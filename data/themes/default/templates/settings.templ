@@ -1,0 +1,28 @@
+// Package templates
+package templates
+
+import "github.com/papierkorp/knov/data/themes/default/templates/layout"
+
+templ Settings() {
+	@layout.Base("Settings") {
+		<div id="settingsContainer" class="basicRoute">
+			<h1>Settings</h1>
+			<div class="settingsGrid">
+				// for _, info := range globals.GetPluginManager().ListPlugins() {
+				// 	<div class="plugin-section">
+				// 		<h3>{ info.Name }</h3>
+				// 		<p>{ info.Description }</p>
+				// 		if plugin, ok := globals.GetPluginManager().GetPlugin(info.Name); ok {
+				// 			if response, err := plugin.TemplResponse(); err == nil {
+				// 				@response
+				// 			} else {
+				// 				<p class="error">Error: { err.Error() }</p>
+				// 			}
+				// 		}
+				// 	</div>
+				// 	<hr/>
+				// }
+			</div>
+		</div>
+	}
+}

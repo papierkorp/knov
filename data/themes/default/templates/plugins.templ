@@ -1,0 +1,25 @@
+// Package templates
+package templates
+
+import "github.com/papierkorp/knov/data/themes/default/templates/layout"
+
+templ Plugins() {
+	@layout.Base("Plugins") {
+		<div id="pluginsContainer" class="basicRoute">
+			<h1>Available Plugins</h1>
+			<div class="plugins-list">
+				// for _, info := range globals.GetPluginManager().ListPlugins() {
+				// 	<div class="plugin-card">
+				// 		<h2>{ info.Name }</h2>
+				// 		<p>{ info.Description }</p>
+				// 		<div class="tags">
+				// 			for _, tag := range info.Tags {
+				// 				<span class="tag">{ tag }</span>
+				// 			}
+				// 		</div>
+				// 	</div>
+				// }
+			</div>
+		</div>
+	}
+}

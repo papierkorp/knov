@@ -1,0 +1,38 @@
+:root {
+  --primary: #81a15a;
+  --accent: #9ece5a;
+  --neutral: #6b6e72;
+  --black: #4e5154;
+  --white: #d1d1d3;
+}
+
+body {
+  margin: 0;
+  background-color: var(--black);
+  color: var(--white);
+}
+
+main {
+  margin: 16px;
+}
+
+#wrapper {
+}
+
+#header {
+  background-color: var(--primary);
+  padding: 16px;
+  text-transform: uppercase;
+}
+
+#header a {
+  color: var(--black);
+  background-color: transparent;
+  text-decoration: none;
+  padding: 16px 0;
+}
+
+#header a:hover {
+  background-color: var(--accent);
+  padding: 16px 0;
+}

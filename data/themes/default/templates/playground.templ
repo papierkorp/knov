@@ -1,0 +1,29 @@
+// Package templates
+package templates
+
+import "github.com/papierkorp/knov/data/themes/default/templates/layout"
+
+templ Playground() {
+	@layout.Base("Playground") {
+		<div id="playgroundContainer" class="basicRoute">
+			<h1>Playground</h1>
+			<section>
+				<h2>Plugin Demo Area</h2>
+				// for _, info := range globals.GetPluginManager().ListPlugins() {
+				// 	<div class="plugin-section">
+				// 		<h3>{ info.Name }</h3>
+				// 		<p>{ info.Description }</p>
+				// 		if plugin, ok := globals.GetPluginManager().GetPlugin(info.Name); ok {
+				// 			if response, err := plugin.TemplResponse(); err == nil {
+				// 				@response
+				// 			} else {
+				// 				<p class="error">Error: { err.Error() }</p>
+				// 			}
+				// 		}
+				// 	</div>
+				// 	<hr/>
+				// }
+			</section>
+		</div>
+	}
+}
