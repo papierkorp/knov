@@ -2,9 +2,11 @@
 package main
 
 import (
-	"github.com/papierkorp/knov/internal/server"
+	"knov/internal/server"
+	"knov/internal/thememanager"
 )
 
 func main() {
-	server.Start()
+	thememanager.Init()
+	server.StartServerChi()
 }

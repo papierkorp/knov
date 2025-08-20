@@ -1,0 +1,30 @@
+package templates
+
+import (
+"fmt"
+"knov/internal/thememanager"
+)
+
+templ Home() {
+<style>
+    body {
+        background-color: black;
+        color: white;
+    }
+</style>
+<div>
+    <h1>Hello World from templ at home in the dark!</h1>
+    <form method="post" action="/switch-theme">
+        <label for="theme">Select Theme:</label>
+        <select name="theme" id="theme" onchange="this.form.submit()">
+            for _, theme := range thememanager.GetThemeManager().GetAvailableThemes() {
+            if theme == thememanager.GetThemeManager().GetCurrentThemeName() {
+            <option value={ theme } selected>{ theme }</option>
+            } else {
+            <option value={ theme }>{ theme }</option>
+            }
+            }
+        </select>
+    </form>
+</div>
+}

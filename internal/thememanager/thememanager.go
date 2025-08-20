@@ -1,139 +1,94 @@
 // Package thememanager ...
-// Package thememanager ...
 package thememanager
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"plugin"
 	"sync"
 
 	"github.com/a-h/templ"
 )
 
-// ---------------------------------------------------------
-// ------------------ GLOBAL THEMEMANAGER ------------------
-// ---------------------------------------------------------
+// -----------------------------------------------------------------------------
+// ----------------------------- globalThemeManager -----------------------------
+// -----------------------------------------------------------------------------
 
 var globalThemeManager *ThemeManager
 
-// ThemeManager ...
-type ThemeManager struct {
-	themes       map[string]ITheme
-	themeInfo    map[string]ThemeInfo
-	currentTheme ITheme
-	mutex        sync.RWMutex
+// Init ..
+func Init() {
+	tm := NewThemeManager()
+	tm.Initialize()
+	globalThemeManager = tm
 }
 
+// GetThemeManager ...
 func GetThemeManager() IThemeManager {
-	if globalThemeManager == nil {
-		globalThemeManager = NewThemeManager()
-		if err := globalThemeManager.Initialize(); err != nil {
-			log.Fatalf("Failed to initialize theme manager: %v", err)
-		}
-	}
 	return globalThemeManager
-}
-
-// ---------------------------------------------------------
-// --------------------- GENERAL TYPES ---------------------
-// ---------------------------------------------------------
-
-// ITheme interface defines required methods for themes
-type ITheme interface {
-	Home() (templ.Component, error)
-	Help() (templ.Component, error)
-	Settings() (templ.Component, error)
-	Search() (templ.Component, error)
-	DocsRoot() (templ.Component, error)
-	Docs(content string) (templ.Component, error)
-	Playground() (templ.Component, error)
-	Plugins() (templ.Component, error)
-}
-
-// ThemeInfo structure for theme metadata
-type ThemeInfo struct {
-	Name              string   `json:"name"`
-	DisplayName       string   `json:"displayName"`
-	Description       string   `json:"description"`
-	Version           string   `json:"version"`
-	Tags              []string `json:"tags"`
-	Author            string   `json:"author"`
-	SupportedFeatures []string `json:"supportedFeatures"`
-	ThemeColor        string   `json:"themeColor"`
-}
-
-// ---------------------------------------------------------
-// ------------------- ThemeManager Logic ------------------
-// ---------------------------------------------------------
-
-// IThemeManager ..
-type IThemeManager interface {
-	GetCurrentTheme() ITheme
-	SetCurrentTheme(name string) error
-	GetCurrentThemeName() string
-	GetAvailableThemes() []string
-	GetThemeInfo(name string) (ThemeInfo, bool)
-	ListThemeInfo() map[string]ThemeInfo
-	Initialize() error
 }
 
 // NewThemeManager ..
 func NewThemeManager() *ThemeManager {
 	return &ThemeManager{
-		themes:    make(map[string]ITheme),
-		themeInfo: make(map[string]ThemeInfo),
+		themes: make(map[string]ITheme),
 	}
 }
 
+// ThemeManager ...
+type ThemeManager struct {
+	themes       map[string]ITheme
+	currentTheme ITheme
+	mutex        sync.RWMutex
+}
+
+// ITheme ...
+type ITheme interface {
+	Home() (templ.Component, error)
+}
+
+// -----------------------------------------------------------------------------
+// -------------------------- IThemeManager Interface --------------------------
+// -----------------------------------------------------------------------------
+
+// IThemeManager ..
+type IThemeManager interface {
+	Initialize()
+	GetCurrentTheme() ITheme
+	GetCurrentThemeName() string
+	SetCurrentTheme(name string) error
+	GetAvailableThemes() []string
+	LoadTheme(themeName string) error
+	LoadAllThemes() error
+}
+
 // Initialize loads all themes from the themes directory
-func (tm *ThemeManager) Initialize() error {
-	tm.mutex.Lock()
-	defer tm.mutex.Unlock()
+func (tm *ThemeManager) Initialize() {
+	log.Println("initialize thememanager ...")
 
-	log.Println("Loading themes...")
-	themes, themeInfos, err := loadThemes()
+	err := tm.CompileThemes()
 	if err != nil {
-		return fmt.Errorf("failed to load themes: %v", err)
+		log.Printf("failed compiling the themes: %s", err)
 	}
 
-	// Store loaded themes and their info
-	for name, theme := range themes {
-		tm.themes[name] = theme
-		if info, exists := themeInfos[name]; exists {
-			tm.themeInfo[name] = info
-		} else {
-			// Fallback info if theme.json is missing
-			tm.themeInfo[name] = ThemeInfo{
-				Name:        name,
-				DisplayName: name,
-				Description: "Theme loaded without metadata",
-				Tags:        []string{"unknown"},
-			}
-		}
-		log.Printf("✅ Loaded theme: %s (%s)", name, tm.themeInfo[name].DisplayName)
+	err = tm.LoadAllThemes()
+	if err != nil {
+		log.Printf("failed to load all themes: %v", err)
 	}
 
-	if len(tm.themes) == 0 {
-		return fmt.Errorf("❌ No themes were loaded")
+	// todo: set to load from config
+	// currentTheme := "defaulttheme"
+	currentTheme := "dark"
+
+	err = tm.SetCurrentTheme(currentTheme)
+	if err != nil {
+		log.Printf("failed to set current theme - %s: %v", currentTheme, err)
 	}
 
-	// Set default theme
-	if theme, ok := tm.themes["default"]; ok {
-		tm.currentTheme = theme
-		log.Println("✅ Set default theme: default")
-	} else {
-		// Set first available theme as default
-		for name, theme := range tm.themes {
-			tm.currentTheme = theme
-			log.Printf("⚠️  Default theme not found, using: %s", name)
-			break
-		}
-	}
-
-	log.Printf("✅ Theme Manager initialized with %d themes", len(tm.themes))
-	return nil
+	log.Println("theme loaded successfully")
 }
 
 // GetCurrentTheme ..
@@ -141,21 +96,6 @@ func (tm *ThemeManager) GetCurrentTheme() ITheme {
 	tm.mutex.RLock()
 	defer tm.mutex.RUnlock()
 	return tm.currentTheme
-}
-
-// SetCurrentTheme ..
-func (tm *ThemeManager) SetCurrentTheme(name string) error {
-	tm.mutex.Lock()
-	defer tm.mutex.Unlock()
-
-	theme, ok := tm.themes[name]
-	if !ok {
-		return fmt.Errorf("theme %s not found", name)
-	}
-
-	tm.currentTheme = theme
-	log.Printf("✅ Switched to theme: %s", name)
-	return nil
 }
 
 // GetCurrentThemeName ..
@@ -171,6 +111,23 @@ func (tm *ThemeManager) GetCurrentThemeName() string {
 	return ""
 }
 
+// SetCurrentTheme ..
+func (tm *ThemeManager) SetCurrentTheme(name string) error {
+	tm.mutex.Lock()
+	defer tm.mutex.Unlock()
+
+	log.Println("start to set current theme")
+	theme, ok := tm.themes[name]
+	if !ok {
+		log.Printf("theme %s not found", name)
+		return fmt.Errorf("theme %s not found", name)
+	}
+
+	tm.currentTheme = theme
+	log.Printf("switched to theme: %s", name)
+	return nil
+}
+
 // GetAvailableThemes ..
 func (tm *ThemeManager) GetAvailableThemes() []string {
 	tm.mutex.RLock()
@@ -183,41 +140,126 @@ func (tm *ThemeManager) GetAvailableThemes() []string {
 	return names
 }
 
-// GetThemeInfo returns theme metadata for a specific theme
-func (tm *ThemeManager) GetThemeInfo(name string) (ThemeInfo, bool) {
-	tm.mutex.RLock()
-	defer tm.mutex.RUnlock()
+// -----------------------------------------------------------------------------
+// ----------------------------- Theme Compilation -----------------------------
+// -----------------------------------------------------------------------------
 
-	info, exists := tm.themeInfo[name]
-	return info, exists
-}
+// CompileThemes searches and compiles all themes in the themes directory
+func (tm *ThemeManager) CompileThemes() error {
+	themesDir := "data/themes"
 
-// ListThemeInfo returns all theme metadata
-func (tm *ThemeManager) ListThemeInfo() map[string]ThemeInfo {
-	tm.mutex.RLock()
-	defer tm.mutex.RUnlock()
+	log.Printf("start compiling themes")
 
-	// Return a copy to prevent external modification
-	infoCopy := make(map[string]ThemeInfo)
-	for name, info := range tm.themeInfo {
-		infoCopy[name] = info
-	}
-	return infoCopy
-}
-
-// loadThemeMetadata loads theme.json file for a theme
-func loadThemeMetadata(themePath string) (ThemeInfo, error) {
-	metadataPath := fmt.Sprintf("%s/theme.json", themePath)
-
-	data, err := os.ReadFile(metadataPath)
+	entries, err := os.ReadDir(themesDir)
 	if err != nil {
-		return ThemeInfo{}, fmt.Errorf("failed to read theme metadata: %v", err)
+		return fmt.Errorf("failed to read themes directory: %w", err)
 	}
 
-	var info ThemeInfo
-	if err := json.Unmarshal(data, &info); err != nil {
-		return ThemeInfo{}, fmt.Errorf("failed to parse theme metadata: %v", err)
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+
+		themeName := entry.Name()
+		themeDir := filepath.Join(themesDir, themeName)
+		absOutPath, err := filepath.Abs(filepath.Join(themesDir, themeName+".so"))
+		if err != nil {
+			return fmt.Errorf("failed to get absolute path: %w", err)
+		}
+
+		cmd := exec.Command("go", "build", "-buildmode=plugin", "-o", absOutPath, ".")
+		cmd.Dir = themeDir
+		output, err := cmd.CombinedOutput()
+
+		if err != nil {
+			log.Printf("failed to compile theme %s: %v, %s", themeName, err, output)
+			return err
+		}
+
+		log.Printf("compiled theme: %s", absOutPath)
 	}
 
-	return info, nil
+	return nil
+}
+
+// LoadTheme loads a specific theme plugin by name
+func (tm *ThemeManager) LoadTheme(themeName string) error {
+	tm.mutex.Lock()
+	defer tm.mutex.Unlock()
+
+	log.Println("start to load theme")
+
+	if _, exists := tm.themes[themeName]; exists {
+		return nil
+	}
+
+	pluginPath := filepath.Join("data/themes", themeName+".so")
+	if _, err := os.Stat(pluginPath); os.IsNotExist(err) {
+		return fmt.Errorf("theme plugin file not found: %s", pluginPath)
+	}
+
+	plugin, err := plugin.Open(pluginPath)
+	if err != nil {
+		return fmt.Errorf("failed to load plugin %s: %w", pluginPath, err)
+	}
+
+	themeSymbol, err := plugin.Lookup("Theme")
+	if err != nil {
+		return fmt.Errorf("failed to find 'Theme' symbol in plugin %s: %w", themeName, err)
+	}
+	theme, ok := themeSymbol.(ITheme)
+	if !ok {
+		return fmt.Errorf("theme %s does not implement ITheme interface", themeName)
+	}
+
+	tm.themes[themeName] = theme
+	log.Printf("successfully loaded theme: %s", themeName)
+
+	return nil
+}
+
+// LoadAllThemes loads all available theme plugins from the themes directory
+func (tm *ThemeManager) LoadAllThemes() error {
+	themesDir := "data/themes"
+
+	log.Printf("loading all themes from %s", themesDir)
+
+	entries, err := os.ReadDir(themesDir)
+	if err != nil {
+		return fmt.Errorf("failed to read themes directory: %w", err)
+	}
+
+	var loadErrors []string
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+
+		themeName := entry.Name()
+
+		tm.mutex.RLock()
+		_, exists := tm.themes[themeName]
+		tm.mutex.RUnlock()
+
+		if exists {
+			log.Printf("theme %s is already loaded, skipping", themeName)
+		} else {
+			err := tm.LoadTheme(themeName)
+			if err != nil {
+				errMsg := fmt.Sprintf("failed to load theme %s: %v", themeName, err)
+				log.Printf(errMsg)
+				loadErrors = append(loadErrors, errMsg)
+				continue
+			}
+		}
+
+	}
+
+	if len(loadErrors) > 0 {
+		return fmt.Errorf("failed to load some themes: %v", loadErrors)
+	}
+
+	log.Printf("successfully loaded all available themes")
+	return nil
 }

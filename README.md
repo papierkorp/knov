@@ -1,11 +1,8 @@
-# Dev Environment
+# temp
 
-```bash
-go get github.com/labstack/echo/v4
-go get github.com/a-h/templ/cmd/templ@latest
-```
+help me to implement the following:
 
-```bash
-go install github.com/a-h/templ/cmd/templ@latest
-go install github.com/air-verse/air@latest
-```
+- change the defaulttheme so it can be compiled to a .so file
+- a function which searches and compiles all themes in the theme folder with: cmd := exec.Command("go", "build", "-buildmode=plugin", "-o", outPath, ".")
+- in Initialize fill the themes ThemeManager struct with the pluginnames
+- a function which loads a specific theme .so file (the name of the theme is passed)

@@ -1,8 +1,0 @@
-{
-  "name": "defaultTheme",
-  "displayName": "Default Theme",
-  "description": "The default knov theme",
-  "version": "1.0.0",
-  "tags": ["default", "builtin"],
-  "author": "knov Team"
-}
