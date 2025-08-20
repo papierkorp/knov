@@ -3,7 +3,10 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"path/filepath"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -20,11 +23,39 @@ func StartServerChi() {
 	r.Get("/", handleHome)
 	r.Post("/switch-theme", handleSwitchTheme)
 
+	r.Get("/static/css/style.css", handleCSS)
+	r.Get("/static/css/custom.css", handleCSS)
+
+	fs := http.FileServer(http.Dir("static"))
+	r.Handle("/static/*", http.StripPrefix("/static/", fs))
+
 	err := http.ListenAndServe(":1324", r)
 	if err != nil {
 		fmt.Printf("Error starting chi server: %v\n", err)
 		return
 	}
+
+}
+
+func handleCSS(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/css")
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Set("Expires", "0")
+
+	filename := filepath.Base(r.URL.Path)
+	var cssPath string
+
+	log.Println("cssfilename: ", filename)
+
+	switch filename {
+	case "style.css":
+		themeName := thememanager.GetThemeManager().GetCurrentThemeName()
+		cssPath = filepath.Join("data/themes", themeName, "templates", "style.css")
+	case "custom.css":
+		cssPath = "data/custom.css"
+	}
+
+	http.ServeFile(w, r, cssPath)
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
@@ -71,5 +102,7 @@ func handleSwitchTheme(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	// http.Redirect(w, r, "/", http.StatusSeeOther)
+	redirectURL := fmt.Sprintf("/?v=%d", time.Now().Unix())
+	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 }

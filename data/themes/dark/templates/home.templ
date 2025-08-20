@@ -1,24 +1,25 @@
 package templates
 
 import (
-"fmt"
 "knov/internal/thememanager"
+"log"
 )
 
-templ Home() {
-<style>
-    body {
-        background-color: black;
-        color: white;
-    }
-</style>
+func logDebug(msg string, args ...interface{}) string {
+log.Printf("LOGDEBUG HOME: "+msg, args...)
+return ""
+}
+
+templ Home(data thememanager.TemplateData) {
+@Base("Home")
 <div>
     <h1>Hello World from templ at home in the dark!</h1>
     <form method="post" action="/switch-theme">
         <label for="theme">Select Theme:</label>
         <select name="theme" id="theme" onchange="this.form.submit()">
-            for _, theme := range thememanager.GetThemeManager().GetAvailableThemes() {
-            if theme == thememanager.GetThemeManager().GetCurrentThemeName() {
+            for _, theme := range data.AvailableThemes {
+            logDebug("data:", data)
+            if theme == data.ThemeToUse {
             <option value={ theme } selected>{ theme }</option>
             } else {
             <option value={ theme }>{ theme }</option>

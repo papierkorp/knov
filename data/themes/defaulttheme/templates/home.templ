@@ -2,20 +2,29 @@ package templates
 
 import "knov/internal/thememanager"
 
-templ Home() {
-	<style>
-    background-color: lightgrey;
-    color: black;
-</style>
-	<div>
-		<h1>Hello World from templ at the default home!</h1>
-		<form method="post" action="/switch-theme">
-			<label for="theme">Select Theme:</label>
-			<select name="theme" id="theme" onchange="this.form.submit()">
-				for _, theme := range thememanager.GetThemeManager().GetAvailableThemes() {
-					<option value={ theme }>{ theme }</option>
-				}
-			</select>
-		</form>
-	</div>
+templ Home(data thememanager.TemplateData) {
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<link href="/static/css/style.css" rel="stylesheet"/>
+			<link href="/static/css/custom.css" rel="stylesheet"/>
+		</head>
+		<body>
+			<div>
+				<h1>Hello World from templ at the default home!</h1>
+				<form method="post" action="/switch-theme">
+					<label for="theme">Select Theme:</label>
+					<select name="theme" id="theme" onchange="this.form.submit()">
+						for _, theme := range data.AvailableThemes {
+							if theme == data.ThemeToUse {
+								<option value={ theme } selected>{ theme }</option>
+							} else {
+								<option value={ theme }>{ theme }</option>
+							}
+						}
+					</select>
+				</form>
+			</div>
+		</body>
+	</html>
 }

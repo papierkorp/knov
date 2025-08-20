@@ -54,6 +54,16 @@ type ITheme interface {
 // -------------------------- IThemeManager Interface --------------------------
 // -----------------------------------------------------------------------------
 
+// TemplateData to be passed onto Templates for dynamic data access
+type TemplateData struct {
+	ThemeToUse      string
+	AvailableThemes []string
+}
+
+// -----------------------------------------------------------------------------
+// -------------------------- IThemeManager Interface --------------------------
+// -----------------------------------------------------------------------------
+
 // IThemeManager ..
 type IThemeManager interface {
 	Initialize()

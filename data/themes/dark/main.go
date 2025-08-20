@@ -2,9 +2,9 @@
 package main
 
 import (
-	"knov/data/themes/dark/templates"
-
 	"github.com/a-h/templ"
+	"knov/data/themes/dark/templates"
+	"knov/internal/thememanager"
 )
 
 // Dark ..
@@ -15,7 +15,14 @@ var Theme Dark
 
 // Home ...
 func (t *Dark) Home() (templ.Component, error) {
-	return templates.Home(), nil
+
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.Home(td), nil
 }
 
 func main() {}

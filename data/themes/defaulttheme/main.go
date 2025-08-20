@@ -2,9 +2,9 @@
 package main
 
 import (
-	"knov/data/themes/defaulttheme/templates"
-
 	"github.com/a-h/templ"
+	"knov/data/themes/defaulttheme/templates"
+	"knov/internal/thememanager"
 )
 
 // DefaultTheme ..
@@ -15,7 +15,13 @@ var Theme DefaultTheme
 
 // Home ...
 func (t *DefaultTheme) Home() (templ.Component, error) {
-	return templates.Home(), nil
+
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+	return templates.Home(td), nil
 }
 
 func main() {}
