@@ -8,9 +8,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"plugin"
+	"slices"
 	"sync"
 
 	"github.com/a-h/templ"
+	"knov/internal/configmanager"
 )
 
 // -----------------------------------------------------------------------------
@@ -89,10 +91,16 @@ func (tm *ThemeManager) Initialize() {
 		log.Printf("failed to load all themes: %v", err)
 	}
 
-	// todo: set to load from config
-	// currentTheme := "defaulttheme"
-	currentTheme := "dark"
+	availableThemes := tm.GetAvailableThemes()
+	currentTheme := configmanager.GetConfigThemes().CurrentTheme
+	if currentTheme == "" || slices.Contains(availableThemes, currentTheme) {
+		log.Printf("couldnt find theme: %s, using builtin instead", currentTheme)
 
+		configmanager.SetConfigThemes(configmanager.ConfigThemes{
+			CurrentTheme: "builtin",
+		})
+		currentTheme = "builtin"
+	}
 	err = tm.SetCurrentTheme(currentTheme)
 	if err != nil {
 		log.Printf("failed to set current theme - %s: %v", currentTheme, err)
@@ -156,7 +164,7 @@ func (tm *ThemeManager) GetAvailableThemes() []string {
 
 // CompileThemes searches and compiles all themes in the themes directory
 func (tm *ThemeManager) CompileThemes() error {
-	themesDir := "data/themes"
+	themesDir := "themes/"
 
 	log.Printf("start compiling themes")
 
@@ -182,7 +190,7 @@ func (tm *ThemeManager) CompileThemes() error {
 		output, err := cmd.CombinedOutput()
 
 		if err != nil {
-			log.Printf("failed to compile theme %s: %v, %s", themeName, err, output)
+			log.Printf("failed to compile theme %s in %s: %v, %s", themeName, themeDir, err, output)
 			return err
 		}
 
@@ -203,14 +211,14 @@ func (tm *ThemeManager) LoadTheme(themeName string) error {
 		return nil
 	}
 
-	pluginPath := filepath.Join("data/themes", themeName+".so")
-	if _, err := os.Stat(pluginPath); os.IsNotExist(err) {
-		return fmt.Errorf("theme plugin file not found: %s", pluginPath)
+	themesDir := filepath.Join("themes/", themeName+".so")
+	if _, err := os.Stat(themesDir); os.IsNotExist(err) {
+		return fmt.Errorf("theme plugin file not found: %s", themesDir)
 	}
 
-	plugin, err := plugin.Open(pluginPath)
+	plugin, err := plugin.Open(themesDir)
 	if err != nil {
-		return fmt.Errorf("failed to load plugin %s: %w", pluginPath, err)
+		return fmt.Errorf("failed to load plugin %s: %w", themesDir, err)
 	}
 
 	themeSymbol, err := plugin.Lookup("Theme")
@@ -230,7 +238,7 @@ func (tm *ThemeManager) LoadTheme(themeName string) error {
 
 // LoadAllThemes loads all available theme plugins from the themes directory
 func (tm *ThemeManager) LoadAllThemes() error {
-	themesDir := "data/themes"
+	themesDir := "themes/"
 
 	log.Printf("loading all themes from %s", themesDir)
 

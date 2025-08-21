@@ -3,18 +3,18 @@ package main
 
 import (
 	"github.com/a-h/templ"
-	"knov/data/themes/defaulttheme/templates"
 	"knov/internal/thememanager"
+	"knov/themes/billo/templates"
 )
 
 // DefaultTheme ..
-type DefaultTheme struct{}
+type Billo struct{}
 
 // Theme ..
-var Theme DefaultTheme
+var Theme Billo
 
 // Home ...
-func (t *DefaultTheme) Home() (templ.Component, error) {
+func (t *Billo) Home() (templ.Component, error) {
 
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{

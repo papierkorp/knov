@@ -10,11 +10,19 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"knov/internal/configmanager"
 	"knov/internal/thememanager"
 )
 
 // StartServerChi ...
 func StartServerChi() {
+
+	err := configmanager.InitConfig()
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	fmt.Println("Starting Chi HTTP server on http://localhost:1324")
 	r := chi.NewRouter()
 
@@ -29,7 +37,7 @@ func StartServerChi() {
 	fs := http.FileServer(http.Dir("static"))
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
-	err := http.ListenAndServe(":1324", r)
+	err = http.ListenAndServe(":1324", r)
 	if err != nil {
 		fmt.Printf("Error starting chi server: %v\n", err)
 		return
@@ -45,14 +53,12 @@ func handleCSS(w http.ResponseWriter, r *http.Request) {
 	filename := filepath.Base(r.URL.Path)
 	var cssPath string
 
-	log.Println("cssfilename: ", filename)
-
 	switch filename {
 	case "style.css":
 		themeName := thememanager.GetThemeManager().GetCurrentThemeName()
-		cssPath = filepath.Join("data/themes", themeName, "templates", "style.css")
+		cssPath = filepath.Join("themes/", themeName, "templates", "style.css")
 	case "custom.css":
-		cssPath = "data/custom.css"
+		cssPath = "config/custom.css"
 	}
 
 	http.ServeFile(w, r, cssPath)
@@ -105,4 +111,11 @@ func handleSwitchTheme(w http.ResponseWriter, r *http.Request) {
 	// http.Redirect(w, r, "/", http.StatusSeeOther)
 	redirectURL := fmt.Sprintf("/?v=%d", time.Now().Unix())
 	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+
+	configmanager.SetConfigThemes(configmanager.ConfigThemes{
+		CurrentTheme: "asdf",
+	})
+
+	log.Printf("configManager.themes: %+v", configmanager.GetConfigThemes())
+	log.Printf("configManager current theme: %+v", configmanager.GetConfigThemes().CurrentTheme)
 }

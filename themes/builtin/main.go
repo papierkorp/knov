@@ -3,18 +3,18 @@ package main
 
 import (
 	"github.com/a-h/templ"
-	"knov/data/themes/dark/templates"
 	"knov/internal/thememanager"
+	"knov/themes/builtin/templates"
 )
 
-// Dark ..
-type Dark struct{}
+// Builtin ..
+type Builtin struct{}
 
 // Theme ..
-var Theme Dark
+var Theme Builtin
 
 // Home ...
-func (t *Dark) Home() (templ.Component, error) {
+func (t *Builtin) Home() (templ.Component, error) {
 
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
