@@ -12,18 +12,11 @@ templ Home(data thememanager.TemplateData) {
 		<body>
 			<div>
 				<h1>Hello World from templ at Billo home!</h1>
-				<form method="post" action="/switch-theme">
-					<label for="theme">Select Theme:</label>
-					<select name="theme" id="theme" onchange="this.form.submit()">
-						for _, theme := range data.AvailableThemes {
-							if theme == data.ThemeToUse {
-								<option value={ theme } selected>{ theme }</option>
-							} else {
-								<option value={ theme }>{ theme }</option>
-							}
-						}
-					</select>
-				</form>
+				<a href="/">Home</a>
+				<a href="/help">Help</a>
+				<a href="/playground">Playground</a>
+				<a href="/search">Search</a>
+				<a href="/settings">Settings</a>
 			</div>
 		</body>
 	</html>

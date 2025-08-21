@@ -3,20 +3,18 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"path/filepath"
-	"time"
+
+	"knov/internal/configmanager"
+	"knov/internal/thememanager"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"knov/internal/configmanager"
-	"knov/internal/thememanager"
 )
 
 // StartServerChi ...
 func StartServerChi() {
-
 	err := configmanager.InitConfig()
 
 	if err != nil {
@@ -29,7 +27,8 @@ func StartServerChi() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Get("/", handleHome)
-	r.Post("/switch-theme", handleSwitchTheme)
+	r.Get("/home", handleHome)
+	r.Get("/settings", handleSettings)
 
 	r.Get("/static/css/style.css", handleCSS)
 	r.Get("/static/css/custom.css", handleCSS)
@@ -80,42 +79,34 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleSwitchTheme(w http.ResponseWriter, r *http.Request) {
-	themeName := r.FormValue("theme")
-	if themeName == "" {
-		http.Error(w, "fheme name is required", http.StatusBadRequest)
-		return
+func handleSettings(w http.ResponseWriter, r *http.Request) {
+	theme := r.URL.Query().Get("theme")
+	if theme != "" {
+		tm := thememanager.GetThemeManager()
+		currentTheme := tm.GetCurrentThemeName()
+		if currentTheme != theme {
+			err := tm.LoadTheme(theme)
+			if err == nil {
+				tm.SetCurrentTheme(theme)
+				newConfig := configmanager.ConfigThemes{
+					CurrentTheme: theme,
+				}
+				configmanager.SetConfigThemes(newConfig)
+			}
+		}
 	}
 
-	tm := thememanager.GetThemeManager()
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().Settings()
 
-	currentTheme := thememanager.GetThemeManager().GetCurrentThemeName()
-	if currentTheme == themeName {
-		fmt.Printf("theme %s already loaded\n", themeName)
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
-	err := tm.LoadTheme(themeName)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("failed to load theme: %v", err), http.StatusInternalServerError)
-		return
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		fmt.Printf("Error loading theme")
 	}
 
-	err = tm.SetCurrentTheme(themeName)
+	err = component.Render(r.Context(), w)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("failed to switch theme: %v", err), http.StatusInternalServerError)
+		http.Error(w, "Failed to render template", http.StatusInternalServerError)
+		fmt.Printf("Error rendering template: %v\n", err)
 		return
 	}
-
-	// http.Redirect(w, r, "/", http.StatusSeeOther)
-	redirectURL := fmt.Sprintf("/?v=%d", time.Now().Unix())
-	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
-
-	configmanager.SetConfigThemes(configmanager.ConfigThemes{
-		CurrentTheme: "asdf",
-	})
-
-	log.Printf("configManager.themes: %+v", configmanager.GetConfigThemes())
-	log.Printf("configManager current theme: %+v", configmanager.GetConfigThemes().CurrentTheme)
 }

@@ -2,9 +2,10 @@
 package main
 
 import (
-	"github.com/a-h/templ"
 	"knov/internal/thememanager"
 	"knov/themes/builtin/templates"
+
+	"github.com/a-h/templ"
 )
 
 // Builtin ..
@@ -23,6 +24,18 @@ func (t *Builtin) Home() (templ.Component, error) {
 	}
 
 	return templates.Home(td), nil
+}
+
+// Settings ...
+func (t *Builtin) Settings() (templ.Component, error) {
+
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.Settings(td), nil
 }
 
 func main() {}

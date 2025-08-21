@@ -9,6 +9,10 @@ import (
 	"os"
 )
 
+// -----------------------------------------------------------------------------
+// ------------------------------- configManager -------------------------------
+// -----------------------------------------------------------------------------
+
 var configManager ConfigManager
 
 // ConfigManager ..
@@ -41,10 +45,6 @@ func InitConfig() error {
 		return fmt.Errorf("failed to decode config.json: %s", err)
 	}
 
-	log.Printf("configManager: %+v", configManager)
-	log.Printf("configManager.themes: %+v", configManager.Themes)
-	log.Printf("configManager current theme: %+v", configManager.Themes.CurrentTheme)
-
 	return nil
 }
 
@@ -61,6 +61,10 @@ func saveConfigToFile() error {
 	log.Printf("config saved successfully")
 	return nil
 }
+
+// -----------------------------------------------------------------------------
+// ----------------------------- retrieve/set Data -----------------------------
+// -----------------------------------------------------------------------------
 
 // GetConfigThemes ..
 func GetConfigThemes() ConfigThemes {

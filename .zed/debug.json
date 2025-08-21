@@ -1,0 +1,13 @@
+[
+  {
+    "adapter": "Delve",
+    "label": "go run ./cmd/main.go",
+    "request": "launch",
+    "mode": "debug",
+    "program": "./cmd",
+    "cwd": "$ZED_DIRNAME",
+    "args": [],
+    "buildFlags": [],
+    "env": {}
+  }
+]

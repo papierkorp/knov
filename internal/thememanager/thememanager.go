@@ -11,8 +11,9 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/a-h/templ"
 	"knov/internal/configmanager"
+
+	"github.com/a-h/templ"
 )
 
 // -----------------------------------------------------------------------------
@@ -50,6 +51,7 @@ type ThemeManager struct {
 // ITheme ...
 type ITheme interface {
 	Home() (templ.Component, error)
+	Settings() (templ.Component, error)
 }
 
 // -----------------------------------------------------------------------------
@@ -266,7 +268,7 @@ func (tm *ThemeManager) LoadAllThemes() error {
 			err := tm.LoadTheme(themeName)
 			if err != nil {
 				errMsg := fmt.Sprintf("failed to load theme %s: %v", themeName, err)
-				log.Printf(errMsg)
+				log.Println(errMsg)
 				loadErrors = append(loadErrors, errMsg)
 				continue
 			}
