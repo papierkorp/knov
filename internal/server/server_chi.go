@@ -6,37 +6,31 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"knov/internal/configmanager"
-	"knov/internal/thememanager"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"knov/internal/thememanager"
 )
 
 // StartServerChi ...
 func StartServerChi() {
-	err := configmanager.InitConfig()
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
 	fmt.Println("Starting Chi HTTP server on http://localhost:1324")
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+
 	r.Get("/", handleHome)
 	r.Get("/home", handleHome)
 	r.Get("/settings", handleSettings)
 
 	r.Get("/static/css/style.css", handleCSS)
 	r.Get("/static/css/custom.css", handleCSS)
-
 	fs := http.FileServer(http.Dir("static"))
 	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
-	err = http.ListenAndServe(":1324", r)
+	apiRoutes(r)
+
+	err := http.ListenAndServe(":1324", r)
 	if err != nil {
 		fmt.Printf("Error starting chi server: %v\n", err)
 		return
@@ -80,22 +74,6 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleSettings(w http.ResponseWriter, r *http.Request) {
-	theme := r.URL.Query().Get("theme")
-	if theme != "" {
-		tm := thememanager.GetThemeManager()
-		currentTheme := tm.GetCurrentThemeName()
-		if currentTheme != theme {
-			err := tm.LoadTheme(theme)
-			if err == nil {
-				tm.SetCurrentTheme(theme)
-				newConfig := configmanager.ConfigThemes{
-					CurrentTheme: theme,
-				}
-				configmanager.SetConfigThemes(newConfig)
-			}
-		}
-	}
-
 	component, err := thememanager.GetThemeManager().GetCurrentTheme().Settings()
 
 	if err != nil {

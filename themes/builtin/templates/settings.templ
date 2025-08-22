@@ -1,25 +1,22 @@
 package templates
 
-import (
-"knov/internal/thememanager"
-)
+import "knov/internal/thememanager"
 
 templ Settings(data thememanager.TemplateData) {
-@Base("Settings")
-<div>
-    <h1>Hello World from templ at settings in the dark!</h1>
-    <form hx-get="/settings" hx-target="body" hx-swap="outerHTML">
-        <label for="theme">Select Theme:</label>
-        <select name="theme" id="theme" onchange="this.form.submit()">
-            for _, theme := range data.AvailableThemes {
-            if theme == data.ThemeToUse {
-            <option value={ theme } selected>{ theme }</option>
-            } else {
-            <option value={ theme }>{ theme }</option>
-            }
-            }
-        </select>
-    </form>
-
-</div>
+	@Base("Settings")
+	<div>
+		<h1>Hello World from templ at settings in the bultin theme!</h1>
+		<form hx-post="/api/themes" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
+			<label for="theme">Select Theme:</label>
+			<select name="theme" id="theme">
+				for _, theme := range data.AvailableThemes {
+					if theme == data.ThemeToUse {
+						<option value={ theme } selected>{ theme }</option>
+					} else {
+						<option value={ theme }>{ theme }</option>
+					}
+				}
+			</select>
+		</form>
+	</div>
 }

@@ -11,9 +11,8 @@ import (
 	"slices"
 	"sync"
 
-	"knov/internal/configmanager"
-
 	"github.com/a-h/templ"
+	"knov/internal/configmanager"
 )
 
 // -----------------------------------------------------------------------------
@@ -95,7 +94,7 @@ func (tm *ThemeManager) Initialize() {
 
 	availableThemes := tm.GetAvailableThemes()
 	currentTheme := configmanager.GetConfigThemes().CurrentTheme
-	if currentTheme == "" || slices.Contains(availableThemes, currentTheme) {
+	if currentTheme == "" || !slices.Contains(availableThemes, currentTheme) {
 		log.Printf("couldnt find theme: %s, using builtin instead", currentTheme)
 
 		configmanager.SetConfigThemes(configmanager.ConfigThemes{

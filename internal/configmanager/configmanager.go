@@ -26,26 +26,25 @@ type ConfigThemes struct {
 }
 
 // InitConfig intializing config/config.json
-func InitConfig() error {
+func InitConfig() {
 	jsonFile, err := os.ReadFile("config/config.json")
 	if err != nil {
-		return fmt.Errorf("unable to open config.json file: %s", err)
+		log.Printf("unable to open config.json file: %s", err)
 	}
 
 	if len(jsonFile) == 0 {
-		return fmt.Errorf("config.json file is empty")
+		log.Printf("config.json file is empty")
 	}
 
 	if !json.Valid(jsonFile) {
-		return fmt.Errorf("config.json contains invalid JSON")
+		log.Printf("config.json contains invalid JSON")
 	}
 
 	decoder := json.NewDecoder(bytes.NewBuffer(jsonFile))
 	if err := decoder.Decode(&configManager); err != nil {
-		return fmt.Errorf("failed to decode config.json: %s", err)
+		log.Printf("failed to decode config.json: %s", err)
 	}
 
-	return nil
 }
 
 func saveConfigToFile() error {

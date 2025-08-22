@@ -1,0 +1,73 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "KNOV API \\n http://localhost:1324",
+        "title": "Knov API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "http://localhost:1324",
+    "basePath": "/",
+    "paths": {
+        "/api/health": {
+            "get": {
+                "summary": "Health check",
+                "responses": {}
+            }
+        },
+        "/api/themes": {
+            "get": {
+                "description": "Get current theme and available themes, or set new theme via query parameter",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "themes"
+                ],
+                "summary": "Get and set themes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Theme name to set (POST only)",
+                        "name": "theme",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"current\":\"themename\",\"available\":[\"theme1\",\"theme2\"]}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Get current theme and available themes, or set new theme via query parameter",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "themes"
+                ],
+                "summary": "Get and set themes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Theme name to set (POST only)",
+                        "name": "theme",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"current\":\"themename\",\"available\":[\"theme1\",\"theme2\"]}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
