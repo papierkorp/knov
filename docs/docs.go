@@ -15,30 +15,43 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/config/getConfig": {
+            "get": {
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get current configuration",
+                "responses": {}
+            }
+        },
+        "/api/config/setConfig": {
+            "post": {
+                "tags": [
+                    "config"
+                ],
+                "summary": "Set configuration",
+                "responses": {}
+            }
+        },
         "/api/health": {
             "get": {
+                "tags": [
+                    "health"
+                ],
                 "summary": "Health check",
                 "responses": {}
             }
         },
-        "/api/themes": {
+        "/api/themes/getAllThemes": {
             "get": {
-                "description": "Get current theme and available themes, or set new theme via query parameter",
+                "description": "Get current theme and available themes",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "themes"
                 ],
-                "summary": "Get and set themes",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Theme name to set (POST only)",
-                        "name": "theme",
-                        "in": "query"
-                    }
-                ],
+                "summary": "Get themes",
                 "responses": {
                     "200": {
                         "description": "{\"current\":\"themename\",\"available\":[\"theme1\",\"theme2\"]}",
@@ -47,30 +60,30 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/api/themes/setTheme": {
             "post": {
-                "description": "Get current theme and available themes, or set new theme via query parameter",
-                "produces": [
-                    "application/json"
+                "description": "Set new theme via form parameter",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
                 ],
                 "tags": [
                     "themes"
                 ],
-                "summary": "Get and set themes",
+                "summary": "Set theme",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Theme name to set (POST only)",
+                        "description": "Theme name to set",
                         "name": "theme",
-                        "in": "query"
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "{\"current\":\"themename\",\"available\":[\"theme1\",\"theme2\"]}",
-                        "schema": {
-                            "type": "string"
-                        }
+                    "303": {
+                        "description": "Redirect to settings page"
                     }
                 }
             }
@@ -81,7 +94,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "http://localhost:1324",
+	Host:             "localhost:1324",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Knov API",

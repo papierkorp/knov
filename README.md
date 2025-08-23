@@ -2,8 +2,6 @@
 
 # todo
 
-- change thememanger to api
-- change configmanager to api
 - add a translator
 - add GET api/themes to api (show all avaiable themes)
 - add POST api/themes/{themeName} (switch to theme)
@@ -41,9 +39,19 @@
 
 # done
 
+- change configmanager to api
+- change thememanger to api
 - add a api
 - use htmx
 - add settings route
 - load defaulttheme/theme from settings.json instead of hardcoded in thememanager => configmanager
 - make style.css and custom.css work
 - add a flexible thememanager with 2 themes
+
+# dev
+
+```bash
+go install github.com/a-h/templ/cmd/templ@latest
+go install github.com/swaggo/swag/cmd/swag@latest
+
+```

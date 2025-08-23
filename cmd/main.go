@@ -10,7 +10,7 @@ import (
 // @title Knov API
 // @version 1.0
 // @description KNOV API \n http://localhost:1324
-// @host http://localhost:1324
+// @host localhost:1324
 // @BasePath /
 func main() {
 	configmanager.InitConfig()

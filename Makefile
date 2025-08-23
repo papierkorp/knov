@@ -10,4 +10,7 @@ swaggo-api-init:
 dev: swaggo-api-init templ-generate 
 	go run ./cmd
 
-.PHONY: templ-generate dev swaggo-api-init
+rmt: 
+	rm ./themes/*.so
+
+.PHONY: templ-generate dev swaggo-api-init rmt
