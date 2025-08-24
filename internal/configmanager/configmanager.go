@@ -20,7 +20,7 @@ var configManager ConfigManager
 // ConfigManager ..
 type ConfigManager struct {
 	Themes   ConfigThemes `json:"themes"`
-	Language string       `json:"Language"`
+	Language string       `json:"language"`
 }
 
 // ConfigThemes ..
@@ -49,6 +49,8 @@ func InitConfig() {
 		log.Printf("failed to decode config.json: %s", err)
 	}
 
+	SetLanguage(GetLanguage())
+
 }
 
 func saveConfigToFile() error {
@@ -63,6 +65,17 @@ func saveConfigToFile() error {
 
 	log.Printf("config saved successfully")
 	return nil
+}
+
+// GetConfig ..
+func GetConfig() ConfigManager {
+	return configManager
+}
+
+// SetConfig ..
+func SetConfig(newConfig ConfigManager) {
+	configManager = newConfig
+	saveConfigToFile()
 }
 
 // -----------------------------------------------------------------------------

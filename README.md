@@ -2,10 +2,6 @@
 
 # todo
 
-- add a translator
-- add GET api/themes to api (show all avaiable themes)
-- add POST api/themes/{themeName} (switch to theme)
-- add GET api/currentTheme
 - add custom.css panel to settings
 - make basic style for settings
 - add api to docs and thememanager readme
@@ -39,6 +35,10 @@
 
 # done
 
+- add a translator
+- add GET api/themes to api (show all avaiable themes)
+- add POST api/themes/{themeName} (switch to theme)
+- add GET api/currentTheme
 - change configmanager to api
 - change thememanger to api
 - add a api

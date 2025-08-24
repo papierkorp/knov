@@ -12,7 +12,7 @@ import (
 // @Tags config
 // @Router /api/config/getConfig [get]
 func handleAPIGetConfig(w http.ResponseWriter, r *http.Request) {
-	config := configmanager.GetConfigThemes()
+	config := configmanager.GetConfig()
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(config)
@@ -22,14 +22,14 @@ func handleAPIGetConfig(w http.ResponseWriter, r *http.Request) {
 // @Tags config
 // @Router /api/config/setConfig [post]
 func handleAPISetConfig(w http.ResponseWriter, r *http.Request) {
-	var config configmanager.ConfigThemes
+	var config configmanager.ConfigManager
 
 	if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
 		http.Error(w, "invalid json", http.StatusBadRequest)
 		return
 	}
 
-	configmanager.SetConfigThemes(config)
+	configmanager.SetConfig(config)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
