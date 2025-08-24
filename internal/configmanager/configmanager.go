@@ -17,7 +17,8 @@ var configManager ConfigManager
 
 // ConfigManager ..
 type ConfigManager struct {
-	Themes ConfigThemes `json:"themes"`
+	Themes   ConfigThemes `json:"themes"`
+	Language string       `json:"Language"`
 }
 
 // ConfigThemes ..
@@ -62,7 +63,7 @@ func saveConfigToFile() error {
 }
 
 // -----------------------------------------------------------------------------
-// ----------------------------- retrieve/set Data -----------------------------
+// ----------------------------------- themes -----------------------------------
 // -----------------------------------------------------------------------------
 
 // GetConfigThemes ..
@@ -73,5 +74,23 @@ func GetConfigThemes() ConfigThemes {
 // SetConfigThemes ..
 func SetConfigThemes(newConfigThemes ConfigThemes) {
 	configManager.Themes = newConfigThemes
+	saveConfigToFile()
+}
+
+// -----------------------------------------------------------------------------
+// -------------------------------- translation --------------------------------
+// -----------------------------------------------------------------------------
+
+// GetLanguage ..
+func GetLanguage() string {
+	if configManager.Language == "" {
+		return "en"
+	}
+	return configManager.Language
+}
+
+// SetLanguage ..
+func SetLanguage(lang string) {
+	configManager.Language = lang
 	saveConfigToFile()
 }

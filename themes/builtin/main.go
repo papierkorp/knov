@@ -2,10 +2,9 @@
 package main
 
 import (
+	"github.com/a-h/templ"
 	"knov/internal/thememanager"
 	"knov/themes/builtin/templates"
-
-	"github.com/a-h/templ"
 )
 
 // Builtin ..

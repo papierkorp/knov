@@ -3,6 +3,7 @@ package main
 
 import (
 	"knov/internal/configmanager"
+	"knov/internal/translation"
 	"knov/internal/server"
 	"knov/internal/thememanager"
 )
@@ -14,7 +15,9 @@ import (
 // @BasePath /
 func main() {
 	configmanager.InitConfig()
-
+	translation.Init()
+	translation.SetLanguage(configmanager.GetLanguage())
 	thememanager.Init()
+
 	server.StartServerChi()
 }
