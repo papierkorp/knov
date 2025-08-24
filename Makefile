@@ -1,12 +1,12 @@
 # Variables
-APP_NAME := gotest
+APP_NAME := knov
 
 # ------------- actual usage -------------
 dev: swaggo-api-init templ-generate 
 	go run ./cmd
 
 prod: swaggo-api-init templ-generate translation
-	go build -o $(APP_NAME) ./cmd
+	go build -o bin/$(APP_NAME) ./cmd
 
 rmt: 
 	rm ./themes/*.so

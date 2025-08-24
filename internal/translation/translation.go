@@ -6,7 +6,7 @@ import (
 	"golang.org/x/text/message"
 )
 
-//go:generate sh -c "../../generate-translations.sh"
+//go:generate sh -c "../../static/generate-translations.sh"
 
 var globalPrinter *message.Printer
 

@@ -25,8 +25,9 @@ TRANSLATION_CALL_PATTERN='translation\.Sprintf("[^"]*")'  # Matches: translation
 EXTRACT_STRING_PATTERN='s/translation\.Sprintf("//g; s/")//g'  # Removes function wrapper, keeps content
 
 # File paths and settings
-THEME_FILES="themes/"
-TEMP_GO_FILE="internal/translation/temp_extracted.go"
+THEME_FILES="../themes/"
+TEMP_GO_FILE="../internal/translation/temp_extracted.go"
+TRANSLATION_PATH="../internal/translation"
 OUTPUT_CATALOG="catalog.go"
 SUPPORTED_LANGUAGES="en,de"
 
@@ -69,7 +70,7 @@ echo "Generated temporary Go file: $TEMP_GO_FILE"
 
 # Step 5: Use gotext to generate/update translation catalogs
 echo "Generating translation catalogs..."
-cd internal/translation && \
+cd $TRANSLATION_PATH && \
     gotext -srclang=en update -out="$OUTPUT_CATALOG" -lang="$SUPPORTED_LANGUAGES" .
 
 if [ $? -eq 0 ]; then
