@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"knov/internal/translation"
 )
 
 // -----------------------------------------------------------------------------
@@ -30,6 +32,7 @@ type ConfigThemes struct {
 func InitConfig() {
 	jsonFile, err := os.ReadFile("config/config.json")
 	if err != nil {
+		translation.Sprintf("testmessage from configmanager")
 		log.Printf("unable to open config.json file: %s", err)
 	}
 

@@ -6,7 +6,7 @@ import (
 	"golang.org/x/text/message"
 )
 
-//go:generate gotext -srclang=en update -out=catalog.go -lang=en,de knov/themes/builtin/templates
+//go:generate sh -c "../../generate-translations.sh"
 
 var globalPrinter *message.Printer
 
