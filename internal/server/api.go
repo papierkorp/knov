@@ -28,6 +28,7 @@ func apiRoutes(r chi.Router) {
 			r.Get("/getConfig", handleAPIGetConfig)
 			r.Post("/setConfig", handleAPISetConfig)
 		})
+
 	})
 }
 
