@@ -2,6 +2,7 @@
 
 # todo
 
+- error handling in settings (especially git settings)
 - create a setting to init a new git repo in data folder/set git url
 - create folder structure for different file types
   - project (has board/boards)

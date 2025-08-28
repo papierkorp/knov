@@ -1,12 +1,8 @@
-// Package server ..
+// Package server - Clean API handlers that delegate to business logic
 package server
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
-	"os/exec"
-	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/thememanager"
@@ -32,28 +28,44 @@ func handleAPIHealth(w http.ResponseWriter, r *http.Request) {
 // @Tags config
 // @Router /api/config/getConfig [get]
 func handleAPIGetConfig(w http.ResponseWriter, r *http.Request) {
-	config := configmanager.GetConfig()
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(config)
+	configmanager.HandleGetConfig(w, r)
 }
 
 // @Summary Set configuration
 // @Tags config
 // @Router /api/config/setConfig [post]
 func handleAPISetConfig(w http.ResponseWriter, r *http.Request) {
-	var config configmanager.ConfigManager
+	configmanager.HandleSetConfig(w, r)
+}
 
-	if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
-		http.Error(w, "invalid json", http.StatusBadRequest)
-		return
-	}
+// @Summary Set language
+// @Tags config
+// @Router /api/config/setLanguage [post]
+func handleAPISetLanguage(w http.ResponseWriter, r *http.Request) {
+	configmanager.HandleSetLanguage(w, r)
+}
 
-	configmanager.SetConfig(config)
+// @Summary Get git repository URL
+// @Tags config
+// @Produce json
+// @Success 200 {object} string
+// @Router /api/config/getRepositoryURL [get]
+func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
+	configmanager.HandleGetRepositoryURL(w, r)
+}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+// @Summary Set git data path
+// @Tags config
+// @Router /api/config/setDataPath [post]
+func handleAPISetGitDataPath(w http.ResponseWriter, r *http.Request) {
+	configmanager.HandleSetDataPath(w, r)
+}
+
+// @Summary Set git repository URL
+// @Tags config
+// @Router /api/config/setRepositoryURL [post]
+func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
+	configmanager.HandleSetRepositoryURL(w, r)
 }
 
 // ----------------------------------------------------------------------------------------
@@ -67,18 +79,7 @@ func handleAPISetConfig(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "{"current":"themename","available":["theme1","theme2"]}"
 // @Router /api/themes/getAllThemes [get]
 func handleAPIGetThemes(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-
-	response := struct {
-		Current   string   `json:"current"`
-		Available []string `json:"available"`
-	}{
-		Current:   tm.GetCurrentThemeName(),
-		Available: tm.GetAvailableThemes(),
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	thememanager.HandleGetThemes(w, r)
 }
 
 // @Summary Set theme
@@ -89,96 +90,5 @@ func handleAPIGetThemes(w http.ResponseWriter, r *http.Request) {
 // @Success 303 "Redirect to settings page"
 // @Router /api/themes/setTheme [post]
 func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	theme := r.FormValue("theme")
-
-	if theme != "" {
-		tm := thememanager.GetThemeManager()
-		err := tm.LoadTheme(theme)
-		if err == nil {
-			tm.SetCurrentTheme(theme)
-			newConfig := configmanager.ConfigThemes{CurrentTheme: theme}
-			configmanager.SetConfigThemes(newConfig)
-		}
-	}
-
-	// http.Redirect(w, r, "/settings", http.StatusSeeOther)
-	w.Header().Set("HX-Refresh", "true")
-	w.WriteHeader(http.StatusOK)
-}
-
-// ----------------------------------------------------------------------------------------
-// ------------------------------------------ git ------------------------------------------
-// ----------------------------------------------------------------------------------------
-
-// @Summary Get git repository URL
-// @Tags git
-// @Produce json
-// @Success 200 {object} string
-// @Router /api/git/getRepositoryURL [get]
-func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
-	config := configmanager.GetConfigGit()
-	dataDir := config.DataPath
-	if dataDir == "" {
-		dataDir = "data"
-	}
-	// Get remote URL from git config
-	cmd := exec.Command("git", "config", "--get", "remote.origin.url")
-	cmd.Dir = dataDir
-	output, err := cmd.Output()
-	var repositoryURL string
-	if err != nil {
-		log.Printf("error in git config get remote.origin.url command - using config repositoryURL instead")
-		repositoryURL = config.RepositoryURL
-		if repositoryURL == "" {
-			repositoryURL = "local"
-		}
-	} else {
-		repositoryURL = strings.TrimSpace(string(output))
-	}
-	response := map[string]string{
-		"repositoryUrl": repositoryURL,
-		"dataPath":      dataDir,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-// @Summary Set git repository URL
-// @Tags git
-// @Accept json
-// @Param repositoryUrl body string true "Repository URL"
-// @Success 200 {object} map[string]string
-// @Router /api/git/setRepositoryURL [post]
-func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
-	var repositoryURL string
-	if err := json.NewDecoder(r.Body).Decode(&repositoryURL); err != nil {
-		http.Error(w, "invalid json", http.StatusBadRequest)
-		return
-	}
-	if repositoryURL == "" {
-		http.Error(w, "repositoryUrl cannot be empty", http.StatusBadRequest)
-		return
-	}
-	config := configmanager.GetConfigGit()
-	dataDir := config.DataPath
-	if dataDir == "" {
-		dataDir = "data"
-	}
-
-	cmd := exec.Command("git", "remote", "set-url", "origin", repositoryURL)
-	cmd.Dir = dataDir
-	if err := cmd.Run(); err != nil {
-		cmd = exec.Command("git", "remote", "add", "origin", repositoryURL)
-		cmd.Dir = dataDir
-		if err := cmd.Run(); err != nil {
-			http.Error(w, "failed to set git remote", http.StatusInternalServerError)
-			return
-		}
-	}
-	config.RepositoryURL = repositoryURL
-	configmanager.SetConfigGit(config)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	thememanager.HandleSetTheme(w, r)
 }

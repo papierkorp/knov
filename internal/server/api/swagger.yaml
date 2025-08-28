@@ -12,13 +12,7 @@ paths:
       summary: Get current configuration
       tags:
       - config
-  /api/config/setConfig:
-    post:
-      responses: {}
-      summary: Set configuration
-      tags:
-      - config
-  /api/git/getRepositoryURL:
+  /api/config/getRepositoryURL:
     get:
       produces:
       - application/json
@@ -29,28 +23,31 @@ paths:
             type: string
       summary: Get git repository URL
       tags:
-      - git
-  /api/git/setRepositoryURL:
+      - config
+  /api/config/setConfig:
     post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Repository URL
-        in: body
-        name: repositoryUrl
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
+      responses: {}
+      summary: Set configuration
+      tags:
+      - config
+  /api/config/setDataPath:
+    post:
+      responses: {}
+      summary: Set git data path
+      tags:
+      - config
+  /api/config/setLanguage:
+    post:
+      responses: {}
+      summary: Set language
+      tags:
+      - config
+  /api/config/setRepositoryURL:
+    post:
+      responses: {}
       summary: Set git repository URL
       tags:
-      - git
+      - config
   /api/health:
     get:
       responses: {}

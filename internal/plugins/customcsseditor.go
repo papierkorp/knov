@@ -7,14 +7,15 @@ import (
 	"strings"
 )
 
+// GetCustomCSSEditor ..
 func GetCustomCSSEditor(editorHTML string) string {
 	css, _ := os.ReadFile("config/custom.css")
 	return strings.Replace(editorHTML, "{{CSS_CONTENT}}", string(css), 1)
 
 }
 
+// HandleCustomCSS ..
 func HandleCustomCSS(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method == "POST" {
 		r.ParseForm()
 
@@ -29,5 +30,4 @@ func HandleCustomCSS(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("HX-Refresh", "true")
 		w.WriteHeader(http.StatusOK)
 	}
-
 }

@@ -24,22 +24,13 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/setConfig": {
-            "post": {
-                "tags": [
-                    "config"
-                ],
-                "summary": "Set configuration",
-                "responses": {}
-            }
-        },
-        "/api/git/getRepositoryURL": {
+        "/api/config/getRepositoryURL": {
             "get": {
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "git"
+                    "config"
                 ],
                 "summary": "Get git repository URL",
                 "responses": {
@@ -52,37 +43,40 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/git/setRepositoryURL": {
+        "/api/config/setConfig": {
             "post": {
-                "consumes": [
-                    "application/json"
-                ],
                 "tags": [
-                    "git"
+                    "config"
+                ],
+                "summary": "Set configuration",
+                "responses": {}
+            }
+        },
+        "/api/config/setDataPath": {
+            "post": {
+                "tags": [
+                    "config"
+                ],
+                "summary": "Set git data path",
+                "responses": {}
+            }
+        },
+        "/api/config/setLanguage": {
+            "post": {
+                "tags": [
+                    "config"
+                ],
+                "summary": "Set language",
+                "responses": {}
+            }
+        },
+        "/api/config/setRepositoryURL": {
+            "post": {
+                "tags": [
+                    "config"
                 ],
                 "summary": "Set git repository URL",
-                "parameters": [
-                    {
-                        "description": "Repository URL",
-                        "name": "repositoryUrl",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
+                "responses": {}
             }
         },
         "/api/health": {

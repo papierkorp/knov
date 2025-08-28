@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"knov/internal/configmanager"
 	"knov/internal/plugins"
 	"knov/internal/thememanager"
 )
@@ -8,9 +9,8 @@ import (
 func getBuiltinCSSEditor() string {
 	editorHTML := `<div id="customCssEditor">
     <h3>Custom CSS</h3>
-    <form hx-post="/plugins/customCSS" hx-target="#customCssEditor" hx-swap="outerHTML" hx-trigger="submit">
+    <form hx-post="/plugins/customCSS" hx-trigger="blur from:textarea">
         <textarea name="css" rows="20" style="width: 100%; font-family: monospace;">{{CSS_CONTENT}}</textarea>
-        <button type="submit">Save and Reload</button>
     </form>
 </div>`
 	return plugins.GetCustomCSSEditor(editorHTML)
@@ -21,10 +21,31 @@ templ Settings(data thememanager.TemplateData) {
 	<div class="settings-container">
 		<h1>Settings</h1>
 		<div class="settings-sections">
-			@ThemeSection(data)
 			@GeneralSection()
+			@ThemeSection(data)
+			@GitSection()
 		</div>
 	</div>
+}
+
+templ GeneralSection() {
+	<section class="settings-section">
+		<h2>General Settings</h2>
+		<div class="setting-item">
+			<form hx-post="/api/config/setLanguage" hx-trigger="change">
+				<label for="language">Select Language:</label>
+				<select name="language" id="language">
+					if configmanager.GetLanguage() == "en" {
+						<option value="en" selected>English</option>
+						<option value="de">Deutsch</option>
+					} else {
+						<option value="en">English</option>
+						<option value="de" selected>Deutsch</option>
+					}
+				</select>
+			</form>
+		</div>
+	</section>
 }
 
 templ ThemeSection(data thememanager.TemplateData) {
@@ -54,19 +75,27 @@ templ ThemeSection(data thememanager.TemplateData) {
 	</section>
 }
 
-templ GeneralSection() {
+templ GitSection() {
 	<section class="settings-section">
-		<h2>General Settings</h2>
+		<h2>Git Settings</h2>
 		<div class="setting-item">
-			<label for="language">Select Language:</label>
-			<select name="language" id="language">
-				<option value="en">English</option>
-				<option value="de">Deutsch</option>
-			</select>
+			<form hx-post="/api/config/setDataPath" hx-trigger="blur from:input" hx-swap="none">
+				<label for="dataPath">Data Path:</label>
+				<input type="text" id="dataPath" name="dataPath" value={ configmanager.GetConfigGit().DataPath }/>
+				<small>Saves when you click outside...</small>
+			</form>
 		</div>
 		<div class="setting-item">
-			<label for="apiPort">API Port:</label>
-			<input type="number" id="apiPort" name="apiPort" value="1324"/>
+			<form hx-post="/api/config/setRepositoryURL" hx-trigger="blur from:input" hx-swap="none">
+				<label for="repositoryUrl">Repository URL:</label>
+				<input
+					type="text"
+					id="repositoryUrl"
+					name="repositoryUrl"
+					value={ configmanager.GetConfigGit().RepositoryURL }
+				/>
+				<small>Saves when you click outside...</small>
+			</form>
 		</div>
 	</section>
 }
