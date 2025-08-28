@@ -1,13 +1,12 @@
 {
-  "themes": {
-    "currentTheme": "builtin"
-  },
-  "general": {
-    "language": "en"
-  },
-  "git": {
-    "repositoryUrl": "",
-    "dataPath": "data"
-  }
+ "themes": {
+  "currentTheme": "builtin"
+ },
+ "general": {
+  "language": "en"
+ },
+ "git": {
+  "repositoryUrl": "local",
+  "dataPath": "data"
+ }
 }
-

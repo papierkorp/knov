@@ -18,6 +18,39 @@ paths:
       summary: Set configuration
       tags:
       - config
+  /api/git/getRepositoryURL:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get git repository URL
+      tags:
+      - git
+  /api/git/setRepositoryURL:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Repository URL
+        in: body
+        name: repositoryUrl
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Set git repository URL
+      tags:
+      - git
   /api/health:
     get:
       responses: {}

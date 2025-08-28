@@ -27,6 +27,7 @@ go.work.sum
 .env
 
 bin/
+data/.git
 
 # ----------------------------- go templ
 # Output.

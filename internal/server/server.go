@@ -11,8 +11,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/swaggo/http-swagger/v2"
-	_ "knov/docs" // swaggo api docs
 	"knov/internal/plugins"
+	_ "knov/internal/server/api" // swaggo api docs
 	"knov/internal/thememanager"
 )
 
@@ -81,8 +81,8 @@ func StartServerChi() {
 		// ----------------------------------------- GIT ------------------------------------------
 		// ----------------------------------------------------------------------------------------
 		r.Route("/git", func(r chi.Router) {
-			r.Get("/getConfig", handleAPIGetGitConfig)
-			r.Post("/setConfig", handleAPISetGitConfig)
+			r.Get("/getRepositoryURL", handleAPIGetGitRepositoryURL)
+			r.Post("/setRepositoryURL", handleAPISetGitRepositoryURL)
 		})
 
 	})

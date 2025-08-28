@@ -19,7 +19,7 @@ templ-generate:
 	TEMPL_EXPERIMENT=rawgo templ generate
 
 swaggo-api-init:
-	swag init -g cmd/main.go
+	swag init -g cmd/main.go -o internal/server/api
 
 
 

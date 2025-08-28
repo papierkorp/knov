@@ -12,7 +12,7 @@ Configuration is stored in `config/config.json`.
 
 ## Git
 
-If no repositoryURL is provided an new git repository will be initiated.
+If no repositoryURL/local is provided an new local git repository will be initiated.
 
-- **`git.repositoryUrl`** (string) - Repository URL to clone. If empty, creates new repo (default: "")
+- **`git.repositoryUrl`** (string) - Repository URL to clone. If empty, creates new repo (default: "local")
 - **`git.dataPath`** (string) - Path where git repository will be created/cloned (default: "data")

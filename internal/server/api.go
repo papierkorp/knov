@@ -3,7 +3,10 @@ package server
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
+	"os/exec"
+	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/thememanager"
@@ -108,34 +111,73 @@ func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
 // ------------------------------------------ git ------------------------------------------
 // ----------------------------------------------------------------------------------------
 
-// @Summary Get git configuration
+// @Summary Get git repository URL
 // @Tags git
 // @Produce json
-// @Success 200 {object} configmanager.ConfigGit
-// @Router /api/git/getConfig [get]
-func handleAPIGetGitConfig(w http.ResponseWriter, r *http.Request) {
+// @Success 200 {object} string
+// @Router /api/git/getRepositoryURL [get]
+func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	config := configmanager.GetConfigGit()
-
+	dataDir := config.DataPath
+	if dataDir == "" {
+		dataDir = "data"
+	}
+	// Get remote URL from git config
+	cmd := exec.Command("git", "config", "--get", "remote.origin.url")
+	cmd.Dir = dataDir
+	output, err := cmd.Output()
+	var repositoryURL string
+	if err != nil {
+		log.Printf("error in git config get remote.origin.url command - using config repositoryURL instead")
+		repositoryURL = config.RepositoryURL
+		if repositoryURL == "" {
+			repositoryURL = "local"
+		}
+	} else {
+		repositoryURL = strings.TrimSpace(string(output))
+	}
+	response := map[string]string{
+		"repositoryUrl": repositoryURL,
+		"dataPath":      dataDir,
+	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(config)
+	json.NewEncoder(w).Encode(response)
 }
 
-// @Summary Set git configuration
+// @Summary Set git repository URL
 // @Tags git
 // @Accept json
-// @Param config body configmanager.ConfigGit true "Git configuration"
+// @Param repositoryUrl body string true "Repository URL"
 // @Success 200 {object} map[string]string
-// @Router /api/git/setConfig [post]
-func handleAPISetGitConfig(w http.ResponseWriter, r *http.Request) {
-	var config configmanager.ConfigGit
-
-	if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
+// @Router /api/git/setRepositoryURL [post]
+func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
+	var repositoryURL string
+	if err := json.NewDecoder(r.Body).Decode(&repositoryURL); err != nil {
 		http.Error(w, "invalid json", http.StatusBadRequest)
 		return
 	}
+	if repositoryURL == "" {
+		http.Error(w, "repositoryUrl cannot be empty", http.StatusBadRequest)
+		return
+	}
+	config := configmanager.GetConfigGit()
+	dataDir := config.DataPath
+	if dataDir == "" {
+		dataDir = "data"
+	}
 
+	cmd := exec.Command("git", "remote", "set-url", "origin", repositoryURL)
+	cmd.Dir = dataDir
+	if err := cmd.Run(); err != nil {
+		cmd = exec.Command("git", "remote", "add", "origin", repositoryURL)
+		cmd.Dir = dataDir
+		if err := cmd.Run(); err != nil {
+			http.Error(w, "failed to set git remote", http.StatusInternalServerError)
+			return
+		}
+	}
+	config.RepositoryURL = repositoryURL
 	configmanager.SetConfigGit(config)
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})

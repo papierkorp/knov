@@ -166,7 +166,7 @@ func initGitRepository() error {
 		return nil
 	}
 
-	if configManager.Git.RepositoryURL != "" {
+	if configManager.Git.RepositoryURL != "" && configManager.Git.RepositoryURL != "local" {
 		// Clone existing repository
 		cmd := exec.Command("git", "clone", configManager.Git.RepositoryURL, dataDir)
 		if err := cmd.Run(); err != nil {
