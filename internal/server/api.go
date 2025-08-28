@@ -2,35 +2,16 @@
 package server
 
 import (
+	"encoding/json"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/swaggo/http-swagger/v2"
-	_ "knov/docs" // swaggo api docs
+	"knov/internal/configmanager"
+	"knov/internal/thememanager"
 )
 
-func apiRoutes(r chi.Router) {
-	r.Get("/swagger/*", httpSwagger.Handler())
-	r.Route("/api", func(r chi.Router) {
-		r.Get("/health", handleAPIHealth)
-		// ----------------------------------------------------------------------------------------
-		// ---------------------------------------- THEMES ----------------------------------------
-		// ----------------------------------------------------------------------------------------
-		r.Route("/themes", func(r chi.Router) {
-			r.Get("/getAllThemes", handleAPIGetThemes)
-			r.Post("/setTheme", handleAPISetTheme)
-
-		})
-		// ----------------------------------------------------------------------------------------
-		// ---------------------------------------- THEMES ----------------------------------------
-		// ----------------------------------------------------------------------------------------
-		r.Route("/config", func(r chi.Router) {
-			r.Get("/getConfig", handleAPIGetConfig)
-			r.Post("/setConfig", handleAPISetConfig)
-		})
-
-	})
-}
+// ----------------------------------------------------------------------------------------
+// ---------------------------------------- health ----------------------------------------
+// ----------------------------------------------------------------------------------------
 
 // @Summary Health check
 // @Tags health
@@ -38,4 +19,87 @@ func apiRoutes(r chi.Router) {
 func handleAPIHealth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(`{"status":"ok"}`))
+}
+
+// ----------------------------------------------------------------------------------------
+// ---------------------------------------- config ----------------------------------------
+// ----------------------------------------------------------------------------------------
+
+// @Summary Get current configuration
+// @Tags config
+// @Router /api/config/getConfig [get]
+func handleAPIGetConfig(w http.ResponseWriter, r *http.Request) {
+	config := configmanager.GetConfig()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(config)
+}
+
+// @Summary Set configuration
+// @Tags config
+// @Router /api/config/setConfig [post]
+func handleAPISetConfig(w http.ResponseWriter, r *http.Request) {
+	var config configmanager.ConfigManager
+
+	if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
+		http.Error(w, "invalid json", http.StatusBadRequest)
+		return
+	}
+
+	configmanager.SetConfig(config)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
+
+// ----------------------------------------------------------------------------------------
+// ---------------------------------------- themes ----------------------------------------
+// ----------------------------------------------------------------------------------------
+
+// @Summary Get themes
+// @Description Get current theme and available themes
+// @Tags themes
+// @Produce json
+// @Success 200 {string} string "{"current":"themename","available":["theme1","theme2"]}"
+// @Router /api/themes/getAllThemes [get]
+func handleAPIGetThemes(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+
+	response := struct {
+		Current   string   `json:"current"`
+		Available []string `json:"available"`
+	}{
+		Current:   tm.GetCurrentThemeName(),
+		Available: tm.GetAvailableThemes(),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// @Summary Set theme
+// @Description Set new theme via form parameter
+// @Tags themes
+// @Accept x-www-form-urlencoded
+// @Param theme formData string true "Theme name to set"
+// @Success 303 "Redirect to settings page"
+// @Router /api/themes/setTheme [post]
+func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	theme := r.FormValue("theme")
+
+	if theme != "" {
+		tm := thememanager.GetThemeManager()
+		err := tm.LoadTheme(theme)
+		if err == nil {
+			tm.SetCurrentTheme(theme)
+			newConfig := configmanager.ConfigThemes{CurrentTheme: theme}
+			configmanager.SetConfigThemes(newConfig)
+		}
+	}
+
+	// http.Redirect(w, r, "/settings", http.StatusSeeOther)
+	w.Header().Set("HX-Refresh", "true")
+	w.WriteHeader(http.StatusOK)
 }

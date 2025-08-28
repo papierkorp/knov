@@ -2,11 +2,7 @@
 
 # todo
 
-- add custom.css panel to settings
-- make basic style for settings
-- add api to docs and thememanager readme
-- init new git repo in data folder
-- add a markdown parser
+- create a setting to init a new git repo in data folder/set git url
 - create folder structure for different file types
   - project (has board/boards)
     - board (has everything else besides project)
@@ -16,7 +12,11 @@
     - todo
     - knowledge
     - journal
-- use git do display all files in the data folder
+- add basic git functions
+  - use git do display all files in the data folder
+  - add api endpoint to create a new file (git add)
+  - add api endpoint to get a git history
+  - add api endpoint to rename a filename
 - create api endpoints to save the metadata
   - in a sqlite file
   - in postgres
@@ -25,9 +25,7 @@
 - when is metadata endpoint called? (time interval?)
 - create api endpoints to retrieve the metadata
 - create filter/toc
-- add api endpoint to create a new file (git add)
-- add api endpoint to get a git history
-- add api endpoint to rename a filename
+- add a markdown parser
 - add text editor
 - add edit file
 - create api endpoint for fulltext search
@@ -35,6 +33,9 @@
 
 # done
 
+- add api to docs and thememanager readme
+- add custom.css panel to settings
+- make basic style for settings
 - add a translator
 - add GET api/themes to api (show all avaiable themes)
 - add POST api/themes/{themeName} (switch to theme)
