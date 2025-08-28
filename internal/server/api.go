@@ -103,3 +103,40 @@ func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("HX-Refresh", "true")
 	w.WriteHeader(http.StatusOK)
 }
+
+// ----------------------------------------------------------------------------------------
+// ------------------------------------------ git ------------------------------------------
+// ----------------------------------------------------------------------------------------
+
+// @Summary Get git configuration
+// @Tags git
+// @Produce json
+// @Success 200 {object} configmanager.ConfigGit
+// @Router /api/git/getConfig [get]
+func handleAPIGetGitConfig(w http.ResponseWriter, r *http.Request) {
+	config := configmanager.GetConfigGit()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(config)
+}
+
+// @Summary Set git configuration
+// @Tags git
+// @Accept json
+// @Param config body configmanager.ConfigGit true "Git configuration"
+// @Success 200 {object} map[string]string
+// @Router /api/git/setConfig [post]
+func handleAPISetGitConfig(w http.ResponseWriter, r *http.Request) {
+	var config configmanager.ConfigGit
+
+	if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
+		http.Error(w, "invalid json", http.StatusBadRequest)
+		return
+	}
+
+	configmanager.SetConfigGit(config)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
