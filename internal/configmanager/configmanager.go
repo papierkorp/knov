@@ -80,6 +80,7 @@ func saveConfigToFile() error {
 		return fmt.Errorf("failed to write config to file: %s", err)
 	}
 
+	log.Printf("DEBUG config: %s", jsonData)
 	log.Printf("config saved successfully")
 	return nil
 }
@@ -136,6 +137,7 @@ func GetLanguage() string {
 // SetLanguage ..
 func SetLanguage(lang string) {
 	configManager.General.Language = lang
+	log.Printf("DEBUG setlanguage: %s", lang)
 	saveConfigToFile()
 }
 

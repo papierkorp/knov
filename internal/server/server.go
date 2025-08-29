@@ -3,10 +3,8 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"path/filepath"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -114,8 +112,8 @@ func handleCSS(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	locale := getBrowserLocale(r)
-	log.Println("locale: ", locale)
+	// locale := getBrowserLocale(r)
+	// log.Println("DEBUG handleHome: locale: ", locale)
 	component, err := thememanager.GetThemeManager().GetCurrentTheme().Home()
 
 	if err != nil {
@@ -147,18 +145,18 @@ func handleSettings(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getBrowserLocale(r *http.Request) string {
-	acceptLanguage := r.Header.Get("Accept-Language")
-	if acceptLanguage == "" {
-		// default
-		return "en"
-	}
-
-	languages := strings.Split(acceptLanguage, ",")
-	if len(languages) > 0 {
-		locale := strings.Split(strings.TrimSpace(languages[0]), "-")[0]
-		return locale
-	}
-
-	return "en"
-}
+// func getBrowserLocale(r *http.Request) string {
+// 	acceptLanguage := r.Header.Get("Accept-Language")
+// 	if acceptLanguage == "" {
+// 		// default
+// 		return "en"
+// 	}
+//
+// 	languages := strings.Split(acceptLanguage, ",")
+// 	if len(languages) > 0 {
+// 		locale := strings.Split(strings.TrimSpace(languages[0]), "-")[0]
+// 		return locale
+// 	}
+//
+// 	return "en"
+// }

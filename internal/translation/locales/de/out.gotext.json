@@ -1,10 +1,11 @@
 {
-    "language": "de",
-    "messages": [
-        {
-            "id": "Hello World from templ at home in the dark!",
-            "message": "Hello World from templ at home in the dark!",
-            "translation": ""
-        }
-    ]
+  "language": "de",
+  "messages": [
+    {
+      "id": "Hello World from templ at home in the dark!",
+      "message": "Hello World from templ at home in the dark!",
+      "translation": "hallo welt"
+    }
+  ]
 }
+

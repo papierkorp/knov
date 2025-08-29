@@ -3,7 +3,10 @@ package configmanager
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
+
+	"knov/internal/translation"
 )
 
 // HandleGetConfig returns current configuration
@@ -35,8 +38,11 @@ func HandleSetLanguage(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	lang := r.FormValue("language")
 
+	log.Printf("DEBUG lang: %s", lang)
+
 	if lang != "" {
 		SetLanguage(lang)
+		translation.SetLanguage(lang)
 	}
 
 	w.Header().Set("HX-Refresh", "true")
