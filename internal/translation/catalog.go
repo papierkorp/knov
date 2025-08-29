@@ -27,9 +27,10 @@ func (d *dictionary) Lookup(key string) (data string, ok bool) {
 
 func init() {
 	dict := map[string]catalog.Dictionary{
-		"en_US": &dictionary{index: en_USIndex, data: en_USData},
+		"de": &dictionary{index: deIndex, data: deData},
+		"en": &dictionary{index: enIndex, data: enData},
 	}
-	fallback := language.MustParse("en-US")
+	fallback := language.MustParse("en")
 	cat, err := catalog.NewFromMap(dict, catalog.Fallback(fallback))
 	if err != nil {
 		panic(err)
@@ -39,13 +40,20 @@ func init() {
 
 var messageKeyToIndex = map[string]int{
 	"Hello World from templ at home in the dark!": 0,
+	"Settings": 1,
 }
 
-var en_USIndex = []uint32{ // 2 elements
-	0x00000000, 0x0000002c,
-} // Size: 32 bytes
+var deIndex = []uint32{ // 3 elements
+	0x00000000, 0x0000000b, 0x00000019,
+} // Size: 36 bytes
 
-const en_USData string = "" + // Size: 44 bytes
-	"\x02Hello World from templ at home in the dark!"
+const deData string = "\x02hallo welt\x02einstellungen"
 
-	// Total table size 76 bytes (0KiB); checksum: A1F10D25
+var enIndex = []uint32{ // 3 elements
+	0x00000000, 0x0000002c, 0x00000035,
+} // Size: 36 bytes
+
+const enData string = "" + // Size: 53 bytes
+	"\x02Hello World from templ at home in the dark!\x02Settings"
+
+	// Total table size 150 bytes (0KiB); checksum: 7B720CAB

@@ -7,6 +7,13 @@
             "translation": "Hello World from templ at home in the dark!",
             "translatorComment": "Copied from source.",
             "fuzzy": true
+        },
+        {
+            "id": "Settings",
+            "message": "Settings",
+            "translation": "Settings",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
         }
     ]
 }

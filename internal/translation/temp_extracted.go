@@ -6,4 +6,5 @@ import "golang.org/x/text/message"
 func init() {
     p := message.NewPrinter(message.MatchLanguage("en"))
     _ = p.Sprintf("Hello World from templ at home in the dark!")
+    _ = p.Sprintf("Settings")
 }

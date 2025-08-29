@@ -73,6 +73,46 @@ echo "Generating translation catalogs..."
 cd $TRANSLATION_PATH && \
     gotext -srclang=en update -out="$OUTPUT_CATALOG" -lang="$SUPPORTED_LANGUAGES" .
 
+# Merge new strings from out.gotext.json into messages.gotext.json
+for lang in $(echo "$SUPPORTED_LANGUAGES" | tr ',' ' '); do
+    out_file="locales/$lang/out.gotext.json"
+    messages_file="locales/$lang/messages.gotext.json"
+
+    if [ -f "$out_file" ]; then
+        if [ ! -f "$messages_file" ]; then
+            # First time - just copy out to messages
+            cp "$out_file" "$messages_file"
+            echo "Created initial messages.gotext.json for language: $lang"
+        else
+            # Merge: add new entries from out.gotext.json to messages.gotext.json
+            # This preserves existing translations and adds new untranslated entries
+            python3 -c "
+import json
+import sys
+
+# Read both files
+with open('$out_file', 'r') as f:
+    out_data = json.load(f)
+with open('$messages_file', 'r') as f:
+    messages_data = json.load(f)
+
+# Create a dict of existing translations
+existing = {msg['id']: msg for msg in messages_data['messages']}
+
+# Add new messages that don't exist yet
+for msg in out_data['messages']:
+    if msg['id'] not in existing:
+        messages_data['messages'].append(msg)
+
+# Write back to messages file
+with open('$messages_file', 'w') as f:
+    json.dump(messages_data, f, indent=2)
+            "
+            echo "Merged new strings into messages.gotext.json for language: $lang"
+        fi
+    fi
+done
+
 if [ $? -eq 0 ]; then
     echo "Translation catalogs updated successfully!"
 else

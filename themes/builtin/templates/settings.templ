@@ -4,6 +4,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/plugins"
 	"knov/internal/thememanager"
+	"knov/internal/translation"
 )
 
 func getBuiltinCSSEditor() string {
@@ -17,7 +18,7 @@ func getBuiltinCSSEditor() string {
 }
 
 templ Settings(data thememanager.TemplateData) {
-	@Base("Settings")
+	@Base(translation.Sprintf("Settings"))
 	<div class="settings-container">
 		<h1>Settings</h1>
 		<div class="settings-sections">

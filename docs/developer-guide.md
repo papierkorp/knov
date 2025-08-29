@@ -21,7 +21,15 @@ Server runs on `http://localhost:1324`
 
 ### Translation
 
-Use `translation.Sprintf("text")` in `.templ` files. See `themes/builtin/templates/home.templ` for example.
+Use `translation.Sprintf("text")` in `.templ` files. See `themes/builtin/templates/home.templ` for examples.
+
+**Workflow:**
+
+1. Add `translation.Sprintf("Your text")` to templates
+2. Run `make translation` to extract strings and generate catalogs
+3. Edit `internal/translation/locales/{lang}/messages.gotext.json` to add translations
+4. Run `make translation` again to update catalogs
+5. Existing translations in `messages.gotext.json` are preserved, new strings are added untranslated
 
 ### API
 
