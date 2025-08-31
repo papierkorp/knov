@@ -15,5 +15,12 @@ templ Home(data thememanager.TemplateData) {
 	@Base(translation.Sprintf("Home"))
 	<div>
 		<h1>{ translation.Sprintf("Hello World from templ at home in the dark!") }</h1>
+		<div id="files-list">
+			<h2>{ translation.Sprintf("Markdown Files") }</h2>
+			<div hx-get="/api/files" hx-trigger="load">
+				{ translation.Sprintf("Loading files...") }
+			</div>
+		</div>
+		<div id="content-area"></div>
 	</div>
 }

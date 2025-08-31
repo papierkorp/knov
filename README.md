@@ -2,8 +2,8 @@
 
 # todo
 
+- files dont return list
 - error handling in settings (especially git settings)
-- create a setting to init a new git repo in data folder/set git url
 - create folder structure for different file types
   - project (has board/boards)
     - board (has everything else besides project)
@@ -34,6 +34,7 @@
 
 # done
 
+- create a setting to init a new git repo in data folder/set git url
 - add api to docs and thememanager readme
 - add custom.css panel to settings
 - make basic style for settings

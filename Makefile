@@ -3,7 +3,7 @@ APP_NAME := knov
 
 # ------------- actual usage -------------
 dev: swaggo-api-init templ-generate 
-	KNOV_LOG_LEVEL=error go run ./cmd
+	KNOV_LOG_LEVEL=debug go run ./cmd
 
 prod: swaggo-api-init templ-generate translation
 	go build -o bin/$(APP_NAME) ./cmd
@@ -19,7 +19,7 @@ templ-generate:
 	TEMPL_EXPERIMENT=rawgo templ generate
 
 swaggo-api-init:
-	swag init -g cmd/main.go -o internal/server/api
+	swag init -g main.go -d cmd/ -o internal/server/api
 
 
 

@@ -30,6 +30,5 @@ func SetLanguage(lang string) {
 
 // Sprintf to be used for text that has to be translated
 func Sprintf(key string, args ...interface{}) string {
-	logging.LogDebug("translation sprintf")
 	return globalPrinter.Sprintf(key, args...)
 }
