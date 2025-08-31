@@ -7,9 +7,22 @@ import (
 	"knov/internal/translation"
 )
 
+type Language struct {
+	Code string
+	Name string
+}
+
+func getAvailableLanguages() []Language {
+	return []Language{
+		{Code: "en", Name: "English"},
+		{Code: "de", Name: "Deutsch"},
+		// Add more languages here as needed
+	}
+}
+
 func getBuiltinCSSEditor() string {
 	editorHTML := `<div id="customCssEditor">
-    <h3>Custom CSS</h3>
+    <h3>` + translation.Sprintf("Custom CSS") + `</h3>
     <form hx-post="/plugins/customCSS" hx-trigger="blur from:textarea">
         <textarea name="css" rows="20" style="width: 100%; font-family: monospace;">{{CSS_CONTENT}}</textarea>
     </form>
@@ -20,7 +33,7 @@ func getBuiltinCSSEditor() string {
 templ Settings(data thememanager.TemplateData) {
 	@Base(translation.Sprintf("Settings"))
 	<div class="settings-container">
-		<h1>Settings</h1>
+		<h1>{ translation.Sprintf("Settings") }</h1>
 		<div class="settings-sections">
 			@GeneralSection()
 			@ThemeSection(data)
@@ -31,17 +44,17 @@ templ Settings(data thememanager.TemplateData) {
 
 templ GeneralSection() {
 	<section class="settings-section">
-		<h2>General Settings</h2>
+		<h2>{ translation.Sprintf("General Settings") }</h2>
 		<div class="setting-item">
 			<form hx-post="/api/config/setLanguage" hx-trigger="change">
-				<label for="language">Select Language:</label>
+				<label for="language">{ translation.Sprintf("Select Language:") }</label>
 				<select name="language" id="language">
-					if configmanager.GetLanguage() == "en" {
-						<option value="en" selected>English</option>
-						<option value="de">Deutsch</option>
-					} else {
-						<option value="en">English</option>
-						<option value="de" selected>Deutsch</option>
+					for _, lang := range configmanager.GetAvailableLanguages() {
+						if lang.Code == configmanager.GetLanguage() {
+							<option value={ lang.Code } selected>{ lang.Name }</option>
+						} else {
+							<option value={ lang.Code }>{ lang.Name }</option>
+						}
 					}
 				</select>
 			</form>
@@ -51,10 +64,10 @@ templ GeneralSection() {
 
 templ ThemeSection(data thememanager.TemplateData) {
 	<section class="settings-section">
-		<h2>Theme Settings</h2>
+		<h2>{ translation.Sprintf("Theme Settings") }</h2>
 		<div class="setting-item">
 			<form hx-post="/api/themes/setTheme" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
-				<label for="theme">Select Theme:</label>
+				<label for="theme">{ translation.Sprintf("Select Theme:") }</label>
 				<select name="theme" id="theme">
 					for _, theme := range data.AvailableThemes {
 						if theme == data.ThemeToUse {
@@ -68,7 +81,7 @@ templ ThemeSection(data thememanager.TemplateData) {
 		</div>
 		<div class="setting-item">
 			<label>
-				Dark Mode
+				{ translation.Sprintf("Dark Mode") }
 				<input type="checkbox" name="darkMode"/>
 			</label>
 		</div>
@@ -78,24 +91,24 @@ templ ThemeSection(data thememanager.TemplateData) {
 
 templ GitSection() {
 	<section class="settings-section">
-		<h2>Git Settings</h2>
+		<h2>{ translation.Sprintf("Git Settings") }</h2>
 		<div class="setting-item">
 			<form hx-post="/api/config/setDataPath" hx-trigger="blur from:input" hx-swap="none">
-				<label for="dataPath">Data Path:</label>
+				<label for="dataPath">{ translation.Sprintf("Data Path:") }</label>
 				<input type="text" id="dataPath" name="dataPath" value={ configmanager.GetConfigGit().DataPath }/>
-				<small>Saves when you click outside...</small>
+				<small>{ translation.Sprintf("Saves when you click outside...") }</small>
 			</form>
 		</div>
 		<div class="setting-item">
 			<form hx-post="/api/config/setRepositoryURL" hx-trigger="blur from:input" hx-swap="none">
-				<label for="repositoryUrl">Repository URL:</label>
+				<label for="repositoryUrl">{ translation.Sprintf("Repository URL:") }</label>
 				<input
 					type="text"
 					id="repositoryUrl"
 					name="repositoryUrl"
 					value={ configmanager.GetConfigGit().RepositoryURL }
 				/>
-				<small>Saves when you click outside...</small>
+				<small>{ translation.Sprintf("Saves when you click outside...") }</small>
 			</form>
 		</div>
 	</section>

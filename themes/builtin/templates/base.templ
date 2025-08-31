@@ -1,6 +1,8 @@
 // Package templates
 package templates
 
+import "knov/internal/translation"
+
 templ Base(title string) {
 	<!DOCTYPE html>
 	<html>
@@ -26,12 +28,12 @@ templ Base(title string) {
 
 templ header() {
 	<header id="header">
-		<a href="/">Home</a> |
-		<a href="/help">Help</a> |
-		<a href="/playground">Playground</a> |
-		<a href="/search">Search</a> |
-		<a href="/settings">Settings</a> |
-		<a href="/docs">Documentation</a> |
+		<a href="/">{ translation.Sprintf("Home") }</a> |
+		<a href="/help">{ translation.Sprintf("Help") }</a> |
+		<a href="/playground">{ translation.Sprintf("Playground") }</a> |
+		<a href="/search">{ translation.Sprintf("Search") }</a> |
+		<a href="/settings">{ translation.Sprintf("Settings") }</a> |
+		<a href="/docs">{ translation.Sprintf("Documentation") }</a> |
 		<a href="/swagger/">Swagger</a>
 	</header>
 }

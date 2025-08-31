@@ -14,6 +14,125 @@
       "translation": "Settings",
       "translatorComment": "Copied from source.",
       "fuzzy": true
+    },
+    {
+      "id": "Custom CSS",
+      "message": "Custom CSS",
+      "translation": "Custom CSS",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Dark Mode",
+      "message": "Dark Mode",
+      "translation": "Dark Mode",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Data Path:",
+      "message": "Data Path:",
+      "translation": "Data Path:",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Documentation",
+      "message": "Documentation",
+      "translation": "Documentation",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "English",
+      "message": "English",
+      "translation": "English",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "General Settings",
+      "message": "General Settings",
+      "translation": "General Settings",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "German",
+      "message": "German",
+      "translation": "German",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Git Settings",
+      "message": "Git Settings",
+      "translation": "Git Settings",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Help",
+      "message": "Help",
+      "translation": "Help",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Home",
+      "message": "Home",
+      "translation": "Home",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Playground",
+      "message": "Playground",
+      "translation": "Playground",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Repository URL:",
+      "message": "Repository URL:",
+      "translation": "Repository URL:",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Saves when you click outside...",
+      "message": "Saves when you click outside...",
+      "translation": "Saves when you click outside...",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Search",
+      "message": "Search",
+      "translation": "Search",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Select Language:",
+      "message": "Select Language:",
+      "translation": "Select Language:",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Select Theme:",
+      "message": "Select Theme:",
+      "translation": "Select Theme:",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Theme Settings",
+      "message": "Theme Settings",
+      "translation": "Theme Settings",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
     }
   ]
 }

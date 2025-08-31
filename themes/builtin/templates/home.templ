@@ -1,18 +1,18 @@
 package templates
 
 import (
-	"knov/internal/translation"
+	"knov/internal/logging"
 	"knov/internal/thememanager"
-	"log"
+	"knov/internal/translation"
 )
 
 func logDebug(msg string, args ...interface{}) string {
-	log.Printf("LOGDEBUG HOME: "+msg, args...)
+	logging.LogDebug(msg, args...)
 	return ""
 }
 
 templ Home(data thememanager.TemplateData) {
-	@Base("Home")
+	@Base(translation.Sprintf("Home"))
 	<div>
 		<h1>{ translation.Sprintf("Hello World from templ at home in the dark!") }</h1>
 	</div>

@@ -3,7 +3,8 @@
   "currentTheme": "builtin"
  },
  "general": {
-  "language": "de"
+  "language": "en",
+  "logLevel": "info"
  },
  "git": {
   "repositoryUrl": "local",

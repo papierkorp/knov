@@ -2,10 +2,9 @@
 package translation
 
 import (
-	"log"
-
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
+	"knov/internal/logging"
 )
 
 //go:generate sh -c "../../static/generate-translations.sh"
@@ -15,7 +14,7 @@ var globalPrinter *message.Printer
 // Init ..
 func Init() {
 	globalPrinter = message.NewPrinter(language.English)
-	log.Printf("DEBUG translation globalprinter: %v", globalPrinter)
+	logging.LogDebug("translation globalprinter: %v", globalPrinter)
 }
 
 // SetLanguage ..
@@ -25,12 +24,12 @@ func SetLanguage(lang string) {
 		language.German,
 	}), lang)
 
-	log.Printf("DEBUG translations setlanguage tag %s", tag)
+	logging.LogDebug("translations setlanguage tag %s", tag)
 	globalPrinter = message.NewPrinter(tag)
 }
 
 // Sprintf to be used for text that has to be translated
 func Sprintf(key string, args ...interface{}) string {
-	log.Printf("DEBUG translation sprintf")
+	logging.LogDebug("translation sprintf")
 	return globalPrinter.Sprintf(key, args...)
 }

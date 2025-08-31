@@ -3,7 +3,6 @@ package thememanager
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/a-h/templ"
 	"knov/internal/configmanager"
+	"knov/internal/logging"
 )
 
 // -----------------------------------------------------------------------------
@@ -80,22 +80,22 @@ type IThemeManager interface {
 
 // Initialize loads all themes from the themes directory
 func (tm *ThemeManager) Initialize() {
-	log.Println("initialize thememanager ...")
+	logging.LogInfo("initialize thememanager ...")
 
 	err := tm.CompileThemes()
 	if err != nil {
-		log.Printf("failed compiling the themes: %s", err)
+		logging.LogError("failed compiling the themes: %s", err)
 	}
 
 	err = tm.LoadAllThemes()
 	if err != nil {
-		log.Printf("failed to load all themes: %v", err)
+		logging.LogError("failed to load all themes: %v", err)
 	}
 
 	availableThemes := tm.GetAvailableThemes()
 	currentTheme := configmanager.GetConfigThemes().CurrentTheme
 	if currentTheme == "" || !slices.Contains(availableThemes, currentTheme) {
-		log.Printf("couldnt find theme: %s, using builtin instead", currentTheme)
+		logging.LogError("couldnt find theme: %s, using builtin instead", currentTheme)
 
 		configmanager.SetConfigThemes(configmanager.ConfigThemes{
 			CurrentTheme: "builtin",
@@ -104,10 +104,10 @@ func (tm *ThemeManager) Initialize() {
 	}
 	err = tm.SetCurrentTheme(currentTheme)
 	if err != nil {
-		log.Printf("failed to set current theme - %s: %v", currentTheme, err)
+		logging.LogError("failed to set current theme - %s: %v", currentTheme, err)
 	}
 
-	log.Println("theme loaded successfully")
+	logging.LogInfo("theme loaded successfully")
 }
 
 // GetCurrentTheme ..
@@ -135,15 +135,15 @@ func (tm *ThemeManager) SetCurrentTheme(name string) error {
 	tm.mutex.Lock()
 	defer tm.mutex.Unlock()
 
-	log.Println("start to set current theme")
+	logging.LogInfo("start to set current theme")
 	theme, ok := tm.themes[name]
 	if !ok {
-		log.Printf("theme %s not found", name)
+		logging.LogError("theme %s not found", name)
 		return fmt.Errorf("theme %s not found", name)
 	}
 
 	tm.currentTheme = theme
-	log.Printf("switched to theme: %s", name)
+	logging.LogInfo("switched to theme: %s", name)
 	return nil
 }
 
@@ -167,7 +167,7 @@ func (tm *ThemeManager) GetAvailableThemes() []string {
 func (tm *ThemeManager) CompileThemes() error {
 	themesDir := "themes/"
 
-	log.Printf("start compiling themes")
+	logging.LogInfo("start compiling themes")
 
 	entries, err := os.ReadDir(themesDir)
 	if err != nil {
@@ -191,11 +191,11 @@ func (tm *ThemeManager) CompileThemes() error {
 		output, err := cmd.CombinedOutput()
 
 		if err != nil {
-			log.Printf("failed to compile theme %s in %s: %v, %s", themeName, themeDir, err, output)
+			logging.LogError("failed to compile theme %s in %s: %v, %s", themeName, themeDir, err, output)
 			return err
 		}
 
-		log.Printf("compiled theme: %s", absOutPath)
+		logging.LogInfo("compiled theme: %s", absOutPath)
 	}
 
 	return nil
@@ -206,7 +206,7 @@ func (tm *ThemeManager) LoadTheme(themeName string) error {
 	tm.mutex.Lock()
 	defer tm.mutex.Unlock()
 
-	log.Println("start to load theme")
+	logging.LogInfo("start to load theme")
 
 	if _, exists := tm.themes[themeName]; exists {
 		return nil
@@ -232,7 +232,7 @@ func (tm *ThemeManager) LoadTheme(themeName string) error {
 	}
 
 	tm.themes[themeName] = theme
-	log.Printf("successfully loaded theme: %s", themeName)
+	logging.LogInfo("successfully loaded theme: %s", themeName)
 
 	return nil
 }
@@ -241,7 +241,7 @@ func (tm *ThemeManager) LoadTheme(themeName string) error {
 func (tm *ThemeManager) LoadAllThemes() error {
 	themesDir := "themes/"
 
-	log.Printf("loading all themes from %s", themesDir)
+	logging.LogInfo("loading all themes from %s", themesDir)
 
 	entries, err := os.ReadDir(themesDir)
 	if err != nil {
@@ -262,12 +262,12 @@ func (tm *ThemeManager) LoadAllThemes() error {
 		tm.mutex.RUnlock()
 
 		if exists {
-			log.Printf("theme %s is already loaded, skipping", themeName)
+			logging.LogError("theme %s is already loaded, skipping", themeName)
 		} else {
 			err := tm.LoadTheme(themeName)
 			if err != nil {
 				errMsg := fmt.Sprintf("failed to load theme %s: %v", themeName, err)
-				log.Println(errMsg)
+				logging.LogError(errMsg)
 				loadErrors = append(loadErrors, errMsg)
 				continue
 			}
@@ -279,6 +279,6 @@ func (tm *ThemeManager) LoadAllThemes() error {
 		return fmt.Errorf("failed to load some themes: %v", loadErrors)
 	}
 
-	log.Printf("successfully loaded all available themes")
+	logging.LogInfo("successfully loaded all available themes")
 	return nil
 }

@@ -5,10 +5,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
+	"slices"
 
+	"knov/internal/logging"
 	"knov/internal/translation"
 )
 
@@ -28,6 +29,7 @@ type ConfigManager struct {
 // ConfigGeneral ..
 type ConfigGeneral struct {
 	Language string `json:"language"`
+	LogLevel string `json:"logLevel"` // debug, info, warning, error
 }
 
 // ConfigThemes ..
@@ -46,32 +48,39 @@ func InitConfig() {
 	jsonFile, err := os.ReadFile("config/config.json")
 	if err != nil {
 		translation.Sprintf("testmessage from configmanager")
-		log.Printf("unable to open config.json file: %s", err)
+		logging.LogError("unable to open config.json file: %s", err)
 	}
 
 	if len(jsonFile) == 0 {
-		log.Printf("config.json file is empty")
+		logging.LogError("config.json file is empty")
 	}
 
 	if !json.Valid(jsonFile) {
-		log.Printf("config.json contains invalid JSON")
+		logging.LogError("config.json contains invalid JSON")
 	}
 
 	decoder := json.NewDecoder(bytes.NewBuffer(jsonFile))
 	if err := decoder.Decode(&configManager); err != nil {
-		log.Printf("failed to decode config.json: %s", err)
+		logging.LogError("failed to decode config.json: %s", err)
 	}
 
 	SetLanguage(GetLanguage())
+	initLogLevel()
 
 	if err := initGitRepository(); err != nil {
-		log.Printf("failed to initialize git repository: %s", err)
+		logging.LogError("failed to initialize git repository: %s", err)
 	}
 
 }
 
 func saveConfigToFile() error {
+	err := os.MkdirAll("config", 0755)
+	if err != nil {
+		return fmt.Errorf("failed to create config directory: %w", err)
+	}
+
 	jsonData, err := json.MarshalIndent(configManager, "", " ")
+
 	if err != nil {
 		return fmt.Errorf("failed to marshal config: %s", err)
 	}
@@ -80,8 +89,8 @@ func saveConfigToFile() error {
 		return fmt.Errorf("failed to write config to file: %s", err)
 	}
 
-	log.Printf("DEBUG config: %s", jsonData)
-	log.Printf("config saved successfully")
+	logging.LogDebug("config: %s", jsonData)
+	logging.LogInfo("config saved successfully")
 	return nil
 }
 
@@ -93,6 +102,44 @@ func GetConfig() ConfigManager {
 // SetConfig ..
 func SetConfig(newConfig ConfigManager) {
 	configManager = newConfig
+	saveConfigToFile()
+}
+
+// -----------------------------------------------------------------------------
+// --------------------------------- log level ---------------------------------
+// -----------------------------------------------------------------------------
+
+func initLogLevel() {
+	envLogLevel := os.Getenv("KNOV_LOG_LEVEL")
+	if envLogLevel != "" {
+		logging.LogInfo("loglevel set to: %s", envLogLevel)
+		return
+	}
+
+	logLevel := GetLogLevel()
+	logging.LogInfo("loglevel set to: %s", logLevel)
+	os.Setenv("KNOV_LOG_LEVEL", logLevel)
+}
+
+// GetLogLevel return the current log level, defaults to "info"
+func GetLogLevel() string {
+	if configManager.General.LogLevel == "" {
+		return "info"
+	}
+	return configManager.General.LogLevel
+}
+
+// SetLogLevel set log level
+func SetLogLevel(level string) {
+	validLevels := []string{"debug", "info", "warning", "error"}
+
+	if !slices.Contains(validLevels, level) {
+		logging.LogWarning("invalid log level '%s', falling back to 'info'", level)
+		level = "info"
+	}
+
+	configManager.General.LogLevel = level
+	os.Setenv("KNOV_LOG_LEVEL", level)
 	saveConfigToFile()
 }
 
@@ -126,18 +173,52 @@ func SetGeneral(general ConfigGeneral) {
 	saveConfigToFile()
 }
 
-// GetLanguage ..
-func GetLanguage() string {
-	if configManager.General.Language == "" {
+// -----------------------------------------------------------------------------
+// ---------------------------------- language ----------------------------------
+// -----------------------------------------------------------------------------
+
+// Language lists all available Languages
+type Language struct {
+	Code string
+	Name string
+}
+
+// GetAvailableLanguages returns all supported languages
+func GetAvailableLanguages() []Language {
+	return []Language{
+		{Code: "en", Name: "English"},
+		{Code: "de", Name: "Deutsch"},
+	}
+}
+
+// CheckLanguage validates if a language code is supported
+func CheckLanguage(lang string) string {
+	if lang == "" {
 		return "en"
 	}
-	return configManager.General.Language
+
+	availableLanguages := GetAvailableLanguages()
+	for _, availableLang := range availableLanguages {
+		if availableLang.Code == lang {
+			return lang
+		}
+	}
+
+	logging.LogWarning("language '%s' not supported, falling back to 'en'", lang)
+	return "en"
+}
+
+// GetLanguage ..
+func GetLanguage() string {
+	return CheckLanguage(configManager.General.Language)
 }
 
 // SetLanguage ..
 func SetLanguage(lang string) {
-	configManager.General.Language = lang
-	log.Printf("DEBUG setlanguage: %s", lang)
+	validLang := CheckLanguage(lang)
+	configManager.General.Language = validLang
+
+	logging.LogDebug("setlanguage: %s", validLang)
 	saveConfigToFile()
 }
 
@@ -164,7 +245,6 @@ func initGitRepository() error {
 
 	gitDir := dataDir + "/.git"
 	if _, err := os.Stat(gitDir); !os.IsNotExist(err) {
-		log.Printf("git repository already exists in %s", dataDir)
 		return nil
 	}
 
@@ -174,7 +254,7 @@ func initGitRepository() error {
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to clone repository: %w", err)
 		}
-		log.Printf("git repository cloned from %s to %s", configManager.Git.RepositoryURL, dataDir)
+		logging.LogInfo("git repository cloned from %s to %s", configManager.Git.RepositoryURL, dataDir)
 	} else {
 		// Initialize new repository
 		if _, err := os.Stat(dataDir); os.IsNotExist(err) {
@@ -188,7 +268,7 @@ func initGitRepository() error {
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to initialize git repository: %w", err)
 		}
-		log.Printf("git repository initialized in %s", dataDir)
+		logging.LogInfo("git repository initialized in %s", dataDir)
 	}
 
 	return nil

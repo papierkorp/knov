@@ -39,21 +39,55 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
-	"Hello World from templ at home in the dark!": 0,
-	"Settings": 1,
+	"Custom CSS":       17,
+	"Dark Mode":        0,
+	"Data Path:":       1,
+	"Documentation":    2,
+	"English":          3,
+	"General Settings": 4,
+	"German":           5,
+	"Git Settings":     6,
+	"Hello World from templ at home in the dark!": 7,
+	"Help":                            8,
+	"Home":                            9,
+	"Playground":                      10,
+	"Repository URL:":                 18,
+	"Saves when you click outside...": 11,
+	"Search":                          12,
+	"Select Language:":                13,
+	"Select Theme:":                   14,
+	"Settings":                        15,
+	"Theme Settings":                  16,
 }
 
-var deIndex = []uint32{ // 3 elements
-	0x00000000, 0x0000000b, 0x00000019,
-} // Size: 36 bytes
+var deIndex = []uint32{ // 20 elements
+	0x00000000, 0x0000000e, 0x00000019, 0x00000027,
+	0x00000030, 0x00000049, 0x00000051, 0x00000063,
+	0x0000006e, 0x00000074, 0x0000007a, 0x00000085,
+	0x000000bd, 0x000000c3, 0x000000d6, 0x000000e8,
+	0x000000f6, 0x0000010a, 0x0000010a, 0x0000010a,
+} // Size: 104 bytes
 
-const deData string = "\x02hallo welt\x02einstellungen"
+const deData string = "" + // Size: 266 bytes
+	"\x02Dunkler Modus\x02Dateipfad:\x02Dokumentation\x02Englisch\x02Allgemei" +
+	"ne Einstellungen\x02Deutsch\x02Git Einstellungen\x02Hallo Welt\x02Hilfe" +
+	"\x02Start\x02Spielwiese\x02Speichert automatisch sobald das Feld verlass" +
+	"en wird...\x02Suche\x02Spache auswählen:\x02Theme auswählen:\x02Einstell" +
+	"ungen\x02Theme Einstellungen"
 
-var enIndex = []uint32{ // 3 elements
-	0x00000000, 0x0000002c, 0x00000035,
-} // Size: 36 bytes
+var enIndex = []uint32{ // 20 elements
+	0x00000000, 0x0000000a, 0x00000015, 0x00000023,
+	0x0000002b, 0x0000003c, 0x00000043, 0x00000050,
+	0x0000007c, 0x00000081, 0x00000086, 0x00000091,
+	0x000000b1, 0x000000b8, 0x000000c9, 0x000000d7,
+	0x000000e0, 0x000000ef, 0x000000fa, 0x0000010a,
+} // Size: 104 bytes
 
-const enData string = "" + // Size: 53 bytes
-	"\x02Hello World from templ at home in the dark!\x02Settings"
+const enData string = "" + // Size: 266 bytes
+	"\x02Dark Mode\x02Data Path:\x02Documentation\x02English\x02General Setti" +
+	"ngs\x02German\x02Git Settings\x02Hello World from templ at home in the d" +
+	"ark!\x02Help\x02Home\x02Playground\x02Saves when you click outside..." +
+	"\x02Search\x02Select Language:\x02Select Theme:\x02Settings\x02Theme Set" +
+	"tings\x02Custom CSS\x02Repository URL:"
 
-	// Total table size 150 bytes (0KiB); checksum: 7B720CAB
+	// Total table size 740 bytes (0KiB); checksum: 5B46D911

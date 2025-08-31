@@ -2,14 +2,99 @@
     "language": "de",
     "messages": [
         {
+            "id": "Custom CSS",
+            "message": "Custom CSS",
+            "translation": ""
+        },
+        {
+            "id": "Dark Mode",
+            "message": "Dark Mode",
+            "translation": "Dunkler Modus"
+        },
+        {
+            "id": "Data Path:",
+            "message": "Data Path:",
+            "translation": "Dateipfad:"
+        },
+        {
+            "id": "Documentation",
+            "message": "Documentation",
+            "translation": "Dokumentation"
+        },
+        {
+            "id": "English",
+            "message": "English",
+            "translation": "Englisch"
+        },
+        {
+            "id": "General Settings",
+            "message": "General Settings",
+            "translation": "Allgemeine Einstellungen"
+        },
+        {
+            "id": "German",
+            "message": "German",
+            "translation": "Deutsch"
+        },
+        {
+            "id": "Git Settings",
+            "message": "Git Settings",
+            "translation": "Git Einstellungen"
+        },
+        {
             "id": "Hello World from templ at home in the dark!",
             "message": "Hello World from templ at home in the dark!",
-            "translation": "hallo welt"
+            "translation": "Hallo Welt"
+        },
+        {
+            "id": "Help",
+            "message": "Help",
+            "translation": "Hilfe"
+        },
+        {
+            "id": "Home",
+            "message": "Home",
+            "translation": "Start"
+        },
+        {
+            "id": "Playground",
+            "message": "Playground",
+            "translation": "Spielwiese"
+        },
+        {
+            "id": "Repository URL:",
+            "message": "Repository URL:",
+            "translation": ""
+        },
+        {
+            "id": "Saves when you click outside...",
+            "message": "Saves when you click outside...",
+            "translation": "Speichert automatisch sobald das Feld verlassen wird..."
+        },
+        {
+            "id": "Search",
+            "message": "Search",
+            "translation": "Suche"
+        },
+        {
+            "id": "Select Language:",
+            "message": "Select Language:",
+            "translation": "Spache auswählen:"
+        },
+        {
+            "id": "Select Theme:",
+            "message": "Select Theme:",
+            "translation": "Theme auswählen:"
         },
         {
             "id": "Settings",
             "message": "Settings",
-            "translation": "einstellungen"
+            "translation": "Einstellungen"
+        },
+        {
+            "id": "Theme Settings",
+            "message": "Theme Settings",
+            "translation": "Theme Einstellungen"
         }
     ]
 }

@@ -3,9 +3,9 @@ package configmanager
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
+	"knov/internal/logging"
 	"knov/internal/translation"
 )
 
@@ -38,7 +38,7 @@ func HandleSetLanguage(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	lang := r.FormValue("language")
 
-	log.Printf("DEBUG lang: %s", lang)
+	logging.LogDebug("language set to: %s", lang)
 
 	if lang != "" {
 		SetLanguage(lang)
