@@ -198,4 +198,5 @@ dist
 # ------------------- app specific
 
 data/
+data/*
 bin/
