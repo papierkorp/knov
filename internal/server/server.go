@@ -34,7 +34,6 @@ func StartServerChi() {
 	r.Get("/", handleHome)
 	r.Get("/home", handleHome)
 	r.Get("/settings", handleSettings)
-	r.Get("/markdown/*", handleAPIMarkdown)
 
 	// ----------------------------------------------------------------------------------------
 	// ------------------------------------- static routes -------------------------------------
@@ -79,7 +78,17 @@ func StartServerChi() {
 			r.Post("/setDataPath", handleAPISetGitDataPath)
 			r.Post("/setRepositoryURL", handleAPISetGitRepositoryURL)
 		})
-		r.Get("/files", handleAPIGetFiles)
+
+		// ----------------------------------------------------------------------------------------
+		// ---------------------------------------- FILES ----------------------------------------
+		// ------------------------------------------------------------------------------- --------
+
+		r.Route("/files", func(r chi.Router) {
+			r.Get("/list", handleAPIGetAllFiles)
+			r.Get("/content/*", handleAPIGetFileContent)
+			r.Get("/metadata", handleAPIGetAllFilesWithMetadata)
+			r.Get("/metadata/*", handleAPIGetFileMetadata)
+		})
 	})
 
 	// ----------------------------------------------------------------------------------------

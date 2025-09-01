@@ -26,9 +26,6 @@ go.work.sum
 # env file
 .env
 
-bin/
-data/.git
-
 # ----------------------------- go templ
 # Output.
 cmd/templ/templ
@@ -197,3 +194,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# ------------------- app specific
+
+data/
+bin/

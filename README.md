@@ -2,7 +2,17 @@
 
 # todo
 
-- files dont return list
+- files system
+  - create internal/files folder
+  - remove current file implementation: files dont return list
+  - create file struct: name, path, metadata
+  - new api route: files
+  - api get all files (return list of file structs)
+  - api get converted html for specific file (return html content)
+  - metadata for inFile (markdown header), sqlite, postgresql
+  - api get all files + metadata
+  - api get metadata for specific file
+  - api get files with filter (maybe add later)
 - error handling in settings (especially git settings)
 - create folder structure for different file types
   - project (has board/boards)

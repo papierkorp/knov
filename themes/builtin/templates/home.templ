@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
@@ -15,12 +16,22 @@ templ Home(data thememanager.TemplateData) {
 	@Base(translation.Sprintf("Home"))
 	<div>
 		<h1>{ translation.Sprintf("Hello World from templ at home in the dark!") }</h1>
-		<div id="files-list">
-			<h2>{ translation.Sprintf("Markdown Files") }</h2>
-			<div hx-get="/api/files" hx-trigger="load">
-				{ translation.Sprintf("Loading files...") }
+		<div class="files-container">
+			<div class="files-list">
+				<h2>{ translation.Sprintf("Files") }</h2>
+				<ul>
+					if fileList, err := files.GetAllFiles(); err == nil {
+						for _, file := range fileList {
+							<li>
+								<a href="#" hx-get={ "/api/files/content/" + file.Path[5:] } hx-target="#file-content">
+									{ file.Name }
+								</a>
+							</li>
+						}
+					}
+				</ul>
 			</div>
+			<div id="file-content"></div>
 		</div>
-		<div id="content-area"></div>
 	</div>
 }

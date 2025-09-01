@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/thememanager"
 )
 
@@ -91,4 +92,40 @@ func handleAPIGetThemes(w http.ResponseWriter, r *http.Request) {
 // @Router /api/themes/setTheme [post]
 func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
 	thememanager.HandleSetTheme(w, r)
+}
+
+// ----------------------------------------------------------------------------------------
+// ----------------------------------------- files -----------------------------------------
+// ----------------------------------------------------------------------------------------
+
+// @Summary Get all files
+// @Tags files
+// @Produce json
+// @Router /api/files/list [get]
+func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
+	files.HandleAPIGetAllFiles(w, r)
+}
+
+// @Summary Get file content as html
+// @Tags files
+// @Produce json
+// @Router /api/files/content/{filepath} [get]
+func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
+	files.HandleAPIGetFileContent(w, r)
+}
+
+// @Summary Get all files with metadata
+// @Tags files
+// @Produce json
+// @Router /api/files/metadata [get]
+func handleAPIGetAllFilesWithMetadata(w http.ResponseWriter, r *http.Request) {
+	files.HandleAPIGetAllFilesWithMetadata(w, r)
+}
+
+// @Summary Get file metadata
+// @Tags files
+// @Produce json
+// @Router /api/files/metadata/{filepath} [get]
+func handleAPIGetFileMetadata(w http.ResponseWriter, r *http.Request) {
+	files.HandleAPIGetFileMetadata(w, r)
 }
