@@ -129,3 +129,45 @@ func handleAPIGetAllFilesWithMetadata(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetFileMetadata(w http.ResponseWriter, r *http.Request) {
 	files.HandleAPIGetFileMetadata(w, r)
 }
+
+// ----------------------------------------------------------------------------------------
+// ------------------------------------------ git ------------------------------------------
+// ----------------------------------------------------------------------------------------
+
+// @Summary Get recently changed files
+// @Tags files
+// @Param count query int false "Number of recent files" default(10)
+// @Produce json
+// @Router /api/files/git/history [get]
+func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
+	files.HandleAPIGetRecentlyChanged(w, r)
+}
+
+// @Summary Get file diff
+// @Tags files
+// @Produce json
+// @Router /api/files/git/diff/{filepath} [get]
+func handleAPIGetFileDiff(w http.ResponseWriter, r *http.Request) {
+	files.HandleAPIGetFileDiff(w, r)
+}
+
+// @Summary Add file to git
+// @Tags files
+// @Router /api/files/git/add/{filepath} [post]
+func handleAPIAddFile(w http.ResponseWriter, r *http.Request) {
+	files.HandleAPIAddFile(w, r)
+}
+
+// @Summary Add all files to git
+// @Tags files
+// @Router /api/files/git/addall [post]
+func handleAPIAddAllFiles(w http.ResponseWriter, r *http.Request) {
+	files.HandleAPIAddAllFiles(w, r)
+}
+
+// @Summary Delete file from git
+// @Tags files
+// @Router /api/files/git/delete/{filepath} [delete]
+func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
+	files.HandleAPIDeleteFile(w, r)
+}

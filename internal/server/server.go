@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/swaggo/http-swagger/v2"
+	"knov/internal/files"
 	"knov/internal/plugins"
 	_ "knov/internal/server/api" // swaggo api docs
 	"knov/internal/thememanager"
@@ -34,13 +36,14 @@ func StartServerChi() {
 	r.Get("/", handleHome)
 	r.Get("/home", handleHome)
 	r.Get("/settings", handleSettings)
+	r.Get("/playground", handlePlayground)
 
 	// ----------------------------------------------------------------------------------------
 	// ------------------------------------- static routes -------------------------------------
 	// ----------------------------------------------------------------------------------------
 
-	r.Get("/static/css/style.css", handleCSS)
-	r.Get("/static/css/custom.css", handleCSS)
+	r.Get("/static/css/*", handleCSS)
+
 	fs := http.FileServer(http.Dir("static"))
 	r.Handle("/static/*", http.StripPrefix("/static/", fs)) // else css files are served as text files
 
@@ -81,13 +84,21 @@ func StartServerChi() {
 
 		// ----------------------------------------------------------------------------------------
 		// ---------------------------------------- FILES ----------------------------------------
-		// ------------------------------------------------------------------------------- --------
+		// ----------------------------------------------------------------------------------------
 
 		r.Route("/files", func(r chi.Router) {
 			r.Get("/list", handleAPIGetAllFiles)
 			r.Get("/content/*", handleAPIGetFileContent)
 			r.Get("/metadata", handleAPIGetAllFilesWithMetadata)
 			r.Get("/metadata/*", handleAPIGetFileMetadata)
+
+			r.Route("/git", func(r chi.Router) {
+				r.Get("/history", files.HandleAPIGetRecentlyChanged)
+				r.Get("/diff/*", files.HandleAPIGetFileDiff)
+				r.Post("/add/*", files.HandleAPIAddFile)
+				r.Post("/addall", files.HandleAPIAddAllFiles)
+				r.Delete("/delete/*", files.HandleAPIDeleteFile)
+			})
 		})
 	})
 
@@ -106,25 +117,25 @@ func StartServerChi() {
 func handleCSS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/css")
 	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-	w.Header().Set("Expires", "0")
 
-	filename := filepath.Base(r.URL.Path)
+	cssFile := strings.TrimPrefix(r.URL.Path, "/static/css/")
 	var cssPath string
 
-	switch filename {
+	switch cssFile {
 	case "style.css":
 		themeName := thememanager.GetThemeManager().GetCurrentThemeName()
-		cssPath = filepath.Join("themes/", themeName, "templates", "style.css")
+		cssPath = filepath.Join("themes", themeName, "templates", "style.css")
 	case "custom.css":
 		cssPath = "config/custom.css"
+	default:
+		themeName := thememanager.GetThemeManager().GetCurrentThemeName()
+		cssPath = filepath.Join("themes", themeName, "templates", cssFile)
 	}
 
 	http.ServeFile(w, r, cssPath)
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	// locale := getBrowserLocale(r)
-	// log.Println("DEBUG handleHome: locale: ", locale)
 	component, err := thememanager.GetThemeManager().GetCurrentTheme().Home()
 
 	if err != nil {
@@ -156,18 +167,18 @@ func handleSettings(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// func getBrowserLocale(r *http.Request) string {
-// 	acceptLanguage := r.Header.Get("Accept-Language")
-// 	if acceptLanguage == "" {
-// 		// default
-// 		return "en"
-// 	}
-//
-// 	languages := strings.Split(acceptLanguage, ",")
-// 	if len(languages) > 0 {
-// 		locale := strings.Split(strings.TrimSpace(languages[0]), "-")[0]
-// 		return locale
-// 	}
-//
-// 	return "en"
-// }
+func handlePlayground(w http.ResponseWriter, r *http.Request) {
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().Playground()
+
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		fmt.Printf("Error loading theme")
+	}
+
+	err = component.Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "Failed to render template", http.StatusInternalServerError)
+		fmt.Printf("Error rendering template: %v\n", err)
+		return
+	}
+}

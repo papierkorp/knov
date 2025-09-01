@@ -3,10 +3,10 @@
 # todo
 
 - files system
-  - create internal/files folder
-  - remove current file implementation: files dont return list
-  - create file struct: name, path, metadata
-  - new api route: files
+  <!-- - create internal/files folder -->
+  <!-- - remove current file implementation: files dont return list -->
+  <!-- - create file struct: name, path, metadata -->
+  <!-- - new api route: files -->
   - api get all files (return list of file structs)
   - api get converted html for specific file (return html content)
   - metadata for inFile (markdown header), sqlite, postgresql

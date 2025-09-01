@@ -5,6 +5,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
+	"strings"
 )
 
 func logDebug(msg string, args ...interface{}) string {
@@ -24,7 +25,7 @@ templ Home(data thememanager.TemplateData) {
 						for _, file := range fileList {
 							<li>
 								<a href="#" hx-get={ "/api/files/content/" + file.Path[5:] } hx-target="#file-content">
-									{ file.Name }
+									{ strings.TrimPrefix(file.Path, "data/") }
 								</a>
 							</li>
 						}

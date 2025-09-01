@@ -22,7 +22,7 @@ func HandleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(files)
 }
 
-// HandleAPIGetFileContent returns html content for specific file
+// HandleAPIGetFileContent returns html content
 func HandleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/content/")
 

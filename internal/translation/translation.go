@@ -32,3 +32,19 @@ func SetLanguage(lang string) {
 func Sprintf(key string, args ...interface{}) string {
 	return globalPrinter.Sprintf(key, args...)
 }
+
+// func getBrowserLocale(r *http.Request) string {
+// 	acceptLanguage := r.Header.Get("Accept-Language")
+// 	if acceptLanguage == "" {
+// 		// default
+// 		return "en"
+// 	}
+//
+// 	languages := strings.Split(acceptLanguage, ",")
+// 	if len(languages) > 0 {
+// 		locale := strings.Split(strings.TrimSpace(languages[0]), "-")[0]
+// 		return locale
+// 	}
+//
+// 	return "en"
+// }

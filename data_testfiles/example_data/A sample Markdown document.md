@@ -1,28 +1,30 @@
 ---
 meta:
-    author: Jon Doe
-    topic: Samples
+  author: Jon Doe
+  topic: Samples
+  tag: sample
 ---
+
 # A sample Markdown document
 
 This is a sample document so you can preview the color schemes.
 
 ## Text Formatting
 
-Markdown supports _italics_, __bold__, and ___bold italics___ style using underscores.
+Markdown supports _italics_, **bold**, and **_bold italics_** style using underscores.
 
-Markdown supports *italics*, **bold**, and ***bold italics*** style using asterisks.
+Markdown supports _italics_, **bold**, and **_bold italics_** style using asterisks.
 
 There are also inline styles like `inline code in monospace font` and ~~strikethrough style~~.
 
-__There may be ~~strikethroughed text~~ or `code text` inside bold text.__
+**There may be ~~strikethroughed text~~ or `code text` inside bold text.**
 
 _And There may be ~~strikethroughed text~~ or `code text` inside italic text._
 
-> __Here is some quotation__. Lorem ~~ipsum~~ dolor sit amet, consectetur  
-> adipisicing elit, *sed* do eiusmod tempor incididunt ut labore et
+> **Here is some quotation**. Lorem ~~ipsum~~ dolor sit amet, consectetur  
+> adipisicing elit, _sed_ do eiusmod tempor incididunt ut labore et
 > dolore magna aliqua. Ut enim <b>ad</b> minim <kbd>veniam</kbd>, quis nostrud exercitation.
-> 
+>
 > <code>
 >   code block
 > </code>
@@ -49,7 +51,7 @@ This [[SamplePage]] is a wiki link.
 
 There are two types of lists, ordered and unordered.
 
-1. Item 1 
+1. Item 1
    <kbd>key</kbd>
 2. Item 2
 3. Item 3
@@ -58,19 +60,19 @@ There are two types of lists, ordered and unordered.
 2) Item 2
 3) Item 3
 
-* Item A
-    - Sub list
-        + Sub sub list
-        + Sub sub list 2
-    - Sub list 2
-* Item B
-* Item C
+- Item A
+  - Sub list
+    - Sub sub list
+    - Sub sub list 2
+  - Sub list 2
+- Item B
+- Item C
 
 ## Tables
 
-Col 1 | Col 2
------:|-------
-what  | else
+| Col 1 | Col 2 |
+| ----: | ----- |
+|  what | else  |
 
 ## Code Blocks
 
@@ -95,7 +97,7 @@ index 3d4b1fe..a85a22a 100644
 --- a/schemes/Preview.md
 +++ b/schemes/Preview.md
 @@ -89,6 +89,12 @@ function fibo(n) {
- 
+
 -## Deleted
 +## Inserted
 ```

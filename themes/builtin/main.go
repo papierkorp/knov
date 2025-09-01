@@ -37,4 +37,15 @@ func (t *Builtin) Settings() (templ.Component, error) {
 	return templates.Settings(td), nil
 }
 
+// Playground ...
+func (t *Builtin) Playground() (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.Playground(td), nil
+}
+
 func main() {}
