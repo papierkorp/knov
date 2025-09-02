@@ -54,6 +54,6 @@ templ-generate:
 	TEMPL_EXPERIMENT=rawgo templ generate
 
 swaggo-api-init:
-	swag init -g main.go -d cmd/ -o internal/server/api
+	swag init -g cmd/main.go -d . -o internal/server/api
 
 .PHONY: templ-generate dev swaggo-api-init rmt translation setup-test-data copy-test-files create-git-operations clean-test-data

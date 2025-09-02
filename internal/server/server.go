@@ -10,7 +10,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/swaggo/http-swagger/v2"
-	"knov/internal/files"
 	"knov/internal/plugins"
 	_ "knov/internal/server/api" // swaggo api docs
 	"knov/internal/thememanager"
@@ -92,13 +91,18 @@ func StartServerChi() {
 			r.Get("/metadata", handleAPIGetAllFilesWithMetadata)
 			r.Get("/metadata/*", handleAPIGetFileMetadata)
 
-			r.Route("/git", func(r chi.Router) {
-				r.Get("/history", files.HandleAPIGetRecentlyChanged)
-				r.Get("/diff/*", files.HandleAPIGetFileDiff)
-				r.Post("/add/*", files.HandleAPIAddFile)
-				r.Post("/addall", files.HandleAPIAddAllFiles)
-				r.Delete("/delete/*", files.HandleAPIDeleteFile)
-			})
+		})
+
+		// ----------------------------------------------------------------------------------------
+		// ------------------------------------ GIT Operations ------------------------------------
+		// ----------------------------------------------------------------------------------------
+
+		r.Route("/git", func(r chi.Router) {
+			r.Get("/history", handleAPIGetRecentlyChanged)
+			r.Get("/diff/*", handleAPIGetFileDiff)
+			r.Post("/add/*", handleAPIAddFile)
+			r.Post("/addall", handleAPIAddAllFiles)
+			r.Delete("/delete/*", handleAPIDeleteFile)
 		})
 	})
 

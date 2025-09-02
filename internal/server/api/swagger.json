@@ -8,5 +8,218 @@
     },
     "host": "localhost:1324",
     "basePath": "/",
-    "paths": {}
+    "paths": {
+        "/api/config/getConfig": {
+            "get": {
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get current configuration",
+                "responses": {}
+            }
+        },
+        "/api/config/getRepositoryURL": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get git repository URL",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/config/setConfig": {
+            "post": {
+                "tags": [
+                    "config"
+                ],
+                "summary": "Set configuration",
+                "responses": {}
+            }
+        },
+        "/api/config/setDataPath": {
+            "post": {
+                "tags": [
+                    "config"
+                ],
+                "summary": "Set git data path",
+                "responses": {}
+            }
+        },
+        "/api/config/setLanguage": {
+            "post": {
+                "tags": [
+                    "config"
+                ],
+                "summary": "Set language",
+                "responses": {}
+            }
+        },
+        "/api/config/setRepositoryURL": {
+            "post": {
+                "tags": [
+                    "config"
+                ],
+                "summary": "Set git repository URL",
+                "responses": {}
+            }
+        },
+        "/api/files/content/{filepath}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get file content as html",
+                "responses": {}
+            }
+        },
+        "/api/files/list": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get all files",
+                "responses": {}
+            }
+        },
+        "/api/files/metadata": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get all files with metadata",
+                "responses": {}
+            }
+        },
+        "/api/files/metadata/{filepath}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get file metadata",
+                "responses": {}
+            }
+        },
+        "/api/git/add/{filepath}": {
+            "post": {
+                "tags": [
+                    "git"
+                ],
+                "summary": "Add file to git",
+                "responses": {}
+            }
+        },
+        "/api/git/addall": {
+            "post": {
+                "tags": [
+                    "git"
+                ],
+                "summary": "Add all files to git",
+                "responses": {}
+            }
+        },
+        "/api/git/delete/{filepath}": {
+            "delete": {
+                "tags": [
+                    "git"
+                ],
+                "summary": "Delete file from git",
+                "responses": {}
+            }
+        },
+        "/api/git/diff/{filepath}": {
+            "get": {
+                "tags": [
+                    "git"
+                ],
+                "summary": "Get file diff",
+                "responses": {}
+            }
+        },
+        "/api/git/history": {
+            "get": {
+                "tags": [
+                    "git"
+                ],
+                "summary": "Get recently changed files",
+                "responses": {}
+            }
+        },
+        "/api/health": {
+            "get": {
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health check",
+                "responses": {}
+            }
+        },
+        "/api/themes/getAllThemes": {
+            "get": {
+                "description": "Get current theme and available themes",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "themes"
+                ],
+                "summary": "Get themes",
+                "responses": {
+                    "200": {
+                        "description": "{\"current\":\"themename\",\"available\":[\"theme1\",\"theme2\"]}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/themes/setTheme": {
+            "post": {
+                "description": "Set new theme via form parameter",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "tags": [
+                    "themes"
+                ],
+                "summary": "Set theme",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Theme name to set",
+                        "name": "theme",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "303": {
+                        "description": "Redirect to settings page"
+                    }
+                }
+            }
+        }
+    }
 }

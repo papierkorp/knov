@@ -6,6 +6,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/git"
 	"knov/internal/thememanager"
 )
 
@@ -135,39 +136,36 @@ func handleAPIGetFileMetadata(w http.ResponseWriter, r *http.Request) {
 // ----------------------------------------------------------------------------------------
 
 // @Summary Get recently changed files
-// @Tags files
-// @Param count query int false "Number of recent files" default(10)
-// @Produce json
-// @Router /api/files/git/history [get]
+// @Tags git
+// @Router /api/git/history [get]
 func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
-	files.HandleAPIGetRecentlyChanged(w, r)
+	git.HandleAPIGetRecentlyChanged(w, r)
 }
 
 // @Summary Get file diff
-// @Tags files
-// @Produce json
-// @Router /api/files/git/diff/{filepath} [get]
+// @Tags git
+// @Router /api/git/diff/{filepath} [get]
 func handleAPIGetFileDiff(w http.ResponseWriter, r *http.Request) {
-	files.HandleAPIGetFileDiff(w, r)
+	git.HandleAPIGetFileDiff(w, r)
 }
 
 // @Summary Add file to git
-// @Tags files
-// @Router /api/files/git/add/{filepath} [post]
+// @Tags git
+// @Router /api/git/add/{filepath} [post]
 func handleAPIAddFile(w http.ResponseWriter, r *http.Request) {
-	files.HandleAPIAddFile(w, r)
+	git.HandleAPIAddFile(w, r)
 }
 
 // @Summary Add all files to git
-// @Tags files
-// @Router /api/files/git/addall [post]
+// @Tags git
+// @Router /api/git/addall [post]
 func handleAPIAddAllFiles(w http.ResponseWriter, r *http.Request) {
-	files.HandleAPIAddAllFiles(w, r)
+	git.HandleAPIAddAllFiles(w, r)
 }
 
 // @Summary Delete file from git
-// @Tags files
-// @Router /api/files/git/delete/{filepath} [delete]
+// @Tags git
+// @Router /api/git/delete/{filepath} [delete]
 func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
-	files.HandleAPIDeleteFile(w, r)
+	git.HandleAPIDeleteFile(w, r)
 }

@@ -1,5 +1,5 @@
-// Package files - Git operations for file management
-package files
+// Package git - Git operations for file management
+package git
 
 import (
 	"os/exec"

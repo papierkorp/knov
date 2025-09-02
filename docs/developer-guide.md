@@ -67,30 +67,30 @@ Git integration provides version control for markdown files:
 **API Endpoints:**
 
 ```
-GET    /api/files/git/history?count=N  # Recent changes (default: 10)
-GET    /api/files/git/diff/{filepath}  # File diff from last commit
-POST   /api/files/git/add/{filepath}   # Add and commit file
-POST   /api/files/git/addall           # Add and commit all files
-DELETE /api/files/git/delete/{filepath} # Delete and commit removal
+GET    /api/git/history?count=N  # Recent changes (default: 10)
+GET    /api/git/diff/{filepath}  # File diff from last commit
+POST   /api/git/add/{filepath}   # Add and commit file
+POST   /api/git/addall           # Add and commit all files
+DELETE /api/git/delete/{filepath} # Delete and commit removal
 ```
 
 **Example Usage:**
 
 ```bash
 # Get last 5 changed files
-curl "http://localhost:1324/api/files/git/history?count=5"
+curl "http://localhost:1324/api/git/history?count=5"
 
 # Get diff for specific file
-curl "http://localhost:1324/api/files/git/diff/ai.md"
+curl "http://localhost:1324/api/git/diff/ai.md"
 
 # Add new file to git
-curl -X POST "http://localhost:1324/api/files/git/add/newfile.md"
+curl -X POST "http://localhost:1324/api/git/add/newfile.md"
 
 # Add all files
-curl -X POST "http://localhost:1324/api/files/git/addall"
+curl -X POST "http://localhost:1324/api/git/addall"
 
 # Delete file from git
-curl -X DELETE "http://localhost:1324/api/files/git/delete/oldfile.md"
+curl -X DELETE "http://localhost:1324/api/git/delete/oldfile.md"
 ```
 
 ### Translation

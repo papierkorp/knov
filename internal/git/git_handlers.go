@@ -1,5 +1,5 @@
-// Package files - Git operations for file management
-package files
+// Package git - Git operations for file management
+package git
 
 import (
 	"encoding/json"
@@ -32,7 +32,7 @@ func HandleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 
 // HandleAPIGetFileDiff returns diff for specific file
 func HandleAPIGetFileDiff(w http.ResponseWriter, r *http.Request) {
-	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/git/diff/")
+	filePath := strings.TrimPrefix(r.URL.Path, "/api/git/diff/")
 
 	config := configmanager.GetConfigGit()
 	dataDir := config.DataPath
@@ -54,7 +54,7 @@ func HandleAPIGetFileDiff(w http.ResponseWriter, r *http.Request) {
 
 // HandleAPIAddFile adds a file to git
 func HandleAPIAddFile(w http.ResponseWriter, r *http.Request) {
-	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/git/add/")
+	filePath := strings.TrimPrefix(r.URL.Path, "/api/git/add/")
 
 	config := configmanager.GetConfigGit()
 	dataDir := config.DataPath
@@ -88,7 +88,7 @@ func HandleAPIAddAllFiles(w http.ResponseWriter, r *http.Request) {
 
 // HandleAPIDeleteFile deletes a file from git
 func HandleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
-	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/git/delete/")
+	filePath := strings.TrimPrefix(r.URL.Path, "/api/git/delete/")
 
 	config := configmanager.GetConfigGit()
 	dataDir := config.DataPath

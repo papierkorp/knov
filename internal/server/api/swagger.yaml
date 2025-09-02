@@ -5,5 +5,145 @@ info:
   description: KNOV API \n http://localhost:1324
   title: Knov API
   version: "1.0"
-paths: {}
+paths:
+  /api/config/getConfig:
+    get:
+      responses: {}
+      summary: Get current configuration
+      tags:
+      - config
+  /api/config/getRepositoryURL:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get git repository URL
+      tags:
+      - config
+  /api/config/setConfig:
+    post:
+      responses: {}
+      summary: Set configuration
+      tags:
+      - config
+  /api/config/setDataPath:
+    post:
+      responses: {}
+      summary: Set git data path
+      tags:
+      - config
+  /api/config/setLanguage:
+    post:
+      responses: {}
+      summary: Set language
+      tags:
+      - config
+  /api/config/setRepositoryURL:
+    post:
+      responses: {}
+      summary: Set git repository URL
+      tags:
+      - config
+  /api/files/content/{filepath}:
+    get:
+      produces:
+      - application/json
+      responses: {}
+      summary: Get file content as html
+      tags:
+      - files
+  /api/files/list:
+    get:
+      produces:
+      - application/json
+      responses: {}
+      summary: Get all files
+      tags:
+      - files
+  /api/files/metadata:
+    get:
+      produces:
+      - application/json
+      responses: {}
+      summary: Get all files with metadata
+      tags:
+      - files
+  /api/files/metadata/{filepath}:
+    get:
+      produces:
+      - application/json
+      responses: {}
+      summary: Get file metadata
+      tags:
+      - files
+  /api/git/add/{filepath}:
+    post:
+      responses: {}
+      summary: Add file to git
+      tags:
+      - git
+  /api/git/addall:
+    post:
+      responses: {}
+      summary: Add all files to git
+      tags:
+      - git
+  /api/git/delete/{filepath}:
+    delete:
+      responses: {}
+      summary: Delete file from git
+      tags:
+      - git
+  /api/git/diff/{filepath}:
+    get:
+      responses: {}
+      summary: Get file diff
+      tags:
+      - git
+  /api/git/history:
+    get:
+      responses: {}
+      summary: Get recently changed files
+      tags:
+      - git
+  /api/health:
+    get:
+      responses: {}
+      summary: Health check
+      tags:
+      - health
+  /api/themes/getAllThemes:
+    get:
+      description: Get current theme and available themes
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"current":"themename","available":["theme1","theme2"]}'
+          schema:
+            type: string
+      summary: Get themes
+      tags:
+      - themes
+  /api/themes/setTheme:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Set new theme via form parameter
+      parameters:
+      - description: Theme name to set
+        in: formData
+        name: theme
+        required: true
+        type: string
+      responses:
+        "303":
+          description: Redirect to settings page
+      summary: Set theme
+      tags:
+      - themes
 swagger: "2.0"
