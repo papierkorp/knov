@@ -127,42 +127,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/git/add/{filepath}": {
-            "post": {
-                "tags": [
-                    "git"
-                ],
-                "summary": "Add file to git",
-                "responses": {}
-            }
-        },
-        "/api/git/addall": {
-            "post": {
-                "tags": [
-                    "git"
-                ],
-                "summary": "Add all files to git",
-                "responses": {}
-            }
-        },
-        "/api/git/delete/{filepath}": {
-            "delete": {
-                "tags": [
-                    "git"
-                ],
-                "summary": "Delete file from git",
-                "responses": {}
-            }
-        },
-        "/api/git/diff/{filepath}": {
-            "get": {
-                "tags": [
-                    "git"
-                ],
-                "summary": "Get file diff",
-                "responses": {}
-            }
-        },
         "/api/git/history": {
             "get": {
                 "tags": [

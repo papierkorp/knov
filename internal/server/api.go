@@ -141,31 +141,3 @@ func handleAPIGetFileMetadata(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 	git.HandleAPIGetRecentlyChanged(w, r)
 }
-
-// @Summary Get file diff
-// @Tags git
-// @Router /api/git/diff/{filepath} [get]
-func handleAPIGetFileDiff(w http.ResponseWriter, r *http.Request) {
-	git.HandleAPIGetFileDiff(w, r)
-}
-
-// @Summary Add file to git
-// @Tags git
-// @Router /api/git/add/{filepath} [post]
-func handleAPIAddFile(w http.ResponseWriter, r *http.Request) {
-	git.HandleAPIAddFile(w, r)
-}
-
-// @Summary Add all files to git
-// @Tags git
-// @Router /api/git/addall [post]
-func handleAPIAddAllFiles(w http.ResponseWriter, r *http.Request) {
-	git.HandleAPIAddAllFiles(w, r)
-}
-
-// @Summary Delete file from git
-// @Tags git
-// @Router /api/git/delete/{filepath} [delete]
-func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
-	git.HandleAPIDeleteFile(w, r)
-}

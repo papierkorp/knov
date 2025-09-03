@@ -8,137 +8,25 @@ import (
 templ Playground(data thememanager.TemplateData) {
 	@Base(translation.Sprintf("Playground"))
 	<div class="playground-container">
-		<h1>{ translation.Sprintf("API Playground") }</h1>
+		<h1>{ translation.Sprintf("Playground") }</h1>
 		<div class="playground-sections">
-			@FileOperationsSection()
 			@GitOperationsSection()
 		</div>
 	</div>
 }
 
-templ FileOperationsSection() {
-	<section class="playground-section">
-		<h2>{ translation.Sprintf("File Operations") }</h2>
-		<div class="example-group">
-			<h3>{ translation.Sprintf("Get All Files") }</h3>
-			<button hx-get="/api/files/list" hx-target="#file-list-result">
-				{ translation.Sprintf("Load File List") }
-			</button>
-			<div id="file-list-result" class="result-box">
-				{ translation.Sprintf("Click button to load files") }
-			</div>
-		</div>
-		<div class="example-group">
-			<h3>{ translation.Sprintf("Get File Content") }</h3>
-			<input type="text" id="content-file-path" placeholder="ai.md"/>
-			<button hx-get="/api/files/content/projects/ai.md" hx-target="#file-content-result">
-				{ translation.Sprintf("Get ai.md Content") }
-			</button>
-			<div id="file-content-result" class="result-box">
-				{ translation.Sprintf("File content will appear here") }
-			</div>
-		</div>
-		<div class="example-group">
-			<h3>{ translation.Sprintf("Get Files with Metadata") }</h3>
-			<button hx-get="/api/files/metadata" hx-target="#metadata-result">
-				{ translation.Sprintf("Load Files with Metadata") }
-			</button>
-			<div id="metadata-result" class="result-box">
-				{ translation.Sprintf("Metadata will appear here") }
-			</div>
-		</div>
-	</section>
-}
-
 templ GitOperationsSection() {
-	<section class="playground-section">
-		<h2>{ translation.Sprintf("Git Operations") }</h2>
-		<div class="example-group">
-			<h3>{ translation.Sprintf("Recent File History") }</h3>
-			<div class="input-group">
-				<label>{ translation.Sprintf("Count:") }</label>
-				<input type="number" id="history-count" value="5" min="1" max="50"/>
-				<button hx-get="/api/git/history?count=5" hx-target="#history-result">
-					{ translation.Sprintf("Get Recent Changes") }
-				</button>
-			</div>
-			<div id="history-result" class="result-box">
-				{ translation.Sprintf("Recent changes will appear here") }
-			</div>
-		</div>
-		<div class="example-group">
-			<h3>{ translation.Sprintf("File Diff") }</h3>
-			<div class="input-group">
-				<label>{ translation.Sprintf("File Path:") }</label>
-				<input type="text" id="diff-file-path" placeholder="ai.md"/>
-				<button hx-get="/api/git/diff/ai.md" hx-target="#diff-result">
-					{ translation.Sprintf("Get ai.md Diff") }
-				</button>
-			</div>
-			<div id="diff-result" class="result-box">
-				{ translation.Sprintf("File diff will appear here") }
-			</div>
-		</div>
-		<div class="example-group">
-			<h3>{ translation.Sprintf("Git Add Operations") }</h3>
-			<div class="button-group">
-				<button hx-post="/api/git/add/ai.md" hx-target="#add-result">
-					{ translation.Sprintf("Add ai.md") }
-				</button>
-				<button hx-post="/api/git/addall" hx-target="#add-result">
-					{ translation.Sprintf("Add All Files") }
-				</button>
-			</div>
-			<div id="add-result" class="result-box">
-				{ translation.Sprintf("Git add results will appear here") }
-			</div>
-		</div>
-		<div class="example-group danger">
-			<h3>{ translation.Sprintf("Danger Zone") }</h3>
-			<div class="warning">
-				⚠️ { translation.Sprintf("These operations modify your git repository") }
-			</div>
-			<button
-				hx-delete="/api/git/delete/test_file.md"
-				hx-target="#delete-result"
-				hx-confirm="Are you sure you want to delete this file?"
-			>
-				{ translation.Sprintf("Delete test_file.md") }
+	<section>
+		<h3>{ translation.Sprintf("Recent File History") }</h3>
+		<form hx-get="/api/git/history" hx-target="#history-result">
+			<label>{ translation.Sprintf("Count:") }</label>
+			<input type="number" name="count" id="history-count" value="5" min="1" max="500"/>
+			<button type="submit">
+				{ translation.Sprintf("Get Recent Changes") }
 			</button>
-			<div id="delete-result" class="result-box">
-				{ translation.Sprintf("Delete results will appear here") }
-			</div>
+		</form>
+		<div id="history-result">
+			{ translation.Sprintf("Recent changes will appear here") }
 		</div>
 	</section>
-}
-
-script playgroundScript() {
-// Dynamic path updates
-document.getElementById('history-count').addEventListener('change', function() {
-const button = this.parentNode.querySelector('button');
-button.setAttribute('hx-get', '/api/git/history?count=' + this.value);
-});
-
-document.getElementById('diff-file-path').addEventListener('input', function() {
-const button = this.parentNode.querySelector('button');
-button.setAttribute('hx-get', '/api/git/diff/' + this.value);
-});
-
-document.getElementById('content-file-path').addEventListener('input', function() {
-const button = this.parentNode.querySelector('button');
-button.setAttribute('hx-get', '/api/files/content/' + this.value);
-});
-
-// Format JSON responses
-document.addEventListener('htmx:afterSettle', function(evt) {
-if (evt.target.classList.contains('result-box') &&
-evt.target.textContent.startsWith('{') || evt.target.textContent.startsWith('[')) {
-try {
-const json = JSON.parse(evt.target.textContent);
-evt.target.innerHTML = '<pre>' + JSON.stringify(json, null, 2) + '</pre>';
-} catch (e) {
-// Not JSON, leave as is
-}
-}
-});
 }

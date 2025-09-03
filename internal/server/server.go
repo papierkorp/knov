@@ -99,10 +99,6 @@ func StartServerChi() {
 
 		r.Route("/git", func(r chi.Router) {
 			r.Get("/history", handleAPIGetRecentlyChanged)
-			r.Get("/diff/*", handleAPIGetFileDiff)
-			r.Post("/add/*", handleAPIAddFile)
-			r.Post("/addall", handleAPIAddAllFiles)
-			r.Delete("/delete/*", handleAPIDeleteFile)
 		})
 	})
 

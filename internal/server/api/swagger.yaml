@@ -80,30 +80,6 @@ paths:
       summary: Get file metadata
       tags:
       - files
-  /api/git/add/{filepath}:
-    post:
-      responses: {}
-      summary: Add file to git
-      tags:
-      - git
-  /api/git/addall:
-    post:
-      responses: {}
-      summary: Add all files to git
-      tags:
-      - git
-  /api/git/delete/{filepath}:
-    delete:
-      responses: {}
-      summary: Delete file from git
-      tags:
-      - git
-  /api/git/diff/{filepath}:
-    get:
-      responses: {}
-      summary: Get file diff
-      tags:
-      - git
   /api/git/history:
     get:
       responses: {}
