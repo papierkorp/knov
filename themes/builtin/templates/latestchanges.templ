@@ -1,0 +1,23 @@
+package templates
+
+import (
+	"knov/internal/git"
+	"knov/internal/thememanager"
+	"knov/internal/translation"
+)
+
+templ LatestChanges(data thememanager.TemplateData) {
+	@Base(translation.Sprintf("Latest Changes"))
+	<div>
+		<h1>{ translation.Sprintf("Recent File History") }</h1>
+		<div>
+			<ul>
+				if files, err := git.GetRecentlyChangedFiles(100); err == nil {
+					for _, file := range files {
+						<li>{ file.Date } - { file.Name } ({ file.Message })</li>
+					}
+				}
+			</ul>
+		</div>
+	</div>
+}

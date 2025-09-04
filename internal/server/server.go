@@ -36,6 +36,8 @@ func StartServerChi() {
 	r.Get("/home", handleHome)
 	r.Get("/settings", handleSettings)
 	r.Get("/playground", handlePlayground)
+	r.Get("/latest-changes", handleLatestChanges)
+	r.Get("/history", handleHistory)
 
 	// ----------------------------------------------------------------------------------------
 	// ------------------------------------- static routes -------------------------------------
@@ -169,6 +171,38 @@ func handleSettings(w http.ResponseWriter, r *http.Request) {
 
 func handlePlayground(w http.ResponseWriter, r *http.Request) {
 	component, err := thememanager.GetThemeManager().GetCurrentTheme().Playground()
+
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		fmt.Printf("Error loading theme")
+	}
+
+	err = component.Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "Failed to render template", http.StatusInternalServerError)
+		fmt.Printf("Error rendering template: %v\n", err)
+		return
+	}
+}
+
+func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().LatestChanges()
+
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		fmt.Printf("Error loading theme")
+	}
+
+	err = component.Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "Failed to render template", http.StatusInternalServerError)
+		fmt.Printf("Error rendering template: %v\n", err)
+		return
+	}
+}
+
+func handleHistory(w http.ResponseWriter, r *http.Request) {
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().History()
 
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)

@@ -48,4 +48,26 @@ func (t *Builtin) Playground() (templ.Component, error) {
 	return templates.Playground(td), nil
 }
 
+// LatestChanges ...
+func (t *Builtin) LatestChanges() (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.LatestChanges(td), nil
+}
+
+// History ...
+func (t *Builtin) History() (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.History(td), nil
+}
+
 func main() {}

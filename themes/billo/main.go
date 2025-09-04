@@ -46,4 +46,25 @@ func (t *Billo) Playground() (templ.Component, error) {
 	return templates.Playground(td), nil
 }
 
+// LatestChanges ...
+func (t *Billo) LatestChanges() (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.LatestChanges(td), nil
+}
+
+// History ...
+func (t *Billo) History() (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.History(td), nil
+}
 func main() {}
