@@ -19,12 +19,6 @@ type File struct {
 	Metadata *Metadata `json:"metadata,omitempty"`
 }
 
-// Metadata represents file metadata
-type Metadata struct {
-	FileType string `json:"fileType"` // todo/knowledge/journal
-	Size     int64  `json:"size"`
-}
-
 // GetAllFiles returns list of all files
 func GetAllFiles() ([]File, error) {
 	config := configmanager.GetConfigGit()
@@ -84,10 +78,4 @@ func GetAllFilesWithMetadata() ([]File, error) {
 	}
 
 	return files, nil
-}
-
-// GetFileMetadata returns metadata for specific file
-func GetFileMetadata(filePath string) (*Metadata, error) {
-	// TODO: implement metadata extraction
-	return nil, nil
 }

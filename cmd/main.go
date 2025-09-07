@@ -3,9 +3,9 @@ package main
 
 import (
 	"knov/internal/configmanager"
-	"knov/internal/translation"
 	"knov/internal/server"
 	"knov/internal/thememanager"
+	"knov/internal/translation"
 )
 
 // @title Knov API

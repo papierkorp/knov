@@ -1,4 +1,73 @@
 basePath: /
+definitions:
+  files.Metadata:
+    properties:
+      boards:
+        items:
+          type: string
+        type: array
+      createdAt:
+        type: string
+      folders:
+        items:
+          type: string
+        type: array
+      lastEdited:
+        type: string
+      linkedFiles:
+        description: id/filepath
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      path:
+        type: string
+      priority:
+        $ref: '#/definitions/files.priority'
+      project:
+        type: string
+      size:
+        type: integer
+      status:
+        $ref: '#/definitions/files.status'
+      tags:
+        items:
+          type: string
+        type: array
+      type:
+        $ref: '#/definitions/files.filetype'
+    type: object
+  files.filetype:
+    enum:
+    - todo
+    - knowledge
+    - journal
+    type: string
+    x-enum-varnames:
+    - FileTypeTodo
+    - FileTypeKnowledge
+    - FileTypeJournal
+  files.priority:
+    enum:
+    - low
+    - medium
+    - high
+    type: string
+    x-enum-varnames:
+    - PriorityLow
+    - PriorityMedium
+    - PriorityHigh
+  files.status:
+    enum:
+    - draft
+    - published
+    - archived
+    type: string
+    x-enum-varnames:
+    - StatusDraft
+    - StatusPublished
+    - StatusArchived
 host: localhost:1324
 info:
   contact: {}
@@ -66,18 +135,79 @@ paths:
       - files
   /api/files/metadata:
     get:
+      description: Get metadata for a file by providing filepath as query parameter
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
       produces:
       - application/json
-      responses: {}
-      summary: Get all files with metadata
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/files.Metadata'
+        "400":
+          description: missing filepath parameter
+          schema:
+            type: string
+        "404":
+          description: metadata not found
+          schema:
+            type: string
+        "500":
+          description: failed to get metadata
+          schema:
+            type: string
+      summary: Get metadata for a single file
       tags:
       - files
-  /api/files/metadata/{filepath}:
-    get:
+    post:
+      consumes:
+      - application/json
+      description: Set metadata for a file using JSON payload
+      parameters:
+      - description: Metadata object
+        in: body
+        name: metadata
+        required: true
+        schema:
+          $ref: '#/definitions/files.Metadata'
       produces:
       - application/json
-      responses: {}
-      summary: Get file metadata
+      responses:
+        "200":
+          description: metadata saved
+          schema:
+            type: string
+        "400":
+          description: invalid json or missing path
+          schema:
+            type: string
+        "500":
+          description: failed to save metadata
+          schema:
+            type: string
+      summary: Set metadata for a single file
+      tags:
+      - files
+  /api/files/metadata/init:
+    post:
+      description: Creates metadata for all files that don't have metadata yet
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: metadata initialized
+          schema:
+            type: string
+        "500":
+          description: failed to initialize metadata
+          schema:
+            type: string
+      summary: Initialize metadata for all files
       tags:
       - files
   /api/git/history:

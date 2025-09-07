@@ -189,7 +189,7 @@ func (tm *ThemeManager) CompileThemes() error {
 			return fmt.Errorf("failed to get absolute path: %w", err)
 		}
 
-		cmd := exec.Command("go", "build", "-buildmode=plugin", "-o", absOutPath, ".")
+		cmd := exec.Command("go", "build", "-buildvcs=false", "-buildmode=plugin", "-o", absOutPath, ".")
 		cmd.Dir = themeDir
 		output, err := cmd.CombinedOutput()
 

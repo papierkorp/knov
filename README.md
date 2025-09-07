@@ -2,23 +2,33 @@
 
 # todo
 
+- testgit is executed with every make dev command ..
+- change handlers to set all handlers in api.go without creating a xxx.handler file..
+- update swagger comments
+- is the data folder necessary?
+- git
+  - file history (changes, differences)
+  - move plugins/git to git
+  - dont apply git settings on the fly only on startup
+  - test external repo and fix it
+  - if added without web interface but with a git commit, search commit message for --type ...
+- metadata
+  - metadata for json, markdown header, sqlite, postgresql
+  - metadata struct:
+  - save in a sqlite file
+  - save in postgres
+  - save in a json file
+  - save in header in markdown files
 - files system
-  <!-- - create internal/files folder -->
-  <!-- - remove current file implementation: files dont return list -->
-  <!-- - create file struct: name, path, metadata -->
-  <!-- - new api route: files -->
-  - api get all files (return list of file structs)
-  - api get converted html for specific file (return html content)
-  - metadata for inFile (markdown header), sqlite, postgresql
   - api get all files + metadata
   - api get metadata for specific file
   - api get files with filter (maybe add later)
+  - does the dataPath config even make sense?
 - error handling in settings (especially git settings)
 - create folder structure for different file types
   - project (has board/boards)
     - board (has everything else besides project)
       - filter (which cards are displayed)
-      - toc (like filter)
   - is displayed with filter/toc
     - todo
     - knowledge
@@ -28,11 +38,6 @@
   - add api endpoint to create a new file (git add)
   - add api endpoint to get a git history
   - add api endpoint to rename a filename
-- create api endpoints to save the metadata
-  - in a sqlite file
-  - in postgres
-  - in a json file
-  - as metadata in the markdown files
 - when is metadata endpoint called? (time interval?)
 - create api endpoints to retrieve the metadata
 - create filter/toc
@@ -44,6 +49,15 @@
 
 # done
 
+- git
+  - latest changes (latest changed files)
+- files system
+  - create internal/files folder
+  - remove current file implementation: files dont return list
+  - create file struct: name, path, metadata
+  - new api route: files
+  - api get all files (return list of file structs)
+  - api get converted html for specific file (return html content)
 - create a setting to init a new git repo in data folder/set git url
 - add api to docs and thememanager readme
 - add custom.css panel to settings

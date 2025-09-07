@@ -1,0 +1,144 @@
+{
+  "data/example_data/A sample Markdown document.md": {
+    "name": "A sample Markdown document.md",
+    "path": "data/example_data/A sample Markdown document.md",
+    "createdAt": "2025-09-07T23:17:20.661920445+02:00",
+    "lastEdited": "2025-09-07T23:17:20.661920445+02:00",
+    "project": "default",
+    "folders": [
+      "data",
+      "example_data"
+    ],
+    "tags": [],
+    "boards": [
+      "default"
+    ],
+    "linkedFiles": [],
+    "type": "journal",
+    "status": "published",
+    "priority": "medium",
+    "size": 2808
+  },
+  "data/example_data/computer/Network Services.md": {
+    "name": "Network Services.md",
+    "path": "data/example_data/computer/Network Services.md",
+    "createdAt": "2025-09-07T23:17:20.661920445+02:00",
+    "lastEdited": "2025-09-07T23:17:20.661920445+02:00",
+    "project": "default",
+    "folders": [
+      "data",
+      "example_data",
+      "computer"
+    ],
+    "tags": [],
+    "boards": [
+      "default"
+    ],
+    "linkedFiles": [],
+    "type": "journal",
+    "status": "published",
+    "priority": "medium",
+    "size": 2973
+  },
+  "data/example_data/computer/Web Fundamentals.md": {
+    "name": "Web Fundamentals.md",
+    "path": "data/example_data/computer/Web Fundamentals.md",
+    "createdAt": "2025-09-07T23:17:20.661920445+02:00",
+    "lastEdited": "2025-09-07T23:17:20.661920445+02:00",
+    "project": "default",
+    "folders": [
+      "data",
+      "example_data",
+      "computer"
+    ],
+    "tags": [],
+    "boards": [
+      "default"
+    ],
+    "linkedFiles": [],
+    "type": "journal",
+    "status": "published",
+    "priority": "medium",
+    "size": 3852
+  },
+  "data/example_data/computer/Windows.md": {
+    "name": "Windows.md",
+    "path": "data/example_data/computer/Windows.md",
+    "createdAt": "2025-09-07T23:17:20.661920445+02:00",
+    "lastEdited": "2025-09-07T23:17:20.661920445+02:00",
+    "project": "default",
+    "folders": [
+      "data",
+      "example_data",
+      "computer"
+    ],
+    "tags": [],
+    "boards": [
+      "default"
+    ],
+    "linkedFiles": [],
+    "type": "journal",
+    "status": "published",
+    "priority": "medium",
+    "size": 17323
+  },
+  "data/example_markdown.md": {
+    "name": "example_markdown.md",
+    "path": "data/example_markdown.md",
+    "createdAt": "2025-09-07T23:17:20.661920445+02:00",
+    "lastEdited": "2025-09-07T23:17:20.661920445+02:00",
+    "project": "default",
+    "folders": [
+      "data"
+    ],
+    "tags": [],
+    "boards": [
+      "default"
+    ],
+    "linkedFiles": [],
+    "type": "journal",
+    "status": "published",
+    "priority": "medium",
+    "size": 4559
+  },
+  "data/projects/ai.md": {
+    "name": "ai.md",
+    "path": "data/projects/ai.md",
+    "createdAt": "2025-09-07T23:17:20.661920445+02:00",
+    "lastEdited": "2025-09-07T23:17:20.661920445+02:00",
+    "project": "default",
+    "folders": [
+      "data",
+      "projects"
+    ],
+    "tags": [],
+    "boards": [
+      "default"
+    ],
+    "linkedFiles": [],
+    "type": "journal",
+    "status": "published",
+    "priority": "medium",
+    "size": 4408
+  },
+  "data/projects/project_notes.md": {
+    "name": "project_notes.md",
+    "path": "data/projects/project_notes.md",
+    "createdAt": "2025-09-07T23:17:20.671920834+02:00",
+    "lastEdited": "2025-09-07T23:17:20.671920834+02:00",
+    "project": "default",
+    "folders": [
+      "data",
+      "projects"
+    ],
+    "tags": [],
+    "boards": [
+      "default"
+    ],
+    "linkedFiles": [],
+    "type": "journal",
+    "status": "published",
+    "priority": "medium",
+    "size": 20
+  }
+}

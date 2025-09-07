@@ -9,5 +9,8 @@
  "git": {
   "repositoryUrl": "local",
   "dataPath": "data"
+ },
+ "metadata": {
+  "storagemethod": "json"
  }
 }

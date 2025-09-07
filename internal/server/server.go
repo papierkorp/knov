@@ -90,8 +90,10 @@ func StartServerChi() {
 		r.Route("/files", func(r chi.Router) {
 			r.Get("/list", handleAPIGetAllFiles)
 			r.Get("/content/*", handleAPIGetFileContent)
-			r.Get("/metadata", handleAPIGetAllFilesWithMetadata)
-			r.Get("/metadata/*", handleAPIGetFileMetadata)
+
+			r.Get("/metadata", handleAPIGetMetadata)
+			r.Post("/metadata", handleAPISetMetadata)
+			r.Post("/metadata/init", handleAPIInitMetadata)
 
 		})
 

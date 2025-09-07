@@ -21,9 +21,10 @@ var configManager ConfigManager
 
 // ConfigManager ..
 type ConfigManager struct {
-	Themes  ConfigThemes  `json:"themes"`
-	General ConfigGeneral `json:"general"`
-	Git     ConfigGit     `json:"git"`
+	Themes   ConfigThemes   `json:"themes"`
+	General  ConfigGeneral  `json:"general"`
+	Git      ConfigGit      `json:"git"`
+	Metadata ConfigMetadata `json:"metadata"`
 }
 
 // ConfigGeneral ..
@@ -41,6 +42,11 @@ type ConfigThemes struct {
 type ConfigGit struct {
 	RepositoryURL string `json:"repositoryUrl"`
 	DataPath      string `json:"dataPath"`
+}
+
+// ConfigMetadata ..
+type ConfigMetadata struct {
+	StorageMethod string `json:"storagemethod"` //"json", "sqlite", "postgres", "yaml"
 }
 
 // InitConfig intializing config/config.json
@@ -272,4 +278,28 @@ func initGitRepository() error {
 	}
 
 	return nil
+}
+
+// -----------------------------------------------------------------------------
+// --------------------------------- METADATA ---------------------------------
+// -----------------------------------------------------------------------------
+
+// GetConfigMetadata ..
+func GetConfigMetadata() ConfigMetadata {
+	return configManager.Metadata
+}
+
+// SetConfigMetadata ..
+func SetConfigMetadata(newConfigMetadata ConfigMetadata) {
+	configManager.Metadata = newConfigMetadata
+	saveConfigToFile()
+}
+
+// GetMetadataStorageMethod returns storage method with default
+func GetMetadataStorageMethod() string {
+	method := configManager.Metadata.StorageMethod
+	if method == "" {
+		return "json" // default
+	}
+	return method
 }

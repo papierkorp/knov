@@ -1,0 +1,290 @@
+// Package files handles file operations and metadata
+package files
+
+import (
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"knov/internal/configmanager"
+	"knov/internal/logging"
+)
+
+type filetype string
+type status string
+type priority string
+
+const (
+	FileTypeTodo      filetype = "todo"
+	FileTypeKnowledge filetype = "knowledge"
+	FileTypeJournal   filetype = "journal"
+
+	StatusDraft     status = "draft"
+	StatusPublished status = "published"
+	StatusArchived  status = "archived"
+
+	PriorityLow    priority = "low"
+	PriorityMedium priority = "medium"
+	PriorityHigh   priority = "high"
+)
+
+// Metadata represents file metadata
+type Metadata struct {
+	Name        string    `json:"name"`
+	Path        string    `json:"path"`
+	CreatedAt   time.Time `json:"createdAt"`
+	LastEdited  time.Time `json:"lastEdited"`
+	Project     string    `json:"project"`
+	Folders     []string  `json:"folders"`
+	Tags        []string  `json:"tags"`
+	Boards      []string  `json:"boards"`
+	LinkedFiles []string  `json:"linkedFiles"` // id/filepath
+	FileType    filetype  `json:"type"`
+	Status      status    `json:"status"`
+	Priority    priority  `json:"priority"`
+	Size        int64     `json:"size"`
+}
+
+func metaDataCreate(filePath string, existing *Metadata) *Metadata {
+	fileInfo, err := os.Stat(filePath)
+	actualPath := filePath
+
+	if err != nil {
+		if !strings.HasPrefix(filePath, "data/") {
+			dataPath := filepath.Join("data", filePath)
+			fileInfo, err = os.Stat(dataPath)
+			if err == nil {
+				actualPath = dataPath
+			}
+		}
+	}
+
+	if err != nil {
+		logging.LogError("failed to get file info for %s: %v", filePath, err)
+		return nil
+	}
+
+	if existing == nil {
+		existing = &Metadata{}
+	}
+
+	existing.Name = fileInfo.Name()
+	existing.Path = actualPath
+	if existing.CreatedAt.IsZero() {
+		existing.CreatedAt = fileInfo.ModTime()
+	}
+	existing.LastEdited = fileInfo.ModTime()
+	existing.Size = fileInfo.Size()
+
+	dir := filepath.Dir(actualPath)
+	if dir != "." && dir != "/" && dir != "" {
+		folders := strings.Split(strings.Trim(dir, "/"), "/")
+		var validFolders []string
+		for _, folder := range folders {
+			if folder != "" {
+				validFolders = append(validFolders, folder)
+			}
+		}
+		existing.Folders = validFolders
+	}
+
+	if existing.Project == "" {
+		existing.Project = "default"
+	}
+	if existing.Tags == nil {
+		existing.Tags = []string{}
+	}
+	if existing.Boards == nil {
+		existing.Boards = []string{"default"}
+	}
+	if existing.LinkedFiles == nil {
+		existing.LinkedFiles = []string{}
+	}
+	if existing.FileType == "" {
+		existing.FileType = FileTypeJournal
+	}
+	if existing.Status == "" {
+		existing.Status = StatusPublished
+	}
+	if existing.Priority == "" {
+		existing.Priority = PriorityMedium
+	}
+
+	return existing
+}
+
+// MetaDataSave saves metadata using the configured storage method
+func MetaDataSave(m *Metadata) error {
+	existing, _ := MetaDataGet(m.Path)
+
+	finalMetadata := metaDataCreate(m.Path, existing)
+	if finalMetadata == nil {
+		return nil
+	}
+
+	// merge new data with existing (new data takes priority)
+	if m.Project != "" {
+		finalMetadata.Project = m.Project
+	}
+	if len(m.Tags) > 0 {
+		finalMetadata.Tags = m.Tags
+	}
+	if len(m.Boards) > 0 {
+		finalMetadata.Boards = m.Boards
+	}
+	if len(m.LinkedFiles) > 0 {
+		finalMetadata.LinkedFiles = m.LinkedFiles
+	}
+	if m.FileType != "" {
+		finalMetadata.FileType = m.FileType
+	}
+	if m.Status != "" {
+		finalMetadata.Status = m.Status
+	}
+	if m.Priority != "" {
+		finalMetadata.Priority = m.Priority
+	}
+	storageMethod := configmanager.GetMetadataStorageMethod()
+
+	switch storageMethod {
+	case "json":
+		return metaDataSaveAsJSON(finalMetadata)
+	default:
+		logging.LogWarning("unsupported metadata storage method: %s, using json", storageMethod)
+		return metaDataSaveAsJSON(finalMetadata)
+	}
+}
+
+func metaDataSaveAsJSON(m *Metadata) error {
+	metadataFile := "config/.metadata/metadata.json"
+	metadataDir := filepath.Dir(metadataFile)
+
+	if err := os.MkdirAll(metadataDir, 0755); err != nil {
+		logging.LogError("failed to create metadata directory: %v", err)
+		return err
+	}
+
+	// TODO: to optimize switch to multiple json files e.g. alphabetically
+	var allMetadata map[string]*Metadata
+	if data, err := os.ReadFile(metadataFile); err == nil {
+		json.Unmarshal(data, &allMetadata)
+	}
+	if allMetadata == nil {
+		allMetadata = make(map[string]*Metadata)
+	}
+
+	allMetadata[m.Path] = m
+
+	jsonData, err := json.MarshalIndent(allMetadata, "", "  ")
+	if err != nil {
+		logging.LogError("failed to marshal metadata: %v", err)
+		return err
+	}
+
+	if err := os.WriteFile(metadataFile, jsonData, 0644); err != nil {
+		logging.LogError("failed to write metadata file: %v", err)
+		return err
+	}
+
+	logging.LogDebug("metadata saved to %s", metadataFile)
+	return nil
+}
+
+func metaDataSaveAsMarkdown(m *Metadata) error {
+	return nil
+}
+
+func metaDataSaveAsSQLITE(m *Metadata) error {
+	return nil
+}
+
+func metaDataSaveAsPostgres(m *Metadata) error {
+	return nil
+}
+
+// MetaDataGet retrieves metadata using the configured storage method
+func MetaDataGet(filepath string) (*Metadata, error) {
+	storageMethod := configmanager.GetMetadataStorageMethod()
+
+	switch storageMethod {
+	case "json":
+		return metaDataGetJSON(filepath)
+	default:
+		logging.LogWarning("unsupported metadata storage method: %s, using json", storageMethod)
+		return metaDataGetJSON(filepath)
+	}
+}
+
+func metaDataGetJSON(filepath string) (*Metadata, error) {
+	metadataFile := "config/.metadata/metadata.json"
+
+	data, err := os.ReadFile(metadataFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			logging.LogDebug("metadata file does not exist: %s", metadataFile)
+			return nil, nil
+		}
+		logging.LogError("failed to read metadata file: %v", err)
+		return nil, err
+	}
+
+	var allMetadata map[string]*Metadata
+	if err := json.Unmarshal(data, &allMetadata); err != nil {
+		logging.LogError("failed to unmarshal metadata: %v", err)
+		return nil, err
+	}
+
+	metadata, exists := allMetadata[filepath]
+	if !exists {
+		logging.LogDebug("no metadata found for file: %s", filepath)
+		return nil, nil
+	}
+
+	logging.LogDebug("metadata retrieved: %+v", metadata)
+	return metadata, nil
+}
+
+func metaDataGetMarkdown(filepath string) (*Metadata, error) {
+	return nil, nil
+}
+
+func metaDataGetSQLITE(filepath string) (*Metadata, error) {
+	return nil, nil
+}
+
+func metaDataGetPostgres(filepath string) (*Metadata, error) {
+	return nil, nil
+}
+
+// MetaDataInitializeAll creates metadata for all files that don't have it yet
+func MetaDataInitializeAll() error {
+	files, err := GetAllFiles()
+	if err != nil {
+		logging.LogError("failed to get all files: %v", err)
+		return err
+	}
+
+	for _, file := range files {
+		existing, err := MetaDataGet(file.Path)
+		if err != nil {
+			logging.LogError("failed to check existing metadata for %s: %v", file.Path, err)
+			continue
+		}
+
+		if existing == nil {
+			metadata := &Metadata{Path: file.Path}
+			if err := MetaDataSave(metadata); err != nil {
+				logging.LogError("failed to save metadata for %s: %v", file.Path, err)
+				continue
+			}
+			logging.LogDebug("created metadata for %s", file.Path)
+		} else {
+			logging.LogDebug("metadata already exists for %s", file.Path)
+		}
+	}
+
+	logging.LogInfo("metadata initialization completed")
+	return nil
+}

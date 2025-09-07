@@ -4,6 +4,8 @@ package logging
 import (
 	"log"
 	"os"
+	"runtime"
+	"strings"
 )
 
 // shouldLog checks if message should be logged based on environment variable
@@ -26,31 +28,46 @@ func shouldLog(messageLevel string) bool {
 		return true
 	}
 }
+func getCaller() string {
+	pc, _, _, ok := runtime.Caller(2)
+	if !ok {
+		return "unknown"
+	}
+	fn := runtime.FuncForPC(pc)
+	if fn == nil {
+		return "unknown"
+	}
+	name := fn.Name()
+	if idx := strings.LastIndex(name, "."); idx >= 0 {
+		name = name[idx+1:]
+	}
+	return name
+}
 
 // LogDebug logs debug messages
 func LogDebug(format string, args ...any) {
 	if shouldLog("debug") {
-		log.Printf("DEBUG: "+format, args...)
+		log.Printf("debug [%s]: "+format, append([]any{getCaller()}, args...)...)
 	}
 }
 
 // LogInfo logs info messages
 func LogInfo(format string, args ...any) {
 	if shouldLog("info") {
-		log.Printf("INFO: "+format, args...)
+		log.Printf("info [%s]: "+format, append([]any{getCaller()}, args...)...)
 	}
 }
 
 // LogWarning logs warning messages
 func LogWarning(format string, args ...any) {
 	if shouldLog("warning") {
-		log.Printf("WARNING: "+format, args...)
+		log.Printf("warning [%s]: "+format, append([]any{getCaller()}, args...)...)
 	}
 }
 
 // LogError logs error messages
 func LogError(format string, args ...any) {
 	if shouldLog("error") {
-		log.Printf("ERROR: "+format, args...)
+		log.Printf("error [%s]: "+format, append([]any{getCaller()}, args...)...)
 	}
 }
