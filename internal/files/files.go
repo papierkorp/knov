@@ -21,12 +21,7 @@ type File struct {
 
 // GetAllFiles returns list of all files
 func GetAllFiles() ([]File, error) {
-	config := configmanager.GetConfigGit()
-	dataDir := config.DataPath
-	if dataDir == "" {
-		dataDir = "data"
-	}
-
+	dataDir := configmanager.DataPath
 	var files []File
 	err := filepath.Walk(dataDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {

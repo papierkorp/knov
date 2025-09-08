@@ -79,7 +79,6 @@ func StartServerChi() {
 			r.Post("/setConfig", handleAPISetConfig)
 			r.Post("/setLanguage", handleAPISetLanguage)
 			r.Get("/getRepositoryURL", handleAPIGetGitRepositoryURL)
-			r.Post("/setDataPath", handleAPISetGitDataPath)
 			r.Post("/setRepositoryURL", handleAPISetGitRepositoryURL)
 		})
 

@@ -18,6 +18,7 @@ import (
 // -----------------------------------------------------------------------------
 
 var configManager ConfigManager
+var DataPath = "data"
 
 // ConfigManager ..
 type ConfigManager struct {
@@ -41,7 +42,6 @@ type ConfigThemes struct {
 // ConfigGit ..
 type ConfigGit struct {
 	RepositoryURL string `json:"repositoryUrl"`
-	DataPath      string `json:"dataPath"`
 }
 
 // ConfigMetadata ..
@@ -245,37 +245,32 @@ func SetConfigGit(newConfigGit ConfigGit) {
 }
 
 func initGitRepository() error {
-	dataDir := configManager.Git.DataPath
-	if dataDir == "" {
-		dataDir = "data"
-	}
-
-	gitDir := dataDir + "/.git"
+	gitDir := DataPath + "/.git"
 	if _, err := os.Stat(gitDir); !os.IsNotExist(err) {
 		return nil
 	}
 
 	if configManager.Git.RepositoryURL != "" && configManager.Git.RepositoryURL != "local" {
 		// Clone existing repository
-		cmd := exec.Command("git", "clone", configManager.Git.RepositoryURL, dataDir)
+		cmd := exec.Command("git", "clone", configManager.Git.RepositoryURL, DataPath)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to clone repository: %w", err)
 		}
-		logging.LogInfo("git repository cloned from %s to %s", configManager.Git.RepositoryURL, dataDir)
+		logging.LogInfo("git repository cloned from %s to %s", configManager.Git.RepositoryURL, DataPath)
 	} else {
 		// Initialize new repository
-		if _, err := os.Stat(dataDir); os.IsNotExist(err) {
-			if err := os.MkdirAll(dataDir, 0755); err != nil {
+		if _, err := os.Stat(DataPath); os.IsNotExist(err) {
+			if err := os.MkdirAll(DataPath, 0755); err != nil {
 				return fmt.Errorf("failed to create data directory: %w", err)
 			}
 		}
 
 		cmd := exec.Command("git", "init")
-		cmd.Dir = dataDir
+		cmd.Dir = DataPath
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to initialize git repository: %w", err)
 		}
-		logging.LogInfo("git repository initialized in %s", dataDir)
+		logging.LogInfo("git repository initialized in %s", DataPath)
 	}
 
 	return nil
@@ -305,7 +300,7 @@ func GetMetadataStorageMethod() string {
 	return method
 }
 
-// GetMetadataStorageMethod returns storage method with default
+// GetMetadataLinkRegex ..
 func GetMetadataLinkRegex() []string {
 	return configManager.Metadata.LinkRegex
 }

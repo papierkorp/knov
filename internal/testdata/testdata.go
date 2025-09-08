@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"knov/internal/configmanager"
 	"knov/internal/logging"
 )
 
@@ -29,7 +30,7 @@ func SetupTestData() error {
 
 // CleanTestData removes all test data
 func CleanTestData() error {
-	if err := os.RemoveAll("data"); err != nil {
+	if err := os.RemoveAll(configmanager.DataPath); err != nil {
 		logging.LogError("failed to remove data directory: %v", err)
 		return err
 	}
@@ -46,11 +47,11 @@ func CleanTestData() error {
 func copyTestFiles() error {
 	logging.LogInfo("copying test files")
 
-	if err := os.MkdirAll("data", 0755); err != nil {
+	if err := os.MkdirAll(configmanager.DataPath, 0755); err != nil {
 		return err
 	}
 
-	cmd := exec.Command("cp", "-r", "internal/testdata/testfiles/.", "data/")
+	cmd := exec.Command("cp", "-r", "internal/testdata/testfiles/.", configmanager.DataPath+"/")
 	if err := cmd.Run(); err != nil {
 		logging.LogError("failed to copy test files: %v", err)
 		return err
@@ -62,7 +63,7 @@ func copyTestFiles() error {
 func createGitOperations() error {
 	logging.LogInfo("creating git operations")
 
-	dataDir := "data"
+	dataDir := configmanager.DataPath
 
 	// Initialize git if needed
 	gitDir := filepath.Join(dataDir, ".git")

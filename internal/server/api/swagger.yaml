@@ -114,12 +114,6 @@ paths:
       summary: Set configuration
       tags:
       - config
-  /api/config/setDataPath:
-    post:
-      responses: {}
-      summary: Set git data path
-      tags:
-      - config
   /api/config/setLanguage:
     post:
       responses: {}

@@ -59,8 +59,8 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 
 	// TODO add config for the datafolder or remove the config
 	if err != nil {
-		if !strings.HasPrefix(filePath, "data/") {
-			dataPath := filepath.Join("data", filePath)
+		if !strings.HasPrefix(filePath, configmanager.DataPath+"/") {
+			dataPath := filepath.Join(configmanager.DataPath, filePath)
 			fileInfo, err = os.Stat(dataPath)
 			if err == nil {
 				actualPath = dataPath

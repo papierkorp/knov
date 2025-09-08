@@ -93,12 +93,6 @@ templ GitSection() {
 	<section class="settings-section">
 		<h2>{ translation.Sprintf("Git Settings") }</h2>
 		<div class="setting-item">
-			<form hx-post="/api/config/setDataPath" hx-trigger="blur from:input" hx-swap="none">
-				<label for="dataPath">{ translation.Sprintf("Data Path:") }</label>
-				<input type="text" id="dataPath" name="dataPath" value={ configmanager.GetConfigGit().DataPath }/>
-			</form>
-		</div>
-		<div class="setting-item">
 			<form hx-post="/api/config/setRepositoryURL" hx-trigger="blur from:input" hx-swap="none">
 				<label for="repositoryUrl">{ translation.Sprintf("Repository URL:") }</label>
 				<input

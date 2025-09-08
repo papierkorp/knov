@@ -2,19 +2,6 @@
 
 # todo
 
-- make updateUsedLinks work
-- testgit is executed with every make dev command ..
-- change handlers to set all handlers in api.go without creating a xxx.handler file..
-- update swagger comments
-- is the data folder necessary?
-- change linkRegex config to names, e.g. obsidian, notion, dokuwiki... instead of a regex? or add one regex string + confignames
-- reduce metadata debugging logs
-- git
-  - file history (changes, differences)
-  - move plugins/git to git
-  - dont apply git settings on the fly only on startup
-  - test external repo and fix it
-  - if added without web interface but with a git commit, search commit message for --type ...
 - metadata
   - metadata for json, markdown header, sqlite, postgresql
   - metadata struct:
@@ -22,6 +9,15 @@
   - save in postgres
   - save in a json file
   - save in header in markdown files
+  - reduce metadata debugging logs
+  - make updateUsedLinks work
+  - change linkRegex config to names, e.g. obsidian, notion, dokuwiki... instead of a regex? or add one regex string + confignames
+- git
+  - file history (changes, differences)
+  - move plugins/git to git
+  - dont apply git settings on the fly only on startup
+  - test external repo and fix it
+  - if added without web interface but with a git commit, search commit message for --type ...
 - files system
   - api get all files + metadata
   - api get metadata for specific file
@@ -52,6 +48,10 @@
 
 # done
 
+- update swagger comments
+- is the data folder config neccessary?
+- testgit is executed with every make dev command ..
+- change handlers to set all handlers in api.go without creating a xxx.handler file..
 - git
   - latest changes (latest changed files)
 - files system

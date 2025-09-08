@@ -52,15 +52,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/setDataPath": {
-            "post": {
-                "tags": [
-                    "config"
-                ],
-                "summary": "Set git data path",
-                "responses": {}
-            }
-        },
         "/api/config/setLanguage": {
             "post": {
                 "tags": [
