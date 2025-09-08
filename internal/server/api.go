@@ -8,6 +8,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/git"
+	"knov/internal/testdata"
 	"knov/internal/thememanager"
 )
 
@@ -205,20 +206,66 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("metadata saved"))
 }
 
-// @Summary Initialize metadata for all files
+// @Summary Initialize/Rebuild metadata for all files
 // @Description Creates metadata for all files that don't have metadata yet
 // @Tags files
 // @Produce json
 // @Success 200 {string} string "metadata initialized"
 // @Failure 500 {string} string "failed to initialize metadata"
-// @Router /api/files/metadata/init [post]
-func handleAPIInitMetadata(w http.ResponseWriter, r *http.Request) {
+// @Router /api/files/metadata/rebuild [post]
+func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 	if err := files.MetaDataInitializeAll(); err != nil {
 		http.Error(w, "failed to initialize metadata", http.StatusInternalServerError)
+		return
+	}
+
+	err := files.MetaDataLinksRebuild()
+	if err != nil {
+		http.Error(w, "failed to rebuild metadata links", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "metadata initialized"})
+}
+
+// ----------------------------------------------------------------------------------------
+// --------------------------------------- TESTDATA ---------------------------------------
+// ----------------------------------------------------------------------------------------
+
+// @Summary Setup test data
+// @Description Creates test files, git operations, and metadata for testing
+// @Tags testdata
+// @Produce json
+// @Success 200 {object} string "{"status":"ok","message":"test data setup completed"}"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/setup [post]
+func handleAPISetupTestData(w http.ResponseWriter, r *http.Request) {
+	err := testdata.SetupTestData()
+	if err != nil {
+		http.Error(w, "failed to setup test data", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"status":"ok","message":"test data setup completed"}`))
+}
+
+// @Summary Clean test data
+// @Description Removes all test data files and metadata
+// @Tags testdata
+// @Produce json
+// @Success 200 {object} string "{"status":"ok","message":"test data cleaned"}"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/clean [post]
+func handleAPICleanTestData(w http.ResponseWriter, r *http.Request) {
+	err := testdata.CleanTestData()
+	if err != nil {
+		http.Error(w, "failed to clean test data", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"status":"ok","message":"test data cleaned"}`))
 }

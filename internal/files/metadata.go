@@ -17,9 +17,9 @@ type status string
 type priority string
 
 const (
-	FileTypeTodo      filetype = "todo"
-	FileTypeKnowledge filetype = "knowledge"
-	FileTypeJournal   filetype = "journal"
+	FileTypeTodo    filetype = "todo"
+	FileTypeNote    filetype = "note"
+	FileTypeJournal filetype = "journal"
 
 	StatusDraft     status = "draft"
 	StatusPublished status = "published"
@@ -40,17 +40,24 @@ type Metadata struct {
 	Folders     []string  `json:"folders"`
 	Tags        []string  `json:"tags"`
 	Boards      []string  `json:"boards"`
-	LinkedFiles []string  `json:"linkedFiles"` // id/filepath
+	Ancestor    []string  `json:"ancestor"`
+	Parents     []string  `json:"parents"`
+	Kids        []string  `json:"kids"`
+	UsedLinks   []string  `json:"usedLinks"`
+	LinksToHere []string  `json:"linksToHere"`
 	FileType    filetype  `json:"type"`
 	Status      status    `json:"status"`
 	Priority    priority  `json:"priority"`
 	Size        int64     `json:"size"`
 }
 
-func metaDataCreate(filePath string, existing *Metadata) *Metadata {
+func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
+	currentMetadata, _ := MetaDataGet(filePath)
+
 	fileInfo, err := os.Stat(filePath)
 	actualPath := filePath
 
+	// TODO add config for the datafolder or remove the config
 	if err != nil {
 		if !strings.HasPrefix(filePath, "data/") {
 			dataPath := filepath.Join("data", filePath)
@@ -66,17 +73,17 @@ func metaDataCreate(filePath string, existing *Metadata) *Metadata {
 		return nil
 	}
 
-	if existing == nil {
-		existing = &Metadata{}
+	if currentMetadata == nil {
+		currentMetadata = &Metadata{}
 	}
 
-	existing.Name = fileInfo.Name()
-	existing.Path = actualPath
-	if existing.CreatedAt.IsZero() {
-		existing.CreatedAt = fileInfo.ModTime()
+	currentMetadata.Name = fileInfo.Name()
+	currentMetadata.Path = actualPath
+	if currentMetadata.CreatedAt.IsZero() {
+		currentMetadata.CreatedAt = fileInfo.ModTime()
 	}
-	existing.LastEdited = fileInfo.ModTime()
-	existing.Size = fileInfo.Size()
+	currentMetadata.LastEdited = fileInfo.ModTime()
+	currentMetadata.Size = fileInfo.Size()
 
 	dir := filepath.Dir(actualPath)
 	if dir != "." && dir != "/" && dir != "" {
@@ -87,65 +94,89 @@ func metaDataCreate(filePath string, existing *Metadata) *Metadata {
 				validFolders = append(validFolders, folder)
 			}
 		}
-		existing.Folders = validFolders
+		currentMetadata.Folders = validFolders
 	}
 
-	if existing.Project == "" {
-		existing.Project = "default"
-	}
-	if existing.Tags == nil {
-		existing.Tags = []string{}
-	}
-	if existing.Boards == nil {
-		existing.Boards = []string{"default"}
-	}
-	if existing.LinkedFiles == nil {
-		existing.LinkedFiles = []string{}
-	}
-	if existing.FileType == "" {
-		existing.FileType = FileTypeJournal
-	}
-	if existing.Status == "" {
-		existing.Status = StatusPublished
-	}
-	if existing.Priority == "" {
-		existing.Priority = PriorityMedium
+	if newMetadata != nil {
+		if newMetadata.Project != "" {
+			currentMetadata.Project = newMetadata.Project
+		}
+		if len(newMetadata.Tags) > 0 {
+			currentMetadata.Tags = newMetadata.Tags
+		}
+		if len(newMetadata.Boards) > 0 {
+			currentMetadata.Boards = newMetadata.Boards
+		}
+		if len(newMetadata.Ancestor) > 0 {
+			currentMetadata.Ancestor = newMetadata.Ancestor
+		}
+		if len(newMetadata.Parents) > 0 {
+			currentMetadata.Parents = newMetadata.Parents
+		}
+		if len(newMetadata.Kids) > 0 {
+			currentMetadata.Kids = newMetadata.Kids
+		}
+		if len(newMetadata.UsedLinks) > 0 {
+			currentMetadata.UsedLinks = newMetadata.UsedLinks
+		}
+		if len(newMetadata.LinksToHere) > 0 {
+			currentMetadata.LinksToHere = newMetadata.LinksToHere
+		}
+		if newMetadata.FileType != "" {
+			currentMetadata.FileType = newMetadata.FileType
+		}
+		if newMetadata.Status != "" {
+			currentMetadata.Status = newMetadata.Status
+		}
+		if newMetadata.Priority != "" {
+			currentMetadata.Priority = newMetadata.Priority
+		}
 	}
 
-	return existing
+	if currentMetadata.Project == "" {
+		currentMetadata.Project = "default"
+	}
+	if currentMetadata.Tags == nil {
+		currentMetadata.Tags = []string{}
+	}
+	if currentMetadata.Boards == nil {
+		currentMetadata.Boards = []string{"default"}
+	}
+	if currentMetadata.Ancestor == nil {
+		currentMetadata.Ancestor = []string{}
+	}
+	if currentMetadata.Parents == nil {
+		currentMetadata.Parents = []string{}
+	}
+	if currentMetadata.Kids == nil {
+		currentMetadata.Kids = []string{}
+	}
+	if currentMetadata.UsedLinks == nil {
+		currentMetadata.UsedLinks = []string{}
+	}
+	if currentMetadata.LinksToHere == nil {
+		currentMetadata.LinksToHere = []string{}
+	}
+	if currentMetadata.FileType == "" {
+		currentMetadata.FileType = FileTypeJournal
+	}
+	if currentMetadata.Status == "" {
+		currentMetadata.Status = StatusPublished
+	}
+	if currentMetadata.Priority == "" {
+		currentMetadata.Priority = PriorityMedium
+	}
+
+	return currentMetadata
 }
 
 // MetaDataSave saves metadata using the configured storage method
 func MetaDataSave(m *Metadata) error {
-	existing, _ := MetaDataGet(m.Path)
-
-	finalMetadata := metaDataCreate(m.Path, existing)
+	finalMetadata := metaDataUpdate(m.Path, m)
 	if finalMetadata == nil {
 		return nil
 	}
 
-	// merge new data with existing (new data takes priority)
-	if m.Project != "" {
-		finalMetadata.Project = m.Project
-	}
-	if len(m.Tags) > 0 {
-		finalMetadata.Tags = m.Tags
-	}
-	if len(m.Boards) > 0 {
-		finalMetadata.Boards = m.Boards
-	}
-	if len(m.LinkedFiles) > 0 {
-		finalMetadata.LinkedFiles = m.LinkedFiles
-	}
-	if m.FileType != "" {
-		finalMetadata.FileType = m.FileType
-	}
-	if m.Status != "" {
-		finalMetadata.Status = m.Status
-	}
-	if m.Priority != "" {
-		finalMetadata.Priority = m.Priority
-	}
 	storageMethod := configmanager.GetMetadataStorageMethod()
 
 	switch storageMethod {

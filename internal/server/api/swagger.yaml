@@ -2,6 +2,10 @@ basePath: /
 definitions:
   files.Metadata:
     properties:
+      ancestor:
+        items:
+          type: string
+        type: array
       boards:
         items:
           type: string
@@ -12,15 +16,22 @@ definitions:
         items:
           type: string
         type: array
+      kids:
+        items:
+          type: string
+        type: array
       lastEdited:
         type: string
-      linkedFiles:
-        description: id/filepath
+      linksToHere:
         items:
           type: string
         type: array
       name:
         type: string
+      parents:
+        items:
+          type: string
+        type: array
       path:
         type: string
       priority:
@@ -37,16 +48,20 @@ definitions:
         type: array
       type:
         $ref: '#/definitions/files.filetype'
+      usedLinks:
+        items:
+          type: string
+        type: array
     type: object
   files.filetype:
     enum:
     - todo
-    - knowledge
+    - note
     - journal
     type: string
     x-enum-varnames:
     - FileTypeTodo
-    - FileTypeKnowledge
+    - FileTypeNote
     - FileTypeJournal
   files.priority:
     enum:
@@ -193,7 +208,7 @@ paths:
       summary: Set metadata for a single file
       tags:
       - files
-  /api/files/metadata/init:
+  /api/files/metadata/rebuild:
     post:
       description: Creates metadata for all files that don't have metadata yet
       produces:
@@ -207,7 +222,7 @@ paths:
           description: failed to initialize metadata
           schema:
             type: string
-      summary: Initialize metadata for all files
+      summary: Initialize/Rebuild metadata for all files
       tags:
       - files
   /api/git/history:
@@ -222,6 +237,40 @@ paths:
       summary: Health check
       tags:
       - health
+  /api/testdata/clean:
+    post:
+      description: Removes all test data files and metadata
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"status":"ok","message":"test data cleaned"}'
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Clean test data
+      tags:
+      - testdata
+  /api/testdata/setup:
+    post:
+      description: Creates test files, git operations, and metadata for testing
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"status":"ok","message":"test data setup completed"}'
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Setup test data
+      tags:
+      - testdata
   /api/themes/getAllThemes:
     get:
       description: Get current theme and available themes

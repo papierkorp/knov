@@ -93,7 +93,7 @@ func StartServerChi() {
 
 			r.Get("/metadata", handleAPIGetMetadata)
 			r.Post("/metadata", handleAPISetMetadata)
-			r.Post("/metadata/init", handleAPIInitMetadata)
+			r.Post("/metadata/rebuild", handleAPIRebuildMetadata)
 
 		})
 
@@ -103,6 +103,15 @@ func StartServerChi() {
 
 		r.Route("/git", func(r chi.Router) {
 			r.Get("/history", handleAPIGetRecentlyChanged)
+		})
+
+		// ----------------------------------------------------------------------------------------
+		// --------------------------------------- TESTDATA ---------------------------------------
+		// ----------------------------------------------------------------------------------------
+
+		r.Route("/testdata", func(r chi.Router) {
+			r.Post("/setup", handleAPISetupTestData)
+			r.Post("/clean", handleAPICleanTestData)
 		})
 	})
 

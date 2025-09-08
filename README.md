@@ -2,10 +2,13 @@
 
 # todo
 
+- make updateUsedLinks work
 - testgit is executed with every make dev command ..
 - change handlers to set all handlers in api.go without creating a xxx.handler file..
 - update swagger comments
 - is the data folder necessary?
+- change linkRegex config to names, e.g. obsidian, notion, dokuwiki... instead of a regex? or add one regex string + confignames
+- reduce metadata debugging logs
 - git
   - file history (changes, differences)
   - move plugins/git to git
@@ -31,7 +34,7 @@
       - filter (which cards are displayed)
   - is displayed with filter/toc
     - todo
-    - knowledge
+    - knowledge/note
     - journal
 - add basic git functions
   - use git do display all files in the data folder

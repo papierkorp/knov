@@ -194,7 +194,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/files/metadata/init": {
+        "/api/files/metadata/rebuild": {
             "post": {
                 "description": "Creates metadata for all files that don't have metadata yet",
                 "produces": [
@@ -203,7 +203,7 @@ const docTemplate = `{
                 "tags": [
                     "files"
                 ],
-                "summary": "Initialize metadata for all files",
+                "summary": "Initialize/Rebuild metadata for all files",
                 "responses": {
                     "200": {
                         "description": "metadata initialized",
@@ -236,6 +236,58 @@ const docTemplate = `{
                 ],
                 "summary": "Health check",
                 "responses": {}
+            }
+        },
+        "/api/testdata/clean": {
+            "post": {
+                "description": "Removes all test data files and metadata",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Clean test data",
+                "responses": {
+                    "200": {
+                        "description": "{\"status\":\"ok\",\"message\":\"test data cleaned\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/testdata/setup": {
+            "post": {
+                "description": "Creates test files, git operations, and metadata for testing",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Setup test data",
+                "responses": {
+                    "200": {
+                        "description": "{\"status\":\"ok\",\"message\":\"test data setup completed\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/api/themes/getAllThemes": {
@@ -289,6 +341,12 @@ const docTemplate = `{
         "files.Metadata": {
             "type": "object",
             "properties": {
+                "ancestor": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "boards": {
                     "type": "array",
                     "items": {
@@ -304,11 +362,16 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "kids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "lastEdited": {
                     "type": "string"
                 },
-                "linkedFiles": {
-                    "description": "id/filepath",
+                "linksToHere": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -316,6 +379,12 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "parents": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "path": {
                     "type": "string"
@@ -340,6 +409,12 @@ const docTemplate = `{
                 },
                 "type": {
                     "$ref": "#/definitions/files.filetype"
+                },
+                "usedLinks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -347,12 +422,12 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "todo",
-                "knowledge",
+                "note",
                 "journal"
             ],
             "x-enum-varnames": [
                 "FileTypeTodo",
-                "FileTypeKnowledge",
+                "FileTypeNote",
                 "FileTypeJournal"
             ]
         },

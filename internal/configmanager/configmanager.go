@@ -46,7 +46,8 @@ type ConfigGit struct {
 
 // ConfigMetadata ..
 type ConfigMetadata struct {
-	StorageMethod string `json:"storagemethod"` //"json", "sqlite", "postgres", "yaml"
+	StorageMethod string   `json:"storagemethod"` //"json", "sqlite", "postgres", "yaml"
+	LinkRegex     []string `json:"linkRegex"`
 }
 
 // InitConfig intializing config/config.json
@@ -302,4 +303,9 @@ func GetMetadataStorageMethod() string {
 		return "json" // default
 	}
 	return method
+}
+
+// GetMetadataStorageMethod returns storage method with default
+func GetMetadataLinkRegex() []string {
+	return configManager.Metadata.LinkRegex
 }
