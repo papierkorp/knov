@@ -128,8 +128,14 @@ paths:
       - config
   /api/files/content/{filepath}:
     get:
+      parameters:
+      - description: File path
+        in: path
+        name: filepath
+        required: true
+        type: string
       produces:
-      - application/json
+      - text/html
       responses: {}
       summary: Get file content as html
       tags:

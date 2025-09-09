@@ -18,6 +18,8 @@ import (
 // -----------------------------------------------------------------------------
 
 var configManager ConfigManager
+
+// DataPath defaults to data or is set via env
 var DataPath = "data"
 
 // ConfigManager ..
@@ -52,6 +54,7 @@ type ConfigMetadata struct {
 
 // InitConfig intializing config/config.json
 func InitConfig() {
+	initEnv()
 	jsonFile, err := os.ReadFile("config/config.json")
 	if err != nil {
 		translation.Sprintf("testmessage from configmanager")

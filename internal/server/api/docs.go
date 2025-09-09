@@ -73,12 +73,21 @@ const docTemplate = `{
         "/api/files/content/{filepath}": {
             "get": {
                 "produces": [
-                    "application/json"
+                    "text/html"
                 ],
                 "tags": [
                     "files"
                 ],
                 "summary": "Get file content as html",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {}
             }
         },
