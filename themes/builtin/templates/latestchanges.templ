@@ -7,17 +7,18 @@ import (
 )
 
 templ LatestChanges(data thememanager.TemplateData) {
-	@Base(translation.Sprintf("Latest Changes"))
-	<div>
-		<h1>{ translation.Sprintf("Recent File History") }</h1>
+	@Base(translation.Sprintf("Latest Changes")) {
 		<div>
-			<ul>
-				if files, err := git.GetRecentlyChangedFiles(100); err == nil {
-					for _, file := range files {
-						<li>{ file.Date } - { file.Name } ({ file.Message })</li>
+			<h1>{ translation.Sprintf("Recent File History") }</h1>
+			<div>
+				<ul>
+					if files, err := git.GetRecentlyChangedFiles(100); err == nil {
+						for _, file := range files {
+							<li>{ file.Date } - { file.Name } ({ file.Message })</li>
+						}
 					}
-				}
-			</ul>
+				</ul>
+			</div>
 		</div>
-	</div>
+	}
 }

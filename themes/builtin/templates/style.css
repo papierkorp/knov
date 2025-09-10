@@ -1,6 +1,149 @@
 /* @import url("playground.css"); */
+:root {
+  --primary: #65a30d;
+  /* lime 600 */
+  --accent: #a3e635;
+  /* lime 400 */
+  --neutral: #475569;
+  /* slate 600 */
+  --black: #374151;
+  /* gray 700 */
+  --white: #d1d5db;
+  /* gray 300 */
+}
 
 body {
-  background-color: black;
-  color: white;
+  font-family: sans-serif;
+  background: var(--white);
+  color: var(--black);
+  margin: 0;
+  font-size: 16px;
+}
+
+a {
+  color: var(--black);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------- */
+/* ------------------------ settings ------------------------ */
+/* ---------------------------------------------------------- */
+
+.settings-container {
+  overflow: auto;
+  padding: 20px;
+}
+
+/* ---------------------------------------------------------- */
+/* ------------------------- header ------------------------- */
+/* ---------------------------------------------------------- */
+
+header {
+  background: var(--neutral);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 2px solid var(--primary);
+}
+
+header a,
+header button {
+  background: var(--white);
+  border: 1px solid var(--neutral);
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: var(--black);
+  transition: background 0.2s;
+}
+
+header a:hover,
+header button:hover {
+  background: var(--accent);
+}
+
+header input {
+  background: var(--white);
+  border: 1px solid var(--black);
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: var(--black);
+}
+
+.logo {
+  background: var(--primary);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* ---------------------- search input ---------------------- */
+
+/* ------------------------- boards ------------------------- */
+
+/* --------------------- git operations --------------------- */
+
+#headerGitOperations {
+  border: 1px solid var(--neutral);
+  border-radius: 4px;
+
+  padding: 8px 12px;
+  background: var(--white);
+}
+
+#headerGitOperations a {
+  border: 0;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+}
+
+/* ---------------------- Menu Dropdown ---------------------- */
+
+.dropdownNavbar {
+  float: left;
+  overflow: hidden;
+}
+
+.dropdownNavbar .btnMenuDropdown {
+  outline: none;
+  margin: 0;
+  transition: background 0.2s;
+  font-size: 16px;
+}
+
+.dropdownNavbar-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.dropdownNavbar-content a {
+  border: 0;
+  float: none;
+  /* padding: 12px 16px; */
+  display: block;
+  /* text-align: left; */
+}
+
+.dropdownNavbar-content a:hover {
+  background-color: var(--accent);
+}
+
+.dropdownNavbar:hover .dropdownNavbar-content {
+  display: block;
+}
+
+/* ---------------------------------------------------------- */
+/* -------------------------- main -------------------------- */
+/* ---------------------------------------------------------- */
+
+main {
+  padding: 20px;
 }

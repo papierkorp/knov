@@ -31,15 +31,16 @@ func getBuiltinCSSEditor() string {
 }
 
 templ Settings(data thememanager.TemplateData) {
-	@Base(translation.Sprintf("Settings"))
-	<div class="settings-container">
-		<h1>{ translation.Sprintf("Settings") }</h1>
-		<div class="settings-sections">
-			@GeneralSection()
-			@ThemeSection(data)
-			@GitSection()
+	@Base(translation.Sprintf("Settings")) {
+		<div class="settings-container">
+			<h1>{ translation.Sprintf("Settings") }</h1>
+			<div class="settings-sections">
+				@GeneralSection()
+				@ThemeSection(data)
+				@GitSection()
+			</div>
 		</div>
-	</div>
+	}
 }
 
 templ GeneralSection() {

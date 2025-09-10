@@ -3,7 +3,7 @@ APP_NAME := knov
 
 # ------------- actual usage -------------
 dev: swaggo-api-init templ-generate
-	KNOV_LOG_LEVEL=debug KNOV_DATA_PATH="/home/markus/test" go run ./cmd
+	KNOV_LOG_LEVEL=debug go run ./cmd
 
 prod: swaggo-api-init templ-generate translation
 	go build -o bin/$(APP_NAME) ./cmd

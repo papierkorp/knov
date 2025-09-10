@@ -6,13 +6,14 @@ import (
 )
 
 templ Playground(data thememanager.TemplateData) {
-	@Base(translation.Sprintf("Playground"))
-	<div class="playground-container">
-		<h1>{ translation.Sprintf("Playground") }</h1>
-		<div class="playground-sections">
-			@GitOperationsSection()
+	@Base(translation.Sprintf("Playground")) {
+		<div class="playground-container">
+			<h1>{ translation.Sprintf("Playground") }</h1>
+			<div class="playground-sections">
+				@GitOperationsSection()
+			</div>
 		</div>
-	</div>
+	}
 }
 
 templ GitOperationsSection() {
