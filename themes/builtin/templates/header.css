@@ -1,0 +1,156 @@
+/* Header */
+header {
+  background: var(--neutral);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 2px solid var(--primary);
+  flex-wrap: wrap;
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Common button/input styles */
+header button,
+header input,
+header a:not(.logo) {
+  background: var(--white);
+  border: none;
+  padding: 8px 12px;
+  color: var(--black);
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+header button:hover,
+header a:not(.logo):hover {
+  background: var(--accent);
+}
+
+/* Logo */
+.logo {
+  background: var(--primary);
+  color: var(--white);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* Board buttons */
+.header-mid button {
+  border-radius: 50%;
+  margin: 0 4px;
+}
+
+/* Git operations */
+.spanHeaderGitOperations {
+  border: 1px solid var(--neutral);
+  border-radius: 4px;
+  background: var(--white);
+  padding: 8px 0;
+}
+
+.spanHeaderGitOperations a {
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  padding: 8px 12px;
+}
+
+/* Add button */
+.btnAdd {
+  font-size: 2em;
+  color: var(--white);
+  background: inherit;
+  border: none;
+  padding: 0 4px;
+}
+
+.btnAdd:hover {
+  background: var(--accent);
+  color: var(--black);
+}
+
+/* Dropdown */
+.dropdownNavbar {
+  position: relative;
+}
+
+.btnMenuDropdown {
+  font-size: 2em;
+  color: var(--white);
+  background: inherit;
+  border: none;
+  padding: 0 4px;
+}
+
+.btnMenuDropdown:hover {
+  background: var(--accent);
+  color: var(--black);
+}
+
+.dropdownNavbar-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.dropdownNavbar-content a {
+  display: block;
+  padding: 8px 12px;
+  border: none;
+}
+
+.dropdownNavbar-content a:hover {
+  background: var(--accent);
+}
+
+.dropdownNavbar:hover .dropdownNavbar-content {
+  display: block;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  header {
+    gap: 10px;
+  }
+
+  .header-left {
+    flex: 1 1 100%;
+    order: 1;
+  }
+
+  .header-left input {
+    width: 100%;
+  }
+
+  .header-right {
+    order: 2;
+    gap: 10px;
+  }
+
+  .header-mid {
+    flex: 1 1 100%;
+    order: 3;
+  }
+
+  .spanHeaderGitOperations {
+    min-width: 150px;
+  }
+
+  header .spanHeaderGitOperations a {
+    font-size: 14px;
+    padding: 2px;
+  }
+}
