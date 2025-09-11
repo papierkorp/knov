@@ -29,28 +29,34 @@ templ Base(title string) {
 
 templ header() {
 	<header>
-		<a class="logo" href="/">K</a>
-		<input placeholder={ translation.Sprintf("Search..") }/>
-		<button class="boardButton boardButtonActive">B1</button>
-		<button class="boardButton">B2</button>
-		<button class="boardButton">B3</button>
-		<span id="headerGitOperations">
-			<a href="/latest-changes">{ translation.Sprintf("Latest Changes") }</a>
-			<a href="/history">{ translation.Sprintf("History") }</a>
-			<a href="/rename">{ translation.Sprintf("Rename") }</a>
-			<a href="/edit">{ translation.Sprintf("Edit") }</a>
-		</span>
-		<a href="/add">+</a>
-		<div class="dropdownNavbar">
-			<button class="btnMenuDropdown">
-				<i class="fa fa-bars" aria-hidden="true"></i>
-			</button>
-			<div class="dropdownNavbar-content">
-				<a href="/">{ translation.Sprintf("Home") }</a>
-				<a href="/help">{ translation.Sprintf("Help") }</a>
-				<a href="/playground">{ translation.Sprintf("Playground") }</a>
-				<a href="/settings">{ translation.Sprintf("Settings") }</a>
-				<a href="/swagger/">Swagger</a>
+		<div class="header-left">
+			<a class="logo" href="/">K</a>
+			<input placeholder={ translation.Sprintf("Search..") }/>
+		</div>
+		<div class="header-mid">
+			<button>B1</button>
+			<button>B2</button>
+			<button>B3</button>
+		</div>
+		<div class="header-right">
+			<span class="spanHeaderGitOperations">
+				<a href="/latest-changes">{ translation.Sprintf("Latest Changes") }</a>
+				<a href="/history">{ translation.Sprintf("History") }</a>
+				<a href="/rename">{ translation.Sprintf("Rename") }</a>
+				<a href="/edit">{ translation.Sprintf("Edit") }</a>
+			</span>
+			<button class="btnAdd" href="/add">+</button>
+			<div class="dropdownNavbar">
+				<button class="btnMenuDropdown">
+					<i class="fa fa-bars" aria-hidden="true"></i>
+				</button>
+				<div class="dropdownNavbar-content">
+					<a href="/">{ translation.Sprintf("Home") }</a>
+					<a href="/help">{ translation.Sprintf("Help") }</a>
+					<a href="/playground">{ translation.Sprintf("Playground") }</a>
+					<a href="/settings">{ translation.Sprintf("Settings") }</a>
+					<a href="/swagger/">Swagger</a>
+				</div>
 			</div>
 		</div>
 	</header>
