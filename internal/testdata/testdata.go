@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/logging"
 )
 
@@ -75,79 +76,36 @@ func createGitOperations() error {
 		}
 	}
 
+	// Copy test files from testfiles directory
+	cmd := exec.Command("cp", "-r", "internal/testdata/testfiles/.", dataDir+"/")
+	if err := cmd.Run(); err != nil {
+		logging.LogError("failed to copy test files: %v", err)
+		return err
+	}
+
 	// Initial commit
-	cmd := exec.Command("git", "add", ".")
-	cmd.Dir = dataDir
-	cmd.Run()
-
-	cmd = exec.Command("git", "commit", "-m", "initial test data", "--allow-empty")
-	cmd.Dir = dataDir
-	cmd.Run()
-
-	// Create test file
-	testFile := filepath.Join(dataDir, "test_created_file.md")
-	os.WriteFile(testFile, []byte("# Test File Created by API"), 0644)
-
-	cmd = exec.Command("git", "add", "test_created_file.md")
-	cmd.Dir = dataDir
-	cmd.Run()
-
-	cmd = exec.Command("git", "commit", "-m", "add dynamically created test file")
-	cmd.Dir = dataDir
-	cmd.Run()
-
-	// Move ai.md to projects
-	os.MkdirAll(filepath.Join(dataDir, "projects"), 0755)
-	os.Rename(filepath.Join(dataDir, "ai.md"), filepath.Join(dataDir, "projects", "ai.md"))
-
 	cmd = exec.Command("git", "add", ".")
 	cmd.Dir = dataDir
 	cmd.Run()
 
-	cmd = exec.Command("git", "commit", "-m", "move ai.md to projects folder", "--allow-empty")
+	cmd = exec.Command("git", "commit", "-m", "initial test documentation", "--allow-empty")
 	cmd.Dir = dataDir
 	cmd.Run()
 
-	// Create project notes
-	projectNotes := filepath.Join(dataDir, "projects", "project_notes.md")
-	os.WriteFile(projectNotes, []byte("# Another Test File"), 0644)
+	// Simulate file change for git history
+	gettingStartedPath := filepath.Join(dataDir, "getting-started.md")
+	if content, err := os.ReadFile(gettingStartedPath); err == nil {
+		updatedContent := string(content) + "\n\n## Recent Updates\n- Added troubleshooting section\n- Improved navigation"
+		os.WriteFile(gettingStartedPath, []byte(updatedContent), 0644)
 
-	cmd = exec.Command("git", "add", "projects/project_notes.md")
-	cmd.Dir = dataDir
-	cmd.Run()
+		cmd = exec.Command("git", "add", "getting-started.md")
+		cmd.Dir = dataDir
+		cmd.Run()
 
-	cmd = exec.Command("git", "commit", "-m", "add project notes")
-	cmd.Dir = dataDir
-	cmd.Run()
-
-	// Remove test file
-	os.Remove(testFile)
-
-	cmd = exec.Command("git", "add", ".")
-	cmd.Dir = dataDir
-	cmd.Run()
-
-	cmd = exec.Command("git", "commit", "-m", "remove test file", "--allow-empty")
-	cmd.Dir = dataDir
-	cmd.Run()
-
-	// Create test files with links
-	child1 := filepath.Join(dataDir, "child1.md")
-	os.WriteFile(child1, []byte("# Child Document\n\nThis links to [[projects/ai.md]]"), 0644)
-
-	child2 := filepath.Join(dataDir, "child2.md")
-	os.WriteFile(child2, []byte("# Child Document 2\n\nThis also links to [[projects/ai.md]]"), 0644)
-
-	grandchild := filepath.Join(dataDir, "grandchild.md")
-	os.WriteFile(grandchild, []byte("# Grandchild\n\nParent: [[child1.md]]"), 0644)
-
-	cmd = exec.Command("git", "add", "*.md")
-	cmd.Dir = dataDir
-	cmd.Run()
-
-	cmd = exec.Command("git", "commit", "-m", "add test files with parent relationships")
-	cmd.Dir = dataDir
-	cmd.Run()
+		cmd = exec.Command("git", "commit", "-m", "update getting started guide")
+		cmd.Dir = dataDir
+		cmd.Run()
+	}
 
 	return nil
 }
@@ -160,64 +118,202 @@ func setupTestMetadata() error {
 	}
 
 	metadata := `{
-  "data/child1.md": {
-    "name": "child1.md",
-    "path": "data/child1.md",
+  "data/getting-started.md": {
+    "name": "getting-started.md",
+    "path": "data/getting-started.md",
     "createdAt": "2025-09-08T21:00:00Z",
     "lastEdited": "2025-09-08T21:00:00Z",
-    "project": "test",
+    "project": "documentation",
     "folders": [],
-    "tags": [],
+    "tags": ["guide", "onboarding", "getting-started"],
     "boards": ["default"],
     "ancestor": [],
-    "parents": ["data/projects/ai.md"],
+    "parents": [],
     "kids": [],
     "usedLinks": [],
     "linksToHere": [],
     "type": "note",
     "status": "published",
-    "priority": "medium",
-    "size": 100
+    "priority": "high",
+    "size": 0
   },
-  "data/child2.md": {
-    "name": "child2.md",
-    "path": "data/child2.md",
-    "createdAt": "2025-09-08T21:00:00Z",
-    "lastEdited": "2025-09-08T21:00:00Z",
-    "project": "test",
+  "data/project-overview.md": {
+    "name": "project-overview.md", 
+    "path": "data/project-overview.md",
+    "createdAt": "2025-09-08T20:00:00Z",
+    "lastEdited": "2025-09-08T22:00:00Z",
+    "project": "management",
     "folders": [],
-    "tags": [],
-    "boards": ["default"],
+    "tags": ["project", "overview", "status"],
+    "boards": ["default", "management"],
     "ancestor": [],
-    "parents": ["data/projects/ai.md"],
+    "parents": [],
     "kids": [],
     "usedLinks": [],
     "linksToHere": [],
     "type": "note",
     "status": "published",
-    "priority": "medium",
-    "size": 100
+    "priority": "high",
+    "size": 0
   },
-  "data/grandchild.md": {
-    "name": "grandchild.md",
-    "path": "data/grandchild.md",
-    "createdAt": "2025-09-08T21:00:00Z",
-    "lastEdited": "2025-09-08T21:00:00Z",
-    "project": "test",
+  "data/technical-documentation.md": {
+    "name": "technical-documentation.md",
+    "path": "data/technical-documentation.md",
+    "createdAt": "2025-09-08T19:00:00Z",
+    "lastEdited": "2025-09-08T23:00:00Z",
+    "project": "technical",
     "folders": [],
-    "tags": [],
-    "boards": ["default"],
+    "tags": ["technical", "api", "documentation"],
+    "boards": ["default", "technical"],
     "ancestor": [],
-    "parents": ["data/child1.md"],
+    "parents": [],
     "kids": [],
     "usedLinks": [],
     "linksToHere": [],
     "type": "note",
     "status": "published",
     "priority": "medium",
-    "size": 100
+    "size": 0
+  },
+  "data/meeting-notes.md": {
+    "name": "meeting-notes.md",
+    "path": "data/meeting-notes.md",
+    "createdAt": "2025-09-11T10:00:00Z",
+    "lastEdited": "2025-09-11T15:00:00Z",
+    "project": "management",
+    "folders": [],
+    "tags": ["meeting", "sprint", "planning"],
+    "boards": ["default", "meetings"],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [],
+    "linksToHere": [],
+    "type": "note",
+    "status": "published",
+    "priority": "medium",
+    "size": 0
+  },
+  "data/troubleshooting.md": {
+    "name": "troubleshooting.md",
+    "path": "data/troubleshooting.md",
+    "createdAt": "2025-09-07T14:00:00Z",
+    "lastEdited": "2025-09-10T16:00:00Z",
+    "project": "support",
+    "folders": [],
+    "tags": ["troubleshooting", "help", "debug"],
+    "boards": ["default", "support"],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [],
+    "linksToHere": [],
+    "type": "note",
+    "status": "published",
+    "priority": "high",
+    "size": 0
+  },
+  "data/projects/backend-api.md": {
+    "name": "backend-api.md",
+    "path": "data/projects/backend-api.md",
+    "createdAt": "2025-09-05T09:00:00Z",
+    "lastEdited": "2025-09-11T14:00:00Z",
+    "project": "backend",
+    "folders": ["projects"],
+    "tags": ["backend", "api", "development", "in-progress"],
+    "boards": ["default", "development"],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [],
+    "linksToHere": [],
+    "type": "todo",
+    "status": "draft",
+    "priority": "high",
+    "size": 0
+  },
+  "data/projects/frontend-redesign.md": {
+    "name": "frontend-redesign.md",
+    "path": "data/projects/frontend-redesign.md",
+    "createdAt": "2025-09-06T11:00:00Z",
+    "lastEdited": "2025-09-09T17:00:00Z",
+    "project": "frontend",
+    "folders": ["projects"],
+    "tags": ["frontend", "ui", "redesign", "planning"],
+    "boards": ["default", "design"],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [],
+    "linksToHere": [],
+    "type": "todo",
+    "status": "draft",
+    "priority": "medium",
+    "size": 0
+  },
+  "data/projects/database-migration.md": {
+    "name": "database-migration.md",
+    "path": "data/projects/database-migration.md",
+    "createdAt": "2025-08-15T08:00:00Z",
+    "lastEdited": "2025-09-01T12:00:00Z",
+    "project": "infrastructure",
+    "folders": ["projects"],
+    "tags": ["database", "migration", "completed", "infrastructure"],
+    "boards": ["default", "infrastructure"],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [],
+    "linksToHere": [],
+    "type": "note",
+    "status": "published",
+    "priority": "high",
+    "size": 0
+  },
+  "data/guides/user-manual.md": {
+    "name": "user-manual.md",
+    "path": "data/guides/user-manual.md",
+    "createdAt": "2025-09-04T13:00:00Z",
+    "lastEdited": "2025-09-08T18:00:00Z",
+    "project": "documentation",
+    "folders": ["guides"],
+    "tags": ["user", "manual", "guide", "help"],
+    "boards": ["default", "documentation"],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [],
+    "linksToHere": [],
+    "type": "note",
+    "status": "published",
+    "priority": "medium",
+    "size": 0
+  },
+  "data/guides/developer-setup.md": {
+    "name": "developer-setup.md",
+    "path": "data/guides/developer-setup.md",
+    "createdAt": "2025-09-03T16:00:00Z",
+    "lastEdited": "2025-09-07T10:00:00Z",
+    "project": "technical",
+    "folders": ["guides"],
+    "tags": ["developer", "setup", "guide", "technical"],
+    "boards": ["default", "technical"],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [],
+    "linksToHere": [],
+    "type": "note",
+    "status": "published",
+    "priority": "medium",
+    "size": 0
   }
 }`
 
-	return os.WriteFile("config/.metadata/metadata.json", []byte(metadata), 0644)
+	if err := os.WriteFile("config/.metadata/metadata.json", []byte(metadata), 0644); err != nil {
+		return err
+	}
+
+	// Let the app automatically detect and create links
+	return files.MetaDataLinksRebuild()
 }

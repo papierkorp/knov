@@ -2,6 +2,7 @@
 
 # todo
 
+- change the filter to return html instead of json
 - metadata
   - metadata for json, markdown header, sqlite, postgresql
   - metadata struct:

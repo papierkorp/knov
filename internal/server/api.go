@@ -260,6 +260,71 @@ func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 	w.Write(html)
 }
 
+// @Summary Filter files by metadata
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Produce json
+// @Param metadata[] formData []string false "Metadata fields to filter on"
+// @Param operator[] formData []string false "Filter operators (equals, contains, greater, less, in)"
+// @Param value[] formData []string false "Filter values"
+// @Param logic[] formData []string false "Logic operators (and, or)"
+// @Param action[] formData []string false "Filter actions (include, exclude)"
+// @Success 200 {array} files.File
+// @Router /api/files/filter [post]
+func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug("filter request received")
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	logging.LogDebug("form data: %+v", r.Form)
+
+	var criteria []files.FilterCriteria
+	metadata := r.Form["metadata[]"]
+	operators := r.Form["operator[]"]
+	values := r.Form["value[]"]
+	logic := r.Form["logic[]"]
+	actions := r.Form["action[]"]
+
+	logging.LogDebug("metadata: %v, operators: %v, values: %v", metadata, operators, values)
+
+	maxLen := len(metadata)
+	for i := 0; i < maxLen; i++ {
+		if i < len(operators) && i < len(values) && metadata[i] != "" && operators[i] != "" {
+			criteria = append(criteria, files.FilterCriteria{
+				Metadata: metadata[i],
+				Operator: operators[i],
+				Value:    values[i],
+				Logic:    getFormValue(logic, i),
+				Action:   getFormValue(actions, i),
+			})
+		}
+	}
+
+	logging.LogDebug("built %d filter criteria: %+v", len(criteria), criteria)
+
+	filteredFiles, err := files.FilterFilesByMetadata(criteria)
+	if err != nil {
+		logging.LogError("failed to filter files: %v", err)
+		http.Error(w, "failed to filter files", http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogDebug("filtered %d files", len(filteredFiles))
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(filteredFiles)
+}
+
+func getFormValue(slice []string, index int) string {
+	if index < len(slice) {
+		return slice[index]
+	}
+	return ""
+}
+
 // ----------------------------------------------------------------------------------------
 // ------------------------------------------ git ------------------------------------------
 // ----------------------------------------------------------------------------------------

@@ -36,6 +36,7 @@ type Metadata struct {
 	Path        string    `json:"path"`
 	CreatedAt   time.Time `json:"createdAt"`
 	LastEdited  time.Time `json:"lastEdited"`
+	TargetDate  time.Time `json:"targetDate"`
 	Project     string    `json:"project"`
 	Folders     []string  `json:"folders"`
 	Tags        []string  `json:"tags"`

@@ -91,6 +91,83 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/files/filter": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Filter files by metadata",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Metadata fields to filter on",
+                        "name": "metadata[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Filter operators (equals, contains, greater, less, in)",
+                        "name": "operator[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Filter values",
+                        "name": "value[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Logic operators (and, or)",
+                        "name": "logic[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Filter actions (include, exclude)",
+                        "name": "action[]",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/files.File"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/list": {
             "get": {
                 "produces": [
@@ -338,6 +415,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "files.File": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "$ref": "#/definitions/files.Metadata"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
         "files.Metadata": {
             "type": "object",
             "properties": {
@@ -406,6 +497,9 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "targetDate": {
+                    "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/files.filetype"

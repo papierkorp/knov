@@ -93,7 +93,7 @@ func StartServerChi() {
 			r.Get("/metadata", handleAPIGetMetadata)
 			r.Post("/metadata", handleAPISetMetadata)
 			r.Post("/metadata/rebuild", handleAPIRebuildMetadata)
-
+			r.Post("/filter", handleAPIFilterFiles)
 		})
 
 		// ----------------------------------------------------------------------------------------

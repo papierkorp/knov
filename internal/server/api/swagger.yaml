@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  files.File:
+    properties:
+      metadata:
+        $ref: '#/definitions/files.Metadata'
+      name:
+        type: string
+      path:
+        type: string
+    type: object
   files.Metadata:
     properties:
       ancestor:
@@ -46,6 +55,8 @@ definitions:
         items:
           type: string
         type: array
+      targetDate:
+        type: string
       type:
         $ref: '#/definitions/files.filetype'
       usedLinks:
@@ -138,6 +149,58 @@ paths:
       - text/html
       responses: {}
       summary: Get file content as html
+      tags:
+      - files
+  /api/files/filter:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - collectionFormat: csv
+        description: Metadata fields to filter on
+        in: formData
+        items:
+          type: string
+        name: metadata[]
+        type: array
+      - collectionFormat: csv
+        description: Filter operators (equals, contains, greater, less, in)
+        in: formData
+        items:
+          type: string
+        name: operator[]
+        type: array
+      - collectionFormat: csv
+        description: Filter values
+        in: formData
+        items:
+          type: string
+        name: value[]
+        type: array
+      - collectionFormat: csv
+        description: Logic operators (and, or)
+        in: formData
+        items:
+          type: string
+        name: logic[]
+        type: array
+      - collectionFormat: csv
+        description: Filter actions (include, exclude)
+        in: formData
+        items:
+          type: string
+        name: action[]
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/files.File'
+            type: array
+      summary: Filter files by metadata
       tags:
       - files
   /api/files/list:

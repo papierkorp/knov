@@ -1,59 +1,379 @@
 {
-  "data/child1.md": {
-    "name": "child1.md",
-    "path": "data/child1.md",
+  "data/getting-started.md": {
+    "name": "getting-started.md",
+    "path": "data/getting-started.md",
     "createdAt": "2025-09-08T21:00:00Z",
-    "lastEdited": "2025-09-08T21:00:00Z",
-    "project": "test",
-    "folders": [],
-    "tags": [],
-    "boards": ["default"],
+    "lastEdited": "2025-09-11T23:22:30.096521636+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "documentation",
+    "folders": [
+      "data"
+    ],
+    "tags": [
+      "guide",
+      "onboarding",
+      "getting-started"
+    ],
+    "boards": [
+      "default"
+    ],
     "ancestor": [],
-    "parents": ["data/projects/ai.md"],
+    "parents": [],
     "kids": [],
-    "usedLinks": [],
+    "usedLinks": [
+      "data/technical-documentation.md",
+      "data/troubleshooting.md",
+      "data/project-overview.md",
+      "data/meeting-notes.md"
+    ],
     "linksToHere": [],
     "type": "note",
     "status": "published",
-    "priority": "medium",
-    "size": 100
+    "priority": "high",
+    "size": 902
   },
-  "data/child2.md": {
-    "name": "child2.md",
-    "path": "data/child2.md",
-    "createdAt": "2025-09-08T21:00:00Z",
-    "lastEdited": "2025-09-08T21:00:00Z",
-    "project": "test",
-    "folders": [],
-    "tags": [],
-    "boards": ["default"],
+  "data/guides/developer-setup.md": {
+    "name": "developer-setup.md",
+    "path": "data/guides/developer-setup.md",
+    "createdAt": "2025-09-03T16:00:00Z",
+    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "technical",
+    "folders": [
+      "data",
+      "guides"
+    ],
+    "tags": [
+      "developer",
+      "setup",
+      "guide",
+      "technical"
+    ],
+    "boards": [
+      "default",
+      "technical"
+    ],
     "ancestor": [],
-    "parents": ["data/projects/ai.md"],
+    "parents": [],
     "kids": [],
-    "usedLinks": [],
+    "usedLinks": [
+      "data/technical-documentation.md",
+      "data/project-overview.md",
+      "data/troubleshooting.md"
+    ],
     "linksToHere": [],
     "type": "note",
     "status": "published",
     "priority": "medium",
-    "size": 100
+    "size": 1423
   },
-  "data/grandchild.md": {
-    "name": "grandchild.md",
-    "path": "data/grandchild.md",
-    "createdAt": "2025-09-08T21:00:00Z",
-    "lastEdited": "2025-09-08T21:00:00Z",
-    "project": "test",
-    "folders": [],
-    "tags": [],
-    "boards": ["default"],
+  "data/guides/user-manual.md": {
+    "name": "user-manual.md",
+    "path": "data/guides/user-manual.md",
+    "createdAt": "2025-09-04T13:00:00Z",
+    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "documentation",
+    "folders": [
+      "data",
+      "guides"
+    ],
+    "tags": [
+      "user",
+      "manual",
+      "guide",
+      "help"
+    ],
+    "boards": [
+      "default",
+      "documentation"
+    ],
     "ancestor": [],
-    "parents": ["data/child1.md"],
+    "parents": [],
     "kids": [],
-    "usedLinks": [],
+    "usedLinks": [
+      "data/meeting-notes.md",
+      "data/getting-started.md",
+      "data/troubleshooting.md",
+      "data/technical-documentation.md"
+    ],
     "linksToHere": [],
     "type": "note",
     "status": "published",
     "priority": "medium",
-    "size": 100
+    "size": 1370
+  },
+  "data/meeting-notes.md": {
+    "name": "meeting-notes.md",
+    "path": "data/meeting-notes.md",
+    "createdAt": "2025-09-11T10:00:00Z",
+    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "management",
+    "folders": [
+      "data"
+    ],
+    "tags": [
+      "meeting",
+      "sprint",
+      "planning"
+    ],
+    "boards": [
+      "default",
+      "meetings"
+    ],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [
+      "data/project-overview.md",
+      "data/technical-documentation.md",
+      "data/getting-started.md",
+      "data/troubleshooting.md"
+    ],
+    "linksToHere": [
+      "data/getting-started.md",
+      "data/guides/user-manual.md"
+    ],
+    "type": "note",
+    "status": "published",
+    "priority": "medium",
+    "size": 1213
+  },
+  "data/project-overview.md": {
+    "name": "project-overview.md",
+    "path": "data/project-overview.md",
+    "createdAt": "2025-09-08T20:00:00Z",
+    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "management",
+    "folders": [
+      "data"
+    ],
+    "tags": [
+      "project",
+      "overview",
+      "status"
+    ],
+    "boards": [
+      "default",
+      "management"
+    ],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [
+      "data/projects/database-migration.md",
+      "data/troubleshooting.md",
+      "data/guides/developer-setup.md",
+      "data/projects/backend-api.md",
+      "data/projects/frontend-redesign.md"
+    ],
+    "linksToHere": [
+      "data/getting-started.md",
+      "data/guides/developer-setup.md",
+      "data/meeting-notes.md"
+    ],
+    "type": "note",
+    "status": "published",
+    "priority": "high",
+    "size": 956
+  },
+  "data/projects/backend-api.md": {
+    "name": "backend-api.md",
+    "path": "data/projects/backend-api.md",
+    "createdAt": "2025-09-05T09:00:00Z",
+    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "backend",
+    "folders": [
+      "data",
+      "projects"
+    ],
+    "tags": [
+      "backend",
+      "api",
+      "development",
+      "in-progress"
+    ],
+    "boards": [
+      "default",
+      "development"
+    ],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [
+      "data/project-overview.md",
+      "data/projects/database-migration.md",
+      "data/projects/frontend-redesign.md",
+      "data/meeting-notes.md"
+    ],
+    "linksToHere": [
+      "data/project-overview.md"
+    ],
+    "type": "todo",
+    "status": "draft",
+    "priority": "high",
+    "size": 900
+  },
+  "data/projects/database-migration.md": {
+    "name": "database-migration.md",
+    "path": "data/projects/database-migration.md",
+    "createdAt": "2025-08-15T08:00:00Z",
+    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "infrastructure",
+    "folders": [
+      "data",
+      "projects"
+    ],
+    "tags": [
+      "database",
+      "migration",
+      "completed",
+      "infrastructure"
+    ],
+    "boards": [
+      "default",
+      "infrastructure"
+    ],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [
+      "data/project-overview.md",
+      "data/projects/backend-api.md",
+      "data/projects/frontend-redesign.md",
+      "data/troubleshooting.md"
+    ],
+    "linksToHere": [
+      "data/project-overview.md",
+      "data/projects/backend-api.md"
+    ],
+    "type": "note",
+    "status": "published",
+    "priority": "high",
+    "size": 1082
+  },
+  "data/projects/frontend-redesign.md": {
+    "name": "frontend-redesign.md",
+    "path": "data/projects/frontend-redesign.md",
+    "createdAt": "2025-09-06T11:00:00Z",
+    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "frontend",
+    "folders": [
+      "data",
+      "projects"
+    ],
+    "tags": [
+      "frontend",
+      "ui",
+      "redesign",
+      "planning"
+    ],
+    "boards": [
+      "default",
+      "design"
+    ],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [
+      "data/project-overview.md",
+      "data/projects/backend-api.md",
+      "data/technical-documentation.md"
+    ],
+    "linksToHere": [
+      "data/project-overview.md",
+      "data/projects/backend-api.md",
+      "data/projects/database-migration.md"
+    ],
+    "type": "todo",
+    "status": "draft",
+    "priority": "medium",
+    "size": 861
+  },
+  "data/technical-documentation.md": {
+    "name": "technical-documentation.md",
+    "path": "data/technical-documentation.md",
+    "createdAt": "2025-09-08T19:00:00Z",
+    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "technical",
+    "folders": [
+      "data"
+    ],
+    "tags": [
+      "technical",
+      "api",
+      "documentation"
+    ],
+    "boards": [
+      "default",
+      "technical"
+    ],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [
+      "data/project-overview.md",
+      "data/troubleshooting.md",
+      "data/meeting-notes.md"
+    ],
+    "linksToHere": [
+      "data/getting-started.md",
+      "data/guides/developer-setup.md",
+      "data/guides/user-manual.md",
+      "data/meeting-notes.md",
+      "data/projects/frontend-redesign.md"
+    ],
+    "type": "note",
+    "status": "published",
+    "priority": "medium",
+    "size": 1289
+  },
+  "data/troubleshooting.md": {
+    "name": "troubleshooting.md",
+    "path": "data/troubleshooting.md",
+    "createdAt": "2025-09-07T14:00:00Z",
+    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "support",
+    "folders": [
+      "data"
+    ],
+    "tags": [
+      "troubleshooting",
+      "help",
+      "debug"
+    ],
+    "boards": [
+      "default",
+      "support"
+    ],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [
+      "data/meeting-notes.md",
+      "data/technical-documentation.md",
+      "data/getting-started.md",
+      "data/guides/user-manual.md"
+    ],
+    "linksToHere": [
+      "data/getting-started.md",
+      "data/guides/developer-setup.md",
+      "data/guides/user-manual.md",
+      "data/meeting-notes.md",
+      "data/project-overview.md",
+      "data/projects/database-migration.md",
+      "data/technical-documentation.md"
+    ],
+    "type": "note",
+    "status": "published",
+    "priority": "high",
+    "size": 1751
   }
 }
