@@ -103,6 +103,9 @@ info:
 paths:
   /api/config/getConfig:
     get:
+      produces:
+      - application/json
+      - text/html
       responses: {}
       summary: Get current configuration
       tags:
@@ -111,6 +114,7 @@ paths:
     get:
       produces:
       - application/json
+      - text/html
       responses:
         "200":
           description: OK
@@ -121,18 +125,33 @@ paths:
       - config
   /api/config/setConfig:
     post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      - text/html
       responses: {}
       summary: Set configuration
       tags:
       - config
   /api/config/setLanguage:
     post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      - text/html
       responses: {}
       summary: Set language
       tags:
       - config
   /api/config/setRepositoryURL:
     post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      - text/html
       responses: {}
       summary: Set git repository URL
       tags:
@@ -193,6 +212,7 @@ paths:
         type: array
       produces:
       - application/json
+      - text/html
       responses:
         "200":
           description: OK
@@ -207,6 +227,7 @@ paths:
     get:
       produces:
       - application/json
+      - text/html
       responses: {}
       summary: Get all files
       tags:
@@ -222,6 +243,7 @@ paths:
         type: string
       produces:
       - application/json
+      - text/html
       responses:
         "200":
           description: OK
@@ -255,6 +277,7 @@ paths:
           $ref: '#/definitions/files.Metadata'
       produces:
       - application/json
+      - text/html
       responses:
         "200":
           description: metadata saved
@@ -276,6 +299,7 @@ paths:
       description: Creates metadata for all files that don't have metadata yet
       produces:
       - application/json
+      - text/html
       responses:
         "200":
           description: metadata initialized
@@ -290,12 +314,18 @@ paths:
       - files
   /api/git/history:
     get:
+      produces:
+      - application/json
+      - text/html
       responses: {}
       summary: Get recently changed files
       tags:
       - git
   /api/health:
     get:
+      produces:
+      - application/json
+      - text/html
       responses: {}
       summary: Health check
       tags:
@@ -305,6 +335,7 @@ paths:
       description: Removes all test data files and metadata
       produces:
       - application/json
+      - text/html
       responses:
         "200":
           description: '{"status":"ok","message":"test data cleaned"}'
@@ -322,6 +353,7 @@ paths:
       description: Creates test files, git operations, and metadata for testing
       produces:
       - application/json
+      - text/html
       responses:
         "200":
           description: '{"status":"ok","message":"test data setup completed"}'
@@ -339,6 +371,7 @@ paths:
       description: Get current theme and available themes
       produces:
       - application/json
+      - text/html
       responses:
         "200":
           description: '{"current":"themename","available":["theme1","theme2"]}'
@@ -358,6 +391,9 @@ paths:
         name: theme
         required: true
         type: string
+      produces:
+      - application/json
+      - text/html
       responses:
         "303":
           description: Redirect to settings page

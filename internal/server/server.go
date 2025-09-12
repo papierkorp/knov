@@ -10,6 +10,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/swaggo/http-swagger/v2"
+	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/plugins"
 	_ "knov/internal/server/api" // swaggo api docs
 	"knov/internal/thememanager"
@@ -39,6 +41,8 @@ func StartServerChi() {
 	r.Get("/latest-changes", handleLatestChanges)
 	r.Get("/history", handleHistory)
 	r.Get("/overview", handleOverview)
+
+	r.Get("/files/*", handleFileContent)
 
 	// ----------------------------------------------------------------------------------------
 	// ------------------------------------- static routes -------------------------------------
@@ -240,6 +244,37 @@ func handleOverview(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Failed to render template", http.StatusInternalServerError)
 		fmt.Printf("Error rendering template: %v\n", err)
+		return
+	}
+}
+
+func handleFileContent(w http.ResponseWriter, r *http.Request) {
+	filePath := strings.TrimPrefix(r.URL.Path, "/files/")
+	dataDir := configmanager.DataPath
+	fullPath := filepath.Join(dataDir, filePath)
+
+	content, err := files.GetFileContent(fullPath)
+	if err != nil {
+		http.Error(w, "failed to get file content", http.StatusInternalServerError)
+		return
+	}
+
+	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write(content)
+		return
+	}
+
+	filename := filepath.Base(filePath)
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().FileView(string(content), filename)
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+
+	err = component.Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
 		return
 	}
 }

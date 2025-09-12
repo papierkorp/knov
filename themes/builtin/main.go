@@ -70,7 +70,7 @@ func (t *Builtin) History() (templ.Component, error) {
 	return templates.History(td), nil
 }
 
-// History ...
+// Overview ...
 func (t *Builtin) Overview() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
@@ -79,6 +79,17 @@ func (t *Builtin) Overview() (templ.Component, error) {
 	}
 
 	return templates.Overview(td), nil
+}
+
+// FileView ...
+func (t *Builtin) FileView(content string, filename string) (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.FileView(content, filename, td), nil
 }
 
 func main() {}

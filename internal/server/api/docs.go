@@ -17,6 +17,10 @@ const docTemplate = `{
     "paths": {
         "/api/config/getConfig": {
             "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "config"
                 ],
@@ -27,7 +31,8 @@ const docTemplate = `{
         "/api/config/getRepositoryURL": {
             "get": {
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "config"
@@ -45,6 +50,13 @@ const docTemplate = `{
         },
         "/api/config/setConfig": {
             "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "config"
                 ],
@@ -54,6 +66,13 @@ const docTemplate = `{
         },
         "/api/config/setLanguage": {
             "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "config"
                 ],
@@ -63,6 +82,13 @@ const docTemplate = `{
         },
         "/api/config/setRepositoryURL": {
             "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "config"
                 ],
@@ -97,7 +123,8 @@ const docTemplate = `{
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -171,7 +198,8 @@ const docTemplate = `{
         "/api/files/list": {
             "get": {
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -184,7 +212,8 @@ const docTemplate = `{
             "get": {
                 "description": "Get metadata for a file by providing filepath as query parameter",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -232,7 +261,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -275,7 +305,8 @@ const docTemplate = `{
             "post": {
                 "description": "Creates metadata for all files that don't have metadata yet",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -299,6 +330,10 @@ const docTemplate = `{
         },
         "/api/git/history": {
             "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "git"
                 ],
@@ -308,6 +343,10 @@ const docTemplate = `{
         },
         "/api/health": {
             "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "health"
                 ],
@@ -319,7 +358,8 @@ const docTemplate = `{
             "post": {
                 "description": "Removes all test data files and metadata",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "testdata"
@@ -345,7 +385,8 @@ const docTemplate = `{
             "post": {
                 "description": "Creates test files, git operations, and metadata for testing",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "testdata"
@@ -371,7 +412,8 @@ const docTemplate = `{
             "get": {
                 "description": "Get current theme and available themes",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "themes"
@@ -392,6 +434,10 @@ const docTemplate = `{
                 "description": "Set new theme via form parameter",
                 "consumes": [
                     "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "themes"

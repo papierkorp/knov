@@ -1,0 +1,15 @@
+package templates
+
+import "knov/internal/thememanager"
+
+templ FileView(content string, filename string, data thememanager.TemplateData) {
+	<div class="file-container">
+		<ul>
+			<li><a href="/">Home</a></li>
+			<li><a href="/settings">Settings</a></li>
+		</ul>
+		<article class="file-content">
+			@templ.Raw(content)
+		</article>
+	</div>
+}

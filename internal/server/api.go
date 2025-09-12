@@ -20,16 +20,30 @@ import (
 	"knov/internal/translation"
 )
 
+func writeResponse(w http.ResponseWriter, r *http.Request, jsonData any, htmlData string) {
+	acceptHeader := r.Header.Get("Accept")
+
+	if strings.Contains(acceptHeader, "text/html") || strings.Contains(acceptHeader, "*/*") {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(htmlData))
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(jsonData)
+	}
+}
+
 // ----------------------------------------------------------------------------------------
 // ---------------------------------------- health ----------------------------------------
 // ----------------------------------------------------------------------------------------
 
 // @Summary Health check
 // @Tags health
+// @Produce json,html
 // @Router /api/health [get]
 func handleAPIHealth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"status":"ok"}`))
+	data := map[string]string{"status": "ok"}
+	html := `<span class="health-ok">OK</span>`
+	writeResponse(w, r, data, html)
 }
 
 // ----------------------------------------------------------------------------------------
@@ -38,16 +52,25 @@ func handleAPIHealth(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Get current configuration
 // @Tags config
+// @Produce json,html
 // @Router /api/config/getConfig [get]
 func handleAPIGetConfig(w http.ResponseWriter, r *http.Request) {
 	config := configmanager.GetConfig()
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(config)
+	var html strings.Builder
+	html.WriteString("<div class='config'>")
+	html.WriteString(fmt.Sprintf("<p>Theme: %s</p>", config.Themes.CurrentTheme))
+	html.WriteString(fmt.Sprintf("<p>Language: %s</p>", config.General.Language))
+	html.WriteString(fmt.Sprintf("<p>Repository: %s</p>", config.Git.RepositoryURL))
+	html.WriteString("</div>")
+
+	writeResponse(w, r, config, html.String())
 }
 
 // @Summary Set configuration
 // @Tags config
+// @Accept json
+// @Produce json,html
 // @Router /api/config/setConfig [post]
 func handleAPISetConfig(w http.ResponseWriter, r *http.Request) {
 	var config configmanager.ConfigManager
@@ -59,13 +82,15 @@ func handleAPISetConfig(w http.ResponseWriter, r *http.Request) {
 
 	configmanager.SetConfig(config)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	data := map[string]string{"status": "ok"}
+	html := `<span class="status-ok">Configuration saved</span>`
+	writeResponse(w, r, data, html)
 }
 
 // @Summary Set language
 // @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
 // @Router /api/config/setLanguage [post]
 func handleAPISetLanguage(w http.ResponseWriter, r *http.Request) {
 	lang := r.FormValue("language")
@@ -83,7 +108,7 @@ func handleAPISetLanguage(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Get git repository URL
 // @Tags config
-// @Produce json
+// @Produce json,html
 // @Success 200 {object} string
 // @Router /api/config/getRepositoryURL [get]
 func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
@@ -105,14 +130,14 @@ func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 		repositoryURL = strings.TrimSpace(string(output))
 	}
 
-	response := repositoryURL
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	html := fmt.Sprintf(`<span class="repo-url">%s</span>`, repositoryURL)
+	writeResponse(w, r, repositoryURL, html)
 }
 
 // @Summary Set git repository URL
 // @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
 // @Router /api/config/setRepositoryURL [post]
 func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
@@ -164,8 +189,9 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	config.RepositoryURL = repositoryURL
 	configmanager.SetConfigGit(config)
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Saved"))
+	data := "Saved"
+	html := `<span class="status-ok">Repository URL saved</span>`
+	writeResponse(w, r, data, html)
 }
 
 // ----------------------------------------------------------------------------------------
@@ -175,7 +201,7 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 // @Summary Get themes
 // @Description Get current theme and available themes
 // @Tags themes
-// @Produce json
+// @Produce json,html
 // @Success 200 {string} string "{"current":"themename","available":["theme1","theme2"]}"
 // @Router /api/themes/getAllThemes [get]
 func handleAPIGetThemes(w http.ResponseWriter, r *http.Request) {
@@ -189,15 +215,23 @@ func handleAPIGetThemes(w http.ResponseWriter, r *http.Request) {
 		Available: tm.GetAvailableThemes(),
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	var html strings.Builder
+	html.WriteString(fmt.Sprintf("<p>Current: <strong>%s</strong></p>", response.Current))
+	html.WriteString("<ul>")
+	for _, theme := range response.Available {
+		html.WriteString(fmt.Sprintf(`<li>%s</li>`, theme))
+	}
+	html.WriteString("</ul>")
+
+	writeResponse(w, r, response, html.String())
 }
 
 // @Summary Set theme
 // @Description Set new theme via form parameter
 // @Tags themes
-// @Accept x-www-form-urlencoded
+// @Accept application/x-www-form-urlencoded
 // @Param theme formData string true "Theme name to set"
+// @Produce json,html
 // @Success 303 "Redirect to settings page"
 // @Router /api/themes/setTheme [post]
 func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
@@ -224,7 +258,7 @@ func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Get all files
 // @Tags files
-// @Produce json
+// @Produce json,html
 // @Router /api/files/list [get]
 func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	files, err := files.GetAllFiles()
@@ -233,8 +267,16 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(files)
+	var html strings.Builder
+	html.WriteString("<ul>")
+	for _, file := range files {
+		html.WriteString(fmt.Sprintf(`<li><a href="#" hx-get="/files/%s?snippet=true" hx-target="#file-content">%s</a></li>`,
+			strings.TrimPrefix(file.Path, "data/"),
+			strings.TrimPrefix(file.Path, "data/")))
+	}
+	html.WriteString("</ul>")
+
+	writeResponse(w, r, files, html.String())
 }
 
 // @Summary Get file content as html
@@ -243,11 +285,8 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 // @Produce text/html
 // @Router /api/files/content/{filepath} [get]
 func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
-
 	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/content/")
-
 	dataDir := configmanager.DataPath
-
 	fullPath := filepath.Join(dataDir, filePath)
 
 	html, err := files.GetFileContent(fullPath)
@@ -263,7 +302,7 @@ func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 // @Summary Filter files by metadata
 // @Tags files
 // @Accept application/x-www-form-urlencoded
-// @Produce json
+// @Produce json,html
 // @Param metadata[] formData []string false "Metadata fields to filter on"
 // @Param operator[] formData []string false "Filter operators (equals, contains, greater, less, in)"
 // @Param value[] formData []string false "Filter values"
@@ -314,8 +353,16 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogDebug("filtered %d files", len(filteredFiles))
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(filteredFiles)
+	var html strings.Builder
+	html.WriteString("<ul>")
+	for _, file := range filteredFiles {
+		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s">%s</a></li>`,
+			strings.TrimPrefix(file.Path, "data/"),
+			strings.TrimPrefix(file.Path, "data/")))
+	}
+	html.WriteString("</ul>")
+
+	writeResponse(w, r, filteredFiles, html.String())
 }
 
 func getFormValue(slice []string, index int) string {
@@ -331,6 +378,7 @@ func getFormValue(slice []string, index int) string {
 
 // @Summary Get recently changed files
 // @Tags git
+// @Produce json,html
 // @Router /api/git/history [get]
 func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 	countStr := r.URL.Query().Get("count")
@@ -347,8 +395,18 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(files)
+	var html strings.Builder
+	html.WriteString("<ul>")
+	for _, file := range files {
+		html.WriteString(fmt.Sprintf(`<li>%s - <a href="/files/%s"><strong>%s</strong></a> (%s)</li>`,
+			file.Date,
+			strings.TrimPrefix(file.Path, "data/"),
+			file.Name,
+			file.Message))
+	}
+	html.WriteString("</ul>")
+
+	writeResponse(w, r, files, html.String())
 }
 
 // ----------------------------------------------------------------------------------------
@@ -358,7 +416,7 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 // @Summary Get metadata for a single file
 // @Description Get metadata for a file by providing filepath as query parameter
 // @Tags files
-// @Produce json
+// @Produce json,html
 // @Param filepath query string true "File path"
 // @Success 200 {object} files.Metadata
 // @Failure 400 {string} string "missing filepath parameter"
@@ -383,30 +441,32 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(metadata)
+	var html strings.Builder
+	html.WriteString("<div class='metadata'>")
+	html.WriteString(fmt.Sprintf("<p>Path: %s</p>", metadata.Path))
+	html.WriteString(fmt.Sprintf("<p>Project: %s</p>", metadata.Project))
+	html.WriteString(fmt.Sprintf("<p>Type: %s</p>", metadata.FileType))
+	html.WriteString(fmt.Sprintf("<p>Status: %s</p>", metadata.Status))
+	html.WriteString(fmt.Sprintf("<p>Priority: %s</p>", metadata.Priority))
+	if len(metadata.Tags) > 0 {
+		html.WriteString(fmt.Sprintf("<p>Tags: %s</p>", strings.Join(metadata.Tags, ", ")))
+	}
+	html.WriteString("</div>")
+
+	writeResponse(w, r, metadata, html.String())
 }
 
 // @Summary Set metadata for a single file
 // @Description Set metadata for a file using JSON payload
 // @Tags files
 // @Accept json
-// @Produce json
+// @Produce json,html
 // @Param metadata body files.Metadata true "Metadata object"
 // @Success 200 {string} string "metadata saved"
 // @Failure 400 {string} string "invalid json or missing path"
 // @Failure 500 {string} string "failed to save metadata"
 // @Router /api/files/metadata [post]
 func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
-	// example json
-	// {
-	//   "path": "example_markdown.md",
-	//   "project": "my-project",
-	//   "tags": ["important", "work"],
-	//   "type": "todo",
-	//   "status": "draft",
-	//   "priority": "high"
-	// }
 	var metadata files.Metadata
 
 	if err := json.NewDecoder(r.Body).Decode(&metadata); err != nil {
@@ -425,14 +485,15 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("metadata saved"))
+	data := "metadata saved"
+	html := `<span class="status-ok">Metadata saved successfully</span>`
+	writeResponse(w, r, data, html)
 }
 
 // @Summary Initialize/Rebuild metadata for all files
 // @Description Creates metadata for all files that don't have metadata yet
 // @Tags files
-// @Produce json
+// @Produce json,html
 // @Success 200 {string} string "metadata initialized"
 // @Failure 500 {string} string "failed to initialize metadata"
 // @Router /api/files/metadata/rebuild [post]
@@ -448,9 +509,9 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"status": "metadata initialized"})
+	data := map[string]string{"status": "metadata initialized"}
+	html := `<span class="status-ok">Metadata initialized and rebuilt successfully</span>`
+	writeResponse(w, r, data, html)
 }
 
 // ----------------------------------------------------------------------------------------
@@ -460,7 +521,7 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 // @Summary Setup test data
 // @Description Creates test files, git operations, and metadata for testing
 // @Tags testdata
-// @Produce json
+// @Produce json,html
 // @Success 200 {object} string "{"status":"ok","message":"test data setup completed"}"
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/setup [post]
@@ -471,14 +532,15 @@ func handleAPISetupTestData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"status":"ok","message":"test data setup completed"}`))
+	data := map[string]string{"status": "ok", "message": "test data setup completed"}
+	html := `<span class="status-ok">Test data setup completed</span>`
+	writeResponse(w, r, data, html)
 }
 
 // @Summary Clean test data
 // @Description Removes all test data files and metadata
 // @Tags testdata
-// @Produce json
+// @Produce json,html
 // @Success 200 {object} string "{"status":"ok","message":"test data cleaned"}"
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/clean [post]
@@ -489,6 +551,7 @@ func handleAPICleanTestData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"status":"ok","message":"test data cleaned"}`))
+	data := map[string]string{"status": "ok", "message": "test data cleaned"}
+	html := `<span class="status-ok">Test data cleaned</span>`
+	writeResponse(w, r, data, html)
 }

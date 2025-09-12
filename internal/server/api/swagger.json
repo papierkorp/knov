@@ -11,6 +11,10 @@
     "paths": {
         "/api/config/getConfig": {
             "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "config"
                 ],
@@ -21,7 +25,8 @@
         "/api/config/getRepositoryURL": {
             "get": {
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "config"
@@ -39,6 +44,13 @@
         },
         "/api/config/setConfig": {
             "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "config"
                 ],
@@ -48,6 +60,13 @@
         },
         "/api/config/setLanguage": {
             "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "config"
                 ],
@@ -57,6 +76,13 @@
         },
         "/api/config/setRepositoryURL": {
             "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "config"
                 ],
@@ -91,7 +117,8 @@
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -165,7 +192,8 @@
         "/api/files/list": {
             "get": {
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -178,7 +206,8 @@
             "get": {
                 "description": "Get metadata for a file by providing filepath as query parameter",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -226,7 +255,8 @@
                     "application/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -269,7 +299,8 @@
             "post": {
                 "description": "Creates metadata for all files that don't have metadata yet",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -293,6 +324,10 @@
         },
         "/api/git/history": {
             "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "git"
                 ],
@@ -302,6 +337,10 @@
         },
         "/api/health": {
             "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "health"
                 ],
@@ -313,7 +352,8 @@
             "post": {
                 "description": "Removes all test data files and metadata",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "testdata"
@@ -339,7 +379,8 @@
             "post": {
                 "description": "Creates test files, git operations, and metadata for testing",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "testdata"
@@ -365,7 +406,8 @@
             "get": {
                 "description": "Get current theme and available themes",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "themes"
@@ -386,6 +428,10 @@
                 "description": "Set new theme via form parameter",
                 "consumes": [
                     "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "themes"

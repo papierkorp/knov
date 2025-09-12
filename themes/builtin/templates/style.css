@@ -27,3 +27,7 @@ main {
   padding: 10px;
   border: 1px solid color-mix(in srgb, var(--neutral) 50%, transparent);
 }
+
+h1:first-child {
+  margin-top: 0;
+}

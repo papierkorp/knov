@@ -7,13 +7,10 @@ import (
 	"knov/themes/billo/templates"
 )
 
-// Billo ..
 type Billo struct{}
 
-// Theme ..
 var Theme Billo
 
-// Home ...
 func (t *Billo) Home() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
@@ -24,7 +21,6 @@ func (t *Billo) Home() (templ.Component, error) {
 	return templates.Home(td), nil
 }
 
-// Settings ...
 func (t *Billo) Settings() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
@@ -35,7 +31,6 @@ func (t *Billo) Settings() (templ.Component, error) {
 	return templates.Settings(td), nil
 }
 
-// Playground ...
 func (t *Billo) Playground() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
@@ -46,7 +41,6 @@ func (t *Billo) Playground() (templ.Component, error) {
 	return templates.Playground(td), nil
 }
 
-// LatestChanges ...
 func (t *Billo) LatestChanges() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
@@ -57,7 +51,6 @@ func (t *Billo) LatestChanges() (templ.Component, error) {
 	return templates.LatestChanges(td), nil
 }
 
-// History ...
 func (t *Billo) History() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
@@ -67,4 +60,25 @@ func (t *Billo) History() (templ.Component, error) {
 
 	return templates.History(td), nil
 }
+
+func (t *Billo) Overview() (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.Overview(td), nil
+}
+
+func (t *Billo) FileView(content string, filename string) (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.FileView(content, filename, td), nil
+}
+
 func main() {}

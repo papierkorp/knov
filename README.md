@@ -2,28 +2,22 @@
 
 # todo
 
-- change the filter to return html instead of json
+- filter not working correctly
 - metadata
-  - metadata for json, markdown header, sqlite, postgresql
-  - metadata struct:
   - save in a sqlite file
   - save in postgres
-  - save in a json file
-  - save in header in markdown files
+  - save in yaml header in markdown files
+  - get metadata for sqlite
+  - get metadata for postgres
+  - get metadata for yaml header
   - reduce metadata debugging logs
   - make updateUsedLinks work
   - change linkRegex config to names, e.g. obsidian, notion, dokuwiki... instead of a regex? or add one regex string + confignames
 - git
-  - file history (changes, differences)
   - move plugins/git to git
   - dont apply git settings on the fly only on startup
   - test external repo and fix it
   - if added without web interface but with a git commit, search commit message for --type ...
-- files system
-  - api get all files + metadata
-  - api get metadata for specific file
-  - api get files with filter (maybe add later)
-  - does the dataPath config even make sense?
 - error handling in settings (especially git settings)
 - create folder structure for different file types
   - project (has board/boards)
@@ -39,9 +33,6 @@
   - add api endpoint to get a git history
   - add api endpoint to rename a filename
 - when is metadata endpoint called? (time interval?)
-- create api endpoints to retrieve the metadata
-- create filter/toc
-- add a markdown parser
 - add text editor
 - add edit file
 - create api endpoint for fulltext search
@@ -49,6 +40,24 @@
 
 # done
 
+- create filter/toc
+- add a markdown parser
+- files system
+  - api get all files + metadata
+  - api get metadata for specific file
+  - api get files with filter (maybe add later)
+  - does the dataPath config even make sense?
+- git
+  - file history (changes, differences)
+- metadata
+  - create api endpoints to retrieve the metadata
+  - metadata for json, markdown header, sqlite, postgresql
+  - metadata struct:
+  - save in a json file
+  - get metadata for json
+- what about the filepath (e.g. http://localhost:1324/api/files/content/guides/developer-setup.md)
+- add style for filepath (e.g. http://localhost:1324/api/files/content/guides/developer-setup.md)
+- change the filter to return html instead of json
 - update swagger comments
 - is the data folder config neccessary?
 - testgit is executed with every make dev command ..
