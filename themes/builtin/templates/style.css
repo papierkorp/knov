@@ -11,21 +11,25 @@
 
 body {
   font-family: sans-serif;
-  background: var(--white);
-  color: var(--black);
+  background: var(--black);
+  color: var(--white);
   margin: 0;
   font-size: 16px;
 }
 
 a {
-  color: var(--black);
+  color: var(--white);
   text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent);
 }
 
 main {
   margin: 20px;
   padding: 10px;
-  border: 1px solid color-mix(in srgb, var(--neutral) 50%, transparent);
+  /* border: 1px solid color-mix(in srgb, var(--neutral) 50%, transparent); */
 }
 
 h1:first-child {

@@ -1,6 +1,7 @@
 /* Header */
 header {
-  background: var(--neutral);
+  background-color: var(--black);
+  color: var(--white);
   padding: 10px 20px;
   display: flex;
   align-items: center;
@@ -51,10 +52,8 @@ header a:not(.logo):hover {
 
 /* Git operations */
 .spanHeaderGitOperations {
-  border: 1px solid var(--neutral);
-  border-radius: 4px;
   background: var(--white);
-  padding: 8px 0;
+  display: flex;
 }
 
 .spanHeaderGitOperations a {
@@ -137,7 +136,7 @@ header a:not(.logo):hover {
 
   .header-right {
     order: 2;
-    gap: 10px;
+    /* gap: 10px; */
   }
 
   .header-mid {
