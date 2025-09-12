@@ -54,6 +54,7 @@ type ITheme interface {
 	Playground() (templ.Component, error)
 	LatestChanges() (templ.Component, error)
 	History() (templ.Component, error)
+	Overview() (templ.Component, error)
 }
 
 // -----------------------------------------------------------------------------

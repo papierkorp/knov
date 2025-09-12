@@ -70,4 +70,15 @@ func (t *Builtin) History() (templ.Component, error) {
 	return templates.History(td), nil
 }
 
+// History ...
+func (t *Builtin) Overview() (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.Overview(td), nil
+}
+
 func main() {}

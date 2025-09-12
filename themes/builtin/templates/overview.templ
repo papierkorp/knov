@@ -1,0 +1,34 @@
+package templates
+
+import (
+	"knov/internal/thememanager"
+	"knov/internal/translation"
+
+	"knov/internal/files"
+	"strings"
+)
+
+templ Overview(data thememanager.TemplateData) {
+	@Base(translation.Sprintf("Overview")) {
+		<div>
+			<h1>{ translation.Sprintf("OVERVIEW") }</h1>
+		</div>
+		<div class="files-container">
+			<div class="files-list">
+				<h2>{ translation.Sprintf("Files") }</h2>
+				<ul>
+					if fileList, err := files.GetAllFiles(); err == nil {
+						for _, file := range fileList {
+							<li>
+								<a href="#" hx-get={ "/api/files/content/" + file.Path[5:] } hx-target="#file-content">
+									{ strings.TrimPrefix(file.Path, "data/") }
+								</a>
+							</li>
+						}
+					}
+				</ul>
+			</div>
+			<div id="file-content"></div>
+		</div>
+	}
+}

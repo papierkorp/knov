@@ -3,7 +3,7 @@
     "name": "getting-started.md",
     "path": "data/getting-started.md",
     "createdAt": "2025-09-08T21:00:00Z",
-    "lastEdited": "2025-09-11T23:22:30.096521636+02:00",
+    "lastEdited": "2025-09-12T07:50:15.505754558+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "documentation",
     "folders": [
@@ -36,7 +36,7 @@
     "name": "developer-setup.md",
     "path": "data/guides/developer-setup.md",
     "createdAt": "2025-09-03T16:00:00Z",
-    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "lastEdited": "2025-09-12T07:50:15.491559594+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "technical",
     "folders": [
@@ -71,7 +71,7 @@
     "name": "user-manual.md",
     "path": "data/guides/user-manual.md",
     "createdAt": "2025-09-04T13:00:00Z",
-    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "lastEdited": "2025-09-12T07:50:15.49161197+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "documentation",
     "folders": [
@@ -107,7 +107,7 @@
     "name": "meeting-notes.md",
     "path": "data/meeting-notes.md",
     "createdAt": "2025-09-11T10:00:00Z",
-    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "lastEdited": "2025-09-12T07:50:15.491661655+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "management",
     "folders": [
@@ -144,7 +144,7 @@
     "name": "project-overview.md",
     "path": "data/project-overview.md",
     "createdAt": "2025-09-08T20:00:00Z",
-    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "lastEdited": "2025-09-12T07:50:15.491722973+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "management",
     "folders": [
@@ -183,7 +183,7 @@
     "name": "backend-api.md",
     "path": "data/projects/backend-api.md",
     "createdAt": "2025-09-05T09:00:00Z",
-    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "lastEdited": "2025-09-12T07:50:15.491803337+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "backend",
     "folders": [
@@ -221,7 +221,7 @@
     "name": "database-migration.md",
     "path": "data/projects/database-migration.md",
     "createdAt": "2025-08-15T08:00:00Z",
-    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "lastEdited": "2025-09-12T07:50:15.491879169+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "infrastructure",
     "folders": [
@@ -260,7 +260,7 @@
     "name": "frontend-redesign.md",
     "path": "data/projects/frontend-redesign.md",
     "createdAt": "2025-09-06T11:00:00Z",
-    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "lastEdited": "2025-09-12T07:50:15.491941691+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "frontend",
     "folders": [
@@ -299,7 +299,7 @@
     "name": "technical-documentation.md",
     "path": "data/technical-documentation.md",
     "createdAt": "2025-09-08T19:00:00Z",
-    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "lastEdited": "2025-09-12T07:50:15.492004272+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "technical",
     "folders": [
@@ -338,7 +338,7 @@
     "name": "troubleshooting.md",
     "path": "data/troubleshooting.md",
     "createdAt": "2025-09-07T14:00:00Z",
-    "lastEdited": "2025-09-11T23:22:30.087354974+02:00",
+    "lastEdited": "2025-09-12T07:50:15.492089934+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "support",
     "folders": [
