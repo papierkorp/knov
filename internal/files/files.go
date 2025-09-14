@@ -141,6 +141,8 @@ func evaluateFilter(metadata *Metadata, filter FilterCriteria) bool {
 	var fieldValue string
 	var fieldArray []string
 
+	filterValue := strings.TrimSpace(filter.Value)
+
 	switch filter.Metadata {
 	case "project":
 		fieldValue = metadata.Project
@@ -168,23 +170,23 @@ func evaluateFilter(metadata *Metadata, filter FilterCriteria) bool {
 	switch filter.Operator {
 	case "equals":
 		if len(fieldArray) > 0 {
-			matches = slices.Contains(fieldArray, filter.Value)
+			matches = slices.Contains(fieldArray, filterValue)
 		} else {
-			matches = fieldValue == filter.Value
+			matches = fieldValue == filterValue
 		}
 	case "contains":
 		if len(fieldArray) > 0 {
 			matches = slices.ContainsFunc(fieldArray, func(s string) bool {
-				return strings.Contains(strings.ToLower(s), strings.ToLower(filter.Value))
+				return strings.Contains(strings.ToLower(s), strings.ToLower(filterValue))
 			})
 		} else {
-			matches = strings.Contains(strings.ToLower(fieldValue), strings.ToLower(filter.Value))
+			matches = strings.Contains(strings.ToLower(fieldValue), strings.ToLower(filterValue))
 		}
 	case "in":
 		if len(fieldArray) > 0 {
-			matches = slices.Contains(fieldArray, filter.Value)
+			matches = slices.Contains(fieldArray, filterValue)
 		} else {
-			matches = fieldValue == filter.Value
+			matches = fieldValue == filterValue
 		}
 	default:
 		matches = false

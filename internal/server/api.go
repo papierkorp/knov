@@ -327,10 +327,12 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 	logic := r.Form["logic[]"]
 	actions := r.Form["action[]"]
 
+	logging.LogDebug("---------------------------------------------------\n---------------------------------------------------------\n---------------------------------------------------------")
 	logging.LogDebug("metadata: %v, operators: %v, values: %v", metadata, operators, values)
 
 	maxLen := len(metadata)
-	for i := 0; i < maxLen; i++ {
+
+	for i := range maxLen {
 		if i < len(operators) && i < len(values) && metadata[i] != "" && operators[i] != "" {
 			criteria = append(criteria, files.FilterCriteria{
 				Metadata: metadata[i],
