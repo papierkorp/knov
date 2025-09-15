@@ -2,10 +2,13 @@
 package files
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/parser"
@@ -18,15 +21,6 @@ type File struct {
 	Name     string    `json:"name"`
 	Path     string    `json:"path"`
 	Metadata *Metadata `json:"metadata,omitempty"`
-}
-
-// FilterCriteria represents a single filter condition
-type FilterCriteria struct {
-	Metadata string `json:"metadata"`
-	Operator string `json:"operator"`
-	Value    string `json:"value"`
-	Logic    string `json:"logic"`
-	Action   string `json:"action"`
 }
 
 // GetAllFiles returns list of all files
@@ -87,6 +81,14 @@ func GetAllFilesWithMetadata() ([]File, error) {
 
 // ------------------------- FILTER -------------------------
 
+// FilterCriteria represents a single filter condition
+type FilterCriteria struct {
+	Metadata string `json:"metadata"`
+	Operator string `json:"operator"`
+	Value    string `json:"value"`
+	Action   string `json:"action"`
+}
+
 // FilterFilesByMetadata filters files based on metadata criteria
 func FilterFilesByMetadata(criteria []FilterCriteria) ([]File, error) {
 	allFiles, err := GetAllFiles()
@@ -126,12 +128,7 @@ func matchesFilter(metadata *Metadata, criteria []FilterCriteria) bool {
 
 	for i := 1; i < len(criteria); i++ {
 		currentResult := evaluateFilter(metadata, criteria[i])
-
-		if criteria[i-1].Logic == "or" {
-			result = result || currentResult
-		} else {
-			result = result && currentResult
-		}
+		result = result && currentResult
 	}
 
 	return result
@@ -140,8 +137,6 @@ func matchesFilter(metadata *Metadata, criteria []FilterCriteria) bool {
 func evaluateFilter(metadata *Metadata, filter FilterCriteria) bool {
 	var fieldValue string
 	var fieldArray []string
-
-	filterValue := strings.TrimSpace(filter.Value)
 
 	switch filter.Metadata {
 	case "project":
@@ -163,6 +158,7 @@ func evaluateFilter(metadata *Metadata, filter FilterCriteria) bool {
 	case "lastEdited":
 		fieldValue = metadata.LastEdited.Format("2006-01-02")
 	default:
+		logging.LogWarning("INTERNAL WARNING: selected metadata does not exist")
 		return false
 	}
 
@@ -170,25 +166,74 @@ func evaluateFilter(metadata *Metadata, filter FilterCriteria) bool {
 	switch filter.Operator {
 	case "equals":
 		if len(fieldArray) > 0 {
-			matches = slices.Contains(fieldArray, filterValue)
+			matches = slices.Contains(fieldArray, filter.Value)
 		} else {
-			matches = fieldValue == filterValue
+			matches = fieldValue == filter.Value
 		}
 	case "contains":
 		if len(fieldArray) > 0 {
 			matches = slices.ContainsFunc(fieldArray, func(s string) bool {
-				return strings.Contains(strings.ToLower(s), strings.ToLower(filterValue))
+				return strings.Contains(strings.ToLower(s), strings.ToLower(filter.Value))
 			})
 		} else {
-			matches = strings.Contains(strings.ToLower(fieldValue), strings.ToLower(filterValue))
+			matches = strings.Contains(strings.ToLower(fieldValue), strings.ToLower(filter.Value))
 		}
 	case "in":
 		if len(fieldArray) > 0 {
-			matches = slices.Contains(fieldArray, filterValue)
+			matches = slices.Contains(fieldArray, filter.Value)
 		} else {
-			matches = fieldValue == filterValue
+			matches = fieldValue == filter.Value
+		}
+	case "greater":
+		if len(fieldArray) > 0 {
+			arrayCount := len(fieldArray)
+			if targetCount, err := strconv.Atoi(filter.Value); err == nil {
+				matches = arrayCount > targetCount
+			}
+		} else {
+			switch filter.Metadata {
+			case "createdAt", "lastEdited":
+				if targetDate, err := parseDate(filter.Value); err == nil {
+					var compareDate time.Time
+					if filter.Metadata == "createdAt" {
+						compareDate = metadata.CreatedAt
+					} else {
+						compareDate = metadata.LastEdited
+					}
+					matches = compareDate.After(targetDate)
+				}
+			case "size":
+				if targetSize, err := strconv.ParseInt(filter.Value, 10, 64); err == nil {
+					matches = metadata.Size > targetSize
+				}
+			}
+		}
+	case "less":
+		if len(fieldArray) > 0 {
+			arrayCount := len(fieldArray)
+			if targetCount, err := strconv.Atoi(filter.Value); err == nil {
+				matches = arrayCount < targetCount
+			}
+		} else {
+			switch filter.Metadata {
+			case "createdAt", "lastEdited":
+				if targetDate, err := parseDate(filter.Value); err == nil {
+					var compareDate time.Time
+					if filter.Metadata == "createdAt" {
+						compareDate = metadata.CreatedAt
+					} else {
+						compareDate = metadata.LastEdited
+					}
+					matches = compareDate.Before(targetDate)
+				}
+			case "size":
+				if targetSize, err := strconv.ParseInt(filter.Value, 10, 64); err == nil {
+					matches = metadata.Size < targetSize
+				}
+			}
 		}
 	default:
+		logging.LogWarning("INTERNAL WARNING: selected operator does not exist")
 		matches = false
 	}
 
@@ -196,4 +241,21 @@ func evaluateFilter(metadata *Metadata, filter FilterCriteria) bool {
 		return !matches
 	}
 	return matches
+}
+
+func parseDate(dateStr string) (time.Time, error) {
+	formats := []string{
+		"2006-01-02", // ISO format
+		"02.01.2006", // DD.MM.YYYY
+		"01/02/2006", // MM/DD/YYYY
+		"2006/01/02", // YYYY/MM/DD
+		"02-01-2006", // DD-MM-YYYY
+	}
+
+	for _, format := range formats {
+		if t, err := time.Parse(format, dateStr); err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("unable to parse date: %s", dateStr)
 }

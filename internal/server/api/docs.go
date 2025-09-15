@@ -167,16 +167,6 @@ const docTemplate = `{
                             "type": "string"
                         },
                         "collectionFormat": "csv",
-                        "description": "Logic operators (and, or)",
-                        "name": "logic[]",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
                         "description": "Filter actions (include, exclude)",
                         "name": "action[]",
                         "in": "formData"
@@ -475,6 +465,19 @@ const docTemplate = `{
                 }
             }
         },
+        "files.Filetype": {
+            "type": "string",
+            "enum": [
+                "todo",
+                "note",
+                "journal"
+            ],
+            "x-enum-varnames": [
+                "FileTypeTodo",
+                "FileTypeNote",
+                "FileTypeJournal"
+            ]
+        },
         "files.Metadata": {
             "type": "object",
             "properties": {
@@ -527,7 +530,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "priority": {
-                    "$ref": "#/definitions/files.priority"
+                    "$ref": "#/definitions/files.Priority"
                 },
                 "project": {
                     "type": "string"
@@ -536,7 +539,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "status": {
-                    "$ref": "#/definitions/files.status"
+                    "$ref": "#/definitions/files.Status"
                 },
                 "tags": {
                     "type": "array",
@@ -548,7 +551,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/files.filetype"
+                    "$ref": "#/definitions/files.Filetype"
                 },
                 "usedLinks": {
                     "type": "array",
@@ -558,20 +561,7 @@ const docTemplate = `{
                 }
             }
         },
-        "files.filetype": {
-            "type": "string",
-            "enum": [
-                "todo",
-                "note",
-                "journal"
-            ],
-            "x-enum-varnames": [
-                "FileTypeTodo",
-                "FileTypeNote",
-                "FileTypeJournal"
-            ]
-        },
-        "files.priority": {
+        "files.Priority": {
             "type": "string",
             "enum": [
                 "low",
@@ -584,7 +574,7 @@ const docTemplate = `{
                 "PriorityHigh"
             ]
         },
-        "files.status": {
+        "files.Status": {
             "type": "string",
             "enum": [
                 "draft",

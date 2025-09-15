@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
@@ -61,33 +63,66 @@ func copyTestFiles() error {
 	return nil
 }
 
-func createGitOperations() error {
-	logging.LogInfo("creating git operations")
+func createTestStructure() error {
+	logging.LogInfo("creating test structure")
 
-	dataDir := configmanager.DataPath
+	dataPath := configmanager.DataPath
 
-	// Initialize git if needed
-	gitDir := filepath.Join(dataDir, ".git")
-	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
-		cmd := exec.Command("git", "init")
-		cmd.Dir = dataDir
-		if err := cmd.Run(); err != nil {
+	dirs := []string{
+		"test/testA/testAA",
+		"test/testA/testAB",
+		"test/testA/testAC",
+		"test/testB",
+		"test/testC",
+	}
+
+	for _, dir := range dirs {
+		if err := os.MkdirAll(filepath.Join(dataPath, dir), 0755); err != nil {
 			return err
 		}
 	}
 
-	// Copy test files from testfiles directory
-	cmd := exec.Command("cp", "-r", "internal/testdata/testfiles/.", dataDir+"/")
-	if err := cmd.Run(); err != nil {
-		logging.LogError("failed to copy test files: %v", err)
+	testFiles := []string{
+		"test/testA/testA.md",
+		"test/testA/testAB.md",
+		"test/testA/testAC.md",
+		"test/testA/testAA/testAAA.md",
+		"test/testA/testAA/testAAB.md",
+		"test/testA/testAA/testAAC.md",
+		"test/testA/testAB/testABA.md",
+		"test/testA/testAB/testABB.md",
+		"test/testA/testAC/testACA.md",
+		"test/testB/testBA.md",
+		"test/testB/testBB.md",
+		"test/testB/testBC.md",
+		"test/testC/testCA.md",
+		"test/testC/testCB.md",
+		"test/testC/testCC.md",
+	}
+
+	for _, file := range testFiles {
+		fullPath := filepath.Join(dataPath, file)
+		content := "# " + filepath.Base(file) + "\n\nThis is a test file."
+		if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func createGitOperations() error {
+	logging.LogInfo("creating git operations")
+
+	if err := configmanager.InitGitRepository(); err != nil {
 		return err
 	}
 
-	// Initial commit
-	cmd = exec.Command("git", "add", ".")
+	dataDir := configmanager.DataPath
+
+	cmd := exec.Command("git", "add", ".")
 	cmd.Dir = dataDir
 	cmd.Run()
-
 	cmd = exec.Command("git", "commit", "-m", "initial test documentation", "--allow-empty")
 	cmd.Dir = dataDir
 	cmd.Run()
@@ -107,213 +142,261 @@ func createGitOperations() error {
 		cmd.Run()
 	}
 
+	if err := createTestStructure(); err != nil {
+		return err
+	}
+
+	cmd = exec.Command("git", "add", ".")
+	cmd.Dir = dataDir
+	cmd.Run()
+	cmd = exec.Command("git", "commit", "-m", "add test structure")
+	cmd.Dir = dataDir
+	cmd.Run()
+
 	return nil
 }
 
 func setupTestMetadata() error {
 	logging.LogInfo("creating test metadata")
 
-	if err := os.MkdirAll("config/.metadata", 0755); err != nil {
+	// Create metadata for default files
+	defaultFiles := getDefaultFiles()
+	for _, meta := range defaultFiles {
+		if err := files.MetaDataSave(meta); err != nil {
+			logging.LogError("failed to save metadata for %s: %v", meta.Path, err)
+		}
+	}
+
+	// Create metadata for test structure files
+	if err := createTestMetadata(); err != nil {
 		return err
 	}
 
-	metadata := `{
-  "data/getting-started.md": {
-    "name": "getting-started.md",
-    "path": "data/getting-started.md",
-    "createdAt": "2025-09-08T21:00:00Z",
-    "lastEdited": "2025-09-08T21:00:00Z",
-    "project": "documentation",
-    "folders": [],
-    "tags": ["guide", "onboarding", "getting-started"],
-    "boards": ["default"],
-    "ancestor": [],
-    "parents": [],
-    "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
-    "type": "note",
-    "status": "published",
-    "priority": "high",
-    "size": 0
-  },
-  "data/project-overview.md": {
-    "name": "project-overview.md", 
-    "path": "data/project-overview.md",
-    "createdAt": "2025-09-08T20:00:00Z",
-    "lastEdited": "2025-09-08T22:00:00Z",
-    "project": "management",
-    "folders": [],
-    "tags": ["project", "overview", "status"],
-    "boards": ["default", "management"],
-    "ancestor": [],
-    "parents": [],
-    "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
-    "type": "note",
-    "status": "published",
-    "priority": "high",
-    "size": 0
-  },
-  "data/technical-documentation.md": {
-    "name": "technical-documentation.md",
-    "path": "data/technical-documentation.md",
-    "createdAt": "2025-09-08T19:00:00Z",
-    "lastEdited": "2025-09-08T23:00:00Z",
-    "project": "technical",
-    "folders": [],
-    "tags": ["technical", "api", "documentation"],
-    "boards": ["default", "technical"],
-    "ancestor": [],
-    "parents": [],
-    "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
-    "type": "note",
-    "status": "published",
-    "priority": "medium",
-    "size": 0
-  },
-  "data/meeting-notes.md": {
-    "name": "meeting-notes.md",
-    "path": "data/meeting-notes.md",
-    "createdAt": "2025-09-11T10:00:00Z",
-    "lastEdited": "2025-09-11T15:00:00Z",
-    "project": "management",
-    "folders": [],
-    "tags": ["meeting", "sprint", "planning"],
-    "boards": ["default", "meetings"],
-    "ancestor": [],
-    "parents": [],
-    "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
-    "type": "note",
-    "status": "published",
-    "priority": "medium",
-    "size": 0
-  },
-  "data/troubleshooting.md": {
-    "name": "troubleshooting.md",
-    "path": "data/troubleshooting.md",
-    "createdAt": "2025-09-07T14:00:00Z",
-    "lastEdited": "2025-09-10T16:00:00Z",
-    "project": "support",
-    "folders": [],
-    "tags": ["troubleshooting", "help", "debug"],
-    "boards": ["default", "support"],
-    "ancestor": [],
-    "parents": [],
-    "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
-    "type": "note",
-    "status": "published",
-    "priority": "high",
-    "size": 0
-  },
-  "data/projects/backend-api.md": {
-    "name": "backend-api.md",
-    "path": "data/projects/backend-api.md",
-    "createdAt": "2025-09-05T09:00:00Z",
-    "lastEdited": "2025-09-11T14:00:00Z",
-    "project": "backend",
-    "folders": ["projects"],
-    "tags": ["backend", "api", "development", "in-progress"],
-    "boards": ["default", "development"],
-    "ancestor": [],
-    "parents": [],
-    "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
-    "type": "todo",
-    "status": "draft",
-    "priority": "high",
-    "size": 0
-  },
-  "data/projects/frontend-redesign.md": {
-    "name": "frontend-redesign.md",
-    "path": "data/projects/frontend-redesign.md",
-    "createdAt": "2025-09-06T11:00:00Z",
-    "lastEdited": "2025-09-09T17:00:00Z",
-    "project": "frontend",
-    "folders": ["projects"],
-    "tags": ["frontend", "ui", "redesign", "planning"],
-    "boards": ["default", "design"],
-    "ancestor": [],
-    "parents": [],
-    "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
-    "type": "todo",
-    "status": "draft",
-    "priority": "medium",
-    "size": 0
-  },
-  "data/projects/database-migration.md": {
-    "name": "database-migration.md",
-    "path": "data/projects/database-migration.md",
-    "createdAt": "2025-08-15T08:00:00Z",
-    "lastEdited": "2025-09-01T12:00:00Z",
-    "project": "infrastructure",
-    "folders": ["projects"],
-    "tags": ["database", "migration", "completed", "infrastructure"],
-    "boards": ["default", "infrastructure"],
-    "ancestor": [],
-    "parents": [],
-    "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
-    "type": "note",
-    "status": "published",
-    "priority": "high",
-    "size": 0
-  },
-  "data/guides/user-manual.md": {
-    "name": "user-manual.md",
-    "path": "data/guides/user-manual.md",
-    "createdAt": "2025-09-04T13:00:00Z",
-    "lastEdited": "2025-09-08T18:00:00Z",
-    "project": "documentation",
-    "folders": ["guides"],
-    "tags": ["user", "manual", "guide", "help"],
-    "boards": ["default", "documentation"],
-    "ancestor": [],
-    "parents": [],
-    "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
-    "type": "note",
-    "status": "published",
-    "priority": "medium",
-    "size": 0
-  },
-  "data/guides/developer-setup.md": {
-    "name": "developer-setup.md",
-    "path": "data/guides/developer-setup.md",
-    "createdAt": "2025-09-03T16:00:00Z",
-    "lastEdited": "2025-09-07T10:00:00Z",
-    "project": "technical",
-    "folders": ["guides"],
-    "tags": ["developer", "setup", "guide", "technical"],
-    "boards": ["default", "technical"],
-    "ancestor": [],
-    "parents": [],
-    "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
-    "type": "note",
-    "status": "published",
-    "priority": "medium",
-    "size": 0
-  }
-}`
-
-	if err := os.WriteFile("config/.metadata/metadata.json", []byte(metadata), 0644); err != nil {
-		return err
-	}
-
-	// Let the app automatically detect and create links
 	return files.MetaDataLinksRebuild()
+}
+
+func createTestMetadata() error {
+	var testFiles []string
+	testDir := filepath.Join(configmanager.DataPath, "test")
+
+	err := filepath.Walk(testDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && strings.HasSuffix(path, ".md") {
+			testFiles = append(testFiles, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	statuses := []files.Status{files.StatusDraft, files.StatusPublished, files.StatusPublished, files.StatusDraft}
+	priorities := []files.Priority{files.PriorityLow, files.PriorityMedium, files.PriorityHigh}
+
+	for i, file := range testFiles {
+		filename := filepath.Base(file)
+		relPath := strings.TrimPrefix(file, configmanager.DataPath+"/")
+		folders := strings.Split(filepath.Dir(relPath), "/")
+
+		// Remove empty folder elements
+		validFolders := []string{}
+		for _, folder := range folders {
+			if folder != "" && folder != "." {
+				validFolders = append(validFolders, folder)
+			}
+		}
+
+		project := "testA"
+		if len(validFolders) > 1 {
+			project = validFolders[1]
+		}
+
+		createDay := 3 + (i % 13)
+		editDay := createDay + 3 + (i % 8)
+		status := statuses[i%len(statuses)]
+		priority := priorities[i%len(priorities)]
+
+		tags := extractFilenameTags(filename)
+
+		metadata := &files.Metadata{
+			Name:       filename,
+			Path:       file,
+			CreatedAt:  time.Date(2025, 9, createDay, 8+(i%8), (i*7)%60, 0, 0, time.UTC),
+			LastEdited: time.Date(2025, 9, editDay, 10+(i%6), (i*13)%60, 0, 0, time.UTC),
+			Project:    project,
+			Folders:    validFolders,
+			Tags:       tags,
+			Boards:     []string{},
+			FileType:   files.FileTypeNote,
+			Status:     status,
+			Priority:   priority,
+		}
+
+		if err := files.MetaDataSave(metadata); err != nil {
+			logging.LogError("failed to save test metadata for %s: %v", file, err)
+		}
+	}
+
+	return nil
+}
+
+func extractFilenameTags(filename string) []string {
+	basename := strings.TrimSuffix(filename, ".md")
+
+	if !strings.HasPrefix(basename, "test") {
+		return []string{}
+	}
+
+	remaining := strings.TrimPrefix(basename, "test")
+	uniqueLetters := make(map[string]bool)
+	var tags []string
+
+	for _, char := range remaining {
+		if char >= 'A' && char <= 'Z' {
+			letter := string(char)
+			if !uniqueLetters[letter] {
+				uniqueLetters[letter] = true
+				tags = append(tags, "test"+letter)
+			}
+		}
+	}
+
+	return tags
+}
+
+func getDefaultFiles() []*files.Metadata {
+	return []*files.Metadata{
+		{
+			Name:       "getting-started.md",
+			Path:       "data/getting-started.md",
+			CreatedAt:  time.Date(2025, 9, 8, 21, 0, 0, 0, time.UTC),
+			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
+			Project:    "documentation",
+			Folders:    []string{"data"},
+			Tags:       []string{"guide", "onboarding", "getting-started"},
+			Boards:     []string{"default"},
+			FileType:   files.FileTypeNote,
+			Status:     files.StatusPublished,
+			Priority:   files.PriorityHigh,
+		},
+		{
+			Name:       "project-overview.md",
+			Path:       "data/project-overview.md",
+			CreatedAt:  time.Date(2025, 9, 8, 20, 0, 0, 0, time.UTC),
+			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
+			Project:    "management",
+			Folders:    []string{"data"},
+			Tags:       []string{"project", "overview", "status"},
+			Boards:     []string{"default", "management"},
+			FileType:   files.FileTypeNote,
+			Status:     files.StatusPublished,
+			Priority:   files.PriorityHigh,
+		},
+		{
+			Name:       "technical-documentation.md",
+			Path:       "data/technical-documentation.md",
+			CreatedAt:  time.Date(2025, 9, 8, 19, 0, 0, 0, time.UTC),
+			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
+			Project:    "technical",
+			Folders:    []string{"data"},
+			Tags:       []string{"technical", "api", "documentation"},
+			Boards:     []string{"default", "technical"},
+			FileType:   files.FileTypeNote,
+			Status:     files.StatusPublished,
+			Priority:   files.PriorityMedium,
+		},
+		{
+			Name:       "meeting-notes.md",
+			Path:       "data/meeting-notes.md",
+			CreatedAt:  time.Date(2025, 9, 11, 10, 0, 0, 0, time.UTC),
+			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
+			Project:    "management",
+			Folders:    []string{"data"},
+			Tags:       []string{"meeting", "sprint", "planning"},
+			Boards:     []string{"default", "meetings"},
+			FileType:   files.FileTypeNote,
+			Status:     files.StatusPublished,
+			Priority:   files.PriorityMedium,
+		},
+		{
+			Name:       "troubleshooting.md",
+			Path:       "data/troubleshooting.md",
+			CreatedAt:  time.Date(2025, 9, 7, 14, 0, 0, 0, time.UTC),
+			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
+			Project:    "support",
+			Folders:    []string{"data"},
+			Tags:       []string{"troubleshooting", "help", "debug"},
+			Boards:     []string{"default", "support"},
+			FileType:   files.FileTypeNote,
+			Status:     files.StatusPublished,
+			Priority:   files.PriorityHigh,
+		},
+		{
+			Name:       "developer-setup.md",
+			Path:       "data/guides/developer-setup.md",
+			CreatedAt:  time.Date(2025, 9, 3, 16, 0, 0, 0, time.UTC),
+			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
+			Project:    "technical",
+			Folders:    []string{"data", "guides"},
+			Tags:       []string{"developer", "setup", "guide", "technical"},
+			Boards:     []string{"default", "technical"},
+			FileType:   files.FileTypeNote,
+			Status:     files.StatusPublished,
+			Priority:   files.PriorityMedium,
+		},
+		{
+			Name:       "user-manual.md",
+			Path:       "data/guides/user-manual.md",
+			CreatedAt:  time.Date(2025, 9, 4, 13, 0, 0, 0, time.UTC),
+			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
+			Project:    "documentation",
+			Folders:    []string{"data", "guides"},
+			Tags:       []string{"user", "manual", "guide", "help"},
+			Boards:     []string{"default", "documentation"},
+			FileType:   files.FileTypeNote,
+			Status:     files.StatusPublished,
+			Priority:   files.PriorityMedium,
+		},
+		{
+			Name:       "backend-api.md",
+			Path:       "data/projects/backend-api.md",
+			CreatedAt:  time.Date(2025, 9, 5, 9, 0, 0, 0, time.UTC),
+			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
+			Project:    "backend",
+			Folders:    []string{"data", "projects"},
+			Tags:       []string{"backend", "api", "development", "in-progress"},
+			Boards:     []string{"default", "development"},
+			FileType:   files.FileTypeTodo,
+			Status:     files.StatusDraft,
+			Priority:   files.PriorityHigh,
+		},
+		{
+			Name:       "database-migration.md",
+			Path:       "data/projects/database-migration.md",
+			CreatedAt:  time.Date(2025, 8, 15, 8, 0, 0, 0, time.UTC),
+			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
+			Project:    "infrastructure",
+			Folders:    []string{"data", "projects"},
+			Tags:       []string{"database", "migration", "completed", "infrastructure"},
+			Boards:     []string{"default", "infrastructure"},
+			FileType:   files.FileTypeNote,
+			Status:     files.StatusPublished,
+			Priority:   files.PriorityHigh,
+		},
+		{
+			Name:       "frontend-redesign.md",
+			Path:       "data/projects/frontend-redesign.md",
+			CreatedAt:  time.Date(2025, 9, 6, 11, 0, 0, 0, time.UTC),
+			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
+			Project:    "frontend",
+			Folders:    []string{"data", "projects"},
+			Tags:       []string{"frontend", "ui", "redesign", "planning"},
+			Boards:     []string{"default", "design"},
+			FileType:   "todo",
+			Status:     "draft",
+			Priority:   "medium",
+		},
+	}
 }

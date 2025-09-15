@@ -9,6 +9,16 @@ definitions:
       path:
         type: string
     type: object
+  files.Filetype:
+    enum:
+    - todo
+    - note
+    - journal
+    type: string
+    x-enum-varnames:
+    - FileTypeTodo
+    - FileTypeNote
+    - FileTypeJournal
   files.Metadata:
     properties:
       ancestor:
@@ -44,13 +54,13 @@ definitions:
       path:
         type: string
       priority:
-        $ref: '#/definitions/files.priority'
+        $ref: '#/definitions/files.Priority'
       project:
         type: string
       size:
         type: integer
       status:
-        $ref: '#/definitions/files.status'
+        $ref: '#/definitions/files.Status'
       tags:
         items:
           type: string
@@ -58,23 +68,13 @@ definitions:
       targetDate:
         type: string
       type:
-        $ref: '#/definitions/files.filetype'
+        $ref: '#/definitions/files.Filetype'
       usedLinks:
         items:
           type: string
         type: array
     type: object
-  files.filetype:
-    enum:
-    - todo
-    - note
-    - journal
-    type: string
-    x-enum-varnames:
-    - FileTypeTodo
-    - FileTypeNote
-    - FileTypeJournal
-  files.priority:
+  files.Priority:
     enum:
     - low
     - medium
@@ -84,7 +84,7 @@ definitions:
     - PriorityLow
     - PriorityMedium
     - PriorityHigh
-  files.status:
+  files.Status:
     enum:
     - draft
     - published
@@ -195,13 +195,6 @@ paths:
         items:
           type: string
         name: value[]
-        type: array
-      - collectionFormat: csv
-        description: Logic operators (and, or)
-        in: formData
-        items:
-          type: string
-        name: logic[]
         type: array
       - collectionFormat: csv
         description: Filter actions (include, exclude)

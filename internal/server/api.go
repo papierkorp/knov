@@ -306,7 +306,6 @@ func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 // @Param metadata[] formData []string false "Metadata fields to filter on"
 // @Param operator[] formData []string false "Filter operators (equals, contains, greater, less, in)"
 // @Param value[] formData []string false "Filter values"
-// @Param logic[] formData []string false "Logic operators (and, or)"
 // @Param action[] formData []string false "Filter actions (include, exclude)"
 // @Success 200 {array} files.File
 // @Router /api/files/filter [post]
@@ -324,7 +323,6 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 	metadata := r.Form["metadata[]"]
 	operators := r.Form["operator[]"]
 	values := r.Form["value[]"]
-	logic := r.Form["logic[]"]
 	actions := r.Form["action[]"]
 
 	logging.LogDebug("---------------------------------------------------\n---------------------------------------------------------\n---------------------------------------------------------")
@@ -338,7 +336,6 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 				Metadata: metadata[i],
 				Operator: operators[i],
 				Value:    values[i],
-				Logic:    getFormValue(logic, i),
 				Action:   getFormValue(actions, i),
 			})
 		}

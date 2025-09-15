@@ -16,11 +16,144 @@ templ Home(data thememanager.TemplateData) {
 		<div id="home">
 			<h1>{ translation.Sprintf("Hello World from templ at home in the dark!") }</h1>
 		</div>
+		@MetadataExample()
 		@MetadataFilterSection()
 	}
 }
 
+templ MetadataExample() {
+	<section>
+		<table>
+			<thead>
+				<tr>
+					<th>Filename</th>
+					<th>Tags</th>
+					<th>Folders</th>
+					<th>Project</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td class="filename">testA.md</td>
+					<td>testA</td>
+					<td>test, testA</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testAB.md</td>
+					<td>testA, testB</td>
+					<td>test, testA</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testAC.md</td>
+					<td>testA, testC</td>
+					<td>test, testA</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testAAA.md</td>
+					<td>testA</td>
+					<td>test, testA, testAA</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testAAB.md</td>
+					<td>testA, testB</td>
+					<td>test, testA, testAA</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testAAC.md</td>
+					<td>testA, testC</td>
+					<td>test, testA, testAA</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testABA.md</td>
+					<td>testA, testB</td>
+					<td>test, testA, testAB</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testABB.md</td>
+					<td>testA, testB</td>
+					<td>test, testA, testAB</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testACA.md</td>
+					<td>testA, testC</td>
+					<td>test, testA, testAC</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testBA.md</td>
+					<td>testA, testB</td>
+					<td>test, testB</td>
+					<td>testB</td>
+				</tr>
+				<tr>
+					<td class="filename">testBB.md</td>
+					<td>testB</td>
+					<td>test, testB</td>
+					<td>testB</td>
+				</tr>
+				<tr>
+					<td class="filename">testBC.md</td>
+					<td>testB, testC</td>
+					<td>test, testB</td>
+					<td>testB</td>
+				</tr>
+				<tr>
+					<td class="filename">testCA.md</td>
+					<td>testA, testC</td>
+					<td>test, testC</td>
+					<td>testC</td>
+				</tr>
+				<tr>
+					<td class="filename">testCB.md</td>
+					<td>testB, testC</td>
+					<td>test, testC</td>
+					<td>testC</td>
+				</tr>
+				<tr>
+					<td class="filename">testCC.md</td>
+					<td>testC</td>
+					<td>test, testC</td>
+					<td>testC</td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+}
+
 templ MetadataFilterSection() {
+	<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 1rem 0;
+        font-size: 10px;
+    }
+
+    th,
+    td {
+        border: 1px solid var(--neutral);
+        padding: 4px;
+        text-align: left;
+    }
+
+    th {
+        background: var(--primary);
+        color: var(--white);
+        font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+        background: color-mix(in srgb, var(--neutral) 10%, transparent);
+    }
+</style>
 	<section>
 		<h3>{ translation.Sprintf("Metadata Filter") }</h3>
 		<form id="metadata-filter-form" hx-post="/api/files/filter" hx-target="#filter-results">
@@ -46,10 +179,6 @@ templ MetadataFilterSection() {
 						<option value="in">{ translation.Sprintf("In Array") }</option>
 					</select>
 					<input type="text" name="value[]" id="value-0" placeholder={ translation.Sprintf("Value") }/>
-					<select name="logic[]" id="logic-0">
-						<option value="and">{ translation.Sprintf("AND") }</option>
-						<option value="or">{ translation.Sprintf("OR") }</option>
-					</select>
 					<select name="action[]" id="action-0">
 						<option value="include">{ translation.Sprintf("Include") }</option>
 						<option value="exclude">{ translation.Sprintf("Exclude") }</option>
@@ -95,10 +224,6 @@ templ MetadataFilterSection() {
 					<option value="in">In Array</option>
 				</select>
 				<input type="text" name="value[]" id="value-${filterRowCount}" placeholder="Value"/>
-				<select name="logic[]" id="logic-${filterRowCount}">
-					<option value="and">AND</option>
-					<option value="or">OR</option>
-				</select>
 				<select name="action[]" id="action-${filterRowCount}">
 					<option value="include">Include</option>
 					<option value="exclude">Exclude</option>

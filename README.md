@@ -2,7 +2,7 @@
 
 # todo
 
-- filter not working correctly
+- return filter form from api
 - metadata
   - save in a sqlite file
   - save in postgres
@@ -40,6 +40,7 @@
 
 # done
 
+- filter not working correctly
 - create filter/toc
 - add a markdown parser
 - files system

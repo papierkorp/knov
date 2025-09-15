@@ -77,7 +77,7 @@ func InitConfig() {
 	SetLanguage(GetLanguage())
 	initLogLevel()
 
-	if err := initGitRepository(); err != nil {
+	if err := InitGitRepository(); err != nil {
 		logging.LogError("failed to initialize git repository: %s", err)
 	}
 
@@ -247,7 +247,8 @@ func SetConfigGit(newConfigGit ConfigGit) {
 	saveConfigToFile()
 }
 
-func initGitRepository() error {
+// InitGitRepository Initalize a git repository in data folder
+func InitGitRepository() error {
 	gitDir := DataPath + "/.git"
 	if _, err := os.Stat(gitDir); !os.IsNotExist(err) {
 		return nil

@@ -12,22 +12,22 @@ import (
 	"knov/internal/logging"
 )
 
-type filetype string
-type status string
-type priority string
+type Filetype string
+type Status string
+type Priority string
 
 const (
-	FileTypeTodo    filetype = "todo"
-	FileTypeNote    filetype = "note"
-	FileTypeJournal filetype = "journal"
+	FileTypeTodo    Filetype = "todo"
+	FileTypeNote    Filetype = "note"
+	FileTypeJournal Filetype = "journal"
 
-	StatusDraft     status = "draft"
-	StatusPublished status = "published"
-	StatusArchived  status = "archived"
+	StatusDraft     Status = "draft"
+	StatusPublished Status = "published"
+	StatusArchived  Status = "archived"
 
-	PriorityLow    priority = "low"
-	PriorityMedium priority = "medium"
-	PriorityHigh   priority = "high"
+	PriorityLow    Priority = "low"
+	PriorityMedium Priority = "medium"
+	PriorityHigh   Priority = "high"
 )
 
 // Metadata represents file metadata
@@ -46,9 +46,9 @@ type Metadata struct {
 	Kids        []string  `json:"kids"`
 	UsedLinks   []string  `json:"usedLinks"`
 	LinksToHere []string  `json:"linksToHere"`
-	FileType    filetype  `json:"type"`
-	Status      status    `json:"status"`
-	Priority    priority  `json:"priority"`
+	FileType    Filetype  `json:"type"`
+	Status      Status    `json:"status"`
+	Priority    Priority  `json:"priority"`
 	Size        int64     `json:"size"`
 }
 
