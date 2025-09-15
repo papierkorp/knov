@@ -203,6 +203,11 @@ paths:
           type: string
         name: action[]
         type: array
+      - default: and
+        description: Logic operator for combining criteria (and, or)
+        in: formData
+        name: logic
+        type: string
       produces:
       - application/json
       - text/html

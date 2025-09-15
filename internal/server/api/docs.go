@@ -170,6 +170,13 @@ const docTemplate = `{
                         "description": "Filter actions (include, exclude)",
                         "name": "action[]",
                         "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "default": "and",
+                        "description": "Logic operator for combining criteria (and, or)",
+                        "name": "logic",
+                        "in": "formData"
                     }
                 ],
                 "responses": {

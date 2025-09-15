@@ -22,6 +22,31 @@ templ Home(data thememanager.TemplateData) {
 }
 
 templ MetadataExample() {
+	<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 1rem 0;
+        font-size: 10px;
+    }
+
+    th,
+    td {
+        border: 1px solid var(--neutral);
+        padding: 4px;
+        text-align: left;
+    }
+
+    th {
+        background: var(--primary);
+        color: var(--white);
+        font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+        background: color-mix(in srgb, var(--neutral) 10%, transparent);
+    }
+</style>
 	<section>
 		<table>
 			<thead>
@@ -129,37 +154,19 @@ templ MetadataExample() {
 }
 
 templ MetadataFilterSection() {
-	<style>
-    table {
-        border-collapse: collapse;
-        width: 100%;
-        margin: 1rem 0;
-        font-size: 10px;
-    }
-
-    th,
-    td {
-        border: 1px solid var(--neutral);
-        padding: 4px;
-        text-align: left;
-    }
-
-    th {
-        background: var(--primary);
-        color: var(--white);
-        font-weight: bold;
-    }
-
-    tr:nth-child(even) {
-        background: color-mix(in srgb, var(--neutral) 10%, transparent);
-    }
-</style>
 	<section>
 		<h3>{ translation.Sprintf("Metadata Filter") }</h3>
 		<form id="metadata-filter-form" hx-post="/api/files/filter" hx-target="#filter-results">
+			<div>
+				<button type="submit">{ translation.Sprintf("Apply Filter") }</button>
+				<select name="logic" id="logic-operator">
+					<option value="and">{ translation.Sprintf("AND") }</option>
+					<option value="or">{ translation.Sprintf("OR") }</option>
+				</select>
+				<button type="button" onclick="addFilterRow()">{ translation.Sprintf("Add Filter") }</button>
+			</div>
 			<div id="filter-container">
 				<div class="filter-row" id="filter-row-0">
-					<button type="button" onclick="addFilterRow()">+</button>
 					<select name="metadata[]" id="metadata-0">
 						<option value="project">{ translation.Sprintf("Project") }</option>
 						<option value="tags">{ translation.Sprintf("Tags") }</option>
@@ -186,9 +193,6 @@ templ MetadataFilterSection() {
 					<button type="button" onclick="removeFilterRow(0)">-</button>
 				</div>
 			</div>
-			<button type="submit">
-				{ translation.Sprintf("Apply Filter") }
-			</button>
 		</form>
 		<div id="filter-results">
 			{ translation.Sprintf("Filtered results will appear here") }
@@ -204,7 +208,6 @@ templ MetadataFilterSection() {
         newRow.id = `filter-row-${filterRowCount}`;
 
         newRow.innerHTML = `
-				<button type="button" onclick="addFilterRow()">+</button>
 				<select name="metadata[]" id="metadata-${filterRowCount}">
 					<option value="project">Project</option>
 					<option value="tags">Tags</option>
@@ -241,6 +244,7 @@ templ MetadataFilterSection() {
             row.remove();
         }
     }
+
     document.body.addEventListener('htmx:afterRequest', function (event) {
         if (event.detail.target.id === 'filter-results' && event.detail.xhr.status === 200) {
             try {

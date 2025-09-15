@@ -90,7 +90,7 @@ type FilterCriteria struct {
 }
 
 // FilterFilesByMetadata filters files based on metadata criteria
-func FilterFilesByMetadata(criteria []FilterCriteria) ([]File, error) {
+func FilterFilesByMetadata(criteria []FilterCriteria, logic string) ([]File, error) {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func FilterFilesByMetadata(criteria []FilterCriteria) ([]File, error) {
 			continue
 		}
 
-		if matchesFilter(fileMetadata, criteria) {
+		if matchesFilter(fileMetadata, criteria, logic) {
 			filteredFiles = append(filteredFiles, file)
 		}
 	}
@@ -119,7 +119,7 @@ func FilterFilesByMetadata(criteria []FilterCriteria) ([]File, error) {
 	return filteredFiles, nil
 }
 
-func matchesFilter(metadata *Metadata, criteria []FilterCriteria) bool {
+func matchesFilter(metadata *Metadata, criteria []FilterCriteria, logic string) bool {
 	if len(criteria) == 0 {
 		return true
 	}
@@ -128,7 +128,11 @@ func matchesFilter(metadata *Metadata, criteria []FilterCriteria) bool {
 
 	for i := 1; i < len(criteria); i++ {
 		currentResult := evaluateFilter(metadata, criteria[i])
-		result = result && currentResult
+		if logic == "or" {
+			result = result || currentResult
+		} else {
+			result = result && currentResult
+		}
 	}
 
 	return result
