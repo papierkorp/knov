@@ -317,6 +317,21 @@ paths:
       summary: Health check
       tags:
       - health
+  /api/search:
+    get:
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Search files
+      tags:
+      - search
   /api/testdata/clean:
     post:
       description: Removes all test data files and metadata

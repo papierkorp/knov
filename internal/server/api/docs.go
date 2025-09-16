@@ -335,6 +335,28 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/search": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "search"
+                ],
+                "summary": "Search files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/testdata/clean": {
             "post": {
                 "description": "Removes all test data files and metadata",
