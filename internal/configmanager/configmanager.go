@@ -16,11 +16,13 @@ func Init() {
 // ---------------------------------- Language ---------------------------------
 // -----------------------------------------------------------------------------
 
+// Language ..
 type Language struct {
 	Code string
 	Name string
 }
 
+// GetAvailableLanguages ..
 func GetAvailableLanguages() []Language {
 	return []Language{
 		{Code: "en", Name: "English"},
@@ -28,6 +30,7 @@ func GetAvailableLanguages() []Language {
 	}
 }
 
+// CheckLanguage ..
 func CheckLanguage(lang string) string {
 	if lang == "" {
 		return "en"
@@ -40,7 +43,7 @@ func CheckLanguage(lang string) string {
 		}
 	}
 
-	logging.LogWarning("language '%s' not supported, falling back to 'en'", lang)
+	logging.LogWarning("language '%s' not supported, falling back to 'en', availableLanguages: %v", lang, availableLanguages)
 	return "en"
 }
 

@@ -44,7 +44,6 @@ func InitAppConfig() {
 
 	initLogLevel()
 
-	// Initialize git repository
 	if err := InitGitRepository(); err != nil {
 		logging.LogError("failed to initialize git repository: %s", err)
 	}
@@ -102,19 +101,16 @@ func InitGitRepository() error {
 	dataPath := appConfig.DataPath
 	gitDir := filepath.Join(dataPath, ".git")
 
-	// Check if git repo already exists
 	if _, err := os.Stat(gitDir); !os.IsNotExist(err) {
 		logging.LogInfo("git repository already exists in %s", dataPath)
 		return nil
 	}
 
-	// Create data directory if it doesn't exist
 	if err := os.MkdirAll(dataPath, 0755); err != nil {
 		return err
 	}
 
 	if appConfig.GitRepoURL != "" {
-		// Clone existing repository
 		cmd := exec.Command("git", "clone", appConfig.GitRepoURL, dataPath)
 		if err := cmd.Run(); err != nil {
 			logging.LogError("failed to clone repository: %v", err)
@@ -122,7 +118,6 @@ func InitGitRepository() error {
 		}
 		logging.LogInfo("git repository cloned from %s to %s", appConfig.GitRepoURL, dataPath)
 	} else {
-		// Initialize new local repository
 		cmd := exec.Command("git", "init")
 		cmd.Dir = dataPath
 		if err := cmd.Run(); err != nil {

@@ -26,6 +26,7 @@ type UserSettings struct {
 
 // InitUserSettings initializes user settings from JSON file for specific user
 func InitUserSettings(userID string) {
+	// TODO store user settings locally?
 	currentUserID = userID
 	userSettings = UserSettings{
 		Theme:    "builtin",
