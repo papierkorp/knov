@@ -17,7 +17,6 @@ import (
 	"knov/internal/logging"
 	"knov/internal/testdata"
 	"knov/internal/thememanager"
-	"knov/internal/translation"
 )
 
 func writeResponse(w http.ResponseWriter, r *http.Request, jsonData any, htmlData string) {
@@ -55,36 +54,25 @@ func handleAPIHealth(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/config/getConfig [get]
 func handleAPIGetConfig(w http.ResponseWriter, r *http.Request) {
-	config := configmanager.GetConfig()
+	appConfig := configmanager.GetAppConfig()
+	userSettings := configmanager.GetUserSettings()
+
+	config := struct {
+		App  configmanager.AppConfig    `json:"app"`
+		User configmanager.UserSettings `json:"user"`
+	}{
+		App:  appConfig,
+		User: userSettings,
+	}
 
 	var html strings.Builder
 	html.WriteString("<div class='config'>")
-	html.WriteString(fmt.Sprintf("<p>Theme: %s</p>", config.Themes.CurrentTheme))
-	html.WriteString(fmt.Sprintf("<p>Language: %s</p>", config.General.Language))
-	html.WriteString(fmt.Sprintf("<p>Repository: %s</p>", config.Git.RepositoryURL))
+	html.WriteString(fmt.Sprintf("<p>theme: %s</p>", userSettings.Theme))
+	html.WriteString(fmt.Sprintf("<p>language: %s</p>", userSettings.Language))
+	html.WriteString(fmt.Sprintf("<p>data path: %s</p>", appConfig.DataPath))
 	html.WriteString("</div>")
 
 	writeResponse(w, r, config, html.String())
-}
-
-// @Summary Set configuration
-// @Tags config
-// @Accept json
-// @Produce json,html
-// @Router /api/config/setConfig [post]
-func handleAPISetConfig(w http.ResponseWriter, r *http.Request) {
-	var config configmanager.ConfigManager
-
-	if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
-		http.Error(w, "invalid json", http.StatusBadRequest)
-		return
-	}
-
-	configmanager.SetConfig(config)
-
-	data := map[string]string{"status": "ok"}
-	html := `<span class="status-ok">Configuration saved</span>`
-	writeResponse(w, r, data, html)
 }
 
 // @Summary Set language
@@ -99,7 +87,6 @@ func handleAPISetLanguage(w http.ResponseWriter, r *http.Request) {
 
 	if lang != "" {
 		configmanager.SetLanguage(lang)
-		translation.SetLanguage(lang)
 	}
 
 	w.Header().Set("HX-Refresh", "true")
@@ -112,22 +99,11 @@ func handleAPISetLanguage(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} string
 // @Router /api/config/getRepositoryURL [get]
 func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
-	config := configmanager.GetConfigGit()
+	appConfig := configmanager.GetAppConfig()
+	repositoryURL := appConfig.GitRepoURL
 
-	// Get remote URL from git config
-	cmd := exec.Command("git", "config", "--get", "remote.origin.url")
-	cmd.Dir = configmanager.DataPath
-	output, err := cmd.Output()
-	var repositoryURL string
-
-	if err != nil {
-		logging.LogError("error in git config get remote.origin.url command - using config repositoryURL instead")
-		repositoryURL = config.RepositoryURL
-		if repositoryURL == "" {
-			repositoryURL = "local"
-		}
-	} else {
-		repositoryURL = strings.TrimSpace(string(output))
+	if repositoryURL == "" {
+		repositoryURL = "not configured"
 	}
 
 	html := fmt.Sprintf(`<span class="repo-url">%s</span>`, repositoryURL)
@@ -151,8 +127,8 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	config := configmanager.GetConfigGit()
-	dataDir := configmanager.DataPath
+	appConfig := configmanager.GetAppConfig()
+	dataDir := appConfig.DataPath
 
 	logging.LogDebug("using datadir: '%s'", dataDir)
 
@@ -179,18 +155,15 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			logging.LogError("add remote failed with error: %v - %s", err, string(output))
-			http.Error(w, fmt.Sprintf("Git command failed: %v - %s", err, string(output)), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("git command failed: %v - %s", err, string(output)), http.StatusInternalServerError)
 			return
 		}
 	}
 
 	logging.LogInfo("git remote set successfully")
 
-	config.RepositoryURL = repositoryURL
-	configmanager.SetConfigGit(config)
-
-	data := "Saved"
-	html := `<span class="status-ok">Repository URL saved</span>`
+	data := "saved"
+	html := `<span class="status-ok">repository URL saved</span>`
 	writeResponse(w, r, data, html)
 }
 
@@ -243,8 +216,7 @@ func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
 		err := tm.LoadTheme(theme)
 		if err == nil {
 			tm.SetCurrentTheme(theme)
-			newConfig := configmanager.ConfigThemes{CurrentTheme: theme}
-			configmanager.SetConfigThemes(newConfig)
+			configmanager.SetTheme(theme)
 		}
 	}
 
@@ -286,7 +258,7 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/content/{filepath} [get]
 func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/content/")
-	dataDir := configmanager.DataPath
+	dataDir := configmanager.GetAppConfig().DataPath
 	fullPath := filepath.Join(dataDir, filePath)
 
 	html, err := files.GetFileContent(fullPath)
@@ -398,7 +370,7 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 	var html strings.Builder
 	html.WriteString("<ul>")
 	for _, file := range files {
-		linkPath := strings.TrimPrefix(file.Path, configmanager.DataPath+"/")
+		linkPath := strings.TrimPrefix(file.Path, configmanager.GetAppConfig().DataPath+"/")
 		html.WriteString(fmt.Sprintf(`<li>%s - <a href="/files/%s"><strong>%s</strong></a> (%s)</li>`,
 			file.Date,
 			linkPath,

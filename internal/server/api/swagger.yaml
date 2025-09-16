@@ -123,17 +123,6 @@ paths:
       summary: Get git repository URL
       tags:
       - config
-  /api/config/setConfig:
-    post:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Set configuration
-      tags:
-      - config
   /api/config/setLanguage:
     post:
       consumes:
@@ -310,7 +299,7 @@ paths:
       summary: Initialize/Rebuild metadata for all files
       tags:
       - files
-  /api/git/history:
+  /api/git/latestchanges:
     get:
       produces:
       - application/json

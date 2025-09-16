@@ -25,7 +25,7 @@ type File struct {
 
 // GetAllFiles returns list of all files
 func GetAllFiles() ([]File, error) {
-	dataDir := configmanager.DataPath
+	dataDir := configmanager.GetAppConfig().DataPath
 	var files []File
 	err := filepath.Walk(dataDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {

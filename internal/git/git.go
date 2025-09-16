@@ -21,7 +21,7 @@ type GitHistoryFile struct {
 
 // GetRecentlyChangedFiles returns list of recently changed files
 func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
-	dataDir := configmanager.DataPath
+	dataDir := configmanager.GetAppConfig().DataPath
 	cmd := exec.Command("git", "log", "--oneline", "--name-only", "--pretty=format:%h|%ad|%s", "--date=short", "-n", strconv.Itoa(count), "--", "*.md")
 	cmd.Dir = dataDir
 	output, err := cmd.CombinedOutput()

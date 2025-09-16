@@ -33,7 +33,8 @@ func SetupTestData() error {
 
 // CleanTestData removes all test data
 func CleanTestData() error {
-	if err := os.RemoveAll(configmanager.DataPath); err != nil {
+	dataPath := configmanager.GetAppConfig().DataPath
+	if err := os.RemoveAll(dataPath); err != nil {
 		logging.LogError("failed to remove data directory: %v", err)
 		return err
 	}
@@ -50,11 +51,12 @@ func CleanTestData() error {
 func copyTestFiles() error {
 	logging.LogInfo("copying test files")
 
-	if err := os.MkdirAll(configmanager.DataPath, 0755); err != nil {
+	dataPath := configmanager.GetAppConfig().DataPath
+	if err := os.MkdirAll(dataPath, 0755); err != nil {
 		return err
 	}
 
-	cmd := exec.Command("cp", "-r", "internal/testdata/testfiles/.", configmanager.DataPath+"/")
+	cmd := exec.Command("cp", "-r", "internal/testdata/testfiles/.", dataPath+"/")
 	if err := cmd.Run(); err != nil {
 		logging.LogError("failed to copy test files: %v", err)
 		return err
@@ -66,7 +68,7 @@ func copyTestFiles() error {
 func createTestStructure() error {
 	logging.LogInfo("creating test structure")
 
-	dataPath := configmanager.DataPath
+	dataPath := configmanager.GetAppConfig().DataPath
 
 	dirs := []string{
 		"test/testA/testAA",
@@ -114,11 +116,12 @@ func createTestStructure() error {
 func createGitOperations() error {
 	logging.LogInfo("creating git operations")
 
+	// Use the configmanager git initialization instead of manual git init
 	if err := configmanager.InitGitRepository(); err != nil {
 		return err
 	}
 
-	dataDir := configmanager.DataPath
+	dataDir := configmanager.GetAppConfig().DataPath
 
 	cmd := exec.Command("git", "add", ".")
 	cmd.Dir = dataDir
@@ -177,7 +180,8 @@ func setupTestMetadata() error {
 
 func createTestMetadata() error {
 	var testFiles []string
-	testDir := filepath.Join(configmanager.DataPath, "test")
+	dataPath := configmanager.GetAppConfig().DataPath
+	testDir := filepath.Join(dataPath, "test")
 
 	err := filepath.Walk(testDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -197,10 +201,9 @@ func createTestMetadata() error {
 
 	for i, file := range testFiles {
 		filename := filepath.Base(file)
-		relPath := strings.TrimPrefix(file, configmanager.DataPath+"/")
+		relPath := strings.TrimPrefix(file, dataPath+"/")
 		folders := strings.Split(filepath.Dir(relPath), "/")
 
-		// Remove empty folder elements
 		validFolders := []string{}
 		for _, folder := range folders {
 			if folder != "" && folder != "." {
@@ -241,7 +244,6 @@ func createTestMetadata() error {
 
 	return nil
 }
-
 func extractFilenameTags(filename string) []string {
 	basename := strings.TrimSuffix(filename, ".md")
 

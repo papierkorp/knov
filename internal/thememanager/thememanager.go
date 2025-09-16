@@ -98,13 +98,10 @@ func (tm *ThemeManager) Initialize() {
 	}
 
 	availableThemes := tm.GetAvailableThemes()
-	currentTheme := configmanager.GetConfigThemes().CurrentTheme
+	currentTheme := configmanager.GetTheme()
 	if currentTheme == "" || !slices.Contains(availableThemes, currentTheme) {
-		logging.LogError("couldnt find theme: %s, using builtin instead", currentTheme)
-
-		configmanager.SetConfigThemes(configmanager.ConfigThemes{
-			CurrentTheme: "builtin",
-		})
+		logging.LogError("couldn't find theme: %s, using builtin instead", currentTheme)
+		configmanager.SetTheme("builtin")
 		currentTheme = "builtin"
 	}
 	err = tm.SetCurrentTheme(currentTheme)

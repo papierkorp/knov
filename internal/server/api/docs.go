@@ -48,22 +48,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/config/setConfig": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Set configuration",
-                "responses": {}
-            }
-        },
         "/api/config/setLanguage": {
             "post": {
                 "consumes": [
@@ -325,7 +309,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/git/history": {
+        "/api/git/latestchanges": {
             "get": {
                 "produces": [
                     "application/json",

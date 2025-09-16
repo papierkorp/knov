@@ -14,9 +14,10 @@ import (
 // @host localhost:1324
 // @BasePath /
 func main() {
-	configmanager.InitConfig()
 	translation.Init()
 	translation.SetLanguage(configmanager.GetLanguage())
+
+	configmanager.Init()
 	thememanager.Init()
 
 	server.StartServerChi()

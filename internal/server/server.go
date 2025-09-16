@@ -23,8 +23,10 @@ func StartServerChi() {
 	// ----------------------------------------------------------------------------------------
 	// ----------------------------------- define chi server -----------------------------------
 	// ----------------------------------------------------------------------------------------
+	appConfig := configmanager.GetAppConfig()
+	port := appConfig.ServerPort
 
-	fmt.Println("Starting Chi HTTP server on http://localhost:1324")
+	fmt.Printf("starting chi http server on http://localhost:%s\n", port)
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
@@ -81,7 +83,6 @@ func StartServerChi() {
 		// ----------------------------------------------------------------------------------------
 		r.Route("/config", func(r chi.Router) {
 			r.Get("/getConfig", handleAPIGetConfig)
-			r.Post("/setConfig", handleAPISetConfig)
 			r.Post("/setLanguage", handleAPISetLanguage)
 			r.Get("/getRepositoryURL", handleAPIGetGitRepositoryURL)
 			r.Post("/setRepositoryURL", handleAPISetGitRepositoryURL)
@@ -123,12 +124,11 @@ func StartServerChi() {
 	// ----------------------------------- start chi server -----------------------------------
 	// ----------------------------------------------------------------------------------------
 
-	err := http.ListenAndServe(":1324", r)
+	err := http.ListenAndServe(":"+port, r)
 	if err != nil {
-		fmt.Printf("Error starting chi server: %v\n", err)
+		fmt.Printf("error starting chi server: %v\n", err)
 		return
 	}
-
 }
 
 func handleCSS(w http.ResponseWriter, r *http.Request) {
@@ -250,7 +250,7 @@ func handleOverview(w http.ResponseWriter, r *http.Request) {
 
 func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/files/")
-	dataDir := configmanager.DataPath
+	dataDir := configmanager.GetAppConfig().DataPath
 	fullPath := filepath.Join(dataDir, filePath)
 
 	content, err := files.GetFileContent(fullPath)
