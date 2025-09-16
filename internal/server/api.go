@@ -271,8 +271,8 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	html.WriteString("<ul>")
 	for _, file := range files {
 		html.WriteString(fmt.Sprintf(`<li><a href="#" hx-get="/files/%s?snippet=true" hx-target="#file-content">%s</a></li>`,
-			strings.TrimPrefix(file.Path, "data/"),
-			strings.TrimPrefix(file.Path, "data/")))
+			file.Path,
+			file.Path))
 	}
 	html.WriteString("</ul>")
 
@@ -379,10 +379,10 @@ func getFormValue(slice []string, index int) string {
 // @Summary Get recently changed files
 // @Tags git
 // @Produce json,html
-// @Router /api/git/history [get]
+// @Router /api/git/latestchanges [get]
 func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 	countStr := r.URL.Query().Get("count")
-	count := 10 // default
+	count := 100 // default
 	if countStr != "" {
 		if c, err := strconv.Atoi(countStr); err == nil {
 			count = c
@@ -398,9 +398,10 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 	var html strings.Builder
 	html.WriteString("<ul>")
 	for _, file := range files {
+		linkPath := strings.TrimPrefix(file.Path, configmanager.DataPath+"/")
 		html.WriteString(fmt.Sprintf(`<li>%s - <a href="/files/%s"><strong>%s</strong></a> (%s)</li>`,
 			file.Date,
-			strings.TrimPrefix(file.Path, "data/"),
+			linkPath,
 			file.Name,
 			file.Message))
 	}

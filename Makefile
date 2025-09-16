@@ -13,10 +13,10 @@ prod: swaggo-api-init templ-generate translation
 docker: docker-build docker-run
 
 docker-build:
-	docker build -t knov-dev .
+	docker build --no-cache -t knov-dev .
 
 docker-run:
-	docker run -p 1324:1324 knov-dev
+	docker run --rm -it --name knov-dev -p 1324:1324 -v /home/markus/develop/gitlab/gollum/tempwiki2:/data knov-dev
 
 # ------------- helper -------------
 rmt:

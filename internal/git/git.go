@@ -24,9 +24,9 @@ func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
 	dataDir := configmanager.DataPath
 	cmd := exec.Command("git", "log", "--oneline", "--name-only", "--pretty=format:%h|%ad|%s", "--date=short", "-n", strconv.Itoa(count), "--", "*.md")
 	cmd.Dir = dataDir
-	output, err := cmd.Output()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		logging.LogError("failed to get git history: %v", err)
+		logging.LogError("failed to get git history: %v, output: %s", err, string(output))
 		return nil, err
 	}
 

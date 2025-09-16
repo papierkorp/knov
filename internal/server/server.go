@@ -106,7 +106,7 @@ func StartServerChi() {
 		// ----------------------------------------------------------------------------------------
 
 		r.Route("/git", func(r chi.Router) {
-			r.Get("/history", handleAPIGetRecentlyChanged)
+			r.Get("/latestchanges", handleAPIGetRecentlyChanged)
 		})
 
 		// ----------------------------------------------------------------------------------------

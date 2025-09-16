@@ -33,9 +33,13 @@ func GetAllFiles() ([]File, error) {
 		}
 
 		if !info.IsDir() && strings.HasSuffix(strings.ToLower(info.Name()), ".md") {
+			relativePath, err := filepath.Rel(dataDir, path)
+			if err != nil {
+				relativePath = path
+			}
 			file := File{
 				Name: info.Name(),
-				Path: path,
+				Path: relativePath,
 			}
 			files = append(files, file)
 		}
