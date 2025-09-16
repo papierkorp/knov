@@ -3,8 +3,8 @@ package main
 
 import (
 	"knov/internal/configmanager"
-	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/search"
 	"knov/internal/server"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
@@ -21,10 +21,8 @@ func main() {
 
 	configmanager.Init()
 	thememanager.Init()
-	if err := files.InitSearch(); err != nil {
+	if err := search.InitSearch(); err != nil {
 		logging.LogError("failed to initialize search: %v", err)
-	} else {
-		files.IndexAllFiles()
 	}
 	server.StartServerChi()
 }

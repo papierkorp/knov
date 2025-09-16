@@ -1,4 +1,3 @@
-// Package server - Clean API handlers that delegate to business logic
 package server
 
 import (
@@ -15,6 +14,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/logging"
+	"knov/internal/search"
 	"knov/internal/testdata"
 	"knov/internal/thememanager"
 )
@@ -356,7 +356,7 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results, err := files.SearchFiles(query, 20)
+	results, err := search.SearchFiles(query, 20)
 	if err != nil {
 		http.Error(w, "search failed", http.StatusInternalServerError)
 		return

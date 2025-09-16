@@ -23,6 +23,7 @@ type AppConfig struct {
 	LogLevel        string
 	GitRepoURL      string
 	MetadataStorage string
+	SearchEngine    string
 	LinkRegex       []string
 }
 
@@ -34,6 +35,7 @@ func InitAppConfig() {
 		LogLevel:        getEnv("KNOV_LOG_LEVEL", "info"),
 		GitRepoURL:      getEnv("KNOV_GIT_REPO_URL", ""),
 		MetadataStorage: getEnv("KNOV_METADATA_STORAGE", "json"),
+		SearchEngine:    getEnv("KNOV_SEARCH_ENGINE", "memory"),
 		LinkRegex: []string{
 			"\\[\\[([^\\]]+)\\]\\]",
 			"\\[([^\\]]+)\\]\\([^)]+\\)",
@@ -128,4 +130,9 @@ func InitGitRepository() error {
 	}
 
 	return nil
+}
+
+// GetSearchEngine ..
+func GetSearchEngine() string {
+	return appConfig.SearchEngine
 }

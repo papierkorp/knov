@@ -20,6 +20,7 @@ templ Base(title string) {
 				@header()
 				@htmx()
 				<main>
+					<div id="search-results"></div>
 					{ children... }
 				</main>
 			</div>
@@ -67,7 +68,6 @@ templ header() {
 			</div>
 		</div>
 	</header>
-	<div id="search-results"></div>
 }
 
 templ htmx() {

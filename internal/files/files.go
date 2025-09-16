@@ -96,6 +96,7 @@ type FilterCriteria struct {
 // FilterFilesByMetadata filters files based on metadata criteria
 func FilterFilesByMetadata(criteria []FilterCriteria, logic string) ([]File, error) {
 	allFiles, err := GetAllFiles()
+
 	if err != nil {
 		return nil, err
 	}
@@ -105,12 +106,17 @@ func FilterFilesByMetadata(criteria []FilterCriteria, logic string) ([]File, err
 	}
 
 	var filteredFiles []File
+
 	for _, file := range allFiles {
-		fileMetadata, err := MetaDataGet(file.Path)
+		dataDir := configmanager.GetAppConfig().DataPath
+		fullPath := filepath.Join(dataDir, file.Path)
+		fileMetadata, err := MetaDataGet(fullPath)
+
 		if err != nil {
-			logging.LogWarning("failed to get metadata for %s: %v", file.Path, err)
+			logging.LogWarning("failed to get metadata for %s: %v", fullPath, err)
 			continue
 		}
+
 		if fileMetadata == nil {
 			continue
 		}
@@ -121,8 +127,8 @@ func FilterFilesByMetadata(criteria []FilterCriteria, logic string) ([]File, err
 	}
 
 	return filteredFiles, nil
-}
 
+}
 func matchesFilter(metadata *Metadata, criteria []FilterCriteria, logic string) bool {
 	if len(criteria) == 0 {
 		return true

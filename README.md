@@ -2,7 +2,8 @@
 
 # todo
 
-- return filter form from api
+- make links visible in files view
+- return filter form from api?
 - metadata
   - save in a sqlite file
   - save in postgres
@@ -35,11 +36,11 @@
 - when is metadata endpoint called? (time interval?)
 - add text editor
 - add edit file
-- create api endpoint for fulltext search
 - users/groups/permissions?
 
 # done
 
+- create api endpoint for fulltext search
 - filter not working correctly
 - create filter/toc
 - add a markdown parser
