@@ -2,8 +2,42 @@
 
 # todo
 
+- Dashboard
+  - Core Structure
+    - [ ] Create dashboard data structure (widgets, layout, filters)
+    - [ ] Add dashboard CRUD API endpoints (create, read, update, delete)
+    - [ ] Create basic dashboard storage (JSON file initially)
+    - [ ] Add dashboard management to user settings
+  - Widget System
+    - [ ] Design widget configuration structure (filter + display method + size)
+    - [ ] Create widget types (list, cards, content preview)
+    - [ ] Implement widget rendering system
+    - [ ] Add widget CRUD operations
+  - UI
+    - [ ] Create dashboard template/view
+    - [ ] Add dashboard selection/switching UI
+    - [ ] Implement basic layouts (1-column, 2-column, 3-column)
+    - [ ] Add widget container rendering
+    - [ ] Create dashboard editor interface
+    - [ ] Add widget creation form (filter selection, display type)
+    - [ ] Implement layout selector
+    - [ ] Add widget edit/delete functionality
+  - UI advanced
+    - [ ] Add widget drag & drop reordering
+    - [ ] Implement widget resizing
+    - [ ] Add dashboard export/import
+    - [ ] Create dashboard templates/presets
+    - [ ] Add auto-refresh options
+- auto update
+  - startup metadata handling
+    - add MetaDataInitializeAll() to startup sequence
+    - add MetaDataLinksRebuild() to startup sequence
+    - add search.IndexAllFiles() to startup sequence
+  - periodic metadata scan
+    - create timer/goroutine for periodic checks (every 5-10 minutes)
+    - run same operations as startup: metadata init, links rebuild, search reindex
+    - add logging for periodic scan operations
 - add a editor (textbox) and the neccessary form e.g. parents, collection
-- make links visible in files view
 - return filter form from api?
 - metadata
   - save in a sqlite file
@@ -15,36 +49,35 @@
   - reduce metadata debugging logs
   - make updateUsedLinks work
   - change linkRegex config to names, e.g. obsidian, notion, dokuwiki... instead of a regex? or add one regex string + confignames
-- git
-  - move plugins/git to git
-  - dont apply git settings on the fly only on startup
-  - test external repo and fix it
-  - if added without web interface but with a git commit, search commit message for --type ...
 - error handling in settings (especially git settings)
 - create folder structure for different file types
-  - project (has board/boards)
-    - board (has everything else besides project)
+  - project (has board/boards) => own repository for each project
+    - board (has everything else besides project) => displays filter and files
       - filter (which cards are displayed)
   - is displayed with filter/toc
     - todo
     - knowledge/note
     - journal
-- add basic git functions
-  - use git do display all files in the data folder
-  - add api endpoint to create a new file (git add)
-  - add api endpoint to get a git history
-  - add api endpoint to rename a filename
-- when is metadata endpoint called? (time interval?)
-- add text editor
 - add edit file
 - users/groups/permissions?
 
 # done
 
+- [x] git
+  - [x] move plugins/git to git
+  - [x] dont apply git settings on the fly only on startup
+  - [x] test external repo and fix it
+  - [x] if added without web interface but with a git commit, search commit message for --type ... => new to do startup + periodic scan
+- make links visible in files view
 - create api endpoint for fulltext search
 - filter not working correctly
 - create filter/toc
 - add a markdown parser
+- add basic git functions
+  - use git do display all files in the data folder
+  - add api endpoint to create a new file (git add)
+  - add api endpoint to get a git history
+  - add api endpoint to rename a filename
 - files system
   - api get all files + metadata
   - api get metadata for specific file
