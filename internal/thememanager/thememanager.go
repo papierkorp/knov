@@ -55,7 +55,7 @@ type ITheme interface {
 	LatestChanges() (templ.Component, error)
 	History() (templ.Component, error)
 	Overview() (templ.Component, error)
-	FileView(content string, filename string) (templ.Component, error)
+	FileView(content string, filepath string) (templ.Component, error)
 }
 
 // -----------------------------------------------------------------------------

@@ -329,6 +329,116 @@
                 "responses": {}
             }
         },
+        "/api/links/ancestors": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Get ancestor links for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/links/kids": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Get kids links for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/links/linkstohere": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Get links to here for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/links/parents": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Get parent links for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/links/used": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Get used links for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/search": {
             "get": {
                 "produces": [
@@ -489,78 +599,108 @@
             "type": "object",
             "properties": {
                 "ancestor": {
+                    "description": "auto",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "boards": {
+                    "description": "auto",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "createdAt": {
+                    "description": "auto",
                     "type": "string"
                 },
                 "folders": {
+                    "description": "auto",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "kids": {
+                    "description": "auto",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "lastEdited": {
+                    "description": "auto",
                     "type": "string"
                 },
                 "linksToHere": {
+                    "description": "auto",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "name": {
+                    "description": "manual filename",
                     "type": "string"
                 },
                 "parents": {
+                    "description": "manual",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "path": {
+                    "description": "auto",
                     "type": "string"
                 },
                 "priority": {
-                    "$ref": "#/definitions/files.Priority"
+                    "description": "manual",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/files.Priority"
+                        }
+                    ]
                 },
                 "project": {
+                    "description": "manual - change to collection?",
                     "type": "string"
                 },
                 "size": {
+                    "description": "auto",
                     "type": "integer"
                 },
                 "status": {
-                    "$ref": "#/definitions/files.Status"
+                    "description": "manual",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/files.Status"
+                        }
+                    ]
                 },
                 "tags": {
+                    "description": "manual",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "targetDate": {
+                    "description": "auto",
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/files.Filetype"
+                    "description": "manual - with add new",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/files.Filetype"
+                        }
+                    ]
                 },
                 "usedLinks": {
+                    "description": "auto",
                     "type": "array",
                     "items": {
                         "type": "string"

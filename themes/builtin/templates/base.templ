@@ -20,7 +20,9 @@ templ Base(title string) {
 				@header()
 				@htmx()
 				<main>
-					<div id="search-results"></div>
+					<div id="search">
+						<div id="search-results"></div>
+					</div>
 					{ children... }
 				</main>
 			</div>

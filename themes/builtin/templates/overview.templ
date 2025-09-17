@@ -7,17 +7,17 @@ import (
 
 templ Overview(data thememanager.TemplateData) {
 	@Base(translation.Sprintf("Overview")) {
-		<div>
+		<div id="overview">
 			<h1>{ translation.Sprintf("OVERVIEW") }</h1>
-		</div>
-		<div class="files-container">
-			<div class="files-list">
-				<h2>{ translation.Sprintf("Files") }</h2>
-				<div hx-get="/api/files/list" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
-					Loading files...
+			<div class="files-list-container">
+				<div class="overview-list">
+					<div hx-get="/api/files/list" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+						Loading files...
+					</div>
 				</div>
+				<hr/>
+				<div id="file-content"></div>
 			</div>
-			<div id="file-content"></div>
 		</div>
 	}
 }

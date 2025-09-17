@@ -22,54 +22,75 @@ definitions:
   files.Metadata:
     properties:
       ancestor:
+        description: auto
         items:
           type: string
         type: array
       boards:
+        description: auto
         items:
           type: string
         type: array
       createdAt:
+        description: auto
         type: string
       folders:
+        description: auto
         items:
           type: string
         type: array
       kids:
+        description: auto
         items:
           type: string
         type: array
       lastEdited:
+        description: auto
         type: string
       linksToHere:
+        description: auto
         items:
           type: string
         type: array
       name:
+        description: manual filename
         type: string
       parents:
+        description: manual
         items:
           type: string
         type: array
       path:
+        description: auto
         type: string
       priority:
-        $ref: '#/definitions/files.Priority'
+        allOf:
+        - $ref: '#/definitions/files.Priority'
+        description: manual
       project:
+        description: manual - change to collection?
         type: string
       size:
+        description: auto
         type: integer
       status:
-        $ref: '#/definitions/files.Status'
+        allOf:
+        - $ref: '#/definitions/files.Status'
+        description: manual
       tags:
+        description: manual
         items:
           type: string
         type: array
       targetDate:
+        description: auto
         type: string
       type:
-        $ref: '#/definitions/files.Filetype'
+        allOf:
+        - $ref: '#/definitions/files.Filetype'
+        description: manual - with add new
       usedLinks:
+        description: auto
         items:
           type: string
         type: array
@@ -317,6 +338,81 @@ paths:
       summary: Health check
       tags:
       - health
+  /api/links/ancestors:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get ancestor links for a file
+      tags:
+      - links
+  /api/links/kids:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get kids links for a file
+      tags:
+      - links
+  /api/links/linkstohere:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get links to here for a file
+      tags:
+      - links
+  /api/links/parents:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get parent links for a file
+      tags:
+      - links
+  /api/links/used:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get used links for a file
+      tags:
+      - links
   /api/search:
     get:
       parameters:

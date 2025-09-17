@@ -2,6 +2,8 @@
 package main
 
 import (
+	"path/filepath"
+
 	"github.com/a-h/templ"
 	"knov/internal/thememanager"
 	"knov/themes/builtin/templates"
@@ -82,14 +84,15 @@ func (t *Builtin) Overview() (templ.Component, error) {
 }
 
 // FileView ...
-func (t *Builtin) FileView(content string, filename string) (templ.Component, error) {
+func (t *Builtin) FileView(content string, filePath string) (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
 		AvailableThemes: tm.GetAvailableThemes(),
 	}
 
-	return templates.FileView(content, filename, td), nil
+	filename := filepath.Base(filePath)
+	return templates.FileView(content, filePath, filename, td), nil
 }
 
 func main() {}

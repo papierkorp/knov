@@ -9,12 +9,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/swaggo/http-swagger/v2"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/plugins"
 	_ "knov/internal/server/api" // swaggo api docs
 	"knov/internal/thememanager"
+	"knov/internal/utils"
 )
 
 // StartServerChi ...
@@ -101,6 +102,17 @@ func StartServerChi() {
 			r.Post("/metadata", handleAPISetMetadata)
 			r.Post("/metadata/rebuild", handleAPIRebuildMetadata)
 			r.Post("/filter", handleAPIFilterFiles)
+		})
+
+		// ----------------------------------------------------------------------------------------
+		// --------------------------------------- LINKS ------------------------------------------
+		// ----------------------------------------------------------------------------------------
+		r.Route("/links", func(r chi.Router) {
+			r.Get("/parents", handleAPIGetParents)
+			r.Get("/ancestors", handleAPIGetAncestors)
+			r.Get("/kids", handleAPIGetKids)
+			r.Get("/used", handleAPIGetUsedLinks)
+			r.Get("/linkstohere", handleAPIGetLinksToHere)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -251,8 +263,7 @@ func handleOverview(w http.ResponseWriter, r *http.Request) {
 
 func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/files/")
-	dataDir := configmanager.GetAppConfig().DataPath
-	fullPath := filepath.Join(dataDir, filePath)
+	fullPath := utils.ToFullPath(filePath)
 
 	content, err := files.GetFileContent(fullPath)
 	if err != nil {
@@ -266,8 +277,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filename := filepath.Base(filePath)
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().FileView(string(content), filename)
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().FileView(string(content), filePath)
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
 		return

@@ -1,5 +1,7 @@
 @import url("header.css");
 @import url("playground.css");
+@import url("fileview.css");
+@import url("overview.css");
 
 :root {
   --primary: #65a30d;

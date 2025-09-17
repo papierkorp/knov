@@ -1,0 +1,28 @@
+.links-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.link-section h3 {
+  margin: 0 0 5px 0;
+  font-size: 12px;
+}
+
+.link-section ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link-section li {
+  margin: 2px 0;
+  font-size: 11px;
+}
+
+@media (max-width: 768px) {
+  .links-container {
+    grid-template-columns: 1fr;
+  }
+}

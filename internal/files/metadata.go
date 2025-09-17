@@ -10,6 +10,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/logging"
+	"knov/internal/utils"
 )
 
 type Filetype string
@@ -32,42 +33,33 @@ const (
 
 // Metadata represents file metadata
 type Metadata struct {
-	Name        string    `json:"name"`
-	Path        string    `json:"path"`
-	CreatedAt   time.Time `json:"createdAt"`
-	LastEdited  time.Time `json:"lastEdited"`
-	TargetDate  time.Time `json:"targetDate"`
-	Project     string    `json:"project"`
-	Folders     []string  `json:"folders"`
-	Tags        []string  `json:"tags"`
-	Boards      []string  `json:"boards"`
-	Ancestor    []string  `json:"ancestor"`
-	Parents     []string  `json:"parents"`
-	Kids        []string  `json:"kids"`
-	UsedLinks   []string  `json:"usedLinks"`
-	LinksToHere []string  `json:"linksToHere"`
-	FileType    Filetype  `json:"type"`
-	Status      Status    `json:"status"`
-	Priority    Priority  `json:"priority"`
-	Size        int64     `json:"size"`
+	Name        string    `json:"name"`        // manual filename
+	Path        string    `json:"path"`        // auto
+	CreatedAt   time.Time `json:"createdAt"`   // auto
+	LastEdited  time.Time `json:"lastEdited"`  // auto
+	TargetDate  time.Time `json:"targetDate"`  // auto
+	Project     string    `json:"project"`     // manual - change to collection?
+	Folders     []string  `json:"folders"`     // auto
+	Tags        []string  `json:"tags"`        // manual
+	Boards      []string  `json:"boards"`      // auto
+	Ancestor    []string  `json:"ancestor"`    // auto
+	Parents     []string  `json:"parents"`     // manual
+	Kids        []string  `json:"kids"`        // auto
+	UsedLinks   []string  `json:"usedLinks"`   // auto
+	LinksToHere []string  `json:"linksToHere"` // auto
+	FileType    Filetype  `json:"type"`        // manual - with add new
+	Status      Status    `json:"status"`      // manual
+	Priority    Priority  `json:"priority"`    // manual
+	Size        int64     `json:"size"`        // auto
 }
 
 func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	currentMetadata, _ := MetaDataGet(filePath)
 
-	fileInfo, err := os.Stat(filePath)
-	actualPath := filePath
+	normalizedPath := utils.ToRelativePath(filePath)
+	fullPath := utils.ToFullPath(normalizedPath)
 
-	// TODO add config for the datafolder or remove the config
-	if err != nil {
-		if !strings.HasPrefix(filePath, configmanager.GetAppConfig().DataPath+"/") {
-			dataPath := filepath.Join(configmanager.GetAppConfig().DataPath, filePath)
-			fileInfo, err = os.Stat(dataPath)
-			if err == nil {
-				actualPath = dataPath
-			}
-		}
-	}
+	fileInfo, err := os.Stat(fullPath)
 
 	if err != nil {
 		logging.LogError("failed to get file info for %s: %v", filePath, err)
@@ -79,14 +71,14 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	}
 
 	currentMetadata.Name = fileInfo.Name()
-	currentMetadata.Path = actualPath
+	currentMetadata.Path = normalizedPath
 	if currentMetadata.CreatedAt.IsZero() {
 		currentMetadata.CreatedAt = fileInfo.ModTime()
 	}
 	currentMetadata.LastEdited = fileInfo.ModTime()
 	currentMetadata.Size = fileInfo.Size()
 
-	dir := filepath.Dir(actualPath)
+	dir := filepath.Dir(utils.ToRelativePath(fullPath))
 	if dir != "." && dir != "/" && dir != "" {
 		folders := strings.Split(strings.Trim(dir, "/"), "/")
 		var validFolders []string
@@ -274,7 +266,7 @@ func metaDataGetJSON(filepath string) (*Metadata, error) {
 		return nil, nil
 	}
 
-	logging.LogDebug("metadata retrieved: %+v", metadata)
+	logging.LogDebug("metadata retrieved: %s", metadata.Name)
 	return metadata, nil
 }
 

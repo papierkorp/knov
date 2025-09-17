@@ -9,7 +9,6 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
-	"knov/internal/logging"
 )
 
 // InMemoryEngine ..

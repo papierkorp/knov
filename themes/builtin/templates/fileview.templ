@@ -2,12 +2,47 @@ package templates
 
 import "knov/internal/thememanager"
 
-templ FileView(content string, filename string, data thememanager.TemplateData) {
+templ FileView(content string, filepath string, filename string, data thememanager.TemplateData) {
 	@Base(filename) {
-		<div class="file-container">
-			<article class="file-content">
-				@templ.Raw(content)
-			</article>
+		<div id="fileview">
+			<link href="/static/css/fileview.css" rel="stylesheet"/>
+			<div class="files-list-container">
+				<div class="links-container">
+					<div class="link-section">
+						<h3>Parents</h3>
+						<ul hx-get={ "/api/links/parents?filepath=" + templ.URL(filepath) } hx-trigger="load">
+							<li>loading...</li>
+						</ul>
+					</div>
+					<div class="link-section">
+						<h3>Ancestors</h3>
+						<ul hx-get={ "/api/links/ancestors?filepath=" + templ.URL(filepath) } hx-trigger="load">
+							<li>loading...</li>
+						</ul>
+					</div>
+					<div class="link-section">
+						<h3>Kids</h3>
+						<ul hx-get={ "/api/links/kids?filepath=" + templ.URL(filepath) } hx-trigger="load">
+							<li>loading...</li>
+						</ul>
+					</div>
+					<div class="link-section">
+						<h3>Used Links</h3>
+						<ul hx-get={ "/api/links/used?filepath=" + templ.URL(filepath) } hx-trigger="load">
+							<li>loading...</li>
+						</ul>
+					</div>
+					<div class="link-section">
+						<h3>Links To Here</h3>
+						<ul hx-get={ "/api/links/linkstohere?filepath=" + templ.URL(filepath) } hx-trigger="load">
+							<li>loading...</li>
+						</ul>
+					</div>
+				</div>
+				<article class="file-content">
+					@templ.Raw(content)
+				</article>
+			</div>
 		</div>
 	}
 }

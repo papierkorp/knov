@@ -10,6 +10,7 @@ import (
 	_ "github.com/mattn/go-sqlite3" // sqlite full text search
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/utils"
 )
 
 // SQLiteEngine ..
@@ -47,7 +48,7 @@ func (s *SQLiteEngine) IndexAllFiles() error {
 
 	dataDir := configmanager.GetAppConfig().DataPath
 	for _, file := range allFiles {
-		fullPath := filepath.Join(dataDir, file.Path)
+		fullPath := utils.ToFullPath(file.Path)
 		content, err := os.ReadFile(fullPath)
 		if err != nil {
 			continue

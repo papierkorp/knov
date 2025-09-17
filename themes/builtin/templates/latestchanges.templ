@@ -7,7 +7,7 @@ import (
 
 templ LatestChanges(data thememanager.TemplateData) {
 	@Base(translation.Sprintf("Latest Changes")) {
-		<div>
+		<div id="latestchanges">
 			<h1>{ translation.Sprintf("Recent File History") }</h1>
 			<div hx-get="/api/git/latestchanges?count=500" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
 				Loading recent changes...

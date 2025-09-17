@@ -3,13 +3,13 @@ package files
 
 import (
 	"os"
-	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/logging"
+	"knov/internal/utils"
 )
 
 func metaDataLinksAdd(filePath string) error {
@@ -112,17 +112,14 @@ func findTopAncestor(filePath string, visited map[string]bool) string {
 }
 
 func updateUsedLinks(metadata *Metadata) {
-	content, err := os.ReadFile(metadata.Path)
+	fullPath := utils.ToFullPath(metadata.Path)
+	content, err := os.ReadFile(fullPath)
 	if err != nil {
-		logging.LogWarning("failed to read file %s: %v", metadata.Path, err)
+		logging.LogWarning("failed to read file %s: %v", fullPath, err)
 		return
 	}
 
 	linkRegexes := configmanager.GetMetadataLinkRegex()
-	if len(linkRegexes) == 0 {
-		return
-	}
-
 	var usedLinks []string
 	linkSet := make(map[string]bool)
 
@@ -137,16 +134,23 @@ func updateUsedLinks(metadata *Metadata) {
 		for _, match := range matches {
 			if len(match) > 1 {
 				link := match[1]
-				if link != "" {
-					normalizedLink := normalizePath(link, metadata.Path)
-					if normalizedLink != metadata.Path && !linkSet[normalizedLink] {
-						if _, err := os.Stat(normalizedLink); err == nil {
-							linkSet[normalizedLink] = true
-							usedLinks = append(usedLinks, normalizedLink)
-						} else if _, err := os.Stat(normalizedLink + ".md"); err == nil {
-							linkSet[normalizedLink] = true
-							usedLinks = append(usedLinks, normalizedLink)
-						}
+				if idx := strings.Index(link, "|"); idx != -1 {
+					link = link[:idx]
+				}
+				if idx := strings.Index(link, "]]"); idx != -1 {
+					link = link[:idx]
+				}
+				if idx := strings.Index(link, "}}"); idx != -1 {
+					link = link[:idx]
+				}
+				if strings.HasPrefix(link, "../") {
+					link = strings.TrimPrefix(link, "../")
+				}
+				link = strings.TrimSpace(link)
+				if strings.HasSuffix(link, ".md") && !strings.Contains(link, "\n") && len(link) < 100 {
+					if link != metadata.Path && !linkSet[link] {
+						linkSet[link] = true
+						usedLinks = append(usedLinks, link)
 					}
 				}
 			}
@@ -154,16 +158,6 @@ func updateUsedLinks(metadata *Metadata) {
 	}
 
 	metadata.UsedLinks = usedLinks
-}
-
-func normalizePath(linkPath, basePath string) string {
-	if strings.HasPrefix(linkPath, "data/") {
-		return linkPath
-	}
-
-	baseDir := filepath.Dir(basePath)
-	fullPath := filepath.Join(baseDir, linkPath)
-	return filepath.Clean(fullPath)
 }
 
 func updateKidsAndLinksToHere(metadata *Metadata) {

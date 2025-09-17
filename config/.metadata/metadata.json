@@ -1,19 +1,13 @@
 {
-  "data/getting-started.md": {
-    "name": "getting-started.md",
-    "path": "data/getting-started.md",
-    "createdAt": "2025-09-16T20:35:16.573254521+02:00",
-    "lastEdited": "2025-09-16T20:35:16.573254521+02:00",
+  "ai.md": {
+    "name": "ai.md",
+    "path": "ai.md",
+    "createdAt": "2025-09-17T11:08:22.598013163+02:00",
+    "lastEdited": "2025-09-17T11:08:22.598013163+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "documentation",
-    "folders": [
-      "data"
-    ],
-    "tags": [
-      "guide",
-      "onboarding",
-      "getting-started"
-    ],
+    "project": "default",
+    "folders": null,
+    "tags": [],
     "boards": [
       "default"
     ],
@@ -22,20 +16,80 @@
     "kids": [],
     "usedLinks": [],
     "linksToHere": [],
+    "type": "journal",
+    "status": "published",
+    "priority": "medium",
+    "size": 4408
+  },
+  "example_markdown.md": {
+    "name": "example_markdown.md",
+    "path": "example_markdown.md",
+    "createdAt": "2025-09-17T11:08:22.598089278+02:00",
+    "lastEdited": "2025-09-17T11:08:22.598089278+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "default",
+    "folders": null,
+    "tags": [],
+    "boards": [
+      "default"
+    ],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [],
+    "linksToHere": [],
+    "type": "journal",
+    "status": "published",
+    "priority": "medium",
+    "size": 4559
+  },
+  "getting-started.md": {
+    "name": "getting-started.md",
+    "path": "getting-started.md",
+    "createdAt": "2025-09-17T11:08:22.619704658+02:00",
+    "lastEdited": "2025-09-17T11:08:22.619704658+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "documentation",
+    "folders": null,
+    "tags": [
+      "guide",
+      "onboarding",
+      "getting-started"
+    ],
+    "boards": [
+      "default"
+    ],
+    "ancestor": [
+      "project-overview.md"
+    ],
+    "parents": [
+      "project-overview.md"
+    ],
+    "kids": [],
+    "usedLinks": [
+      "project-overview.md",
+      "technical-documentation.md",
+      "troubleshooting.md",
+      "meeting-notes.md"
+    ],
+    "linksToHere": [
+      "meeting-notes.md",
+      "technical-documentation.md",
+      "troubleshooting.md"
+    ],
     "type": "note",
     "status": "published",
     "priority": "high",
     "size": 902
   },
-  "data/guides/developer-setup.md": {
+  "guides/developer-setup.md": {
     "name": "developer-setup.md",
-    "path": "data/guides/developer-setup.md",
-    "createdAt": "2025-09-16T20:35:16.545754521+02:00",
-    "lastEdited": "2025-09-16T20:35:16.545754521+02:00",
+    "path": "guides/developer-setup.md",
+    "createdAt": "2025-09-17T11:08:22.598206099+02:00",
+    "lastEdited": "2025-09-17T11:08:22.598206099+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "technical",
     "folders": [
-      "data",
       "guides"
     ],
     "tags": [
@@ -51,22 +105,28 @@
     "ancestor": [],
     "parents": [],
     "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
+    "usedLinks": [
+      "technical-documentation.md",
+      "project-overview.md",
+      "troubleshooting.md"
+    ],
+    "linksToHere": [
+      "project-overview.md",
+      "technical-documentation.md"
+    ],
     "type": "note",
     "status": "published",
     "priority": "medium",
     "size": 1423
   },
-  "data/guides/user-manual.md": {
+  "guides/user-manual.md": {
     "name": "user-manual.md",
-    "path": "data/guides/user-manual.md",
-    "createdAt": "2025-09-16T20:35:16.545754521+02:00",
-    "lastEdited": "2025-09-16T20:35:16.545754521+02:00",
+    "path": "guides/user-manual.md",
+    "createdAt": "2025-09-17T11:08:22.59826109+02:00",
+    "lastEdited": "2025-09-17T11:08:22.59826109+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "documentation",
     "folders": [
-      "data",
       "guides"
     ],
     "tags": [
@@ -82,23 +142,29 @@
     "ancestor": [],
     "parents": [],
     "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
+    "usedLinks": [
+      "getting-started.md",
+      "document-name.md",
+      "troubleshooting.md",
+      "technical-documentation.md",
+      "meeting-notes.md"
+    ],
+    "linksToHere": [
+      "troubleshooting.md"
+    ],
     "type": "note",
     "status": "published",
     "priority": "medium",
     "size": 1370
   },
-  "data/meeting-notes.md": {
+  "meeting-notes.md": {
     "name": "meeting-notes.md",
-    "path": "data/meeting-notes.md",
-    "createdAt": "2025-09-16T20:35:16.545754521+02:00",
-    "lastEdited": "2025-09-16T20:35:16.545754521+02:00",
+    "path": "meeting-notes.md",
+    "createdAt": "2025-09-17T11:08:22.598342357+02:00",
+    "lastEdited": "2025-09-17T11:08:22.598342357+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "management",
-    "folders": [
-      "data"
-    ],
+    "folders": null,
     "tags": [
       "meeting",
       "sprint",
@@ -108,26 +174,40 @@
       "default",
       "meetings"
     ],
-    "ancestor": [],
-    "parents": [],
+    "ancestor": [
+      "project-overview.md"
+    ],
+    "parents": [
+      "project-overview.md"
+    ],
     "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
+    "usedLinks": [
+      "project-overview.md",
+      "technical-documentation.md",
+      "getting-started.md",
+      "projects/backend-api.md",
+      "troubleshooting.md"
+    ],
+    "linksToHere": [
+      "getting-started.md",
+      "guides/user-manual.md",
+      "project-overview.md",
+      "technical-documentation.md",
+      "troubleshooting.md"
+    ],
     "type": "note",
     "status": "published",
     "priority": "medium",
     "size": 1213
   },
-  "data/project-overview.md": {
+  "project-overview.md": {
     "name": "project-overview.md",
-    "path": "data/project-overview.md",
-    "createdAt": "2025-09-16T20:35:16.545754521+02:00",
-    "lastEdited": "2025-09-16T20:35:16.545754521+02:00",
+    "path": "project-overview.md",
+    "createdAt": "2025-09-17T11:08:22.598384668+02:00",
+    "lastEdited": "2025-09-17T11:08:22.598384668+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "management",
-    "folders": [
-      "data"
-    ],
+    "folders": null,
     "tags": [
       "project",
       "overview",
@@ -139,23 +219,40 @@
     ],
     "ancestor": [],
     "parents": [],
-    "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
+    "kids": [
+      "getting-started.md",
+      "meeting-notes.md",
+      "technical-documentation.md"
+    ],
+    "usedLinks": [
+      "projects/backend-api.md",
+      "projects/frontend-redesign.md",
+      "projects/database-migration.md",
+      "meeting-notes.md",
+      "troubleshooting.md",
+      "guides/developer-setup.md",
+      "technical-documentation.md"
+    ],
+    "linksToHere": [
+      "getting-started.md",
+      "guides/developer-setup.md",
+      "meeting-notes.md",
+      "technical-documentation.md",
+      "troubleshooting.md"
+    ],
     "type": "note",
     "status": "published",
     "priority": "high",
     "size": 956
   },
-  "data/projects/backend-api.md": {
+  "projects/backend-api.md": {
     "name": "backend-api.md",
-    "path": "data/projects/backend-api.md",
-    "createdAt": "2025-09-16T20:35:16.536587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.536587854+02:00",
+    "path": "projects/backend-api.md",
+    "createdAt": "2025-09-17T11:08:22.598455629+02:00",
+    "lastEdited": "2025-09-17T11:08:22.598455629+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "backend",
     "folders": [
-      "data",
       "projects"
     ],
     "tags": [
@@ -171,22 +268,30 @@
     "ancestor": [],
     "parents": [],
     "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
+    "usedLinks": [
+      "project-overview.md",
+      "database-migration.md",
+      "frontend-redesign.md",
+      "technical-documentation.md",
+      "meeting-notes.md"
+    ],
+    "linksToHere": [
+      "meeting-notes.md",
+      "project-overview.md"
+    ],
     "type": "todo",
     "status": "draft",
     "priority": "high",
     "size": 900
   },
-  "data/projects/database-migration.md": {
+  "projects/database-migration.md": {
     "name": "database-migration.md",
-    "path": "data/projects/database-migration.md",
-    "createdAt": "2025-09-16T20:35:16.536587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.536587854+02:00",
+    "path": "projects/database-migration.md",
+    "createdAt": "2025-09-17T11:08:22.598496867+02:00",
+    "lastEdited": "2025-09-17T11:08:22.598496867+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "infrastructure",
     "folders": [
-      "data",
       "projects"
     ],
     "tags": [
@@ -202,22 +307,29 @@
     "ancestor": [],
     "parents": [],
     "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
+    "usedLinks": [
+      "project-overview.md",
+      "backend-api.md",
+      "frontend-redesign.md",
+      "technical-documentation.md",
+      "troubleshooting.md"
+    ],
+    "linksToHere": [
+      "project-overview.md"
+    ],
     "type": "note",
     "status": "published",
     "priority": "high",
     "size": 1082
   },
-  "data/projects/frontend-redesign.md": {
+  "projects/frontend-redesign.md": {
     "name": "frontend-redesign.md",
-    "path": "data/projects/frontend-redesign.md",
-    "createdAt": "2025-09-16T20:35:16.536587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.536587854+02:00",
+    "path": "projects/frontend-redesign.md",
+    "createdAt": "2025-09-17T11:08:22.598843589+02:00",
+    "lastEdited": "2025-09-17T11:08:22.598843589+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "frontend",
     "folders": [
-      "data",
       "projects"
     ],
     "tags": [
@@ -233,23 +345,50 @@
     "ancestor": [],
     "parents": [],
     "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
+    "usedLinks": [
+      "project-overview.md",
+      "backend-api.md",
+      "guides/user-manual.md",
+      "technical-documentation.md"
+    ],
+    "linksToHere": [
+      "project-overview.md"
+    ],
     "type": "todo",
     "status": "draft",
     "priority": "medium",
     "size": 861
   },
-  "data/technical-documentation.md": {
+  "sample Markdown.md": {
+    "name": "sample Markdown.md",
+    "path": "sample Markdown.md",
+    "createdAt": "2025-09-17T11:08:22.598973255+02:00",
+    "lastEdited": "2025-09-17T11:08:22.598973255+02:00",
+    "targetDate": "0001-01-01T00:00:00Z",
+    "project": "default",
+    "folders": null,
+    "tags": [],
+    "boards": [
+      "default"
+    ],
+    "ancestor": [],
+    "parents": [],
+    "kids": [],
+    "usedLinks": [],
+    "linksToHere": [],
+    "type": "journal",
+    "status": "published",
+    "priority": "medium",
+    "size": 2808
+  },
+  "technical-documentation.md": {
     "name": "technical-documentation.md",
-    "path": "data/technical-documentation.md",
-    "createdAt": "2025-09-16T20:35:16.545754521+02:00",
-    "lastEdited": "2025-09-16T20:35:16.545754521+02:00",
+    "path": "technical-documentation.md",
+    "createdAt": "2025-09-17T11:08:22.598902966+02:00",
+    "lastEdited": "2025-09-17T11:08:22.598902966+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "technical",
-    "folders": [
-      "data"
-    ],
+    "folders": null,
     "tags": [
       "technical",
       "api",
@@ -259,25 +398,44 @@
       "default",
       "technical"
     ],
-    "ancestor": [],
-    "parents": [],
+    "ancestor": [
+      "project-overview.md"
+    ],
+    "parents": [
+      "project-overview.md"
+    ],
     "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
+    "usedLinks": [
+      "project-overview.md",
+      "troubleshooting.md",
+      "getting-started.md",
+      "meeting-notes.md",
+      "guides/developer-setup.md"
+    ],
+    "linksToHere": [
+      "getting-started.md",
+      "guides/developer-setup.md",
+      "guides/user-manual.md",
+      "meeting-notes.md",
+      "project-overview.md",
+      "projects/backend-api.md",
+      "projects/database-migration.md",
+      "projects/frontend-redesign.md",
+      "troubleshooting.md"
+    ],
     "type": "note",
     "status": "published",
     "priority": "medium",
     "size": 1289
   },
-  "data/test/testA/testA.md": {
+  "test/testA/testA.md": {
     "name": "testA.md",
-    "path": "data/test/testA/testA.md",
-    "createdAt": "2025-09-16T20:35:16.573254521+02:00",
-    "lastEdited": "2025-09-16T20:35:16.573254521+02:00",
+    "path": "test/testA/testA.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testA",
     "folders": [
-      "data",
       "test",
       "testA"
     ],
@@ -297,15 +455,14 @@
     "priority": "low",
     "size": 32
   },
-  "data/test/testA/testAA/testAAA.md": {
+  "test/testA/testAA/testAAA.md": {
     "name": "testAAA.md",
-    "path": "data/test/testA/testAA/testAAA.md",
-    "createdAt": "2025-09-16T20:35:16.573254521+02:00",
-    "lastEdited": "2025-09-16T20:35:16.573254521+02:00",
+    "path": "test/testA/testAA/testAAA.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testA",
     "folders": [
-      "data",
       "test",
       "testA",
       "testAA"
@@ -326,15 +483,14 @@
     "priority": "medium",
     "size": 34
   },
-  "data/test/testA/testAA/testAAB.md": {
+  "test/testA/testAA/testAAB.md": {
     "name": "testAAB.md",
-    "path": "data/test/testA/testAA/testAAB.md",
-    "createdAt": "2025-09-16T20:35:16.573254521+02:00",
-    "lastEdited": "2025-09-16T20:35:16.573254521+02:00",
+    "path": "test/testA/testAA/testAAB.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testA",
     "folders": [
-      "data",
       "test",
       "testA",
       "testAA"
@@ -356,15 +512,14 @@
     "priority": "high",
     "size": 34
   },
-  "data/test/testA/testAA/testAAC.md": {
+  "test/testA/testAA/testAAC.md": {
     "name": "testAAC.md",
-    "path": "data/test/testA/testAA/testAAC.md",
-    "createdAt": "2025-09-16T20:35:16.591587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.591587854+02:00",
+    "path": "test/testA/testAA/testAAC.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testA",
     "folders": [
-      "data",
       "test",
       "testA",
       "testAA"
@@ -386,15 +541,14 @@
     "priority": "low",
     "size": 34
   },
-  "data/test/testA/testAB.md": {
+  "test/testA/testAB.md": {
     "name": "testAB.md",
-    "path": "data/test/testA/testAB.md",
-    "createdAt": "2025-09-16T20:35:16.573254521+02:00",
-    "lastEdited": "2025-09-16T20:35:16.573254521+02:00",
+    "path": "test/testA/testAB.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testA",
     "folders": [
-      "data",
       "test",
       "testA"
     ],
@@ -415,15 +569,14 @@
     "priority": "low",
     "size": 33
   },
-  "data/test/testA/testAB/testABA.md": {
+  "test/testA/testAB/testABA.md": {
     "name": "testABA.md",
-    "path": "data/test/testA/testAB/testABA.md",
-    "createdAt": "2025-09-16T20:35:16.591587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.591587854+02:00",
+    "path": "test/testA/testAB/testABA.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testA",
     "folders": [
-      "data",
       "test",
       "testA",
       "testAB"
@@ -445,15 +598,14 @@
     "priority": "medium",
     "size": 34
   },
-  "data/test/testA/testAB/testABB.md": {
+  "test/testA/testAB/testABB.md": {
     "name": "testABB.md",
-    "path": "data/test/testA/testAB/testABB.md",
-    "createdAt": "2025-09-16T20:35:16.591587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.591587854+02:00",
+    "path": "test/testA/testAB/testABB.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testA",
     "folders": [
-      "data",
       "test",
       "testA",
       "testAB"
@@ -475,15 +627,14 @@
     "priority": "high",
     "size": 34
   },
-  "data/test/testA/testAC.md": {
+  "test/testA/testAC.md": {
     "name": "testAC.md",
-    "path": "data/test/testA/testAC.md",
-    "createdAt": "2025-09-16T20:35:16.573254521+02:00",
-    "lastEdited": "2025-09-16T20:35:16.573254521+02:00",
+    "path": "test/testA/testAC.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testA",
     "folders": [
-      "data",
       "test",
       "testA"
     ],
@@ -504,15 +655,14 @@
     "priority": "high",
     "size": 33
   },
-  "data/test/testA/testAC/testACA.md": {
+  "test/testA/testAC/testACA.md": {
     "name": "testACA.md",
-    "path": "data/test/testA/testAC/testACA.md",
-    "createdAt": "2025-09-16T20:35:16.591587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.591587854+02:00",
+    "path": "test/testA/testAC/testACA.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testA",
     "folders": [
-      "data",
       "test",
       "testA",
       "testAC"
@@ -534,15 +684,14 @@
     "priority": "medium",
     "size": 34
   },
-  "data/test/testB/testBA.md": {
+  "test/testB/testBA.md": {
     "name": "testBA.md",
-    "path": "data/test/testB/testBA.md",
-    "createdAt": "2025-09-16T20:35:16.591587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.591587854+02:00",
+    "path": "test/testB/testBA.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testB",
     "folders": [
-      "data",
       "test",
       "testB"
     ],
@@ -563,15 +712,14 @@
     "priority": "low",
     "size": 33
   },
-  "data/test/testB/testBB.md": {
+  "test/testB/testBB.md": {
     "name": "testBB.md",
-    "path": "data/test/testB/testBB.md",
-    "createdAt": "2025-09-16T20:35:16.591587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.591587854+02:00",
+    "path": "test/testB/testBB.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testB",
     "folders": [
-      "data",
       "test",
       "testB"
     ],
@@ -591,15 +739,14 @@
     "priority": "medium",
     "size": 33
   },
-  "data/test/testB/testBC.md": {
+  "test/testB/testBC.md": {
     "name": "testBC.md",
-    "path": "data/test/testB/testBC.md",
-    "createdAt": "2025-09-16T20:35:16.591587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.591587854+02:00",
+    "path": "test/testB/testBC.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testB",
     "folders": [
-      "data",
       "test",
       "testB"
     ],
@@ -620,15 +767,14 @@
     "priority": "high",
     "size": 33
   },
-  "data/test/testC/testCA.md": {
+  "test/testC/testCA.md": {
     "name": "testCA.md",
-    "path": "data/test/testC/testCA.md",
-    "createdAt": "2025-09-16T20:35:16.591587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.591587854+02:00",
+    "path": "test/testC/testCA.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testC",
     "folders": [
-      "data",
       "test",
       "testC"
     ],
@@ -649,15 +795,14 @@
     "priority": "low",
     "size": 33
   },
-  "data/test/testC/testCB.md": {
+  "test/testC/testCB.md": {
     "name": "testCB.md",
-    "path": "data/test/testC/testCB.md",
-    "createdAt": "2025-09-16T20:35:16.591587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.591587854+02:00",
+    "path": "test/testC/testCB.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testC",
     "folders": [
-      "data",
       "test",
       "testC"
     ],
@@ -678,15 +823,14 @@
     "priority": "medium",
     "size": 33
   },
-  "data/test/testC/testCC.md": {
+  "test/testC/testCC.md": {
     "name": "testCC.md",
-    "path": "data/test/testC/testCC.md",
-    "createdAt": "2025-09-16T20:35:16.591587854+02:00",
-    "lastEdited": "2025-09-16T20:35:16.591587854+02:00",
+    "path": "test/testC/testCC.md",
+    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
+    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "testC",
     "folders": [
-      "data",
       "test",
       "testC"
     ],
@@ -706,16 +850,14 @@
     "priority": "high",
     "size": 33
   },
-  "data/troubleshooting.md": {
+  "troubleshooting.md": {
     "name": "troubleshooting.md",
-    "path": "data/troubleshooting.md",
-    "createdAt": "2025-09-16T20:35:16.545754521+02:00",
-    "lastEdited": "2025-09-16T20:35:16.545754521+02:00",
+    "path": "troubleshooting.md",
+    "createdAt": "2025-09-17T11:08:22.598939688+02:00",
+    "lastEdited": "2025-09-17T11:08:22.598939688+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
     "project": "support",
-    "folders": [
-      "data"
-    ],
+    "folders": null,
     "tags": [
       "troubleshooting",
       "help",
@@ -728,8 +870,22 @@
     "ancestor": [],
     "parents": [],
     "kids": [],
-    "usedLinks": [],
-    "linksToHere": [],
+    "usedLinks": [
+      "meeting-notes.md",
+      "technical-documentation.md",
+      "project-overview.md",
+      "getting-started.md",
+      "guides/user-manual.md"
+    ],
+    "linksToHere": [
+      "getting-started.md",
+      "guides/developer-setup.md",
+      "guides/user-manual.md",
+      "meeting-notes.md",
+      "project-overview.md",
+      "projects/database-migration.md",
+      "technical-documentation.md"
+    ],
     "type": "note",
     "status": "published",
     "priority": "high",

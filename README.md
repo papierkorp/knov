@@ -2,6 +2,7 @@
 
 # todo
 
+- add a editor (textbox) and the neccessary form e.g. parents, collection
 - make links visible in files view
 - return filter form from api?
 - metadata
