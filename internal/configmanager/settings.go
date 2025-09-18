@@ -22,6 +22,7 @@ var currentUserID string
 type UserSettings struct {
 	Theme    string `json:"theme"`
 	Language string `json:"language"`
+	FileView string `json:"fileView"`
 }
 
 // InitUserSettings initializes user settings from JSON file for specific user
@@ -31,6 +32,7 @@ func InitUserSettings(userID string) {
 	userSettings = UserSettings{
 		Theme:    "builtin",
 		Language: "en",
+		FileView: "detailed",
 	}
 
 	settingsPath := getUserSettingsPath(userID)
@@ -89,4 +91,18 @@ func saveUserSettings() error {
 
 	logging.LogInfo("user settings saved for user: %s", currentUserID)
 	return nil
+}
+
+// GetFileView returns current file view from user settings
+func GetFileView() string {
+	if userSettings.FileView == "" {
+		return "detailed"
+	}
+	return userSettings.FileView
+}
+
+// SetFileView updates user settings with new file view
+func SetFileView(view string) {
+	userSettings.FileView = view
+	saveUserSettings()
 }

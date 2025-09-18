@@ -253,3 +253,179 @@
     margin-left: 0;
   }
 }
+
+/* Compact View */
+#fileview-compact .file-compact {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+#fileview-compact .compact-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--neutral);
+  margin-bottom: 20px;
+}
+
+#fileview-compact .breadcrumb {
+  color: var(--neutral);
+  font-size: 14px;
+}
+
+#fileview-compact .quick-meta {
+  display: flex;
+  gap: 8px;
+}
+
+#fileview-compact .meta-pill {
+  background: var(--primary);
+  color: var(--white);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+#fileview-compact .compact-links {
+  margin-top: 20px;
+  padding: 10px;
+  background: color-mix(in srgb, var(--neutral) 5%, transparent);
+  border-radius: 6px;
+}
+
+#fileview-compact .inline-links {
+  margin-left: 10px;
+}
+
+/* Minimal View */
+#fileview-minimal .file-minimal {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+#fileview-minimal .file-content-minimal {
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+#fileview-minimal .file-content-minimal h1 {
+  font-size: 32px;
+  margin-bottom: 30px;
+  color: var(--accent);
+}
+
+/* Reader View */
+#fileview-reader .file-reader {
+  max-width: 650px;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+}
+
+#fileview-reader .reader-controls {
+  position: fixed;
+  top: 5em;
+  right: 1em;
+  background: var(--black);
+  border: 1px solid var(--neutral);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  gap: 5px;
+  z-index: 100;
+}
+
+#fileview-reader .reader-controls button {
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#fileview-reader .file-content-reader {
+  font-size: 18px;
+  line-height: 1.8;
+  padding-top: 40px;
+}
+
+/* Debug View */
+#fileview-debug .file-debug {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+#fileview-debug .debug-panel {
+  background: color-mix(in srgb, var(--neutral) 8%, transparent);
+  padding: 20px;
+  border-radius: 8px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+#fileview-debug .debug-section {
+  margin: 15px 0;
+}
+
+#fileview-debug .debug-section h4 {
+  margin: 0 0 8px 0;
+  color: var(--accent);
+  font-size: 14px;
+}
+
+#fileview-debug .metadata-json {
+  background: var(--black);
+  padding: 10px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+#fileview-debug .debug-links {
+  font-size: 12px;
+}
+
+#fileview-debug .debug-links strong {
+  color: var(--accent);
+  display: block;
+  margin: 8px 0 4px 0;
+}
+
+#fileview-debug .debug-content h3 {
+  margin-top: 0;
+  color: var(--accent);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  #fileview-debug .file-debug {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  #fileview-debug .debug-panel {
+    max-height: 300px;
+  }
+
+  #fileview-reader .reader-controls {
+    position: static;
+    margin-bottom: 20px;
+    justify-content: center;
+  }
+
+  #fileview-compact .compact-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+}

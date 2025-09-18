@@ -15,6 +15,19 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/config/getAvailableFileViews": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get available file views for current theme",
+                "responses": {}
+            }
+        },
         "/api/config/getConfig": {
             "get": {
                 "produces": [
@@ -46,6 +59,22 @@ const docTemplate = `{
                         }
                     }
                 }
+            }
+        },
+        "/api/config/setFileView": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Set file view",
+                "responses": {}
             }
         },
         "/api/config/setLanguage": {

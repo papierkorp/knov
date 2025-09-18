@@ -122,6 +122,15 @@ info:
   title: Knov API
   version: "1.0"
 paths:
+  /api/config/getAvailableFileViews:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get available file views for current theme
+      tags:
+      - config
   /api/config/getConfig:
     get:
       produces:
@@ -142,6 +151,17 @@ paths:
           schema:
             type: string
       summary: Get git repository URL
+      tags:
+      - config
+  /api/config/setFileView:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Set file view
       tags:
       - config
   /api/config/setLanguage:

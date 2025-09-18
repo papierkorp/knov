@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -88,6 +89,8 @@ func StartServerChi() {
 			r.Post("/setLanguage", handleAPISetLanguage)
 			r.Get("/getRepositoryURL", handleAPIGetGitRepositoryURL)
 			r.Post("/setRepositoryURL", handleAPISetGitRepositoryURL)
+			r.Get("/getAvailableFileViews", handleAPIGetAvailableFileViews)
+			r.Post("/setFileView", handleAPISetFileView)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -301,7 +304,17 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().FileView(string(content), filePath)
+	tm := thememanager.GetThemeManager()
+	currentTheme := tm.GetCurrentTheme()
+	fileView := configmanager.GetFileView()
+
+	availableViews := currentTheme.GetAvailableFileViews()
+	if !slices.Contains(availableViews, fileView) && len(availableViews) > 0 {
+		fileView = availableViews[0]
+		configmanager.SetFileView(fileView)
+	}
+
+	component, err := currentTheme.RenderFileView(fileView, string(content), filePath)
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
 		return

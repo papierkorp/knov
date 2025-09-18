@@ -1,4 +1,5 @@
 {
   "theme": "builtin",
-  "language": "en"
+  "language": "en",
+  "fileView": "reader"
 }

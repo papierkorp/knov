@@ -1,0 +1,14 @@
+package templates
+
+import "knov/internal/thememanager"
+
+templ FileViewMinimal(content string, filePath string, filename string, data thememanager.TemplateData) {
+	@Base(filename) {
+		<link href="/static/css/fileview.css" rel="stylesheet"/>
+		<div id="fileview-minimal" class="file-minimal">
+			<article class="file-content-minimal">
+				@templ.Raw(content)
+			</article>
+		</div>
+	}
+}

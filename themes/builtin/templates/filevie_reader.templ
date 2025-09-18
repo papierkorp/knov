@@ -1,0 +1,25 @@
+package templates
+
+import "knov/internal/thememanager"
+
+templ FileViewReader(content string, filePath string, filename string, data thememanager.TemplateData) {
+	@Base(filename) {
+		<link href="/static/css/fileview.css" rel="stylesheet"/>
+		<div id="fileview-reader" class="file-reader">
+			<div class="reader-controls">
+				<button onclick="adjustFontSize(-1)">A-</button>
+				<button onclick="adjustFontSize(1)">A+</button>
+			</div>
+			<article class="file-content-reader" id="reader-content">
+				@templ.Raw(content)
+			</article>
+		</div>
+		<script>
+    function adjustFontSize(delta) {
+        const content = document.getElementById('reader-content');
+        const currentSize = parseInt(window.getComputedStyle(content).fontSize);
+        content.style.fontSize = (currentSize + delta * 2) + 'px';
+    }
+</script>
+	}
+}

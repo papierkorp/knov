@@ -1,0 +1,44 @@
+package templates
+
+import "knov/internal/thememanager"
+
+templ FileViewCompact(content string, filePath string, filename string, data thememanager.TemplateData) {
+	@Base(filename) {
+		<link href="/static/css/fileview.css" rel="stylesheet"/>
+		<div id="fileview-compact" class="file-compact">
+			<div class="compact-header">
+				<div class="breadcrumb">📁 { filePath }</div>
+				<div class="quick-meta">
+					<span
+						class="meta-pill"
+						hx-get={ "/api/metadata/status?filepath=" + templ.URL(filePath) }
+						hx-trigger="load"
+					>...</span>
+					<span
+						class="meta-pill"
+						hx-get={ "/api/metadata/priority?filepath=" + templ.URL(filePath) }
+						hx-trigger="load"
+					>...</span>
+					<span
+						class="meta-pill"
+						hx-get={ "/api/metadata/collection?filepath=" + templ.URL(filePath) }
+						hx-trigger="load"
+					>...</span>
+				</div>
+			</div>
+			<article class="file-content">
+				@templ.Raw(content)
+			</article>
+			<div class="compact-links">
+				<div class="link-row">
+					<strong>Links:</strong>
+					<span
+						hx-get={ "/api/links/used?filepath=" + templ.URL(filePath) }
+						hx-trigger="load"
+						class="inline-links"
+					>...</span>
+				</div>
+			</div>
+		</div>
+	}
+}

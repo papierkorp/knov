@@ -83,16 +83,32 @@ func (t *Builtin) Overview() (templ.Component, error) {
 	return templates.Overview(td), nil
 }
 
-// FileView ...
-func (t *Builtin) FileView(content string, filePath string) (templ.Component, error) {
+// GetAvailableFileViews returns all available file views for this theme
+func (t *Builtin) GetAvailableFileViews() []string {
+	return []string{"detailed", "compact", "minimal", "reader", "debug"}
+}
+
+// RenderFileView renders the specified file view
+func (t *Builtin) RenderFileView(viewName string, content string, filePath string) (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
 		AvailableThemes: tm.GetAvailableThemes(),
 	}
-
 	filename := filepath.Base(filePath)
-	return templates.FileView(content, filePath, filename, td), nil
-}
 
-func main() {}
+	switch viewName {
+	case "detailed":
+		return templates.FileViewDetailed(content, filePath, filename, td), nil
+	case "compact":
+		return templates.FileViewCompact(content, filePath, filename, td), nil
+	case "minimal":
+		return templates.FileViewMinimal(content, filePath, filename, td), nil
+	case "reader":
+		return templates.FileViewReader(content, filePath, filename, td), nil
+	case "debug":
+		return templates.FileViewDebug(content, filePath, filename, td), nil
+	default:
+		return templates.FileViewDetailed(content, filePath, filename, td), nil
+	}
+}
