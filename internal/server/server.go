@@ -93,15 +93,39 @@ func StartServerChi() {
 		// ----------------------------------------------------------------------------------------
 		// ---------------------------------------- FILES ----------------------------------------
 		// ----------------------------------------------------------------------------------------
-
 		r.Route("/files", func(r chi.Router) {
 			r.Get("/list", handleAPIGetAllFiles)
 			r.Get("/content/*", handleAPIGetFileContent)
-
-			r.Get("/metadata", handleAPIGetMetadata)
-			r.Post("/metadata", handleAPISetMetadata)
-			r.Post("/metadata/rebuild", handleAPIRebuildMetadata)
 			r.Post("/filter", handleAPIFilterFiles)
+		})
+
+		// ----------------------------------------------------------------------------------------
+		// --------------------------------------- METADATA ---------------------------------------
+		// ----------------------------------------------------------------------------------------
+		r.Route("/metadata", func(r chi.Router) {
+			r.Get("/", handleAPIGetMetadata)
+			r.Post("/", handleAPISetMetadata)
+			r.Post("/rebuild", handleAPIRebuildMetadata)
+
+			r.Get("/collection", handleAPIGetMetadataCollection)
+			r.Get("/filetype", handleAPIGetMetadataFileType)
+			r.Get("/status", handleAPIGetMetadataStatus)
+			r.Get("/priority", handleAPIGetMetadataPriority)
+			r.Get("/path", handleAPIGetMetadataPath)
+			r.Get("/name", handleAPIGetMetadataName)
+			r.Get("/createdat", handleAPIGetMetadataCreatedAt)
+			r.Get("/lastedited", handleAPIGetMetadataLastEdited)
+			r.Get("/folders", handleAPIGetMetadataFolders)
+
+			r.Post("/collection", handleAPISetMetadataCollection)
+			r.Post("/filetype", handleAPISetMetadataFileType)
+			r.Post("/status", handleAPISetMetadataStatus)
+			r.Post("/priority", handleAPISetMetadataPriority)
+			r.Post("/path", handleAPISetMetadataPath)
+			r.Post("/name", handleAPISetMetadataName)
+			r.Post("/createdat", handleAPISetMetadataCreatedAt)
+			r.Post("/lastedited", handleAPISetMetadataLastEdited)
+			r.Post("/folders", handleAPISetMetadataFolders)
 		})
 
 		// ----------------------------------------------------------------------------------------

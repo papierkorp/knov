@@ -31,6 +31,9 @@ definitions:
         items:
           type: string
         type: array
+      collection:
+        description: auto / manual possible
+        type: string
       createdAt:
         description: auto
         type: string
@@ -67,9 +70,6 @@ definitions:
         allOf:
         - $ref: '#/definitions/files.Priority'
         description: manual
-      project:
-        description: manual - change to collection?
-        type: string
       size:
         description: auto
         type: integer
@@ -240,86 +240,6 @@ paths:
       summary: Get all files
       tags:
       - files
-  /api/files/metadata:
-    get:
-      description: Get metadata for a file by providing filepath as query parameter
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/files.Metadata'
-        "400":
-          description: missing filepath parameter
-          schema:
-            type: string
-        "404":
-          description: metadata not found
-          schema:
-            type: string
-        "500":
-          description: failed to get metadata
-          schema:
-            type: string
-      summary: Get metadata for a single file
-      tags:
-      - files
-    post:
-      consumes:
-      - application/json
-      description: Set metadata for a file using JSON payload
-      parameters:
-      - description: Metadata object
-        in: body
-        name: metadata
-        required: true
-        schema:
-          $ref: '#/definitions/files.Metadata'
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: metadata saved
-          schema:
-            type: string
-        "400":
-          description: invalid json or missing path
-          schema:
-            type: string
-        "500":
-          description: failed to save metadata
-          schema:
-            type: string
-      summary: Set metadata for a single file
-      tags:
-      - files
-  /api/files/metadata/rebuild:
-    post:
-      description: Creates metadata for all files that don't have metadata yet
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: metadata initialized
-          schema:
-            type: string
-        "500":
-          description: failed to initialize metadata
-          schema:
-            type: string
-      summary: Initialize/Rebuild metadata for all files
-      tags:
-      - files
   /api/git/latestchanges:
     get:
       produces:
@@ -413,6 +333,484 @@ paths:
       summary: Get used links for a file
       tags:
       - links
+  /api/metadata:
+    get:
+      description: Get metadata for a file by providing filepath as query parameter
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/files.Metadata'
+        "400":
+          description: missing filepath parameter
+          schema:
+            type: string
+        "404":
+          description: metadata not found
+          schema:
+            type: string
+        "500":
+          description: failed to get metadata
+          schema:
+            type: string
+      summary: Get metadata for a single file
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/json
+      description: Set metadata for a file using JSON payload
+      parameters:
+      - description: Metadata object
+        in: body
+        name: metadata
+        required: true
+        schema:
+          $ref: '#/definitions/files.Metadata'
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: metadata saved
+          schema:
+            type: string
+        "400":
+          description: invalid json or missing path
+          schema:
+            type: string
+        "500":
+          description: failed to save metadata
+          schema:
+            type: string
+      summary: Set metadata for a single file
+      tags:
+      - metadata
+  /api/metadata/collection:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file collection
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Collection name
+        in: formData
+        name: collection
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file collection
+      tags:
+      - metadata
+  /api/metadata/createdat:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file creation date
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Creation date (YYYY-MM-DD HH:MM:SS)
+        in: formData
+        name: createdat
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file creation date
+      tags:
+      - metadata
+  /api/metadata/filetype:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file type
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: File type (note, todo, journal)
+        in: formData
+        name: filetype
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file type
+      tags:
+      - metadata
+  /api/metadata/folders:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get file folders
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Comma-separated folder list
+        in: formData
+        name: folders
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file folders
+      tags:
+      - metadata
+  /api/metadata/lastedited:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file last edited date
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Last edited date (YYYY-MM-DD HH:MM:SS)
+        in: formData
+        name: lastedited
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file last edited date
+      tags:
+      - metadata
+  /api/metadata/name:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file name
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: New file name
+        in: formData
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file name
+      tags:
+      - metadata
+  /api/metadata/path:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file path
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Current file path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: New file path
+        in: formData
+        name: newpath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file path
+      tags:
+      - metadata
+  /api/metadata/priority:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file priority
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Priority (low, medium, high)
+        in: formData
+        name: priority
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file priority
+      tags:
+      - metadata
+  /api/metadata/rebuild:
+    post:
+      description: Creates metadata for all files that don't have metadata yet
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: metadata initialized
+          schema:
+            type: string
+        "500":
+          description: failed to initialize metadata
+          schema:
+            type: string
+      summary: Initialize/Rebuild metadata for all files
+      tags:
+      - metadata
+  /api/metadata/status:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file status
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Status (draft, published, archived)
+        in: formData
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file status
+      tags:
+      - metadata
   /api/search:
     get:
       parameters:

@@ -38,7 +38,7 @@ type Metadata struct {
 	CreatedAt   time.Time `json:"createdAt"`   // auto
 	LastEdited  time.Time `json:"lastEdited"`  // auto
 	TargetDate  time.Time `json:"targetDate"`  // auto
-	Project     string    `json:"project"`     // manual - change to collection?
+	Collection  string    `json:"collection"`  // auto / manual possible
 	Folders     []string  `json:"folders"`     // auto
 	Tags        []string  `json:"tags"`        // manual
 	Boards      []string  `json:"boards"`      // auto
@@ -78,6 +78,13 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	currentMetadata.LastEdited = fileInfo.ModTime()
 	currentMetadata.Size = fileInfo.Size()
 
+	pathParts := strings.Split(strings.Trim(normalizedPath, "/"), "/")
+	if len(pathParts) > 1 && pathParts[0] != "" {
+		currentMetadata.Collection = pathParts[0]
+	} else {
+		currentMetadata.Collection = "default"
+	}
+
 	dir := filepath.Dir(utils.ToRelativePath(fullPath))
 	if dir != "." && dir != "/" && dir != "" {
 		folders := strings.Split(strings.Trim(dir, "/"), "/")
@@ -91,8 +98,8 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	}
 
 	if newMetadata != nil {
-		if newMetadata.Project != "" {
-			currentMetadata.Project = newMetadata.Project
+		if newMetadata.Collection != "" {
+			currentMetadata.Collection = newMetadata.Collection
 		}
 		if len(newMetadata.Tags) > 0 {
 			currentMetadata.Tags = newMetadata.Tags
@@ -125,9 +132,8 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 			currentMetadata.Priority = newMetadata.Priority
 		}
 	}
-
-	if currentMetadata.Project == "" {
-		currentMetadata.Project = "default"
+	if currentMetadata.Collection == "" {
+		currentMetadata.Collection = "default"
 	}
 	if currentMetadata.Tags == nil {
 		currentMetadata.Tags = []string{}

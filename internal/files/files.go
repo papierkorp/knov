@@ -13,6 +13,7 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/parser"
 	"knov/internal/configmanager"
+	"knov/internal/content"
 	"knov/internal/logging"
 )
 
@@ -55,15 +56,17 @@ func GetAllFiles() ([]File, error) {
 
 // GetFileContent converts markdown to html
 func GetFileContent(filePath string) ([]byte, error) {
-	content, err := os.ReadFile(filePath)
+	fileContent, err := os.ReadFile(filePath)
 	if err != nil {
 		logging.LogError("failed to read file %s: %v", filePath, err)
 		return nil, err
 	}
 
+	processedContent := content.ProcessContent(string(fileContent))
+
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
 	p := parser.NewWithExtensions(extensions)
-	html := markdown.ToHTML(content, p, nil)
+	html := markdown.ToHTML([]byte(processedContent), p, nil)
 
 	return html, nil
 }
@@ -153,8 +156,8 @@ func evaluateFilter(metadata *Metadata, filter FilterCriteria) bool {
 	var fieldArray []string
 
 	switch filter.Metadata {
-	case "project":
-		fieldValue = metadata.Project
+	case "collection":
+		fieldValue = metadata.Collection
 	case "type":
 		fieldValue = string(metadata.FileType)
 	case "status":

@@ -1,11 +1,14 @@
+// Package server ..
 package server
 
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"knov/internal/files"
+	"knov/internal/utils"
 )
 
 // @Summary Get parent links for a file
@@ -14,32 +17,32 @@ import (
 // @Produce json,html
 // @Router /api/links/parents [get]
 func handleAPIGetParents(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	if filepath == "" {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
 		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
 		return
 	}
-	metadata, err := files.MetaDataGet(filepath)
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
-		html := "<li>no metadata found</li>"
+		html := `<div class="no-links">no parents found</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
-
 	if len(metadata.Parents) == 0 {
 		data := []string{}
-		html := "<li>no parents</li>"
+		html := `<div class="no-links">no parents</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
-
 	var html strings.Builder
+	html.WriteString(`<ul class="link-list">`)
 	for _, parent := range metadata.Parents {
-		linkPath := strings.TrimPrefix(parent, "data/")
-		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s">%s</a></li>`, linkPath, linkPath))
+		linkPath := utils.ToRelativePath(parent)
+		filename := filepath.Base(linkPath)
+		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s" title="%s">%s</a></li>`, linkPath, linkPath, filename))
 	}
-
+	html.WriteString(`</ul>`)
 	writeResponse(w, r, metadata.Parents, html.String())
 }
 
@@ -49,33 +52,32 @@ func handleAPIGetParents(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/ancestors [get]
 func handleAPIGetAncestors(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	if filepath == "" {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
 		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
 		return
 	}
-
-	metadata, err := files.MetaDataGet(filepath)
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
-		html := "<li>no metadata found</li>"
+		html := `<div class="no-links">no ancestors found</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
-
 	if len(metadata.Ancestor) == 0 {
 		data := []string{}
-		html := "<li>no ancestors</li>"
+		html := `<div class="no-links">no ancestors</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
-
 	var html strings.Builder
+	html.WriteString(`<ul class="link-list">`)
 	for _, ancestor := range metadata.Ancestor {
-		linkPath := strings.TrimPrefix(ancestor, "data/")
-		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s">%s</a></li>`, linkPath, linkPath))
+		linkPath := utils.ToRelativePath(ancestor)
+		filename := filepath.Base(linkPath)
+		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s" title="%s">%s</a></li>`, linkPath, linkPath, filename))
 	}
-
+	html.WriteString(`</ul>`)
 	writeResponse(w, r, metadata.Ancestor, html.String())
 }
 
@@ -85,33 +87,32 @@ func handleAPIGetAncestors(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/kids [get]
 func handleAPIGetKids(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	if filepath == "" {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
 		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
 		return
 	}
-
-	metadata, err := files.MetaDataGet(filepath)
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
-		html := "<li>no metadata found</li>"
+		html := `<div class="no-links">no children found</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
-
 	if len(metadata.Kids) == 0 {
 		data := []string{}
-		html := "<li>no kids</li>"
+		html := `<div class="no-links">no children</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
-
 	var html strings.Builder
+	html.WriteString(`<ul class="link-list">`)
 	for _, kid := range metadata.Kids {
-		linkPath := strings.TrimPrefix(kid, "data/")
-		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s">%s</a></li>`, linkPath, linkPath))
+		linkPath := utils.ToRelativePath(kid)
+		filename := filepath.Base(linkPath)
+		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s" title="%s">%s</a></li>`, linkPath, linkPath, filename))
 	}
-
+	html.WriteString(`</ul>`)
 	writeResponse(w, r, metadata.Kids, html.String())
 }
 
@@ -121,33 +122,32 @@ func handleAPIGetKids(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/used [get]
 func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	if filepath == "" {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
 		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
 		return
 	}
-
-	metadata, err := files.MetaDataGet(filepath)
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
-		html := "<li>no metadata found</li>"
+		html := `<div class="no-links">no outbound links found</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
-
 	if len(metadata.UsedLinks) == 0 {
 		data := []string{}
-		html := "<li>no used links</li>"
+		html := `<div class="no-links">no outbound links</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
-
 	var html strings.Builder
+	html.WriteString(`<ul class="link-list">`)
 	for _, usedLink := range metadata.UsedLinks {
-		linkPath := strings.TrimPrefix(usedLink, "data/")
-		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s">%s</a></li>`, linkPath, linkPath))
+		linkPath := utils.ToRelativePath(usedLink)
+		filename := filepath.Base(linkPath)
+		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s" title="%s">%s</a></li>`, linkPath, linkPath, filename))
 	}
-
+	html.WriteString(`</ul>`)
 	writeResponse(w, r, metadata.UsedLinks, html.String())
 }
 
@@ -157,32 +157,31 @@ func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/links/linkstohere [get]
 func handleAPIGetLinksToHere(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	if filepath == "" {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
 		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
 		return
 	}
-
-	metadata, err := files.MetaDataGet(filepath)
+	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
-		html := "<li>no metadata found</li>"
+		html := `<div class="no-links">no inbound links found</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
-
 	if len(metadata.LinksToHere) == 0 {
 		data := []string{}
-		html := "<li>no links to here</li>"
+		html := `<div class="no-links">no inbound links</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
-
 	var html strings.Builder
+	html.WriteString(`<ul class="link-list">`)
 	for _, linkToHere := range metadata.LinksToHere {
-		linkPath := strings.TrimPrefix(linkToHere, "data/")
-		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s">%s</a></li>`, linkPath, linkPath))
+		linkPath := utils.ToRelativePath(linkToHere)
+		filename := filepath.Base(linkPath)
+		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s" title="%s">%s</a></li>`, linkPath, linkPath, filename))
 	}
-
+	html.WriteString(`</ul>`)
 	writeResponse(w, r, metadata.LinksToHere, html.String())
 }

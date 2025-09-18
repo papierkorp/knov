@@ -162,7 +162,6 @@ func createGitOperations() error {
 func setupTestMetadata() error {
 	logging.LogInfo("creating test metadata")
 
-	// Create metadata for default files
 	defaultFiles := getDefaultFiles()
 	for _, meta := range defaultFiles {
 		if err := files.MetaDataSave(meta); err != nil {
@@ -170,7 +169,6 @@ func setupTestMetadata() error {
 		}
 	}
 
-	// Create metadata for test structure files
 	if err := createTestMetadata(); err != nil {
 		return err
 	}
@@ -211,9 +209,9 @@ func createTestMetadata() error {
 			}
 		}
 
-		project := "testA"
-		if len(validFolders) > 1 {
-			project = validFolders[1]
+		collection := "default"
+		if len(validFolders) > 0 && validFolders[0] != "" {
+			collection = validFolders[0]
 		}
 
 		createDay := 3 + (i % 13)
@@ -228,7 +226,7 @@ func createTestMetadata() error {
 			Path:       file,
 			CreatedAt:  time.Date(2025, 9, createDay, 8+(i%8), (i*7)%60, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 9, editDay, 10+(i%6), (i*13)%60, 0, 0, time.UTC),
-			Project:    project,
+			Collection: collection,
 			Folders:    validFolders,
 			Tags:       tags,
 			Boards:     []string{},
@@ -244,6 +242,7 @@ func createTestMetadata() error {
 
 	return nil
 }
+
 func extractFilenameTags(filename string) []string {
 	basename := strings.TrimSuffix(filename, ".md")
 
@@ -266,142 +265,4 @@ func extractFilenameTags(filename string) []string {
 	}
 
 	return tags
-}
-
-func getDefaultFiles() []*files.Metadata {
-	return []*files.Metadata{
-		{
-			Name:       "getting-started.md",
-			Path:       "getting-started.md",
-			CreatedAt:  time.Date(2025, 9, 8, 21, 0, 0, 0, time.UTC),
-			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
-			Project:    "documentation",
-			Folders:    []string{"data"},
-			Tags:       []string{"guide", "onboarding", "getting-started"},
-			Boards:     []string{"default"},
-			Parents:    []string{"project-overview.md"},
-			FileType:   files.FileTypeNote,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityHigh,
-		},
-		{
-			Name:       "project-overview.md",
-			Path:       "data/project-overview.md",
-			CreatedAt:  time.Date(2025, 9, 8, 20, 0, 0, 0, time.UTC),
-			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
-			Project:    "management",
-			Folders:    []string{"data"},
-			Tags:       []string{"project", "overview", "status"},
-			Boards:     []string{"default", "management"},
-			FileType:   files.FileTypeNote,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityHigh,
-		},
-		{
-			Name:       "meeting-notes.md",
-			Path:       "meeting-notes.md",
-			CreatedAt:  time.Date(2025, 9, 11, 10, 0, 0, 0, time.UTC),
-			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
-			Project:    "management",
-			Folders:    []string{"data"},
-			Tags:       []string{"meeting", "sprint", "planning"},
-			Boards:     []string{"default", "meetings"},
-			Parents:    []string{"project-overview.md"},
-			FileType:   files.FileTypeNote,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityMedium,
-		},
-		{
-			Name:       "technical-documentation.md",
-			Path:       "technical-documentation.md",
-			CreatedAt:  time.Date(2025, 9, 8, 19, 0, 0, 0, time.UTC),
-			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
-			Project:    "technical",
-			Folders:    []string{"data"},
-			Tags:       []string{"technical", "api", "documentation"},
-			Boards:     []string{"default", "technical"},
-			Parents:    []string{"project-overview.md"},
-			FileType:   files.FileTypeNote,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityMedium,
-		},
-		{
-			Name:       "troubleshooting.md",
-			Path:       "data/troubleshooting.md",
-			CreatedAt:  time.Date(2025, 9, 7, 14, 0, 0, 0, time.UTC),
-			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
-			Project:    "support",
-			Folders:    []string{"data"},
-			Tags:       []string{"troubleshooting", "help", "debug"},
-			Boards:     []string{"default", "support"},
-			FileType:   files.FileTypeNote,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityHigh,
-		},
-		{
-			Name:       "developer-setup.md",
-			Path:       "data/guides/developer-setup.md",
-			CreatedAt:  time.Date(2025, 9, 3, 16, 0, 0, 0, time.UTC),
-			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
-			Project:    "technical",
-			Folders:    []string{"data", "guides"},
-			Tags:       []string{"developer", "setup", "guide", "technical"},
-			Boards:     []string{"default", "technical"},
-			FileType:   files.FileTypeNote,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityMedium,
-		},
-		{
-			Name:       "user-manual.md",
-			Path:       "data/guides/user-manual.md",
-			CreatedAt:  time.Date(2025, 9, 4, 13, 0, 0, 0, time.UTC),
-			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
-			Project:    "documentation",
-			Folders:    []string{"data", "guides"},
-			Tags:       []string{"user", "manual", "guide", "help"},
-			Boards:     []string{"default", "documentation"},
-			FileType:   files.FileTypeNote,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityMedium,
-		},
-		{
-			Name:       "backend-api.md",
-			Path:       "data/projects/backend-api.md",
-			CreatedAt:  time.Date(2025, 9, 5, 9, 0, 0, 0, time.UTC),
-			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
-			Project:    "backend",
-			Folders:    []string{"data", "projects"},
-			Tags:       []string{"backend", "api", "development", "in-progress"},
-			Boards:     []string{"default", "development"},
-			FileType:   files.FileTypeTodo,
-			Status:     files.StatusDraft,
-			Priority:   files.PriorityHigh,
-		},
-		{
-			Name:       "database-migration.md",
-			Path:       "data/projects/database-migration.md",
-			CreatedAt:  time.Date(2025, 8, 15, 8, 0, 0, 0, time.UTC),
-			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
-			Project:    "infrastructure",
-			Folders:    []string{"data", "projects"},
-			Tags:       []string{"database", "migration", "completed", "infrastructure"},
-			Boards:     []string{"default", "infrastructure"},
-			FileType:   files.FileTypeNote,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityHigh,
-		},
-		{
-			Name:       "frontend-redesign.md",
-			Path:       "data/projects/frontend-redesign.md",
-			CreatedAt:  time.Date(2025, 9, 6, 11, 0, 0, 0, time.UTC),
-			LastEdited: time.Date(2025, 9, 12, 7, 50, 15, 0, time.UTC),
-			Project:    "frontend",
-			Folders:    []string{"data", "projects"},
-			Tags:       []string{"frontend", "ui", "redesign", "planning"},
-			Boards:     []string{"default", "design"},
-			FileType:   "todo",
-			Status:     "draft",
-			Priority:   "medium",
-		},
-	}
 }

@@ -2,10 +2,10 @@
   "ai.md": {
     "name": "ai.md",
     "path": "ai.md",
-    "createdAt": "2025-09-17T11:08:22.598013163+02:00",
-    "lastEdited": "2025-09-17T11:08:22.598013163+02:00",
+    "createdAt": "2025-09-18T09:44:12.649298398+02:00",
+    "lastEdited": "2025-09-18T09:44:12.649298398+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "default",
+    "collection": "default",
     "folders": null,
     "tags": [],
     "boards": [
@@ -24,10 +24,10 @@
   "example_markdown.md": {
     "name": "example_markdown.md",
     "path": "example_markdown.md",
-    "createdAt": "2025-09-17T11:08:22.598089278+02:00",
-    "lastEdited": "2025-09-17T11:08:22.598089278+02:00",
+    "createdAt": "2025-09-18T09:44:12.649495876+02:00",
+    "lastEdited": "2025-09-18T09:44:12.649495876+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "default",
+    "collection": "default",
     "folders": null,
     "tags": [],
     "boards": [
@@ -46,10 +46,10 @@
   "getting-started.md": {
     "name": "getting-started.md",
     "path": "getting-started.md",
-    "createdAt": "2025-09-17T11:08:22.619704658+02:00",
-    "lastEdited": "2025-09-17T11:08:22.619704658+02:00",
+    "createdAt": "2025-09-18T09:44:12.679425652+02:00",
+    "lastEdited": "2025-09-18T09:44:12.679425652+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "documentation",
+    "collection": "default",
     "folders": null,
     "tags": [
       "guide",
@@ -73,6 +73,7 @@
       "meeting-notes.md"
     ],
     "linksToHere": [
+      "guides/user-manual.md",
       "meeting-notes.md",
       "technical-documentation.md",
       "troubleshooting.md"
@@ -85,10 +86,10 @@
   "guides/developer-setup.md": {
     "name": "developer-setup.md",
     "path": "guides/developer-setup.md",
-    "createdAt": "2025-09-17T11:08:22.598206099+02:00",
-    "lastEdited": "2025-09-17T11:08:22.598206099+02:00",
+    "createdAt": "2025-09-18T09:44:12.64967191+02:00",
+    "lastEdited": "2025-09-18T09:44:12.64967191+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "technical",
+    "collection": "guides",
     "folders": [
       "guides"
     ],
@@ -122,10 +123,10 @@
   "guides/user-manual.md": {
     "name": "user-manual.md",
     "path": "guides/user-manual.md",
-    "createdAt": "2025-09-17T11:08:22.59826109+02:00",
-    "lastEdited": "2025-09-17T11:08:22.59826109+02:00",
+    "createdAt": "2025-09-18T09:44:12.65198251+02:00",
+    "lastEdited": "2025-09-18T09:44:12.65198251+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "documentation",
+    "collection": "guides",
     "folders": [
       "guides"
     ],
@@ -150,6 +151,7 @@
       "meeting-notes.md"
     ],
     "linksToHere": [
+      "projects/frontend-redesign.md",
       "troubleshooting.md"
     ],
     "type": "note",
@@ -160,10 +162,10 @@
   "meeting-notes.md": {
     "name": "meeting-notes.md",
     "path": "meeting-notes.md",
-    "createdAt": "2025-09-17T11:08:22.598342357+02:00",
-    "lastEdited": "2025-09-17T11:08:22.598342357+02:00",
+    "createdAt": "2025-09-18T09:44:12.652096209+02:00",
+    "lastEdited": "2025-09-18T09:44:12.652096209+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "management",
+    "collection": "default",
     "folders": null,
     "tags": [
       "meeting",
@@ -192,6 +194,7 @@
       "getting-started.md",
       "guides/user-manual.md",
       "project-overview.md",
+      "projects/backend-api.md",
       "technical-documentation.md",
       "troubleshooting.md"
     ],
@@ -203,10 +206,10 @@
   "project-overview.md": {
     "name": "project-overview.md",
     "path": "project-overview.md",
-    "createdAt": "2025-09-17T11:08:22.598384668+02:00",
-    "lastEdited": "2025-09-17T11:08:22.598384668+02:00",
+    "createdAt": "2025-09-18T09:44:12.652141638+02:00",
+    "lastEdited": "2025-09-18T09:44:12.652141638+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "management",
+    "collection": "default",
     "folders": null,
     "tags": [
       "project",
@@ -237,6 +240,9 @@
       "getting-started.md",
       "guides/developer-setup.md",
       "meeting-notes.md",
+      "projects/backend-api.md",
+      "projects/database-migration.md",
+      "projects/frontend-redesign.md",
       "technical-documentation.md",
       "troubleshooting.md"
     ],
@@ -248,10 +254,10 @@
   "projects/backend-api.md": {
     "name": "backend-api.md",
     "path": "projects/backend-api.md",
-    "createdAt": "2025-09-17T11:08:22.598455629+02:00",
-    "lastEdited": "2025-09-17T11:08:22.598455629+02:00",
+    "createdAt": "2025-09-18T09:44:12.652246425+02:00",
+    "lastEdited": "2025-09-18T09:44:12.652246425+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "backend",
+    "collection": "projects",
     "folders": [
       "projects"
     ],
@@ -287,10 +293,10 @@
   "projects/database-migration.md": {
     "name": "database-migration.md",
     "path": "projects/database-migration.md",
-    "createdAt": "2025-09-17T11:08:22.598496867+02:00",
-    "lastEdited": "2025-09-17T11:08:22.598496867+02:00",
+    "createdAt": "2025-09-18T09:44:12.652299741+02:00",
+    "lastEdited": "2025-09-18T09:44:12.652299741+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "infrastructure",
+    "collection": "projects",
     "folders": [
       "projects"
     ],
@@ -325,10 +331,10 @@
   "projects/frontend-redesign.md": {
     "name": "frontend-redesign.md",
     "path": "projects/frontend-redesign.md",
-    "createdAt": "2025-09-17T11:08:22.598843589+02:00",
-    "lastEdited": "2025-09-17T11:08:22.598843589+02:00",
+    "createdAt": "2025-09-18T09:44:12.652338697+02:00",
+    "lastEdited": "2025-09-18T09:44:12.652338697+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "frontend",
+    "collection": "projects",
     "folders": [
       "projects"
     ],
@@ -362,10 +368,10 @@
   "sample Markdown.md": {
     "name": "sample Markdown.md",
     "path": "sample Markdown.md",
-    "createdAt": "2025-09-17T11:08:22.598973255+02:00",
-    "lastEdited": "2025-09-17T11:08:22.598973255+02:00",
+    "createdAt": "2025-09-18T09:44:12.652493575+02:00",
+    "lastEdited": "2025-09-18T09:44:12.652493575+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "default",
+    "collection": "default",
     "folders": null,
     "tags": [],
     "boards": [
@@ -384,10 +390,10 @@
   "technical-documentation.md": {
     "name": "technical-documentation.md",
     "path": "technical-documentation.md",
-    "createdAt": "2025-09-17T11:08:22.598902966+02:00",
-    "lastEdited": "2025-09-17T11:08:22.598902966+02:00",
+    "createdAt": "2025-09-18T09:44:12.652399936+02:00",
+    "lastEdited": "2025-09-18T09:44:12.652399936+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "technical",
+    "collection": "default",
     "folders": null,
     "tags": [
       "technical",
@@ -431,10 +437,10 @@
   "test/testA/testA.md": {
     "name": "testA.md",
     "path": "test/testA/testA.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testA",
+    "collection": "test",
     "folders": [
       "test",
       "testA"
@@ -458,10 +464,10 @@
   "test/testA/testAA/testAAA.md": {
     "name": "testAAA.md",
     "path": "test/testA/testAA/testAAA.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testA",
+    "collection": "test",
     "folders": [
       "test",
       "testA",
@@ -486,10 +492,10 @@
   "test/testA/testAA/testAAB.md": {
     "name": "testAAB.md",
     "path": "test/testA/testAA/testAAB.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testA",
+    "collection": "test",
     "folders": [
       "test",
       "testA",
@@ -515,10 +521,10 @@
   "test/testA/testAA/testAAC.md": {
     "name": "testAAC.md",
     "path": "test/testA/testAA/testAAC.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testA",
+    "collection": "test",
     "folders": [
       "test",
       "testA",
@@ -544,10 +550,10 @@
   "test/testA/testAB.md": {
     "name": "testAB.md",
     "path": "test/testA/testAB.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testA",
+    "collection": "test",
     "folders": [
       "test",
       "testA"
@@ -572,10 +578,10 @@
   "test/testA/testAB/testABA.md": {
     "name": "testABA.md",
     "path": "test/testA/testAB/testABA.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testA",
+    "collection": "test",
     "folders": [
       "test",
       "testA",
@@ -601,10 +607,10 @@
   "test/testA/testAB/testABB.md": {
     "name": "testABB.md",
     "path": "test/testA/testAB/testABB.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testA",
+    "collection": "test",
     "folders": [
       "test",
       "testA",
@@ -630,10 +636,10 @@
   "test/testA/testAC.md": {
     "name": "testAC.md",
     "path": "test/testA/testAC.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testA",
+    "collection": "test",
     "folders": [
       "test",
       "testA"
@@ -658,10 +664,10 @@
   "test/testA/testAC/testACA.md": {
     "name": "testACA.md",
     "path": "test/testA/testAC/testACA.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testA",
+    "collection": "test",
     "folders": [
       "test",
       "testA",
@@ -687,10 +693,10 @@
   "test/testB/testBA.md": {
     "name": "testBA.md",
     "path": "test/testB/testBA.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testB",
+    "collection": "test",
     "folders": [
       "test",
       "testB"
@@ -715,10 +721,10 @@
   "test/testB/testBB.md": {
     "name": "testBB.md",
     "path": "test/testB/testBB.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testB",
+    "collection": "test",
     "folders": [
       "test",
       "testB"
@@ -742,10 +748,10 @@
   "test/testB/testBC.md": {
     "name": "testBC.md",
     "path": "test/testB/testBC.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testB",
+    "collection": "test",
     "folders": [
       "test",
       "testB"
@@ -770,10 +776,10 @@
   "test/testC/testCA.md": {
     "name": "testCA.md",
     "path": "test/testC/testCA.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testC",
+    "collection": "test",
     "folders": [
       "test",
       "testC"
@@ -798,10 +804,10 @@
   "test/testC/testCB.md": {
     "name": "testCB.md",
     "path": "test/testC/testCB.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testC",
+    "collection": "test",
     "folders": [
       "test",
       "testC"
@@ -826,10 +832,10 @@
   "test/testC/testCC.md": {
     "name": "testCC.md",
     "path": "test/testC/testCC.md",
-    "createdAt": "2025-09-17T11:08:22.630925217+02:00",
-    "lastEdited": "2025-09-17T11:08:22.630925217+02:00",
+    "createdAt": "2025-09-18T09:44:12.69105818+02:00",
+    "lastEdited": "2025-09-18T09:44:12.69105818+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "testC",
+    "collection": "test",
     "folders": [
       "test",
       "testC"
@@ -853,10 +859,10 @@
   "troubleshooting.md": {
     "name": "troubleshooting.md",
     "path": "troubleshooting.md",
-    "createdAt": "2025-09-17T11:08:22.598939688+02:00",
-    "lastEdited": "2025-09-17T11:08:22.598939688+02:00",
+    "createdAt": "2025-09-18T09:44:12.652448848+02:00",
+    "lastEdited": "2025-09-18T09:44:12.652448848+02:00",
     "targetDate": "0001-01-01T00:00:00Z",
-    "project": "support",
+    "collection": "default",
     "folders": null,
     "tags": [
       "troubleshooting",

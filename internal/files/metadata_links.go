@@ -3,11 +3,9 @@ package files
 
 import (
 	"os"
-	"regexp"
 	"slices"
-	"strings"
 
-	"knov/internal/configmanager"
+	"knov/internal/content"
 	"knov/internal/logging"
 	"knov/internal/utils"
 )
@@ -113,53 +111,23 @@ func findTopAncestor(filePath string, visited map[string]bool) string {
 
 func updateUsedLinks(metadata *Metadata) {
 	fullPath := utils.ToFullPath(metadata.Path)
-	content, err := os.ReadFile(fullPath)
+	contentData, err := os.ReadFile(fullPath)
 	if err != nil {
 		logging.LogWarning("failed to read file %s: %v", fullPath, err)
 		return
 	}
 
-	linkRegexes := configmanager.GetMetadataLinkRegex()
-	var usedLinks []string
-	linkSet := make(map[string]bool)
+	links := content.ExtractLinks(string(contentData))
 
-	for _, regexPattern := range linkRegexes {
-		re, err := regexp.Compile(regexPattern)
-		if err != nil {
-			logging.LogWarning("invalid regex pattern %s: %v", regexPattern, err)
-			continue
-		}
-
-		matches := re.FindAllStringSubmatch(string(content), -1)
-		for _, match := range matches {
-			if len(match) > 1 {
-				link := match[1]
-				if idx := strings.Index(link, "|"); idx != -1 {
-					link = link[:idx]
-				}
-				if idx := strings.Index(link, "]]"); idx != -1 {
-					link = link[:idx]
-				}
-				if idx := strings.Index(link, "}}"); idx != -1 {
-					link = link[:idx]
-				}
-				if strings.HasPrefix(link, "../") {
-					link = strings.TrimPrefix(link, "../")
-				}
-				link = strings.TrimSpace(link)
-				if strings.HasSuffix(link, ".md") && !strings.Contains(link, "\n") && len(link) < 100 {
-					if link != metadata.Path && !linkSet[link] {
-						linkSet[link] = true
-						usedLinks = append(usedLinks, link)
-					}
-				}
-			}
+	var validLinks []string
+	for _, link := range links {
+		if link != metadata.Path {
+			validLinks = append(validLinks, link)
 		}
 	}
 
-	metadata.UsedLinks = usedLinks
+	metadata.UsedLinks = validLinks
 }
-
 func updateKidsAndLinksToHere(metadata *Metadata) {
 	files, err := GetAllFiles()
 	if err != nil {

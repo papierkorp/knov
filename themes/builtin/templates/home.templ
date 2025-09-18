@@ -35,7 +35,7 @@ templ MetadataFilterSection() {
 			<div id="filter-container">
 				<div class="filter-row" id="filter-row-0">
 					<select name="metadata[]" id="metadata-0">
-						<option value="project">{ translation.Sprintf("Project") }</option>
+						<option value="collection">{ translation.Sprintf("Collection") }</option>
 						<option value="tags">{ translation.Sprintf("Tags") }</option>
 						<option value="type">{ translation.Sprintf("Type") }</option>
 						<option value="status">{ translation.Sprintf("Status") }</option>
@@ -76,7 +76,7 @@ templ MetadataFilterSection() {
 
         newRow.innerHTML = `
 				<select name="metadata[]" id="metadata-${filterRowCount}">
-					<option value="project">Project</option>
+					<option value="collection">Collection</option>
 					<option value="tags">Tags</option>
 					<option value="type">Type</option>
 					<option value="status">Status</option>
@@ -111,7 +111,6 @@ templ MetadataFilterSection() {
             row.remove();
         }
     }
-
     document.body.addEventListener('htmx:afterRequest', function (event) {
         if (event.detail.target.id === 'filter-results' && event.detail.xhr.status === 200) {
             try {

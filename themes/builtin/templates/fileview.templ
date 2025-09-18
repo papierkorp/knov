@@ -4,45 +4,115 @@ import "knov/internal/thememanager"
 
 templ FileView(content string, filepath string, filename string, data thememanager.TemplateData) {
 	@Base(filename) {
-		<div id="fileview">
-			<link href="/static/css/fileview.css" rel="stylesheet"/>
-			<div class="files-list-container">
-				<div class="links-container">
-					<div class="link-section">
-						<h3>Parents</h3>
-						<ul hx-get={ "/api/links/parents?filepath=" + templ.URL(filepath) } hx-trigger="load">
-							<li>loading...</li>
-						</ul>
-					</div>
-					<div class="link-section">
-						<h3>Ancestors</h3>
-						<ul hx-get={ "/api/links/ancestors?filepath=" + templ.URL(filepath) } hx-trigger="load">
-							<li>loading...</li>
-						</ul>
-					</div>
-					<div class="link-section">
-						<h3>Kids</h3>
-						<ul hx-get={ "/api/links/kids?filepath=" + templ.URL(filepath) } hx-trigger="load">
-							<li>loading...</li>
-						</ul>
-					</div>
-					<div class="link-section">
-						<h3>Used Links</h3>
-						<ul hx-get={ "/api/links/used?filepath=" + templ.URL(filepath) } hx-trigger="load">
-							<li>loading...</li>
-						</ul>
-					</div>
-					<div class="link-section">
-						<h3>Links To Here</h3>
-						<ul hx-get={ "/api/links/linkstohere?filepath=" + templ.URL(filepath) } hx-trigger="load">
-							<li>loading...</li>
-						</ul>
+		<link href="/static/css/fileview.css" rel="stylesheet"/>
+		<div class="file-container">
+			<!-- Main Content First -->
+			<article class="file-content">
+				@templ.Raw(content)
+			</article>
+			<!-- Sidebar with Metadata and Links -->
+			<aside class="file-sidebar">
+				<!-- Metadata Section -->
+				<div class="sidebar-section">
+					<h4>Info</h4>
+					<div class="metadata-compact">
+						<div class="meta-row">
+							<span class="label">Collection:</span>
+							<span
+								class="value"
+								hx-get={ "/api/metadata/collection?filepath=" + templ.URL(filepath) }
+								hx-trigger="load"
+							>...</span>
+						</div>
+						<div class="meta-row">
+							<span class="label">Type:</span>
+							<span
+								class="value"
+								hx-get={ "/api/metadata/filetype?filepath=" + templ.URL(filepath) }
+								hx-trigger="load"
+							>...</span>
+						</div>
+						<div class="meta-row">
+							<span class="label">Status:</span>
+							<span
+								class="value"
+								hx-get={ "/api/metadata/status?filepath=" + templ.URL(filepath) }
+								hx-trigger="load"
+							>...</span>
+						</div>
+						<div class="meta-row">
+							<span class="label">Priority:</span>
+							<span
+								class="value"
+								hx-get={ "/api/metadata/priority?filepath=" + templ.URL(filepath) }
+								hx-trigger="load"
+							>...</span>
+						</div>
+						<div class="meta-row">
+							<span class="label">Created:</span>
+							<span
+								class="value"
+								hx-get={ "/api/metadata/createdat?filepath=" + templ.URL(filepath) }
+								hx-trigger="load"
+							>...</span>
+						</div>
+						<div class="meta-row">
+							<span class="label">Modified:</span>
+							<span
+								class="value"
+								hx-get={ "/api/metadata/lastedited?filepath=" + templ.URL(filepath) }
+								hx-trigger="load"
+							>...</span>
+						</div>
 					</div>
 				</div>
-				<article class="file-content">
-					@templ.Raw(content)
-				</article>
-			</div>
+				<!-- Links Section -->
+				<div class="sidebar-section">
+					<h4>Links</h4>
+					<div class="links-compact">
+						<div class="link-group">
+							<span class="link-label">↑ Ancestors:</span>
+							<div
+								class="link-list"
+								hx-get={ "/api/links/ancestors?filepath=" + templ.URL(filepath) }
+								hx-trigger="load"
+							>...</div>
+						</div>
+						<div class="link-group">
+							<span class="link-label">↑ Parents:</span>
+							<div
+								class="link-list"
+								hx-get={ "/api/links/parents?filepath=" + templ.URL(filepath) }
+								hx-trigger="load"
+							>...</div>
+						</div>
+						<div class="link-group">
+							<span class="link-label">↓ Children:</span>
+							<div
+								class="link-list"
+								hx-get={ "/api/links/kids?filepath=" + templ.URL(filepath) }
+								hx-trigger="load"
+							>...</div>
+						</div>
+						<div class="link-group">
+							<span class="link-label">→ Out:</span>
+							<div
+								class="link-list"
+								hx-get={ "/api/links/used?filepath=" + templ.URL(filepath) }
+								hx-trigger="load"
+							>...</div>
+						</div>
+						<div class="link-group">
+							<span class="link-label">← In:</span>
+							<div
+								class="link-list"
+								hx-get={ "/api/links/linkstohere?filepath=" + templ.URL(filepath) }
+								hx-trigger="load"
+							>...</div>
+						</div>
+					</div>
+				</div>
+			</aside>
 		</div>
 	}
 }
