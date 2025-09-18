@@ -4,8 +4,7 @@ import "knov/internal/thememanager"
 
 templ FileViewDetailed(content string, filePath string, filename string, data thememanager.TemplateData) {
 	@Base(filename) {
-		<link href="/static/css/fileview.css" rel="stylesheet"/>
-		<div id="fileview-detailed" class="file-container">
+		<div id="view-fileview-detailed" class="file-container">
 			<article class="file-content">
 				@templ.Raw(content)
 			</article>

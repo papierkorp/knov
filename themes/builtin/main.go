@@ -83,6 +83,16 @@ func (t *Builtin) Overview() (templ.Component, error) {
 	return templates.Overview(td), nil
 }
 
+func (t *Builtin) Search(query string) (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.Search(query, td), nil
+}
+
 // GetAvailableFileViews returns all available file views for this theme
 func (t *Builtin) GetAvailableFileViews() []string {
 	return []string{"detailed", "compact", "minimal", "reader", "debug"}

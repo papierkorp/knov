@@ -4,8 +4,7 @@ import "knov/internal/thememanager"
 
 templ FileViewReader(content string, filePath string, filename string, data thememanager.TemplateData) {
 	@Base(filename) {
-		<link href="/static/css/fileview.css" rel="stylesheet"/>
-		<div id="fileview-reader" class="file-reader">
+		<div id="view-fileview-reader" class="file-reader">
 			<div class="reader-controls">
 				<button onclick="adjustFontSize(-1)">A-</button>
 				<button onclick="adjustFontSize(1)">A+</button>

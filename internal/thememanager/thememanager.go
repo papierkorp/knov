@@ -54,6 +54,7 @@ type ITheme interface {
 	Playground() (templ.Component, error)
 	LatestChanges() (templ.Component, error)
 	History() (templ.Component, error)
+	Search(query string) (templ.Component, error)
 	Overview() (templ.Component, error)
 	GetAvailableFileViews() []string
 	RenderFileView(viewName string, content string, filePath string) (templ.Component, error)

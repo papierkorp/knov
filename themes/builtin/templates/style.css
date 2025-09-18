@@ -2,6 +2,7 @@
 @import url("playground.css");
 @import url("fileview.css");
 @import url("overview.css");
+@import url("search.css");
 
 :root {
   --primary: #65a30d;
@@ -31,9 +32,31 @@ a:hover {
 main {
   margin: 20px;
   padding: 10px;
-  /* border: 1px solid color-mix(in srgb, var(--neutral) 50%, transparent); */
 }
 
 h1:first-child {
   margin-top: 0;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.btn {
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: var(--accent);
+  color: var(--black);
 }

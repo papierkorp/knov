@@ -1,5 +1,5 @@
 /* Header */
-header {
+#component-header {
   background-color: var(--black);
   color: var(--white);
   padding: 10px 20px;
@@ -11,17 +11,17 @@ header {
   flex-wrap: wrap;
 }
 
-.header-left,
-.header-right {
+#component-header .header-left,
+#component-header .header-right {
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
 /* Common button/input styles */
-header button,
-header input,
-header a:not(.logo) {
+#component-header button,
+#component-header input,
+#component-header a:not(.logo) {
   background: var(--white);
   border: none;
   padding: 8px 12px;
@@ -30,13 +30,13 @@ header a:not(.logo) {
   transition: background 0.2s;
 }
 
-header button:hover,
-header a:not(.logo):hover {
+#component-header button:hover,
+#component-header a:not(.logo):hover {
   background: var(--accent);
 }
 
 /* Logo */
-.logo {
+#component-header .logo {
   background: var(--primary);
   color: var(--white);
   padding: 8px 12px;
@@ -45,18 +45,24 @@ header a:not(.logo):hover {
 }
 
 /* Board buttons */
-.header-mid button {
+#component-header .header-mid {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#component-header .header-mid button {
   border-radius: 50%;
   margin: 0 4px;
 }
 
 /* Git operations */
-.spanHeaderGitOperations {
+#component-header .span-header-git-operations {
   background: var(--white);
   display: flex;
 }
 
-.spanHeaderGitOperations a {
+#component-header .span-header-git-operations a {
   border: none;
   text-transform: uppercase;
   letter-spacing: -1px;
@@ -64,7 +70,7 @@ header a:not(.logo):hover {
 }
 
 /* Add button */
-.btnAdd {
+#component-header .btn-add {
   font-size: 2em;
   color: var(--white);
   background: inherit;
@@ -72,17 +78,17 @@ header a:not(.logo):hover {
   padding: 0 4px;
 }
 
-.btnAdd:hover {
+#component-header .btn-add:hover {
   background: var(--accent);
   color: var(--black);
 }
 
 /* Dropdown */
-.dropdownNavbar {
+#component-header .dropdown-navbar {
   position: relative;
 }
 
-.btnMenuDropdown {
+#component-header .btn-menu-dropdown {
   font-size: 2em;
   color: var(--white);
   background: inherit;
@@ -90,12 +96,12 @@ header a:not(.logo):hover {
   padding: 0 4px;
 }
 
-.btnMenuDropdown:hover {
+#component-header .btn-menu-dropdown:hover {
   background: var(--accent);
   color: var(--black);
 }
 
-.dropdownNavbar-content {
+#component-header .dropdown-navbar-content {
   display: none;
   position: absolute;
   right: 0;
@@ -105,50 +111,79 @@ header a:not(.logo):hover {
   z-index: 1;
 }
 
-.dropdownNavbar-content a {
+#component-header .dropdown-navbar-content a {
   display: block;
   padding: 8px 12px;
   border: none;
 }
 
-.dropdownNavbar-content a:hover {
+#component-header .dropdown-navbar-content a:hover {
   background: var(--accent);
 }
 
-.dropdownNavbar:hover .dropdownNavbar-content {
+#component-header .dropdown-navbar:hover .dropdown-navbar-content {
   display: block;
+}
+
+/* Search */
+#component-header .search-container {
+  position: relative;
+  flex: 1;
+}
+
+#component-header .search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--neutral);
+  border-top: none;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+}
+
+#component-header .search-container:focus-within .search-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  header {
+  #component-header {
     gap: 10px;
   }
 
-  .header-left {
+  #component-header .header-left {
     flex: 1 1 100%;
     order: 1;
   }
 
-  .header-left input {
-    width: 100%;
+  #component-header .header-left input {
+    width: calc(100% - 20px);
+    /* Accounts for scrollbar and some padding */
   }
 
-  .header-right {
+  #component-header .header-right {
     order: 2;
-    /* gap: 10px; */
   }
 
-  .header-mid {
+  #component-header .header-mid {
     flex: 1 1 100%;
     order: 3;
   }
 
-  .spanHeaderGitOperations {
+  #component-header .span-header-git-operations {
     min-width: 150px;
   }
 
-  header .spanHeaderGitOperations a {
+  #component-header .span-header-git-operations a {
     font-size: 14px;
     padding: 2px;
   }

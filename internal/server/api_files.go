@@ -1,3 +1,4 @@
+// Package server ..
 package server
 
 import (
@@ -7,7 +8,6 @@ import (
 
 	"knov/internal/files"
 	"knov/internal/logging"
-	"knov/internal/search"
 	"knov/internal/utils"
 )
 
@@ -118,36 +118,6 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 	html.WriteString("</ul>")
 
 	writeResponse(w, r, filteredFiles, html.String())
-}
-
-// @Summary Search files
-// @Tags search
-// @Param q query string true "Search query"
-// @Produce json,html
-// @Router /api/search [get]
-func handleAPISearch(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query().Get("q")
-	if query == "" {
-		http.Error(w, "missing search query", http.StatusBadRequest)
-		return
-	}
-
-	results, err := search.SearchFiles(query, 20)
-	if err != nil {
-		http.Error(w, "search failed", http.StatusInternalServerError)
-		return
-	}
-
-	var html strings.Builder
-	html.WriteString("<ul>")
-	for _, file := range results {
-		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s">%s</a></li>`,
-			strings.TrimPrefix(file.Path, "data/"),
-			strings.TrimPrefix(file.Path, "data/")))
-	}
-	html.WriteString("</ul>")
-
-	writeResponse(w, r, results, html.String())
 }
 
 func getFormValue(slice []string, index int) string {

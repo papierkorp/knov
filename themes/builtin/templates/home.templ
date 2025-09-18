@@ -13,10 +13,10 @@ func logDebug(msg string, args ...interface{}) string {
 
 templ Home(data thememanager.TemplateData) {
 	@Base(translation.Sprintf("Home")) {
-		<div id="home">
+		<div id="page-home">
 			<h1>{ translation.Sprintf("Hello World from templ at home in the dark!") }</h1>
+			@MetadataFilterSection()
 		</div>
-		@MetadataFilterSection()
 	}
 }
 
@@ -111,6 +111,7 @@ templ MetadataFilterSection() {
             row.remove();
         }
     }
+
     document.body.addEventListener('htmx:afterRequest', function (event) {
         if (event.detail.target.id === 'filter-results' && event.detail.xhr.status === 200) {
             try {

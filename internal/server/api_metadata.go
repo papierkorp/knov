@@ -44,7 +44,7 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var html strings.Builder
-	html.WriteString("<div class='metadata'>")
+	html.WriteString("<div class='component-metadata'>")
 	html.WriteString(fmt.Sprintf("<p>Path: %s</p>", metadata.Path))
 	html.WriteString(fmt.Sprintf("<p>Collection: %s</p>", metadata.Collection))
 	html.WriteString(fmt.Sprintf("<p>Type: %s</p>", metadata.FileType))

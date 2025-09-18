@@ -4,8 +4,7 @@ import "knov/internal/thememanager"
 
 templ FileViewDebug(content string, filePath string, filename string, data thememanager.TemplateData) {
 	@Base(filename) {
-		<link href="/static/css/fileview.css" rel="stylesheet"/>
-		<div id="fileview-debug" class="file-debug">
+		<div id="view-fileview-debug" class="file-debug">
 			<div class="debug-panel">
 				<h3>🔍 Debug Info</h3>
 				<div class="debug-section">

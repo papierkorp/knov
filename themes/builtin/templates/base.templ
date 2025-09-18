@@ -20,9 +20,6 @@ templ Base(title string) {
 				@header()
 				@htmx()
 				<main>
-					<div id="search">
-						<div id="search-results"></div>
-					</div>
 					{ children... }
 				</main>
 			</div>
@@ -31,16 +28,25 @@ templ Base(title string) {
 }
 
 templ header() {
-	<header>
+	<header id="component-header">
 		<div class="header-left">
 			<a class="logo" href="/">K</a>
-			<input
-				placeholder={ translation.Sprintf("Search..") }
-				hx-get="/api/search"
-				hx-target="#search-results"
-				hx-trigger="keyup changed delay:300ms"
-				name="q"
-			/>
+			<div class="search-container">
+				<input
+					placeholder={ translation.Sprintf("Search..") }
+					hx-get="/api/search"
+					hx-target="#search-results"
+					hx-trigger="keyup changed delay:300ms"
+					hx-swap="innerHTML"
+					name="q"
+					id="search-input"
+				/>
+				<div class="search-dropdown">
+					<div id="search-results">
+						<div class="component-search-hint">start typing to search...</div>
+					</div>
+				</div>
+			</div>
 		</div>
 		<div class="header-mid">
 			<button>B1</button>
@@ -48,19 +54,19 @@ templ header() {
 			<button>B3</button>
 		</div>
 		<div class="header-right">
-			<span class="spanHeaderGitOperations">
+			<span class="span-header-git-operations">
 				<a href="/overview">{ translation.Sprintf("Overview") }</a>
 				<a href="/latest-changes">{ translation.Sprintf("Latest Changes") }</a>
 				<a href="/history">{ translation.Sprintf("History") }</a>
 				<a href="/rename">{ translation.Sprintf("Rename") }</a>
 				<a href="/edit">{ translation.Sprintf("Edit") }</a>
 			</span>
-			<button class="btnAdd" href="/add">+</button>
-			<div class="dropdownNavbar">
-				<button class="btnMenuDropdown">
+			<button class="btn-add" href="/add">+</button>
+			<div class="dropdown-navbar">
+				<button class="btn-menu-dropdown">
 					<i class="fa fa-bars" aria-hidden="true"></i>
 				</button>
-				<div class="dropdownNavbar-content">
+				<div class="dropdown-navbar-content">
 					<a href="/">{ translation.Sprintf("Home") }</a>
 					<a href="/help">{ translation.Sprintf("Help") }</a>
 					<a href="/playground">{ translation.Sprintf("Playground") }</a>

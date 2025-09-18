@@ -25,18 +25,18 @@ func handleAPIGetParents(w http.ResponseWriter, r *http.Request) {
 	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
-		html := `<div class="no-links">no parents found</div>`
+		html := `<div class="component-no-links">no parents found</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
 	if len(metadata.Parents) == 0 {
 		data := []string{}
-		html := `<div class="no-links">no parents</div>`
+		html := `<div class="component-no-links">no parents</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
 	var html strings.Builder
-	html.WriteString(`<ul class="link-list">`)
+	html.WriteString(`<ul class="component-link-list">`)
 	for _, parent := range metadata.Parents {
 		linkPath := utils.ToRelativePath(parent)
 		filename := filepath.Base(linkPath)
@@ -60,18 +60,18 @@ func handleAPIGetAncestors(w http.ResponseWriter, r *http.Request) {
 	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
-		html := `<div class="no-links">no ancestors found</div>`
+		html := `<div class="component-no-links">no ancestors found</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
 	if len(metadata.Ancestor) == 0 {
 		data := []string{}
-		html := `<div class="no-links">no ancestors</div>`
+		html := `<div class="component-no-links">no ancestors</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
 	var html strings.Builder
-	html.WriteString(`<ul class="link-list">`)
+	html.WriteString(`<ul class="component-link-list">`)
 	for _, ancestor := range metadata.Ancestor {
 		linkPath := utils.ToRelativePath(ancestor)
 		filename := filepath.Base(linkPath)
@@ -95,18 +95,18 @@ func handleAPIGetKids(w http.ResponseWriter, r *http.Request) {
 	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
-		html := `<div class="no-links">no children found</div>`
+		html := `<div class="component-no-links">no children found</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
 	if len(metadata.Kids) == 0 {
 		data := []string{}
-		html := `<div class="no-links">no children</div>`
+		html := `<div class="component-no-links">no children</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
 	var html strings.Builder
-	html.WriteString(`<ul class="link-list">`)
+	html.WriteString(`<ul class="component-link-list">`)
 	for _, kid := range metadata.Kids {
 		linkPath := utils.ToRelativePath(kid)
 		filename := filepath.Base(linkPath)
@@ -130,18 +130,18 @@ func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
 	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
-		html := `<div class="no-links">no outbound links found</div>`
+		html := `<div class="component-no-links">no outbound links found</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
 	if len(metadata.UsedLinks) == 0 {
 		data := []string{}
-		html := `<div class="no-links">no outbound links</div>`
+		html := `<div class="component-no-links">no outbound links</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
 	var html strings.Builder
-	html.WriteString(`<ul class="link-list">`)
+	html.WriteString(`<ul class="component-link-list">`)
 	for _, usedLink := range metadata.UsedLinks {
 		linkPath := utils.ToRelativePath(usedLink)
 		filename := filepath.Base(linkPath)
@@ -165,18 +165,18 @@ func handleAPIGetLinksToHere(w http.ResponseWriter, r *http.Request) {
 	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
-		html := `<div class="no-links">no inbound links found</div>`
+		html := `<div class="component-no-links">no inbound links found</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
 	if len(metadata.LinksToHere) == 0 {
 		data := []string{}
-		html := `<div class="no-links">no inbound links</div>`
+		html := `<div class="component-no-links">no inbound links</div>`
 		writeResponse(w, r, data, html)
 		return
 	}
 	var html strings.Builder
-	html.WriteString(`<ul class="link-list">`)
+	html.WriteString(`<ul class="component-link-list">`)
 	for _, linkToHere := range metadata.LinksToHere {
 		linkPath := utils.ToRelativePath(linkToHere)
 		filename := filepath.Base(linkPath)

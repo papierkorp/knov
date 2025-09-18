@@ -4,8 +4,7 @@ import "knov/internal/thememanager"
 
 templ FileViewCompact(content string, filePath string, filename string, data thememanager.TemplateData) {
 	@Base(filename) {
-		<link href="/static/css/fileview.css" rel="stylesheet"/>
-		<div id="fileview-compact" class="file-compact">
+		<div id="view-fileview-compact" class="file-compact">
 			<div class="compact-header">
 				<div class="breadcrumb">📁 { filePath }</div>
 				<div class="quick-meta">

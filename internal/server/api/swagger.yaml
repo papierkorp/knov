@@ -839,6 +839,15 @@ paths:
         name: q
         required: true
         type: string
+      - description: 'Output format: dropdown, list, cards, json'
+        enum:
+        - dropdown
+        - list
+        - cards
+        - json
+        in: query
+        name: format
+        type: string
       produces:
       - application/json
       - text/html

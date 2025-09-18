@@ -1088,6 +1088,18 @@ const docTemplate = `{
                         "name": "q",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "enum": [
+                            "dropdown",
+                            "list",
+                            "cards",
+                            "json"
+                        ],
+                        "type": "string",
+                        "description": "Output format: dropdown, list, cards, json",
+                        "name": "format",
+                        "in": "query"
                     }
                 ],
                 "responses": {}

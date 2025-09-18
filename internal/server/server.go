@@ -45,7 +45,7 @@ func StartServerChi() {
 	r.Get("/latest-changes", handleLatestChanges)
 	r.Get("/history", handleHistory)
 	r.Get("/overview", handleOverview)
-
+	r.Get("/search", handleSearchPage)
 	r.Get("/files/*", handleFileContent)
 
 	// ----------------------------------------------------------------------------------------
@@ -284,6 +284,22 @@ func handleOverview(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Failed to render template", http.StatusInternalServerError)
 		fmt.Printf("Error rendering template: %v\n", err)
+		return
+	}
+}
+
+func handleSearchPage(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().Search(query)
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+
+	err = component.Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
 		return
 	}
 }

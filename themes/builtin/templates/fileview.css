@@ -1,7 +1,5 @@
-/* themes/builtin/templates/fileview.css - Compact sidebar layout */
-
-.file-container {
-  max-width: 1200px;
+/* Detailed View */
+#view-fileview-detailed {
   margin: 0 auto;
   padding: 20px;
   display: grid;
@@ -10,7 +8,7 @@
 }
 
 /* Main Content */
-.file-content {
+#view-fileview-detailed .file-content {
   background: var(--black);
   padding: 30px;
   border: 1px solid var(--neutral);
@@ -19,31 +17,31 @@
   min-height: 400px;
 }
 
-.file-content h1,
-.file-content h2,
-.file-content h3 {
+#view-fileview-detailed .file-content h1,
+#view-fileview-detailed .file-content h2,
+#view-fileview-detailed .file-content h3 {
   color: var(--accent);
   border-bottom: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
   padding-bottom: 8px;
 }
 
-.file-content h1 {
+#view-fileview-detailed .file-content h1 {
   font-size: 24px;
   margin-top: 0;
 }
 
-.file-content p {
+#view-fileview-detailed .file-content p {
   margin: 16px 0;
 }
 
-.file-content code {
+#view-fileview-detailed .file-content code {
   background: color-mix(in srgb, var(--neutral) 20%, transparent);
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 14px;
 }
 
-.file-content pre {
+#view-fileview-detailed .file-content pre {
   background: color-mix(in srgb, var(--neutral) 15%, transparent);
   padding: 15px;
   border-radius: 6px;
@@ -52,13 +50,13 @@
 }
 
 /* Sidebar */
-.file-sidebar {
+#view-fileview-detailed .file-sidebar {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.sidebar-section {
+#view-fileview-detailed .sidebar-section {
   background: color-mix(in srgb, var(--neutral) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--neutral) 40%, transparent);
   border-radius: 6px;
@@ -66,7 +64,7 @@
   font-size: 13px;
 }
 
-.sidebar-section h4 {
+#view-fileview-detailed .sidebar-section h4 {
   margin: 0 0 12px 0;
   color: var(--accent);
   font-size: 14px;
@@ -76,13 +74,13 @@
 }
 
 /* Compact Metadata */
-.metadata-compact {
+#view-fileview-detailed .metadata-compact {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.meta-row {
+#view-fileview-detailed .meta-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -90,18 +88,18 @@
   border-bottom: 1px solid color-mix(in srgb, var(--neutral) 20%, transparent);
 }
 
-.meta-row:last-child {
+#view-fileview-detailed .meta-row:last-child {
   border-bottom: none;
 }
 
-.meta-row .label {
+#view-fileview-detailed .meta-row .label {
   color: var(--white);
   font-weight: 500;
   font-size: 12px;
   min-width: 60px;
 }
 
-.meta-row .value {
+#view-fileview-detailed .meta-row .value {
   color: var(--accent);
   font-size: 12px;
   font-family: monospace;
@@ -110,7 +108,7 @@
   margin-left: 8px;
 }
 
-.meta-row .collection {
+#view-fileview-detailed .meta-row .collection {
   background: var(--primary);
   color: var(--white);
   padding: 2px 6px;
@@ -119,9 +117,9 @@
   font-weight: bold;
 }
 
-.meta-row .status,
-.meta-row .priority,
-.meta-row .filetype {
+#view-fileview-detailed .meta-row .status,
+#view-fileview-detailed .meta-row .priority,
+#view-fileview-detailed .meta-row .filetype {
   padding: 1px 4px;
   border-radius: 3px;
   font-size: 10px;
@@ -129,53 +127,54 @@
   font-weight: bold;
 }
 
-.meta-row .status {
+#view-fileview-detailed .meta-row .status {
   background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
-.meta-row .priority {
+#view-fileview-detailed .meta-row .priority {
   background: color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
-.meta-row .filetype {
+#view-fileview-detailed .meta-row .filetype {
   background: color-mix(in srgb, var(--neutral) 30%, transparent);
 }
 
 /* Compact Links */
-.links-compact {
+#view-fileview-detailed .links-compact {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.link-group {
+#view-fileview-detailed .link-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.link-label {
+#view-fileview-detailed .link-label {
   color: var(--white);
   font-weight: 500;
   font-size: 12px;
   opacity: 0.9;
 }
 
-.link-list {
+#view-fileview-detailed .link-list {
   margin-left: 12px;
 }
 
-.link-list ul {
+/* Component styles for links (shared across all views) */
+.component-link-list {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.link-list li {
+.component-link-list li {
   margin: 2px 0;
 }
 
-.link-list a {
+.component-link-list a {
   color: var(--accent);
   text-decoration: none;
   font-size: 12px;
@@ -186,12 +185,12 @@
   word-break: break-word;
 }
 
-.link-list a:hover {
+.component-link-list a:hover {
   background: color-mix(in srgb, var(--accent) 15%, transparent);
   color: var(--white);
 }
 
-.no-links {
+.component-no-links {
   color: var(--neutral);
   font-style: italic;
   font-size: 11px;
@@ -200,68 +199,67 @@
 }
 
 /* Loading States */
-.loading,
-.metadata-compact .value:empty::after,
-.link-list:empty::after {
+#view-fileview-detailed .loading,
+#view-fileview-detailed .metadata-compact .value:empty::after,
+#view-fileview-detailed .link-list:empty::after {
   color: var(--neutral);
   font-style: italic;
   font-size: 11px;
   opacity: 0.6;
 }
 
-.metadata-compact .value:empty::after {
+#view-fileview-detailed .metadata-compact .value:empty::after {
   content: "...";
 }
 
-.link-list:empty::after {
+#view-fileview-detailed .link-list:empty::after {
   content: "...";
   margin-left: 12px;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .file-container {
+  #view-fileview-detailed {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
     gap: 15px;
   }
 
-  .file-sidebar {
+  #view-fileview-detailed .file-sidebar {
     order: -1;
-    /* Show sidebar above content on mobile */
     flex-direction: row;
     gap: 10px;
   }
 
-  .sidebar-section {
+  #view-fileview-detailed .sidebar-section {
     flex: 1;
     min-width: 0;
   }
 
-  .file-content {
+  #view-fileview-detailed .file-content {
     padding: 20px;
   }
 
-  .meta-row {
+  #view-fileview-detailed .meta-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
   }
 
-  .meta-row .value {
+  #view-fileview-detailed .meta-row .value {
     text-align: left;
     margin-left: 0;
   }
 }
 
 /* Compact View */
-#fileview-compact .file-compact {
+#view-fileview-compact .file-compact {
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
 }
 
-#fileview-compact .compact-header {
+#view-fileview-compact .compact-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -270,17 +268,17 @@
   margin-bottom: 20px;
 }
 
-#fileview-compact .breadcrumb {
+#view-fileview-compact .breadcrumb {
   color: var(--neutral);
   font-size: 14px;
 }
 
-#fileview-compact .quick-meta {
+#view-fileview-compact .quick-meta {
   display: flex;
   gap: 8px;
 }
 
-#fileview-compact .meta-pill {
+#view-fileview-compact .meta-pill {
   background: var(--primary);
   color: var(--white);
   padding: 4px 8px;
@@ -288,44 +286,44 @@
   font-size: 12px;
 }
 
-#fileview-compact .compact-links {
+#view-fileview-compact .compact-links {
   margin-top: 20px;
   padding: 10px;
   background: color-mix(in srgb, var(--neutral) 5%, transparent);
   border-radius: 6px;
 }
 
-#fileview-compact .inline-links {
+#view-fileview-compact .inline-links {
   margin-left: 10px;
 }
 
 /* Minimal View */
-#fileview-minimal .file-minimal {
+#view-fileview-minimal .file-minimal {
   max-width: 700px;
   margin: 0 auto;
   padding: 40px 20px;
 }
 
-#fileview-minimal .file-content-minimal {
+#view-fileview-minimal .file-content-minimal {
   font-size: 16px;
   line-height: 1.7;
 }
 
-#fileview-minimal .file-content-minimal h1 {
+#view-fileview-minimal .file-content-minimal h1 {
   font-size: 32px;
   margin-bottom: 30px;
   color: var(--accent);
 }
 
 /* Reader View */
-#fileview-reader .file-reader {
+#view-fileview-reader .file-reader {
   max-width: 650px;
   margin: 0 auto;
   padding: 20px;
   position: relative;
 }
 
-#fileview-reader .reader-controls {
+#view-fileview-reader .reader-controls {
   position: fixed;
   top: 5em;
   right: 1em;
@@ -338,7 +336,7 @@
   z-index: 100;
 }
 
-#fileview-reader .reader-controls button {
+#view-fileview-reader .reader-controls button {
   background: var(--primary);
   color: var(--white);
   border: none;
@@ -348,14 +346,14 @@
   font-size: 14px;
 }
 
-#fileview-reader .file-content-reader {
+#view-fileview-reader .file-content-reader {
   font-size: 18px;
   line-height: 1.8;
   padding-top: 40px;
 }
 
 /* Debug View */
-#fileview-debug .file-debug {
+#view-fileview-debug .file-debug {
   display: grid;
   grid-template-columns: 350px 1fr;
   gap: 20px;
@@ -364,7 +362,7 @@
   margin: 0 auto;
 }
 
-#fileview-debug .debug-panel {
+#view-fileview-debug .debug-panel {
   background: color-mix(in srgb, var(--neutral) 8%, transparent);
   padding: 20px;
   border-radius: 8px;
@@ -372,17 +370,17 @@
   overflow-y: auto;
 }
 
-#fileview-debug .debug-section {
+#view-fileview-debug .debug-section {
   margin: 15px 0;
 }
 
-#fileview-debug .debug-section h4 {
+#view-fileview-debug .debug-section h4 {
   margin: 0 0 8px 0;
   color: var(--accent);
   font-size: 14px;
 }
 
-#fileview-debug .metadata-json {
+#view-fileview-debug .metadata-json {
   background: var(--black);
   padding: 10px;
   border-radius: 4px;
@@ -391,39 +389,39 @@
   white-space: pre-wrap;
 }
 
-#fileview-debug .debug-links {
+#view-fileview-debug .debug-links {
   font-size: 12px;
 }
 
-#fileview-debug .debug-links strong {
+#view-fileview-debug .debug-links strong {
   color: var(--accent);
   display: block;
   margin: 8px 0 4px 0;
 }
 
-#fileview-debug .debug-content h3 {
+#view-fileview-debug .debug-content h3 {
   margin-top: 0;
   color: var(--accent);
 }
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  #fileview-debug .file-debug {
+  #view-fileview-debug .file-debug {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
   }
 
-  #fileview-debug .debug-panel {
+  #view-fileview-debug .debug-panel {
     max-height: 300px;
   }
 
-  #fileview-reader .reader-controls {
+  #view-fileview-reader .reader-controls {
     position: static;
     margin-bottom: 20px;
     justify-content: center;
   }
 
-  #fileview-compact .compact-header {
+  #view-fileview-compact .compact-header {
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
