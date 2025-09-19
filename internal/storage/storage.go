@@ -24,7 +24,7 @@ type StorageManager struct {
 
 // Init initializes the global storage manager
 func Init() {
-	storageType := configmanager.GetMetadataStorageMethod()
+	storageType := configmanager.GetStorageMethod()
 
 	var backend Storage
 	var err error

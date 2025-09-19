@@ -18,24 +18,24 @@ var appConfig AppConfig
 
 // AppConfig contains environment-based application configuration
 type AppConfig struct {
-	DataPath        string
-	ServerPort      string
-	LogLevel        string
-	GitRepoURL      string
-	MetadataStorage string
-	SearchEngine    string
-	LinkRegex       []string
+	DataPath     string
+	ServerPort   string
+	LogLevel     string
+	GitRepoURL   string
+	Storage      string
+	SearchEngine string
+	LinkRegex    []string
 }
 
 // InitAppConfig initializes app config from environment variables
 func InitAppConfig() {
 	appConfig = AppConfig{
-		DataPath:        getEnv("KNOV_DATA_PATH", "data"),
-		ServerPort:      getEnv("KNOV_SERVER_PORT", "1324"),
-		LogLevel:        getEnv("KNOV_LOG_LEVEL", "info"),
-		GitRepoURL:      getEnv("KNOV_GIT_REPO_URL", ""),
-		MetadataStorage: getEnv("KNOV_METADATA_STORAGE", "json"),
-		SearchEngine:    getEnv("KNOV_SEARCH_ENGINE", "memory"),
+		DataPath:     getEnv("KNOV_DATA_PATH", "data"),
+		ServerPort:   getEnv("KNOV_SERVER_PORT", "1324"),
+		LogLevel:     getEnv("KNOV_LOG_LEVEL", "info"),
+		GitRepoURL:   getEnv("KNOV_GIT_REPO_URL", ""),
+		Storage:      getEnv("KNOV_METADATA_STORAGE", "json"),
+		SearchEngine: getEnv("KNOV_SEARCH_ENGINE", "memory"),
 		LinkRegex: []string{
 			"\\[\\[([^\\]]+)\\]\\]",
 			"\\[([^\\]]+)\\]\\([^)]+\\)",
@@ -88,9 +88,9 @@ func SetLogLevel(level string) {
 	logging.LogInfo("log level updated to: %s", level)
 }
 
-// GetMetadataStorageMethod returns storage method
-func GetMetadataStorageMethod() string {
-	return appConfig.MetadataStorage
+// GetStorageMethod returns storage method
+func GetStorageMethod() string {
+	return appConfig.Storage
 }
 
 // GetMetadataLinkRegex returns link regex patterns

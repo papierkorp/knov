@@ -9,21 +9,45 @@ App configuration is read from environment variables on startup and cannot be ch
 - `KNOV_LOG_LEVEL` (string) - How much logs do you want to receive from most to lowest (default: `"info"`)
   - Available Options: `"debug"`, `"info"`, `"warning"`, `"error"`
 - `KNOV_GIT_REPO_URL` (string) - Git repository URL to clone. If empty, a new repository is initialized (default: `""`)
-- `KNOV_METADATA_STORAGE` (string) - Storage method for file metadata (default: `"json"`)
-  - Available options: `"json"`, `"sqlite"`, `"postgres"`, `"yaml"`
+- `KNOV_STORAGE` (string) - Storage method for all data including metadata and dashboards (default: `"json"`)
+  - Available options: `"json"`, `"sqlite"`, `"postgres"`
 - `KNOV_SEARCH_ENGINE` (string) - Search engine type (default: `"sqlite"`)
   - Available options: `"sqlite"`, `"memory"`, `"grep"`
 
-## Search Engine Comparison
+## Storage System
 
-| Engine   | Best For                      | File Count  | Advantages                                                       | Disadvantages                                       |
-| -------- | ----------------------------- | ----------- | ---------------------------------------------------------------- | --------------------------------------------------- |
-| `sqlite` | Production, persistent search | 1000+ files | - Persistent index<br>- Fast queries<br>- Handles large datasets | - Disk space usage<br>- Index rebuild time          |
-| `memory` | Development, fast iteration   | <500 files  | - Extremely fast search<br>- No disk usage<br>- Instant startup  | - Rebuilds on restart<br>- High memory usage        |
-| `grep`   | Simple setups, no indexing    | <100 files  | - No indexing needed<br>- Uses system tools<br>- Low memory      | - Slow on large datasets<br>- Requires grep command |
+The application uses a unified key-based storage system for all data types:
 
-# User Settings (JSON Files)
+| Data Type       | Key Pattern                | Example                        |
+| --------------- | -------------------------- | ------------------------------ |
+| Metadata        | `metadata/filepath`        | `metadata/projects/backend.md` |
+| Dashboards      | `dashboard/id`             | `dashboard/home`               |
+| User Dashboards | `user/userid/dashboard/id` | `user/john/dashboard/work`     |
+| User Settings   | `user/userid/settings`     | `user/john/settings`           |
 
-User settings are stored in JSON files and can be changed at runtime. Each user has their own settings file.
+### Storage Methods
 
-Settings are stored in: `config/users/{userID}/settings.json`
+| Method     | Best For                    | Advantages                                 | Disadvantages              |
+| ---------- | --------------------------- | ------------------------------------------ | -------------------------- |
+| `json`     | Development, small datasets | Simple, human-readable, no dependencies    | Slower for large datasets  |
+| `sqlite`   | Production, medium datasets | Fast queries, ACID compliance, single file | Requires SQLite            |
+| `postgres` | Enterprise, large datasets  | Full SQL features, concurrent access       | Requires PostgreSQL server |
+
+### File Structure (JSON Storage)
+
+```
+config/
+├── .storage/
+│   ├── metadata/
+│   │   ├── project.md.json
+│   │   └── guides/
+│   │       └── setup.md.json
+│   ├── dashboard/
+│   │   └── home.json
+│   └── user/
+│       └── john/
+│           ├── settings.json
+│           └── dashboard/
+│               └── work.json
+└── users/  ← legacy user settings (will be migrated)
+```

@@ -17,7 +17,7 @@ export KNOV_DATA_PATH="data"
 export KNOV_SERVER_PORT="1324"
 export KNOV_LOG_LEVEL="debug"
 export KNOV_GIT_REPO_URL=""  # Empty for local development
-export KNOV_METADATA_STORAGE="json"
+export KNOV_STORAGE="json"   # Changed from KNOV_METADATA_STORAGE
 ```
 
 ## Development
@@ -42,10 +42,38 @@ The application uses a two-tier configuration system:
 
 ### User Settings
 
-- Stored in JSON files per user
+- Stored via the unified storage system
 - Changeable at runtime via API
 - UI preferences and personalization
 - See `internal/configmanager/settings.go`
+
+## Storage System
+
+The app uses a unified key-based storage system:
+
+```go
+// Access storage
+storage := storage.GetStorage()
+
+// Save data
+storage.Set("datatype/identifier", jsonData)
+
+// Load data
+data, err := storage.Get("datatype/identifier")
+
+// List keys
+keys, err := storage.List("datatype/")
+
+// Delete data
+storage.Delete("datatype/identifier")
+```
+
+### Key Patterns
+
+- `metadata/filepath` - File metadata
+- `dashboard/id` - Global dashboards
+- `user/userid/dashboard/id` - User dashboards
+- `user/userid/settings` - User settings
 
 ## Config Manager
 
@@ -55,6 +83,7 @@ Access configuration through:
 // App config
 appConfig := configmanager.GetAppConfig()
 dataPath := appConfig.DataPath
+storageMethod := configmanager.GetStorageMethod()  // New function name
 
 // User settings
 userSettings := configmanager.GetUserSettings()
