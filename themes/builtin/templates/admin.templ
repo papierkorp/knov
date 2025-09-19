@@ -1,0 +1,41 @@
+package templates
+
+import (
+	"knov/internal/configmanager"
+	"knov/internal/thememanager"
+	"knov/internal/translation"
+)
+
+templ Admin(data thememanager.TemplateData) {
+	@Base(translation.Sprintf("Admin")) {
+		<div id="page-admin">
+			<h1>{ translation.Sprintf("Admin") }</h1>
+			<div class="admin-sections">
+				@GitSection()
+			</div>
+		</div>
+	}
+}
+
+templ GitSection() {
+	<section class="admin-section">
+		<h2>{ translation.Sprintf("Git Settings") }</h2>
+		<div class="admin-item">
+			<form
+				hx-post="/api/config/setRepositoryURL"
+				hx-trigger="blur from:input"
+				hx-target="#git-status"
+				hx-headers='{"Accept": "text/html"}'
+			>
+				<label for="repositoryUrl">{ translation.Sprintf("Repository URL:") }</label>
+				<input
+					type="text"
+					id="repositoryUrl"
+					name="repositoryUrl"
+					value={ configmanager.GetAppConfig().GitRepoURL }
+				/>
+			</form>
+			<div id="git-status"></div>
+		</div>
+	</section>
+}

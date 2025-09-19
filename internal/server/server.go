@@ -41,6 +41,7 @@ func StartServerChi() {
 	r.Get("/", handleHome)
 	r.Get("/home", handleHome)
 	r.Get("/settings", handleSettings)
+	r.Get("/admin", handleAdmin)
 	r.Get("/playground", handlePlayground)
 	r.Get("/latest-changes", handleLatestChanges)
 	r.Get("/history", handleHistory)
@@ -197,13 +198,13 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("Error loading theme")
+		fmt.Printf("error loading theme")
 	}
 
 	err = component.Render(r.Context(), w)
 	if err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-		fmt.Printf("Error rendering template: %v\n", err)
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
 }
@@ -213,13 +214,29 @@ func handleSettings(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("Error loading theme")
+		fmt.Printf("error loading theme")
 	}
 
 	err = component.Render(r.Context(), w)
 	if err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-		fmt.Printf("Error rendering template: %v\n", err)
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		fmt.Printf("error rendering template: %v\n", err)
+		return
+	}
+}
+
+func handleAdmin(w http.ResponseWriter, r *http.Request) {
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().Admin()
+
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		fmt.Printf("error loading theme")
+	}
+
+	err = component.Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
 }
@@ -229,13 +246,13 @@ func handlePlayground(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("Error loading theme")
+		fmt.Printf("error loading theme")
 	}
 
 	err = component.Render(r.Context(), w)
 	if err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-		fmt.Printf("Error rendering template: %v\n", err)
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
 }
@@ -251,7 +268,7 @@ func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
 	err = component.Render(r.Context(), w)
 	if err != nil {
 		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-		fmt.Printf("Error rendering template: %v\n", err)
+		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
 }
@@ -261,13 +278,13 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("Error loading theme")
+		fmt.Printf("error loading theme")
 	}
 
 	err = component.Render(r.Context(), w)
 	if err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-		fmt.Printf("Error rendering template: %v\n", err)
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
 }
@@ -277,13 +294,13 @@ func handleOverview(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("Error loading theme")
+		fmt.Printf("error loading theme")
 	}
 
 	err = component.Render(r.Context(), w)
 	if err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-		fmt.Printf("Error rendering template: %v\n", err)
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
 }

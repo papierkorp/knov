@@ -39,6 +39,18 @@ func (t *Builtin) Settings() (templ.Component, error) {
 	return templates.Settings(td), nil
 }
 
+// Admin ...
+func (t *Builtin) Admin() (templ.Component, error) {
+
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.Admin(td), nil
+}
+
 // Playground ...
 func (t *Builtin) Playground() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
@@ -83,6 +95,7 @@ func (t *Builtin) Overview() (templ.Component, error) {
 	return templates.Overview(td), nil
 }
 
+// Search ..
 func (t *Builtin) Search(query string) (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{

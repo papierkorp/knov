@@ -37,7 +37,6 @@ templ Settings(data thememanager.TemplateData) {
 			<div class="settings-sections">
 				@GeneralSection()
 				@ThemeSection(data)
-				@GitSection()
 			</div>
 		</div>
 	}
@@ -95,28 +94,5 @@ templ ThemeSection(data thememanager.TemplateData) {
 			</form>
 		</div>
 		@templ.Raw(getBuiltinCSSEditor())
-	</section>
-}
-
-templ GitSection() {
-	<section class="settings-section">
-		<h2>{ translation.Sprintf("Git Settings") }</h2>
-		<div class="setting-item">
-			<form
-				hx-post="/api/config/setRepositoryURL"
-				hx-trigger="blur from:input"
-				hx-target="#git-status"
-				hx-headers='{"Accept": "text/html"}'
-			>
-				<label for="repositoryUrl">{ translation.Sprintf("Repository URL:") }</label>
-				<input
-					type="text"
-					id="repositoryUrl"
-					name="repositoryUrl"
-					value={ configmanager.GetAppConfig().GitRepoURL }
-				/>
-			</form>
-			<div id="git-status"></div>
-		</div>
 	</section>
 }

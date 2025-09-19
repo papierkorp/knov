@@ -4,14 +4,14 @@ package main
 import (
 	"github.com/a-h/templ"
 	"knov/internal/thememanager"
-	"knov/themes/billo/templates"
+	"knov/themes/test/templates"
 )
 
-type Billo struct{}
+type test struct{}
 
-var Theme Billo
+var Theme test
 
-func (t *Billo) Home() (templ.Component, error) {
+func (t *test) Home() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
@@ -21,7 +21,7 @@ func (t *Billo) Home() (templ.Component, error) {
 	return templates.Home(td), nil
 }
 
-func (t *Billo) Settings() (templ.Component, error) {
+func (t *test) Settings() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
@@ -31,7 +31,19 @@ func (t *Billo) Settings() (templ.Component, error) {
 	return templates.Settings(td), nil
 }
 
-func (t *Billo) Playground() (templ.Component, error) {
+// Admin ...
+func (t *test) Admin() (templ.Component, error) {
+
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.Admin(td), nil
+}
+
+func (t *test) Playground() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
@@ -41,7 +53,7 @@ func (t *Billo) Playground() (templ.Component, error) {
 	return templates.Playground(td), nil
 }
 
-func (t *Billo) LatestChanges() (templ.Component, error) {
+func (t *test) LatestChanges() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
@@ -51,7 +63,7 @@ func (t *Billo) LatestChanges() (templ.Component, error) {
 	return templates.LatestChanges(td), nil
 }
 
-func (t *Billo) History() (templ.Component, error) {
+func (t *test) History() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
@@ -61,7 +73,7 @@ func (t *Billo) History() (templ.Component, error) {
 	return templates.History(td), nil
 }
 
-func (t *Billo) Overview() (templ.Component, error) {
+func (t *test) Overview() (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
@@ -71,14 +83,31 @@ func (t *Billo) Overview() (templ.Component, error) {
 	return templates.Overview(td), nil
 }
 
-func (t *Billo) FileView(content string, filename string) (templ.Component, error) {
+// Search ..
+func (t *test) Search(query string) (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
 		AvailableThemes: tm.GetAvailableThemes(),
 	}
 
-	return templates.FileView(content, filename, td), nil
+	return templates.Search(td), nil
+}
+
+// GetAvailableFileViews returns all available file views for this theme
+func (t *test) GetAvailableFileViews() []string {
+	return []string{"detailed", "compact", "minimal", "reader", "debug"}
+}
+
+// RenderFileView renders the specified file view
+func (t *test) RenderFileView(_ string, content string, filePath string) (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.FileView(content, filePath, td), nil
 }
 
 func main() {}
