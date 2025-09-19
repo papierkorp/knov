@@ -6,6 +6,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/search"
 	"knov/internal/server"
+	"knov/internal/storage"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
@@ -20,6 +21,7 @@ func main() {
 	translation.SetLanguage(configmanager.GetLanguage())
 
 	configmanager.Init()
+	storage.Init()
 	thememanager.Init()
 	if err := search.InitSearch(); err != nil {
 		logging.LogError("failed to initialize search: %v", err)

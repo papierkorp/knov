@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"knov/internal/configmanager"
 	"knov/internal/logging"
+	"knov/internal/storage"
 	"knov/internal/utils"
 )
 
@@ -176,116 +176,44 @@ func MetaDataSave(m *Metadata) error {
 		return nil
 	}
 
-	storageMethod := configmanager.GetMetadataStorageMethod()
-
-	switch storageMethod {
-	case "json":
-		return metaDataSaveAsJSON(finalMetadata)
-	default:
-		logging.LogWarning("unsupported metadata storage method: %s, using json", storageMethod)
-		return metaDataSaveAsJSON(finalMetadata)
-	}
-}
-
-func metaDataSaveAsJSON(m *Metadata) error {
-	metadataFile := "config/.metadata/metadata.json"
-	metadataDir := filepath.Dir(metadataFile)
-
-	if err := os.MkdirAll(metadataDir, 0755); err != nil {
-		logging.LogError("failed to create metadata directory: %v", err)
-		return err
-	}
-
-	// TODO: to optimize switch to multiple json files e.g. alphabetically
-	var allMetadata map[string]*Metadata
-	if data, err := os.ReadFile(metadataFile); err == nil {
-		json.Unmarshal(data, &allMetadata)
-	}
-	if allMetadata == nil {
-		allMetadata = make(map[string]*Metadata)
-	}
-
-	allMetadata[m.Path] = m
-
-	jsonData, err := json.MarshalIndent(allMetadata, "", "  ")
+	data, err := json.Marshal(finalMetadata)
 	if err != nil {
 		logging.LogError("failed to marshal metadata: %v", err)
 		return err
 	}
 
-	if err := os.WriteFile(metadataFile, jsonData, 0644); err != nil {
-		logging.LogError("failed to write metadata file: %v", err)
+	key := "metadata/" + finalMetadata.Path
+	if err := storage.GetStorage().Set(key, data); err != nil {
+		logging.LogError("failed to save metadata for %s: %v", finalMetadata.Path, err)
 		return err
 	}
 
-	logging.LogDebug("metadata saved to %s", metadataFile)
-	return nil
-}
-
-func metaDataSaveAsMarkdown(m *Metadata) error {
-	return nil
-}
-
-func metaDataSaveAsSQLITE(m *Metadata) error {
-	return nil
-}
-
-func metaDataSaveAsPostgres(m *Metadata) error {
+	logging.LogDebug("metadata saved for: %s", finalMetadata.Path)
 	return nil
 }
 
 // MetaDataGet retrieves metadata using the configured storage method
 func MetaDataGet(filepath string) (*Metadata, error) {
-	storageMethod := configmanager.GetMetadataStorageMethod()
-
-	switch storageMethod {
-	case "json":
-		return metaDataGetJSON(filepath)
-	default:
-		logging.LogWarning("unsupported metadata storage method: %s, using json", storageMethod)
-		return metaDataGetJSON(filepath)
-	}
-}
-
-func metaDataGetJSON(filepath string) (*Metadata, error) {
-	metadataFile := "config/.metadata/metadata.json"
-
-	data, err := os.ReadFile(metadataFile)
+	key := "metadata/" + utils.ToRelativePath(filepath)
+	data, err := storage.GetStorage().Get(key)
 	if err != nil {
-		if os.IsNotExist(err) {
-			logging.LogDebug("metadata file does not exist: %s", metadataFile)
-			return nil, nil
-		}
-		logging.LogError("failed to read metadata file: %v", err)
+		logging.LogError("failed to get metadata for %s: %v", filepath, err)
 		return nil, err
 	}
 
-	var allMetadata map[string]*Metadata
-	if err := json.Unmarshal(data, &allMetadata); err != nil {
-		logging.LogError("failed to unmarshal metadata: %v", err)
-		return nil, err
-	}
-
-	metadata, exists := allMetadata[filepath]
-	if !exists {
+	if data == nil {
 		logging.LogDebug("no metadata found for file: %s", filepath)
 		return nil, nil
 	}
 
+	var metadata Metadata
+	if err := json.Unmarshal(data, &metadata); err != nil {
+		logging.LogError("failed to unmarshal metadata for %s: %v", filepath, err)
+		return nil, err
+	}
+
 	logging.LogDebug("metadata retrieved: %s", metadata.Name)
-	return metadata, nil
-}
-
-func metaDataGetMarkdown(filepath string) (*Metadata, error) {
-	return nil, nil
-}
-
-func metaDataGetSQLITE(filepath string) (*Metadata, error) {
-	return nil, nil
-}
-
-func metaDataGetPostgres(filepath string) (*Metadata, error) {
-	return nil, nil
+	return &metadata, nil
 }
 
 // MetaDataInitializeAll creates metadata for all files that don't have it yet
