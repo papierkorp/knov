@@ -135,3 +135,14 @@ func (t *Builtin) RenderFileView(viewName string, content string, filePath strin
 		return templates.FileViewDetailed(content, filePath, filename, td), nil
 	}
 }
+
+// Dashboard ...
+func (t *Builtin) Dashboard() (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.Dashboard(td), nil
+}

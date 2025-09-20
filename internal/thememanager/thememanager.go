@@ -57,6 +57,7 @@ type ITheme interface {
 	History() (templ.Component, error)
 	Search(query string) (templ.Component, error)
 	Overview() (templ.Component, error)
+	Dashboard() (templ.Component, error)
 	GetAvailableFileViews() []string
 	RenderFileView(viewName string, content string, filePath string) (templ.Component, error)
 }

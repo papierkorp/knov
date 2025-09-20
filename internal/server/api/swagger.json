@@ -103,6 +103,118 @@
                 "responses": {}
             }
         },
+        "/api/dashboards": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Get all dashboards",
+                "responses": {}
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Create dashboard",
+                "parameters": [
+                    {
+                        "description": "Dashboard object",
+                        "name": "dashboard",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dashboards.Dashboard"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/dashboards/{id}": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Get dashboard by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dashboard ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Update dashboard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dashboard ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dashboard object",
+                        "name": "dashboard",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dashboards.Dashboard"
+                        }
+                    }
+                ],
+                "responses": {}
+            },
+            "delete": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Delete dashboard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dashboard ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/files/content/{filepath}": {
             "get": {
                 "produces": [
@@ -1206,6 +1318,45 @@
         }
     },
     "definitions": {
+        "dashboards.Dashboard": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "layout": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "widgets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboards.DashboardWidget"
+                    }
+                }
+            }
+        },
+        "dashboards.DashboardWidget": {
+            "type": "object",
+            "properties": {
+                "filter": {
+                    "type": "array",
+                    "items": {}
+                },
+                "id": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "files.File": {
             "type": "object",
             "properties": {

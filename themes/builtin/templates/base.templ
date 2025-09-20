@@ -61,7 +61,14 @@ templ header() {
 				<a href="/rename">{ translation.Sprintf("Rename") }</a>
 				<a href="/edit">{ translation.Sprintf("Edit") }</a>
 			</span>
-			<button class="btn-add" href="/add">+</button>
+			<div class="dropdown-navbar">
+				<button class="btn-add">+</button>
+				<div class="dropdown-navbar-content">
+					<a href="#" hx-get="/dashboard-form" hx-target="body" hx-swap="beforeend">Add Dashboard</a>
+					<a href="#" onclick="alert('Add Note - Coming Soon')">Add Note</a>
+					<a href="#" onclick="alert('Add Todo - Coming Soon')">Add Todo</a>
+				</div>
+			</div>
 			<div class="dropdown-navbar">
 				<button class="btn-menu-dropdown">
 					<i class="fa fa-bars" aria-hidden="true"></i>
