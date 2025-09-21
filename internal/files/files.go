@@ -3,6 +3,7 @@ package files
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"slices"
@@ -272,4 +273,39 @@ func parseDate(dateStr string) (time.Time, error) {
 		}
 	}
 	return time.Time{}, fmt.Errorf("unable to parse date: %s", dateStr)
+}
+
+// ParseFilterCriteria parses form data into FilterCriteria
+func ParseFilterCriteria(r *http.Request) ([]FilterCriteria, string, error) {
+	if err := r.ParseForm(); err != nil {
+		return nil, "", err
+	}
+
+	logic := r.FormValue("logic")
+	if logic == "" {
+		logic = "and"
+	}
+
+	var criteria []FilterCriteria
+	metadata := r.Form["metadata[]"]
+	operators := r.Form["operator[]"]
+	values := r.Form["value[]"]
+	actions := r.Form["action[]"]
+
+	for i := range metadata {
+		if i < len(operators) && i < len(values) && metadata[i] != "" && operators[i] != "" {
+			action := "include"
+			if i < len(actions) {
+				action = actions[i]
+			}
+			criteria = append(criteria, FilterCriteria{
+				Metadata: metadata[i],
+				Operator: operators[i],
+				Value:    values[i],
+				Action:   action,
+			})
+		}
+	}
+
+	return criteria, logic, nil
 }

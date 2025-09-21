@@ -60,6 +60,7 @@ type ITheme interface {
 	Dashboard() (templ.Component, error)
 	GetAvailableFileViews() []string
 	RenderFileView(viewName string, content string, filePath string) (templ.Component, error)
+	RenderForm(formType string, data interface{}) (templ.Component, error)
 }
 
 // -----------------------------------------------------------------------------

@@ -15,9 +15,9 @@ definitions:
     type: object
   dashboards.DashboardWidget:
     properties:
-      filter:
-        items: {}
-        type: array
+      config:
+        additionalProperties: true
+        type: object
       id:
         type: string
       position:
@@ -223,14 +223,22 @@ paths:
       - dashboards
     post:
       consumes:
-      - application/json
+      - application/x-www-form-urlencoded
       parameters:
-      - description: Dashboard object
-        in: body
-        name: dashboard
+      - description: Dashboard ID
+        in: formData
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/dashboards.Dashboard'
+        type: string
+      - description: Dashboard name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Dashboard layout
+        in: formData
+        name: layout
+        type: string
       produces:
       - application/json
       - text/html

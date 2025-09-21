@@ -123,7 +123,7 @@ const docTemplate = `{
             },
             "post": {
                 "consumes": [
-                    "application/json"
+                    "application/x-www-form-urlencoded"
                 ],
                 "produces": [
                     "application/json",
@@ -135,13 +135,24 @@ const docTemplate = `{
                 "summary": "Create dashboard",
                 "parameters": [
                     {
-                        "description": "Dashboard object",
-                        "name": "dashboard",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dashboards.Dashboard"
-                        }
+                        "type": "string",
+                        "description": "Dashboard ID",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dashboard name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dashboard layout",
+                        "name": "layout",
+                        "in": "formData"
                     }
                 ],
                 "responses": {}
@@ -1347,9 +1358,9 @@ const docTemplate = `{
         "dashboards.DashboardWidget": {
             "type": "object",
             "properties": {
-                "filter": {
-                    "type": "array",
-                    "items": {}
+                "config": {
+                    "type": "object",
+                    "additionalProperties": true
                 },
                 "id": {
                     "type": "string"

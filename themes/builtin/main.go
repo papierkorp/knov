@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/a-h/templ"
@@ -145,4 +146,20 @@ func (t *Builtin) Dashboard() (templ.Component, error) {
 	}
 
 	return templates.Dashboard(td), nil
+}
+
+// RenderForm renders various forms
+func (t *Builtin) RenderForm(formType string, data interface{}) (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	switch formType {
+	case "dashboard-create":
+		return templates.DashboardForm(td), nil
+	default:
+		return nil, fmt.Errorf("unknown form type: %s", formType)
+	}
 }

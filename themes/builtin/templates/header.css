@@ -51,7 +51,11 @@
   gap: 10px;
 }
 
-#component-header .header-mid button {
+#component-header .header-mid a {
+  background: var(--white);
+  border: none;
+  padding: 8px 12px;
+  color: var(--black);
   border-radius: 50%;
   margin: 0 4px;
 }

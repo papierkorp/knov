@@ -67,33 +67,10 @@ func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 	logging.LogDebug("filter request received")
 
-	if err := r.ParseForm(); err != nil {
+	criteria, logic, err := files.ParseFilterCriteria(r)
+	if err != nil {
 		http.Error(w, "failed to parse form", http.StatusBadRequest)
 		return
-	}
-
-	logic := r.FormValue("logic")
-	if logic == "" {
-		logic = "and"
-	}
-
-	var criteria []files.FilterCriteria
-	metadata := r.Form["metadata[]"]
-	operators := r.Form["operator[]"]
-	values := r.Form["value[]"]
-	actions := r.Form["action[]"]
-
-	maxLen := len(metadata)
-
-	for i := range maxLen {
-		if i < len(operators) && i < len(values) && metadata[i] != "" && operators[i] != "" {
-			criteria = append(criteria, files.FilterCriteria{
-				Metadata: metadata[i],
-				Operator: operators[i],
-				Value:    values[i],
-				Action:   getFormValue(actions, i),
-			})
-		}
 	}
 
 	logging.LogDebug("built %d filter criteria: %+v", len(criteria), criteria)
@@ -118,11 +95,4 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 	html.WriteString("</ul>")
 
 	writeResponse(w, r, filteredFiles, html.String())
-}
-
-func getFormValue(slice []string, index int) string {
-	if index < len(slice) {
-		return slice[index]
-	}
-	return ""
 }

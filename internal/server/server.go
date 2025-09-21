@@ -49,6 +49,8 @@ func StartServerChi() {
 	r.Get("/search", handleSearchPage)
 	r.Get("/files/*", handleFileContent)
 	r.Get("/dashboard", handleDashboard)
+	r.Get("/dashboard/new", handleDashboardForm)
+	r.Get("/dashboard/{id}", handleDashboardView)
 
 	// ----------------------------------------------------------------------------------------
 	// ------------------------------------- static routes -------------------------------------
@@ -385,6 +387,36 @@ func handleDashboard(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "failed to render template", http.StatusInternalServerError)
 		fmt.Printf("error rendering template: %v\n", err)
+		return
+	}
+}
+
+func handleDashboardForm(w http.ResponseWriter, r *http.Request) {
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().RenderForm("dashboard-create", nil)
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+
+	err = component.Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleDashboardView(w http.ResponseWriter, r *http.Request) {
+	// dashboardID := chi.URLParam(r, "id")
+
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard()
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+
+	err = component.Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
 		return
 	}
 }

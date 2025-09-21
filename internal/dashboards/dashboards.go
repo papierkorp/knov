@@ -9,6 +9,7 @@ import (
 	"knov/internal/storage"
 )
 
+// Dashboard ..
 type Dashboard struct {
 	ID      string            `json:"id"`
 	Name    string            `json:"name"`
@@ -16,11 +17,12 @@ type Dashboard struct {
 	Widgets []DashboardWidget `json:"widgets"`
 }
 
+// DashboardWidget ..
 type DashboardWidget struct {
 	ID       string                 `json:"id"`
 	Type     string                 `json:"type"`
 	Position map[string]interface{} `json:"position"`
-	Filter   []interface{}          `json:"filter"`
+	Config   map[string]interface{} `json:"config"`
 }
 
 // GetAll returns all dashboards

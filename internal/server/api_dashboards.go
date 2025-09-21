@@ -2,10 +2,12 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"knov/internal/dashboards"
+	"knov/internal/files"
 )
 
 // @Summary Get all dashboards
@@ -20,26 +22,60 @@ func handleAPIGetDashboards(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var html strings.Builder
-	html.WriteString("<ul>")
-	for _, dashboard := range allDashboards {
-		html.WriteString("<li>" + dashboard.Name + "</li>")
+
+	if len(allDashboards) == 0 {
+		html.WriteString(`<a href="/">Home</a>`)
+	} else {
+		for _, dashboard := range allDashboards {
+			displayText := dashboard.Name
+			if len(displayText) > 3 {
+				displayText = displayText[:3]
+			}
+			html.WriteString(fmt.Sprintf(`<a href="/dashboard/%s">%s</a>`, dashboard.ID, displayText))
+		}
 	}
-	html.WriteString("</ul>")
 
 	writeResponse(w, r, allDashboards, html.String())
 }
 
 // @Summary Create dashboard
 // @Tags dashboards
-// @Accept json
+// @Accept application/x-www-form-urlencoded
 // @Produce json,html
-// @Param dashboard body dashboards.Dashboard true "Dashboard object"
+// @Param id formData string true "Dashboard ID"
+// @Param name formData string true "Dashboard name"
+// @Param layout formData string false "Dashboard layout"
 // @Router /api/dashboards [post]
 func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
-	var dashboard dashboards.Dashboard
-	if err := json.NewDecoder(r.Body).Decode(&dashboard); err != nil {
-		http.Error(w, "invalid json", http.StatusBadRequest)
+	criteria, logic, err := files.ParseFilterCriteria(r)
+	if err != nil {
+		http.Error(w, "failed to parse form", http.StatusBadRequest)
 		return
+	}
+
+	dashboard := dashboards.Dashboard{
+		ID:      r.FormValue("id"),
+		Name:    r.FormValue("name"),
+		Layout:  r.FormValue("layout"),
+		Widgets: []dashboards.DashboardWidget{},
+	}
+
+	if dashboard.Layout == "" {
+		dashboard.Layout = "single-column"
+	}
+
+	// Create widget if filter criteria exist
+	if len(criteria) > 0 {
+		dashboard.Widgets = append(dashboard.Widgets, dashboards.DashboardWidget{
+			ID:       "main-filter",
+			Type:     "file-filter",
+			Position: map[string]interface{}{"x": 0, "y": 0},
+			Config: map[string]interface{}{
+				"filter":  criteria,
+				"logic":   logic,
+				"display": r.FormValue("display"),
+			},
+		})
 	}
 
 	if dashboard.ID == "" || dashboard.Name == "" {
