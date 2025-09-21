@@ -3,6 +3,7 @@
 @import url("fileview.css");
 @import url("overview.css");
 @import url("search.css");
+@import url("dashboard.css");
 
 :root {
   --primary: #65a30d;

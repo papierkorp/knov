@@ -6,6 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/a-h/templ"
+	"knov/internal/dashboards"
+	"knov/internal/files"
+	"knov/internal/server"
 	"knov/internal/thememanager"
 	"knov/themes/builtin/templates"
 )
@@ -137,15 +140,57 @@ func (t *Builtin) RenderFileView(viewName string, content string, filePath strin
 	}
 }
 
-// Dashboard ...
-func (t *Builtin) Dashboard() (templ.Component, error) {
+func (t *Builtin) Dashboard(id string) (templ.Component, error) {
+	dashboard, err := dashboards.GetByID(id)
+	if err != nil {
+		allDashboards, _ := dashboards.GetAll()
+		if len(allDashboards) == 0 && id == "home" {
+			dashboard = &dashboards.Dashboard{
+				ID: "home", Name: "Home", Layout: "single-column", Widgets: []dashboards.DashboardWidget{},
+			}
+		} else {
+			return nil, fmt.Errorf("dashboard not found: %s", id)
+		}
+	}
+
+	widgetContents := make(map[string]string)
+	for _, widget := range dashboard.Widgets {
+		if widget.Type == "file-filter" {
+			widgetContents[widget.ID] = renderFilterWidget(widget)
+		}
+	}
+
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
 		AvailableThemes: tm.GetAvailableThemes(),
+		Dashboard:       dashboard,
+		WidgetContents:  widgetContents,
 	}
 
 	return templates.Dashboard(td), nil
+}
+
+func renderFilterWidget(widget dashboards.DashboardWidget) string {
+	criteria, logic, err := files.ParseFilterCriteriaFromConfig(widget.Config)
+	if err != nil {
+		return "<p>invalid filter config</p>"
+	}
+
+	display, _ := widget.Config["display"].(string)
+	if display == "" {
+		display = "list"
+	}
+
+	filteredFiles, err := files.FilterFilesByMetadata(criteria, logic)
+	if err != nil {
+		return "<p>filter error</p>"
+	}
+
+	if display == "cards" {
+		return server.BuildCardsHTML(filteredFiles, "")
+	}
+	return server.BuildListHTML(filteredFiles, "")
 }
 
 // RenderForm renders various forms

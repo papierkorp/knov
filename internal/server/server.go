@@ -50,7 +50,7 @@ func StartServerChi() {
 	r.Get("/files/*", handleFileContent)
 	r.Get("/dashboard", handleDashboard)
 	r.Get("/dashboard/new", handleDashboardForm)
-	r.Get("/dashboard/{id}", handleDashboardView)
+	r.Get("/dashboard/{id}", handleDashboard)
 
 	// ----------------------------------------------------------------------------------------
 	// ------------------------------------- static routes -------------------------------------
@@ -376,39 +376,26 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDashboard(w http.ResponseWriter, r *http.Request) {
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard()
+	dashboardID := "home" // default
 
-	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("error loading theme")
+	if strings.HasPrefix(r.URL.Path, "/dashboard/") {
+		dashboardID = strings.TrimPrefix(r.URL.Path, "/dashboard/")
 	}
 
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard(dashboardID)
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
 	err = component.Render(r.Context(), w)
 	if err != nil {
 		http.Error(w, "failed to render template", http.StatusInternalServerError)
-		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
 }
 
 func handleDashboardForm(w http.ResponseWriter, r *http.Request) {
 	component, err := thememanager.GetThemeManager().GetCurrentTheme().RenderForm("dashboard-create", nil)
-	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		return
-	}
-
-	err = component.Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "failed to render template", http.StatusInternalServerError)
-		return
-	}
-}
-
-func handleDashboardView(w http.ResponseWriter, r *http.Request) {
-	// dashboardID := chi.URLParam(r, "id")
-
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard()
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
 		return

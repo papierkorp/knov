@@ -64,10 +64,10 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 		html := buildDropdownHTML(results, query)
 		w.Write([]byte(html))
 	case "list":
-		html := buildListHTML(results, query)
+		html := BuildListHTML(results, query)
 		writeResponse(w, r, results, html)
 	case "cards":
-		html := buildCardsHTML(results, query)
+		html := BuildCardsHTML(results, query)
 		writeResponse(w, r, results, html)
 	default:
 		html := buildDropdownHTML(results, query)
@@ -107,7 +107,8 @@ func buildDropdownHTML(results []files.File, query string) string {
 	return html.String()
 }
 
-func buildCardsHTML(results []files.File, query string) string {
+// BuildCardsHTML ..
+func BuildCardsHTML(results []files.File, query string) string {
 	var html strings.Builder
 	html.WriteString(fmt.Sprintf(`<p>found %d results for "%s"</p>`, len(results), query))
 	html.WriteString(`<div class="search-results-cards">`)
@@ -126,7 +127,8 @@ func buildCardsHTML(results []files.File, query string) string {
 	return html.String()
 }
 
-func buildListHTML(results []files.File, query string) string {
+// BuildListHTML ..
+func BuildListHTML(results []files.File, query string) string {
 	var html strings.Builder
 	html.WriteString(fmt.Sprintf(`<p>found %d results for "%s"</p>`, len(results), query))
 	html.WriteString(`<ul class="search-results-simple-list">`)

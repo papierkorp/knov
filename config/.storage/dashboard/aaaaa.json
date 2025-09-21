@@ -1,0 +1,1 @@
+{"id":"aaaaa","name":"aaaaa","layout":"single-column","widgets":[{"id":"main-filter","type":"file-filter","position":{"x":0,"y":0},"config":{"display":"cards","filter":[{"metadata":"tags","operator":"equals","value":"testA","action":"include"}],"logic":"and"}}]}

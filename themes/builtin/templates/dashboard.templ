@@ -5,8 +5,24 @@ import "knov/internal/thememanager"
 templ Dashboard(data thememanager.TemplateData) {
 	@Base("Dashboard") {
 		<div id="page-dashboard">
-			<h1>Dashboard</h1>
-			<p>Dashboard functionality coming soon...</p>
+			if data.Dashboard != nil {
+				<h1>{ data.Dashboard.Name }</h1>
+				<div class={ "dashboard-layout-" + data.Dashboard.Layout }>
+					for _, widget := range data.Dashboard.Widgets {
+						<div class="dashboard-widget" id={ "widget-" + widget.ID }>
+							if content, exists := data.WidgetContents[widget.ID]; exists {
+								@templ.Raw(content)
+							} else {
+								<p>widget content not available</p>
+							}
+						</div>
+					}
+				</div>
+			} else {
+				<h1>Dashboard</h1>
+				<p>no dashboard configured</p>
+				<a href="/dashboard/new">create dashboard</a>
+			}
 		</div>
 	}
 }
@@ -53,6 +69,7 @@ templ MetadataFilterSection() {
 				<option value="cards">Cards</option>
 			</select>
 			<button type="button" onclick="addFilterRow()">Add Filter</button>
+			<button type="button" onclick="previewFilter()">Preview Filter</button>
 		</div>
 		<div id="filter-container">
 			<div class="filter-row" id="filter-row-0">
@@ -80,6 +97,13 @@ templ MetadataFilterSection() {
 					<option value="exclude">Exclude</option>
 				</select>
 				<button type="button" onclick="removeFilterRow(0)">-</button>
+			</div>
+		</div>
+		<!-- Add preview section -->
+		<div id="filter-preview">
+			<h4>Filter Preview</h4>
+			<div id="filter-results">
+				<p>click "Preview Filter" to see results</p>
 			</div>
 		</div>
 		<script>
@@ -129,28 +153,25 @@ templ MetadataFilterSection() {
             }
         }
 
-        document.body.addEventListener('htmx:afterRequest', function (event) {
-            if (event.detail.target.id === 'filter-results' && event.detail.xhr.status === 200) {
-                try {
-                    const files = JSON.parse(event.detail.xhr.responseText);
-                    const ul = document.createElement('ul');
-                    files.forEach(file => {
-                        const li = document.createElement('li');
-                        const a = document.createElement('a');
-                        a.href = '#';
-                        a.setAttribute('hx-get', '/api/files/content/' + file.path.substring(5));
-                        a.setAttribute('hx-target', '#file-content');
-                        a.textContent = file.path.replace('data/', '');
-                        li.appendChild(a);
-                        ul.appendChild(li);
-                    });
-                    event.detail.target.innerHTML = '';
-                    event.detail.target.appendChild(ul);
-                } catch (e) {
-                    console.error('failed to parse json response:', e);
+        function previewFilter() {
+            const form = document.querySelector('form');
+            const formData = new FormData(form);
+
+            fetch('/api/files/filter', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'text/html'
                 }
-            }
-        });
+            })
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('filter-results').innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('filter-results').innerHTML = '<p>error loading preview</p>';
+                });
+        }
     </script>
 	</section>
 }

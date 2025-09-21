@@ -1,0 +1,1 @@
+{"id":"asdf","name":"asdf","layout":"two-column","widgets":[{"id":"main-filter","type":"file-filter","position":{"x":0,"y":0},"config":{"display":"list","filter":[{"metadata":"tags","operator":"equals","value":"testB","action":"include"}],"logic":"and"}}]}

@@ -12,6 +12,7 @@ import (
 
 	"github.com/a-h/templ"
 	"knov/internal/configmanager"
+	"knov/internal/dashboards"
 	"knov/internal/logging"
 )
 
@@ -57,7 +58,7 @@ type ITheme interface {
 	History() (templ.Component, error)
 	Search(query string) (templ.Component, error)
 	Overview() (templ.Component, error)
-	Dashboard() (templ.Component, error)
+	Dashboard(id string) (templ.Component, error)
 	GetAvailableFileViews() []string
 	RenderFileView(viewName string, content string, filePath string) (templ.Component, error)
 	RenderForm(formType string, data interface{}) (templ.Component, error)
@@ -71,6 +72,8 @@ type ITheme interface {
 type TemplateData struct {
 	ThemeToUse      string
 	AvailableThemes []string
+	Dashboard       *dashboards.Dashboard
+	WidgetContents  map[string]string
 }
 
 // -----------------------------------------------------------------------------

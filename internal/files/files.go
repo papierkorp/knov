@@ -309,3 +309,45 @@ func ParseFilterCriteria(r *http.Request) ([]FilterCriteria, string, error) {
 
 	return criteria, logic, nil
 }
+
+// ParseFilterCriteriaFromConfig parses filter criteria from dashboard widget config
+func ParseFilterCriteriaFromConfig(config map[string]interface{}) ([]FilterCriteria, string, error) {
+	logic, _ := config["logic"].(string)
+	if logic == "" {
+		logic = "and"
+	}
+
+	filterInterface, ok := config["filter"]
+	if !ok {
+		return []FilterCriteria{}, logic, nil
+	}
+
+	var criteria []FilterCriteria
+
+	// Handle slice of maps from JSON
+	if filterSlice, ok := filterInterface.([]interface{}); ok {
+		for _, item := range filterSlice {
+			if filterMap, ok := item.(map[string]interface{}); ok {
+				metadata, _ := filterMap["metadata"].(string)
+				operator, _ := filterMap["operator"].(string)
+				value, _ := filterMap["value"].(string)
+				action, _ := filterMap["action"].(string)
+
+				if action == "" {
+					action = "include"
+				}
+
+				if metadata != "" && operator != "" {
+					criteria = append(criteria, FilterCriteria{
+						Metadata: metadata,
+						Operator: operator,
+						Value:    value,
+						Action:   action,
+					})
+				}
+			}
+		}
+	}
+
+	return criteria, logic, nil
+}
