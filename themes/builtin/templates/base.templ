@@ -22,6 +22,7 @@ templ Base(title string) {
 				<main>
 					{ children... }
 				</main>
+				@editPopups()
 			</div>
 		</body>
 	</html>
@@ -56,8 +57,7 @@ templ header() {
 				<a href="/overview">{ translation.Sprintf("Overview") }</a>
 				<a href="/latest-changes">{ translation.Sprintf("Latest Changes") }</a>
 				<a href="/history">{ translation.Sprintf("History") }</a>
-				<a href="/rename">{ translation.Sprintf("Rename") }</a>
-				<a href="/edit">{ translation.Sprintf("Edit") }</a>
+				<a href="#" onclick="openEditPopup()">{ translation.Sprintf("Edit") }</a>
 			</span>
 			<div class="dropdown-navbar">
 				<button class="btn-add">+</button>
@@ -86,4 +86,206 @@ templ header() {
 
 templ htmx() {
 	<script src="/static/htmx.min.js"></script>
+}
+
+templ editPopups() {
+	<!-- Edit Menu Popup -->
+	<div id="edit-menu-popup" class="popup-overlay" onclick="closeEditPopup()">
+		<div class="popup-content" onclick="event.stopPropagation()">
+			<div class="popup-header">
+				<h3>Edit Options</h3>
+				<button onclick="closeEditPopup()" class="popup-close">&times;</button>
+			</div>
+			<div class="popup-body">
+				<button onclick="handleEdit()" class="popup-btn edit-btn">
+					<i class="fa fa-edit"></i> Edit
+				</button>
+				<button onclick="openRenamePopup()" class="popup-btn rename-btn">
+					<i class="fa fa-pencil"></i> Rename
+				</button>
+				<button onclick="openDeletePopup()" class="popup-btn delete-btn">
+					<i class="fa fa-trash"></i> Delete
+				</button>
+			</div>
+		</div>
+	</div>
+	<!-- Rename Popup -->
+	<div id="rename-popup" class="popup-overlay" onclick="closeRenamePopup()">
+		<div class="popup-content" onclick="event.stopPropagation()">
+			<div class="popup-header">
+				<h3>Rename</h3>
+				<button onclick="closeRenamePopup()" class="popup-close">&times;</button>
+			</div>
+			<div class="popup-body">
+				<input type="text" id="rename-input" placeholder="Enter new name" class="popup-input"/>
+				<div class="popup-buttons">
+					<button onclick="handleRename()" class="popup-btn save-btn">Save</button>
+					<button onclick="closeRenamePopup()" class="popup-btn cancel-btn">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Delete Confirmation Popup -->
+	<div id="delete-popup" class="popup-overlay" onclick="closeDeletePopup()">
+		<div class="popup-content" onclick="event.stopPropagation()">
+			<div class="popup-header">
+				<h3>Delete Confirmation</h3>
+				<button onclick="closeDeletePopup()" class="popup-close">&times;</button>
+			</div>
+			<div class="popup-body">
+				<p>Are you sure you want to delete this item?</p>
+				<div class="popup-buttons">
+					<button onclick="handleDelete()" class="popup-btn delete-confirm-btn">Delete</button>
+					<button onclick="closeDeletePopup()" class="popup-btn cancel-btn">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+    function openEditPopup() {
+        document.getElementById('edit-menu-popup').style.display = 'flex';
+    }
+
+    function closeEditPopup() {
+        document.getElementById('edit-menu-popup').style.display = 'none';
+    }
+
+    function openRenamePopup() {
+        closeEditPopup();
+        document.getElementById('rename-popup').style.display = 'flex';
+        document.getElementById('rename-input').focus();
+    }
+
+    function closeRenamePopup() {
+        document.getElementById('rename-popup').style.display = 'none';
+        document.getElementById('rename-input').value = '';
+    }
+
+    function openDeletePopup() {
+        closeEditPopup();
+        document.getElementById('delete-popup').style.display = 'flex';
+    }
+
+    function closeDeletePopup() {
+        document.getElementById('delete-popup').style.display = 'none';
+    }
+
+    function getContextFromURL() {
+        const path = window.location.pathname;
+
+        if (path.startsWith('/dashboard/')) {
+            const id = path.split('/dashboard/')[1];
+            if (id === 'new') {
+                return null; // can't edit new dashboard creation page
+            }
+            return {
+                type: 'dashboard',
+                id: id,
+                editUrl: `/dashboard/new?edit=${id}`,
+                renameApi: `/api/dashboards/${id}/rename`,
+                deleteApi: `/api/dashboards/${id}`
+            };
+        } else if (path.startsWith('/files/')) {
+            const filePath = path.split('/files/')[1];
+            return {
+                type: 'file',
+                id: filePath,
+                editUrl: `/files/${filePath}/edit`, // placeholder for future file edit
+                renameApi: `/api/files/${filePath}/rename`, // placeholder for future file rename
+                deleteApi: `/api/files/${filePath}` // placeholder for future file delete
+            };
+        }
+
+        return null; // no editable context
+    }
+
+    function handleEdit() {
+        const context = getContextFromURL();
+        if (context && context.editUrl) {
+            window.location.href = context.editUrl;
+        } else {
+            alert('Edit not available for this page');
+        }
+        closeEditPopup();
+    }
+
+    function handleRename() {
+        const newName = document.getElementById('rename-input').value.trim();
+        if (!newName) {
+            alert('Please enter a new name');
+            return;
+        }
+
+        const context = getContextFromURL();
+        if (context && context.renameApi) {
+            const formData = new FormData();
+            if (context.type === 'dashboard') {
+                formData.append('new_id', newName);
+            } else {
+                formData.append('new_name', newName);
+            }
+
+            fetch(context.renameApi, {
+                method: 'PATCH',
+                body: formData
+            })
+                .then(response => {
+                    if (response.ok) {
+                        if (context.type === 'dashboard') {
+                            window.location.href = `/dashboard/${newName}`;
+                        } else {
+                            window.location.reload();
+                        }
+                    } else {
+                        return response.text().then(text => {
+                            throw new Error(text);
+                        });
+                    }
+                })
+                .catch(error => {
+                    alert('Rename failed: ' + error.message);
+                });
+        } else {
+            alert('Rename not available for this page');
+        }
+        closeRenamePopup();
+    }
+
+    function handleDelete() {
+        const context = getContextFromURL();
+        if (context && context.deleteApi) {
+            fetch(context.deleteApi, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        if (context.type === 'dashboard') {
+                            window.location.href = '/';
+                        } else {
+                            window.location.href = '/overview';
+                        }
+                    } else {
+                        return response.text().then(text => {
+                            throw new Error(text);
+                        });
+                    }
+                })
+                .catch(error => {
+                    alert('Delete failed: ' + error.message);
+                });
+        } else {
+            alert('Delete not available for this page');
+        }
+        closeDeletePopup();
+    }
+
+    // Close popups with Escape key
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeEditPopup();
+            closeRenamePopup();
+            closeDeletePopup();
+        }
+    });
+</script>
 }

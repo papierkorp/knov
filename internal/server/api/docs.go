@@ -179,9 +179,29 @@ const docTemplate = `{
                 ],
                 "responses": {}
             },
-            "put": {
+            "delete": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Delete dashboard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dashboard ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "patch": {
                 "consumes": [
-                    "application/json"
+                    "application/x-www-form-urlencoded"
                 ],
                 "produces": [
                     "application/json",
@@ -200,18 +220,26 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Dashboard object",
-                        "name": "dashboard",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dashboards.Dashboard"
-                        }
+                        "type": "string",
+                        "description": "Dashboard name",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dashboard layout",
+                        "name": "layout",
+                        "in": "formData"
                     }
                 ],
                 "responses": {}
-            },
-            "delete": {
+            }
+        },
+        "/api/dashboards/{id}/rename": {
+            "patch": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
                 "produces": [
                     "application/json",
                     "text/html"
@@ -219,13 +247,20 @@ const docTemplate = `{
                 "tags": [
                     "dashboards"
                 ],
-                "summary": "Delete dashboard",
+                "summary": "Rename dashboard",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Dashboard ID",
+                        "description": "Current dashboard ID",
                         "name": "id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "New dashboard ID",
+                        "name": "new_id",
+                        "in": "formData",
                         "required": true
                     }
                 ],
@@ -1335,45 +1370,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dashboards.Dashboard": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "layout": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "widgets": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dashboards.DashboardWidget"
-                    }
-                }
-            }
-        },
-        "dashboards.DashboardWidget": {
-            "type": "object",
-            "properties": {
-                "config": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "id": {
-                    "type": "string"
-                },
-                "position": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
         "files.File": {
             "type": "object",
             "properties": {

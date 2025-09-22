@@ -1,31 +1,5 @@
 basePath: /
 definitions:
-  dashboards.Dashboard:
-    properties:
-      id:
-        type: string
-      layout:
-        type: string
-      name:
-        type: string
-      widgets:
-        items:
-          $ref: '#/definitions/dashboards.DashboardWidget'
-        type: array
-    type: object
-  dashboards.DashboardWidget:
-    properties:
-      config:
-        additionalProperties: true
-        type: object
-      id:
-        type: string
-      position:
-        additionalProperties: true
-        type: object
-      type:
-        type: string
-    type: object
   files.File:
     properties:
       metadata:
@@ -275,26 +249,50 @@ paths:
       summary: Get dashboard by ID
       tags:
       - dashboards
-    put:
+    patch:
       consumes:
-      - application/json
+      - application/x-www-form-urlencoded
       parameters:
       - description: Dashboard ID
         in: path
         name: id
         required: true
         type: string
-      - description: Dashboard object
-        in: body
-        name: dashboard
-        required: true
-        schema:
-          $ref: '#/definitions/dashboards.Dashboard'
+      - description: Dashboard name
+        in: formData
+        name: name
+        type: string
+      - description: Dashboard layout
+        in: formData
+        name: layout
+        type: string
       produces:
       - application/json
       - text/html
       responses: {}
       summary: Update dashboard
+      tags:
+      - dashboards
+  /api/dashboards/{id}/rename:
+    patch:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Current dashboard ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New dashboard ID
+        in: formData
+        name: new_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Rename dashboard
       tags:
       - dashboards
   /api/files/content/{filepath}:
