@@ -172,6 +172,7 @@ func StartServerChi() {
 			r.Get("/*", handleAPIGetDashboard)
 			r.Put("/*", handleAPIUpdateDashboard)
 			r.Delete("/*", handleAPIDeleteDashboard)
+			r.Patch("/{id}/rename", handleAPIRenameDashboard)
 		})
 
 	})

@@ -1,14 +1,20 @@
+// Package server ..
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
 	"knov/internal/dashboards"
 	"knov/internal/files"
 )
+
+// checkDashboardExists returns dashboard and error if not found
+func checkDashboardExists(id string) (*dashboards.Dashboard, error) {
+	return dashboards.GetByID(id)
+}
 
 // @Summary Get all dashboards
 // @Tags dashboards
@@ -109,7 +115,7 @@ func handleAPIGetDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dashboard, err := dashboards.GetByID(id)
+	dashboard, err := checkDashboardExists(id)
 	if err != nil {
 		http.Error(w, "dashboard not found", http.StatusNotFound)
 		return
@@ -122,10 +128,11 @@ func handleAPIGetDashboard(w http.ResponseWriter, r *http.Request) {
 // @Summary Update dashboard
 // @Tags dashboards
 // @Param id path string true "Dashboard ID"
-// @Accept json
+// @Accept application/x-www-form-urlencoded
 // @Produce json,html
-// @Param dashboard body dashboards.Dashboard true "Dashboard object"
-// @Router /api/dashboards/{id} [put]
+// @Param name formData string false "Dashboard name"
+// @Param layout formData string false "Dashboard layout"
+// @Router /api/dashboards/{id} [patch]
 func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/api/dashboards/")
 	if id == "" {
@@ -133,29 +140,90 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !dashboards.Exists(id) {
+	dashboard, err := checkDashboardExists(id)
+	if err != nil {
 		http.Error(w, "dashboard not found", http.StatusNotFound)
 		return
 	}
 
-	var dashboard dashboards.Dashboard
-	if err := json.NewDecoder(r.Body).Decode(&dashboard); err != nil {
-		http.Error(w, "invalid json", http.StatusBadRequest)
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "failed to parse form", http.StatusBadRequest)
 		return
 	}
 
-	if dashboard.ID != "" && dashboard.ID != id {
-		http.Error(w, "cannot change dashboard id via update", http.StatusBadRequest)
-		return
+	// update only provided fields
+	if name := r.FormValue("name"); name != "" {
+		dashboard.Name = name
+	}
+	if layout := r.FormValue("layout"); layout != "" {
+		dashboard.Layout = layout
 	}
 
-	dashboard.ID = id
-	if err := dashboards.Save(&dashboard); err != nil {
+	if err := dashboards.Save(dashboard); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	html := `<span class="status-ok">dashboard updated</span>`
+	writeResponse(w, r, dashboard, html)
+}
+
+// @Summary Rename dashboard
+// @Tags dashboards
+// @Param id path string true "Current dashboard ID"
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param new_id formData string true "New dashboard ID"
+// @Router /api/dashboards/{id}/rename [patch]
+func handleAPIRenameDashboard(w http.ResponseWriter, r *http.Request) {
+	oldID := chi.URLParam(r, "id")
+
+	if oldID == "" {
+		http.Error(w, "missing dashboard id", http.StatusBadRequest)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	newID := r.FormValue("new_id")
+	if newID == "" {
+		http.Error(w, "new_id is required", http.StatusBadRequest)
+		return
+	}
+
+	if newID == oldID {
+		http.Error(w, "new id must be different", http.StatusBadRequest)
+		return
+	}
+
+	dashboard, err := checkDashboardExists(oldID)
+	if err != nil {
+		http.Error(w, "dashboard not found", http.StatusNotFound)
+		return
+	}
+
+	if dashboards.Exists(newID) {
+		http.Error(w, "new dashboard id already exists", http.StatusConflict)
+		return
+	}
+
+	// create with new id
+	dashboard.ID = newID
+	if err := dashboards.Save(dashboard); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// delete old one
+	if err := dashboards.Delete(oldID); err != nil {
+		http.Error(w, "failed to delete old dashboard", http.StatusInternalServerError)
+		return
+	}
+
+	html := `<span class="status-ok">dashboard renamed</span>`
 	writeResponse(w, r, dashboard, html)
 }
 
@@ -171,7 +239,8 @@ func handleAPIDeleteDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !dashboards.Exists(id) {
+	_, err := checkDashboardExists(id)
+	if err != nil {
 		http.Error(w, "dashboard not found", http.StatusNotFound)
 		return
 	}
