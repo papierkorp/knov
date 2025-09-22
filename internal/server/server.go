@@ -169,10 +169,14 @@ func StartServerChi() {
 		r.Route("/dashboards", func(r chi.Router) {
 			r.Get("/", handleAPIGetDashboards)
 			r.Post("/", handleAPICreateDashboard)
-			r.Get("/*", handleAPIGetDashboard)
-			r.Put("/*", handleAPIUpdateDashboard)
-			r.Delete("/*", handleAPIDeleteDashboard)
+
+			// specific routes first
 			r.Patch("/{id}/rename", handleAPIRenameDashboard)
+
+			// wildcard routes last
+			r.Get("/{id}", handleAPIGetDashboard)
+			r.Patch("/{id}", handleAPIUpdateDashboard)
+			r.Delete("/{id}", handleAPIDeleteDashboard)
 		})
 
 	})

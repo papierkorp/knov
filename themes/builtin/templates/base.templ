@@ -202,7 +202,29 @@ templ editPopups() {
     function handleEdit() {
         const context = getContextFromURL();
         if (context && context.editUrl) {
-            window.location.href = context.editUrl;
+            if (context.type === 'dashboard') {
+                // fetch current dashboard data and redirect with parameters
+                fetch(`/api/dashboards/${context.id}`, {
+                    headers: {'Accept': 'application/json'}
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const params = new URLSearchParams({
+                            edit: context.id,
+                            id: data.id,
+                            name: data.name,
+                            layout: data.layout || 'single-column'
+                        });
+                        window.location.href = `/dashboard/new?${params.toString()}`;
+                    })
+                    .catch(error => {
+                        console.error('failed to fetch dashboard data:', error);
+                        // fallback to basic edit url
+                        window.location.href = context.editUrl;
+                    });
+            } else {
+                window.location.href = context.editUrl;
+            }
         } else {
             alert('Edit not available for this page');
         }

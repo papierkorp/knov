@@ -30,8 +30,8 @@ templ Dashboard(data thememanager.TemplateData) {
 templ DashboardForm(data thememanager.TemplateData) {
 	@Base("Create Dashboard") {
 		<div id="page-dashboard-form">
-			<h1>Create New Dashboard</h1>
-			<form hx-post="/api/dashboards" hx-target="#form-status" hx-swap="innerHTML">
+			<h1 id="form-title">Create New Dashboard</h1>
+			<form id="dashboard-form" hx-post="/api/dashboards" hx-target="#form-status" hx-swap="innerHTML">
 				<div>
 					<label for="id">ID:</label>
 					<input type="text" id="id" name="id" required/>
@@ -42,16 +42,53 @@ templ DashboardForm(data thememanager.TemplateData) {
 				</div>
 				<div>
 					<label for="layout">Layout:</label>
-					<select id="layout" name="layout">
+					<select id="layout" name="layout" onchange="updateColumnOptions()">
 						<option value="single-column">Single Column</option>
 						<option value="two-column">Two Column</option>
 					</select>
 				</div>
-				@MetadataFilterSection()
-				<button type="submit">Create Dashboard</button>
-				<a href="/">Cancel</a>
+				@WidgetManagementSection()
+				<button type="submit" id="submit-btn">Create Dashboard</button>
+				<a href="/" id="cancel-link">Cancel</a>
 			</form>
 			<div id="form-status"></div>
+			<script>
+        // check if this is an edit operation
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+
+        if (editId) {
+            // update form for edit mode
+            document.getElementById('form-title').textContent = 'Edit Dashboard';
+            document.getElementById('submit-btn').textContent = 'Update Dashboard';
+            document.getElementById('cancel-link').href = `/dashboard/${editId}`;
+
+            // populate form fields from url parameters
+            const formData = {
+                id: urlParams.get('id') || '',
+                name: urlParams.get('name') || '',
+                layout: urlParams.get('layout') || 'single-column'
+            };
+
+            document.getElementById('id').value = formData.id;
+            document.getElementById('name').value = formData.name;
+            document.getElementById('layout').value = formData.layout;
+
+            // make id field readonly in edit mode
+            document.getElementById('id').readOnly = true;
+            document.getElementById('id').style.backgroundColor = '#f3f4f6';
+
+            // change form action to patch for update
+            const form = document.getElementById('dashboard-form');
+            form.setAttribute('hx-patch', `/api/dashboards/${editId}`);
+            form.removeAttribute('hx-post');
+
+            // load existing widgets if editing
+            loadExistingWidgets(editId);
+        }
+
+        updateColumnOptions();
+    </script>
 		</div>
 	}
 }
@@ -174,4 +211,292 @@ templ MetadataFilterSection() {
         }
     </script>
 	</section>
+}
+
+templ WidgetManagementSection() {
+	<section id="widget-management">
+		<h3>Widgets</h3>
+		<!-- Add Widget Controls -->
+		<div class="widget-add-controls">
+			<select id="widget-type-select">
+				<option value="">Select Widget Type</option>
+				<option value="file-filter">File Filter</option>
+			</select>
+			<select id="widget-column-select">
+				<option value="0">Column 1</option>
+			</select>
+			<button type="button" onclick="addWidget()">Add Widget</button>
+		</div>
+		<!-- Current Widgets List -->
+		<div id="widgets-list">
+			<h4>Current Widgets:</h4>
+			<div id="widgets-container">
+				<p class="no-widgets">No widgets added yet</p>
+			</div>
+		</div>
+		<!-- Hidden Widget Configuration Popup -->
+		<div id="widget-config-popup" class="popup-overlay" onclick="closeWidgetConfig()">
+			<div class="popup-content" onclick="event.stopPropagation()">
+				<div class="popup-header">
+					<h3>Configure Widget</h3>
+					<button onclick="closeWidgetConfig()" class="popup-close">&times;</button>
+				</div>
+				<div class="popup-body">
+					<div id="widget-config-content">
+						<!-- Dynamic content based on widget type -->
+					</div>
+					<div class="popup-buttons">
+						<button onclick="saveWidgetConfig()" class="popup-btn save-btn">Save Widget</button>
+						<button onclick="closeWidgetConfig()" class="popup-btn cancel-btn">Cancel</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<script>
+    let widgetCounter = 0;
+    let currentWidgets = [];
+    let currentWidgetConfig = null;
+
+    function updateColumnOptions() {
+        const layout = document.getElementById('layout').value;
+        const columnSelect = document.getElementById('widget-column-select');
+
+        columnSelect.innerHTML = '';
+        if (layout === 'single-column') {
+            columnSelect.innerHTML = '<option value="0">Column 1</option>';
+        } else if (layout === 'two-column') {
+            columnSelect.innerHTML = '<option value="0">Column 1</option><option value="1">Column 2</option>';
+        }
+    }
+
+    function addWidget() {
+        const widgetType = document.getElementById('widget-type-select').value;
+        const column = document.getElementById('widget-column-select').value;
+
+        if (!widgetType) {
+            alert('Please select a widget type');
+            return;
+        }
+
+        if (widgetType === 'file-filter') {
+            openFilterWidgetConfig(column);
+        }
+    }
+
+    function openFilterWidgetConfig(column) {
+        currentWidgetConfig = {
+            type: 'file-filter',
+            column: parseInt(column),
+            id: 'widget-' + widgetCounter++
+        };
+
+        const configContent = document.getElementById('widget-config-content');
+        configContent.innerHTML = createFilterWidgetConfig();
+
+        document.getElementById('widget-config-popup').style.display = 'flex';
+    }
+
+    function createFilterWidgetConfig() {
+        return `
+				<div>
+					<label>Display Format:</label>
+					<select id="config-display">
+						<option value="list">List</option>
+						<option value="cards">Cards</option>
+					</select>
+				</div>
+				<div>
+					<label>Logic:</label>
+					<select id="config-logic">
+						<option value="and">AND</option>
+						<option value="or">OR</option>
+					</select>
+				</div>
+				<div id="filter-criteria">
+					<h4>Filter Criteria:</h4>
+					<div id="criteria-container">
+						<div class="criteria-row">
+							<select name="criteria-metadata">
+								<option value="collection">Collection</option>
+								<option value="tags">Tags</option>
+								<option value="type">Type</option>
+								<option value="status">Status</option>
+								<option value="priority">Priority</option>
+								<option value="createdAt">Created Date</option>
+								<option value="lastEdited">Last Edited</option>
+								<option value="folders">Folders</option>
+								<option value="boards">Boards</option>
+							</select>
+							<select name="criteria-operator">
+								<option value="equals">Equals</option>
+								<option value="contains">Contains</option>
+								<option value="greater">Greater Than</option>
+								<option value="less">Less Than</option>
+								<option value="in">In Array</option>
+							</select>
+							<input type="text" name="criteria-value" placeholder="Value"/>
+							<select name="criteria-action">
+								<option value="include">Include</option>
+								<option value="exclude">Exclude</option>
+							</select>
+							<button type="button" onclick="removeCriteriaRow(this)">-</button>
+						</div>
+					</div>
+					<button type="button" onclick="addCriteriaRow()">Add Criteria</button>
+				</div>
+			`;
+    }
+
+    function addCriteriaRow() {
+        const container = document.getElementById('criteria-container');
+        const newRow = document.createElement('div');
+        newRow.className = 'criteria-row';
+        newRow.innerHTML = `
+				<select name="criteria-metadata">
+					<option value="collection">Collection</option>
+					<option value="tags">Tags</option>
+					<option value="type">Type</option>
+					<option value="status">Status</option>
+					<option value="priority">Priority</option>
+					<option value="createdAt">Created Date</option>
+					<option value="lastEdited">Last Edited</option>
+					<option value="folders">Folders</option>
+					<option value="boards">Boards</option>
+				</select>
+				<select name="criteria-operator">
+					<option value="equals">Equals</option>
+					<option value="contains">Contains</option>
+					<option value="greater">Greater Than</option>
+					<option value="less">Less Than</option>
+					<option value="in">In Array</option>
+				</select>
+				<input type="text" name="criteria-value" placeholder="Value"/>
+				<select name="criteria-action">
+					<option value="include">Include</option>
+					<option value="exclude">Exclude</option>
+				</select>
+				<button type="button" onclick="removeCriteriaRow(this)">-</button>
+			`;
+        container.appendChild(newRow);
+    }
+
+    function removeCriteriaRow(button) {
+        const row = button.closest('.criteria-row');
+        if (document.querySelectorAll('.criteria-row').length > 1) {
+            row.remove();
+        }
+    }
+
+    function saveWidgetConfig() {
+        if (currentWidgetConfig.type === 'file-filter') {
+            const display = document.getElementById('config-display').value;
+            const logic = document.getElementById('config-logic').value;
+
+            // collect filter criteria
+            const criteriaRows = document.querySelectorAll('.criteria-row');
+            const criteria = [];
+
+            criteriaRows.forEach(row => {
+                const metadata = row.querySelector('[name="criteria-metadata"]').value;
+                const operator = row.querySelector('[name="criteria-operator"]').value;
+                const value = row.querySelector('[name="criteria-value"]').value;
+                const action = row.querySelector('[name="criteria-action"]').value;
+
+                if (metadata && operator && value) {
+                    criteria.push({metadata, operator, value, action});
+                }
+            });
+
+            const widget = {
+                ...currentWidgetConfig,
+                config: {
+                    display: display,
+                    logic: logic,
+                    filter: criteria
+                }
+            };
+
+            currentWidgets.push(widget);
+            updateWidgetsList();
+            closeWidgetConfig();
+        }
+    }
+
+    function updateWidgetsList() {
+        const container = document.getElementById('widgets-container');
+
+        if (currentWidgets.length === 0) {
+            container.innerHTML = '<p class="no-widgets">No widgets added yet</p>';
+            return;
+        }
+
+        let html = '';
+        currentWidgets.forEach((widget, index) => {
+            html += `
+					<div class="widget-item">
+						<span class="widget-info">
+							<strong>${widget.type}</strong> - Column ${widget.column + 1}
+							${widget.type === 'file-filter' ? ` (${widget.config.filter.length} criteria, ${widget.config.display} view)` : ''}
+						</span>
+						<button type="button" onclick="removeWidget(${index})" class="remove-widget-btn">Remove</button>
+					</div>
+				`;
+        });
+
+        container.innerHTML = html;
+
+        // update form with widget data
+        updateFormWithWidgets();
+    }
+
+    function removeWidget(index) {
+        currentWidgets.splice(index, 1);
+        updateWidgetsList();
+    }
+
+    function updateFormWithWidgets() {
+        // remove existing widget input fields
+        const existingInputs = document.querySelectorAll('input[name^="widget_"]');
+        existingInputs.forEach(input => input.remove());
+
+        // add new widget input fields
+        const form = document.getElementById('dashboard-form');
+
+        currentWidgets.forEach((widget, index) => {
+            const widgetInput = document.createElement('input');
+            widgetInput.type = 'hidden';
+            widgetInput.name = `widget_${index}`;
+            widgetInput.value = JSON.stringify(widget);
+            form.appendChild(widgetInput);
+        });
+    }
+
+    function closeWidgetConfig() {
+        document.getElementById('widget-config-popup').style.display = 'none';
+        currentWidgetConfig = null;
+    }
+
+    function loadExistingWidgets(dashboardId) {
+        // fetch existing dashboard data and populate widgets
+        fetch(`/api/dashboards/${dashboardId}`, {
+            headers: {'Accept': 'application/json'}
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.widgets && data.widgets.length > 0) {
+                    currentWidgets = data.widgets.map(widget => ({
+                        id: widget.id,
+                        type: widget.type,
+                        column: widget.position ? (widget.position.x || 0) : 0,
+                        config: widget.config
+                    }));
+                    updateWidgetsList();
+                }
+            })
+            .catch(error => {
+                console.error('failed to load existing widgets:', error);
+            });
+    }
+</script>
 }

@@ -2,13 +2,14 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"knov/internal/dashboards"
-	"knov/internal/files"
+	"knov/internal/logging"
 )
 
 // checkDashboardExists returns dashboard and error if not found
@@ -53,8 +54,7 @@ func handleAPIGetDashboards(w http.ResponseWriter, r *http.Request) {
 // @Param layout formData string false "Dashboard layout"
 // @Router /api/dashboards [post]
 func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
-	criteria, logic, err := files.ParseFilterCriteria(r)
-	if err != nil {
+	if err := r.ParseForm(); err != nil {
 		http.Error(w, "failed to parse form", http.StatusBadRequest)
 		return
 	}
@@ -70,18 +70,30 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 		dashboard.Layout = "single-column"
 	}
 
-	// Create widget if filter criteria exist
-	if len(criteria) > 0 {
-		dashboard.Widgets = append(dashboard.Widgets, dashboards.DashboardWidget{
-			ID:       "main-filter",
-			Type:     "file-filter",
-			Position: map[string]interface{}{"x": 0, "y": 0},
-			Config: map[string]interface{}{
-				"filter":  criteria,
-				"logic":   logic,
-				"display": r.FormValue("display"),
-			},
-		})
+	// parse widgets from form data
+	for key, values := range r.Form {
+		if strings.HasPrefix(key, "widget_") && len(values) > 0 {
+			var widgetData struct {
+				ID     string                 `json:"id"`
+				Type   string                 `json:"type"`
+				Column int                    `json:"column"`
+				Config map[string]interface{} `json:"config"`
+			}
+
+			if err := json.Unmarshal([]byte(values[0]), &widgetData); err != nil {
+				logging.LogWarning("failed to parse widget data: %v", err)
+				continue
+			}
+
+			widget := dashboards.DashboardWidget{
+				ID:       widgetData.ID,
+				Type:     widgetData.Type,
+				Position: map[string]interface{}{"x": widgetData.Column, "y": 0},
+				Config:   widgetData.Config,
+			}
+
+			dashboard.Widgets = append(dashboard.Widgets, widget)
+		}
 	}
 
 	if dashboard.ID == "" || dashboard.Name == "" {
@@ -157,6 +169,38 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 	if layout := r.FormValue("layout"); layout != "" {
 		dashboard.Layout = layout
+	}
+
+	// parse widgets from form data
+	var newWidgets []dashboards.DashboardWidget
+	for key, values := range r.Form {
+		if strings.HasPrefix(key, "widget_") && len(values) > 0 {
+			var widgetData struct {
+				ID     string                 `json:"id"`
+				Type   string                 `json:"type"`
+				Column int                    `json:"column"`
+				Config map[string]interface{} `json:"config"`
+			}
+
+			if err := json.Unmarshal([]byte(values[0]), &widgetData); err != nil {
+				logging.LogWarning("failed to parse widget data: %v", err)
+				continue
+			}
+
+			widget := dashboards.DashboardWidget{
+				ID:       widgetData.ID,
+				Type:     widgetData.Type,
+				Position: map[string]interface{}{"x": widgetData.Column, "y": 0},
+				Config:   widgetData.Config,
+			}
+
+			newWidgets = append(newWidgets, widget)
+		}
+	}
+
+	// update widgets if any were provided
+	if len(newWidgets) > 0 {
+		dashboard.Widgets = newWidgets
 	}
 
 	if err := dashboards.Save(dashboard); err != nil {
