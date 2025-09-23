@@ -112,28 +112,5 @@ templ MetadataFilterSection() {
             row.remove();
         }
     }
-
-    document.body.addEventListener('htmx:afterRequest', function (event) {
-        if (event.detail.target.id === 'filter-results' && event.detail.xhr.status === 200) {
-            try {
-                const files = JSON.parse(event.detail.xhr.responseText);
-                const ul = document.createElement('ul');
-                files.forEach(file => {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    a.href = '#';
-                    a.setAttribute('hx-get', '/api/files/content/' + file.path.substring(5));
-                    a.setAttribute('hx-target', '#file-content');
-                    a.textContent = file.path.replace('data/', '');
-                    li.appendChild(a);
-                    ul.appendChild(li);
-                });
-                event.detail.target.innerHTML = '';
-                event.detail.target.appendChild(ul);
-            } catch (e) {
-                console.error('failed to parse json response:', e);
-            }
-        }
-    });
 </script>
 }
