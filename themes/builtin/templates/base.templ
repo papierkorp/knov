@@ -48,10 +48,8 @@ templ header() {
 				</div>
 			</div>
 		</div>
-		<div class="header-mid">
-			<button>B1</button>
-			<button>B2</button>
-			<button>B3</button>
+		<div class="header-mid" hx-get="/api/dashboards" hx-trigger="load">
+			<a>Loading...</a>
 		</div>
 		<div class="header-right">
 			<span class="span-header-git-operations">

@@ -10,6 +10,8 @@ import (
 	"knov/internal/utils"
 )
 
+var currentUserID = "default" // TODO: replace with proper session/auth
+
 // Layout represents dashboard layout types
 type Layout string
 
@@ -44,7 +46,7 @@ type Dashboard struct {
 }
 
 // GetAll returns all dashboards for user or global
-func GetAll(userID string) ([]Dashboard, error) {
+func GetAll() ([]Dashboard, error) {
 	var dashboards []Dashboard
 
 	// Get global dashboards
@@ -70,7 +72,7 @@ func GetAll(userID string) ([]Dashboard, error) {
 	}
 
 	// Get user dashboards if not global
-	userPrefix := fmt.Sprintf("user/%s/dashboard/", userID)
+	userPrefix := fmt.Sprintf("user/%s/dashboard/", currentUserID)
 	userKeys, err := storage.GetStorage().List(userPrefix)
 	if err == nil {
 		for _, key := range userKeys {
@@ -95,14 +97,14 @@ func GetAll(userID string) ([]Dashboard, error) {
 }
 
 // Get returns a specific dashboard
-func Get(id string, userID string) (*Dashboard, error) {
+func Get(id string) (*Dashboard, error) {
 	// Try global first
 	key := fmt.Sprintf("dashboard/%s", id)
 	data, err := storage.GetStorage().Get(key)
 
 	// If not found globally, try user-specific
 	if data == nil && err == nil {
-		key = fmt.Sprintf("user/%s/dashboard/%s", userID, id)
+		key = fmt.Sprintf("user/%s/dashboard/%s", currentUserID, id)
 		data, err = storage.GetStorage().Get(key)
 	}
 
@@ -124,11 +126,11 @@ func Get(id string, userID string) (*Dashboard, error) {
 }
 
 // Create creates a new dashboard
-func Create(dashboard *Dashboard, userID string) error {
+func Create(dashboard *Dashboard) error {
 	dashboard.ID = utils.CleanseID(dashboard.Name)
 
 	// Check if dashboard already exists
-	existing, _ := Get(dashboard.ID, userID)
+	existing, _ := Get(dashboard.ID)
 	if existing != nil {
 		return fmt.Errorf("dashboard with id '%s' already exists", dashboard.ID)
 	}
@@ -151,7 +153,7 @@ func Create(dashboard *Dashboard, userID string) error {
 	if dashboard.Global {
 		key = fmt.Sprintf("dashboard/%s", dashboard.ID)
 	} else {
-		key = fmt.Sprintf("user/%s/dashboard/%s", userID, dashboard.ID)
+		key = fmt.Sprintf("user/%s/dashboard/%s", currentUserID, dashboard.ID)
 	}
 
 	if err := storage.GetStorage().Set(key, data); err != nil {
@@ -163,7 +165,7 @@ func Create(dashboard *Dashboard, userID string) error {
 }
 
 // Update updates an existing dashboard
-func Update(dashboard *Dashboard, userID string) error {
+func Update(dashboard *Dashboard) error {
 	// Validate layout
 	if !isValidLayout(dashboard.Layout) {
 		return fmt.Errorf("invalid layout: %s", dashboard.Layout)
@@ -178,7 +180,7 @@ func Update(dashboard *Dashboard, userID string) error {
 	if dashboard.Global {
 		key = fmt.Sprintf("dashboard/%s", dashboard.ID)
 	} else {
-		key = fmt.Sprintf("user/%s/dashboard/%s", userID, dashboard.ID)
+		key = fmt.Sprintf("user/%s/dashboard/%s", currentUserID, dashboard.ID)
 	}
 
 	if err := storage.GetStorage().Set(key, data); err != nil {
@@ -200,9 +202,9 @@ func isValidLayout(layout Layout) bool {
 }
 
 // Delete removes a dashboard
-func Delete(id string, userID string) error {
+func Delete(id string) error {
 	// Check if dashboard exists first
-	existing, _ := Get(id, userID)
+	existing, _ := Get(id)
 	if existing == nil {
 		return fmt.Errorf("dashboard with id '%s' not found", id)
 	}
@@ -211,7 +213,7 @@ func Delete(id string, userID string) error {
 	if existing.Global {
 		key = fmt.Sprintf("dashboard/%s", id)
 	} else {
-		key = fmt.Sprintf("user/%s/dashboard/%s", userID, id)
+		key = fmt.Sprintf("user/%s/dashboard/%s", currentUserID, id)
 	}
 
 	if err := storage.GetStorage().Delete(key); err != nil {
@@ -220,4 +222,13 @@ func Delete(id string, userID string) error {
 
 	logging.LogDebug("deleted dashboard: %s", id)
 	return nil
+}
+
+func getCurrentUserID() string {
+	return currentUserID
+}
+
+// SetCurrentUser sets the current user context
+func SetCurrentUser(userID string) {
+	currentUserID = userID
 }

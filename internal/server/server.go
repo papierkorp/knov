@@ -49,6 +49,8 @@ func StartServerChi() {
 	r.Get("/overview", handleOverview)
 	r.Get("/search", handleSearchPage)
 	r.Get("/files/*", handleFileContent)
+	r.Get("/dashboard", handleDashboard)
+	r.Get("/dashboard/{id}", handleDashboard)
 
 	// ----------------------------------------------------------------------------------------
 	// ------------------------------------- static routes -------------------------------------
@@ -368,6 +370,27 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	err = component.Render(r.Context(), w)
 	if err != nil {
 		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleDashboard(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		id = "home"
+	}
+
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard(id)
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		fmt.Printf("error loading theme: %v\n", err)
+		return
+	}
+
+	err = component.Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
 }

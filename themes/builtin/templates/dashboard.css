@@ -1,0 +1,41 @@
+#page-dashboard .dashboard-layout {
+    padding: 20px;
+}
+
+#page-dashboard .dashboard-oneColumn {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+#page-dashboard .dashboard-twoColumns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+#page-dashboard .dashboard-threeColumns {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+#page-dashboard .dashboard-fourColumns {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+#page-dashboard .dashboard-widget {
+    border: 1px solid var(--neutral);
+    border-radius: 6px;
+    padding: 16px;
+    background: color-mix(in srgb, var(--neutral) 5%, transparent);
+}
+
+#page-dashboard .dashboard-empty {
+    text-align: center;
+    color: var(--neutral);
+    font-style: italic;
+    padding: 40px;
+}

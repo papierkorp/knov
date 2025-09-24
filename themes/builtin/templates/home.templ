@@ -15,6 +15,8 @@ templ Home(data thememanager.TemplateData) {
 	@Base(translation.Sprintf("Home")) {
 		<div id="page-home">
 			<a href="http://localhost:1324/files/project-overview.md">Project Overview</a>
+			<a href="http://localhost:1324/dashboard">/dashboard</a>
+			<a href="http://localhost:1324/dashboard/asdf">/dashboard/asdf</a>
 			<h1>{ translation.Sprintf("Hello World from templ at home in the dark!") }</h1>
 			@MetadataFilterSection()
 		</div>

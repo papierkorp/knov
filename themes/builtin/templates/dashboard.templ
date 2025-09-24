@@ -1,0 +1,29 @@
+package templates
+
+import (
+	"knov/internal/thememanager"
+	"knov/internal/translation"
+)
+
+templ Dashboard(data thememanager.TemplateData) {
+	@Base(data.Dashboard.Name) {
+		<div id="page-dashboard">
+			<h1>{ data.Dashboard.Name }</h1>
+			<div class="dashboard-layout dashboard-{ string(data.Dashboard.Layout) }">
+				<div class="dashboard-widgets">
+					for _, widget := range data.Dashboard.Widgets {
+						<div class="dashboard-widget" data-widget-id={ widget.ID }>
+							<h3>{ widget.Type }</h3>
+							<div>widget content placeholder</div>
+						</div>
+					}
+					if len(data.Dashboard.Widgets) == 0 {
+						<div class="dashboard-empty">
+							<p>{ translation.Sprintf("No widgets configured") }</p>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	}
+}

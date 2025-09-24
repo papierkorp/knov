@@ -17,9 +17,7 @@ import (
 // @Success 200 {array} dashboard.Dashboard
 // @Router /api/dashboards [get]
 func handleAPIGetDashboards(w http.ResponseWriter, r *http.Request) {
-	userID := "default" // TODO: get from session/auth
-
-	dashboards, err := dashboard.GetAll(userID)
+	dashboards, err := dashboard.GetAll()
 	if err != nil {
 		logging.LogError("failed to get dashboards: %v", err)
 		http.Error(w, "failed to get dashboards", http.StatusInternalServerError)
@@ -28,7 +26,7 @@ func handleAPIGetDashboards(w http.ResponseWriter, r *http.Request) {
 
 	var html strings.Builder
 	for _, dash := range dashboards {
-		html.WriteString(fmt.Sprintf(`<div class="dashboard-item"><a href="/dashboards/%s">%s</a></div>`, dash.ID, dash.Name))
+		html.WriteString(fmt.Sprintf(`<a href="/dashboard/%s">%s</a>`, dash.ID, dash.Name))
 	}
 
 	writeResponse(w, r, dashboards, html.String())
@@ -50,8 +48,6 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := "default" // TODO: get from session/auth
-
 	name := r.FormValue("name")
 	layout := dashboard.Layout(r.FormValue("layout"))
 	globalStr := r.FormValue("global")
@@ -69,14 +65,14 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 		Global: global,
 	}
 
-	if err := dashboard.Create(dash, userID); err != nil {
+	if err := dashboard.Create(dash); err != nil {
 		logging.LogError("failed to create dashboard: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	data := "dashboard created"
-	html := `<div class="status-ok">dashboard created</div>`
+	html := `<div>dashboard created</div>`
 	writeResponse(w, r, data, html)
 }
 
@@ -89,16 +85,15 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 // @Router /api/dashboards/{id} [get]
 func handleAPIGetDashboard(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/api/dashboards/")
-	userID := "default" // TODO: get from session/auth
 
-	dash, err := dashboard.Get(id, userID)
+	dash, err := dashboard.Get(id)
 	if err != nil {
 		logging.LogError("failed to get dashboard %s: %v", id, err)
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	html := fmt.Sprintf(`<div class="dashboard"><h3>%s</h3><p>Layout: %s</p></div>`, dash.Name, dash.Layout)
+	html := fmt.Sprintf(`<div><h3>%s</h3><p>Layout: %s</p></div>`, dash.Name, dash.Layout)
 	writeResponse(w, r, dash, html)
 }
 
@@ -115,14 +110,13 @@ func handleAPIGetDashboard(w http.ResponseWriter, r *http.Request) {
 // @Router /api/dashboards/{id} [patch]
 func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/api/dashboards/")
-	userID := "default" // TODO: get from session/auth
 
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "failed to parse form", http.StatusBadRequest)
 		return
 	}
 
-	dash, err := dashboard.Get(id, userID)
+	dash, err := dashboard.Get(id)
 	if err != nil {
 		http.Error(w, "dashboard not found", http.StatusNotFound)
 		return
@@ -139,13 +133,13 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 		dash.Global = global
 	}
 
-	if err := dashboard.Update(dash, userID); err != nil {
+	if err := dashboard.Update(dash); err != nil {
 		logging.LogError("failed to update dashboard: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	html := fmt.Sprintf(`<div class="dashboard-updated">%s updated</div>`, dash.Name)
+	html := fmt.Sprintf(`<div>%s updated</div>`, dash.Name)
 	writeResponse(w, r, dash, html)
 }
 
@@ -158,15 +152,14 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 // @Router /api/dashboards/{id} [delete]
 func handleAPIDeleteDashboard(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/api/dashboards/")
-	userID := "default" // TODO: get from session/auth
 
-	if err := dashboard.Delete(id, userID); err != nil {
+	if err := dashboard.Delete(id); err != nil {
 		logging.LogError("failed to delete dashboard %s: %v", id, err)
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
 	data := "dashboard deleted"
-	html := `<div class="status-ok">dashboard deleted</div>`
+	html := `<div>dashboard deleted</div>`
 	writeResponse(w, r, data, html)
 }
