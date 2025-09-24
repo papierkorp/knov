@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -33,13 +34,18 @@ func handleAPIGetDashboards(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Create new dashboard
-// @Description Create a new dashboard
+// @Description Create a new dashboard with optional widgets
 // @Tags dashboards
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
 // @Param name formData string true "Dashboard name"
 // @Param layout formData string true "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)"
 // @Param global formData string false "Global dashboard (true/false)"
+// @Param widgets[0][id] formData string false "Widget ID"
+// @Param widgets[0][type] formData string false "Widget type (filter, filterForm, fileContent, static)"
+// @Param widgets[0][position][x] formData int false "Widget X position"
+// @Param widgets[0][position][y] formData int false "Widget Y position"
+// @Param widgets[0][config] formData string false "Widget configuration JSON"
 // @Success 200 {string} string "dashboard created"
 // @Router /api/dashboards [post]
 func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
@@ -59,10 +65,50 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 
 	global, _ := strconv.ParseBool(globalStr)
 
+	// Parse widgets from form data
+	var widgets []dashboard.Widget
+	form := r.PostForm
+	widgetIDs := []string{}
+
+	// Extract widget IDs from form keys
+	for key := range form {
+		if strings.HasPrefix(key, "widgets[") && strings.HasSuffix(key, "][id]") {
+			widgetID := form.Get(key)
+			if widgetID != "" {
+				widgetIDs = append(widgetIDs, widgetID)
+			}
+		}
+	}
+
+	// Build widgets from form data
+	for i, widgetID := range widgetIDs {
+		widgetType := dashboard.WidgetType(r.FormValue(fmt.Sprintf("widgets[%d][type]", i)))
+		xPos, _ := strconv.Atoi(r.FormValue(fmt.Sprintf("widgets[%d][position][x]", i)))
+		yPos, _ := strconv.Atoi(r.FormValue(fmt.Sprintf("widgets[%d][position][y]", i)))
+		configJSON := r.FormValue(fmt.Sprintf("widgets[%d][config]", i))
+
+		var config dashboard.WidgetConfig
+		if configJSON != "" {
+			json.Unmarshal([]byte(configJSON), &config)
+		}
+
+		widget := dashboard.Widget{
+			ID:   widgetID,
+			Type: widgetType,
+			Position: dashboard.WidgetPosition{
+				X: xPos,
+				Y: yPos,
+			},
+			Config: config,
+		}
+		widgets = append(widgets, widget)
+	}
+
 	dash := &dashboard.Dashboard{
-		Name:   name,
-		Layout: layout,
-		Global: global,
+		Name:    name,
+		Layout:  layout,
+		Global:  global,
+		Widgets: widgets,
 	}
 
 	if err := dashboard.Create(dash); err != nil {
@@ -72,7 +118,7 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := "dashboard created"
-	html := `<div>dashboard created</div>`
+	html := `<div>dashboard created successfully</div>`
 	writeResponse(w, r, data, html)
 }
 
@@ -162,4 +208,62 @@ func handleAPIDeleteDashboard(w http.ResponseWriter, r *http.Request) {
 	data := "dashboard deleted"
 	html := `<div>dashboard deleted</div>`
 	writeResponse(w, r, data, html)
+}
+
+// @Summary Render dashboard widget
+// @Description Render a specific widget by ID from a dashboard
+// @Tags widgets
+// @Param dashboardId formData string true "Dashboard ID"
+// @Param widgetId path string true "Widget ID"
+// @Accept application/x-www-form-urlencoded
+// @Produce text/html
+// @Success 200 {string} string "rendered widget html"
+// @Failure 400 {string} string "missing parameters"
+// @Failure 404 {string} string "widget not found"
+// @Failure 500 {string} string "failed to render widget"
+// @Router /api/dashboards/widget/{widgetId} [post]
+func handleAPIRenderWidget(w http.ResponseWriter, r *http.Request) {
+	widgetId := strings.TrimPrefix(r.URL.Path, "/api/dashboards/widget/")
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	dashboardId := r.FormValue("dashboardId")
+	if dashboardId == "" {
+		http.Error(w, "dashboardId is required", http.StatusBadRequest)
+		return
+	}
+
+	dash, err := dashboard.Get(dashboardId)
+	if err != nil {
+		logging.LogError("failed to get dashboard %s: %v", dashboardId, err)
+		http.Error(w, "dashboard not found", http.StatusNotFound)
+		return
+	}
+
+	// find widget by id
+	var widget *dashboard.Widget
+	for _, w := range dash.Widgets {
+		if w.ID == widgetId {
+			widget = &w
+			break
+		}
+	}
+
+	if widget == nil {
+		http.Error(w, "widget not found", http.StatusNotFound)
+		return
+	}
+
+	html, err := dashboard.RenderWidget(widget.Type, widget.Config)
+	if err != nil {
+		logging.LogError("failed to render widget %s: %v", widgetId, err)
+		http.Error(w, "failed to render widget", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
 }

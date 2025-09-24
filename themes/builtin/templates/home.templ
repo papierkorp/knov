@@ -18,7 +18,10 @@ templ Home(data thememanager.TemplateData) {
 			<a href="http://localhost:1324/dashboard">/dashboard</a>
 			<a href="http://localhost:1324/dashboard/asdf">/dashboard/asdf</a>
 			<h1>{ translation.Sprintf("Hello World from templ at home in the dark!") }</h1>
+			<hr/>
 			@MetadataFilterSection()
+			<hr/>
+			@DashboardCreateForm()
 		</div>
 	}
 }
@@ -115,4 +118,803 @@ templ MetadataFilterSection() {
         }
     }
 </script>
+}
+
+templ DashboardCreateForm() {
+	<div class="dashboard-create-form">
+		<div class="form-header">
+			<h3>Create New Dashboard</h3>
+			<p>Design your custom dashboard with widgets</p>
+		</div>
+		<form hx-post="/api/dashboards" hx-target="#dashboard-create-result" hx-swap="innerHTML" class="dashboard-form">
+			<div class="form-section">
+				<h4>Dashboard Settings</h4>
+				<div class="form-group">
+					<label for="name">Dashboard Name</label>
+					<input
+						type="text"
+						id="name"
+						name="name"
+						required
+						placeholder="My Awesome Dashboard"
+						class="form-input"
+					/>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="layout">Layout</label>
+						<select id="layout" name="layout" required class="form-select">
+							<option value="oneColumn">📋 One Column</option>
+							<option value="twoColumns" selected>📊 Two Columns</option>
+							<option value="threeColumns">🎯 Three Columns</option>
+							<option value="fourColumns">🎨 Four Columns</option>
+						</select>
+					</div>
+					<div class="form-group checkbox-group">
+						<label class="checkbox-label">
+							<input type="checkbox" name="global" value="true" class="form-checkbox"/>
+							<span class="checkmark"></span>
+							Global Dashboard
+							<small>Visible to all users</small>
+						</label>
+					</div>
+				</div>
+			</div>
+			<div class="form-section">
+				<div class="section-header">
+					<h4>Widgets</h4>
+					<button type="button" onclick="addWidget()" class="btn-add-widget">+ Add Widget</button>
+				</div>
+				<div id="widgets-container">
+					<div class="widget-form">
+						<div class="widget-header">
+							<span class="widget-number">Widget 1</span>
+						</div>
+						<div class="form-row">
+							<div class="form-group">
+								<label>Widget ID</label>
+								<input
+									type="text"
+									name="widgets[0][id]"
+									placeholder="my-filter-widget"
+									required
+									class="form-input"
+								/>
+							</div>
+							<div class="form-group">
+								<label>Type</label>
+								<select
+									name="widgets[0][type]"
+									required
+									class="form-select"
+									onchange="updateConfig(0, this.value)"
+								>
+									<option value="">Choose type...</option>
+									<option value="filter">🔍 Filter</option>
+									<option value="filterForm">📝 Filter Form</option>
+									<option value="fileContent">📄 File Content</option>
+									<option value="static">📌 Static Content</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="form-group">
+								<label>X Position</label>
+								<input
+									type="number"
+									name="widgets[0][position][x]"
+									min="0"
+									max="3"
+									value="0"
+									class="form-input"
+								/>
+							</div>
+							<div class="form-group">
+								<label>Y Position</label>
+								<input type="number" name="widgets[0][position][y]" min="0" value="0" class="form-input"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<label>Configuration</label>
+							<div class="config-helper" id="config-helper-0">
+								<div class="config-placeholder">
+									<p>Select a widget type to see configuration options</p>
+								</div>
+							</div>
+							<textarea
+								name="widgets[0][config]"
+								id="config-textarea-0"
+								placeholder="Select widget type for configuration template"
+								rows="4"
+								class="form-textarea"
+							></textarea>
+							<small class="form-help">Configuration will be generated based on your selections above</small>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="btn-primary">
+					<span>🚀</span>
+					Create Dashboard
+				</button>
+			</div>
+		</form>
+		<div id="dashboard-create-result" class="result-container"></div>
+		<script>
+        let widgetCount = 1;
+
+        function addWidget() {
+            const container = document.getElementById('widgets-container');
+            const widgetDiv = document.createElement('div');
+            widgetDiv.className = 'widget-form';
+            widgetDiv.innerHTML = `
+				<div class="widget-header">
+					<span class="widget-number">Widget ${widgetCount + 1}</span>
+					<button type="button" onclick="this.closest('.widget-form').remove()" class="btn-remove">×</button>
+				</div>
+				
+				<div class="form-row">
+					<div class="form-group">
+						<label>Widget ID</label>
+						<input type="text" name="widgets[${widgetCount}][id]" placeholder="my-widget-${widgetCount}" required class="form-input"/>
+					</div>
+					<div class="form-group">
+						<label>Type</label>
+						<select name="widgets[${widgetCount}][type]" required class="form-select" onchange="updateConfig(${widgetCount}, this.value)">
+							<option value="">Choose type...</option>
+							<option value="filter">🔍 Filter</option>
+							<option value="filterForm">📝 Filter Form</option>
+							<option value="fileContent">📄 File Content</option>
+							<option value="static">📌 Static Content</option>
+						</select>
+					</div>
+				</div>
+				
+				<div class="form-row">
+					<div class="form-group">
+						<label>X Position</label>
+						<input type="number" name="widgets[${widgetCount}][position][x]" min="0" max="3" value="0" class="form-input"/>
+					</div>
+					<div class="form-group">
+						<label>Y Position</label>
+						<input type="number" name="widgets[${widgetCount}][position][y]" min="0" value="0" class="form-input"/>
+					</div>
+				</div>
+				
+				<div class="form-group">
+					<label>Configuration</label>
+					<div class="config-helper" id="config-helper-${widgetCount}">
+						<div class="config-placeholder">
+							<p>Select a widget type to see configuration options</p>
+						</div>
+					</div>
+					<textarea 
+						name="widgets[${widgetCount}][config]" 
+						id="config-textarea-${widgetCount}"
+						placeholder='Select widget type for configuration template' 
+						rows="4" 
+						class="form-textarea"
+					></textarea>
+					<small class="form-help">Configuration will be generated based on your selections above</small>
+				</div>
+			`;
+            container.appendChild(widgetDiv);
+            widgetCount++;
+        }
+
+        function updateConfig(widgetIndex, widgetType) {
+            const helperId = `config-helper-${widgetIndex}`;
+            const textareaId = `config-textarea-${widgetIndex}`;
+            const helper = document.getElementById(helperId);
+            const textarea = document.getElementById(textareaId);
+
+            if (!widgetType) {
+                helper.innerHTML = '<div class="config-placeholder"><p>Select a widget type to see configuration options</p></div>';
+                textarea.value = '';
+                return;
+            }
+
+            let helperHTML = '';
+            let configTemplate = '';
+
+            switch (widgetType) {
+                case 'filter':
+                    helperHTML = `
+						<div class="config-form">
+							<h5>Filter Configuration</h5>
+							<div class="config-section">
+								<h6>Display & Limits</h6>
+								<div class="config-row">
+									<label>Display:</label>
+									<select id="filter-display-${widgetIndex}" onchange="updateFilterConfig(${widgetIndex})">
+										<option value="list">List</option>
+										<option value="cards">Cards</option>
+										<option value="dropdown">Dropdown</option>
+									</select>
+								</div>
+								<div class="config-row">
+									<label>Limit:</label>
+									<input type="number" id="filter-limit-${widgetIndex}" value="5" min="1" max="50" onchange="updateFilterConfig(${widgetIndex})"/>
+								</div>
+								<div class="config-row">
+									<label>Logic:</label>
+									<select id="filter-logic-${widgetIndex}" onchange="updateFilterConfig(${widgetIndex})">
+										<option value="and">AND (all conditions must match)</option>
+										<option value="or">OR (any condition can match)</option>
+									</select>
+								</div>
+							</div>
+							
+							<div class="config-section">
+								<h6>Filter Criteria</h6>
+								<div id="criteria-container-${widgetIndex}">
+									<div class="criteria-row" data-index="0">
+										<select class="criteria-metadata" onchange="updateFilterConfig(${widgetIndex})">
+											<option value="">Select field...</option>
+											<option value="collection">Collection</option>
+											<option value="tags">Tags</option>
+											<option value="type">Type</option>
+											<option value="status">Status</option>
+											<option value="priority">Priority</option>
+											<option value="createdAt">Created Date</option>
+											<option value="lastEdited">Last Edited</option>
+											<option value="folders">Folders</option>
+											<option value="boards">Boards</option>
+										</select>
+										<select class="criteria-operator" onchange="updateFilterConfig(${widgetIndex})">
+											<option value="equals">Equals</option>
+											<option value="contains">Contains</option>
+											<option value="greater">Greater Than</option>
+											<option value="less">Less Than</option>
+											<option value="in">In Array</option>
+										</select>
+										<input type="text" class="criteria-value" placeholder="Value" onchange="updateFilterConfig(${widgetIndex})"/>
+										<select class="criteria-action" onchange="updateFilterConfig(${widgetIndex})">
+											<option value="include">Include</option>
+											<option value="exclude">Exclude</option>
+										</select>
+									</div>
+								</div>
+								<button type="button" onclick="addFilterCriteria(${widgetIndex})" class="btn-add-criteria">Add Criteria</button>
+							</div>
+						</div>
+					`;
+                    configTemplate = JSON.stringify({
+                        filter: {
+                            criteria: [],
+                            logic: "and",
+                            display: "list",
+                            limit: 5
+                        }
+                    }, null, 2);
+                    break;
+
+                case 'filterForm':
+                    helperHTML = `
+						<div class="config-form">
+							<h5>Filter Form Configuration</h5>
+							<p class="config-note">No configuration needed - provides interactive filtering form</p>
+						</div>
+					`;
+                    configTemplate = JSON.stringify({}, null, 2);
+                    break;
+
+                case 'fileContent':
+                    helperHTML = `
+						<div class="config-form">
+							<h5>File Content Configuration</h5>
+							<div class="config-row">
+								<label>File Path:</label>
+								<input type="text" placeholder="path/to/file.md" onchange="updateFileContentConfig(${widgetIndex}, this.value)"/>
+							</div>
+							<p class="config-note">Enter the path to the markdown file you want to display</p>
+						</div>
+					`;
+                    configTemplate = JSON.stringify({
+                        fileContent: {
+                            filePath: "path/to/file.md"
+                        }
+                    }, null, 2);
+                    break;
+
+                case 'static':
+                    helperHTML = `
+						<div class="config-form">
+							<h5>Static Content Configuration</h5>
+							<div class="config-row">
+								<label>Format:</label>
+								<select onchange="updateStaticConfig(${widgetIndex})">
+									<option value="html">HTML</option>
+									<option value="markdown">Markdown</option>
+									<option value="text">Plain Text</option>
+								</select>
+							</div>
+							<div class="config-row">
+								<label>Content:</label>
+								<textarea placeholder="Enter your content here..." rows="3" onchange="updateStaticConfig(${widgetIndex})"></textarea>
+							</div>
+						</div>
+					`;
+                    configTemplate = JSON.stringify({
+                        static: {
+                            content: "<h3>Welcome!</h3><p>Your static content here</p>",
+                            format: "html"
+                        }
+                    }, null, 2);
+                    break;
+            }
+
+            helper.innerHTML = helperHTML;
+            textarea.value = configTemplate;
+        }
+
+        function updateFilterConfig(widgetIndex) {
+            const helper = document.getElementById(`config-helper-${widgetIndex}`);
+            const textarea = document.getElementById(`config-textarea-${widgetIndex}`);
+
+            const display = document.getElementById(`filter-display-${widgetIndex}`).value;
+            const limit = parseInt(document.getElementById(`filter-limit-${widgetIndex}`).value);
+            const logic = document.getElementById(`filter-logic-${widgetIndex}`).value;
+
+            // Build criteria from form
+            const criteriaContainer = document.getElementById(`criteria-container-${widgetIndex}`);
+            const criteriaRows = criteriaContainer.querySelectorAll('.criteria-row');
+            const criteria = [];
+
+            criteriaRows.forEach(row => {
+                const metadata = row.querySelector('.criteria-metadata').value;
+                const operator = row.querySelector('.criteria-operator').value;
+                const value = row.querySelector('.criteria-value').value;
+                const action = row.querySelector('.criteria-action').value;
+
+                if (metadata && value) {
+                    criteria.push({
+                        metadata: metadata,
+                        operator: operator,
+                        value: value,
+                        action: action
+                    });
+                }
+            });
+
+            const config = {
+                filter: {
+                    criteria: criteria,
+                    logic: logic,
+                    display: display,
+                    limit: limit
+                }
+            };
+            textarea.value = JSON.stringify(config, null, 2);
+        }
+
+        function addFilterCriteria(widgetIndex) {
+            const container = document.getElementById(`criteria-container-${widgetIndex}`);
+            const criteriaCount = container.children.length;
+
+            const criteriaRow = document.createElement('div');
+            criteriaRow.className = 'criteria-row';
+            criteriaRow.setAttribute('data-index', criteriaCount);
+            criteriaRow.innerHTML = `
+				<select class="criteria-metadata" onchange="updateFilterConfig(${widgetIndex})">
+					<option value="">Select field...</option>
+					<option value="collection">Collection</option>
+					<option value="tags">Tags</option>
+					<option value="type">Type</option>
+					<option value="status">Status</option>
+					<option value="priority">Priority</option>
+					<option value="createdAt">Created Date</option>
+					<option value="lastEdited">Last Edited</option>
+					<option value="folders">Folders</option>
+					<option value="boards">Boards</option>
+				</select>
+				<select class="criteria-operator" onchange="updateFilterConfig(${widgetIndex})">
+					<option value="equals">Equals</option>
+					<option value="contains">Contains</option>
+					<option value="greater">Greater Than</option>
+					<option value="less">Less Than</option>
+					<option value="in">In Array</option>
+				</select>
+				<input type="text" class="criteria-value" placeholder="Value" onchange="updateFilterConfig(${widgetIndex})"/>
+				<select class="criteria-action" onchange="updateFilterConfig(${widgetIndex})">
+					<option value="include">Include</option>
+					<option value="exclude">Exclude</option>
+				</select>
+				<button type="button" onclick="this.parentElement.remove(); updateFilterConfig(${widgetIndex})" class="btn-remove-criteria">×</button>
+			`;
+            container.appendChild(criteriaRow);
+            updateFilterConfig(widgetIndex);
+        }
+
+        function updateFileContentConfig(widgetIndex, filePath) {
+            const textarea = document.getElementById(`config-textarea-${widgetIndex}`);
+            const config = {
+                fileContent: {
+                    filePath: filePath
+                }
+            };
+            textarea.value = JSON.stringify(config, null, 2);
+        }
+
+        function updateStaticConfig(widgetIndex) {
+            const helper = document.getElementById(`config-helper-${widgetIndex}`);
+            const textarea = document.getElementById(`config-textarea-${widgetIndex}`);
+            const format = helper.querySelector('select').value;
+            const content = helper.querySelector('textarea').value;
+
+            const config = {
+                static: {
+                    content: content || "<h3>Welcome!</h3><p>Your static content here</p>",
+                    format: format
+                }
+            };
+            textarea.value = JSON.stringify(config, null, 2);
+        }
+    </script>
+		<style>
+        .dashboard-create-form {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--black);
+            border-radius: 12px;
+            border: 1px solid var(--neutral);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--neutral);
+        }
+
+        .form-header h3 {
+            margin: 0 0 8px 0;
+            color: var(--accent);
+            font-size: 24px;
+        }
+
+        .form-header p {
+            margin: 0;
+            color: var(--white);
+            opacity: 0.8;
+        }
+
+        .dashboard-form {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .form-section {
+            background: color-mix(in srgb, var(--neutral) 5%, transparent);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid color-mix(in srgb, var(--neutral) 20%, transparent);
+        }
+
+        .form-section h4 {
+            margin: 0 0 15px 0;
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            color: var(--white);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: 10px 12px;
+            border: 1px solid var(--neutral);
+            border-radius: 6px;
+            background: var(--white);
+            color: var(--black);
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .form-help {
+            color: var(--neutral);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .checkbox-group {
+            justify-content: center;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: var(--white);
+        }
+
+        .checkbox-label small {
+            display: block;
+            color: var(--neutral);
+            font-size: 12px;
+        }
+
+        .form-checkbox {
+            width: 18px;
+            height: 18px;
+        }
+
+        .widget-form {
+            background: color-mix(in srgb, var(--black) 50%, transparent);
+            border: 1px solid var(--neutral);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid color-mix(in srgb, var(--neutral) 30%, transparent);
+        }
+
+        .widget-number {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .btn-add-widget {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-add-widget:hover {
+            background: var(--accent);
+            color: var(--black);
+            transform: translateY(-1px);
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-remove:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+
+        .form-actions {
+            text-align: center;
+            padding-top: 10px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent);
+            color: var(--black);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
+        }
+
+        .result-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: color-mix(in srgb, var(--primary) 10%, transparent);
+            border: 1px solid var(--primary);
+        }
+
+        .config-helper {
+            background: color-mix(in srgb, var(--primary) 5%, transparent);
+            border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .config-placeholder {
+            text-align: center;
+            color: var(--neutral);
+            font-style: italic;
+        }
+
+        .config-form h5 {
+            margin: 0 0 12px 0;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .config-row label {
+            min-width: 80px;
+            font-size: 13px;
+            color: var(--white);
+        }
+
+        .config-row input,
+        .config-row select,
+        .config-row textarea {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid var(--neutral);
+            border-radius: 4px;
+            background: var(--white);
+            color: var(--black);
+            font-size: 13px;
+        }
+
+        .config-note {
+            margin: 10px 0 0 0;
+            font-size: 12px;
+            color: var(--neutral);
+            font-style: italic;
+        }
+
+        .config-section {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid color-mix(in srgb, var(--neutral) 10%, transparent);
+        }
+
+        .config-section:last-child {
+            border-bottom: none;
+        }
+
+        .config-section h6 {
+            margin: 0 0 8px 0;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .criteria-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1.5fr 1fr auto;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .criteria-row select,
+        .criteria-row input {
+            padding: 4px 6px;
+            border: 1px solid var(--neutral);
+            border-radius: 4px;
+            background: var(--white);
+            color: var(--black);
+            font-size: 12px;
+        }
+
+        .btn-add-criteria {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-add-criteria:hover {
+            background: var(--accent);
+            color: var(--black);
+        }
+
+        .btn-remove-criteria {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-remove-criteria:hover {
+            background: #c82333;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-create-form {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+        }
+    </style>
+	</div>
 }

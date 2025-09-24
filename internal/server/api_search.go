@@ -2,13 +2,8 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
 
-	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/search"
 )
@@ -61,108 +56,16 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 	case "json":
 		writeResponse(w, r, results, "")
 	case "dropdown":
-		html := buildDropdownHTML(results, query)
+		html := files.BuildDropdownHTML(results, query)
 		w.Write([]byte(html))
 	case "list":
-		html := buildListHTML(results, query)
+		html := files.BuildListHTML(results, query)
 		writeResponse(w, r, results, html)
 	case "cards":
-		html := buildCardsHTML(results, query)
+		html := files.BuildCardsHTML(results, query)
 		writeResponse(w, r, results, html)
 	default:
-		html := buildDropdownHTML(results, query)
+		html := files.BuildDropdownHTML(results, query)
 		w.Write([]byte(html))
 	}
-}
-
-func buildDropdownHTML(results []files.File, query string) string {
-	var html strings.Builder
-	html.WriteString(`<ul class="component-search-dropdown-list">`)
-
-	displayCount := 5
-	for i, file := range results {
-		if i >= displayCount {
-			break
-		}
-		html.WriteString(fmt.Sprintf(`
-			<li><a href="/files/%s">%s</a></li>`,
-			file.Path, file.Name))
-	}
-
-	if len(results) > displayCount {
-		totalResults, _ := search.SearchFiles(query, 100)
-		totalCount := len(totalResults)
-		html.WriteString(fmt.Sprintf(`
-			<li class="component-search-more-item">
-				<a href="/search?q=%s" class="component-search-more-link">view all %d results →</a>
-			</li>`,
-			query, totalCount))
-	}
-
-	if len(results) == 0 {
-		html.WriteString(`<li class="component-search-hint">no results found</li>`)
-	}
-
-	html.WriteString(`</ul>`)
-	return html.String()
-}
-
-func buildCardsHTML(results []files.File, query string) string {
-	var html strings.Builder
-	html.WriteString(fmt.Sprintf(`<p>found %d results for "%s"</p>`, len(results), query))
-	html.WriteString(`<div class="search-results-cards">`)
-
-	for _, file := range results {
-		context := getSearchContext(file.Path, query, 30)
-		html.WriteString(fmt.Sprintf(`
-			<div class="search-card">
-				<h4><a href="/files/%s">%s</a></h4>
-				<p class="card-context">...%s...</p>
-			</div>`,
-			file.Path, file.Path, context))
-	}
-
-	html.WriteString(`</div>`)
-	return html.String()
-}
-
-func buildListHTML(results []files.File, query string) string {
-	var html strings.Builder
-	html.WriteString(fmt.Sprintf(`<p>found %d results for "%s"</p>`, len(results), query))
-	html.WriteString(`<ul class="search-results-simple-list">`)
-
-	for _, file := range results {
-		html.WriteString(fmt.Sprintf(`
-			<li><a href="/files/%s">%s</a></li>`,
-			file.Path, file.Path))
-	}
-
-	html.WriteString(`</ul>`)
-	return html.String()
-}
-func getSearchContext(filePath, query string, contextLength int) string {
-	dataDir := configmanager.GetAppConfig().DataPath
-	fullPath := filepath.Join(dataDir, filePath)
-
-	content, err := os.ReadFile(fullPath)
-	if err != nil {
-		return "content unavailable"
-	}
-
-	contentStr := strings.ToLower(string(content))
-	queryLower := strings.ToLower(query)
-
-	index := strings.Index(contentStr, queryLower)
-	if index == -1 {
-		return fmt.Sprintf("found in filename: %s", filepath.Base(filePath))
-	}
-
-	start := max(0, index-contextLength)
-	end := min(len(content), index+len(query)+contextLength)
-
-	context := string(content[start:end])
-	context = strings.ReplaceAll(context, "\n", " ")
-	context = strings.ReplaceAll(context, "\t", " ")
-
-	return strings.TrimSpace(context)
 }

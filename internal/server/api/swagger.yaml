@@ -15,6 +15,25 @@ definitions:
           $ref: '#/definitions/dashboard.Widget'
         type: array
     type: object
+  dashboard.FileContentConfig:
+    properties:
+      filePath:
+        type: string
+    type: object
+  dashboard.FilterConfig:
+    properties:
+      criteria:
+        items:
+          $ref: '#/definitions/files.FilterCriteria'
+        type: array
+      display:
+        description: list, cards, dropdown
+        type: string
+      limit:
+        type: integer
+      logic:
+        type: string
+    type: object
   dashboard.Layout:
     enum:
     - oneColumn
@@ -27,15 +46,33 @@ definitions:
     - TwoColumns
     - ThreeColumns
     - FourColumns
+  dashboard.StaticConfig:
+    properties:
+      content:
+        type: string
+      format:
+        description: html, markdown, text
+        type: string
+    type: object
   dashboard.Widget:
     properties:
-      config: {}
+      config:
+        $ref: '#/definitions/dashboard.WidgetConfig'
       id:
         type: string
       position:
         $ref: '#/definitions/dashboard.WidgetPosition'
       type:
-        type: string
+        $ref: '#/definitions/dashboard.WidgetType'
+    type: object
+  dashboard.WidgetConfig:
+    properties:
+      fileContent:
+        $ref: '#/definitions/dashboard.FileContentConfig'
+      filter:
+        $ref: '#/definitions/dashboard.FilterConfig'
+      static:
+        $ref: '#/definitions/dashboard.StaticConfig'
     type: object
   dashboard.WidgetPosition:
     properties:
@@ -44,6 +81,18 @@ definitions:
       "y":
         type: integer
     type: object
+  dashboard.WidgetType:
+    enum:
+    - filter
+    - filterForm
+    - fileContent
+    - static
+    type: string
+    x-enum-varnames:
+    - WidgetTypeFilter
+    - WidgetTypeFilterForm
+    - WidgetTypeFileContent
+    - WidgetTypeStatic
   files.File:
     properties:
       metadata:
@@ -63,6 +112,17 @@ definitions:
     - FileTypeTodo
     - FileTypeNote
     - FileTypeJournal
+  files.FilterCriteria:
+    properties:
+      action:
+        type: string
+      metadata:
+        type: string
+      operator:
+        type: string
+      value:
+        type: string
+    type: object
   files.Metadata:
     properties:
       ancestor:
@@ -249,7 +309,7 @@ paths:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Create a new dashboard
+      description: Create a new dashboard with optional widgets
       parameters:
       - description: Dashboard name
         in: formData
@@ -264,6 +324,26 @@ paths:
       - description: Global dashboard (true/false)
         in: formData
         name: global
+        type: string
+      - description: Widget ID
+        in: formData
+        name: widgets[0][id]
+        type: string
+      - description: Widget type (filter, filterForm, fileContent, static)
+        in: formData
+        name: widgets[0][type]
+        type: string
+      - description: Widget X position
+        in: formData
+        name: widgets[0][position][x]
+        type: integer
+      - description: Widget Y position
+        in: formData
+        name: widgets[0][position][y]
+        type: integer
+      - description: Widget configuration JSON
+        in: formData
+        name: widgets[0][config]
         type: string
       produces:
       - application/json
@@ -350,6 +430,44 @@ paths:
       summary: Update dashboard
       tags:
       - dashboards
+  /api/dashboards/widget/{widgetId}:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Render a specific widget by ID from a dashboard
+      parameters:
+      - description: Dashboard ID
+        in: formData
+        name: dashboardId
+        required: true
+        type: string
+      - description: Widget ID
+        in: path
+        name: widgetId
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: rendered widget html
+          schema:
+            type: string
+        "400":
+          description: missing parameters
+          schema:
+            type: string
+        "404":
+          description: widget not found
+          schema:
+            type: string
+        "500":
+          description: failed to render widget
+          schema:
+            type: string
+      summary: Render dashboard widget
+      tags:
+      - widgets
   /api/files/content/{filepath}:
     get:
       parameters:

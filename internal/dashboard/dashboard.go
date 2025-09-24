@@ -22,20 +22,6 @@ const (
 	FourColumns  Layout = "fourColumns"
 )
 
-// WidgetPosition represents widget position on dashboard
-type WidgetPosition struct {
-	X int `json:"x"`
-	Y int `json:"y"`
-}
-
-// Widget represents a dashboard widget
-type Widget struct {
-	ID       string         `json:"id"`
-	Type     string         `json:"type"`
-	Position WidgetPosition `json:"position"`
-	Config   interface{}    `json:"config"`
-}
-
 // Dashboard represents a dashboard structure
 type Dashboard struct {
 	Name    string   `json:"name"`

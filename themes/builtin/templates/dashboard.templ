@@ -13,8 +13,15 @@ templ Dashboard(data thememanager.TemplateData) {
 				<div class="dashboard-widgets">
 					for _, widget := range data.Dashboard.Widgets {
 						<div class="dashboard-widget" data-widget-id={ widget.ID }>
-							<h3>{ widget.Type }</h3>
-							<div>widget content placeholder</div>
+							<h3>{ string(widget.Type) }</h3>
+							<div
+								hx-post={ "/api/dashboards/widget/" + widget.ID }
+								hx-vals={ `{"dashboardId": "` + data.Dashboard.ID + `" }` }
+								hx-trigger="load"
+								class="widget-content"
+							>
+								loading widget...
+							</div>
 						</div>
 					}
 					if len(data.Dashboard.Widgets) == 0 {
