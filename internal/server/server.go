@@ -8,15 +8,16 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/plugins"
 	_ "knov/internal/server/api" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/utils"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 // StartServerChi ...
@@ -149,6 +150,17 @@ func StartServerChi() {
 
 		r.Route("/git", func(r chi.Router) {
 			r.Get("/latestchanges", handleAPIGetRecentlyChanged)
+		})
+
+		// ----------------------------------------------------------------------------------------
+		// --------------------------------------- DASHBOARDS -------------------------------------
+		// ----------------------------------------------------------------------------------------
+		r.Route("/dashboards", func(r chi.Router) {
+			r.Get("/", handleAPIGetDashboards)
+			r.Post("/", handleAPICreateDashboard)
+			r.Get("/{id}", handleAPIGetDashboard)
+			r.Patch("/{id}", handleAPIUpdateDashboard)
+			r.Delete("/{id}", handleAPIDeleteDashboard)
 		})
 
 		// ----------------------------------------------------------------------------------------

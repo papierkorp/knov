@@ -103,6 +103,183 @@
                 "responses": {}
             }
         },
+        "/api/dashboards": {
+            "get": {
+                "description": "Get list of all dashboards for current user",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Get all dashboards",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dashboard.Dashboard"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new dashboard",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Create new dashboard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dashboard name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)",
+                        "name": "layout",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Global dashboard (true/false)",
+                        "name": "global",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "dashboard created",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboards/{id}": {
+            "get": {
+                "description": "Get dashboard by ID",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Get specific dashboard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dashboard ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dashboard.Dashboard"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete dashboard by ID",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Delete dashboard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dashboard ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "dashboard deleted",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update existing dashboard",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Update dashboard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dashboard ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dashboard name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dashboard layout",
+                        "name": "layout",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Global dashboard",
+                        "name": "global",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dashboard.Dashboard"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/content/{filepath}": {
             "get": {
                 "produces": [
@@ -1206,6 +1383,70 @@
         }
     },
     "definitions": {
+        "dashboard.Dashboard": {
+            "type": "object",
+            "properties": {
+                "global": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "layout": {
+                    "$ref": "#/definitions/dashboard.Layout"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "widgets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dashboard.Widget"
+                    }
+                }
+            }
+        },
+        "dashboard.Layout": {
+            "type": "string",
+            "enum": [
+                "oneColumn",
+                "twoColumns",
+                "threeColumns",
+                "fourColumns"
+            ],
+            "x-enum-varnames": [
+                "OneColumn",
+                "TwoColumns",
+                "ThreeColumns",
+                "FourColumns"
+            ]
+        },
+        "dashboard.Widget": {
+            "type": "object",
+            "properties": {
+                "config": {},
+                "id": {
+                    "type": "string"
+                },
+                "position": {
+                    "$ref": "#/definitions/dashboard.WidgetPosition"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dashboard.WidgetPosition": {
+            "type": "object",
+            "properties": {
+                "x": {
+                    "type": "integer"
+                },
+                "y": {
+                    "type": "integer"
+                }
+            }
+        },
         "files.File": {
             "type": "object",
             "properties": {

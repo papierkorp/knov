@@ -1,5 +1,49 @@
 basePath: /
 definitions:
+  dashboard.Dashboard:
+    properties:
+      global:
+        type: boolean
+      id:
+        type: string
+      layout:
+        $ref: '#/definitions/dashboard.Layout'
+      name:
+        type: string
+      widgets:
+        items:
+          $ref: '#/definitions/dashboard.Widget'
+        type: array
+    type: object
+  dashboard.Layout:
+    enum:
+    - oneColumn
+    - twoColumns
+    - threeColumns
+    - fourColumns
+    type: string
+    x-enum-varnames:
+    - OneColumn
+    - TwoColumns
+    - ThreeColumns
+    - FourColumns
+  dashboard.Widget:
+    properties:
+      config: {}
+      id:
+        type: string
+      position:
+        $ref: '#/definitions/dashboard.WidgetPosition'
+      type:
+        type: string
+    type: object
+  dashboard.WidgetPosition:
+    properties:
+      x:
+        type: integer
+      "y":
+        type: integer
+    type: object
   files.File:
     properties:
       metadata:
@@ -186,6 +230,126 @@ paths:
       summary: Set git repository URL
       tags:
       - config
+  /api/dashboards:
+    get:
+      description: Get list of all dashboards for current user
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dashboard.Dashboard'
+            type: array
+      summary: Get all dashboards
+      tags:
+      - dashboards
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Create a new dashboard
+      parameters:
+      - description: Dashboard name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)
+        in: formData
+        name: layout
+        required: true
+        type: string
+      - description: Global dashboard (true/false)
+        in: formData
+        name: global
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: dashboard created
+          schema:
+            type: string
+      summary: Create new dashboard
+      tags:
+      - dashboards
+  /api/dashboards/{id}:
+    delete:
+      description: Delete dashboard by ID
+      parameters:
+      - description: Dashboard ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: dashboard deleted
+          schema:
+            type: string
+      summary: Delete dashboard
+      tags:
+      - dashboards
+    get:
+      description: Get dashboard by ID
+      parameters:
+      - description: Dashboard ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dashboard.Dashboard'
+      summary: Get specific dashboard
+      tags:
+      - dashboards
+    patch:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Update existing dashboard
+      parameters:
+      - description: Dashboard ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dashboard name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Dashboard layout
+        in: formData
+        name: layout
+        required: true
+        type: string
+      - description: Global dashboard
+        in: formData
+        name: global
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dashboard.Dashboard'
+      summary: Update dashboard
+      tags:
+      - dashboards
   /api/files/content/{filepath}:
     get:
       parameters:
