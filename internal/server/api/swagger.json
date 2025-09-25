@@ -1498,6 +1498,62 @@
                     }
                 }
             }
+        },
+        "/browse/{metadata}/{value}": {
+            "get": {
+                "description": "Browse and filter files by specific metadata type and value",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Browse files by metadata",
+                "parameters": [
+                    {
+                        "enum": [
+                            "tags",
+                            "collection",
+                            "folders",
+                            "type",
+                            "status",
+                            "priority"
+                        ],
+                        "type": "string",
+                        "description": "Metadata type",
+                        "name": "metadata",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Metadata value to filter by",
+                        "name": "value",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "rendered browse page",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "missing metadata type or value",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to render page",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

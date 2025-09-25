@@ -238,15 +238,7 @@ func renderTagsWidget() (string, error) {
 		return "", err
 	}
 
-	var mockFiles []files.File
-	for tag, count := range tagCount {
-		mockFiles = append(mockFiles, files.File{
-			Name: fmt.Sprintf("%s (%d)", tag, count),
-			Path: fmt.Sprintf("filter?metadata=tags&value=%s", tag),
-		})
-	}
-
-	return files.BuildListHTML(mockFiles, ""), nil
+	return files.BuildBrowseHTML(tagCount, "/browse/tags"), nil
 }
 
 func renderCollectionsWidget() (string, error) {
@@ -255,15 +247,7 @@ func renderCollectionsWidget() (string, error) {
 		return "", err
 	}
 
-	var mockFiles []files.File
-	for collection, count := range collectionCount {
-		mockFiles = append(mockFiles, files.File{
-			Name: fmt.Sprintf("%s (%d)", collection, count),
-			Path: fmt.Sprintf("filter?metadata=collection&value=%s", collection),
-		})
-	}
-
-	return files.BuildListHTML(mockFiles, ""), nil
+	return files.BuildBrowseHTML(collectionCount, "/browse/collection"), nil
 }
 
 func renderFoldersWidget() (string, error) {
@@ -272,13 +256,5 @@ func renderFoldersWidget() (string, error) {
 		return "", err
 	}
 
-	var mockFiles []files.File
-	for folder, count := range folderCount {
-		mockFiles = append(mockFiles, files.File{
-			Name: fmt.Sprintf("%s (%d)", folder, count),
-			Path: fmt.Sprintf("filter?metadata=folders&value=%s", folder),
-		})
-	}
-
-	return files.BuildListHTML(mockFiles, ""), nil
+	return files.BuildBrowseHTML(folderCount, "/browse/folders"), nil
 }

@@ -715,14 +715,8 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var html strings.Builder
-	html.WriteString(`<ul class="search-results-simple-list">`)
-	for tag, count := range tags {
-		html.WriteString(fmt.Sprintf(`<li><span>%s (%d)</span></li>`, tag, count))
-	}
-	html.WriteString(`</ul>`)
-
-	writeResponse(w, r, tags, html.String())
+	html := files.BuildBrowseHTML(tags, "/browse/tags")
+	writeResponse(w, r, tags, html)
 }
 
 // @Summary Get all collections with counts
@@ -737,14 +731,8 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var html strings.Builder
-	html.WriteString(`<ul class="search-results-simple-list">`)
-	for collection, count := range collections {
-		html.WriteString(fmt.Sprintf(`<li><span>%s (%d)</span></li>`, collection, count))
-	}
-	html.WriteString(`</ul>`)
-
-	writeResponse(w, r, collections, html.String())
+	html := files.BuildBrowseHTML(collections, "/browse/collection")
+	writeResponse(w, r, collections, html)
 }
 
 // @Summary Get all folders with counts
@@ -759,12 +747,6 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var html strings.Builder
-	html.WriteString(`<ul class="search-results-simple-list">`)
-	for folder, count := range folders {
-		html.WriteString(fmt.Sprintf(`<li><span>%s (%d)</span></li>`, folder, count))
-	}
-	html.WriteString(`</ul>`)
-
-	writeResponse(w, r, folders, html.String())
+	html := files.BuildBrowseHTML(folders, "/browse/folders")
+	writeResponse(w, r, folders, html)
 }

@@ -1,0 +1,31 @@
+package templates
+
+import (
+	"knov/internal/thememanager"
+	"knov/internal/translation"
+)
+
+templ BrowseFiles(metadataType string, value string, query string, data thememanager.TemplateData) {
+	@Base(translation.Sprintf("Browse") + ": " + value) {
+		<div id="page-browse-files">
+			<div class="browse-header">
+				<h1>{ translation.Sprintf("Files with") } { metadataType }: <span class="filter-value">{ value }</span></h1>
+				<div class="browse-breadcrumb">
+					<a href="/">{ translation.Sprintf("Home") }</a>
+					→ <a href="/overview">{ translation.Sprintf("Browse") }</a>
+					→ <span>{ metadataType }: { value }</span>
+				</div>
+			</div>
+			<div class="browse-content">
+				<div
+					hx-post="/api/files/filter"
+					hx-trigger="load"
+					hx-vals={ `{"metadata[]": "` + metadataType + `", "operator[]": "equals", "value[]": "` + value + `", "action[]": "include", "logic": "and"}` }
+					class="filter-results"
+				>
+					{ translation.Sprintf("Loading files...") }
+				</div>
+			</div>
+		</div>
+	}
+}

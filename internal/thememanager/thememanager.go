@@ -62,6 +62,7 @@ type ITheme interface {
 	GetAvailableFileViews() []string
 	RenderFileView(viewName string, content string, filePath string) (templ.Component, error)
 	Dashboard(id string) (templ.Component, error)
+	BrowseFiles(metadataType string, value string, query string) (templ.Component, error)
 }
 
 // -----------------------------------------------------------------------------

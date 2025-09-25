@@ -9,14 +9,54 @@ templ Overview(data thememanager.TemplateData) {
 	@Base(translation.Sprintf("Overview")) {
 		<div id="page-overview">
 			<h1>{ translation.Sprintf("OVERVIEW") }</h1>
-			<div class="files-list-container">
-				<div class="overview-list">
-					<div hx-get="/api/files/list" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
-						Loading files...
+			<div class="overview-sections">
+				<section class="overview-browse">
+					<h2>{ translation.Sprintf("Browse by Metadata") }</h2>
+					<div class="browse-grid">
+						<div class="browse-section">
+							<h3>{ translation.Sprintf("Tags") }</h3>
+							<div
+								hx-get="/api/metadata/tags"
+								hx-trigger="load"
+								hx-headers='{"Accept": "text/html"}'
+							>
+								loading tags...
+							</div>
+						</div>
+						<div class="browse-section">
+							<h3>{ translation.Sprintf("Collections") }</h3>
+							<div
+								hx-get="/api/metadata/collections"
+								hx-trigger="load"
+								hx-headers='{"Accept": "text/html"}'
+							>
+								loading collections...
+							</div>
+						</div>
+						<div class="browse-section">
+							<h3>{ translation.Sprintf("Folders") }</h3>
+							<div
+								hx-get="/api/metadata/folders"
+								hx-trigger="load"
+								hx-headers='{"Accept": "text/html"}'
+							>
+								loading folders...
+							</div>
+						</div>
 					</div>
-				</div>
-				<hr/>
-				<div id="file-content"></div>
+				</section>
+				<section class="overview-files">
+					<h2>{ translation.Sprintf("All Files") }</h2>
+					<div class="files-list-container">
+						<div class="overview-list">
+							<div hx-get="/api/files/list" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+								Loading files...
+							</div>
+						</div>
+						<hr/>
+						<div id="file-content"></div>
+					</div>
+				</section>
 			</div>
 		</div>
 	}

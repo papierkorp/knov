@@ -161,3 +161,14 @@ func (t *Builtin) Dashboard(id string) (templ.Component, error) {
 	td.Dashboard = dash
 	return templates.Dashboard(td), nil
 }
+
+// BrowseFiles renders filtered file browse page
+func (t *Builtin) BrowseFiles(metadataType string, value string, query string) (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	return templates.BrowseFiles(metadataType, value, query, td), nil
+}

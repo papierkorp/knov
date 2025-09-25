@@ -74,3 +74,18 @@ func BuildListHTML(results []File, query string) string {
 	html.WriteString(`</ul>`)
 	return html.String()
 }
+
+// BuildBrowseHTML creates HTML list for metadata browsing with counts
+func BuildBrowseHTML(items map[string]int, urlPrefix string) string {
+	var html strings.Builder
+	html.WriteString(`<ul class="search-results-simple-list">`)
+
+	for item, count := range items {
+		html.WriteString(fmt.Sprintf(`
+			<li><a href="%s/%s">%s (%d)</a></li>`,
+			urlPrefix, item, item, count))
+	}
+
+	html.WriteString(`</ul>`)
+	return html.String()
+}

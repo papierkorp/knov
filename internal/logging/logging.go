@@ -4,6 +4,7 @@ package logging
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -14,7 +15,6 @@ func shouldLog(messageLevel string) bool {
 	if configLevel == "" {
 		configLevel = "info"
 	}
-
 	switch configLevel {
 	case "debug":
 		return true // show all logs
@@ -28,20 +28,28 @@ func shouldLog(messageLevel string) bool {
 		return true
 	}
 }
+
 func getCaller() string {
-	pc, _, _, ok := runtime.Caller(2)
+	pc, file, _, ok := runtime.Caller(2)
 	if !ok {
-		return "unknown"
+		return "unknown - unknown"
 	}
+
 	fn := runtime.FuncForPC(pc)
 	if fn == nil {
-		return "unknown"
+		return "unknown - unknown"
 	}
-	name := fn.Name()
-	if idx := strings.LastIndex(name, "."); idx >= 0 {
-		name = name[idx+1:]
+
+	// Extract function name
+	funcName := fn.Name()
+	if idx := strings.LastIndex(funcName, "."); idx >= 0 {
+		funcName = funcName[idx+1:]
 	}
-	return name
+
+	// Extract filename
+	fileName := filepath.Base(file)
+
+	return fileName + " - " + funcName
 }
 
 // LogDebug logs debug messages

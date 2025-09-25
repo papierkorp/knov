@@ -51,6 +51,7 @@ func StartServerChi() {
 	r.Get("/files/*", handleFileContent)
 	r.Get("/dashboard", handleDashboard)
 	r.Get("/dashboard/{id}", handleDashboard)
+	r.Get("/browse/{metadata}/{value}", handleBrowseFiles)
 
 	// ----------------------------------------------------------------------------------------
 	// ------------------------------------- static routes -------------------------------------
@@ -413,6 +414,39 @@ func handleDashboard(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "failed to render template", http.StatusInternalServerError)
 		fmt.Printf("error rendering template: %v\n", err)
+		return
+	}
+}
+
+// @Summary Browse files by metadata
+// @Description Browse and filter files by specific metadata type and value
+// @Tags files
+// @Param metadata path string true "Metadata type" Enums(tags, collection, folders, type, status, priority)
+// @Param value path string true "Metadata value to filter by"
+// @Produce text/html
+// @Success 200 {string} string "rendered browse page"
+// @Failure 400 {string} string "missing metadata type or value"
+// @Failure 500 {string} string "failed to render page"
+// @Router /browse/{metadata}/{value} [get]
+func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
+	metadataType := chi.URLParam(r, "metadata")
+	value := chi.URLParam(r, "value")
+
+	if metadataType == "" || value == "" {
+		http.Error(w, "missing metadata type or value", http.StatusBadRequest)
+		return
+	}
+
+	query := fmt.Sprintf("%s:%s", metadataType, value)
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().BrowseFiles(metadataType, value, query)
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+
+	err = component.Render(r.Context(), w)
+	if err != nil {
+		http.Error(w, "failed to render template", http.StatusInternalServerError)
 		return
 	}
 }

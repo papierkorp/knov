@@ -4,6 +4,7 @@
 @import url("overview.css");
 @import url("search.css");
 @import url("dashboard.css");
+@import url("browsefiles.css");
 
 :root {
     --primary: #65a30d;
