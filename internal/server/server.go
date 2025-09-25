@@ -8,15 +8,16 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/plugins"
 	_ "knov/internal/server/api" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/utils"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 // StartServerChi ...
@@ -132,6 +133,10 @@ func StartServerChi() {
 			r.Post("/createdat", handleAPISetMetadataCreatedAt)
 			r.Post("/lastedited", handleAPISetMetadataLastEdited)
 			r.Post("/folders", handleAPISetMetadataFolders)
+
+			r.Get("/tags", handleAPIGetAllTags)
+			r.Get("/collections", handleAPIGetAllCollections)
+			r.Get("/folders", handleAPIGetAllFolders)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -376,6 +381,23 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 
 func handleDashboard(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+	action := r.URL.Query().Get("action")
+
+	if action == "new" {
+		// render dashboard creation form
+		component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard("new")
+		if err != nil {
+			http.Error(w, "failed to load theme", http.StatusInternalServerError)
+			return
+		}
+		err = component.Render(r.Context(), w)
+		if err != nil {
+			http.Error(w, "failed to render template", http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+
 	if id == "" {
 		id = "home"
 	}

@@ -39,3 +39,24 @@
     font-style: italic;
     padding: 40px;
 }
+
+#page-dashboard .widget-tags,
+#page-dashboard .widget-collections,
+#page-dashboard .widget-folders {
+    padding: 0;
+}
+
+#page-dashboard .widget-tags .search-results-simple-list,
+#page-dashboard .widget-collections .search-results-simple-list,
+#page-dashboard .widget-folders .search-results-simple-list {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    margin-top: 0;
+}
+
+#page-dashboard .widget-tags .search-results-simple-list li,
+#page-dashboard .widget-collections .search-results-simple-list li,
+#page-dashboard .widget-folders .search-results-simple-list li {
+    padding: 6px 8px;
+    font-size: 13px;
+}

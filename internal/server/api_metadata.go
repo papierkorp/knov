@@ -702,3 +702,69 @@ func handleAPISetMetadataFolders(w http.ResponseWriter, r *http.Request) {
 
 	writeResponse(w, r, "folders updated", html.String())
 }
+
+// @Summary Get all tags with counts
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {object} map[string]int
+// @Router /api/metadata/tags [get]
+func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
+	tags, err := files.GetAllTags()
+	if err != nil {
+		http.Error(w, "failed to get tags", http.StatusInternalServerError)
+		return
+	}
+
+	var html strings.Builder
+	html.WriteString(`<ul class="search-results-simple-list">`)
+	for tag, count := range tags {
+		html.WriteString(fmt.Sprintf(`<li><span>%s (%d)</span></li>`, tag, count))
+	}
+	html.WriteString(`</ul>`)
+
+	writeResponse(w, r, tags, html.String())
+}
+
+// @Summary Get all collections with counts
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {object} map[string]int
+// @Router /api/metadata/collections [get]
+func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
+	collections, err := files.GetAllCollections()
+	if err != nil {
+		http.Error(w, "failed to get collections", http.StatusInternalServerError)
+		return
+	}
+
+	var html strings.Builder
+	html.WriteString(`<ul class="search-results-simple-list">`)
+	for collection, count := range collections {
+		html.WriteString(fmt.Sprintf(`<li><span>%s (%d)</span></li>`, collection, count))
+	}
+	html.WriteString(`</ul>`)
+
+	writeResponse(w, r, collections, html.String())
+}
+
+// @Summary Get all folders with counts
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {object} map[string]int
+// @Router /api/metadata/folders [get]
+func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
+	folders, err := files.GetAllFolders()
+	if err != nil {
+		http.Error(w, "failed to get folders", http.StatusInternalServerError)
+		return
+	}
+
+	var html strings.Builder
+	html.WriteString(`<ul class="search-results-simple-list">`)
+	for folder, count := range folders {
+		html.WriteString(fmt.Sprintf(`<li><span>%s (%d)</span></li>`, folder, count))
+	}
+	html.WriteString(`</ul>`)
+
+	writeResponse(w, r, folders, html.String())
+}

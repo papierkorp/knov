@@ -141,18 +141,23 @@ func (t *Builtin) RenderFileView(viewName string, content string, filePath strin
 
 // Dashboard renders a specific dashboard by id
 func (t *Builtin) Dashboard(id string) (templ.Component, error) {
+	tm := thememanager.GetThemeManager()
+	td := thememanager.TemplateData{
+		ThemeToUse:      tm.GetCurrentThemeName(),
+		AvailableThemes: tm.GetAvailableThemes(),
+	}
+
+	if id == "new" {
+		td.ShowCreateForm = true
+		return templates.Dashboard(td), nil
+	}
+
 	dash, err := dashboard.Get(id)
 	if err != nil {
 		logging.LogWarning("dashboard not found: %s, using default home", id)
 		return t.Home()
 	}
 
-	tm := thememanager.GetThemeManager()
-	td := thememanager.TemplateData{
-		ThemeToUse:      tm.GetCurrentThemeName(),
-		AvailableThemes: tm.GetAvailableThemes(),
-		Dashboard:       dash,
-	}
-
+	td.Dashboard = dash
 	return templates.Dashboard(td), nil
 }

@@ -41,8 +41,7 @@ func handleAPIGetDashboards(w http.ResponseWriter, r *http.Request) {
 // @Param name formData string true "Dashboard name"
 // @Param layout formData string true "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)"
 // @Param global formData string false "Global dashboard (true/false)"
-// @Param widgets[0][id] formData string false "Widget ID"
-// @Param widgets[0][type] formData string false "Widget type (filter, filterForm, fileContent, static)"
+// @Param widgets[0][type] formData string false "Widget type (filter, filterForm, fileContent, static, tags, collections, folders)"
 // @Param widgets[0][position][x] formData int false "Widget X position"
 // @Param widgets[0][position][y] formData int false "Widget Y position"
 // @Param widgets[0][config] formData string false "Widget configuration JSON"
@@ -68,21 +67,29 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 	// Parse widgets from form data
 	var widgets []dashboard.Widget
 	form := r.PostForm
-	widgetIDs := []string{}
 
-	// Extract widget IDs from form keys
+	// Find the highest widget index
+	maxIndex := -1
 	for key := range form {
-		if strings.HasPrefix(key, "widgets[") && strings.HasSuffix(key, "][id]") {
-			widgetID := form.Get(key)
-			if widgetID != "" {
-				widgetIDs = append(widgetIDs, widgetID)
+		if strings.HasPrefix(key, "widgets[") && strings.Contains(key, "][type]") {
+			// Extract index from widgets[N][type]
+			start := strings.Index(key, "[") + 1
+			end := strings.Index(key[start:], "]")
+			if end > 0 {
+				if idx, err := strconv.Atoi(key[start : start+end]); err == nil && idx > maxIndex {
+					maxIndex = idx
+				}
 			}
 		}
 	}
 
 	// Build widgets from form data
-	for i, widgetID := range widgetIDs {
+	for i := 0; i <= maxIndex; i++ {
 		widgetType := dashboard.WidgetType(r.FormValue(fmt.Sprintf("widgets[%d][type]", i)))
+		if widgetType == "" {
+			continue // skip empty widget types
+		}
+
 		xPos, _ := strconv.Atoi(r.FormValue(fmt.Sprintf("widgets[%d][position][x]", i)))
 		yPos, _ := strconv.Atoi(r.FormValue(fmt.Sprintf("widgets[%d][position][y]", i)))
 		configJSON := r.FormValue(fmt.Sprintf("widgets[%d][config]", i))
@@ -93,7 +100,6 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 		}
 
 		widget := dashboard.Widget{
-			ID:   widgetID,
 			Type: widgetType,
 			Position: dashboard.WidgetPosition{
 				X: xPos,

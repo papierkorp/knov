@@ -73,6 +73,7 @@ type TemplateData struct {
 	ThemeToUse      string
 	AvailableThemes []string
 	Dashboard       *dashboard.Dashboard
+	ShowCreateForm  bool
 }
 
 // -----------------------------------------------------------------------------

@@ -168,13 +168,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Widget ID",
-                        "name": "widgets[0][id]",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Widget type (filter, filterForm, fileContent, static)",
+                        "description": "Widget type (filter, filterForm, fileContent, static, tags, collections, folders)",
                         "name": "widgets[0][type]",
                         "in": "formData"
                     },
@@ -777,6 +771,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/collections": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all collections with counts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/createdat": {
             "get": {
                 "produces": [
@@ -918,23 +935,14 @@ const docTemplate = `{
                 "tags": [
                     "metadata"
                 ],
-                "summary": "Get file folders",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
+                "summary": "Get all folders with counts",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
                             }
                         }
                     }
@@ -1335,6 +1343,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/tags": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all tags with counts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/search": {
             "get": {
                 "produces": [
@@ -1603,13 +1634,19 @@ const docTemplate = `{
                 "filter",
                 "filterForm",
                 "fileContent",
-                "static"
+                "static",
+                "tags",
+                "collections",
+                "folders"
             ],
             "x-enum-varnames": [
                 "WidgetTypeFilter",
                 "WidgetTypeFilterForm",
                 "WidgetTypeFileContent",
-                "WidgetTypeStatic"
+                "WidgetTypeStatic",
+                "WidgetTypeTags",
+                "WidgetTypeCollections",
+                "WidgetTypeFolders"
             ]
         },
         "files.File": {

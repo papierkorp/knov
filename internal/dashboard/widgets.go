@@ -31,6 +31,9 @@ const (
 	WidgetTypeFilterForm  WidgetType = "filterForm"
 	WidgetTypeFileContent WidgetType = "fileContent"
 	WidgetTypeStatic      WidgetType = "static"
+	WidgetTypeTags        WidgetType = "tags"
+	WidgetTypeCollections WidgetType = "collections"
+	WidgetTypeFolders     WidgetType = "folders"
 )
 
 // FilterConfig represents filter configuration for widgets
@@ -70,6 +73,12 @@ func RenderWidget(widgetType WidgetType, config WidgetConfig) (string, error) {
 		return renderFileContentWidget(config.FileContent)
 	case WidgetTypeStatic:
 		return renderStaticWidget(config.Static)
+	case WidgetTypeTags:
+		return renderTagsWidget()
+	case WidgetTypeCollections:
+		return renderCollectionsWidget()
+	case WidgetTypeFolders:
+		return renderFoldersWidget()
 	default:
 		return "", fmt.Errorf("unknown widget type: %s", widgetType)
 	}
@@ -154,7 +163,7 @@ func renderFilterFormWidget() (string, error) {
 				const newRow = document.createElement('div');
 				newRow.className = 'filter-row';
 				newRow.id = 'filter-row-' + filterRowCount;
-				newRow.innerHTML = 
+				newRow.innerHTML =
 					'<select name="metadata[]" id="metadata-' + filterRowCount + '">' +
 						'<option value="collection">Collection</option>' +
 						'<option value="tags">Tags</option>' +
@@ -221,4 +230,55 @@ func renderStaticWidget(config *StaticConfig) (string, error) {
 	default:
 		return fmt.Sprintf("<pre>%s</pre>", config.Content), nil
 	}
+}
+
+func renderTagsWidget() (string, error) {
+	tagCount, err := files.GetAllTags()
+	if err != nil {
+		return "", err
+	}
+
+	var mockFiles []files.File
+	for tag, count := range tagCount {
+		mockFiles = append(mockFiles, files.File{
+			Name: fmt.Sprintf("%s (%d)", tag, count),
+			Path: fmt.Sprintf("filter?metadata=tags&value=%s", tag),
+		})
+	}
+
+	return files.BuildListHTML(mockFiles, ""), nil
+}
+
+func renderCollectionsWidget() (string, error) {
+	collectionCount, err := files.GetAllCollections()
+	if err != nil {
+		return "", err
+	}
+
+	var mockFiles []files.File
+	for collection, count := range collectionCount {
+		mockFiles = append(mockFiles, files.File{
+			Name: fmt.Sprintf("%s (%d)", collection, count),
+			Path: fmt.Sprintf("filter?metadata=collection&value=%s", collection),
+		})
+	}
+
+	return files.BuildListHTML(mockFiles, ""), nil
+}
+
+func renderFoldersWidget() (string, error) {
+	folderCount, err := files.GetAllFolders()
+	if err != nil {
+		return "", err
+	}
+
+	var mockFiles []files.File
+	for folder, count := range folderCount {
+		mockFiles = append(mockFiles, files.File{
+			Name: fmt.Sprintf("%s (%d)", folder, count),
+			Path: fmt.Sprintf("filter?metadata=folders&value=%s", folder),
+		})
+	}
+
+	return files.BuildListHTML(mockFiles, ""), nil
 }

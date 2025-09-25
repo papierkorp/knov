@@ -112,6 +112,7 @@ func Get(id string) (*Dashboard, error) {
 }
 
 // Create creates a new dashboard
+// Create creates a new dashboard
 func Create(dashboard *Dashboard) error {
 	dashboard.ID = utils.CleanseID(dashboard.Name)
 
@@ -128,6 +129,13 @@ func Create(dashboard *Dashboard) error {
 
 	if dashboard.Widgets == nil {
 		dashboard.Widgets = []Widget{}
+	}
+
+	// Auto-generate widget IDs
+	for i := range dashboard.Widgets {
+		if dashboard.Widgets[i].ID == "" {
+			dashboard.Widgets[i].ID = fmt.Sprintf("widget-%d", i)
+		}
 	}
 
 	data, err := json.Marshal(dashboard)

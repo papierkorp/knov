@@ -100,3 +100,9 @@ configmanager.SetLanguage("de")
 - If empty, the system operates in local-only mode
 - Repository is cloned/initialized on startup
 - See `internal/testdata/testdata.go` for git setup examples
+
+## Theme Development
+
+For creating custom themes, see the [Theme Creator Guide](theme-creator-guide.md).
+
+The theme system uses Go plugins for maximum flexibility while maintaining a clean interface.

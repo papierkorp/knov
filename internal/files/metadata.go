@@ -246,3 +246,67 @@ func MetaDataInitializeAll() error {
 	logging.LogInfo("metadata initialization completed")
 	return nil
 }
+
+// GetAllTags returns all unique tags with their counts
+func GetAllTags() (map[string]int, error) {
+	allFiles, err := GetAllFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	tagCount := make(map[string]int)
+	for _, file := range allFiles {
+		metadata, err := MetaDataGet(file.Path)
+		if err != nil || metadata == nil {
+			continue
+		}
+		for _, tag := range metadata.Tags {
+			if tag != "" {
+				tagCount[tag]++
+			}
+		}
+	}
+	return tagCount, nil
+}
+
+// GetAllCollections returns all unique collections with their counts
+func GetAllCollections() (map[string]int, error) {
+	allFiles, err := GetAllFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	collectionCount := make(map[string]int)
+	for _, file := range allFiles {
+		metadata, err := MetaDataGet(file.Path)
+		if err != nil || metadata == nil {
+			continue
+		}
+		if metadata.Collection != "" {
+			collectionCount[metadata.Collection]++
+		}
+	}
+	return collectionCount, nil
+}
+
+// GetAllFolders returns all unique folders with their counts
+func GetAllFolders() (map[string]int, error) {
+	allFiles, err := GetAllFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	folderCount := make(map[string]int)
+	for _, file := range allFiles {
+		metadata, err := MetaDataGet(file.Path)
+		if err != nil || metadata == nil {
+			continue
+		}
+		for _, folder := range metadata.Folders {
+			if folder != "" {
+				folderCount[folder]++
+			}
+		}
+	}
+	return folderCount, nil
+}

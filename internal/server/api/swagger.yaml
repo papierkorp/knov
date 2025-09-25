@@ -87,12 +87,18 @@ definitions:
     - filterForm
     - fileContent
     - static
+    - tags
+    - collections
+    - folders
     type: string
     x-enum-varnames:
     - WidgetTypeFilter
     - WidgetTypeFilterForm
     - WidgetTypeFileContent
     - WidgetTypeStatic
+    - WidgetTypeTags
+    - WidgetTypeCollections
+    - WidgetTypeFolders
   files.File:
     properties:
       metadata:
@@ -325,11 +331,8 @@ paths:
         in: formData
         name: global
         type: string
-      - description: Widget ID
-        in: formData
-        name: widgets[0][id]
-        type: string
-      - description: Widget type (filter, filterForm, fileContent, static)
+      - description: Widget type (filter, filterForm, fileContent, static, tags, collections,
+          folders)
         in: formData
         name: widgets[0][type]
         type: string
@@ -741,6 +744,21 @@ paths:
       summary: Set file collection
       tags:
       - metadata
+  /api/metadata/collections:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+      summary: Get all collections with counts
+      tags:
+      - metadata
   /api/metadata/createdat:
     get:
       parameters:
@@ -831,12 +849,6 @@ paths:
       - metadata
   /api/metadata/folders:
     get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
       produces:
       - application/json
       - text/html
@@ -844,10 +856,10 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              type: string
-            type: array
-      summary: Get file folders
+            additionalProperties:
+              type: integer
+            type: object
+      summary: Get all folders with counts
       tags:
       - metadata
     post:
@@ -1111,6 +1123,21 @@ paths:
           schema:
             type: string
       summary: Set file status
+      tags:
+      - metadata
+  /api/metadata/tags:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+      summary: Get all tags with counts
       tags:
       - metadata
   /api/search:
