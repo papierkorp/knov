@@ -4,12 +4,11 @@ package main
 import (
 	"path/filepath"
 
+	"github.com/a-h/templ"
 	"knov/internal/dashboard"
 	"knov/internal/logging"
 	"knov/internal/thememanager"
 	"knov/themes/builtin/templates"
-
-	"github.com/a-h/templ"
 )
 
 // Builtin ..
