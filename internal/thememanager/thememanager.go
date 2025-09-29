@@ -10,10 +10,11 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/a-h/templ"
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
 	"knov/internal/logging"
+
+	"github.com/a-h/templ"
 )
 
 // -----------------------------------------------------------------------------
@@ -60,7 +61,7 @@ type ITheme interface {
 	Overview() (templ.Component, error)
 	GetAvailableFileViews() []string
 	RenderFileView(viewName string, content string, filePath string) (templ.Component, error)
-	Dashboard(id string) (templ.Component, error)
+	Dashboard(id string, action string) (templ.Component, error)
 	BrowseFiles(metadataType string, value string, query string) (templ.Component, error)
 }
 

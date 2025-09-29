@@ -4,11 +4,12 @@ package main
 import (
 	"path/filepath"
 
-	"github.com/a-h/templ"
 	"knov/internal/dashboard"
 	"knov/internal/logging"
 	"knov/internal/thememanager"
 	"knov/themes/builtin/templates"
+
+	"github.com/a-h/templ"
 )
 
 // Builtin ..
@@ -139,21 +140,33 @@ func (t *Builtin) RenderFileView(viewName string, content string, filePath strin
 }
 
 // Dashboard renders a specific dashboard by id
-func (t *Builtin) Dashboard(id string) (templ.Component, error) {
+func (t *Builtin) Dashboard(id string, action string) (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
 		AvailableThemes: tm.GetAvailableThemes(),
 	}
 
-	if id == "new" {
+	if action == "new" {
 		td.ShowCreateForm = true
 		return templates.Dashboard(td), nil
 	}
 
+	if action == "edit" {
+		dash, err := dashboard.Get(id)
+		if err != nil {
+			logging.LogWarning("dashboard not found: %s", id)
+			return nil, err
+		}
+		td.Dashboard = dash
+		td.ShowCreateForm = true
+		return templates.DashboardEdit(td), nil
+	}
+
+	// action == "view"
 	dash, err := dashboard.Get(id)
 	if err != nil {
-		logging.LogWarning("dashboard not found: %s, using default home", id)
+		logging.LogWarning("dashboard not found: %s", id)
 		return t.Home()
 	}
 

@@ -13,7 +13,7 @@ templ Base(title string) {
 			<link href="/static/css/style.css" rel="stylesheet"/>
 			<link href="/static/css/custom.css" rel="stylesheet"/>
 			<link rel="icon" type="image/x-icon" href="/static/favicon.ico"/>
-			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
 		</head>
 		<body>
 			<div id="wrapper">
@@ -56,15 +56,23 @@ templ header() {
 				<a href="/overview">{ translation.Sprintf("Overview") }</a>
 				<a href="/latest-changes">{ translation.Sprintf("Latest Changes") }</a>
 				<a href="/history">{ translation.Sprintf("History") }</a>
-				<a href="/rename">{ translation.Sprintf("Rename") }</a>
-				<a href="/edit">{ translation.Sprintf("Edit") }</a>
 			</span>
 			<div class="dropdown-navbar">
 				<button class="btn-add">+</button>
 				<div class="dropdown-navbar-content">
-					<a href="/dashboard?action=new">{ translation.Sprintf("New Dashboard") }</a>
+					<a href="/dashboard/new">{ translation.Sprintf("New Dashboard") }</a>
 					<a href="#" onclick="alert('Add Note - Coming Soon')">Add Note</a>
 					<a href="#" onclick="alert('Add Todo - Coming Soon')">Add Todo</a>
+				</div>
+			</div>
+			<div class="dropdown-navbar" id="edit-dropdown">
+				<button class="btn-edit">
+					<i class="fa fa-pen-to-square"></i>
+				</button>
+				<div class="dropdown-navbar-content" id="edit-dropdown-content">
+					<a href="#" id="edit-link">{ translation.Sprintf("Edit") }</a>
+					<a href="#" onclick="document.getElementById('rename-modal').style.display='flex'">{ translation.Sprintf("Rename") }</a>
+					<a href="#" onclick="document.getElementById('delete-modal').style.display='flex'">{ translation.Sprintf("Delete") }</a>
 				</div>
 			</div>
 			<div class="dropdown-navbar">
@@ -82,8 +90,51 @@ templ header() {
 			</div>
 		</div>
 	</header>
+	@edit()
 }
 
 templ htmx() {
 	<script src="/static/htmx.min.js"></script>
+}
+
+templ edit() {
+	<div id="rename-modal" class="modal">
+		<div class="modal-content">
+			<h3>{ translation.Sprintf("Rename") }</h3>
+			<form id="rename-form" hx-post="" hx-target="#rename-result">
+				<input type="text" name="name" id="rename-input" required/>
+				<div class="modal-actions">
+					<button type="submit" class="btn-primary">{ translation.Sprintf("Rename") }</button>
+					<button type="button" class="btn-secondary" onclick="document.getElementById('rename-modal').style.display='none'">{ translation.Sprintf("Cancel") }</button>
+				</div>
+			</form>
+			<div id="rename-result"></div>
+		</div>
+	</div>
+	<div id="delete-modal" class="modal">
+		<div class="modal-content">
+			<h3>{ translation.Sprintf("Delete") }</h3>
+			<p>{ translation.Sprintf("Are you sure?") }</p>
+			<form id="delete-form" hx-delete="" hx-target="#delete-result">
+				<div class="modal-actions">
+					<button type="submit" class="btn-danger">{ translation.Sprintf("Delete") }</button>
+					<button type="button" class="btn-secondary" onclick="document.getElementById('delete-modal').style.display='none'">{ translation.Sprintf("Cancel") }</button>
+				</div>
+			</form>
+			<div id="delete-result"></div>
+		</div>
+	</div>
+	<script>
+const path = window.location.pathname;
+const match = path.match(/\/dashboard\/([^\/]+)/);
+if (match) {
+		const id = match[1];
+		document.getElementById('edit-link').href = `/dashboard/edit/${id}`;
+		document.getElementById('rename-form').setAttribute('hx-post', `/api/dashboards/${id}/rename`);
+		document.getElementById('delete-form').setAttribute('hx-delete', `/api/dashboards/${id}`);
+		document.getElementById('edit-dropdown').style.display = 'block';
+} else {
+		document.getElementById('edit-dropdown').style.display = 'none';
+}
+</script>
 }

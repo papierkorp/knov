@@ -49,8 +49,10 @@ func StartServerChi() {
 	r.Get("/overview", handleOverview)
 	r.Get("/search", handleSearchPage)
 	r.Get("/files/*", handleFileContent)
-	r.Get("/dashboard", handleDashboard)
-	r.Get("/dashboard/{id}", handleDashboard)
+	r.Get("/dashboard", handleDashboardView)
+	r.Get("/dashboard/{id}", handleDashboardView)
+	r.Get("/dashboard/new", handleDashboardNew)
+	r.Get("/dashboard/edit/{id}", handleDashboardEdit)
 	r.Get("/browse/{metadata}/{value}", handleBrowseFiles)
 
 	// ----------------------------------------------------------------------------------------
@@ -169,6 +171,7 @@ func StartServerChi() {
 			r.Patch("/{id}", handleAPIUpdateDashboard)
 			r.Delete("/{id}", handleAPIDeleteDashboard)
 			r.Post("/widget/{id}", handleAPIRenderWidget)
+			r.Post("/{id}/rename", handleAPIRenameDashboard)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -380,44 +383,6 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleDashboard(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	action := r.URL.Query().Get("action")
-
-	if action == "new" {
-		// render dashboard creation form
-		component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard("new")
-		if err != nil {
-			http.Error(w, "failed to load theme", http.StatusInternalServerError)
-			return
-		}
-		err = component.Render(r.Context(), w)
-		if err != nil {
-			http.Error(w, "failed to render template", http.StatusInternalServerError)
-			return
-		}
-		return
-	}
-
-	if id == "" {
-		id = "home"
-	}
-
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard(id)
-	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("error loading theme: %v\n", err)
-		return
-	}
-
-	err = component.Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "failed to render template", http.StatusInternalServerError)
-		fmt.Printf("error rendering template: %v\n", err)
-		return
-	}
-}
-
 // @Summary Browse files by metadata
 // @Description Browse and filter files by specific metadata type and value
 // @Tags files
@@ -449,4 +414,36 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to render template", http.StatusInternalServerError)
 		return
 	}
+}
+
+func handleDashboardNew(w http.ResponseWriter, r *http.Request) {
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard("", "new")
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+	component.Render(r.Context(), w)
+}
+
+func handleDashboardEdit(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard(id, "edit")
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+	component.Render(r.Context(), w)
+}
+
+func handleDashboardView(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		id = "home"
+	}
+	component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard(id, "view")
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+	component.Render(r.Context(), w)
 }

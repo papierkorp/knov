@@ -340,20 +340,42 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Dashboard name",
                         "name": "name",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     },
                     {
                         "type": "string",
                         "description": "Dashboard layout",
                         "name": "layout",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     },
                     {
                         "type": "string",
                         "description": "Global dashboard",
                         "name": "global",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Widget type",
+                        "name": "widgets[0][type]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Widget X position",
+                        "name": "widgets[0][position][x]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Widget Y position",
+                        "name": "widgets[0][position][y]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Widget configuration JSON",
+                        "name": "widgets[0][config]",
                         "in": "formData"
                     }
                 ],
@@ -362,6 +384,45 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/dashboard.Dashboard"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboards/{id}/rename": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Rename dashboard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "dashboard id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "new dashboard name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "dashboard renamed",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }

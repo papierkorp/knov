@@ -154,9 +154,13 @@ func handleAPIGetDashboard(w http.ResponseWriter, r *http.Request) {
 // @Tags dashboards
 // @Accept application/x-www-form-urlencoded
 // @Param id path string true "Dashboard ID"
-// @Param name formData string true "Dashboard name"
-// @Param layout formData string true "Dashboard layout"
+// @Param name formData string false "Dashboard name"
+// @Param layout formData string false "Dashboard layout"
 // @Param global formData string false "Global dashboard"
+// @Param widgets[0][type] formData string false "Widget type"
+// @Param widgets[0][position][x] formData int false "Widget X position"
+// @Param widgets[0][position][y] formData int false "Widget Y position"
+// @Param widgets[0][config] formData string false "Widget configuration JSON"
 // @Produce json,html
 // @Success 200 {object} dashboard.Dashboard
 // @Router /api/dashboards/{id} [patch]
@@ -183,6 +187,55 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 	if globalStr := r.FormValue("global"); globalStr != "" {
 		global, _ := strconv.ParseBool(globalStr)
 		dash.Global = global
+	} else {
+		dash.Global = false
+	}
+
+	var widgets []dashboard.Widget
+	form := r.PostForm
+
+	maxIndex := -1
+	for key := range form {
+		if strings.HasPrefix(key, "widgets[") && strings.Contains(key, "][type]") {
+			start := strings.Index(key, "[") + 1
+			end := strings.Index(key[start:], "]")
+			if end > 0 {
+				if idx, err := strconv.Atoi(key[start : start+end]); err == nil && idx > maxIndex {
+					maxIndex = idx
+				}
+			}
+		}
+	}
+
+	for i := 0; i <= maxIndex; i++ {
+		widgetType := dashboard.WidgetType(r.FormValue(fmt.Sprintf("widgets[%d][type]", i)))
+		if widgetType == "" {
+			continue
+		}
+
+		xPos, _ := strconv.Atoi(r.FormValue(fmt.Sprintf("widgets[%d][position][x]", i)))
+		yPos, _ := strconv.Atoi(r.FormValue(fmt.Sprintf("widgets[%d][position][y]", i)))
+		configJSON := r.FormValue(fmt.Sprintf("widgets[%d][config]", i))
+
+		var config dashboard.WidgetConfig
+		if configJSON != "" {
+			json.Unmarshal([]byte(configJSON), &config)
+		}
+
+		widget := dashboard.Widget{
+			ID:   fmt.Sprintf("widget-%d", i),
+			Type: widgetType,
+			Position: dashboard.WidgetPosition{
+				X: xPos,
+				Y: yPos,
+			},
+			Config: config,
+		}
+		widgets = append(widgets, widget)
+	}
+
+	if len(widgets) > 0 {
+		dash.Widgets = widgets
 	}
 
 	if err := dashboard.Update(dash); err != nil {
@@ -191,7 +244,7 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<div>%s updated</div>`, dash.Name)
+	html := fmt.Sprintf(`<div class="success-message">dashboard updated successfully! <a href="/dashboard/%s">view dashboard</a></div>`, dash.ID)
 	writeResponse(w, r, dash, html)
 }
 
@@ -272,4 +325,47 @@ func handleAPIRenderWidget(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
+}
+
+// internal/server/api_dashboards.go
+
+// @Summary Rename dashboard
+// @Tags dashboards
+// @Accept application/x-www-form-urlencoded
+// @Param id path string true "dashboard id"
+// @Param name formData string true "new dashboard name"
+// @Produce json,html
+// @Success 200 {string} string "dashboard renamed"
+// @Router /api/dashboards/{id}/rename [post]
+func handleAPIRenameDashboard(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimPrefix(r.URL.Path, "/api/dashboards/")
+	id = strings.TrimSuffix(id, "/rename")
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	name := r.FormValue("name")
+	if name == "" {
+		http.Error(w, "name is required", http.StatusBadRequest)
+		return
+	}
+
+	dash, err := dashboard.Get(id)
+	if err != nil {
+		http.Error(w, "dashboard not found", http.StatusNotFound)
+		return
+	}
+
+	dash.Name = name
+	if err := dashboard.Update(dash); err != nil {
+		logging.LogError("failed to rename dashboard: %v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	data := "dashboard renamed"
+	html := `<div>dashboard renamed successfully</div>`
+	writeResponse(w, r, data, html)
 }

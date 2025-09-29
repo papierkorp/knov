@@ -411,16 +411,30 @@ paths:
       - description: Dashboard name
         in: formData
         name: name
-        required: true
         type: string
       - description: Dashboard layout
         in: formData
         name: layout
-        required: true
         type: string
       - description: Global dashboard
         in: formData
         name: global
+        type: string
+      - description: Widget type
+        in: formData
+        name: widgets[0][type]
+        type: string
+      - description: Widget X position
+        in: formData
+        name: widgets[0][position][x]
+        type: integer
+      - description: Widget Y position
+        in: formData
+        name: widgets[0][position][y]
+        type: integer
+      - description: Widget configuration JSON
+        in: formData
+        name: widgets[0][config]
         type: string
       produces:
       - application/json
@@ -431,6 +445,32 @@ paths:
           schema:
             $ref: '#/definitions/dashboard.Dashboard'
       summary: Update dashboard
+      tags:
+      - dashboards
+  /api/dashboards/{id}/rename:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: dashboard id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: new dashboard name
+        in: formData
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: dashboard renamed
+          schema:
+            type: string
+      summary: Rename dashboard
       tags:
       - dashboards
   /api/dashboards/widget/{widgetId}:
