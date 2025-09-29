@@ -1,10 +1,8 @@
 package templates
 
 import (
-	"encoding/json"
 	"fmt"
 	"knov/internal/dashboard"
-	"knov/internal/files"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
 	"strconv"
@@ -60,14 +58,7 @@ templ DashboardCreateForm() {
 				<h4>Dashboard Settings</h4>
 				<div class="form-group">
 					<label for="name">Dashboard Name</label>
-					<input
-						type="text"
-						id="name"
-						name="name"
-						required
-						placeholder="My Awesome Dashboard"
-						class="form-input"
-					/>
+					<input type="text" id="name" name="name" required placeholder="My Awesome Dashboard" class="form-input"/>
 				</div>
 				<div class="form-row">
 					<div class="form-group">
@@ -102,12 +93,7 @@ templ DashboardCreateForm() {
 						<div class="form-row">
 							<div class="form-group">
 								<label>Type</label>
-								<select
-									name="widgets[0][type]"
-									required
-									class="form-select"
-									onchange="updateConfig(0, this.value)"
-								>
+								<select name="widgets[0][type]" required class="form-select" onchange="updateConfig(0, this.value)">
 									<option value="">Choose type...</option>
 									<option value="filter">🔍 Filter</option>
 									<option value="filterForm">📝 Filter Form</option>
@@ -122,14 +108,7 @@ templ DashboardCreateForm() {
 						<div class="form-row">
 							<div class="form-group">
 								<label>X Position</label>
-								<input
-									type="number"
-									name="widgets[0][position][x]"
-									min="0"
-									max="3"
-									value="0"
-									class="form-input"
-								/>
+								<input type="number" name="widgets[0][position][x]" min="0" max="3" value="0" class="form-input"/>
 							</div>
 							<div class="form-group">
 								<label>Y Position</label>
@@ -158,7 +137,6 @@ templ DashboardCreateForm() {
 templ WidgetManagementScripts() {
 	<script>
     let widgetCount = 1;
-
     function addWidget() {
         const container = document.getElementById('widgets-container');
         const widgetDiv = document.createElement('div');
@@ -168,7 +146,6 @@ templ WidgetManagementScripts() {
                     <span class="widget-number">Widget ${widgetCount + 1}</span>
                     <button type="button" onclick="this.closest('.widget-form').remove()" class="btn-remove">×</button>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Type</label>
@@ -184,7 +161,6 @@ templ WidgetManagementScripts() {
                         </select>
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>X Position</label>
@@ -195,22 +171,12 @@ templ WidgetManagementScripts() {
                         <input type="number" name="widgets[${widgetCount}][position][y]" min="0" value="0" class="form-input"/>
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label>Configuration</label>
                     <div class="config-helper" id="config-helper-${widgetCount}">
-                        <div class="config-placeholder">
-                            <p>Select a widget type to see configuration options</p>
-                        </div>
+                        <div class="config-placeholder"><p>Select a widget type to see configuration options</p></div>
                     </div>
-                    <textarea
-                        name="widgets[${widgetCount}][config]"
-                        id="config-textarea-${widgetCount}"
-                        placeholder='Select widget type for configuration template'
-                        rows="4"
-                        class="form-textarea"
-                    ></textarea>
-                    <small class="form-help">Configuration will be generated based on your selections above</small>
+                    <textarea name="widgets[${widgetCount}][config]" id="config-textarea-${widgetCount}" placeholder='Select widget type for configuration template' rows="4" class="form-textarea" style="display:none;"></textarea>
                 </div>
             `;
         container.appendChild(widgetDiv);
@@ -223,26 +189,15 @@ templ WidgetTypeConfigScripts() {
 	<script>
     function updateFileContentConfig(widgetIndex, filePath) {
         const textarea = document.getElementById(`config-textarea-${widgetIndex}`);
-        const config = {
-            fileContent: {
-                filePath: filePath
-            }
-        };
+        const config = { fileContent: { filePath: filePath } };
         textarea.value = JSON.stringify(config, null, 2);
     }
-
     function updateStaticConfig(widgetIndex) {
         const helper = document.getElementById(`config-helper-${widgetIndex}`);
         const textarea = document.getElementById(`config-textarea-${widgetIndex}`);
         const format = helper.querySelector('select').value;
         const content = helper.querySelector('textarea').value;
-
-        const config = {
-            static: {
-                content: content || "<h3>Welcome!</h3><p>Your static content here</p>",
-                format: format
-            }
-        };
+        const config = { static: { content: content || "<h3>Welcome!</h3><p>Your static content here</p>", format: format } };
         textarea.value = JSON.stringify(config, null, 2);
     }
 </script>
@@ -251,49 +206,28 @@ templ WidgetTypeConfigScripts() {
 templ FilterConfigScripts() {
 	<script>
     function updateFilterConfig(widgetIndex) {
-        const helper = document.getElementById(`config-helper-${widgetIndex}`);
         const textarea = document.getElementById(`config-textarea-${widgetIndex}`);
-
         const display = document.getElementById(`filter-display-${widgetIndex}`).value;
         const limit = parseInt(document.getElementById(`filter-limit-${widgetIndex}`).value);
         const logic = document.getElementById(`filter-logic-${widgetIndex}`).value;
-
-        // build criteria from form
         const criteriaContainer = document.getElementById(`criteria-container-${widgetIndex}`);
         const criteriaRows = criteriaContainer.querySelectorAll('.criteria-row');
         const criteria = [];
-
         criteriaRows.forEach(row => {
             const metadata = row.querySelector('.criteria-metadata').value;
             const operator = row.querySelector('.criteria-operator').value;
             const value = row.querySelector('.criteria-value').value;
             const action = row.querySelector('.criteria-action').value;
-
             if (metadata && value) {
-                criteria.push({
-                    metadata: metadata,
-                    operator: operator,
-                    value: value,
-                    action: action
-                });
+                criteria.push({ metadata: metadata, operator: operator, value: value, action: action });
             }
         });
-
-        const config = {
-            filter: {
-                criteria: criteria,
-                logic: logic,
-                display: display,
-                limit: limit
-            }
-        };
+        const config = { filter: { criteria: criteria, logic: logic, display: display, limit: limit } };
         textarea.value = JSON.stringify(config, null, 2);
     }
-
     function addFilterCriteria(widgetIndex) {
         const container = document.getElementById(`criteria-container-${widgetIndex}`);
         const criteriaCount = container.children.length;
-
         const criteriaRow = document.createElement('div');
         criteriaRow.className = 'criteria-row';
         criteriaRow.setAttribute('data-index', criteriaCount);
@@ -337,169 +271,49 @@ templ ConfigUpdateScripts() {
         const textareaId = `config-textarea-${widgetIndex}`;
         const helper = document.getElementById(helperId);
         const textarea = document.getElementById(textareaId);
-
         if (!widgetType) {
             helper.innerHTML = '<div class="config-placeholder"><p>Select a widget type to see configuration options</p></div>';
             textarea.value = '';
             return;
         }
-
         let helperHTML = '';
         let configTemplate = '';
-
         switch (widgetType) {
             case 'filter':
                 helperHTML = getFilterConfigHTML(widgetIndex);
-                configTemplate = JSON.stringify({
-                    filter: {
-                        criteria: [],
-                        logic: "and",
-                        display: "list",
-                        limit: 5
-                    }
-                }, null, 2);
+                configTemplate = JSON.stringify({ filter: { criteria: [], logic: "and", display: "list", limit: 5 } }, null, 2);
                 break;
-
             case 'filterForm':
-                helperHTML = `
-						<div class="config-form">
-							<h5>Filter Form Configuration</h5>
-							<p class="config-note">No configuration needed - provides interactive filtering form</p>
-						</div>
-					`;
+                helperHTML = `<div class="config-form"><h5>Filter Form Configuration</h5><p class="config-note">No configuration needed - provides interactive filtering form</p></div>`;
                 configTemplate = JSON.stringify({}, null, 2);
                 break;
-
             case 'fileContent':
-                helperHTML = `
-						<div class="config-form">
-							<h5>File Content Configuration</h5>
-							<div class="config-row">
-								<label>File Path:</label>
-								<input type="text" placeholder="path/to/file.md" onchange="updateFileContentConfig(${widgetIndex}, this.value)"/>
-							</div>
-							<p class="config-note">Enter the path to the markdown file you want to display</p>
-						</div>
-					`;
-                configTemplate = JSON.stringify({
-                    fileContent: {
-                        filePath: "path/to/file.md"
-                    }
-                }, null, 2);
+                helperHTML = `<div class="config-form"><h5>File Content Configuration</h5><div class="config-row"><label>File Path:</label><input type="text" placeholder="path/to/file.md" onchange="updateFileContentConfig(${widgetIndex}, this.value)"/></div><p class="config-note">Enter the path to the markdown file you want to display</p></div>`;
+                configTemplate = JSON.stringify({ fileContent: { filePath: "path/to/file.md" } }, null, 2);
                 break;
-
             case 'static':
-                helperHTML = `
-						<div class="config-form">
-							<h5>Static Content Configuration</h5>
-							<div class="config-row">
-								<label>Format:</label>
-								<select onchange="updateStaticConfig(${widgetIndex})">
-									<option value="html">HTML</option>
-									<option value="markdown">Markdown</option>
-									<option value="text">Plain Text</option>
-								</select>
-							</div>
-							<div class="config-row">
-								<label>Content:</label>
-								<textarea placeholder="Enter your content here..." rows="3" onchange="updateStaticConfig(${widgetIndex})"></textarea>
-							</div>
-						</div>
-					`;
-                configTemplate = JSON.stringify({
-                    static: {
-                        content: "<h3>Welcome!</h3><p>Your static content here</p>",
-                        format: "html"
-                    }
-                }, null, 2);
+                helperHTML = `<div class="config-form"><h5>Static Content Configuration</h5><div class="config-row"><label>Format:</label><select onchange="updateStaticConfig(${widgetIndex})"><option value="html">HTML</option><option value="markdown">Markdown</option><option value="text">Plain Text</option></select></div><div class="config-row"><label>Content:</label><textarea placeholder="Enter your content here..." rows="3" onchange="updateStaticConfig(${widgetIndex})"></textarea></div></div>`;
+                configTemplate = JSON.stringify({ static: { content: "<h3>Welcome!</h3><p>Your static content here</p>", format: "html" } }, null, 2);
                 break;
-
             case 'tags':
             case 'collections':
             case 'folders':
                 const widgetName = widgetType.charAt(0).toUpperCase() + widgetType.slice(1);
-                helperHTML = `
-                        <div class="config-form">
-                            <h5>${widgetName} Widget Configuration</h5>
-                            <p class="config-note">shows all available ${widgetType} with file counts - no configuration needed</p>
-                        </div>
-                    `;
+                helperHTML = `<div class="config-form"><h5>${widgetName} Widget Configuration</h5><p class="config-note">shows all available ${widgetType} with file counts - no configuration needed</p></div>`;
                 configTemplate = JSON.stringify({}, null, 2);
                 break;
         }
-
         helper.innerHTML = helperHTML;
         textarea.value = configTemplate;
     }
-
     function getFilterConfigHTML(widgetIndex) {
-        return `
-				<div class="config-form">
-					<h5>Filter Configuration</h5>
-					<div class="config-section">
-						<h6>Display & Limits</h6>
-						<div class="config-row">
-							<label>Display:</label>
-							<select id="filter-display-${widgetIndex}" onchange="updateFilterConfig(${widgetIndex})">
-								<option value="list">List</option>
-								<option value="cards">Cards</option>
-								<option value="dropdown">Dropdown</option>
-							</select>
-						</div>
-						<div class="config-row">
-							<label>Limit:</label>
-							<input type="number" id="filter-limit-${widgetIndex}" value="5" min="1" max="50" onchange="updateFilterConfig(${widgetIndex})"/>
-						</div>
-						<div class="config-row">
-							<label>Logic:</label>
-							<select id="filter-logic-${widgetIndex}" onchange="updateFilterConfig(${widgetIndex})">
-								<option value="and">AND (all conditions must match)</option>
-								<option value="or">OR (any condition can match)</option>
-							</select>
-						</div>
-					</div>
-
-					<div class="config-section">
-						<h6>Filter Criteria</h6>
-						<div id="criteria-container-${widgetIndex}">
-							<div class="criteria-row" data-index="0">
-								<select class="criteria-metadata" onchange="updateFilterConfig(${widgetIndex})">
-									<option value="">Select field...</option>
-									<option value="collection">Collection</option>
-									<option value="tags">Tags</option>
-									<option value="type">Type</option>
-									<option value="status">Status</option>
-									<option value="priority">Priority</option>
-									<option value="createdAt">Created Date</option>
-									<option value="lastEdited">Last Edited</option>
-									<option value="folders">Folders</option>
-									<option value="boards">Boards</option>
-								</select>
-								<select class="criteria-operator" onchange="updateFilterConfig(${widgetIndex})">
-									<option value="equals">Equals</option>
-									<option value="contains">Contains</option>
-									<option value="greater">Greater Than</option>
-									<option value="less">Less Than</option>
-									<option value="in">In Array</option>
-								</select>
-								<input type="text" class="criteria-value" placeholder="Value" onchange="updateFilterConfig(${widgetIndex})"/>
-								<select class="criteria-action" onchange="updateFilterConfig(${widgetIndex})">
-									<option value="include">Include</option>
-									<option value="exclude">Exclude</option>
-								</select>
-							</div>
-						</div>
-						<button type="button" onclick="addFilterCriteria(${widgetIndex})" class="btn-add-criteria">Add Criteria</button>
-					</div>
-				</div>
-			`;
+        return `<div class="config-form"><h5>Filter Configuration</h5><div class="config-section"><h6>Display & Limits</h6><div class="config-row"><label>Display:</label><select id="filter-display-${widgetIndex}" onchange="updateFilterConfig(${widgetIndex})"><option value="list">List</option><option value="cards">Cards</option><option value="dropdown">Dropdown</option></select></div><div class="config-row"><label>Limit:</label><input type="number" id="filter-limit-${widgetIndex}" value="5" min="1" max="50" onchange="updateFilterConfig(${widgetIndex})"/></div><div class="config-row"><label>Logic:</label><select id="filter-logic-${widgetIndex}" onchange="updateFilterConfig(${widgetIndex})"><option value="and">AND (all conditions must match)</option><option value="or">OR (any condition can match)</option></select></div></div><div class="config-section"><h6>Filter Criteria</h6><div id="criteria-container-${widgetIndex}"><div class="criteria-row" data-index="0"><select class="criteria-metadata" onchange="updateFilterConfig(${widgetIndex})"><option value="">Select field...</option><option value="collection">Collection</option><option value="tags">Tags</option><option value="type">Type</option><option value="status">Status</option><option value="priority">Priority</option><option value="createdAt">Created Date</option><option value="lastEdited">Last Edited</option><option value="folders">Folders</option><option value="boards">Boards</option></select><select class="criteria-operator" onchange="updateFilterConfig(${widgetIndex})"><option value="equals">Equals</option><option value="contains">Contains</option><option value="greater">Greater Than</option><option value="less">Less Than</option><option value="in">In Array</option></select><input type="text" class="criteria-value" placeholder="Value" onchange="updateFilterConfig(${widgetIndex})"/><select class="criteria-action" onchange="updateFilterConfig(${widgetIndex})"><option value="include">Include</option><option value="exclude">Exclude</option></select></div></div><button type="button" onclick="addFilterCriteria(${widgetIndex})" class="btn-add-criteria">Add Criteria</button></div></div>`;
     }
 </script>
 }
 
 templ WidgetConfigSection(widgetIndex int) {
 	<div class="form-group">
-		<label>Configuration</label>
 		<div class="config-helper" id={ "config-helper-" + fmt.Sprintf("%d", widgetIndex) }>
 			<div class="config-placeholder">
 				<p>Select a widget type to see configuration options</p>
@@ -507,13 +321,12 @@ templ WidgetConfigSection(widgetIndex int) {
 		</div>
 		<textarea
 			name={ "widgets[" + fmt.Sprintf("%d", widgetIndex) + "][config]" }
-			id={ "config-textarea-" +
-        fmt.Sprintf("%d", widgetIndex) }
+			id={ "config-textarea-" + fmt.Sprintf("%d", widgetIndex) }
 			placeholder="Select widget type for configuration template"
 			rows="4"
 			class="form-textarea"
+			style="display:none;"
 		></textarea>
-		<small class="form-help">Configuration will be generated based on your selections above</small>
 	</div>
 }
 
@@ -532,24 +345,12 @@ templ DashboardEditForm(dash *dashboard.Dashboard) {
 			<h3>{ translation.Sprintf("Edit Dashboard") }</h3>
 			<p>{ translation.Sprintf("Update your dashboard configuration") }</p>
 		</div>
-		<form
-			hx-patch={ "/api/dashboards/" + dash.ID }
-			hx-target="#dashboard-edit-result"
-			hx-swap="innerHTML"
-			class="dashboard-form"
-		>
+		<form hx-patch={ "/api/dashboards/" + dash.ID } hx-target="#dashboard-edit-result" hx-swap="innerHTML" class="dashboard-form">
 			<div class="form-section">
 				<h4>{ translation.Sprintf("Dashboard Settings") }</h4>
 				<div class="form-group">
 					<label for="name">{ translation.Sprintf("Dashboard Name") }</label>
-					<input
-						type="text"
-						id="name"
-						name="name"
-						required
-						value={ dash.Name }
-						class="form-input"
-					/>
+					<input type="text" id="name" name="name" required value={ dash.Name } class="form-input"/>
 				</div>
 				<div class="form-row">
 					<div class="form-group">
@@ -593,6 +394,9 @@ templ DashboardEditForm(dash *dashboard.Dashboard) {
 			</div>
 		</form>
 		<div id="dashboard-edit-result"></div>
+		<script>
+        let widgetCount = { strconv.Itoa(len(dash.Widgets)) };
+        </script>
 		@WidgetManagementScripts()
 		@ConfigUpdateScripts()
 		@FilterConfigScripts()
@@ -611,13 +415,7 @@ templ renderEditWidget(i int, widget dashboard.Widget) {
 		<div class="form-row">
 			<div class="form-group">
 				<label>{ translation.Sprintf("Type") }</label>
-				<select
-					name={ "widgets[" + strconv.Itoa(i) + "][type]" }
-					required
-					class="form-select"
-					data-widget-index={ strconv.Itoa(i) }
-					onchange="updateConfig(this.dataset.widgetIndex, this.value)"
-				>
+				<select name={ "widgets[" + strconv.Itoa(i) + "][type]" } required class="form-select" data-widget-index={ strconv.Itoa(i) } onchange="updateConfig(this.dataset.widgetIndex, this.value)">
 					<option value="">{ translation.Sprintf("Choose type...") }</option>
 					<option value="filter" selected?={ widget.Type == "filter" }>🔍 { translation.Sprintf("Filter") }</option>
 					<option value="filterForm" selected?={ widget.Type == "filterForm" }>📝 { translation.Sprintf("Filter Form") }</option>
@@ -632,24 +430,11 @@ templ renderEditWidget(i int, widget dashboard.Widget) {
 		<div class="form-row">
 			<div class="form-group">
 				<label>{ translation.Sprintf("X Position") }</label>
-				<input
-					type="number"
-					name={ "widgets[" + strconv.Itoa(i) + "][position][x]" }
-					min="0"
-					max="3"
-					value={ strconv.Itoa(widget.Position.X) }
-					class="form-input"
-				/>
+				<input type="number" name={ "widgets[" + strconv.Itoa(i) + "][position][x]" } min="0" max="3" value={ strconv.Itoa(widget.Position.X) } class="form-input"/>
 			</div>
 			<div class="form-group">
 				<label>{ translation.Sprintf("Y Position") }</label>
-				<input
-					type="number"
-					name={ "widgets[" + strconv.Itoa(i) + "][position][y]" }
-					min="0"
-					value={ strconv.Itoa(widget.Position.Y) }
-					class="form-input"
-				/>
+				<input type="number" name={ "widgets[" + strconv.Itoa(i) + "][position][y]" } min="0" value={ strconv.Itoa(widget.Position.Y) } class="form-input"/>
 			</div>
 		</div>
 		<div class="form-group">
@@ -657,23 +442,39 @@ templ renderEditWidget(i int, widget dashboard.Widget) {
 			<div class="config-helper" id={ "config-helper-" + strconv.Itoa(i) }>
 				@renderExistingWidgetConfig(i, widget)
 			</div>
-			<textarea
-				name={ "widgets[" + strconv.Itoa(i) + "][config]" }
-				id={ "config-textarea-" + strconv.Itoa(i) }
-				rows="6"
-				class="form-textarea"
-				style="display:none;"
-			>{ marshalWidgetConfig(widget.Config) }</textarea>
+			<textarea name={ "widgets[" + strconv.Itoa(i) + "][config]" } id={ "config-textarea-" + strconv.Itoa(i) } rows="6" class="form-textarea" style="display:none;">{ marshalWidgetConfig(widget.Config) }</textarea>
 		</div>
 	</div>
+	<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        updateConfig({ strconv.Itoa(i) }, '{ string(widget.Type) }');
+    });
+    </script>
 }
 
 func marshalWidgetConfig(config dashboard.WidgetConfig) string {
-	data, err := json.MarshalIndent(config, "", "  ")
-	if err != nil {
-		return "{}"
+	return ""
+}
+
+templ renderExistingWidgetConfig(i int, widget dashboard.Widget) {
+	switch widget.Type {
+		case "filter":
+			if widget.Config.Filter != nil {
+				@renderFilterConfigHelper(i, widget.Config.Filter)
+			}
+		case "static":
+			if widget.Config.Static != nil {
+				@renderStaticConfigHelper(i, widget.Config.Static)
+			}
+		case "fileContent":
+			if widget.Config.FileContent != nil {
+				@renderFileContentConfigHelper(i, widget.Config.FileContent)
+			}
+		default:
+			<div class="config-placeholder">
+				<p>{ translation.Sprintf("No configuration needed for this widget type") }</p>
+			</div>
 	}
-	return string(data)
 }
 
 templ renderFilterConfigHelper(i int, filter *dashboard.FilterConfig) {
@@ -713,7 +514,7 @@ templ renderFilterConfigHelper(i int, filter *dashboard.FilterConfig) {
 	</div>
 }
 
-templ renderCriterionRow(widgetIndex int, criterionIndex int, criterion files.FilterCriteria) {
+templ renderCriterionRow(widgetIndex int, criterionIndex int, criterion dashboard.FilterCriteria) {
 	<div class="criteria-row" data-index={ strconv.Itoa(criterionIndex) }>
 		<select class="criteria-metadata" data-widget-index={ strconv.Itoa(widgetIndex) } onchange="updateFilterConfig(this.dataset.widgetIndex)">
 			<option value="">{ translation.Sprintf("Select field...") }</option>
