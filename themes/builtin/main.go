@@ -148,8 +148,7 @@ func (t *Builtin) Dashboard(id string, action string) (templ.Component, error) {
 	}
 
 	if action == "new" {
-		td.ShowCreateForm = true
-		return templates.Dashboard(td), nil
+		return templates.DashboardNew(td), nil
 	}
 
 	if action == "edit" {
@@ -159,7 +158,6 @@ func (t *Builtin) Dashboard(id string, action string) (templ.Component, error) {
 			return nil, err
 		}
 		td.Dashboard = dash
-		td.ShowCreateForm = true
 		return templates.DashboardEdit(td), nil
 	}
 

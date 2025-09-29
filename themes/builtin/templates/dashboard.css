@@ -534,3 +534,17 @@
     font-weight: bold;
     text-decoration: underline;
 }
+
+/* Dashboard Edit Page */
+#page-dashboard-edit .dashboard-create-form {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: var(--black);
+    border-radius: 12px;
+    border: 1px solid var(--neutral);
+}
+
+#page-dashboard-edit .form-textarea {
+    display: none !important;
+}
