@@ -10,11 +10,10 @@ import (
 	"slices"
 	"sync"
 
+	"github.com/a-h/templ"
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
 	"knov/internal/logging"
-
-	"github.com/a-h/templ"
 )
 
 // -----------------------------------------------------------------------------

@@ -22,7 +22,7 @@ type GitHistoryFile struct {
 // GetRecentlyChangedFiles returns list of recently changed files
 func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
 	dataDir := configmanager.GetAppConfig().DataPath
-	cmd := exec.Command("git", "log", "--oneline", "--name-only", "--pretty=format:%h|%ad|%s", "--date=short", "-n", strconv.Itoa(count), "--", "*.md")
+	cmd := exec.Command("git", "log", "--oneline", "--name-only", "--pretty=format:%h|%ad|%s", "--date=short", "-n", strconv.Itoa(count))
 	cmd.Dir = dataDir
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -42,7 +42,7 @@ func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
 				currentDate = parts[1]
 				currentMessage = parts[2]
 			}
-		} else if line != "" && strings.HasSuffix(line, ".md") {
+		} else if line != "" {
 			files = append(files, GitHistoryFile{
 				Name:    strings.Split(line, "/")[len(strings.Split(line, "/"))-1],
 				Path:    dataDir + "/" + line,

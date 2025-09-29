@@ -6,10 +6,10 @@ KNOV is a file-based knowledge management system that organizes markdown files w
 
 ### Files
 
-- **Markdown files** stored in the filesystem
+- **All file types** stored in the filesystem
 - **Git-backed** for version control and history
-- **Metadata** automatically generated and stored separately
-- **Links** between files are tracked and indexed
+- **Metadata** automatically generated for all files
+- **Links** between markdown files are tracked and indexed
 
 ### Collections
 

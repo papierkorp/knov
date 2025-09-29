@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"fmt"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
@@ -490,4 +491,24 @@ templ ConfigUpdateScripts() {
 			`;
     }
 </script>
+}
+
+templ WidgetConfigSection(widgetIndex int) {
+	<div class="form-group">
+		<label>Configuration</label>
+		<div class="config-helper" id={ "config-helper-" + fmt.Sprintf("%d", widgetIndex) }>
+			<div class="config-placeholder">
+				<p>Select a widget type to see configuration options</p>
+			</div>
+		</div>
+		<textarea
+			name={ "widgets[" + fmt.Sprintf("%d", widgetIndex) + "][config]" }
+			id={ "config-textarea-" +
+        fmt.Sprintf("%d", widgetIndex) }
+			placeholder="Select widget type for configuration template"
+			rows="4"
+			class="form-textarea"
+		></textarea>
+		<small class="form-help">Configuration will be generated based on your selections above</small>
+	</div>
 }

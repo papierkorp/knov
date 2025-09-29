@@ -33,7 +33,12 @@ func GetAllFiles() ([]File, error) {
 			return err
 		}
 
-		if !info.IsDir() && strings.HasSuffix(strings.ToLower(info.Name()), ".md") {
+		// skip .git directory
+		if info.IsDir() && info.Name() == ".git" {
+			return filepath.SkipDir
+		}
+
+		if !info.IsDir() {
 			relativePath, err := filepath.Rel(dataDir, path)
 			if err != nil {
 				return err
@@ -62,13 +67,16 @@ func GetFileContent(filePath string) ([]byte, error) {
 		return nil, err
 	}
 
-	processedContent := content.ProcessContent(string(fileContent))
+	if strings.HasSuffix(strings.ToLower(filePath), ".md") {
+		processedContent := content.ProcessContent(string(fileContent))
+		extensions := parser.CommonExtensions | parser.AutoHeadingIDs
+		p := parser.NewWithExtensions(extensions)
+		html := markdown.ToHTML([]byte(processedContent), p, nil)
+		return html, nil
+	}
 
-	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
-	p := parser.NewWithExtensions(extensions)
-	html := markdown.ToHTML([]byte(processedContent), p, nil)
-
-	return html, nil
+	// return raw content for non-markdown files, TODO: add other files
+	return fileContent, nil
 }
 
 // GetAllFilesWithMetadata returns files with metadata

@@ -121,7 +121,7 @@ func extractLinkPath(linkText string) string {
 	linkText = strings.TrimSpace(linkText)
 
 	// Validate link
-	if strings.Contains(linkText, "\n") || len(linkText) > 100 || !strings.HasSuffix(linkText, ".md") {
+	if strings.Contains(linkText, "\n") || len(linkText) > 100 {
 		return ""
 	}
 
