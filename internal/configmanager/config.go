@@ -18,13 +18,15 @@ var appConfig AppConfig
 
 // AppConfig contains environment-based application configuration
 type AppConfig struct {
-	DataPath     string
-	ServerPort   string
-	LogLevel     string
-	GitRepoURL   string
-	Storage      string
-	SearchEngine string
-	LinkRegex    []string
+	DataPath            string
+	ServerPort          string
+	LogLevel            string
+	GitRepoURL          string
+	Storage             string
+	SearchEngine        string
+	LinkRegex           []string
+	CronjobInterval     string
+	SearchIndexInterval string
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -42,6 +44,8 @@ func InitAppConfig() {
 			"\\[\\[([^|]+)\\|[^\\]]+\\]\\]",
 			"\\{\\{([^}]+)\\}\\}",
 		},
+		CronjobInterval:     getEnv("KNOV_CRONJOB_INTERVAL", "5m"),
+		SearchIndexInterval: getEnv("KNOV_SEARCH_INDEX_INTERVAL", "15m"),
 	}
 
 	initLogLevel()

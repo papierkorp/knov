@@ -197,7 +197,6 @@ func isValidLayout(layout Layout) bool {
 
 // Delete removes a dashboard
 func Delete(id string) error {
-	// Check if dashboard exists first
 	existing, _ := Get(id)
 	if existing == nil {
 		return fmt.Errorf("dashboard with id '%s' not found", id)

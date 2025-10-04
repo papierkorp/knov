@@ -13,6 +13,12 @@ App configuration is read from environment variables on startup and cannot be ch
   - Available options: `"json"`, `"sqlite"`, `"postgres"`
 - `KNOV_SEARCH_ENGINE` (string) - Search engine type (default: `"sqlite"`)
   - Available options: `"sqlite"`, `"memory"`, `"grep"`
+- `KNOV_CRONJOB_INTERVAL` (string) - Interval for file processing tasks (default: `"5m"`)
+  - Format: Duration string (e.g., `"5m"`, `"1h"`, `"30s"`)
+  - Tasks: Add new files to git, initialize metadata
+- `KNOV_SEARCH_INDEX_INTERVAL` (string) - Interval for search index rebuild (default: `"15m"`)
+  - Format: Duration string (e.g., `"15m"`, `"30m"`, `"1h"`)
+  - Rebuilds the entire search index to ensure accuracy
 
 ## Storage System
 

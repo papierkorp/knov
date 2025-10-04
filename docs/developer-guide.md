@@ -12,12 +12,14 @@ go install golang.org/x/text/cmd/gotext@latest
 
 Set these environment variables for development:
 
-```bash
+````bash
 export KNOV_DATA_PATH="data"
 export KNOV_SERVER_PORT="1324"
 export KNOV_LOG_LEVEL="debug"
 export KNOV_GIT_REPO_URL=""  # Empty for local development
 export KNOV_STORAGE="json"   # Changed from KNOV_METADATA_STORAGE
+export KNOV_CRONJOB_INTERVAL="5m"  # File processing interval
+export KNOV_SEARCH_INDEX_INTERVAL="15m"  # Search index rebuild interval
 ```
 
 ## Development
@@ -25,7 +27,7 @@ export KNOV_STORAGE="json"   # Changed from KNOV_METADATA_STORAGE
 ```bash
 make dev     # Start development server with test data
 make prod    # Build production binary
-```
+````
 
 Server runs on the port specified by `KNOV_SERVER_PORT` environment variable (default: `http://localhost:1324`)
 

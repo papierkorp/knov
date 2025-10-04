@@ -8,16 +8,15 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/plugins"
 	_ "knov/internal/server/api" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/utils"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 // StartServerChi ...
@@ -347,6 +346,13 @@ func handleSearchPage(w http.ResponseWriter, r *http.Request) {
 func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/files/")
 	fullPath := utils.ToFullPath(filePath)
+	ext := strings.ToLower(filepath.Ext(fullPath))
+
+	if ext == ".pdf" {
+		w.Header().Set("Content-Type", "application/pdf")
+		http.ServeFile(w, r, fullPath)
+		return
+	}
 
 	content, err := files.GetFileContent(fullPath)
 	if err != nil {

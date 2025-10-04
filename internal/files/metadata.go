@@ -310,3 +310,15 @@ func GetAllFolders() (map[string]int, error) {
 	}
 	return folderCount, nil
 }
+
+// MetaDataDelete removes metadata for a file
+func MetaDataDelete(filepath string) error {
+	key := "metadata/" + utils.ToRelativePath(filepath)
+	if err := storage.GetStorage().Delete(key); err != nil {
+		logging.LogError("failed to delete metadata for %s: %v", filepath, err)
+		return err
+	}
+
+	logging.LogDebug("metadata deleted for: %s", filepath)
+	return nil
+}

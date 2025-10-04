@@ -3,6 +3,7 @@ package main
 
 import (
 	"knov/internal/configmanager"
+	"knov/internal/cronjob"
 	"knov/internal/logging"
 	"knov/internal/search"
 	"knov/internal/server"
@@ -26,5 +27,9 @@ func main() {
 	if err := search.InitSearch(); err != nil {
 		logging.LogError("failed to initialize search: %v", err)
 	}
+
+	cronjob.Start()
+	defer cronjob.Stop()
+
 	server.StartServerChi()
 }
