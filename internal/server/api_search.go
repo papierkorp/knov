@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"knov/internal/files"
+	"knov/internal/renderer"
 	"knov/internal/search"
 )
 
@@ -56,16 +57,16 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 	case "json":
 		writeResponse(w, r, results, "")
 	case "dropdown":
-		html := files.BuildDropdownHTML(results, query)
+		html := renderer.BuildDropdownHTML(results, query)
 		w.Write([]byte(html))
 	case "list":
-		html := files.BuildListHTML(results, query)
+		html := renderer.BuildListHTML(results, query)
 		writeResponse(w, r, results, html)
 	case "cards":
-		html := files.BuildCardsHTML(results, query)
+		html := renderer.BuildCardsHTML(results, query)
 		writeResponse(w, r, results, html)
 	default:
-		html := files.BuildDropdownHTML(results, query)
+		html := renderer.BuildDropdownHTML(results, query)
 		w.Write([]byte(html))
 	}
 }

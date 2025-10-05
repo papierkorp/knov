@@ -5,6 +5,7 @@
   display: grid;
   grid-template-columns: 1fr 280px;
   gap: 20px;
+  min-width: 0;
 }
 
 #view-fileview-detailed .file-content {
@@ -14,6 +15,8 @@
   border-radius: 8px;
   line-height: 1.6;
   min-height: 400px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 #view-fileview-detailed .file-content h1,
@@ -425,4 +428,150 @@
     gap: 10px;
     align-items: flex-start;
   }
+}
+
+/* Table styles for all file views */
+#view-fileview-detailed .file-content table,
+#view-fileview-compact .file-content table,
+#view-fileview-minimal .file-content-minimal table,
+#view-fileview-reader .file-content-reader table,
+#view-fileview-debug .file-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  border: 1px solid var(--neutral);
+}
+
+#view-fileview-detailed .file-content th,
+#view-fileview-detailed .file-content td,
+#view-fileview-compact .file-content th,
+#view-fileview-compact .file-content td,
+#view-fileview-minimal .file-content-minimal th,
+#view-fileview-minimal .file-content-minimal td,
+#view-fileview-reader .file-content-reader th,
+#view-fileview-reader .file-content-reader td,
+#view-fileview-debug .file-content th,
+#view-fileview-debug .file-content td {
+  border: 1px solid var(--neutral);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+#view-fileview-detailed .file-content th,
+#view-fileview-compact .file-content th,
+#view-fileview-minimal .file-content-minimal th,
+#view-fileview-reader .file-content-reader th,
+#view-fileview-debug .file-content th {
+  background: var(--primary);
+  color: var(--white);
+  font-weight: bold;
+}
+
+#view-fileview-detailed .file-content tbody tr:nth-child(even),
+#view-fileview-compact .file-content tbody tr:nth-child(even),
+#view-fileview-minimal .file-content-minimal tbody tr:nth-child(even),
+#view-fileview-reader .file-content-reader tbody tr:nth-child(even),
+#view-fileview-debug .file-content tbody tr:nth-child(even) {
+  background: color-mix(in srgb, var(--neutral) 10%, transparent);
+}
+
+#view-fileview-detailed .file-content tbody tr:hover,
+#view-fileview-compact .file-content tbody tr:hover,
+#view-fileview-minimal .file-content-minimal tbody tr:hover,
+#view-fileview-reader .file-content-reader tbody tr:hover,
+#view-fileview-debug .file-content tbody tr:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+/* Folded sections (details/summary) */
+#view-fileview-detailed .file-content .dokuwiki-folded,
+#view-fileview-compact .file-content .dokuwiki-folded,
+#view-fileview-minimal .file-content-minimal .dokuwiki-folded,
+#view-fileview-reader .file-content-reader .dokuwiki-folded,
+#view-fileview-debug .file-content .dokuwiki-folded {
+  border: 1px solid var(--neutral);
+  border-radius: 4px;
+  margin: 1rem 0;
+  background: color-mix(in srgb, var(--neutral) 5%, transparent);
+}
+
+#view-fileview-detailed .file-content .dokuwiki-folded summary,
+#view-fileview-compact .file-content .dokuwiki-folded summary,
+#view-fileview-minimal .file-content-minimal .dokuwiki-folded summary,
+#view-fileview-reader .file-content-reader .dokuwiki-folded summary,
+#view-fileview-debug .file-content .dokuwiki-folded summary {
+  padding: 10px 15px;
+  cursor: pointer;
+  font-weight: bold;
+  background: var(--primary);
+  color: var(--white);
+  border-radius: 4px 4px 0 0;
+  user-select: none;
+}
+
+#view-fileview-detailed .file-content .dokuwiki-folded summary:hover,
+#view-fileview-compact .file-content .dokuwiki-folded summary:hover,
+#view-fileview-minimal .file-content-minimal .dokuwiki-folded summary:hover,
+#view-fileview-reader .file-content-reader .dokuwiki-folded summary:hover,
+#view-fileview-debug .file-content .dokuwiki-folded summary:hover {
+  background: var(--accent);
+  color: var(--black);
+}
+
+#view-fileview-detailed .file-content .dokuwiki-folded .folded-content,
+#view-fileview-compact .file-content .dokuwiki-folded .folded-content,
+#view-fileview-minimal .file-content-minimal .dokuwiki-folded .folded-content,
+#view-fileview-reader .file-content-reader .dokuwiki-folded .folded-content,
+#view-fileview-debug .file-content .dokuwiki-folded .folded-content {
+  padding: 15px;
+}
+
+#view-fileview-detailed .file-content .dokuwiki-folded[open] summary,
+#view-fileview-compact .file-content .dokuwiki-folded[open] summary,
+#view-fileview-minimal .file-content-minimal .dokuwiki-folded[open] summary,
+#view-fileview-reader .file-content-reader .dokuwiki-folded[open] summary,
+#view-fileview-debug .file-content .dokuwiki-folded[open] summary {
+  border-radius: 4px 4px 0 0;
+  border-bottom: 1px solid var(--neutral);
+}
+
+/* Code blocks with Prism.js */
+#view-fileview-detailed .file-content pre,
+#view-fileview-compact .file-content pre,
+#view-fileview-minimal .file-content-minimal pre,
+#view-fileview-reader .file-content-reader pre,
+#view-fileview-debug .file-content pre {
+  margin: 1rem 0;
+  border-radius: 4px;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+#view-fileview-detailed .file-content pre code,
+#view-fileview-compact .file-content pre code,
+#view-fileview-minimal .file-content-minimal pre code,
+#view-fileview-reader .file-content-reader pre code,
+#view-fileview-debug .file-content pre code {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  display: block;
+  white-space: pre;
+  word-wrap: normal;
+  overflow-wrap: normal;
+}
+
+/* Inline code (not in pre) */
+#view-fileview-detailed .file-content code:not(pre code),
+#view-fileview-compact .file-content code:not(pre code),
+#view-fileview-minimal .file-content-minimal code:not(pre code),
+#view-fileview-reader .file-content-reader code:not(pre code),
+#view-fileview-debug .file-content code:not(pre code) {
+  background: color-mix(in srgb, var(--neutral) 20%, transparent);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 14px;
+  font-family: "Courier New", Courier, monospace;
+  white-space: normal;
+  word-break: break-word;
 }

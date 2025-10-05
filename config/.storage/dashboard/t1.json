@@ -1,0 +1,1 @@
+{"name":"t1","id":"t1","layout":"oneColumn","widgets":[{"id":"widget-0","type":"filter","position":{"x":0,"y":0},"config":{"filter":{"criteria":[{"metadata":"folders","operator":"contains","value":"dokuwiki","action":"include"}],"logic":"and","display":"list","limit":5}}}],"global":true}

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"knov/internal/files"
+	"knov/internal/renderer"
 )
 
 // ----------------------------------------------------------------------------------------
@@ -715,7 +716,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := files.BuildBrowseHTML(tags, "/browse/tags")
+	html := renderer.BuildBrowseHTML(tags, "/browse/tags")
 	writeResponse(w, r, tags, html)
 }
 
@@ -731,7 +732,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := files.BuildBrowseHTML(collections, "/browse/collection")
+	html := renderer.BuildBrowseHTML(collections, "/browse/collection")
 	writeResponse(w, r, collections, html)
 }
 
@@ -747,6 +748,6 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := files.BuildBrowseHTML(folders, "/browse/folders")
+	html := renderer.BuildBrowseHTML(folders, "/browse/folders")
 	writeResponse(w, r, folders, html)
 }

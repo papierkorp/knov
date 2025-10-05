@@ -57,3 +57,59 @@ config/
 │               └── work.json
 └── users/  ← legacy user settings (will be migrated)
 ```
+
+## Supported File Formats
+
+KNOV supports multiple file formats with automatic syntax highlighting:
+
+- **Markdown** (`.md`) - Full CommonMark support with extensions
+  - Fenced code blocks: ` ```language `
+- **DokuWiki** (`.txt`, `.dokuwiki`) - DokuWiki syntax with automatic conversion
+  - Standard code blocks: `<code language>...</code>`
+  - SyntaxHighlighter4: `<sxh language>...</sxh>`
+  - Codify plugin: `<codify language>...</codify>`
+- **PDF** (`.pdf`) - Direct viewing
+- **Other** - Raw content display
+
+### Syntax Highlighting
+
+Code blocks are highlighted using Prism.js with support for 200+ languages:
+
+**Markdown example:**
+\`\`\`go
+func main() {
+fmt.Println("Hello")
+}
+\`\`\`
+
+**DokuWiki examples:**
+
+### Tables
+
+DokuWiki tables are enhanced with metadata attributes for future functionality:
+
+**Alignment Detection:**
+
+```
+^ Left    ^  Center  ^    Right ^
+| Data    |  Data    |     Data |
+```
+
+**Type Detection:**
+
+- Numbers: `123`, `45.67`, `-10`
+- Dates: `2024-01-01`, `01.01.2024`
+- Currency: `$100`, `€50`, `£25`
+- Text: everything else
+
+**Features:**
+
+- Sticky headers (stay visible while scrolling)
+- Responsive wrapper (horizontal scroll on small screens)
+- Zebra striping (alternating row colors)
+- Hover highlighting
+- Type-specific formatting (numbers right-aligned, monospace for currency)
+- `data-editable="true"` attribute for future editing functionality
+- `data-align` and `data-type` attributes for enhanced styling
+
+Tables are wrapped in `.table-wrapper` for horizontal scrolling on narrow screens.

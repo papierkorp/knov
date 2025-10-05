@@ -232,6 +232,57 @@ info:
   title: Knov API
   version: "1.0"
 paths:
+  /api/components/table:
+    get:
+      description: Returns paginated, sortable, searchable table HTML fragment
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 25
+        description: Items per page
+        in: query
+        name: size
+        type: integer
+      - default: -1
+        description: Column index to sort by
+        in: query
+        name: sort
+        type: integer
+      - default: asc
+        description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      - description: Search query
+        in: query
+        name: search
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: table html fragment
+          schema:
+            type: string
+        "400":
+          description: invalid parameters
+          schema:
+            type: string
+        "500":
+          description: failed to process table
+          schema:
+            type: string
+      summary: Get paginated table
+      tags:
+      - components
   /api/config/getAvailableFileViews:
     get:
       produces:

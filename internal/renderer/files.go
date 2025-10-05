@@ -1,13 +1,15 @@
-// Package files - Render utilities for file HTML output
-package files
+// Package renderer handles rendering utilities
+package renderer
 
 import (
 	"fmt"
 	"strings"
+
+	"knov/internal/files"
 )
 
 // BuildDropdownHTML creates dropdown HTML for file results
-func BuildDropdownHTML(results []File, query string) string {
+func BuildDropdownHTML(results []files.File, query string) string {
 	var html strings.Builder
 	html.WriteString(`<ul class="component-search-dropdown-list">`)
 
@@ -38,7 +40,7 @@ func BuildDropdownHTML(results []File, query string) string {
 }
 
 // BuildCardsHTML creates cards HTML for file results
-func BuildCardsHTML(results []File, query string) string {
+func BuildCardsHTML(results []files.File, query string) string {
 	var html strings.Builder
 	if query != "" {
 		html.WriteString(fmt.Sprintf(`<p>found %d results for "%s"</p>`, len(results), query))
@@ -58,7 +60,7 @@ func BuildCardsHTML(results []File, query string) string {
 }
 
 // BuildListHTML creates simple list HTML for file results
-func BuildListHTML(results []File, query string) string {
+func BuildListHTML(results []files.File, query string) string {
 	var html strings.Builder
 	if query != "" {
 		html.WriteString(fmt.Sprintf(`<p>found %d results for "%s"</p>`, len(results), query))

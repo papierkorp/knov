@@ -11,10 +11,11 @@ import (
 	"time"
 
 	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/parser"
+	gomarkdown_parser "github.com/gomarkdown/markdown/parser"
 	"knov/internal/configmanager"
-	"knov/internal/content"
 	"knov/internal/logging"
+	"knov/internal/parser"
+	"knov/internal/utils"
 )
 
 // File represents a file in the system
@@ -59,7 +60,7 @@ func GetAllFiles() ([]File, error) {
 	return files, nil
 }
 
-// GetFileContent converts markdown to html
+// GetFileContent converts file content to html based on detected type
 func GetFileContent(filePath string) ([]byte, error) {
 	fileContent, err := os.ReadFile(filePath)
 	if err != nil {
@@ -67,16 +68,29 @@ func GetFileContent(filePath string) ([]byte, error) {
 		return nil, err
 	}
 
-	if strings.HasSuffix(strings.ToLower(filePath), ".md") {
-		processedContent := content.ProcessContent(string(fileContent))
-		extensions := parser.CommonExtensions | parser.AutoHeadingIDs
-		p := parser.NewWithExtensions(extensions)
+	relativePath := utils.ToRelativePath(filePath)
+
+	// detect file type by extension and content
+	fileType := parser.DetectFileType(filePath, string(fileContent))
+
+	switch fileType {
+	case "dokuwiki":
+		processedContent := parser.ParseDokuWiki(string(fileContent))
+		// replace filepath placeholder
+		processedContent = strings.ReplaceAll(processedContent, "{{FILEPATH}}", relativePath)
+		return []byte(processedContent), nil
+
+	case "markdown":
+		processedContent := parser.ParseMarkdown(string(fileContent))
+		extensions := gomarkdown_parser.CommonExtensions | gomarkdown_parser.AutoHeadingIDs
+		p := gomarkdown_parser.NewWithExtensions(extensions)
 		html := markdown.ToHTML([]byte(processedContent), p, nil)
 		return html, nil
-	}
 
-	// return raw content for non-markdown files, TODO: add other files
-	return fileContent, nil
+	default:
+		// return raw content for plaintext/unknown files
+		return fileContent, nil
+	}
 }
 
 // GetAllFilesWithMetadata returns files with metadata
