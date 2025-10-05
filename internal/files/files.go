@@ -1,4 +1,3 @@
-// Package files handles file operations and metadata
 package files
 
 import (
@@ -6,17 +5,28 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/gomarkdown/markdown"
-	gomarkdown_parser "github.com/gomarkdown/markdown/parser"
 	"knov/internal/configmanager"
+	"knov/internal/filetype"
 	"knov/internal/logging"
-	"knov/internal/parser"
 	"knov/internal/utils"
 )
+
+var fileTypeRegistry *filetype.Registry
+
+func init() {
+	fileTypeRegistry = filetype.NewRegistry()
+	fileTypeRegistry.Register(filetype.NewMarkdownHandler())
+	fileTypeRegistry.Register(filetype.NewDokuwikiHandler())
+	fileTypeRegistry.Register(filetype.NewPlaintextHandler())
+}
+
+// GetFileTypeRegistry returns the global file type registry
+func GetFileTypeRegistry() *filetype.Registry {
+	return fileTypeRegistry
+}
 
 // File represents a file in the system
 type File struct {
@@ -34,7 +44,6 @@ func GetAllFiles() ([]File, error) {
 			return err
 		}
 
-		// skip .git directory
 		if info.IsDir() && info.Name() == ".git" {
 			return filepath.SkipDir
 		}
@@ -62,35 +71,30 @@ func GetAllFiles() ([]File, error) {
 
 // GetFileContent converts file content to html based on detected type
 func GetFileContent(filePath string) ([]byte, error) {
-	fileContent, err := os.ReadFile(filePath)
+	handler := fileTypeRegistry.GetHandler(filePath)
+	if handler == nil {
+		return nil, fmt.Errorf("no handler found for file: %s", filePath)
+	}
+
+	content, err := handler.GetContent(filePath)
 	if err != nil {
-		logging.LogError("failed to read file %s: %v", filePath, err)
+		return nil, err
+	}
+
+	parsed, err := handler.Parse(content)
+	if err != nil {
+		return nil, err
+	}
+
+	html, err := handler.Render(parsed)
+	if err != nil {
 		return nil, err
 	}
 
 	relativePath := utils.ToRelativePath(filePath)
+	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", relativePath)
 
-	// detect file type by extension and content
-	fileType := parser.DetectFileType(filePath, string(fileContent))
-
-	switch fileType {
-	case "dokuwiki":
-		processedContent := parser.ParseDokuWiki(string(fileContent))
-		// replace filepath placeholder
-		processedContent = strings.ReplaceAll(processedContent, "{{FILEPATH}}", relativePath)
-		return []byte(processedContent), nil
-
-	case "markdown":
-		processedContent := parser.ParseMarkdown(string(fileContent))
-		extensions := gomarkdown_parser.CommonExtensions | gomarkdown_parser.AutoHeadingIDs
-		p := gomarkdown_parser.NewWithExtensions(extensions)
-		html := markdown.ToHTML([]byte(processedContent), p, nil)
-		return html, nil
-
-	default:
-		// return raw content for plaintext/unknown files
-		return fileContent, nil
-	}
+	return []byte(processedContent), nil
 }
 
 // GetAllFilesWithMetadata returns files with metadata
@@ -100,7 +104,6 @@ func GetAllFilesWithMetadata() ([]File, error) {
 		return nil, err
 	}
 
-	// TODO: populate metadata
 	for i := range files {
 		files[i].Metadata = nil
 	}
@@ -132,7 +135,7 @@ func FilterFilesByMetadata(criteria []FilterCriteria, logic string) ([]File, err
 	var filteredFiles []File
 
 	for _, file := range allFiles {
-		fileMetadata, err := MetaDataGet(file.Path) // Remove the dataDir join
+		fileMetadata, err := MetaDataGet(file.Path)
 
 		if err != nil {
 			logging.LogWarning("failed to get metadata for %s: %v", file.Path, err)
@@ -156,142 +159,111 @@ func matchesFilter(metadata *Metadata, criteria []FilterCriteria, logic string) 
 		return true
 	}
 
-	result := evaluateFilter(metadata, criteria[0])
-
-	for i := 1; i < len(criteria); i++ {
-		currentResult := evaluateFilter(metadata, criteria[i])
-		if logic == "or" {
-			result = result || currentResult
-		} else {
-			result = result && currentResult
+	if logic == "AND" {
+		for _, criterion := range criteria {
+			if !matchesCriterion(metadata, criterion) {
+				return false
+			}
 		}
+		return true
 	}
 
-	return result
+	for _, criterion := range criteria {
+		if matchesCriterion(metadata, criterion) {
+			return true
+		}
+	}
+	return false
 }
 
-func evaluateFilter(metadata *Metadata, filter FilterCriteria) bool {
+func matchesCriterion(metadata *Metadata, criterion FilterCriteria) bool {
 	var fieldValue string
-	var fieldArray []string
 
-	switch filter.Metadata {
-	case "collection":
-		fieldValue = metadata.Collection
-	case "type":
-		fieldValue = string(metadata.FileType)
-	case "status":
-		fieldValue = string(metadata.Status)
+	switch criterion.Metadata {
+	case "name":
+		fieldValue = metadata.Name
+	case "tags":
+		return matchesTagCriterion(metadata.Tags, criterion)
+	case "parents":
+		return matchesArrayCriterion(metadata.Parents, criterion)
+	case "kids":
+		return matchesArrayCriterion(metadata.Kids, criterion)
+	case "usedlinks":
+		return matchesArrayCriterion(metadata.UsedLinks, criterion)
+	case "linkstohere":
+		return matchesArrayCriterion(metadata.LinksToHere, criterion)
 	case "priority":
 		fieldValue = string(metadata.Priority)
-	case "tags":
-		fieldArray = metadata.Tags
-	case "folders":
-		fieldArray = metadata.Folders
-	case "boards":
-		fieldArray = metadata.Boards
+	case "status":
+		fieldValue = string(metadata.Status)
 	case "createdAt":
-		fieldValue = metadata.CreatedAt.Format("2006-01-02")
+		if !metadata.CreatedAt.IsZero() {
+			fieldValue = metadata.CreatedAt.Format(time.RFC3339)
+		}
 	case "lastEdited":
-		fieldValue = metadata.LastEdited.Format("2006-01-02")
+		if !metadata.LastEdited.IsZero() {
+			fieldValue = metadata.LastEdited.Format(time.RFC3339)
+		}
 	default:
-		logging.LogWarning("INTERNAL WARNING: selected metadata does not exist")
 		return false
 	}
 
-	var matches bool
-	switch filter.Operator {
-	case "equals":
-		if len(fieldArray) > 0 {
-			matches = slices.Contains(fieldArray, filter.Value)
-		} else {
-			matches = fieldValue == filter.Value
-		}
-	case "contains":
-		if len(fieldArray) > 0 {
-			matches = slices.ContainsFunc(fieldArray, func(s string) bool {
-				return strings.Contains(strings.ToLower(s), strings.ToLower(filter.Value))
-			})
-		} else {
-			matches = strings.Contains(strings.ToLower(fieldValue), strings.ToLower(filter.Value))
-		}
-	case "in":
-		if len(fieldArray) > 0 {
-			matches = slices.Contains(fieldArray, filter.Value)
-		} else {
-			matches = fieldValue == filter.Value
-		}
-	case "greater":
-		if len(fieldArray) > 0 {
-			arrayCount := len(fieldArray)
-			if targetCount, err := strconv.Atoi(filter.Value); err == nil {
-				matches = arrayCount > targetCount
-			}
-		} else {
-			switch filter.Metadata {
-			case "createdAt", "lastEdited":
-				if targetDate, err := parseDate(filter.Value); err == nil {
-					var compareDate time.Time
-					if filter.Metadata == "createdAt" {
-						compareDate = metadata.CreatedAt
-					} else {
-						compareDate = metadata.LastEdited
-					}
-					matches = compareDate.After(targetDate)
-				}
-			case "size":
-				if targetSize, err := strconv.ParseInt(filter.Value, 10, 64); err == nil {
-					matches = metadata.Size > targetSize
-				}
-			}
-		}
-	case "less":
-		if len(fieldArray) > 0 {
-			arrayCount := len(fieldArray)
-			if targetCount, err := strconv.Atoi(filter.Value); err == nil {
-				matches = arrayCount < targetCount
-			}
-		} else {
-			switch filter.Metadata {
-			case "createdAt", "lastEdited":
-				if targetDate, err := parseDate(filter.Value); err == nil {
-					var compareDate time.Time
-					if filter.Metadata == "createdAt" {
-						compareDate = metadata.CreatedAt
-					} else {
-						compareDate = metadata.LastEdited
-					}
-					matches = compareDate.Before(targetDate)
-				}
-			case "size":
-				if targetSize, err := strconv.ParseInt(filter.Value, 10, 64); err == nil {
-					matches = metadata.Size < targetSize
-				}
-			}
-		}
-	default:
-		logging.LogWarning("INTERNAL WARNING: selected operator does not exist")
-		matches = false
-	}
-
-	if filter.Action == "exclude" {
-		return !matches
-	}
-	return matches
+	return matchesOperator(fieldValue, criterion.Operator, criterion.Value)
 }
 
-func parseDate(dateStr string) (time.Time, error) {
-	formats := []string{
-		"2006-01-02", // ISO format
-		"02.01.2006", // DD.MM.YYYY
-		"01/02/2006", // MM/DD/YYYY
-		"2006/01/02", // YYYY/MM/DD
-		"02-01-2006", // DD-MM-YYYY
+func matchesTagCriterion(tags []string, criterion FilterCriteria) bool {
+	switch criterion.Operator {
+	case "contains":
+		return slices.Contains(tags, criterion.Value)
+	case "not_contains":
+		return !slices.Contains(tags, criterion.Value)
+	case "empty":
+		return len(tags) == 0
+	case "not_empty":
+		return len(tags) > 0
+	default:
+		return false
 	}
+}
 
-	for _, format := range formats {
-		if t, err := time.Parse(format, dateStr); err == nil {
-			return t, nil
-		}
+func matchesArrayCriterion(array []string, criterion FilterCriteria) bool {
+	switch criterion.Operator {
+	case "contains":
+		return slices.Contains(array, criterion.Value)
+	case "not_contains":
+		return !slices.Contains(array, criterion.Value)
+	case "empty":
+		return len(array) == 0
+	case "not_empty":
+		return len(array) > 0
+	default:
+		return false
 	}
-	return time.Time{}, fmt.Errorf("unable to parse date: %s", dateStr)
+}
+
+func matchesOperator(fieldValue, operator, criterionValue string) bool {
+	switch operator {
+	case "equals":
+		return fieldValue == criterionValue
+	case "not_equals":
+		return fieldValue != criterionValue
+	case "contains":
+		return strings.Contains(strings.ToLower(fieldValue), strings.ToLower(criterionValue))
+	case "not_contains":
+		return !strings.Contains(strings.ToLower(fieldValue), strings.ToLower(criterionValue))
+	case "starts_with":
+		return strings.HasPrefix(strings.ToLower(fieldValue), strings.ToLower(criterionValue))
+	case "ends_with":
+		return strings.HasSuffix(strings.ToLower(fieldValue), strings.ToLower(criterionValue))
+	case "empty":
+		return fieldValue == ""
+	case "not_empty":
+		return fieldValue != ""
+	case "greater_than":
+		return fieldValue > criterionValue
+	case "less_than":
+		return fieldValue < criterionValue
+	default:
+		return false
+	}
 }

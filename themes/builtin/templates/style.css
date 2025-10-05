@@ -7,58 +7,62 @@
 @import url("browsefiles.css");
 
 :root {
-    --primary: #65a30d;
-    --accent: #a3e635;
-    --neutral: #475569;
-    --black: #374151;
-    --white: #d1d5db;
+  --primary: #65a30d;
+  --accent: #a3e635;
+  --neutral: #475569;
+  --black: #374151;
+  --white: #d1d5db;
 }
 
 body {
-    font-family: sans-serif;
-    background: var(--black);
-    color: var(--white);
-    margin: 0;
-    font-size: 16px;
+  font-family: sans-serif;
+  background: var(--black);
+  color: var(--white);
+  margin: 0;
+  font-size: 16px;
 }
 
 a {
-    color: var(--white);
-    text-decoration: none;
+  color: var(--white);
+  text-decoration: none;
 }
 
 a:hover {
-    color: var(--accent);
+  color: var(--accent);
 }
 
 main {
-    margin: 20px;
-    padding: 10px;
+  margin: 20px;
+  padding: 10px;
+}
+
+ul {
+  padding-inline-start: 20px;
 }
 
 h1:first-child {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 .text-center {
-    text-align: center;
+  text-align: center;
 }
 
 .mb-4 {
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 .btn {
-    background: var(--primary);
-    color: var(--white);
-    border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
 .btn:hover {
-    background: var(--accent);
-    color: var(--black);
+  background: var(--accent);
+  color: var(--black);
 }

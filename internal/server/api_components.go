@@ -5,9 +5,9 @@ import (
 	"os"
 	"strconv"
 
+	"knov/internal/files"
+	"knov/internal/filetype"
 	"knov/internal/logging"
-	"knov/internal/parser"
-	"knov/internal/renderer"
 	"knov/internal/utils"
 )
 
@@ -32,7 +32,6 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// parse pagination params
 	page := 1
 	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
 		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
@@ -47,7 +46,6 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// parse sort params
 	sortCol := -1
 	if sortStr := r.URL.Query().Get("sort"); sortStr != "" {
 		if s, err := strconv.Atoi(sortStr); err == nil && s >= 0 {
@@ -60,10 +58,8 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 		sortOrder = "desc"
 	}
 
-	// parse search param
 	searchQuery := r.URL.Query().Get("search")
 
-	// read file content
 	fullPath := utils.ToFullPath(filepath)
 	fileContent, err := os.ReadFile(fullPath)
 	if err != nil {
@@ -72,38 +68,36 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// detect file type and parse table
-	fileType := parser.DetectFileType(filepath, string(fileContent))
+	handler := files.GetFileTypeRegistry().GetHandler(fullPath)
+	if handler == nil {
+		http.Error(w, "unsupported file type", http.StatusBadRequest)
+		return
+	}
 
-	var tableData *parser.TableData
-	switch fileType {
-	case "dokuwiki":
-		tableData, err = parser.ParseDokuWikiTable(string(fileContent))
+	var tableData *filetype.TableData
+	if dokuwikiHandler, ok := handler.(*filetype.DokuwikiHandler); ok {
+		tableData, err = dokuwikiHandler.ParseDokuWikiTable(string(fileContent))
 		if err != nil {
 			logging.LogError("failed to parse dokuwiki table: %v", err)
 			http.Error(w, "failed to parse table", http.StatusInternalServerError)
 			return
 		}
-	default:
+	} else {
 		http.Error(w, "table parsing not supported for this file type", http.StatusBadRequest)
 		return
 	}
 
-	// apply search
 	if searchQuery != "" {
-		tableData = parser.SearchTable(tableData, searchQuery)
+		tableData = filetype.SearchTable(tableData, searchQuery)
 	}
 
-	// apply sorting
 	if sortCol >= 0 {
-		tableData = parser.SortTable(tableData, sortCol, sortOrder)
+		tableData = filetype.SortTable(tableData, sortCol, sortOrder)
 	}
 
-	// apply pagination
-	paginatedData := parser.PaginateTable(tableData, page, size)
+	paginatedData := filetype.PaginateTable(tableData, page, size)
 
-	// render html
-	html := renderer.RenderTableHTML(paginatedData, filepath, page, size, sortCol, sortOrder, searchQuery)
+	html := filetype.RenderTableHTML(paginatedData, filepath, page, size, sortCol, sortOrder, searchQuery)
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))

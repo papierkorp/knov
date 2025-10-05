@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"knov/internal/files"
-	"knov/internal/renderer"
 )
 
 // ----------------------------------------------------------------------------------------
@@ -716,7 +715,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := renderer.BuildBrowseHTML(tags, "/browse/tags")
+	html := files.BuildBrowseHTML(tags, "/browse/tags")
 	writeResponse(w, r, tags, html)
 }
 
@@ -732,7 +731,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := renderer.BuildBrowseHTML(collections, "/browse/collection")
+	html := files.BuildBrowseHTML(collections, "/browse/collection")
 	writeResponse(w, r, collections, html)
 }
 
@@ -748,6 +747,21 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := renderer.BuildBrowseHTML(folders, "/browse/folders")
+	html := files.BuildBrowseHTML(folders, "/browse/folders")
 	writeResponse(w, r, folders, html)
+}
+
+// buildBrowseHTML creates HTML list for metadata browsing with counts
+func buildBrowseHTML(items map[string]int, urlPrefix string) string {
+	var html strings.Builder
+	html.WriteString(`<ul class="search-results-simple-list">`)
+
+	for item, count := range items {
+		html.WriteString(fmt.Sprintf(`
+			<li><a href="%s/%s">%s (%d)</a></li>`,
+			urlPrefix, item, item, count))
+	}
+
+	html.WriteString(`</ul>`)
+	return html.String()
 }

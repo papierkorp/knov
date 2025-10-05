@@ -86,7 +86,7 @@ fmt.Println("Hello")
 
 ### Tables
 
-DokuWiki tables are enhanced with metadata attributes for future functionality:
+Tables are enhanced with metadata attributes for future functionality:
 
 **Alignment Detection:**
 
@@ -102,14 +102,42 @@ DokuWiki tables are enhanced with metadata attributes for future functionality:
 - Currency: `$100`, `€50`, `£25`
 - Text: everything else
 
-**Features:**
+**Pagination:**
 
-- Sticky headers (stay visible while scrolling)
-- Responsive wrapper (horizontal scroll on small screens)
-- Zebra striping (alternating row colors)
-- Hover highlighting
-- Type-specific formatting (numbers right-aligned, monospace for currency)
-- `data-editable="true"` attribute for future editing functionality
-- `data-align` and `data-type` attributes for enhanced styling
+- Default: 25 rows per page
+- Navigate with First/Prev/Next/Last buttons
+- Shows current page and total pages
+
+**Sorting:**
+
+- Click column headers to sort
+- Click again to reverse order
+- Type-aware sorting (numbers, dates, text)
+- Sort indicator shows current column and direction (↑/↓)
+
+**Searching:**
+
+- Real-time search across all columns
+- 300ms debounce for performance
+- Searches within current sort order
+
+**URL Parameters:**
+
+- `page` - Current page number
+- `size` - Rows per page (10, 25, 50, 100)
+- `sort` - Column index to sort by
+- `order` - Sort direction (asc/desc)
+- `search` - Search query
+
+All features work together: search + sort + paginate simultaneously.
 
 Tables are wrapped in `.table-wrapper` for horizontal scrolling on narrow screens.
+
+### Dokuwiki
+
+DokuWiki files are automatically detected and converted to HTML, preserving:
+
+- Headers (====== to ==)
+- Formatting (bold, italic, underline, monospace)
+- Links ([[link]] or [[link|title]])
+- Line breaks and paragraphs

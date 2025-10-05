@@ -6,7 +6,6 @@ import (
 
 	"knov/internal/files"
 	"knov/internal/logging"
-	"knov/internal/renderer"
 	"knov/internal/utils"
 )
 
@@ -82,35 +81,6 @@ func RenderWidget(widgetType WidgetType, config WidgetConfig) (string, error) {
 		return renderFoldersWidget()
 	default:
 		return "", fmt.Errorf("unknown widget type: %s", widgetType)
-	}
-}
-
-func renderFilterWidget(config *FilterConfig) (string, error) {
-	if config == nil {
-		return "", fmt.Errorf("filter config is required")
-	}
-
-	filteredFiles, err := files.FilterFilesByMetadata(config.Criteria, config.Logic)
-	if err != nil {
-		logging.LogError("failed to filter files: %v", err)
-		return "", err
-	}
-
-	limit := config.Limit
-	if limit <= 0 {
-		limit = 10
-	}
-	if len(filteredFiles) > limit {
-		filteredFiles = filteredFiles[:limit]
-	}
-
-	switch config.Display {
-	case "cards":
-		return renderer.BuildCardsHTML(filteredFiles, ""), nil
-	case "dropdown":
-		return renderer.BuildDropdownHTML(filteredFiles, ""), nil
-	default:
-		return renderer.BuildListHTML(filteredFiles, ""), nil
 	}
 }
 
@@ -233,13 +203,42 @@ func renderStaticWidget(config *StaticConfig) (string, error) {
 	}
 }
 
+func renderFilterWidget(config *FilterConfig) (string, error) {
+	if config == nil {
+		return "", fmt.Errorf("filter config is required")
+	}
+
+	filteredFiles, err := files.FilterFilesByMetadata(config.Criteria, config.Logic)
+	if err != nil {
+		logging.LogError("failed to filter files: %v", err)
+		return "", err
+	}
+
+	limit := config.Limit
+	if limit <= 0 {
+		limit = 10
+	}
+	if len(filteredFiles) > limit {
+		filteredFiles = filteredFiles[:limit]
+	}
+
+	switch config.Display {
+	case "cards":
+		return files.BuildCardsHTML(filteredFiles, ""), nil
+	case "dropdown":
+		return files.BuildDropdownHTML(filteredFiles, ""), nil
+	default:
+		return files.BuildListHTML(filteredFiles, ""), nil
+	}
+}
+
 func renderTagsWidget() (string, error) {
 	tagCount, err := files.GetAllTags()
 	if err != nil {
 		return "", err
 	}
 
-	return renderer.BuildBrowseHTML(tagCount, "/browse/tags"), nil
+	return files.BuildBrowseHTML(tagCount, "/browse/tags"), nil
 }
 
 func renderCollectionsWidget() (string, error) {
@@ -248,7 +247,7 @@ func renderCollectionsWidget() (string, error) {
 		return "", err
 	}
 
-	return renderer.BuildBrowseHTML(collectionCount, "/browse/collection"), nil
+	return files.BuildBrowseHTML(collectionCount, "/browse/collection"), nil
 }
 
 func renderFoldersWidget() (string, error) {
@@ -257,5 +256,5 @@ func renderFoldersWidget() (string, error) {
 		return "", err
 	}
 
-	return renderer.BuildBrowseHTML(folderCount, "/browse/folders"), nil
+	return files.BuildBrowseHTML(folderCount, "/browse/folders"), nil
 }

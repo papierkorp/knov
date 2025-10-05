@@ -6,7 +6,6 @@ import (
 	"slices"
 
 	"knov/internal/logging"
-	"knov/internal/parser"
 	"knov/internal/utils"
 )
 
@@ -117,7 +116,12 @@ func updateUsedLinks(metadata *Metadata) {
 		return
 	}
 
-	links := parser.ExtractLinks(string(contentData), metadata.Path)
+	handler := fileTypeRegistry.GetHandler(fullPath)
+	if handler == nil {
+		return
+	}
+
+	links := handler.ExtractLinks(contentData)
 
 	var validLinks []string
 	for _, link := range links {

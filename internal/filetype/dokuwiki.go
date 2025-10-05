@@ -1,49 +1,92 @@
-// Package parser handles dokuwiki parsing
-package parser
+package filetype
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
+
+	"knov/internal/logging"
 )
 
-// ParseDokuWiki converts DokuWiki syntax to HTML
-func ParseDokuWiki(content string) string {
-	// process code blocks first (before other formatting)
-	content = processDokuWikiCodeBlocks(content)
+type DokuwikiHandler struct{}
 
-	// headers
+func NewDokuwikiHandler() *DokuwikiHandler {
+	return &DokuwikiHandler{}
+}
+
+func (h *DokuwikiHandler) CanHandle(filename string) bool {
+	ext := strings.ToLower(filepath.Ext(filename))
+
+	if ext == ".dokuwiki" {
+		return true
+	}
+
+	if ext == ".txt" {
+		content, err := os.ReadFile(filename)
+		if err == nil {
+			lines := strings.Split(string(content), "\n")
+			if len(lines) > 0 {
+				firstLine := strings.TrimSpace(lines[0])
+				if strings.HasPrefix(firstLine, "======") || strings.HasPrefix(firstLine, "=====") {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
+}
+
+func (h *DokuwikiHandler) GetContent(filepath string) ([]byte, error) {
+	content, err := os.ReadFile(filepath)
+	if err != nil {
+		logging.LogError("failed to read file %s: %v", filepath, err)
+		return nil, err
+	}
+	return content, nil
+}
+
+func (h *DokuwikiHandler) Parse(content []byte) ([]byte, error) {
+	parsed := h.parseDokuWiki(string(content))
+	return []byte(parsed), nil
+}
+
+func (h *DokuwikiHandler) Render(content []byte) ([]byte, error) {
+	return content, nil
+}
+
+func (h *DokuwikiHandler) ExtractLinks(content []byte) []string {
+	return h.extractDokuWikiLinks(string(content))
+}
+
+func (h *DokuwikiHandler) Name() string {
+	return "dokuwiki"
+}
+
+// parseDokuWiki converts DokuWiki syntax to HTML
+func (h *DokuwikiHandler) parseDokuWiki(content string) string {
+	content = h.processDokuWikiCodeBlocks(content)
+
 	content = regexp.MustCompile(`======\s*(.+?)\s*======`).ReplaceAllString(content, "<h1>$1</h1>")
 	content = regexp.MustCompile(`=====\s*(.+?)\s*=====`).ReplaceAllString(content, "<h2>$1</h2>")
 	content = regexp.MustCompile(`====\s*(.+?)\s*====`).ReplaceAllString(content, "<h3>$1</h3>")
 	content = regexp.MustCompile(`===\s*(.+?)\s*===`).ReplaceAllString(content, "<h4>$1</h4>")
 	content = regexp.MustCompile(`==\s*(.+?)\s*==`).ReplaceAllString(content, "<h5>$1</h5>")
 
-	// bold
 	content = regexp.MustCompile(`\*\*(.+?)\*\*`).ReplaceAllString(content, "<strong>$1</strong>")
-
-	// italic
 	content = regexp.MustCompile(`//(.+?)//`).ReplaceAllString(content, "<em>$1</em>")
-
-	// underline
 	content = regexp.MustCompile(`__(.+?)__`).ReplaceAllString(content, "<u>$1</u>")
-
-	// monospace
 	content = regexp.MustCompile(`''(.+?)''`).ReplaceAllString(content, "<code>$1</code>")
 
-	// line breaks
 	content = strings.ReplaceAll(content, "\\\\", "<br>")
 
-	// process folded sections
-	content = processDokuWikiFolded(content)
+	content = h.processDokuWikiFolded(content)
+	content = h.replaceTablesWithHTMX(content)
+	content = h.processDokuWikiLinks(content)
+	content = h.processDokuWikiLists(content)
 
-	// replace tables with HTMX placeholder
-	content = replaceTablesWithHTMX(content)
-
-	// process links using shared function
-	content = ProcessDokuWikiLinks(content)
-
-	// paragraphs
 	lines := strings.Split(content, "\n\n")
 	for i, line := range lines {
 		line = strings.TrimSpace(line)
@@ -57,8 +100,7 @@ func ParseDokuWiki(content string) string {
 }
 
 // processDokuWikiCodeBlocks handles all code block syntaxes
-func processDokuWikiCodeBlocks(content string) string {
-	// <code language> ... </code>
+func (h *DokuwikiHandler) processDokuWikiCodeBlocks(content string) string {
 	content = regexp.MustCompile(`(?s)<code\s+([a-zA-Z0-9_-]+)>(.*?)</code>`).ReplaceAllStringFunc(content, func(match string) string {
 		re := regexp.MustCompile(`(?s)<code\s+([a-zA-Z0-9_-]+)>(.*?)</code>`)
 		matches := re.FindStringSubmatch(match)
@@ -67,10 +109,9 @@ func processDokuWikiCodeBlocks(content string) string {
 		}
 		language := strings.TrimSpace(matches[1])
 		code := strings.TrimSpace(matches[2])
-		return fmt.Sprintf(`<pre><code class="language-%s">%s</code></pre>`, language, escapeHTML(code))
+		return fmt.Sprintf(`<pre><code class="language-%s">%s</code></pre>`, language, h.escapeHTML(code))
 	})
 
-	// <code> ... </code> (no language)
 	content = regexp.MustCompile(`(?s)<code>(.*?)</code>`).ReplaceAllStringFunc(content, func(match string) string {
 		re := regexp.MustCompile(`(?s)<code>(.*?)</code>`)
 		matches := re.FindStringSubmatch(match)
@@ -78,10 +119,9 @@ func processDokuWikiCodeBlocks(content string) string {
 			return match
 		}
 		code := strings.TrimSpace(matches[1])
-		return fmt.Sprintf(`<pre><code class="language-plaintext">%s</code></pre>`, escapeHTML(code))
+		return fmt.Sprintf(`<pre><code class="language-plaintext">%s</code></pre>`, h.escapeHTML(code))
 	})
 
-	// <sxh language> ... </sxh> (syntaxhighlighter4)
 	content = regexp.MustCompile(`(?s)<sxh\s+([a-zA-Z0-9_-]+)>(.*?)</sxh>`).ReplaceAllStringFunc(content, func(match string) string {
 		re := regexp.MustCompile(`(?s)<sxh\s+([a-zA-Z0-9_-]+)>(.*?)</sxh>`)
 		matches := re.FindStringSubmatch(match)
@@ -90,10 +130,9 @@ func processDokuWikiCodeBlocks(content string) string {
 		}
 		language := strings.TrimSpace(matches[1])
 		code := strings.TrimSpace(matches[2])
-		return fmt.Sprintf(`<pre><code class="language-%s">%s</code></pre>`, language, escapeHTML(code))
+		return fmt.Sprintf(`<pre><code class="language-%s">%s</code></pre>`, language, h.escapeHTML(code))
 	})
 
-	// <codify language> ... </codify>
 	content = regexp.MustCompile(`(?s)<codify\s+([a-zA-Z0-9_-]+)>(.*?)</codify>`).ReplaceAllStringFunc(content, func(match string) string {
 		re := regexp.MustCompile(`(?s)<codify\s+([a-zA-Z0-9_-]+)>(.*?)</codify>`)
 		matches := re.FindStringSubmatch(match)
@@ -102,14 +141,14 @@ func processDokuWikiCodeBlocks(content string) string {
 		}
 		language := strings.TrimSpace(matches[1])
 		code := strings.TrimSpace(matches[2])
-		return fmt.Sprintf(`<pre><code class="language-%s">%s</code></pre>`, language, escapeHTML(code))
+		return fmt.Sprintf(`<pre><code class="language-%s">%s</code></pre>`, language, h.escapeHTML(code))
 	})
 
 	return content
 }
 
 // escapeHTML escapes HTML special characters in code
-func escapeHTML(s string) string {
+func (h *DokuwikiHandler) escapeHTML(s string) string {
 	s = strings.ReplaceAll(s, "&", "&amp;")
 	s = strings.ReplaceAll(s, "<", "&lt;")
 	s = strings.ReplaceAll(s, ">", "&gt;")
@@ -119,8 +158,7 @@ func escapeHTML(s string) string {
 }
 
 // processDokuWikiFolded converts folded plugin syntax to HTML details/summary
-func processDokuWikiFolded(content string) string {
-	// ++++ Title | Content ++++
+func (h *DokuwikiHandler) processDokuWikiFolded(content string) string {
 	re := regexp.MustCompile(`(?s)\+{4,}\s*([^|]+?)\s*\|\s*(.*?)\s*\+{4,}`)
 
 	content = re.ReplaceAllStringFunc(content, func(match string) string {
@@ -142,8 +180,7 @@ func processDokuWikiFolded(content string) string {
 }
 
 // replaceTablesWithHTMX replaces table syntax with HTMX loading div
-func replaceTablesWithHTMX(content string) string {
-	// detect tables and replace with HTMX loader
+func (h *DokuwikiHandler) replaceTablesWithHTMX(content string) string {
 	lines := strings.Split(content, "\n")
 	var result []string
 	var inTable bool
@@ -151,11 +188,9 @@ func replaceTablesWithHTMX(content string) string {
 	for _, line := range lines {
 		if strings.HasPrefix(line, "^") || strings.HasPrefix(line, "|") {
 			if !inTable {
-				// start of table - add HTMX placeholder
 				result = append(result, `<div id="table-wrapper" hx-get="/api/components/table?filepath={{FILEPATH}}&page=1&size=25" hx-trigger="load" hx-swap="innerHTML">Loading table...</div>`)
 				inTable = true
 			}
-			// skip table lines
 		} else {
 			if inTable {
 				inTable = false
@@ -167,9 +202,8 @@ func replaceTablesWithHTMX(content string) string {
 	return strings.Join(result, "\n")
 }
 
-// ProcessDokuWikiLinks converts DokuWiki-style links to HTML
-func ProcessDokuWikiLinks(content string) string {
-	// [[link]] or [[link|title]]
+// processDokuWikiLinks converts DokuWiki-style links to HTML
+func (h *DokuwikiHandler) processDokuWikiLinks(content string) string {
 	re := regexp.MustCompile(`\[\[([^\]|]+)(?:\|([^\]]+))?\]\]`)
 
 	content = re.ReplaceAllStringFunc(content, func(match string) string {
@@ -184,7 +218,6 @@ func ProcessDokuWikiLinks(content string) string {
 			title = strings.TrimSpace(matches[2])
 		}
 
-		// ensure extension
 		if !strings.HasSuffix(link, ".md") && !strings.HasSuffix(link, ".txt") {
 			link += ".txt"
 		}
@@ -195,19 +228,17 @@ func ProcessDokuWikiLinks(content string) string {
 	return content
 }
 
-// ExtractDokuWikiLinks extracts all links from dokuwiki content
-func ExtractDokuWikiLinks(content string) []string {
+// extractDokuWikiLinks extracts all links from dokuwiki content
+func (h *DokuwikiHandler) extractDokuWikiLinks(content string) []string {
 	var links []string
 	linkSet := make(map[string]bool)
 
-	// [[link]] or [[link|title]] pattern
 	re := regexp.MustCompile(`\[\[([^\]|]+)(?:\|[^\]]+)?\]\]`)
 	matches := re.FindAllStringSubmatch(content, -1)
 
 	for _, match := range matches {
 		if len(match) > 1 {
 			link := strings.TrimSpace(match[1])
-			// clean up path
 			if idx := strings.Index(link, "|"); idx != -1 {
 				link = link[:idx]
 			}
@@ -224,7 +255,7 @@ func ExtractDokuWikiLinks(content string) []string {
 }
 
 // ParseDokuWikiTable extracts table data from dokuwiki content
-func ParseDokuWikiTable(content string) (*TableData, error) {
+func (h *DokuwikiHandler) ParseDokuWikiTable(content string) (*TableData, error) {
 	lines := strings.Split(content, "\n")
 	var headers []TableHeader
 	var rows [][]TableCell
@@ -242,14 +273,14 @@ func ParseDokuWikiTable(content string) (*TableData, error) {
 			line = strings.TrimSuffix(line, "^")
 			line = strings.TrimSuffix(line, "|")
 
-			cells := splitMixedDelimiters(line)
-			isHeaderRow := !headerParsed && isMajorityHeaderCells(line)
+			cells := h.splitMixedDelimiters(line)
+			isHeaderRow := !headerParsed && h.isMajorityHeaderCells(line)
 
 			if isHeaderRow {
 				for idx, cell := range cells {
 					cellContent := strings.TrimSpace(cell)
-					align := detectCellAlignment(cell)
-					dataType := detectCellType(cellContent)
+					align := h.detectCellAlignment(cell)
+					dataType := h.detectCellType(cellContent)
 
 					headers = append(headers, TableHeader{
 						Content:   cellContent,
@@ -264,8 +295,8 @@ func ParseDokuWikiTable(content string) (*TableData, error) {
 				var row []TableCell
 				for i, cell := range cells {
 					cellContent := strings.TrimSpace(cell)
-					align := detectCellAlignment(cell)
-					dataType := detectCellType(cellContent)
+					align := h.detectCellAlignment(cell)
+					dataType := h.detectCellType(cellContent)
 
 					if i < len(headers) {
 						if headers[i].Align != "" {
@@ -297,65 +328,132 @@ func ParseDokuWikiTable(content string) (*TableData, error) {
 	}, nil
 }
 
-func splitMixedDelimiters(line string) []string {
+func (h *DokuwikiHandler) splitMixedDelimiters(line string) []string {
 	var cells []string
-	var current strings.Builder
+	var currentCell strings.Builder
 
-	for _, ch := range line {
-		if ch == '^' || ch == '|' {
-			if current.Len() > 0 || len(cells) > 0 {
-				cells = append(cells, current.String())
-				current.Reset()
+	for _, char := range line {
+		if char == '^' || char == '|' {
+			if currentCell.Len() > 0 || len(cells) > 0 {
+				cells = append(cells, currentCell.String())
+				currentCell.Reset()
 			}
 		} else {
-			current.WriteRune(ch)
+			currentCell.WriteRune(char)
 		}
 	}
 
-	if current.Len() > 0 {
-		cells = append(cells, current.String())
+	if currentCell.Len() > 0 {
+		cells = append(cells, currentCell.String())
 	}
 
 	return cells
 }
 
-func isMajorityHeaderCells(line string) bool {
-	carets := strings.Count(line, "^")
-	pipes := strings.Count(line, "|")
-	return carets > pipes
+func (h *DokuwikiHandler) isMajorityHeaderCells(line string) bool {
+	headerCount := strings.Count(line, "^")
+	normalCount := strings.Count(line, "|")
+	return headerCount > normalCount
 }
 
-func detectCellAlignment(cell string) string {
+func (h *DokuwikiHandler) detectCellAlignment(cell string) string {
 	trimmed := strings.TrimSpace(cell)
-	if trimmed == "" {
-		return ""
+	if len(trimmed) == 0 {
+		return "left"
 	}
 
 	leftSpaces := len(cell) - len(strings.TrimLeft(cell, " "))
 	rightSpaces := len(cell) - len(strings.TrimRight(cell, " "))
 
-	if leftSpaces > 1 && rightSpaces > 1 {
+	if leftSpaces > 0 && rightSpaces > 0 && leftSpaces == rightSpaces {
 		return "center"
-	} else if rightSpaces > 1 {
+	}
+	if rightSpaces > leftSpaces {
 		return "right"
 	}
 	return "left"
 }
 
-func detectCellType(content string) string {
+func (h *DokuwikiHandler) detectCellType(content string) string {
 	content = strings.TrimSpace(content)
-	if content == "" {
-		return "text"
-	}
 
-	if matched, _ := regexp.MatchString(`^-?\d+\.?\d*$`, content); matched {
+	if matched, _ := regexp.MatchString(`^[$€£¥]\s*[\d,]+\.?\d*$`, content); matched {
+		return "currency"
+	}
+	if matched, _ := regexp.MatchString(`^\d+\.?\d*$`, content); matched {
 		return "number"
 	}
 	if matched, _ := regexp.MatchString(`^\d{4}-\d{2}-\d{2}$`, content); matched {
 		return "date"
 	}
-	if matched, _ := regexp.MatchString(`^[$€£¥]\s*\d`, content); matched {
-		return "currency"
+	if matched, _ := regexp.MatchString(`^\d{2}\.\d{2}\.\d{4}$`, content); matched {
+		return "date"
 	}
+
 	return "text"
+}
+
+// processDokuWikiLists converts DokuWiki list syntax to HTML with support for nested lists
+func (h *DokuwikiHandler) processDokuWikiLists(content string) string {
+	lines := strings.Split(content, "\n")
+	var result []string
+	var listStack []string // tracks open list tags by level
+
+	for _, line := range lines {
+		trimmed := strings.TrimRight(line, " \t")
+
+		// detect list item and its level
+		var isListItem bool
+		var listType string
+		var level int
+		var item string
+
+		if match := regexp.MustCompile(`^(  +)(\*|-) (.+)$`).FindStringSubmatch(trimmed); match != nil {
+			level = len(match[1]) / 2
+			if match[2] == "*" {
+				listType = "ul"
+			} else {
+				listType = "ol"
+			}
+			item = match[3]
+			isListItem = true
+		}
+
+		if isListItem {
+			// close lists deeper than current level
+			for len(listStack) > level {
+				result = append(result, "</"+listStack[len(listStack)-1]+">")
+				listStack = listStack[:len(listStack)-1]
+			}
+
+			// check if we need to change list type at current level
+			if len(listStack) == level && listStack[level-1] != listType {
+				result = append(result, "</"+listStack[len(listStack)-1]+">")
+				listStack = listStack[:len(listStack)-1]
+			}
+
+			// open new lists up to current level
+			for len(listStack) < level {
+				result = append(result, "<"+listType+">")
+				listStack = append(listStack, listType)
+			}
+
+			result = append(result, "<li>"+item+"</li>")
+		} else {
+			// close all open lists
+			for len(listStack) > 0 {
+				result = append(result, "</"+listStack[len(listStack)-1]+">")
+				listStack = listStack[:len(listStack)-1]
+			}
+			result = append(result, line)
+		}
+	}
+
+	// close any remaining open lists
+	for len(listStack) > 0 {
+		result = append(result, "</"+listStack[len(listStack)-1]+">")
+		listStack = listStack[:len(listStack)-1]
+	}
+
+	return strings.Join(result, "\n")
 }
