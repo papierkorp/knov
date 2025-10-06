@@ -106,6 +106,7 @@ func StartServerChi() {
 			r.Get("/list", handleAPIGetAllFiles)
 			r.Get("/content/*", handleAPIGetFileContent)
 			r.Post("/filter", handleAPIFilterFiles)
+			r.Get("/header", handleAPIGetFileHeader)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -139,6 +140,9 @@ func StartServerChi() {
 			r.Get("/tags", handleAPIGetAllTags)
 			r.Get("/collections", handleAPIGetAllCollections)
 			r.Get("/folders", handleAPIGetAllFolders)
+			r.Get("/file/tags", handleAPIGetFileMetadataTags)
+			r.Get("/file/folders", handleAPIGetFileMetadataFolders)
+			r.Get("/file/collection", handleAPIGetFileMetadataCollection)
 		})
 
 		// ----------------------------------------------------------------------------------------

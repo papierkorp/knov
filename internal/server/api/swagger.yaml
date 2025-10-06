@@ -627,6 +627,21 @@ paths:
       summary: Filter files by metadata
       tags:
       - files
+  /api/files/header:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get file header with link and breadcrumb
+      tags:
+      - files
   /api/files/list:
     get:
       produces:
@@ -892,6 +907,67 @@ paths:
           schema:
             type: string
       summary: Set file creation date
+      tags:
+      - metadata
+  /api/metadata/file/collection:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get collection for a specific file
+      tags:
+      - metadata
+  /api/metadata/file/folders:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get folders for a specific file
+      tags:
+      - metadata
+  /api/metadata/file/tags:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get tags for a specific file
       tags:
       - metadata
   /api/metadata/filetype:

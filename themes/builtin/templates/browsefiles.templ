@@ -20,7 +20,13 @@ templ BrowseFiles(metadataType string, value string, query string, data thememan
 				<div
 					hx-post="/api/files/filter"
 					hx-trigger="load"
-					hx-vals={ `{"metadata[]": "` + metadataType + `", "operator[]": "equals", "value[]": "` + value + `", "action[]": "include", "logic": "and"}` }
+					if metadataType=="tags" || metadataType=="folders" {
+						hx-vals={ `{"metadata[]": "` + metadataType + `" , "operator[]" : "contains" , "value[]" : "` + value + `"
+            , "action[]" : "include" , "logic" : "and" }` }
+					} else {
+						hx-vals={ `{"metadata[]": "` + metadataType + `"
+            , "operator[]" : "equals" , "value[]" : "` + value + `" , "action[]" : "include" , "logic" : "and" }` }
+					}
 					class="filter-results"
 				>
 					{ translation.Sprintf("Loading files...") }

@@ -15,31 +15,19 @@ templ Overview(data thememanager.TemplateData) {
 					<div class="browse-grid">
 						<div class="browse-section">
 							<h3>{ translation.Sprintf("Tags") }</h3>
-							<div
-								hx-get="/api/metadata/tags"
-								hx-trigger="load"
-								hx-headers='{"Accept": "text/html"}'
-							>
+							<div hx-get="/api/metadata/tags" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
 								loading tags...
 							</div>
 						</div>
 						<div class="browse-section">
 							<h3>{ translation.Sprintf("Collections") }</h3>
-							<div
-								hx-get="/api/metadata/collections"
-								hx-trigger="load"
-								hx-headers='{"Accept": "text/html"}'
-							>
+							<div hx-get="/api/metadata/collections" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
 								loading collections...
 							</div>
 						</div>
 						<div class="browse-section">
 							<h3>{ translation.Sprintf("Folders") }</h3>
-							<div
-								hx-get="/api/metadata/folders"
-								hx-trigger="load"
-								hx-headers='{"Accept": "text/html"}'
-							>
+							<div hx-get="/api/metadata/folders" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
 								loading folders...
 							</div>
 						</div>
@@ -48,12 +36,18 @@ templ Overview(data thememanager.TemplateData) {
 				<section class="overview-files">
 					<h2>{ translation.Sprintf("All Files") }</h2>
 					<div class="files-list-container">
+						<div class="overview-breadcrumb">
+							<a href="/">{ translation.Sprintf("Home") }</a>
+							→ <span>{ translation.Sprintf("All Files") }</span>
+							<span id="current-file-breadcrumb"></span>
+						</div>
 						<div class="overview-list">
 							<div hx-get="/api/files/list" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
 								Loading files...
 							</div>
 						</div>
 						<hr/>
+						<div id="file-header"></div>
 						<div id="file-content"></div>
 					</div>
 				</section>

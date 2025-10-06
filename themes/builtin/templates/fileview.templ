@@ -116,7 +116,23 @@ templ FileViewDetailed(content string, filePath string, filename string, data th
 							<span class="label">Collection:</span>
 							<span
 								class="value"
-								hx-get={ "/api/metadata/collection?filepath=" + templ.URL(filePath) }
+								hx-get={ "/api/metadata/file/collection?filepath=" + templ.URL(filePath) }
+								hx-trigger="load"
+							>...</span>
+						</div>
+						<div class="meta-row">
+							<span class="label">Tags:</span>
+							<span
+								class="value"
+								hx-get={ "/api/metadata/file/tags?filepath=" + templ.URL(filePath) }
+								hx-trigger="load"
+							>...</span>
+						</div>
+						<div class="meta-row">
+							<span class="label">Folders:</span>
+							<span
+								class="value"
+								hx-get={ "/api/metadata/file/folders?filepath=" + templ.URL(filePath) }
 								hx-trigger="load"
 							>...</span>
 						</div>

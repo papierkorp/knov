@@ -182,8 +182,14 @@ func matchesCriterion(metadata *Metadata, criterion FilterCriteria) bool {
 	switch criterion.Metadata {
 	case "name":
 		fieldValue = metadata.Name
+	case "collection":
+		fieldValue = metadata.Collection
 	case "tags":
 		return matchesTagCriterion(metadata.Tags, criterion)
+	case "folders":
+		return matchesArrayCriterion(metadata.Folders, criterion)
+	case "boards":
+		return matchesArrayCriterion(metadata.Boards, criterion)
 	case "parents":
 		return matchesArrayCriterion(metadata.Parents, criterion)
 	case "kids":
@@ -196,6 +202,8 @@ func matchesCriterion(metadata *Metadata, criterion FilterCriteria) bool {
 		fieldValue = string(metadata.Priority)
 	case "status":
 		fieldValue = string(metadata.Status)
+	case "type":
+		fieldValue = string(metadata.FileType)
 	case "createdAt":
 		if !metadata.CreatedAt.IsZero() {
 			fieldValue = metadata.CreatedAt.Format(time.RFC3339)

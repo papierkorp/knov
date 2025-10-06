@@ -25,7 +25,15 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	var html strings.Builder
 	html.WriteString("<ul>")
 	for _, file := range allFiles {
-		html.WriteString(fmt.Sprintf(`<li><a href="#" hx-get="/files/%s?snippet=true" hx-target="#file-content">%s</a></li>`,
+		html.WriteString(fmt.Sprintf(`
+			<li>
+				<a href="#" 
+					hx-get="/files/%s?snippet=true" 
+					hx-target="#file-content"
+					hx-on::after-request="htmx.ajax('GET', '/api/files/header?filepath=%s', {target: '#file-header'})"
+				>%s</a>
+			</li>`,
+			file.Path,
 			file.Path,
 			file.Path))
 	}
@@ -125,4 +133,27 @@ func getFormValue(slice []string, index int) string {
 		return slice[index]
 	}
 	return ""
+}
+
+// @Summary Get file header with link and breadcrumb
+// @Tags files
+// @Param filepath query string true "File path"
+// @Produce json,html
+// @Router /api/files/header [get]
+func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	data := map[string]string{
+		"filepath": filepath,
+		"link":     "/files/" + filepath,
+	}
+
+	var html strings.Builder
+	html.WriteString(fmt.Sprintf(`<div id="current-file-breadcrumb"><a href="/files/%s">→ %s</a></div>`, filepath, filepath))
+
+	writeResponse(w, r, data, html.String())
 }

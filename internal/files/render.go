@@ -89,3 +89,29 @@ func BuildBrowseHTML(items map[string]int, urlPrefix string) string {
 	html.WriteString(`</ul>`)
 	return html.String()
 }
+
+// BuildMetadataLinksHTML creates HTML links for metadata items (tags, folders, collections)
+func BuildMetadataLinksHTML(items []string, browseType string) string {
+	if len(items) == 0 {
+		return `<span class="meta-empty">-</span>`
+	}
+
+	var html strings.Builder
+	for i, item := range items {
+		if i > 0 {
+			html.WriteString(", ")
+		}
+		html.WriteString(fmt.Sprintf(`<a href="/browse/%s/%s" class="meta-link">%s</a>`, browseType, item, item))
+	}
+
+	return html.String()
+}
+
+// BuildMetadataLinkHTML creates a single HTML link for metadata (e.g., collection)
+func BuildMetadataLinkHTML(item string, browseType string) string {
+	if item == "" {
+		return `<span class="meta-empty">-</span>`
+	}
+
+	return fmt.Sprintf(`<a href="/browse/%s/%s" class="meta-link">%s</a>`, browseType, item, item)
+}

@@ -574,3 +574,54 @@
   white-space: normal;
   word-break: break-word;
 }
+
+#view-fileview-detailed .meta-row .meta-link {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+#view-fileview-detailed .meta-row .meta-link:hover {
+  color: var(--white);
+  text-decoration: underline;
+}
+
+#view-fileview-detailed .meta-row .meta-empty {
+  color: var(--neutral);
+  font-style: italic;
+  opacity: 0.6;
+}
+
+view-fileview-detailed .meta-row .meta-link {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+#view-fileview-detailed .meta-row .meta-link:hover {
+  color: var(--white);
+  text-decoration: underline;
+}
+
+#view-fileview-detailed .meta-row .meta-empty {
+  color: var(--neutral);
+  font-style: italic;
+  opacity: 0.6;
+}
+
+#view-fileview-detailed .meta-row .meta-link {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+#view-fileview-detailed .meta-row .meta-link:hover {
+  color: var(--white);
+  text-decoration: underline;
+}
+
+#view-fileview-detailed .meta-row .meta-empty {
+  color: var(--neutral);
+  font-style: italic;
+  opacity: 0.6;
+}

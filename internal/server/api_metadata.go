@@ -751,17 +751,86 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, folders, html)
 }
 
-// buildBrowseHTML creates HTML list for metadata browsing with counts
-func buildBrowseHTML(items map[string]int, urlPrefix string) string {
-	var html strings.Builder
-	html.WriteString(`<ul class="search-results-simple-list">`)
-
-	for item, count := range items {
-		html.WriteString(fmt.Sprintf(`
-			<li><a href="%s/%s">%s (%d)</a></li>`,
-			urlPrefix, item, item, count))
+// @Summary Get tags for a specific file
+// @Tags metadata
+// @Param filepath query string true "File path"
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/metadata/file/tags [get]
+func handleAPIGetFileMetadataTags(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
 	}
 
-	html.WriteString(`</ul>`)
-	return html.String()
+	metadata, err := files.MetaDataGet(filepath)
+	if err != nil {
+		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
+		return
+	}
+
+	if metadata == nil {
+		http.Error(w, "metadata not found", http.StatusNotFound)
+		return
+	}
+
+	html := files.BuildMetadataLinksHTML(metadata.Tags, "tags")
+	writeResponse(w, r, metadata.Tags, html)
+}
+
+// @Summary Get folders for a specific file
+// @Tags metadata
+// @Param filepath query string true "File path"
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/metadata/file/folders [get]
+func handleAPIGetFileMetadataFolders(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	metadata, err := files.MetaDataGet(filepath)
+	if err != nil {
+		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
+		return
+	}
+
+	if metadata == nil {
+		http.Error(w, "metadata not found", http.StatusNotFound)
+		return
+	}
+
+	html := files.BuildMetadataLinksHTML(metadata.Folders, "folders")
+	writeResponse(w, r, metadata.Folders, html)
+}
+
+// @Summary Get collection for a specific file
+// @Tags metadata
+// @Param filepath query string true "File path"
+// @Produce json,html
+// @Success 200 {string} string
+// @Router /api/metadata/file/collection [get]
+func handleAPIGetFileMetadataCollection(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	metadata, err := files.MetaDataGet(filepath)
+	if err != nil {
+		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
+		return
+	}
+
+	if metadata == nil {
+		http.Error(w, "metadata not found", http.StatusNotFound)
+		return
+	}
+
+	html := files.BuildMetadataLinkHTML(metadata.Collection, "collection")
+	writeResponse(w, r, metadata.Collection, html)
 }
