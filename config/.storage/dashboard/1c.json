@@ -1,1 +1,1 @@
-{"name":"1c","id":"1c","layout":"oneColumn","widgets":[{"id":"widget-0","type":"tags","position":{"x":0,"y":0},"config":{}}],"global":true}
+{"name":"1c","id":"1c","layout":"threeColumns","widgets":[{"id":"widget-0","type":"tags","position":{"x":0,"y":0},"config":{}},{"id":"widget-1","type":"collections","position":{"x":0,"y":0},"config":{}},{"id":"widget-2","type":"folders","position":{"x":0,"y":0},"config":{}}],"global":true}

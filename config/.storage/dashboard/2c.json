@@ -1,1 +1,1 @@
-{"name":"2c","id":"2c","layout":"twoColumns","widgets":[{"id":"widget-0","type":"tags","position":{"x":0,"y":0},"config":{}},{"id":"widget-1","type":"collections","position":{"x":0,"y":1},"config":{}}],"global":true}
+{"name":"2f","id":"2c","layout":"threeColumns","widgets":[{"id":"widget-0","type":"filter","position":{"x":0,"y":0},"config":{"filter":{"criteria":[{"metadata":"collection","operator":"equals","value":"sirconic","action":"include"}],"logic":"and","display":"list","limit":1000}}}],"global":true}
