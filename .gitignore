@@ -200,3 +200,6 @@ dist
 data/
 data/*
 bin/
+config/.storage
+config/search.db
+config/.last_processed_commit

@@ -2,7 +2,6 @@ package templates
 
 import (
 	"knov/internal/configmanager"
-	"knov/internal/plugins"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
@@ -23,11 +22,11 @@ func getAvailableLanguages() []Language {
 func getBuiltinCSSEditor() string {
 	editorHTML := `<div id="customCssEditor">
     <h3>` + translation.Sprintf("Custom CSS") + `</h3>
-    <form hx-post="/plugins/customCSS" hx-trigger="blur from:textarea">
+    <form hx-post="/api/config/customCSS" hx-trigger="blur from:textarea">
         <textarea name="css" rows="20" style="width: 100%; font-family: monospace;">{{CSS_CONTENT}}</textarea>
     </form>
 </div>`
-	return plugins.GetCustomCSSEditor(editorHTML)
+	return configmanager.GetCustomCSSEditor(editorHTML)
 }
 
 templ Settings(data thememanager.TemplateData) {

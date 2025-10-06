@@ -8,15 +8,15 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"knov/internal/configmanager"
 	"knov/internal/files"
-	"knov/internal/plugins"
 	_ "knov/internal/server/api" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/utils"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 // StartServerChi ...
@@ -64,14 +64,6 @@ func StartServerChi() {
 	r.Handle("/static/*", http.StripPrefix("/static/", fs)) // else css files are served as text files
 
 	// ----------------------------------------------------------------------------------------
-	// ------------------------------------- plugin routes -------------------------------------
-	// ----------------------------------------------------------------------------------------
-
-	r.Route("/plugins", func(r chi.Router) {
-		r.HandleFunc("/customCSS", plugins.HandleCustomCSS)
-	})
-
-	// ----------------------------------------------------------------------------------------
 	// -------------------------------------- api routes --------------------------------------
 	// ----------------------------------------------------------------------------------------
 
@@ -97,6 +89,7 @@ func StartServerChi() {
 			r.Post("/setRepositoryURL", handleAPISetGitRepositoryURL)
 			r.Get("/getAvailableFileViews", handleAPIGetAvailableFileViews)
 			r.Post("/setFileView", handleAPISetFileView)
+			r.Post("/customCSS", handleCustomCSS)
 		})
 
 		// ----------------------------------------------------------------------------------------

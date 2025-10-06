@@ -127,3 +127,24 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	html := `<span class="status-ok">repository URL saved</span>`
 	writeResponse(w, r, data, html)
 }
+
+// handleCustomCSS ..
+func handleCustomCSS(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		logging.LogDebug("failed to parse form: %v", err)
+		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	css := r.FormValue("css")
+
+	if err := os.WriteFile("config/custom.css", []byte(css), 0644); err != nil {
+		logging.LogDebug("failed to save css: %v", err)
+		http.Error(w, "failed to save css", http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogDebug("saved custom css successfully")
+	w.Header().Set("HX-Refresh", "true")
+	w.WriteHeader(http.StatusOK)
+}
