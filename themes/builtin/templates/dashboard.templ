@@ -9,8 +9,8 @@ templ Dashboard(data thememanager.TemplateData) {
 	@Base(data.Dashboard.Name) {
 		<div id="page-dashboard">
 			<h1>{ data.Dashboard.Name }</h1>
-			<div class="dashboard-layout dashboard-{ string(data.Dashboard.Layout) }">
-				<div class="dashboard-widgets">
+			<div class="dashboard-layout">
+				<div class={ "dashboard-widgets dashboard-" + string(data.Dashboard.Layout) }>
 					for _, widget := range data.Dashboard.Widgets {
 						<div class="dashboard-widget" data-widget-id={ widget.ID }>
 							<h3>{ string(widget.Type) }</h3>

@@ -158,9 +158,6 @@ templ edit() {
         document.getElementById('edit-link').href = `/dashboard/edit/${id}`;
         document.getElementById('rename-form').setAttribute('hx-post', `/api/dashboards/${id}/rename`);
         document.getElementById('delete-form').setAttribute('hx-delete', `/api/dashboards/${id}`);
-        document.getElementById('edit-dropdown').style.display = 'block';
-    } else {
-        document.getElementById('edit-dropdown').style.display = 'none';
     }
 </script>
 }
