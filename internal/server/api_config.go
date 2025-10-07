@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/logging"
@@ -128,23 +129,43 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, data, html)
 }
 
-// handleCustomCSS ..
+// @Summary Save custom CSS for current user
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param css formData string true "CSS content"
+// @Produce json,html
+// @Success 200 {string} string "css saved"
+// @Router /api/config/customCSS [post]
 func handleCustomCSS(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		logging.LogDebug("failed to parse form: %v", err)
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
-		return
-	}
-
+	r.ParseForm()
 	css := r.FormValue("css")
 
-	if err := os.WriteFile("config/custom.css", []byte(css), 0644); err != nil {
-		logging.LogDebug("failed to save css: %v", err)
-		http.Error(w, "failed to save css", http.StatusInternalServerError)
-		return
-	}
+	settings := configmanager.GetUserSettings()
+	settings.CustomCSS = css
+	configmanager.SetUserSettings(settings)
 
-	logging.LogDebug("saved custom css successfully")
-	w.Header().Set("HX-Refresh", "true")
-	w.WriteHeader(http.StatusOK)
+	data := "css saved"
+	html := `<span class="status-ok">custom css saved</span>`
+	writeResponse(w, r, data, html)
+}
+
+// @Summary Restart application
+// @Description Restarts the application (requires process manager like systemd or docker)
+// @Tags system
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Success 200 {string} string "restarting"
+// @Router /api/system/restart [post]
+func handleAPIRestartApp(w http.ResponseWriter, r *http.Request) {
+	logging.LogInfo("application restart requested")
+
+	data := "restarting"
+	html := `<span class="status-ok">restarting application...</span>`
+	writeResponse(w, r, data, html)
+
+	// give response time to send
+	go func() {
+		time.Sleep(500 * time.Millisecond)
+		os.Exit(0)
+	}()
 }

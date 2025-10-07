@@ -14,11 +14,36 @@ func logDebug(msg string, args ...interface{}) string {
 templ Home(data thememanager.TemplateData) {
 	@Base(translation.Sprintf("Home")) {
 		<div id="page-home">
-			<a href="http://localhost:1324/files/project-overview.md">Project Overview</a>
-			<a href="http://localhost:1324/dashboard">/dashboard</a>
-			<a href="http://localhost:1324/dashboard/asdf">/dashboard/asdf</a>
+			<ul>
+				<li><a href="http://localhost:1324/files/project-overview.md">Project Overview</a></li>
+				<li><a href="http://localhost:1324/dashboard">/dashboard</a></li>
+				<li><a href="http://localhost:1324/dashboard/asdf">/dashboard/asdf</a></li>
+			</ul>
 			<h1>{ translation.Sprintf("Hello World from templ at home in the dark!") }</h1>
 			<hr/>
+			<section class="overview-browse">
+				<h2>{ translation.Sprintf("Browse by Metadata") }</h2>
+				<div class="browse-grid">
+					<div class="browse-section">
+						<h3>{ translation.Sprintf("Tags") }</h3>
+						<div hx-get="/api/metadata/tags" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+							loading tags...
+						</div>
+					</div>
+					<div class="browse-section">
+						<h3>{ translation.Sprintf("Collections") }</h3>
+						<div hx-get="/api/metadata/collections" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+							loading collections...
+						</div>
+					</div>
+					<div class="browse-section">
+						<h3>{ translation.Sprintf("Folders") }</h3>
+						<div hx-get="/api/metadata/folders" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+							loading folders...
+						</div>
+					</div>
+				</div>
+			</section>
 		</div>
 	}
 }

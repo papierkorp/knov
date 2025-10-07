@@ -71,6 +71,15 @@ func StartServerChi() {
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/health", handleAPIHealth)
 		r.Get("/search", handleAPISearch)
+
+		// ----------------------------------------------------------------------------------------
+		// ------------------------------------ system routes ------------------------------------
+		// ----------------------------------------------------------------------------------------
+
+		r.Route("/system", func(r chi.Router) {
+			r.Post("/restart", handleAPIRestartApp)
+		})
+
 		// ----------------------------------------------------------------------------------------
 		// ---------------------------------------- THEMES ----------------------------------------
 		// ----------------------------------------------------------------------------------------
@@ -204,20 +213,21 @@ func handleCSS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 
 	cssFile := strings.TrimPrefix(r.URL.Path, "/static/css/")
-	var cssPath string
 
 	switch cssFile {
+	case "custom.css":
+		customCSS := configmanager.GetUserSettings().CustomCSS
+		w.Write([]byte(customCSS))
+		return
 	case "style.css":
 		themeName := thememanager.GetThemeManager().GetCurrentThemeName()
-		cssPath = filepath.Join("themes", themeName, "templates", "style.css")
-	case "custom.css":
-		cssPath = "config/custom.css"
+		cssPath := filepath.Join("themes", themeName, "templates", "style.css")
+		http.ServeFile(w, r, cssPath)
 	default:
 		themeName := thememanager.GetThemeManager().GetCurrentThemeName()
-		cssPath = filepath.Join("themes", themeName, "templates", cssFile)
+		cssPath := filepath.Join("themes", themeName, "templates", cssFile)
+		http.ServeFile(w, r, cssPath)
 	}
-
-	http.ServeFile(w, r, cssPath)
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {

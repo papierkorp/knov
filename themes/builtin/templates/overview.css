@@ -4,40 +4,6 @@
     gap: 30px;
 }
 
-#page-overview .overview-browse {
-    background: color-mix(in srgb, var(--neutral) 5%, transparent);
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid color-mix(in srgb, var(--neutral) 20%, transparent);
-}
-
-#page-overview .overview-browse h2 {
-    margin: 0 0 20px 0;
-    color: var(--accent);
-    font-size: 18px;
-}
-
-#page-overview .browse-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
-}
-
-#page-overview .browse-section {
-    background: var(--black);
-    padding: 15px;
-    border-radius: 6px;
-    border: 1px solid var(--neutral);
-}
-
-#page-overview .browse-section h3 {
-    margin: 0 0 10px 0;
-    color: var(--primary);
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
 #page-overview .overview-files h2 {
     color: var(--accent);
     font-size: 18px;
@@ -49,13 +15,51 @@
     grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 
+#page-overview #current-file-breadcrumb {
+    margin: 40px 20px;
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
-    #page-overview .browse-grid {
+    #page-home .browse-grid {
         grid-template-columns: 1fr;
     }
 
     #page-overview .files-list-container ul {
         grid-template-columns: 1fr;
     }
+}
+
+#page-home .overview-browse {
+    background: color-mix(in srgb, var(--neutral) 5%, transparent);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--neutral) 20%, transparent);
+}
+
+#page-home .overview-browse h2 {
+    margin: 0 0 20px 0;
+    color: var(--accent);
+    font-size: 18px;
+}
+
+#page-home .browse-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+#page-home .browse-section {
+    background: var(--black);
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid var(--neutral);
+}
+
+#page-home .browse-section h3 {
+    margin: 0 0 10px 0;
+    color: var(--primary);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }

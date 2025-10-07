@@ -79,12 +79,6 @@ templ ThemeSection(data thememanager.TemplateData) {
 			</form>
 		</div>
 		<div class="setting-item">
-			<label>
-				{ translation.Sprintf("Dark Mode") }
-				<input type="checkbox" name="darkMode"/>
-			</label>
-		</div>
-		<div class="setting-item">
 			<form hx-post="/api/config/setFileView" hx-trigger="change">
 				<label for="fileView">Select File View:</label>
 				<select name="fileView" id="fileView" hx-get="/api/config/getAvailableFileViews" hx-trigger="load">

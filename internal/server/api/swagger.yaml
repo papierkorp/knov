@@ -283,6 +283,27 @@ paths:
       summary: Get paginated table
       tags:
       - components
+  /api/config/customCSS:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: CSS content
+        in: formData
+        name: css
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: css saved
+          schema:
+            type: string
+      summary: Save custom CSS for current user
+      tags:
+      - config
   /api/config/getAvailableFileViews:
     get:
       produces:
@@ -1331,6 +1352,23 @@ paths:
       summary: Search files
       tags:
       - search
+  /api/system/restart:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Restarts the application (requires process manager like systemd
+        or docker)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: restarting
+          schema:
+            type: string
+      summary: Restart application
+      tags:
+      - system
   /api/testdata/clean:
     post:
       description: Removes all test data files and metadata

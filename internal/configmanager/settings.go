@@ -20,9 +20,10 @@ var currentUserID string
 
 // UserSettings contains user-specific settings stored in JSON
 type UserSettings struct {
-	Theme    string `json:"theme"`
-	Language string `json:"language"`
-	FileView string `json:"fileView"`
+	Theme     string `json:"theme"`
+	Language  string `json:"language"`
+	FileView  string `json:"fileView"`
+	CustomCSS string `json:"customCSS"`
 }
 
 // InitUserSettings initializes user settings from JSON file for specific user

@@ -90,6 +90,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/config/customCSS": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Save custom CSS for current user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "CSS content",
+                        "name": "css",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "css saved",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/config/getAvailableFileViews": {
             "get": {
                 "produces": [
@@ -1649,6 +1681,30 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {}
+            }
+        },
+        "/api/system/restart": {
+            "post": {
+                "description": "Restarts the application (requires process manager like systemd or docker)",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Restart application",
+                "responses": {
+                    "200": {
+                        "description": "restarting",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/api/testdata/clean": {
