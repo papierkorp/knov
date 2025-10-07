@@ -168,6 +168,39 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/config/setDataPath": {
+            "post": {
+                "description": "updates data path in .env file (requires restart)",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update data path",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "data path",
+                        "name": "dataPath",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "saved",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/config/setFileView": {
             "post": {
                 "consumes": [
@@ -202,6 +235,7 @@ const docTemplate = `{
         },
         "/api/config/setRepositoryURL": {
             "post": {
+                "description": "updates git repository url in .env file (requires restart)",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -212,8 +246,24 @@ const docTemplate = `{
                 "tags": [
                     "config"
                 ],
-                "summary": "Set git repository URL",
-                "responses": {}
+                "summary": "Update git repository URL",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "repository url",
+                        "name": "repositoryUrl",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "saved",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/api/dashboards": {

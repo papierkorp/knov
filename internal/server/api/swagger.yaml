@@ -335,6 +335,28 @@ paths:
       summary: Get git repository URL
       tags:
       - config
+  /api/config/setDataPath:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: updates data path in .env file (requires restart)
+      parameters:
+      - description: data path
+        in: formData
+        name: dataPath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: saved
+          schema:
+            type: string
+      summary: Update data path
+      tags:
+      - config
   /api/config/setFileView:
     post:
       consumes:
@@ -361,11 +383,22 @@ paths:
     post:
       consumes:
       - application/x-www-form-urlencoded
+      description: updates git repository url in .env file (requires restart)
+      parameters:
+      - description: repository url
+        in: formData
+        name: repositoryUrl
+        required: true
+        type: string
       produces:
       - application/json
       - text/html
-      responses: {}
-      summary: Set git repository URL
+      responses:
+        "200":
+          description: saved
+          schema:
+            type: string
+      summary: Update git repository URL
       tags:
       - config
   /api/dashboards:

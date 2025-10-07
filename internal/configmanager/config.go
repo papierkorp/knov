@@ -2,10 +2,12 @@
 package configmanager
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"knov/internal/logging"
 )
@@ -31,6 +33,8 @@ type AppConfig struct {
 
 // InitAppConfig initializes app config from environment variables
 func InitAppConfig() {
+	loadEnvFile()
+
 	appConfig = AppConfig{
 		DataPath:     getEnv("KNOV_DATA_PATH", "data"),
 		ServerPort:   getEnv("KNOV_SERVER_PORT", "1324"),
@@ -68,10 +72,6 @@ func getEnv(key, defaultValue string) string {
 	}
 	return defaultValue
 }
-
-// -----------------------------------------------------------------------------
-// --------------------------------- Log Level ---------------------------------
-// -----------------------------------------------------------------------------
 
 func initLogLevel() {
 	logLevel := appConfig.LogLevel
@@ -139,4 +139,61 @@ func InitGitRepository() error {
 // GetSearchEngine ..
 func GetSearchEngine() string {
 	return appConfig.SearchEngine
+}
+
+// UpdateEnvFile updates .env file with new values
+func UpdateEnvFile(key, value string) error {
+	envPath := ".env"
+
+	content := ""
+	if data, err := os.ReadFile(envPath); err == nil {
+		content = string(data)
+	}
+
+	lines := strings.Split(content, "\n")
+	found := false
+	for i, line := range lines {
+		if strings.HasPrefix(line, key+"=") {
+			lines[i] = fmt.Sprintf("%s=%s", key, value)
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		lines = append(lines, fmt.Sprintf("%s=%s", key, value))
+	}
+
+	newContent := strings.Join(lines, "\n")
+	return os.WriteFile(envPath, []byte(newContent), 0644)
+}
+
+func loadEnvFile() {
+	envPath := ".env"
+	if _, err := os.Stat(envPath); os.IsNotExist(err) {
+		logging.LogInfo("no .env file found, using environment variables and defaults")
+		return
+	}
+
+	data, err := os.ReadFile(envPath)
+	if err != nil {
+		logging.LogWarning("failed to read .env file: %v", err)
+		return
+	}
+
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+			os.Setenv(key, value)
+		}
+	}
+
+	logging.LogInfo(".env file loaded")
 }

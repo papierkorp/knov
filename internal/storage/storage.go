@@ -2,7 +2,6 @@
 package storage
 
 import (
-	"knov/internal/configmanager"
 	"knov/internal/logging"
 )
 
@@ -23,13 +22,11 @@ type StorageManager struct {
 }
 
 // Init initializes the global storage manager
-func Init() {
-	storageType := configmanager.GetStorageMethod()
-
+func Init(storageMethod string) {
 	var backend Storage
 	var err error
 
-	switch storageType {
+	switch storageMethod {
 	case "json":
 		backend, err = NewJSONStorage()
 	case "sqlite":
@@ -39,7 +36,7 @@ func Init() {
 		logging.LogError("postgres storage not implemented yet, using json")
 		backend, err = NewJSONStorage()
 	default:
-		logging.LogWarning("unknown storage type '%s', using json", storageType)
+		logging.LogWarning("unknown storage type '%s', using json", storageMethod)
 		backend, err = NewJSONStorage()
 	}
 
@@ -49,7 +46,7 @@ func Init() {
 	}
 
 	globalStorageManager = &StorageManager{backend: backend}
-	logging.LogInfo("storage initialized: %s", storageType)
+	logging.LogInfo("storage initialized: %s", storageMethod)
 }
 
 // Get retrieves data by key

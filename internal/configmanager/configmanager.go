@@ -6,12 +6,6 @@ import (
 	"knov/internal/translation"
 )
 
-// Init initializes both app config and user settings
-func Init() {
-	InitAppConfig()
-	InitUserSettings("default") // default user for now
-}
-
 // -----------------------------------------------------------------------------
 // ---------------------------------- Language ---------------------------------
 // -----------------------------------------------------------------------------

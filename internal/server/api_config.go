@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -73,59 +72,26 @@ func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, repositoryURL, html)
 }
 
-// @Summary Set git repository URL
+// @Summary Update git repository URL
+// @Description updates git repository url in .env file (requires restart)
 // @Tags config
 // @Accept application/x-www-form-urlencoded
+// @Param repositoryUrl formData string true "repository url"
 // @Produce json,html
+// @Success 200 {string} string "saved"
 // @Router /api/config/setRepositoryURL [post]
 func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	repositoryURL := r.FormValue("repositoryUrl")
 
-	logging.LogDebug("received repositoryUrl: '%s'", repositoryURL)
-
-	if repositoryURL == "" {
-		logging.LogError("empty repositoryUrl")
-		http.Error(w, "repositoryUrl cannot be empty", http.StatusBadRequest)
+	if err := configmanager.UpdateEnvFile("KNOV_GIT_REPO_URL", repositoryURL); err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, "failed to save", http.StatusInternalServerError)
 		return
 	}
-
-	appConfig := configmanager.GetAppConfig()
-	dataDir := appConfig.DataPath
-
-	logging.LogDebug("using datadir: '%s'", dataDir)
-
-	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
-		logging.LogError("data directory doesn't exist: %s", dataDir)
-		http.Error(w, fmt.Sprintf("data directory doesn't exist: %s", dataDir), http.StatusInternalServerError)
-		return
-	}
-
-	logging.LogDebug("attempting to set git remote URL...")
-
-	cmd := exec.Command("git", "remote", "set-url", "origin", repositoryURL)
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
-
-	if err != nil {
-		logging.LogError("set-url failed with error: %v, output: %s", err, string(output))
-		logging.LogDebug("trying to add remote instead...")
-
-		cmd = exec.Command("git", "remote", "add", "origin", repositoryURL)
-		cmd.Dir = dataDir
-		output, err = cmd.CombinedOutput()
-
-		if err != nil {
-			logging.LogError("add remote failed with error: %v - %s", err, string(output))
-			http.Error(w, fmt.Sprintf("git command failed: %v - %s", err, string(output)), http.StatusInternalServerError)
-			return
-		}
-	}
-
-	logging.LogInfo("git remote set successfully")
 
 	data := "saved"
-	html := `<span class="status-ok">repository URL saved</span>`
+	html := `<span class="status-ok">git url saved. restart required.</span>`
 	writeResponse(w, r, data, html)
 }
 
@@ -168,4 +134,32 @@ func handleAPIRestartApp(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(500 * time.Millisecond)
 		os.Exit(0)
 	}()
+}
+
+// @Summary Update data path
+// @Description updates data path in .env file (requires restart)
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param dataPath formData string true "data path"
+// @Produce json,html
+// @Success 200 {string} string "saved"
+// @Router /api/config/setDataPath [post]
+func handleAPISetDataPath(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	dataPath := r.FormValue("dataPath")
+
+	if dataPath == "" {
+		http.Error(w, "data path cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	if err := configmanager.UpdateEnvFile("KNOV_DATA_PATH", dataPath); err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, "failed to save", http.StatusInternalServerError)
+		return
+	}
+
+	data := "saved"
+	html := `<span class="status-ok">data path saved. restart required.</span>`
+	writeResponse(w, r, data, html)
 }

@@ -19,11 +19,12 @@ import (
 // @host localhost:1324
 // @BasePath /
 func main() {
+	configmanager.InitAppConfig()
 	translation.Init()
+	storage.Init(configmanager.GetStorageMethod())
+	configmanager.InitUserSettings("default")
 	translation.SetLanguage(configmanager.GetLanguage())
 
-	configmanager.Init()
-	storage.Init()
 	thememanager.Init()
 	if err := search.InitSearch(); err != nil {
 		logging.LogError("failed to initialize search: %v", err)

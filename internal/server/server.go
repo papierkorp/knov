@@ -99,6 +99,7 @@ func StartServerChi() {
 			r.Get("/getAvailableFileViews", handleAPIGetAvailableFileViews)
 			r.Post("/setFileView", handleAPISetFileView)
 			r.Post("/customCSS", handleCustomCSS)
+			r.Post("/setDataPath", handleAPISetDataPath)
 		})
 
 		// ----------------------------------------------------------------------------------------

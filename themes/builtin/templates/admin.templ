@@ -11,6 +11,7 @@ templ Admin(data thememanager.TemplateData) {
 		<div id="page-admin">
 			<h1>{ translation.Sprintf("Admin") }</h1>
 			<div class="admin-sections">
+				@PathSection()
 				@GitSection()
 				@MetadataSection()
 				@SystemSection()
@@ -18,7 +19,6 @@ templ Admin(data thememanager.TemplateData) {
 		</div>
 	}
 }
-
 templ MetadataSection() {
 	<section class="admin-section">
 		<h2>{ translation.Sprintf("Metadata") }</h2>
@@ -39,8 +39,22 @@ templ GitSection() {
 	<section class="admin-section">
 		<h2>{ translation.Sprintf("Git Settings") }</h2>
 		<div class="admin-item">
-			<p>{ translation.Sprintf("Current Repository URL:") } <code>{ configmanager.GetAppConfig().GitRepoURL }</code></p>
-			<p class="admin-note">{ translation.Sprintf("Change via KNOV_GIT_REPO_URL environment variable and restart the application") }</p>
+			<form
+				hx-post="/api/config/setRepositoryURL"
+				hx-trigger="blur from:input"
+				hx-target="#git-status"
+				hx-headers='{"Accept": "text/html"}'
+			>
+				<label for="repositoryUrl">{ translation.Sprintf("Repository URL:") }</label>
+				<input
+					type="text"
+					id="repositoryUrl"
+					name="repositoryUrl"
+					value={ configmanager.GetAppConfig().GitRepoURL }
+				/>
+			</form>
+			<div id="git-status"></div>
+			<p class="admin-note">{ translation.Sprintf("restart required for changes to take effect") }</p>
 		</div>
 	</section>
 }
@@ -58,6 +72,30 @@ templ SystemSection() {
 				<button type="submit" class="btn btn-warning">{ translation.Sprintf("Restart Application") }</button>
 			</form>
 			<div id="restart-status"></div>
+		</div>
+	</section>
+}
+
+templ PathSection() {
+	<section class="admin-section">
+		<h2>{ translation.Sprintf("Paths") }</h2>
+		<div class="admin-item">
+			<form
+				hx-post="/api/config/setDataPath"
+				hx-trigger="blur from:input"
+				hx-target="#path-status"
+				hx-headers='{"Accept": "text/html"}'
+			>
+				<label for="dataPath">{ translation.Sprintf("Data Path:") }</label>
+				<input
+					type="text"
+					id="dataPath"
+					name="dataPath"
+					value={ configmanager.GetAppConfig().DataPath }
+				/>
+			</form>
+			<div id="path-status"></div>
+			<p class="admin-note">{ translation.Sprintf("restart required for changes to take effect") }</p>
 		</div>
 	</section>
 }
