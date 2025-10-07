@@ -375,7 +375,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	currentTheme := tm.GetCurrentTheme()
 	fileView := configmanager.GetFileView()
 
-	availableViews := currentTheme.GetAvailableFileViews()
+	availableViews := tm.GetAvailableFileViews()
 	if !slices.Contains(availableViews, fileView) && len(availableViews) > 0 {
 		fileView = availableViews[0]
 		configmanager.SetFileView(fileView)

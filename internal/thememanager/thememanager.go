@@ -38,15 +38,17 @@ func GetThemeManager() IThemeManager {
 // NewThemeManager ..
 func NewThemeManager() *ThemeManager {
 	return &ThemeManager{
-		themes: make(map[string]ITheme),
+		themes:        make(map[string]ITheme),
+		thememetadata: make(map[string]*ThemeMetadata),
 	}
 }
 
 // ThemeManager ...
 type ThemeManager struct {
-	themes       map[string]ITheme
-	currentTheme ITheme
-	mutex        sync.RWMutex
+	themes        map[string]ITheme
+	currentTheme  ITheme
+	thememetadata map[string]*ThemeMetadata
+	mutex         sync.RWMutex
 }
 
 // ITheme ...
@@ -59,10 +61,13 @@ type ITheme interface {
 	History() (templ.Component, error)
 	Search(query string) (templ.Component, error)
 	Overview() (templ.Component, error)
-	GetAvailableFileViews() []string
 	RenderFileView(viewName string, content string, filePath string) (templ.Component, error)
 	Dashboard(id string, action string) (templ.Component, error)
 	BrowseFiles(metadataType string, value string, query string) (templ.Component, error)
+}
+
+type ThemeMetadata struct {
+	AvailableFileViews []string
 }
 
 // -----------------------------------------------------------------------------
@@ -77,10 +82,6 @@ type TemplateData struct {
 	ShowCreateForm  bool
 }
 
-// -----------------------------------------------------------------------------
-// -------------------------- IThemeManager Interface --------------------------
-// -----------------------------------------------------------------------------
-
 // IThemeManager ..
 type IThemeManager interface {
 	Initialize()
@@ -90,6 +91,7 @@ type IThemeManager interface {
 	GetAvailableThemes() []string
 	LoadTheme(themeName string) error
 	LoadAllThemes() error
+	GetAvailableFileViews() []string
 }
 
 // Initialize loads all themes from the themes directory
@@ -243,9 +245,35 @@ func (tm *ThemeManager) LoadTheme(themeName string) error {
 	}
 
 	tm.themes[themeName] = theme
+
+	metaSymbol, err := plugin.Lookup("Metadata")
+	if err == nil {
+		if meta, ok := metaSymbol.(*ThemeMetadata); ok {
+			tm.thememetadata[themeName] = meta
+			logging.LogInfo("loaded metadata for theme: %s", themeName)
+		}
+	}
+
 	logging.LogInfo("successfully loaded theme: %s", themeName)
 
 	return nil
+}
+
+// GetAvailableFileViews ..
+func (tm *ThemeManager) GetAvailableFileViews() []string {
+	tm.mutex.RLock()
+	defer tm.mutex.RUnlock()
+
+	for name, theme := range tm.themes {
+		if theme == tm.currentTheme {
+			if meta, ok := tm.thememetadata[name]; ok {
+				return meta.AvailableFileViews
+			}
+			break
+		}
+	}
+
+	return []string{}
 }
 
 // LoadAllThemes loads all available theme plugins from the themes directory

@@ -18,6 +18,10 @@ type Builtin struct{}
 // Theme ..
 var Theme Builtin
 
+var Metadata = thememanager.ThemeMetadata{
+	AvailableFileViews: []string{"detailed", "compact", "minimal", "reader", "debug"},
+}
+
 // Home ...
 func (t *Builtin) Home() (templ.Component, error) {
 
@@ -107,11 +111,6 @@ func (t *Builtin) Search(query string) (templ.Component, error) {
 	}
 
 	return templates.Search(query, td), nil
-}
-
-// GetAvailableFileViews returns all available file views for this theme
-func (t *Builtin) GetAvailableFileViews() []string {
-	return []string{"detailed", "compact", "minimal", "reader", "debug"}
 }
 
 // RenderFileView renders the specified file view

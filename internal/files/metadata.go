@@ -212,7 +212,6 @@ func MetaDataGet(filepath string) (*Metadata, error) {
 		return nil, err
 	}
 
-	logging.LogDebug("metadata retrieved: %s", metadata.Name)
 	return &metadata, nil
 }
 

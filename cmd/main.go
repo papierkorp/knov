@@ -10,6 +10,7 @@ import (
 	"knov/internal/storage"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
+	"time"
 )
 
 // @title Knov API
@@ -28,8 +29,11 @@ func main() {
 		logging.LogError("failed to initialize search: %v", err)
 	}
 
-	cronjob.Start()
-	defer cronjob.Stop()
+	go func() {
+		time.Sleep(2 * time.Minute)
+		cronjob.Start()
+		defer cronjob.Stop()
+	}()
 
 	server.StartServerChi()
 }
