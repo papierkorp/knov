@@ -1,432 +1,462 @@
 /* Detailed View */
 #view-fileview-detailed {
-  margin: 0 auto;
-  padding: 20px;
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 20px;
-  min-width: 0;
+    margin: 0 auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 20px;
+    min-width: 0;
 }
 
 #view-fileview-detailed .file-content {
-  background: var(--black);
-  padding: 30px;
-  border: 1px solid var(--neutral);
-  border-radius: 8px;
-  /* line-height: 1.6; */
-  min-height: 400px;
-  min-width: 0;
-  overflow: hidden;
+    background: var(--black);
+    padding: 30px;
+    border: 1px solid var(--neutral);
+    border-radius: 8px;
+    /* line-height: 1.6; */
+    min-height: 400px;
+    min-width: 0;
+    overflow: hidden;
 }
 
 #view-fileview-detailed .file-content h1,
 #view-fileview-detailed .file-content h2,
 #view-fileview-detailed .file-content h3 {
-  color: var(--accent);
-  border-bottom: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
-  padding-bottom: 8px;
+    color: var(--accent);
+    border-bottom: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+    padding-bottom: 8px;
 }
 
 #view-fileview-detailed .file-content h1 {
-  font-size: 24px;
+    font-size: 24px;
 }
 
 #view-fileview-detailed .file-content p {
-  margin: 16px 0;
+    margin: 16px 0;
 }
 
 #view-fileview-detailed .file-content code {
-  background: color-mix(in srgb, var(--neutral) 20%, transparent);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 14px;
+    background: color-mix(in srgb, var(--neutral) 20%, transparent);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 14px;
 }
 
 #view-fileview-detailed .file-content pre {
-  background: color-mix(in srgb, var(--neutral) 15%, transparent);
-  padding: 15px;
-  border-radius: 6px;
-  overflow-x: auto;
-  border-left: 4px solid var(--primary);
+    background: color-mix(in srgb, var(--neutral) 15%, transparent);
+    padding: 15px;
+    border-radius: 6px;
+    overflow-x: auto;
+    border-left: 4px solid var(--primary);
 }
 
 /* Sidebar */
 #view-fileview-detailed .file-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 #view-fileview-detailed .sidebar-section {
-  background: color-mix(in srgb, var(--neutral) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--neutral) 40%, transparent);
-  border-radius: 6px;
-  padding: 12px;
-  font-size: 13px;
+    background: color-mix(in srgb, var(--neutral) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--neutral) 40%, transparent);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 13px;
 }
 
 #view-fileview-detailed .sidebar-section h4 {
-  margin: 0 0 12px 0;
-  color: var(--accent);
-  font-size: 14px;
-  font-weight: bold;
-  border-bottom: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
-  padding-bottom: 6px;
+    margin: 0;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Sidebar collapsible sections */
+#view-fileview-detailed .sidebar-section details {
+    border: none;
+}
+
+#view-fileview-detailed .sidebar-section summary {
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+#view-fileview-detailed .sidebar-section summary::-webkit-details-marker {
+    display: none;
+}
+
+#view-fileview-detailed .sidebar-section summary h4::before {
+    content: "▼ ";
+    font-size: 0.8em;
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+#view-fileview-detailed
+    .sidebar-section
+    details:not([open])
+    summary
+    h4::before {
+    content: "▶ ";
 }
 
 /* Compact Metadata */
 #view-fileview-detailed .metadata-compact {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 12px;
 }
 
 #view-fileview-detailed .meta-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 3px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--neutral) 20%, transparent);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--neutral) 20%, transparent);
 }
 
 #view-fileview-detailed .meta-row:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 #view-fileview-detailed .meta-row .label {
-  color: var(--white);
-  font-weight: 500;
-  font-size: 12px;
-  min-width: 60px;
+    color: var(--white);
+    font-weight: 500;
+    font-size: 12px;
+    min-width: 60px;
 }
 
 #view-fileview-detailed .meta-row .value {
-  color: var(--accent);
-  font-size: 12px;
-  font-family: monospace;
-  text-align: right;
-  flex: 1;
-  margin-left: 8px;
+    color: var(--accent);
+    font-size: 12px;
+    font-family: monospace;
+    text-align: right;
+    flex: 1;
+    margin-left: 8px;
 }
 
 #view-fileview-detailed .meta-row .collection {
-  background: var(--primary);
-  color: var(--white);
-  padding: 2px 6px;
-  border-radius: 8px;
-  font-size: 10px;
-  font-weight: bold;
+    background: var(--primary);
+    color: var(--white);
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: bold;
 }
 
 #view-fileview-detailed .meta-row .status,
 #view-fileview-detailed .meta-row .priority,
 #view-fileview-detailed .meta-row .filetype {
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-size: 10px;
-  text-transform: uppercase;
-  font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
 }
 
 #view-fileview-detailed .meta-row .status {
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
+    background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 #view-fileview-detailed .meta-row .priority {
-  background: color-mix(in srgb, var(--primary) 20%, transparent);
+    background: color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
 #view-fileview-detailed .meta-row .filetype {
-  background: color-mix(in srgb, var(--neutral) 30%, transparent);
+    background: color-mix(in srgb, var(--neutral) 30%, transparent);
 }
 
 /* Compact Links */
 #view-fileview-detailed .links-compact {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 12px;
 }
 
 #view-fileview-detailed .link-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 #view-fileview-detailed .link-label {
-  color: var(--white);
-  font-weight: 500;
-  font-size: 12px;
-  opacity: 0.9;
+    color: var(--white);
+    font-weight: 500;
+    font-size: 12px;
+    opacity: 0.9;
 }
 
 #view-fileview-detailed .link-list {
-  margin-left: 12px;
+    margin-left: 12px;
 }
 
 /* Component styles for links (shared across all views) */
 .component-link-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .component-link-list li {
-  margin: 2px 0;
+    margin: 2px 0;
 }
 
 .component-link-list a {
-  color: var(--accent);
-  text-decoration: none;
-  font-size: 12px;
-  display: block;
-  padding: 2px 4px;
-  border-radius: 2px;
-  transition: background 0.2s;
-  word-break: break-word;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 12px;
+    display: block;
+    padding: 2px 4px;
+    border-radius: 2px;
+    transition: background 0.2s;
+    word-break: break-word;
 }
 
 .component-link-list a:hover {
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
-  color: var(--white);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    color: var(--white);
 }
 
 .component-no-links {
-  color: var(--neutral);
-  font-style: italic;
-  font-size: 11px;
-  opacity: 0.7;
-  margin-left: 12px;
+    color: var(--neutral);
+    font-style: italic;
+    font-size: 11px;
+    opacity: 0.7;
+    margin-left: 12px;
 }
 
 /* Loading States */
 #view-fileview-detailed .loading,
 #view-fileview-detailed .metadata-compact .value:empty::after,
 #view-fileview-detailed .link-list:empty::after {
-  color: var(--neutral);
-  font-style: italic;
-  font-size: 11px;
-  opacity: 0.6;
+    color: var(--neutral);
+    font-style: italic;
+    font-size: 11px;
+    opacity: 0.6;
 }
 
 #view-fileview-detailed .metadata-compact .value:empty::after {
-  content: "...";
+    content: "...";
 }
 
 #view-fileview-detailed .link-list:empty::after {
-  content: "...";
-  margin-left: 12px;
+    content: "...";
+    margin-left: 12px;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  #view-fileview-detailed {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-    gap: 15px;
-  }
+    #view-fileview-detailed {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        gap: 15px;
+    }
 
-  #view-fileview-detailed .file-sidebar {
-    order: -1;
-    flex-direction: row;
-    gap: 10px;
-  }
+    #view-fileview-detailed .file-sidebar {
+        order: -1;
+        flex-direction: row;
+        gap: 10px;
+    }
 
-  #view-fileview-detailed .sidebar-section {
-    flex: 1;
-    min-width: 0;
-  }
+    #view-fileview-detailed .sidebar-section {
+        flex: 1;
+        min-width: 0;
+    }
 
-  #view-fileview-detailed .file-content {
-    padding: 20px;
-  }
+    #view-fileview-detailed .file-content {
+        padding: 20px;
+    }
 
-  #view-fileview-detailed .meta-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-  }
+    #view-fileview-detailed .meta-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
 
-  #view-fileview-detailed .meta-row .value {
-    text-align: left;
-    margin-left: 0;
-  }
+    #view-fileview-detailed .meta-row .value {
+        text-align: left;
+        margin-left: 0;
+    }
 }
 
 /* Compact View */
 #view-fileview-compact .file-compact {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 #view-fileview-compact .compact-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--neutral);
-  margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--neutral);
+    margin-bottom: 20px;
 }
 
 #view-fileview-compact .breadcrumb {
-  color: var(--neutral);
-  font-size: 14px;
+    color: var(--neutral);
+    font-size: 14px;
 }
 
 #view-fileview-compact .quick-meta {
-  display: flex;
-  gap: 8px;
+    display: flex;
+    gap: 8px;
 }
 
 #view-fileview-compact .meta-pill {
-  background: var(--primary);
-  color: var(--white);
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
+    background: var(--primary);
+    color: var(--white);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
 }
 
 #view-fileview-compact .compact-links {
-  margin-top: 20px;
-  padding: 10px;
-  background: color-mix(in srgb, var(--neutral) 5%, transparent);
-  border-radius: 6px;
+    margin-top: 20px;
+    padding: 10px;
+    background: color-mix(in srgb, var(--neutral) 5%, transparent);
+    border-radius: 6px;
 }
 
 #view-fileview-compact .inline-links {
-  margin-left: 10px;
+    margin-left: 10px;
 }
 
 /* Minimal View */
 #view-fileview-minimal .file-minimal {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 40px 20px;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 40px 20px;
 }
 
 #view-fileview-minimal .file-content-minimal {
-  font-size: 16px;
-  line-height: 1.7;
+    font-size: 16px;
+    line-height: 1.7;
 }
 
 #view-fileview-minimal .file-content-minimal h1 {
-  font-size: 32px;
-  margin-bottom: 30px;
-  color: var(--accent);
+    font-size: 32px;
+    margin-bottom: 30px;
+    color: var(--accent);
 }
 
 /* Reader View */
 #view-fileview-reader .file-reader {
-  max-width: 650px;
-  margin: 0 auto;
-  padding: 20px;
-  position: relative;
+    max-width: 650px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
 }
 
 #view-fileview-reader .reader-controls {
-  position: fixed;
-  top: 5em;
-  right: 1em;
-  background: var(--black);
-  border: 1px solid var(--neutral);
-  border-radius: 6px;
-  padding: 8px;
-  display: flex;
-  gap: 5px;
-  z-index: 100;
+    position: fixed;
+    top: 5em;
+    right: 1em;
+    background: var(--black);
+    border: 1px solid var(--neutral);
+    border-radius: 6px;
+    padding: 8px;
+    display: flex;
+    gap: 5px;
+    z-index: 100;
 }
 
 #view-fileview-reader .reader-controls button {
-  background: var(--primary);
-  color: var(--white);
-  border: none;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
 }
 
 #view-fileview-reader .file-content-reader {
-  font-size: 18px;
-  line-height: 1.8;
-  padding-top: 40px;
+    font-size: 18px;
+    line-height: 1.8;
+    padding-top: 40px;
 }
 
 /* Debug View */
 #view-fileview-debug .file-debug {
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 20px;
-  padding: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 #view-fileview-debug .debug-panel {
-  background: color-mix(in srgb, var(--neutral) 8%, transparent);
-  padding: 20px;
-  border-radius: 8px;
-  max-height: 80vh;
-  overflow-y: auto;
+    background: color-mix(in srgb, var(--neutral) 8%, transparent);
+    padding: 20px;
+    border-radius: 8px;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 #view-fileview-debug .debug-section {
-  margin: 15px 0;
+    margin: 15px 0;
 }
 
 #view-fileview-debug .debug-section h4 {
-  margin: 0 0 8px 0;
-  color: var(--accent);
-  font-size: 14px;
+    margin: 0 0 8px 0;
+    color: var(--accent);
+    font-size: 14px;
 }
 
 #view-fileview-debug .metadata-json {
-  background: var(--black);
-  padding: 10px;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 12px;
-  white-space: pre-wrap;
+    background: var(--black);
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
 }
 
 #view-fileview-debug .debug-links {
-  font-size: 12px;
+    font-size: 12px;
 }
 
 #view-fileview-debug .debug-links strong {
-  color: var(--accent);
-  display: block;
-  margin: 8px 0 4px 0;
+    color: var(--accent);
+    display: block;
+    margin: 8px 0 4px 0;
 }
 
 #view-fileview-debug .debug-content h3 {
-  margin-top: 0;
-  color: var(--accent);
+    margin-top: 0;
+    color: var(--accent);
 }
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  #view-fileview-debug .file-debug {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-  }
+    #view-fileview-debug .file-debug {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
 
-  #view-fileview-debug .debug-panel {
-    max-height: 300px;
-  }
+    #view-fileview-debug .debug-panel {
+        max-height: 300px;
+    }
 
-  #view-fileview-reader .reader-controls {
-    position: static;
-    margin-bottom: 20px;
-    justify-content: center;
-  }
+    #view-fileview-reader .reader-controls {
+        position: static;
+        margin-bottom: 20px;
+        justify-content: center;
+    }
 
-  #view-fileview-compact .compact-header {
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-start;
-  }
+    #view-fileview-compact .compact-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
 }
 
 /* Table styles for all file views */
@@ -435,10 +465,10 @@
 #view-fileview-minimal .file-content-minimal table,
 #view-fileview-reader .file-content-reader table,
 #view-fileview-debug .file-content table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1rem 0;
-  border: 1px solid var(--neutral);
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    border: 1px solid var(--neutral);
 }
 
 #view-fileview-detailed .file-content th,
@@ -451,9 +481,9 @@
 #view-fileview-reader .file-content-reader td,
 #view-fileview-debug .file-content th,
 #view-fileview-debug .file-content td {
-  border: 1px solid var(--neutral);
-  padding: 8px 12px;
-  text-align: left;
+    border: 1px solid var(--neutral);
+    padding: 8px 12px;
+    text-align: left;
 }
 
 #view-fileview-detailed .file-content th,
@@ -461,9 +491,9 @@
 #view-fileview-minimal .file-content-minimal th,
 #view-fileview-reader .file-content-reader th,
 #view-fileview-debug .file-content th {
-  background: var(--primary);
-  color: var(--white);
-  font-weight: bold;
+    background: var(--primary);
+    color: var(--white);
+    font-weight: bold;
 }
 
 #view-fileview-detailed .file-content tbody tr:nth-child(even),
@@ -471,7 +501,7 @@
 #view-fileview-minimal .file-content-minimal tbody tr:nth-child(even),
 #view-fileview-reader .file-content-reader tbody tr:nth-child(even),
 #view-fileview-debug .file-content tbody tr:nth-child(even) {
-  background: color-mix(in srgb, var(--neutral) 10%, transparent);
+    background: color-mix(in srgb, var(--neutral) 10%, transparent);
 }
 
 #view-fileview-detailed .file-content tbody tr:hover,
@@ -479,7 +509,7 @@
 #view-fileview-minimal .file-content-minimal tbody tr:hover,
 #view-fileview-reader .file-content-reader tbody tr:hover,
 #view-fileview-debug .file-content tbody tr:hover {
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
 /* Folded sections (details/summary) */
@@ -488,10 +518,10 @@
 #view-fileview-minimal .file-content-minimal .dokuwiki-folded,
 #view-fileview-reader .file-content-reader .dokuwiki-folded,
 #view-fileview-debug .file-content .dokuwiki-folded {
-  border: 1px solid var(--neutral);
-  border-radius: 4px;
-  margin: 1rem 0;
-  background: color-mix(in srgb, var(--neutral) 5%, transparent);
+    border: 1px solid var(--neutral);
+    border-radius: 4px;
+    margin: 1rem 0;
+    background: color-mix(in srgb, var(--neutral) 5%, transparent);
 }
 
 #view-fileview-detailed .file-content .dokuwiki-folded summary,
@@ -499,13 +529,13 @@
 #view-fileview-minimal .file-content-minimal .dokuwiki-folded summary,
 #view-fileview-reader .file-content-reader .dokuwiki-folded summary,
 #view-fileview-debug .file-content .dokuwiki-folded summary {
-  padding: 10px 15px;
-  cursor: pointer;
-  font-weight: bold;
-  background: var(--primary);
-  color: var(--white);
-  border-radius: 4px 4px 0 0;
-  user-select: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: bold;
+    background: var(--primary);
+    color: var(--white);
+    border-radius: 4px 4px 0 0;
+    user-select: none;
 }
 
 #view-fileview-detailed .file-content .dokuwiki-folded summary:hover,
@@ -513,8 +543,8 @@
 #view-fileview-minimal .file-content-minimal .dokuwiki-folded summary:hover,
 #view-fileview-reader .file-content-reader .dokuwiki-folded summary:hover,
 #view-fileview-debug .file-content .dokuwiki-folded summary:hover {
-  background: var(--accent);
-  color: var(--black);
+    background: var(--accent);
+    color: var(--black);
 }
 
 #view-fileview-detailed .file-content .dokuwiki-folded .folded-content,
@@ -522,7 +552,7 @@
 #view-fileview-minimal .file-content-minimal .dokuwiki-folded .folded-content,
 #view-fileview-reader .file-content-reader .dokuwiki-folded .folded-content,
 #view-fileview-debug .file-content .dokuwiki-folded .folded-content {
-  padding: 15px;
+    padding: 15px;
 }
 
 #view-fileview-detailed .file-content .dokuwiki-folded[open] summary,
@@ -530,8 +560,8 @@
 #view-fileview-minimal .file-content-minimal .dokuwiki-folded[open] summary,
 #view-fileview-reader .file-content-reader .dokuwiki-folded[open] summary,
 #view-fileview-debug .file-content .dokuwiki-folded[open] summary {
-  border-radius: 4px 4px 0 0;
-  border-bottom: 1px solid var(--neutral);
+    border-radius: 4px 4px 0 0;
+    border-bottom: 1px solid var(--neutral);
 }
 
 /* Code blocks with Prism.js */
@@ -540,10 +570,10 @@
 #view-fileview-minimal .file-content-minimal pre,
 #view-fileview-reader .file-content-reader pre,
 #view-fileview-debug .file-content pre {
-  margin: 1rem 0;
-  border-radius: 4px;
-  overflow-x: auto;
-  max-width: 100%;
+    margin: 1rem 0;
+    border-radius: 4px;
+    overflow-x: auto;
+    max-width: 100%;
 }
 
 #view-fileview-detailed .file-content pre code,
@@ -551,13 +581,13 @@
 #view-fileview-minimal .file-content-minimal pre code,
 #view-fileview-reader .file-content-reader pre code,
 #view-fileview-debug .file-content pre code {
-  font-family: "Courier New", Courier, monospace;
-  font-size: 14px;
-  line-height: 1.5;
-  display: block;
-  white-space: pre;
-  word-wrap: normal;
-  overflow-wrap: normal;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    display: block;
+    white-space: pre;
+    word-wrap: normal;
+    overflow-wrap: normal;
 }
 
 /* Inline code (not in pre) */
@@ -566,62 +596,122 @@
 #view-fileview-minimal .file-content-minimal code:not(pre code),
 #view-fileview-reader .file-content-reader code:not(pre code),
 #view-fileview-debug .file-content code:not(pre code) {
-  background: color-mix(in srgb, var(--neutral) 20%, transparent);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 14px;
-  font-family: "Courier New", Courier, monospace;
-  white-space: normal;
-  word-break: break-word;
+    background: color-mix(in srgb, var(--neutral) 20%, transparent);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 14px;
+    font-family: "Courier New", Courier, monospace;
+    white-space: normal;
+    word-break: break-word;
 }
 
 #view-fileview-detailed .meta-row .meta-link {
-  color: var(--accent);
-  text-decoration: none;
-  transition: color 0.2s;
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s;
 }
 
 #view-fileview-detailed .meta-row .meta-link:hover {
-  color: var(--white);
-  text-decoration: underline;
+    color: var(--white);
+    text-decoration: underline;
 }
 
 #view-fileview-detailed .meta-row .meta-empty {
-  color: var(--neutral);
-  font-style: italic;
-  opacity: 0.6;
+    color: var(--neutral);
+    font-style: italic;
+    opacity: 0.6;
 }
 
 view-fileview-detailed .meta-row .meta-link {
-  color: var(--accent);
-  text-decoration: none;
-  transition: color 0.2s;
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s;
 }
 
 #view-fileview-detailed .meta-row .meta-link:hover {
-  color: var(--white);
-  text-decoration: underline;
+    color: var(--white);
+    text-decoration: underline;
 }
 
 #view-fileview-detailed .meta-row .meta-empty {
-  color: var(--neutral);
-  font-style: italic;
-  opacity: 0.6;
+    color: var(--neutral);
+    font-style: italic;
+    opacity: 0.6;
 }
 
 #view-fileview-detailed .meta-row .meta-link {
-  color: var(--accent);
-  text-decoration: none;
-  transition: color 0.2s;
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s;
 }
 
 #view-fileview-detailed .meta-row .meta-link:hover {
-  color: var(--white);
-  text-decoration: underline;
+    color: var(--white);
+    text-decoration: underline;
 }
 
 #view-fileview-detailed .meta-row .meta-empty {
-  color: var(--neutral);
-  font-style: italic;
-  opacity: 0.6;
+    color: var(--neutral);
+    font-style: italic;
+    opacity: 0.6;
+}
+
+/* TOC */
+#component-toc {
+    margin: 0;
+    padding: 0;
+}
+
+#component-toc h4 {
+    margin: 0 0 0.75rem 0;
+    color: var(--accent);
+    font-size: 1rem;
+}
+
+#component-toc ul {
+    list-style: none;
+    padding: 0;
+    padding-top: 12px;
+    margin: 0;
+}
+
+#component-toc li {
+    margin: 0.25rem 0;
+}
+
+#component-toc .toc-level-2 {
+    padding-left: 1rem;
+}
+
+#component-toc .toc-level-3 {
+    padding-left: 2rem;
+}
+
+#component-toc .toc-level-4 {
+    padding-left: 3rem;
+}
+
+#component-toc .toc-level-5 {
+    padding-left: 4rem;
+}
+
+#component-toc .toc-level-6 {
+    padding-left: 5rem;
+}
+
+#component-toc a {
+    text-decoration: none;
+    color: var(--link-color, var(--primary));
+    font-size: 0.9rem;
+}
+
+#component-toc a:hover {
+    text-decoration: underline;
+}
+
+.sidebar-section-sticky {
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
 }

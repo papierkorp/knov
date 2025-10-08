@@ -2,6 +2,7 @@
 package main
 
 import (
+	"knov/internal/files"
 	"knov/internal/thememanager"
 	"knov/themes/test/templates"
 
@@ -100,14 +101,14 @@ func (t *test) Search(query string) (templ.Component, error) {
 }
 
 // RenderFileView renders the specified file view
-func (t *test) RenderFileView(_ string, content string, filePath string) (templ.Component, error) {
+func (t *test) RenderFileView(_ string, fileContent *files.FileContent, filePath string) (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
 		AvailableThemes: tm.GetAvailableThemes(),
 	}
 
-	return templates.FileView(content, filePath, td), nil
+	return templates.FileView(fileContent, filePath, td), nil
 }
 
 func (t *test) BrowseFiles(metadataType string, value string, query string) (templ.Component, error) {

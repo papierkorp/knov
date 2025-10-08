@@ -184,7 +184,7 @@ func renderFileContentWidget(config *FileContentConfig) (string, error) {
 		return "", err
 	}
 
-	return string(content), nil
+	return string(content.HTML), nil
 }
 
 func renderStaticWidget(config *StaticConfig) (string, error) {

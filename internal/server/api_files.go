@@ -27,8 +27,8 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	for _, file := range allFiles {
 		html.WriteString(fmt.Sprintf(`
 			<li>
-				<a href="#" 
-					hx-get="/files/%s?snippet=true" 
+				<a href="#"
+					hx-get="/files/%s?snippet=true"
 					hx-target="#file-content"
 					hx-on::after-request="htmx.ajax('GET', '/api/files/header?filepath=%s', {target: '#file-header'})"
 				>%s</a>
@@ -51,14 +51,14 @@ func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/content/")
 	fullPath := utils.ToFullPath(filePath)
 
-	html, err := files.GetFileContent(fullPath)
+	content, err := files.GetFileContent(fullPath)
 	if err != nil {
 		http.Error(w, "failed to get file content", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "text/html")
-	w.Write(html)
+	w.Write([]byte(content.HTML))
 }
 
 // @Summary Filter files by metadata

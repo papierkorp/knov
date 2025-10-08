@@ -35,6 +35,11 @@ type File struct {
 	Metadata *Metadata `json:"metadata,omitempty"`
 }
 
+type FileContent struct {
+	HTML string
+	TOC  []TOCItem
+}
+
 // GetAllFiles returns list of all files
 func GetAllFiles() ([]File, error) {
 	dataDir := configmanager.GetAppConfig().DataPath
@@ -70,7 +75,7 @@ func GetAllFiles() ([]File, error) {
 }
 
 // GetFileContent converts file content to html based on detected type
-func GetFileContent(filePath string) ([]byte, error) {
+func GetFileContent(filePath string) (*FileContent, error) {
 	handler := fileTypeRegistry.GetHandler(filePath)
 	if handler == nil {
 		return nil, fmt.Errorf("no handler found for file: %s", filePath)
@@ -94,7 +99,13 @@ func GetFileContent(filePath string) ([]byte, error) {
 	relativePath := utils.ToRelativePath(filePath)
 	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", relativePath)
 
-	return []byte(processedContent), nil
+	processedContent = InjectHeaderIDs(processedContent)
+	toc := GenerateTOC(processedContent)
+
+	return &FileContent{
+		HTML: processedContent,
+		TOC:  toc,
+	}, nil
 }
 
 // GetAllFilesWithMetadata returns files with metadata

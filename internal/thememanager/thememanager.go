@@ -12,6 +12,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
+	"knov/internal/files"
 	"knov/internal/logging"
 
 	"github.com/a-h/templ"
@@ -61,7 +62,7 @@ type ITheme interface {
 	History() (templ.Component, error)
 	Search(query string) (templ.Component, error)
 	Overview() (templ.Component, error)
-	RenderFileView(viewName string, content string, filePath string) (templ.Component, error)
+	RenderFileView(viewName string, fileContent *files.FileContent, filePath string) (templ.Component, error)
 	Dashboard(id string, action string) (templ.Component, error)
 	BrowseFiles(metadataType string, value string, query string) (templ.Component, error)
 }

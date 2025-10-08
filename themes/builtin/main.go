@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"knov/internal/dashboard"
+	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/thememanager"
 	"knov/themes/builtin/templates"
@@ -114,7 +115,7 @@ func (t *Builtin) Search(query string) (templ.Component, error) {
 }
 
 // RenderFileView renders the specified file view
-func (t *Builtin) RenderFileView(viewName string, content string, filePath string) (templ.Component, error) {
+func (t *Builtin) RenderFileView(viewName string, fileContent *files.FileContent, filePath string) (templ.Component, error) {
 	tm := thememanager.GetThemeManager()
 	td := thememanager.TemplateData{
 		ThemeToUse:      tm.GetCurrentThemeName(),
@@ -124,17 +125,17 @@ func (t *Builtin) RenderFileView(viewName string, content string, filePath strin
 
 	switch viewName {
 	case "detailed":
-		return templates.FileViewDetailed(content, filePath, filename, td), nil
+		return templates.FileViewDetailed(fileContent, filePath, filename, td), nil
 	case "compact":
-		return templates.FileViewCompact(content, filePath, filename, td), nil
+		return templates.FileViewCompact(fileContent, filePath, filename, td), nil
 	case "minimal":
-		return templates.FileViewMinimal(content, filePath, filename, td), nil
+		return templates.FileViewMinimal(fileContent, filePath, filename, td), nil
 	case "reader":
-		return templates.FileViewReader(content, filePath, filename, td), nil
+		return templates.FileViewReader(fileContent, filePath, filename, td), nil
 	case "debug":
-		return templates.FileViewDebug(content, filePath, filename, td), nil
+		return templates.FileViewDebug(fileContent, filePath, filename, td), nil
 	default:
-		return templates.FileViewDetailed(content, filePath, filename, td), nil
+		return templates.FileViewDetailed(fileContent, filePath, filename, td), nil
 	}
 }
 

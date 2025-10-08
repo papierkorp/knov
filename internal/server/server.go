@@ -370,7 +370,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	content, err := files.GetFileContent(fullPath)
+	fileContent, err := files.GetFileContent(fullPath)
 	if err != nil {
 		http.Error(w, "failed to get file content", http.StatusInternalServerError)
 		return
@@ -378,7 +378,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
 		w.Header().Set("Content-Type", "text/html")
-		w.Write(content)
+		w.Write([]byte(fileContent.HTML))
 		return
 	}
 
@@ -392,7 +392,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		configmanager.SetFileView(fileView)
 	}
 
-	component, err := currentTheme.RenderFileView(fileView, string(content), filePath)
+	component, err := currentTheme.RenderFileView(fileView, fileContent, filePath)
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
 		return
