@@ -3,42 +3,13 @@
 # todo
 
 - Dashboard
-  - Core Structure
-    - [ ] Create dashboard data structure (widgets, layout, filters)
-    - [ ] Add dashboard CRUD API endpoints (create, read, update, delete)
-    - [ ] Create basic dashboard storage (JSON file initially)
-    - [ ] Add dashboard management to user settings
-  - Widget System
-    - [ ] Design widget configuration structure (filter + display method + size)
-    - [ ] Create widget types (list, cards, content preview)
-    - [ ] Implement widget rendering system
-    - [ ] Add widget CRUD operations
-  - UI
-    - [ ] Create dashboard template/view
-    - [ ] Add dashboard selection/switching UI
-    - [ ] Implement basic layouts (1-column, 2-column, 3-column)
-    - [ ] Add widget container rendering
-    - [ ] Create dashboard editor interface
-    - [ ] Add widget creation form (filter selection, display type)
-    - [ ] Implement layout selector
-    - [ ] Add widget edit/delete functionality
   - UI advanced
     - [ ] Add widget drag & drop reordering
     - [ ] Implement widget resizing
     - [ ] Add dashboard export/import
     - [ ] Create dashboard templates/presets
     - [ ] Add auto-refresh options
-- auto update
-  - startup metadata handling
-    - add MetaDataInitializeAll() to startup sequence
-    - add MetaDataLinksRebuild() to startup sequence
-    - add search.IndexAllFiles() to startup sequence
-  - periodic metadata scan
-    - create timer/goroutine for periodic checks (every 5-10 minutes)
-    - run same operations as startup: metadata init, links rebuild, search reindex
-    - add logging for periodic scan operations
 - add a editor (textbox) and the neccessary form e.g. parents, collection
-- return filter form from api?
 - metadata
   - save in a sqlite file
   - save in postgres
@@ -46,10 +17,12 @@
   - get metadata for sqlite
   - get metadata for postgres
   - get metadata for yaml header
-  - reduce metadata debugging logs
-  - make updateUsedLinks work
   - change linkRegex config to names, e.g. obsidian, notion, dokuwiki... instead of a regex? or add one regex string + confignames
-- error handling in settings (especially git settings)
+- users/groups/permissions?
+- add todo filetype
+
+# done
+
 - create folder structure for different file types
   - project (has board/boards) => own repository for each project
     - board (has everything else besides project) => displays filter and files
@@ -58,11 +31,36 @@
     - todo
     - knowledge/note
     - journal
-- add edit file
-- users/groups/permissions?
-
-# done
-
+- [x] error handling in settings (especially git settings)
+- [x] return filter form from api?
+- [x] auto update
+  - [x] startup metadata handling
+    - [x] add MetaDataInitializeAll() to startup sequence
+    - [x] add MetaDataLinksRebuild() to startup sequence
+    - [x] add search.IndexAllFiles() to startup sequence
+  - [x] periodic metadata scan
+    - [x] create timer/goroutine for periodic checks (every 5-10 minutes)
+    - [x] run same operations as startup: metadata init, links rebuild, search reindex
+    - [x] add logging for periodic scan operations
+- Dashboard
+  - Core Structure
+    - [x] Create dashboard data structure (widgets, layout, filters)
+    - [x] Add dashboard CRUD API endpoints (create, read, update, delete)
+    - [x] Create basic dashboard storage (JSON file initially)
+    - [x] Add dashboard management to user settings
+  - Widget System
+    - [x] Design widget configuration structure (filter + display method + size)
+    - [x] Create widget types (list, cards, content preview)
+    - [x] Implement widget rendering system
+    - [x] Add widget CRUD operations
+  - UI
+    - [x] Create dashboard template/view
+    - [x] Add dashboard selection/switching UI
+    - [x] Implement basic layouts (1-column, 2-column, 3-column)
+    - [x] Add widget container rendering
+    - [x] Create dashboard editor interface
+    - [x] Add widget creation form (filter selection, display type)
+    - [x] Add widget edit/delete functionality
 - [x] git
   - [x] move plugins/git to git
   - [x] dont apply git settings on the fly only on startup

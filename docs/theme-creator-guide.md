@@ -41,6 +41,9 @@ See internal/thememanager/thememanager.go for the complete ITheme interface defi
 
 ### 2. Metadata Variable
 
+- AvailableFileViews: List of file view types the theme supports (e.g., "markdown", "detailed", "compact")
+
+
 Export a Metadata variable containing static theme configuration:
 
 ```go
@@ -51,11 +54,8 @@ Export a Metadata variable containing static theme configuration:
 
 **Important: Use thememanager.ThemeMetadata type, not a local type definition.**
 
-## Theme Metadata Fields
 
-- AvailableFileViews: List of file view types the theme supports (e.g., "markdown", "detailed", "compact")
-
-## Minimal Example
+**Minimal Example**
 
 ```go
     package main
@@ -85,7 +85,63 @@ Export a Metadata variable containing static theme configuration:
 
     // Implement remaining ITheme methods...
 ```
-`
+
+## File Content Structure
+
+When implementing `RenderFileView`, you'll receive a `*files.FileContent` struct:
+
+```go
+type FileContent struct {
+    HTML string      // Rendered HTML content with header IDs
+    TOC  []TOCItem   // Table of contents entries
+}
+
+type TOCItem struct {
+    Level int        // Header level (1-6)
+    Text  string     // Header text
+    ID    string     // Anchor ID
+    Class string     // CSS class (toc-level-N)
+    Link  string     // Full anchor link (#id)
+}
+```
+
+### Using FileContent in Templates
+
+```templ
+templ FileViewDetailed(fileContent *files.FileContent, filePath string, filename string, data thememanager.TemplateData) {
+    @Base(filename) {
+        if len(fileContent.TOC) > 0 {
+            <nav id="component-toc">
+                <h4>Table of Contents</h4>
+                <ul>
+                    for _, item := range fileContent.TOC {
+                        <li class={ item.Class }>
+                            <a href={ templ.SafeURL(item.Link) }>{ item.Text }</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+        @templ.Raw(fileContent.HTML)
+    }
+}
+```
+**Minimal Example**
+
+```go
+func (t *MyTheme) RenderFileView(viewName string, fileContent *files.FileContent, filePath string) (templ.Component, error) {
+    tm := thememanager.GetThemeManager()
+    data := thememanager.TemplateData{
+        ThemeToUse:      tm.GetCurrentThemeName(),
+        AvailableThemes: tm.GetAvailableThemes(),
+    }
+    filename := filepath.Base(filePath)
+
+    return templates.FileViewDetailed(fileContent, filePath, filename, data), nil
+}
+```
+
+
 ## Template Data
 
 Access dynamic data in your templates via thememanager.TemplateData:
