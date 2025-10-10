@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"knov/internal/dashboard"
+	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/thememanager"
 	"knov/themes/builtin/templates"
@@ -19,7 +20,7 @@ type Builtin struct{}
 var Theme Builtin
 
 var Metadata = thememanager.ThemeMetadata{
-	AvailableFileViews:          []string{"detailed", "compact", "minimal", "reader", "debug"},
+	AvailableFileViews:          []string{"detailed", "compact", "reader"},
 	AvailableHomeViews:          []string{"default"},
 	AvailableSearchViews:        []string{"default"},
 	AvailableOverviewViews:      []string{"default"},
@@ -32,42 +33,10 @@ var Metadata = thememanager.ThemeMetadata{
 	AvailableBrowseFilesViews:   []string{"default"},
 	SupportsDarkMode:            true,
 	AvailableColorSchemes: []thememanager.ColorScheme{
-		{
-			Name:  "default",
-			Label: "Default Blue",
-			Colors: map[string]string{
-				"primary": "#3b82f6",
-				"accent":  "#8b5cf6",
-				"neutral": "#64748b",
-			},
-		},
-		{
-			Name:  "green",
-			Label: "Forest Green",
-			Colors: map[string]string{
-				"primary": "#65a30d",
-				"accent":  "#a3e635",
-				"neutral": "#475569",
-			},
-		},
-		{
-			Name:  "red",
-			Label: "Ruby Red",
-			Colors: map[string]string{
-				"primary": "#dc2626",
-				"accent":  "#f87171",
-				"neutral": "#6b7280",
-			},
-		},
-		{
-			Name:  "purple",
-			Label: "Royal Purple",
-			Colors: map[string]string{
-				"primary": "#a855f7",
-				"accent":  "#c084fc",
-				"neutral": "#64748b",
-			},
-		},
+		{Name: "default", Label: "Default Blue"},
+		{Name: "green", Label: "Forest Green"},
+		{Name: "red", Label: "Ruby Red"},
+		{Name: "purple", Label: "Royal Purple"},
 	},
 }
 
@@ -112,22 +81,16 @@ func (t *Builtin) Search(viewName string, query string) (templ.Component, error)
 }
 
 // RenderFileView renders the specified file view
-func (t *Builtin) RenderFileView(viewName string, content string, filePath string) (templ.Component, error) {
+func (t *Builtin) RenderFileView(viewName string, fileContent *files.FileContent, filePath string) (templ.Component, error) {
 	filename := filepath.Base(filePath)
 
 	switch viewName {
-	case "detailed":
-		return templates.FileViewDetailed(content, filePath, filename), nil
 	case "compact":
-		return templates.FileViewCompact(content, filePath, filename), nil
-	case "minimal":
-		return templates.FileViewMinimal(content, filePath, filename), nil
+		return templates.FileViewCompact(fileContent, filePath, filename), nil
 	case "reader":
-		return templates.FileViewReader(content, filePath, filename), nil
-	case "debug":
-		return templates.FileViewDebug(content, filePath, filename), nil
+		return templates.FileViewReader(fileContent, filePath, filename), nil
 	default:
-		return templates.FileViewDetailed(content, filePath, filename), nil
+		return templates.FileViewDetailed(fileContent, filePath, filename), nil
 	}
 }
 

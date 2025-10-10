@@ -12,6 +12,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
+	"knov/internal/files"
 	"knov/internal/logging"
 
 	"github.com/a-h/templ"
@@ -61,16 +62,15 @@ type ITheme interface {
 	History(viewName string) (templ.Component, error)
 	Search(viewName string, query string) (templ.Component, error)
 	Overview(viewName string) (templ.Component, error)
-	RenderFileView(viewName string, content string, filePath string) (templ.Component, error)
+	RenderFileView(viewName string, fileContent *files.FileContent, filePath string) (templ.Component, error)
 	Dashboard(viewName string, id string, action string, dash *dashboard.Dashboard) (templ.Component, error)
 	BrowseFiles(viewName string, metadataType string, value string, query string) (templ.Component, error)
 }
 
 // ColorScheme defines a pre-defined color scheme
 type ColorScheme struct {
-	Name   string            // e.g. "green", "blue", "dark"
-	Label  string            // e.g. "Forest Green", "Ocean Blue"
-	Colors map[string]string // e.g. {"primary": "#65a30d", "accent": "#a3e635"}
+	Name  string // e.g. "green", "blue", "dark"
+	Label string // e.g. "Forest Green", "Ocean Blue"
 }
 
 // ThemeMetadata defines theme capabilities and available options
