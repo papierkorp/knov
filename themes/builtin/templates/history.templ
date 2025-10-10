@@ -1,11 +1,8 @@
 package templates
 
-import (
-	"knov/internal/thememanager"
-	"knov/internal/translation"
-)
+import "knov/internal/translation"
 
-templ History(data thememanager.TemplateData) {
+templ History() {
 	@Base(translation.Sprintf("History")) {
 		<div id="history">
 			<h1>{ translation.Sprintf("Hello World from templ at History in the dark!") }</h1>

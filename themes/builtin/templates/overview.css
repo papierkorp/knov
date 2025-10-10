@@ -5,7 +5,6 @@
 }
 
 #page-overview .overview-files h2 {
-    color: var(--accent);
     font-size: 18px;
     margin-bottom: 15px;
 }
@@ -39,7 +38,6 @@
 
 #page-home .overview-browse h2 {
     margin: 0 0 20px 0;
-    color: var(--accent);
     font-size: 18px;
 }
 

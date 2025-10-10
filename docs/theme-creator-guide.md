@@ -1,174 +1,273 @@
 # Theme Creator Guide
 
-The theme system uses Go plugins to provide customizable UI themes. Each theme is compiled as a .so plugin file and loaded dynamically at runtime.
+Create custom themes using Go plugins for maximum flexibility with minimal complexity.
 
 ## Quick Start
 
-1. Create theme directory: themes/mytheme/
-2. Implement ITheme interface: Create main.go with theme struct
-3. Add metadata: Export Metadata variable with theme configuration
-4. Add templates: Create templates/ folder with .templ files
-5. Add styles: Create templates/style.css for theme styling
-6. Build: Run make dev to compile and load your theme
+```bash
+mkdir -p themes/mytheme/templates
+# create files (see below)
+make dev
+```
 
 ## Theme Structure
 
 ```
-themes/
-└── mytheme/
-    ├── main.go              # Theme implementation
-    └── templates/
-        ├── style.css        # Theme styles
-        ├── *.templ          # Template files
-        └── *_templ.go       # Generated template files
+themes/mytheme/
+├── main.go                 # theme implementation
+└── templates/
+    ├── *.templ            # your templates
+    └── style.css          # your styles
 ```
 
-## Theme Implementation
+## Minimal Theme
 
-Your theme's main.go must export two symbols:
-
-### 1. Theme Variable
-
-Export a variable named Theme that implements the ITheme interface:
+**themes/mytheme/main.go:**
 
 ```go
-    package main
-    type MyTheme struct{}
-    var Theme MyTheme
-```
-`
-See internal/thememanager/thememanager.go for the complete ITheme interface definition.
+package main
 
-### 2. Metadata Variable
+import (
+    "knov/internal/dashboard"
+    "knov/internal/thememanager"
+    "knov/themes/mytheme/templates"
+    "github.com/a-h/templ"
+)
 
-- AvailableFileViews: List of file view types the theme supports (e.g., "markdown", "detailed", "compact")
+type MyTheme struct{}
 
+var Theme MyTheme
 
-Export a Metadata variable containing static theme configuration:
-
-```go
-    var Metadata = thememanager.ThemeMetadata{
-        AvailableFileViews: []string{"detailed", "compact", "minimal"},
-    }
-```
-
-**Important: Use thememanager.ThemeMetadata type, not a local type definition.**
-
-
-**Minimal Example**
-
-```go
-    package main
-
-    import (
-        "knov/internal/thememanager"
-        "knov/themes/mytheme/templates"
-        "github.com/a-h/templ"
-    )
-
-    type MyTheme struct{}
-
-    var Theme MyTheme
-
-    var Metadata = thememanager.ThemeMetadata{
-        AvailableFileViews: []string{"detailed"},
-    }
-
-    func (t *MyTheme) Home() (templ.Component, error) {
-        tm := thememanager.GetThemeManager()
-        data := thememanager.TemplateData{
-            ThemeToUse:      tm.GetCurrentThemeName(),
-            AvailableThemes: tm.GetAvailableThemes(),
-        }
-        return templates.Home(data), nil
-    }
-
-    // Implement remaining ITheme methods...
-```
-
-## File Content Structure
-
-When implementing `RenderFileView`, you'll receive a `*files.FileContent` struct:
-
-```go
-type FileContent struct {
-    HTML string      // Rendered HTML content with header IDs
-    TOC  []TOCItem   // Table of contents entries
+var Metadata = thememanager.ThemeMetadata{
+    AvailableFileViews: []string{"default"},
+    SupportsDarkMode: true,
+    AvailableColorSchemes: []thememanager.ColorScheme{
+        {
+            Name:  "blue",
+            Label: "Ocean Blue",
+            Colors: map[string]string{
+                "primary": "#0ea5e9",
+                "accent":  "#38bdf8",
+            },
+        },
+        {
+            Name:  "green",
+            Label: "Forest Green",
+            Colors: map[string]string{
+                "primary": "#65a30d",
+                "accent":  "#a3e635",
+            },
+        },
+    },
 }
 
-type TOCItem struct {
-    Level int        // Header level (1-6)
-    Text  string     // Header text
-    ID    string     // Anchor ID
-    Class string     // CSS class (toc-level-N)
-    Link  string     // Full anchor link (#id)
+func (t *MyTheme) Home(viewName string) (templ.Component, error) {
+    return templates.Home(), nil
+}
+
+func (t *MyTheme) Settings(viewName string) (templ.Component, error) {
+    return templates.Settings(), nil
+}
+
+// implement all other required methods...
+
+func (t *MyTheme) RenderFileView(viewName string, content string, filePath string) (templ.Component, error) {
+    switch viewName {
+    case "compact":
+        return templates.FileViewCompact(content, filePath), nil
+    default:
+        return templates.FileView(content, filePath), nil
+    }
+}
+
+func (t *MyTheme) Dashboard(viewName string, id string, action string, dash *dashboard.Dashboard) (templ.Component, error) {
+    if action == "new" {
+        return templates.DashboardNew(), nil
+    }
+    if action == "edit" {
+        return templates.DashboardEdit(dash), nil
+    }
+    return templates.Dashboard(dash), nil
 }
 ```
 
-### Using FileContent in Templates
+## Required Methods
 
-```templ
-templ FileViewDetailed(fileContent *files.FileContent, filePath string, filename string, data thememanager.TemplateData) {
-    @Base(filename) {
-        if len(fileContent.TOC) > 0 {
-            <nav id="component-toc">
-                <h4>Table of Contents</h4>
-                <ul>
-                    for _, item := range fileContent.TOC {
-                        <li class={ item.Class }>
-                            <a href={ templ.SafeURL(item.Link) }>{ item.Text }</a>
-                        </li>
-                    }
-                </ul>
-            </nav>
-        }
-        @templ.Raw(fileContent.HTML)
-    }
-}
-```
-**Minimal Example**
+Implement all methods from `ITheme` interface:
 
 ```go
-func (t *MyTheme) RenderFileView(viewName string, fileContent *files.FileContent, filePath string) (templ.Component, error) {
-    tm := thememanager.GetThemeManager()
-    data := thememanager.TemplateData{
-        ThemeToUse:      tm.GetCurrentThemeName(),
-        AvailableThemes: tm.GetAvailableThemes(),
-    }
-    filename := filepath.Base(filePath)
-
-    return templates.FileViewDetailed(fileContent, filePath, filename, data), nil
+type ITheme interface {
+    Home(viewName string) (templ.Component, error)
+    Settings(viewName string) (templ.Component, error)
+    Admin(viewName string) (templ.Component, error)
+    Playground(viewName string) (templ.Component, error)
+    LatestChanges(viewName string) (templ.Component, error)
+    History(viewName string) (templ.Component, error)
+    Search(viewName string, query string) (templ.Component, error)
+    Overview(viewName string) (templ.Component, error)
+    RenderFileView(viewName string, content string, filePath string) (templ.Component, error)
+    Dashboard(viewName string, id string, action string, dash *dashboard.Dashboard) (templ.Component, error)
+    BrowseFiles(viewName string, metadataType string, value string, query string) (templ.Component, error)
 }
 ```
 
+## Theme Metadata
 
-## Template Data
-
-Access dynamic data in your templates via thememanager.TemplateData:
+Define theme capabilities and view variants:
 
 ```go
-    type TemplateData struct {
-        ThemeToUse      string
-        AvailableThemes []string
-        Dashboard       *dashboard.Dashboard
-        ShowCreateForm  bool
-    }
+type ThemeMetadata struct {
+    // view variants for each page type
+    AvailableFileViews          []string
+    AvailableHomeViews          []string
+    AvailableSearchViews        []string
+    AvailableOverviewViews      []string
+    AvailableDashboardViews     []string
+    AvailableSettingsViews      []string
+    AvailableAdminViews         []string
+    AvailablePlaygroundViews    []string
+    AvailableHistoryViews       []string
+    AvailableLatestChangesViews []string
+    AvailableBrowseFilesViews   []string
+
+    // theme capabilities
+    SupportsDarkMode      bool
+    AvailableColorSchemes []ColorScheme
+}
+
+type ColorScheme struct {
+    Name   string            // e.g. "green", "blue"
+    Label  string            // e.g. "Forest Green", "Ocean Blue"
+    Colors map[string]string // e.g. {"primary": "#65a30d"}
+}
 ```
 
-## Building and Loading
+## Color Schemes
 
-Themes are automatically compiled and loaded during initialization:
+Define pre-made color schemes users can select from:
 
-1. Compile: go build -buildmode=plugin -o themes/mytheme.so themes/mytheme/
-2. Load: Theme manager automatically loads all .so files from themes/ directory
-3. Switch: Set active theme via settings page or config
+```go
+var Metadata = thememanager.ThemeMetadata{
+    SupportsDarkMode: true,
+    AvailableColorSchemes: []thememanager.ColorScheme{
+        {
+            Name:  "blue",
+            Label: "Ocean Blue",
+            Colors: map[string]string{
+                "primary": "#0ea5e9",
+                "accent":  "#38bdf8",
+                "neutral": "#64748b",
+            },
+        },
+        {
+            Name:  "green",
+            Label: "Forest Green",
+            Colors: map[string]string{
+                "primary": "#65a30d",
+                "accent":  "#a3e635",
+                "neutral": "#475569",
+            },
+        },
+    },
+}
+```
 
-## Reference Implementation
+## Styling with CSS
 
-See themes/builtin/ for a complete reference implementation demonstrating all required methods and best practices.
+**themes/mytheme/templates/style.css:**
 
-## Interface Definitions
+```css
+/* Define color schemes using data attributes */
 
-- ITheme: See internal/thememanager/thememanager.go
-- IThemeManager: See internal/thememanager/thememanager.go
-- TemplateData: See internal/thememanager/thememanager.go
+/* Blue scheme */
+:root,
+body[data-color-scheme="blue"] {
+    --primary: #0ea5e9;
+    --accent: #38bdf8;
+    --neutral: #64748b;
+}
+
+/* Green scheme */
+body[data-color-scheme="green"] {
+    --primary: #65a30d;
+    --accent: #a3e635;
+    --neutral: #475569;
+}
+
+/* Light mode (default) */
+body {
+    --bg: #ffffff;
+    --text: #1a1a1a;
+    --border: var(--neutral);
+
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* Dark mode */
+body[data-dark-mode="true"] {
+    --bg: #0f172a;
+    --text: #f1f5f9;
+    --border: #334155;
+}
+
+/* Use color variables throughout */
+.button {
+    background: var(--primary);
+    color: var(--bg);
+}
+
+a {
+    color: var(--primary);
+}
+
+a:hover {
+    color: var(--accent);
+}
+
+/* Use ID selectors for specificity */
+#page-home { }
+#component-navbar { }
+#view-fileview-compact { }
+```
+
+## Available Body Attributes
+
+Your CSS can read these data attributes:
+
+- `data-theme` - current theme name
+- `data-dark-mode` - "true" or "false"
+- `data-color-scheme` - selected color scheme name
+- `data-language` - current language code
+
+## User Preferences
+
+User settings are automatically stored in `config/users/{userid}/settings.json`:
+
+```json
+{
+  "theme": "mytheme",
+  "language": "en",
+  "fileView": "default",
+  "darkMode": true,
+  "colorScheme": "green"
+}
+```
+
+No additional configuration needed!
+
+## Building
+
+```bash
+make dev  # auto-compiles all themes
+```
+
+Manual:
+```bash
+cd themes/mytheme
+go build -buildmode=plugin -o ../mytheme.so .
+```
+
+## Reference
+
+See `themes/builtin/` for complete implementation.

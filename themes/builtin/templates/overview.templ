@@ -1,11 +1,8 @@
 package templates
 
-import (
-	"knov/internal/thememanager"
-	"knov/internal/translation"
-)
+import "knov/internal/translation"
 
-templ Overview(data thememanager.TemplateData) {
+templ Overview() {
 	@Base(translation.Sprintf("Overview")) {
 		<div id="page-overview">
 			<h1>{ translation.Sprintf("OVERVIEW") }</h1>

@@ -1,11 +1,8 @@
 package templates
 
-import (
-	"knov/internal/thememanager"
-	"knov/internal/translation"
-)
+import "knov/internal/translation"
 
-templ Search(query string, data thememanager.TemplateData) {
+templ Search(query string) {
 	@Base(translation.Sprintf("Search")) {
 		<div id="page-search">
 			<h1>{ translation.Sprintf("Search Results") }</h1>

@@ -313,6 +313,15 @@ paths:
       summary: Get available file views for current theme
       tags:
       - config
+  /api/config/getColorSchemes:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get available color schemes
+      tags:
+      - config
   /api/config/getConfig:
     get:
       produces:
@@ -335,26 +344,26 @@ paths:
       summary: Get git repository URL
       tags:
       - config
-  /api/config/setDataPath:
+  /api/config/setColorScheme:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: updates data path in .env file (requires restart)
-      parameters:
-      - description: data path
-        in: formData
-        name: dataPath
-        required: true
-        type: string
       produces:
       - application/json
       - text/html
-      responses:
-        "200":
-          description: saved
-          schema:
-            type: string
-      summary: Update data path
+      responses: {}
+      summary: Set color scheme
+      tags:
+      - config
+  /api/config/setDarkMode:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Set dark mode
       tags:
       - config
   /api/config/setFileView:
@@ -383,22 +392,11 @@ paths:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: updates git repository url in .env file (requires restart)
-      parameters:
-      - description: repository url
-        in: formData
-        name: repositoryUrl
-        required: true
-        type: string
       produces:
       - application/json
       - text/html
-      responses:
-        "200":
-          description: saved
-          schema:
-            type: string
-      summary: Update git repository URL
+      responses: {}
+      summary: Set git repository URL
       tags:
       - config
   /api/dashboards:
@@ -1472,43 +1470,4 @@ paths:
       summary: Set theme
       tags:
       - themes
-  /browse/{metadata}/{value}:
-    get:
-      description: Browse and filter files by specific metadata type and value
-      parameters:
-      - description: Metadata type
-        enum:
-        - tags
-        - collection
-        - folders
-        - type
-        - status
-        - priority
-        in: path
-        name: metadata
-        required: true
-        type: string
-      - description: Metadata value to filter by
-        in: path
-        name: value
-        required: true
-        type: string
-      produces:
-      - text/html
-      responses:
-        "200":
-          description: rendered browse page
-          schema:
-            type: string
-        "400":
-          description: missing metadata type or value
-          schema:
-            type: string
-        "500":
-          description: failed to render page
-          schema:
-            type: string
-      summary: Browse files by metadata
-      tags:
-      - files
 swagger: "2.0"

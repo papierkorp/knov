@@ -6,63 +6,103 @@
 @import url("dashboard.css");
 @import url("browsefiles.css");
 
-:root {
-  --primary: #65a30d;
-  --accent: #a3e635;
-  --neutral: #475569;
-  --black: #374151;
-  --white: #d1d5db;
+/* Default Blue */
+:root,
+body[data-color-scheme="default"] {
+    --primary: #3b82f6;
+    --accent: #8b5cf6;
+    --neutral: #64748b;
+    --black: #1e293b;
+    --white: #f1f5f9;
 }
 
+/* Forest Green */
+body[data-color-scheme="green"] {
+    --primary: #65a30d;
+    --accent: #a3e635;
+    --neutral: #475569;
+    --black: #374151;
+    --white: #d1d5db;
+}
+
+/* Ruby Red */
+body[data-color-scheme="red"] {
+    --primary: #dc2626;
+    --accent: #f87171;
+    --neutral: #6b7280;
+    --black: #1f2937;
+    --white: #e5e7eb;
+}
+
+/* Royal Purple */
+body[data-color-scheme="purple"] {
+    --primary: #a855f7;
+    --accent: #c084fc;
+    --neutral: #64748b;
+    --black: #1e293b;
+    --white: #f1f5f9;
+}
+
+/* Light/Dark Mode Base */
 body {
-  font-family: sans-serif;
-  background: var(--black);
-  color: var(--white);
-  margin: 0;
-  font-size: 16px;
+    --bg: var(--white);
+    --text: var(--black);
+    --border: var(--neutral);
+
+    background: var(--bg);
+    color: var(--text);
+    font-family: sans-serif;
+    margin: 0;
+    font-size: 16px;
+}
+
+body[data-dark-mode="true"] {
+    --bg: #0f172a;
+    --text: #f1f5f9;
+    --border: #334155;
 }
 
 a {
-  color: var(--white);
-  text-decoration: none;
+    color: var(--primary);
+    text-decoration: none;
 }
 
 a:hover {
-  color: var(--accent);
+    color: var(--accent);
 }
 
 main {
-  margin: 20px;
-  padding: 10px;
+    margin: 20px;
+    padding: 10px;
 }
 
 ul {
-  padding-inline-start: 20px;
+    padding-inline-start: 20px;
 }
 
 h1:first-child {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 .text-center {
-  text-align: center;
+    text-align: center;
 }
 
 .mb-4 {
-  margin-bottom: 1rem;
+    margin-bottom: 1rem;
 }
 
 .btn {
-  background: var(--primary);
-  color: var(--white);
-  border: none;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.2s;
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .btn:hover {
-  background: var(--accent);
-  color: var(--black);
+    background: var(--accent);
+    color: var(--black);
 }

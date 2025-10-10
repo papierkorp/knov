@@ -1,59 +1,21 @@
 package templates
 
-import (
-	"knov/internal/files"
-	"knov/internal/thememanager"
-)
-
-templ FileViewReader(fileContent *files.FileContent, filePath string, filename string, data thememanager.TemplateData) {
+templ FileViewDetailed(content string, filePath string, filename string) {
 	@Base(filename) {
-		<div id="view-fileview-reader" class="file-reader">
-			<div class="reader-controls">
-				<button onclick="adjustFontSize(-1)">A-</button>
-				<button onclick="adjustFontSize(1)">A+</button>
-			</div>
-			<article class="file-content-reader" id="reader-content">
-				@templ.Raw(fileContent.HTML)
+		<div id="view-fileview-detailed" class="file-detailed">
+			<article class="file-content">
+				@templ.Raw(content)
 			</article>
-		</div>
-		<script>
-    function adjustFontSize(delta) {
-        const content = document.getElementById('reader-content');
-        const currentSize = parseInt(window.getComputedStyle(content).fontSize);
-        content.style.fontSize = (currentSize + delta * 2) + 'px';
-    }
-</script>
-	}
-}
-
-templ FileViewCompact(fileContent *files.FileContent, filePath string, filename string, data thememanager.TemplateData) {
-	@Base(filename) {
-		<div id="view-fileview-compact" class="file-compact">
-			<div class="compact-header">
-				<div class="breadcrumb">📁 { filePath }</div>
-				<div class="quick-meta">
+			<div class="file-metadata">
+				<div class="metadata-item">
+					<strong>Tags:</strong>
 					<span
-						class="meta-pill"
-						hx-get={ "/api/metadata/status?filepath=" + templ.URL(filePath) }
+						hx-get={ "/api/metadata/tags?filepath=" + templ.URL(filePath) }
 						hx-trigger="load"
-					>...</span>
-					<span
-						class="meta-pill"
-						hx-get={ "/api/metadata/priority?filepath=" + templ.URL(filePath) }
-						hx-trigger="load"
-					>...</span>
-					<span
-						class="meta-pill"
-						hx-get={ "/api/metadata/collection?filepath=" + templ.URL(filePath) }
-						hx-trigger="load"
+						class="inline-tags"
 					>...</span>
 				</div>
-			</div>
-			<article class="file-content">
-				@templ.Raw(fileContent.HTML)
-			</article>
-			<div class="compact-links">
-				<div class="link-row">
+				<div class="metadata-item">
 					<strong>Links:</strong>
 					<span
 						hx-get={ "/api/links/used?filepath=" + templ.URL(filePath) }
@@ -66,7 +28,37 @@ templ FileViewCompact(fileContent *files.FileContent, filePath string, filename 
 	}
 }
 
-templ FileViewDebug(fileContent *files.FileContent, filePath string, filename string, data thememanager.TemplateData) {
+templ FileViewCompact(content string, filePath string, filename string) {
+	@Base(filename) {
+		<div id="view-fileview-compact" class="file-compact">
+			<article class="file-content">
+				@templ.Raw(content)
+			</article>
+		</div>
+	}
+}
+
+templ FileViewMinimal(content string, filePath string, filename string) {
+	@Base(filename) {
+		<div id="view-fileview-minimal" class="file-minimal">
+			<article class="file-content">
+				@templ.Raw(content)
+			</article>
+		</div>
+	}
+}
+
+templ FileViewReader(content string, filePath string, filename string) {
+	@Base(filename) {
+		<div id="view-fileview-reader" class="file-reader">
+			<article class="file-content">
+				@templ.Raw(content)
+			</article>
+		</div>
+	}
+}
+
+templ FileViewDebug(content string, filePath string, filename string) {
 	@Base(filename) {
 		<div id="view-fileview-debug" class="file-debug">
 			<div class="debug-panel">
@@ -81,186 +73,13 @@ templ FileViewDebug(fileContent *files.FileContent, filePath string, filename st
 						...
 					</div>
 				</div>
-				<div class="debug-section">
-					<h4>All Links</h4>
-					<div class="debug-links">
-						<strong>Parents:</strong>
-						<div hx-get={ "/api/links/parents?filepath=" + templ.URL(filePath) } hx-trigger="load">...</div>
-						<strong>Children:</strong>
-						<div hx-get={ "/api/links/kids?filepath=" + templ.URL(filePath) } hx-trigger="load">...</div>
-						<strong>Used:</strong>
-						<div hx-get={ "/api/links/used?filepath=" + templ.URL(filePath) } hx-trigger="load">...</div>
-						<strong>References:</strong>
-						<div hx-get={ "/api/links/linkstohere?filepath=" + templ.URL(filePath) } hx-trigger="load">...</div>
-					</div>
-				</div>
 			</div>
 			<div class="debug-content">
 				<h3>📄 Content</h3>
 				<article class="file-content">
-					@templ.Raw(fileContent.HTML)
+					@templ.Raw(content)
 				</article>
 			</div>
-		</div>
-	}
-}
-
-templ FileViewDetailed(fileContent *files.FileContent, filePath string, filename string, data thememanager.TemplateData) {
-	@Base(filename) {
-		<div id="view-fileview-detailed" class="file-container">
-			<article class="file-content">
-				@templ.Raw(fileContent.HTML)
-			</article>
-			<aside class="file-sidebar">
-				<div class="sidebar-section">
-					<details open>
-						<summary><h4>Info</h4></summary>
-						<div class="metadata-compact">
-							<div class="meta-row">
-								<span class="label">Collection:</span>
-								<span
-									class="value"
-									hx-get={ "/api/metadata/file/collection?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</span>
-							</div>
-							<div class="meta-row">
-								<span class="label">Tags:</span>
-								<span
-									class="value"
-									hx-get={ "/api/metadata/file/tags?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</span>
-							</div>
-							<div class="meta-row">
-								<span class="label">Folders:</span>
-								<span
-									class="value"
-									hx-get={ "/api/metadata/file/folders?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</span>
-							</div>
-							<div class="meta-row">
-								<span class="label">Type:</span>
-								<span
-									class="value"
-									hx-get={ "/api/metadata/filetype?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</span>
-							</div>
-							<div class="meta-row">
-								<span class="label">Status:</span>
-								<span
-									class="value"
-									hx-get={ "/api/metadata/status?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</span>
-							</div>
-							<div class="meta-row">
-								<span class="label">Priority:</span>
-								<span
-									class="value"
-									hx-get={ "/api/metadata/priority?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</span>
-							</div>
-							<div class="meta-row">
-								<span class="label">Created:</span>
-								<span
-									class="value"
-									hx-get={ "/api/metadata/createdat?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</span>
-							</div>
-							<div class="meta-row">
-								<span class="label">Modified:</span>
-								<span
-									class="value"
-									hx-get={ "/api/metadata/lastedited?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</span>
-							</div>
-						</div>
-					</details>
-				</div>
-				<div class="sidebar-section">
-					<details open>
-						<summary><h4>Links</h4></summary>
-						<div class="links-compact">
-							<div class="link-group">
-								<span class="link-label">↑ Parents:</span>
-								<div
-									class="link-list"
-									hx-get={ "/api/links/parents?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</div>
-							</div>
-							<div class="link-group">
-								<span class="link-label">↑ Ancestors:</span>
-								<div
-									class="link-list"
-									hx-get={ "/api/links/ancestors?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</div>
-							</div>
-							<div class="link-group">
-								<span class="link-label">↓ Children:</span>
-								<div
-									class="link-list"
-									hx-get={ "/api/links/kids?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</div>
-							</div>
-							<div class="link-group">
-								<span class="link-label">→ Out:</span>
-								<div
-									class="link-list"
-									hx-get={ "/api/links/used?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</div>
-							</div>
-							<div class="link-group">
-								<span class="link-label">← In:</span>
-								<div
-									class="link-list"
-									hx-get={ "/api/links/linkstohere?filepath=" + templ.URL(filePath) }
-									hx-trigger="load"
-								>...</div>
-							</div>
-						</div>
-					</details>
-				</div>
-				if len(fileContent.TOC) > 0 {
-					<div class="sidebar-section sidebar-section-sticky">
-						<details open>
-							<summary>
-								<nav id="component-toc">
-									<h4>Table of Contents</h4>
-								</nav>
-							</summary>
-							<nav id="component-toc">
-								<ul>
-									for _, item := range fileContent.TOC {
-										<li class={ item.Class }>
-											<a href={ templ.SafeURL(item.Link) }>{ item.Text }</a>
-										</li>
-									}
-								</ul>
-							</nav>
-						</details>
-					</div>
-				}
-			</aside>
-		</div>
-	}
-}
-
-templ FileViewMinimal(fileContent *files.FileContent, filePath string, filename string, data thememanager.TemplateData) {
-	@Base(filename) {
-		<div id="view-fileview-minimal" class="file-minimal">
-			<article class="file-content-minimal">
-				@templ.Raw(fileContent.HTML)
-			</article>
 		</div>
 	}
 }

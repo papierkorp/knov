@@ -1,11 +1,8 @@
 package templates
 
-import (
-	"knov/internal/thememanager"
-	"knov/internal/translation"
-)
+import "knov/internal/translation"
 
-templ Playground(data thememanager.TemplateData) {
+templ Playground() {
 	@Base(translation.Sprintf("Playground")) {
 		<div id="playground">
 			<h1>{ translation.Sprintf("Playground") }</h1>

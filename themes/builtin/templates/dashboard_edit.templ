@@ -4,16 +4,15 @@ import (
 	"encoding/json"
 	"knov/internal/dashboard"
 	"knov/internal/files"
-	"knov/internal/thememanager"
 	"knov/internal/translation"
 	"strconv"
 )
 
-templ DashboardEdit(data thememanager.TemplateData) {
-	@Base(translation.Sprintf("Edit Dashboard") + ": " + data.Dashboard.Name) {
+templ DashboardEdit(dash *dashboard.Dashboard) {
+	@Base(translation.Sprintf("Edit Dashboard") + ": " + dash.Name) {
 		<div id="page-dashboard-edit">
-			<h1>{ translation.Sprintf("Edit Dashboard") }: { data.Dashboard.Name }</h1>
-			@DashboardEditForm(data.Dashboard)
+			<h1>{ translation.Sprintf("Edit Dashboard") }: { dash.Name }</h1>
+			@DashboardEditForm(dash)
 		</div>
 	}
 }

@@ -12,7 +12,6 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
-	"knov/internal/files"
 	"knov/internal/logging"
 
 	"github.com/a-h/templ"
@@ -54,34 +53,46 @@ type ThemeManager struct {
 
 // ITheme ...
 type ITheme interface {
-	Home() (templ.Component, error)
-	Settings() (templ.Component, error)
-	Admin() (templ.Component, error)
-	Playground() (templ.Component, error)
-	LatestChanges() (templ.Component, error)
-	History() (templ.Component, error)
-	Search(query string) (templ.Component, error)
-	Overview() (templ.Component, error)
-	RenderFileView(viewName string, fileContent *files.FileContent, filePath string) (templ.Component, error)
-	Dashboard(id string, action string) (templ.Component, error)
-	BrowseFiles(metadataType string, value string, query string) (templ.Component, error)
+	Home(viewName string) (templ.Component, error)
+	Settings(viewName string) (templ.Component, error)
+	Admin(viewName string) (templ.Component, error)
+	Playground(viewName string) (templ.Component, error)
+	LatestChanges(viewName string) (templ.Component, error)
+	History(viewName string) (templ.Component, error)
+	Search(viewName string, query string) (templ.Component, error)
+	Overview(viewName string) (templ.Component, error)
+	RenderFileView(viewName string, content string, filePath string) (templ.Component, error)
+	Dashboard(viewName string, id string, action string, dash *dashboard.Dashboard) (templ.Component, error)
+	BrowseFiles(viewName string, metadataType string, value string, query string) (templ.Component, error)
 }
 
+// ColorScheme defines a pre-defined color scheme
+type ColorScheme struct {
+	Name   string            // e.g. "green", "blue", "dark"
+	Label  string            // e.g. "Forest Green", "Ocean Blue"
+	Colors map[string]string // e.g. {"primary": "#65a30d", "accent": "#a3e635"}
+}
+
+// ThemeMetadata defines theme capabilities and available options
 type ThemeMetadata struct {
-	AvailableFileViews []string
+	AvailableFileViews          []string
+	AvailableHomeViews          []string
+	AvailableSearchViews        []string
+	AvailableOverviewViews      []string
+	AvailableDashboardViews     []string
+	AvailableSettingsViews      []string
+	AvailableAdminViews         []string
+	AvailablePlaygroundViews    []string
+	AvailableHistoryViews       []string
+	AvailableLatestChangesViews []string
+	AvailableBrowseFilesViews   []string
+	SupportsDarkMode            bool
+	AvailableColorSchemes       []ColorScheme
 }
 
 // -----------------------------------------------------------------------------
 // -------------------------- IThemeManager Interface --------------------------
 // -----------------------------------------------------------------------------
-
-// TemplateData to be passed onto Templates for dynamic data access
-type TemplateData struct {
-	ThemeToUse      string
-	AvailableThemes []string
-	Dashboard       *dashboard.Dashboard
-	ShowCreateForm  bool
-}
 
 // IThemeManager ..
 type IThemeManager interface {
@@ -92,7 +103,8 @@ type IThemeManager interface {
 	GetAvailableThemes() []string
 	LoadTheme(themeName string) error
 	LoadAllThemes() error
-	GetAvailableFileViews() []string
+	GetAvailableViews(viewType string) []string
+	GetThemeMetadata(themeName string) *ThemeMetadata
 }
 
 // Initialize loads all themes from the themes directory
@@ -171,6 +183,56 @@ func (tm *ThemeManager) GetAvailableThemes() []string {
 		names = append(names, name)
 	}
 	return names
+}
+
+// GetAvailableViews returns available view variants for a specific view type
+func (tm *ThemeManager) GetAvailableViews(viewType string) []string {
+	tm.mutex.RLock()
+	defer tm.mutex.RUnlock()
+
+	for name, theme := range tm.themes {
+		if theme == tm.currentTheme {
+			if meta, ok := tm.thememetadata[name]; ok {
+				switch viewType {
+				case "file":
+					return meta.AvailableFileViews
+				case "home":
+					return meta.AvailableHomeViews
+				case "search":
+					return meta.AvailableSearchViews
+				case "overview":
+					return meta.AvailableOverviewViews
+				case "dashboard":
+					return meta.AvailableDashboardViews
+				case "settings":
+					return meta.AvailableSettingsViews
+				case "admin":
+					return meta.AvailableAdminViews
+				case "playground":
+					return meta.AvailablePlaygroundViews
+				case "history":
+					return meta.AvailableHistoryViews
+				case "latestchanges":
+					return meta.AvailableLatestChangesViews
+				case "browsefiles":
+					return meta.AvailableBrowseFilesViews
+				}
+			}
+			break
+		}
+	}
+	return []string{"default"}
+}
+
+// GetThemeMetadata returns metadata for a specific theme
+func (tm *ThemeManager) GetThemeMetadata(themeName string) *ThemeMetadata {
+	tm.mutex.RLock()
+	defer tm.mutex.RUnlock()
+
+	if meta, ok := tm.thememetadata[themeName]; ok {
+		return meta
+	}
+	return nil
 }
 
 // -----------------------------------------------------------------------------
@@ -258,23 +320,6 @@ func (tm *ThemeManager) LoadTheme(themeName string) error {
 	logging.LogInfo("successfully loaded theme: %s", themeName)
 
 	return nil
-}
-
-// GetAvailableFileViews ..
-func (tm *ThemeManager) GetAvailableFileViews() []string {
-	tm.mutex.RLock()
-	defer tm.mutex.RUnlock()
-
-	for name, theme := range tm.themes {
-		if theme == tm.currentTheme {
-			if meta, ok := tm.thememetadata[name]; ok {
-				return meta.AvailableFileViews
-			}
-			break
-		}
-	}
-
-	return []string{}
 }
 
 // LoadAllThemes loads all available theme plugins from the themes directory

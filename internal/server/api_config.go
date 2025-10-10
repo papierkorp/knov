@@ -9,6 +9,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/logging"
+	"knov/internal/thememanager"
 )
 
 // @Summary Get current configuration
@@ -136,6 +137,7 @@ func handleAPIRestartApp(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
+<<<<<<< HEAD
 // @Summary Update data path
 // @Description updates data path in .env file (requires restart)
 // @Tags config
@@ -162,4 +164,60 @@ func handleAPISetDataPath(w http.ResponseWriter, r *http.Request) {
 	data := "saved"
 	html := `<span class="status-ok">data path saved. restart required.</span>`
 	writeResponse(w, r, data, html)
+=======
+// @Summary Set dark mode
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Router /api/config/setDarkMode [post]
+func handleAPISetDarkMode(w http.ResponseWriter, r *http.Request) {
+	enabled := r.FormValue("enabled") == "true"
+	configmanager.SetDarkMode(enabled)
+	w.Header().Set("HX-Refresh", "true")
+	w.WriteHeader(http.StatusOK)
+}
+
+// @Summary Get available color schemes
+// @Tags config
+// @Produce json,html
+// @Router /api/config/getColorSchemes [get]
+func handleAPIGetColorSchemes(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	currentThemeName := tm.GetCurrentThemeName()
+	metadata := tm.GetThemeMetadata(currentThemeName)
+
+	if metadata == nil || len(metadata.AvailableColorSchemes) == 0 {
+		writeResponse(w, r, []string{}, "<option>no schemes available</option>")
+		return
+	}
+
+	currentScheme := configmanager.GetColorScheme()
+
+	var html strings.Builder
+	for _, scheme := range metadata.AvailableColorSchemes {
+		selected := ""
+		if scheme.Name == currentScheme {
+			selected = "selected"
+		}
+		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, scheme.Name, selected, scheme.Label))
+	}
+
+	writeResponse(w, r, metadata.AvailableColorSchemes, html.String())
+}
+
+// @Summary Set color scheme
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Router /api/config/setColorScheme [post]
+func handleAPISetColorScheme(w http.ResponseWriter, r *http.Request) {
+	scheme := r.FormValue("colorScheme")
+
+	if scheme != "" {
+		configmanager.SetColorScheme(scheme)
+	}
+
+	w.Header().Set("HX-Refresh", "true")
+	w.WriteHeader(http.StatusOK)
+>>>>>>> eefe0d0 (feat: thememanager refactor)
 }

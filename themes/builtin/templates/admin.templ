@@ -2,11 +2,10 @@ package templates
 
 import (
 	"knov/internal/configmanager"
-	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
 
-templ Admin(data thememanager.TemplateData) {
+templ Admin() {
 	@Base(translation.Sprintf("Admin")) {
 		<div id="page-admin">
 			<h1>{ translation.Sprintf("Admin") }</h1>

@@ -2,22 +2,8 @@ package templates
 
 import (
 	"knov/internal/configmanager"
-	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
-
-type Language struct {
-	Code string
-	Name string
-}
-
-func getAvailableLanguages() []Language {
-	return []Language{
-		{Code: "en", Name: "English"},
-		{Code: "de", Name: "Deutsch"},
-		// Add more languages here as needed
-	}
-}
 
 func getBuiltinCSSEditor() string {
 	editorHTML := `<div id="customCssEditor">
@@ -29,13 +15,13 @@ func getBuiltinCSSEditor() string {
 	return configmanager.GetCustomCSSEditor(editorHTML)
 }
 
-templ Settings(data thememanager.TemplateData) {
+templ Settings() {
 	@Base(translation.Sprintf("Settings")) {
 		<div id="page-settings">
 			<h1>{ translation.Sprintf("Settings") }</h1>
 			<div class="settings-sections">
 				@GeneralSection()
-				@ThemeSection(data)
+				@ThemeSection()
 			</div>
 		</div>
 	}
@@ -61,20 +47,45 @@ templ GeneralSection() {
 	</section>
 }
 
-templ ThemeSection(data thememanager.TemplateData) {
+templ ThemeSection() {
 	<section class="settings-section">
 		<h2>{ translation.Sprintf("Theme Settings") }</h2>
 		<div class="setting-item">
 			<form hx-post="/api/themes/setTheme" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
 				<label for="theme">{ translation.Sprintf("Select Theme:") }</label>
-				<select name="theme" id="theme">
-					for _, theme := range data.AvailableThemes {
-						if theme == data.ThemeToUse {
-							<option value={ theme } selected>{ theme }</option>
-						} else {
-							<option value={ theme }>{ theme }</option>
-						}
-					}
+				<select
+					name="theme"
+					id="theme"
+					hx-get="/api/themes/list"
+					hx-trigger="load"
+				>
+					<option>Loading themes...</option>
+				</select>
+			</form>
+		</div>
+		<div class="setting-item">
+			<label>
+				{ translation.Sprintf("Dark Mode") }
+				<input
+					type="checkbox"
+					name="darkMode"
+					checked?={ configmanager.GetDarkMode() }
+					hx-post="/api/config/setDarkMode"
+					hx-vals='js:{"enabled": event.target.checked}'
+					hx-trigger="change"
+				/>
+			</label>
+		</div>
+		<div class="setting-item">
+			<form hx-post="/api/config/setColorScheme" hx-trigger="change">
+				<label for="colorScheme">Color Scheme:</label>
+				<select
+					name="colorScheme"
+					id="colorScheme"
+					hx-get="/api/config/getColorSchemes"
+					hx-trigger="load"
+				>
+					<option>Loading schemes...</option>
 				</select>
 			</form>
 		</div>

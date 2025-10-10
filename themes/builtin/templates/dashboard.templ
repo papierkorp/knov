@@ -1,22 +1,22 @@
 package templates
 
 import (
-	"knov/internal/thememanager"
+	"knov/internal/dashboard"
 	"knov/internal/translation"
 )
 
-templ Dashboard(data thememanager.TemplateData) {
-	@Base(data.Dashboard.Name) {
+templ Dashboard(dash *dashboard.Dashboard) {
+	@Base(dash.Name) {
 		<div id="page-dashboard">
-			<h1>{ data.Dashboard.Name }</h1>
+			<h1>{ dash.Name }</h1>
 			<div class="dashboard-layout">
-				<div class={ "dashboard-widgets dashboard-" + string(data.Dashboard.Layout) }>
-					for _, widget := range data.Dashboard.Widgets {
+				<div class={ "dashboard-widgets dashboard-" + string(dash.Layout) }>
+					for _, widget := range dash.Widgets {
 						<div class="dashboard-widget" data-widget-id={ widget.ID }>
 							<h3>{ string(widget.Type) }</h3>
 							<div
 								hx-post={ "/api/dashboards/widget/" + widget.ID }
-								hx-vals={ `{"dashboardId": "` + data.Dashboard.ID + `" }` }
+								hx-vals={ `{"dashboardId": "` + dash.ID + `"}` }
 								hx-trigger="load"
 								class="widget-content"
 							>
@@ -24,7 +24,7 @@ templ Dashboard(data thememanager.TemplateData) {
 							</div>
 						</div>
 					}
-					if len(data.Dashboard.Widgets) == 0 {
+					if len(dash.Widgets) == 0 {
 						<div class="dashboard-empty">
 							<p>{ translation.Sprintf("No widgets configured") }</p>
 						</div>

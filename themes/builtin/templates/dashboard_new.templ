@@ -2,11 +2,10 @@ package templates
 
 import (
 	"fmt"
-	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
 
-templ DashboardNew(data thememanager.TemplateData) {
+templ DashboardNew() {
 	@Base(translation.Sprintf("New Dashboard")) {
 		<div id="page-dashboard-new">
 			<h1>{ translation.Sprintf("Create New Dashboard") }</h1>

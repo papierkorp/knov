@@ -1,11 +1,8 @@
 package templates
 
-import (
-	"knov/internal/files"
-	"knov/internal/thememanager"
-)
+import "knov/internal/files"
 
-templ Home(data thememanager.TemplateData) {
+templ Home() {
 	<!DOCTYPE html>
 	<html>
 		<head>
@@ -25,7 +22,7 @@ templ Home(data thememanager.TemplateData) {
 	</html>
 }
 
-templ FileView(fileContent *files.FileContent, filePath string, data thememanager.TemplateData) {
+templ FileView(fileContent *files.FileContent, filePath string) {
 	<div class="file-container">
 		<ul>
 			<li><a href="/">Home</a></li>
@@ -37,7 +34,7 @@ templ FileView(fileContent *files.FileContent, filePath string, data thememanage
 	</div>
 }
 
-templ Settings(data thememanager.TemplateData) {
+templ Settings() {
 	<!DOCTYPE html>
 	<html>
 		<head>
@@ -67,7 +64,7 @@ templ Settings(data thememanager.TemplateData) {
 	</html>
 }
 
-templ BrowseFiles(metadataType string, value string, query string, data thememanager.TemplateData) {
+templ BrowseFiles(metadataType string, value string, query string) {
 	<!DOCTYPE html>
 	<html>
 		<head>

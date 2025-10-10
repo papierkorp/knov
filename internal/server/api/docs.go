@@ -135,6 +135,19 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/config/getColorSchemes": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get available color schemes",
+                "responses": {}
+            }
+        },
         "/api/config/getConfig": {
             "get": {
                 "produces": [
@@ -168,9 +181,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/config/setDataPath": {
+        "/api/config/setColorScheme": {
             "post": {
-                "description": "updates data path in .env file (requires restart)",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -181,24 +193,24 @@ const docTemplate = `{
                 "tags": [
                     "config"
                 ],
-                "summary": "Update data path",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "data path",
-                        "name": "dataPath",
-                        "in": "formData",
-                        "required": true
-                    }
+                "summary": "Set color scheme",
+                "responses": {}
+            }
+        },
+        "/api/config/setDarkMode": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
                 ],
-                "responses": {
-                    "200": {
-                        "description": "saved",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Set dark mode",
+                "responses": {}
             }
         },
         "/api/config/setFileView": {
@@ -235,7 +247,6 @@ const docTemplate = `{
         },
         "/api/config/setRepositoryURL": {
             "post": {
-                "description": "updates git repository url in .env file (requires restart)",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -246,24 +257,8 @@ const docTemplate = `{
                 "tags": [
                     "config"
                 ],
-                "summary": "Update git repository URL",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "repository url",
-                        "name": "repositoryUrl",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "saved",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
+                "summary": "Set git repository URL",
+                "responses": {}
             }
         },
         "/api/dashboards": {
@@ -1858,62 +1853,6 @@ const docTemplate = `{
                 "responses": {
                     "303": {
                         "description": "Redirect to settings page"
-                    }
-                }
-            }
-        },
-        "/browse/{metadata}/{value}": {
-            "get": {
-                "description": "Browse and filter files by specific metadata type and value",
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "Browse files by metadata",
-                "parameters": [
-                    {
-                        "enum": [
-                            "tags",
-                            "collection",
-                            "folders",
-                            "type",
-                            "status",
-                            "priority"
-                        ],
-                        "type": "string",
-                        "description": "Metadata type",
-                        "name": "metadata",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Metadata value to filter by",
-                        "name": "value",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "rendered browse page",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "missing metadata type or value",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "failed to render page",
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 }
             }

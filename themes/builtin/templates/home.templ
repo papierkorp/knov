@@ -2,7 +2,6 @@ package templates
 
 import (
 	"knov/internal/logging"
-	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
 
@@ -11,7 +10,7 @@ func logDebug(msg string, args ...interface{}) string {
 	return ""
 }
 
-templ Home(data thememanager.TemplateData) {
+templ Home() {
 	@Base(translation.Sprintf("Home")) {
 		<div id="page-home">
 			<ul>

@@ -1,11 +1,8 @@
 package templates
 
-import (
-	"knov/internal/thememanager"
-	"knov/internal/translation"
-)
+import "knov/internal/translation"
 
-templ LatestChanges(data thememanager.TemplateData) {
+templ LatestChanges() {
 	@Base(translation.Sprintf("Latest Changes")) {
 		<div id="latestchanges">
 			<h1>{ translation.Sprintf("Recent File History") }</h1>

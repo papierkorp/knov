@@ -1,134 +1,76 @@
-// Package main ..
+// Package testtheme ..
 package main
 
 import (
-	"knov/internal/files"
+	"knov/internal/dashboard"
 	"knov/internal/thememanager"
 	"knov/themes/test/templates"
 
 	"github.com/a-h/templ"
 )
 
-type test struct{}
+// TestTheme ..
+type TestTheme struct{}
 
-var Theme test
+// Theme ..
+var Theme TestTheme
 
 var Metadata = thememanager.ThemeMetadata{
-	AvailableFileViews: []string{"normal"},
+	AvailableFileViews:          []string{"default"},
+	AvailableHomeViews:          []string{"default"},
+	AvailableSearchViews:        []string{"default"},
+	AvailableOverviewViews:      []string{"default"},
+	AvailableDashboardViews:     []string{"default"},
+	AvailableSettingsViews:      []string{"default"},
+	AvailableAdminViews:         []string{"default"},
+	AvailablePlaygroundViews:    []string{"default"},
+	AvailableHistoryViews:       []string{"default"},
+	AvailableLatestChangesViews: []string{"default"},
+	AvailableBrowseFilesViews:   []string{"default"},
+	SupportsDarkMode:            false,
+	AvailableColorSchemes:       []thememanager.ColorScheme{},
 }
 
-func (t *test) Home() (templ.Component, error) {
-	tm := thememanager.GetThemeManager()
-	td := thememanager.TemplateData{
-		ThemeToUse:      tm.GetCurrentThemeName(),
-		AvailableThemes: tm.GetAvailableThemes(),
-	}
-
-	return templates.Home(td), nil
+func (t *TestTheme) Home(viewName string) (templ.Component, error) {
+	return templates.Home(), nil
 }
 
-func (t *test) Settings() (templ.Component, error) {
-	tm := thememanager.GetThemeManager()
-	td := thememanager.TemplateData{
-		ThemeToUse:      tm.GetCurrentThemeName(),
-		AvailableThemes: tm.GetAvailableThemes(),
-	}
-
-	return templates.Settings(td), nil
+func (t *TestTheme) Settings(viewName string) (templ.Component, error) {
+	return templates.Settings(), nil
 }
 
-// Admin ...
-func (t *test) Admin() (templ.Component, error) {
-
-	tm := thememanager.GetThemeManager()
-	td := thememanager.TemplateData{
-		ThemeToUse:      tm.GetCurrentThemeName(),
-		AvailableThemes: tm.GetAvailableThemes(),
-	}
-
-	return templates.Home(td), nil
+func (t *TestTheme) Admin(viewName string) (templ.Component, error) {
+	return templates.Admin(), nil
 }
 
-func (t *test) Playground() (templ.Component, error) {
-	tm := thememanager.GetThemeManager()
-	td := thememanager.TemplateData{
-		ThemeToUse:      tm.GetCurrentThemeName(),
-		AvailableThemes: tm.GetAvailableThemes(),
-	}
-
-	return templates.Home(td), nil
+func (t *TestTheme) Playground(viewName string) (templ.Component, error) {
+	return templates.Playground(), nil
 }
 
-func (t *test) LatestChanges() (templ.Component, error) {
-	tm := thememanager.GetThemeManager()
-	td := thememanager.TemplateData{
-		ThemeToUse:      tm.GetCurrentThemeName(),
-		AvailableThemes: tm.GetAvailableThemes(),
-	}
-
-	return templates.Home(td), nil
+func (t *TestTheme) LatestChanges(viewName string) (templ.Component, error) {
+	return templates.LatestChanges(), nil
 }
 
-func (t *test) History() (templ.Component, error) {
-	tm := thememanager.GetThemeManager()
-	td := thememanager.TemplateData{
-		ThemeToUse:      tm.GetCurrentThemeName(),
-		AvailableThemes: tm.GetAvailableThemes(),
-	}
-
-	return templates.Home(td), nil
+func (t *TestTheme) History(viewName string) (templ.Component, error) {
+	return templates.History(), nil
 }
 
-func (t *test) Overview() (templ.Component, error) {
-	tm := thememanager.GetThemeManager()
-	td := thememanager.TemplateData{
-		ThemeToUse:      tm.GetCurrentThemeName(),
-		AvailableThemes: tm.GetAvailableThemes(),
-	}
-
-	return templates.Home(td), nil
+func (t *TestTheme) Overview(viewName string) (templ.Component, error) {
+	return templates.Overview(), nil
 }
 
-// Search ..
-func (t *test) Search(query string) (templ.Component, error) {
-	tm := thememanager.GetThemeManager()
-	td := thememanager.TemplateData{
-		ThemeToUse:      tm.GetCurrentThemeName(),
-		AvailableThemes: tm.GetAvailableThemes(),
-	}
-
-	return templates.Home(td), nil
+func (t *TestTheme) Search(viewName string, query string) (templ.Component, error) {
+	return templates.Search(query), nil
 }
 
-// RenderFileView renders the specified file view
-func (t *test) RenderFileView(_ string, fileContent *files.FileContent, filePath string) (templ.Component, error) {
-	tm := thememanager.GetThemeManager()
-	td := thememanager.TemplateData{
-		ThemeToUse:      tm.GetCurrentThemeName(),
-		AvailableThemes: tm.GetAvailableThemes(),
-	}
-
-	return templates.FileView(fileContent, filePath, td), nil
+func (t *TestTheme) RenderFileView(viewName string, content string, filePath string) (templ.Component, error) {
+	return templates.FileView(content, filePath), nil
 }
 
-func (t *test) BrowseFiles(metadataType string, value string, query string) (templ.Component, error) {
-	tm := thememanager.GetThemeManager()
-	td := thememanager.TemplateData{
-		ThemeToUse:      tm.GetCurrentThemeName(),
-		AvailableThemes: tm.GetAvailableThemes(),
-	}
-
-	return templates.BrowseFiles(metadataType, value, query, td), nil
+func (t *TestTheme) Dashboard(viewName string, id string, action string, dash *dashboard.Dashboard) (templ.Component, error) {
+	return templates.Home(), nil
 }
 
-func (t *test) Dashboard(id string, action string) (templ.Component, error) {
-	tm := thememanager.GetThemeManager()
-	td := thememanager.TemplateData{
-		ThemeToUse:      tm.GetCurrentThemeName(),
-		AvailableThemes: tm.GetAvailableThemes(),
-	}
-
-	return templates.Home(td), nil
+func (t *TestTheme) BrowseFiles(viewName string, metadataType string, value string, query string) (templ.Component, error) {
+	return templates.Home(), nil
 }
-
-func main() {}
