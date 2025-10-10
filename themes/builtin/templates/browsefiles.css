@@ -1,7 +1,7 @@
 #page-browse-files .browse-header {
     margin-bottom: 20px;
     padding-bottom: 15px;
-    border-bottom: 1px solid var(--neutral);
+    border-bottom: 1px solid var(--border);
 }
 
 #page-browse-files .browse-header h1 {
@@ -19,7 +19,7 @@
 
 #page-browse-files .browse-breadcrumb {
     font-size: 14px;
-    color: var(--neutral);
+    color: var(--text-secondary);
 }
 
 #page-browse-files .browse-breadcrumb a {
@@ -32,8 +32,8 @@
 }
 
 #page-browse-files .browse-content {
-    background: color-mix(in srgb, var(--neutral) 5%, transparent);
+    background: var(--bg-secondary);
     padding: 20px;
     border-radius: 8px;
-    border: 1px solid color-mix(in srgb, var(--neutral) 20%, transparent);
+    border: 1px solid var(--border);
 }

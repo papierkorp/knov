@@ -6,48 +6,39 @@
 @import url("dashboard.css");
 @import url("browsefiles.css");
 
-/* Default Blue */
+/* Color schemes */
 :root,
 body[data-color-scheme="default"] {
     --primary: #3b82f6;
-    --accent: #8b5cf6;
+    --accent: #60a5fa;
     --neutral: #64748b;
-    --black: #1e293b;
-    --white: #f1f5f9;
 }
 
-/* Forest Green */
 body[data-color-scheme="green"] {
     --primary: #65a30d;
     --accent: #a3e635;
     --neutral: #475569;
-    --black: #374151;
-    --white: #d1d5db;
 }
 
-/* Ruby Red */
 body[data-color-scheme="red"] {
     --primary: #dc2626;
-    --accent: #f87171;
+    --accent: #ef4444;
     --neutral: #6b7280;
-    --black: #1f2937;
-    --white: #e5e7eb;
 }
 
-/* Royal Purple */
 body[data-color-scheme="purple"] {
     --primary: #a855f7;
     --accent: #c084fc;
     --neutral: #64748b;
-    --black: #1e293b;
-    --white: #f1f5f9;
 }
 
-/* Light/Dark Mode Base */
+/* Light mode */
 body {
-    --bg: var(--white);
-    --text: var(--black);
-    --border: var(--neutral);
+    --bg: #ffffff;
+    --text: #1e293b;
+    --bg-secondary: #e2e8f0;
+    --text-secondary: #475569;
+    --border: #cbd5e1;
 
     background: var(--bg);
     color: var(--text);
@@ -56,9 +47,12 @@ body {
     font-size: 16px;
 }
 
+/* Dark mode */
 body[data-dark-mode="true"] {
     --bg: #0f172a;
     --text: #f1f5f9;
+    --bg-secondary: #1e293b;
+    --text-secondary: #cbd5e1;
     --border: #334155;
 }
 
@@ -94,7 +88,7 @@ h1:first-child {
 
 .btn {
     background: var(--primary);
-    color: var(--white);
+    color: var(--bg);
     border: none;
     padding: 8px 12px;
     border-radius: 4px;
@@ -104,5 +98,4 @@ h1:first-child {
 
 .btn:hover {
     background: var(--accent);
-    color: var(--black);
 }
