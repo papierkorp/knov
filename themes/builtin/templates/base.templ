@@ -92,12 +92,10 @@ templ header() {
 				<div class="dropdown-navbar-content" id="edit-dropdown-content">
 					<a href="#" id="edit-link">{ translation.Sprintf("Edit") }</a>
 					<a href="#" onclick="document.getElementById('rename-modal').style.display='flex'">
-						{ 
-                    translation.Sprintf("Rename") }
+						{ translation.Sprintf("Rename") }
 					</a>
 					<a href="#" onclick="document.getElementById('delete-modal').style.display='flex'">
-						{ 
-                    translation.Sprintf("Delete") }
+						{ translation.Sprintf("Delete") }
 					</a>
 				</div>
 			</div>
@@ -132,8 +130,7 @@ templ edit() {
 						class="btn-secondary"
 						onclick="document.getElementById('rename-modal').style.display='none'"
 					>
-						{ 
-                    translation.Sprintf("Cancel") }
+						{ translation.Sprintf("Cancel") }
 					</button>
 				</div>
 			</form>
@@ -152,8 +149,7 @@ templ edit() {
 						class="btn-secondary"
 						onclick="document.getElementById('delete-modal').style.display='none'"
 					>
-						{ 
-                    translation.Sprintf("Cancel") }
+						{ translation.Sprintf("Cancel") }
 					</button>
 				</div>
 			</form>

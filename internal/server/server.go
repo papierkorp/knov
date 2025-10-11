@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/dashboard"
 	"knov/internal/files"
 	_ "knov/internal/server/api" // swaggo api docs
 	"knov/internal/thememanager"
@@ -100,6 +101,9 @@ func StartServerChi() {
 			r.Post("/setFileView", handleAPISetFileView)
 			r.Post("/customCSS", handleCustomCSS)
 			r.Post("/setDataPath", handleAPISetDataPath)
+			r.Post("/setDarkMode", handleAPISetDarkMode)
+			r.Get("/getColorSchemes", handleAPIGetColorSchemes)
+			r.Post("/setColorScheme", handleAPISetColorScheme)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -209,6 +213,18 @@ func StartServerChi() {
 	}
 }
 
+// ----------------------------------------------------------------------------------------
+// ---------------------------------------- helper ----------------------------------------
+// ----------------------------------------------------------------------------------------
+
+func getViewName(tm thememanager.IThemeManager, viewType string) string {
+	views := tm.GetAvailableViews(viewType)
+	if len(views) > 0 {
+		return views[0]
+	}
+	return "default"
+}
+
 func handleCSS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/css")
 	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -231,132 +247,180 @@ func handleCSS(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleHome(w http.ResponseWriter, r *http.Request) {
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().Home()
+// ----------------------------------------------------------------------------------------
+// ------------------------------------ default routes ------------------------------------
+// ----------------------------------------------------------------------------------------
 
+func handleHome(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "home")
+
+	component, err := tm.GetCurrentTheme().Home(viewName)
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("error loading theme")
-	}
-
-	err = component.Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "failed to render template", http.StatusInternalServerError)
-		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
+	component.Render(r.Context(), w)
 }
 
 func handleSettings(w http.ResponseWriter, r *http.Request) {
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().Settings()
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "settings")
 
+	component, err := tm.GetCurrentTheme().Settings(viewName)
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("error loading theme")
-	}
-
-	err = component.Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "failed to render template", http.StatusInternalServerError)
-		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
+	component.Render(r.Context(), w)
 }
 
 func handleAdmin(w http.ResponseWriter, r *http.Request) {
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().Admin()
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "admin")
 
+	component, err := tm.GetCurrentTheme().Admin(viewName)
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("error loading theme")
-	}
-
-	err = component.Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "failed to render template", http.StatusInternalServerError)
-		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
+	component.Render(r.Context(), w)
 }
 
 func handlePlayground(w http.ResponseWriter, r *http.Request) {
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().Playground()
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "playground")
 
+	component, err := tm.GetCurrentTheme().Playground(viewName)
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("error loading theme")
-	}
-
-	err = component.Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "failed to render template", http.StatusInternalServerError)
-		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
+	component.Render(r.Context(), w)
 }
 
 func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().LatestChanges()
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "latestchanges")
 
+	component, err := tm.GetCurrentTheme().LatestChanges(viewName)
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("Error loading theme")
-	}
-
-	err = component.Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
+	component.Render(r.Context(), w)
 }
 
 func handleHistory(w http.ResponseWriter, r *http.Request) {
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().History()
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "history")
 
+	component, err := tm.GetCurrentTheme().History(viewName)
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("error loading theme")
-	}
-
-	err = component.Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "failed to render template", http.StatusInternalServerError)
-		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
+	component.Render(r.Context(), w)
 }
 
 func handleOverview(w http.ResponseWriter, r *http.Request) {
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().Overview()
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "overview")
 
+	component, err := tm.GetCurrentTheme().Overview(viewName)
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		fmt.Printf("error loading theme")
-	}
-
-	err = component.Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "failed to render template", http.StatusInternalServerError)
-		fmt.Printf("error rendering template: %v\n", err)
 		return
 	}
+	component.Render(r.Context(), w)
 }
 
 func handleSearchPage(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "search")
 
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().Search(query)
+	component, err := tm.GetCurrentTheme().Search(viewName, query)
 	if err != nil {
 		http.Error(w, "failed to load theme", http.StatusInternalServerError)
 		return
 	}
+	component.Render(r.Context(), w)
+}
 
-	err = component.Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "failed to render template", http.StatusInternalServerError)
+func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
+	metadataType := chi.URLParam(r, "metadata")
+	value := chi.URLParam(r, "value")
+
+	if metadataType == "" || value == "" {
+		http.Error(w, "missing metadata type or value", http.StatusBadRequest)
 		return
 	}
+
+	query := fmt.Sprintf("%s:%s", metadataType, value)
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "browsefiles")
+
+	component, err := tm.GetCurrentTheme().BrowseFiles(viewName, metadataType, value, query)
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+	component.Render(r.Context(), w)
+}
+
+func handleDashboardNew(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "dashboard")
+
+	component, err := tm.GetCurrentTheme().Dashboard(viewName, "", "new", nil)
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+	component.Render(r.Context(), w)
+}
+
+func handleDashboardEdit(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	dash, err := dashboard.Get(id)
+	if err != nil {
+		http.Error(w, "dashboard not found", http.StatusNotFound)
+		return
+	}
+
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "dashboard")
+
+	component, err := tm.GetCurrentTheme().Dashboard(viewName, id, "edit", dash)
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+	component.Render(r.Context(), w)
+}
+
+func handleDashboardView(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		id = "home"
+	}
+
+	dash, err := dashboard.Get(id)
+	if err != nil {
+		http.Error(w, "dashboard not found", http.StatusNotFound)
+		return
+	}
+
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "dashboard")
+
+	component, err := tm.GetCurrentTheme().Dashboard(viewName, id, "view", dash)
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+	component.Render(r.Context(), w)
 }
 
 func handleFileContent(w http.ResponseWriter, r *http.Request) {
@@ -386,7 +450,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	currentTheme := tm.GetCurrentTheme()
 	fileView := configmanager.GetFileView()
 
-	availableViews := tm.GetAvailableFileViews()
+	availableViews := tm.GetAvailableViews("file")
 	if !slices.Contains(availableViews, fileView) && len(availableViews) > 0 {
 		fileView = availableViews[0]
 		configmanager.SetFileView(fileView)
@@ -403,69 +467,4 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to render template", http.StatusInternalServerError)
 		return
 	}
-}
-
-// @Summary Browse files by metadata
-// @Description Browse and filter files by specific metadata type and value
-// @Tags files
-// @Param metadata path string true "Metadata type" Enums(tags, collection, folders, type, status, priority)
-// @Param value path string true "Metadata value to filter by"
-// @Produce text/html
-// @Success 200 {string} string "rendered browse page"
-// @Failure 400 {string} string "missing metadata type or value"
-// @Failure 500 {string} string "failed to render page"
-// @Router /browse/{metadata}/{value} [get]
-func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
-	metadataType := chi.URLParam(r, "metadata")
-	value := chi.URLParam(r, "value")
-
-	if metadataType == "" || value == "" {
-		http.Error(w, "missing metadata type or value", http.StatusBadRequest)
-		return
-	}
-
-	query := fmt.Sprintf("%s:%s", metadataType, value)
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().BrowseFiles(metadataType, value, query)
-	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		return
-	}
-
-	err = component.Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "failed to render template", http.StatusInternalServerError)
-		return
-	}
-}
-
-func handleDashboardNew(w http.ResponseWriter, r *http.Request) {
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard("", "new")
-	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		return
-	}
-	component.Render(r.Context(), w)
-}
-
-func handleDashboardEdit(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard(id, "edit")
-	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		return
-	}
-	component.Render(r.Context(), w)
-}
-
-func handleDashboardView(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	if id == "" {
-		id = "home"
-	}
-	component, err := thememanager.GetThemeManager().GetCurrentTheme().Dashboard(id, "view")
-	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		return
-	}
-	component.Render(r.Context(), w)
 }

@@ -69,8 +69,9 @@ type ITheme interface {
 
 // ColorScheme defines a pre-defined color scheme
 type ColorScheme struct {
-	Name  string // e.g. "green", "blue", "dark"
-	Label string // e.g. "Forest Green", "Ocean Blue"
+	Name   string            // e.g. "green", "blue", "dark"
+	Label  string            // e.g. "Forest Green", "Ocean Blue"
+	Colors map[string]string // e.g. {"primary": "#65a30d", "accent": "#a3e635"}
 }
 
 // ThemeMetadata defines theme capabilities and available options

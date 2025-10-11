@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"knov/internal/logging"
-	"knov/internal/storage"
 	"knov/internal/translation"
 )
 
@@ -73,17 +73,28 @@ func SwitchUser(userID string) {
 }
 
 func getUserSettingsPath(userID string) string {
-	return fmt.Sprintf("user/%s/settings", userID)
+	return filepath.Join("config", "users", userID, "settings.json")
 }
 
 func saveUserSettings() error {
-	data, err := json.Marshal(userSettings)
-	if err != nil {
-		return err
+	settingsPath := getUserSettingsPath(currentUserID)
+	settingsDir := filepath.Dir(settingsPath)
+
+	if err := os.MkdirAll(settingsDir, 0755); err != nil {
+		return fmt.Errorf("failed to create user settings directory: %w", err)
 	}
 
-	key := getUserSettingsPath(currentUserID)
-	return storage.GetStorage().Set(key, data)
+	jsonData, err := json.MarshalIndent(userSettings, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal user settings: %s", err)
+	}
+
+	if err = os.WriteFile(settingsPath, jsonData, 0644); err != nil {
+		return fmt.Errorf("failed to write user settings to file: %s", err)
+	}
+
+	logging.LogInfo("user settings saved for user: %s", currentUserID)
+	return nil
 }
 
 // GetFileView returns current file view from user settings

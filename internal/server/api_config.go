@@ -137,7 +137,6 @@ func handleAPIRestartApp(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
-<<<<<<< HEAD
 // @Summary Update data path
 // @Description updates data path in .env file (requires restart)
 // @Tags config
@@ -164,7 +163,8 @@ func handleAPISetDataPath(w http.ResponseWriter, r *http.Request) {
 	data := "saved"
 	html := `<span class="status-ok">data path saved. restart required.</span>`
 	writeResponse(w, r, data, html)
-=======
+}
+
 // @Summary Set dark mode
 // @Tags config
 // @Accept application/x-www-form-urlencoded
@@ -219,5 +219,4 @@ func handleAPISetColorScheme(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("HX-Refresh", "true")
 	w.WriteHeader(http.StatusOK)
->>>>>>> eefe0d0 (feat: thememanager refactor)
 }

@@ -32,13 +32,13 @@ body[data-color-scheme="purple"] {
     --neutral: #64748b;
 }
 
-/* Light mode */
+/* Light mode - using your original colors */
 body {
-    --bg: #ffffff;
-    --text: #1e293b;
-    --bg-secondary: #e2e8f0;
-    --text-secondary: #475569;
-    --border: #cbd5e1;
+    --bg: #374151;
+    --text: #d1d5db;
+    --bg-secondary: #4b5563;
+    --text-secondary: #e5e7eb;
+    --border: #6b7280;
 
     background: var(--bg);
     color: var(--text);
@@ -47,17 +47,17 @@ body {
     font-size: 16px;
 }
 
-/* Dark mode */
+/* Dark mode - darker variant */
 body[data-dark-mode="true"] {
-    --bg: #0f172a;
-    --text: #f1f5f9;
-    --bg-secondary: #1e293b;
-    --text-secondary: #cbd5e1;
-    --border: #334155;
+    --bg: #1f2937;
+    --text: #f3f4f6;
+    --bg-secondary: #111827;
+    --text-secondary: #d1d5db;
+    --border: #374151;
 }
 
 a {
-    color: var(--primary);
+    color: var(--text);
     text-decoration: none;
 }
 
@@ -88,7 +88,7 @@ h1:first-child {
 
 .btn {
     background: var(--primary);
-    color: var(--bg);
+    color: var(--text);
     border: none;
     padding: 8px 12px;
     border-radius: 4px;
@@ -98,4 +98,5 @@ h1:first-child {
 
 .btn:hover {
     background: var(--accent);
+    color: var(--bg);
 }

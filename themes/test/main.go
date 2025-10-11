@@ -40,31 +40,31 @@ func (t *TestTheme) Settings(viewName string) (templ.Component, error) {
 }
 
 func (t *TestTheme) Admin(viewName string) (templ.Component, error) {
-	return templates.Admin(), nil
+	return templates.Home(), nil
 }
 
 func (t *TestTheme) Playground(viewName string) (templ.Component, error) {
-	return templates.Playground(), nil
+	return templates.Home(), nil
 }
 
 func (t *TestTheme) LatestChanges(viewName string) (templ.Component, error) {
-	return templates.LatestChanges(), nil
+	return templates.Home(), nil
 }
 
 func (t *TestTheme) History(viewName string) (templ.Component, error) {
-	return templates.History(), nil
+	return templates.Home(), nil
 }
 
 func (t *TestTheme) Overview(viewName string) (templ.Component, error) {
-	return templates.Overview(), nil
+	return templates.Home(), nil
 }
 
 func (t *TestTheme) Search(viewName string, query string) (templ.Component, error) {
-	return templates.Search(query), nil
+	return templates.Home(), nil
 }
 
 func (t *TestTheme) RenderFileView(viewName string, content string, filePath string) (templ.Component, error) {
-	return templates.FileView(content, filePath), nil
+	return templates.Home(), nil
 }
 
 func (t *TestTheme) Dashboard(viewName string, id string, action string, dash *dashboard.Dashboard) (templ.Component, error) {
