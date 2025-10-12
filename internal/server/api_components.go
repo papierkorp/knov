@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -98,6 +99,42 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 	paginatedData := filetype.PaginateTable(tableData, page, size)
 
 	html := filetype.RenderTableHTML(paginatedData, filepath, page, size, sortCol, sortOrder, searchQuery)
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// @Summary Get file editor
+// @Tags components
+// @Param filepath query string true "File path"
+// @Produce html
+// @Router /api/components/editor [get]
+func handleAPIGetEditor(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	fullPath := utils.ToFullPath(filepath)
+	content, err := files.GetRawContent(fullPath)
+	if err != nil {
+		content = "" // empty for new files
+	}
+
+	html := fmt.Sprintf(`
+		<div id="component-editor">
+			<form hx-post="/api/files/save" hx-target="#editor-status">
+				<input type="hidden" name="filepath" value="%s">
+				<textarea name="content" rows="25" style="width: 100%%; font-family: monospace; padding: 12px;">%s</textarea>
+				<div style="margin-top: 12px;">
+					<button type="submit" class="btn-primary">save</button>
+					<button type="button" onclick="location.reload()" class="btn-secondary">cancel</button>
+				</div>
+			</form>
+			<div id="editor-status"></div>
+		</div>
+	`, filepath, content)
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))

@@ -120,3 +120,9 @@ func (t *Builtin) Dashboard(viewName string, id string, action string, dash *das
 func (t *Builtin) BrowseFiles(viewName string, metadataType string, value string, query string) (templ.Component, error) {
 	return templates.BrowseFiles(metadataType, value, query), nil
 }
+
+// FileEdit ...
+func (t *Builtin) FileEdit(viewName string, content string, filePath string) (templ.Component, error) {
+	filename := filepath.Base(filePath)
+	return templates.FileEdit(content, filePath, filename), nil
+}

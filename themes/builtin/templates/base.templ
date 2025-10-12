@@ -158,12 +158,22 @@ templ edit() {
 	</div>
 	<script>
     const path = window.location.pathname;
-    const match = path.match(/\/dashboard\/([^\/]+)/);
-    if (match) {
-        const id = match[1];
+
+    // Handle dashboard edit
+    const dashMatch = path.match(/\/dashboard\/([^\/]+)/);
+    if (dashMatch) {
+        const id = dashMatch[1];
         document.getElementById('edit-link').href = `/dashboard/edit/${id}`;
         document.getElementById('rename-form').setAttribute('hx-post', `/api/dashboards/${id}/rename`);
         document.getElementById('delete-form').setAttribute('hx-delete', `/api/dashboards/${id}`);
     }
-</script>
+
+    // Handle file edit
+    const fileMatch = path.match(/\/files\/(.+)/);
+    if (fileMatch && !path.includes('/edit/')) {
+        const filepath = fileMatch[1];
+        document.getElementById('edit-link').href = `/files/edit/${filepath}`;
+        document.getElementById('edit-dropdown').style.display = 'block';
+    }
+    </script>
 }

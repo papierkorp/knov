@@ -48,6 +48,7 @@ func StartServerChi() {
 	r.Get("/history", handleHistory)
 	r.Get("/overview", handleOverview)
 	r.Get("/search", handleSearchPage)
+	r.Get("/files/edit/*", handleFileEdit)
 	r.Get("/files/*", handleFileContent)
 	r.Get("/dashboard", handleDashboardView)
 	r.Get("/dashboard/{id}", handleDashboardView)
@@ -114,6 +115,8 @@ func StartServerChi() {
 			r.Get("/content/*", handleAPIGetFileContent)
 			r.Post("/filter", handleAPIFilterFiles)
 			r.Get("/header", handleAPIGetFileHeader)
+			r.Get("/raw", handleAPIGetRawContent)
+			r.Post("/save", handleAPIFileSave)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -199,6 +202,7 @@ func StartServerChi() {
 
 		r.Route("/components", func(r chi.Router) {
 			r.Get("/table", handleAPIGetTable)
+			r.Get("/editor", handleAPIGetEditor)
 		})
 	})
 
@@ -467,4 +471,24 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to render template", http.StatusInternalServerError)
 		return
 	}
+}
+
+func handleFileEdit(w http.ResponseWriter, r *http.Request) {
+	filePath := strings.TrimPrefix(r.URL.Path, "/files/edit/")
+	fullPath := utils.ToFullPath(filePath)
+
+	content, err := files.GetRawContent(fullPath)
+	if err != nil {
+		content = ""
+	}
+
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName(tm, "fileedit")
+
+	component, err := tm.GetCurrentTheme().FileEdit(viewName, content, filePath)
+	if err != nil {
+		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		return
+	}
+	component.Render(r.Context(), w)
 }

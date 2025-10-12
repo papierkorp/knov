@@ -232,6 +232,20 @@ info:
   title: Knov API
   version: "1.0"
 paths:
+  /api/components/editor:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get file editor
+      tags:
+      - components
   /api/components/table:
     get:
       description: Returns paginated, sortable, searchable table HTML fragment
@@ -734,6 +748,53 @@ paths:
       - text/html
       responses: {}
       summary: Get all files
+      tags:
+      - files
+  /api/files/raw:
+    get:
+      description: Returns unprocessed file content for editing
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/plain
+      responses:
+        "200":
+          description: raw content
+          schema:
+            type: string
+      summary: Get raw file content
+      tags:
+      - files
+  /api/files/save:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Saves raw content to file (creates new file if needed)
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: File content
+        in: formData
+        name: content
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: file saved
+          schema:
+            type: string
+      summary: Save file content
       tags:
       - files
   /api/git/latestchanges:

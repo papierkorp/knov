@@ -1,0 +1,21 @@
+package templates
+
+templ FileEdit(content string, filePath string, filename string) {
+	@Base(filename + " - edit") {
+		<div id="page-fileedit">
+			<h2>
+				edit:
+				<a href={ templ.SafeURL("/files/" + filePath) }>{ filePath }</a>
+			</h2>
+			<form hx-post="/api/files/save" hx-target="#editor-status">
+				<input type="hidden" name="filepath" value={ filePath }/>
+				<textarea name="content" rows="25" style="width: 100%; font-family: monospace; padding: 12px;">{ content }</textarea>
+				<div style="margin-top: 12px;">
+					<button type="submit" class="btn-primary">save</button>
+					<a href={ templ.SafeURL("/files/" + filePath) } class="btn-secondary">cancel</a>
+				</div>
+			</form>
+			<div id="editor-status"></div>
+		</div>
+	}
+}

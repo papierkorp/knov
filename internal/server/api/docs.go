@@ -15,6 +15,27 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/components/editor": {
+            "get": {
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "components"
+                ],
+                "summary": "Get file editor",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/components/table": {
             "get": {
                 "description": "Returns paginated, sortable, searchable table HTML fragment",
@@ -759,6 +780,76 @@ const docTemplate = `{
                 ],
                 "summary": "Get all files",
                 "responses": {}
+            }
+        },
+        "/api/files/raw": {
+            "get": {
+                "description": "Returns unprocessed file content for editing",
+                "produces": [
+                    "application/json",
+                    "text/plain"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get raw file content",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "raw content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/files/save": {
+            "post": {
+                "description": "Saves raw content to file (creates new file if needed)",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Save file content",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "File content",
+                        "name": "content",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "file saved",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/api/git/latestchanges": {

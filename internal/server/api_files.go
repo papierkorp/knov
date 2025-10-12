@@ -157,3 +157,58 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 
 	writeResponse(w, r, data, html.String())
 }
+
+// @Summary Get raw file content
+// @Description Returns unprocessed file content for editing
+// @Tags files
+// @Param filepath query string true "File path"
+// @Produce json,plain
+// @Success 200 {string} string "raw content"
+// @Router /api/files/raw [get]
+func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	fullPath := utils.ToFullPath(filepath)
+	content, err := files.GetRawContent(fullPath)
+	if err != nil {
+		logging.LogError("failed to get raw content: %v", err)
+		http.Error(w, "failed to get raw content", http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]string{"content": content}
+	writeResponse(w, r, data, content)
+}
+
+// @Summary Save file content
+// @Description Saves raw content to file (creates new file if needed)
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param content formData string true "File content"
+// @Success 200 {string} string "file saved"
+// @Router /api/files/save [post]
+func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filepath := r.FormValue("filepath")
+	content := r.FormValue("content")
+
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	fullPath := utils.ToFullPath(filepath)
+	if err := files.SaveRawContent(fullPath, content); err != nil {
+		http.Error(w, "failed to save file", http.StatusInternalServerError)
+		return
+	}
+
+	html := fmt.Sprintf(`<span class="status-ok">saved: %s</span>`, filepath)
+	writeResponse(w, r, "file saved", html)
+}

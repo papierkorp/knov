@@ -77,3 +77,7 @@ func (t *TestTheme) Dashboard(viewName string, id string, action string, dash *d
 func (t *TestTheme) BrowseFiles(viewName string, metadataType string, value string, query string) (templ.Component, error) {
 	return templates.Home(), nil
 }
+
+func (t *TestTheme) FileEdit(viewName string, content string, filePath string) (templ.Component, error) {
+	return templates.Home(), nil
+}

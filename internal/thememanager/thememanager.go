@@ -65,6 +65,7 @@ type ITheme interface {
 	Search(viewName string, query string) (templ.Component, error)
 	Overview(viewName string) (templ.Component, error)
 	RenderFileView(viewName string, fileContent *files.FileContent, filePath string) (templ.Component, error)
+	FileEdit(viewName string, content string, filePath string) (templ.Component, error) // ← add this
 	Dashboard(viewName string, id string, action string, dash *dashboard.Dashboard) (templ.Component, error)
 	BrowseFiles(viewName string, metadataType string, value string, query string) (templ.Component, error)
 }

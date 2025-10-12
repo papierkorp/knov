@@ -286,3 +286,35 @@ func matchesOperator(fieldValue, operator, criterionValue string) bool {
 		return false
 	}
 }
+
+// GetRawContent returns raw file content as string
+func GetRawContent(filePath string) (string, error) {
+	handler := fileTypeRegistry.GetHandler(filePath)
+	if handler == nil {
+		return "", fmt.Errorf("no handler found for file: %s", filePath)
+	}
+
+	content, err := handler.GetContent(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	return string(content), nil
+}
+
+// SaveRawContent saves raw content to file (creates if not exists)
+func SaveRawContent(filePath string, content string) error {
+	dir := filepath.Dir(filePath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		logging.LogError("failed to create directory %s: %v", dir, err)
+		return err
+	}
+
+	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+		logging.LogError("failed to write file %s: %v", filePath, err)
+		return err
+	}
+
+	logging.LogInfo("saved file: %s", filePath)
+	return nil
+}
