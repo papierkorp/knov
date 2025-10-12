@@ -1,13 +1,11 @@
-// Package configmanager - User settings stored in JSON
 package configmanager
 
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"knov/internal/logging"
+	"knov/internal/storage"
 	"knov/internal/translation"
 )
 
@@ -28,7 +26,7 @@ type UserSettings struct {
 	CustomCSS   string `json:"customCSS"`
 }
 
-// InitUserSettings initializes user settings from JSON file for specific user
+// InitUserSettings initializes user settings from storage for specific user
 func InitUserSettings(userID string) {
 	currentUserID = userID
 	userSettings = UserSettings{
@@ -39,15 +37,21 @@ func InitUserSettings(userID string) {
 		ColorScheme: "default",
 	}
 
-	settingsPath := getUserSettingsPath(userID)
-	jsonFile, err := os.ReadFile(settingsPath)
+	key := fmt.Sprintf("user/%s/settings", userID)
+	data, err := storage.GetStorage().Get(key)
 	if err != nil {
 		logging.LogInfo("no user settings found for user %s, using defaults", userID)
 		saveUserSettings()
 		return
 	}
 
-	if err := json.Unmarshal(jsonFile, &userSettings); err != nil {
+	if data == nil {
+		logging.LogInfo("no user settings found for user %s, using defaults", userID)
+		saveUserSettings()
+		return
+	}
+
+	if err := json.Unmarshal(data, &userSettings); err != nil {
 		logging.LogError("failed to decode user settings for user %s: %s", userID, err)
 		return
 	}
@@ -72,25 +76,15 @@ func SwitchUser(userID string) {
 	InitUserSettings(userID)
 }
 
-func getUserSettingsPath(userID string) string {
-	return filepath.Join("config", "users", userID, "settings.json")
-}
-
 func saveUserSettings() error {
-	settingsPath := getUserSettingsPath(currentUserID)
-	settingsDir := filepath.Dir(settingsPath)
-
-	if err := os.MkdirAll(settingsDir, 0755); err != nil {
-		return fmt.Errorf("failed to create user settings directory: %w", err)
-	}
-
-	jsonData, err := json.MarshalIndent(userSettings, "", "  ")
+	data, err := json.Marshal(userSettings)
 	if err != nil {
 		return fmt.Errorf("failed to marshal user settings: %s", err)
 	}
 
-	if err = os.WriteFile(settingsPath, jsonData, 0644); err != nil {
-		return fmt.Errorf("failed to write user settings to file: %s", err)
+	key := fmt.Sprintf("user/%s/settings", currentUserID)
+	if err := storage.GetStorage().Set(key, data); err != nil {
+		return fmt.Errorf("failed to save user settings: %s", err)
 	}
 
 	logging.LogInfo("user settings saved for user: %s", currentUserID)

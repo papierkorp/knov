@@ -3,6 +3,7 @@ package main
 
 import (
 	"knov/internal/dashboard"
+	"knov/internal/files"
 	"knov/internal/thememanager"
 	"knov/themes/test/templates"
 
@@ -28,7 +29,9 @@ var Metadata = thememanager.ThemeMetadata{
 	AvailableLatestChangesViews: []string{"default"},
 	AvailableBrowseFilesViews:   []string{"default"},
 	SupportsDarkMode:            false,
-	AvailableColorSchemes:       []thememanager.ColorScheme{},
+	AvailableColorSchemes: []thememanager.ColorScheme{
+		{Name: "default", Label: "Default"},
+	},
 }
 
 func (t *TestTheme) Home(viewName string) (templ.Component, error) {
@@ -55,15 +58,15 @@ func (t *TestTheme) History(viewName string) (templ.Component, error) {
 	return templates.Home(), nil
 }
 
-func (t *TestTheme) Overview(viewName string) (templ.Component, error) {
-	return templates.Home(), nil
-}
-
 func (t *TestTheme) Search(viewName string, query string) (templ.Component, error) {
 	return templates.Home(), nil
 }
 
-func (t *TestTheme) RenderFileView(viewName string, content string, filePath string) (templ.Component, error) {
+func (t *TestTheme) Overview(viewName string) (templ.Component, error) {
+	return templates.Home(), nil
+}
+
+func (t *TestTheme) RenderFileView(viewName string, fileContent *files.FileContent, filePath string) (templ.Component, error) {
 	return templates.Home(), nil
 }
 

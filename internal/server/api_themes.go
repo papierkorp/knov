@@ -17,22 +17,25 @@ import (
 // @Router /api/themes/getAllThemes [get]
 func handleAPIGetThemes(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
+	currentTheme := tm.GetCurrentThemeName()
+	availableThemes := tm.GetAvailableThemes()
 
 	response := struct {
 		Current   string   `json:"current"`
 		Available []string `json:"available"`
 	}{
-		Current:   tm.GetCurrentThemeName(),
-		Available: tm.GetAvailableThemes(),
+		Current:   currentTheme,
+		Available: availableThemes,
 	}
 
 	var html strings.Builder
-	html.WriteString(fmt.Sprintf("<p>Current: <strong>%s</strong></p>", response.Current))
-	html.WriteString("<ul>")
-	for _, theme := range response.Available {
-		html.WriteString(fmt.Sprintf(`<li>%s</li>`, theme))
+	for _, theme := range availableThemes {
+		selected := ""
+		if theme == currentTheme {
+			selected = "selected"
+		}
+		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, theme, selected, theme))
 	}
-	html.WriteString("</ul>")
 
 	writeResponse(w, r, response, html.String())
 }

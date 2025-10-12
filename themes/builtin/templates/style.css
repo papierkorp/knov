@@ -6,7 +6,7 @@
 @import url("dashboard.css");
 @import url("browsefiles.css");
 
-/* Color schemes */
+/* color schemes */
 :root,
 body[data-color-scheme="default"] {
     --primary: #3b82f6;
@@ -32,13 +32,13 @@ body[data-color-scheme="purple"] {
     --neutral: #64748b;
 }
 
-/* Light mode - using your original colors */
+/* light mode */
 body {
-    --bg: #374151;
-    --text: #d1d5db;
-    --bg-secondary: #4b5563;
-    --text-secondary: #e5e7eb;
-    --border: #6b7280;
+    --bg: #e5e7eb;
+    --text: #1f2937;
+    --bg-secondary: #b0b8c1;
+    --text-secondary: #374151;
+    --border: #94a3b8;
 
     background: var(--bg);
     color: var(--text);
@@ -47,7 +47,7 @@ body {
     font-size: 16px;
 }
 
-/* Dark mode - darker variant */
+/* dark mode */
 body[data-dark-mode="true"] {
     --bg: #1f2937;
     --text: #f3f4f6;
@@ -57,7 +57,7 @@ body[data-dark-mode="true"] {
 }
 
 a {
-    color: var(--text);
+    color: var(--primary);
     text-decoration: none;
 }
 
@@ -88,7 +88,7 @@ h1:first-child {
 
 .btn {
     background: var(--primary);
-    color: var(--text);
+    color: #ffffff;
     border: none;
     padding: 8px 12px;
     border-radius: 4px;
@@ -98,5 +98,4 @@ h1:first-child {
 
 .btn:hover {
     background: var(--accent);
-    color: var(--bg);
 }

@@ -39,24 +39,6 @@ The application uses a unified key-based storage system for all data types:
 | `sqlite`   | Production, medium datasets | Fast queries, ACID compliance, single file | Requires SQLite            |
 | `postgres` | Enterprise, large datasets  | Full SQL features, concurrent access       | Requires PostgreSQL server |
 
-### File Structure (JSON Storage)
-
-```
-config/
-├── .storage/
-│   ├── metadata/
-│   │   ├── project.md.json
-│   │   └── guides/
-│   │       └── setup.md.json
-│   ├── dashboard/
-│   │   └── home.json
-│   └── user/
-│       └── john/
-│           ├── settings.json
-│           └── dashboard/
-│               └── work.json
-└── users/  ← legacy user settings (will be migrated)
-```
 
 ## Supported File Formats
 

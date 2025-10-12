@@ -7,7 +7,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"plugin"
+	"reflect"
 	"slices"
+	"strings"
 	"sync"
 
 	"knov/internal/configmanager"
@@ -69,9 +71,8 @@ type ITheme interface {
 
 // ColorScheme defines a pre-defined color scheme
 type ColorScheme struct {
-	Name   string            // e.g. "green", "blue", "dark"
-	Label  string            // e.g. "Forest Green", "Ocean Blue"
-	Colors map[string]string // e.g. {"primary": "#65a30d", "accent": "#a3e635"}
+	Name  string
+	Label string
 }
 
 // ThemeMetadata defines theme capabilities and available options
@@ -305,9 +306,37 @@ func (tm *ThemeManager) LoadTheme(themeName string) error {
 	}
 	theme, ok := themeSymbol.(ITheme)
 	if !ok {
+		themeType := reflect.TypeOf(themeSymbol)
+		interfaceType := reflect.TypeOf((*ITheme)(nil)).Elem()
+
+		var issues []string
+		for i := 0; i < interfaceType.NumMethod(); i++ {
+			ifaceMethod := interfaceType.Method(i)
+			themeMethod, found := themeType.MethodByName(ifaceMethod.Name)
+
+			if !found {
+				issues = append(issues, fmt.Sprintf("%s: missing", ifaceMethod.Name))
+			} else {
+				if ifaceMethod.Type.NumIn() != themeMethod.Type.NumIn()-1 ||
+					ifaceMethod.Type.NumOut() != themeMethod.Type.NumOut() {
+					issues = append(issues, fmt.Sprintf("%s: wrong signature", ifaceMethod.Name))
+				} else {
+					for j := 0; j < ifaceMethod.Type.NumIn(); j++ {
+						if ifaceMethod.Type.In(j) != themeMethod.Type.In(j+1) {
+							issues = append(issues, fmt.Sprintf("%s: param %d should be %v, got %v",
+								ifaceMethod.Name, j+1, ifaceMethod.Type.In(j), themeMethod.Type.In(j+1)))
+							break
+						}
+					}
+				}
+			}
+		}
+
+		if len(issues) > 0 {
+			return fmt.Errorf("theme %s does not implement ITheme interface:\n%v", themeName, strings.Join(issues, "\n"))
+		}
 		return fmt.Errorf("theme %s does not implement ITheme interface", themeName)
 	}
-
 	tm.themes[themeName] = theme
 
 	metaSymbol, err := plugin.Lookup("Metadata")
@@ -353,7 +382,6 @@ func (tm *ThemeManager) LoadAllThemes() error {
 			err := tm.LoadTheme(themeName)
 			if err != nil {
 				errMsg := fmt.Sprintf("failed to load theme %s: %v", themeName, err)
-				logging.LogError(errMsg)
 				loadErrors = append(loadErrors, errMsg)
 				continue
 			}

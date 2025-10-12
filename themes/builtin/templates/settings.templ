@@ -55,7 +55,9 @@ templ ThemeSection() {
 			<form hx-post="/api/themes/setTheme" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
 				<label for="theme">{ translation.Sprintf("Select Theme:") }</label>
 				<select name="theme" id="theme"
-				        hx-get="/api/themes/list"
+				        hx-get="/api/themes/getAllThemes"
+				        hx-target="this"
+				        hx-swap="innerHTML"
 				        hx-trigger="load">
 					<option>Loading themes...</option>
 				</select>
