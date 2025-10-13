@@ -86,41 +86,21 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	}
 
 	dir := filepath.Dir(utils.ToRelativePath(fullPath))
-	if dir != "." && dir != "/" && dir != "" {
-		folders := strings.Split(strings.Trim(dir, "/"), "/")
-		var validFolders []string
-		for _, folder := range folders {
-			if folder != "" {
-				validFolders = append(validFolders, folder)
-			}
-		}
-		currentMetadata.Folders = validFolders
+	if dir != "." && dir != "" {
+		currentMetadata.Folders = strings.Split(dir, string(filepath.Separator))
 	}
 
+	// save previous data
 	if newMetadata != nil {
-		if newMetadata.Collection != "" {
-			currentMetadata.Collection = newMetadata.Collection
-		}
 		if len(newMetadata.Tags) > 0 {
 			currentMetadata.Tags = newMetadata.Tags
 		}
-		if len(newMetadata.Boards) > 0 {
-			currentMetadata.Boards = newMetadata.Boards
-		}
-		if len(newMetadata.Ancestor) > 0 {
-			currentMetadata.Ancestor = newMetadata.Ancestor
-		}
 		if len(newMetadata.Parents) > 0 {
-			currentMetadata.Parents = newMetadata.Parents
-		}
-		if len(newMetadata.Kids) > 0 {
-			currentMetadata.Kids = newMetadata.Kids
-		}
-		if len(newMetadata.UsedLinks) > 0 {
-			currentMetadata.UsedLinks = newMetadata.UsedLinks
-		}
-		if len(newMetadata.LinksToHere) > 0 {
-			currentMetadata.LinksToHere = newMetadata.LinksToHere
+			normalized := make([]string, 0, len(newMetadata.Parents))
+			for _, parent := range newMetadata.Parents {
+				normalized = append(normalized, utils.CleanLink(parent))
+			}
+			currentMetadata.Parents = normalized
 		}
 		if newMetadata.FileType != "" {
 			currentMetadata.FileType = newMetadata.FileType
@@ -132,14 +112,16 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 			currentMetadata.Priority = newMetadata.Priority
 		}
 	}
-	if currentMetadata.Collection == "" {
-		currentMetadata.Collection = "default"
-	}
+
+	// init
 	if currentMetadata.Tags == nil {
 		currentMetadata.Tags = []string{}
 	}
+	if currentMetadata.Folders == nil {
+		currentMetadata.Folders = []string{}
+	}
 	if currentMetadata.Boards == nil {
-		currentMetadata.Boards = []string{"default"}
+		currentMetadata.Boards = []string{}
 	}
 	if currentMetadata.Ancestor == nil {
 		currentMetadata.Ancestor = []string{}

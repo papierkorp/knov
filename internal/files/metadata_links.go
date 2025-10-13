@@ -128,6 +128,7 @@ func updateUsedLinks(metadata *Metadata) {
 
 	logging.LogDebug("cleaned used links for %s: %v", metadata.Path, metadata.UsedLinks)
 }
+
 func updateKidsAndLinksToHere(metadata *Metadata) {
 	files, err := GetAllFiles()
 	if err != nil {

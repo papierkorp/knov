@@ -209,6 +209,11 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	metadata := &files.Metadata{Path: filepath}
+	if err := files.MetaDataSave(metadata); err != nil {
+		logging.LogError("failed to create metadata for %s: %v", filepath, err)
+	}
+
 	html := fmt.Sprintf(`<span class="status-ok">saved: %s</span>`, filepath)
 	writeResponse(w, r, "file saved", html)
 }
