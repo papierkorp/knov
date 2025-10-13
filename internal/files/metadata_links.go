@@ -9,21 +9,6 @@ import (
 	"knov/internal/utils"
 )
 
-func metaDataLinksAdd(filePath string) error {
-	metadata, err := MetaDataGet(filePath)
-	if err != nil {
-		return err
-	}
-	if metadata == nil {
-		return nil
-	}
-
-	updateAncestors(metadata)
-	updateUsedLinks(metadata)
-
-	return MetaDataSave(metadata)
-}
-
 // MetaDataLinksRebuild ..
 func MetaDataLinksRebuild() error {
 	logging.LogInfo("rebuilding all metadata links")
@@ -49,7 +34,6 @@ func MetaDataLinksRebuild() error {
 
 		updateAncestors(metadata)
 		updateUsedLinks(metadata)
-
 		updateKidsAndLinksToHere(metadata)
 
 		if err := MetaDataSave(metadata); err != nil {

@@ -21,6 +21,8 @@ var (
 func Start() {
 	stopChan = make(chan bool)
 
+	linksRebuildInterval := 30 * time.Minute
+
 	// parse intervals from config
 	fileIntervalStr := configmanager.GetAppConfig().CronjobInterval
 	parsedFileInterval, err := time.ParseDuration(fileIntervalStr)
@@ -71,6 +73,21 @@ func Start() {
 				runSearchJob()
 			case <-stopChan:
 				logging.LogInfo("search cronjob stopped")
+				return
+			}
+		}
+	}()
+
+	go func() {
+		ticker := time.NewTicker(linksRebuildInterval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				runLinksRebuildJob()
+			case <-stopChan:
+				logging.LogInfo("links rebuild cronjob stopped")
 				return
 			}
 		}
@@ -208,4 +225,15 @@ func removeDuplicates(files []string) []string {
 	}
 
 	return result
+}
+
+func runLinksRebuildJob() {
+	logging.LogDebug("running links rebuild cronjob")
+
+	if err := files.MetaDataLinksRebuild(); err != nil {
+		logging.LogError("cronjob: failed to rebuild metadata links: %v", err)
+		return
+	}
+
+	logging.LogDebug("links rebuild cronjob completed")
 }

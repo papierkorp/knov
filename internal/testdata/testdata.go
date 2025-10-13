@@ -2,6 +2,7 @@
 package testdata
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -103,9 +104,27 @@ func createTestStructure() error {
 		"test/testC/testCC.md",
 	}
 
-	for _, file := range testFiles {
+	for i, file := range testFiles {
 		fullPath := filepath.Join(dataPath, file)
-		content := "# " + filepath.Base(file) + "\n\nThis is a test file."
+
+		// create content with links
+		content := "# " + filepath.Base(file) + "\n\nThis is a test file.\n\n"
+
+		// add 2 pseudo-random links to other test files
+		link1Idx := (i + 3) % len(testFiles)
+		link2Idx := (i + 7) % len(testFiles)
+
+		// ensure we don't link to ourselves
+		if link1Idx == i {
+			link1Idx = (i + 1) % len(testFiles)
+		}
+		if link2Idx == i {
+			link2Idx = (i + 2) % len(testFiles)
+		}
+
+		content += fmt.Sprintf("- [[%s]]\n", testFiles[link1Idx])
+		content += fmt.Sprintf("- [[%s]]\n", testFiles[link2Idx])
+
 		if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
 			return err
 		}

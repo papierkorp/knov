@@ -166,6 +166,10 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		currentMetadata.Priority = PriorityMedium
 	}
 
+	updateAncestors(currentMetadata)
+	updateUsedLinks(currentMetadata)
+	// updateKidsAndLinksToHere(currentMetadata) // shouldnt run with every filesave since it loops through all files
+
 	return currentMetadata
 }
 

@@ -10,6 +10,11 @@ KNOV is a file-based knowledge management system that organizes markdown files w
 - **Git-backed** for version control and history
 - **Metadata** automatically generated for all files
 - **Links** between markdown files are tracked and indexed
+  - **parents**: manually defined hierarchical relationships (e.g., "this note belongs under that concept")
+  - **ancestors**: automatically calculated top-level parents in the hierarchy chain
+  - **children**: automatically calculated reverse of parents (files that have this file as parent)
+  - **outbound**: automatically extracted markdown links `[[file]]` found in the file content
+  - **inbound**: automatically calculated files that link to this file
 
 ### Collections
 
