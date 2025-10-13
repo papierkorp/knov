@@ -346,47 +346,6 @@ func handleAPIGetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, lastEdited, html)
 }
 
-// @Summary Get file folders
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Produce json,html
-// @Success 200 {array} string
-// @Router /api/metadata/folders [get]
-func handleAPIGetMetadataFolders(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	if filepath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	metadata, err := files.MetaDataGet(filepath)
-	if err != nil {
-		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
-		return
-	}
-
-	if metadata == nil {
-		http.Error(w, "metadata not found", http.StatusNotFound)
-		return
-	}
-
-	var html strings.Builder
-	html.WriteString(`<span class="folders">`)
-	for i, folder := range metadata.Folders {
-		if i > 0 {
-			html.WriteString(", ")
-		}
-		html.WriteString(folder)
-	}
-	html.WriteString(`</span>`)
-
-	writeResponse(w, r, metadata.Folders, html.String())
-}
-
-// ----------------------------------------------------------------------------------------
-// ---------------------------------- POST INDIVIDUAL ---------------------------------
-// ----------------------------------------------------------------------------------------
-
 // @Summary Set file collection
 // @Tags metadata
 // @Accept application/x-www-form-urlencoded

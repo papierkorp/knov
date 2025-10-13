@@ -11,7 +11,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
 	"knov/internal/files"
-	_ "knov/internal/server/api" // swaggo api docs
+	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/utils"
 
@@ -135,7 +135,6 @@ func StartServerChi() {
 			r.Get("/name", handleAPIGetMetadataName)
 			r.Get("/createdat", handleAPIGetMetadataCreatedAt)
 			r.Get("/lastedited", handleAPIGetMetadataLastEdited)
-			r.Get("/folders", handleAPIGetMetadataFolders)
 
 			r.Post("/collection", handleAPISetMetadataCollection)
 			r.Post("/filetype", handleAPISetMetadataFileType)

@@ -18,3 +18,12 @@ func CleanseID(input string) string {
 
 	return result
 }
+
+// CleanLink normalizes a link by removing anchors, aliases, and extensions
+func CleanLink(link string) string {
+	cleanLink := strings.Split(link, "#")[0]     // remove anchor
+	cleanLink = strings.Split(cleanLink, "|")[0] // remove alias
+	cleanLink = strings.TrimSpace(cleanLink)
+	cleanLink = strings.TrimSuffix(cleanLink, ".md")
+	return cleanLink
+}

@@ -1,15 +1,17 @@
 package filetype
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"knov/internal/logging"
+
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	gomarkdown_parser "github.com/gomarkdown/markdown/parser"
-	"knov/internal/logging"
 )
 
 type MarkdownHandler struct{}
@@ -50,7 +52,35 @@ func (h *MarkdownHandler) Render(content []byte) ([]byte, error) {
 }
 
 func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
-	return h.extractMarkdownLinks(string(content))
+	var links []string
+	text := string(content)
+
+	// extract wiki-style links [[path]]
+	wikiLinkRegex := regexp.MustCompile(`\[\[([^\]]+)\]\]`)
+	wikiMatches := wikiLinkRegex.FindAllStringSubmatch(text, -1)
+	for _, match := range wikiMatches {
+		if len(match) > 1 {
+			link := strings.TrimSpace(match[1])
+			if link != "" {
+				links = append(links, link)
+			}
+		}
+	}
+
+	// extract standard markdown links [text](url)
+	mdLinkRegex := regexp.MustCompile(`\[([^\]]+)\]\(([^\)]+)\)`)
+	mdMatches := mdLinkRegex.FindAllStringSubmatch(text, -1)
+	for _, match := range mdMatches {
+		if len(match) > 2 {
+			link := strings.TrimSpace(match[2])
+			if link != "" && !strings.HasPrefix(link, "http") {
+				links = append(links, link)
+			}
+		}
+	}
+	fmt.Println("LINKS_--------------------: ", links)
+
+	return links
 }
 
 func (h *MarkdownHandler) Name() string {
@@ -81,27 +111,4 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 	})
 
 	return content
-}
-
-// extractMarkdownLinks extracts all links from markdown content
-func (h *MarkdownHandler) extractMarkdownLinks(content string) []string {
-	var links []string
-	linkSet := make(map[string]bool)
-
-	re := regexp.MustCompile(`\[([^\]]+)\]\(([^)]+)\)`)
-	matches := re.FindAllStringSubmatch(content, -1)
-
-	for _, match := range matches {
-		if len(match) > 2 {
-			url := strings.TrimSpace(match[2])
-			if !strings.Contains(url, "://") && !strings.HasPrefix(url, "#") {
-				if !linkSet[url] {
-					linkSet[url] = true
-					links = append(links, url)
-				}
-			}
-		}
-	}
-
-	return links
 }

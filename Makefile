@@ -29,6 +29,6 @@ templ-generate:
 	TEMPL_EXPERIMENT=rawgo templ generate
 
 swaggo-api-init:
-	swag init -g cmd/main.go -d . -o internal/server/api
+	swag init -g cmd/main.go -d . -o internal/server/swagger
 
 .PHONY: templ-generate dev swaggo-api-init rmt translation prod docker docker-build docker-run

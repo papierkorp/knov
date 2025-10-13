@@ -94,6 +94,9 @@ func findTopAncestor(filePath string, visited map[string]bool) string {
 
 func updateUsedLinks(metadata *Metadata) {
 	fullPath := utils.ToFullPath(metadata.Path)
+
+	logging.LogInfo("processing file for links: %s", fullPath)
+
 	contentData, err := os.ReadFile(fullPath)
 	if err != nil {
 		logging.LogWarning("failed to read file %s: %v", fullPath, err)
@@ -102,21 +105,29 @@ func updateUsedLinks(metadata *Metadata) {
 
 	handler := fileTypeRegistry.GetHandler(fullPath)
 	if handler == nil {
+		logging.LogWarning("no handler found for file %s", fullPath)
 		return
 	}
 
 	links := handler.ExtractLinks(contentData)
+	logging.LogInfo("extracted %d links from %s", len(links), metadata.Path)
 
-	var validLinks []string
+	metadata.UsedLinks = []string{}
+
 	for _, link := range links {
-		if link != metadata.Path {
-			validLinks = append(validLinks, link)
+		cleanLink := utils.CleanLink(link)
+
+		if cleanLink == "" || cleanLink == metadata.Path {
+			continue
+		}
+
+		if !slices.Contains(metadata.UsedLinks, cleanLink) {
+			metadata.UsedLinks = append(metadata.UsedLinks, cleanLink)
 		}
 	}
 
-	metadata.UsedLinks = validLinks
+	logging.LogDebug("cleaned used links for %s: %v", metadata.Path, metadata.UsedLinks)
 }
-
 func updateKidsAndLinksToHere(metadata *Metadata) {
 	files, err := GetAllFiles()
 	if err != nil {

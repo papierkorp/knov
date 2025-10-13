@@ -96,9 +96,11 @@ func createTestStructure() error {
 		"test/testA/testAB/testABA.md",
 		"test/testA/testAB/testABB.md",
 		"test/testA/testAC/testACA.md",
+		"test/testB/testB.md",
 		"test/testB/testBA.md",
 		"test/testB/testBB.md",
 		"test/testB/testBC.md",
+		"test/testC/testC.md",
 		"test/testC/testCA.md",
 		"test/testC/testCB.md",
 		"test/testC/testCC.md",
@@ -108,7 +110,7 @@ func createTestStructure() error {
 		fullPath := filepath.Join(dataPath, file)
 
 		// create content with links
-		content := "# " + filepath.Base(file) + "\n\nThis is a test file.\n\n"
+		content := "# " + filepath.Base(file) + "\n\n**This is a test file.**\n\n"
 
 		// add 2 pseudo-random links to other test files
 		link1Idx := (i + 3) % len(testFiles)
@@ -122,8 +124,8 @@ func createTestStructure() error {
 			link2Idx = (i + 2) % len(testFiles)
 		}
 
-		content += fmt.Sprintf("- [[%s]]\n", testFiles[link1Idx])
-		content += fmt.Sprintf("- [[%s]]\n", testFiles[link2Idx])
+		content += fmt.Sprintf("- [%s](%s)\n", testFiles[link1Idx], testFiles[link1Idx])
+		content += fmt.Sprintf("- [%s](%s)\n", testFiles[link2Idx], testFiles[link2Idx])
 
 		if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
 			return err
@@ -241,6 +243,24 @@ func createTestMetadata() error {
 
 		tags := extractFilenameTags(filename)
 
+		var parents []string
+		if i > 0 {
+			parentCount := (i % 3)
+			if parentCount > 2 {
+				parentCount = 2
+			}
+
+			for j := 0; j < parentCount && j < i; j++ {
+				parentIdx := i - 1 - (j * 2)
+				if parentIdx >= 0 && parentIdx < i {
+					parentPath := utils.ToRelativePath(testFiles[parentIdx])
+					if parentPath != relPath && !contains(parents, parentPath) {
+						parents = append(parents, parentPath)
+					}
+				}
+			}
+		}
+
 		metadata := &files.Metadata{
 			Name:       filename,
 			Path:       relPath,
@@ -250,6 +270,7 @@ func createTestMetadata() error {
 			Folders:    validFolders,
 			Tags:       tags,
 			Boards:     []string{},
+			Parents:    parents,
 			FileType:   files.FileTypeNote,
 			Status:     status,
 			Priority:   priority,
@@ -261,6 +282,15 @@ func createTestMetadata() error {
 	}
 
 	return nil
+}
+
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
 }
 
 func extractFilenameTags(filename string) []string {
