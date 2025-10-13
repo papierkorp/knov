@@ -1,0 +1,71 @@
+#page-fileedit #markdown-editor {
+    margin-bottom: 12px;
+}
+
+/* dark mode */
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-defaultUI {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-toolbar {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-toolbar button {
+    color: var(--text) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-toolbar button:hover {
+    background: var(--bg) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-main-container {
+    background: var(--bg-secondary) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-container {
+    background: var(--bg-secondary) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-ww-container {
+    background: var(--bg-secondary) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .ProseMirror {
+    color: var(--text) !important;
+    background: var(--bg-secondary) !important;
+    caret-color: var(--text) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents {
+    color: var(--text) !important;
+    background: var(--bg-secondary) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h1,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h2,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h3,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h4,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h5,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h6,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents p,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents span,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents div,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents li,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents strong,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents em {
+    color: var(--text) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents a {
+    color: var(--primary) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-preview {
+    background: var(--bg-secondary) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-splitter {
+    background: var(--border

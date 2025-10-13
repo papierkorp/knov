@@ -61,9 +61,10 @@ func StartServerChi() {
 	// ----------------------------------------------------------------------------------------
 
 	r.Get("/static/css/*", handleCSS)
+	r.Get("/static/*", handleStatic)
 
 	fs := http.FileServer(http.Dir("static"))
-	r.Handle("/static/*", http.StripPrefix("/static/", fs)) // else css files are served as text files
+	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
 	// ----------------------------------------------------------------------------------------
 	// -------------------------------------- api routes --------------------------------------
@@ -248,6 +249,30 @@ func handleCSS(w http.ResponseWriter, r *http.Request) {
 		cssPath := filepath.Join("themes", themeName, "templates", cssFile)
 		http.ServeFile(w, r, cssPath)
 	}
+}
+
+func handleStatic(w http.ResponseWriter, r *http.Request) {
+	filePath := strings.TrimPrefix(r.URL.Path, "/static/")
+	fullPath := filepath.Join("static", filePath)
+
+	// set correct content type based on extension
+	ext := strings.ToLower(filepath.Ext(filePath))
+	switch ext {
+	case ".js":
+		w.Header().Set("Content-Type", "application/javascript")
+	case ".css":
+		w.Header().Set("Content-Type", "text/css")
+	case ".png":
+		w.Header().Set("Content-Type", "image/png")
+	case ".jpg", ".jpeg":
+		w.Header().Set("Content-Type", "image/jpeg")
+	case ".svg":
+		w.Header().Set("Content-Type", "image/svg+xml")
+	case ".ico":
+		w.Header().Set("Content-Type", "image/x-icon")
+	}
+
+	http.ServeFile(w, r, fullPath)
 }
 
 // ----------------------------------------------------------------------------------------
