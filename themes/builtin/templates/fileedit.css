@@ -160,3 +160,21 @@ body[data-dark-mode="true"]
     color: var(--text) !important;
     background: var(--bg-secondary) !important;
 }
+
+/* ensure all preview content has proper text color in dark mode */
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents * {
+    color: var(--text) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h1,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h2,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h3,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h4,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h5,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h6,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents p,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents li,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents td,
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents th {
+    color: var(--text) !important;
+}

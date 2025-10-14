@@ -108,3 +108,18 @@ configmanager.SetLanguage("de")
 For creating custom themes, see the [Theme Creator Guide](theme-creator-guide.md).
 
 The theme system uses Go plugins for maximum flexibility while maintaining a clean interface.
+
+# Update Dependencies
+
+```bash
+cd static/
+# fontAwesome
+curl -o font-awesome-7.0.1-all.min.css https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css
+# toastUI Editor
+curl -o toastui-editor-3.2.2.min.js https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js
+curl -o toastui-editor-3.2.2.min.css https://uicdn.toast.com/editor/latest/toastui-editor.min.css
+## prism.js (code highlighter)
+curl -o prism-tomorrow-1.29.0.min.css https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css
+```
+
+update in base.templ

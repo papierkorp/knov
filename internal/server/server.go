@@ -4,6 +4,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -61,11 +62,7 @@ func StartServerChi() {
 	// ------------------------------------- static routes -------------------------------------
 	// ----------------------------------------------------------------------------------------
 
-	r.Get("/static/css/*", handleCSS)
 	r.Get("/static/*", handleStatic)
-
-	fs := http.FileServer(http.Dir("static"))
-	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
 	// ----------------------------------------------------------------------------------------
 	// -------------------------------------- api routes --------------------------------------
@@ -231,39 +228,43 @@ func getViewName(tm thememanager.IThemeManager, viewType string) string {
 	return "default"
 }
 
-func handleCSS(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/css")
-	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-
-	cssFile := strings.TrimPrefix(r.URL.Path, "/static/css/")
-
-	switch cssFile {
-	case "custom.css":
-		customCSS := configmanager.GetUserSettings().CustomCSS
-		w.Write([]byte(customCSS))
-		return
-	case "style.css":
-		themeName := thememanager.GetThemeManager().GetCurrentThemeName()
-		cssPath := filepath.Join("themes", themeName, "templates", "style.css")
-		http.ServeFile(w, r, cssPath)
-	default:
-		themeName := thememanager.GetThemeManager().GetCurrentThemeName()
-		cssPath := filepath.Join("themes", themeName, "templates", cssFile)
-		http.ServeFile(w, r, cssPath)
-	}
-}
-
 func handleStatic(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/static/")
-	fullPath := filepath.Join("static", filePath)
 
-	// set correct content type based on extension
+	fmt.Printf("handleStatic called for: %s\n", filePath)
+
+	// handle special CSS files
+	if strings.HasPrefix(filePath, "css/") {
+		w.Header().Set("Content-Type", "text/css")
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+
+		cssFile := strings.TrimPrefix(filePath, "css/")
+
+		switch cssFile {
+		case "custom.css":
+			customCSS := configmanager.GetUserSettings().CustomCSS
+			w.Write([]byte(customCSS))
+			return
+		case "style.css":
+			themeName := thememanager.GetThemeManager().GetCurrentThemeName()
+			cssPath := filepath.Join("themes", themeName, "templates", "style.css")
+			http.ServeFile(w, r, cssPath)
+			return
+		default:
+			themeName := thememanager.GetThemeManager().GetCurrentThemeName()
+			cssPath := filepath.Join("themes", themeName, "templates", cssFile)
+			http.ServeFile(w, r, cssPath)
+			return
+		}
+	}
+
+	// set content type before serving
 	ext := strings.ToLower(filepath.Ext(filePath))
 	switch ext {
 	case ".js":
-		w.Header().Set("Content-Type", "application/javascript")
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
 	case ".css":
-		w.Header().Set("Content-Type", "text/css")
+		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 	case ".png":
 		w.Header().Set("Content-Type", "image/png")
 	case ".jpg", ".jpeg":
@@ -274,7 +275,16 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/x-icon")
 	}
 
-	http.ServeFile(w, r, fullPath)
+	fullPath := filepath.Join("static", filePath)
+
+	// read and serve file directly to prevent mime type override
+	data, err := os.ReadFile(fullPath)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	w.Write(data)
 }
 
 // ----------------------------------------------------------------------------------------
