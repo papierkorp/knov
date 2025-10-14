@@ -246,6 +246,20 @@ paths:
       summary: Get file editor
       tags:
       - components
+  /api/components/markdown-editor:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get markdown editor
+      tags:
+      - components
   /api/components/table:
     get:
       description: Returns paginated, sortable, searchable table HTML fragment
@@ -770,14 +784,13 @@ paths:
       summary: Get raw file content
       tags:
       - files
-  /api/files/save:
+  /api/files/save/{filepath}:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Saves raw content to file (creates new file if needed)
       parameters:
       - description: File path
-        in: formData
+        in: path
         name: filepath
         required: true
         type: string
@@ -787,13 +800,8 @@ paths:
         required: true
         type: string
       produces:
-      - application/json
       - text/html
-      responses:
-        "200":
-          description: file saved
-          schema:
-            type: string
+      responses: {}
       summary: Save file content
       tags:
       - files

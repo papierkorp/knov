@@ -2,70 +2,101 @@
     margin-bottom: 12px;
 }
 
-/* dark mode */
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-defaultUI {
+/* override toast ui dark theme colors */
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-dark {
     background: var(--bg-secondary) !important;
-    border-color: var(--border) !important;
-}
-
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-toolbar {
-    background: var(--bg-secondary) !important;
-    border-color: var(--border) !important;
-}
-
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-toolbar button {
     color: var(--text) !important;
 }
 
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-toolbar button:hover {
+body[data-dark-mode="true"]
+    #page-fileedit
+    .toastui-editor-dark
+    .toastui-editor-defaultUI {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border) !important;
+}
+
+body[data-dark-mode="true"]
+    #page-fileedit
+    .toastui-editor-dark
+    .toastui-editor-toolbar {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border) !important;
+}
+
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-dark .ProseMirror {
+    background: var(--bg-secondary) !important;
+    color: var(--text) !important;
+}
+
+body[data-dark-mode="true"]
+    #page-fileedit
+    .toastui-editor-dark
+    .toastui-editor-contents {
+    background: var(--bg-secondary) !important;
+    color: var(--text) !important;
+}
+
+body[data-dark-mode="true"]
+    #page-fileedit
+    .toastui-editor-dark
+    .toastui-editor-md-preview {
+    background: var(--bg-secondary) !important;
+    color: var(--text) !important;
+}
+
+body[data-dark-mode="true"]
+    #page-fileedit
+    .toastui-editor-dark
+    .toastui-editor-md-container {
+    background: var(--bg-secondary) !important;
+}
+
+body[data-dark-mode="true"]
+    #page-fileedit
+    .toastui-editor-dark
+    .toastui-editor-md-splitter {
+    background: var(--border) !important;
+}
+
+body[data-dark-mode="true"]
+    #page-fileedit
+    .toastui-editor-dark
+    .toastui-editor-toolbar
+    button {
+    color: var(--text) !important;
+}
+
+/* code blocks in markdown mode */
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-code-block {
+    background: var(--bg) !important;
+    color: #a3e635 !important;
+}
+
+body[data-dark-mode="true"]
+    #page-fileedit
+    .toastui-editor-md-code-block-line-background {
     background: var(--bg) !important;
 }
 
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-main-container {
-    background: var(--bg-secondary) !important;
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-meta {
+    color: var(--text-secondary) !important;
 }
 
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-container {
-    background: var(--bg-secondary) !important;
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-delimiter {
+    color: var(--text-secondary) !important;
 }
 
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-ww-container {
-    background: var(--bg-secondary) !important;
+/* code blocks in preview */
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents pre {
+    background: var(--bg) !important;
 }
 
-body[data-dark-mode="true"] #page-fileedit .ProseMirror {
-    color: var(--text) !important;
-    background: var(--bg-secondary) !important;
-    caret-color: var(--text) !important;
-}
-
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents {
-    color: var(--text) !important;
-    background: var(--bg-secondary) !important;
-}
-
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h1,
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h2,
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h3,
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h4,
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h5,
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h6,
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents p,
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents span,
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents div,
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents li,
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents strong,
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents em {
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents code {
+    background: var(--bg) !important;
     color: var(--text) !important;
 }
 
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents a {
-    color: var(--primary) !important;
+body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents pre code {
+    color: var(--text) !important;
 }
-
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-preview {
-    background: var(--bg-secondary) !important;
-}
-
-body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-splitter {
-    background: var(--border

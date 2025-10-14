@@ -36,6 +36,27 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/components/markdown-editor": {
+            "get": {
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "components"
+                ],
+                "summary": "Get markdown editor",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/components/table": {
             "get": {
                 "description": "Returns paginated, sortable, searchable table HTML fragment",
@@ -812,14 +833,12 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/files/save": {
+        "/api/files/save/{filepath}": {
             "post": {
-                "description": "Saves raw content to file (creates new file if needed)",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
-                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -831,7 +850,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "File path",
                         "name": "filepath",
-                        "in": "formData",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -842,14 +861,7 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "file saved",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
+                "responses": {}
             }
         },
         "/api/git/latestchanges": {

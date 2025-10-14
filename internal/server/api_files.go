@@ -4,6 +4,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"knov/internal/files"
@@ -185,35 +186,31 @@ func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Save file content
-// @Description Saves raw content to file (creates new file if needed)
 // @Tags files
 // @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Param filepath formData string true "File path"
+// @Param filepath path string true "File path"
 // @Param content formData string true "File content"
-// @Success 200 {string} string "file saved"
-// @Router /api/files/save [post]
+// @Produce html
+// @Router /api/files/save/{filepath} [post]
 func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	filepath := r.FormValue("filepath")
-	content := r.FormValue("content")
+	filepath := strings.TrimPrefix(r.URL.Path, "/api/files/save/")
 
 	if filepath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		http.Error(w, "missing filepath", http.StatusBadRequest)
 		return
 	}
 
+	content := r.FormValue("content")
 	fullPath := utils.ToFullPath(filepath)
-	if err := files.SaveRawContent(fullPath, content); err != nil {
+
+	err := os.WriteFile(fullPath, []byte(content), 0644)
+	if err != nil {
+		logging.LogError("failed to save file %s: %v", fullPath, err)
 		http.Error(w, "failed to save file", http.StatusInternalServerError)
 		return
 	}
 
-	metadata := &files.Metadata{Path: filepath}
-	if err := files.MetaDataSave(metadata); err != nil {
-		logging.LogError("failed to create metadata for %s: %v", filepath, err)
-	}
-
-	html := fmt.Sprintf(`<span class="status-ok">saved: %s</span>`, filepath)
-	writeResponse(w, r, "file saved", html)
+	logging.LogInfo("saved file: %s", filepath)
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(`<span style="color: green;">file saved successfully</span>`))
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/filetype"
 	"knov/internal/logging"
@@ -135,6 +136,57 @@ func handleAPIGetEditor(w http.ResponseWriter, r *http.Request) {
 			<div id="editor-status"></div>
 		</div>
 	`, filepath, content)
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// @Summary Get markdown editor
+// @Tags components
+// @Param filepath query string true "File path"
+// @Produce html
+// @Router /api/components/markdown-editor [get]
+func handleAPIGetMarkdownEditor(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	fullPath := utils.ToFullPath(filepath)
+	content, err := files.GetRawContent(fullPath)
+	if err != nil {
+		content = ""
+	}
+
+	theme := "light"
+	if configmanager.GetDarkMode() {
+		theme = "dark"
+	}
+
+	html := fmt.Sprintf(`
+		<div>
+			<input type="hidden" id="content-input" name="content"/>
+			<textarea id="initial-content" style="display:none;">%s</textarea>
+			<div id="markdown-editor"></div>
+			<script>
+				const initialContent = document.getElementById('initial-content').value;
+				const editor = new toastui.Editor({
+					el: document.querySelector('#markdown-editor'),
+					height: '600px',
+					initialEditType: 'markdown',
+					previewStyle: 'tab',
+					initialValue: initialContent,
+					usageStatistics: false,
+					theme: '%s'
+				});
+
+				document.getElementById('editor-form').addEventListener('submit', function(e) {
+					document.getElementById('content-input').value = editor.getMarkdown();
+				});
+			</script>
+		</div>
+	`, content, theme)
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))

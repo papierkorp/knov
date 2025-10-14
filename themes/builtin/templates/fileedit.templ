@@ -7,34 +7,20 @@ templ FileEdit(content string, filePath string, filename string) {
 				edit:
 				<a href={ templ.SafeURL("/files/" + filePath) }>{ filePath }</a>
 			</h2>
-			<form id="editor-form" hx-post="/api/files/save" hx-target="#editor-status">
-				<input type="hidden" name="filepath" value={ filePath }/>
-				<input type="hidden" id="content-input" name="content"/>
-				<textarea id="initial-content" style="display:none;">{ content }</textarea>
-				<div id="markdown-editor"></div>
+			<form id="editor-form" hx-post={ "/api/files/save/" + filePath } hx-target="#editor-status">
+				<div
+					hx-get={ "/api/components/markdown-editor?filepath=" + filePath }
+					hx-trigger="load"
+					hx-swap="outerHTML"
+				></div>
+				<div id="editor-status">
+					loading editor...
+				</div>
 				<div style="margin-top: 12px;">
 					<button type="submit" class="btn-primary">save</button>
 					<a href={ templ.SafeURL("/files/" + filePath) } class="btn-secondary">cancel</a>
 				</div>
 			</form>
-			<div id="editor-status"></div>
-			<link rel="stylesheet" href="/static/toastui-editor.min.css"/>
-			<script src="/static/toastui-editor.min.js"></script>
-			<script>
-				const initialContent = document.getElementById('initial-content').value;
-				const editor = new toastui.Editor({
-					el: document.querySelector('#markdown-editor'),
-					height: '600px',
-					initialEditType: 'wysiwyg',
-					previewStyle: 'tab',
-					initialValue: initialContent,
-					usageStatistics: false
-				});
-
-				document.getElementById('editor-form').addEventListener('submit', function(e) {
-					document.getElementById('content-input').value = editor.getMarkdown();
-				});
-			</script>
 		</div>
 	}
 }

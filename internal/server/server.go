@@ -49,6 +49,7 @@ func StartServerChi() {
 	r.Get("/overview", handleOverview)
 	r.Get("/search", handleSearchPage)
 	r.Get("/files/edit/*", handleFileEdit)
+	r.Post("/files/save/*", handleAPIFileSave)
 	r.Get("/files/*", handleFileContent)
 	r.Get("/dashboard", handleDashboardView)
 	r.Get("/dashboard/{id}", handleDashboardView)
@@ -203,6 +204,7 @@ func StartServerChi() {
 		r.Route("/components", func(r chi.Router) {
 			r.Get("/table", handleAPIGetTable)
 			r.Get("/editor", handleAPIGetEditor)
+			r.Get("/markdown-editor", handleAPIGetMarkdownEditor)
 		})
 	})
 
