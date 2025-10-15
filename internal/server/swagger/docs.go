@@ -44,7 +44,6 @@ const docTemplate = `{
                 "tags": [
                     "components"
                 ],
-                "summary": "Get markdown editor",
                 "parameters": [
                     {
                         "type": "string",

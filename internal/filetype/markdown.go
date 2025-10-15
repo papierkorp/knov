@@ -2,6 +2,7 @@ package filetype
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -10,6 +11,7 @@ import (
 	"knov/internal/logging"
 
 	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/html"
 	gomarkdown_parser "github.com/gomarkdown/markdown/parser"
 )
@@ -39,16 +41,48 @@ func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 	return []byte(processed), nil
 }
 
+type customRenderer struct {
+	*html.Renderer
+}
+
+func (r *customRenderer) RenderNode(w io.Writer, node ast.Node, entering bool) ast.WalkStatus {
+	if code, ok := node.(*ast.CodeBlock); ok && entering {
+		lang := string(code.Info)
+		if lang == "" {
+			lang = "text"
+		}
+		highlighted := HighlightCodeBlock(string(code.Literal), lang)
+		w.Write([]byte(highlighted))
+		return ast.GoToNext
+	}
+	return r.Renderer.RenderNode(w, node, entering)
+}
+
+// update the Render function to use custom renderer:
 func (h *MarkdownHandler) Render(content []byte) ([]byte, error) {
 	extensions := gomarkdown_parser.CommonExtensions | gomarkdown_parser.AutoHeadingIDs
 	p := gomarkdown_parser.NewWithExtensions(extensions)
 
 	htmlFlags := html.CommonFlags | html.HrefTargetBlank
-	opts := html.RendererOptions{Flags: htmlFlags}
+	opts := html.RendererOptions{
+		Flags: htmlFlags,
+		RenderNodeHook: func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
+			if code, ok := node.(*ast.CodeBlock); ok && entering {
+				lang := string(code.Info)
+				if lang == "" {
+					lang = "text"
+				}
+				highlighted := HighlightCodeBlock(string(code.Literal), lang)
+				w.Write([]byte(highlighted))
+				return ast.GoToNext, true
+			}
+			return ast.GoToNext, false
+		},
+	}
 	renderer := html.NewRenderer(opts)
 
-	html := markdown.ToHTML(content, p, renderer)
-	return html, nil
+	htmlOutput := markdown.ToHTML(content, p, renderer)
+	return htmlOutput, nil
 }
 
 func (h *MarkdownHandler) ExtractLinks(content []byte) []string {

@@ -101,6 +101,7 @@ func (h *DokuwikiHandler) parseDokuWiki(content string) string {
 
 // processDokuWikiCodeBlocks handles all code block syntaxes
 func (h *DokuwikiHandler) processDokuWikiCodeBlocks(content string) string {
+	// <code language>...</code>
 	content = regexp.MustCompile(`(?s)<code\s+([a-zA-Z0-9_-]+)>(.*?)</code>`).ReplaceAllStringFunc(content, func(match string) string {
 		re := regexp.MustCompile(`(?s)<code\s+([a-zA-Z0-9_-]+)>(.*?)</code>`)
 		matches := re.FindStringSubmatch(match)
@@ -109,9 +110,10 @@ func (h *DokuwikiHandler) processDokuWikiCodeBlocks(content string) string {
 		}
 		language := strings.TrimSpace(matches[1])
 		code := strings.TrimSpace(matches[2])
-		return fmt.Sprintf(`<pre><code class="language-%s">%s</code></pre>`, language, h.escapeHTML(code))
+		return HighlightCodeBlock(code, language)
 	})
 
+	// <code>...</code> (no language)
 	content = regexp.MustCompile(`(?s)<code>(.*?)</code>`).ReplaceAllStringFunc(content, func(match string) string {
 		re := regexp.MustCompile(`(?s)<code>(.*?)</code>`)
 		matches := re.FindStringSubmatch(match)
@@ -119,9 +121,10 @@ func (h *DokuwikiHandler) processDokuWikiCodeBlocks(content string) string {
 			return match
 		}
 		code := strings.TrimSpace(matches[1])
-		return fmt.Sprintf(`<pre><code class="language-plaintext">%s</code></pre>`, h.escapeHTML(code))
+		return HighlightCodeBlock(code, "text")
 	})
 
+	// <sxh language>...</sxh>
 	content = regexp.MustCompile(`(?s)<sxh\s+([a-zA-Z0-9_-]+)>(.*?)</sxh>`).ReplaceAllStringFunc(content, func(match string) string {
 		re := regexp.MustCompile(`(?s)<sxh\s+([a-zA-Z0-9_-]+)>(.*?)</sxh>`)
 		matches := re.FindStringSubmatch(match)
@@ -130,9 +133,10 @@ func (h *DokuwikiHandler) processDokuWikiCodeBlocks(content string) string {
 		}
 		language := strings.TrimSpace(matches[1])
 		code := strings.TrimSpace(matches[2])
-		return fmt.Sprintf(`<pre><code class="language-%s">%s</code></pre>`, language, h.escapeHTML(code))
+		return HighlightCodeBlock(code, language)
 	})
 
+	// <codify language>...</codify>
 	content = regexp.MustCompile(`(?s)<codify\s+([a-zA-Z0-9_-]+)>(.*?)</codify>`).ReplaceAllStringFunc(content, func(match string) string {
 		re := regexp.MustCompile(`(?s)<codify\s+([a-zA-Z0-9_-]+)>(.*?)</codify>`)
 		matches := re.FindStringSubmatch(match)
@@ -141,20 +145,10 @@ func (h *DokuwikiHandler) processDokuWikiCodeBlocks(content string) string {
 		}
 		language := strings.TrimSpace(matches[1])
 		code := strings.TrimSpace(matches[2])
-		return fmt.Sprintf(`<pre><code class="language-%s">%s</code></pre>`, language, h.escapeHTML(code))
+		return HighlightCodeBlock(code, language)
 	})
 
 	return content
-}
-
-// escapeHTML escapes HTML special characters in code
-func (h *DokuwikiHandler) escapeHTML(s string) string {
-	s = strings.ReplaceAll(s, "&", "&amp;")
-	s = strings.ReplaceAll(s, "<", "&lt;")
-	s = strings.ReplaceAll(s, ">", "&gt;")
-	s = strings.ReplaceAll(s, "\"", "&quot;")
-	s = strings.ReplaceAll(s, "'", "&#39;")
-	return s
 }
 
 // processDokuWikiFolded converts folded plugin syntax to HTML details/summary

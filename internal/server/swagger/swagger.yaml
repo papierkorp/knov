@@ -257,7 +257,6 @@ paths:
       produces:
       - text/html
       responses: {}
-      summary: Get markdown editor
       tags:
       - components
   /api/components/table:

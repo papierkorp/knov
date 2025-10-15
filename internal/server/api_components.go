@@ -141,7 +141,7 @@ func handleAPIGetEditor(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(html))
 }
 
-// @Summary Get markdown editor
+// / @Summary Get markdown editor with form
 // @Tags components
 // @Param filepath query string true "File path"
 // @Produce html
@@ -165,11 +165,17 @@ func handleAPIGetMarkdownEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	html := fmt.Sprintf(`
-		<div>
-			<input type="hidden" id="content-input" name="content"/>
+		<form id="editor-form" hx-post="/api/files/save/%s" hx-target="#editor-status">
 			<textarea id="initial-content" style="display:none;">%s</textarea>
 			<div id="markdown-editor"></div>
-			<script>
+			<div style="margin-top: 12px;">
+				<button type="submit" class="btn-primary">save</button>
+				<a href="/files/%s" class="btn-secondary">cancel</a>
+			</div>
+		</form>
+		<div id="editor-status"></div>
+		<script>
+			(function() {
 				const initialContent = document.getElementById('initial-content').value;
 				const editor = new toastui.Editor({
 					el: document.querySelector('#markdown-editor'),
@@ -181,12 +187,13 @@ func handleAPIGetMarkdownEditor(w http.ResponseWriter, r *http.Request) {
 					theme: '%s'
 				});
 
-				document.getElementById('editor-form').addEventListener('submit', function(e) {
-					document.getElementById('content-input').value = editor.getMarkdown();
+				const form = document.getElementById('editor-form');
+				form.addEventListener('htmx:configRequest', function(evt) {
+					evt.detail.parameters['content'] = editor.getMarkdown();
 				});
-			</script>
-		</div>
-	`, content, theme)
+			})();
+		</script>
+	`, filepath, content, filepath, theme)
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
