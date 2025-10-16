@@ -39,55 +39,240 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
-	"Custom CSS":       17,
-	"Dark Mode":        0,
-	"Data Path:":       1,
-	"Documentation":    2,
-	"English":          3,
-	"General Settings": 4,
-	"German":           5,
-	"Git Settings":     6,
-	"Hello World from templ at home in the dark!": 7,
-	"Help":                            8,
-	"Home":                            9,
-	"Playground":                      10,
-	"Repository URL:":                 18,
-	"Saves when you click outside...": 11,
-	"Search":                          12,
-	"Select Language:":                13,
-	"Select Theme:":                   14,
-	"Settings":                        15,
-	"Theme Settings":                  16,
+	"AND":                18,
+	"Add Criteria":       13,
+	"Add Filter":         14,
+	"Add Widget":         15,
+	"Admin":              16,
+	"All Files":          17,
+	"Apply Filter":       19,
+	"Are you sure?":      20,
+	"Boards":             21,
+	"Browse":             22,
+	"Browse by Metadata": 23,
+	"Cancel":             24,
+	"Cards":              25,
+	"Choose type...":     26,
+	"Collection":         27,
+	"Collections":        28,
+	"Configuration":      29,
+	"Configuration will be generated based on your selections above": 30,
+	"Contains":             31,
+	"Content":              32,
+	"Create Dashboard":     33,
+	"Create New Dashboard": 35,
+	"Created Date":         34,
+	"Custom CSS":           36,
+	"Dark Mode":            0,
+	"Dashboard Name":       37,
+	"Dashboard Settings":   38,
+	"Data Path:":           1,
+	"Delete":               39,
+	"Design your custom dashboard with widgets": 40,
+	"Display":             41,
+	"Display & Limits":    42,
+	"Dropdown":            43,
+	"Edit":                44,
+	"Edit Dashboard":      45,
+	"Enter a search term": 46,
+	"Enter the path to the markdown file you want to display": 47,
+	"Enter your content here...":                              48,
+	"Equals":                                                  49,
+	"Exclude":                                                 50,
+	"File Content":                                            51,
+	"File Content Configuration":                              52,
+	"File Path":                                               53,
+	"Files with":                                              54,
+	"Filter":                                                  55,
+	"Filter Configuration":                                    56,
+	"Filter Criteria":                                         57,
+	"Filter Form":                                             59,
+	"Filtered results will appear here":                       58,
+	"Folders":                                                 60,
+	"Format":                                                  61,
+	"Four Columns":                                            62,
+	"General Settings":                                        2,
+	"Git Settings":                                            3,
+	"Global Dashboard":                                        63,
+	"Greater Than":                                            64,
+	"Hello World from templ at History in the dark!": 65,
+	"Hello World from templ at home in the dark!":    4,
+	"Help":                    5,
+	"History":                 66,
+	"Home":                    6,
+	"In Array":                67,
+	"Include":                 68,
+	"Last Edited":             69,
+	"Latest Changes":          70,
+	"Layout":                  71,
+	"Less Than":               72,
+	"Limit":                   73,
+	"List":                    74,
+	"Loading files...":        75,
+	"Loading results for":     76,
+	"Logic":                   78,
+	"Metadata":                79,
+	"Metadata Filter":         80,
+	"My Awesome Dashboard":    81,
+	"New Dashboard":           82,
+	"No configuration needed": 83,
+	"No widgets configured":   84,
+	"OR":                      86,
+	"OVERVIEW":                88,
+	"One Column":              85,
+	"Overview":                87,
+	"Paths":                   89,
+	"Plain Text":              90,
+	"Playground":              7,
+	"Priority":                91,
+	"Rebuild Metadata":        92,
+	"Recent File History":     93,
+	"Rename":                  94,
+	"Repository URL:":         95,
+	"Restart Application":     96,
+	"Save Changes":            98,
+	"Search":                  8,
+	"Search Results":          101,
+	"Search files...":         100,
+	"Search..":                99,
+	"Select Language:":        9,
+	"Select Theme:":           10,
+	"Select a widget type to see configuration options": 102,
+	"Select field...": 103,
+	"Select widget type for configuration template": 104,
+	"Settings":                            11,
+	"Static Content":                      105,
+	"Static Content Configuration":        106,
+	"Status":                              107,
+	"System":                              108,
+	"Tags":                                109,
+	"Theme Settings":                      12,
+	"Three Columns":                       110,
+	"Two Columns":                         111,
+	"Type":                                112,
+	"Update your dashboard configuration": 113,
+	"Value":                               114,
+	"Visible to all users":                115,
+	"Widget":                              116,
+	"Widgets":                             117,
+	"X Position":                          118,
+	"Y Position":                          119,
+	"loading widget...":                   77,
+	"restart required for changes to take effect": 97,
 }
 
-var deIndex = []uint32{ // 20 elements
-	0x00000000, 0x0000000e, 0x00000019, 0x00000027,
-	0x00000030, 0x00000049, 0x00000051, 0x00000063,
-	0x0000006e, 0x00000074, 0x0000007a, 0x00000085,
-	0x000000bd, 0x000000c3, 0x000000d6, 0x000000e8,
-	0x000000f6, 0x0000010a, 0x0000010a, 0x0000010a,
-} // Size: 104 bytes
+var deIndex = []uint32{ // 121 elements
+	// Entry 0 - 1F
+	0x00000000, 0x0000000e, 0x00000019, 0x00000032,
+	0x00000044, 0x0000004f, 0x00000055, 0x0000005b,
+	0x00000066, 0x0000006c, 0x0000007f, 0x00000091,
+	0x0000009f, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	// Entry 20 - 3F
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	// Entry 40 - 5F
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	// Entry 60 - 7F
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3, 0x000000b3, 0x000000b3, 0x000000b3,
+	0x000000b3,
+} // Size: 508 bytes
 
-const deData string = "" + // Size: 266 bytes
-	"\x02Dunkler Modus\x02Dateipfad:\x02Dokumentation\x02Englisch\x02Allgemei" +
-	"ne Einstellungen\x02Deutsch\x02Git Einstellungen\x02Hallo Welt\x02Hilfe" +
-	"\x02Start\x02Spielwiese\x02Speichert automatisch sobald das Feld verlass" +
-	"en wird...\x02Suche\x02Spache auswählen:\x02Theme auswählen:\x02Einstell" +
-	"ungen\x02Theme Einstellungen"
+const deData string = "" + // Size: 179 bytes
+	"\x02Dunkler Modus\x02Dateipfad:\x02Allgemeine Einstellungen\x02Git Einst" +
+	"ellungen\x02Hallo Welt\x02Hilfe\x02Start\x02Spielwiese\x02Suche\x02Spach" +
+	"e auswählen:\x02Theme auswählen:\x02Einstellungen\x02Theme Einstellungen"
 
-var enIndex = []uint32{ // 20 elements
-	0x00000000, 0x0000000a, 0x00000015, 0x00000023,
-	0x0000002b, 0x0000003c, 0x00000043, 0x00000050,
-	0x0000007c, 0x00000081, 0x00000086, 0x00000091,
-	0x000000b1, 0x000000b8, 0x000000c9, 0x000000d7,
-	0x000000e0, 0x000000ef, 0x000000fa, 0x0000010a,
-} // Size: 104 bytes
+var enIndex = []uint32{ // 121 elements
+	// Entry 0 - 1F
+	0x00000000, 0x0000000a, 0x00000015, 0x00000026,
+	0x00000033, 0x0000005f, 0x00000064, 0x00000069,
+	0x00000074, 0x0000007b, 0x0000008c, 0x0000009a,
+	0x000000a3, 0x000000b2, 0x000000bf, 0x000000ca,
+	0x000000d5, 0x000000db, 0x000000e5, 0x000000e9,
+	0x000000f6, 0x00000104, 0x0000010b, 0x00000112,
+	0x00000125, 0x0000012c, 0x00000132, 0x00000141,
+	0x0000014c, 0x00000158, 0x00000166, 0x000001a5,
+	// Entry 20 - 3F
+	0x000001ae, 0x000001b6, 0x000001c7, 0x000001d4,
+	0x000001e9, 0x000001f4, 0x00000203, 0x00000216,
+	0x0000021d, 0x00000247, 0x0000024f, 0x00000260,
+	0x00000269, 0x0000026e, 0x0000027d, 0x00000291,
+	0x000002c9, 0x000002e4, 0x000002eb, 0x000002f3,
+	0x00000300, 0x0000031b, 0x00000325, 0x00000330,
+	0x00000337, 0x0000034c, 0x0000035c, 0x0000037e,
+	0x0000038a, 0x00000392, 0x00000399, 0x000003a6,
+	// Entry 40 - 5F
+	0x000003b7, 0x000003c4, 0x000003f3, 0x000003fb,
+	0x00000404, 0x0000040c, 0x00000418, 0x00000427,
+	0x0000042e, 0x00000438, 0x0000043e, 0x00000443,
+	0x00000454, 0x00000468, 0x0000047a, 0x00000480,
+	0x00000489, 0x00000499, 0x000004ae, 0x000004bc,
+	0x000004d4, 0x000004ea, 0x000004f5, 0x000004f8,
+	0x00000501, 0x0000050a, 0x00000510, 0x0000051b,
+	0x00000524, 0x00000535, 0x00000549, 0x00000550,
+	// Entry 60 - 7F
+	0x00000560, 0x00000574, 0x000005a0, 0x000005ad,
+	0x000005b6, 0x000005c6, 0x000005d5, 0x00000607,
+	0x00000617, 0x00000645, 0x00000654, 0x00000671,
+	0x00000678, 0x0000067f, 0x00000684, 0x00000692,
+	0x0000069e, 0x000006a3, 0x000006c7, 0x000006cd,
+	0x000006e2, 0x000006e9, 0x000006f1, 0x000006fc,
+	0x00000707,
+} // Size: 508 bytes
 
-const enData string = "" + // Size: 266 bytes
-	"\x02Dark Mode\x02Data Path:\x02Documentation\x02English\x02General Setti" +
-	"ngs\x02German\x02Git Settings\x02Hello World from templ at home in the d" +
-	"ark!\x02Help\x02Home\x02Playground\x02Saves when you click outside..." +
-	"\x02Search\x02Select Language:\x02Select Theme:\x02Settings\x02Theme Set" +
-	"tings\x02Custom CSS\x02Repository URL:"
+const enData string = "" + // Size: 1799 bytes
+	"\x02Dark Mode\x02Data Path:\x02General Settings\x02Git Settings\x02Hello" +
+	" World from templ at home in the dark!\x02Help\x02Home\x02Playground\x02" +
+	"Search\x02Select Language:\x02Select Theme:\x02Settings\x02Theme Setting" +
+	"s\x02Add Criteria\x02Add Filter\x02Add Widget\x02Admin\x02All Files\x02A" +
+	"ND\x02Apply Filter\x02Are you sure?\x02Boards\x02Browse\x02Browse by Met" +
+	"adata\x02Cancel\x02Cards\x02Choose type...\x02Collection\x02Collections" +
+	"\x02Configuration\x02Configuration will be generated based on your selec" +
+	"tions above\x02Contains\x02Content\x02Create Dashboard\x02Created Date" +
+	"\x02Create New Dashboard\x02Custom CSS\x02Dashboard Name\x02Dashboard Se" +
+	"ttings\x02Delete\x02Design your custom dashboard with widgets\x02Display" +
+	"\x02Display & Limits\x02Dropdown\x02Edit\x02Edit Dashboard\x02Enter a se" +
+	"arch term\x02Enter the path to the markdown file you want to display\x02" +
+	"Enter your content here...\x02Equals\x02Exclude\x02File Content\x02File " +
+	"Content Configuration\x02File Path\x02Files with\x02Filter\x02Filter Con" +
+	"figuration\x02Filter Criteria\x02Filtered results will appear here\x02Fi" +
+	"lter Form\x02Folders\x02Format\x02Four Columns\x02Global Dashboard\x02Gr" +
+	"eater Than\x02Hello World from templ at History in the dark!\x02History" +
+	"\x02In Array\x02Include\x02Last Edited\x02Latest Changes\x02Layout\x02Le" +
+	"ss Than\x02Limit\x02List\x02Loading files...\x02Loading results for\x02l" +
+	"oading widget...\x02Logic\x02Metadata\x02Metadata Filter\x02My Awesome D" +
+	"ashboard\x02New Dashboard\x02No configuration needed\x02No widgets confi" +
+	"gured\x02One Column\x02OR\x02Overview\x02OVERVIEW\x02Paths\x02Plain Text" +
+	"\x02Priority\x02Rebuild Metadata\x02Recent File History\x02Rename\x02Rep" +
+	"ository URL:\x02Restart Application\x02restart required for changes to t" +
+	"ake effect\x02Save Changes\x02Search..\x02Search files...\x02Search Resu" +
+	"lts\x02Select a widget type to see configuration options\x02Select field" +
+	"...\x02Select widget type for configuration template\x02Static Content" +
+	"\x02Static Content Configuration\x02Status\x02System\x02Tags\x02Three Co" +
+	"lumns\x02Two Columns\x02Type\x02Update your dashboard configuration\x02V" +
+	"alue\x02Visible to all users\x02Widget\x02Widgets\x02X Position\x02Y Pos" +
+	"ition"
 
-	// Total table size 740 bytes (0KiB); checksum: 5B46D911
+	// Total table size 2994 bytes (2KiB); checksum: 4523B22A

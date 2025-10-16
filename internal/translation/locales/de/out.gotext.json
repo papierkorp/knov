@@ -2,6 +2,121 @@
     "language": "de",
     "messages": [
         {
+            "id": "Add Criteria",
+            "message": "Add Criteria",
+            "translation": ""
+        },
+        {
+            "id": "Add Filter",
+            "message": "Add Filter",
+            "translation": ""
+        },
+        {
+            "id": "Add Widget",
+            "message": "Add Widget",
+            "translation": ""
+        },
+        {
+            "id": "Admin",
+            "message": "Admin",
+            "translation": ""
+        },
+        {
+            "id": "All Files",
+            "message": "All Files",
+            "translation": ""
+        },
+        {
+            "id": "AND",
+            "message": "AND",
+            "translation": ""
+        },
+        {
+            "id": "Apply Filter",
+            "message": "Apply Filter",
+            "translation": ""
+        },
+        {
+            "id": "Are you sure?",
+            "message": "Are you sure?",
+            "translation": ""
+        },
+        {
+            "id": "Boards",
+            "message": "Boards",
+            "translation": ""
+        },
+        {
+            "id": "Browse",
+            "message": "Browse",
+            "translation": ""
+        },
+        {
+            "id": "Browse by Metadata",
+            "message": "Browse by Metadata",
+            "translation": ""
+        },
+        {
+            "id": "Cancel",
+            "message": "Cancel",
+            "translation": ""
+        },
+        {
+            "id": "Cards",
+            "message": "Cards",
+            "translation": ""
+        },
+        {
+            "id": "Choose type...",
+            "message": "Choose type...",
+            "translation": ""
+        },
+        {
+            "id": "Collection",
+            "message": "Collection",
+            "translation": ""
+        },
+        {
+            "id": "Collections",
+            "message": "Collections",
+            "translation": ""
+        },
+        {
+            "id": "Configuration",
+            "message": "Configuration",
+            "translation": ""
+        },
+        {
+            "id": "Configuration will be generated based on your selections above",
+            "message": "Configuration will be generated based on your selections above",
+            "translation": ""
+        },
+        {
+            "id": "Contains",
+            "message": "Contains",
+            "translation": ""
+        },
+        {
+            "id": "Content",
+            "message": "Content",
+            "translation": ""
+        },
+        {
+            "id": "Create Dashboard",
+            "message": "Create Dashboard",
+            "translation": ""
+        },
+        {
+            "id": "Created Date",
+            "message": "Created Date",
+            "translation": ""
+        },
+        {
+            "id": "Create New Dashboard",
+            "message": "Create New Dashboard",
+            "translation": ""
+        },
+        {
             "id": "Custom CSS",
             "message": "Custom CSS",
             "translation": ""
@@ -12,19 +127,139 @@
             "translation": "Dunkler Modus"
         },
         {
+            "id": "Dashboard Name",
+            "message": "Dashboard Name",
+            "translation": ""
+        },
+        {
+            "id": "Dashboard Settings",
+            "message": "Dashboard Settings",
+            "translation": ""
+        },
+        {
             "id": "Data Path:",
             "message": "Data Path:",
             "translation": "Dateipfad:"
         },
         {
-            "id": "Documentation",
-            "message": "Documentation",
-            "translation": "Dokumentation"
+            "id": "Delete",
+            "message": "Delete",
+            "translation": ""
         },
         {
-            "id": "English",
-            "message": "English",
-            "translation": "Englisch"
+            "id": "Design your custom dashboard with widgets",
+            "message": "Design your custom dashboard with widgets",
+            "translation": ""
+        },
+        {
+            "id": "Display",
+            "message": "Display",
+            "translation": ""
+        },
+        {
+            "id": "Display \u0026 Limits",
+            "message": "Display \u0026 Limits",
+            "translation": ""
+        },
+        {
+            "id": "Dropdown",
+            "message": "Dropdown",
+            "translation": ""
+        },
+        {
+            "id": "Edit",
+            "message": "Edit",
+            "translation": ""
+        },
+        {
+            "id": "Edit Dashboard",
+            "message": "Edit Dashboard",
+            "translation": ""
+        },
+        {
+            "id": "Enter a search term",
+            "message": "Enter a search term",
+            "translation": ""
+        },
+        {
+            "id": "Enter the path to the markdown file you want to display",
+            "message": "Enter the path to the markdown file you want to display",
+            "translation": ""
+        },
+        {
+            "id": "Enter your content here...",
+            "message": "Enter your content here...",
+            "translation": ""
+        },
+        {
+            "id": "Equals",
+            "message": "Equals",
+            "translation": ""
+        },
+        {
+            "id": "Exclude",
+            "message": "Exclude",
+            "translation": ""
+        },
+        {
+            "id": "File Content",
+            "message": "File Content",
+            "translation": ""
+        },
+        {
+            "id": "File Content Configuration",
+            "message": "File Content Configuration",
+            "translation": ""
+        },
+        {
+            "id": "File Path",
+            "message": "File Path",
+            "translation": ""
+        },
+        {
+            "id": "Files with",
+            "message": "Files with",
+            "translation": ""
+        },
+        {
+            "id": "Filter",
+            "message": "Filter",
+            "translation": ""
+        },
+        {
+            "id": "Filter Configuration",
+            "message": "Filter Configuration",
+            "translation": ""
+        },
+        {
+            "id": "Filter Criteria",
+            "message": "Filter Criteria",
+            "translation": ""
+        },
+        {
+            "id": "Filtered results will appear here",
+            "message": "Filtered results will appear here",
+            "translation": ""
+        },
+        {
+            "id": "Filter Form",
+            "message": "Filter Form",
+            "translation": ""
+        },
+        {
+            "id": "Folders",
+            "message": "Folders",
+            "translation": ""
+        },
+        {
+            "id": "Format",
+            "message": "Format",
+            "translation": ""
+        },
+        {
+            "id": "Four Columns",
+            "message": "Four Columns",
+            "translation": ""
         },
         {
             "id": "General Settings",
@@ -32,14 +267,24 @@
             "translation": "Allgemeine Einstellungen"
         },
         {
-            "id": "German",
-            "message": "German",
-            "translation": "Deutsch"
-        },
-        {
             "id": "Git Settings",
             "message": "Git Settings",
             "translation": "Git Einstellungen"
+        },
+        {
+            "id": "Global Dashboard",
+            "message": "Global Dashboard",
+            "translation": ""
+        },
+        {
+            "id": "Greater Than",
+            "message": "Greater Than",
+            "translation": ""
+        },
+        {
+            "id": "Hello World from templ at History in the dark!",
+            "message": "Hello World from templ at History in the dark!",
+            "translation": ""
         },
         {
             "id": "Hello World from templ at home in the dark!",
@@ -52,9 +297,134 @@
             "translation": "Hilfe"
         },
         {
+            "id": "History",
+            "message": "History",
+            "translation": ""
+        },
+        {
             "id": "Home",
             "message": "Home",
             "translation": "Start"
+        },
+        {
+            "id": "In Array",
+            "message": "In Array",
+            "translation": ""
+        },
+        {
+            "id": "Include",
+            "message": "Include",
+            "translation": ""
+        },
+        {
+            "id": "Last Edited",
+            "message": "Last Edited",
+            "translation": ""
+        },
+        {
+            "id": "Latest Changes",
+            "message": "Latest Changes",
+            "translation": ""
+        },
+        {
+            "id": "Layout",
+            "message": "Layout",
+            "translation": ""
+        },
+        {
+            "id": "Less Than",
+            "message": "Less Than",
+            "translation": ""
+        },
+        {
+            "id": "Limit",
+            "message": "Limit",
+            "translation": ""
+        },
+        {
+            "id": "List",
+            "message": "List",
+            "translation": ""
+        },
+        {
+            "id": "Loading files...",
+            "message": "Loading files...",
+            "translation": ""
+        },
+        {
+            "id": "Loading results for",
+            "message": "Loading results for",
+            "translation": ""
+        },
+        {
+            "id": "loading widget...",
+            "message": "loading widget...",
+            "translation": ""
+        },
+        {
+            "id": "Logic",
+            "message": "Logic",
+            "translation": ""
+        },
+        {
+            "id": "Metadata",
+            "message": "Metadata",
+            "translation": ""
+        },
+        {
+            "id": "Metadata Filter",
+            "message": "Metadata Filter",
+            "translation": ""
+        },
+        {
+            "id": "My Awesome Dashboard",
+            "message": "My Awesome Dashboard",
+            "translation": ""
+        },
+        {
+            "id": "New Dashboard",
+            "message": "New Dashboard",
+            "translation": ""
+        },
+        {
+            "id": "No configuration needed",
+            "message": "No configuration needed",
+            "translation": ""
+        },
+        {
+            "id": "No widgets configured",
+            "message": "No widgets configured",
+            "translation": ""
+        },
+        {
+            "id": "One Column",
+            "message": "One Column",
+            "translation": ""
+        },
+        {
+            "id": "OR",
+            "message": "OR",
+            "translation": ""
+        },
+        {
+            "id": "Overview",
+            "message": "Overview",
+            "translation": ""
+        },
+        {
+            "id": "OVERVIEW",
+            "message": "OVERVIEW",
+            "translation": ""
+        },
+        {
+            "id": "Paths",
+            "message": "Paths",
+            "translation": ""
+        },
+        {
+            "id": "Plain Text",
+            "message": "Plain Text",
+            "translation": ""
         },
         {
             "id": "Playground",
@@ -62,19 +432,74 @@
             "translation": "Spielwiese"
         },
         {
+            "id": "Priority",
+            "message": "Priority",
+            "translation": ""
+        },
+        {
+            "id": "Rebuild Metadata",
+            "message": "Rebuild Metadata",
+            "translation": ""
+        },
+        {
+            "id": "Recent File History",
+            "message": "Recent File History",
+            "translation": ""
+        },
+        {
+            "id": "Rename",
+            "message": "Rename",
+            "translation": ""
+        },
+        {
             "id": "Repository URL:",
             "message": "Repository URL:",
             "translation": ""
         },
         {
-            "id": "Saves when you click outside...",
-            "message": "Saves when you click outside...",
-            "translation": "Speichert automatisch sobald das Feld verlassen wird..."
+            "id": "Restart Application",
+            "message": "Restart Application",
+            "translation": ""
+        },
+        {
+            "id": "restart required for changes to take effect",
+            "message": "restart required for changes to take effect",
+            "translation": ""
+        },
+        {
+            "id": "Save Changes",
+            "message": "Save Changes",
+            "translation": ""
         },
         {
             "id": "Search",
             "message": "Search",
             "translation": "Suche"
+        },
+        {
+            "id": "Search..",
+            "message": "Search..",
+            "translation": ""
+        },
+        {
+            "id": "Search files...",
+            "message": "Search files...",
+            "translation": ""
+        },
+        {
+            "id": "Search Results",
+            "message": "Search Results",
+            "translation": ""
+        },
+        {
+            "id": "Select a widget type to see configuration options",
+            "message": "Select a widget type to see configuration options",
+            "translation": ""
+        },
+        {
+            "id": "Select field...",
+            "message": "Select field...",
+            "translation": ""
         },
         {
             "id": "Select Language:",
@@ -87,14 +512,94 @@
             "translation": "Theme auswählen:"
         },
         {
+            "id": "Select widget type for configuration template",
+            "message": "Select widget type for configuration template",
+            "translation": ""
+        },
+        {
             "id": "Settings",
             "message": "Settings",
             "translation": "Einstellungen"
         },
         {
+            "id": "Static Content",
+            "message": "Static Content",
+            "translation": ""
+        },
+        {
+            "id": "Static Content Configuration",
+            "message": "Static Content Configuration",
+            "translation": ""
+        },
+        {
+            "id": "Status",
+            "message": "Status",
+            "translation": ""
+        },
+        {
+            "id": "System",
+            "message": "System",
+            "translation": ""
+        },
+        {
+            "id": "Tags",
+            "message": "Tags",
+            "translation": ""
+        },
+        {
             "id": "Theme Settings",
             "message": "Theme Settings",
             "translation": "Theme Einstellungen"
+        },
+        {
+            "id": "Three Columns",
+            "message": "Three Columns",
+            "translation": ""
+        },
+        {
+            "id": "Two Columns",
+            "message": "Two Columns",
+            "translation": ""
+        },
+        {
+            "id": "Type",
+            "message": "Type",
+            "translation": ""
+        },
+        {
+            "id": "Update your dashboard configuration",
+            "message": "Update your dashboard configuration",
+            "translation": ""
+        },
+        {
+            "id": "Value",
+            "message": "Value",
+            "translation": ""
+        },
+        {
+            "id": "Visible to all users",
+            "message": "Visible to all users",
+            "translation": ""
+        },
+        {
+            "id": "Widget",
+            "message": "Widget",
+            "translation": ""
+        },
+        {
+            "id": "Widgets",
+            "message": "Widgets",
+            "translation": ""
+        },
+        {
+            "id": "X Position",
+            "message": "X Position",
+            "translation": ""
+        },
+        {
+            "id": "Y Position",
+            "message": "Y Position",
+            "translation": ""
         }
     ]
 }

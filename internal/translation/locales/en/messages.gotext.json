@@ -133,6 +133,741 @@
       "translation": "Theme Settings",
       "translatorComment": "Copied from source.",
       "fuzzy": true
+    },
+    {
+      "id": "Add Criteria",
+      "message": "Add Criteria",
+      "translation": "Add Criteria",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Add Filter",
+      "message": "Add Filter",
+      "translation": "Add Filter",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Add Widget",
+      "message": "Add Widget",
+      "translation": "Add Widget",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Admin",
+      "message": "Admin",
+      "translation": "Admin",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "All Files",
+      "message": "All Files",
+      "translation": "All Files",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "AND",
+      "message": "AND",
+      "translation": "AND",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Apply Filter",
+      "message": "Apply Filter",
+      "translation": "Apply Filter",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Are you sure?",
+      "message": "Are you sure?",
+      "translation": "Are you sure?",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Boards",
+      "message": "Boards",
+      "translation": "Boards",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Browse",
+      "message": "Browse",
+      "translation": "Browse",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Browse by Metadata",
+      "message": "Browse by Metadata",
+      "translation": "Browse by Metadata",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Cancel",
+      "message": "Cancel",
+      "translation": "Cancel",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Cards",
+      "message": "Cards",
+      "translation": "Cards",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Choose type...",
+      "message": "Choose type...",
+      "translation": "Choose type...",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Collection",
+      "message": "Collection",
+      "translation": "Collection",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Collections",
+      "message": "Collections",
+      "translation": "Collections",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Configuration",
+      "message": "Configuration",
+      "translation": "Configuration",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Configuration will be generated based on your selections above",
+      "message": "Configuration will be generated based on your selections above",
+      "translation": "Configuration will be generated based on your selections above",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Contains",
+      "message": "Contains",
+      "translation": "Contains",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Content",
+      "message": "Content",
+      "translation": "Content",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Create Dashboard",
+      "message": "Create Dashboard",
+      "translation": "Create Dashboard",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Created Date",
+      "message": "Created Date",
+      "translation": "Created Date",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Create New Dashboard",
+      "message": "Create New Dashboard",
+      "translation": "Create New Dashboard",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Dashboard Name",
+      "message": "Dashboard Name",
+      "translation": "Dashboard Name",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Dashboard Settings",
+      "message": "Dashboard Settings",
+      "translation": "Dashboard Settings",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Delete",
+      "message": "Delete",
+      "translation": "Delete",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Design your custom dashboard with widgets",
+      "message": "Design your custom dashboard with widgets",
+      "translation": "Design your custom dashboard with widgets",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Display",
+      "message": "Display",
+      "translation": "Display",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Display & Limits",
+      "message": "Display & Limits",
+      "translation": "Display & Limits",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Dropdown",
+      "message": "Dropdown",
+      "translation": "Dropdown",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Edit",
+      "message": "Edit",
+      "translation": "Edit",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Edit Dashboard",
+      "message": "Edit Dashboard",
+      "translation": "Edit Dashboard",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Enter a search term",
+      "message": "Enter a search term",
+      "translation": "Enter a search term",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Enter the path to the markdown file you want to display",
+      "message": "Enter the path to the markdown file you want to display",
+      "translation": "Enter the path to the markdown file you want to display",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Enter your content here...",
+      "message": "Enter your content here...",
+      "translation": "Enter your content here...",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Equals",
+      "message": "Equals",
+      "translation": "Equals",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Exclude",
+      "message": "Exclude",
+      "translation": "Exclude",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "File Content",
+      "message": "File Content",
+      "translation": "File Content",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "File Content Configuration",
+      "message": "File Content Configuration",
+      "translation": "File Content Configuration",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "File Path",
+      "message": "File Path",
+      "translation": "File Path",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Files with",
+      "message": "Files with",
+      "translation": "Files with",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Filter",
+      "message": "Filter",
+      "translation": "Filter",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Filter Configuration",
+      "message": "Filter Configuration",
+      "translation": "Filter Configuration",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Filter Criteria",
+      "message": "Filter Criteria",
+      "translation": "Filter Criteria",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Filtered results will appear here",
+      "message": "Filtered results will appear here",
+      "translation": "Filtered results will appear here",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Filter Form",
+      "message": "Filter Form",
+      "translation": "Filter Form",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Folders",
+      "message": "Folders",
+      "translation": "Folders",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Format",
+      "message": "Format",
+      "translation": "Format",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Four Columns",
+      "message": "Four Columns",
+      "translation": "Four Columns",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Global Dashboard",
+      "message": "Global Dashboard",
+      "translation": "Global Dashboard",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Greater Than",
+      "message": "Greater Than",
+      "translation": "Greater Than",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Hello World from templ at History in the dark!",
+      "message": "Hello World from templ at History in the dark!",
+      "translation": "Hello World from templ at History in the dark!",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "History",
+      "message": "History",
+      "translation": "History",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "In Array",
+      "message": "In Array",
+      "translation": "In Array",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Include",
+      "message": "Include",
+      "translation": "Include",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Last Edited",
+      "message": "Last Edited",
+      "translation": "Last Edited",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Latest Changes",
+      "message": "Latest Changes",
+      "translation": "Latest Changes",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Layout",
+      "message": "Layout",
+      "translation": "Layout",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Less Than",
+      "message": "Less Than",
+      "translation": "Less Than",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Limit",
+      "message": "Limit",
+      "translation": "Limit",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "List",
+      "message": "List",
+      "translation": "List",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Loading files...",
+      "message": "Loading files...",
+      "translation": "Loading files...",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Loading results for",
+      "message": "Loading results for",
+      "translation": "Loading results for",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "loading widget...",
+      "message": "loading widget...",
+      "translation": "loading widget...",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Logic",
+      "message": "Logic",
+      "translation": "Logic",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Metadata",
+      "message": "Metadata",
+      "translation": "Metadata",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Metadata Filter",
+      "message": "Metadata Filter",
+      "translation": "Metadata Filter",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "My Awesome Dashboard",
+      "message": "My Awesome Dashboard",
+      "translation": "My Awesome Dashboard",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "New Dashboard",
+      "message": "New Dashboard",
+      "translation": "New Dashboard",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "No configuration needed",
+      "message": "No configuration needed",
+      "translation": "No configuration needed",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "No widgets configured",
+      "message": "No widgets configured",
+      "translation": "No widgets configured",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "One Column",
+      "message": "One Column",
+      "translation": "One Column",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "OR",
+      "message": "OR",
+      "translation": "OR",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Overview",
+      "message": "Overview",
+      "translation": "Overview",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "OVERVIEW",
+      "message": "OVERVIEW",
+      "translation": "OVERVIEW",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Paths",
+      "message": "Paths",
+      "translation": "Paths",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Plain Text",
+      "message": "Plain Text",
+      "translation": "Plain Text",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Priority",
+      "message": "Priority",
+      "translation": "Priority",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Rebuild Metadata",
+      "message": "Rebuild Metadata",
+      "translation": "Rebuild Metadata",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Recent File History",
+      "message": "Recent File History",
+      "translation": "Recent File History",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Rename",
+      "message": "Rename",
+      "translation": "Rename",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Restart Application",
+      "message": "Restart Application",
+      "translation": "Restart Application",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "restart required for changes to take effect",
+      "message": "restart required for changes to take effect",
+      "translation": "restart required for changes to take effect",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Save Changes",
+      "message": "Save Changes",
+      "translation": "Save Changes",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Search..",
+      "message": "Search..",
+      "translation": "Search..",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Search files...",
+      "message": "Search files...",
+      "translation": "Search files...",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Search Results",
+      "message": "Search Results",
+      "translation": "Search Results",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Select a widget type to see configuration options",
+      "message": "Select a widget type to see configuration options",
+      "translation": "Select a widget type to see configuration options",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Select field...",
+      "message": "Select field...",
+      "translation": "Select field...",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Select widget type for configuration template",
+      "message": "Select widget type for configuration template",
+      "translation": "Select widget type for configuration template",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Static Content",
+      "message": "Static Content",
+      "translation": "Static Content",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Static Content Configuration",
+      "message": "Static Content Configuration",
+      "translation": "Static Content Configuration",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Status",
+      "message": "Status",
+      "translation": "Status",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "System",
+      "message": "System",
+      "translation": "System",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Tags",
+      "message": "Tags",
+      "translation": "Tags",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Three Columns",
+      "message": "Three Columns",
+      "translation": "Three Columns",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Two Columns",
+      "message": "Two Columns",
+      "translation": "Two Columns",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Type",
+      "message": "Type",
+      "translation": "Type",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Update your dashboard configuration",
+      "message": "Update your dashboard configuration",
+      "translation": "Update your dashboard configuration",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Value",
+      "message": "Value",
+      "translation": "Value",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Visible to all users",
+      "message": "Visible to all users",
+      "translation": "Visible to all users",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Widget",
+      "message": "Widget",
+      "translation": "Widget",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Widgets",
+      "message": "Widgets",
+      "translation": "Widgets",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "X Position",
+      "message": "X Position",
+      "translation": "X Position",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
+    },
+    {
+      "id": "Y Position",
+      "message": "Y Position",
+      "translation": "Y Position",
+      "translatorComment": "Copied from source.",
+      "fuzzy": true
     }
   ]
 }
