@@ -259,7 +259,7 @@ func (tm *ThemeManager) GetThemeMetadata(themeName string) *ThemeMetadata {
 
 // CompileThemes searches and compiles all themes in the themes directory
 func (tm *ThemeManager) CompileThemes() error {
-	themesDir := "themes/"
+	themesDir := configmanager.GetThemesPath()
 
 	logging.LogInfo("start compiling themes")
 
@@ -395,7 +395,7 @@ func (tm *ThemeManager) LoadTheme(themeName string) error {
 
 // LoadAllThemes loads all available theme plugins from the themes directory
 func (tm *ThemeManager) LoadAllThemes() error {
-	themesDir := "themes/"
+	themesDir := configmanager.GetThemesPath()
 
 	logging.LogInfo("loading all themes from %s", themesDir)
 

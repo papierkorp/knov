@@ -21,6 +21,8 @@ var appConfig AppConfig
 // AppConfig contains environment-based application configuration
 type AppConfig struct {
 	DataPath            string
+	ThemesPath          string
+	ConfigPath          string
 	ServerPort          string
 	LogLevel            string
 	GitRepoURL          string
@@ -37,6 +39,8 @@ func InitAppConfig() {
 
 	appConfig = AppConfig{
 		DataPath:     getEnv("KNOV_DATA_PATH", "data"),
+		ThemesPath:   getEnv("KNOV_THEMES_PATH", "themes"),
+		ConfigPath:   getEnv("KNOV_CONFIG_PATH", "config"),
 		ServerPort:   getEnv("KNOV_SERVER_PORT", "1324"),
 		LogLevel:     getEnv("KNOV_LOG_LEVEL", "info"),
 		GitRepoURL:   getEnv("KNOV_GIT_REPO_URL", ""),
@@ -196,4 +200,12 @@ func loadEnvFile() {
 	}
 
 	logging.LogInfo(".env file loaded")
+}
+
+func GetThemesPath() string {
+	return appConfig.ThemesPath
+}
+
+func GetConfigPath() string {
+	return appConfig.ConfigPath
 }

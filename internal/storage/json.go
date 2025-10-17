@@ -18,8 +18,8 @@ type JSONStorage struct {
 }
 
 // NewJSONStorage creates a new JSON storage instance
-func NewJSONStorage() (*JSONStorage, error) {
-	basePath := "config/.storage"
+func NewJSONStorage(configPath string) (*JSONStorage, error) {
+	basePath := configPath + "/.storage"
 	if err := os.MkdirAll(basePath, 0755); err != nil {
 		return nil, err
 	}

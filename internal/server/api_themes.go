@@ -109,7 +109,8 @@ func handleAPIUploadTheme(w http.ResponseWriter, r *http.Request) {
 	themeName := strings.TrimSuffix(header.Filename, ".so")
 
 	// create themes directory if it doesn't exist
-	if err := os.MkdirAll("themes", 0755); err != nil {
+	themesPath := configmanager.GetThemesPath()
+	if err := os.MkdirAll(themesPath, 0755); err != nil {
 		http.Error(w, "failed to create themes directory", http.StatusInternalServerError)
 		return
 	}

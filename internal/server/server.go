@@ -275,7 +275,7 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				// fallback: serve from themes folder for plugin themes
-				cssPath := filepath.Join("themes", themeName, "templates", "style.css")
+				cssPath := filepath.Join(configmanager.GetThemesPath(), themeName, "templates", "style.css")
 				if data, err := os.ReadFile(cssPath); err == nil {
 					w.Write(data)
 					return
@@ -341,7 +341,7 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 
 func getPluginCSS(themeName, filename string) string {
 	// load the plugin
-	pluginPath := filepath.Join("themes", themeName+".so")
+	pluginPath := filepath.Join(configmanager.GetThemesPath(), themeName+".so")
 	if _, err := os.Stat(pluginPath); os.IsNotExist(err) {
 		return ""
 	}

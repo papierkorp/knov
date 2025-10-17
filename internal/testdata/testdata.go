@@ -25,9 +25,9 @@ func SetupTestData() error {
 		return err
 	}
 
-	// if err := setupTestMetadata(); err != nil {
-	// 	return err
-	// }
+	if err := setupTestMetadata(); err != nil {
+		return err
+	}
 
 	logging.LogInfo("test data setup completed")
 	return nil
@@ -41,7 +41,8 @@ func CleanTestData() error {
 		return err
 	}
 
-	if err := os.RemoveAll("config/.metadata"); err != nil {
+	configPath := configmanager.GetConfigPath()
+	if err := os.RemoveAll(configPath + "/.metadata"); err != nil {
 		logging.LogError("failed to remove metadata directory: %v", err)
 		return err
 	}

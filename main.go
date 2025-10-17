@@ -31,7 +31,7 @@ func main() {
 
 	configmanager.InitAppConfig()
 	translation.Init()
-	storage.Init(configmanager.GetStorageMethod())
+	storage.Init(configmanager.GetConfigPath(), configmanager.GetStorageMethod())
 	configmanager.InitUserSettings("default")
 	translation.SetLanguage(configmanager.GetLanguage())
 

@@ -1,125 +1,157 @@
 # Developer Guide
 
-## Prerequisites
+## Development Setup
 
+### Prerequisites
+- Go 1.21+
+- Templ CLI: `go install github.com/a-h/templ/cmd/templ@latest`
+- Swag CLI: `go install github.com/swaggo/swag/cmd/swag@latest`
+
+### Development Commands
 ```bash
-go install github.com/a-h/templ/cmd/templ@latest
-go install github.com/swaggo/swag/cmd/swag@latest
-go install golang.org/x/text/cmd/gotext@latest
+# Start development server with hot reload
+make dev
+
+# Generate Swagger docs
+make docs
+
+# Generate translations
+make translate
+
+# Build for production
+make prod
+
+# Clean build artifacts
+make clean
 ```
 
-## Environment Setup
-
-Set these environment variables for development:
-
-````bash
-export KNOV_DATA_PATH="data"
-export KNOV_SERVER_PORT="1324"
-export KNOV_LOG_LEVEL="debug"
-export KNOV_GIT_REPO_URL=""  # Empty for local development
-export KNOV_STORAGE="json"   # Changed from KNOV_METADATA_STORAGE
-export KNOV_CRONJOB_INTERVAL="5m"  # File processing interval
-export KNOV_SEARCH_INDEX_INTERVAL="15m"  # Search index rebuild interval
+## Project Structure
+```
+├── cmd/                    # Application entry point (legacy, moved to root)
+├── internal/
+│   ├── configmanager/     # Configuration and user settings
+│   ├── dashboard/         # Dashboard and widget system
+│   ├── files/            # File handling and metadata
+│   ├── filetype/         # File type processors (Markdown, DokuWiki)
+│   ├── logging/          # Logging utilities
+│   ├── search/           # Search engine implementations
+│   ├── server/           # HTTP server and API routes
+│   ├── storage/          # Data persistence layer
+│   ├── thememanager/     # Theme system and builtin theme
+│   ├── translation/      # Internationalization
+│   └── utils/            # Utility functions
+├── static/               # Static assets (embedded)
+├── themes/               # Plugin themes
+├── main.go              # Application entry point
+└── docs/                # Documentation
 ```
 
-## Development
+## Building Themes
 
+### Builtin Theme
+The builtin theme is embedded directly in the thememanager package:
+- Templates in `internal/thememanager/*.templ`
+- CSS in `internal/thememanager/*.css`
+- Automatically embedded via `//go:embed`
+
+### Plugin Themes
+Plugin themes are Go plugins with embedded assets:
+```go
+// themes/mytheme/main.go
+package main
+
+import (
+    "embed"
+    "knov/internal/thememanager"
+    // ...
+)
+
+//go:embed templates/*.css
+var cssFiles embed.FS
+
+type MyTheme struct{}
+var Theme MyTheme
+
+func GetCSS(filename string) string {
+    cssPath := "templates/" + filename
+    if data, err := cssFiles.ReadFile(cssPath); err == nil {
+        return string(data)
+    }
+    return ""
+}
+
+// Implement ITheme interface methods...
+```
+
+Build theme:
 ```bash
-make dev     # Start development server with test data
-make prod    # Build production binary
-````
+cd themes/mytheme
+go build -buildmode=plugin -o mytheme.so .
+```
 
-Server runs on the port specified by `KNOV_SERVER_PORT` environment variable (default: `http://localhost:1324`)
+## API Development
+
+### Adding New Endpoints
+1. Add handler function to appropriate `internal/server/api_*.go` file
+2. Add route in `internal/server/server.go`
+3. Add Swagger documentation comments
+4. Regenerate docs with `make docs`
+
+### Theme-Friendly APIs
+- Use form data instead of JSON for consistency
+- Add Swagger comments for documentation
+- Keep APIs generic and theme-agnostic
+- Return HTMX-compatible responses
+
+## Translation
+
+Add translatable strings:
+```go
+translation.Sprintf("Your translatable text")
+```
+
+Generate translations:
+```bash
+make translate
+```
+
+Translation files in `internal/translation/locales/{lang}/messages.gotext.json`
+
+## Embedded Assets
+
+### Static Files
+Static files are embedded from the project root:
+```go
+//go:embed static/*
+var staticFS embed.FS
+```
+
+### Theme Assets
+Builtin theme assets are embedded from thememanager:
+```go
+//go:embed internal/thememanager/*
+var themeManagerFS embed.FS
+```
+
+Plugin themes embed their own assets:
+```go
+//go:embed templates/*.css
+var cssFiles embed.FS
+```
 
 ## Configuration System
 
-The application uses a two-tier configuration system:
+Configuration uses a layered approach:
+1. Environment variables (highest priority)
+2. Configuration files
+3. Defaults (lowest priority)
 
-### App Configuration
-
-- Set via environment variables
-- Read-only at runtime
-- Affects core application behavior
-- See `internal/configmanager/config.go`
-
-### User Settings
-
-- Stored via the unified storage system
-- Changeable at runtime via API
-- UI preferences and personalization
-- See `internal/configmanager/settings.go`
-
-## Storage System
-
-The app uses a unified key-based storage system:
-
+Add new config options in `internal/configmanager/config.go`:
 ```go
-// Access storage
-storage := storage.GetStorage()
-
-// Save data
-storage.Set("datatype/identifier", jsonData)
-
-// Load data
-data, err := storage.Get("datatype/identifier")
-
-// List keys
-keys, err := storage.List("datatype/")
-
-// Delete data
-storage.Delete("datatype/identifier")
+func getNewOption() string {
+    if val := os.Getenv("KNOV_NEW_OPTION"); val != "" {
+        return val
+    }
+    return "default_value"
+}
 ```
-
-### Key Patterns
-
-- `metadata/filepath` - File metadata
-- `dashboard/id` - Global dashboards
-- `user/userid/dashboard/id` - User dashboards
-- `user/userid/settings` - User settings
-
-## Config Manager
-
-Access configuration through:
-
-```go
-// App config
-appConfig := configmanager.GetAppConfig()
-dataPath := appConfig.DataPath
-storageMethod := configmanager.GetStorageMethod()  // New function name
-
-// User settings
-userSettings := configmanager.GetUserSettings()
-theme := userSettings.Theme
-
-// Helper functions
-language := configmanager.GetLanguage()
-configmanager.SetLanguage("de")
-```
-
-## Git Integration
-
-- Git operations only work if `KNOV_GIT_REPO_URL` is configured
-- If empty, the system operates in local-only mode
-- Repository is cloned/initialized on startup
-- See `internal/testdata/testdata.go` for git setup examples
-
-## Theme Development
-
-For creating custom themes, see the [Theme Creator Guide](theme-creator-guide.md).
-
-The theme system uses Go plugins for maximum flexibility while maintaining a clean interface.
-
-# Update Dependencies
-
-```bash
-cd static/
-# fontAwesome
-curl -o font-awesome-7.0.1-all.min.css https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css
-# toastUI Editor
-curl -o toastui-editor-3.2.2.min.js https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js
-curl -o toastui-editor-3.2.2.min.css https://uicdn.toast.com/editor/latest/toastui-editor.min.css
-## prism.js (code highlighter)
-curl -o prism-tomorrow-1.29.0.min.css https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css
-```
-
-update in base.templ
