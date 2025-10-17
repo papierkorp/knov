@@ -1,10 +1,9 @@
 // Package templates
-package templates
+package thememanager
 
 import (
 	"fmt"
 	"knov/internal/configmanager"
-	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
 
@@ -22,7 +21,7 @@ templ Base(title string) {
 			<link rel="stylesheet" href="/static/toastui-editor-3.2.2.min.css"/>
 		</head>
 		<body
-			data-theme={ thememanager.GetThemeManager().GetCurrentThemeName() }
+			data-theme={ GetThemeManager().GetCurrentThemeName() }
 			data-dark-mode={ fmt.Sprintf("%t", configmanager.GetDarkMode()) }
 			data-color-scheme={ configmanager.GetColorScheme() }
 			data-language={ configmanager.GetLanguage() }

@@ -17,9 +17,9 @@ import (
 
 // SetupTestData creates test files and git operations
 func SetupTestData() error {
-	if err := copyTestFiles(); err != nil {
-		return err
-	}
+	// if err := copyTestFiles(); err != nil {
+	// 	return err
+	// }
 
 	if err := createGitOperations(); err != nil {
 		return err

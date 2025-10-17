@@ -2,6 +2,7 @@
 package server
 
 import (
+	"embed"
 	"fmt"
 	"net/http"
 	"os"
@@ -20,6 +21,18 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
+
+var staticFiles embed.FS
+var themeManagerFiles embed.FS
+
+func SetStaticFiles(files embed.FS) {
+	staticFiles = files
+}
+
+// SetThemeManagerFiles sets the embedded thememanager files
+func SetThemeManagerFiles(files embed.FS) {
+	themeManagerFiles = files
+}
 
 // StartServerChi ...
 func StartServerChi() {
@@ -246,16 +259,45 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 			return
 		case "style.css":
 			themeName := thememanager.GetThemeManager().GetCurrentThemeName()
-			cssPath := filepath.Join("themes", themeName, "templates", "style.css")
-			http.ServeFile(w, r, cssPath)
+			if themeName == "builtin" {
+				// serve from embedded thememanager files
+				themeManagerPath := filepath.Join("internal", "thememanager", "style.css")
+				if data, err := themeManagerFiles.ReadFile(themeManagerPath); err == nil {
+					w.Write(data)
+					return
+				}
+			} else {
+				// serve from themes folder for plugin themes
+				cssPath := filepath.Join("themes", themeName, "templates", "style.css")
+				if data, err := os.ReadFile(cssPath); err == nil {
+					w.Write(data)
+					return
+				}
+			}
+			http.NotFound(w, r)
 			return
 		default:
 			themeName := thememanager.GetThemeManager().GetCurrentThemeName()
-			cssPath := filepath.Join("themes", themeName, "templates", cssFile)
-			http.ServeFile(w, r, cssPath)
-			return
+			if themeName == "builtin" {
+				// serve from embedded thememanager files
+				themeManagerPath := filepath.Join("internal", "thememanager", cssFile)
+				if data, err := themeManagerFiles.ReadFile(themeManagerPath); err == nil {
+					w.Write(data)
+					return
+				}
+			} else {
+				// serve from themes folder for plugin themes
+				cssPath := filepath.Join("themes", themeName, "templates", cssFile)
+				if data, err := os.ReadFile(cssPath); err == nil {
+					w.Write(data)
+					return
+				}
+			}
 		}
 	}
+
+	// serve from embedded static files
+	fullPath := filepath.Join("static", filePath)
 
 	// set content type before serving
 	ext := strings.ToLower(filepath.Ext(filePath))
@@ -274,11 +316,10 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/x-icon")
 	}
 
-	fullPath := filepath.Join("static", filePath)
-
-	// read and serve file directly to prevent mime type override
-	data, err := os.ReadFile(fullPath)
+	// read from embedded static files
+	data, err := staticFiles.ReadFile(fullPath)
 	if err != nil {
+		fmt.Printf("failed to read embedded file %s: %v\n", fullPath, err)
 		http.NotFound(w, r)
 		return
 	}

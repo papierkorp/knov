@@ -65,7 +65,7 @@ type ITheme interface {
 	Search(viewName string, query string) (templ.Component, error)
 	Overview(viewName string) (templ.Component, error)
 	RenderFileView(viewName string, fileContent *files.FileContent, filePath string) (templ.Component, error)
-	FileEdit(viewName string, content string, filePath string) (templ.Component, error) // ← add this
+	FileEdit(viewName string, content string, filePath string) (templ.Component, error)
 	Dashboard(viewName string, id string, action string, dash *dashboard.Dashboard) (templ.Component, error)
 	BrowseFiles(viewName string, metadataType string, value string, query string) (templ.Component, error)
 }
@@ -114,14 +114,17 @@ type IThemeManager interface {
 func (tm *ThemeManager) Initialize() {
 	logging.LogInfo("initialize thememanager ...")
 
+	// register builtin theme directly
+	tm.registerBuiltinTheme()
+
 	err := tm.CompileThemes()
 	if err != nil {
-		logging.LogError("failed compiling the themes: %s", err)
+		logging.LogWarning("failed compiling the themes: %s", err)
 	}
 
 	err = tm.LoadAllThemes()
 	if err != nil {
-		logging.LogError("failed to load all themes: %v", err)
+		logging.LogWarning("failed to load all themes: %v", err)
 	}
 
 	availableThemes := tm.GetAvailableThemes()
@@ -137,6 +140,17 @@ func (tm *ThemeManager) Initialize() {
 	}
 
 	logging.LogInfo("theme loaded successfully")
+}
+
+// registerBuiltinTheme registers the builtin theme directly without plugin loading
+func (tm *ThemeManager) registerBuiltinTheme() {
+	tm.mutex.Lock()
+	defer tm.mutex.Unlock()
+
+	logging.LogInfo("registering builtin theme")
+	tm.themes["builtin"] = &builtinTheme
+	tm.thememetadata["builtin"] = &builtinMetadata
+	logging.LogInfo("builtin theme registered successfully")
 }
 
 // GetCurrentTheme ..
@@ -254,7 +268,7 @@ func (tm *ThemeManager) CompileThemes() error {
 	}
 
 	for _, entry := range entries {
-		if !entry.IsDir() {
+		if !entry.IsDir() || entry.Name() == "builtin" {
 			continue
 		}
 
@@ -288,6 +302,11 @@ func (tm *ThemeManager) LoadTheme(themeName string) error {
 	logging.LogInfo("start to load theme")
 
 	if _, exists := tm.themes[themeName]; exists {
+		return nil
+	}
+
+	// skip builtin theme since it's already registered
+	if themeName == "builtin" {
 		return nil
 	}
 
@@ -367,7 +386,7 @@ func (tm *ThemeManager) LoadAllThemes() error {
 	var loadErrors []string
 
 	for _, entry := range entries {
-		if !entry.IsDir() {
+		if !entry.IsDir() || entry.Name() == "builtin" {
 			continue
 		}
 

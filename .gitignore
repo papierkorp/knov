@@ -29,6 +29,7 @@ go.work.sum
 # ----------------------------- go templ
 # Output.
 cmd/templ/templ
+templ/templ
 **/*_templ.go
 
 

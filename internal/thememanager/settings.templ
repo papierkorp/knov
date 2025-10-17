@@ -1,4 +1,4 @@
-package templates
+package thememanager
 
 import (
 	"knov/internal/configmanager"
@@ -50,20 +50,21 @@ templ GeneralSection() {
 templ ThemeSection() {
 	<section class="settings-section">
 		<h2>{ translation.Sprintf("Theme Settings") }</h2>
-
 		<div class="setting-item">
 			<form hx-post="/api/themes/setTheme" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
 				<label for="theme">{ translation.Sprintf("Select Theme:") }</label>
-				<select name="theme" id="theme"
-				        hx-get="/api/themes/getAllThemes"
-				        hx-target="this"
-				        hx-swap="innerHTML"
-				        hx-trigger="load">
+				<select
+					name="theme"
+					id="theme"
+					hx-get="/api/themes/getAllThemes"
+					hx-target="this"
+					hx-swap="innerHTML"
+					hx-trigger="load"
+				>
 					<option>Loading themes...</option>
 				</select>
 			</form>
 		</div>
-
 		<div class="setting-item">
 			<label>
 				{ translation.Sprintf("Dark Mode") }
@@ -77,18 +78,19 @@ templ ThemeSection() {
 				/>
 			</label>
 		</div>
-
 		<div class="setting-item">
 			<form hx-post="/api/config/setColorScheme" hx-trigger="change">
 				<label for="colorScheme">Color Scheme:</label>
-				<select name="colorScheme" id="colorScheme"
-				        hx-get="/api/config/getColorSchemes"
-				        hx-trigger="load">
+				<select
+					name="colorScheme"
+					id="colorScheme"
+					hx-get="/api/config/getColorSchemes"
+					hx-trigger="load"
+				>
 					<option>Loading schemes...</option>
 				</select>
 			</form>
 		</div>
-
 		<div class="setting-item">
 			<form hx-post="/api/config/setFileView" hx-trigger="change">
 				<label for="fileView">Select File View:</label>
@@ -97,7 +99,6 @@ templ ThemeSection() {
 				</select>
 			</form>
 		</div>
-
 		@templ.Raw(getBuiltinCSSEditor())
 	</section>
 }
