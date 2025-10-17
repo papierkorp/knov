@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"plugin"
 	"slices"
 	"strings"
 
@@ -99,6 +100,7 @@ func StartServerChi() {
 		r.Route("/themes", func(r chi.Router) {
 			r.Get("/getAllThemes", handleAPIGetThemes)
 			r.Post("/setTheme", handleAPISetTheme)
+			r.Post("/upload", handleAPIUploadTheme)
 
 		})
 		// ----------------------------------------------------------------------------------------
@@ -267,7 +269,12 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 			} else {
-				// serve from themes folder for plugin themes
+				// try to get CSS from plugin theme
+				if css := getPluginCSS(themeName, "style.css"); css != "" {
+					w.Write([]byte(css))
+					return
+				}
+				// fallback: serve from themes folder for plugin themes
 				cssPath := filepath.Join("themes", themeName, "templates", "style.css")
 				if data, err := os.ReadFile(cssPath); err == nil {
 					w.Write(data)
@@ -286,7 +293,12 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 			} else {
-				// serve from themes folder for plugin themes
+				// try to get CSS from plugin theme
+				if css := getPluginCSS(themeName, cssFile); css != "" {
+					w.Write([]byte(css))
+					return
+				}
+				// fallback: serve from themes folder for plugin themes
 				cssPath := filepath.Join("themes", themeName, "templates", cssFile)
 				if data, err := os.ReadFile(cssPath); err == nil {
 					w.Write(data)
@@ -325,6 +337,32 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(data)
+}
+
+func getPluginCSS(themeName, filename string) string {
+	// load the plugin
+	pluginPath := filepath.Join("themes", themeName+".so")
+	if _, err := os.Stat(pluginPath); os.IsNotExist(err) {
+		return ""
+	}
+
+	plugin, err := plugin.Open(pluginPath)
+	if err != nil {
+		return ""
+	}
+
+	// look for GetCSS function
+	getCSSSymbol, err := plugin.Lookup("GetCSS")
+	if err != nil {
+		return ""
+	}
+
+	// call GetCSS function if it exists
+	if getCSSFunc, ok := getCSSSymbol.(func(string) string); ok {
+		return getCSSFunc(filename)
+	}
+
+	return ""
 }
 
 // ----------------------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 package main
 
 import (
+	"embed"
 	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/thememanager"
@@ -9,6 +10,9 @@ import (
 
 	"github.com/a-h/templ"
 )
+
+//go:embed templates/*.css
+var cssFiles embed.FS
 
 // TestTheme ..
 type TestTheme struct{}
@@ -32,6 +36,15 @@ var Metadata = thememanager.ThemeMetadata{
 	AvailableColorSchemes: []thememanager.ColorScheme{
 		{Name: "default", Label: "Default"},
 	},
+}
+
+// GetCSS returns embedded CSS for the theme
+func GetCSS(filename string) string {
+	cssPath := "templates/" + filename
+	if data, err := cssFiles.ReadFile(cssPath); err == nil {
+		return string(data)
+	}
+	return ""
 }
 
 func (t *TestTheme) Home(viewName string) (templ.Component, error) {

@@ -25,9 +25,9 @@ func SetupTestData() error {
 		return err
 	}
 
-	if err := setupTestMetadata(); err != nil {
-		return err
-	}
+	// if err := setupTestMetadata(); err != nil {
+	// 	return err
+	// }
 
 	logging.LogInfo("test data setup completed")
 	return nil

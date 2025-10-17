@@ -5,7 +5,7 @@ APP_NAME := knov
 dev: swaggo-api-init templ-generate
 	KNOV_LOG_LEVEL=debug go run ./
 
-prod: swaggo-api-init templ-generate translation
+prod: clean swaggo-api-init templ-generate translation
 	go build -o bin/$(APP_NAME) ./
 
 # ------------- docker -------------
@@ -20,7 +20,7 @@ docker-run:
 
 # ------------- helper -------------
 clean:
-	rm ./themes/*.so && rm -rf ./bin
+	rm -f ./themes/*.so && rm -rf ./bin
 
 translation:
 	cd internal/translation && go generate
@@ -31,4 +31,4 @@ templ-generate:
 swaggo-api-init:
 	swag init -g main.go -d . -o internal/server/swagger
 
-.PHONY: templ-generate dev swaggo-api-init rmt translation prod docker docker-build docker-run
+.PHONY: templ-generate dev swaggo-api-init rmt translation prod docker docker-build docker-run clean

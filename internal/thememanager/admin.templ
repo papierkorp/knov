@@ -14,6 +14,7 @@ templ Admin() {
 				@GitSection()
 				@MetadataSection()
 				@SystemSection()
+				@ThemeUploadSection()
 			</div>
 		</div>
 	}
@@ -96,6 +97,36 @@ templ PathSection() {
 			</form>
 			<div id="path-status"></div>
 			<p class="admin-note">{ translation.Sprintf("restart required for changes to take effect") }</p>
+		</div>
+	</section>
+}
+
+templ ThemeUploadSection() {
+	<section class="admin-section">
+		<h2>Theme Management</h2>
+		<div class="upload-form">
+			<h3>Upload New Theme</h3>
+			<form
+				hx-post="/api/themes/upload"
+				hx-encoding="multipart/form-data"
+				hx-target="#upload-result"
+				hx-swap="innerHTML"
+			>
+				<input type="file" name="file" accept=".so" required/>
+				<button type="submit">Upload Theme</button>
+			</form>
+			<div id="upload-result"></div>
+		</div>
+		<div class="current-themes">
+			<h3>Available Themes</h3>
+			<div
+				hx-get="/api/themes/getAllThemes"
+				hx-trigger="load"
+				hx-target="this"
+				hx-swap="innerHTML"
+			>
+				Loading themes...
+			</div>
 		</div>
 	</section>
 }

@@ -108,6 +108,7 @@ type IThemeManager interface {
 	LoadAllThemes() error
 	GetAvailableViews(viewType string) []string
 	GetThemeMetadata(themeName string) *ThemeMetadata
+	CompileThemes() error
 }
 
 // Initialize loads all themes from the themes directory
@@ -267,6 +268,12 @@ func (tm *ThemeManager) CompileThemes() error {
 		return fmt.Errorf("failed to read themes directory: %w", err)
 	}
 
+	// get current working directory
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get current directory: %w", err)
+	}
+
 	for _, entry := range entries {
 		if !entry.IsDir() || entry.Name() == "builtin" {
 			continue
@@ -279,13 +286,27 @@ func (tm *ThemeManager) CompileThemes() error {
 			return fmt.Errorf("failed to get absolute path: %w", err)
 		}
 
-		cmd := exec.Command("go", "build", "-buildvcs=false", "-buildmode=plugin", "-o", absOutPath, ".")
-		cmd.Dir = themeDir
-		output, err := cmd.CombinedOutput()
+		// check if go.mod exists in current directory
+		if _, err := os.Stat("go.mod"); err != nil {
+			// no go.mod, build from theme directory (old behavior)
+			cmd := exec.Command("go", "build", "-buildvcs=false", "-buildmode=plugin", "-o", absOutPath, ".")
+			cmd.Dir = themeDir
+			output, err := cmd.CombinedOutput()
 
-		if err != nil {
-			logging.LogError("failed to compile theme %s in %s: %v, %s", themeName, themeDir, err, output)
-			return err
+			if err != nil {
+				logging.LogError("failed to compile theme %s in %s: %v, %s", themeName, themeDir, err, output)
+				return err
+			}
+		} else {
+			// go.mod exists, build from project root
+			cmd := exec.Command("go", "build", "-buildvcs=false", "-buildmode=plugin", "-o", absOutPath, "./themes/"+themeName)
+			cmd.Dir = currentDir
+			output, err := cmd.CombinedOutput()
+
+			if err != nil {
+				logging.LogError("failed to compile theme %s from %s: %v, %s", themeName, currentDir, err, output)
+				return err
+			}
 		}
 
 		logging.LogInfo("compiled theme: %s", absOutPath)

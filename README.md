@@ -1,5 +1,7 @@
 # temp
 
+tar -czf test.tar.gz test/
+
 # todo
 
 - Dashboard
