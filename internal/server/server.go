@@ -37,7 +37,6 @@ func SetThemeManagerFiles(files embed.FS) {
 
 // StartServerChi ...
 func StartServerChi() {
-
 	// ----------------------------------------------------------------------------------------
 	// ----------------------------------- define chi server -----------------------------------
 	// ----------------------------------------------------------------------------------------
@@ -262,19 +261,16 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		case "style.css":
 			themeName := thememanager.GetThemeManager().GetCurrentThemeName()
 			if themeName == "builtin" {
-				// serve from embedded thememanager files
-				themeManagerPath := filepath.Join("internal", "thememanager", "style.css")
+				themeManagerPath := "internal/thememanager/style.css"
 				if data, err := themeManagerFiles.ReadFile(themeManagerPath); err == nil {
 					w.Write(data)
 					return
 				}
 			} else {
-				// try to get CSS from plugin theme
 				if css := getPluginCSS(themeName, "style.css"); css != "" {
 					w.Write([]byte(css))
 					return
 				}
-				// fallback: serve from themes folder for plugin themes
 				cssPath := filepath.Join(configmanager.GetThemesPath(), themeName, "templates", "style.css")
 				if data, err := os.ReadFile(cssPath); err == nil {
 					w.Write(data)
@@ -286,19 +282,16 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		default:
 			themeName := thememanager.GetThemeManager().GetCurrentThemeName()
 			if themeName == "builtin" {
-				// serve from embedded thememanager files
-				themeManagerPath := filepath.Join("internal", "thememanager", cssFile)
+				themeManagerPath := "internal/thememanager/" + cssFile
 				if data, err := themeManagerFiles.ReadFile(themeManagerPath); err == nil {
 					w.Write(data)
 					return
 				}
 			} else {
-				// try to get CSS from plugin theme
 				if css := getPluginCSS(themeName, cssFile); css != "" {
 					w.Write([]byte(css))
 					return
 				}
-				// fallback: serve from themes folder for plugin themes
 				cssPath := filepath.Join("themes", themeName, "templates", cssFile)
 				if data, err := os.ReadFile(cssPath); err == nil {
 					w.Write(data)
@@ -308,8 +301,8 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// serve from embedded static files
-	fullPath := filepath.Join("static", filePath)
+	// serve from embedded static files - use forward slashes for embed.FS
+	fullPath := "static/" + filePath
 
 	// set content type before serving
 	ext := strings.ToLower(filepath.Ext(filePath))
@@ -328,7 +321,6 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/x-icon")
 	}
 
-	// read from embedded static files
 	data, err := staticFiles.ReadFile(fullPath)
 	if err != nil {
 		fmt.Printf("failed to read embedded file %s: %v\n", fullPath, err)

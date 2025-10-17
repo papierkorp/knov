@@ -7,6 +7,7 @@ dev: swaggo-api-init templ-generate
 
 prod: clean swaggo-api-init templ-generate translation
 	go build -o bin/$(APP_NAME) ./
+	GOOS=windows GOARCH=amd64 go build -o bin/$(APP_NAME).exe ./
 
 # ------------- docker -------------
 

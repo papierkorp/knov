@@ -37,10 +37,20 @@ type AppConfig struct {
 func InitAppConfig() {
 	loadEnvFile()
 
+	baseDir := "."
+	exePath, err := os.Executable()
+	if err == nil {
+		execDir := filepath.Dir(exePath)
+		// check if running from go build cache (go run)
+		if !strings.Contains(execDir, "go-build") {
+			baseDir = execDir
+		}
+	}
+
 	appConfig = AppConfig{
-		DataPath:     getEnv("KNOV_DATA_PATH", "data"),
-		ThemesPath:   getEnv("KNOV_THEMES_PATH", "themes"),
-		ConfigPath:   getEnv("KNOV_CONFIG_PATH", "config"),
+		DataPath:     getEnv("KNOV_DATA_PATH", filepath.Join(baseDir, "data")),
+		ThemesPath:   getEnv("KNOV_THEMES_PATH", filepath.Join(baseDir, "themes")),
+		ConfigPath:   getEnv("KNOV_CONFIG_PATH", filepath.Join(baseDir, "config")),
 		ServerPort:   getEnv("KNOV_SERVER_PORT", "1324"),
 		LogLevel:     getEnv("KNOV_LOG_LEVEL", "info"),
 		GitRepoURL:   getEnv("KNOV_GIT_REPO_URL", ""),
