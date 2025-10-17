@@ -3,10 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -59,10 +56,13 @@ func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
 
 	if theme != "" {
 		tm := thememanager.GetThemeManager()
-		err := tm.LoadTheme(theme)
+		err := tm.SetCurrentTheme(theme)
 		if err == nil {
-			tm.SetCurrentTheme(theme)
 			configmanager.SetTheme(theme)
+		} else {
+			logging.LogError("failed to set theme: %v", err)
+			http.Error(w, "failed to set theme", http.StatusBadRequest)
+			return
 		}
 	}
 
@@ -70,12 +70,12 @@ func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// handleAPIUploadTheme uploads a self-contained theme .so file
+// handleAPIUploadTheme uploads a theme .tgz archive
 // @Summary Upload theme
-// @Description Upload a self-contained theme .so file
+// @Description Upload a theme .tgz archive
 // @Tags themes
 // @Accept multipart/form-data
-// @Param file formData file true "Theme .so file"
+// @Param file formData file true "Theme .tgz file"
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]interface{}
 // @Router /api/themes/upload [post]
@@ -86,7 +86,7 @@ func handleAPIUploadTheme(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// parse multipart form
-	err := r.ParseMultipartForm(10 << 20) // 10MB max
+	err := r.ParseMultipartForm(50 << 20) // 50MB max
 	if err != nil {
 		http.Error(w, "failed to parse form", http.StatusBadRequest)
 		return
@@ -100,48 +100,24 @@ func handleAPIUploadTheme(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	// validate file extension
-	if !strings.HasSuffix(header.Filename, ".so") {
-		http.Error(w, "file must be a .so file", http.StatusBadRequest)
+	if !strings.HasSuffix(header.Filename, ".tgz") && !strings.HasSuffix(header.Filename, ".tar.gz") {
+		http.Error(w, "file must be a .tgz or .tar.gz file", http.StatusBadRequest)
 		return
 	}
 
 	// extract theme name from filename
-	themeName := strings.TrimSuffix(header.Filename, ".so")
+	themeName := strings.TrimSuffix(strings.TrimSuffix(header.Filename, ".tgz"), ".tar.gz")
 
-	// create themes directory if it doesn't exist
-	themesPath := configmanager.GetThemesPath()
-	if err := os.MkdirAll(themesPath, 0755); err != nil {
-		http.Error(w, "failed to create themes directory", http.StatusInternalServerError)
-		return
-	}
-
-	// create destination file
-	destPath := filepath.Join("themes", header.Filename)
-	destFile, err := os.Create(destPath)
-	if err != nil {
-		http.Error(w, "failed to create destination file", http.StatusInternalServerError)
-		return
-	}
-	defer destFile.Close()
-
-	// copy uploaded file to destination
-	_, err = io.Copy(destFile, file)
-	if err != nil {
-		http.Error(w, "failed to save file", http.StatusInternalServerError)
-		return
-	}
-
-	// try to load the theme to validate it
+	// load theme from archive
 	tm := thememanager.GetThemeManager()
-	err = tm.LoadTheme(themeName)
+	err = tm.LoadThemeFromArchive(themeName, file)
 	if err != nil {
-		// remove invalid file
-		os.Remove(destPath)
-		http.Error(w, fmt.Sprintf("invalid theme file: %v", err), http.StatusBadRequest)
+		logging.LogError("failed to load theme from archive: %v", err)
+		http.Error(w, fmt.Sprintf("invalid theme archive: %v", err), http.StatusBadRequest)
 		return
 	}
 
-	logging.LogInfo("theme uploaded successfully: %s", themeName)
+	logging.LogInfo("theme uploaded and loaded successfully: %s", themeName)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{

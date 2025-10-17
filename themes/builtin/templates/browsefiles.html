@@ -1,0 +1,33 @@
+{{define "content"}}
+<div id="page-browse-files">
+    <div class="browse-header">
+        <h1>{{T "Files with"}} {{.MetadataType}}: <span class="filter-value">{{.Value}}</span></h1>
+        <div class="browse-breadcrumb">
+            <a href="/">{{T "Home"}}</a>
+            → <a href="/overview">{{T "Browse"}}</a>
+            → <span>{{.MetadataType}}: {{.Value}}</span>
+        </div>
+    </div>
+    <div class="browse-content">
+        {{if or (eq .MetadataType "tags") (eq .MetadataType "folders")}}
+            <div
+                hx-post="/api/files/filter"
+                hx-trigger="load"
+                hx-vals='{"metadata[]": "{{.MetadataType}}", "operator[]": "contains", "value[]": "{{.Value}}", "action[]": "include", "logic": "and"}'
+                class="filter-results"
+            >
+                {{T "Loading files..."}}
+            </div>
+        {{else}}
+            <div
+                hx-post="/api/files/filter"
+                hx-trigger="load"
+                hx-vals='{"metadata[]": "{{.MetadataType}}", "operator[]": "equals", "value[]": "{{.Value}}", "action[]": "include", "logic": "and"}'
+                class="filter-results"
+            >
+                {{T "Loading files..."}}
+            </div>
+        {{end}}
+    </div>
+</div>
+{{end}}

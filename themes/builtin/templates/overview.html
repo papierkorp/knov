@@ -1,0 +1,25 @@
+{{define "content"}}
+<div id="page-overview">
+    <h1>{{T "OVERVIEW"}}</h1>
+    <div class="overview-sections">
+        <section class="overview-files">
+            <h2>{{T "All Files"}}</h2>
+            <div class="files-list-container">
+                <div class="overview-breadcrumb">
+                    <a href="/">{{T "Home"}}</a>
+                    → <span>{{T "All Files"}}</span>
+                    <span id="current-file-breadcrumb"></span>
+                </div>
+                <div class="overview-list">
+                    <div hx-get="/api/files/list" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                        Loading files...
+                    </div>
+                </div>
+                <hr/>
+                <div id="file-header"></div>
+                <div id="file-content"></div>
+            </div>
+        </section>
+    </div>
+</div>
+{{end}}

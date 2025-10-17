@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{.Title}} - Simple Theme</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="/themes/{{.ThemeName}}/static/css/style.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+    <script src="/static/htmx.min.js"></script>
+</head>
+<body data-theme="{{.ThemeName}}" data-dark-mode="{{.DarkMode}}">
+    <div class="container">
+        <header>
+            <h1>🎨 Simple Theme</h1>
+            <nav>
+                <a href="/">{{.T "Home"}}</a>
+                <a href="/settings">{{.T "Settings"}}</a>
+                <a href="/admin">{{.T "Admin"}}</a>
+            </nav>
+        </header>
+        <main>
+            {{template "content" .}}
+        </main>
+        <footer>
+            <p>Simple Theme v1.0 | Current Theme: {{.ThemeName}}</p>
+        </footer>
+    </div>
+</body>
+</html>

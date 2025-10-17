@@ -2011,7 +2011,7 @@ const docTemplate = `{
         },
         "/api/themes/upload": {
             "post": {
-                "description": "Upload a self-contained theme .so file",
+                "description": "Upload a theme .tgz archive",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -2022,7 +2022,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "file",
-                        "description": "Theme .so file",
+                        "description": "Theme .tgz file",
                         "name": "file",
                         "in": "formData",
                         "required": true

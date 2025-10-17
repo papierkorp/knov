@@ -1,0 +1,44 @@
+{
+  "name": "builtin",
+  "version": "1.0.0",
+  "author": "knov Team",
+  "description": "Default HTMX-based theme for knov",
+  "views": {
+    "home": ["default"],
+    "fileview": ["detailed", "compact", "reader"],
+    "search": ["default"],
+    "overview": ["default"],
+    "dashboard": ["default"],
+    "settings": ["default"],
+    "admin": ["default"],
+    "playground": ["default"],
+    "history": ["default"],
+    "latestchanges": ["default"],
+    "browsefiles": ["default"],
+    "fileedit": ["default"]
+  },
+  "features": {
+    "darkMode": true,
+    "colorSchemes": [
+      {"name": "default", "label": "Default Blue"},
+      {"name": "green", "label": "Forest Green"},
+      {"name": "red", "label": "Ruby Red"},
+      {"name": "purple", "label": "Royal Purple"}
+    ]
+  },
+  "templates": {
+    "base": "templates/base.html",
+    "home": "templates/home.html",
+    "fileview": "templates/fileview.html",
+    "search": "templates/search.html",
+    "overview": "templates/overview.html",
+    "dashboard": "templates/dashboard.html",
+    "settings": "templates/settings.html",
+    "admin": "templates/admin.html",
+    "playground": "templates/playground.html",
+    "history": "templates/history.html",
+    "latestchanges": "templates/latestchanges.html",
+    "browsefiles": "templates/browsefiles.html",
+    "fileedit": "templates/fileedit.html"
+  }
+}

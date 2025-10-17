@@ -1,0 +1,15 @@
+{{define "content"}}
+<div id="page-fileedit">
+    <h2>
+        edit:
+        <a href="/files/{{.FilePath}}">{{.FilePath}}</a>
+    </h2>
+    <div
+        hx-get="/api/components/markdown-editor?filepath={{.FilePath}}"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+    >
+        loading editor...
+    </div>
+</div>
+{{end}}

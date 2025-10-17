@@ -186,7 +186,7 @@ func handleAPIGetColorSchemes(w http.ResponseWriter, r *http.Request) {
 	currentThemeName := tm.GetCurrentThemeName()
 	metadata := tm.GetThemeMetadata(currentThemeName)
 
-	if metadata == nil || len(metadata.AvailableColorSchemes) == 0 {
+	if metadata == nil || len(metadata.Features.ColorSchemes) == 0 {
 		writeResponse(w, r, []string{}, "<option>no schemes available</option>")
 		return
 	}
@@ -194,7 +194,7 @@ func handleAPIGetColorSchemes(w http.ResponseWriter, r *http.Request) {
 	currentScheme := configmanager.GetColorScheme()
 
 	var html strings.Builder
-	for _, scheme := range metadata.AvailableColorSchemes {
+	for _, scheme := range metadata.Features.ColorSchemes {
 		selected := ""
 		if scheme.Name == currentScheme {
 			selected = "selected"
@@ -202,7 +202,7 @@ func handleAPIGetColorSchemes(w http.ResponseWriter, r *http.Request) {
 		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, scheme.Name, selected, scheme.Label))
 	}
 
-	writeResponse(w, r, metadata.AvailableColorSchemes, html.String())
+	writeResponse(w, r, metadata.Features.ColorSchemes, html.String())
 }
 
 // @Summary Set color scheme

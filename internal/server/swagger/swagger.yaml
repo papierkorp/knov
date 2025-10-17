@@ -1575,9 +1575,9 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Upload a self-contained theme .so file
+      description: Upload a theme .tgz archive
       parameters:
-      - description: Theme .so file
+      - description: Theme .tgz file
         in: formData
         name: file
         required: true

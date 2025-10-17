@@ -1,0 +1,41 @@
+{
+  "name": "simple",
+  "version": "1.0.0",
+  "author": "KNOV Team",
+  "description": "Simple test theme with minimal features",
+  "views": {
+    "home": ["default"],
+    "fileview": ["default"],
+    "search": ["default"],
+    "overview": ["default"],
+    "dashboard": ["default"],
+    "settings": ["default"],
+    "admin": ["default"],
+    "playground": ["default"],
+    "history": ["default"],
+    "latestchanges": ["default"],
+    "browsefiles": ["default"],
+    "fileedit": ["default"]
+  },
+  "features": {
+    "darkMode": true,
+    "colorSchemes": [
+      {"name": "default", "label": "Purple Theme"}
+    ]
+  },
+  "templates": {
+    "base": "templates/base.html",
+    "home": "templates/home.html",
+    "fileview": "templates/home.html",
+    "search": "templates/home.html",
+    "overview": "templates/home.html",
+    "dashboard": "templates/home.html",
+    "settings": "templates/settings.html",
+    "admin": "templates/home.html",
+    "playground": "templates/home.html",
+    "history": "templates/home.html",
+    "latestchanges": "templates/home.html",
+    "browsefiles": "templates/home.html",
+    "fileedit": "templates/home.html"
+  }
+}
