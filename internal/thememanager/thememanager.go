@@ -138,6 +138,7 @@ type IThemeManager interface {
 	GetAvailableViews(viewType string) []string
 	GetThemeMetadata(themeName string) *ThemeMetadata
 	RenderPage(w io.Writer, page string, data interface{}) error
+	RenderContent(w io.Writer, page string, data interface{}) error
 }
 
 // Initialize loads all themes
@@ -450,6 +451,60 @@ func (tm *ThemeManager) RenderPage(w io.Writer, page string, data interface{}) e
 	var buf bytes.Buffer
 	if err := tmpl.ExecuteTemplate(&buf, "base.html", data); err != nil {
 		return fmt.Errorf("failed to render template: %w", err)
+	}
+
+	_, err := w.Write(buf.Bytes())
+	return err
+}
+
+// RenderContent renders only the content portion of a page (for HTMX requests)
+func (tm *ThemeManager) RenderContent(w io.Writer, page string, data interface{}) error {
+	tm.mutex.RLock()
+	defer tm.mutex.RUnlock()
+
+	if tm.currentTheme == nil {
+		return fmt.Errorf("no theme is currently set")
+	}
+
+	// Get the appropriate template
+	var tmpl *template.Template
+	switch page {
+	case "home.html":
+		tmpl = tm.currentTheme.Templates.Home
+	case "fileview.html":
+		tmpl = tm.currentTheme.Templates.FileView
+	case "fileedit.html":
+		tmpl = tm.currentTheme.Templates.FileEdit
+	case "search.html":
+		tmpl = tm.currentTheme.Templates.Search
+	case "overview.html":
+		tmpl = tm.currentTheme.Templates.Overview
+	case "dashboard.html":
+		tmpl = tm.currentTheme.Templates.Dashboard
+	case "settings.html":
+		tmpl = tm.currentTheme.Templates.Settings
+	case "admin.html":
+		tmpl = tm.currentTheme.Templates.Admin
+	case "playground.html":
+		tmpl = tm.currentTheme.Templates.Playground
+	case "history.html":
+		tmpl = tm.currentTheme.Templates.History
+	case "latestchanges.html":
+		tmpl = tm.currentTheme.Templates.LatestChanges
+	case "browsefiles.html":
+		tmpl = tm.currentTheme.Templates.BrowseFiles
+	default:
+		return fmt.Errorf("unknown page template: %s", page)
+	}
+
+	if tmpl == nil {
+		return fmt.Errorf("template %s not found in current theme", page)
+	}
+
+	// Execute only the "content" template (not base.html)
+	var buf bytes.Buffer
+	if err := tmpl.ExecuteTemplate(&buf, "content", data); err != nil {
+		return fmt.Errorf("failed to render content template: %w", err)
 	}
 
 	_, err := w.Write(buf.Bytes())

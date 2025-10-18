@@ -210,6 +210,7 @@ func StartServerChi() {
 			r.Get("/table", handleAPIGetTable)
 			r.Get("/editor", handleAPIGetEditor)
 			r.Get("/markdown-editor", handleAPIGetMarkdownEditor)
+			r.Get("/filter-form", handleAPIGetFilterForm)
 		})
 	})
 
@@ -340,12 +341,33 @@ func handleThemeStatic(w http.ResponseWriter, r *http.Request) {
 // ------------------------------------ default routes ------------------------------------
 // ----------------------------------------------------------------------------------------
 
+// Helper function to check if request is from HTMX
+func isHTMXRequest(r *http.Request) bool {
+	return r.Header.Get("HX-Request") == "true" || r.Header.Get("X-Requested-With") == "HTMX"
+}
+
+// Helper function to render page with HTMX support
+func renderPage(w http.ResponseWriter, r *http.Request, tm thememanager.IThemeManager, page string, data interface{}, pageName string) error {
+	if isHTMXRequest(r) {
+		if err := tm.RenderContent(w, page, data); err != nil {
+			logging.LogError("failed to render %s content: %v", pageName, err)
+			return err
+		}
+		return nil
+	}
+
+	if err := tm.RenderPage(w, page, data); err != nil {
+		logging.LogError("failed to render %s page: %v", pageName, err)
+		return err
+	}
+	return nil
+}
+
 func handleHome(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := NewTemplateData("Home")
 
-	if err := tm.RenderPage(w, "home.html", data); err != nil {
-		logging.LogError("failed to render home page: %v", err)
+	if err := renderPage(w, r, tm, "home.html", data, "home"); err != nil {
 		http.Error(w, "failed to render page", http.StatusInternalServerError)
 		return
 	}
@@ -355,8 +377,7 @@ func handleSettings(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := NewTemplateData("Settings")
 
-	if err := tm.RenderPage(w, "settings.html", data); err != nil {
-		logging.LogError("failed to render settings page: %v", err)
+	if err := renderPage(w, r, tm, "settings.html", data, "settings"); err != nil {
 		http.Error(w, "failed to render page", http.StatusInternalServerError)
 		return
 	}
@@ -450,9 +471,17 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 func handleDashboardNew(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	data := NewTemplateData("New Dashboard")
 
-	if err := tm.RenderPage(w, "dashboard.html", data); err != nil {
+	// Create empty dashboard for new dashboard page
+	newDash := &dashboard.Dashboard{
+		Name:    "New Dashboard",
+		Layout:  "grid",
+		Widgets: []dashboard.Widget{},
+	}
+
+	data := NewTemplateData("New Dashboard").SetDashboardData(newDash).SetMode("new")
+
+	if err := renderPage(w, r, tm, "dashboard.html", data, "dashboard"); err != nil {
 		logging.LogError("failed to render dashboard (new) page: %v", err)
 		http.Error(w, "failed to render page", http.StatusInternalServerError)
 		return
@@ -468,9 +497,9 @@ func handleDashboardEdit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tm := thememanager.GetThemeManager()
-	data := NewTemplateData("Edit Dashboard").SetDashboardData(dash)
+	data := NewTemplateData("Edit Dashboard").SetDashboardData(dash).SetMode("edit")
 
-	if err := tm.RenderPage(w, "dashboard.html", data); err != nil {
+	if err := renderPage(w, r, tm, "dashboard.html", data, "dashboard"); err != nil {
 		logging.LogError("failed to render dashboard (edit) page: %v", err)
 		http.Error(w, "failed to render page", http.StatusInternalServerError)
 		return
@@ -490,9 +519,9 @@ func handleDashboardView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tm := thememanager.GetThemeManager()
-	data := NewTemplateData(dash.Name).SetDashboardData(dash)
+	data := NewTemplateData(dash.Name).SetDashboardData(dash).SetMode("view")
 
-	if err := tm.RenderPage(w, "dashboard.html", data); err != nil {
+	if err := renderPage(w, r, tm, "dashboard.html", data, "dashboard"); err != nil {
 		logging.LogError("failed to render dashboard (view) page: %v", err)
 		http.Error(w, "failed to render page", http.StatusInternalServerError)
 		return
@@ -516,7 +545,8 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
+	// Legacy snippet mode - just return raw HTML
+	if r.URL.Query().Get("snippet") == "true" {
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(fileContent.HTML))
 		return
@@ -535,8 +565,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		SetFileData(fileContent, filePath).
 		SetView(fileView)
 
-	if err := tm.RenderPage(w, "fileview.html", data); err != nil {
-		logging.LogError("failed to render fileview page: %v", err)
+	if err := renderPage(w, r, tm, "fileview.html", data, "fileview"); err != nil {
 		http.Error(w, "failed to render page", http.StatusInternalServerError)
 		return
 	}

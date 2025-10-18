@@ -1,0 +1,14 @@
+package thememanager
+
+import "knov/internal/translation"
+
+templ LatestChanges() {
+	@Base(translation.Sprintf("Latest Changes")) {
+		<div id="latestchanges">
+			<h1>{ translation.Sprintf("Recent File History") }</h1>
+			<div hx-get="/api/git/latestchanges?count=500" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+				Loading recent changes...
+			</div>
+		</div>
+	}
+}

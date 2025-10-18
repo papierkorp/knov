@@ -29,6 +29,7 @@ type TemplateData struct {
 	FileContent  *files.FileContent   // For file view
 	FilePath     string               // For file view/edit
 	Dashboard    *dashboard.Dashboard // For dashboard
+	Mode         string               // For dashboard (view, edit, new)
 	MetadataType string               // For browse files
 	Value        string               // For browse files
 }
@@ -87,5 +88,11 @@ func (td *TemplateData) SetView(view string) *TemplateData {
 // SetCustomCSSEditor sets the custom CSS editor HTML
 func (td *TemplateData) SetCustomCSSEditor(editor template.HTML) *TemplateData {
 	td.CustomCSSEditor = editor
+	return td
+}
+
+// SetMode sets the page mode (e.g., "view", "edit", "new")
+func (td *TemplateData) SetMode(mode string) *TemplateData {
+	td.Mode = mode
 	return td
 }

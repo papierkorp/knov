@@ -1,122 +1,204 @@
 {{define "content"}}
-{{if eq .View "detailed"}}
-    {{template "fileview-detailed" .}}
-{{else if eq .View "compact"}}
-    {{template "fileview-compact" .}}
-{{else if eq .View "reader"}}
-    {{template "fileview-reader" .}}
-{{else}}
-    {{template "fileview-detailed" .}}
-{{end}}
-{{end}}
-
-{{define "fileview-detailed"}}
-<div id="view-fileview-detailed">
+<div
+    id="page-fileview"
+    class="page-container"
+    data-filepath="{{.FilePath}}"
+    data-page-title="{{.Title}}"
+>
+    {{if eq .View "detailed"}} {{template "fileview-detailed" .}} {{else if eq
+    .View "compact"}} {{template "fileview-compact" .}} {{else if eq .View
+    "reader"}} {{template "fileview-reader" .}} {{else}} {{template
+    "fileview-detailed" .}} {{end}}
+</div>
+{{end}} {{define "fileview-detailed"}}
+<div id="section-fileview-detailed" class="section-container">
     <div class="fileview-layout">
-        <article class="file-content">
+        <article id="section-content" class="file-content">
             {{.FileContent.HTML}}
         </article>
-        <aside class="file-sidebar">
-            <section class="sidebar-section">
+        <aside id="section-sidebar" class="file-sidebar">
+            <section id="section-metadata" class="sidebar-section">
                 <h3>metadata</h3>
                 <div class="metadata-grid">
                     <div class="metadata-row">
                         <span class="metadata-label">collection:</span>
-                        <span hx-get="/api/metadata/file/collection?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</span>
+                        <span
+                            id="fragment-metadata-collection"
+                            hx-get="/api/metadata/file/collection?filepath={{.FilePath | urlquery}}"
+                            hx-trigger="load"
+                            >...</span
+                        >
                     </div>
                     <div class="metadata-row">
                         <span class="metadata-label">created:</span>
-                        <span hx-get="/api/metadata/createdat?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</span>
+                        <span
+                            id="fragment-metadata-created"
+                            hx-get="/api/metadata/createdat?filepath={{.FilePath | urlquery}}"
+                            hx-trigger="load"
+                            >...</span
+                        >
                     </div>
                     <div class="metadata-row">
                         <span class="metadata-label">edited:</span>
-                        <span hx-get="/api/metadata/lastedited?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</span>
+                        <span
+                            id="fragment-metadata-edited"
+                            hx-get="/api/metadata/lastedited?filepath={{.FilePath | urlquery}}"
+                            hx-trigger="load"
+                            >...</span
+                        >
                     </div>
                     <div class="metadata-row">
                         <span class="metadata-label">tags:</span>
-                        <span hx-get="/api/metadata/file/tags?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</span>
+                        <span
+                            id="fragment-metadata-tags"
+                            hx-get="/api/metadata/file/tags?filepath={{.FilePath | urlquery}}"
+                            hx-trigger="load"
+                            >...</span
+                        >
                     </div>
                     <div class="metadata-row">
                         <span class="metadata-label">folders:</span>
-                        <span hx-get="/api/metadata/file/folders?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</span>
+                        <span
+                            id="fragment-metadata-folders"
+                            hx-get="/api/metadata/file/folders?filepath={{.FilePath | urlquery}}"
+                            hx-trigger="load"
+                            >...</span
+                        >
                     </div>
                 </div>
             </section>
-            <section class="sidebar-section">
+            <section id="section-links" class="sidebar-section">
                 <h3>links</h3>
                 <div class="links-container">
                     <div class="links-group">
                         <span class="links-label">parents:</span>
-                        <div hx-get="/api/links/parents?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</div>
+                        <div
+                            id="fragment-links-parents"
+                            hx-get="/api/links/parents?filepath={{.FilePath | urlquery}}"
+                            hx-trigger="load"
+                        >
+                            ...
+                        </div>
                     </div>
                     <div class="links-group">
                         <span class="links-label">ancestors:</span>
-                        <div hx-get="/api/links/ancestors?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</div>
+                        <div
+                            id="fragment-links-ancestors"
+                            hx-get="/api/links/ancestors?filepath={{.FilePath | urlquery}}"
+                            hx-trigger="load"
+                        >
+                            ...
+                        </div>
                     </div>
                     <div class="links-group">
                         <span class="links-label">children:</span>
-                        <div hx-get="/api/links/kids?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</div>
+                        <div
+                            id="fragment-links-children"
+                            hx-get="/api/links/kids?filepath={{.FilePath | urlquery}}"
+                            hx-trigger="load"
+                        >
+                            ...
+                        </div>
                     </div>
                     <div class="links-group">
                         <span class="links-label">outbound:</span>
-                        <div hx-get="/api/links/used?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</div>
+                        <div
+                            id="fragment-links-outbound"
+                            hx-get="/api/links/used?filepath={{.FilePath | urlquery}}"
+                            hx-trigger="load"
+                        >
+                            ...
+                        </div>
                     </div>
                     <div class="links-group">
                         <span class="links-label">inbound:</span>
-                        <div hx-get="/api/links/linkstohere?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</div>
+                        <div
+                            id="fragment-links-inbound"
+                            hx-get="/api/links/linkstohere?filepath={{.FilePath | urlquery}}"
+                            hx-trigger="load"
+                        >
+                            ...
+                        </div>
                     </div>
                 </div>
             </section>
-            <section class="sidebar-section sidebar-toc">
+            <section id="section-toc" class="sidebar-section sidebar-toc">
                 <h3>table of contents</h3>
                 {{if .FileContent.TOC}}
-                    <nav class="toc-nav">
-                        {{range .FileContent.TOC}}
-                            <a href="{{.Link}}" class="{{.Class}}" style="padding-left: {{mul (sub .Level 1) 12}}px;">{{.Text}}</a>
-                        {{end}}
-                    </nav>
+                <nav class="toc-nav">
+                    {{range .FileContent.TOC}}
+                    <a
+                        href="{{.Link}}"
+                        class="{{.Class}}"
+                        style="padding-left: {{mul (sub .Level 1) 12}}px;"
+                        >{{.Text}}</a
+                    >
+                    {{end}}
+                </nav>
                 {{else}}
-                    <div class="toc-empty">no headings found</div>
+                <div class="toc-empty">no headings found</div>
                 {{end}}
             </section>
         </aside>
     </div>
 </div>
-{{end}}
-
-{{define "fileview-compact"}}
-<div id="view-fileview-compact">
+{{end}} {{define "fileview-compact"}}
+<div id="section-fileview-compact" class="section-container">
     <div class="compact-header">
         <div class="compact-metadata">
-            <span hx-get="/api/metadata/file/collection?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</span>
+            <span
+                hx-get="/api/metadata/file/collection?filepath={{.FilePath | urlquery}}"
+                hx-trigger="load"
+                >...</span
+            >
             <span class="separator">•</span>
-            <span hx-get="/api/metadata/createdat?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</span>
+            <span
+                hx-get="/api/metadata/createdat?filepath={{.FilePath | urlquery}}"
+                hx-trigger="load"
+                >...</span
+            >
             <span class="separator">•</span>
-            <span hx-get="/api/metadata/file/tags?filepath={{.FilePath | urlquery}}" hx-trigger="load">...</span>
+            <span
+                hx-get="/api/metadata/file/tags?filepath={{.FilePath | urlquery}}"
+                hx-trigger="load"
+                >...</span
+            >
         </div>
     </div>
-    <article class="file-content">
+    <article id="section-content" class="file-content">
         {{.FileContent.HTML}}
     </article>
 </div>
-{{end}}
-
-{{define "fileview-reader"}}
-<div id="view-fileview-reader">
+{{end}} {{define "fileview-reader"}}
+<div id="section-fileview-reader" class="section-container">
     <div class="reader-controls">
-        <button class="font-size-btn" onclick="adjustFontSize(-1)" aria-label="decrease font size">A-</button>
-        <button class="font-size-btn" onclick="adjustFontSize(1)" aria-label="increase font size">A+</button>
+        <button
+            class="font-size-btn"
+            onclick="adjustFontSize(-1)"
+            aria-label="decrease font size"
+        >
+            A-
+        </button>
+        <button
+            class="font-size-btn"
+            onclick="adjustFontSize(1)"
+            aria-label="increase font size"
+        >
+            A+
+        </button>
     </div>
-    <article class="file-content" id="reader-content">
+    <article id="section-content" class="file-content" id="reader-content">
         {{.FileContent.HTML}}
     </article>
     <script>
         function adjustFontSize(delta) {
-            const content = document.getElementById('reader-content');
-            const currentSize = parseFloat(window.getComputedStyle(content).fontSize);
+            const content = document.getElementById("reader-content");
+            const currentSize = parseFloat(
+                window.getComputedStyle(content).fontSize,
+            );
             const newSize = currentSize + delta;
             if (newSize >= 12 && newSize <= 32) {
-                content.style.fontSize = newSize + 'px';
+                content.style.fontSize = newSize + "px";
             }
         }
     </script>

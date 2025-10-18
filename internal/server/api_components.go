@@ -198,3 +198,98 @@ func handleAPIGetMarkdownEditor(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
+
+// @Summary Get filter form widget
+// @Tags components
+// @Produce html
+// @Router /api/components/filter-form [get]
+func handleAPIGetFilterForm(w http.ResponseWriter, r *http.Request) {
+	html := `<div class="widget-filter-form">
+		<form id="metadata-filter-form" hx-post="/api/files/filter" hx-target="#filter-results">
+			<div>
+				<button type="submit">Apply Filter</button>
+				<select name="logic" id="logic-operator">
+					<option value="and">AND</option>
+					<option value="or">OR</option>
+				</select>
+				<button type="button" onclick="addFilterRow()">Add Filter</button>
+			</div>
+			<div id="filter-container">
+				<div class="filter-row" id="filter-row-0">
+					<select name="metadata[]" id="metadata-0">
+						<option value="collection">Collection</option>
+						<option value="tags">Tags</option>
+						<option value="type">Type</option>
+						<option value="status">Status</option>
+						<option value="priority">Priority</option>
+						<option value="createdAt">Created Date</option>
+						<option value="lastEdited">Last Edited</option>
+						<option value="folders">Folders</option>
+						<option value="boards">Boards</option>
+					</select>
+					<select name="operator[]" id="operator-0">
+						<option value="equals">Equals</option>
+						<option value="contains">Contains</option>
+						<option value="greater">Greater Than</option>
+						<option value="less">Less Than</option>
+						<option value="in">In Array</option>
+					</select>
+					<input type="text" name="value[]" id="value-0" placeholder="Value"/>
+					<select name="action[]" id="action-0">
+						<option value="include">Include</option>
+						<option value="exclude">Exclude</option>
+					</select>
+					<button type="button" onclick="removeFilterRow(0)">-</button>
+				</div>
+			</div>
+		</form>
+		<div id="filter-results">
+			Filtered results will appear here
+		</div>
+		<script>
+			let filterRowCount = 1;
+			function addFilterRow() {
+				const container = document.getElementById('filter-container');
+				const newRow = document.createElement('div');
+				newRow.className = 'filter-row';
+				newRow.id = 'filter-row-' + filterRowCount;
+				newRow.innerHTML =
+					'<select name="metadata[]" id="metadata-' + filterRowCount + '">' +
+						'<option value="collection">Collection</option>' +
+						'<option value="tags">Tags</option>' +
+						'<option value="type">Type</option>' +
+						'<option value="status">Status</option>' +
+						'<option value="priority">Priority</option>' +
+						'<option value="createdAt">Created Date</option>' +
+						'<option value="lastEdited">Last Edited</option>' +
+						'<option value="folders">Folders</option>' +
+						'<option value="boards">Boards</option>' +
+					'</select>' +
+					'<select name="operator[]" id="operator-' + filterRowCount + '">' +
+						'<option value="equals">Equals</option>' +
+						'<option value="contains">Contains</option>' +
+						'<option value="greater">Greater Than</option>' +
+						'<option value="less">Less Than</option>' +
+						'<option value="in">In Array</option>' +
+					'</select>' +
+					'<input type="text" name="value[]" id="value-' + filterRowCount + '" placeholder="Value"/>' +
+					'<select name="action[]" id="action-' + filterRowCount + '">' +
+						'<option value="include">Include</option>' +
+						'<option value="exclude">Exclude</option>' +
+					'</select>' +
+					'<button type="button" onclick="removeFilterRow(' + filterRowCount + ')">-</button>';
+				container.appendChild(newRow);
+				filterRowCount++;
+			}
+			function removeFilterRow(index) {
+				const row = document.getElementById('filter-row-' + index);
+				if (row && document.querySelectorAll('.filter-row').length > 1) {
+					row.remove();
+				}
+			}
+		</script>
+	</div>`
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}

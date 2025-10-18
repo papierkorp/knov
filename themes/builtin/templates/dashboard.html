@@ -1,27 +1,114 @@
 {{define "content"}}
 <div id="page-dashboard">
+    {{if eq .Mode "new"}}
+    <h1>{{T "Create New Dashboard"}}</h1>
+    <form id="dashboard-form" hx-post="/api/dashboards" hx-target="#page-dashboard" hx-swap="outerHTML">
+        <div class="form-group">
+            <label for="name">{{T "Dashboard Name"}}</label>
+            <input type="text" id="name" name="name" value="{{.Dashboard.Name}}" required>
+        </div>
+        <div class="form-group">
+            <label for="layout">{{T "Layout"}}</label>
+            <select id="layout" name="layout">
+                <option value="grid" {{if eq .Dashboard.Layout "grid"}}selected{{end}}>{{T "Grid"}}</option>
+                <option value="oneColumn" {{if eq .Dashboard.Layout "oneColumn"}}selected{{end}}>{{T "One Column"}}</option>
+                <option value="twoColumns" {{if eq .Dashboard.Layout "twoColumns"}}selected{{end}}>{{T "Two Columns"}}</option>
+                <option value="threeColumns" {{if eq .Dashboard.Layout "threeColumns"}}selected{{end}}>{{T "Three Columns"}}</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>{{T "Add Widgets"}}</label>
+            <div id="widget-selection">
+                <div class="widget-option">
+                    <input type="checkbox" id="widget-filter-form" name="widgets[0][type]" value="filterForm" checked>
+                    <label for="widget-filter-form">{{T "Filter Form"}}</label>
+                    <input type="hidden" name="widgets[0][position][x]" value="0">
+                    <input type="hidden" name="widgets[0][position][y]" value="0">
+                </div>
+                <div class="widget-option">
+                    <input type="checkbox" id="widget-tags" name="widgets[1][type]" value="tags">
+                    <label for="widget-tags">{{T "Tags"}}</label>
+                    <input type="hidden" name="widgets[1][position][x]" value="1">
+                    <input type="hidden" name="widgets[1][position][y]" value="0">
+                </div>
+                <div class="widget-option">
+                    <input type="checkbox" id="widget-collections" name="widgets[2][type]" value="collections">
+                    <label for="widget-collections">{{T "Collections"}}</label>
+                    <input type="hidden" name="widgets[2][position][x]" value="2">
+                    <input type="hidden" name="widgets[2][position][y]" value="0">
+                </div>
+                <div class="widget-option">
+                    <input type="checkbox" id="widget-folders" name="widgets[3][type]" value="folders">
+                    <label for="widget-folders">{{T "Folders"}}</label>
+                    <input type="hidden" name="widgets[3][position][x]" value="0">
+                    <input type="hidden" name="widgets[3][position][y]" value="1">
+                </div>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{T "Create Dashboard"}}</button>
+            <a href="/dashboard" class="btn btn-secondary">{{T "Cancel"}}</a>
+        </div>
+    </form>
+    <script>
+        // Remove unchecked widget values before submission
+        document.getElementById('dashboard-form').addEventListener('submit', function(e) {
+            const checkboxes = document.querySelectorAll('#widget-selection input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                if (!checkbox.checked) {
+                    checkbox.value = '';
+                }
+            });
+        });
+    </script>
+    {{else if eq .Mode "edit"}}
+    <h1>{{T "Edit Dashboard"}}: {{.Dashboard.Name}}</h1>
+    <form id="dashboard-form" hx-patch="/api/dashboards/{{.Dashboard.ID}}" hx-target="#page-dashboard" hx-swap="outerHTML">
+        <div class="form-group">
+            <label for="name">{{T "Dashboard Name"}}</label>
+            <input type="text" id="name" name="name" value="{{.Dashboard.Name}}" required>
+        </div>
+        <div class="form-group">
+            <label for="layout">{{T "Layout"}}</label>
+            <select id="layout" name="layout">
+                <option value="grid" {{if eq .Dashboard.Layout "grid"}}selected{{end}}>{{T "Grid"}}</option>
+                <option value="oneColumn" {{if eq .Dashboard.Layout "oneColumn"}}selected{{end}}>{{T "One Column"}}</option>
+                <option value="twoColumns" {{if eq .Dashboard.Layout "twoColumns"}}selected{{end}}>{{T "Two Columns"}}</option>
+                <option value="threeColumns" {{if eq .Dashboard.Layout "threeColumns"}}selected{{end}}>{{T "Three Columns"}}</option>
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{T "Save Changes"}}</button>
+            <a href="/dashboard/{{.Dashboard.ID}}" class="btn btn-secondary">{{T "Cancel"}}</a>
+        </div>
+    </form>
+    {{else}}
     <h1>{{.Dashboard.Name}}</h1>
+    <div class="dashboard-actions">
+        <a href="/dashboard/edit/{{.Dashboard.ID}}" class="btn btn-small">{{T "Edit"}}</a>
+    </div>
     <div class="dashboard-layout">
         <div class="dashboard-widgets dashboard-{{.Dashboard.Layout}}">
             {{range .Dashboard.Widgets}}
-                <div class="dashboard-widget" data-widget-id="{{.ID}}">
-                    <h3>{{.Type}}</h3>
-                    <div
-                        hx-post="/api/dashboards/widget/{{.ID}}"
-                        hx-vals='{"dashboardId": "{{$.Dashboard.ID}}"}'
-                        hx-trigger="load"
-                        class="widget-content"
-                    >
-                        {{$.T "loading widget..."}}
-                    </div>
+            <div class="dashboard-widget" data-widget-id="{{.ID}}">
+                <h3>{{.Type}}</h3>
+                <div
+                    hx-post="/api/dashboards/widget/{{.ID}}"
+                    hx-vals='{"dashboardId": "{{$.Dashboard.ID}}"}'
+                    hx-trigger="load"
+                    class="widget-content"
+                >
+                    {{T "loading widget..."}}
                 </div>
+            </div>
             {{end}}
             {{if not .Dashboard.Widgets}}
-                <div class="dashboard-empty">
-                    <p>{{T "No widgets configured"}}</p>
-                </div>
+            <div class="dashboard-empty">
+                <p>{{T "No widgets configured"}}</p>
+            </div>
             {{end}}
         </div>
     </div>
+    {{end}}
 </div>
 {{end}}

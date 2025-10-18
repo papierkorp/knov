@@ -1,0 +1,12 @@
+{
+    "language": "en",
+    "messages": [
+        {
+            "id": "Select Theme:",
+            "message": "Select Theme:",
+            "translation": "Select Theme:",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        }
+    ]
+}

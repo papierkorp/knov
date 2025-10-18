@@ -1,0 +1,10 @@
+{
+    "language": "de",
+    "messages": [
+        {
+            "id": "Select Theme:",
+            "message": "Select Theme:",
+            "translation": "Theme auswählen:"
+        }
+    ]
+}

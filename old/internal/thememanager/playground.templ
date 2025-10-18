@@ -1,0 +1,147 @@
+package thememanager
+
+import "knov/internal/translation"
+
+templ Playground() {
+	@Base(translation.Sprintf("Playground")) {
+		<div id="playground">
+			<h1>{ translation.Sprintf("Playground") }</h1>
+			<div class="playground-sections">
+				@MetadataExample()
+				@MetadataFilterSection()
+			</div>
+		</div>
+	}
+}
+
+templ MetadataExample() {
+	<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 1rem 0;
+        font-size: 10px;
+    }
+
+    th,
+    td {
+        border: 1px solid var(--neutral);
+        padding: 4px;
+        text-align: left;
+    }
+
+    th {
+        background: var(--primary);
+        color: var(--white);
+        font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+        background: color-mix(in srgb, var(--neutral) 10%, transparent);
+    }
+</style>
+	<section>
+		<table>
+			<thead>
+				<tr>
+					<th>Filename</th>
+					<th>Tags</th>
+					<th>Folders</th>
+					<th>Collection</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td class="filename">testA.md</td>
+					<td>testA</td>
+					<td>test, testA</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testAB.md</td>
+					<td>testA, testB</td>
+					<td>test, testA</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testAC.md</td>
+					<td>testA, testC</td>
+					<td>test, testA</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testAAA.md</td>
+					<td>testA</td>
+					<td>test, testA, testAA</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testAAB.md</td>
+					<td>testA, testB</td>
+					<td>test, testA, testAA</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testAAC.md</td>
+					<td>testA, testC</td>
+					<td>test, testA, testAA</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testABA.md</td>
+					<td>testA, testB</td>
+					<td>test, testA, testAB</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testABB.md</td>
+					<td>testA, testB</td>
+					<td>test, testA, testAB</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testACA.md</td>
+					<td>testA, testC</td>
+					<td>test, testA, testAC</td>
+					<td>testA</td>
+				</tr>
+				<tr>
+					<td class="filename">testBA.md</td>
+					<td>testA, testB</td>
+					<td>test, testB</td>
+					<td>testB</td>
+				</tr>
+				<tr>
+					<td class="filename">testBB.md</td>
+					<td>testB</td>
+					<td>test, testB</td>
+					<td>testB</td>
+				</tr>
+				<tr>
+					<td class="filename">testBC.md</td>
+					<td>testB, testC</td>
+					<td>test, testB</td>
+					<td>testB</td>
+				</tr>
+				<tr>
+					<td class="filename">testCA.md</td>
+					<td>testA, testC</td>
+					<td>test, testC</td>
+					<td>testC</td>
+				</tr>
+				<tr>
+					<td class="filename">testCB.md</td>
+					<td>testB, testC</td>
+					<td>test, testC</td>
+					<td>testC</td>
+				</tr>
+				<tr>
+					<td class="filename">testCC.md</td>
+					<td>testC</td>
+					<td>test, testC</td>
+					<td>testC</td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+}

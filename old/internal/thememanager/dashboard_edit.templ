@@ -1,0 +1,385 @@
+package thememanager
+
+import (
+	"encoding/json"
+	"knov/internal/dashboard"
+	"knov/internal/files"
+	"knov/internal/translation"
+	"strconv"
+)
+
+templ DashboardEdit(dash *dashboard.Dashboard) {
+	@Base(translation.Sprintf("Edit Dashboard") + ": " + dash.Name) {
+		<div id="page-dashboard-edit">
+			<h1>{ translation.Sprintf("Edit Dashboard") }: { dash.Name }</h1>
+			@DashboardEditForm(dash)
+		</div>
+	}
+}
+
+templ DashboardEditForm(dash *dashboard.Dashboard) {
+	<div class="dashboard-create-form">
+		<div class="form-header">
+			<h3>{ translation.Sprintf("Edit Dashboard") }</h3>
+			<p>{ translation.Sprintf("Update your dashboard configuration") }</p>
+		</div>
+		<form
+			hx-patch={ "/api/dashboards/" + dash.ID }
+			hx-target="#dashboard-edit-result"
+			hx-swap="innerHTML"
+			class="dashboard-form"
+		>
+			<div class="form-section">
+				<h4>{ translation.Sprintf("Dashboard Settings") }</h4>
+				<div class="form-group">
+					<label for="name">{ translation.Sprintf("Dashboard Name") }</label>
+					<input type="text" id="name" name="name" required value={ dash.Name } class="form-input"/>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="layout">{ translation.Sprintf("Layout") }</label>
+						<select id="layout" name="layout" required class="form-select">
+							<option value="oneColumn" selected?={ dash.Layout=="oneColumn" }>
+								📋 { 
+                            translation.Sprintf("One Column") }
+							</option>
+							<option value="twoColumns" selected?={ dash.Layout=="twoColumns" }>
+								📊 { 
+                            translation.Sprintf("Two Columns") }
+							</option>
+							<option value="threeColumns" selected?={ dash.Layout=="threeColumns" }>
+								🎯 { 
+                            translation.Sprintf("Three Columns") }
+							</option>
+							<option value="fourColumns" selected?={ dash.Layout=="fourColumns" }>
+								🎨 { 
+                            translation.Sprintf("Four Columns") }
+							</option>
+						</select>
+					</div>
+					<div class="form-group checkbox-group">
+						<label class="checkbox-label">
+							<input
+								type="checkbox"
+								name="global"
+								value="true"
+								checked?={ dash.Global }
+								class="form-checkbox"
+							/>
+							<span class="checkmark"></span>
+							{ translation.Sprintf("Global Dashboard") }
+							<small>{ translation.Sprintf("Visible to all users") }</small>
+						</label>
+					</div>
+				</div>
+			</div>
+			<div class="form-section">
+				<div class="section-header">
+					<h4>{ translation.Sprintf("Widgets") }</h4>
+					<button type="button" onclick="addWidget()" class="btn-add-widget">
+						+ { translation.Sprintf("Add Widget") }
+					</button>
+				</div>
+				<div id="widgets-container">
+					for i, widget := range dash.Widgets {
+						@renderEditWidget(i, widget)
+					}
+				</div>
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="btn-primary">
+					<span>💾</span>
+					{ translation.Sprintf("Save Changes") }
+				</button>
+				<a href={ templ.SafeURL("/dashboard/" + dash.ID) } class="btn-secondary">
+					{ translation.Sprintf("Cancel") }
+				</a>
+			</div>
+		</form>
+		<div id="dashboard-edit-result"></div>
+		@WidgetManagementScripts()
+		@ConfigUpdateScripts()
+		@FilterConfigScripts()
+		@WidgetTypeConfigScripts()
+	</div>
+}
+
+templ renderEditWidget(i int, widget dashboard.Widget) {
+	<div class="widget-form">
+		<div class="widget-header">
+			<span class="widget-number">{ translation.Sprintf("Widget") } { strconv.Itoa(i+1) }</span>
+			if i > 0 {
+				<button type="button" onclick="this.closest('.widget-form').remove()" class="btn-remove">×</button>
+			}
+		</div>
+		<div class="form-row">
+			<div class="form-group">
+				<label>{ translation.Sprintf("Type") }</label>
+				<select
+					name={ "widgets[" + strconv.Itoa(i) + "][type]" }
+					required
+					class="form-select"
+					data-widget-index={ strconv.Itoa(i) }
+					onchange="updateConfig(this.dataset.widgetIndex, this.value)"
+				>
+					<option value="">{ translation.Sprintf("Choose type...") }</option>
+					<option value="filter" selected?={ widget.Type=="filter" }>🔍 { translation.Sprintf("Filter") }</option>
+					<option value="filterForm" selected?={ widget.Type=="filterForm" }>
+						📝 { 
+                    translation.Sprintf("Filter Form") }
+					</option>
+					<option value="fileContent" selected?={ widget.Type=="fileContent" }>
+						📄 { 
+                    translation.Sprintf("File Content") }
+					</option>
+					<option value="static" selected?={ widget.Type=="static" }>
+						📌 { translation.Sprintf("Static Content") }
+					</option>
+					<option value="tags" selected?={ widget.Type=="tags" }>🏷️ { translation.Sprintf("Tags") }</option>
+					<option value="collections" selected?={ widget.Type=="collections" }>
+						📚 { 
+                    translation.Sprintf("Collections") }
+					</option>
+					<option value="folders" selected?={ widget.Type=="folders" }>
+						📁 { translation.Sprintf("Folders") }
+					</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-row">
+			<div class="form-group">
+				<label>{ translation.Sprintf("X Position") }</label>
+				<input
+					type="number"
+					name={ "widgets[" + strconv.Itoa(i) + "][position][x]" }
+					min="0"
+					max="3"
+					value={ strconv.Itoa(widget.Position.X) }
+					class="form-input"
+				/>
+			</div>
+			<div class="form-group">
+				<label>{ translation.Sprintf("Y Position") }</label>
+				<input
+					type="number"
+					name={ "widgets[" + strconv.Itoa(i) + "][position][y]" }
+					min="0"
+					value={ strconv.Itoa(widget.Position.Y) }
+					class="form-input"
+				/>
+			</div>
+		</div>
+		<div class="form-group">
+			<label>{ translation.Sprintf("Configuration") }</label>
+			<div class="config-helper" id={ "config-helper-" + strconv.Itoa(i) }>
+				@renderExistingWidgetConfig(i, widget)
+			</div>
+			<textarea
+				name={ "widgets[" + strconv.Itoa(i) + "][config]" }
+				id={ "config-textarea-" + strconv.Itoa(i) }
+				rows="6"
+				class="form-textarea"
+				style="display:none;"
+			>{ marshalWidgetConfig(widget.Config) }</textarea>
+		</div>
+	</div>
+}
+
+func marshalWidgetConfig(config dashboard.WidgetConfig) string {
+	data, err := json.MarshalIndent(config, "", " ")
+	if err != nil {
+		return "{}"
+	}
+	return string(data)
+}
+
+templ renderExistingWidgetConfig(i int, widget dashboard.Widget) {
+	switch widget.Type {
+		case "filter":
+			if widget.Config.Filter != nil {
+				@renderFilterConfigHelper(i, widget.Config.Filter)
+			}
+		case "static":
+			if widget.Config.Static != nil {
+				@renderStaticConfigHelper(i, widget.Config.Static)
+			}
+		case "fileContent":
+			if widget.Config.FileContent != nil {
+				@renderFileContentConfigHelper(i, widget.Config.FileContent)
+			}
+		default:
+			<div class="config-form">
+				<h5>{ string(widget.Type) } { translation.Sprintf("Widget") }</h5>
+				<p class="config-note">{ translation.Sprintf("No configuration needed") }</p>
+			</div>
+	}
+}
+
+templ renderFilterConfigHelper(i int, filter *dashboard.FilterConfig) {
+	<div class="config-form">
+		<h5>{ translation.Sprintf("Filter Configuration") }</h5>
+		<div class="config-section">
+			<h6>{ translation.Sprintf("Display & Limits") }</h6>
+			<div class="config-row">
+				<label>{ translation.Sprintf("Display") }:</label>
+				<select
+					id={ "filter-display-" + strconv.Itoa(i) }
+					data-widget-index={ strconv.Itoa(i) }
+					onchange="updateFilterConfig(this.dataset.widgetIndex)"
+				>
+					<option value="list" selected?={ filter.Display=="list" }>{ translation.Sprintf("List") }</option>
+					<option value="cards" selected?={ filter.Display=="cards" }>{ translation.Sprintf("Cards") }</option>
+					<option value="dropdown" selected?={ filter.Display=="dropdown" }>
+						{ translation.Sprintf("Dropdown") }
+					</option>
+				</select>
+			</div>
+			<div class="config-row">
+				<label>{ translation.Sprintf("Limit") }:</label>
+				<input
+					type="number"
+					id={ "filter-limit-" + strconv.Itoa(i) }
+					value={ strconv.Itoa(filter.Limit) }
+					min="1"
+					max="5000"
+					data-widget-index={ strconv.Itoa(i) }
+					onchange="updateFilterConfig(this.dataset.widgetIndex)"
+				/>
+			</div>
+			<div class="config-row">
+				<label>{ translation.Sprintf("Logic") }:</label>
+				<select
+					id={ "filter-logic-" + strconv.Itoa(i) }
+					data-widget-index={ strconv.Itoa(i) }
+					onchange="updateFilterConfig(this.dataset.widgetIndex)"
+				>
+					<option value="and" selected?={ filter.Logic=="and" }>{ translation.Sprintf("AND") }</option>
+					<option value="or" selected?={ filter.Logic=="or" }>{ translation.Sprintf("OR") }</option>
+				</select>
+			</div>
+		</div>
+		<div class="config-section">
+			<h6>{ translation.Sprintf("Filter Criteria") }</h6>
+			<div id={ "criteria-container-" + strconv.Itoa(i) }>
+				for j, criterion := range filter.Criteria {
+					@renderCriterionRow(i, j, criterion)
+				}
+			</div>
+			<button
+				type="button"
+				data-widget-index={ strconv.Itoa(i) }
+				onclick="addFilterCriteria(this.dataset.widgetIndex)"
+				class="btn-add-criteria"
+			>
+				{ 
+            translation.Sprintf("Add Criteria") }
+			</button>
+		</div>
+	</div>
+}
+
+templ renderCriterionRow(widgetIndex int, criterionIndex int, criterion files.FilterCriteria) {
+	<div class="criteria-row" data-index={ strconv.Itoa(criterionIndex) }>
+		<select
+			class="criteria-metadata"
+			data-widget-index={ strconv.Itoa(widgetIndex) }
+			onchange="updateFilterConfig(this.dataset.widgetIndex)"
+		>
+			<option value="">{ translation.Sprintf("Select field...") }</option>
+			<option value="collection" selected?={ criterion.Metadata=="collection" }>
+				{ translation.Sprintf("Collection") }
+			</option>
+			<option value="tags" selected?={ criterion.Metadata=="tags" }>{ translation.Sprintf("Tags") }</option>
+			<option value="type" selected?={ criterion.Metadata=="type" }>{ translation.Sprintf("Type") }</option>
+			<option value="status" selected?={ criterion.Metadata=="status" }>{ translation.Sprintf("Status") }</option>
+			<option value="priority" selected?={ criterion.Metadata=="priority" }>
+				{ translation.Sprintf("Priority") }
+			</option>
+			<option value="createdAt" selected?={ criterion.Metadata=="createdAt" }>
+				{ translation.Sprintf("Created Date") }
+			</option>
+			<option value="lastEdited" selected?={ criterion.Metadata=="lastEdited" }>
+				{ translation.Sprintf("Last Edited") }
+			</option>
+			<option value="folders" selected?={ criterion.Metadata=="folders" }>{ translation.Sprintf("Folders") }</option>
+			<option value="boards" selected?={ criterion.Metadata=="boards" }>{ translation.Sprintf("Boards") }</option>
+		</select>
+		<select
+			class="criteria-operator"
+			data-widget-index={ strconv.Itoa(widgetIndex) }
+			onchange="updateFilterConfig(this.dataset.widgetIndex)"
+		>
+			<option value="equals" selected?={ criterion.Operator=="equals" }>{ translation.Sprintf("Equals") }</option>
+			<option value="contains" selected?={ criterion.Operator=="contains" }>
+				{ translation.Sprintf("Contains") }
+			</option>
+			<option value="greater" selected?={ criterion.Operator=="greater" }>
+				{ translation.Sprintf("Greater Than") }
+			</option>
+			<option value="less" selected?={ criterion.Operator=="less" }>{ translation.Sprintf("Less Than") }</option>
+			<option value="in" selected?={ criterion.Operator=="in" }>{ translation.Sprintf("In Array") }</option>
+		</select>
+		<input
+			type="text"
+			class="criteria-value"
+			value={ criterion.Value }
+			placeholder={ translation.Sprintf("Value") }
+			data-widget-index={ strconv.Itoa(widgetIndex) }
+			onchange="updateFilterConfig(this.dataset.widgetIndex)"
+		/>
+		<select
+			class="criteria-action"
+			data-widget-index={ strconv.Itoa(widgetIndex) }
+			onchange="updateFilterConfig(this.dataset.widgetIndex)"
+		>
+			<option value="include" selected?={ criterion.Action=="include" }>{ translation.Sprintf("Include") }</option>
+			<option value="exclude" selected?={ criterion.Action=="exclude" }>{ translation.Sprintf("Exclude") }</option>
+		</select>
+		<button
+			type="button"
+			data-widget-index={ strconv.Itoa(widgetIndex) }
+			onclick="this.parentElement.remove(); updateFilterConfig(this.dataset.widgetIndex)"
+			class="btn-remove-criteria"
+		>×</button>
+	</div>
+}
+
+templ renderStaticConfigHelper(i int, static *dashboard.StaticConfig) {
+	<div class="config-form">
+		<h5>{ translation.Sprintf("Static Content Configuration") }</h5>
+		<div class="config-row">
+			<label>{ translation.Sprintf("Format") }:</label>
+			<select data-widget-index={ strconv.Itoa(i) } onchange="updateStaticConfig(this.dataset.widgetIndex)">
+				<option value="html" selected?={ static.Format=="html" }>HTML</option>
+				<option value="markdown" selected?={ static.Format=="markdown" }>Markdown</option>
+				<option value="text" selected?={ static.Format=="text" }>{ translation.Sprintf("Plain Text") }</option>
+			</select>
+		</div>
+		<div class="config-row">
+			<label>{ translation.Sprintf("Content") }:</label>
+			<textarea
+				placeholder={ translation.Sprintf("Enter your content here...") }
+				rows="3"
+				data-widget-index={ strconv.Itoa(i) }
+				onchange="updateStaticConfig(this.dataset.widgetIndex)"
+			>{ static.Content }</textarea>
+		</div>
+	</div>
+}
+
+templ renderFileContentConfigHelper(i int, fileContent *dashboard.FileContentConfig) {
+	<div class="config-form">
+		<h5>{ translation.Sprintf("File Content Configuration") }</h5>
+		<div class="config-row">
+			<label>{ translation.Sprintf("File Path") }:</label>
+			<input
+				type="text"
+				value={ fileContent.FilePath }
+				placeholder="path/to/file.md"
+				data-widget-index={ strconv.Itoa(i) }
+				onchange="updateFileContentConfig(this.dataset.widgetIndex, this.value)"
+			/>
+		</div>
+		<p class="config-note">{ translation.Sprintf("Enter the path to the markdown file you want to display") }</p>
+	</div>
+}

@@ -1,0 +1,21 @@
+#page-playground {
+    padding: 20px;
+}
+
+#page-playground .playground-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+#page-playground section {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+#page-playground h2 {
+    margin-top: 0;
+    color: var(--primary);
+}

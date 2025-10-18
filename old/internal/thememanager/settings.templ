@@ -1,0 +1,104 @@
+package thememanager
+
+import (
+	"knov/internal/configmanager"
+	"knov/internal/translation"
+)
+
+func getBuiltinCSSEditor() string {
+	editorHTML := `<div id="customCssEditor">
+    <h3>` + translation.Sprintf("Custom CSS") + `</h3>
+    <form hx-post="/api/config/customCSS" hx-trigger="blur from:textarea">
+        <textarea name="css" rows="20" style="width: 100%; font-family: monospace;">{{CSS_CONTENT}}</textarea>
+    </form>
+</div>`
+	return configmanager.GetCustomCSSEditor(editorHTML)
+}
+
+templ Settings() {
+	@Base(translation.Sprintf("Settings")) {
+		<div id="page-settings">
+			<h1>{ translation.Sprintf("Settings") }</h1>
+			<div class="settings-sections">
+				@GeneralSection()
+				@ThemeSection()
+			</div>
+		</div>
+	}
+}
+
+templ GeneralSection() {
+	<section class="settings-section">
+		<h2>{ translation.Sprintf("General Settings") }</h2>
+		<div class="setting-item">
+			<form hx-post="/api/config/setLanguage" hx-trigger="change">
+				<label for="language">{ translation.Sprintf("Select Language:") }</label>
+				<select name="language" id="language">
+					for _, lang := range configmanager.GetAvailableLanguages() {
+						if lang.Code == configmanager.GetLanguage() {
+							<option value={ lang.Code } selected>{ lang.Name }</option>
+						} else {
+							<option value={ lang.Code }>{ lang.Name }</option>
+						}
+					}
+				</select>
+			</form>
+		</div>
+	</section>
+}
+
+templ ThemeSection() {
+	<section class="settings-section">
+		<h2>{ translation.Sprintf("Theme Settings") }</h2>
+		<div class="setting-item">
+			<form hx-post="/api/themes/setTheme" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
+				<label for="theme">{ translation.Sprintf("Select Theme:") }</label>
+				<select
+					name="theme"
+					id="theme"
+					hx-get="/api/themes/getAllThemes"
+					hx-target="this"
+					hx-swap="innerHTML"
+					hx-trigger="load"
+				>
+					<option>Loading themes...</option>
+				</select>
+			</form>
+		</div>
+		<div class="setting-item">
+			<label>
+				{ translation.Sprintf("Dark Mode") }
+				<input
+					type="checkbox"
+					name="darkMode"
+					checked?={ configmanager.GetDarkMode() }
+					hx-post="/api/config/setDarkMode"
+					hx-vals='js:{"enabled": event.target.checked}'
+					hx-trigger="change"
+				/>
+			</label>
+		</div>
+		<div class="setting-item">
+			<form hx-post="/api/config/setColorScheme" hx-trigger="change">
+				<label for="colorScheme">Color Scheme:</label>
+				<select
+					name="colorScheme"
+					id="colorScheme"
+					hx-get="/api/config/getColorSchemes"
+					hx-trigger="load"
+				>
+					<option>Loading schemes...</option>
+				</select>
+			</form>
+		</div>
+		<div class="setting-item">
+			<form hx-post="/api/config/setFileView" hx-trigger="change">
+				<label for="fileView">Select File View:</label>
+				<select name="fileView" id="fileView" hx-get="/api/config/getAvailableFileViews" hx-trigger="load">
+					<option>Loading views...</option>
+				</select>
+			</form>
+		</div>
+		@templ.Raw(getBuiltinCSSEditor())
+	</section>
+}

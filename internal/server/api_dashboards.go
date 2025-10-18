@@ -123,8 +123,18 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := "dashboard created"
-	html := `<div>dashboard created successfully</div>`
+	// For HTMX requests, redirect to the dashboard view
+	if isHTMXRequest(r) {
+		w.Header().Set("HX-Redirect", fmt.Sprintf("/dashboard/%s", dash.ID))
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	data := map[string]string{
+		"status": "ok",
+		"id":     dash.ID,
+	}
+	html := fmt.Sprintf(`<div>Dashboard created successfully. <a href="/dashboard/%s">View Dashboard</a></div>`, dash.ID)
 	writeResponse(w, r, data, html)
 }
 
@@ -244,7 +254,14 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<div class="success-message">dashboard updated successfully! <a href="/dashboard/%s">view dashboard</a></div>`, dash.ID)
+	// For HTMX requests, redirect to the dashboard view
+	if isHTMXRequest(r) {
+		w.Header().Set("HX-Redirect", fmt.Sprintf("/dashboard/%s", dash.ID))
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	html := fmt.Sprintf(`<div class="success-message">Dashboard updated successfully! <a href="/dashboard/%s">View Dashboard</a></div>`, dash.ID)
 	writeResponse(w, r, dash, html)
 }
 

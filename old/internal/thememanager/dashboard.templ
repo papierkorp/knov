@@ -1,0 +1,36 @@
+package thememanager
+
+import (
+	"knov/internal/dashboard"
+	"knov/internal/translation"
+)
+
+templ Dashboard(dash *dashboard.Dashboard) {
+	@Base(dash.Name) {
+		<div id="page-dashboard">
+			<h1>{ dash.Name }</h1>
+			<div class="dashboard-layout">
+				<div class={ "dashboard-widgets dashboard-" + string(dash.Layout) }>
+					for _, widget := range dash.Widgets {
+						<div class="dashboard-widget" data-widget-id={ widget.ID }>
+							<h3>{ string(widget.Type) }</h3>
+							<div
+								hx-post={ "/api/dashboards/widget/" + widget.ID }
+								hx-vals={ `{"dashboardId": "` + dash.ID + `"}` }
+								hx-trigger="load"
+								class="widget-content"
+							>
+								{ translation.Sprintf("loading widget...") }
+							</div>
+						</div>
+					}
+					if len(dash.Widgets) == 0 {
+						<div class="dashboard-empty">
+							<p>{ translation.Sprintf("No widgets configured") }</p>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	}
+}

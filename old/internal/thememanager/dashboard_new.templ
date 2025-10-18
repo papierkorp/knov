@@ -1,0 +1,141 @@
+package thememanager
+
+import (
+	"fmt"
+	"knov/internal/translation"
+)
+
+templ DashboardNew() {
+	@Base(translation.Sprintf("New Dashboard")) {
+		<div id="page-dashboard-new">
+			<h1>{ translation.Sprintf("Create New Dashboard") }</h1>
+			@DashboardCreateForm()
+		</div>
+	}
+}
+
+templ DashboardCreateForm() {
+	<div class="dashboard-create-form">
+		<div class="form-header">
+			<h3>{ translation.Sprintf("Create New Dashboard") }</h3>
+			<p>{ translation.Sprintf("Design your custom dashboard with widgets") }</p>
+		</div>
+		<form hx-post="/api/dashboards" hx-target="#dashboard-create-result" hx-swap="innerHTML" class="dashboard-form">
+			<div class="form-section">
+				<h4>{ translation.Sprintf("Dashboard Settings") }</h4>
+				<div class="form-group">
+					<label for="name">{ translation.Sprintf("Dashboard Name") }</label>
+					<input
+						type="text"
+						id="name"
+						name="name"
+						required
+						placeholder={ translation.Sprintf("My Awesome Dashboard") }
+						class="form-input"
+					/>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="layout">{ translation.Sprintf("Layout") }</label>
+						<select id="layout" name="layout" required class="form-select">
+							<option value="oneColumn">📋 { translation.Sprintf("One Column") }</option>
+							<option value="twoColumns" selected>📊 { translation.Sprintf("Two Columns") }</option>
+							<option value="threeColumns">🎯 { translation.Sprintf("Three Columns") }</option>
+							<option value="fourColumns">🎨 { translation.Sprintf("Four Columns") }</option>
+						</select>
+					</div>
+					<div class="form-group checkbox-group">
+						<label class="checkbox-label">
+							<input type="checkbox" name="global" value="true" class="form-checkbox"/>
+							<span class="checkmark"></span>
+							{ translation.Sprintf("Global Dashboard") }
+							<small>{ translation.Sprintf("Visible to all users") }</small>
+						</label>
+					</div>
+				</div>
+			</div>
+			<div class="form-section">
+				<div class="section-header">
+					<h4>{ translation.Sprintf("Widgets") }</h4>
+					<button type="button" onclick="addWidget()" class="btn-add-widget">+ { translation.Sprintf("Add Widget") }</button>
+				</div>
+				<div id="widgets-container">
+					<div class="widget-form">
+						<div class="widget-header">
+							<span class="widget-number">{ translation.Sprintf("Widget") } 1</span>
+						</div>
+						<div class="form-row">
+							<div class="form-group">
+								<label>{ translation.Sprintf("Type") }</label>
+								<select
+									name="widgets[0][type]"
+									required
+									class="form-select"
+									onchange="updateConfig(0, this.value)"
+								>
+									<option value="">{ translation.Sprintf("Choose type...") }</option>
+									<option value="filter">🔍 { translation.Sprintf("Filter") }</option>
+									<option value="filterForm">📝 { translation.Sprintf("Filter Form") }</option>
+									<option value="fileContent">📄 { translation.Sprintf("File Content") }</option>
+									<option value="static">📌 { translation.Sprintf("Static Content") }</option>
+									<option value="tags">🏷️ { translation.Sprintf("Tags") }</option>
+									<option value="collections">📚 { translation.Sprintf("Collections") }</option>
+									<option value="folders">📁 { translation.Sprintf("Folders") }</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="form-group">
+								<label>{ translation.Sprintf("X Position") }</label>
+								<input
+									type="number"
+									name="widgets[0][position][x]"
+									min="0"
+									max="3"
+									value="0"
+									class="form-input"
+								/>
+							</div>
+							<div class="form-group">
+								<label>{ translation.Sprintf("Y Position") }</label>
+								<input type="number" name="widgets[0][position][y]" min="0" value="0" class="form-input"/>
+							</div>
+						</div>
+						@WidgetConfigSection(0)
+					</div>
+				</div>
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="btn-primary">
+					<span>🚀</span>
+					{ translation.Sprintf("Create Dashboard") }
+				</button>
+			</div>
+		</form>
+		<div id="dashboard-create-result" class="result-container"></div>
+		@WidgetManagementScripts()
+		@ConfigUpdateScripts()
+		@FilterConfigScripts()
+		@WidgetTypeConfigScripts()
+	</div>
+}
+
+templ WidgetConfigSection(widgetIndex int) {
+	<div class="form-group">
+		<label>{ translation.Sprintf("Configuration") }</label>
+		<div class="config-helper" id={ "config-helper-" + fmt.Sprintf("%d", widgetIndex) }>
+			<div class="config-placeholder">
+				<p>{ translation.Sprintf("Select a widget type to see configuration options") }</p>
+			</div>
+		</div>
+		<textarea
+			name={ "widgets[" + fmt.Sprintf("%d", widgetIndex) + "][config]" }
+			id={ "config-textarea-" + fmt.Sprintf("%d", widgetIndex) }
+			placeholder={ translation.Sprintf("Select widget type for configuration template") }
+			rows="4"
+			class="form-textarea"
+			style="display:none;"
+		></textarea>
+		<small class="form-help">{ translation.Sprintf("Configuration will be generated based on your selections above") }</small>
+	</div>
+}

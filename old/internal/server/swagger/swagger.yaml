@@ -1,0 +1,1599 @@
+basePath: /
+definitions:
+  dashboard.Dashboard:
+    properties:
+      global:
+        type: boolean
+      id:
+        type: string
+      layout:
+        $ref: '#/definitions/dashboard.Layout'
+      name:
+        type: string
+      widgets:
+        items:
+          $ref: '#/definitions/dashboard.Widget'
+        type: array
+    type: object
+  dashboard.FileContentConfig:
+    properties:
+      filePath:
+        type: string
+    type: object
+  dashboard.FilterConfig:
+    properties:
+      criteria:
+        items:
+          $ref: '#/definitions/files.FilterCriteria'
+        type: array
+      display:
+        description: list, cards, dropdown
+        type: string
+      limit:
+        type: integer
+      logic:
+        type: string
+    type: object
+  dashboard.Layout:
+    enum:
+    - oneColumn
+    - twoColumns
+    - threeColumns
+    - fourColumns
+    type: string
+    x-enum-varnames:
+    - OneColumn
+    - TwoColumns
+    - ThreeColumns
+    - FourColumns
+  dashboard.StaticConfig:
+    properties:
+      content:
+        type: string
+      format:
+        description: html, markdown, text
+        type: string
+    type: object
+  dashboard.Widget:
+    properties:
+      config:
+        $ref: '#/definitions/dashboard.WidgetConfig'
+      id:
+        type: string
+      position:
+        $ref: '#/definitions/dashboard.WidgetPosition'
+      type:
+        $ref: '#/definitions/dashboard.WidgetType'
+    type: object
+  dashboard.WidgetConfig:
+    properties:
+      fileContent:
+        $ref: '#/definitions/dashboard.FileContentConfig'
+      filter:
+        $ref: '#/definitions/dashboard.FilterConfig'
+      static:
+        $ref: '#/definitions/dashboard.StaticConfig'
+    type: object
+  dashboard.WidgetPosition:
+    properties:
+      x:
+        type: integer
+      "y":
+        type: integer
+    type: object
+  dashboard.WidgetType:
+    enum:
+    - filter
+    - filterForm
+    - fileContent
+    - static
+    - tags
+    - collections
+    - folders
+    type: string
+    x-enum-varnames:
+    - WidgetTypeFilter
+    - WidgetTypeFilterForm
+    - WidgetTypeFileContent
+    - WidgetTypeStatic
+    - WidgetTypeTags
+    - WidgetTypeCollections
+    - WidgetTypeFolders
+  files.File:
+    properties:
+      metadata:
+        $ref: '#/definitions/files.Metadata'
+      name:
+        type: string
+      path:
+        type: string
+    type: object
+  files.Filetype:
+    enum:
+    - todo
+    - note
+    - journal
+    type: string
+    x-enum-varnames:
+    - FileTypeTodo
+    - FileTypeNote
+    - FileTypeJournal
+  files.FilterCriteria:
+    properties:
+      action:
+        type: string
+      metadata:
+        type: string
+      operator:
+        type: string
+      value:
+        type: string
+    type: object
+  files.Metadata:
+    properties:
+      ancestor:
+        description: auto
+        items:
+          type: string
+        type: array
+      boards:
+        description: auto
+        items:
+          type: string
+        type: array
+      collection:
+        description: auto / manual possible
+        type: string
+      createdAt:
+        description: auto
+        type: string
+      folders:
+        description: auto
+        items:
+          type: string
+        type: array
+      kids:
+        description: auto
+        items:
+          type: string
+        type: array
+      lastEdited:
+        description: auto
+        type: string
+      linksToHere:
+        description: auto
+        items:
+          type: string
+        type: array
+      name:
+        description: manual filename
+        type: string
+      parents:
+        description: manual
+        items:
+          type: string
+        type: array
+      path:
+        description: auto
+        type: string
+      priority:
+        allOf:
+        - $ref: '#/definitions/files.Priority'
+        description: manual
+      size:
+        description: auto
+        type: integer
+      status:
+        allOf:
+        - $ref: '#/definitions/files.Status'
+        description: manual
+      tags:
+        description: manual
+        items:
+          type: string
+        type: array
+      targetDate:
+        description: auto
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/files.Filetype'
+        description: manual - with add new
+      usedLinks:
+        description: auto
+        items:
+          type: string
+        type: array
+    type: object
+  files.Priority:
+    enum:
+    - low
+    - medium
+    - high
+    type: string
+    x-enum-varnames:
+    - PriorityLow
+    - PriorityMedium
+    - PriorityHigh
+  files.Status:
+    enum:
+    - draft
+    - published
+    - archived
+    type: string
+    x-enum-varnames:
+    - StatusDraft
+    - StatusPublished
+    - StatusArchived
+host: localhost:1324
+info:
+  contact: {}
+  description: KNOV API \n http://localhost:1324
+  title: Knov API
+  version: "1.0"
+paths:
+  /api/components/editor:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get file editor
+      tags:
+      - components
+  /api/components/markdown-editor:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      tags:
+      - components
+  /api/components/table:
+    get:
+      description: Returns paginated, sortable, searchable table HTML fragment
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 25
+        description: Items per page
+        in: query
+        name: size
+        type: integer
+      - default: -1
+        description: Column index to sort by
+        in: query
+        name: sort
+        type: integer
+      - default: asc
+        description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      - description: Search query
+        in: query
+        name: search
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: table html fragment
+          schema:
+            type: string
+        "400":
+          description: invalid parameters
+          schema:
+            type: string
+        "500":
+          description: failed to process table
+          schema:
+            type: string
+      summary: Get paginated table
+      tags:
+      - components
+  /api/config/customCSS:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: CSS content
+        in: formData
+        name: css
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: css saved
+          schema:
+            type: string
+      summary: Save custom CSS for current user
+      tags:
+      - config
+  /api/config/getAvailableFileViews:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get available file views for current theme
+      tags:
+      - config
+  /api/config/getColorSchemes:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get available color schemes
+      tags:
+      - config
+  /api/config/getConfig:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get current configuration
+      tags:
+      - config
+  /api/config/getRepositoryURL:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get git repository URL
+      tags:
+      - config
+  /api/config/setColorScheme:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Set color scheme
+      tags:
+      - config
+  /api/config/setDarkMode:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Set dark mode
+      tags:
+      - config
+  /api/config/setDataPath:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: updates data path in .env file (requires restart)
+      parameters:
+      - description: data path
+        in: formData
+        name: dataPath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: saved
+          schema:
+            type: string
+      summary: Update data path
+      tags:
+      - config
+  /api/config/setFileView:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Set file view
+      tags:
+      - config
+  /api/config/setLanguage:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Set language
+      tags:
+      - config
+  /api/config/setRepositoryURL:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: updates git repository url in .env file (requires restart)
+      parameters:
+      - description: repository url
+        in: formData
+        name: repositoryUrl
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: saved
+          schema:
+            type: string
+      summary: Update git repository URL
+      tags:
+      - config
+  /api/dashboards:
+    get:
+      description: Get list of all dashboards for current user
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dashboard.Dashboard'
+            type: array
+      summary: Get all dashboards
+      tags:
+      - dashboards
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Create a new dashboard with optional widgets
+      parameters:
+      - description: Dashboard name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)
+        in: formData
+        name: layout
+        required: true
+        type: string
+      - description: Global dashboard (true/false)
+        in: formData
+        name: global
+        type: string
+      - description: Widget type (filter, filterForm, fileContent, static, tags, collections,
+          folders)
+        in: formData
+        name: widgets[0][type]
+        type: string
+      - description: Widget X position
+        in: formData
+        name: widgets[0][position][x]
+        type: integer
+      - description: Widget Y position
+        in: formData
+        name: widgets[0][position][y]
+        type: integer
+      - description: Widget configuration JSON
+        in: formData
+        name: widgets[0][config]
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: dashboard created
+          schema:
+            type: string
+      summary: Create new dashboard
+      tags:
+      - dashboards
+  /api/dashboards/{id}:
+    delete:
+      description: Delete dashboard by ID
+      parameters:
+      - description: Dashboard ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: dashboard deleted
+          schema:
+            type: string
+      summary: Delete dashboard
+      tags:
+      - dashboards
+    get:
+      description: Get dashboard by ID
+      parameters:
+      - description: Dashboard ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dashboard.Dashboard'
+      summary: Get specific dashboard
+      tags:
+      - dashboards
+    patch:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Update existing dashboard
+      parameters:
+      - description: Dashboard ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dashboard name
+        in: formData
+        name: name
+        type: string
+      - description: Dashboard layout
+        in: formData
+        name: layout
+        type: string
+      - description: Global dashboard
+        in: formData
+        name: global
+        type: string
+      - description: Widget type
+        in: formData
+        name: widgets[0][type]
+        type: string
+      - description: Widget X position
+        in: formData
+        name: widgets[0][position][x]
+        type: integer
+      - description: Widget Y position
+        in: formData
+        name: widgets[0][position][y]
+        type: integer
+      - description: Widget configuration JSON
+        in: formData
+        name: widgets[0][config]
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dashboard.Dashboard'
+      summary: Update dashboard
+      tags:
+      - dashboards
+  /api/dashboards/{id}/rename:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: dashboard id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: new dashboard name
+        in: formData
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: dashboard renamed
+          schema:
+            type: string
+      summary: Rename dashboard
+      tags:
+      - dashboards
+  /api/dashboards/widget/{widgetId}:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Render a specific widget by ID from a dashboard
+      parameters:
+      - description: Dashboard ID
+        in: formData
+        name: dashboardId
+        required: true
+        type: string
+      - description: Widget ID
+        in: path
+        name: widgetId
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: rendered widget html
+          schema:
+            type: string
+        "400":
+          description: missing parameters
+          schema:
+            type: string
+        "404":
+          description: widget not found
+          schema:
+            type: string
+        "500":
+          description: failed to render widget
+          schema:
+            type: string
+      summary: Render dashboard widget
+      tags:
+      - widgets
+  /api/files/content/{filepath}:
+    get:
+      parameters:
+      - description: File path
+        in: path
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get file content as html
+      tags:
+      - files
+  /api/files/filter:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - collectionFormat: csv
+        description: Metadata fields to filter on
+        in: formData
+        items:
+          type: string
+        name: metadata[]
+        type: array
+      - collectionFormat: csv
+        description: Filter operators (equals, contains, greater, less, in)
+        in: formData
+        items:
+          type: string
+        name: operator[]
+        type: array
+      - collectionFormat: csv
+        description: Filter values
+        in: formData
+        items:
+          type: string
+        name: value[]
+        type: array
+      - collectionFormat: csv
+        description: Filter actions (include, exclude)
+        in: formData
+        items:
+          type: string
+        name: action[]
+        type: array
+      - default: and
+        description: Logic operator for combining criteria (and, or)
+        in: formData
+        name: logic
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/files.File'
+            type: array
+      summary: Filter files by metadata
+      tags:
+      - files
+  /api/files/header:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get file header with link and breadcrumb
+      tags:
+      - files
+  /api/files/list:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get all files
+      tags:
+      - files
+  /api/files/raw:
+    get:
+      description: Returns unprocessed file content for editing
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/plain
+      responses:
+        "200":
+          description: raw content
+          schema:
+            type: string
+      summary: Get raw file content
+      tags:
+      - files
+  /api/files/save/{filepath}:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: path
+        name: filepath
+        required: true
+        type: string
+      - description: File content
+        in: formData
+        name: content
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Save file content
+      tags:
+      - files
+  /api/git/latestchanges:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get recently changed files
+      tags:
+      - git
+  /api/health:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Health check
+      tags:
+      - health
+  /api/links/ancestors:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get ancestor links for a file
+      tags:
+      - links
+  /api/links/kids:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get kids links for a file
+      tags:
+      - links
+  /api/links/linkstohere:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get links to here for a file
+      tags:
+      - links
+  /api/links/parents:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get parent links for a file
+      tags:
+      - links
+  /api/links/used:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get used links for a file
+      tags:
+      - links
+  /api/metadata:
+    get:
+      description: Get metadata for a file by providing filepath as query parameter
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/files.Metadata'
+        "400":
+          description: missing filepath parameter
+          schema:
+            type: string
+        "404":
+          description: metadata not found
+          schema:
+            type: string
+        "500":
+          description: failed to get metadata
+          schema:
+            type: string
+      summary: Get metadata for a single file
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/json
+      description: Set metadata for a file using JSON payload
+      parameters:
+      - description: Metadata object
+        in: body
+        name: metadata
+        required: true
+        schema:
+          $ref: '#/definitions/files.Metadata'
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: metadata saved
+          schema:
+            type: string
+        "400":
+          description: invalid json or missing path
+          schema:
+            type: string
+        "500":
+          description: failed to save metadata
+          schema:
+            type: string
+      summary: Set metadata for a single file
+      tags:
+      - metadata
+  /api/metadata/collection:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file collection
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Collection name
+        in: formData
+        name: collection
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file collection
+      tags:
+      - metadata
+  /api/metadata/collections:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+      summary: Get all collections with counts
+      tags:
+      - metadata
+  /api/metadata/createdat:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file creation date
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Creation date (YYYY-MM-DD HH:MM:SS)
+        in: formData
+        name: createdat
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file creation date
+      tags:
+      - metadata
+  /api/metadata/file/collection:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get collection for a specific file
+      tags:
+      - metadata
+  /api/metadata/file/folders:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get folders for a specific file
+      tags:
+      - metadata
+  /api/metadata/file/tags:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get tags for a specific file
+      tags:
+      - metadata
+  /api/metadata/filetype:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file type
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: File type (note, todo, journal)
+        in: formData
+        name: filetype
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file type
+      tags:
+      - metadata
+  /api/metadata/folders:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+      summary: Get all folders with counts
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Comma-separated folder list
+        in: formData
+        name: folders
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file folders
+      tags:
+      - metadata
+  /api/metadata/lastedited:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file last edited date
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Last edited date (YYYY-MM-DD HH:MM:SS)
+        in: formData
+        name: lastedited
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file last edited date
+      tags:
+      - metadata
+  /api/metadata/name:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file name
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: New file name
+        in: formData
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file name
+      tags:
+      - metadata
+  /api/metadata/path:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file path
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Current file path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: New file path
+        in: formData
+        name: newpath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file path
+      tags:
+      - metadata
+  /api/metadata/priority:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file priority
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Priority (low, medium, high)
+        in: formData
+        name: priority
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file priority
+      tags:
+      - metadata
+  /api/metadata/rebuild:
+    post:
+      description: Creates metadata for all files that don't have metadata yet
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: metadata initialized
+          schema:
+            type: string
+        "500":
+          description: failed to initialize metadata
+          schema:
+            type: string
+      summary: Initialize/Rebuild metadata for all files
+      tags:
+      - metadata
+  /api/metadata/status:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file status
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Status (draft, published, archived)
+        in: formData
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file status
+      tags:
+      - metadata
+  /api/metadata/tags:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+      summary: Get all tags with counts
+      tags:
+      - metadata
+  /api/search:
+    get:
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        required: true
+        type: string
+      - description: 'Output format: dropdown, list, cards, json'
+        enum:
+        - dropdown
+        - list
+        - cards
+        - json
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Search files
+      tags:
+      - search
+  /api/system/restart:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Restarts the application (requires process manager like systemd
+        or docker)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: restarting
+          schema:
+            type: string
+      summary: Restart application
+      tags:
+      - system
+  /api/testdata/clean:
+    post:
+      description: Removes all test data files and metadata
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: '{"status":"ok","message":"test data cleaned"}'
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Clean test data
+      tags:
+      - testdata
+  /api/testdata/setup:
+    post:
+      description: Creates test files, git operations, and metadata for testing
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: '{"status":"ok","message":"test data setup completed"}'
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Setup test data
+      tags:
+      - testdata
+  /api/themes/getAllThemes:
+    get:
+      description: Get current theme and available themes
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: '{"current":"themename","available":["theme1","theme2"]}'
+          schema:
+            type: string
+      summary: Get themes
+      tags:
+      - themes
+  /api/themes/setTheme:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Set new theme via form parameter
+      parameters:
+      - description: Theme name to set
+        in: formData
+        name: theme
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "303":
+          description: Redirect to settings page
+      summary: Set theme
+      tags:
+      - themes
+  /api/themes/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a self-contained theme .so file
+      parameters:
+      - description: Theme .so file
+        in: formData
+        name: file
+        required: true
+        type: file
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Upload theme
+      tags:
+      - themes
+swagger: "2.0"

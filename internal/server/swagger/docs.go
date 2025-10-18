@@ -36,6 +36,18 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/components/filter-form": {
+            "get": {
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "components"
+                ],
+                "summary": "Get filter form widget",
+                "responses": {}
+            }
+        },
         "/api/components/markdown-editor": {
             "get": {
                 "produces": [
@@ -369,7 +381,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dashboard.Dashboard"
+                                "$ref": "#/definitions/knov_internal_dashboard.Dashboard"
                             }
                         }
                     }
@@ -525,7 +537,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dashboard.Dashboard"
+                            "$ref": "#/definitions/knov_internal_dashboard.Dashboard"
                         }
                     }
                 }
@@ -626,7 +638,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dashboard.Dashboard"
+                            "$ref": "#/definitions/knov_internal_dashboard.Dashboard"
                         }
                     }
                 }
@@ -760,7 +772,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/files.File"
+                                "$ref": "#/definitions/knov_internal_files.File"
                             }
                         }
                     }
@@ -1023,7 +1035,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/files.Metadata"
+                            "$ref": "#/definitions/knov_internal_files.Metadata"
                         }
                     },
                     "400": {
@@ -1066,7 +1078,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/files.Metadata"
+                            "$ref": "#/definitions/knov_internal_files.Metadata"
                         }
                     }
                 ],
@@ -2011,7 +2023,7 @@ const docTemplate = `{
         },
         "/api/themes/upload": {
             "post": {
-                "description": "Upload a theme .tgz archive",
+                "description": "Upload a self-contained theme .so file",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -2022,7 +2034,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "file",
-                        "description": "Theme .tgz file",
+                        "description": "Theme .so file",
                         "name": "file",
                         "in": "formData",
                         "required": true
@@ -2048,7 +2060,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dashboard.Dashboard": {
+        "knov_internal_dashboard.Dashboard": {
             "type": "object",
             "properties": {
                 "global": {
@@ -2058,7 +2070,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "layout": {
-                    "$ref": "#/definitions/dashboard.Layout"
+                    "$ref": "#/definitions/knov_internal_dashboard.Layout"
                 },
                 "name": {
                     "type": "string"
@@ -2066,12 +2078,12 @@ const docTemplate = `{
                 "widgets": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dashboard.Widget"
+                        "$ref": "#/definitions/knov_internal_dashboard.Widget"
                     }
                 }
             }
         },
-        "dashboard.FileContentConfig": {
+        "knov_internal_dashboard.FileContentConfig": {
             "type": "object",
             "properties": {
                 "filePath": {
@@ -2079,13 +2091,13 @@ const docTemplate = `{
                 }
             }
         },
-        "dashboard.FilterConfig": {
+        "knov_internal_dashboard.FilterConfig": {
             "type": "object",
             "properties": {
                 "criteria": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/files.FilterCriteria"
+                        "$ref": "#/definitions/knov_internal_files.FilterCriteria"
                     }
                 },
                 "display": {
@@ -2100,7 +2112,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dashboard.Layout": {
+        "knov_internal_dashboard.Layout": {
             "type": "string",
             "enum": [
                 "oneColumn",
@@ -2115,7 +2127,7 @@ const docTemplate = `{
                 "FourColumns"
             ]
         },
-        "dashboard.StaticConfig": {
+        "knov_internal_dashboard.StaticConfig": {
             "type": "object",
             "properties": {
                 "content": {
@@ -2127,38 +2139,38 @@ const docTemplate = `{
                 }
             }
         },
-        "dashboard.Widget": {
+        "knov_internal_dashboard.Widget": {
             "type": "object",
             "properties": {
                 "config": {
-                    "$ref": "#/definitions/dashboard.WidgetConfig"
+                    "$ref": "#/definitions/knov_internal_dashboard.WidgetConfig"
                 },
                 "id": {
                     "type": "string"
                 },
                 "position": {
-                    "$ref": "#/definitions/dashboard.WidgetPosition"
+                    "$ref": "#/definitions/knov_internal_dashboard.WidgetPosition"
                 },
                 "type": {
-                    "$ref": "#/definitions/dashboard.WidgetType"
+                    "$ref": "#/definitions/knov_internal_dashboard.WidgetType"
                 }
             }
         },
-        "dashboard.WidgetConfig": {
+        "knov_internal_dashboard.WidgetConfig": {
             "type": "object",
             "properties": {
                 "fileContent": {
-                    "$ref": "#/definitions/dashboard.FileContentConfig"
+                    "$ref": "#/definitions/knov_internal_dashboard.FileContentConfig"
                 },
                 "filter": {
-                    "$ref": "#/definitions/dashboard.FilterConfig"
+                    "$ref": "#/definitions/knov_internal_dashboard.FilterConfig"
                 },
                 "static": {
-                    "$ref": "#/definitions/dashboard.StaticConfig"
+                    "$ref": "#/definitions/knov_internal_dashboard.StaticConfig"
                 }
             }
         },
-        "dashboard.WidgetPosition": {
+        "knov_internal_dashboard.WidgetPosition": {
             "type": "object",
             "properties": {
                 "x": {
@@ -2169,7 +2181,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dashboard.WidgetType": {
+        "knov_internal_dashboard.WidgetType": {
             "type": "string",
             "enum": [
                 "filter",
@@ -2190,11 +2202,11 @@ const docTemplate = `{
                 "WidgetTypeFolders"
             ]
         },
-        "files.File": {
+        "knov_internal_files.File": {
             "type": "object",
             "properties": {
                 "metadata": {
-                    "$ref": "#/definitions/files.Metadata"
+                    "$ref": "#/definitions/knov_internal_files.Metadata"
                 },
                 "name": {
                     "type": "string"
@@ -2204,7 +2216,7 @@ const docTemplate = `{
                 }
             }
         },
-        "files.Filetype": {
+        "knov_internal_files.Filetype": {
             "type": "string",
             "enum": [
                 "todo",
@@ -2217,7 +2229,7 @@ const docTemplate = `{
                 "FileTypeJournal"
             ]
         },
-        "files.FilterCriteria": {
+        "knov_internal_files.FilterCriteria": {
             "type": "object",
             "properties": {
                 "action": {
@@ -2234,7 +2246,7 @@ const docTemplate = `{
                 }
             }
         },
-        "files.Metadata": {
+        "knov_internal_files.Metadata": {
             "type": "object",
             "properties": {
                 "ancestor": {
@@ -2303,7 +2315,7 @@ const docTemplate = `{
                     "description": "manual",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/files.Priority"
+                            "$ref": "#/definitions/knov_internal_files.Priority"
                         }
                     ]
                 },
@@ -2315,7 +2327,7 @@ const docTemplate = `{
                     "description": "manual",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/files.Status"
+                            "$ref": "#/definitions/knov_internal_files.Status"
                         }
                     ]
                 },
@@ -2334,7 +2346,7 @@ const docTemplate = `{
                     "description": "manual - with add new",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/files.Filetype"
+                            "$ref": "#/definitions/knov_internal_files.Filetype"
                         }
                     ]
                 },
@@ -2347,7 +2359,7 @@ const docTemplate = `{
                 }
             }
         },
-        "files.Priority": {
+        "knov_internal_files.Priority": {
             "type": "string",
             "enum": [
                 "low",
@@ -2360,7 +2372,7 @@ const docTemplate = `{
                 "PriorityHigh"
             ]
         },
-        "files.Status": {
+        "knov_internal_files.Status": {
             "type": "string",
             "enum": [
                 "draft",

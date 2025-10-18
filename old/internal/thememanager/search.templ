@@ -1,0 +1,29 @@
+package thememanager
+
+import "knov/internal/translation"
+
+templ Search(query string) {
+	@Base(translation.Sprintf("Search")) {
+		<div id="page-search">
+			<h1>{ translation.Sprintf("Search Results") }</h1>
+			<div class="search-form">
+				<input
+					type="text"
+					value={ query }
+					placeholder={ translation.Sprintf("Search files...") }
+					hx-get="/api/search?format=cards"
+					hx-target="#page-search-results"
+					hx-trigger="keyup changed delay:300ms, load"
+					name="q"
+				/>
+			</div>
+			<div id="page-search-results">
+				if query != "" {
+					<p>{ translation.Sprintf("Loading results for") }: "{ query }"</p>
+				} else {
+					<p>{ translation.Sprintf("Enter a search term") }</p>
+				}
+			</div>
+		</div>
+	}
+}

@@ -1,30 +1,30 @@
 basePath: /
 definitions:
-  dashboard.Dashboard:
+  knov_internal_dashboard.Dashboard:
     properties:
       global:
         type: boolean
       id:
         type: string
       layout:
-        $ref: '#/definitions/dashboard.Layout'
+        $ref: '#/definitions/knov_internal_dashboard.Layout'
       name:
         type: string
       widgets:
         items:
-          $ref: '#/definitions/dashboard.Widget'
+          $ref: '#/definitions/knov_internal_dashboard.Widget'
         type: array
     type: object
-  dashboard.FileContentConfig:
+  knov_internal_dashboard.FileContentConfig:
     properties:
       filePath:
         type: string
     type: object
-  dashboard.FilterConfig:
+  knov_internal_dashboard.FilterConfig:
     properties:
       criteria:
         items:
-          $ref: '#/definitions/files.FilterCriteria'
+          $ref: '#/definitions/knov_internal_files.FilterCriteria'
         type: array
       display:
         description: list, cards, dropdown
@@ -34,7 +34,7 @@ definitions:
       logic:
         type: string
     type: object
-  dashboard.Layout:
+  knov_internal_dashboard.Layout:
     enum:
     - oneColumn
     - twoColumns
@@ -46,7 +46,7 @@ definitions:
     - TwoColumns
     - ThreeColumns
     - FourColumns
-  dashboard.StaticConfig:
+  knov_internal_dashboard.StaticConfig:
     properties:
       content:
         type: string
@@ -54,34 +54,34 @@ definitions:
         description: html, markdown, text
         type: string
     type: object
-  dashboard.Widget:
+  knov_internal_dashboard.Widget:
     properties:
       config:
-        $ref: '#/definitions/dashboard.WidgetConfig'
+        $ref: '#/definitions/knov_internal_dashboard.WidgetConfig'
       id:
         type: string
       position:
-        $ref: '#/definitions/dashboard.WidgetPosition'
+        $ref: '#/definitions/knov_internal_dashboard.WidgetPosition'
       type:
-        $ref: '#/definitions/dashboard.WidgetType'
+        $ref: '#/definitions/knov_internal_dashboard.WidgetType'
     type: object
-  dashboard.WidgetConfig:
+  knov_internal_dashboard.WidgetConfig:
     properties:
       fileContent:
-        $ref: '#/definitions/dashboard.FileContentConfig'
+        $ref: '#/definitions/knov_internal_dashboard.FileContentConfig'
       filter:
-        $ref: '#/definitions/dashboard.FilterConfig'
+        $ref: '#/definitions/knov_internal_dashboard.FilterConfig'
       static:
-        $ref: '#/definitions/dashboard.StaticConfig'
+        $ref: '#/definitions/knov_internal_dashboard.StaticConfig'
     type: object
-  dashboard.WidgetPosition:
+  knov_internal_dashboard.WidgetPosition:
     properties:
       x:
         type: integer
       "y":
         type: integer
     type: object
-  dashboard.WidgetType:
+  knov_internal_dashboard.WidgetType:
     enum:
     - filter
     - filterForm
@@ -99,16 +99,16 @@ definitions:
     - WidgetTypeTags
     - WidgetTypeCollections
     - WidgetTypeFolders
-  files.File:
+  knov_internal_files.File:
     properties:
       metadata:
-        $ref: '#/definitions/files.Metadata'
+        $ref: '#/definitions/knov_internal_files.Metadata'
       name:
         type: string
       path:
         type: string
     type: object
-  files.Filetype:
+  knov_internal_files.Filetype:
     enum:
     - todo
     - note
@@ -118,7 +118,7 @@ definitions:
     - FileTypeTodo
     - FileTypeNote
     - FileTypeJournal
-  files.FilterCriteria:
+  knov_internal_files.FilterCriteria:
     properties:
       action:
         type: string
@@ -129,7 +129,7 @@ definitions:
       value:
         type: string
     type: object
-  files.Metadata:
+  knov_internal_files.Metadata:
     properties:
       ancestor:
         description: auto
@@ -178,14 +178,14 @@ definitions:
         type: string
       priority:
         allOf:
-        - $ref: '#/definitions/files.Priority'
+        - $ref: '#/definitions/knov_internal_files.Priority'
         description: manual
       size:
         description: auto
         type: integer
       status:
         allOf:
-        - $ref: '#/definitions/files.Status'
+        - $ref: '#/definitions/knov_internal_files.Status'
         description: manual
       tags:
         description: manual
@@ -197,7 +197,7 @@ definitions:
         type: string
       type:
         allOf:
-        - $ref: '#/definitions/files.Filetype'
+        - $ref: '#/definitions/knov_internal_files.Filetype'
         description: manual - with add new
       usedLinks:
         description: auto
@@ -205,7 +205,7 @@ definitions:
           type: string
         type: array
     type: object
-  files.Priority:
+  knov_internal_files.Priority:
     enum:
     - low
     - medium
@@ -215,7 +215,7 @@ definitions:
     - PriorityLow
     - PriorityMedium
     - PriorityHigh
-  files.Status:
+  knov_internal_files.Status:
     enum:
     - draft
     - published
@@ -244,6 +244,14 @@ paths:
       - text/html
       responses: {}
       summary: Get file editor
+      tags:
+      - components
+  /api/components/filter-form:
+    get:
+      produces:
+      - text/html
+      responses: {}
+      summary: Get filter form widget
       tags:
       - components
   /api/components/markdown-editor:
@@ -470,7 +478,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dashboard.Dashboard'
+              $ref: '#/definitions/knov_internal_dashboard.Dashboard'
             type: array
       summary: Get all dashboards
       tags:
@@ -557,7 +565,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dashboard.Dashboard'
+            $ref: '#/definitions/knov_internal_dashboard.Dashboard'
       summary: Get specific dashboard
       tags:
       - dashboards
@@ -606,7 +614,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dashboard.Dashboard'
+            $ref: '#/definitions/knov_internal_dashboard.Dashboard'
       summary: Update dashboard
       tags:
       - dashboards
@@ -734,7 +742,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/files.File'
+              $ref: '#/definitions/knov_internal_files.File'
             type: array
       summary: Filter files by metadata
       tags:
@@ -913,7 +921,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/files.Metadata'
+            $ref: '#/definitions/knov_internal_files.Metadata'
         "400":
           description: missing filepath parameter
           schema:
@@ -939,7 +947,7 @@ paths:
         name: metadata
         required: true
         schema:
-          $ref: '#/definitions/files.Metadata'
+          $ref: '#/definitions/knov_internal_files.Metadata'
       produces:
       - application/json
       - text/html
@@ -1575,9 +1583,9 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Upload a theme .tgz archive
+      description: Upload a self-contained theme .so file
       parameters:
-      - description: Theme .tgz file
+      - description: Theme .so file
         in: formData
         name: file
         required: true

@@ -25,14 +25,52 @@
     data-color-scheme="{{.ColorScheme}}"
     data-language="{{.Language}}"
 >
-    <div id="wrapper">
+    <div id="app-wrapper">
         {{template "header" .}}
-        <main>
+        <main id="app-main">
             {{template "content" .}}
         </main>
     </div>
+    <div class="htmx-indicator" id="app-loading">
+        <div class="loading-spinner"></div>
+    </div>
     <script src="/static/htmx.min.js"></script>
     <script src="/static/toastui-editor-3.2.2.min.js"></script>
+    <script>
+        // Global HTMX configuration
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            // Add custom headers for HTMX requests
+            event.detail.headers['X-Requested-With'] = 'HTMX';
+        });
+
+        // Update page title on navigation
+        document.body.addEventListener('htmx:afterSwap', (event) => {
+            const title = event.detail.target.getAttribute('data-page-title');
+            if (title) {
+                document.title = title;
+            }
+        });
+
+        // Handle navigation indicator - show/hide loading bar
+        const loadingIndicator = document.getElementById('app-loading');
+
+        // Show indicator when request starts
+        document.body.addEventListener('htmx:beforeRequest', (event) => {
+            loadingIndicator.classList.add('active');
+        });
+
+        // Hide indicator when complete (multiple events to ensure it's hidden)
+        const hideLoading = () => {
+            loadingIndicator.classList.remove('active');
+        };
+
+        document.body.addEventListener('htmx:afterSwap', hideLoading);
+        document.body.addEventListener('htmx:afterSettle', hideLoading);
+        document.body.addEventListener('htmx:afterOnLoad', hideLoading);
+        document.body.addEventListener('htmx:responseError', hideLoading);
+        document.body.addEventListener('htmx:sendError', hideLoading);
+        document.body.addEventListener('htmx:timeout', hideLoading);
+    </script>
 </body>
 </html>
 
@@ -62,14 +100,34 @@
     </div>
     <div class="header-right">
         <span class="span-header-git-operations">
-            <a href="/overview">{{T "Overview"}}</a>
-            <a href="/latest-changes">{{T "Latest Changes"}}</a>
-            <a href="/history">{{T "History"}}</a>
+            <a href="/overview"
+               hx-get="/overview"
+               hx-target="#app-main"
+               hx-push-url="true"
+               hx-swap="innerHTML swap:0.2s"
+               class="htmx-nav">{{T "Overview"}}</a>
+            <a href="/latest-changes"
+               hx-get="/latest-changes"
+               hx-target="#app-main"
+               hx-push-url="true"
+               hx-swap="innerHTML swap:0.2s"
+               class="htmx-nav">{{T "Latest Changes"}}</a>
+            <a href="/history"
+               hx-get="/history"
+               hx-target="#app-main"
+               hx-push-url="true"
+               hx-swap="innerHTML swap:0.2s"
+               class="htmx-nav">{{T "History"}}</a>
         </span>
         <div class="dropdown-navbar">
             <button class="btn-add">+</button>
             <div class="dropdown-navbar-content">
-                <a href="/dashboard/new">{{T "New Dashboard"}}</a>
+                <a href="/dashboard/new"
+                   hx-get="/dashboard/new"
+                   hx-target="#app-main"
+                   hx-push-url="true"
+                   hx-swap="innerHTML swap:0.2s"
+                   class="htmx-nav">{{T "New Dashboard"}}</a>
                 <a href="#" onclick="alert('Add Note - Coming Soon')">Add Note</a>
                 <a href="#" onclick="alert('Add Todo - Coming Soon')">Add Todo</a>
             </div>
@@ -93,11 +151,36 @@
                 <i class="fa fa-bars" aria-hidden="true"></i>
             </button>
             <div class="dropdown-navbar-content">
-                <a href="/">{{T "Home"}}</a>
-                <a href="/help">{{T "Help"}}</a>
-                <a href="/playground">{{T "Playground"}}</a>
-                <a href="/settings">{{T "Settings"}}</a>
-                <a href="/admin">{{T "Admin"}}</a>
+                <a href="/"
+                   hx-get="/"
+                   hx-target="#app-main"
+                   hx-push-url="true"
+                   hx-swap="innerHTML swap:0.2s"
+                   class="htmx-nav">{{T "Home"}}</a>
+                <a href="/help"
+                   hx-get="/help"
+                   hx-target="#app-main"
+                   hx-push-url="true"
+                   hx-swap="innerHTML swap:0.2s"
+                   class="htmx-nav">{{T "Help"}}</a>
+                <a href="/playground"
+                   hx-get="/playground"
+                   hx-target="#app-main"
+                   hx-push-url="true"
+                   hx-swap="innerHTML swap:0.2s"
+                   class="htmx-nav">{{T "Playground"}}</a>
+                <a href="/settings"
+                   hx-get="/settings"
+                   hx-target="#app-main"
+                   hx-push-url="true"
+                   hx-swap="innerHTML swap:0.2s"
+                   class="htmx-nav">{{T "Settings"}}</a>
+                <a href="/admin"
+                   hx-get="/admin"
+                   hx-target="#app-main"
+                   hx-push-url="true"
+                   hx-swap="innerHTML swap:0.2s"
+                   class="htmx-nav">{{T "Admin"}}</a>
                 <a href="/swagger/">Swagger</a>
             </div>
         </div>
