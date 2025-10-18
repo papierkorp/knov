@@ -1,42 +1,46 @@
 {{define "content"}}
 <div class="page-settings">
-    <h2>{{.T "Theme Settings"}}</h2>
+    <h2>Settings</h2>
 
-    <div class="settings-section">
-        <h3>{{.T "Switch Theme"}}</h3>
-        <form hx-post="/api/themes/setTheme" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
-            <label for="theme">{{.T "Select Theme:"}}</label>
-            <select
-                name="theme"
-                id="theme"
-                hx-get="/api/themes/getAllThemes"
-                hx-target="this"
-                hx-swap="innerHTML"
-                hx-trigger="load"
-            >
-                <option>Loading themes...</option>
+    <section class="settings-section">
+        <h3>Theme Selection</h3>
+
+        <div class="setting-item">
+            <label>Choose Theme</label>
+            <select name="theme" hx-post="/api/themes/setTheme" hx-trigger="change">
+                <option value="builtin">Builtin Theme</option>
+                <option value="simple" selected>Simple Theme (Current)</option>
             </select>
-        </form>
-    </div>
+            <p class="setting-hint">Switch between available themes</p>
+        </div>
 
-    <div class="settings-section">
-        <h3>{{.T "Dark Mode"}}</h3>
-        <label class="toggle-container">
+        <div class="setting-item">
+            <label>Dark Mode</label>
             <input
                 type="checkbox"
                 name="darkMode"
                 {{if .DarkMode}}checked{{end}}
                 hx-post="/api/config/setDarkMode"
-                hx-vals='js:{"enabled": event.target.checked}'
                 hx-trigger="change"
             />
-            <span class="toggle-label">{{.T "Enable Dark Mode"}}</span>
-        </label>
-    </div>
+            <p class="setting-hint">Toggle dark mode on/off</p>
+        </div>
 
-    <div class="info-box">
-        <p><strong>Note:</strong> This simple theme has minimal features.</p>
-        <p>Switch back to the <strong>builtin</strong> theme for full functionality.</p>
-    </div>
+        <div class="setting-item">
+            <label>Language</label>
+            <select name="language" hx-post="/api/config/setLanguage" hx-trigger="change">
+                <option value="en" {{if eq .Language "en"}}selected{{end}}>English</option>
+                <option value="de" {{if eq .Language "de"}}selected{{end}}>Deutsch</option>
+            </select>
+            <p class="setting-hint">Select your preferred language</p>
+        </div>
+    </section>
+
+    <section class="settings-section">
+        <h3>Navigation</h3>
+        <div class="setting-item">
+            <a href="/home" class="btn">← Back to Home</a>
+        </div>
+    </section>
 </div>
 {{end}}

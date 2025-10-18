@@ -2,35 +2,41 @@
 package thememanager
 
 import (
-	"archive/tar"
 	"bytes"
-	"compress/gzip"
 	"embed"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
-	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/translation"
+	"knov/internal/utils"
 )
 
 // -----------------------------------------------------------------------------
-// ----------------------------- globalThemeManager -----------------------------
+// ----------------------------- Global Variables ------------------------------
 // -----------------------------------------------------------------------------
 
 var globalThemeManager *ThemeManager
-var builtinThemeFS embed.FS
+var builtinThemeArchive embed.FS
+var themesPath string // Themes directory path (config/themes)
 
-// SetBuiltinThemeFS sets the embedded filesystem for the builtin theme
-func SetBuiltinThemeFS(fsys embed.FS) {
-	builtinThemeFS = fsys
+// SetBuiltinThemeArchive sets the embedded builtin theme archive
+func SetBuiltinThemeArchive(fsys embed.FS) {
+	builtinThemeArchive = fsys
+}
+
+// getThemesPath returns the themes directory path
+func getThemesPath() string {
+	if themesPath == "" {
+		themesPath = filepath.Join(configmanager.GetConfigPath(), "themes")
+	}
+	return themesPath
 }
 
 // Init initializes the global theme manager
@@ -48,17 +54,12 @@ func GetThemeManager() IThemeManager {
 // NewThemeManager creates a new theme manager instance
 func NewThemeManager() *ThemeManager {
 	return &ThemeManager{
-		themes:        make(map[string]*Theme),
-		pageTemplates: make(map[string]*template.Template),
+		themes: make(map[string]*Theme),
 		funcMap: template.FuncMap{
-			"urlquery": template.URLQueryEscaper,
-			"sub":      func(a, b int) int { return a - b },
-			"mul":      func(a, b int) int { return a * b },
-			"add":      func(a, b int) int { return a + b },
-			"eq":       func(a, b interface{}) bool { return a == b },
-			"ne":       func(a, b interface{}) bool { return a != b },
-			"or":       func(a, b bool) bool { return a || b },
-			"T":        translation.Sprintf,
+			"T":   translation.Sprintf, // Translation function
+			"add": func(a, b int) int { return a + b },
+			"sub": func(a, b int) int { return a - b },
+			"mul": func(a, b int) int { return a * b },
 		},
 	}
 }
@@ -70,19 +71,34 @@ func NewThemeManager() *ThemeManager {
 // Theme represents a loaded theme
 type Theme struct {
 	Name      string
-	Path      string // filesystem path for external themes
+	Path      string // empty for builtin, filesystem path for external
 	Metadata  ThemeMetadata
-	Templates *template.Template
-	IsBuiltin bool
+	Templates ThemeTemplates
+}
+
+// ThemeTemplates contains all parsed templates for a theme
+type ThemeTemplates struct {
+	Base          *template.Template
+	Home          *template.Template
+	FileView      *template.Template
+	FileEdit      *template.Template
+	Search        *template.Template
+	Overview      *template.Template
+	Dashboard     *template.Template
+	Settings      *template.Template
+	Admin         *template.Template
+	Playground    *template.Template
+	History       *template.Template
+	LatestChanges *template.Template
+	BrowseFiles   *template.Template
 }
 
 // ThemeManager manages all themes
 type ThemeManager struct {
-	themes        map[string]*Theme
-	currentTheme  *Theme
-	funcMap       template.FuncMap
-	pageTemplates map[string]*template.Template // page-specific templates
-	mutex         sync.RWMutex
+	themes       map[string]*Theme
+	currentTheme *Theme
+	funcMap      template.FuncMap // needed for template functions like T, urlquery, eq, etc.
+	mutex        sync.RWMutex
 }
 
 // ThemeMetadata defines theme capabilities from theme.json
@@ -93,7 +109,6 @@ type ThemeMetadata struct {
 	Description string              `json:"description"`
 	Views       map[string][]string `json:"views"`
 	Features    ThemeFeatures       `json:"features"`
-	Templates   map[string]string   `json:"templates"`
 }
 
 // ThemeFeatures defines theme feature support
@@ -129,15 +144,37 @@ type IThemeManager interface {
 func (tm *ThemeManager) Initialize() {
 	logging.LogInfo("initialize thememanager ...")
 
-	// Load builtin theme
-	if err := tm.loadBuiltinTheme(); err != nil {
-		logging.LogError("failed to load builtin theme: %v", err)
-		panic(fmt.Sprintf("cannot continue without builtin theme: %v", err))
+	themesDir := getThemesPath()
+	builtinPath := filepath.Join(themesDir, "builtin")
+
+	// Check if builtin theme needs to be extracted
+	if _, err := os.Stat(filepath.Join(builtinPath, "theme.json")); os.IsNotExist(err) {
+		logging.LogInfo("extracting builtin theme from embedded archive")
+
+		// Read embedded archive
+		archiveData, err := builtinThemeArchive.ReadFile("themes/builtin.tar.gz")
+		if err != nil {
+			logging.LogError("failed to read embedded builtin theme archive: %v", err)
+			panic(fmt.Sprintf("cannot continue without builtin theme: %v", err))
+		}
+
+		// Use LoadThemeFromArchive to extract and load builtin
+		reader := bytes.NewReader(archiveData)
+		if err := tm.LoadThemeFromArchive("builtin", reader); err != nil {
+			logging.LogError("failed to load builtin theme: %v", err)
+			panic(fmt.Sprintf("cannot continue without builtin theme: %v", err))
+		}
 	}
 
-	// Load external themes from themes/external directory
-	if err := tm.loadExternalThemes(); err != nil {
-		logging.LogWarning("failed to load external themes: %v", err)
+	// Load all themes from themes/ directory (including builtin if already extracted)
+	if err := tm.loadAllThemes(); err != nil {
+		logging.LogWarning("failed to load themes: %v", err)
+	}
+
+	// Ensure builtin theme exists
+	if _, ok := tm.themes["builtin"]; !ok {
+		logging.LogError("builtin theme not found after loading")
+		panic("builtin theme is required but not found")
 	}
 
 	// Set current theme from config
@@ -155,103 +192,18 @@ func (tm *ThemeManager) Initialize() {
 	logging.LogInfo("theme manager initialized successfully")
 }
 
-// loadBuiltinTheme loads the embedded builtin theme
-func (tm *ThemeManager) loadBuiltinTheme() error {
-	tm.mutex.Lock()
-	defer tm.mutex.Unlock()
+// loadAllThemes loads all themes from themes/ directory
+func (tm *ThemeManager) loadAllThemes() error {
+	themesDir := getThemesPath()
 
-	logging.LogInfo("loading builtin theme from embedded filesystem")
+	// Create themes directory if it doesn't exist
+	if err := os.MkdirAll(themesDir, 0755); err != nil {
+		return fmt.Errorf("failed to create themes directory: %w", err)
+	}
 
-	// Read theme.json
-	metadataBytes, err := builtinThemeFS.ReadFile("themes/builtin/theme.json")
+	entries, err := os.ReadDir(themesDir)
 	if err != nil {
-		return fmt.Errorf("failed to read builtin theme.json: %w", err)
-	}
-
-	var metadata ThemeMetadata
-	if err := json.Unmarshal(metadataBytes, &metadata); err != nil {
-		return fmt.Errorf("failed to parse builtin theme.json: %w", err)
-	}
-
-	// Read base template content first
-	baseContent, err := builtinThemeFS.ReadFile("themes/builtin/templates/base.html")
-	if err != nil {
-		return fmt.Errorf("failed to read base.html: %w", err)
-	}
-
-	// Create a dummy template set for the theme (for compatibility)
-	tmpl := template.New("builtin").Funcs(tm.funcMap)
-
-	// Parse all .html files and create individual template sets for each page
-	err = fs.WalkDir(builtinThemeFS, "themes/builtin/templates", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if d.IsDir() || !strings.HasSuffix(path, ".html") {
-			return nil
-		}
-
-		templateName := filepath.Base(path)
-
-		// Skip base.html in the loop
-		if templateName == "base.html" {
-			return nil
-		}
-
-		content, err := builtinThemeFS.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("failed to read %s: %w", path, err)
-		}
-
-		// Create a new template set for this page that includes base + page content
-		pageTmpl := template.New(templateName).Funcs(tm.funcMap)
-
-		// Parse base template first
-		if _, err := pageTmpl.New("base.html").Parse(string(baseContent)); err != nil {
-			return fmt.Errorf("failed to parse base.html for %s: %w", templateName, err)
-		}
-
-		// Parse the page template
-		if _, err := pageTmpl.Parse(string(content)); err != nil {
-			return fmt.Errorf("failed to parse template %s: %w", templateName, err)
-		}
-
-		// Store this page-specific template set
-		tm.pageTemplates[templateName] = pageTmpl
-
-		logging.LogInfo("parsed builtin template: %s", path)
-		return nil
-	})
-
-	if err != nil {
-		return fmt.Errorf("failed to parse builtin templates: %w", err)
-	}
-
-	theme := &Theme{
-		Name:      "builtin",
-		Path:      "",
-		Metadata:  metadata,
-		Templates: tmpl,
-		IsBuiltin: true,
-	}
-
-	tm.themes["builtin"] = theme
-	logging.LogInfo("builtin theme loaded successfully")
-	return nil
-}
-
-// loadExternalThemes loads all themes from themes/external directory
-func (tm *ThemeManager) loadExternalThemes() error {
-	externalDir := filepath.Join(configmanager.GetThemesPath(), "external")
-
-	// Create external directory if it doesn't exist
-	if err := os.MkdirAll(externalDir, 0755); err != nil {
-		return fmt.Errorf("failed to create external themes directory: %w", err)
-	}
-
-	entries, err := os.ReadDir(externalDir)
-	if err != nil {
-		return fmt.Errorf("failed to read external themes directory: %w", err)
+		return fmt.Errorf("failed to read themes directory: %w", err)
 	}
 
 	for _, entry := range entries {
@@ -260,10 +212,10 @@ func (tm *ThemeManager) loadExternalThemes() error {
 		}
 
 		themeName := entry.Name()
-		themePath := filepath.Join(externalDir, themeName)
+		themePath := filepath.Join(themesDir, themeName)
 
-		if err := tm.loadExternalTheme(themeName, themePath); err != nil {
-			logging.LogWarning("failed to load external theme %s: %v", themeName, err)
+		if err := tm.loadTheme(themeName, themePath); err != nil {
+			logging.LogWarning("failed to load theme %s: %v", themeName, err)
 			continue
 		}
 	}
@@ -271,12 +223,12 @@ func (tm *ThemeManager) loadExternalThemes() error {
 	return nil
 }
 
-// loadExternalTheme loads a single external theme from a directory
-func (tm *ThemeManager) loadExternalTheme(name string, path string) error {
+// loadTheme loads a single theme from a directory
+func (tm *ThemeManager) loadTheme(name string, path string) error {
 	tm.mutex.Lock()
 	defer tm.mutex.Unlock()
 
-	logging.LogInfo("loading external theme: %s from %s", name, path)
+	logging.LogInfo("loading theme: %s from %s", name, path)
 
 	// Read theme.json
 	metadataPath := filepath.Join(path, "theme.json")
@@ -290,57 +242,9 @@ func (tm *ThemeManager) loadExternalTheme(name string, path string) error {
 		return fmt.Errorf("failed to parse theme.json: %w", err)
 	}
 
-	// Read base template content first
-	baseTemplatePath := filepath.Join(path, "templates", "base.html")
-	baseContent, err := os.ReadFile(baseTemplatePath)
-	if err != nil {
-		return fmt.Errorf("failed to read base.html: %w", err)
-	}
-
-	// Create a dummy template set for the theme (for compatibility)
-	tmpl := template.New(name).Funcs(tm.funcMap)
-
+	// Parse templates
 	templatesDir := filepath.Join(path, "templates")
-	err = filepath.WalkDir(templatesDir, func(filePath string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if d.IsDir() || !strings.HasSuffix(filePath, ".html") {
-			return nil
-		}
-
-		templateName := filepath.Base(filePath)
-
-		// Skip base.html in the loop
-		if templateName == "base.html" {
-			return nil
-		}
-
-		content, err := os.ReadFile(filePath)
-		if err != nil {
-			return fmt.Errorf("failed to read %s: %w", filePath, err)
-		}
-
-		// Create a new template set for this page that includes base + page content
-		pageTmpl := template.New(templateName).Funcs(tm.funcMap)
-
-		// Parse base template first
-		if _, err := pageTmpl.New("base.html").Parse(string(baseContent)); err != nil {
-			return fmt.Errorf("failed to parse base.html for %s: %w", templateName, err)
-		}
-
-		// Parse the page template
-		if _, err := pageTmpl.Parse(string(content)); err != nil {
-			return fmt.Errorf("failed to parse template %s: %w", templateName, err)
-		}
-
-		// Store this page-specific template set
-		tm.pageTemplates[templateName] = pageTmpl
-
-		logging.LogInfo("parsed template: %s", filePath)
-		return nil
-	})
-
+	templates, err := tm.parseTemplates(templatesDir)
 	if err != nil {
 		return fmt.Errorf("failed to parse templates: %w", err)
 	}
@@ -349,89 +253,74 @@ func (tm *ThemeManager) loadExternalTheme(name string, path string) error {
 		Name:      metadata.Name,
 		Path:      path,
 		Metadata:  metadata,
-		Templates: tmpl,
-		IsBuiltin: false,
+		Templates: templates,
 	}
 
 	tm.themes[metadata.Name] = theme
-	logging.LogInfo("external theme %s loaded successfully", name)
+	logging.LogInfo("theme %s loaded successfully", name)
 	return nil
+}
+
+// parseTemplates parses all templates from a directory
+func (tm *ThemeManager) parseTemplates(templatesDir string) (ThemeTemplates, error) {
+	var templates ThemeTemplates
+
+	// Read base template first
+	baseContent, err := os.ReadFile(filepath.Join(templatesDir, "base.html"))
+	if err != nil {
+		return templates, fmt.Errorf("failed to read base.html: %w", err)
+	}
+
+	// Helper function to parse a template with base
+	parseTemplate := func(filename string) (*template.Template, error) {
+		content, err := os.ReadFile(filepath.Join(templatesDir, filename))
+		if err != nil {
+			return nil, fmt.Errorf("failed to read %s: %w", filename, err)
+		}
+
+		tmpl := template.New(filename).Funcs(tm.funcMap)
+		if _, err := tmpl.New("base.html").Parse(string(baseContent)); err != nil {
+			return nil, fmt.Errorf("failed to parse base.html: %w", err)
+		}
+		if _, err := tmpl.Parse(string(content)); err != nil {
+			return nil, fmt.Errorf("failed to parse %s: %w", filename, err)
+		}
+
+		return tmpl, nil
+	}
+
+	// Parse all required templates
+	templates.Base = template.Must(template.New("base.html").Funcs(tm.funcMap).Parse(string(baseContent)))
+	templates.Home = template.Must(parseTemplate("home.html"))
+	templates.FileView = template.Must(parseTemplate("fileview.html"))
+	templates.FileEdit = template.Must(parseTemplate("fileedit.html"))
+	templates.Search = template.Must(parseTemplate("search.html"))
+	templates.Overview = template.Must(parseTemplate("overview.html"))
+	templates.Dashboard = template.Must(parseTemplate("dashboard.html"))
+	templates.Settings = template.Must(parseTemplate("settings.html"))
+	templates.Admin = template.Must(parseTemplate("admin.html"))
+	templates.Playground = template.Must(parseTemplate("playground.html"))
+	templates.History = template.Must(parseTemplate("history.html"))
+	templates.LatestChanges = template.Must(parseTemplate("latestchanges.html"))
+	templates.BrowseFiles = template.Must(parseTemplate("browsefiles.html"))
+
+	return templates, nil
 }
 
 // LoadThemeFromArchive extracts and loads a theme from a .tgz archive
 func (tm *ThemeManager) LoadThemeFromArchive(name string, reader io.Reader) error {
 	logging.LogInfo("loading theme from archive: %s", name)
 
-	// Create temporary directory for extraction
-	externalDir := filepath.Join(configmanager.GetThemesPath(), "external")
-	if err := os.MkdirAll(externalDir, 0755); err != nil {
-		return fmt.Errorf("failed to create external themes directory: %w", err)
-	}
+	themesDir := getThemesPath()
+	themePath := filepath.Join(themesDir, name)
 
-	themePath := filepath.Join(externalDir, name)
-
-	// Remove existing theme directory if it exists
-	if err := os.RemoveAll(themePath); err != nil {
-		return fmt.Errorf("failed to remove existing theme directory: %w", err)
-	}
-
-	// Create theme directory
-	if err := os.MkdirAll(themePath, 0755); err != nil {
-		return fmt.Errorf("failed to create theme directory: %w", err)
-	}
-
-	// Extract .tgz archive
-	gzr, err := gzip.NewReader(reader)
-	if err != nil {
-		return fmt.Errorf("failed to create gzip reader: %w", err)
-	}
-	defer gzr.Close()
-
-	tr := tar.NewReader(gzr)
-
-	for {
-		header, err := tr.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return fmt.Errorf("failed to read tar entry: %w", err)
-		}
-
-		// Security: prevent path traversal
-		if strings.Contains(header.Name, "..") {
-			return fmt.Errorf("invalid file path in archive: %s", header.Name)
-		}
-
-		target := filepath.Join(themePath, header.Name)
-
-		switch header.Typeflag {
-		case tar.TypeDir:
-			if err := os.MkdirAll(target, 0755); err != nil {
-				return fmt.Errorf("failed to create directory: %w", err)
-			}
-		case tar.TypeReg:
-			// Create parent directory if needed
-			if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
-				return fmt.Errorf("failed to create parent directory: %w", err)
-			}
-
-			// Create file
-			outFile, err := os.Create(target)
-			if err != nil {
-				return fmt.Errorf("failed to create file: %w", err)
-			}
-
-			if _, err := io.Copy(outFile, tr); err != nil {
-				outFile.Close()
-				return fmt.Errorf("failed to write file: %w", err)
-			}
-			outFile.Close()
-		}
+	// Extract archive using utils
+	if err := utils.ExtractTarGzFromReader(reader, themePath); err != nil {
+		return fmt.Errorf("failed to extract theme archive: %w", err)
 	}
 
 	// Load the extracted theme
-	if err := tm.loadExternalTheme(name, themePath); err != nil {
+	if err := tm.loadTheme(name, themePath); err != nil {
 		// Clean up on failure
 		os.RemoveAll(themePath)
 		return fmt.Errorf("failed to load extracted theme: %w", err)
@@ -522,15 +411,44 @@ func (tm *ThemeManager) RenderPage(w io.Writer, page string, data interface{}) e
 		return fmt.Errorf("no theme is currently set")
 	}
 
-	// Get the page-specific template set
-	pageTmpl, ok := tm.pageTemplates[page]
-	if !ok {
-		return fmt.Errorf("page template %s not found", page)
+	// Get the appropriate template
+	var tmpl *template.Template
+	switch page {
+	case "home.html":
+		tmpl = tm.currentTheme.Templates.Home
+	case "fileview.html":
+		tmpl = tm.currentTheme.Templates.FileView
+	case "fileedit.html":
+		tmpl = tm.currentTheme.Templates.FileEdit
+	case "search.html":
+		tmpl = tm.currentTheme.Templates.Search
+	case "overview.html":
+		tmpl = tm.currentTheme.Templates.Overview
+	case "dashboard.html":
+		tmpl = tm.currentTheme.Templates.Dashboard
+	case "settings.html":
+		tmpl = tm.currentTheme.Templates.Settings
+	case "admin.html":
+		tmpl = tm.currentTheme.Templates.Admin
+	case "playground.html":
+		tmpl = tm.currentTheme.Templates.Playground
+	case "history.html":
+		tmpl = tm.currentTheme.Templates.History
+	case "latestchanges.html":
+		tmpl = tm.currentTheme.Templates.LatestChanges
+	case "browsefiles.html":
+		tmpl = tm.currentTheme.Templates.BrowseFiles
+	default:
+		return fmt.Errorf("unknown page template: %s", page)
 	}
 
-	// Execute base template which includes the page-specific content definitions
+	if tmpl == nil {
+		return fmt.Errorf("template %s not found in current theme", page)
+	}
+
+	// Execute base template which includes the page-specific content
 	var buf bytes.Buffer
-	if err := pageTmpl.ExecuteTemplate(&buf, "base.html", data); err != nil {
+	if err := tmpl.ExecuteTemplate(&buf, "base.html", data); err != nil {
 		return fmt.Errorf("failed to render template: %w", err)
 	}
 

@@ -24,14 +24,9 @@ import (
 )
 
 var staticFiles embed.FS
-var builtinThemeFS embed.FS
 
 func SetStaticFiles(files embed.FS) {
 	staticFiles = files
-}
-
-func SetBuiltinThemeFS(files embed.FS) {
-	builtinThemeFS = files
 }
 
 // StartServerChi ...
@@ -302,8 +297,8 @@ func handleThemeStatic(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	theme := tm.GetCurrentTheme()
 
-	// Security check: only serve files from the current theme or builtin
-	if themeName != "builtin" && (theme == nil || theme.Name != themeName) {
+	// Security check: only serve files from the current theme
+	if theme == nil || theme.Name != themeName {
 		http.Error(w, "unauthorized theme access", http.StatusForbidden)
 		return
 	}
@@ -329,27 +324,16 @@ func handleThemeStatic(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Cache-Control", "public, max-age=3600")
 
-	if themeName == "builtin" {
-		// Serve from embedded builtin theme
-		fullPath := "themes/builtin/" + assetPath
-		data, err := builtinThemeFS.ReadFile(fullPath)
-		if err != nil {
-			fmt.Printf("failed to read builtin theme file %s: %v\n", fullPath, err)
-			http.NotFound(w, r)
-			return
-		}
-		w.Write(data)
-	} else {
-		// Serve from external theme directory
-		themePath := filepath.Join(configmanager.GetThemesPath(), "external", themeName, assetPath)
-		data, err := os.ReadFile(themePath)
-		if err != nil {
-			fmt.Printf("failed to read external theme file %s: %v\n", themePath, err)
-			http.NotFound(w, r)
-			return
-		}
-		w.Write(data)
+	// Serve from theme directory (all themes are treated the same)
+	themesDir := filepath.Join(configmanager.GetConfigPath(), "themes")
+	themePath := filepath.Join(themesDir, themeName, assetPath)
+	data, err := os.ReadFile(themePath)
+	if err != nil {
+		fmt.Printf("failed to read theme file %s: %v\n", themePath, err)
+		http.NotFound(w, r)
+		return
 	}
+	w.Write(data)
 }
 
 // ----------------------------------------------------------------------------------------

@@ -39,19 +39,141 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
-	"Select Theme:": 0,
+	"AND":                               15,
+	"Add Filter":                        12,
+	"Admin":                             13,
+	"All Files":                         14,
+	"Apply Filter":                      16,
+	"Are you sure?":                     17,
+	"Boards":                            18,
+	"Browse":                            19,
+	"Browse by Metadata":                20,
+	"Cancel":                            21,
+	"Collection":                        22,
+	"Collections":                       23,
+	"Contains":                          24,
+	"Created Date":                      25,
+	"Dark Mode":                         0,
+	"Data Path:":                        1,
+	"Delete":                            26,
+	"Edit":                              27,
+	"Enter a search term":               28,
+	"Equals":                            29,
+	"Exclude":                           30,
+	"Files with":                        31,
+	"Filtered results will appear here": 32,
+	"Folders":                           33,
+	"General Settings":                  2,
+	"Git Settings":                      3,
+	"Greater Than":                      34,
+	"Hello World from templ at History in the dark!": 35,
+	"Hello World from templ at home in the dark!":    4,
+	"Help":                  5,
+	"History":               36,
+	"Home":                  6,
+	"In Array":              37,
+	"Include":               38,
+	"Last Edited":           39,
+	"Latest Changes":        40,
+	"Less Than":             41,
+	"Loading files...":      42,
+	"Loading results for":   43,
+	"Metadata":              44,
+	"Metadata Filter":       45,
+	"New Dashboard":         46,
+	"No widgets configured": 47,
+	"OR":                    48,
+	"OVERVIEW":              50,
+	"Overview":              49,
+	"Paths":                 51,
+	"Playground":            7,
+	"Priority":              52,
+	"Rebuild Metadata":      53,
+	"Recent File History":   54,
+	"Rename":                55,
+	"Repository URL:":       56,
+	"Restart Application":   57,
+	"Search Results":        61,
+	"Search files...":       60,
+	"Search..":              59,
+	"Select Language:":      8,
+	"Select Theme:":         9,
+	"Settings":              10,
+	"Status":                62,
+	"System":                63,
+	"Tags":                  64,
+	"Theme Settings":        11,
+	"Type":                  65,
+	"Value":                 66,
+	"restart required for changes to take effect": 58,
 }
 
-var deIndex = []uint32{ // 2 elements
-	0x00000000, 0x00000012,
-} // Size: 32 bytes
+var deIndex = []uint32{ // 68 elements
+	// Entry 0 - 1F
+	0x00000000, 0x0000000e, 0x00000019, 0x00000032,
+	0x00000044, 0x0000004f, 0x00000055, 0x0000005b,
+	0x00000066, 0x00000079, 0x0000008b, 0x00000099,
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	// Entry 20 - 3F
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+	// Entry 40 - 5F
+	0x000000ad, 0x000000ad, 0x000000ad, 0x000000ad,
+} // Size: 296 bytes
 
-const deData string = "\x02Theme auswählen:"
+const deData string = "" + // Size: 173 bytes
+	"\x02Dunkler Modus\x02Dateipfad:\x02Allgemeine Einstellungen\x02Git Einst" +
+	"ellungen\x02Hallo Welt\x02Hilfe\x02Start\x02Spielwiese\x02Spache auswähl" +
+	"en:\x02Theme auswählen:\x02Einstellungen\x02Theme Einstellungen"
 
-var enIndex = []uint32{ // 2 elements
-	0x00000000, 0x0000000e,
-} // Size: 32 bytes
+var enIndex = []uint32{ // 68 elements
+	// Entry 0 - 1F
+	0x00000000, 0x0000000a, 0x00000015, 0x00000026,
+	0x00000033, 0x0000005f, 0x00000064, 0x00000069,
+	0x00000074, 0x00000085, 0x00000093, 0x0000009c,
+	0x000000ab, 0x000000b6, 0x000000bc, 0x000000c6,
+	0x000000ca, 0x000000d7, 0x000000e5, 0x000000ec,
+	0x000000f3, 0x00000106, 0x0000010d, 0x00000118,
+	0x00000124, 0x0000012d, 0x0000013a, 0x00000141,
+	0x00000146, 0x0000015a, 0x00000161, 0x00000169,
+	// Entry 20 - 3F
+	0x00000174, 0x00000196, 0x0000019e, 0x000001ab,
+	0x000001da, 0x000001e2, 0x000001eb, 0x000001f3,
+	0x000001ff, 0x0000020e, 0x00000218, 0x00000229,
+	0x0000023d, 0x00000246, 0x00000256, 0x00000264,
+	0x0000027a, 0x0000027d, 0x00000286, 0x0000028f,
+	0x00000295, 0x0000029e, 0x000002af, 0x000002c3,
+	0x000002ca, 0x000002da, 0x000002ee, 0x0000031a,
+	0x00000323, 0x00000333, 0x00000342, 0x00000349,
+	// Entry 40 - 5F
+	0x00000350, 0x00000355, 0x0000035a, 0x00000360,
+} // Size: 296 bytes
 
-const enData string = "\x02Select Theme:"
+const enData string = "" + // Size: 864 bytes
+	"\x02Dark Mode\x02Data Path:\x02General Settings\x02Git Settings\x02Hello" +
+	" World from templ at home in the dark!\x02Help\x02Home\x02Playground\x02" +
+	"Select Language:\x02Select Theme:\x02Settings\x02Theme Settings\x02Add F" +
+	"ilter\x02Admin\x02All Files\x02AND\x02Apply Filter\x02Are you sure?\x02B" +
+	"oards\x02Browse\x02Browse by Metadata\x02Cancel\x02Collection\x02Collect" +
+	"ions\x02Contains\x02Created Date\x02Delete\x02Edit\x02Enter a search ter" +
+	"m\x02Equals\x02Exclude\x02Files with\x02Filtered results will appear her" +
+	"e\x02Folders\x02Greater Than\x02Hello World from templ at History in the" +
+	" dark!\x02History\x02In Array\x02Include\x02Last Edited\x02Latest Change" +
+	"s\x02Less Than\x02Loading files...\x02Loading results for\x02Metadata" +
+	"\x02Metadata Filter\x02New Dashboard\x02No widgets configured\x02OR\x02O" +
+	"verview\x02OVERVIEW\x02Paths\x02Priority\x02Rebuild Metadata\x02Recent F" +
+	"ile History\x02Rename\x02Repository URL:\x02Restart Application\x02resta" +
+	"rt required for changes to take effect\x02Search..\x02Search files..." +
+	"\x02Search Results\x02Status\x02System\x02Tags\x02Type\x02Value"
 
-// Total table size 96 bytes (0KiB); checksum: 2EE5BB8B
+	// Total table size 1629 bytes (1KiB); checksum: BD843DA6

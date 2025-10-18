@@ -5,21 +5,28 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-func ExtractTarGz(src, dest string) error {
-	file, err := os.Open(src)
-	if err != nil {
-		return err
+// ExtractTarGzFromReader extracts a tar.gz archive from an io.Reader to dest directory
+func ExtractTarGzFromReader(reader io.Reader, dest string) error {
+	// Remove existing directory if it exists
+	if err := os.RemoveAll(dest); err != nil {
+		return fmt.Errorf("failed to remove existing directory: %w", err)
 	}
-	defer file.Close()
 
-	gzr, err := gzip.NewReader(file)
+	// Create destination directory
+	if err := os.MkdirAll(dest, 0755); err != nil {
+		return fmt.Errorf("failed to create directory: %w", err)
+	}
+
+	gzr, err := gzip.NewReader(reader)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create gzip reader: %w", err)
 	}
 	defer gzr.Close()
 
@@ -31,32 +38,53 @@ func ExtractTarGz(src, dest string) error {
 			break
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to read tar entry: %w", err)
 		}
 
-		path := filepath.Join(dest, header.Name)
+		// Security: prevent path traversal
+		if strings.Contains(header.Name, "..") {
+			return fmt.Errorf("invalid file path in archive: %s", header.Name)
+		}
+
+		target := filepath.Join(dest, header.Name)
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(path, 0755); err != nil {
-				return err
+			if err := os.MkdirAll(target, 0755); err != nil {
+				return fmt.Errorf("failed to create directory: %w", err)
 			}
 		case tar.TypeReg:
-			if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-				return err
+			// Create parent directory if needed
+			if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
+				return fmt.Errorf("failed to create parent directory: %w", err)
 			}
-			outFile, err := os.Create(path)
+
+			// Create file
+			outFile, err := os.Create(target)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to create file: %w", err)
 			}
+
 			if _, err := io.Copy(outFile, tr); err != nil {
 				outFile.Close()
-				return err
+				return fmt.Errorf("failed to write file: %w", err)
 			}
 			outFile.Close()
 		}
 	}
+
 	return nil
+}
+
+// ExtractTarGz extracts a tar.gz file from src to dest directory
+func ExtractTarGz(src, dest string) error {
+	file, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	return ExtractTarGzFromReader(file, dest)
 }
 
 func ExtractZip(src, dest string) error {

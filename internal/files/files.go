@@ -2,6 +2,7 @@ package files
 
 import (
 	"fmt"
+	"html/template"
 	"os"
 	"path/filepath"
 	"slices"
@@ -36,7 +37,7 @@ type File struct {
 }
 
 type FileContent struct {
-	HTML string
+	HTML template.HTML
 	TOC  []TOCItem
 }
 
@@ -103,7 +104,7 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	toc := GenerateTOC(processedContent)
 
 	return &FileContent{
-		HTML: processedContent,
+		HTML: template.HTML(processedContent),
 		TOC:  toc,
 	}, nil
 }

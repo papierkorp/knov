@@ -17,8 +17,8 @@ import (
 //go:embed static/*
 var staticFS embed.FS
 
-//go:embed themes/builtin/theme.json themes/builtin/templates/* themes/builtin/static/css/*
-var builtinThemeFS embed.FS
+//go:embed themes/builtin.tar.gz
+var builtinThemeArchive embed.FS
 
 // @title Knov API
 // @version 1.0
@@ -27,12 +27,11 @@ var builtinThemeFS embed.FS
 // @BasePath /
 func main() {
 	server.SetStaticFiles(staticFS)
-	server.SetBuiltinThemeFS(builtinThemeFS)
-	thememanager.SetBuiltinThemeFS(builtinThemeFS)
+	thememanager.SetBuiltinThemeArchive(builtinThemeArchive)
 
 	configmanager.InitAppConfig()
 	translation.Init()
-	storage.Init(configmanager.GetConfigPath(), configmanager.GetStorageMethod())
+	storage.Init(configmanager.GetStorageMethod(), configmanager.GetConfigPath())
 	configmanager.InitUserSettings("default")
 	translation.SetLanguage(configmanager.GetLanguage())
 

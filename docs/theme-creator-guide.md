@@ -1,16 +1,16 @@
 # Theme Creator Guide
 
-Create custom themes for KNOV using HTML templates packaged as `.tgz` archives. This cross-platform approach works on Windows, macOS, and Linux.
+Create custom themes for KNOV using HTML templates and Go's `html/template` engine. Package themes as `.tar.gz` archives for easy distribution.
 
 ## Quick Start
 
 ```bash
 mkdir -p mytheme/templates mytheme/static/css
-# Create your theme files
+# Create your theme files (see structure below)
 cd mytheme
-# Package as .tgz
-tar -czf mytheme.tgz .
-# Upload mytheme.tgz via admin interface
+# Package as .tar.gz
+tar -czf mytheme.tar.gz .
+# Upload via admin interface or place in config/themes/
 ```
 
 ## Theme Structure
@@ -93,6 +93,27 @@ Required configuration file:
 
 KNOV uses Go's `html/template` package. All templates have access to common data and helper functions.
 
+### Template File Format
+
+**Use `.html` file extensions** (recommended)
+
+**Why `.html`?**
+- ✅ Better IDE support (syntax highlighting, auto-completion)
+- ✅ Clear intent - it's HTML with template directives
+- ✅ Frontend developer friendly
+- ✅ Better tooling support (formatters, linters)
+
+**Alternative: `.tmpl` extension**
+- Also acceptable, common in Go projects
+- Less IDE support for HTML syntax
+
+**Not recommended: `.go` files**
+- ❌ No HTML tooling support
+- ❌ Templates as strings are harder to maintain
+- ❌ KNOV's thememanager expects template files, not Go code
+
+All templates are plain HTML files with Go template directives (`{{ }}`) embedded.
+
 ### Available Template Data
 
 Every page template receives a `TemplateData` struct with these fields:
@@ -124,16 +145,41 @@ Every page template receives a `TemplateData` struct with these fields:
 
 ### Template Functions
 
-Available helper functions:
+#### Built-in Go Template Functions
 
-- `{{.T "text"}}` - Translate text
-- `{{urlquery .FilePath}}` - URL-encode strings
-- `{{eq .A .B}}` - Check equality
-- `{{ne .A .B}}` - Check inequality  
-- `{{add .A .B}}` - Add numbers
-- `{{sub .A .B}}` - Subtract numbers
-- `{{mul .A .B}}` - Multiply numbers
+Go's `html/template` provides these out of the box:
+
+- `{{eq .A .B}}` - Check equality (also works with multiple args: `eq .A .B .C`)
+- `{{ne .A .B}}` - Check inequality
+- `{{lt .A .B}}` - Less than
+- `{{le .A .B}}` - Less than or equal
+- `{{gt .A .B}}` - Greater than
+- `{{ge .A .B}}` - Greater than or equal
+- `{{and .A .B}}` - Logical AND
 - `{{or .A .B}}` - Logical OR
+- `{{not .A}}` - Logical NOT
+
+#### KNOV Custom Functions
+
+Additional functions provided by KNOV:
+
+- `{{.T "translation.key"}}` - Translate text (REQUIRED for i18n)
+- `{{add .A .B}}` - Add numbers (e.g., `{{add .Index 1}}`)
+- `{{sub .A .B}}` - Subtract numbers (e.g., `{{sub .Level 1}}`)
+- `{{mul .A .B}}` - Multiply numbers (e.g., `{{mul .Indent 12}}`)
+
+**Example usage:**
+```html
+<!-- Calculate nested indentation -->
+<div style="padding-left: {{mul (sub .Level 1) 20}}px;">
+
+<!-- Translation -->
+<h1>{{.T "welcome.title"}}</h1>
+
+<!-- Comparisons -->
+{{if eq .Status "active"}}Active{{end}}
+{{if gt .Count 0}}{{.Count}} items{{end}}
+```
 
 ## Base Template (base.html)
 
@@ -306,21 +352,43 @@ Use the `T` function for all user-facing text:
 
 ```bash
 cd mytheme
-tar -czf mytheme.tgz theme.json templates/ static/
+tar -czf mytheme.tar.gz theme.json templates/ static/
 ```
 
-### Upload via Admin Interface
+### Installation Methods
+
+#### Method 1: Upload via Admin Interface
 
 1. Navigate to `/admin`
 2. Scroll to "Theme Management"
-3. Click "Choose File" and select `mytheme.tgz`
+3. Click "Choose File" and select `mytheme.tar.gz`
 4. Click "Upload Theme"
-5. Switch to your theme in Settings
+5. Theme will be extracted to `config/themes/mytheme/`
+6. Switch to your theme in Settings
 
-### Command Line Upload
+#### Method 2: Manual Installation
 
 ```bash
-curl -F "file=@mytheme.tgz" http://localhost:1324/api/themes/upload
+# Extract directly to themes directory
+mkdir -p config/themes/mytheme
+tar -xzf mytheme.tar.gz -C config/themes/mytheme/
+# Restart KNOV to load the theme
+```
+
+#### Method 3: Command Line Upload
+
+```bash
+curl -F "file=@mytheme.tar.gz" http://localhost:1324/api/themes/upload
+```
+
+### Theme Location
+
+All themes (including builtin) are stored in:
+```
+config/themes/
+  ├── builtin/          # Automatically extracted from binary
+  ├── mytheme/          # Your custom theme
+  └── another-theme/    # Another custom theme
 ```
 
 ## Best Practices
@@ -359,18 +427,26 @@ curl -F "file=@mytheme.tgz" http://localhost:1324/api/themes/upload
   "description": "Minimal clean theme",
   "views": {
     "home": ["default"],
-    "fileview": ["default"]
+    "fileview": ["default"],
+    "search": ["default"],
+    "overview": ["default"],
+    "dashboard": ["default"],
+    "settings": ["default"],
+    "admin": ["default"],
+    "playground": ["default"],
+    "history": ["default"],
+    "latestchanges": ["default"],
+    "browsefiles": ["default"],
+    "fileedit": ["default"]
   },
   "features": {
     "darkMode": true,
     "colorSchemes": [{"name": "default", "label": "Default"}]
-  },
-  "templates": {
-    "base": "templates/base.html",
-    "home": "templates/home.html"
   }
 }
 ```
+
+**Note**: The `templates` field in `theme.json` is optional. KNOV automatically loads all `.html` files from the `templates/` directory.
 
 **templates/base.html:**
 ```html
@@ -394,14 +470,14 @@ curl -F "file=@mytheme.tgz" http://localhost:1324/api/themes/upload
 **templates/home.html:**
 ```html
 {{define "content"}}
-<h1>{{.T "Welcome to KNOV"}}</h1>
-<p>{{.T "This is a minimal theme example"}}</p>
+<h1>{{.T "welcome.title"}}</h1>
+<p>{{.T "minimal.description"}}</p>
 {{end}}
 ```
 
 Package it:
 ```bash
-tar -czf minimal.tgz theme.json templates/
+tar -czf minimal.tar.gz theme.json templates/
 ```
 
 ## Troubleshooting

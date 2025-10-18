@@ -1,41 +1,34 @@
 {{define "content"}}
 <div class="page-home">
-    <h2>{{.T "Welcome to the Simple Theme!"}}</h2>
-    <div class="info-box">
-        <p><strong>This is a minimal test theme.</strong></p>
-        <p>It demonstrates:</p>
+    <section class="welcome">
+        <h2>Welcome to KNOV Simple Theme</h2>
+        <p>
+            This is a minimal test theme with just two pages: Home and Settings.
+        </p>
+    </section>
+
+    <section class="info-box">
+        <h3>About This Theme</h3>
         <ul>
-            <li>✅ Basic HTML template structure</li>
-            <li>✅ Theme switching capability</li>
-            <li>✅ CSS styling</li>
-            <li>✅ HTMX integration</li>
+            <li>✨ Purple color scheme</li>
+            <li>🌙 Dark mode support</li>
+            <li>📄 Only 2 pages (Home & Settings)</li>
+            <li>🎨 Clean and minimal design</li>
         </ul>
-    </div>
+    </section>
 
-    <div class="theme-info">
-        <h3>Current Theme Information:</h3>
-        <table>
-            <tr>
-                <td><strong>Theme Name:</strong></td>
-                <td>{{.ThemeName}}</td>
-            </tr>
-            <tr>
-                <td><strong>Dark Mode:</strong></td>
-                <td>{{.DarkMode}}</td>
-            </tr>
-            <tr>
-                <td><strong>Color Scheme:</strong></td>
-                <td>{{.ColorScheme}}</td>
-            </tr>
-            <tr>
-                <td><strong>Language:</strong></td>
-                <td>{{.Language}}</td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="action-box">
-        <p>Go to <a href="/settings">Settings</a> to switch back to the builtin theme.</p>
-    </div>
+    <section class="quick-links">
+        <h3>Quick Links</h3>
+        <div class="links-grid">
+            <a href="/home" class="link-card">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="/settings" class="link-card">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+    </section>
 </div>
 {{end}}

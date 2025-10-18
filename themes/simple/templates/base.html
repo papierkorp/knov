@@ -1,29 +1,41 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{.Title}} - Simple Theme</title>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link href="/themes/{{.ThemeName}}/static/css/style.css" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
-    <script src="/static/htmx.min.js"></script>
-</head>
-<body data-theme="{{.ThemeName}}" data-dark-mode="{{.DarkMode}}">
-    <div class="container">
-        <header>
-            <h1>🎨 Simple Theme</h1>
-            <nav>
-                <a href="/">{{.T "Home"}}</a>
-                <a href="/settings">{{.T "Settings"}}</a>
-                <a href="/admin">{{.T "Admin"}}</a>
-            </nav>
-        </header>
-        <main>
-            {{template "content" .}}
-        </main>
-        <footer>
-            <p>Simple Theme v1.0 | Current Theme: {{.ThemeName}}</p>
-        </footer>
-    </div>
-</body>
+<!doctype html>
+<html lang="{{.Language}}">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{{.Title}} - KNOV Simple</title>
+        <link rel="stylesheet" href="/themes/simple/static/css/style.css" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        />
+    </head>
+    <body
+        data-theme="{{.ThemeName}}"
+        data-dark-mode="{{.DarkMode}}"
+        data-color-scheme="{{.ColorScheme}}"
+    >
+        {{template "header" .}}
+        <main>{{template "content" .}}</main>
+        {{template "footer" .}}
+        <script src="/static/htmx.min.js"></script>
+    </body>
 </html>
+
+{{define "header"}}
+<header class="main-header">
+    <div class="header-content">
+        <h1 class="site-title">KNOV Simple</h1>
+        <nav>
+            <a href="/home">Home</a>
+            <a href="/settings">Settings</a>
+        </nav>
+    </div>
+</header>
+{{end}} {{define "footer"}}
+<footer class="main-footer">
+    <p>KNOV Simple Theme - Version: 1.0.0</p>
+</footer>
+{{end}} {{define "content"}}
+<!-- Page content goes here -->
+{{end}}
