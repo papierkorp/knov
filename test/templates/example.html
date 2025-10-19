@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>{{.Heading}}</h1>
+      <p>{{.Message}}</p>
+      <ul>
+        {{range .Items}}
+        <li>{{.}}</li>
+        {{end}}
+      </ul>
+    </div>
+  </body>
+</html>

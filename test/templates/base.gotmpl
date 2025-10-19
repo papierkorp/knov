@@ -1,0 +1,25 @@
+{{define "title"}}Inheritance{{end}}
+
+{{define "content"}}
+<h2>Hello, {{.Name}}!</h2>
+<p>This uses template inheritance.</p>
+<ul>
+    {{range .Items}}
+    <li>{{.}}</li>
+    {{end}}
+</ul>
+{{end}}
+
+<!DOCTYPE html>
+<html>
+
+<body>
+    <div class="header">
+        <h1>{{template "title" .}}</h1>
+    </div>
+    <div class="content">
+        {{template "content" .}}
+    </div>
+</body>
+
+</html>
