@@ -1,0 +1,9 @@
+{
+  "name": "XXX Professional",
+  "version": "1.0.0",
+  "author": "Go Theme System",
+  "description": "A professional dark theme with blue accents",
+  "features": {
+    "darkMode": true
+  }
+}

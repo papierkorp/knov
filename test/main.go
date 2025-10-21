@@ -34,9 +34,22 @@ var templateData = TemplateData{
 var templateFS embed.FS
 
 var templates *template.Template
+var themeManager IThemeManager
 
 func main() {
-	var err error
+	// ----------------------------------
+	// ---------- thememanager ----------
+	// ----------------------------------
+
+	themeManager = NewThemeManager()
+	err := themeManager.Initialize()
+	if err != nil {
+		fmt.Printf("warning: theme manager initialization failed: %v\n", err)
+	}
+
+	// ----------------------------------
+	// ------------ templates ------------
+	// ----------------------------------
 	templates, err = template.ParseFS(templateFS, "templates/*")
 	if err != nil {
 		panic(fmt.Sprintf("error parsing templates: %v", err))
@@ -53,6 +66,8 @@ func main() {
 	r.Get("/1", handleSimpleStringTemplate)
 	r.Get("/2", handleTemplateFile)
 	r.Get("/3", handleManager)
+	r.Get("/4", handleThemes)
+	r.Post("/4", handleThemeChange)
 	r.Get("/static/*", handleStatic)
 
 	err = http.ListenAndServe(":1325", r)
@@ -125,7 +140,7 @@ func handleTemplateFile(w http.ResponseWriter, _ *http.Request) {
 }
 
 // ----------------------------------------------------------------------------
-// --------------------------------- manager ---------------------------------
+// ------------------------------ templatemanager ------------------------------
 // ----------------------------------------------------------------------------
 
 func handleManager(w http.ResponseWriter, _ *http.Request) {
@@ -164,4 +179,55 @@ func NewTemplateManager() *TemplateManager {
 func (tm *TemplateManager) RenderTemplate(w http.ResponseWriter, name string, data TemplateData) error {
 	w.Header().Set("Content-Type", "text/html")
 	return tm.templates.ExecuteTemplate(w, name, data)
+}
+
+// ----------------------------------------------------------------------------
+// ------------------------------- thememanager -------------------------------
+// ----------------------------------------------------------------------------
+
+func handleThemes(w http.ResponseWriter, r *http.Request) {
+	requestedTheme := r.URL.Query().Get("theme")
+	if requestedTheme != "" {
+		if err := themeManager.SetCurrentTheme(requestedTheme); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
+	currentTheme := themeManager.GetCurrentTheme()
+	if currentTheme == nil {
+		http.Error(w, "No theme available", http.StatusInternalServerError)
+		return
+	}
+
+	data := ThemeData{
+		TemplateData:    templateData,
+		CurrentTheme:    themeManager.GetCurrentThemeName(),
+		CurrentMetadata: currentTheme.Metadata,
+		AvailableThemes: themeManager.GetAvailableThemes(),
+	}
+
+	data.Message = fmt.Sprintf("Using %s theme (v%s by %s)",
+		currentTheme.Metadata.Name,
+		currentTheme.Metadata.Version,
+		currentTheme.Metadata.Author)
+
+	err := themeManager.Render(w, "base.gotmpl", data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleThemeChange(w http.ResponseWriter, r *http.Request) {
+	selectedTheme := r.FormValue("theme")
+	if selectedTheme != "" {
+		if err := themeManager.SetCurrentTheme(selectedTheme); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
+	// Redirect back to the themes page
+	http.Redirect(w, r, "/4", http.StatusSeeOther)
 }
