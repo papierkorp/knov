@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{.Title}} - File View - {{.CurrentMetadata.Name}}</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #2d2d2d;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        h1 { color: #4a9eff; }
+        .nav {
+            margin-bottom: 20px;
+        }
+        .nav a {
+            color: #4a9eff;
+            text-decoration: none;
+            margin-right: 15px;
+            padding: 8px 12px;
+            background-color: #3d3d3d;
+            border-radius: 4px;
+        }
+        .nav a:hover { background-color: #4d4d4d; }
+        .nav a.active { background-color: #4a9eff; color: #1a1a1a; }
+        .file-browser {
+            background-color: #3d3d3d;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .file-item {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #4d4d4d;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .file-icon {
+            color: #4a9eff;
+            margin-right: 10px;
+        }
+        select, button {
+            background-color: #4d4d4d;
+            color: #e0e0e0;
+            border: 1px solid #666;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4a9eff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{.Heading}} - File View</h1>
+        
+        <div class="nav">
+            <a href="/?page=base">Base</a>
+            <a href="/?page=history">History</a>
+            <a href="/?page=fileview" class="active">File View</a>
+        </div>
+        
+        <form method="POST">
+            <select name="theme">
+                {{range .AvailableThemes}}
+                <option value="{{.}}" {{if eq . $.CurrentTheme}}selected{{end}}>{{.}}</option>
+                {{end}}
+            </select>
+            <button type="submit">Change Theme</button>
+        </form>
+
+        <h2>File Browser</h2>
+        
+        <div class="file-browser">
+            {{range .Items}}
+            <div class="file-item">
+                <span><span class="file-icon">📄</span>{{.}}</span>
+                <span class="timestamp">{{$.Time.Format "15:04"}}</span>
+            </div>
+            {{end}}
+        </div>
+        
+        <p>{{.Message}} - File view active</p>
+    </div>
+</body>
+</html>

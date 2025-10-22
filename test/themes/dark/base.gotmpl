@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{.Title}} - {{.CurrentMetadata.Name}}</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #2d2d2d;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        h1 { color: #4a9eff; }
+        .theme-info {
+            background-color: #3d3d3d;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .nav {
+            margin-bottom: 20px;
+        }
+        .nav a {
+            color: #4a9eff;
+            text-decoration: none;
+            margin-right: 15px;
+            padding: 8px 12px;
+            background-color: #3d3d3d;
+            border-radius: 4px;
+        }
+        .nav a:hover { background-color: #4d4d4d; }
+        select, button {
+            background-color: #4d4d4d;
+            color: #e0e0e0;
+            border: 1px solid #666;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4a9eff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{.Heading}} - Base Page</h1>
+        
+        <div class="nav">
+            <a href="/?page=base">Base</a>
+            <a href="/?page=history">History</a>
+            <a href="/?page=fileview">File View</a>
+        </div>
+        
+        <div class="theme-info">
+            <h3>{{.CurrentMetadata.Name}} v{{.CurrentMetadata.Version}}</h3>
+            <p>{{.CurrentMetadata.Description}}</p>
+        </div>
+        
+        <form method="POST">
+            <select name="theme">
+                {{range .AvailableThemes}}
+                <option value="{{.}}" {{if eq . $.CurrentTheme}}selected{{end}}>{{.}}</option>
+                {{end}}
+            </select>
+            <button type="submit">Change Theme</button>
+        </form>
+
+        <p>{{.Message}}</p>
+        <p>Time: {{.Time.Format "2006-01-02 15:04:05"}}</p>
+    </div>
+</body>
+</html>

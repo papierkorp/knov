@@ -1,22 +1,40 @@
-// Package main ..
 package main
 
 import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-type IThemeManager interface {
-	Initialize() error
-	GetCurrentTheme() *Theme
-	GetCurrentThemeName() string
-	SetCurrentTheme(name string) error
-	GetAvailableThemes() []string
-	Render(w http.ResponseWriter, templateName string, data ThemeData) error
+// Required template files for each theme
+var RequiredTemplates = []string{
+	"base.gotmpl",
+	"history.gotmpl", 
+	"fileview.gotmpl",
+}
+
+type ThemeManager struct {
+	themes       map[string]*Theme
+	currentTheme string
+	logger       *log.Logger
+}
+
+type Theme struct {
+	Name     string
+	Metadata ThemeMetadata
+	Template *template.Template
+}
+
+type ThemeMetadata struct {
+	Name        string `json:"name"`
+	Version     string `json:"version"`
+	Author      string `json:"author"`
+	Description string `json:"description"`
 }
 
 type ThemeData struct {
@@ -26,162 +44,186 @@ type ThemeData struct {
 	AvailableThemes []string
 }
 
-type ThemeManager struct {
-	themes       map[string]*Theme
-	currentTheme *Theme
-	funcMap      template.FuncMap
+type ThemeValidationError struct {
+	ThemeName string
+	Errors    []string
 }
 
-type Theme struct {
-	Name      string
-	Path      string
-	Metadata  ThemeMetadata
-	Templates ThemeTemplates
-}
-
-type ThemeMetadata struct {
-	Name        string        `json:"name"`
-	Version     string        `json:"version"`
-	Author      string        `json:"author"`
-	Description string        `json:"description"`
-	Features    ThemeFeatures `json:"features"`
-}
-
-type ThemeFeatures struct {
-	DarkMode bool `json:"darkMode"`
-}
-
-type ThemeTemplates struct {
-	Base *template.Template
+func (e ThemeValidationError) Error() string {
+	return fmt.Sprintf("theme '%s' validation failed: %s", e.ThemeName, strings.Join(e.Errors, ", "))
 }
 
 func NewThemeManager() *ThemeManager {
-	tm := &ThemeManager{
+	return &ThemeManager{
 		themes: make(map[string]*Theme),
-		funcMap: template.FuncMap{
-			"formatDate": func(t any) string {
-				if tv, ok := t.(interface{ Format(string) string }); ok {
-					return tv.Format("January 2, 2006")
-				}
-				return ""
-			},
-		},
+		logger: log.New(os.Stdout, "[ThemeManager] ", log.LstdFlags),
 	}
-	return tm
 }
 
-func (tm *ThemeManager) Initialize() error {
-	themesDir := "./themes"
-
-	if _, err := os.Stat(themesDir); os.IsNotExist(err) {
-		return fmt.Errorf("themes directory does not exist: %s", themesDir)
-	}
-
+func (tm *ThemeManager) LoadThemes(themesDir string) error {
 	entries, err := os.ReadDir(themesDir)
 	if err != nil {
-		return fmt.Errorf("error reading themes directory: %v", err)
+		return fmt.Errorf("failed to read themes directory: %w", err)
 	}
 
+	loadedCount := 0
+	
 	for _, entry := range entries {
-		if entry.IsDir() {
-			themeName := entry.Name()
-			themePath := filepath.Join(themesDir, themeName)
+		if !entry.IsDir() {
+			continue
+		}
 
-			theme, err := tm.loadTheme(themeName, themePath)
-			if err != nil {
-				fmt.Printf("error loading theme %s: %v\n", themeName, err)
-				continue
-			}
+		themeName := entry.Name()
+		themePath := filepath.Join(themesDir, themeName)
+		
+		theme, err := tm.loadTheme(themeName, themePath)
+		if err != nil {
+			tm.logger.Printf("Failed to load theme '%s': %v", themeName, err)
+			continue
+		}
 
-			tm.themes[themeName] = theme
-			fmt.Printf("loaded theme: %s (v%s by %s)\n", theme.Metadata.Name, theme.Metadata.Version, theme.Metadata.Author)
+		tm.themes[themeName] = theme
+		loadedCount++
+		tm.logger.Printf("Loaded theme: %s (v%s by %s)", 
+			theme.Metadata.Name, theme.Metadata.Version, theme.Metadata.Author)
+
+		// Set first successfully loaded theme as default
+		if tm.currentTheme == "" {
+			tm.currentTheme = themeName
 		}
 	}
 
-	// default theme
-	if len(tm.themes) > 0 {
-		for _, theme := range tm.themes {
-			tm.currentTheme = theme
-			break
-		}
+	if loadedCount == 0 {
+		return fmt.Errorf("no valid themes found in %s", themesDir)
 	}
 
+	tm.logger.Printf("Successfully loaded %d themes", loadedCount)
 	return nil
 }
 
 func (tm *ThemeManager) loadTheme(name, path string) (*Theme, error) {
-	theme := &Theme{
-		Name: name,
-		Path: path,
+	// Validate required files exist
+	if err := tm.validateThemeFiles(name, path); err != nil {
+		return nil, err
 	}
+
+	theme := &Theme{Name: name}
 
 	// Load metadata
+	metadata := ThemeMetadata{
+		Name:    name,
+		Version: "1.0.0",
+		Author:  "Unknown",
+	}
+	
 	metadataPath := filepath.Join(path, "theme.json")
-	if _, err := os.Stat(metadataPath); err == nil {
-		metadataFile, err := os.ReadFile(metadataPath)
-		if err != nil {
-			return nil, fmt.Errorf("error reading metadata file: %v", err)
-		}
-
-		if err := json.Unmarshal(metadataFile, &theme.Metadata); err != nil {
-			return nil, fmt.Errorf("error parsing metadata: %v", err)
-		}
-	} else {
-		// Default metadata if no theme.json exists
-		theme.Metadata = ThemeMetadata{
-			Name:        name,
-			Version:     "1.0.0",
-			Author:      "Unknown",
-			Description: fmt.Sprintf("Theme %s", name),
+	if data, err := os.ReadFile(metadataPath); err == nil {
+		if err := json.Unmarshal(data, &metadata); err != nil {
+			tm.logger.Printf("Warning: invalid theme.json for '%s': %v", name, err)
 		}
 	}
+	theme.Metadata = metadata
 
 	// Load templates
-	templatePattern := filepath.Join(path, "*.gotmpl")
-	tmpl := template.New(name).Funcs(tm.funcMap)
-
-	tmpl, err := tmpl.ParseGlob(templatePattern)
+	templatePath := filepath.Join(path, "*.gotmpl")
+	tmpl, err := template.ParseGlob(templatePath)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing templates: %v", err)
+		return nil, fmt.Errorf("failed to parse templates: %w", err)
 	}
 
-	theme.Templates.Base = tmpl
+	// Verify all required templates are present in parsed template
+	if err := tm.validateParsedTemplates(name, tmpl); err != nil {
+		return nil, err
+	}
+
+	theme.Template = tmpl
 	return theme, nil
 }
 
-func (tm *ThemeManager) GetCurrentTheme() *Theme {
-	return tm.currentTheme
-}
+func (tm *ThemeManager) validateThemeFiles(themeName, themePath string) error {
+	var errors []string
 
-func (tm *ThemeManager) GetCurrentThemeName() string {
-	if tm.currentTheme == nil {
-		return ""
+	for _, requiredFile := range RequiredTemplates {
+		filePath := filepath.Join(themePath, requiredFile)
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			errors = append(errors, fmt.Sprintf("missing required file: %s", requiredFile))
+		}
 	}
-	return tm.currentTheme.Name
-}
 
-func (tm *ThemeManager) SetCurrentTheme(name string) error {
-	theme, exists := tm.themes[name]
-	if !exists {
-		return fmt.Errorf("theme %s not found", name)
+	if len(errors) > 0 {
+		return ThemeValidationError{ThemeName: themeName, Errors: errors}
 	}
-	tm.currentTheme = theme
+
 	return nil
 }
 
-func (tm *ThemeManager) GetAvailableThemes() []string {
-	themes := make([]string, 0, len(tm.themes))
-	for name := range tm.themes {
-		themes = append(themes, name)
+func (tm *ThemeManager) validateParsedTemplates(themeName string, tmpl *template.Template) error {
+	var errors []string
+
+	for _, requiredTemplate := range RequiredTemplates {
+		if tmpl.Lookup(requiredTemplate) == nil {
+			errors = append(errors, fmt.Sprintf("template not parsed: %s", requiredTemplate))
+		}
 	}
-	return themes
+
+	if len(errors) > 0 {
+		return ThemeValidationError{ThemeName: themeName, Errors: errors}
+	}
+
+	return nil
 }
 
-func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data ThemeData) error {
-	if tm.currentTheme == nil {
+func (tm *ThemeManager) SetTheme(name string) error {
+	if _, exists := tm.themes[name]; !exists {
+		return fmt.Errorf("theme '%s' not found", name)
+	}
+	tm.currentTheme = name
+	tm.logger.Printf("Switched to theme: %s", name)
+	return nil
+}
+
+func (tm *ThemeManager) GetThemeNames() []string {
+	names := make([]string, 0, len(tm.themes))
+	for name := range tm.themes {
+		names = append(names, name)
+	}
+	return names
+}
+
+func (tm *ThemeManager) GetCurrentTheme() *Theme {
+	return tm.themes[tm.currentTheme]
+}
+
+func (tm *ThemeManager) HasTemplate(templateName string) bool {
+	theme := tm.GetCurrentTheme()
+	if theme == nil {
+		return false
+	}
+	return theme.Template.Lookup(templateName) != nil
+}
+
+func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data TemplateData) error {
+	theme := tm.GetCurrentTheme()
+	if theme == nil {
 		return fmt.Errorf("no theme is currently set")
 	}
 
+	// Check if the requested template exists
+	if !tm.HasTemplate(templateName) {
+		return fmt.Errorf("template '%s' not found in theme '%s'", templateName, tm.currentTheme)
+	}
+
+	themeData := ThemeData{
+		TemplateData:    data,
+		CurrentTheme:    tm.currentTheme,
+		CurrentMetadata: theme.Metadata,
+		AvailableThemes: tm.GetThemeNames(),
+	}
+
 	w.Header().Set("Content-Type", "text/html")
-	return tm.currentTheme.Templates.Base.ExecuteTemplate(w, templateName, data)
+	if err := theme.Template.ExecuteTemplate(w, templateName, themeData); err != nil {
+		return fmt.Errorf("failed to execute template '%s': %w", templateName, err)
+	}
+
+	return nil
 }

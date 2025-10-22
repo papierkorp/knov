@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{.Title}} - History - {{.CurrentMetadata.Name}}</title>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 { color: #0d6efd; }
+        .nav {
+            margin-bottom: 20px;
+        }
+        .nav a {
+            color: #0d6efd;
+            text-decoration: none;
+            margin-right: 15px;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .nav a:hover { background-color: #e9ecef; }
+        .nav a.active { background-color: #0d6efd; color: white; }
+        .history-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #0d6efd;
+            border: 1px solid #dee2e6;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+        }
+        select, button {
+            background-color: white;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #0d6efd;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{.Heading}} - History</h1>
+        
+        <div class="nav">
+            <a href="/?page=base">Base</a>
+            <a href="/?page=history" class="active">History</a>
+            <a href="/?page=fileview">File View</a>
+        </div>
+        
+        <form method="POST">
+            <select name="theme">
+                {{range .AvailableThemes}}
+                <option value="{{.}}" {{if eq . $.CurrentTheme}}selected{{end}}>{{.}}</option>
+                {{end}}
+            </select>
+            <button type="submit">Change Theme</button>
+        </form>
+
+        <h2>Recent Activity</h2>
+        
+        {{range .Items}}
+        <div class="history-item">
+            <div class="timestamp">{{$.Time.Format "2006-01-02 15:04:05"}}</div>
+            <div>{{.}}</div>
+        </div>
+        {{end}}
+        
+        <p>{{.Message}} - History view active</p>
+    </div>
+</body>
+</html>
