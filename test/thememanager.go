@@ -1,3 +1,4 @@
+// Package main
 package main
 
 import (
@@ -11,19 +12,21 @@ import (
 	"strings"
 )
 
-// Required template files for each theme
+// RequiredTemplates files for each theme
 var RequiredTemplates = []string{
 	"base.gotmpl",
-	"history.gotmpl", 
+	"history.gotmpl",
 	"fileview.gotmpl",
 }
 
+// ThemeManager ..
 type ThemeManager struct {
 	themes       map[string]*Theme
 	currentTheme string
 	logger       *log.Logger
 }
 
+// Theme ..
 type Theme struct {
 	Name     string
 	Metadata ThemeMetadata
@@ -67,7 +70,7 @@ func (tm *ThemeManager) LoadThemes(themesDir string) error {
 	}
 
 	loadedCount := 0
-	
+
 	for _, entry := range entries {
 		if !entry.IsDir() {
 			continue
@@ -75,7 +78,7 @@ func (tm *ThemeManager) LoadThemes(themesDir string) error {
 
 		themeName := entry.Name()
 		themePath := filepath.Join(themesDir, themeName)
-		
+
 		theme, err := tm.loadTheme(themeName, themePath)
 		if err != nil {
 			tm.logger.Printf("Failed to load theme '%s': %v", themeName, err)
@@ -84,7 +87,7 @@ func (tm *ThemeManager) LoadThemes(themesDir string) error {
 
 		tm.themes[themeName] = theme
 		loadedCount++
-		tm.logger.Printf("Loaded theme: %s (v%s by %s)", 
+		tm.logger.Printf("Loaded theme: %s (v%s by %s)",
 			theme.Metadata.Name, theme.Metadata.Version, theme.Metadata.Author)
 
 		// Set first successfully loaded theme as default
@@ -115,7 +118,7 @@ func (tm *ThemeManager) loadTheme(name, path string) (*Theme, error) {
 		Version: "1.0.0",
 		Author:  "Unknown",
 	}
-	
+
 	metadataPath := filepath.Join(path, "theme.json")
 	if data, err := os.ReadFile(metadataPath); err == nil {
 		if err := json.Unmarshal(data, &metadata); err != nil {
