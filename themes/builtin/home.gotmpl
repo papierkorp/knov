@@ -1,0 +1,15 @@
+{{define "home.gotmpl"}}
+{{template "base.gotmpl" .}}
+{{end}}
+
+{{define "content"}}
+<div id="page-home">
+    <h1>{{.Content.Home.Title}}</h1>
+    <p>{{.Content.Home.WelcomeText}}</p>
+    <div class="actions">
+        {{range .Content.Home.QuickActions}}
+        <a href="{{.URL}}" class="btn">{{.Name}} {{.Icon}}</a>
+        {{end}}
+    </div>
+</div>
+{{end}}

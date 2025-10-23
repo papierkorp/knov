@@ -1,0 +1,30 @@
+{
+  "name": "builtin",
+  "version": "1.0.0",
+  "author": "knov team",
+  "description": "default builtin theme for knov",
+  "views": {
+    "file": ["default", "detailed", "compact", "reader"],
+    "home": ["default"],
+    "search": ["default"],
+    "overview": ["default"],
+    "dashboard": ["default"],
+    "settings": ["default"],
+    "admin": ["default"],
+    "playground": ["default"],
+    "history": ["default"],
+    "latestchanges": ["default"],
+    "browsefiles": ["default"]
+  },
+  "features": {
+    "dark_mode": true,
+    "responsive_css": true,
+    "custom_fonts": false,
+    "color_schemes": [
+      { "name": "default", "label": "default blue" },
+      { "name": "green", "label": "forest green" },
+      { "name": "purple", "label": "royal purple" },
+      { "name": "red", "label": "ruby red" }
+    ]
+  }
+}

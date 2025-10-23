@@ -1,0 +1,15 @@
+{{define "overview.gotmpl"}}
+{{template "base.gotmpl" .}}
+{{end}}
+
+{{define "content"}}
+<div id="page-overview">
+    <h1>{{.Content.Overview.Title}}</h1>
+    <div class="overview-stats">
+        <p>files: {{.Content.Overview.FileCount}}</p>
+    </div>
+    <div class="file-list">
+        <!-- file list content will be loaded here -->
+    </div>
+</div>
+{{end}}

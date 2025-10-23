@@ -1,117 +1,74 @@
-// Package thememanager ...
 package thememanager
 
 import (
+	"embed"
+	"fmt"
+	"os"
 	"path/filepath"
 
-	"knov/internal/dashboard"
-	"knov/internal/files"
 	"knov/internal/logging"
-
-	"github.com/a-h/templ"
 )
 
-// -----------------------------------------------------------------------------
-// ----------------------------- Builtin Theme ---------------------------------
-// -----------------------------------------------------------------------------
+var builtinThemeFS embed.FS
 
-// BuiltinTheme implements the builtin theme
-type BuiltinTheme struct{}
-
-var builtinTheme = BuiltinTheme{}
-
-var builtinMetadata = ThemeMetadata{
-	AvailableFileViews:          []string{"detailed", "compact", "reader"},
-	AvailableHomeViews:          []string{"default"},
-	AvailableSearchViews:        []string{"default"},
-	AvailableOverviewViews:      []string{"default"},
-	AvailableDashboardViews:     []string{"default"},
-	AvailableSettingsViews:      []string{"default"},
-	AvailableAdminViews:         []string{"default"},
-	AvailablePlaygroundViews:    []string{"default"},
-	AvailableHistoryViews:       []string{"default"},
-	AvailableLatestChangesViews: []string{"default"},
-	AvailableBrowseFilesViews:   []string{"default"},
-	SupportsDarkMode:            true,
-	AvailableColorSchemes: []ColorScheme{
-		{Name: "default", Label: "Default Blue"},
-		{Name: "green", Label: "Forest Green"},
-		{Name: "red", Label: "Ruby Red"},
-		{Name: "purple", Label: "Royal Purple"},
-	},
+// SetBuiltinThemeFiles sets the embedded builtin theme files
+func SetBuiltinThemeFiles(fs embed.FS) {
+	builtinThemeFS = fs
 }
 
-func (t *BuiltinTheme) Home(viewName string) (templ.Component, error) {
-	return Home(), nil
-}
+// InitBuiltinTheme extracts and sets up the builtin theme
+func initBuiltinTheme(themesPath string) error {
+	builtinPath := filepath.Join(themesPath, "builtin")
 
-func (t *BuiltinTheme) Settings(viewName string) (templ.Component, error) {
-	return Settings(), nil
-}
-
-func (t *BuiltinTheme) Admin(viewName string) (templ.Component, error) {
-	return Admin(), nil
-}
-
-func (t *BuiltinTheme) Playground(viewName string) (templ.Component, error) {
-	return Playground(), nil
-}
-
-func (t *BuiltinTheme) LatestChanges(viewName string) (templ.Component, error) {
-	return LatestChanges(), nil
-}
-
-func (t *BuiltinTheme) History(viewName string) (templ.Component, error) {
-	return History(), nil
-}
-
-func (t *BuiltinTheme) Overview(viewName string) (templ.Component, error) {
-	return Overview(), nil
-}
-
-func (t *BuiltinTheme) Search(viewName string, query string) (templ.Component, error) {
-	return Search(query), nil
-}
-
-func (t *BuiltinTheme) RenderFileView(viewName string, fileContent *files.FileContent, filePath string) (templ.Component, error) {
-	filename := filepath.Base(filePath)
-
-	switch viewName {
-	case "compact":
-		return FileViewCompact(fileContent, filePath, filename), nil
-	case "reader":
-		return FileViewReader(fileContent, filePath, filename), nil
-	default:
-		return FileViewDetailed(fileContent, filePath, filename), nil
-	}
-}
-
-func (t *BuiltinTheme) FileEdit(viewName string, content string, filePath string) (templ.Component, error) {
-	filename := filepath.Base(filePath)
-	return FileEdit(content, filePath, filename), nil
-}
-
-func (t *BuiltinTheme) Dashboard(viewName string, id string, action string, dash *dashboard.Dashboard) (templ.Component, error) {
-	if action == "new" {
-		return DashboardNew(), nil
+	// Check if builtin theme already exists
+	if _, err := os.Stat(builtinPath); err == nil {
+		return nil // already exists
 	}
 
-	if action == "edit" {
-		if dash == nil {
-			logging.LogWarning("dashboard not found: %s", id)
-			return t.Home("default")
+	logging.LogInfo("extracting builtin theme to %s", builtinPath)
+
+	// Create builtin theme directory
+	if err := os.MkdirAll(builtinPath, 0755); err != nil {
+		return fmt.Errorf("failed to create builtin theme directory: %w", err)
+	}
+
+	// Extract all files from embedded builtin theme
+	return extractBuiltinFiles("themes/builtin", builtinPath, builtinThemeFS)
+}
+
+func extractBuiltinFiles(embedPath, destPath string, builtinFS embed.FS) error {
+	entries, err := builtinFS.ReadDir(embedPath)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		srcPath := filepath.Join(embedPath, entry.Name())
+		destFilePath := filepath.Join(destPath, entry.Name())
+
+		if entry.IsDir() {
+			if err := os.MkdirAll(destFilePath, 0755); err != nil {
+				return err
+			}
+			if err := extractBuiltinFiles(srcPath, destFilePath, builtinFS); err != nil {
+				return err
+			}
+		} else {
+			data, err := builtinFS.ReadFile(srcPath)
+			if err != nil {
+				return err
+			}
+			if err := os.WriteFile(destFilePath, data, 0644); err != nil {
+				return err
+			}
+			logging.LogInfo("extracted %s", destFilePath)
 		}
-		return DashboardEdit(dash), nil
 	}
-
-	if dash == nil {
-		logging.LogWarning("dashboard not found: %s", id)
-		return t.Home("default")
-	}
-
-	return Dashboard(dash), nil
+	return nil
 }
 
-func (t *BuiltinTheme) BrowseFiles(viewName string, metadataType string, value string, query string) (templ.Component, error) {
-	return BrowseFiles(metadataType, value, query), nil
+// LoadBuiltinTemplateContent loads content from builtin theme for fallback
+func LoadBuiltinTemplateContent(templateName string, builtinFS embed.FS) ([]byte, error) {
+	builtinPath := filepath.Join("themes/builtin", templateName)
+	return builtinFS.ReadFile(builtinPath)
 }

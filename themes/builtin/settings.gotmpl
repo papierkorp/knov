@@ -1,0 +1,24 @@
+{{define "settings.gotmpl"}}
+{{template "base.gotmpl" .}}
+{{end}}
+
+{{define "content"}}
+<div id="page-settings">
+    <h1>{{.Content.Settings.Title}}</h1>
+    <form class="settings-form">
+        <div class="setting-group">
+            <label>theme:</label>
+            <select name="theme">
+                <option value="{{.Content.Settings.CurrentTheme}}">{{.Content.Settings.CurrentTheme}}</option>
+            </select>
+        </div>
+        <div class="setting-group">
+            <label>language:</label>
+            <select name="language">
+                <option value="{{.Content.Settings.CurrentLang}}">{{.Content.Settings.CurrentLang}}</option>
+            </select>
+        </div>
+        <button type="submit" class="btn">save settings</button>
+    </form>
+</div>
+{{end}}

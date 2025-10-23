@@ -1,0 +1,35 @@
+{{define "base.gotmpl"}}
+<!DOCTYPE html>
+<html lang="{{.Language}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{if .Content.Home}}{{.Content.Home.Title}} - {{else if .Content.FileView}}{{.Content.FileView.Title}} - {{else if .Content.Overview}}{{.Content.Overview.Title}} - {{else if .Content.Settings}}{{.Content.Settings.Title}} - {{else if .Content.Dashboard}}{{.Content.Dashboard.Title}} - {{else if .Content.Search}}{{.Content.Search.Title}} - {{else if .Content.Admin}}{{.Content.Admin.Title}} - {{else if .Content.Playground}}{{.Content.Playground.Title}} - {{else if .Content.History}}{{.Content.History.Title}} - {{else if .Content.LatestChanges}}{{.Content.LatestChanges.Title}} - {{else if .Content.BrowseFiles}}{{.Content.BrowseFiles.Title}} - {{else if .Content.FileEdit}}{{.Content.FileEdit.Title}} - {{end}}knov</title>
+    <link href="/static/css/style.css" rel="stylesheet">
+    <link href="/static/css/custom.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="/static/htmx.min.js"></script>
+</head>
+<body data-theme="{{.Theme}}" {{if .DarkMode}}data-dark-mode="true"{{end}}>
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="nav-brand">knov</a>
+            <div class="nav-links">
+                <a href="/">{{.T "home"}}</a>
+                <a href="/overview">{{.T "overview"}}</a>
+                <a href="/search">{{.T "search"}}</a>
+                <a href="/dashboard">{{.T "dashboard"}}</a>
+                <a href="/settings">{{.T "settings"}}</a>
+                <a href="/admin">{{.T "admin"}}</a>
+            </div>
+        </nav>
+    </header>
+    <main class="main-content">
+        {{template "content" .}}
+    </main>
+    <footer class="main-footer">
+        <p>&copy; 2024 knov - knowledge management system</p>
+    </footer>
+</body>
+</html>
+{{end}}

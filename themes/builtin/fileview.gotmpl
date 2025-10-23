@@ -1,0 +1,15 @@
+{{define "fileview.gotmpl"}}
+{{template "base.gotmpl" .}}
+{{end}}
+
+{{define "content"}}
+<div id="page-fileview">
+    <div class="file-header">
+        <h1>{{.Content.FileView.Title}}</h1>
+        <div class="file-path">{{.Content.FileView.FilePath}}</div>
+    </div>
+    <div class="file-content">
+        {{.Content.FileView.FileContent}}
+    </div>
+</div>
+{{end}}

@@ -17,8 +17,8 @@ import (
 //go:embed static/*
 var staticFS embed.FS
 
-//go:embed internal/thememanager/*
-var themeManagerFS embed.FS
+//go:embed themes/builtin/*
+var builtinThemeFS embed.FS
 
 // @title Knov API
 // @version 1.0
@@ -27,14 +27,14 @@ var themeManagerFS embed.FS
 // @BasePath /
 func main() {
 	server.SetStaticFiles(staticFS)
-	server.SetThemeManagerFiles(themeManagerFS)
 
 	configmanager.InitAppConfig()
 	translation.Init()
-	storage.Init(configmanager.GetConfigPath(), configmanager.GetStorageMethod())
+	storage.Init(configmanager.GetStorageMethod(), configmanager.GetConfigPath())
 	configmanager.InitUserSettings("default")
 	translation.SetLanguage(configmanager.GetLanguage())
 
+	thememanager.SetBuiltinThemeFiles(builtinThemeFS)
 	thememanager.Init()
 	if err := search.InitSearch(); err != nil {
 		logging.LogError("failed to initialize search: %v", err)

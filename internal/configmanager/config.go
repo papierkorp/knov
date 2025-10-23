@@ -22,6 +22,7 @@ var appConfig AppConfig
 type AppConfig struct {
 	DataPath            string
 	ThemesPath          string
+	ThemeOverwritePath  string
 	ConfigPath          string
 	ServerPort          string
 	LogLevel            string
@@ -48,14 +49,15 @@ func InitAppConfig() {
 	}
 
 	appConfig = AppConfig{
-		DataPath:     getEnv("KNOV_DATA_PATH", filepath.Join(baseDir, "data")),
-		ThemesPath:   getEnv("KNOV_THEMES_PATH", filepath.Join(baseDir, "themes")),
-		ConfigPath:   getEnv("KNOV_CONFIG_PATH", filepath.Join(baseDir, "config")),
-		ServerPort:   getEnv("KNOV_SERVER_PORT", "1324"),
-		LogLevel:     getEnv("KNOV_LOG_LEVEL", "info"),
-		GitRepoURL:   getEnv("KNOV_GIT_REPO_URL", ""),
-		Storage:      getEnv("KNOV_METADATA_STORAGE", "json"),
-		SearchEngine: getEnv("KNOV_SEARCH_ENGINE", "memory"),
+		DataPath:           getEnv("KNOV_DATA_PATH", filepath.Join(baseDir, "data")),
+		ThemesPath:         getEnv("KNOV_THEMES_PATH", filepath.Join(baseDir, "themes")),
+		ThemeOverwritePath: getEnv("KNOV_THEME_OVERWRITE_PATH", ""), // Empty = use themes/overwrite
+		ConfigPath:         getEnv("KNOV_CONFIG_PATH", filepath.Join(baseDir, "config")),
+		ServerPort:         getEnv("KNOV_SERVER_PORT", "1324"),
+		LogLevel:           getEnv("KNOV_LOG_LEVEL", "info"),
+		GitRepoURL:         getEnv("KNOV_GIT_REPO_URL", ""),
+		Storage:            getEnv("KNOV_METADATA_STORAGE", "json"),
+		SearchEngine:       getEnv("KNOV_SEARCH_ENGINE", "memory"),
 		LinkRegex: []string{
 			"\\[\\[([^\\]]+)\\]\\]",
 			"\\[([^\\]]+)\\]\\([^)]+\\)",
@@ -214,6 +216,10 @@ func loadEnvFile() {
 
 func GetThemesPath() string {
 	return appConfig.ThemesPath
+}
+
+func GetThemeOverwritePath() string {
+	return appConfig.ThemeOverwritePath
 }
 
 func GetConfigPath() string {
