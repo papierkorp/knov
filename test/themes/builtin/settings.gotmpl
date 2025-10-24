@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{.Title}}</title>
+    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
+    <!-- <link href="style.css" rel="stylesheet" /> -->
+</head>
+
+<body>
+    <h1>Builtin settings - {{.Title}}</h1>
+
+    <div class="nav">
+        <a href="/base">Base</a>
+        <a href="/settings">Settings</a>
+    </div>
+
+    <form method="post" action="/settings">
+        <label for="theme">Select Theme:</label>
+        <select name="theme" id="theme">
+            {{range .Themes}}
+            <option value="{{.Name}}" {{if eq .Name $.CurrentTheme}}selected{{end}}>{{.Metadata.Name}}</option>
+            {{end}}
+        </select>
+        <input type="submit" value="Change Theme">
+    </form>
+</body>
+
+</html>
