@@ -1,11 +1,14 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -42,6 +45,8 @@ type ThemeTemplates struct {
 
 func InitThemeManager() {
 	themeManager = &ThemeManager{}
+
+	initBuiltInTheme(builtinTheme)
 	loadAllThemes()
 
 	fmt.Printf("thememanager current: %v\n", themeManager.currentTheme.Name)
@@ -148,6 +153,56 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string) error
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	return template.Execute(w, data)
+}
+
+// -----------------------------------------------
+// ---------------- Handle Builtin ----------------
+// -----------------------------------------------
+
+func initBuiltInTheme(builtinTheme embed.FS) error {
+	builtinDir := "themes/builtin"
+
+	// Create themes/builtin directory if it doesn't exist
+	err := os.MkdirAll(builtinDir, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to create builtin theme directory: %w", err)
+	}
+
+	// Extract all files from embedded filesystem
+	err = fs.WalkDir(builtinTheme, "themes/builtin", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Skip the root directory
+		if path == "themes/builtin" {
+			return nil
+		}
+
+		// Create target path
+		relPath := filepath.Join(strings.TrimPrefix(path, "themes/builtin"))
+		targetPath := filepath.Join(builtinDir, relPath)
+
+		if d.IsDir() {
+			return os.MkdirAll(targetPath, 0755)
+		}
+
+		// Read embedded file
+		data, err := builtinTheme.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read embedded file %s: %w", path, err)
+		}
+
+		// Write to target location
+		return os.WriteFile(targetPath, data, 0644)
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to extract builtin theme: %w", err)
+	}
+
+	fmt.Println("extracted builtin theme")
+	return nil
 }
 
 // -----------------------------------------------
