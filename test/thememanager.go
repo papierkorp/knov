@@ -46,13 +46,18 @@ type ThemeTemplates struct {
 func InitThemeManager() {
 	themeManager = &ThemeManager{}
 
-	initBuiltInTheme(builtinTheme)
+	// dont run for devs / go run command
+	exe, err := os.Executable()
+	if err == nil && !strings.Contains(exe, "go-build") {
+		initBuiltInTheme(builtinTheme)
+	}
+
 	loadAllThemes()
-
-	fmt.Printf("thememanager current: %v\n", themeManager.currentTheme.Name)
-	fmt.Printf("thememanager themes: %v\n", themeManager.themes)
-
 }
+
+// -----------------------------------------------
+// ----------------- load Themes -----------------
+// -----------------------------------------------
 
 func loadAllThemes() error {
 	// todo: use themespath config
@@ -66,15 +71,27 @@ func loadAllThemes() error {
 	for _, entry := range entries {
 		if entry.IsDir() {
 			themeName := entry.Name()
+			// todo: make it a config
+			if themeName == "overwrite" {
+				continue
+			}
+
 			themeDir := filepath.Join(themesDir, themeName)
+
+			err := validateTheme(themeName, themesDir)
+			if err != nil {
+				fmt.Printf("warning: %v\n", err)
+				continue
+			}
+
 			themeJsonPath := filepath.Join(themeDir, "theme.json")
 
-			_, err := os.Stat(themeJsonPath)
+			_, err = os.Stat(themeJsonPath)
 			if err == nil {
 				// ---------------------- Load Metadata ----------------------
 				data, err := os.ReadFile(themeJsonPath)
 				if err != nil {
-					fmt.Printf("arning could not read theme.json for theme '%s': %v\n", themeName, err)
+					fmt.Printf("warning could not read theme.json for theme '%s': %v\n", themeName, err)
 					continue
 				}
 
@@ -133,6 +150,10 @@ func loadAllThemes() error {
 	return nil
 }
 
+// -----------------------------------------------
+// -------------------- Render --------------------
+// -----------------------------------------------
+
 func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string) error {
 	var template *template.Template
 
@@ -151,6 +172,21 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string) error
 		return fmt.Errorf("unknown template type: %s", templateName)
 	}
 
+	if template == nil {
+		return fmt.Errorf("template '%s' is not loaded", templateName)
+	}
+
+	// todo: make config
+	overwritePath := filepath.Join("themes", "overwrite", templateName+".gotmpl")
+	err := validateTemplate(overwritePath)
+	if err == nil {
+		overwriteTemplate, err := template.ParseFiles(overwritePath)
+		if err != nil {
+			return fmt.Errorf("failed to parse overwrite template '%s': %v", templateName, err)
+		}
+		template = overwriteTemplate
+	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	return template.Execute(w, data)
 }
@@ -162,24 +198,21 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string) error
 func initBuiltInTheme(builtinTheme embed.FS) error {
 	builtinDir := "themes/builtin"
 
-	// Create themes/builtin directory if it doesn't exist
 	err := os.MkdirAll(builtinDir, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create builtin theme directory: %w", err)
 	}
 
-	// Extract all files from embedded filesystem
+	// extract all files
 	err = fs.WalkDir(builtinTheme, "themes/builtin", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
-		// Skip the root directory
 		if path == "themes/builtin" {
 			return nil
 		}
 
-		// Create target path
 		relPath := filepath.Join(strings.TrimPrefix(path, "themes/builtin"))
 		targetPath := filepath.Join(builtinDir, relPath)
 
@@ -187,13 +220,11 @@ func initBuiltInTheme(builtinTheme embed.FS) error {
 			return os.MkdirAll(targetPath, 0755)
 		}
 
-		// Read embedded file
 		data, err := builtinTheme.ReadFile(path)
 		if err != nil {
 			return fmt.Errorf("failed to read embedded file %s: %w", path, err)
 		}
 
-		// Write to target location
 		return os.WriteFile(targetPath, data, 0644)
 	})
 
@@ -220,5 +251,70 @@ func (tm *ThemeManager) setCurrentTheme(theme Theme) error {
 	// todo: validate theme before adding it
 	tm.currentTheme = theme
 
+	return nil
+}
+
+// -----------------------------------------------
+// ---------------- Error Handling ----------------
+// -----------------------------------------------
+
+func validateTheme(themeName, themeDir string) error {
+	requiredFiles := []string{"theme.json", "base.gotmpl", "settings.gotmpl"}
+
+	themeDir = filepath.Join(themeDir, themeName)
+
+	for _, file := range requiredFiles {
+		path := filepath.Join(themeDir, file)
+		info, err := os.Stat(path)
+
+		if os.IsNotExist(err) {
+			return fmt.Errorf("theme '%s' is missing required file: %s", themeName, file)
+		}
+		if err != nil {
+			return fmt.Errorf("theme '%s' failed to access file %s: %v", themeName, file, err)
+		}
+		if info.Size() == 0 {
+			return fmt.Errorf("theme '%s' has empty file: %s", themeName, file)
+		}
+	}
+
+	themeJsonPath := filepath.Join(themeDir, "theme.json")
+	data, err := os.ReadFile(themeJsonPath)
+	if err != nil {
+		return fmt.Errorf("theme '%s' failed to read theme.json: %v", themeName, err)
+	}
+
+	var metadata ThemeMetadata
+	if err := json.Unmarshal(data, &metadata); err != nil {
+		return fmt.Errorf("theme '%s' has invalid theme.json: %v", themeName, err)
+	}
+
+	if metadata.Name == "" {
+		return fmt.Errorf("theme '%s' is missing 'name' in theme.json", themeName)
+	}
+	if metadata.Version == "" {
+		return fmt.Errorf("theme '%s' is missing 'version' in theme.json", themeName)
+	}
+	if metadata.Author == "" {
+		return fmt.Errorf("theme '%s' is missing 'author' in theme.json", themeName)
+	}
+	if metadata.Description == "" {
+		return fmt.Errorf("theme '%s' is missing 'description' in theme.json", themeName)
+	}
+
+	return nil
+}
+
+func validateTemplate(templatePath string) error {
+	info, err := os.Stat(templatePath)
+	if os.IsNotExist(err) {
+		return fmt.Errorf("template file does not exist: %s", templatePath)
+	}
+	if err != nil {
+		return fmt.Errorf("failed to access template file %s: %v", templatePath, err)
+	}
+	if info.Size() == 0 {
+		return fmt.Errorf("template file is empty: %s", templatePath)
+	}
 	return nil
 }
