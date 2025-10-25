@@ -28,6 +28,7 @@ func main() {
 	r.Get("/*", handleCSS)
 	r.Get("/themes/"+string(themeManager.currentTheme.Name)+"/*", handleCSS)
 
+	fmt.Printf("starting chi http server on http://localhost:1325\n")
 	http.ListenAndServe(":1325", r)
 }
 
@@ -45,7 +46,7 @@ func handleCSS(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleBase(w http.ResponseWriter, r *http.Request) {
-	err := themeManager.Render(w, "base")
+	err := themeManager.Render(w, "base", "")
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -53,7 +54,7 @@ func handleBase(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleSettings(w http.ResponseWriter, r *http.Request) {
-	err := themeManager.Render(w, "settings")
+	err := themeManager.Render(w, "settings", "")
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return

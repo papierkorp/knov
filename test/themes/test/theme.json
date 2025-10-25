@@ -2,5 +2,9 @@
   "name": "Test Theme",
   "version": "1.0.0",
   "author": "Theme System",
-  "description": "A clean and bright theme"
+  "description": "A clean and bright theme",
+  "views": {
+    "base": [""],
+    "settings": [""]
+  }
 }

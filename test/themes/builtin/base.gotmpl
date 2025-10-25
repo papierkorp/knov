@@ -1,21 +1,40 @@
+{{define "basic"}}
 <!DOCTYPE html>
 <html>
 
 <head>
     <title>{{.Title}}</title>
-    <!-- <link href="style.css" rel="stylesheet" /> -->
     <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
-
 </head>
 
 <body>
-    <div class="container">
-        <h1>Builtin base - {{.Title}}</h1>
-        <div class="nav">
-            <a href="/base">Base</a>
-            <a href="/settings">Settings</a>
-        </div>
+    <h1>bultin base - Basic View - {{.Title}}</h1>
+    <div class="nav">
+        <a href="/base">Base</a>
+        <a href="/settings">Settings</a>
     </div>
 </body>
 
 </html>
+{{end}}
+
+{{define "advanced"}}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{.Title}}</title>
+    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
+</head>
+
+<body>
+    <h1>builtin base - Advanced View - {{.Title}}</h1>
+    <div class="nav">
+        <a href="/base">Base</a>
+        <a href="/settings">Settings</a>
+    </div>
+    <p>Advanced features here...</p>
+</body>
+
+</html>
+{{end}}

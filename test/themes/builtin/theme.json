@@ -2,5 +2,9 @@
   "name": "Builtin Theme",
   "version": "1.0.0",
   "author": "knov team",
-  "description": "A professional theme"
+  "description": "A professional theme",
+  "views": {
+    "base": ["basic", "advanced"],
+    "settings": [""]
+  }
 }
