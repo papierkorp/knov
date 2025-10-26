@@ -1,0 +1,143 @@
+{{define "detailed"}}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{.Filename}}</title>
+    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="view-fileview-detailed">
+        <div class="fileview-layout">
+            <article class="file-content">
+                {{.HTML}}
+            </article>
+            <aside class="file-sidebar">
+                <section class="sidebar-section">
+                    <h3>metadata</h3>
+                    <div class="metadata-grid">
+                        <div class="metadata-row">
+                            <span class="metadata-label">collection:</span>
+                            <span hx-get="/api/metadata/file/collection?filepath={{.FilePath}}"
+                                hx-trigger="load">...</span>
+                        </div>
+                        <div class="metadata-row">
+                            <span class="metadata-label">created:</span>
+                            <span hx-get="/api/metadata/createdat?filepath={{.FilePath}}" hx-trigger="load">...</span>
+                        </div>
+                        <div class="metadata-row">
+                            <span class="metadata-label">edited:</span>
+                            <span hx-get="/api/metadata/lastedited?filepath={{.FilePath}}" hx-trigger="load">...</span>
+                        </div>
+                        <div class="metadata-row">
+                            <span class="metadata-label">tags:</span>
+                            <span hx-get="/api/metadata/file/tags?filepath={{.FilePath}}" hx-trigger="load">...</span>
+                        </div>
+                        <div class="metadata-row">
+                            <span class="metadata-label">folders:</span>
+                            <span hx-get="/api/metadata/file/folders?filepath={{.FilePath}}"
+                                hx-trigger="load">...</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="sidebar-section">
+                    <h3>links</h3>
+                    <div class="links-container">
+                        <div class="links-group">
+                            <span class="links-label">parents:</span>
+                            <div hx-get="/api/links/parents?filepath={{.FilePath}}" hx-trigger="load">...</div>
+                        </div>
+                        <div class="links-group">
+                            <span class="links-label">children:</span>
+                            <div hx-get="/api/links/kids?filepath={{.FilePath}}" hx-trigger="load">...</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="sidebar-section sidebar-toc">
+                    <h3>table of contents</h3>
+                    {{if .TOC}}
+                    <nav class="toc-nav">
+                        {{range .TOC}}
+                        <a href="{{.Link}}" class="{{.Class}}" style="padding-left: {{.PaddingLeft}}px;">{{.Text}}</a>
+                        {{end}}
+                    </nav>
+                    {{else}}
+                    <div class="toc-empty">no headings found</div>
+                    {{end}}
+                </section>
+            </aside>
+        </div>
+    </div>
+    <script src="/static/htmx.min.js"></script>
+</body>
+
+</html>
+{{end}}
+
+{{define "compact"}}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{.Filename}}</title>
+    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="view-fileview-compact">
+        <div class="compact-header">
+            <div class="compact-metadata">
+                <span hx-get="/api/metadata/file/collection?filepath={{.FilePath}}" hx-trigger="load">...</span>
+                <span class="separator">•</span>
+                <span hx-get="/api/metadata/createdat?filepath={{.FilePath}}" hx-trigger="load">...</span>
+                <span class="separator">•</span>
+                <span hx-get="/api/metadata/file/tags?filepath={{.FilePath}}" hx-trigger="load">...</span>
+            </div>
+        </div>
+        <article class="file-content">
+            {{.HTML}}
+        </article>
+    </div>
+    <script src="/static/htmx.min.js"></script>
+</body>
+
+</html>
+{{end}}
+
+{{define "reader"}}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{.Filename}}</title>
+    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="view-fileview-reader">
+        <div class="reader-controls">
+            <button class="font-size-btn" onclick="adjustFontSize(-1)">A-</button>
+            <button class="font-size-btn" onclick="adjustFontSize(1)">A+</button>
+        </div>
+        <article class="file-content" id="reader-content">
+            {{.HTML}}
+        </article>
+    </div>
+    <script src="/static/htmx.min.js"></script>
+    <script>
+        function adjustFontSize(delta) {
+            const content = document.getElementById('reader-content');
+            const currentSize = parseFloat(window.getComputedStyle(content).fontSize);
+            const newSize = currentSize + delta;
+            if (newSize >= 12 && newSize <= 32) {
+                content.style.fontSize = newSize + 'px';
+            }
+        }
+    </script>
+</body>
+
+</html>
+{{end}}

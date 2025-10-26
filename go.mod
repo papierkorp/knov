@@ -6,6 +6,7 @@ require github.com/go-chi/chi/v5 v5.2.2
 
 require (
 	github.com/a-h/templ v0.3.943
+	github.com/alecthomas/chroma/v2 v2.20.0
 	github.com/gomarkdown/markdown v0.0.0-20250810172220-2e2c11897d1a
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/swaggo/http-swagger/v2 v2.0.2
@@ -15,7 +16,6 @@ require (
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/alecthomas/chroma/v2 v2.20.0 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/go-openapi/jsonpointer v0.21.2 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect

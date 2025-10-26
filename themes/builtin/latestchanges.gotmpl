@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{.Title}}</title>
+    <meta charset="UTF-8" />
+    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
+</head>
+
+<body data-theme="{{.CurrentTheme}}" data-dark-mode="{{.DarkMode}}" data-color-scheme="{{.ColorScheme}}">
+    <div id="latestchanges">
+        <h1>Recent File History</h1>
+        <div hx-get="/api/git/latestchanges?count=500" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+            Loading recent changes...
+        </div>
+    </div>
+    <script src="/static/htmx.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "Builtin Theme",
+  "version": "1.0.0",
+  "author": "System",
+  "description": "Default builtin theme",
+  "views": {
+    "base": [""],
+    "settings": [""],
+    "fileview": ["detailed", "compact", "reader"],
+    "home": [""],
+    "admin": [""],
+    "search": [""],
+    "overview": [""],
+    "playground": [""],
+    "history": [""],
+    "latestchanges": [""],
+    "browsefiles": [""],
+    "fileedit": [""],
+    "dashboard": [""],
+    "dashboardedit": [""],
+    "dashboardnew": [""]
+  }
+}

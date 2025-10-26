@@ -183,26 +183,25 @@ func handleAPISetDarkMode(w http.ResponseWriter, r *http.Request) {
 // @Router /api/config/getColorSchemes [get]
 func handleAPIGetColorSchemes(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	currentThemeName := tm.GetCurrentThemeName()
-	metadata := tm.GetThemeMetadata(currentThemeName)
+	metadata := tm.GetCurrentThemeMetadata()
 
-	if metadata == nil || len(metadata.AvailableColorSchemes) == 0 {
-		writeResponse(w, r, []string{}, "<option>no schemes available</option>")
-		return
-	}
+	// if metadata == nil || len(metadata.AvailableColorSchemes) == 0 {
+	// 	writeResponse(w, r, []string{}, "<option>no schemes available</option>")
+	// 	return
+	// }
 
-	currentScheme := configmanager.GetColorScheme()
+	// currentScheme := configmanager.GetColorScheme()
 
 	var html strings.Builder
-	for _, scheme := range metadata.AvailableColorSchemes {
-		selected := ""
-		if scheme.Name == currentScheme {
-			selected = "selected"
-		}
-		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, scheme.Name, selected, scheme.Label))
-	}
+	// for _, scheme := range metadata.AvailableColorSchemes {
+	// 	selected := ""
+	// 	if scheme.Name == currentScheme {
+	// 		selected = "selected"
+	// 	}
+	// 	html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, scheme.Name, selected, scheme.Label))
+	// }
 
-	writeResponse(w, r, metadata.AvailableColorSchemes, html.String())
+	writeResponse(w, r, metadata, html.String())
 }
 
 // @Summary Set color scheme

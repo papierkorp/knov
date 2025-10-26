@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{.Title}}</title>
+    <meta charset="UTF-8" />
+    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
+</head>
+
+<body data-theme="{{.CurrentTheme}}" data-dark-mode="{{.DarkMode}}" data-color-scheme="{{.ColorScheme}}">
+    <div id="page-overview">
+        <h1>OVERVIEW</h1>
+        <div class="overview-sections">
+            <section class="overview-files">
+                <h2>All Files</h2>
+                <div class="files-list-container">
+                    <div class="overview-breadcrumb">
+                        <a href="/">Home</a>
+                        → <span>All Files</span>
+                        <span id="current-file-breadcrumb"></span>
+                    </div>
+                    <div class="overview-list">
+                        <div hx-get="/api/files/list" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                            Loading files...
+                        </div>
+                    </div>
+                    <hr />
+                    <div id="file-header"></div>
+                    <div id="file-content"></div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="/static/htmx.min.js"></script>
+</body>
+
+</html>

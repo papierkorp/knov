@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{.Title}}</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
+    <link href="/static/css/custom.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <link rel="stylesheet" href="/static/toastui-editor-3.2.2.min.css" />
+</head>
+
+<body data-theme="{{.CurrentTheme}}" data-dark-mode="{{.DarkMode}}" data-color-scheme="{{.ColorScheme}}"
+    data-language="{{.Language}}">
+    <div id="wrapper">
+        <header id="component-header">
+            <div class="header-left">
+                <a class="logo" href="/">K</a>
+                <div class="search-container">
+                    <input placeholder="Search.." hx-get="/api/search" hx-target="#search-results"
+                        hx-trigger="keyup changed delay:300ms" hx-swap="innerHTML" name="q" id="search-input" />
+                    <div class="search-dropdown">
+                        <div id="search-results">
+                            <div class="component-search-hint">start typing to search...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="header-mid" hx-get="/api/dashboards" hx-trigger="load">
+                <a>Loading...</a>
+            </div>
+            <div class="header-right">
+                <span class="span-header-git-operations">
+                    <a href="/overview">Overview</a>
+                    <a href="/latest-changes">Latest Changes</a>
+                    <a href="/history">History</a>
+                </span>
+                <div class="dropdown-navbar">
+                    <button class="btn-add">+</button>
+                    <div class="dropdown-navbar-content">
+                        <a href="/dashboard/new">New Dashboard</a>
+                        <a href="#" onclick="alert('Add Note - Coming Soon')">Add Note</a>
+                        <a href="#" onclick="alert('Add Todo - Coming Soon')">Add Todo</a>
+                    </div>
+                </div>
+                <div class="dropdown-navbar" id="edit-dropdown">
+                    <button class="btn-edit">

@@ -7,32 +7,21 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"plugin"
-	"slices"
 	"strings"
-
-	"knov/internal/configmanager"
-	"knov/internal/dashboard"
-	"knov/internal/files"
-	_ "knov/internal/server/swagger" // swaggo api docs
-	"knov/internal/thememanager"
-	"knov/internal/utils"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
+	"knov/internal/configmanager"
+	"knov/internal/logging"
+	_ "knov/internal/server/swagger" // swaggo api docs
+	"knov/internal/thememanager"
 )
 
 var staticFiles embed.FS
-var themeManagerFiles embed.FS
 
 func SetStaticFiles(files embed.FS) {
 	staticFiles = files
-}
-
-// SetThemeManagerFiles sets the embedded thememanager files
-func SetThemeManagerFiles(files embed.FS) {
-	themeManagerFiles = files
 }
 
 // StartServerChi ...
@@ -75,6 +64,7 @@ func StartServerChi() {
 	// ----------------------------------------------------------------------------------------
 
 	r.Get("/static/*", handleStatic)
+	r.Get("/themes/*", handleStatic)
 
 	// ----------------------------------------------------------------------------------------
 	// -------------------------------------- api routes --------------------------------------
@@ -99,7 +89,6 @@ func StartServerChi() {
 		r.Route("/themes", func(r chi.Router) {
 			r.Get("/getAllThemes", handleAPIGetThemes)
 			r.Post("/setTheme", handleAPISetTheme)
-			r.Post("/upload", handleAPIUploadTheme)
 
 		})
 		// ----------------------------------------------------------------------------------------
@@ -233,78 +222,37 @@ func StartServerChi() {
 // ---------------------------------------- helper ----------------------------------------
 // ----------------------------------------------------------------------------------------
 
-func getViewName(tm thememanager.IThemeManager, viewType string) string {
-	views := tm.GetAvailableViews(viewType)
-	if len(views) > 0 {
-		return views[0]
-	}
-	return "default"
-}
-
 func handleStatic(w http.ResponseWriter, r *http.Request) {
-	filePath := strings.TrimPrefix(r.URL.Path, "/static/")
+	var basePath, filePath, fullPath string
 
-	fmt.Printf("handleStatic called for: %s\n", filePath)
+	if strings.HasPrefix(r.URL.Path, "/static/") {
+		basePath = "static"
+		filePath = strings.TrimPrefix(r.URL.Path, "/static/")
+		fullPath = filepath.ToSlash(filepath.Join(basePath, filePath))
+	} else if strings.HasPrefix(r.URL.Path, "/themes/") {
+		basePath = "themes"
+		filePath = strings.TrimPrefix(r.URL.Path, "/themes/")
+		fullPath = filepath.Join(basePath, filePath)
+	} else {
+		http.NotFound(w, r)
+		return
+	}
 
-	// handle special CSS files
-	if strings.HasPrefix(filePath, "css/") {
-		w.Header().Set("Content-Type", "text/css")
+	fmt.Printf("handleStatic called for: %s (base: %s)\n", filePath, basePath)
+
+	if basePath == "static" && strings.HasPrefix(filePath, "css/") {
+		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 
 		cssFile := strings.TrimPrefix(filePath, "css/")
 
-		switch cssFile {
-		case "custom.css":
+		if cssFile == "custom.css" {
 			customCSS := configmanager.GetUserSettings().CustomCSS
 			w.Write([]byte(customCSS))
 			return
-		case "style.css":
-			themeName := thememanager.GetThemeManager().GetCurrentThemeName()
-			if themeName == "builtin" {
-				themeManagerPath := "internal/thememanager/style.css"
-				if data, err := themeManagerFiles.ReadFile(themeManagerPath); err == nil {
-					w.Write(data)
-					return
-				}
-			} else {
-				if css := getPluginCSS(themeName, "style.css"); css != "" {
-					w.Write([]byte(css))
-					return
-				}
-				cssPath := filepath.Join(configmanager.GetThemesPath(), themeName, "templates", "style.css")
-				if data, err := os.ReadFile(cssPath); err == nil {
-					w.Write(data)
-					return
-				}
-			}
-			http.NotFound(w, r)
-			return
-		default:
-			themeName := thememanager.GetThemeManager().GetCurrentThemeName()
-			if themeName == "builtin" {
-				themeManagerPath := "internal/thememanager/" + cssFile
-				if data, err := themeManagerFiles.ReadFile(themeManagerPath); err == nil {
-					w.Write(data)
-					return
-				}
-			} else {
-				if css := getPluginCSS(themeName, cssFile); css != "" {
-					w.Write([]byte(css))
-					return
-				}
-				cssPath := filepath.Join("themes", themeName, "templates", cssFile)
-				if data, err := os.ReadFile(cssPath); err == nil {
-					w.Write(data)
-					return
-				}
-			}
 		}
 	}
 
-	// serve from embedded static files - use forward slashes for embed.FS
-	fullPath := "static/" + filePath
-
-	// set content type before serving
 	ext := strings.ToLower(filepath.Ext(filePath))
 	switch ext {
 	case ".js":
@@ -321,39 +269,27 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/x-icon")
 	}
 
-	data, err := staticFiles.ReadFile(fullPath)
-	if err != nil {
-		fmt.Printf("failed to read embedded file %s: %v\n", fullPath, err)
-		http.NotFound(w, r)
-		return
+	if basePath == "themes" {
+		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+			logging.LogDebug("theme file not found: %s", fullPath)
+			http.NotFound(w, r)
+			return
+		}
+		logging.LogDebug("serving theme file: %s", fullPath)
+		http.ServeFile(w, r, fullPath)
+	} else {
+		data, err := staticFiles.ReadFile(fullPath)
+		if err != nil {
+			fmt.Printf("failed to read embedded file %s: %v\n", fullPath, err)
+			http.NotFound(w, r)
+			return
+		}
+		w.Write(data)
 	}
-
-	w.Write(data)
 }
 
-func getPluginCSS(themeName, filename string) string {
-	// load the plugin
-	pluginPath := filepath.Join(configmanager.GetThemesPath(), themeName+".so")
-	if _, err := os.Stat(pluginPath); os.IsNotExist(err) {
-		return ""
-	}
-
-	plugin, err := plugin.Open(pluginPath)
-	if err != nil {
-		return ""
-	}
-
-	// look for GetCSS function
-	getCSSSymbol, err := plugin.Lookup("GetCSS")
-	if err != nil {
-		return ""
-	}
-
-	// call GetCSS function if it exists
-	if getCSSFunc, ok := getCSSSymbol.(func(string) string); ok {
-		return getCSSFunc(filename)
-	}
-
+func getViewName(templateName string) string {
+	// todo: get from configmanager - usersettings
 	return ""
 }
 
@@ -363,99 +299,90 @@ func getPluginCSS(themeName, filename string) string {
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "home")
+	viewName := getViewName("home")
 
-	component, err := tm.GetCurrentTheme().Home(viewName)
+	err := tm.Render(w, "base", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
 }
 
 func handleSettings(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "settings")
+	viewName := getViewName("settings")
 
-	component, err := tm.GetCurrentTheme().Settings(viewName)
+	err := tm.Render(w, "settings", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
 }
 
 func handleAdmin(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "admin")
+	viewName := getViewName("admin")
 
-	component, err := tm.GetCurrentTheme().Admin(viewName)
+	err := tm.Render(w, "admin", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
 }
 
 func handlePlayground(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "playground")
+	viewName := getViewName("playground")
 
-	component, err := tm.GetCurrentTheme().Playground(viewName)
+	err := tm.Render(w, "playground", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
 }
 
 func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "latestchanges")
+	viewName := getViewName("latestchanges")
 
-	component, err := tm.GetCurrentTheme().LatestChanges(viewName)
+	err := tm.Render(w, "latestchanges", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
 }
 
 func handleHistory(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "history")
+	viewName := getViewName("history")
 
-	component, err := tm.GetCurrentTheme().History(viewName)
+	err := tm.Render(w, "history", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
 }
 
 func handleOverview(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "overview")
+	viewName := getViewName("overview")
 
-	component, err := tm.GetCurrentTheme().Overview(viewName)
+	err := tm.Render(w, "overview", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
 }
 
 func handleSearchPage(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query().Get("q")
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "search")
+	viewName := getViewName("search")
 
-	component, err := tm.GetCurrentTheme().Search(viewName, query)
+	err := tm.Render(w, "search", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
 }
 
 func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
@@ -467,134 +394,141 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := fmt.Sprintf("%s:%s", metadataType, value)
-	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "browsefiles")
+	// query := fmt.Sprintf("%s:%s", metadataType, value)
 
-	component, err := tm.GetCurrentTheme().BrowseFiles(viewName, metadataType, value, query)
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName("browsefiles")
+
+	err := tm.Render(w, "browsefiles", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
 }
 
 func handleDashboardNew(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "dashboard")
+	viewName := getViewName("dashboardnew")
 
-	component, err := tm.GetCurrentTheme().Dashboard(viewName, "", "new", nil)
+	err := tm.Render(w, "dashboardnew", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
 }
 
 func handleDashboardEdit(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	dash, err := dashboard.Get(id)
-	if err != nil {
-		http.Error(w, "dashboard not found", http.StatusNotFound)
-		return
-	}
+	// id := chi.URLParam(r, "id")
+	// dashboard, err := dashboard.Get(id)
+	// if err != nil {
+	// 	http.Error(w, "dashboard not found", http.StatusNotFound)
+	// 	return
+	// }
 
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "dashboard")
+	viewName := getViewName("dashboardedit")
 
-	component, err := tm.GetCurrentTheme().Dashboard(viewName, id, "edit", dash)
+	err := tm.Render(w, "dashboardedit", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
 }
 
 func handleDashboardView(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	if id == "" {
-		id = "home"
-	}
+	// id := chi.URLParam(r, "id")
+	// if id == "" {
+	// 	id = "home"
+	// }
 
-	dash, err := dashboard.Get(id)
-	if err != nil {
-		http.Error(w, "dashboard not found", http.StatusNotFound)
-		return
-	}
+	// dash, err := dashboard.Get(id)
+	// if err != nil {
+	// 	http.Error(w, "dashboard not found", http.StatusNotFound)
+	// 	return
+	// }
 
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "dashboard")
+	viewName := getViewName("dashboardview")
 
-	component, err := tm.GetCurrentTheme().Dashboard(viewName, id, "view", dash)
+	err := tm.Render(w, "dashboardview", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
+
 }
 
 func handleFileContent(w http.ResponseWriter, r *http.Request) {
-	filePath := strings.TrimPrefix(r.URL.Path, "/files/")
-	fullPath := utils.ToFullPath(filePath)
-	ext := strings.ToLower(filepath.Ext(fullPath))
-
-	if ext == ".pdf" {
-		w.Header().Set("Content-Type", "application/pdf")
-		http.ServeFile(w, r, fullPath)
-		return
-	}
-
-	fileContent, err := files.GetFileContent(fullPath)
-	if err != nil {
-		http.Error(w, "failed to get file content", http.StatusInternalServerError)
-		return
-	}
-
-	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(fileContent.HTML))
-		return
-	}
+	// filePath := strings.TrimPrefix(r.URL.Path, "/files/")
+	// fullPath := utils.ToFullPath(filePath)
+	// ext := strings.ToLower(filepath.Ext(fullPath))
+	//
+	// if ext == ".pdf" {
+	// 	w.Header().Set("Content-Type", "application/pdf")
+	// 	http.ServeFile(w, r, fullPath)
+	// 	return
+	// }
+	//
+	// fileContent, err := files.GetFileContent(fullPath)
+	// if err != nil {
+	// 	http.Error(w, "failed to get file content", http.StatusInternalServerError)
+	// 	return
+	// }
+	//
+	// if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
+	// 	w.Header().Set("Content-Type", "text/html")
+	// 	w.Write([]byte(fileContent.HTML))
+	// 	return
+	// }
+	//
+	// tm := thememanager.GetThemeManager()
+	// currentTheme := tm.GetCurrentTheme()
+	// fileView := configmanager.GetFileView()
+	//
+	// availableViews := tm.GetAvailableViews("file")
+	// if !slices.Contains(availableViews, fileView) && len(availableViews) > 0 {
+	// 	fileView = availableViews[0]
+	// 	configmanager.SetFileView(fileView)
+	// }
+	//
+	// component, err := currentTheme.RenderFileView(fileView, fileContent, filePath)
+	// if err != nil {
+	// 	http.Error(w, "failed to load theme", http.StatusInternalServerError)
+	// 	return
+	// }
+	//
+	// err = component.Render(r.Context(), w)
+	// if err != nil {
+	// 	http.Error(w, "failed to render template", http.StatusInternalServerError)
+	// 	return
+	// }
 
 	tm := thememanager.GetThemeManager()
-	currentTheme := tm.GetCurrentTheme()
-	fileView := configmanager.GetFileView()
+	viewName := getViewName("filecontent")
 
-	availableViews := tm.GetAvailableViews("file")
-	if !slices.Contains(availableViews, fileView) && len(availableViews) > 0 {
-		fileView = availableViews[0]
-		configmanager.SetFileView(fileView)
-	}
-
-	component, err := currentTheme.RenderFileView(fileView, fileContent, filePath)
+	err := tm.Render(w, "filecontent", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
-		return
-	}
-
-	err = component.Render(r.Context(), w)
-	if err != nil {
-		http.Error(w, "failed to render template", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
 }
 
 func handleFileEdit(w http.ResponseWriter, r *http.Request) {
-	filePath := strings.TrimPrefix(r.URL.Path, "/files/edit/")
-	fullPath := utils.ToFullPath(filePath)
-
-	content, err := files.GetRawContent(fullPath)
-	if err != nil {
-		content = ""
-	}
+	// filePath := strings.TrimPrefix(r.URL.Path, "/files/edit/")
+	// fullPath := utils.ToFullPath(filePath)
+	//
+	// content, err := files.GetRawContent(fullPath)
+	// if err != nil {
+	// 	content = ""
+	// }
 
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName(tm, "fileedit")
+	viewName := getViewName("fileedit")
 
-	component, err := tm.GetCurrentTheme().FileEdit(viewName, content, filePath)
+	err := tm.Render(w, "fileedit", viewName)
 	if err != nil {
-		http.Error(w, "failed to load theme", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	component.Render(r.Context(), w)
+
 }

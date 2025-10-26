@@ -2008,43 +2008,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/api/themes/upload": {
-            "post": {
-                "description": "Upload a self-contained theme .so file",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "tags": [
-                    "themes"
-                ],
-                "summary": "Upload theme",
-                "parameters": [
-                    {
-                        "type": "file",
-                        "description": "Theme .so file",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {

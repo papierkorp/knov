@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{.Title}}</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
+    <link href="/static/css/custom.css" rel="stylesheet" />
+</head>
+
+<body data-theme="{{.CurrentTheme}}" data-dark-mode="{{.DarkMode}}" data-color-scheme="{{.ColorScheme}}">
+    <div id="page-settings">
+        <h1>Settings</h1>
+        <div class="settings-sections">
+            <section class="settings-section">
+                <h2>General Settings</h2>
+                <div class="setting-item">
+                    <form hx-post="/api/config/setLanguage" hx-trigger="change">
+                        <label for="language">Select Language:</label>
+                        <select name="language" id="language">
+                            {{range .AvailableLanguages}}
+                            <option value="{{.Code}}" {{if eq .Code $.CurrentLanguage}}selected{{end}}>{{.Name}}
+                            </option>
+                            {{end}}
+                        </select>
+                    </form>
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <h2>Theme Settings</h2>
+                <div class="setting-item">
+                    <form hx-post="/api/themes/setTheme" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
+                        <label for="theme">Select Theme:</label>
+                        <select name="theme" id="theme" hx-get="/api/themes/getAllThemes" hx-target="this"
+                            hx-swap="innerHTML" hx-trigger="load">
+                            <option>Loading themes...</option>
+                        </select>
+                    </form>
+                </div>
+
+                <div class="setting-item">
+                    <label>
+                        Dark Mode
+                        <input type="checkbox" name="darkMode" {{if .DarkMode}}checked{{end}}
+                            hx-post="/api/config/setDarkMode" hx-vals='js:{"enabled": event.target.checked}'
+                            hx-trigger="change" />
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <form hx-post="/api/config/setColorScheme" hx-trigger="change">
+                        <label for="colorScheme">Color Scheme:</label>
+                        <select name="colorScheme" id="colorScheme" hx-get="/api/config/getColorSchemes"
+                            hx-trigger="load">
+                            <option>Loading schemes...</option>
+                        </select>
+                    </form>
+                </div>
+
+                <div class="setting-item">
+                    <form hx-post="/api/config/setFileView" hx-trigger="change">
+                        <label for="fileView">Select File View:</label>
+                        <select name="fileView" id="fileView" hx-get="/api/config/getAvailableFileViews"
+                            hx-trigger="load">
+                            <option>Loading views...</option>
+                        </select>
+                    </form>
+                </div>
+
+                <div id="customCssEditor">
+                    <h3>Custom CSS</h3>
+                    <form hx-post="/api/config/customCSS" hx-trigger="blur from:textarea">
+                        <textarea name="css" rows="20"
+                            style="width: 100%; font-family: monospace;">{{.CustomCSS}}</textarea>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="/static/htmx.min.js"></script>
+</body>
+
+</html>

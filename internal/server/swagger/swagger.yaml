@@ -1571,29 +1571,4 @@ paths:
       summary: Set theme
       tags:
       - themes
-  /api/themes/upload:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Upload a self-contained theme .so file
-      parameters:
-      - description: Theme .so file
-        in: formData
-        name: file
-        required: true
-        type: file
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Upload theme
-      tags:
-      - themes
 swagger: "2.0"

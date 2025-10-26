@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{.Title}}</title>
+    <meta charset="UTF-8" />
+    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
+</head>
+
+<body data-theme="{{.CurrentTheme}}" data-dark-mode="{{.DarkMode}}" data-color-scheme="{{.ColorScheme}}">
+    <div id="page-admin">
+        <h1>Admin</h1>
+        <div class="admin-sections">
+            <section class="admin-section">
+                <h2>Paths</h2>
+                <div class="admin-item">
+                    <form hx-post="/api/config/setDataPath" hx-trigger="blur from:input" hx-target="#path-status"
+                        hx-headers='{"Accept": "text/html"}'>
+                        <label for="dataPath">Data Path:</label>
+                        <input type="text" id="dataPath" name="dataPath" value="{{.DataPath}}" />
+                    </form>
+                    <div id="path-status"></div>
+                    <p class="admin-note">restart required for changes to take effect</p>
+                </div>
+            </section>
+
+            <section class="admin-section">
+                <h2>Git Settings</h2>
+                <div class="admin-item">
+                    <form hx-post="/api/config/setRepositoryURL" hx-trigger="blur from:input" hx-target="#git-status"
+                        hx-headers='{"Accept": "text/html"}'>
+                        <label for="repositoryUrl">Repository URL:</label>
+                        <input type="text" id="repositoryUrl" name="repositoryUrl" value="{{.GitRepoURL}}" />
+                    </form>
+                    <div id="git-status"></div>
+                    <p class="admin-note">restart required for changes to take effect</p>
+                </div>
+            </section>
+
+            <section class="admin-section">
+                <h2>Metadata</h2>
+                <div class="admin-item">
+                    <form hx-post="/api/metadata/rebuild" hx-target="#metadata-status"
+                        hx-headers='{"Accept": "text/html"}'>
+                        <button type="submit" class="btn">Rebuild Metadata</button>
+                    </form>
+                    <div id="metadata-status"></div>
+                </div>
+            </section>
+
+            <section class="admin-section">
+                <h2>System</h2>
+                <div class="admin-item">
+                    <form hx-post="/api/system/restart" hx-confirm="are you sure you want to restart the application?"
+                        hx-target="#restart-status" hx-headers='{"Accept": "text/html"}'>
+                        <button type="submit" class="btn btn-warning">Restart Application</button>
+                    </form>
+                    <div id="restart-status"></div>
+                </div>
+            </section>
+
+            <section class="admin-section">
+                <h2>Theme Management</h2>
+                <div class="upload-form">
+                    <h3>Upload New Theme</h3>
+                    <form hx-post="/api/themes/upload" hx-encoding="multipart/form-data" hx-target="#upload-result"
+                        hx-swap="innerHTML">
+                        <input type="file" name="file" accept=".so" required />
+                        <button type="submit">Upload Theme</button>
+                    </form>
+                    <div id="upload-result"></div>
+                </div>
+                <div class="current-themes">
+                    <h3>Available Themes</h3>
+                    <div hx-get="/api/themes/getAllThemes" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
+                        Loading themes...
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="/static/htmx.min.js"></script>
+</body>
+
+</html>

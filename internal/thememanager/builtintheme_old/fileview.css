@@ -1,0 +1,192 @@
+/* detailed view with sidebar */
+#view-fileview-detailed .fileview-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+#view-fileview-detailed .file-content {
+    min-width: 0;
+}
+
+#view-fileview-detailed .file-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#view-fileview-detailed .sidebar-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 15px;
+}
+
+#view-fileview-detailed .sidebar-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+    text-transform: lowercase;
+}
+
+#view-fileview-detailed .metadata-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#view-fileview-detailed .metadata-row {
+    display: flex;
+    gap: 8px;
+    font-size: 14px;
+}
+
+#view-fileview-detailed .metadata-label {
+    color: var(--text-secondary);
+    min-width: 80px;
+}
+
+#view-fileview-detailed .links-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#view-fileview-detailed .links-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#view-fileview-detailed .links-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+#view-fileview-detailed .sidebar-toc {
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+#view-fileview-detailed .component-link-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#view-fileview-detailed .component-link-list li {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+#view-fileview-detailed .component-no-links {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+#view-fileview-detailed .toc-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#view-fileview-detailed .toc-nav a {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text);
+    text-decoration: none;
+    padding: 4px 0;
+    transition: color 0.2s;
+}
+
+#view-fileview-detailed .toc-nav a:hover {
+    color: var(--primary);
+}
+
+#view-fileview-detailed .toc-empty {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* compact view */
+#view-fileview-compact .compact-header {
+    padding: 12px 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+#view-fileview-compact .compact-metadata {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+#view-fileview-compact .separator {
+    color: var(--border);
+}
+
+/* reader view */
+#view-fileview-reader {
+    position: relative;
+}
+
+#view-fileview-reader .reader-controls {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+#view-fileview-reader .font-size-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+#view-fileview-reader .font-size-btn:hover {
+    background: var(--primary);
+    color: var(--bg);
+    border-color: var(--primary);
+}
+
+#view-fileview-reader .file-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding-top: 40px;
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+/* responsive */
+@media (max-width: 1024px) {
+    #view-fileview-detailed .fileview-layout {
+        grid-template-columns: 1fr;
+    }
+
+    #view-fileview-detailed .file-sidebar {
+        order: -1;
+    }
+
+    #view-fileview-detailed .sidebar-toc {
+        position: static;
+        max-height: none;
+    }
+}
