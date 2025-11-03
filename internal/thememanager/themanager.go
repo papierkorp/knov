@@ -161,15 +161,25 @@ func LoadSingleTheme(themeName, themesDir string) error {
 
 	// ---------------------- Generate Theme ----------------------
 	templates := ThemeTemplates{}
-	files, err := filepath.Glob(filepath.Join(themeDir, "*.gotmpl"))
+	files, err := filepath.Glob(filepath.Join(themeDir, "*.gohtml"))
 	if err != nil {
 		return fmt.Errorf("failed to list templates in %s: %w", themeDir, err)
 	}
 
-	for _, filePath := range files {
-		name := strings.TrimSuffix(filepath.Base(filePath), ".gotmpl")
+	baseFilePath := filepath.Join(themeDir, "base.gohtml")
 
-		tmpl, err := template.ParseFiles(filePath)
+	for _, filePath := range files {
+		name := strings.TrimSuffix(filepath.Base(filePath), ".gohtml")
+
+		var tmpl *template.Template
+		var err error
+
+		if name == "base" {
+			tmpl, err = template.ParseFiles(filePath)
+		} else {
+			tmpl, err = template.ParseFiles(baseFilePath, filePath)
+		}
+
 		if err != nil {
 			return fmt.Errorf("could not parse %s: %w", filepath.Base(filePath), err)
 		}
@@ -259,7 +269,7 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, viewN
 	}
 
 	// todo: make config
-	overwritePath := filepath.Join("themes", "overwrite", templateName+".gotmpl")
+	overwritePath := filepath.Join("themes", "overwrite", templateName+".gohtml")
 	err = validateTemplateFile(overwritePath)
 	if err == nil {
 		requiredViews := themeManager.GetAvailableViews(templateName)
@@ -437,7 +447,7 @@ func validateThemeFiles(themeName, themeDir string) error {
 	themeDir = filepath.Join(themeDir, themeName)
 
 	for name := range (&Theme{}).TemplateMap() {
-		requiredFiles = append(requiredFiles, fmt.Sprintf("%s.gotmpl", name))
+		requiredFiles = append(requiredFiles, fmt.Sprintf("%s.gohtml", name))
 	}
 
 	themeJsonPath := filepath.Join(themeDir, "theme.json")
@@ -488,7 +498,7 @@ func validateTheme(theme Theme) error {
 }
 
 func validateTemplateFile(templatePath string) error {
-	if !strings.HasSuffix(templatePath, ".gotmpl") {
+	if !strings.HasSuffix(templatePath, ".gohtml") {
 		return nil
 	}
 
@@ -511,7 +521,7 @@ func validateTemplate(templateName string, tmpl *template.Template, views []stri
 			continue
 		}
 		if tmpl.Lookup(view) == nil {
-			return fmt.Errorf("theme '%s': view '%s' not found in %s.gotmpl", themeName, view, templateName)
+			return fmt.Errorf("theme '%s': view '%s' not found in %s.gohtml", themeName, view, templateName)
 		}
 	}
 

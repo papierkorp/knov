@@ -1,12 +1,12 @@
-@import url("base.css");
-@import url("codehighlight.css");
-@import url("playground.css");
-@import url("fileview.css");
-@import url("overview.css");
-@import url("search.css");
-@import url("dashboard.css");
-@import url("browsefiles.css");
-@import url("fileedit.css");
+@import url("./style/base.css");
+@import url("./style/codehighlight.css");
+@import url("./style/playground.css");
+@import url("./style/fileview.css");
+@import url("./style/overview.css");
+@import url("./style/search.css");
+@import url("./style/dashboard.css");
+@import url("./style/browsefiles.css");
+@import url("./style/fileedit.css");
 
 /* color schemes */
 :root,

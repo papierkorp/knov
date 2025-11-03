@@ -9,13 +9,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"knov/internal/configmanager"
 	"knov/internal/logging"
 	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 var staticFiles embed.FS
@@ -301,7 +302,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("home")
 
-	err := tm.Render(w, "base", viewName)
+	err := tm.Render(w, "home", viewName)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
