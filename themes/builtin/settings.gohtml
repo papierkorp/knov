@@ -92,15 +92,13 @@
     <div class="setting-item">
         <div id="customCssEditor">
             <h3>Custom CSS</h3>
-            <form hx-post="/api/config/customCSS" hx-trigger="blur from:textarea">
-                <span
-                    hx-get="/api/config/getCustomCSS"
-                    hx-trigger="load"
-                    hx-swap="innerHTML"
-                >
-                    <textarea name="css" rows="20" style="width: 100%; font-family: monospace;" placeholder="Loading CSS..."></textarea>
-                </span>
-            </form>
+            <span
+                hx-get="/api/config/getCustomCSS"
+                hx-trigger="load"
+                hx-swap="innerHTML"
+            >
+                <textarea name="css" rows="20" style="width: 100%; font-family: monospace;" placeholder="Loading CSS..."></textarea>
+            </span>
         </div>
     </div>
 </section>

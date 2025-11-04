@@ -275,7 +275,7 @@ func handleAPIGetDarkModeStatus(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/config/getCustomCSS [get]
 func handleAPIGetCustomCSS(w http.ResponseWriter, r *http.Request) {
-	editorHTML := `<textarea name="css" rows="20" style="width: 100%; font-family: monospace;">{{CSS_CONTENT}}</textarea>`
+	editorHTML := `<textarea name="css" rows="20" style="width: 100%; font-family: monospace;" hx-post="/api/config/customCSS" hx-trigger="blur" hx-swap="none">{{CSS_CONTENT}}</textarea>`
 	html := configmanager.GetCustomCSSEditor(editorHTML)
 
 	writeResponse(w, r, configmanager.GetCustomCSS(), html)
