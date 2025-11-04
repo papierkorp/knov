@@ -92,7 +92,7 @@
     <div class="setting-item">
         <div id="customCssEditor">
             <h3>Custom CSS</h3>
-            <form hx-post="/api/config/customCSS" hx-trigger="blur from:textarea">
+            <form hx-post="/api/config/customCSS" hx-trigger="blur from:textarea" hx-swap="none">
                 <span
                     hx-get="/api/config/getCustomCSS"
                     hx-trigger="load"
