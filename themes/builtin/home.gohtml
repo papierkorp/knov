@@ -1,31 +1,31 @@
 {{ define "content" }}
 <div id="page-home">
     <ul>
-        <li><a href="http://localhost:1324/files/project-overview.md">Project Overview</a></li>
+        <li><a href="http://localhost:1324/files/project-overview.md">{{T "Project Overview"}}</a></li>
         <li><a href="http://localhost:1324/dashboard">/dashboard</a></li>
         <li><a href="http://localhost:1324/dashboard/asdf">/dashboard/asdf</a></li>
     </ul>
-    <h1>Hello World from templ at home in the dark!</h1>
+    <h1>{{T "Hello World from templ at home in the dark!"}}</h1>
     <hr/>
     <section class="overview-browse">
-        <h2>Browse by Metadata</h2>
+        <h2>{{T "Browse by Metadata"}}</h2>
         <div class="browse-grid">
             <div class="browse-section">
-                <h3>Tags</h3>
+                <h3>{{T "Tags"}}</h3>
                 <div hx-get="/api/metadata/tags" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
-                    loading tags...
+                    {{T "loading tags..."}}
                 </div>
             </div>
             <div class="browse-section">
-                <h3>Collections</h3>
+                <h3>{{T "Collections"}}</h3>
                 <div hx-get="/api/metadata/collections" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
-                    loading collections...
+                    {{T "loading collections..."}}
                 </div>
             </div>
             <div class="browse-section">
-                <h3>Folders</h3>
+                <h3>{{T "Folders"}}</h3>
                 <div hx-get="/api/metadata/folders" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
-                    loading folders...
+                    {{T "loading folders..."}}
                 </div>
             </div>
         </div>
@@ -36,49 +36,96 @@
 
 {{ define "metadata-filter" }}
 <section>
-    <h3>Metadata Filter</h3>
+    <h3>{{T "Metadata Filter"}}</h3>
     <form id="metadata-filter-form" hx-post="/api/files/filter" hx-target="#filter-results">
         <div>
-            <button type="submit">Apply Filter</button>
+            <button type="submit">{{T "Apply Filter"}}</button>
             <select name="logic" id="logic-operator">
-                <option value="and">AND</option>
-                <option value="or">OR</option>
+                <option value="and">{{T "AND"}}</option>
+                <option value="or">{{T "OR"}}</option>
             </select>
-            <button type="button" onclick="addFilterRow()">Add Filter</button>
+            <button type="button" onclick="addFilterRow()">{{T "Add Filter"}}</button>
         </div>
         <div id="filter-container">
             <div class="filter-row" id="filter-row-0">
                 <select name="metadata[]" id="metadata-0">
-                    <option value="collection">Collection</option>
-                    <option value="tags">Tags</option>
-                    <option value="type">Type</option>
-                    <option value="status">Status</option>
-                    <option value="priority">Priority</option>
-                    <option value="createdAt">Created Date</option>
-                    <option value="lastEdited">Last Edited</option>
-                    <option value="folders">Folders</option>
-                    <option value="boards">Boards</option>
+                    <option value="collection">{{T "Collection"}}</option>
+                    <option value="tags">{{T "Tags"}}</option>
+                    <option value="type">{{T "Type"}}</option>
+                    <option value="status">{{T "Status"}}</option>
+                    <option value="priority">{{T "Priority"}}</option>
+                    <option value="createdAt">{{T "Created Date"}}</option>
+                    <option value="lastEdited">{{T "Last Edited"}}</option>
+                    <option value="folders">{{T "Folders"}}</option>
+                    <option value="boards">{{T "Boards"}}</option>
                 </select>
                 <select name="operator[]" id="operator-0">
-                    <option value="equals">Equals</option>
-                    <option value="contains">Contains</option>
-                    <option value="greater">Greater Than</option>
-                    <option value="less">Less Than</option>
-                    <option value="in">In Array</option>
+                    <option value="equals">{{T "Equals"}}</option>
+                    <option value="contains">{{T "Contains"}}</option>
+                    <option value="greater">{{T "Greater Than"}}</option>
+                    <option value="less">{{T "Less Than"}}</option>
+                    <option value="in">{{T "In Array"}}</option>
                 </select>
-                <input type="text" name="value[]" id="value-0" placeholder="Value"/>
+                <input type="text" name="value[]" id="value-0" placeholder="{{T "Value"}}"/>
                 <select name="action[]" id="action-0">
-                    <option value="include">Include</option>
-                    <option value="exclude">Exclude</option>
+                    <option value="include">{{T "Include"}}</option>
+                    <option value="exclude">{{T "Exclude"}}</option>
                 </select>
                 <button type="button" onclick="removeFilterRow(0)">-</button>
             </div>
         </div>
     </form>
     <div id="filter-results">
-        Filtered results will appear here
+        {{T "Filtered results will appear here"}}
     </div>
 </section>
+<script>
+let filterRowCount = 1;
+
+function addFilterRow() {
+    const container = document.getElementById('filter-container');
+    const newRow = document.createElement('div');
+    newRow.className = 'filter-row';
+    newRow.id = `filter-row-${filterRowCount}`;
+
+    newRow.innerHTML = `
+        <select name="metadata[]" id="metadata-${filterRowCount}">
+            <option value="collection">Collection</option>
+            <option value="tags">Tags</option>
+            <option value="type">Type</option>
+            <option value="status">Status</option>
+            <option value="priority">Priority</option>
+            <option value="createdAt">Created Date</option>
+            <option value="lastEdited">Last Edited</option>
+            <option value="folders">Folders</option>
+            <option value="boards">Boards</option>
+        </select>
+        <select name="operator[]" id="operator-${filterRowCount}">
+            <option value="equals">Equals</option>
+            <option value="contains">Contains</option>
+            <option value="greater">Greater Than</option>
+            <option value="less">Less Than</option>
+            <option value="in">In Array</option>
+        </select>
+        <input type="text" name="value[]" id="value-${filterRowCount}" placeholder="Value"/>
+        <select name="action[]" id="action-${filterRowCount}">
+            <option value="include">Include</option>
+            <option value="exclude">Exclude</option>
+        </select>
+        <button type="button" onclick="removeFilterRow(${filterRowCount})">-</button>
+    `;
+
+    container.appendChild(newRow);
+    filterRowCount++;
+}
+
+function removeFilterRow(index) {
+    const row = document.getElementById(`filter-row-${index}`);
+    if (row && document.querySelectorAll('.filter-row').length > 1) {
+        row.remove();
+    }
+}
+</script>
 <script>
 let filterRowCount = 1;
 

@@ -202,6 +202,58 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/config/getCustomCSS": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get custom CSS",
+                "responses": {}
+            }
+        },
+        "/api/config/getDarkMode": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get dark mode setting",
+                "responses": {}
+            }
+        },
+        "/api/config/getDarkModeStatus": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get dark mode status as boolean",
+                "responses": {}
+            }
+        },
+        "/api/config/getLanguages": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get available languages",
+                "responses": {}
+            }
+        },
         "/api/config/getRepositoryURL": {
             "get": {
                 "produces": [

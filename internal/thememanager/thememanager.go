@@ -174,10 +174,12 @@ func LoadSingleTheme(themeName, themesDir string) error {
 		var tmpl *template.Template
 		var err error
 
+		funcMap := CreateFuncMap()
+
 		if name == "base" {
-			tmpl, err = template.ParseFiles(filePath)
+			tmpl, err = template.New(filepath.Base(filePath)).Funcs(funcMap).ParseFiles(filePath)
 		} else {
-			tmpl, err = template.ParseFiles(baseFilePath, filePath)
+			tmpl, err = template.New(filepath.Base(baseFilePath)).Funcs(funcMap).ParseFiles(baseFilePath, filePath)
 		}
 
 		if err != nil {
@@ -250,14 +252,8 @@ func LoadSingleTheme(themeName, themesDir string) error {
 // -------------------- Render --------------------
 // -----------------------------------------------
 
-func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, viewName string) error {
+func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, viewName string, data any) error {
 	var template *template.Template
-
-	data := map[string]any{
-		"Title":        templateName,
-		"Themes":       tm.themes,
-		"CurrentTheme": tm.currentTheme.Name,
-	}
 
 	template, err := tm.GetTemplate(templateName)
 	if err != nil {

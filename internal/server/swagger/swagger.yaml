@@ -358,6 +358,42 @@ paths:
       summary: Get current configuration
       tags:
       - config
+  /api/config/getCustomCSS:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get custom CSS
+      tags:
+      - config
+  /api/config/getDarkMode:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get dark mode setting
+      tags:
+      - config
+  /api/config/getDarkModeStatus:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get dark mode status as boolean
+      tags:
+      - config
+  /api/config/getLanguages:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get available languages
+      tags:
+      - config
   /api/config/getRepositoryURL:
     get:
       produces:

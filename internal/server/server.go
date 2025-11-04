@@ -96,16 +96,23 @@ func StartServerChi() {
 		// ---------------------------------------- CONFIG ----------------------------------------
 		// ----------------------------------------------------------------------------------------
 		r.Route("/config", func(r chi.Router) {
+			// GET
 			r.Get("/getConfig", handleAPIGetConfig)
-			r.Post("/setLanguage", handleAPISetLanguage)
+			r.Get("/getLanguages", handleAPIGetLanguages)
 			r.Get("/getRepositoryURL", handleAPIGetGitRepositoryURL)
-			r.Post("/setRepositoryURL", handleAPISetGitRepositoryURL)
 			r.Get("/getAvailableFileViews", handleAPIGetAvailableFileViews)
+			r.Get("/getCustomCSS", handleAPIGetCustomCSS)
+			r.Get("/getDarkMode", handleAPIGetDarkMode)
+			r.Get("/getColorSchemes", handleAPIGetColorSchemes)
+			r.Get("/getDarkModeStatus", handleAPIGetDarkModeStatus)
+
+			// POST
+			r.Post("/setLanguage", handleAPISetLanguage)
+			r.Post("/setRepositoryURL", handleAPISetGitRepositoryURL)
 			r.Post("/setFileView", handleAPISetFileView)
 			r.Post("/customCSS", handleCustomCSS)
 			r.Post("/setDataPath", handleAPISetDataPath)
 			r.Post("/setDarkMode", handleAPISetDarkMode)
-			r.Get("/getColorSchemes", handleAPIGetColorSchemes)
 			r.Post("/setColorScheme", handleAPISetColorScheme)
 		})
 
@@ -301,8 +308,9 @@ func getViewName(templateName string) string {
 func handleHome(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("home")
+	data := thememanager.NewBaseTemplateData("home")
 
-	err := tm.Render(w, "home", viewName)
+	err := tm.Render(w, "home", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -312,8 +320,9 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 func handleSettings(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("settings")
+	data := thememanager.NewSettingsTemplateData()
 
-	err := tm.Render(w, "settings", viewName)
+	err := tm.Render(w, "settings", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -323,8 +332,9 @@ func handleSettings(w http.ResponseWriter, r *http.Request) {
 func handleAdmin(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("admin")
+	data := thememanager.NewBaseTemplateData("Admin")
 
-	err := tm.Render(w, "admin", viewName)
+	err := tm.Render(w, "admin", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -334,8 +344,9 @@ func handleAdmin(w http.ResponseWriter, r *http.Request) {
 func handlePlayground(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("playground")
+	data := thememanager.NewBaseTemplateData("playground")
 
-	err := tm.Render(w, "playground", viewName)
+	err := tm.Render(w, "playground", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -345,8 +356,9 @@ func handlePlayground(w http.ResponseWriter, r *http.Request) {
 func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("latestchanges")
+	data := thememanager.NewBaseTemplateData("latestchanges")
 
-	err := tm.Render(w, "latestchanges", viewName)
+	err := tm.Render(w, "latestchanges", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -356,8 +368,9 @@ func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
 func handleHistory(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("history")
+	data := thememanager.NewBaseTemplateData("history")
 
-	err := tm.Render(w, "history", viewName)
+	err := tm.Render(w, "history", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -367,8 +380,9 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 func handleOverview(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("overview")
+	data := thememanager.NewBaseTemplateData("overview")
 
-	err := tm.Render(w, "overview", viewName)
+	err := tm.Render(w, "overview", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -378,8 +392,9 @@ func handleOverview(w http.ResponseWriter, r *http.Request) {
 func handleSearchPage(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("search")
+	data := thememanager.NewBaseTemplateData("search")
 
-	err := tm.Render(w, "search", viewName)
+	err := tm.Render(w, "search", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -399,8 +414,9 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("browsefiles")
+	data := thememanager.NewBaseTemplateData("browsefiles")
 
-	err := tm.Render(w, "browsefiles", viewName)
+	err := tm.Render(w, "browsefiles", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -410,8 +426,9 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 func handleDashboardNew(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("dashboardnew")
+	data := thememanager.NewBaseTemplateData("dashboardnew")
 
-	err := tm.Render(w, "dashboardnew", viewName)
+	err := tm.Render(w, "dashboardnew", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -428,8 +445,9 @@ func handleDashboardEdit(w http.ResponseWriter, r *http.Request) {
 
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("dashboardedit")
+	data := thememanager.NewBaseTemplateData("dashboardedit")
 
-	err := tm.Render(w, "dashboardedit", viewName)
+	err := tm.Render(w, "dashboardedit", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -450,8 +468,9 @@ func handleDashboardView(w http.ResponseWriter, r *http.Request) {
 
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("dashboardview")
+	data := thememanager.NewBaseTemplateData("dashboardview")
 
-	err := tm.Render(w, "dashboardview", viewName)
+	err := tm.Render(w, "dashboardview", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -506,8 +525,9 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("filecontent")
+	data := thememanager.NewBaseTemplateData("filecontent")
 
-	err := tm.Render(w, "filecontent", viewName)
+	err := tm.Render(w, "filecontent", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -525,8 +545,9 @@ func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("fileedit")
+	data := thememanager.NewBaseTemplateData("fileedit")
 
-	err := tm.Render(w, "fileedit", viewName)
+	err := tm.Render(w, "fileedit", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return

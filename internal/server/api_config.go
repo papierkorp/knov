@@ -219,3 +219,64 @@ func handleAPISetColorScheme(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("HX-Refresh", "true")
 	w.WriteHeader(http.StatusOK)
 }
+
+// @Summary Get available languages
+// @Tags config
+// @Produce json,html
+// @Router /api/config/getLanguages [get]
+func handleAPIGetLanguages(w http.ResponseWriter, r *http.Request) {
+	languages := configmanager.GetAvailableLanguages()
+	currentLang := configmanager.GetLanguage()
+
+	var html strings.Builder
+	for _, lang := range languages {
+		selected := ""
+		if lang.Code == currentLang {
+			selected = "selected"
+		}
+		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, lang.Code, selected, lang.Name))
+	}
+
+	writeResponse(w, r, languages, html.String())
+}
+
+// @Summary Get dark mode setting
+// @Tags config
+// @Produce json,html
+// @Router /api/config/getDarkMode [get]
+func handleAPIGetDarkMode(w http.ResponseWriter, r *http.Request) {
+	darkMode := configmanager.GetDarkMode()
+
+	checked := ""
+	if darkMode {
+		checked = "checked"
+	}
+	html := fmt.Sprintf(`<input type="checkbox" name="darkMode" %s hx-post="/api/config/setDarkMode" hx-vals='js:{"enabled": event.target.checked}' hx-trigger="change" />`, checked)
+
+	writeResponse(w, r, darkMode, html)
+}
+
+// @Summary Get dark mode status as boolean
+// @Tags config
+// @Produce json,html
+// @Router /api/config/getDarkModeStatus [get]
+func handleAPIGetDarkModeStatus(w http.ResponseWriter, r *http.Request) {
+	darkMode := configmanager.GetDarkMode()
+
+	if darkMode {
+		w.Write([]byte("true"))
+	} else {
+		w.Write([]byte("false"))
+	}
+}
+
+// @Summary Get custom CSS
+// @Tags config
+// @Produce json,html
+// @Router /api/config/getCustomCSS [get]
+func handleAPIGetCustomCSS(w http.ResponseWriter, r *http.Request) {
+	editorHTML := `<textarea name="css" rows="20" style="width: 100%; font-family: monospace;">{{CSS_CONTENT}}</textarea>`
+	html := configmanager.GetCustomCSSEditor(editorHTML)
+
+	writeResponse(w, r, configmanager.GetCustomCSS(), html)
+}
