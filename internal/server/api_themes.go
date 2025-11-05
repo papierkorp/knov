@@ -34,7 +34,7 @@ func handleAPIGetThemes(w http.ResponseWriter, r *http.Request) {
 		if theme.Name == currentTheme.Name {
 			selected = "selected"
 		}
-		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, theme, selected, theme))
+		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, theme.Name, selected, theme.Name))
 	}
 
 	writeResponse(w, r, response, html.String())

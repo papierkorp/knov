@@ -3,9 +3,10 @@ package configmanager
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"knov/internal/logging"
-	"knov/internal/storage"
 	"knov/internal/translation"
 )
 
@@ -15,6 +16,7 @@ import (
 
 var userSettings UserSettings
 var currentUserID string
+var configPath string
 
 // UserSettings contains user-specific settings stored in JSON
 type UserSettings struct {
@@ -26,9 +28,10 @@ type UserSettings struct {
 	CustomCSS   string `json:"customCSS"`
 }
 
-// InitUserSettings initializes user settings from storage for specific user
+// InitUserSettings initializes user settings from direct JSON file for specific user
 func InitUserSettings(userID string) {
 	currentUserID = userID
+	configPath = GetAppConfig().ConfigPath
 	userSettings = UserSettings{
 		Theme:       "builtin",
 		Language:    "en",
@@ -37,17 +40,15 @@ func InitUserSettings(userID string) {
 		ColorScheme: "default",
 	}
 
-	key := fmt.Sprintf("user/%s/settings", userID)
-	data, err := storage.GetStorage().Get(key)
+	settingsPath := getUserSettingsPath(userID)
+	data, err := os.ReadFile(settingsPath)
 	if err != nil {
-		logging.LogInfo("no user settings found for user %s, using defaults", userID)
-		saveUserSettings()
-		return
-	}
-
-	if data == nil {
-		logging.LogInfo("no user settings found for user %s, using defaults", userID)
-		saveUserSettings()
+		if os.IsNotExist(err) {
+			logging.LogInfo("no user settings found for user %s, using defaults", userID)
+			saveUserSettings()
+			return
+		}
+		logging.LogError("failed to read user settings for user %s: %v", userID, err)
 		return
 	}
 
@@ -82,13 +83,24 @@ func saveUserSettings() error {
 		return fmt.Errorf("failed to marshal user settings: %s", err)
 	}
 
-	key := fmt.Sprintf("user/%s/settings", currentUserID)
-	if err := storage.GetStorage().Set(key, data); err != nil {
+	settingsPath := getUserSettingsPath(currentUserID)
+	settingsDir := filepath.Dir(settingsPath)
+
+	if err := os.MkdirAll(settingsDir, 0755); err != nil {
+		return fmt.Errorf("failed to create user settings directory: %s", err)
+	}
+
+	if err := os.WriteFile(settingsPath, data, 0644); err != nil {
 		return fmt.Errorf("failed to save user settings: %s", err)
 	}
 
 	logging.LogInfo("user settings saved for user: %s", currentUserID)
 	return nil
+}
+
+// getUserSettingsPath returns the file path for user settings JSON file
+func getUserSettingsPath(userID string) string {
+	return filepath.Join(configPath, "user", userID, "settings.json")
 }
 
 // GetFileView returns current file view from user settings

@@ -1,2 +1,57 @@
 {{ define "content" }}
+<div id="page-admin">
+    <h1>{{T "Admin"}}</h1>
+    <div class="admin-sections">
+        <section class="admin-overview">
+            <h2>{{T "System Administration"}}</h2>
+            <div class="admin-grid">
+                <div class="admin-card">
+                    <h3 class="tooltip" data-tooltip="{{T "Leave empty for local git repository only"}}">{{T "Git Repository"}}</h3>
+                    <form hx-post="/api/config/setRepositoryURL" hx-target="#git-result">
+                        <label for="git-url">{{T "Remote Repository URL"}} ({{T "optional"}}):</label>
+                        <input type="url" name="repositoryURL" id="git-url" placeholder="https://github.com/user/repo.git"
+                               hx-get="/api/config/getCurrentRepositoryURL" hx-trigger="load" hx-target="this" hx-swap="outerHTML" />
+                        <button type="submit">{{T "Set Remote Repository"}}</button>
+                    </form>
+                    <div id="git-result"></div>
+                </div>
+
+                <div class="admin-card">
+                    <h3 class="tooltip" data-tooltip="{{T "Path to your data storage relative from the executable"}}">{{T "Data Path Configuration"}}</h3>
+                    <form hx-post="/api/config/setDataPath" hx-target="#datapath-result">
+                        <label for="data-path">{{T "Data Path"}}:</label>
+                        <input type="text" name="dataPath" id="data-path" placeholder="/path/to/data" required
+                               hx-get="/api/config/getCurrentDataPath" hx-trigger="load" hx-target="this" hx-swap="outerHTML" />
+                        <button type="submit">{{T "Set Data Path"}}</button>
+                    </form>
+                    <div id="datapath-result"></div>
+                </div>
+
+                <div class="admin-card">
+                    <h3 class="tooltip" data-tooltip="{{T "System maintenance operations"}}">{{T "System Actions"}}</h3>
+                    <button hx-post="/api/metadata/rebuild" hx-target="#rebuild-result" hx-confirm="{{T "Rebuild all metadata? This may take a while."}}">
+                        {{T "Rebuild Metadata"}}
+                    </button>
+                    <div id="rebuild-result"></div>
+
+                    <button hx-post="/api/system/restart" hx-target="#restart-result" hx-confirm="{{T "Restart the system? This will disconnect all users."}}">
+                        {{T "Restart System"}}
+                    </button>
+                    <div id="restart-result"></div>
+                </div>
+
+                <div class="admin-card">
+                    <h3 class="tooltip" data-tooltip="{{T "Setup some test Data Files"}}">{{T "Test Data Management"}}</h3>
+                    <button hx-post="/api/testdata/setup" hx-target="#testdata-result" hx-confirm="{{T "Setup test data? This will create example files."}}">
+                        {{T "Setup Test Data"}}
+                    </button>
+                    <button hx-post="/api/testdata/clean" hx-target="#testdata-result" hx-confirm="{{T "WARNING - This will remove all files in the Data Folder!!."}}">
+                        {{T "Clean Test Data"}}
+                    </button>
+                    <div id="testdata-result"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
 {{ end }}

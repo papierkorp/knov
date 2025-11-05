@@ -38,6 +38,19 @@ func handleAPIGetConfig(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, config, html.String())
 }
 
+// @Summary Get current data path as input field
+// @Tags config
+// @Produce html
+// @Router /api/config/getCurrentDataPath [get]
+func handleAPIGetCurrentDataPath(w http.ResponseWriter, r *http.Request) {
+	appConfig := configmanager.GetAppConfig()
+	dataPath := appConfig.DataPath
+
+	html := fmt.Sprintf(`<input type="text" name="dataPath" id="data-path" value="%s" placeholder="/path/to/data" required />`, dataPath)
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
 // @Summary Set language
 // @Tags config
 // @Accept application/x-www-form-urlencoded
@@ -65,11 +78,7 @@ func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	appConfig := configmanager.GetAppConfig()
 	repositoryURL := appConfig.GitRepoURL
 
-	if repositoryURL == "" {
-		repositoryURL = "not configured"
-	}
-
-	html := fmt.Sprintf(`<span class="repo-url">%s</span>`, repositoryURL)
+	html := fmt.Sprintf(`<input type="url" name="repositoryURL" id="git-url" value="%s" placeholder="https://github.com/user/repo.git" />`, repositoryURL)
 	writeResponse(w, r, repositoryURL, html)
 }
 
@@ -111,9 +120,8 @@ func handleCustomCSS(w http.ResponseWriter, r *http.Request) {
 	settings.CustomCSS = css
 	configmanager.SetUserSettings(settings)
 
-	data := "css saved"
-	html := `<span class="status-ok">custom css saved</span>`
-	writeResponse(w, r, data, html)
+	w.Header().Set("HX-Refresh", "true")
+	w.WriteHeader(http.StatusOK)
 }
 
 // @Summary Restart application

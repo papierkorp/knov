@@ -358,6 +358,14 @@ paths:
       summary: Get current configuration
       tags:
       - config
+  /api/config/getCurrentDataPath:
+    get:
+      produces:
+      - text/html
+      responses: {}
+      summary: Get current data path as input field
+      tags:
+      - config
   /api/config/getCustomCSS:
     get:
       produces:

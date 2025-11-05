@@ -39,19 +39,113 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
-	"Select Theme:": 0,
+	"AND":                               11,
+	"Add Filter":                        7,
+	"Add Note":                          8,
+	"Add Todo":                          9,
+	"Admin":                             10,
+	"Apply Filter":                      12,
+	"Are you sure?":                     13,
+	"Boards":                            14,
+	"Browse by Metadata":                15,
+	"Cancel":                            16,
+	"Collection":                        17,
+	"Collections":                       18,
+	"Contains":                          19,
+	"Created Date":                      20,
+	"Delete":                            21,
+	"Edit":                              22,
+	"Equals":                            23,
+	"Exclude":                           24,
+	"Filtered results will appear here": 25,
+	"Folders":                           26,
+	"General Settings":                  0,
+	"Greater Than":                      27,
+	"Hello World from templ at home in the dark!": 1,
+	"Help":                      2,
+	"History":                   28,
+	"Home":                      3,
+	"In Array":                  29,
+	"Include":                   30,
+	"Last Edited":               31,
+	"Latest Changes":            32,
+	"Less Than":                 33,
+	"Loading...":                34,
+	"Metadata Filter":           38,
+	"New Dashboard":             39,
+	"OR":                        40,
+	"Overview":                  41,
+	"Playground":                4,
+	"Priority":                  42,
+	"Project Overview":          43,
+	"Rename":                    44,
+	"Search..":                  45,
+	"Settings":                  5,
+	"Status":                    47,
+	"Swagger":                   48,
+	"Tags":                      49,
+	"Theme Settings":            6,
+	"Type":                      50,
+	"Value":                     51,
+	"loading collections...":    35,
+	"loading folders...":        36,
+	"loading tags...":           37,
+	"start typing to search...": 46,
 }
 
-var deIndex = []uint32{ // 2 elements
-	0x00000000, 0x00000012,
-} // Size: 32 bytes
+var deIndex = []uint32{ // 53 elements
+	// Entry 0 - 1F
+	0x00000000, 0x00000019, 0x00000024, 0x0000002a,
+	0x00000030, 0x0000003b, 0x00000049, 0x0000005d,
+	0x0000005d, 0x0000005d, 0x0000005d, 0x0000005d,
+	0x0000005d, 0x0000005d, 0x0000005d, 0x0000005d,
+	0x0000005d, 0x0000005d, 0x0000005d, 0x0000005d,
+	0x0000005d, 0x0000005d, 0x0000005d, 0x0000005d,
+	0x0000005d, 0x0000005d, 0x0000005d, 0x0000005d,
+	0x0000005d, 0x0000005d, 0x0000005d, 0x0000005d,
+	// Entry 20 - 3F
+	0x0000005d, 0x0000005d, 0x0000005d, 0x0000005d,
+	0x0000005d, 0x0000005d, 0x0000005d, 0x0000005d,
+	0x0000005d, 0x0000005d, 0x0000005d, 0x0000005d,
+	0x0000005d, 0x0000005d, 0x0000005d, 0x0000005d,
+	0x0000005d, 0x0000005d, 0x0000005d, 0x0000005d,
+	0x0000005d,
+} // Size: 236 bytes
 
-const deData string = "\x02Theme auswählen:"
+const deData string = "" + // Size: 93 bytes
+	"\x02Allgemeine Einstellungen\x02Hallo Welt\x02Hilfe\x02Start\x02Spielwie" +
+	"se\x02Einstellungen\x02Theme Einstellungen"
 
-var enIndex = []uint32{ // 2 elements
-	0x00000000, 0x0000000e,
-} // Size: 32 bytes
+var enIndex = []uint32{ // 53 elements
+	// Entry 0 - 1F
+	0x00000000, 0x00000011, 0x0000003d, 0x00000042,
+	0x00000047, 0x00000052, 0x0000005b, 0x0000006a,
+	0x00000075, 0x0000007e, 0x00000087, 0x0000008d,
+	0x00000091, 0x0000009e, 0x000000ac, 0x000000b3,
+	0x000000c6, 0x000000cd, 0x000000d8, 0x000000e4,
+	0x000000ed, 0x000000fa, 0x00000101, 0x00000106,
+	0x0000010d, 0x00000115, 0x00000137, 0x0000013f,
+	0x0000014c, 0x00000154, 0x0000015d, 0x00000165,
+	// Entry 20 - 3F
+	0x00000171, 0x00000180, 0x0000018a, 0x00000195,
+	0x000001ac, 0x000001bf, 0x000001cf, 0x000001df,
+	0x000001ed, 0x000001f0, 0x000001f9, 0x00000202,
+	0x00000213, 0x0000021a, 0x00000223, 0x0000023d,
+	0x00000244, 0x0000024c, 0x00000251, 0x00000256,
+	0x0000025c,
+} // Size: 236 bytes
 
-const enData string = "\x02Select Theme:"
+const enData string = "" + // Size: 604 bytes
+	"\x02General Settings\x02Hello World from templ at home in the dark!\x02H" +
+	"elp\x02Home\x02Playground\x02Settings\x02Theme Settings\x02Add Filter" +
+	"\x02Add Note\x02Add Todo\x02Admin\x02AND\x02Apply Filter\x02Are you sure" +
+	"?\x02Boards\x02Browse by Metadata\x02Cancel\x02Collection\x02Collections" +
+	"\x02Contains\x02Created Date\x02Delete\x02Edit\x02Equals\x02Exclude\x02F" +
+	"iltered results will appear here\x02Folders\x02Greater Than\x02History" +
+	"\x02In Array\x02Include\x02Last Edited\x02Latest Changes\x02Less Than" +
+	"\x02Loading...\x02loading collections...\x02loading folders...\x02loadin" +
+	"g tags...\x02Metadata Filter\x02New Dashboard\x02OR\x02Overview\x02Prior" +
+	"ity\x02Project Overview\x02Rename\x02Search..\x02start typing to search." +
+	"..\x02Status\x02Swagger\x02Tags\x02Type\x02Value"
 
-// Total table size 96 bytes (0KiB); checksum: 2EE5BB8B
+	// Total table size 1169 bytes (1KiB); checksum: 73C761D9

@@ -19,7 +19,7 @@ type JSONStorage struct {
 
 // NewJSONStorage creates a new JSON storage instance
 func NewJSONStorage(configPath string) (*JSONStorage, error) {
-	basePath := configPath + "/.storage"
+	basePath := ".metadata"
 	if err := os.MkdirAll(basePath, 0755); err != nil {
 		return nil, err
 	}

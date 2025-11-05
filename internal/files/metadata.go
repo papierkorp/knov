@@ -168,7 +168,7 @@ func MetaDataSave(m *Metadata) error {
 		return err
 	}
 
-	key := "metadata/" + finalMetadata.Path
+	key := finalMetadata.Path
 	if err := storage.GetStorage().Set(key, data); err != nil {
 		logging.LogError("failed to save metadata for %s: %v", finalMetadata.Path, err)
 		return err
@@ -180,7 +180,7 @@ func MetaDataSave(m *Metadata) error {
 
 // MetaDataGet retrieves metadata using the configured storage method
 func MetaDataGet(filepath string) (*Metadata, error) {
-	key := "metadata/" + utils.ToRelativePath(filepath)
+	key := utils.ToRelativePath(filepath)
 	data, err := storage.GetStorage().Get(key)
 	if err != nil {
 		logging.LogError("failed to get metadata for %s: %v", filepath, err)
@@ -298,7 +298,7 @@ func GetAllFolders() (map[string]int, error) {
 
 // MetaDataDelete removes metadata for a file
 func MetaDataDelete(filepath string) error {
-	key := "metadata/" + utils.ToRelativePath(filepath)
+	key := utils.ToRelativePath(filepath)
 	if err := storage.GetStorage().Delete(key); err != nil {
 		logging.LogError("failed to delete metadata for %s: %v", filepath, err)
 		return err

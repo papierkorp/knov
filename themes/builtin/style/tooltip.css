@@ -1,0 +1,40 @@
+/* Tooltip styles */
+.tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    background-color: #333;
+    color: white;
+    padding: 8px 12px;
+    margin-left: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: normal;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip:hover::after,
+.tooltip:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Dark mode support */
+body[data-dark-mode="true"] .tooltip::after {
+    background-color: #555;
+    border-color: #555;
+}
+
+body[data-dark-mode="true"] .tooltip::before {
+    border-top-color: #555;
+}

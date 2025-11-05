@@ -10,9 +10,11 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/logging"
 	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
+	"knov/internal/utils"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -98,6 +100,7 @@ func StartServerChi() {
 		r.Route("/config", func(r chi.Router) {
 			// GET
 			r.Get("/getConfig", handleAPIGetConfig)
+			r.Get("/getCurrentDataPath", handleAPIGetCurrentDataPath)
 			r.Get("/getLanguages", handleAPIGetLanguages)
 			r.Get("/getRepositoryURL", handleAPIGetGitRepositoryURL)
 			r.Get("/getAvailableFileViews", handleAPIGetAvailableFileViews)
@@ -479,55 +482,34 @@ func handleDashboardView(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleFileContent(w http.ResponseWriter, r *http.Request) {
-	// filePath := strings.TrimPrefix(r.URL.Path, "/files/")
-	// fullPath := utils.ToFullPath(filePath)
-	// ext := strings.ToLower(filepath.Ext(fullPath))
-	//
-	// if ext == ".pdf" {
-	// 	w.Header().Set("Content-Type", "application/pdf")
-	// 	http.ServeFile(w, r, fullPath)
-	// 	return
-	// }
-	//
-	// fileContent, err := files.GetFileContent(fullPath)
-	// if err != nil {
-	// 	http.Error(w, "failed to get file content", http.StatusInternalServerError)
-	// 	return
-	// }
-	//
-	// if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
-	// 	w.Header().Set("Content-Type", "text/html")
-	// 	w.Write([]byte(fileContent.HTML))
-	// 	return
-	// }
-	//
-	// tm := thememanager.GetThemeManager()
-	// currentTheme := tm.GetCurrentTheme()
-	// fileView := configmanager.GetFileView()
-	//
-	// availableViews := tm.GetAvailableViews("file")
-	// if !slices.Contains(availableViews, fileView) && len(availableViews) > 0 {
-	// 	fileView = availableViews[0]
-	// 	configmanager.SetFileView(fileView)
-	// }
-	//
-	// component, err := currentTheme.RenderFileView(fileView, fileContent, filePath)
-	// if err != nil {
-	// 	http.Error(w, "failed to load theme", http.StatusInternalServerError)
-	// 	return
-	// }
-	//
-	// err = component.Render(r.Context(), w)
-	// if err != nil {
-	// 	http.Error(w, "failed to render template", http.StatusInternalServerError)
-	// 	return
-	// }
+	filePath := strings.TrimPrefix(r.URL.Path, "/files/")
+	fullPath := utils.ToFullPath(filePath)
+	ext := strings.ToLower(filepath.Ext(fullPath))
 
+	if ext == ".pdf" {
+		w.Header().Set("Content-Type", "application/pdf")
+		http.ServeFile(w, r, fullPath)
+		return
+	}
+
+	fileContent, err := files.GetFileContent(fullPath)
+	if err != nil {
+		http.Error(w, "failed to get file content", http.StatusInternalServerError)
+		return
+	}
+
+	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(fileContent.HTML))
+		return
+	}
+
+	// For full page requests, render through template system
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("filecontent")
-	data := thememanager.NewBaseTemplateData("filecontent")
+	viewName := getViewName("fileview")
+	data := thememanager.NewBaseTemplateData(filepath.Base(filePath))
 
-	err := tm.Render(w, "filecontent", viewName, data)
+	err = tm.Render(w, "fileview", viewName, data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return

@@ -2,9 +2,366 @@
     "language": "en",
     "messages": [
         {
-            "id": "Select Theme:",
-            "message": "Select Theme:",
-            "translation": "Select Theme:",
+            "id": "Add Filter",
+            "message": "Add Filter",
+            "translation": "Add Filter",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Add Note",
+            "message": "Add Note",
+            "translation": "Add Note",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Add Todo",
+            "message": "Add Todo",
+            "translation": "Add Todo",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Admin",
+            "message": "Admin",
+            "translation": "Admin",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "AND",
+            "message": "AND",
+            "translation": "AND",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Apply Filter",
+            "message": "Apply Filter",
+            "translation": "Apply Filter",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Are you sure?",
+            "message": "Are you sure?",
+            "translation": "Are you sure?",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Boards",
+            "message": "Boards",
+            "translation": "Boards",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Browse by Metadata",
+            "message": "Browse by Metadata",
+            "translation": "Browse by Metadata",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Cancel",
+            "message": "Cancel",
+            "translation": "Cancel",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Collection",
+            "message": "Collection",
+            "translation": "Collection",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Collections",
+            "message": "Collections",
+            "translation": "Collections",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Contains",
+            "message": "Contains",
+            "translation": "Contains",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Created Date",
+            "message": "Created Date",
+            "translation": "Created Date",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Delete",
+            "message": "Delete",
+            "translation": "Delete",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Edit",
+            "message": "Edit",
+            "translation": "Edit",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Equals",
+            "message": "Equals",
+            "translation": "Equals",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Exclude",
+            "message": "Exclude",
+            "translation": "Exclude",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Filtered results will appear here",
+            "message": "Filtered results will appear here",
+            "translation": "Filtered results will appear here",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Folders",
+            "message": "Folders",
+            "translation": "Folders",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "General Settings",
+            "message": "General Settings",
+            "translation": "General Settings",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Greater Than",
+            "message": "Greater Than",
+            "translation": "Greater Than",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Hello World from templ at home in the dark!",
+            "message": "Hello World from templ at home in the dark!",
+            "translation": "Hello World from templ at home in the dark!",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Help",
+            "message": "Help",
+            "translation": "Help",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "History",
+            "message": "History",
+            "translation": "History",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Home",
+            "message": "Home",
+            "translation": "Home",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "In Array",
+            "message": "In Array",
+            "translation": "In Array",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Include",
+            "message": "Include",
+            "translation": "Include",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Last Edited",
+            "message": "Last Edited",
+            "translation": "Last Edited",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Latest Changes",
+            "message": "Latest Changes",
+            "translation": "Latest Changes",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Less Than",
+            "message": "Less Than",
+            "translation": "Less Than",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Loading...",
+            "message": "Loading...",
+            "translation": "Loading...",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "loading collections...",
+            "message": "loading collections...",
+            "translation": "loading collections...",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "loading folders...",
+            "message": "loading folders...",
+            "translation": "loading folders...",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "loading tags...",
+            "message": "loading tags...",
+            "translation": "loading tags...",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Metadata Filter",
+            "message": "Metadata Filter",
+            "translation": "Metadata Filter",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "New Dashboard",
+            "message": "New Dashboard",
+            "translation": "New Dashboard",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "OR",
+            "message": "OR",
+            "translation": "OR",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Overview",
+            "message": "Overview",
+            "translation": "Overview",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Playground",
+            "message": "Playground",
+            "translation": "Playground",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Priority",
+            "message": "Priority",
+            "translation": "Priority",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Project Overview",
+            "message": "Project Overview",
+            "translation": "Project Overview",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Rename",
+            "message": "Rename",
+            "translation": "Rename",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Search..",
+            "message": "Search..",
+            "translation": "Search..",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Settings",
+            "message": "Settings",
+            "translation": "Settings",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "start typing to search...",
+            "message": "start typing to search...",
+            "translation": "start typing to search...",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Status",
+            "message": "Status",
+            "translation": "Status",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Swagger",
+            "message": "Swagger",
+            "translation": "Swagger",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Tags",
+            "message": "Tags",
+            "translation": "Tags",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Theme Settings",
+            "message": "Theme Settings",
+            "translation": "Theme Settings",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Type",
+            "message": "Type",
+            "translation": "Type",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Value",
+            "message": "Value",
+            "translation": "Value",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         }

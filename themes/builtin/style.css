@@ -1,5 +1,6 @@
 @import url("./style/base.css");
 @import url("./style/codehighlight.css");
+@import url("./style/tooltip.css");
 @import url("./style/playground.css");
 @import url("./style/fileview.css");
 @import url("./style/overview.css");
@@ -47,6 +48,7 @@ body {
     font-family: sans-serif;
     margin: 0;
     font-size: 16px;
+    overflow-x: hidden;
 }
 
 /* dark mode */

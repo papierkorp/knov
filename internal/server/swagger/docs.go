@@ -202,6 +202,18 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/config/getCurrentDataPath": {
+            "get": {
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get current data path as input field",
+                "responses": {}
+            }
+        },
         "/api/config/getCustomCSS": {
             "get": {
                 "produces": [

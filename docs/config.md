@@ -17,9 +17,11 @@ KNOV supports configuration through environment variables and configuration file
 
 ### Storage Configuration
 
-- `KNOV_STORAGE_METHOD`: Storage backend (default: "json")
+- `KNOV_STORAGE_METHOD`: Storage backend for metadata (default: "json")
 
-Storage files are created in `{KNOV_CONFIG_PATH}/.storage/`
+Metadata files are created in `<knov executable>./metadata/`
+
+User settings are stored as direct JSON files in `{KNOV_CONFIG_PATH}/user/`
 
 ### Git Configuration
 
@@ -28,7 +30,7 @@ Storage files are created in `{KNOV_CONFIG_PATH}/.storage/`
 ## Configuration Files
 
 User settings are stored in JSON format at:
-`{KNOV_CONFIG_PATH}/users/{userid}/settings.json`
+`{KNOV_CONFIG_PATH}/user/{userid}/settings.json`
 
 Example user settings:
 
