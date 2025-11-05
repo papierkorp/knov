@@ -1,7 +1,5 @@
 # temp
 
-tar -czf test.tar.gz test/
-
 # todo
 
 - Dashboard
@@ -130,4 +128,20 @@ tar -czf test.tar.gz test/
 go install github.com/a-h/templ/cmd/templ@latest
 go install github.com/swaggo/swag/cmd/swag@latest
 
+```
+
+# prompt
+
+```
+- im currently working on the following golang, htmx, templ app.
+- i want you to anwser with as little code as possible to only fix the problem i anwsered without any unecessary code, as simple and small as possible with as few changes as possible
+- for logging message i only want use lowercase
+- if you create an api call keep in mind to keep it theme friendly (lean more towards being generic) and also add comments for swagger to work, also stay with accept form data we dont need to accept json
+- for styles/css files use Global styles only in style.css and all specific files use ID selectors (#page-, #component-, #view-)
+- if you change something significant also make the neccessary changes in the docs folder
+- think theme-agnostic
+- always search the project since you already have all the files
+- show me the code of what you actual changed, i dont want scroll through the whole artifact to search for your changes
+
+filetree
 ```

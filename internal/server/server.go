@@ -300,7 +300,10 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 }
 
 func getViewName(templateName string) string {
-	// todo: get from configmanager - usersettings
+	if templateName == "fileview" {
+		return configmanager.GetFileView()
+	}
+	// todo: get from configmanager - usersettings for other templates
 	return ""
 }
 
@@ -507,9 +510,10 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	// For full page requests, render through template system
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("fileview")
-	data := thememanager.NewBaseTemplateData(filepath.Base(filePath))
+	data := thememanager.NewFileViewTemplateData(filepath.Base(filePath), filePath, fileContent, viewName)
 
-	err = tm.Render(w, "fileview", viewName, data)
+	// Always render through base template, not individual views
+	err = tm.Render(w, "fileview", "", data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return

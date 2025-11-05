@@ -16,7 +16,7 @@ import (
 // @Router /api/config/getAvailableFileViews [get]
 func handleAPIGetAvailableFileViews(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	views := tm.GetAvailableViews("file")
+	views := tm.GetAvailableViews("fileview")
 	currentView := configmanager.GetFileView()
 
 	if !slices.Contains(views, currentView) && len(views) > 0 {

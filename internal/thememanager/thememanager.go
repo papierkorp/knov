@@ -177,9 +177,9 @@ func LoadSingleTheme(themeName, themesDir string) error {
 		funcMap := CreateFuncMap()
 
 		if name == "base" {
-			tmpl, err = template.New(filepath.Base(filePath)).Funcs(funcMap).ParseFiles(filePath)
+			tmpl, err = template.New("base.gohtml").Funcs(funcMap).ParseFiles(filePath)
 		} else {
-			tmpl, err = template.New(filepath.Base(baseFilePath)).Funcs(funcMap).ParseFiles(baseFilePath, filePath)
+			tmpl, err = template.New("base.gohtml").Funcs(funcMap).ParseFiles(baseFilePath, filePath)
 		}
 
 		if err != nil {
@@ -218,7 +218,7 @@ func LoadSingleTheme(themeName, themesDir string) error {
 		case "settings":
 			templates.settings = tmpl
 		default:
-			fmt.Printf("warning: unknown template file '%s' — ignoring\n", filePath)
+			fmt.Printf("warning: unknown template file '%s' â€” ignoring\n", filePath)
 		}
 	}
 
@@ -288,21 +288,13 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, viewN
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	if viewName == "" || viewName == "default" || viewName == templateName {
-
-		views := themeManager.GetAvailableViews(templateName)
-
-		if len(views) > 0 && views[0] != "" && views[0] != templateName {
-			viewName = views[0]
-		} else {
-			return template.Execute(w, data)
-		}
-
-		return template.ExecuteTemplate(w, viewName, data)
+	// If no specific viewName provided, render through base template
+	if viewName == "" || viewName == "default" {
+		return template.Execute(w, data)
 	}
 
+	// If specific viewName provided, execute that view template directly
 	fmt.Println("viewname: ", viewName)
-
 	return template.ExecuteTemplate(w, viewName, data)
 
 }

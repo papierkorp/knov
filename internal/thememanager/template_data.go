@@ -2,7 +2,9 @@ package thememanager
 
 import (
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/translation"
+	"net/url"
 	"text/template"
 )
 
@@ -28,7 +30,8 @@ type SettingsTemplateData struct {
 type FileViewTemplateData struct {
 	BaseTemplateData
 	FilePath    string
-	FileContent string
+	FileContent *files.FileContent
+	ViewName    string
 }
 
 // NewBaseTemplateData creates base data used by all templates
@@ -53,9 +56,28 @@ func NewSettingsTemplateData() SettingsTemplateData {
 	}
 }
 
+// NewFileViewTemplateData creates file view specific data
+func NewFileViewTemplateData(title, filePath string, fileContent *files.FileContent, viewName string) FileViewTemplateData {
+	return FileViewTemplateData{
+		BaseTemplateData: NewBaseTemplateData(title),
+		FilePath:         filePath,
+		FileContent:      fileContent,
+		ViewName:         viewName,
+	}
+}
+
 // CreateFuncMap creates template function map for HTML templates
 func CreateFuncMap() template.FuncMap {
 	return template.FuncMap{
 		"T": translation.Sprintf,
+		"mul": func(a, b int) int {
+			return a * b
+		},
+		"sub": func(a, b int) int {
+			return a - b
+		},
+		"urlQuery": func(s string) string {
+			return url.QueryEscape(s)
+		},
 	}
 }
