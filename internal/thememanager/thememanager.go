@@ -252,7 +252,7 @@ func LoadSingleTheme(themeName, themesDir string) error {
 // -------------------- Render --------------------
 // -----------------------------------------------
 
-func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, viewName string, data any) error {
+func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data any) error {
 	var template *template.Template
 
 	template, err := tm.GetTemplate(templateName)
@@ -288,14 +288,7 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, viewN
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// If no specific viewName provided, render through base template
-	if viewName == "" || viewName == "default" {
-		return template.Execute(w, data)
-	}
-
-	// If specific viewName provided, execute that view template directly
-	fmt.Println("viewname: ", viewName)
-	return template.ExecuteTemplate(w, viewName, data)
+	return template.Execute(w, data)
 
 }
 
