@@ -1,0 +1,29 @@
+{
+  "name": "Barebone Test Theme",
+  "version": "1.0.0",
+  "author": "System",
+  "description": "Minimal barebone theme with only essential functionality",
+  "views": {
+    "admin": [""],
+    "base": [""],
+    "browsefiles": [""],
+    "dashboard": [""],
+    "dashboardedit": [""],
+    "dashboardnew": [""],
+    "fileedit": [""],
+    "fileview": [""],
+    "history": [""],
+    "home": [""],
+    "latestchanges": [""],
+    "overview": [""],
+    "playground": [""],
+    "search": [""],
+    "settings": [""]
+  },
+  "colorSchemes": [
+    {
+      "value": "minimal",
+      "label": "Minimal"
+    }
+  ]
+}
