@@ -30,11 +30,17 @@ type Theme struct {
 }
 
 type ThemeMetadata struct {
-	Name        string        `json:"name"`
-	Version     string        `json:"version"`
-	Author      string        `json:"author"`
-	Description string        `json:"description"`
-	Views       TemplateViews `json:"views"`
+	Name         string        `json:"name"`
+	Version      string        `json:"version"`
+	Author       string        `json:"author"`
+	Description  string        `json:"description"`
+	Views        TemplateViews `json:"views"`
+	ColorSchemes []ColorScheme `json:"colorSchemes,omitempty"`
+}
+
+type ColorScheme struct {
+	Value string `json:"value"`
+	Label string `json:"label"`
 }
 
 type ThemeTemplates struct {
@@ -460,6 +466,19 @@ func validateTheme(theme Theme) error {
 	}
 	if theme.Metadata.Description == "" {
 		return fmt.Errorf("theme '%s' is missing 'description' in theme.json", theme.Name)
+	}
+	if len(theme.Metadata.ColorSchemes) == 0 {
+		return fmt.Errorf("theme '%s' is missing 'colorSchemes' in theme.json", theme.Name)
+	}
+
+	// validate each color scheme has required fields
+	for i, scheme := range theme.Metadata.ColorSchemes {
+		if scheme.Value == "" {
+			return fmt.Errorf("theme '%s' colorSchemes[%d] is missing 'value' field", theme.Name, i)
+		}
+		if scheme.Label == "" {
+			return fmt.Errorf("theme '%s' colorSchemes[%d] is missing 'label' field", theme.Name, i)
+		}
 	}
 
 	for name, entry := range theme.TemplateMap() {

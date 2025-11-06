@@ -19,5 +19,23 @@
     "dashboard": [""],
     "dashboardedit": [""],
     "dashboardnew": [""]
-  }
+  },
+  "colorSchemes": [
+    {
+      "value": "default",
+      "label": "Default (Blue)"
+    },
+    {
+      "value": "green",
+      "label": "Green"
+    },
+    {
+      "value": "red",
+      "label": "Red"
+    },
+    {
+      "value": "purple",
+      "label": "Purple"
+    }
+  ]
 }

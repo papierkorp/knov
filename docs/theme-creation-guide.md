@@ -6,10 +6,10 @@ Create a new folder in `themes/` with the following required files:
 
 ```
 themes/your-theme-name/
-├── theme.json
-├── base.gotmpl
-├── settings.gotmpl
-└── style.css
+â”œâ”€â”€ theme.json
+â”œâ”€â”€ base.gotmpl
+â”œâ”€â”€ settings.gotmpl
+â””â”€â”€ style.css
 ```
 
 ## Required Files
@@ -27,7 +27,17 @@ Contains theme metadata and view definitions.
   "views": {
     "base": [""],
     "settings": [""]
-  }
+  },
+  "colorSchemes": [
+    {
+      "value": "default",
+      "label": "Default"
+    },
+    {
+      "value": "dark",
+      "label": "Dark Theme"
+    }
+  ]
 }
 ```
 
@@ -38,6 +48,7 @@ Contains theme metadata and view definitions.
 - `author`: Your name or organization
 - `description`: Brief theme description
 - `views`: Define available views for each template
+- `colorSchemes`: Array of color scheme options for your theme (required)
 
 ### 2. base.gotmpl
 
@@ -186,6 +197,77 @@ Define named views in theme.json:
 
 Then create corresponding `{{define}}` blocks in your template.
 
+## Color Schemes
+
+Color schemes allow users to switch between different color variations of your theme. **Every theme must define at least one color scheme.**
+
+### Defining Color Schemes
+
+Add a `colorSchemes` array to your theme.json with at least one scheme:
+
+```json
+{
+  "name": "My Theme",
+  "version": "1.0.0",
+  "author": "Me",
+  "description": "My custom theme",
+  "views": {
+    "base": [""],
+    "settings": [""]
+  },
+  "colorSchemes": [
+    {
+      "value": "light",
+      "label": "Light Mode"
+    },
+    {
+      "value": "dark",
+      "label": "Dark Mode"
+    },
+    {
+      "value": "ocean",
+      "label": "Ocean Blue"
+    }
+  ]
+}
+```
+
+**Required fields for each color scheme:**
+- `value`: The CSS selector value (used in `data-color-scheme="value"`)
+- `label`: User-friendly display name
+
+### Implementing in CSS
+
+Use the `data-color-scheme` attribute in your CSS:
+
+```css
+/* Default styles */
+:root {
+  --primary: #3b82f6;
+  --background: #ffffff;
+}
+
+/* Light color scheme */
+body[data-color-scheme="light"] {
+  --primary: #2563eb;
+  --background: #f8fafc;
+}
+
+/* Dark color scheme */
+body[data-color-scheme="dark"] {
+  --primary: #60a5fa;
+  --background: #1e293b;
+}
+
+/* Ocean color scheme */
+body[data-color-scheme="ocean"] {
+  --primary: #0891b2;
+  --background: #f0f9ff;
+}
+```
+
+The color scheme value is automatically set on the `<body>` element as `data-color-scheme="value"`.
+
 ## Testing Your Theme
 
 1. Place your theme folder in `themes/`
@@ -199,7 +281,9 @@ Then create corresponding `{{define}}` blocks in your template.
 The system validates:
 
 - All required files exist and are not empty
-- theme.json contains all required fields
+- theme.json contains all required fields (name, version, author, description, views, colorSchemes)
+- colorSchemes array has at least one color scheme
+- Each color scheme has required `value` and `label` fields
 - All views defined in theme.json exist as templates
 - Templates parse correctly
 
