@@ -60,13 +60,18 @@ func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
 			err := tm.SetCurrentTheme(theme)
 			if err != nil {
 				logging.LogError("cannot set theme via api: %v", err)
-
-				w.Header().Set("HX-Refresh", "true")
 				w.WriteHeader(http.StatusBadRequest)
+				return
 			}
+
+			logging.LogInfo("theme switched to: %s", themeName)
+			w.Header().Set("HX-Refresh", "true")
+			w.WriteHeader(http.StatusOK)
+			return
 		}
 	}
 
-	w.Header().Set("HX-Refresh", "true")
-	w.WriteHeader(http.StatusOK)
+	// theme not found
+	logging.LogError("theme not found: %s", themeName)
+	w.WriteHeader(http.StatusBadRequest)
 }

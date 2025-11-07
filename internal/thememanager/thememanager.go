@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"knov/internal/configmanager"
 )
 
 // -----------------------------------------------
@@ -94,6 +96,48 @@ func InitThemeManager() {
 	}
 
 	loadAllThemes()
+
+	// set the theme from user configuration after all themes are loaded
+	setThemeFromConfig()
+}
+
+// setThemeFromConfig loads the saved theme from user configuration
+func setThemeFromConfig() {
+	savedThemeName := configmanager.GetTheme()
+
+	// find the theme in loaded themes
+	for _, theme := range themeManager.themes {
+		if theme.Name == savedThemeName {
+			err := themeManager.SetCurrentTheme(theme)
+			if err != nil {
+				fmt.Printf("warning: failed to set saved theme '%s': %v, falling back to builtin\n", savedThemeName, err)
+				setBuiltinAsDefault()
+			} else {
+				fmt.Printf("current theme set to: %s\n", savedThemeName)
+			}
+			return
+		}
+	}
+
+	// if saved theme not found, fall back to builtin
+	fmt.Printf("warning: saved theme '%s' not found, falling back to builtin\n", savedThemeName)
+	setBuiltinAsDefault()
+}
+
+// setBuiltinAsDefault sets builtin theme as the current theme
+func setBuiltinAsDefault() {
+	for _, theme := range themeManager.themes {
+		if theme.Name == "builtin" {
+			err := themeManager.SetCurrentTheme(theme)
+			if err != nil {
+				fmt.Printf("error: failed to set builtin theme: %v\n", err)
+			} else {
+				fmt.Printf("current theme set to: builtin\n")
+			}
+			return
+		}
+	}
+	fmt.Printf("error: builtin theme not found\n")
 }
 
 // -----------------------------------------------
@@ -244,11 +288,6 @@ func LoadSingleTheme(themeName, themesDir string) error {
 		return fmt.Errorf("could not add theme: %w", err)
 	}
 
-	// todo: check if another theme is set in config
-	if themeName == "builtin" {
-		themeManager.SetCurrentTheme(theme)
-	}
-
 	fmt.Printf("added theme: %s\n", metadata.Name)
 
 	return nil
@@ -274,7 +313,7 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data 
 	overwritePath := filepath.Join("themes", "overwrite", templateName+".gohtml")
 	err = validateTemplateFile(overwritePath)
 	if err == nil {
-		requiredViews := themeManager.GetAvailableViews(templateName)
+		requiredViews := tm.GetAvailableViews(templateName)
 
 		overwriteTemplate, parseErr := template.ParseFiles(overwritePath)
 
@@ -295,7 +334,6 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	return template.Execute(w, data)
-
 }
 
 // -----------------------------------------------
@@ -366,11 +404,28 @@ func (tm *ThemeManager) GetAvailableThemes() []Theme {
 }
 
 func (tm *ThemeManager) GetCurrentTheme() Theme {
-	return tm.currentTheme
+	currentThemeName := configmanager.GetTheme()
+
+	// find the theme in available themes
+	for _, theme := range tm.themes {
+		if theme.Name == currentThemeName {
+			return theme
+		}
+	}
+
+	// fallback to builtin if not found
+	for _, theme := range tm.themes {
+		if theme.Name == "builtin" {
+			return theme
+		}
+	}
+
+	// return empty theme if nothing found (shouldn't happen)
+	return Theme{}
 }
 
 func (tm *ThemeManager) GetCurrentThemeName() string {
-	return tm.currentTheme.Name
+	return configmanager.GetTheme()
 }
 
 func (tm *ThemeManager) GetCurrentThemeMetadata() ThemeMetadata {
@@ -384,6 +439,10 @@ func (tm *ThemeManager) addTheme(theme Theme) error {
 }
 
 func (tm *ThemeManager) SetCurrentTheme(theme Theme) error {
+	// save to config (source of truth)
+	configmanager.SetTheme(theme.Name)
+
+	// also update memory for consistency
 	tm.currentTheme = theme
 
 	return nil
@@ -410,7 +469,15 @@ func (t *Theme) TemplateMap() map[string]TemplateEntry {
 }
 
 func (tm *ThemeManager) GetTemplate(name string) (*template.Template, error) {
-	entry, ok := tm.currentTheme.TemplateMap()[name]
+	currentTheme := tm.GetCurrentTheme()
+
+	// if current theme is empty, try to set builtin as default
+	if currentTheme.Name == "" {
+		setBuiltinAsDefault()
+		currentTheme = tm.GetCurrentTheme()
+	}
+
+	entry, ok := currentTheme.TemplateMap()[name]
 	if !ok {
 		return nil, fmt.Errorf("unknown template: %s", name)
 	}
@@ -418,7 +485,15 @@ func (tm *ThemeManager) GetTemplate(name string) (*template.Template, error) {
 }
 
 func (tm *ThemeManager) GetViews(name string) []string {
-	entry, ok := tm.currentTheme.TemplateMap()[name]
+	currentTheme := tm.GetCurrentTheme()
+
+	// if current theme is empty, try to set builtin as default
+	if currentTheme.Name == "" {
+		setBuiltinAsDefault()
+		currentTheme = tm.GetCurrentTheme()
+	}
+
+	entry, ok := currentTheme.TemplateMap()[name]
 	if !ok {
 		return []string{}
 	}
