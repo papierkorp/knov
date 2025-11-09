@@ -1,2 +1,8 @@
 {{ define "content" }}
+<div id="page-latestchanges">
+    <h1>{{T "Recent File History"}}</h1>
+    <div hx-get="/api/git/latestchanges?count=500" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+        {{T "Loading recent changes..."}}
+    </div>
+</div>
 {{ end }}

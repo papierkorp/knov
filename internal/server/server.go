@@ -9,16 +9,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/logging"
 	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/utils"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 var staticFiles embed.FS
@@ -129,6 +128,7 @@ func StartServerChi() {
 			r.Get("/header", handleAPIGetFileHeader)
 			r.Get("/raw", handleAPIGetRawContent)
 			r.Post("/save/*", handleAPIFileSave)
+			r.Get("/browse", handleAPIBrowseFiles)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -420,7 +420,9 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("browsefiles")
-	data := thememanager.NewBaseTemplateData("browsefiles", viewName)
+	title := fmt.Sprintf("Browse: %s", value)
+	data := thememanager.NewBrowseFilesTemplateData(metadataType, value, viewName)
+	data.Title = title
 
 	err := tm.Render(w, "browsefiles", data)
 	if err != nil {

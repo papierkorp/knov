@@ -729,6 +729,45 @@
                 }
             }
         },
+        "/api/files/browse": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Browse files by single metadata field",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Metadata field name",
+                        "name": "metadata",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Metadata field value",
+                        "name": "value",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/files.File"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/content/{filepath}": {
             "get": {
                 "produces": [

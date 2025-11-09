@@ -1,11 +1,12 @@
 package thememanager
 
 import (
+	"net/url"
+	"text/template"
+
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/translation"
-	"net/url"
-	"text/template"
 )
 
 // -----------------------------------------------
@@ -21,7 +22,7 @@ type BaseTemplateData struct {
 	Language     string
 	Themes       []Theme
 	ViewName     string
-	T            func(string, ...interface{}) string
+	T            func(string, ...any) string
 }
 
 // NewBaseTemplateData creates base data used by all templates
@@ -91,5 +92,25 @@ func NewFileViewTemplateData(title, filePath string, fileContent *files.FileCont
 		BaseTemplateData: NewBaseTemplateData(title, viewName),
 		FilePath:         filePath,
 		FileContent:      fileContent,
+	}
+}
+
+// -----------------------------------------------
+// ---------- browsefiles TemplateData ----------
+// -----------------------------------------------
+
+// BrowseFilesTemplateData extends base with browse-specific data
+type BrowseFilesTemplateData struct {
+	BaseTemplateData
+	MetadataType string
+	Value        string
+}
+
+// NewBrowseFilesTemplateData creates browse files specific data
+func NewBrowseFilesTemplateData(metadataType, value, viewName string) BrowseFilesTemplateData {
+	return BrowseFilesTemplateData{
+		BaseTemplateData: NewBaseTemplateData("Browse Files", viewName),
+		MetadataType:     metadataType,
+		Value:            value,
 	}
 }

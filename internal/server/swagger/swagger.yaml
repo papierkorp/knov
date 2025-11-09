@@ -718,6 +718,32 @@ paths:
       summary: Render dashboard widget
       tags:
       - widgets
+  /api/files/browse:
+    get:
+      parameters:
+      - description: Metadata field name
+        in: query
+        name: metadata
+        required: true
+        type: string
+      - description: Metadata field value
+        in: query
+        name: value
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/files.File'
+            type: array
+      summary: Browse files by single metadata field
+      tags:
+      - files
   /api/files/content/{filepath}:
     get:
       parameters:

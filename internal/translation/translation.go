@@ -29,7 +29,7 @@ func SetLanguage(lang string) {
 }
 
 // Sprintf to be used for text that has to be translated
-func Sprintf(key string, args ...interface{}) string {
+func Sprintf(key string, args ...any) string {
 	return globalPrinter.Sprintf(key, args...)
 }
 

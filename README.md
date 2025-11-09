@@ -2,14 +2,16 @@
 
 # todo
 
+- move templ to go html templates
+- deliver everything in builtin template with htmx (no forms... and so on in the html)
 - Dashboard
+  - make it work for go html template
   - UI advanced
     - [ ] Add widget drag & drop reordering
     - [ ] Implement widget resizing
     - [ ] Add dashboard export/import
     - [ ] Create dashboard templates/presets
     - [ ] Add auto-refresh options
-- add a editor (textbox) and the neccessary form e.g. parents, collection
 - metadata
   - save in a sqlite file
   - save in postgres
@@ -23,6 +25,7 @@
 
 # done
 
+- add a editor (textbox) and the neccessary form e.g. parents, collection
 - create folder structure for different file types
   - project (has board/boards) => own repository for each project
     - board (has everything else besides project) => displays filter and files

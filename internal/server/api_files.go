@@ -214,3 +214,56 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(`<span style="color: green;">file saved successfully</span>`))
 }
+
+// @Summary Browse files by single metadata field
+// @Tags files
+// @Produce json,html
+// @Param metadata query string true "Metadata field name"
+// @Param value query string true "Metadata field value"
+// @Success 200 {array} files.File
+// @Router /api/files/browse [get]
+func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
+	metadata := r.URL.Query().Get("metadata")
+	value := r.URL.Query().Get("value")
+
+	if metadata == "" || value == "" {
+		http.Error(w, "missing metadata or value parameter", http.StatusBadRequest)
+		return
+	}
+
+	logging.LogDebug("browse request: %s=%s", metadata, value)
+
+	operator := "equals"
+	if metadata == "tags" || metadata == "folders" {
+		operator = "contains"
+	}
+
+	criteria := []files.FilterCriteria{
+		{
+			Metadata: metadata,
+			Operator: operator, // dynamically set based on field type
+			Value:    value,
+			Action:   "include",
+		},
+	}
+	filteredFiles, err := files.FilterFilesByMetadata(criteria, "and")
+	if err != nil {
+		logging.LogError("failed to browse files: %v", err)
+		http.Error(w, "failed to browse files", http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogDebug("found %d files", len(filteredFiles))
+
+	var html strings.Builder
+	html.WriteString(fmt.Sprintf("<p>found %d files</p>", len(filteredFiles)))
+	html.WriteString("<ul>")
+	for _, file := range filteredFiles {
+		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s">%s</a></li>`,
+			strings.TrimPrefix(file.Path, "data/"),
+			strings.TrimPrefix(file.Path, "data/")))
+	}
+	html.WriteString("</ul>")
+
+	writeResponse(w, r, filteredFiles, html.String())
+}

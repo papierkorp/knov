@@ -98,46 +98,7 @@ func InitThemeManager() {
 	loadAllThemes()
 
 	// set the theme from user configuration after all themes are loaded
-	setThemeFromConfig()
-}
-
-// setThemeFromConfig loads the saved theme from user configuration
-func setThemeFromConfig() {
-	savedThemeName := configmanager.GetTheme()
-
-	// find the theme in loaded themes
-	for _, theme := range themeManager.themes {
-		if theme.Name == savedThemeName {
-			err := themeManager.SetCurrentTheme(theme)
-			if err != nil {
-				fmt.Printf("warning: failed to set saved theme '%s': %v, falling back to builtin\n", savedThemeName, err)
-				setBuiltinAsDefault()
-			} else {
-				fmt.Printf("current theme set to: %s\n", savedThemeName)
-			}
-			return
-		}
-	}
-
-	// if saved theme not found, fall back to builtin
-	fmt.Printf("warning: saved theme '%s' not found, falling back to builtin\n", savedThemeName)
-	setBuiltinAsDefault()
-}
-
-// setBuiltinAsDefault sets builtin theme as the current theme
-func setBuiltinAsDefault() {
-	for _, theme := range themeManager.themes {
-		if theme.Name == "builtin" {
-			err := themeManager.SetCurrentTheme(theme)
-			if err != nil {
-				fmt.Printf("error: failed to set builtin theme: %v\n", err)
-			} else {
-				fmt.Printf("current theme set to: builtin\n")
-			}
-			return
-		}
-	}
-	fmt.Printf("error: builtin theme not found\n")
+	SetTheme()
 }
 
 // -----------------------------------------------
@@ -387,9 +348,46 @@ func initBuiltInTheme(builtinTheme embed.FS) error {
 	return nil
 }
 
+// setBuiltinAsDefault sets builtin theme as the current theme
+func setBuiltinAsDefault() {
+	for _, theme := range themeManager.themes {
+		if theme.Name == "builtin" {
+			err := themeManager.SetCurrentTheme(theme)
+			if err != nil {
+				fmt.Printf("error: failed to set builtin theme: %v\n", err)
+			} else {
+				fmt.Printf("current theme set to: builtin\n")
+			}
+			return
+		}
+	}
+	fmt.Printf("error: builtin theme not found\n")
+}
+
 // -----------------------------------------------
 // ---------------- Getter/Setter ----------------
 // -----------------------------------------------
+
+// SetTheme loads the saved theme from user configuration
+func SetTheme() {
+	savedThemeName := configmanager.GetTheme()
+
+	for _, theme := range themeManager.themes {
+		if theme.Name == savedThemeName {
+			err := themeManager.SetCurrentTheme(theme)
+			if err != nil {
+				fmt.Printf("warning: failed to set saved theme '%s': %v, falling back to builtin\n", savedThemeName, err)
+				setBuiltinAsDefault()
+			} else {
+				fmt.Printf("current theme set to: %s\n", savedThemeName)
+			}
+			return
+		}
+	}
+
+	fmt.Printf("warning: saved theme '%s' not found, falling back to builtin\n", savedThemeName)
+	setBuiltinAsDefault()
+}
 
 func GetThemeManager() ThemeManager {
 	return *themeManager
@@ -406,7 +404,6 @@ func (tm *ThemeManager) GetAvailableThemes() []Theme {
 func (tm *ThemeManager) GetCurrentTheme() Theme {
 	currentThemeName := configmanager.GetTheme()
 
-	// find the theme in available themes
 	for _, theme := range tm.themes {
 		if theme.Name == currentThemeName {
 			return theme
@@ -420,7 +417,6 @@ func (tm *ThemeManager) GetCurrentTheme() Theme {
 		}
 	}
 
-	// return empty theme if nothing found (shouldn't happen)
 	return Theme{}
 }
 
@@ -439,10 +435,8 @@ func (tm *ThemeManager) addTheme(theme Theme) error {
 }
 
 func (tm *ThemeManager) SetCurrentTheme(theme Theme) error {
-	// save to config (source of truth)
 	configmanager.SetTheme(theme.Name)
 
-	// also update memory for consistency
 	tm.currentTheme = theme
 
 	return nil
