@@ -1,0 +1,34 @@
+{{ define "content" }}
+<div id="page-dashboard">
+	{{ if .Dashboard }}
+		<h1>{{ .Dashboard.Name }}</h1>
+		<div class="dashboard-layout">
+			<div class="dashboard-widgets dashboard-{{ .Dashboard.Layout }}">
+				{{ range .Dashboard.Widgets }}
+					<div class="dashboard-widget" data-widget-id="{{ .ID }}">
+						<h3>{{ .Type }}</h3>
+						<div
+							hx-post="/api/dashboards/widget/{{ .ID }}"
+							hx-vals='{"dashboardId": "{{ $.Dashboard.ID }}"}'
+							hx-trigger="load"
+							class="widget-content"
+						>
+							{{ T "loading widget..." }}
+						</div>
+					</div>
+				{{ end }}
+				{{ if eq (len .Dashboard.Widgets) 0 }}
+					<div class="dashboard-empty">
+						<p>{{ T "No widgets configured" }}</p>
+					</div>
+				{{ end }}
+			</div>
+		</div>
+	{{ else }}
+		<div class="dashboard-empty">
+			<h1>{{ T "Dashboard" }}</h1>
+			<p>{{ T "No dashboard found" }}</p>
+		</div>
+	{{ end }}
+</div>
+{{ end }}

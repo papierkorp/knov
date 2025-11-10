@@ -49,7 +49,7 @@ type ThemeTemplates struct {
 	admin         *template.Template
 	base          *template.Template
 	browsefiles   *template.Template
-	dashboard     *template.Template
+	dashboardview *template.Template
 	dashboardedit *template.Template
 	dashboardnew  *template.Template
 	fileedit      *template.Template
@@ -67,7 +67,7 @@ type TemplateViews struct {
 	AdminViews         []string `json:"admin"`
 	BaseViews          []string `json:"base"`
 	BrowseFilesViews   []string `json:"browsefiles"`
-	DashboardViews     []string `json:"dashboard"`
+	DashboardViews     []string `json:"dashboardview"`
 	DashboardEditViews []string `json:"dashboardedit"`
 	DashboardNewViews  []string `json:"dashboardnew"`
 	FileEditViews      []string `json:"fileedit"`
@@ -204,8 +204,8 @@ func LoadSingleTheme(themeName, themesDir string) error {
 			templates.base = tmpl
 		case "browsefiles":
 			templates.browsefiles = tmpl
-		case "dashboard":
-			templates.dashboard = tmpl
+		case "dashboardview":
+			templates.dashboardview = tmpl
 		case "dashboardedit":
 			templates.dashboardedit = tmpl
 		case "dashboardnew":
@@ -447,7 +447,7 @@ func (t *Theme) TemplateMap() map[string]TemplateEntry {
 		"admin":         {t.Templates.admin, t.Metadata.Views.AdminViews},
 		"base":          {t.Templates.base, t.Metadata.Views.BaseViews},
 		"browsefiles":   {t.Templates.browsefiles, t.Metadata.Views.BrowseFilesViews},
-		"dashboard":     {t.Templates.dashboard, t.Metadata.Views.DashboardViews},
+		"dashboardview": {t.Templates.dashboardview, t.Metadata.Views.DashboardViews},
 		"dashboardedit": {t.Templates.dashboardedit, t.Metadata.Views.DashboardEditViews},
 		"dashboardnew":  {t.Templates.dashboardnew, t.Metadata.Views.DashboardNewViews},
 		"fileedit":      {t.Templates.fileedit, t.Metadata.Views.FileEditViews},

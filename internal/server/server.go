@@ -9,15 +9,17 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"knov/internal/configmanager"
+	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/logging"
 	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/utils"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 var staticFiles embed.FS
@@ -434,7 +436,7 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 func handleDashboardNew(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("dashboardnew")
-	data := thememanager.NewBaseTemplateData("dashboardnew", viewName)
+	data := thememanager.NewBaseTemplateData("Create New Dashboard", viewName)
 
 	err := tm.Render(w, "dashboardnew", data)
 	if err != nil {
@@ -444,18 +446,18 @@ func handleDashboardNew(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDashboardEdit(w http.ResponseWriter, r *http.Request) {
-	// id := chi.URLParam(r, "id")
-	// dashboard, err := dashboard.Get(id)
-	// if err != nil {
-	// 	http.Error(w, "dashboard not found", http.StatusNotFound)
-	// 	return
-	// }
+	id := chi.URLParam(r, "id")
+	dash, err := dashboard.Get(id)
+	if err != nil {
+		http.Error(w, "dashboard not found", http.StatusNotFound)
+		return
+	}
 
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("dashboardedit")
-	data := thememanager.NewBaseTemplateData("dashboardedit", viewName)
+	data := thememanager.NewDashboardEditTemplateData(dash, viewName)
 
-	err := tm.Render(w, "dashboardedit", data)
+	err = tm.Render(w, "dashboardedit", data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
@@ -463,27 +465,26 @@ func handleDashboardEdit(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDashboardView(w http.ResponseWriter, r *http.Request) {
-	// id := chi.URLParam(r, "id")
-	// if id == "" {
-	// 	id = "home"
-	// }
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		id = "home"
+	}
 
-	// dash, err := dashboard.Get(id)
-	// if err != nil {
-	// 	http.Error(w, "dashboard not found", http.StatusNotFound)
-	// 	return
-	// }
+	dash, err := dashboard.Get(id)
+	if err != nil {
+		http.Error(w, "dashboard not found", http.StatusNotFound)
+		return
+	}
 
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("dashboardview")
-	data := thememanager.NewBaseTemplateData("dashboardview", viewName)
+	data := thememanager.NewDashboardTemplateData(dash, viewName)
 
-	err := tm.Render(w, "dashboardview", data)
+	err = tm.Render(w, "dashboardview", data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func handleFileContent(w http.ResponseWriter, r *http.Request) {

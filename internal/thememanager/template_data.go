@@ -1,10 +1,12 @@
 package thememanager
 
 import (
+	"encoding/json"
 	"net/url"
 	"text/template"
 
 	"knov/internal/configmanager"
+	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/translation"
 )
@@ -49,8 +51,31 @@ func CreateFuncMap() template.FuncMap {
 		"sub": func(a, b int) int {
 			return a - b
 		},
+		"add": func(a, b int) int {
+			return a + b
+		},
 		"urlQuery": func(s string) string {
 			return url.QueryEscape(s)
+		},
+		"marshalJSON": func(v interface{}) string {
+			data, err := json.MarshalIndent(v, "", "  ")
+			if err != nil {
+				return "{}"
+			}
+			return string(data)
+		},
+		"dict": func(values ...interface{}) map[string]interface{} {
+			dict := make(map[string]interface{})
+			for i := 0; i < len(values); i += 2 {
+				key, ok := values[i].(string)
+				if !ok {
+					continue
+				}
+				if i+1 < len(values) {
+					dict[key] = values[i+1]
+				}
+			}
+			return dict
 		},
 	}
 }
@@ -112,5 +137,45 @@ func NewBrowseFilesTemplateData(metadataType, value, viewName string) BrowseFile
 		BaseTemplateData: NewBaseTemplateData("Browse Files", viewName),
 		MetadataType:     metadataType,
 		Value:            value,
+	}
+}
+
+// -----------------------------------------------
+// ---------- Dashboard TemplateData -------------
+// -----------------------------------------------
+
+// DashboardTemplateData extends base with dashboard-specific data
+type DashboardTemplateData struct {
+	BaseTemplateData
+	Dashboard *dashboard.Dashboard
+}
+
+// NewDashboardTemplateData creates dashboard view specific data
+func NewDashboardTemplateData(dash *dashboard.Dashboard, viewName string) DashboardTemplateData {
+	title := "Dashboard"
+	if dash != nil {
+		title = dash.Name
+	}
+	return DashboardTemplateData{
+		BaseTemplateData: NewBaseTemplateData(title, viewName),
+		Dashboard:        dash,
+	}
+}
+
+// DashboardEditTemplateData extends base with dashboard edit specific data
+type DashboardEditTemplateData struct {
+	BaseTemplateData
+	Dashboard *dashboard.Dashboard
+}
+
+// NewDashboardEditTemplateData creates dashboard edit specific data
+func NewDashboardEditTemplateData(dash *dashboard.Dashboard, viewName string) DashboardEditTemplateData {
+	title := "Edit Dashboard"
+	if dash != nil {
+		title = "Edit Dashboard: " + dash.Name
+	}
+	return DashboardEditTemplateData{
+		BaseTemplateData: NewBaseTemplateData(title, viewName),
+		Dashboard:        dash,
 	}
 }

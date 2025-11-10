@@ -1,2 +1,338 @@
 {{ define "content" }}
+<div id="page-dashboard-new">
+	<h1>{{ T "Create New Dashboard" }}</h1>
+	<div class="dashboard-create-form">
+		<div class="form-header">
+			<h3>{{ T "Create New Dashboard" }}</h3>
+			<p>{{ T "Design your custom dashboard with widgets" }}</p>
+		</div>
+		<form hx-post="/api/dashboards" hx-target="#dashboard-create-result" hx-swap="innerHTML" class="dashboard-form">
+			<div class="form-section">
+				<h4>{{ T "Dashboard Settings" }}</h4>
+				<div class="form-group">
+					<label for="name">{{ T "Dashboard Name" }}</label>
+					<input
+						type="text"
+						id="name"
+						name="name"
+						required
+						placeholder="{{ T "My Awesome Dashboard" }}"
+						class="form-input"
+					/>
+				</div>
+				<div class="form-row">
+					<div class="form-group">
+						<label for="layout">{{ T "Layout" }}</label>
+						<select id="layout" name="layout" required class="form-select">
+							<option value="oneColumn">📋 {{ T "One Column" }}</option>
+							<option value="twoColumns" selected>📊 {{ T "Two Columns" }}</option>
+							<option value="threeColumns">🎯 {{ T "Three Columns" }}</option>
+							<option value="fourColumns">🎨 {{ T "Four Columns" }}</option>
+						</select>
+					</div>
+					<div class="form-group checkbox-group">
+						<label class="checkbox-label">
+							<input type="checkbox" name="global" value="true" class="form-checkbox"/>
+							<span class="checkmark"></span>
+							{{ T "Global Dashboard" }}
+							<small>{{ T "Visible to all users" }}</small>
+						</label>
+					</div>
+				</div>
+			</div>
+			<div class="form-section">
+				<div class="section-header">
+					<h4>{{ T "Widgets" }}</h4>
+					<button type="button" onclick="addWidget()" class="btn-add-widget">+ {{ T "Add Widget" }}</button>
+				</div>
+				<div id="widgets-container">
+					<div class="widget-form">
+						<div class="widget-header">
+							<span class="widget-number">{{ T "Widget" }} 1</span>
+						</div>
+						<div class="form-row">
+							<div class="form-group">
+								<label>{{ T "Type" }}</label>
+								<select
+									name="widgets[0][type]"
+									required
+									class="form-select"
+									onchange="updateConfig(0, this.value)"
+								>
+									<option value="">{{ T "Choose type..." }}</option>
+									<option value="filter">🔍 {{ T "Filter" }}</option>
+									<option value="filterForm">📝 {{ T "Filter Form" }}</option>
+									<option value="fileContent">📄 {{ T "File Content" }}</option>
+									<option value="static">📌 {{ T "Static Content" }}</option>
+									<option value="tags">🏷️ {{ T "Tags" }}</option>
+									<option value="collections">📚 {{ T "Collections" }}</option>
+									<option value="folders">📁 {{ T "Folders" }}</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="form-group">
+								<label>{{ T "X Position" }}</label>
+								<input
+									type="number"
+									name="widgets[0][position][x]"
+									min="0"
+									max="3"
+									value="0"
+									class="form-input"
+								/>
+							</div>
+							<div class="form-group">
+								<label>{{ T "Y Position" }}</label>
+								<input type="number" name="widgets[0][position][y]" min="0" value="0" class="form-input"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<label>{{ T "Configuration" }}</label>
+							<div class="config-helper" id="config-helper-0">
+								<div class="config-placeholder">
+									<p>{{ T "Select a widget type to see configuration options" }}</p>
+								</div>
+							</div>
+							<textarea
+								name="widgets[0][config]"
+								id="config-textarea-0"
+								placeholder="{{ T "Select widget type for configuration template" }}"
+								rows="4"
+								class="form-textarea"
+								style="display:none;"
+							></textarea>
+							<small class="form-help">{{ T "Configuration will be generated based on your selections above" }}</small>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="btn-primary">
+					<span>🚀</span>
+					{{ T "Create Dashboard" }}
+				</button>
+			</div>
+		</form>
+		<div id="dashboard-create-result" class="result-container"></div>
+	</div>
+</div>
+
+<script>
+let widgetCount = 1;
+
+function addWidget() {
+	const container = document.getElementById('widgets-container');
+	const widgetDiv = document.createElement('div');
+	widgetDiv.className = 'widget-form';
+	widgetDiv.innerHTML = `
+		<div class="widget-header">
+			<span class="widget-number">Widget ${widgetCount + 1}</span>
+			<button type="button" onclick="this.closest('.widget-form').remove()" class="btn-remove">×</button>
+		</div>
+
+		<div class="form-row">
+			<div class="form-group">
+				<label>Type</label>
+				<select name="widgets[${widgetCount}][type]" required class="form-select" onchange="updateConfig(${widgetCount}, this.value)">
+					<option value="">Choose type...</option>
+					<option value="filter">🔍 Filter</option>
+					<option value="filterForm">📝 Filter Form</option>
+					<option value="fileContent">📄 File Content</option>
+					<option value="static">📌 Static Content</option>
+					<option value="tags">🏷️ Tags</option>
+					<option value="collections">📚 Collections</option>
+					<option value="folders">📁 Folders</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<div class="form-group">
+				<label>X Position</label>
+				<input type="number" name="widgets[${widgetCount}][position][x]" min="0" max="3" value="0" class="form-input"/>
+			</div>
+			<div class="form-group">
+				<label>Y Position</label>
+				<input type="number" name="widgets[${widgetCount}][position][y]" min="0" value="0" class="form-input"/>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label>Configuration</label>
+			<div class="config-helper" id="config-helper-${widgetCount}">
+				<div class="config-placeholder">
+					<p>Select a widget type to see configuration options</p>
+				</div>
+			</div>
+			<textarea
+				name="widgets[${widgetCount}][config]"
+				id="config-textarea-${widgetCount}"
+				placeholder="Select widget type for configuration template"
+				rows="4"
+				class="form-textarea"
+				style="display:none;"
+			></textarea>
+			<small class="form-help">Configuration will be generated based on your selections above</small>
+		</div>
+	`;
+	container.appendChild(widgetDiv);
+	widgetCount++;
+}
+
+function updateConfig(widgetIndex, widgetType) {
+	const helper = document.getElementById(`config-helper-${widgetIndex}`);
+	const textarea = document.getElementById(`config-textarea-${widgetIndex}`);
+
+	let helperHTML = '';
+	let configTemplate = '';
+
+	switch(widgetType) {
+		case 'filter':
+			helperHTML = `
+				<div class="config-form">
+					<h5>Filter Configuration</h5>
+					<div class="config-section">
+						<h6>Display & Limits</h6>
+						<div class="config-row">
+							<label>Display:</label>
+							<select onchange="updateFilterConfig(${widgetIndex})">
+								<option value="list">List</option>
+								<option value="cards">Cards</option>
+								<option value="dropdown">Dropdown</option>
+							</select>
+						</div>
+						<div class="config-row">
+							<label>Limit:</label>
+							<input type="number" value="10" min="1" onchange="updateFilterConfig(${widgetIndex})"/>
+						</div>
+					</div>
+				</div>
+			`;
+			configTemplate = JSON.stringify({
+				filter: {
+					display: "list",
+					limit: 10,
+					criteria: []
+				}
+			}, null, 2);
+			break;
+
+		case 'filterForm':
+			helperHTML = `
+				<div class="config-form">
+					<h5>Filter Form Configuration</h5>
+					<p class="config-note">Interactive filter form - no configuration needed</p>
+				</div>
+			`;
+			configTemplate = JSON.stringify({}, null, 2);
+			break;
+
+		case 'fileContent':
+			helperHTML = `
+				<div class="config-form">
+					<h5>File Content Configuration</h5>
+					<div class="config-row">
+						<label>File Path:</label>
+						<input
+							type="text"
+							placeholder="path/to/file.md"
+							onchange="updateFileContentConfig(${widgetIndex}, this.value)"
+						/>
+					</div>
+					<p class="config-note">Enter the path to the markdown file you want to display</p>
+				</div>
+			`;
+			configTemplate = JSON.stringify({
+				fileContent: {
+					filePath: "path/to/file.md"
+				}
+			}, null, 2);
+			break;
+
+		case 'static':
+			helperHTML = `
+				<div class="config-form">
+					<h5>Static Content Configuration</h5>
+					<div class="config-row">
+						<label>Format:</label>
+						<select onchange="updateStaticConfig(${widgetIndex})">
+							<option value="html">HTML</option>
+							<option value="markdown">Markdown</option>
+							<option value="text">Plain Text</option>
+						</select>
+					</div>
+					<div class="config-row">
+						<label>Content:</label>
+						<textarea placeholder="Enter your content here..." rows="3" onchange="updateStaticConfig(${widgetIndex})"></textarea>
+					</div>
+				</div>
+			`;
+			configTemplate = JSON.stringify({
+				static: {
+					content: "<h3>Welcome!</h3><p>Your static content here</p>",
+					format: "html"
+				}
+			}, null, 2);
+			break;
+
+		case 'tags':
+		case 'collections':
+		case 'folders':
+			const widgetName = widgetType.charAt(0).toUpperCase() + widgetType.slice(1);
+			helperHTML = `
+				<div class="config-form">
+					<h5>${widgetName} Widget Configuration</h5>
+					<p class="config-note">Shows all available ${widgetType} with file counts - no configuration needed</p>
+				</div>
+			`;
+			configTemplate = JSON.stringify({}, null, 2);
+			break;
+	}
+
+	helper.innerHTML = helperHTML;
+	textarea.value = configTemplate;
+}
+
+function updateFileContentConfig(widgetIndex, filePath) {
+	const textarea = document.getElementById(`config-textarea-${widgetIndex}`);
+	const config = {
+		fileContent: {
+			filePath: filePath
+		}
+	};
+	textarea.value = JSON.stringify(config, null, 2);
+}
+
+function updateStaticConfig(widgetIndex) {
+	const helper = document.getElementById(`config-helper-${widgetIndex}`);
+	const textarea = document.getElementById(`config-textarea-${widgetIndex}`);
+	const format = helper.querySelector('select').value;
+	const content = helper.querySelector('textarea').value;
+
+	const config = {
+		static: {
+			content: content || "<h3>Welcome!</h3><p>Your static content here</p>",
+			format: format
+		}
+	};
+	textarea.value = JSON.stringify(config, null, 2);
+}
+
+function updateFilterConfig(widgetIndex) {
+	const helper = document.getElementById(`config-helper-${widgetIndex}`);
+	const textarea = document.getElementById(`config-textarea-${widgetIndex}`);
+	const display = helper.querySelector('select').value;
+	const limit = parseInt(helper.querySelector('input').value) || 10;
+
+	const config = {
+		filter: {
+			display: display,
+			limit: limit,
+			criteria: []
+		}
+	};
+	textarea.value = JSON.stringify(config, null, 2);
+}
+</script>
 {{ end }}
