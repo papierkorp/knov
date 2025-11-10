@@ -462,7 +462,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)",
+                        "description": "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns, custom)",
                         "name": "layout",
                         "in": "formData",
                         "required": true
@@ -477,6 +477,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Widget type (filter, filterForm, fileContent, static, tags, collections, folders)",
                         "name": "widgets[0][type]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Widget title",
+                        "name": "widgets[0][title]",
                         "in": "formData"
                     },
                     {
@@ -763,7 +769,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Dashboard layout",
+                        "description": "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns, custom)",
                         "name": "layout",
                         "in": "formData"
                     },
@@ -777,6 +783,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Widget type",
                         "name": "widgets[0][type]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Widget title",
+                        "name": "widgets[0][title]",
                         "in": "formData"
                     },
                     {
@@ -2292,13 +2304,15 @@ const docTemplate = `{
                 "oneColumn",
                 "twoColumns",
                 "threeColumns",
-                "fourColumns"
+                "fourColumns",
+                "custom"
             ],
             "x-enum-varnames": [
                 "OneColumn",
                 "TwoColumns",
                 "ThreeColumns",
-                "FourColumns"
+                "FourColumns",
+                "Custom"
             ]
         },
         "dashboard.StaticConfig": {
@@ -2324,6 +2338,9 @@ const docTemplate = `{
                 },
                 "position": {
                     "$ref": "#/definitions/dashboard.WidgetPosition"
+                },
+                "title": {
+                    "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/dashboard.WidgetType"

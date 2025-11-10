@@ -26,6 +26,18 @@
     gap: 20px;
 }
 
+#page-dashboard .dashboard-custom {
+    display: grid;
+    gap: 20px;
+    grid-auto-columns: 1fr;
+    grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
+}
+
+#page-dashboard .dashboard-custom .dashboard-widget {
+    grid-column: var(--widget-column, 1);
+    grid-row: var(--widget-row, 1);
+}
+
 #page-dashboard .dashboard-widget {
     border: 1px solid var(--border);
     border-radius: 6px;

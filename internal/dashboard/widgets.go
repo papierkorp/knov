@@ -19,6 +19,7 @@ type WidgetPosition struct {
 type Widget struct {
 	ID       string         `json:"id"`
 	Type     WidgetType     `json:"type"`
+	Title    string         `json:"title"`
 	Position WidgetPosition `json:"position"`
 	Config   WidgetConfig   `json:"config"`
 }

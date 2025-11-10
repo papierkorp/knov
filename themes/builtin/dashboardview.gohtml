@@ -5,8 +5,13 @@
 		<div class="dashboard-layout">
 			<div class="dashboard-widgets dashboard-{{ .Dashboard.Layout }}">
 				{{ range .Dashboard.Widgets }}
-					<div class="dashboard-widget" data-widget-id="{{ .ID }}">
-						<h3>{{ .Type }}</h3>
+					<div
+					class="dashboard-widget"
+					data-widget-id="{{ .ID }}"
+					data-x="{{ .Position.X }}"
+					data-y="{{ .Position.Y }}"
+				>
+						<h3>{{ if .Title }}{{ .Title }}{{ else }}{{ .Type }}{{ end }}</h3>
 						<div
 							hx-post="/api/dashboards/widget/{{ .ID }}"
 							hx-vals='{"dashboardId": "{{ $.Dashboard.ID }}"}'
@@ -24,6 +29,33 @@
 				{{ end }}
 			</div>
 		</div>
+		{{ if eq .Dashboard.Layout "custom" }}
+		<script>
+		// setup custom grid positioning
+		document.addEventListener('DOMContentLoaded', function() {
+			const dashboardWidgets = document.querySelector('.dashboard-custom');
+			if (!dashboardWidgets) return;
+
+			const widgets = dashboardWidgets.querySelectorAll('.dashboard-widget');
+			let maxX = 0, maxY = 0;
+
+			// Calculate grid dimensions and set positioning
+			widgets.forEach(widget => {
+				const x = parseInt(widget.dataset.x) || 0;
+				const y = parseInt(widget.dataset.y) || 0;
+				maxX = Math.max(maxX, x);
+				maxY = Math.max(maxY, y);
+
+				// Set grid position (1-based)
+				widget.style.setProperty('--widget-column', x + 1);
+				widget.style.setProperty('--widget-row', y + 1);
+			});
+
+			// Set grid columns
+			dashboardWidgets.style.setProperty('--grid-columns', Math.max(maxX + 1, 1));
+		});
+		</script>
+		{{ end }}
 	{{ else }}
 		<div class="dashboard-empty">
 			<h1>{{ T "Dashboard" }}</h1>

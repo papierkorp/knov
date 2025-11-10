@@ -121,6 +121,7 @@ func parseWidgetsFromForm(r *http.Request) ([]dashboard.Widget, error) {
 
 		xPos, _ := strconv.Atoi(r.FormValue(fmt.Sprintf("widgets[%d][position][x]", i)))
 		yPos, _ := strconv.Atoi(r.FormValue(fmt.Sprintf("widgets[%d][position][y]", i)))
+		title := r.FormValue(fmt.Sprintf("widgets[%d][title]", i))
 
 		// Build config from form fields
 		var config dashboard.WidgetConfig
@@ -148,8 +149,9 @@ func parseWidgetsFromForm(r *http.Request) ([]dashboard.Widget, error) {
 		}
 
 		widget := dashboard.Widget{
-			ID:   fmt.Sprintf("widget-%d", i),
-			Type: widgetType,
+			ID:    fmt.Sprintf("widget-%d", i),
+			Type:  widgetType,
+			Title: title,
 			Position: dashboard.WidgetPosition{
 				X: xPos,
 				Y: yPos,
@@ -168,9 +170,10 @@ func parseWidgetsFromForm(r *http.Request) ([]dashboard.Widget, error) {
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
 // @Param name formData string true "Dashboard name"
-// @Param layout formData string true "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)"
+// @Param layout formData string true "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns, custom)"
 // @Param global formData string false "Global dashboard (true/false)"
 // @Param widgets[0][type] formData string false "Widget type (filter, filterForm, fileContent, static, tags, collections, folders)"
+// @Param widgets[0][title] formData string false "Widget title"
 // @Param widgets[0][position][x] formData int false "Widget X position"
 // @Param widgets[0][position][y] formData int false "Widget Y position"
 // @Param widgets[0][config] formData string false "Widget configuration JSON"
@@ -246,9 +249,10 @@ func handleAPIGetDashboard(w http.ResponseWriter, r *http.Request) {
 // @Accept application/x-www-form-urlencoded
 // @Param id path string true "Dashboard ID"
 // @Param name formData string false "Dashboard name"
-// @Param layout formData string false "Dashboard layout"
+// @Param layout formData string false "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns, custom)"
 // @Param global formData string false "Global dashboard"
 // @Param widgets[0][type] formData string false "Widget type"
+// @Param widgets[0][title] formData string false "Widget title"
 // @Param widgets[0][position][x] formData int false "Widget X position"
 // @Param widgets[0][position][y] formData int false "Widget Y position"
 // @Param widgets[0][config] formData string false "Widget configuration JSON"
@@ -507,8 +511,8 @@ func handleAPIDashboardForm(w http.ResponseWriter, r *http.Request) {
 	html.WriteString(`<label for="layout">layout</label>`)
 	html.WriteString(`<select id="layout" name="layout" required class="form-select">`)
 
-	layoutOptions := []string{"oneColumn", "twoColumns", "threeColumns", "fourColumns"}
-	layoutIcons := []string{"📋", "📊", "🎯", "🎨"}
+	layoutOptions := []string{"oneColumn", "twoColumns", "threeColumns", "fourColumns", "custom"}
+	layoutIcons := []string{"📋", "📊", "🎯", "🎨", "🎛️"}
 	selectedLayout := "twoColumns"
 	if dash != nil {
 		selectedLayout = string(dash.Layout)
@@ -604,6 +608,16 @@ func renderWidgetForm(index int, widget *dashboard.Widget) string {
 	if index > 0 {
 		html.WriteString(`<button type="button" onclick="this.closest('.widget-form').remove()" class="btn-remove">×</button>`)
 	}
+	html.WriteString(`</div>`)
+
+	// Title field
+	html.WriteString(`<div class="form-group">`)
+	html.WriteString(`<label>title</label>`)
+	titleValue := ""
+	if widget != nil {
+		titleValue = widget.Title
+	}
+	html.WriteString(fmt.Sprintf(`<input type="text" name="widgets[%d][title]" value="%s" placeholder="enter widget title" class="form-input"/>`, index, titleValue))
 	html.WriteString(`</div>`)
 
 	// Widget type selector

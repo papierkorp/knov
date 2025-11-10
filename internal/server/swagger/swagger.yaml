@@ -40,12 +40,14 @@ definitions:
     - twoColumns
     - threeColumns
     - fourColumns
+    - custom
     type: string
     x-enum-varnames:
     - OneColumn
     - TwoColumns
     - ThreeColumns
     - FourColumns
+    - Custom
   dashboard.StaticConfig:
     properties:
       content:
@@ -62,6 +64,8 @@ definitions:
         type: string
       position:
         $ref: '#/definitions/dashboard.WidgetPosition'
+      title:
+        type: string
       type:
         $ref: '#/definitions/dashboard.WidgetType'
     type: object
@@ -529,7 +533,8 @@ paths:
         name: name
         required: true
         type: string
-      - description: Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)
+      - description: Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns,
+          custom)
         in: formData
         name: layout
         required: true
@@ -542,6 +547,10 @@ paths:
           folders)
         in: formData
         name: widgets[0][type]
+        type: string
+      - description: Widget title
+        in: formData
+        name: widgets[0][title]
         type: string
       - description: Widget X position
         in: formData
@@ -619,7 +628,8 @@ paths:
         in: formData
         name: name
         type: string
-      - description: Dashboard layout
+      - description: Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns,
+          custom)
         in: formData
         name: layout
         type: string
@@ -630,6 +640,10 @@ paths:
       - description: Widget type
         in: formData
         name: widgets[0][type]
+        type: string
+      - description: Widget title
+        in: formData
+        name: widgets[0][title]
         type: string
       - description: Widget X position
         in: formData

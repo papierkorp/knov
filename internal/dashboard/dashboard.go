@@ -20,6 +20,7 @@ const (
 	TwoColumns   Layout = "twoColumns"
 	ThreeColumns Layout = "threeColumns"
 	FourColumns  Layout = "fourColumns"
+	Custom       Layout = "custom"
 )
 
 // Dashboard represents a dashboard structure
@@ -188,7 +189,7 @@ func Update(dashboard *Dashboard) error {
 // isValidLayout checks if the layout is one of the allowed enum values
 func isValidLayout(layout Layout) bool {
 	switch layout {
-	case OneColumn, TwoColumns, ThreeColumns, FourColumns:
+	case OneColumn, TwoColumns, ThreeColumns, FourColumns, Custom:
 		return true
 	default:
 		return false
