@@ -198,6 +198,10 @@ func StartServerChi() {
 			r.Delete("/{id}", handleAPIDeleteDashboard)
 			r.Post("/widget/{id}", handleAPIRenderWidget)
 			r.Post("/{id}/rename", handleAPIRenameDashboard)
+			r.Get("/form", handleAPIDashboardForm)
+			r.Post("/widget-form", handleAPIWidgetForm)
+			r.Post("/widget-config", handleAPIWidgetConfig)
+			r.Post("/filter-criteria", handleAPIFilterCriteria)
 		})
 
 		// ----------------------------------------------------------------------------------------

@@ -508,6 +508,118 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/dashboards/filter-criteria": {
+            "post": {
+                "description": "Add new filter criteria row for filter widget configuration",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Add filter criteria row",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Widget index",
+                        "name": "widget_index",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "filter criteria row html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboards/form": {
+            "get": {
+                "description": "Get dashboard form for create or edit",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Get dashboard form",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dashboard ID for edit mode",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "dashboard form html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboards/widget-config": {
+            "post": {
+                "description": "Get configuration form for specific widget type",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Get widget configuration form",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Widget index",
+                        "name": "index",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "widget config html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboards/widget-form": {
+            "post": {
+                "description": "Get empty widget form for adding new widget",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Get widget form",
+                "responses": {
+                    "200": {
+                        "description": "widget form html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/dashboards/widget/{widgetId}": {
             "post": {
                 "description": "Render a specific widget by ID from a dashboard",
@@ -902,6 +1014,14 @@ const docTemplate = `{
                     "files"
                 ],
                 "summary": "Get all files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Response format (options for HTML select options)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
                 "responses": {}
             }
         },

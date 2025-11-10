@@ -14,12 +14,27 @@ import (
 
 // @Summary Get all files
 // @Tags files
+// @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
 // @Router /api/files/list [get]
 func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	allFiles, err := files.GetAllFiles()
 	if err != nil {
 		http.Error(w, "failed to get files", http.StatusInternalServerError)
+		return
+	}
+
+	format := r.URL.Query().Get("format")
+
+	if format == "options" {
+		var html strings.Builder
+		html.WriteString(`<option value="">select a file...</option>`)
+		for _, file := range allFiles {
+			path := strings.TrimPrefix(file.Path, "data/")
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, path, path))
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
 		return
 	}
 
@@ -154,7 +169,7 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var html strings.Builder
-	html.WriteString(fmt.Sprintf(`<div id="current-file-breadcrumb"><a href="/files/%s">→ %s</a></div>`, filepath, filepath))
+	html.WriteString(fmt.Sprintf(`<div id="current-file-breadcrumb"><a href="/files/%s">â†’ %s</a></div>`, filepath, filepath))
 
 	writeResponse(w, r, data, html.String())
 }

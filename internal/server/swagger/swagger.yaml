@@ -680,6 +680,79 @@ paths:
       summary: Rename dashboard
       tags:
       - dashboards
+  /api/dashboards/filter-criteria:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Add new filter criteria row for filter widget configuration
+      parameters:
+      - description: Widget index
+        in: formData
+        name: widget_index
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: filter criteria row html
+          schema:
+            type: string
+      summary: Add filter criteria row
+      tags:
+      - dashboards
+  /api/dashboards/form:
+    get:
+      description: Get dashboard form for create or edit
+      parameters:
+      - description: Dashboard ID for edit mode
+        in: query
+        name: id
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: dashboard form html
+          schema:
+            type: string
+      summary: Get dashboard form
+      tags:
+      - dashboards
+  /api/dashboards/widget-config:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Get configuration form for specific widget type
+      parameters:
+      - description: Widget index
+        in: formData
+        name: index
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: widget config html
+          schema:
+            type: string
+      summary: Get widget configuration form
+      tags:
+      - dashboards
+  /api/dashboards/widget-form:
+    post:
+      description: Get empty widget form for adding new widget
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: widget form html
+          schema:
+            type: string
+      summary: Get widget form
+      tags:
+      - dashboards
   /api/dashboards/widget/{widgetId}:
     post:
       consumes:
@@ -826,6 +899,11 @@ paths:
       - files
   /api/files/list:
     get:
+      parameters:
+      - description: Response format (options for HTML select options)
+        in: query
+        name: format
+        type: string
       produces:
       - application/json
       - text/html
