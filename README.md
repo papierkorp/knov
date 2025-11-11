@@ -5,7 +5,7 @@
 - move templ to go html templates
 - deliver everything in builtin template with htmx (no forms... and so on in the html)
 - Dashboard
-  - make it work for go html template
+  - make the positions work with a custom layout work
   - UI advanced
     - [ ] Add widget drag & drop reordering
     - [ ] Implement widget resizing
@@ -46,6 +46,7 @@
     - [x] run same operations as startup: metadata init, links rebuild, search reindex
     - [x] add logging for periodic scan operations
 - Dashboard
+  - make it work for go html template
   - Core Structure
     - [x] Create dashboard data structure (widgets, layout, filters)
     - [x] Add dashboard CRUD API endpoints (create, read, update, delete)

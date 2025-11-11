@@ -510,6 +510,11 @@ paths:
   /api/dashboards:
     get:
       description: Get list of all dashboards for current user
+      parameters:
+      - description: Show shortened dashboard names (3 chars max)
+        in: query
+        name: short
+        type: boolean
       produces:
       - application/json
       - text/html
@@ -533,8 +538,7 @@ paths:
         name: name
         required: true
         type: string
-      - description: Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns,
-          custom)
+      - description: Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)
         in: formData
         name: layout
         required: true
@@ -628,8 +632,7 @@ paths:
         in: formData
         name: name
         type: string
-      - description: Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns,
-          custom)
+      - description: Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)
         in: formData
         name: layout
         type: string

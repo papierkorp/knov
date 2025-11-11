@@ -16,6 +16,7 @@ import (
 // @Summary Get all dashboards
 // @Description Get list of all dashboards for current user
 // @Tags dashboards
+// @Param short query bool false "Show shortened dashboard names (3 chars max)"
 // @Produce json,html
 // @Success 200 {array} dashboard.Dashboard
 // @Router /api/dashboards [get]
@@ -27,9 +28,21 @@ func handleAPIGetDashboards(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if shortened names are requested
+	shortNames := r.URL.Query().Get("short") == "true"
+
 	var html strings.Builder
 	for _, dash := range dashboards {
-		html.WriteString(fmt.Sprintf(`<a href="/dashboard/%s">%s</a>`, dash.ID, dash.Name))
+		displayName := dash.Name
+
+		if shortNames && len(displayName) > 3 {
+			// Truncate to 3 characters and add tooltip with full name
+			displayName = displayName[:3]
+			html.WriteString(fmt.Sprintf(`<a href="/dashboard/%s" title="%s">%s</a>`, dash.ID, dash.Name, displayName))
+		} else {
+			// Show full name
+			html.WriteString(fmt.Sprintf(`<a href="/dashboard/%s">%s</a>`, dash.ID, dash.Name))
+		}
 	}
 
 	writeResponse(w, r, dashboards, html.String())
@@ -170,7 +183,7 @@ func parseWidgetsFromForm(r *http.Request) ([]dashboard.Widget, error) {
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
 // @Param name formData string true "Dashboard name"
-// @Param layout formData string true "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns, custom)"
+// @Param layout formData string true "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)"
 // @Param global formData string false "Global dashboard (true/false)"
 // @Param widgets[0][type] formData string false "Widget type (filter, filterForm, fileContent, static, tags, collections, folders)"
 // @Param widgets[0][title] formData string false "Widget title"
@@ -249,7 +262,7 @@ func handleAPIGetDashboard(w http.ResponseWriter, r *http.Request) {
 // @Accept application/x-www-form-urlencoded
 // @Param id path string true "Dashboard ID"
 // @Param name formData string false "Dashboard name"
-// @Param layout formData string false "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns, custom)"
+// @Param layout formData string false "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)"
 // @Param global formData string false "Global dashboard"
 // @Param widgets[0][type] formData string false "Widget type"
 // @Param widgets[0][title] formData string false "Widget title"
@@ -511,8 +524,8 @@ func handleAPIDashboardForm(w http.ResponseWriter, r *http.Request) {
 	html.WriteString(`<label for="layout">layout</label>`)
 	html.WriteString(`<select id="layout" name="layout" required class="form-select">`)
 
-	layoutOptions := []string{"oneColumn", "twoColumns", "threeColumns", "fourColumns", "custom"}
-	layoutIcons := []string{"📋", "📊", "🎯", "🎨", "🎛️"}
+	layoutOptions := []string{"oneColumn", "twoColumns", "threeColumns", "fourColumns"}
+	layoutIcons := []string{"📋", "📊", "🎯", "🎨"}
 	selectedLayout := "twoColumns"
 	if dash != nil {
 		selectedLayout = string(dash.Layout)
@@ -646,25 +659,29 @@ func renderWidgetForm(index int, widget *dashboard.Widget) string {
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
 
-	// Position fields
-	html.WriteString(`<div class="form-row">`)
-	html.WriteString(`<div class="form-group">`)
-	html.WriteString(`<label>x position</label>`)
-	xPos := "0"
-	if widget != nil {
-		xPos = fmt.Sprintf("%d", widget.Position.X)
-	}
-	html.WriteString(fmt.Sprintf(`<input type="number" name="widgets[%d][position][x]" min="0" max="3" value="%s" class="form-input"/>`, index, xPos))
-	html.WriteString(`</div>`)
-	html.WriteString(`<div class="form-group">`)
-	html.WriteString(`<label>y position</label>`)
-	yPos := "0"
-	if widget != nil {
-		yPos = fmt.Sprintf("%d", widget.Position.Y)
-	}
-	html.WriteString(fmt.Sprintf(`<input type="number" name="widgets[%d][position][y]" min="0" value="%s" class="form-input"/>`, index, yPos))
-	html.WriteString(`</div>`)
-	html.WriteString(`</div>`)
+	// Position fields (hidden for now - will implement custom layout later)
+	// html.WriteString(`<div class="form-row">`)
+	// html.WriteString(`<div class="form-group">`)
+	// html.WriteString(`<label>x position</label>`)
+	// xPos := "0"
+	// if widget != nil {
+	// 	xPos = fmt.Sprintf("%d", widget.Position.X)
+	// }
+	// html.WriteString(fmt.Sprintf(`<input type="number" name="widgets[%d][position][x]" min="0" max="3" value="%s" class="form-input"/>`, index, xPos))
+	// html.WriteString(`</div>`)
+	// html.WriteString(`<div class="form-group">`)
+	// html.WriteString(`<label>y position</label>`)
+	// yPos := "0"
+	// if widget != nil {
+	// 	yPos = fmt.Sprintf("%d", widget.Position.Y)
+	// }
+	// html.WriteString(fmt.Sprintf(`<input type="number" name="widgets[%d][position][y]" min="0" value="%s" class="form-input"/>`, index, yPos))
+	// html.WriteString(`</div>`)
+	// html.WriteString(`</div>`)
+
+	// Hidden position inputs (keep default values)
+	html.WriteString(fmt.Sprintf(`<input type="hidden" name="widgets[%d][position][x]" value="0"/>`, index))
+	html.WriteString(fmt.Sprintf(`<input type="hidden" name="widgets[%d][position][y]" value="0"/>`, index))
 
 	// Configuration section
 	html.WriteString(`<div class="form-group">`)
@@ -680,6 +697,9 @@ func renderWidgetForm(index int, widget *dashboard.Widget) string {
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
+
+	// Add separator line for readability
+	html.WriteString(`<hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border); opacity: 0.5;"/>`)
 
 	return html.String()
 }

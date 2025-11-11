@@ -427,6 +427,14 @@ const docTemplate = `{
                     "dashboards"
                 ],
                 "summary": "Get all dashboards",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Show shortened dashboard names (3 chars max)",
+                        "name": "short",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -462,7 +470,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns, custom)",
+                        "description": "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)",
                         "name": "layout",
                         "in": "formData",
                         "required": true
@@ -769,7 +777,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns, custom)",
+                        "description": "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)",
                         "name": "layout",
                         "in": "formData"
                     },
