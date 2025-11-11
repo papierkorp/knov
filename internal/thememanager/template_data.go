@@ -121,6 +121,28 @@ func NewFileViewTemplateData(title, filePath string, fileContent *files.FileCont
 }
 
 // -----------------------------------------------
+// ---------- FileEdit TemplateData -------------
+// -----------------------------------------------
+
+// FileEditTemplateData extends base with file edit specific data
+type FileEditTemplateData struct {
+	BaseTemplateData
+	FilePath string
+}
+
+// NewFileEditTemplateData creates file edit specific data
+func NewFileEditTemplateData(filePath, viewName string) FileEditTemplateData {
+	title := "Edit File"
+	if filePath != "" {
+		title = "Edit: " + filePath
+	}
+	return FileEditTemplateData{
+		BaseTemplateData: NewBaseTemplateData(title, viewName),
+		FilePath:         filePath,
+	}
+}
+
+// -----------------------------------------------
 // ---------- browsefiles TemplateData ----------
 // -----------------------------------------------
 

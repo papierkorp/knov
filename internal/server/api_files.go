@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/utils"
@@ -281,4 +283,158 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 	html.WriteString("</ul>")
 
 	writeResponse(w, r, filteredFiles, html.String())
+}
+
+// @Summary Get file form
+// @Description Get file form for create or edit
+// @Tags files
+// @Param filepath query string false "File path for edit mode"
+// @Produce text/html
+// @Success 200 {string} string "file form html"
+// @Router /api/files/form [get]
+func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	var content string
+	var err error
+	isEdit := filePath != ""
+
+	if isEdit {
+		fullPath := utils.ToFullPath(filePath)
+		content, err = files.GetRawContent(fullPath)
+		if err != nil {
+			content = ""
+		}
+	}
+
+	var formAction, method string
+	if isEdit {
+		formAction = fmt.Sprintf("/api/files/save/%s", filePath)
+		method = "hx-post"
+	} else {
+		formAction = "/api/files/create"
+		method = "hx-post"
+	}
+
+	theme := "light"
+	if configmanager.GetDarkMode() {
+		theme = "dark"
+	}
+
+	var html strings.Builder
+	html.WriteString(fmt.Sprintf(`<form id="file-form" %s="%s" hx-target="#file-status" hx-swap="innerHTML" class="file-form">`, method, formAction))
+
+	// File path section (only for new files)
+	if !isEdit {
+		html.WriteString(`<div class="form-section">`)
+		html.WriteString(`<h4>file settings</h4>`)
+		html.WriteString(`<div class="form-group">`)
+		html.WriteString(`<label for="filepath">file path</label>`)
+		html.WriteString(`<input type="text" id="filepath" name="filepath" required placeholder="path/to/filename.md" class="form-input"/>`)
+		html.WriteString(`<small>enter the full path including filename and extension</small>`)
+		html.WriteString(`</div>`)
+		html.WriteString(`</div>`)
+	}
+
+	// Content section
+	html.WriteString(`<div class="form-section">`)
+	html.WriteString(`<h4>content</h4>`)
+	html.WriteString(fmt.Sprintf(`<textarea id="initial-content" style="display:none;">%s</textarea>`, content))
+	html.WriteString(`<div id="markdown-editor"></div>`)
+	html.WriteString(`</div>`)
+
+	// Form actions
+	html.WriteString(`<div class="form-actions">`)
+	submitText := "🚀 create file"
+	if isEdit {
+		submitText = "💾 save"
+	}
+	html.WriteString(fmt.Sprintf(`<button type="submit" class="btn-primary"><span>%s</span></button>`, submitText))
+
+	// Cancel link
+	cancelLink := "/"
+	if isEdit {
+		cancelLink = fmt.Sprintf("/files/%s", filePath)
+	}
+	html.WriteString(fmt.Sprintf(`<a href="%s" class="btn-secondary">cancel</a>`, cancelLink))
+	html.WriteString(`</div>`)
+	html.WriteString(`</form>`)
+	html.WriteString(`<div id="file-status"></div>`)
+
+	// JavaScript for Toast UI Editor
+	html.WriteString(fmt.Sprintf(`
+		<script>
+			(function() {
+				const initialContent = document.getElementById('initial-content').value;
+				const editor = new toastui.Editor({
+					el: document.querySelector('#markdown-editor'),
+					height: '600px',
+					initialEditType: 'markdown',
+					previewStyle: 'tab',
+					initialValue: initialContent,
+					usageStatistics: false,
+					theme: '%s'
+				});
+
+				const form = document.getElementById('file-form');
+				form.addEventListener('htmx:configRequest', function(evt) {
+					evt.detail.parameters['content'] = editor.getMarkdown();
+				});
+			})();
+		</script>
+	`, theme))
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html.String()))
+}
+
+// @Summary Create new file
+// @Description Create a new file with content
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Param filepath formData string true "File path"
+// @Param content formData string false "File content"
+// @Produce html
+// @Success 200 {string} string "file created"
+// @Router /api/files/create [post]
+func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	filePath := r.FormValue("filepath")
+	if filePath == "" {
+		http.Error(w, "filepath is required", http.StatusBadRequest)
+		return
+	}
+
+	content := r.FormValue("content")
+	fullPath := utils.ToFullPath(filePath)
+
+	// Create directory if it does not exist
+	dir := filepath.Dir(fullPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		logging.LogError("failed to create directory %s: %v", dir, err)
+		http.Error(w, "failed to create directory", http.StatusInternalServerError)
+		return
+	}
+
+	// Check if file already exists
+	if _, err := os.Stat(fullPath); err == nil {
+		http.Error(w, "file already exists", http.StatusConflict)
+		return
+	}
+
+	err := os.WriteFile(fullPath, []byte(content), 0644)
+	if err != nil {
+		logging.LogError("failed to create file %s: %v", fullPath, err)
+		http.Error(w, "failed to create file", http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("created file: %s", filePath)
+	html := fmt.Sprintf(`<div class="success-message">file created successfully! <a href="/files/%s">view file</a> | <a href="/files/edit/%s">edit file</a></div>`, filePath, filePath)
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
 }

@@ -6,7 +6,6 @@
   "views": {
     "base": [""],
     "settings": [""],
-    "fileview": ["detailed", "compact", "reader"],
     "home": [""],
     "admin": [""],
     "search": [""],
@@ -15,7 +14,9 @@
     "history": [""],
     "latestchanges": [""],
     "browsefiles": [""],
+    "fileview": ["detailed", "compact", "reader"],
     "fileedit": [""],
+    "filenew": [""],
     "dashboardview": [""],
     "dashboardedit": [""],
     "dashboardnew": [""]

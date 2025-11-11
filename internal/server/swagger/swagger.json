@@ -921,6 +921,44 @@
                 "responses": {}
             }
         },
+        "/api/files/create": {
+            "post": {
+                "description": "Create a new file with content",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Create new file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "File content",
+                        "name": "content",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "file created",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/filter": {
             "post": {
                 "consumes": [
@@ -991,6 +1029,34 @@
                             "items": {
                                 "$ref": "#/definitions/files.File"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/files/form": {
+            "get": {
+                "description": "Get file form for create or edit",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get file form",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path for edit mode",
+                        "name": "filepath",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "file form html",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }

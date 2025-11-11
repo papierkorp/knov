@@ -848,6 +848,31 @@ paths:
       summary: Get file content as html
       tags:
       - files
+  /api/files/create:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Create a new file with content
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: File content
+        in: formData
+        name: content
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: file created
+          schema:
+            type: string
+      summary: Create new file
+      tags:
+      - files
   /api/files/filter:
     post:
       consumes:
@@ -897,6 +922,24 @@ paths:
               $ref: '#/definitions/files.File'
             type: array
       summary: Filter files by metadata
+      tags:
+      - files
+  /api/files/form:
+    get:
+      description: Get file form for create or edit
+      parameters:
+      - description: File path for edit mode
+        in: query
+        name: filepath
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: file form html
+          schema:
+            type: string
+      summary: Get file form
       tags:
       - files
   /api/files/header:

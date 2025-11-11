@@ -56,6 +56,7 @@ func StartServerChi() {
 	r.Get("/overview", handleOverview)
 	r.Get("/search", handleSearchPage)
 	r.Get("/files/edit/*", handleFileEdit)
+	r.Get("/files/new", handleFileNew)
 	r.Get("/files/*", handleFileContent)
 	r.Get("/dashboard", handleDashboardView)
 	r.Get("/dashboard/{id}", handleDashboardView)
@@ -131,6 +132,8 @@ func StartServerChi() {
 			r.Get("/raw", handleAPIGetRawContent)
 			r.Post("/save/*", handleAPIFileSave)
 			r.Get("/browse", handleAPIBrowseFiles)
+			r.Get("/form", handleAPIFileForm)
+			r.Post("/create", handleAPIFileCreate)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -528,22 +531,27 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleFileEdit(w http.ResponseWriter, r *http.Request) {
-	// filePath := strings.TrimPrefix(r.URL.Path, "/files/edit/")
-	// fullPath := utils.ToFullPath(filePath)
-	//
-	// content, err := files.GetRawContent(fullPath)
-	// if err != nil {
-	// 	content = ""
-	// }
+	filePath := strings.TrimPrefix(r.URL.Path, "/files/edit/")
 
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("fileedit")
-	data := thememanager.NewBaseTemplateData("fileedit", viewName)
+	data := thememanager.NewFileEditTemplateData(filePath, viewName)
 
 	err := tm.Render(w, "fileedit", data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
 	}
+}
 
+func handleFileNew(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	viewName := getViewName("filenew")
+	data := thememanager.NewBaseTemplateData("Create New File", viewName)
+
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
 }
