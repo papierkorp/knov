@@ -2,8 +2,13 @@
     "language": "de",
     "messages": [
         {
-            "id": "Add Criteria",
-            "message": "Add Criteria",
+            "id": "action",
+            "message": "action",
+            "translation": ""
+        },
+        {
+            "id": "+ add criteria",
+            "message": "+ add criteria",
             "translation": ""
         },
         {
@@ -20,11 +25,6 @@
             "id": "Add Todo",
             "message": "Add Todo",
             "translation": "Neues Todo erstellen"
-        },
-        {
-            "id": "Add Widget",
-            "message": "Add Widget",
-            "translation": "Widget hinzufügen"
         },
         {
             "id": "Admin",
@@ -77,16 +77,6 @@
             "translation": "Abbrechen"
         },
         {
-            "id": "Cards",
-            "message": "Cards",
-            "translation": ""
-        },
-        {
-            "id": "Choose type...",
-            "message": "Choose type...",
-            "translation": ""
-        },
-        {
             "id": "Clean Test Data",
             "message": "Clean Test Data",
             "translation": ""
@@ -102,13 +92,8 @@
             "translation": ""
         },
         {
-            "id": "Configuration",
-            "message": "Configuration",
-            "translation": ""
-        },
-        {
-            "id": "Configuration will be generated based on your selections above",
-            "message": "Configuration will be generated based on your selections above",
+            "id": "configuration",
+            "message": "configuration",
             "translation": ""
         },
         {
@@ -117,8 +102,8 @@
             "translation": ""
         },
         {
-            "id": "Content",
-            "message": "Content",
+            "id": "content",
+            "message": "content",
             "translation": ""
         },
         {
@@ -127,9 +112,9 @@
             "translation": "Neue Datei erstellen"
         },
         {
-            "id": "Create Dashboard",
-            "message": "Create Dashboard",
-            "translation": "Dashboard erstellen"
+            "id": "create dashboard",
+            "message": "create dashboard",
+            "translation": ""
         },
         {
             "id": "Created Date",
@@ -147,39 +132,39 @@
             "translation": "Neues Dashboard erstellen"
         },
         {
-            "id": "Custom CSS",
-            "message": "Custom CSS",
-            "translation": ""
-        },
-        {
-            "id": "Dark Mode",
-            "message": "Dark Mode",
-            "translation": "Dunkler Modus"
-        },
-        {
             "id": "Dashboard",
             "message": "Dashboard",
             "translation": ""
         },
         {
-            "id": "Dashboard Name",
-            "message": "Dashboard Name",
+            "id": "dashboard created",
+            "message": "dashboard created",
             "translation": ""
         },
         {
-            "id": "Dashboard Settings",
-            "message": "Dashboard Settings",
+            "id": "dashboard deleted",
+            "message": "dashboard deleted",
+            "translation": ""
+        },
+        {
+            "id": "dashboard name",
+            "message": "dashboard name",
+            "translation": ""
+        },
+        {
+            "id": "dashboard settings",
+            "message": "dashboard settings",
+            "translation": ""
+        },
+        {
+            "id": "dashboard updated successfully!",
+            "message": "dashboard updated successfully!",
             "translation": ""
         },
         {
             "id": "Data Path",
             "message": "Data Path",
             "translation": ""
-        },
-        {
-            "id": "Data Path:",
-            "message": "Data Path:",
-            "translation": "Dateipfad:"
         },
         {
             "id": "Data Path Configuration",
@@ -197,18 +182,13 @@
             "translation": ""
         },
         {
-            "id": "Display",
-            "message": "Display",
+            "id": "display",
+            "message": "display",
             "translation": ""
         },
         {
-            "id": "Display \u0026 Limits",
-            "message": "Display \u0026 Limits",
-            "translation": ""
-        },
-        {
-            "id": "Dropdown",
-            "message": "Dropdown",
+            "id": "display settings",
+            "message": "display settings",
             "translation": ""
         },
         {
@@ -232,14 +212,9 @@
             "translation": "Suchtext eingeben"
         },
         {
-            "id": "Enter the path to the markdown file you want to display",
-            "message": "Enter the path to the markdown file you want to display",
+            "id": "enter widget title",
+            "message": "enter widget title",
             "translation": ""
-        },
-        {
-            "id": "Enter your content here...",
-            "message": "Enter your content here...",
-            "translation": "Hier inhalt einfügen..."
         },
         {
             "id": "Equals",
@@ -257,13 +232,18 @@
             "translation": ""
         },
         {
-            "id": "File Content",
-            "message": "File Content",
+            "id": "field",
+            "message": "field",
             "translation": ""
         },
         {
-            "id": "File Content Configuration",
-            "message": "File Content Configuration",
+            "id": "file",
+            "message": "file",
+            "translation": ""
+        },
+        {
+            "id": "file content configuration",
+            "message": "file content configuration",
             "translation": ""
         },
         {
@@ -274,11 +254,6 @@
         {
             "id": "file path",
             "message": "file path",
-            "translation": "Dateipfad"
-        },
-        {
-            "id": "File Path",
-            "message": "File Path",
             "translation": "Dateipfad"
         },
         {
@@ -297,18 +272,13 @@
             "translation": ""
         },
         {
-            "id": "Filter",
-            "message": "Filter",
+            "id": "filter configuration",
+            "message": "filter configuration",
             "translation": ""
         },
         {
-            "id": "Filter Configuration",
-            "message": "Filter Configuration",
-            "translation": ""
-        },
-        {
-            "id": "Filter Criteria",
-            "message": "Filter Criteria",
+            "id": "filter criteria",
+            "message": "filter criteria",
             "translation": ""
         },
         {
@@ -317,24 +287,14 @@
             "translation": ""
         },
         {
-            "id": "Filter Form",
-            "message": "Filter Form",
-            "translation": ""
-        },
-        {
             "id": "Folders",
             "message": "Folders",
             "translation": "Ordner"
         },
         {
-            "id": "Format",
-            "message": "Format",
+            "id": "format",
+            "message": "format",
             "translation": ""
-        },
-        {
-            "id": "Four Columns",
-            "message": "Four Columns",
-            "translation": "4 Reihen"
         },
         {
             "id": "General Settings",
@@ -347,18 +307,18 @@
             "translation": ""
         },
         {
-            "id": "Git Settings",
-            "message": "Git Settings",
-            "translation": "Git Einstellungen"
-        },
-        {
-            "id": "Global Dashboard",
-            "message": "Global Dashboard",
+            "id": "global dashboard",
+            "message": "global dashboard",
             "translation": ""
         },
         {
             "id": "Greater Than",
             "message": "Greater Than",
+            "translation": ""
+        },
+        {
+            "id": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
+            "message": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
             "translation": ""
         },
         {
@@ -407,8 +367,8 @@
             "translation": "Letzte Änderungen"
         },
         {
-            "id": "Layout",
-            "message": "Layout",
+            "id": "layout",
+            "message": "layout",
             "translation": ""
         },
         {
@@ -422,13 +382,8 @@
             "translation": ""
         },
         {
-            "id": "Limit",
-            "message": "Limit",
-            "translation": ""
-        },
-        {
-            "id": "List",
-            "message": "List",
+            "id": "limit",
+            "message": "limit",
             "translation": ""
         },
         {
@@ -439,6 +394,11 @@
         {
             "id": "loading collections...",
             "message": "loading collections...",
+            "translation": ""
+        },
+        {
+            "id": "loading files...",
+            "message": "loading files...",
             "translation": ""
         },
         {
@@ -457,11 +417,6 @@
             "translation": ""
         },
         {
-            "id": "Loading results for",
-            "message": "Loading results for",
-            "translation": ""
-        },
-        {
             "id": "loading tags...",
             "message": "loading tags...",
             "translation": ""
@@ -472,13 +427,8 @@
             "translation": ""
         },
         {
-            "id": "Logic",
-            "message": "Logic",
-            "translation": ""
-        },
-        {
-            "id": "Metadata",
-            "message": "Metadata",
+            "id": "logic",
+            "message": "logic",
             "translation": ""
         },
         {
@@ -487,18 +437,13 @@
             "translation": ""
         },
         {
-            "id": "My Awesome Dashboard",
-            "message": "My Awesome Dashboard",
-            "translation": ""
-        },
-        {
             "id": "New Dashboard",
             "message": "New Dashboard",
             "translation": "Neues Dashboard"
         },
         {
-            "id": "No configuration needed",
-            "message": "No configuration needed",
+            "id": "no configuration needed",
+            "message": "no configuration needed",
             "translation": ""
         },
         {
@@ -512,9 +457,9 @@
             "translation": ""
         },
         {
-            "id": "One Column",
-            "message": "One Column",
-            "translation": "1 Reihe"
+            "id": "operator",
+            "message": "operator",
+            "translation": ""
         },
         {
             "id": "optional",
@@ -537,11 +482,6 @@
             "translation": "ÜBERSICHT"
         },
         {
-            "id": "Paths",
-            "message": "Paths",
-            "translation": "Pfade"
-        },
-        {
             "id": "path/to/filename.md",
             "message": "path/to/filename.md",
             "translation": ""
@@ -549,11 +489,6 @@
         {
             "id": "Path to your data storage relative from the executable",
             "message": "Path to your data storage relative from the executable",
-            "translation": ""
-        },
-        {
-            "id": "Plain Text",
-            "message": "Plain Text",
             "translation": ""
         },
         {
@@ -592,24 +527,14 @@
             "translation": ""
         },
         {
+            "id": "remove",
+            "message": "remove",
+            "translation": "entfernen"
+        },
+        {
             "id": "Rename",
             "message": "Rename",
             "translation": "Umbenennen"
-        },
-        {
-            "id": "Repository URL:",
-            "message": "Repository URL:",
-            "translation": ""
-        },
-        {
-            "id": "Restart Application",
-            "message": "Restart Application",
-            "translation": ""
-        },
-        {
-            "id": "restart required for changes to take effect",
-            "message": "restart required for changes to take effect",
-            "translation": ""
         },
         {
             "id": "Restart System",
@@ -627,19 +552,14 @@
             "translation": "speichern"
         },
         {
-            "id": "Save Changes",
-            "message": "Save Changes",
-            "translation": "Änderungen sichern"
+            "id": "save changes",
+            "message": "save changes",
+            "translation": ""
         },
         {
             "id": "scanning .gohtml template files...",
             "message": "scanning .gohtml template files...",
             "translation": ""
-        },
-        {
-            "id": "Search",
-            "message": "Search",
-            "translation": "Suche"
         },
         {
             "id": "Search..",
@@ -657,28 +577,13 @@
             "translation": "Suchergebnisse"
         },
         {
-            "id": "Select a widget type to see configuration options",
-            "message": "Select a widget type to see configuration options",
+            "id": "select a widget type to see configuration options",
+            "message": "select a widget type to see configuration options",
             "translation": ""
         },
         {
-            "id": "Select field...",
-            "message": "Select field...",
-            "translation": ""
-        },
-        {
-            "id": "Select Language:",
-            "message": "Select Language:",
-            "translation": "Spache auswählen:"
-        },
-        {
-            "id": "Select Theme:",
-            "message": "Select Theme:",
-            "translation": "Theme auswählen:"
-        },
-        {
-            "id": "Select widget type for configuration template",
-            "message": "Select widget type for configuration template",
+            "id": "select the file you want to display",
+            "message": "select the file you want to display",
             "translation": ""
         },
         {
@@ -717,13 +622,8 @@
             "translation": ""
         },
         {
-            "id": "Static Content",
-            "message": "Static Content",
-            "translation": ""
-        },
-        {
-            "id": "Static Content Configuration",
-            "message": "Static Content Configuration",
+            "id": "static content configuration",
+            "message": "static content configuration",
             "translation": ""
         },
         {
@@ -734,11 +634,6 @@
         {
             "id": "Swagger",
             "message": "Swagger",
-            "translation": ""
-        },
-        {
-            "id": "System",
-            "message": "System",
             "translation": ""
         },
         {
@@ -772,14 +667,14 @@
             "translation": "Theme Einstellungen"
         },
         {
-            "id": "Three Columns",
-            "message": "Three Columns",
-            "translation": "3 Reihen"
+            "id": "title",
+            "message": "title",
+            "translation": ""
         },
         {
-            "id": "Two Columns",
-            "message": "Two Columns",
-            "translation": "2 Reihen"
+            "id": "type",
+            "message": "type",
+            "translation": ""
         },
         {
             "id": "Type",
@@ -792,8 +687,18 @@
             "translation": ""
         },
         {
+            "id": "value",
+            "message": "value",
+            "translation": ""
+        },
+        {
             "id": "Value",
             "message": "Value",
+            "translation": ""
+        },
+        {
+            "id": "view dashboard",
+            "message": "view dashboard",
             "translation": ""
         },
         {
@@ -802,8 +707,8 @@
             "translation": ""
         },
         {
-            "id": "Visible to all users",
-            "message": "Visible to all users",
+            "id": "visible to all users",
+            "message": "visible to all users",
             "translation": ""
         },
         {
@@ -812,23 +717,8 @@
             "translation": ""
         },
         {
-            "id": "Widget",
-            "message": "Widget",
-            "translation": ""
-        },
-        {
-            "id": "Widgets",
-            "message": "Widgets",
-            "translation": ""
-        },
-        {
-            "id": "X Position",
-            "message": "X Position",
-            "translation": ""
-        },
-        {
-            "id": "Y Position",
-            "message": "Y Position",
+            "id": "widgets",
+            "message": "widgets",
             "translation": ""
         }
     ]

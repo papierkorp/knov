@@ -2,9 +2,14 @@
   "language": "en",
   "messages": [
     {
-      "id": "Add Criteria",
-      "message": "Add Criteria",
-      "translation": "Add Criteria"
+      "id": "action",
+      "message": "action",
+      "translation": ""
+    },
+    {
+      "id": "+ add criteria",
+      "message": "+ add criteria",
+      "translation": ""
     },
     {
       "id": "Add Filter",
@@ -20,11 +25,6 @@
       "id": "Add Todo",
       "message": "Add Todo",
       "translation": ""
-    },
-    {
-      "id": "Add Widget",
-      "message": "Add Widget",
-      "translation": "Add Widget"
     },
     {
       "id": "Admin",
@@ -77,16 +77,6 @@
       "translation": "Cancel"
     },
     {
-      "id": "Cards",
-      "message": "Cards",
-      "translation": "Cards"
-    },
-    {
-      "id": "Choose type...",
-      "message": "Choose type...",
-      "translation": "Choose type..."
-    },
-    {
       "id": "Clean Test Data",
       "message": "Clean Test Data",
       "translation": ""
@@ -102,14 +92,9 @@
       "translation": "Collections"
     },
     {
-      "id": "Configuration",
-      "message": "Configuration",
-      "translation": "Configuration"
-    },
-    {
-      "id": "Configuration will be generated based on your selections above",
-      "message": "Configuration will be generated based on your selections above",
-      "translation": "Configuration will be generated based on your selections above"
+      "id": "configuration",
+      "message": "configuration",
+      "translation": ""
     },
     {
       "id": "Contains",
@@ -117,9 +102,9 @@
       "translation": "Contains"
     },
     {
-      "id": "Content",
-      "message": "Content",
-      "translation": "Content"
+      "id": "content",
+      "message": "content",
+      "translation": ""
     },
     {
       "id": "Create a New File",
@@ -127,9 +112,9 @@
       "translation": ""
     },
     {
-      "id": "Create Dashboard",
-      "message": "Create Dashboard",
-      "translation": "Create Dashboard"
+      "id": "create dashboard",
+      "message": "create dashboard",
+      "translation": ""
     },
     {
       "id": "Created Date",
@@ -147,39 +132,39 @@
       "translation": "Create New Dashboard"
     },
     {
-      "id": "Custom CSS",
-      "message": "Custom CSS",
-      "translation": "Custom CSS"
-    },
-    {
-      "id": "Dark Mode",
-      "message": "Dark Mode",
-      "translation": "Dark Mode"
-    },
-    {
       "id": "Dashboard",
       "message": "Dashboard",
       "translation": ""
     },
     {
-      "id": "Dashboard Name",
-      "message": "Dashboard Name",
-      "translation": "Dashboard Name"
+      "id": "dashboard created",
+      "message": "dashboard created",
+      "translation": ""
     },
     {
-      "id": "Dashboard Settings",
-      "message": "Dashboard Settings",
-      "translation": "Dashboard Settings"
+      "id": "dashboard deleted",
+      "message": "dashboard deleted",
+      "translation": ""
+    },
+    {
+      "id": "dashboard name",
+      "message": "dashboard name",
+      "translation": ""
+    },
+    {
+      "id": "dashboard settings",
+      "message": "dashboard settings",
+      "translation": ""
+    },
+    {
+      "id": "dashboard updated successfully!",
+      "message": "dashboard updated successfully!",
+      "translation": ""
     },
     {
       "id": "Data Path",
       "message": "Data Path",
       "translation": ""
-    },
-    {
-      "id": "Data Path:",
-      "message": "Data Path:",
-      "translation": "Data Path:"
     },
     {
       "id": "Data Path Configuration",
@@ -197,19 +182,14 @@
       "translation": "Design your custom dashboard with widgets"
     },
     {
-      "id": "Display",
-      "message": "Display",
-      "translation": "Display"
+      "id": "display",
+      "message": "display",
+      "translation": ""
     },
     {
-      "id": "Display & Limits",
-      "message": "Display & Limits",
-      "translation": "Display & Limits"
-    },
-    {
-      "id": "Dropdown",
-      "message": "Dropdown",
-      "translation": "Dropdown"
+      "id": "display settings",
+      "message": "display settings",
+      "translation": ""
     },
     {
       "id": "Edit",
@@ -232,14 +212,9 @@
       "translation": "Enter a search term"
     },
     {
-      "id": "Enter the path to the markdown file you want to display",
-      "message": "Enter the path to the markdown file you want to display",
-      "translation": "Enter the path to the markdown file you want to display"
-    },
-    {
-      "id": "Enter your content here...",
-      "message": "Enter your content here...",
-      "translation": "Enter your content here..."
+      "id": "enter widget title",
+      "message": "enter widget title",
+      "translation": ""
     },
     {
       "id": "Equals",
@@ -257,14 +232,19 @@
       "translation": "Exclude"
     },
     {
-      "id": "File Content",
-      "message": "File Content",
-      "translation": "File Content"
+      "id": "field",
+      "message": "field",
+      "translation": ""
     },
     {
-      "id": "File Content Configuration",
-      "message": "File Content Configuration",
-      "translation": "File Content Configuration"
+      "id": "file",
+      "message": "file",
+      "translation": ""
+    },
+    {
+      "id": "file content configuration",
+      "message": "file content configuration",
+      "translation": ""
     },
     {
       "id": "file created successfully!",
@@ -275,11 +255,6 @@
       "id": "file path",
       "message": "file path",
       "translation": ""
-    },
-    {
-      "id": "File Path",
-      "message": "File Path",
-      "translation": "File Path"
     },
     {
       "id": "File path not provided",
@@ -297,19 +272,14 @@
       "translation": "Files with"
     },
     {
-      "id": "Filter",
-      "message": "Filter",
-      "translation": "Filter"
+      "id": "filter configuration",
+      "message": "filter configuration",
+      "translation": ""
     },
     {
-      "id": "Filter Configuration",
-      "message": "Filter Configuration",
-      "translation": "Filter Configuration"
-    },
-    {
-      "id": "Filter Criteria",
-      "message": "Filter Criteria",
-      "translation": "Filter Criteria"
+      "id": "filter criteria",
+      "message": "filter criteria",
+      "translation": ""
     },
     {
       "id": "Filtered results will appear here",
@@ -317,24 +287,14 @@
       "translation": "Filtered results will appear here"
     },
     {
-      "id": "Filter Form",
-      "message": "Filter Form",
-      "translation": "Filter Form"
-    },
-    {
       "id": "Folders",
       "message": "Folders",
       "translation": "Folders"
     },
     {
-      "id": "Format",
-      "message": "Format",
-      "translation": "Format"
-    },
-    {
-      "id": "Four Columns",
-      "message": "Four Columns",
-      "translation": "Four Columns"
+      "id": "format",
+      "message": "format",
+      "translation": ""
     },
     {
       "id": "General Settings",
@@ -347,19 +307,19 @@
       "translation": ""
     },
     {
-      "id": "Git Settings",
-      "message": "Git Settings",
-      "translation": "Git Settings"
-    },
-    {
-      "id": "Global Dashboard",
-      "message": "Global Dashboard",
-      "translation": "Global Dashboard"
+      "id": "global dashboard",
+      "message": "global dashboard",
+      "translation": ""
     },
     {
       "id": "Greater Than",
       "message": "Greater Than",
       "translation": "Greater Than"
+    },
+    {
+      "id": "<h3>welcome!</h3><p>your static content here</p>",
+      "message": "<h3>welcome!</h3><p>your static content here</p>",
+      "translation": ""
     },
     {
       "id": "Hello World from templ at History in the dark!",
@@ -407,9 +367,9 @@
       "translation": "Latest Changes"
     },
     {
-      "id": "Layout",
-      "message": "Layout",
-      "translation": "Layout"
+      "id": "layout",
+      "message": "layout",
+      "translation": ""
     },
     {
       "id": "Leave empty for local git repository only",
@@ -422,14 +382,9 @@
       "translation": "Less Than"
     },
     {
-      "id": "Limit",
-      "message": "Limit",
-      "translation": "Limit"
-    },
-    {
-      "id": "List",
-      "message": "List",
-      "translation": "List"
+      "id": "limit",
+      "message": "limit",
+      "translation": ""
     },
     {
       "id": "Loading...",
@@ -439,6 +394,11 @@
     {
       "id": "loading collections...",
       "message": "loading collections...",
+      "translation": ""
+    },
+    {
+      "id": "loading files...",
+      "message": "loading files...",
       "translation": ""
     },
     {
@@ -457,11 +417,6 @@
       "translation": ""
     },
     {
-      "id": "Loading results for",
-      "message": "Loading results for",
-      "translation": "Loading results for"
-    },
-    {
       "id": "loading tags...",
       "message": "loading tags...",
       "translation": ""
@@ -472,14 +427,9 @@
       "translation": "loading widget..."
     },
     {
-      "id": "Logic",
-      "message": "Logic",
-      "translation": "Logic"
-    },
-    {
-      "id": "Metadata",
-      "message": "Metadata",
-      "translation": "Metadata"
+      "id": "logic",
+      "message": "logic",
+      "translation": ""
     },
     {
       "id": "Metadata Filter",
@@ -487,19 +437,14 @@
       "translation": "Metadata Filter"
     },
     {
-      "id": "My Awesome Dashboard",
-      "message": "My Awesome Dashboard",
-      "translation": "My Awesome Dashboard"
-    },
-    {
       "id": "New Dashboard",
       "message": "New Dashboard",
       "translation": "New Dashboard"
     },
     {
-      "id": "No configuration needed",
-      "message": "No configuration needed",
-      "translation": "No configuration needed"
+      "id": "no configuration needed",
+      "message": "no configuration needed",
+      "translation": ""
     },
     {
       "id": "No dashboard found",
@@ -512,9 +457,9 @@
       "translation": "No widgets configured"
     },
     {
-      "id": "One Column",
-      "message": "One Column",
-      "translation": "One Column"
+      "id": "operator",
+      "message": "operator",
+      "translation": ""
     },
     {
       "id": "optional",
@@ -537,11 +482,6 @@
       "translation": "OVERVIEW"
     },
     {
-      "id": "Paths",
-      "message": "Paths",
-      "translation": "Paths"
-    },
-    {
       "id": "path/to/filename.md",
       "message": "path/to/filename.md",
       "translation": ""
@@ -550,11 +490,6 @@
       "id": "Path to your data storage relative from the executable",
       "message": "Path to your data storage relative from the executable",
       "translation": ""
-    },
-    {
-      "id": "Plain Text",
-      "message": "Plain Text",
-      "translation": "Plain Text"
     },
     {
       "id": "Playground",
@@ -592,24 +527,14 @@
       "translation": ""
     },
     {
+      "id": "remove",
+      "message": "remove",
+      "translation": ""
+    },
+    {
       "id": "Rename",
       "message": "Rename",
       "translation": "Rename"
-    },
-    {
-      "id": "Repository URL:",
-      "message": "Repository URL:",
-      "translation": "Repository URL:"
-    },
-    {
-      "id": "Restart Application",
-      "message": "Restart Application",
-      "translation": "Restart Application"
-    },
-    {
-      "id": "restart required for changes to take effect",
-      "message": "restart required for changes to take effect",
-      "translation": "restart required for changes to take effect"
     },
     {
       "id": "Restart System",
@@ -627,19 +552,14 @@
       "translation": ""
     },
     {
-      "id": "Save Changes",
-      "message": "Save Changes",
-      "translation": "Save Changes"
+      "id": "save changes",
+      "message": "save changes",
+      "translation": ""
     },
     {
       "id": "scanning .gohtml template files...",
       "message": "scanning .gohtml template files...",
       "translation": ""
-    },
-    {
-      "id": "Search",
-      "message": "Search",
-      "translation": "Search"
     },
     {
       "id": "Search..",
@@ -657,29 +577,14 @@
       "translation": "Search Results"
     },
     {
-      "id": "Select a widget type to see configuration options",
-      "message": "Select a widget type to see configuration options",
-      "translation": "Select a widget type to see configuration options"
+      "id": "select a widget type to see configuration options",
+      "message": "select a widget type to see configuration options",
+      "translation": ""
     },
     {
-      "id": "Select field...",
-      "message": "Select field...",
-      "translation": "Select field..."
-    },
-    {
-      "id": "Select Language:",
-      "message": "Select Language:",
-      "translation": "Select Language:"
-    },
-    {
-      "id": "Select Theme:",
-      "message": "Select Theme:",
-      "translation": "Select Theme:"
-    },
-    {
-      "id": "Select widget type for configuration template",
-      "message": "Select widget type for configuration template",
-      "translation": "Select widget type for configuration template"
+      "id": "select the file you want to display",
+      "message": "select the file you want to display",
+      "translation": ""
     },
     {
       "id": "Set Data Path",
@@ -717,14 +622,9 @@
       "translation": ""
     },
     {
-      "id": "Static Content",
-      "message": "Static Content",
-      "translation": "Static Content"
-    },
-    {
-      "id": "Static Content Configuration",
-      "message": "Static Content Configuration",
-      "translation": "Static Content Configuration"
+      "id": "static content configuration",
+      "message": "static content configuration",
+      "translation": ""
     },
     {
       "id": "Status",
@@ -735,11 +635,6 @@
       "id": "Swagger",
       "message": "Swagger",
       "translation": ""
-    },
-    {
-      "id": "System",
-      "message": "System",
-      "translation": "System"
     },
     {
       "id": "System Actions",
@@ -772,14 +667,14 @@
       "translation": "Theme Settings"
     },
     {
-      "id": "Three Columns",
-      "message": "Three Columns",
-      "translation": "Three Columns"
+      "id": "title",
+      "message": "title",
+      "translation": ""
     },
     {
-      "id": "Two Columns",
-      "message": "Two Columns",
-      "translation": "Two Columns"
+      "id": "type",
+      "message": "type",
+      "translation": ""
     },
     {
       "id": "Type",
@@ -792,9 +687,19 @@
       "translation": "Update your dashboard configuration"
     },
     {
+      "id": "value",
+      "message": "value",
+      "translation": ""
+    },
+    {
       "id": "Value",
       "message": "Value",
       "translation": "Value"
+    },
+    {
+      "id": "view dashboard",
+      "message": "view dashboard",
+      "translation": ""
     },
     {
       "id": "view file",
@@ -802,9 +707,9 @@
       "translation": ""
     },
     {
-      "id": "Visible to all users",
-      "message": "Visible to all users",
-      "translation": "Visible to all users"
+      "id": "visible to all users",
+      "message": "visible to all users",
+      "translation": ""
     },
     {
       "id": "WARNING - This will remove all files in the Data Folder!!.",
@@ -812,24 +717,9 @@
       "translation": ""
     },
     {
-      "id": "Widget",
-      "message": "Widget",
-      "translation": "Widget"
-    },
-    {
-      "id": "Widgets",
-      "message": "Widgets",
-      "translation": "Widgets"
-    },
-    {
-      "id": "X Position",
-      "message": "X Position",
-      "translation": "X Position"
-    },
-    {
-      "id": "Y Position",
-      "message": "Y Position",
-      "translation": "Y Position"
+      "id": "widgets",
+      "message": "widgets",
+      "translation": ""
     }
   ]
 }

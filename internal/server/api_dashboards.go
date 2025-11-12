@@ -8,9 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"knov/internal/configmanager"
 	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/translation"
 )
 
 // @Summary Get all dashboards
@@ -230,7 +232,7 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := "dashboard created"
+	data := translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard created")
 	html := fmt.Sprintf(`<div class="success-message">dashboard created successfully! <a href="/dashboard/%s">view dashboard</a></div>`, dash.ID)
 	writeResponse(w, r, data, html)
 }
@@ -316,7 +318,10 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<div class="success-message">dashboard updated successfully! <a href="/dashboard/%s">view dashboard</a></div>`, dash.ID)
+	html := fmt.Sprintf(`<div class="success-message">%s <a href="/dashboard/%s">%s</a></div>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard updated successfully!"),
+		dash.ID,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "view dashboard"))
 	writeResponse(w, r, dash, html)
 }
 
@@ -365,8 +370,8 @@ func handleAPIDeleteDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := "dashboard deleted"
-	html := `<div>dashboard deleted</div>`
+	data := translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard deleted")
+	html := fmt.Sprintf(`<div>%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard deleted"))
 	writeResponse(w, r, data, html)
 }
 
@@ -507,9 +512,9 @@ func handleAPIDashboardForm(w http.ResponseWriter, r *http.Request) {
 
 	// Dashboard Settings Section
 	html.WriteString(`<div class="form-section">`)
-	html.WriteString(`<h4>dashboard settings</h4>`)
+	html.WriteString(fmt.Sprintf(`<h4>%s</h4>`, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard settings")))
 	html.WriteString(`<div class="form-group">`)
-	html.WriteString(`<label for="name">dashboard name</label>`)
+	html.WriteString(fmt.Sprintf(`<label for="name">%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard name")))
 
 	nameValue := ""
 	if dash != nil {
@@ -521,22 +526,21 @@ func handleAPIDashboardForm(w http.ResponseWriter, r *http.Request) {
 	// Layout and global checkbox
 	html.WriteString(`<div class="form-row">`)
 	html.WriteString(`<div class="form-group">`)
-	html.WriteString(`<label for="layout">layout</label>`)
+	html.WriteString(fmt.Sprintf(`<label for="layout">%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "layout")))
 	html.WriteString(`<select id="layout" name="layout" required class="form-select">`)
 
 	layoutOptions := []string{"oneColumn", "twoColumns", "threeColumns", "fourColumns"}
-	layoutIcons := []string{"📋", "📊", "🎯", "🎨"}
 	selectedLayout := "twoColumns"
 	if dash != nil {
 		selectedLayout = string(dash.Layout)
 	}
 
-	for i, layout := range layoutOptions {
+	for _, layout := range layoutOptions {
 		selected := ""
 		if layout == selectedLayout {
 			selected = "selected"
 		}
-		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s %s</option>`, layout, selected, layoutIcons[i], layout))
+		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, layout, selected, layout))
 	}
 	html.WriteString(`</select>`)
 	html.WriteString(`</div>`)
@@ -550,8 +554,8 @@ func handleAPIDashboardForm(w http.ResponseWriter, r *http.Request) {
 	}
 	html.WriteString(fmt.Sprintf(`<input type="checkbox" name="global" value="true" %s class="form-checkbox"/>`, globalChecked))
 	html.WriteString(`<span class="checkmark"></span>`)
-	html.WriteString(`global dashboard`)
-	html.WriteString(`<small>visible to all users</small>`)
+	html.WriteString(translation.SprintfForRequest(configmanager.GetLanguage(), "global dashboard"))
+	html.WriteString(fmt.Sprintf(`<small>%s</small>`, translation.SprintfForRequest(configmanager.GetLanguage(), "visible to all users")))
 	html.WriteString(`</label>`)
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
@@ -560,7 +564,7 @@ func handleAPIDashboardForm(w http.ResponseWriter, r *http.Request) {
 	// Widgets Section
 	html.WriteString(`<div class="form-section">`)
 	html.WriteString(`<div class="section-header">`)
-	html.WriteString(`<h4>widgets</h4>`)
+	html.WriteString(fmt.Sprintf(`<h4>%s</h4>`, translation.SprintfForRequest(configmanager.GetLanguage(), "widgets")))
 	html.WriteString(`<button type="button" hx-post="/api/dashboards/widget-form" hx-target="#widgets-container" hx-swap="beforeend">+ add widget</button>`)
 	html.WriteString(`</div>`)
 	html.WriteString(`<div id="widgets-container">`)
@@ -580,9 +584,9 @@ func handleAPIDashboardForm(w http.ResponseWriter, r *http.Request) {
 
 	// Form actions
 	html.WriteString(`<div class="form-actions">`)
-	submitText := "🚀 create dashboard"
+	submitText := translation.SprintfForRequest(configmanager.GetLanguage(), "create dashboard")
 	if isEdit {
-		submitText = "💾 save changes"
+		submitText = translation.SprintfForRequest(configmanager.GetLanguage(), "save changes")
 	}
 	html.WriteString(fmt.Sprintf(`<button type="submit" class="btn-primary"><span>%s</span></button>`, submitText))
 	html.WriteString(`</div>`)
@@ -619,41 +623,40 @@ func renderWidgetForm(index int, widget *dashboard.Widget) string {
 	html.WriteString(`<div class="widget-header">`)
 	html.WriteString(fmt.Sprintf(`<span class="widget-number">widget %d</span>`, index+1))
 	if index > 0 {
-		html.WriteString(`<button type="button" onclick="this.closest('.widget-form').remove()" class="btn-remove">×</button>`)
+		html.WriteString(fmt.Sprintf(`<button type="button" onclick="this.closest('.widget-form').remove()" class="btn-remove">%s</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "remove")))
 	}
 	html.WriteString(`</div>`)
 
 	// Title field
 	html.WriteString(`<div class="form-group">`)
-	html.WriteString(`<label>title</label>`)
+	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "title")))
 	titleValue := ""
 	if widget != nil {
 		titleValue = widget.Title
 	}
-	html.WriteString(fmt.Sprintf(`<input type="text" name="widgets[%d][title]" value="%s" placeholder="enter widget title" class="form-input"/>`, index, titleValue))
+	html.WriteString(fmt.Sprintf(`<input type="text" name="widgets[%d][title]" value="%s" placeholder="%s" class="form-input"/>`, index, titleValue, translation.SprintfForRequest(configmanager.GetLanguage(), "enter widget title")))
 	html.WriteString(`</div>`)
 
 	// Widget type selector
 	html.WriteString(`<div class="form-row">`)
 	html.WriteString(`<div class="form-group">`)
-	html.WriteString(`<label>type</label>`)
+	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "type")))
 	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][type]" required class="form-select" hx-post="/api/dashboards/widget-config" hx-target="#config-helper-%d" hx-include="closest .widget-form" hx-vals='{"index": "%d"}' hx-trigger="change">`, index, index, index))
 	html.WriteString(`<option value="">choose type...</option>`)
 
 	widgetTypes := []string{"filter", "filterForm", "fileContent", "static", "tags", "collections", "folders"}
-	widgetIcons := []string{"🔍", "📝", "📄", "📌", "🏷️", "📚", "📁"}
 
 	selectedType := ""
 	if widget != nil {
 		selectedType = string(widget.Type)
 	}
 
-	for i, wType := range widgetTypes {
+	for _, wType := range widgetTypes {
 		selected := ""
 		if wType == selectedType {
 			selected = "selected"
 		}
-		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s %s</option>`, wType, selected, widgetIcons[i], wType))
+		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, wType, selected, wType))
 	}
 	html.WriteString(`</select>`)
 	html.WriteString(`</div>`)
@@ -685,13 +688,13 @@ func renderWidgetForm(index int, widget *dashboard.Widget) string {
 
 	// Configuration section
 	html.WriteString(`<div class="form-group">`)
-	html.WriteString(`<label>configuration</label>`)
+	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "configuration")))
 	html.WriteString(fmt.Sprintf(`<div class="config-helper" id="config-helper-%d">`, index))
 
 	if widget != nil && widget.Type != "" {
 		html.WriteString(renderWidgetConfig(index, string(widget.Type), &widget.Config))
 	} else {
-		html.WriteString(`<div class="config-placeholder"><p>select a widget type to see configuration options</p></div>`)
+		html.WriteString(fmt.Sprintf(`<div class="config-placeholder"><p>%s</p></div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "select a widget type to see configuration options")))
 	}
 
 	html.WriteString(`</div>`)
@@ -729,7 +732,7 @@ func handleAPIWidgetConfig(w http.ResponseWriter, r *http.Request) {
 	widgetType := r.FormValue(fmt.Sprintf("widgets[%d][type]", index))
 	if widgetType == "" {
 		// Empty type, show placeholder
-		html := `<div class="config-placeholder"><p>select a widget type to see configuration options</p></div>`
+		html := fmt.Sprintf(`<div class="config-placeholder"><p>%s</p></div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "select a widget type to see configuration options"))
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
 		return
@@ -746,13 +749,13 @@ func renderWidgetConfig(index int, widgetType string, config *dashboard.WidgetCo
 	switch widgetType {
 	case "filter":
 		html.WriteString(`<div class="config-form">`)
-		html.WriteString(`<h5>filter configuration</h5>`)
+		html.WriteString(fmt.Sprintf(`<h5>%s</h5>`, translation.SprintfForRequest(configmanager.GetLanguage(), "filter configuration")))
 
 		// Display and Logic settings
 		html.WriteString(`<div class="config-section">`)
-		html.WriteString(`<h6>display settings</h6>`)
+		html.WriteString(fmt.Sprintf(`<h6>%s</h6>`, translation.SprintfForRequest(configmanager.GetLanguage(), "display settings")))
 		html.WriteString(`<div class="config-row">`)
-		html.WriteString(`<label>display:</label>`)
+		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "display")))
 		html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][display]" class="form-select">`, index))
 
 		displayOptions := []string{"list", "cards", "dropdown"}
@@ -772,7 +775,7 @@ func renderWidgetConfig(index int, widgetType string, config *dashboard.WidgetCo
 		html.WriteString(`</div>`)
 
 		html.WriteString(`<div class="config-row">`)
-		html.WriteString(`<label>limit:</label>`)
+		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "limit")))
 		limit := "10"
 		if config != nil && config.Filter != nil && config.Filter.Limit > 0 {
 			limit = fmt.Sprintf("%d", config.Filter.Limit)
@@ -781,7 +784,7 @@ func renderWidgetConfig(index int, widgetType string, config *dashboard.WidgetCo
 		html.WriteString(`</div>`)
 
 		html.WriteString(`<div class="config-row">`)
-		html.WriteString(`<label>logic:</label>`)
+		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "logic")))
 		html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][logic]" class="form-select">`, index))
 
 		selectedLogic := "and"
@@ -797,7 +800,7 @@ func renderWidgetConfig(index int, widgetType string, config *dashboard.WidgetCo
 
 		// Filter Criteria section
 		html.WriteString(`<div class="config-section">`)
-		html.WriteString(`<h6>filter criteria</h6>`)
+		html.WriteString(fmt.Sprintf(`<h6>%s</h6>`, translation.SprintfForRequest(configmanager.GetLanguage(), "filter criteria")))
 		html.WriteString(fmt.Sprintf(`<div id="filter-criteria-container-%d">`, index))
 
 		// Add existing criteria or one empty criteria
@@ -810,28 +813,28 @@ func renderWidgetConfig(index int, widgetType string, config *dashboard.WidgetCo
 		}
 
 		html.WriteString(`</div>`)
-		html.WriteString(fmt.Sprintf(`<button type="button" hx-post="/api/dashboards/filter-criteria" hx-target="#filter-criteria-container-%d" hx-swap="beforeend" hx-vals='{"widget_index": "%d"}' class="btn-add-criteria">+ add criteria</button>`, index, index))
+		html.WriteString(fmt.Sprintf(`<button type="button" hx-post="/api/dashboards/filter-criteria" hx-target="#filter-criteria-container-%d" hx-swap="beforeend" hx-vals='{"widget_index": "%d"}' class="btn-add-criteria">%s</button>`, index, index, translation.SprintfForRequest(configmanager.GetLanguage(), "+ add criteria")))
 		html.WriteString(`</div>`)
 		html.WriteString(`</div>`)
 
 	case "fileContent":
 		html.WriteString(`<div class="config-form">`)
-		html.WriteString(`<h5>file content configuration</h5>`)
+		html.WriteString(fmt.Sprintf(`<h5>%s</h5>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file content configuration")))
 		html.WriteString(`<div class="config-row">`)
-		html.WriteString(`<label>file:</label>`)
+		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file")))
 		selectID := fmt.Sprintf("file-selector-%d", index)
 		html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][filePath]" id="%s" class="form-select" hx-get="/api/files/list?format=options" hx-target="#%s" hx-trigger="load" hx-swap="innerHTML">`, index, selectID, selectID))
-		html.WriteString(`<option value="">loading files...</option>`)
+		html.WriteString(fmt.Sprintf(`<option value="">%s</option>`, translation.SprintfForRequest(configmanager.GetLanguage(), "loading files...")))
 		html.WriteString(`</select>`)
 		html.WriteString(`</div>`)
-		html.WriteString(`<p class="config-note">select the file you want to display</p>`)
+		html.WriteString(fmt.Sprintf(`<p class="config-note">%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "select the file you want to display")))
 		html.WriteString(`</div>`)
 
 	case "static":
 		html.WriteString(`<div class="config-form">`)
-		html.WriteString(`<h5>static content configuration</h5>`)
+		html.WriteString(fmt.Sprintf(`<h5>%s</h5>`, translation.SprintfForRequest(configmanager.GetLanguage(), "static content configuration")))
 		html.WriteString(`<div class="config-row">`)
-		html.WriteString(`<label>format:</label>`)
+		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "format")))
 		html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][format]" class="form-select">`, index))
 
 		formatOptions := []string{"html", "markdown", "text"}
@@ -850,9 +853,9 @@ func renderWidgetConfig(index int, widgetType string, config *dashboard.WidgetCo
 		html.WriteString(`</select>`)
 		html.WriteString(`</div>`)
 		html.WriteString(`<div class="config-row">`)
-		html.WriteString(`<label>content:</label>`)
+		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "content")))
 
-		content := "<h3>welcome!</h3><p>your static content here</p>"
+		content := translation.SprintfForRequest(configmanager.GetLanguage(), "<h3>welcome!</h3><p>your static content here</p>")
 		if config != nil && config.Static != nil {
 			content = config.Static.Content
 		}
@@ -864,7 +867,7 @@ func renderWidgetConfig(index int, widgetType string, config *dashboard.WidgetCo
 		widgetName := strings.Title(widgetType)
 		html.WriteString(`<div class="config-form">`)
 		html.WriteString(fmt.Sprintf(`<h5>%s widget configuration</h5>`, strings.ToLower(widgetName)))
-		html.WriteString(`<p class="config-note">no configuration needed</p>`)
+		html.WriteString(fmt.Sprintf(`<p class="config-note">%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no configuration needed")))
 		html.WriteString(`</div>`)
 	}
 
@@ -878,7 +881,7 @@ func renderFilterCriteriaRow(widgetIndex, criteriaIndex int, criteria *files.Fil
 
 	// Metadata field selector
 	html.WriteString(`<div class="filter-field-group">`)
-	html.WriteString(`<label>field:</label>`)
+	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "field")))
 	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][criteria][%d][metadata]" class="form-select">`, widgetIndex, criteriaIndex))
 
 	metadataOptions := []string{"collection", "tags", "type", "status", "priority", "createdAt", "lastEdited", "folders", "boards"}
@@ -899,7 +902,7 @@ func renderFilterCriteriaRow(widgetIndex, criteriaIndex int, criteria *files.Fil
 
 	// Operator selector
 	html.WriteString(`<div class="filter-field-group">`)
-	html.WriteString(`<label>operator:</label>`)
+	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "operator")))
 	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][criteria][%d][operator]" class="form-select">`, widgetIndex, criteriaIndex))
 
 	operatorOptions := []string{"equals", "contains", "greater", "less", "in"}
@@ -920,17 +923,17 @@ func renderFilterCriteriaRow(widgetIndex, criteriaIndex int, criteria *files.Fil
 
 	// Value input
 	html.WriteString(`<div class="filter-field-group">`)
-	html.WriteString(`<label>value:</label>`)
+	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "value")))
 	value := ""
 	if criteria != nil {
 		value = criteria.Value
 	}
-	html.WriteString(fmt.Sprintf(`<input type="text" name="widgets[%d][config][criteria][%d][value]" value="%s" placeholder="value" class="form-input"/>`, widgetIndex, criteriaIndex, value))
+	html.WriteString(fmt.Sprintf(`<input type="text" name="widgets[%d][config][criteria][%d][value]" value="%s" placeholder="%s" class="form-input"/>`, widgetIndex, criteriaIndex, value, translation.SprintfForRequest(configmanager.GetLanguage(), "value")))
 	html.WriteString(`</div>`)
 
 	// Action selector
 	html.WriteString(`<div class="filter-field-group">`)
-	html.WriteString(`<label>action:</label>`)
+	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "action")))
 	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][criteria][%d][action]" class="form-select">`, widgetIndex, criteriaIndex))
 
 	selectedAction := "include"
@@ -945,7 +948,7 @@ func renderFilterCriteriaRow(widgetIndex, criteriaIndex int, criteria *files.Fil
 
 	// Remove button (if not the first criteria)
 	if criteriaIndex > 0 {
-		html.WriteString(`<button type="button" onclick="this.closest('.filter-criteria-row').remove()" class="btn-remove-criteria">×</button>`)
+		html.WriteString(`<button type="button" onclick="this.closest('.filter-criteria-row').remove()" class="btn-remove-criteria">Ã—</button>`)
 	}
 
 	html.WriteString(`</div>`)
