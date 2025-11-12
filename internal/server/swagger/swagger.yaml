@@ -103,6 +103,29 @@ definitions:
     - WidgetTypeTags
     - WidgetTypeCollections
     - WidgetTypeFolders
+  files.Context:
+    properties:
+      archive:
+        description: Inactive items
+        items:
+          type: string
+        type: array
+      areas:
+        description: Ongoing responsibilities
+        items:
+          type: string
+        type: array
+      projects:
+        description: Active projects with deadlines
+        items:
+          type: string
+        type: array
+      resources:
+        description: Future reference materials
+        items:
+          type: string
+        type: array
+    type: object
   files.File:
     properties:
       metadata:
@@ -115,13 +138,17 @@ definitions:
   files.Filetype:
     enum:
     - todo
-    - note
-    - journal
+    - fleeting
+    - literature
+    - moc
+    - permanent
     type: string
     x-enum-varnames:
     - FileTypeTodo
-    - FileTypeNote
-    - FileTypeJournal
+    - FileTypeFleeting
+    - FileTypeLiterature
+    - FileTypeMOC
+    - FileTypePermanent
   files.FilterCriteria:
     properties:
       action:
@@ -148,6 +175,10 @@ definitions:
       collection:
         description: auto / manual possible
         type: string
+      context:
+        allOf:
+        - $ref: '#/definitions/files.Context'
+        description: manual
       createdAt:
         description: auto
         type: string
@@ -1213,6 +1244,32 @@ paths:
       summary: Get all collections with counts
       tags:
       - metadata
+  /api/metadata/context/projects:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Comma-separated project list
+        in: formData
+        name: projects
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file context projects
+      tags:
+      - metadata
   /api/metadata/createdat:
     get:
       parameters:
@@ -1346,7 +1403,7 @@ paths:
         name: filepath
         required: true
         type: string
-      - description: File type (note, todo, journal)
+      - description: File type (fleeting, literature, permanent, moc, todo)
         in: formData
         name: filetype
         required: true
@@ -1490,6 +1547,96 @@ paths:
       summary: Set file name
       tags:
       - metadata
+  /api/metadata/options/collections:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get collection options for filter
+      tags:
+      - metadata
+  /api/metadata/options/filetypes:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get all available file types
+      tags:
+      - metadata
+  /api/metadata/options/folders:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get folder options for filter
+      tags:
+      - metadata
+  /api/metadata/options/priorities:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get all available priorities
+      tags:
+      - metadata
+  /api/metadata/options/status:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get all available status options
+      tags:
+      - metadata
+  /api/metadata/options/tags:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get tag options for filter
+      tags:
+      - metadata
   /api/metadata/path:
     get:
       parameters:
@@ -1535,24 +1682,6 @@ paths:
       tags:
       - metadata
   /api/metadata/priority:
-    get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get file priority
-      tags:
-      - metadata
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -1597,24 +1726,6 @@ paths:
       tags:
       - metadata
   /api/metadata/status:
-    get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get file status
-      tags:
-      - metadata
     post:
       consumes:
       - application/x-www-form-urlencoded

@@ -272,7 +272,7 @@ func createTestMetadata() error {
 			Tags:       tags,
 			Boards:     []string{},
 			Parents:    parents,
-			FileType:   files.FileTypeNote,
+			FileType:   files.FileTypeFleeting,
 			Status:     status,
 			Priority:   priority,
 		}

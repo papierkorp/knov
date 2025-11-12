@@ -176,62 +176,6 @@ func handleAPIGetMetadataFileType(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, string(metadata.FileType), html)
 }
 
-// @Summary Get file status
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Produce json,html
-// @Success 200 {string} string
-// @Router /api/metadata/status [get]
-func handleAPIGetMetadataStatus(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	if filepath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	metadata, err := files.MetaDataGet(filepath)
-	if err != nil {
-		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
-		return
-	}
-
-	if metadata == nil {
-		http.Error(w, "metadata not found", http.StatusNotFound)
-		return
-	}
-
-	html := fmt.Sprintf(`<span class="status">%s</span>`, metadata.Status)
-	writeResponse(w, r, string(metadata.Status), html)
-}
-
-// @Summary Get file priority
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Produce json,html
-// @Success 200 {string} string
-// @Router /api/metadata/priority [get]
-func handleAPIGetMetadataPriority(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	if filepath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	metadata, err := files.MetaDataGet(filepath)
-	if err != nil {
-		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
-		return
-	}
-
-	if metadata == nil {
-		http.Error(w, "metadata not found", http.StatusNotFound)
-		return
-	}
-
-	html := fmt.Sprintf(`<span class="priority">%s</span>`, metadata.Priority)
-	writeResponse(w, r, string(metadata.Priority), html)
-}
-
 // @Summary Get file path
 // @Tags metadata
 // @Param filepath query string true "File path"
@@ -383,7 +327,7 @@ func handleAPISetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
 // @Param filepath formData string true "File path"
-// @Param filetype formData string true "File type (note, todo, journal)"
+// @Param filetype formData string true "File type (fleeting, literature, permanent, moc, todo)"
 // @Success 200 {string} string
 // @Router /api/metadata/filetype [post]
 func handleAPISetMetadataFileType(w http.ResponseWriter, r *http.Request) {
@@ -792,4 +736,168 @@ func handleAPIGetFileMetadataCollection(w http.ResponseWriter, r *http.Request) 
 
 	html := files.BuildMetadataLinkHTML(metadata.Collection, "collection")
 	writeResponse(w, r, metadata.Collection, html)
+}
+
+// @Summary Set file context projects
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param projects formData string true "Comma-separated project list"
+// @Success 200 {string} string
+// @Router /api/metadata/context/projects [post]
+func handleAPISetMetadataContextProjects(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filepath := r.FormValue("filepath")
+	projectsStr := r.FormValue("projects")
+
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	var projects []string
+	if projectsStr != "" {
+		projects = strings.Split(projectsStr, ",")
+		for i := range projects {
+			projects[i] = strings.TrimSpace(projects[i])
+		}
+	}
+
+	metadata := &files.Metadata{
+		Path: filepath,
+		Context: files.Context{
+			Projects: projects,
+		},
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
+		return
+	}
+
+	html := fmt.Sprintf(`<span class="context-projects">%s</span>`, strings.Join(projects, ", "))
+	writeResponse(w, r, "projects updated", html)
+}
+
+// @Summary Get all available priorities
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/metadata/options/priorities [get]
+func handleAPIGetMetadataPriorities(w http.ResponseWriter, r *http.Request) {
+	priorities := []files.Priority{
+		files.PriorityLow,
+		files.PriorityMedium,
+		files.PriorityHigh,
+	}
+
+	var html strings.Builder
+	for _, p := range priorities {
+		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, p, p))
+	}
+
+	writeResponse(w, r, priorities, html.String())
+}
+
+// @Summary Get all available file types
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/metadata/options/filetypes [get]
+func handleAPIGetMetadataFileTypes(w http.ResponseWriter, r *http.Request) {
+	fileTypes := []files.Filetype{
+		files.FileTypeFleeting,
+		files.FileTypeLiterature,
+		files.FileTypePermanent,
+		files.FileTypeMOC,
+		files.FileTypeTodo,
+	}
+
+	var html strings.Builder
+	for _, ft := range fileTypes {
+		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, ft, ft))
+	}
+
+	writeResponse(w, r, fileTypes, html.String())
+}
+
+// @Summary Get all available status options
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/metadata/options/status [get]
+func handleAPIGetMetadataStatus(w http.ResponseWriter, r *http.Request) {
+	status := []files.Status{
+		files.StatusDraft,
+		files.StatusPublished,
+		files.StatusArchived,
+	}
+
+	var html strings.Builder
+	for _, s := range status {
+		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, s, s))
+	}
+
+	writeResponse(w, r, status, html.String())
+}
+
+// @Summary Get collection options for filter
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/metadata/options/collections [get]
+func handleAPIGetCollectionOptions(w http.ResponseWriter, r *http.Request) {
+	collections, err := files.GetAllCollections()
+	if err != nil {
+		http.Error(w, "failed to get collections", http.StatusInternalServerError)
+		return
+	}
+
+	var html strings.Builder
+	for collection := range collections {
+		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, collection, collection))
+	}
+
+	writeResponse(w, r, collections, html.String())
+}
+
+// @Summary Get tag options for filter
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/metadata/options/tags [get]
+func handleAPIGetTagOptions(w http.ResponseWriter, r *http.Request) {
+	tags, err := files.GetAllTags()
+	if err != nil {
+		http.Error(w, "failed to get tags", http.StatusInternalServerError)
+		return
+	}
+
+	var html strings.Builder
+	for tag := range tags {
+		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, tag, tag))
+	}
+
+	writeResponse(w, r, tags, html.String())
+}
+
+// @Summary Get folder options for filter
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/metadata/options/folders [get]
+func handleAPIGetFolderOptions(w http.ResponseWriter, r *http.Request) {
+	folders, err := files.GetAllFolders()
+	if err != nil {
+		http.Error(w, "failed to get folders", http.StatusInternalServerError)
+		return
+	}
+
+	var html strings.Builder
+	for folder := range folders {
+		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, folder, folder))
+	}
+
+	writeResponse(w, r, folders, html.String())
 }

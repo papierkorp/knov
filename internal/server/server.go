@@ -9,6 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
 	"knov/internal/files"
@@ -16,10 +19,6 @@ import (
 	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/utils"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 var staticFiles embed.FS
@@ -147,7 +146,6 @@ func StartServerChi() {
 			r.Get("/collection", handleAPIGetMetadataCollection)
 			r.Get("/filetype", handleAPIGetMetadataFileType)
 			r.Get("/status", handleAPIGetMetadataStatus)
-			r.Get("/priority", handleAPIGetMetadataPriority)
 			r.Get("/path", handleAPIGetMetadataPath)
 			r.Get("/name", handleAPIGetMetadataName)
 			r.Get("/createdat", handleAPIGetMetadataCreatedAt)
@@ -162,6 +160,7 @@ func StartServerChi() {
 			r.Post("/createdat", handleAPISetMetadataCreatedAt)
 			r.Post("/lastedited", handleAPISetMetadataLastEdited)
 			r.Post("/folders", handleAPISetMetadataFolders)
+			r.Post("/context/projects", handleAPISetMetadataContextProjects)
 
 			r.Get("/tags", handleAPIGetAllTags)
 			r.Get("/collections", handleAPIGetAllCollections)
@@ -169,6 +168,13 @@ func StartServerChi() {
 			r.Get("/file/tags", handleAPIGetFileMetadataTags)
 			r.Get("/file/folders", handleAPIGetFileMetadataFolders)
 			r.Get("/file/collection", handleAPIGetFileMetadataCollection)
+
+			r.Get("/options/filetypes", handleAPIGetMetadataFileTypes)
+			r.Get("/options/priorities", handleAPIGetMetadataPriorities)
+			r.Get("/options/status", handleAPIGetMetadataStatus)
+			r.Get("/options/collections", handleAPIGetCollectionOptions)
+			r.Get("/options/tags", handleAPIGetTagOptions)
+			r.Get("/options/folders", handleAPIGetFolderOptions)
 		})
 
 		// ----------------------------------------------------------------------------------------

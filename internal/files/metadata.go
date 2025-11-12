@@ -18,9 +18,11 @@ type Status string
 type Priority string
 
 const (
-	FileTypeTodo    Filetype = "todo"
-	FileTypeNote    Filetype = "note"
-	FileTypeJournal Filetype = "journal"
+	FileTypeTodo       Filetype = "todo"
+	FileTypeFleeting   Filetype = "fleeting"
+	FileTypeLiterature Filetype = "literature"
+	FileTypeMOC        Filetype = "moc"
+	FileTypePermanent  Filetype = "permanent"
 
 	StatusDraft     Status = "draft"
 	StatusPublished Status = "published"
@@ -33,24 +35,33 @@ const (
 
 // Metadata represents file metadata
 type Metadata struct {
-	Name        string    `json:"name"`        // manual filename
-	Path        string    `json:"path"`        // auto
-	CreatedAt   time.Time `json:"createdAt"`   // auto
-	LastEdited  time.Time `json:"lastEdited"`  // auto
-	TargetDate  time.Time `json:"targetDate"`  // auto
-	Collection  string    `json:"collection"`  // auto / manual possible
-	Folders     []string  `json:"folders"`     // auto
-	Tags        []string  `json:"tags"`        // manual
-	Boards      []string  `json:"boards"`      // auto
-	Ancestor    []string  `json:"ancestor"`    // auto
-	Parents     []string  `json:"parents"`     // manual
-	Kids        []string  `json:"kids"`        // auto
-	UsedLinks   []string  `json:"usedLinks"`   // auto
-	LinksToHere []string  `json:"linksToHere"` // auto
-	FileType    Filetype  `json:"type"`        // manual - with add new
-	Status      Status    `json:"status"`      // manual
-	Priority    Priority  `json:"priority"`    // manual
-	Size        int64     `json:"size"`        // auto
+	Name        string    `json:"name"`              // manual filename
+	Path        string    `json:"path"`              // auto
+	CreatedAt   time.Time `json:"createdAt"`         // auto
+	LastEdited  time.Time `json:"lastEdited"`        // auto
+	TargetDate  time.Time `json:"targetDate"`        // auto
+	Collection  string    `json:"collection"`        // auto / manual possible
+	Folders     []string  `json:"folders"`           // auto
+	Tags        []string  `json:"tags"`              // manual
+	Boards      []string  `json:"boards"`            // auto
+	Ancestor    []string  `json:"ancestor"`          // auto
+	Parents     []string  `json:"parents"`           // manual
+	Kids        []string  `json:"kids"`              // auto
+	UsedLinks   []string  `json:"usedLinks"`         // auto
+	LinksToHere []string  `json:"linksToHere"`       // auto
+	FileType    Filetype  `json:"type"`              // manual - with add new
+	Context     Context   `json:"context,omitempty"` // manual
+	Status      Status    `json:"status"`            // manual
+	Priority    Priority  `json:"priority"`          // manual
+	Size        int64     `json:"size"`              // auto
+}
+
+// Context represents PARA organization
+type Context struct {
+	Projects  []string `json:"projects,omitempty"`  // Active projects with deadlines
+	Areas     []string `json:"areas,omitempty"`     // Ongoing responsibilities
+	Resources []string `json:"resources,omitempty"` // Future reference materials
+	Archive   []string `json:"archive,omitempty"`   // Inactive items
 }
 
 func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
@@ -139,7 +150,7 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		currentMetadata.LinksToHere = []string{}
 	}
 	if currentMetadata.FileType == "" {
-		currentMetadata.FileType = FileTypeJournal
+		currentMetadata.FileType = FileTypeFleeting
 	}
 	if currentMetadata.Status == "" {
 		currentMetadata.Status = StatusPublished

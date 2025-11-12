@@ -170,21 +170,43 @@ func matchesFilter(metadata *Metadata, criteria []FilterCriteria, logic string) 
 		return true
 	}
 
-	if logic == "AND" {
-		for _, criterion := range criteria {
+	var includeCriteria []FilterCriteria
+	var excludeCriteria []FilterCriteria
+
+	for _, criterion := range criteria {
+		if criterion.Action == "exclude" {
+			excludeCriteria = append(excludeCriteria, criterion)
+		} else {
+			includeCriteria = append(includeCriteria, criterion)
+		}
+	}
+
+	for _, criterion := range excludeCriteria {
+		if matchesCriterion(metadata, criterion) {
+			return false
+		}
+	}
+
+	if len(includeCriteria) == 0 {
+		return true
+	}
+
+	if strings.ToUpper(logic) == "AND" {
+		for _, criterion := range includeCriteria {
 			if !matchesCriterion(metadata, criterion) {
 				return false
 			}
 		}
 		return true
-	}
-
-	for _, criterion := range criteria {
-		if matchesCriterion(metadata, criterion) {
-			return true
+	} else {
+		// OR logic - ANY include criterion must match
+		for _, criterion := range includeCriteria {
+			if matchesCriterion(metadata, criterion) {
+				return true
+			}
 		}
+		return false
 	}
-	return false
 }
 
 func matchesCriterion(metadata *Metadata, criterion FilterCriteria) bool {
@@ -232,6 +254,23 @@ func matchesCriterion(metadata *Metadata, criterion FilterCriteria) bool {
 
 func matchesTagCriterion(tags []string, criterion FilterCriteria) bool {
 	switch criterion.Operator {
+	case "equals":
+		// If criterion value contains comma, treat as exact array match
+		if strings.Contains(criterion.Value, ",") {
+			expectedTags := strings.Split(criterion.Value, ",")
+			if len(expectedTags) != len(tags) {
+				return false
+			}
+			for _, expectedTag := range expectedTags {
+				if !slices.Contains(tags, strings.TrimSpace(expectedTag)) {
+					return false
+				}
+			}
+			return true
+		} else {
+			// Single tag - check if file contains this tag
+			return slices.Contains(tags, criterion.Value)
+		}
 	case "contains":
 		return slices.Contains(tags, criterion.Value)
 	case "not_contains":
@@ -247,6 +286,8 @@ func matchesTagCriterion(tags []string, criterion FilterCriteria) bool {
 
 func matchesArrayCriterion(array []string, criterion FilterCriteria) bool {
 	switch criterion.Operator {
+	case "equals":
+		return slices.Contains(array, criterion.Value)
 	case "contains":
 		return slices.Contains(array, criterion.Value)
 	case "not_contains":

@@ -1470,6 +1470,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/context/projects": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Set file context projects",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated project list",
+                        "name": "projects",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/createdat": {
             "get": {
                 "produces": [
@@ -1679,7 +1718,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "File type (note, todo, journal)",
+                        "description": "File type (fleeting, literature, permanent, moc, todo)",
                         "name": "filetype",
                         "in": "formData",
                         "required": true
@@ -1887,6 +1926,144 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/options/collections": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get collection options for filter",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/options/filetypes": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all available file types",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/options/folders": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get folder options for filter",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/options/priorities": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all available priorities",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/options/status": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all available status options",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/options/tags": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get tag options for filter",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/path": {
             "get": {
                 "produces": [
@@ -1954,33 +2131,6 @@ const docTemplate = `{
             }
         },
         "/api/metadata/priority": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get file priority",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -2047,33 +2197,6 @@ const docTemplate = `{
             }
         },
         "/api/metadata/status": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get file status",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -2447,6 +2570,39 @@ const docTemplate = `{
                 "WidgetTypeFolders"
             ]
         },
+        "files.Context": {
+            "type": "object",
+            "properties": {
+                "archive": {
+                    "description": "Inactive items",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "areas": {
+                    "description": "Ongoing responsibilities",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "projects": {
+                    "description": "Active projects with deadlines",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "resources": {
+                    "description": "Future reference materials",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "files.File": {
             "type": "object",
             "properties": {
@@ -2465,13 +2621,17 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "todo",
-                "note",
-                "journal"
+                "fleeting",
+                "literature",
+                "moc",
+                "permanent"
             ],
             "x-enum-varnames": [
                 "FileTypeTodo",
-                "FileTypeNote",
-                "FileTypeJournal"
+                "FileTypeFleeting",
+                "FileTypeLiterature",
+                "FileTypeMOC",
+                "FileTypePermanent"
             ]
         },
         "files.FilterCriteria": {
@@ -2511,6 +2671,14 @@ const docTemplate = `{
                 "collection": {
                     "description": "auto / manual possible",
                     "type": "string"
+                },
+                "context": {
+                    "description": "manual",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/files.Context"
+                        }
+                    ]
                 },
                 "createdAt": {
                     "description": "auto",
