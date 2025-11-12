@@ -2,872 +2,834 @@
   "language": "en",
   "messages": [
     {
-      "id": "Hello World from templ at home in the dark!",
-      "message": "Hello World from templ at home in the dark!",
-      "translation": "Hello World from templ at home in the dark!",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Settings",
-      "message": "Settings",
-      "translation": "Settings",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Custom CSS",
-      "message": "Custom CSS",
-      "translation": "Custom CSS",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Dark Mode",
-      "message": "Dark Mode",
-      "translation": "Dark Mode",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Data Path:",
-      "message": "Data Path:",
-      "translation": "Data Path:",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Documentation",
-      "message": "Documentation",
-      "translation": "Documentation",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "English",
-      "message": "English",
-      "translation": "English",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "General Settings",
-      "message": "General Settings",
-      "translation": "General Settings",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "German",
-      "message": "German",
-      "translation": "German",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Git Settings",
-      "message": "Git Settings",
-      "translation": "Git Settings",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Help",
-      "message": "Help",
-      "translation": "Help",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Home",
-      "message": "Home",
-      "translation": "Home",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Playground",
-      "message": "Playground",
-      "translation": "Playground",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Repository URL:",
-      "message": "Repository URL:",
-      "translation": "Repository URL:",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Saves when you click outside...",
-      "message": "Saves when you click outside...",
-      "translation": "Saves when you click outside...",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Search",
-      "message": "Search",
-      "translation": "Search",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Select Language:",
-      "message": "Select Language:",
-      "translation": "Select Language:",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Select Theme:",
-      "message": "Select Theme:",
-      "translation": "Select Theme:",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
-      "id": "Theme Settings",
-      "message": "Theme Settings",
-      "translation": "Theme Settings",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
-    },
-    {
       "id": "Add Criteria",
       "message": "Add Criteria",
-      "translation": "Add Criteria",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Add Criteria"
     },
     {
       "id": "Add Filter",
       "message": "Add Filter",
-      "translation": "Add Filter",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Add Filter"
+    },
+    {
+      "id": "Add Note",
+      "message": "Add Note",
+      "translation": ""
+    },
+    {
+      "id": "Add Todo",
+      "message": "Add Todo",
+      "translation": ""
     },
     {
       "id": "Add Widget",
       "message": "Add Widget",
-      "translation": "Add Widget",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Add Widget"
     },
     {
       "id": "Admin",
       "message": "Admin",
-      "translation": "Admin",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Admin"
     },
     {
       "id": "All Files",
       "message": "All Files",
-      "translation": "All Files",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "All Files"
     },
     {
       "id": "AND",
       "message": "AND",
-      "translation": "AND",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "AND"
     },
     {
       "id": "Apply Filter",
       "message": "Apply Filter",
-      "translation": "Apply Filter",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Apply Filter"
     },
     {
       "id": "Are you sure?",
       "message": "Are you sure?",
-      "translation": "Are you sure?",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Are you sure?"
     },
     {
       "id": "Boards",
       "message": "Boards",
-      "translation": "Boards",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Boards"
     },
     {
       "id": "Browse",
       "message": "Browse",
-      "translation": "Browse",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Browse"
     },
     {
       "id": "Browse by Metadata",
       "message": "Browse by Metadata",
-      "translation": "Browse by Metadata",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Browse by Metadata"
+    },
+    {
+      "id": "cancel",
+      "message": "cancel",
+      "translation": ""
     },
     {
       "id": "Cancel",
       "message": "Cancel",
-      "translation": "Cancel",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Cancel"
     },
     {
       "id": "Cards",
       "message": "Cards",
-      "translation": "Cards",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Cards"
     },
     {
       "id": "Choose type...",
       "message": "Choose type...",
-      "translation": "Choose type...",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Choose type..."
+    },
+    {
+      "id": "Clean Test Data",
+      "message": "Clean Test Data",
+      "translation": ""
     },
     {
       "id": "Collection",
       "message": "Collection",
-      "translation": "Collection",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Collection"
     },
     {
       "id": "Collections",
       "message": "Collections",
-      "translation": "Collections",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Collections"
     },
     {
       "id": "Configuration",
       "message": "Configuration",
-      "translation": "Configuration",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Configuration"
     },
     {
       "id": "Configuration will be generated based on your selections above",
       "message": "Configuration will be generated based on your selections above",
-      "translation": "Configuration will be generated based on your selections above",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Configuration will be generated based on your selections above"
     },
     {
       "id": "Contains",
       "message": "Contains",
-      "translation": "Contains",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Contains"
     },
     {
       "id": "Content",
       "message": "Content",
-      "translation": "Content",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Content"
+    },
+    {
+      "id": "Create a New File",
+      "message": "Create a New File",
+      "translation": ""
     },
     {
       "id": "Create Dashboard",
       "message": "Create Dashboard",
-      "translation": "Create Dashboard",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Create Dashboard"
     },
     {
       "id": "Created Date",
       "message": "Created Date",
-      "translation": "Created Date",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Created Date"
+    },
+    {
+      "id": "create file",
+      "message": "create file",
+      "translation": ""
     },
     {
       "id": "Create New Dashboard",
       "message": "Create New Dashboard",
-      "translation": "Create New Dashboard",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Create New Dashboard"
+    },
+    {
+      "id": "Custom CSS",
+      "message": "Custom CSS",
+      "translation": "Custom CSS"
+    },
+    {
+      "id": "Dark Mode",
+      "message": "Dark Mode",
+      "translation": "Dark Mode"
+    },
+    {
+      "id": "Dashboard",
+      "message": "Dashboard",
+      "translation": ""
     },
     {
       "id": "Dashboard Name",
       "message": "Dashboard Name",
-      "translation": "Dashboard Name",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Dashboard Name"
     },
     {
       "id": "Dashboard Settings",
       "message": "Dashboard Settings",
-      "translation": "Dashboard Settings",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Dashboard Settings"
+    },
+    {
+      "id": "Data Path",
+      "message": "Data Path",
+      "translation": ""
+    },
+    {
+      "id": "Data Path:",
+      "message": "Data Path:",
+      "translation": "Data Path:"
+    },
+    {
+      "id": "Data Path Configuration",
+      "message": "Data Path Configuration",
+      "translation": ""
     },
     {
       "id": "Delete",
       "message": "Delete",
-      "translation": "Delete",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Delete"
     },
     {
       "id": "Design your custom dashboard with widgets",
       "message": "Design your custom dashboard with widgets",
-      "translation": "Design your custom dashboard with widgets",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Design your custom dashboard with widgets"
     },
     {
       "id": "Display",
       "message": "Display",
-      "translation": "Display",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Display"
     },
     {
       "id": "Display & Limits",
       "message": "Display & Limits",
-      "translation": "Display & Limits",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Display & Limits"
     },
     {
       "id": "Dropdown",
       "message": "Dropdown",
-      "translation": "Dropdown",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Dropdown"
     },
     {
       "id": "Edit",
       "message": "Edit",
-      "translation": "Edit",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Edit"
     },
     {
       "id": "Edit Dashboard",
       "message": "Edit Dashboard",
-      "translation": "Edit Dashboard",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Edit Dashboard"
+    },
+    {
+      "id": "edit file",
+      "message": "edit file",
+      "translation": ""
     },
     {
       "id": "Enter a search term",
       "message": "Enter a search term",
-      "translation": "Enter a search term",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Enter a search term"
     },
     {
       "id": "Enter the path to the markdown file you want to display",
       "message": "Enter the path to the markdown file you want to display",
-      "translation": "Enter the path to the markdown file you want to display",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Enter the path to the markdown file you want to display"
     },
     {
       "id": "Enter your content here...",
       "message": "Enter your content here...",
-      "translation": "Enter your content here...",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Enter your content here..."
     },
     {
       "id": "Equals",
       "message": "Equals",
-      "translation": "Equals",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Equals"
+    },
+    {
+      "id": "Error",
+      "message": "Error",
+      "translation": ""
     },
     {
       "id": "Exclude",
       "message": "Exclude",
-      "translation": "Exclude",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Exclude"
     },
     {
       "id": "File Content",
       "message": "File Content",
-      "translation": "File Content",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "File Content"
     },
     {
       "id": "File Content Configuration",
       "message": "File Content Configuration",
-      "translation": "File Content Configuration",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "File Content Configuration"
+    },
+    {
+      "id": "file created successfully!",
+      "message": "file created successfully!",
+      "translation": ""
+    },
+    {
+      "id": "file path",
+      "message": "file path",
+      "translation": ""
     },
     {
       "id": "File Path",
       "message": "File Path",
-      "translation": "File Path",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "File Path"
+    },
+    {
+      "id": "File path not provided",
+      "message": "File path not provided",
+      "translation": ""
+    },
+    {
+      "id": "file saved successfully",
+      "message": "file saved successfully",
+      "translation": ""
     },
     {
       "id": "Files with",
       "message": "Files with",
-      "translation": "Files with",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Files with"
     },
     {
       "id": "Filter",
       "message": "Filter",
-      "translation": "Filter",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Filter"
     },
     {
       "id": "Filter Configuration",
       "message": "Filter Configuration",
-      "translation": "Filter Configuration",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Filter Configuration"
     },
     {
       "id": "Filter Criteria",
       "message": "Filter Criteria",
-      "translation": "Filter Criteria",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Filter Criteria"
     },
     {
       "id": "Filtered results will appear here",
       "message": "Filtered results will appear here",
-      "translation": "Filtered results will appear here",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Filtered results will appear here"
     },
     {
       "id": "Filter Form",
       "message": "Filter Form",
-      "translation": "Filter Form",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Filter Form"
     },
     {
       "id": "Folders",
       "message": "Folders",
-      "translation": "Folders",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Folders"
     },
     {
       "id": "Format",
       "message": "Format",
-      "translation": "Format",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Format"
     },
     {
       "id": "Four Columns",
       "message": "Four Columns",
-      "translation": "Four Columns",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Four Columns"
+    },
+    {
+      "id": "General Settings",
+      "message": "General Settings",
+      "translation": "General Settings"
+    },
+    {
+      "id": "Git Repository",
+      "message": "Git Repository",
+      "translation": ""
+    },
+    {
+      "id": "Git Settings",
+      "message": "Git Settings",
+      "translation": "Git Settings"
     },
     {
       "id": "Global Dashboard",
       "message": "Global Dashboard",
-      "translation": "Global Dashboard",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Global Dashboard"
     },
     {
       "id": "Greater Than",
       "message": "Greater Than",
-      "translation": "Greater Than",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Greater Than"
     },
     {
       "id": "Hello World from templ at History in the dark!",
       "message": "Hello World from templ at History in the dark!",
-      "translation": "Hello World from templ at History in the dark!",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Hello World from templ at History in the dark!"
+    },
+    {
+      "id": "Hello World from templ at home in the dark!",
+      "message": "Hello World from templ at home in the dark!",
+      "translation": "Hello World from templ at home in the dark!"
+    },
+    {
+      "id": "Help",
+      "message": "Help",
+      "translation": "Help"
     },
     {
       "id": "History",
       "message": "History",
-      "translation": "History",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "History"
+    },
+    {
+      "id": "Home",
+      "message": "Home",
+      "translation": "Home"
     },
     {
       "id": "In Array",
       "message": "In Array",
-      "translation": "In Array",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "In Array"
     },
     {
       "id": "Include",
       "message": "Include",
-      "translation": "Include",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Include"
     },
     {
       "id": "Last Edited",
       "message": "Last Edited",
-      "translation": "Last Edited",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Last Edited"
     },
     {
       "id": "Latest Changes",
       "message": "Latest Changes",
-      "translation": "Latest Changes",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Latest Changes"
     },
     {
       "id": "Layout",
       "message": "Layout",
-      "translation": "Layout",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Layout"
+    },
+    {
+      "id": "Leave empty for local git repository only",
+      "message": "Leave empty for local git repository only",
+      "translation": ""
     },
     {
       "id": "Less Than",
       "message": "Less Than",
-      "translation": "Less Than",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Less Than"
     },
     {
       "id": "Limit",
       "message": "Limit",
-      "translation": "Limit",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Limit"
     },
     {
       "id": "List",
       "message": "List",
-      "translation": "List",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "List"
+    },
+    {
+      "id": "Loading...",
+      "message": "Loading...",
+      "translation": ""
+    },
+    {
+      "id": "loading collections...",
+      "message": "loading collections...",
+      "translation": ""
     },
     {
       "id": "Loading files...",
       "message": "Loading files...",
-      "translation": "Loading files...",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Loading files..."
+    },
+    {
+      "id": "loading folders...",
+      "message": "loading folders...",
+      "translation": ""
+    },
+    {
+      "id": "Loading recent changes...",
+      "message": "Loading recent changes...",
+      "translation": ""
     },
     {
       "id": "Loading results for",
       "message": "Loading results for",
-      "translation": "Loading results for",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Loading results for"
+    },
+    {
+      "id": "loading tags...",
+      "message": "loading tags...",
+      "translation": ""
     },
     {
       "id": "loading widget...",
       "message": "loading widget...",
-      "translation": "loading widget...",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "loading widget..."
     },
     {
       "id": "Logic",
       "message": "Logic",
-      "translation": "Logic",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Logic"
     },
     {
       "id": "Metadata",
       "message": "Metadata",
-      "translation": "Metadata",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Metadata"
     },
     {
       "id": "Metadata Filter",
       "message": "Metadata Filter",
-      "translation": "Metadata Filter",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Metadata Filter"
     },
     {
       "id": "My Awesome Dashboard",
       "message": "My Awesome Dashboard",
-      "translation": "My Awesome Dashboard",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "My Awesome Dashboard"
     },
     {
       "id": "New Dashboard",
       "message": "New Dashboard",
-      "translation": "New Dashboard",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "New Dashboard"
     },
     {
       "id": "No configuration needed",
       "message": "No configuration needed",
-      "translation": "No configuration needed",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "No configuration needed"
+    },
+    {
+      "id": "No dashboard found",
+      "message": "No dashboard found",
+      "translation": ""
     },
     {
       "id": "No widgets configured",
       "message": "No widgets configured",
-      "translation": "No widgets configured",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "No widgets configured"
     },
     {
       "id": "One Column",
       "message": "One Column",
-      "translation": "One Column",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "One Column"
+    },
+    {
+      "id": "optional",
+      "message": "optional",
+      "translation": ""
     },
     {
       "id": "OR",
       "message": "OR",
-      "translation": "OR",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "OR"
     },
     {
       "id": "Overview",
       "message": "Overview",
-      "translation": "Overview",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Overview"
     },
     {
       "id": "OVERVIEW",
       "message": "OVERVIEW",
-      "translation": "OVERVIEW",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "OVERVIEW"
     },
     {
       "id": "Paths",
       "message": "Paths",
-      "translation": "Paths",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Paths"
+    },
+    {
+      "id": "path/to/filename.md",
+      "message": "path/to/filename.md",
+      "translation": ""
+    },
+    {
+      "id": "Path to your data storage relative from the executable",
+      "message": "Path to your data storage relative from the executable",
+      "translation": ""
     },
     {
       "id": "Plain Text",
       "message": "Plain Text",
-      "translation": "Plain Text",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Plain Text"
+    },
+    {
+      "id": "Playground",
+      "message": "Playground",
+      "translation": "Playground"
     },
     {
       "id": "Priority",
       "message": "Priority",
-      "translation": "Priority",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Priority"
+    },
+    {
+      "id": "Project Overview",
+      "message": "Project Overview",
+      "translation": ""
+    },
+    {
+      "id": "Rebuild all metadata? This may take a while.",
+      "message": "Rebuild all metadata? This may take a while.",
+      "translation": ""
     },
     {
       "id": "Rebuild Metadata",
       "message": "Rebuild Metadata",
-      "translation": "Rebuild Metadata",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Rebuild Metadata"
     },
     {
       "id": "Recent File History",
       "message": "Recent File History",
-      "translation": "Recent File History",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Recent File History"
+    },
+    {
+      "id": "Remote Repository URL",
+      "message": "Remote Repository URL",
+      "translation": ""
     },
     {
       "id": "Rename",
       "message": "Rename",
-      "translation": "Rename",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Rename"
+    },
+    {
+      "id": "Repository URL:",
+      "message": "Repository URL:",
+      "translation": "Repository URL:"
     },
     {
       "id": "Restart Application",
       "message": "Restart Application",
-      "translation": "Restart Application",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Restart Application"
     },
     {
       "id": "restart required for changes to take effect",
       "message": "restart required for changes to take effect",
-      "translation": "restart required for changes to take effect",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "restart required for changes to take effect"
+    },
+    {
+      "id": "Restart System",
+      "message": "Restart System",
+      "translation": ""
+    },
+    {
+      "id": "Restart the system? This will disconnect all users.",
+      "message": "Restart the system? This will disconnect all users.",
+      "translation": ""
+    },
+    {
+      "id": "save",
+      "message": "save",
+      "translation": ""
     },
     {
       "id": "Save Changes",
       "message": "Save Changes",
-      "translation": "Save Changes",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Save Changes"
+    },
+    {
+      "id": "scanning .gohtml template files...",
+      "message": "scanning .gohtml template files...",
+      "translation": ""
+    },
+    {
+      "id": "Search",
+      "message": "Search",
+      "translation": "Search"
     },
     {
       "id": "Search..",
       "message": "Search..",
-      "translation": "Search..",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Search.."
     },
     {
       "id": "Search files...",
       "message": "Search files...",
-      "translation": "Search files...",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Search files..."
     },
     {
       "id": "Search Results",
       "message": "Search Results",
-      "translation": "Search Results",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Search Results"
     },
     {
       "id": "Select a widget type to see configuration options",
       "message": "Select a widget type to see configuration options",
-      "translation": "Select a widget type to see configuration options",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Select a widget type to see configuration options"
     },
     {
       "id": "Select field...",
       "message": "Select field...",
-      "translation": "Select field...",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Select field..."
+    },
+    {
+      "id": "Select Language:",
+      "message": "Select Language:",
+      "translation": "Select Language:"
+    },
+    {
+      "id": "Select Theme:",
+      "message": "Select Theme:",
+      "translation": "Select Theme:"
     },
     {
       "id": "Select widget type for configuration template",
       "message": "Select widget type for configuration template",
-      "translation": "Select widget type for configuration template",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Select widget type for configuration template"
+    },
+    {
+      "id": "Set Data Path",
+      "message": "Set Data Path",
+      "translation": ""
+    },
+    {
+      "id": "Set Remote Repository",
+      "message": "Set Remote Repository",
+      "translation": ""
+    },
+    {
+      "id": "Settings",
+      "message": "Settings",
+      "translation": "Settings"
+    },
+    {
+      "id": "Setup some test Data Files",
+      "message": "Setup some test Data Files",
+      "translation": ""
+    },
+    {
+      "id": "Setup Test Data",
+      "message": "Setup Test Data",
+      "translation": ""
+    },
+    {
+      "id": "Setup test data? This will create example files.",
+      "message": "Setup test data? This will create example files.",
+      "translation": ""
+    },
+    {
+      "id": "start typing to search...",
+      "message": "start typing to search...",
+      "translation": ""
     },
     {
       "id": "Static Content",
       "message": "Static Content",
-      "translation": "Static Content",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Static Content"
     },
     {
       "id": "Static Content Configuration",
       "message": "Static Content Configuration",
-      "translation": "Static Content Configuration",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Static Content Configuration"
     },
     {
       "id": "Status",
       "message": "Status",
-      "translation": "Status",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Status"
+    },
+    {
+      "id": "Swagger",
+      "message": "Swagger",
+      "translation": ""
     },
     {
       "id": "System",
       "message": "System",
-      "translation": "System",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "System"
+    },
+    {
+      "id": "System Actions",
+      "message": "System Actions",
+      "translation": ""
+    },
+    {
+      "id": "System Administration",
+      "message": "System Administration",
+      "translation": ""
+    },
+    {
+      "id": "System maintenance operations",
+      "message": "System maintenance operations",
+      "translation": ""
     },
     {
       "id": "Tags",
       "message": "Tags",
-      "translation": "Tags",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Tags"
+    },
+    {
+      "id": "Test Data Management",
+      "message": "Test Data Management",
+      "translation": ""
+    },
+    {
+      "id": "Theme Settings",
+      "message": "Theme Settings",
+      "translation": "Theme Settings"
     },
     {
       "id": "Three Columns",
       "message": "Three Columns",
-      "translation": "Three Columns",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Three Columns"
     },
     {
       "id": "Two Columns",
       "message": "Two Columns",
-      "translation": "Two Columns",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Two Columns"
     },
     {
       "id": "Type",
       "message": "Type",
-      "translation": "Type",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Type"
     },
     {
       "id": "Update your dashboard configuration",
       "message": "Update your dashboard configuration",
-      "translation": "Update your dashboard configuration",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Update your dashboard configuration"
     },
     {
       "id": "Value",
       "message": "Value",
-      "translation": "Value",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Value"
+    },
+    {
+      "id": "view file",
+      "message": "view file",
+      "translation": ""
     },
     {
       "id": "Visible to all users",
       "message": "Visible to all users",
-      "translation": "Visible to all users",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Visible to all users"
+    },
+    {
+      "id": "WARNING - This will remove all files in the Data Folder!!.",
+      "message": "WARNING - This will remove all files in the Data Folder!!.",
+      "translation": ""
     },
     {
       "id": "Widget",
       "message": "Widget",
-      "translation": "Widget",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Widget"
     },
     {
       "id": "Widgets",
       "message": "Widgets",
-      "translation": "Widgets",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Widgets"
     },
     {
       "id": "X Position",
       "message": "X Position",
-      "translation": "X Position",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "X Position"
     },
     {
       "id": "Y Position",
       "message": "Y Position",
-      "translation": "Y Position",
-      "translatorComment": "Copied from source.",
-      "fuzzy": true
+      "translation": "Y Position"
     }
   ]
 }

@@ -223,7 +223,6 @@ func StartServerChi() {
 		r.Route("/components", func(r chi.Router) {
 			r.Get("/table", handleAPIGetTable)
 			r.Get("/editor", handleAPIGetEditor)
-			r.Get("/markdown-editor", handleAPIGetMarkdownEditor)
 		})
 	})
 

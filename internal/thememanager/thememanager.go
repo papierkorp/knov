@@ -233,7 +233,7 @@ func LoadSingleTheme(themeName, themesDir string) error {
 		case "settings":
 			templates.settings = tmpl
 		default:
-			fmt.Printf("warning: unknown template file '%s' â€” ignoring\n", filePath)
+			fmt.Printf("warning: unknown template file '%s' -> ignoring\n", filePath)
 		}
 	}
 

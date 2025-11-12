@@ -114,16 +114,34 @@ go build -buildmode=plugin -o mytheme.so .
 
 ## Translation
 
-Add translatable strings:
+Add translatable strings in templates:
+
+```go
+{{T "Your translatable text"}}
+```
+
+Add translatable strings in Go code (global):
 
 ```go
 translation.Sprintf("Your translatable text")
 ```
 
+Add translatable strings in HTMX handlers (user-specific):
+
+```go
+func handleSomeHTMX(w http.ResponseWriter, r *http.Request) {
+    // Use user's current language setting
+    userLang := configmanager.GetLanguage()
+    text := translation.SprintfForRequest(userLang, "Your translatable text")
+    html := fmt.Sprintf(`<div>%s</div>`, text)
+    w.Write([]byte(html))
+}
+```
+
 Generate translations:
 
 ```bash
-make translate
+make translation
 ```
 
 Translation files in `internal/translation/locales/{lang}/messages.gotext.json`

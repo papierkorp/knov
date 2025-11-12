@@ -36,26 +36,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/components/markdown-editor": {
-            "get": {
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "components"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        },
         "/api/components/table": {
             "get": {
                 "description": "Returns paginated, sortable, searchable table HTML fragment",

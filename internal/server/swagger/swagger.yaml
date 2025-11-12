@@ -250,19 +250,6 @@ paths:
       summary: Get file editor
       tags:
       - components
-  /api/components/markdown-editor:
-    get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      produces:
-      - text/html
-      responses: {}
-      tags:
-      - components
   /api/components/table:
     get:
       description: Returns paginated, sortable, searchable table HTML fragment

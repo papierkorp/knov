@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 
-	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/filetype"
 	"knov/internal/logging"
@@ -136,64 +135,6 @@ func handleAPIGetEditor(w http.ResponseWriter, r *http.Request) {
 			<div id="editor-status"></div>
 		</div>
 	`, filepath, content)
-
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
-}
-
-// / @Summary Get markdown editor with form
-// @Tags components
-// @Param filepath query string true "File path"
-// @Produce html
-// @Router /api/components/markdown-editor [get]
-func handleAPIGetMarkdownEditor(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	if filepath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	fullPath := utils.ToFullPath(filepath)
-	content, err := files.GetRawContent(fullPath)
-	if err != nil {
-		content = ""
-	}
-
-	theme := "light"
-	if configmanager.GetDarkMode() {
-		theme = "dark"
-	}
-
-	html := fmt.Sprintf(`
-		<form id="editor-form" hx-post="/api/files/save/%s" hx-target="#editor-status">
-			<textarea id="initial-content" style="display:none;">%s</textarea>
-			<div id="markdown-editor"></div>
-			<div style="margin-top: 12px;">
-				<button type="submit" class="btn-primary">save</button>
-				<a href="/files/%s" class="btn-secondary">cancel</a>
-			</div>
-		</form>
-		<div id="editor-status"></div>
-		<script>
-			(function() {
-				const initialContent = document.getElementById('initial-content').value;
-				const editor = new toastui.Editor({
-					el: document.querySelector('#markdown-editor'),
-					height: '600px',
-					initialEditType: 'markdown',
-					previewStyle: 'tab',
-					initialValue: initialContent,
-					usageStatistics: false,
-					theme: '%s'
-				});
-
-				const form = document.getElementById('editor-form');
-				form.addEventListener('htmx:configRequest', function(evt) {
-					evt.detail.parameters['content'] = editor.getMarkdown();
-				});
-			})();
-		</script>
-	`, filepath, content, filepath, theme)
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))

@@ -11,6 +11,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/translation"
 	"knov/internal/utils"
 )
 
@@ -171,7 +172,7 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var html strings.Builder
-	html.WriteString(fmt.Sprintf(`<div id="current-file-breadcrumb"><a href="/files/%s">â†’ %s</a></div>`, filepath, filepath))
+	html.WriteString(fmt.Sprintf(`<div id="current-file-breadcrumb"><a href="/files/%s">→ %s</a></div>`, filepath, filepath))
 
 	writeResponse(w, r, data, html.String())
 }
@@ -229,7 +230,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo("saved file: %s", filepath)
 	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(`<span style="color: green;">file saved successfully</span>`))
+	w.Write([]byte(fmt.Sprintf(`<span style="color: green;">%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"))))
 }
 
 // @Summary Browse files by single metadata field
@@ -325,28 +326,23 @@ func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
 
 	// File path section (only for new files)
 	if !isEdit {
-		html.WriteString(`<div class="form-section">`)
-		html.WriteString(`<h4>file settings</h4>`)
 		html.WriteString(`<div class="form-group">`)
-		html.WriteString(`<label for="filepath">file path</label>`)
-		html.WriteString(`<input type="text" id="filepath" name="filepath" required placeholder="path/to/filename.md" class="form-input"/>`)
-		html.WriteString(`<small>enter the full path including filename and extension</small>`)
-		html.WriteString(`</div>`)
+		html.WriteString(fmt.Sprintf(`<label for="filepath">%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file path")))
+		html.WriteString(fmt.Sprintf(`<input type="text" id="filepath" name="filepath" required placeholder="%s" class="form-input"/>`, translation.SprintfForRequest(configmanager.GetLanguage(), "path/to/filename.md")))
 		html.WriteString(`</div>`)
 	}
 
 	// Content section
 	html.WriteString(`<div class="form-section">`)
-	html.WriteString(`<h4>content</h4>`)
 	html.WriteString(fmt.Sprintf(`<textarea id="initial-content" style="display:none;">%s</textarea>`, content))
 	html.WriteString(`<div id="markdown-editor"></div>`)
 	html.WriteString(`</div>`)
 
 	// Form actions
 	html.WriteString(`<div class="form-actions">`)
-	submitText := "🚀 create file"
+	submitText := fmt.Sprintf("%s", translation.SprintfForRequest(configmanager.GetLanguage(), "create file"))
 	if isEdit {
-		submitText = "💾 save"
+		submitText = fmt.Sprintf("%s", translation.SprintfForRequest(configmanager.GetLanguage(), "save"))
 	}
 	html.WriteString(fmt.Sprintf(`<button type="submit" class="btn-primary"><span>%s</span></button>`, submitText))
 
@@ -355,7 +351,7 @@ func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
 	if isEdit {
 		cancelLink = fmt.Sprintf("/files/%s", filePath)
 	}
-	html.WriteString(fmt.Sprintf(`<a href="%s" class="btn-secondary">cancel</a>`, cancelLink))
+	html.WriteString(fmt.Sprintf(`<a href="%s" class="btn-secondary">%s</a>`, cancelLink, translation.SprintfForRequest(configmanager.GetLanguage(), "cancel")))
 	html.WriteString(`</div>`)
 	html.WriteString(`</form>`)
 	html.WriteString(`<div id="file-status"></div>`)
@@ -433,7 +429,12 @@ func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo("created file: %s", filePath)
-	html := fmt.Sprintf(`<div class="success-message">file created successfully! <a href="/files/%s">view file</a> | <a href="/files/edit/%s">edit file</a></div>`, filePath, filePath)
+	html := fmt.Sprintf(`<div class="success-message">%s <a href="/files/%s">%s</a> | <a href="/files/edit/%s">%s</a></div>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "file created successfully!"),
+		filePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"),
+		filePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "edit file"))
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))

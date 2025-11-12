@@ -2,6 +2,29 @@
 <div id="page-overview">
     <h1>{{T "OVERVIEW"}}</h1>
     <div class="overview-sections">
+        <section class="overview-browse">
+            <h2>{{T "Browse by Metadata"}}</h2>
+            <div class="browse-grid">
+                <div class="browse-section">
+                    <h3>{{T "Tags"}}</h3>
+                    <div hx-get="/api/metadata/tags" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                        {{T "loading tags..."}}
+                    </div>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Collections"}}</h3>
+                    <div hx-get="/api/metadata/collections" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                        {{T "loading collections..."}}
+                    </div>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Folders"}}</h3>
+                    <div hx-get="/api/metadata/folders" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                        {{T "loading folders..."}}
+                    </div>
+                </div>
+            </div>
+        </section>
         <section class="overview-files">
             <h2>{{T "All Files"}}</h2>
             <div class="files-list-container">
