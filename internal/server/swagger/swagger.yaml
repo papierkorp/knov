@@ -989,6 +989,24 @@ paths:
       summary: Get all files
       tags:
       - files
+  /api/files/metadata-form:
+    get:
+      description: Get standalone metadata form for a file
+      parameters:
+      - description: File path for edit mode
+        in: query
+        name: filepath
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: metadata form html
+          schema:
+            type: string
+      summary: Get metadata form
+      tags:
+      - files
   /api/files/raw:
     get:
       description: Returns unprocessed file content for editing
@@ -1680,6 +1698,13 @@ paths:
       - metadata
   /api/metadata/para/archive/all:
     get:
+      parameters:
+      - description: Response format (options for datalist)
+        enum:
+        - options
+        in: query
+        name: format
+        type: string
       produces:
       - application/json
       - text/html
@@ -1734,6 +1759,13 @@ paths:
       - metadata
   /api/metadata/para/areas/all:
     get:
+      parameters:
+      - description: Response format (options for datalist)
+        enum:
+        - options
+        in: query
+        name: format
+        type: string
       produces:
       - application/json
       - text/html
@@ -1788,6 +1820,13 @@ paths:
       - metadata
   /api/metadata/para/projects/all:
     get:
+      parameters:
+      - description: Response format (options for datalist)
+        enum:
+        - options
+        in: query
+        name: format
+        type: string
       produces:
       - application/json
       - text/html
@@ -1842,6 +1881,13 @@ paths:
       - metadata
   /api/metadata/para/resources/all:
     get:
+      parameters:
+      - description: Response format (options for datalist)
+        enum:
+        - options
+        in: query
+        name: format
+        type: string
       produces:
       - application/json
       - text/html
@@ -1851,6 +1897,32 @@ paths:
           schema:
             type: string
       summary: Get all PARA resources with counts
+      tags:
+      - metadata
+  /api/metadata/parents:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Comma-separated parent file paths
+        in: formData
+        name: parents
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file parents
       tags:
       - metadata
   /api/metadata/path:
@@ -1995,6 +2067,31 @@ paths:
               type: integer
             type: object
       summary: Get all tags with counts
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Comma-separated tag list
+        in: formData
+        name: tags
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file tags
       tags:
       - metadata
   /api/search:

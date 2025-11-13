@@ -132,6 +132,7 @@ func StartServerChi() {
 			r.Post("/save/*", handleAPIFileSave)
 			r.Get("/browse", handleAPIBrowseFiles)
 			r.Get("/form", handleAPIFileForm)
+			r.Get("/metadata-form", handleAPIMetadataForm)
 			r.Post("/create", handleAPIFileCreate)
 		})
 
@@ -161,6 +162,8 @@ func StartServerChi() {
 			r.Post("/createdat", handleAPISetMetadataCreatedAt)
 			r.Post("/lastedited", handleAPISetMetadataLastEdited)
 			r.Post("/folders", handleAPISetMetadataFolders)
+			r.Post("/tags", handleAPISetMetadataTags)
+			r.Post("/parents", handleAPISetMetadataParents)
 			r.Post("/context/projects", handleAPISetMetadataContextProjects)
 
 			r.Get("/tags", handleAPIGetAllTags)

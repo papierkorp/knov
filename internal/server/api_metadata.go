@@ -1071,6 +1071,86 @@ func handleAPISetMetadataPARAArchive(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, "archive updated", html)
 }
 
+// @Summary Set file tags
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param tags formData string true "Comma-separated tag list"
+// @Success 200 {string} string
+// @Router /api/metadata/tags [post]
+func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filepath := r.FormValue("filepath")
+	tagsStr := r.FormValue("tags")
+
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	var tags []string
+	if tagsStr != "" {
+		tags = strings.Split(tagsStr, ",")
+		for i := range tags {
+			tags[i] = strings.TrimSpace(tags[i])
+		}
+	}
+
+	metadata := &files.Metadata{
+		Path: filepath,
+		Tags: tags,
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
+		return
+	}
+
+	html := fmt.Sprintf(`<span class="tags-updated">tags updated</span>`)
+	writeResponse(w, r, "tags updated", html)
+}
+
+// @Summary Set file parents
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param parents formData string true "Comma-separated parent file paths"
+// @Success 200 {string} string
+// @Router /api/metadata/parents [post]
+func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filepath := r.FormValue("filepath")
+	parentsStr := r.FormValue("parents")
+
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	var parents []string
+	if parentsStr != "" {
+		parents = strings.Split(parentsStr, ",")
+		for i := range parents {
+			parents[i] = strings.TrimSpace(parents[i])
+		}
+	}
+
+	metadata := &files.Metadata{
+		Path:    filepath,
+		Parents: parents,
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
+		return
+	}
+
+	html := fmt.Sprintf(`<span class="parents-updated">parents updated</span>`)
+	writeResponse(w, r, "parents updated", html)
+}
+
 // @Summary Get file priority
 // @Tags metadata
 // @Param filepath query string true "File path"
@@ -1231,10 +1311,13 @@ func handleAPIGetMetadataPARAArchive(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Get all PARA projects with counts
 // @Tags metadata
+// @Param format query string false "Response format (options for datalist)" Enums(options)
 // @Produce json,html
 // @Success 200 {string} string
 // @Router /api/metadata/para/projects/all [get]
 func handleAPIGetAllPARAProjects(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+
 	projectCount, err := files.GetAllPARAProjects()
 	if err != nil {
 		http.Error(w, "failed to get projects", http.StatusInternalServerError)
@@ -1242,6 +1325,17 @@ func handleAPIGetAllPARAProjects(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var html strings.Builder
+	if format == "options" {
+		// return option elements for datalist
+		for project := range projectCount {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, project, project))
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	// default: return div elements for display
 	if len(projectCount) == 0 {
 		html.WriteString(`<div class="no-items">no projects found</div>`)
 	} else {
@@ -1256,10 +1350,13 @@ func handleAPIGetAllPARAProjects(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Get all PARA areas with counts
 // @Tags metadata
+// @Param format query string false "Response format (options for datalist)" Enums(options)
 // @Produce json,html
 // @Success 200 {string} string
 // @Router /api/metadata/para/areas/all [get]
 func handleAPIGetAllPARAreas(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+
 	areaCount, err := files.GetAllPARAreas()
 	if err != nil {
 		http.Error(w, "failed to get areas", http.StatusInternalServerError)
@@ -1267,6 +1364,17 @@ func handleAPIGetAllPARAreas(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var html strings.Builder
+	if format == "options" {
+		// return option elements for datalist
+		for area := range areaCount {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, area, area))
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	// default: return div elements for display
 	if len(areaCount) == 0 {
 		html.WriteString(`<div class="no-items">no areas found</div>`)
 	} else {
@@ -1281,10 +1389,13 @@ func handleAPIGetAllPARAreas(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Get all PARA resources with counts
 // @Tags metadata
+// @Param format query string false "Response format (options for datalist)" Enums(options)
 // @Produce json,html
 // @Success 200 {string} string
 // @Router /api/metadata/para/resources/all [get]
 func handleAPIGetAllPARAResources(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+
 	resourceCount, err := files.GetAllPARAResources()
 	if err != nil {
 		http.Error(w, "failed to get resources", http.StatusInternalServerError)
@@ -1292,6 +1403,17 @@ func handleAPIGetAllPARAResources(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var html strings.Builder
+	if format == "options" {
+		// return option elements for datalist
+		for resource := range resourceCount {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, resource, resource))
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	// default: return div elements for display
 	if len(resourceCount) == 0 {
 		html.WriteString(`<div class="no-items">no resources found</div>`)
 	} else {
@@ -1306,10 +1428,13 @@ func handleAPIGetAllPARAResources(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Get all PARA archive with counts
 // @Tags metadata
+// @Param format query string false "Response format (options for datalist)" Enums(options)
 // @Produce json,html
 // @Success 200 {string} string
 // @Router /api/metadata/para/archive/all [get]
 func handleAPIGetAllPARAArchive(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+
 	archiveCount, err := files.GetAllPARAArchive()
 	if err != nil {
 		http.Error(w, "failed to get archive", http.StatusInternalServerError)
@@ -1317,6 +1442,17 @@ func handleAPIGetAllPARAArchive(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var html strings.Builder
+	if format == "options" {
+		// return option elements for datalist
+		for archive := range archiveCount {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, archive, archive))
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	// default: return div elements for display
 	if len(archiveCount) == 0 {
 		html.WriteString(`<div class="no-items">no archive found</div>`)
 	} else {

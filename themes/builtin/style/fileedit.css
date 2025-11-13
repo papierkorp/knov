@@ -1,184 +1,389 @@
 #page-fileedit #markdown-editor,
 #page-filenew #markdown-editor {
-    margin-bottom: 12px;
+  margin-bottom: 12px;
 }
 
 /* move write/preview tabs to top right */
 #page-fileedit .toastui-editor-md-tab-container,
 #page-filenew .toastui-editor-md-tab-container {
-    position: absolute !important;
-    right: 0 !important;
-    left: auto !important;
-    top: 0 !important;
+  position: absolute !important;
+  right: 0 !important;
+  left: auto !important;
+  top: 0 !important;
 }
 
 /* override toast ui dark theme colors */
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-dark,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-dark {
-    background: var(--bg-secondary) !important;
-    color: var(--text) !important;
+  background: var(--bg-secondary) !important;
+  color: var(--text) !important;
 }
 
 body[data-dark-mode="true"]
-    #page-fileedit
-    .toastui-editor-dark
-    .toastui-editor-defaultUI,
+  #page-fileedit
+  .toastui-editor-dark
+  .toastui-editor-defaultUI,
 body[data-dark-mode="true"]
-    #page-filenew
-    .toastui-editor-dark
-    .toastui-editor-defaultUI {
-    background: var(--bg-secondary) !important;
-    border-color: var(--border) !important;
+  #page-filenew
+  .toastui-editor-dark
+  .toastui-editor-defaultUI {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
 }
 
 body[data-dark-mode="true"]
-    #page-fileedit
-    .toastui-editor-dark
-    .toastui-editor-toolbar,
+  #page-fileedit
+  .toastui-editor-dark
+  .toastui-editor-toolbar,
 body[data-dark-mode="true"]
-    #page-filenew
-    .toastui-editor-dark
-    .toastui-editor-toolbar {
-    background: var(--bg-secondary) !important;
-    border-color: var(--border) !important;
+  #page-filenew
+  .toastui-editor-dark
+  .toastui-editor-toolbar {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
 }
 
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-dark .ProseMirror,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-dark .ProseMirror {
-    background: var(--bg-secondary) !important;
-    color: var(--text) !important;
+  background: var(--bg-secondary) !important;
+  color: var(--text) !important;
 }
 
 body[data-dark-mode="true"]
-    #page-fileedit
-    .toastui-editor-dark
-    .toastui-editor-contents,
+  #page-fileedit
+  .toastui-editor-dark
+  .toastui-editor-contents,
 body[data-dark-mode="true"]
-    #page-filenew
-    .toastui-editor-dark
-    .toastui-editor-contents {
-    background: var(--bg-secondary) !important;
-    color: var(--text) !important;
+  #page-filenew
+  .toastui-editor-dark
+  .toastui-editor-contents {
+  background: var(--bg-secondary) !important;
+  color: var(--text) !important;
 }
 
 body[data-dark-mode="true"]
-    #page-fileedit
-    .toastui-editor-dark
-    .toastui-editor-md-preview,
+  #page-fileedit
+  .toastui-editor-dark
+  .toastui-editor-md-preview,
 body[data-dark-mode="true"]
-    #page-filenew
-    .toastui-editor-dark
-    .toastui-editor-md-preview {
-    background: var(--bg-secondary) !important;
-    color: var(--text) !important;
+  #page-filenew
+  .toastui-editor-dark
+  .toastui-editor-md-preview {
+  background: var(--bg-secondary) !important;
+  color: var(--text) !important;
 }
 
 body[data-dark-mode="true"]
-    #page-fileedit
-    .toastui-editor-dark
-    .toastui-editor-md-container,
+  #page-fileedit
+  .toastui-editor-dark
+  .toastui-editor-md-container,
 body[data-dark-mode="true"]
-    #page-filenew
-    .toastui-editor-dark
-    .toastui-editor-md-container {
-    background: var(--bg-secondary) !important;
+  #page-filenew
+  .toastui-editor-dark
+  .toastui-editor-md-container {
+  background: var(--bg-secondary) !important;
 }
 
 body[data-dark-mode="true"]
-    #page-fileedit
-    .toastui-editor-dark
-    .toastui-editor-md-splitter,
+  #page-fileedit
+  .toastui-editor-dark
+  .toastui-editor-md-splitter,
 body[data-dark-mode="true"]
-    #page-filenew
-    .toastui-editor-dark
-    .toastui-editor-md-splitter {
-    background: var(--border) !important;
+  #page-filenew
+  .toastui-editor-dark
+  .toastui-editor-md-splitter {
+  background: var(--border) !important;
 }
 
 body[data-dark-mode="true"]
-    #page-fileedit
-    .toastui-editor-dark
-    .toastui-editor-toolbar
-    button,
+  #page-fileedit
+  .toastui-editor-dark
+  .toastui-editor-toolbar
+  button,
 body[data-dark-mode="true"]
-    #page-filenew
-    .toastui-editor-dark
-    .toastui-editor-toolbar
-    button {
-    color: var(--text) !important;
+  #page-filenew
+  .toastui-editor-dark
+  .toastui-editor-toolbar
+  button {
+  color: var(--text) !important;
 }
 
 /* code blocks in markdown mode */
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-code-block,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-md-code-block {
-    background: var(--bg) !important;
-    color: #a3e635 !important;
+  background: var(--bg) !important;
+  color: #a3e635 !important;
 }
 
 body[data-dark-mode="true"]
-    #page-fileedit
-    .toastui-editor-md-code-block-line-background,
+  #page-fileedit
+  .toastui-editor-md-code-block-line-background,
 body[data-dark-mode="true"]
-    #page-filenew
-    .toastui-editor-md-code-block-line-background {
-    background: var(--bg) !important;
+  #page-filenew
+  .toastui-editor-md-code-block-line-background {
+  background: var(--bg) !important;
 }
 
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-meta,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-md-meta {
-    color: var(--text-secondary) !important;
+  color: var(--text-secondary) !important;
 }
 
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-delimiter,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-md-delimiter {
-    color: var(--text-secondary) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* metadata form styling */
+#page-fileedit .metadata-form,
+#page-filenew .metadata-form {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+#page-fileedit .metadata-form .form-group,
+#page-filenew .metadata-form .form-group {
+  margin-bottom: 12px;
+}
+
+#page-fileedit .metadata-form .form-subgroup,
+#page-filenew .metadata-form .form-subgroup {
+  margin-bottom: 8px;
+  margin-left: 16px;
+}
+
+#page-fileedit .metadata-form label,
+#page-filenew .metadata-form label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+#page-fileedit .metadata-form .form-input,
+#page-filenew .metadata-form .form-input,
+#page-fileedit .metadata-form .form-select,
+#page-filenew .metadata-form .form-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+#page-fileedit .metadata-form .form-input:focus,
+#page-filenew .metadata-form .form-input:focus,
+#page-fileedit .metadata-form .form-select:focus,
+#page-filenew .metadata-form .form-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-alpha);
+}
+
+#page-fileedit .metadata-form h4,
+#page-filenew .metadata-form h4 {
+  color: var(--text);
+  margin: 12px 0 8px 0;
+  font-size: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+
+/* datalist styling */
+#page-fileedit .metadata-form input[list],
+#page-filenew .metadata-form input[list] {
+  position: relative;
+}
+
+#page-fileedit .metadata-form datalist,
+#page-filenew .metadata-form datalist {
+  display: none;
+}
+
+#page-fileedit .metadata-form input[list]:focus,
+#page-filenew .metadata-form input[list]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-alpha);
+}
+
+/* enhanced placeholder styling for datalist inputs */
+#page-fileedit .metadata-form input[list]::placeholder,
+#page-filenew .metadata-form input[list]::placeholder {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* tag chips styling */
+#page-fileedit .metadata-form .tag-chips-container,
+#page-filenew .metadata-form .tag-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  min-height: 38px;
+  cursor: text;
+}
+
+#page-fileedit .metadata-form .tag-chips-container:focus-within,
+#page-filenew .metadata-form .tag-chips-container:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-alpha);
+}
+
+#page-fileedit .metadata-form .tag-chips,
+#page-filenew .metadata-form .tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+#page-fileedit .metadata-form .tag-chip,
+#page-filenew .metadata-form .tag-chip {
+  display: inline-flex;
+  align-items: center;
+  background: var(--primary);
+  color: var(--primary-text);
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#page-fileedit .metadata-form .tag-chip-remove,
+#page-filenew .metadata-form .tag-chip-remove {
+  background: none;
+  border: none;
+  color: var(--primary-text);
+  cursor: pointer;
+  margin-left: 4px;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.8;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#page-fileedit .metadata-form .tag-chip-remove:hover,
+#page-filenew .metadata-form .tag-chip-remove:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+#page-fileedit .metadata-form .tag-chips-input,
+#page-filenew .metadata-form .tag-chips-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.9rem;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  min-width: 120px;
+}
+
+#page-fileedit .metadata-form .tag-chips-input::placeholder,
+#page-filenew .metadata-form .tag-chips-input::placeholder {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* empty state styling */
+#page-fileedit .metadata-form .tag-chips:empty + .tag-chips-input,
+#page-filenew .metadata-form .tag-chips:empty + .tag-chips-input {
+  width: 100%;
+}
+
+/* save status indicator */
+#page-fileedit .metadata-form .save-status,
+#page-filenew .metadata-form .save-status {
+  padding: 4px 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+  min-height: 20px;
+}
+
+#page-fileedit .metadata-form .save-status:empty,
+#page-filenew .metadata-form .save-status:empty {
+  display: none;
+}
+
+#page-fileedit .metadata-form .save-status .tags-updated,
+#page-filenew .metadata-form .save-status .tags-updated,
+#page-fileedit .metadata-form .save-status .parents-updated,
+#page-filenew .metadata-form .save-status .parents-updated {
+  color: var(--success, #22c55e);
+  background: var(--success-bg, rgba(34, 197, 94, 0.1));
 }
 
 /* code blocks in preview */
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents pre,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-contents pre {
-    background: var(--bg) !important;
+  background: var(--bg) !important;
 }
 
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents code,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-contents code {
-    background: var(--bg) !important;
-    color: var(--text) !important;
+  background: var(--bg) !important;
+  color: var(--text) !important;
 }
 
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents pre code,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-contents pre code {
-    color: var(--text) !important;
+  color: var(--text) !important;
 }
 
 /* toolbar and mode switch */
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-defaultUI-toolbar,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-defaultUI-toolbar {
-    background: var(--bg-secondary) !important;
-    border-color: var(--border) !important;
+  background: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
 }
 
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-mode-switch,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-mode-switch {
-    background: var(--bg-secondary) !important;
-    border-color: var(--border) !important;
+  background: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
 }
 
 body[data-dark-mode="true"]
-    #page-fileedit
-    .toastui-editor-defaultUI
-    .toastui-editor-md-tab-container,
+  #page-fileedit
+  .toastui-editor-defaultUI
+  .toastui-editor-md-tab-container,
 body[data-dark-mode="true"]
-    #page-filenew
-    .toastui-editor-defaultUI
-    .toastui-editor-md-tab-container {
-    background: var(--bg-secondary) !important;
-    border-color: var(--border) !important;
+  #page-filenew
+  .toastui-editor-defaultUI
+  .toastui-editor-md-tab-container {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
 }
 
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents *,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-contents * {
-    color: var(--text) !important;
+  color: var(--text) !important;
 }
 
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-contents h1,
@@ -201,5 +406,5 @@ body[data-dark-mode="true"] #page-filenew .toastui-editor-contents p,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-contents li,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-contents td,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-contents th {
-    color: var(--text) !important;
+  color: var(--text) !important;
 }

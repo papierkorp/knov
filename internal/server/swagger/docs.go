@@ -1091,6 +1091,34 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/files/metadata-form": {
+            "get": {
+                "description": "Get standalone metadata form for a file",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get metadata form",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path for edit mode",
+                        "name": "filepath",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "metadata form html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/raw": {
             "get": {
                 "description": "Returns unprocessed file content for editing",
@@ -2136,6 +2164,17 @@ const docTemplate = `{
                     "metadata"
                 ],
                 "summary": "Get all PARA archive with counts",
+                "parameters": [
+                    {
+                        "enum": [
+                            "options"
+                        ],
+                        "type": "string",
+                        "description": "Response format (options for datalist)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2218,6 +2257,17 @@ const docTemplate = `{
                     "metadata"
                 ],
                 "summary": "Get all PARA areas with counts",
+                "parameters": [
+                    {
+                        "enum": [
+                            "options"
+                        ],
+                        "type": "string",
+                        "description": "Response format (options for datalist)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2300,6 +2350,17 @@ const docTemplate = `{
                     "metadata"
                 ],
                 "summary": "Get all PARA projects with counts",
+                "parameters": [
+                    {
+                        "enum": [
+                            "options"
+                        ],
+                        "type": "string",
+                        "description": "Response format (options for datalist)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2382,6 +2443,56 @@ const docTemplate = `{
                     "metadata"
                 ],
                 "summary": "Get all PARA resources with counts",
+                "parameters": [
+                    {
+                        "enum": [
+                            "options"
+                        ],
+                        "type": "string",
+                        "description": "Response format (options for datalist)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/parents": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Set file parents",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated parent file paths",
+                        "name": "parents",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2604,6 +2715,43 @@ const docTemplate = `{
                             "additionalProperties": {
                                 "type": "integer"
                             }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Set file tags",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated tag list",
+                        "name": "tags",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
