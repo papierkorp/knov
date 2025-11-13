@@ -103,29 +103,6 @@ definitions:
     - WidgetTypeTags
     - WidgetTypeCollections
     - WidgetTypeFolders
-  files.Context:
-    properties:
-      archive:
-        description: Inactive items
-        items:
-          type: string
-        type: array
-      areas:
-        description: Ongoing responsibilities
-        items:
-          type: string
-        type: array
-      projects:
-        description: Active projects with deadlines
-        items:
-          type: string
-        type: array
-      resources:
-        description: Future reference materials
-        items:
-          type: string
-        type: array
-    type: object
   files.File:
     properties:
       metadata:
@@ -175,10 +152,6 @@ definitions:
       collection:
         description: auto / manual possible
         type: string
-      context:
-        allOf:
-        - $ref: '#/definitions/files.Context'
-        description: manual
       createdAt:
         description: auto
         type: string
@@ -203,6 +176,10 @@ definitions:
       name:
         description: manual filename
         type: string
+      para:
+        allOf:
+        - $ref: '#/definitions/files.PARA'
+        description: manual
       parents:
         description: manual
         items:
@@ -236,6 +213,29 @@ definitions:
         description: manual - with add new
       usedLinks:
         description: auto
+        items:
+          type: string
+        type: array
+    type: object
+  files.PARA:
+    properties:
+      archive:
+        description: Inactive items
+        items:
+          type: string
+        type: array
+      areas:
+        description: Ongoing responsibilities
+        items:
+          type: string
+        type: array
+      projects:
+        description: Active projects with deadlines
+        items:
+          type: string
+        type: array
+      resources:
+        description: Future reference materials
         items:
           type: string
         type: array
@@ -1637,6 +1637,222 @@ paths:
       summary: Get tag options for filter
       tags:
       - metadata
+  /api/metadata/para/archive:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get PARA archive for a file
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Comma-separated archive list
+        in: formData
+        name: archive
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set PARA archive
+      tags:
+      - metadata
+  /api/metadata/para/archive/all:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get all PARA archive with counts
+      tags:
+      - metadata
+  /api/metadata/para/areas:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get PARA areas for a file
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Comma-separated area list
+        in: formData
+        name: areas
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set PARA areas
+      tags:
+      - metadata
+  /api/metadata/para/areas/all:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get all PARA areas with counts
+      tags:
+      - metadata
+  /api/metadata/para/projects:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get PARA projects for a file
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Comma-separated project list
+        in: formData
+        name: projects
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set PARA projects
+      tags:
+      - metadata
+  /api/metadata/para/projects/all:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get all PARA projects with counts
+      tags:
+      - metadata
+  /api/metadata/para/resources:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get PARA resources for a file
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Comma-separated resource list
+        in: formData
+        name: resources
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set PARA resources
+      tags:
+      - metadata
+  /api/metadata/para/resources/all:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get all PARA resources with counts
+      tags:
+      - metadata
   /api/metadata/path:
     get:
       parameters:
@@ -1682,6 +1898,21 @@ paths:
       tags:
       - metadata
   /api/metadata/priority:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file priority
+      tags:
+      - metadata
     post:
       consumes:
       - application/x-www-form-urlencoded

@@ -109,6 +109,11 @@ func renderFilterFormWidget() (string, error) {
 						<option value="lastEdited">Last Edited</option>
 						<option value="folders">Folders</option>
 						<option value="boards">Boards</option>
+                        <option value="boards">Boards</option>
+                        <option value="para_projects">PARA: Projects</option>
+                        <option value="para_areas">PARA: Areas</option>
+                        <option value="para_resources">PARA: Resources</option>
+                        <option value="para_archive">PARA: Archive</option>
 					</select>
 					<select name="operator[]" id="operator-0">
 						<option value="equals">Equals</option>
@@ -150,6 +155,11 @@ func renderFilterFormWidget() (string, error) {
 					'<option value="lastEdited">Last Edited</option>' +
 					'<option value="folders">Folders</option>' +
 					'<option value="boards">Boards</option>' +
+                    '<option value="boards">Boards</option>' +
+                    '<option value="para_projects">PARA: Projects</option>' +
+                    '<option value="para_areas">PARA: Areas</option>
+                    '<option value="para_resources">PARA: Resources</option>' +
+                    '<option value="para_archive">PARA: Archive</option>' +
 					'</select>';
 				
 				const operatorHTML = '<select name="operator[]" id="operator-' + filterRowCount + '">' +

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -766,7 +767,7 @@ func handleAPISetMetadataContextProjects(w http.ResponseWriter, r *http.Request)
 
 	metadata := &files.Metadata{
 		Path: filepath,
-		Context: files.Context{
+		PARA: files.PARA{
 			Projects: projects,
 		},
 	}
@@ -900,4 +901,430 @@ func handleAPIGetFolderOptions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, r, folders, html.String())
+}
+
+// @Summary Set PARA projects
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param projects formData string true "Comma-separated project list"
+// @Success 200 {string} string
+// @Router /api/metadata/para/projects [post]
+func handleAPISetMetadataPARAProjects(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filepath := r.FormValue("filepath")
+	projectsStr := r.FormValue("projects")
+
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	var projects []string
+	if projectsStr != "" {
+		projects = strings.Split(projectsStr, ",")
+		for i := range projects {
+			projects[i] = strings.TrimSpace(projects[i])
+		}
+	}
+
+	metadata := &files.Metadata{
+		Path: filepath,
+		PARA: files.PARA{
+			Projects: projects,
+		},
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
+		return
+	}
+
+	html := fmt.Sprintf(`<span class="para-projects">%s</span>`, strings.Join(projects, ", "))
+	writeResponse(w, r, "projects updated", html)
+}
+
+// @Summary Set PARA areas
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param areas formData string true "Comma-separated area list"
+// @Success 200 {string} string
+// @Router /api/metadata/para/areas [post]
+func handleAPISetMetadataPARAreas(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filepath := r.FormValue("filepath")
+	areasStr := r.FormValue("areas")
+
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	var areas []string
+	if areasStr != "" {
+		areas = strings.Split(areasStr, ",")
+		for i := range areas {
+			areas[i] = strings.TrimSpace(areas[i])
+		}
+	}
+
+	metadata := &files.Metadata{
+		Path: filepath,
+		PARA: files.PARA{
+			Areas: areas,
+		},
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
+		return
+	}
+
+	html := fmt.Sprintf(`<span class="para-areas">%s</span>`, strings.Join(areas, ", "))
+	writeResponse(w, r, "areas updated", html)
+}
+
+// @Summary Set PARA resources
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param resources formData string true "Comma-separated resource list"
+// @Success 200 {string} string
+// @Router /api/metadata/para/resources [post]
+func handleAPISetMetadataPARAResources(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filepath := r.FormValue("filepath")
+	resourcesStr := r.FormValue("resources")
+
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	var resources []string
+	if resourcesStr != "" {
+		resources = strings.Split(resourcesStr, ",")
+		for i := range resources {
+			resources[i] = strings.TrimSpace(resources[i])
+		}
+	}
+
+	metadata := &files.Metadata{
+		Path: filepath,
+		PARA: files.PARA{
+			Resources: resources,
+		},
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
+		return
+	}
+
+	html := fmt.Sprintf(`<span class="para-resources">%s</span>`, strings.Join(resources, ", "))
+	writeResponse(w, r, "resources updated", html)
+}
+
+// @Summary Set PARA archive
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param archive formData string true "Comma-separated archive list"
+// @Success 200 {string} string
+// @Router /api/metadata/para/archive [post]
+func handleAPISetMetadataPARAArchive(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filepath := r.FormValue("filepath")
+	archiveStr := r.FormValue("archive")
+
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	var archive []string
+	if archiveStr != "" {
+		archive = strings.Split(archiveStr, ",")
+		for i := range archive {
+			archive[i] = strings.TrimSpace(archive[i])
+		}
+	}
+
+	metadata := &files.Metadata{
+		Path: filepath,
+		PARA: files.PARA{
+			Archive: archive,
+		},
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
+		return
+	}
+
+	html := fmt.Sprintf(`<span class="para-archive">%s</span>`, strings.Join(archive, ", "))
+	writeResponse(w, r, "archive updated", html)
+}
+
+// @Summary Get file priority
+// @Tags metadata
+// @Param filepath query string true "File path"
+// @Success 200 {string} string
+// @Router /api/metadata/priority [get]
+func handleAPIGetMetadataPriority(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	metadata, err := files.MetaDataGet(filepath)
+	if err != nil || metadata == nil {
+		http.Error(w, "metadata not found", http.StatusNotFound)
+		return
+	}
+
+	html := fmt.Sprintf(`<span class="priority">%s</span>`, metadata.Priority)
+	writeResponse(w, r, string(metadata.Priority), html)
+}
+
+// @Summary Get PARA projects for a file
+// @Tags metadata
+// @Param filepath query string true "File path"
+// @Success 200 {string} string
+// @Router /api/metadata/para/projects [get]
+func handleAPIGetMetadataPARAProjects(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	metadata, err := files.MetaDataGet(filepath)
+	if err != nil || metadata == nil {
+		http.Error(w, "metadata not found", http.StatusNotFound)
+		return
+	}
+
+	if len(metadata.PARA.Projects) == 0 {
+		html := `<span class="para-projects">no projects</span>`
+		writeResponse(w, r, []string{}, html)
+		return
+	}
+
+	var links []string
+	for _, project := range metadata.PARA.Projects {
+		links = append(links, fmt.Sprintf(`<a href="/browse/projects/%s" class="meta-link">%s</a>`,
+			url.QueryEscape(project), project))
+	}
+
+	html := fmt.Sprintf(`<span class="para-projects">%s</span>`, strings.Join(links, ", "))
+	writeResponse(w, r, metadata.PARA.Projects, html)
+}
+
+// @Summary Get PARA areas for a file
+// @Tags metadata
+// @Param filepath query string true "File path"
+// @Success 200 {string} string
+// @Router /api/metadata/para/areas [get]
+func handleAPIGetMetadataPARAreas(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	metadata, err := files.MetaDataGet(filepath)
+	if err != nil || metadata == nil {
+		http.Error(w, "metadata not found", http.StatusNotFound)
+		return
+	}
+
+	if len(metadata.PARA.Areas) == 0 {
+		html := `<span class="para-areas">no areas</span>`
+		writeResponse(w, r, []string{}, html)
+		return
+	}
+
+	var links []string
+	for _, area := range metadata.PARA.Areas {
+		links = append(links, fmt.Sprintf(`<a href="/browse/areas/%s" class="meta-link">%s</a>`,
+			url.QueryEscape(area), area))
+	}
+
+	html := fmt.Sprintf(`<span class="para-areas">%s</span>`, strings.Join(links, ", "))
+	writeResponse(w, r, metadata.PARA.Areas, html)
+}
+
+// @Summary Get PARA resources for a file
+// @Tags metadata
+// @Param filepath query string true "File path"
+// @Success 200 {string} string
+// @Router /api/metadata/para/resources [get]
+func handleAPIGetMetadataPARAResources(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	metadata, err := files.MetaDataGet(filepath)
+	if err != nil || metadata == nil {
+		http.Error(w, "metadata not found", http.StatusNotFound)
+		return
+	}
+
+	if len(metadata.PARA.Resources) == 0 {
+		html := `<span class="para-resources">no resources</span>`
+		writeResponse(w, r, []string{}, html)
+		return
+	}
+
+	var links []string
+	for _, resource := range metadata.PARA.Resources {
+		links = append(links, fmt.Sprintf(`<a href="/browse/resources/%s" class="meta-link">%s</a>`,
+			url.QueryEscape(resource), resource))
+	}
+
+	html := fmt.Sprintf(`<span class="para-resources">%s</span>`, strings.Join(links, ", "))
+	writeResponse(w, r, metadata.PARA.Resources, html)
+}
+
+// @Summary Get PARA archive for a file
+// @Tags metadata
+// @Param filepath query string true "File path"
+// @Success 200 {string} string
+// @Router /api/metadata/para/archive [get]
+func handleAPIGetMetadataPARAArchive(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	metadata, err := files.MetaDataGet(filepath)
+	if err != nil || metadata == nil {
+		http.Error(w, "metadata not found", http.StatusNotFound)
+		return
+	}
+
+	if len(metadata.PARA.Archive) == 0 {
+		html := `<span class="para-archive">no archive</span>`
+		writeResponse(w, r, []string{}, html)
+		return
+	}
+
+	var links []string
+	for _, archive := range metadata.PARA.Archive {
+		links = append(links, fmt.Sprintf(`<a href="/browse/archive/%s" class="meta-link">%s</a>`,
+			url.QueryEscape(archive), archive))
+	}
+
+	html := fmt.Sprintf(`<span class="para-archive">%s</span>`, strings.Join(links, ", "))
+	writeResponse(w, r, metadata.PARA.Archive, html)
+}
+
+// @Summary Get all PARA projects with counts
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {string} string
+// @Router /api/metadata/para/projects/all [get]
+func handleAPIGetAllPARAProjects(w http.ResponseWriter, r *http.Request) {
+	projectCount, err := files.GetAllPARAProjects()
+	if err != nil {
+		http.Error(w, "failed to get projects", http.StatusInternalServerError)
+		return
+	}
+
+	var html strings.Builder
+	if len(projectCount) == 0 {
+		html.WriteString(`<div class="no-items">no projects found</div>`)
+	} else {
+		for project, count := range projectCount {
+			html.WriteString(fmt.Sprintf(`<div class="meta-item"><a href="/browse/projects/%s" class="meta-link">%s</a> <span class="meta-count">(%d)</span></div>`,
+				url.QueryEscape(project), project, count))
+		}
+	}
+
+	writeResponse(w, r, projectCount, html.String())
+}
+
+// @Summary Get all PARA areas with counts
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {string} string
+// @Router /api/metadata/para/areas/all [get]
+func handleAPIGetAllPARAreas(w http.ResponseWriter, r *http.Request) {
+	areaCount, err := files.GetAllPARAreas()
+	if err != nil {
+		http.Error(w, "failed to get areas", http.StatusInternalServerError)
+		return
+	}
+
+	var html strings.Builder
+	if len(areaCount) == 0 {
+		html.WriteString(`<div class="no-items">no areas found</div>`)
+	} else {
+		for area, count := range areaCount {
+			html.WriteString(fmt.Sprintf(`<div class="meta-item"><a href="/browse/areas/%s" class="meta-link">%s</a> <span class="meta-count">(%d)</span></div>`,
+				url.QueryEscape(area), area, count))
+		}
+	}
+
+	writeResponse(w, r, areaCount, html.String())
+}
+
+// @Summary Get all PARA resources with counts
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {string} string
+// @Router /api/metadata/para/resources/all [get]
+func handleAPIGetAllPARAResources(w http.ResponseWriter, r *http.Request) {
+	resourceCount, err := files.GetAllPARAResources()
+	if err != nil {
+		http.Error(w, "failed to get resources", http.StatusInternalServerError)
+		return
+	}
+
+	var html strings.Builder
+	if len(resourceCount) == 0 {
+		html.WriteString(`<div class="no-items">no resources found</div>`)
+	} else {
+		for resource, count := range resourceCount {
+			html.WriteString(fmt.Sprintf(`<div class="meta-item"><a href="/browse/resources/%s" class="meta-link">%s</a> <span class="meta-count">(%d)</span></div>`,
+				url.QueryEscape(resource), resource, count))
+		}
+	}
+
+	writeResponse(w, r, resourceCount, html.String())
+}
+
+// @Summary Get all PARA archive with counts
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {string} string
+// @Router /api/metadata/para/archive/all [get]
+func handleAPIGetAllPARAArchive(w http.ResponseWriter, r *http.Request) {
+	archiveCount, err := files.GetAllPARAArchive()
+	if err != nil {
+		http.Error(w, "failed to get archive", http.StatusInternalServerError)
+		return
+	}
+
+	var html strings.Builder
+	if len(archiveCount) == 0 {
+		html.WriteString(`<div class="no-items">no archive found</div>`)
+	} else {
+		for archive, count := range archiveCount {
+			html.WriteString(fmt.Sprintf(`<div class="meta-item"><a href="/browse/archive/%s" class="meta-link">%s</a> <span class="meta-count">(%d)</span></div>`,
+				url.QueryEscape(archive), archive, count))
+		}
+	}
+
+	writeResponse(w, r, archiveCount, html.String())
 }

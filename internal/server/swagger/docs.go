@@ -2064,6 +2064,334 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/para/archive": {
+            "get": {
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get PARA archive for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Set PARA archive",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated archive list",
+                        "name": "archive",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/para/archive/all": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all PARA archive with counts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/para/areas": {
+            "get": {
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get PARA areas for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Set PARA areas",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated area list",
+                        "name": "areas",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/para/areas/all": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all PARA areas with counts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/para/projects": {
+            "get": {
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get PARA projects for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Set PARA projects",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated project list",
+                        "name": "projects",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/para/projects/all": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all PARA projects with counts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/para/resources": {
+            "get": {
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get PARA resources for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Set PARA resources",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated resource list",
+                        "name": "resources",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/para/resources/all": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all PARA resources with counts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/path": {
             "get": {
                 "produces": [
@@ -2131,6 +2459,29 @@ const docTemplate = `{
             }
         },
         "/api/metadata/priority": {
+            "get": {
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get file priority",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -2570,39 +2921,6 @@ const docTemplate = `{
                 "WidgetTypeFolders"
             ]
         },
-        "files.Context": {
-            "type": "object",
-            "properties": {
-                "archive": {
-                    "description": "Inactive items",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "areas": {
-                    "description": "Ongoing responsibilities",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "projects": {
-                    "description": "Active projects with deadlines",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "resources": {
-                    "description": "Future reference materials",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
         "files.File": {
             "type": "object",
             "properties": {
@@ -2672,14 +2990,6 @@ const docTemplate = `{
                     "description": "auto / manual possible",
                     "type": "string"
                 },
-                "context": {
-                    "description": "manual",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/files.Context"
-                        }
-                    ]
-                },
                 "createdAt": {
                     "description": "auto",
                     "type": "string"
@@ -2712,6 +3022,14 @@ const docTemplate = `{
                 "name": {
                     "description": "manual filename",
                     "type": "string"
+                },
+                "para": {
+                    "description": "manual",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/files.PARA"
+                        }
+                    ]
                 },
                 "parents": {
                     "description": "manual",
@@ -2765,6 +3083,39 @@ const docTemplate = `{
                 },
                 "usedLinks": {
                     "description": "auto",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "files.PARA": {
+            "type": "object",
+            "properties": {
+                "archive": {
+                    "description": "Inactive items",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "areas": {
+                    "description": "Ongoing responsibilities",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "projects": {
+                    "description": "Active projects with deadlines",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "resources": {
+                    "description": "Future reference materials",
                     "type": "array",
                     "items": {
                         "type": "string"

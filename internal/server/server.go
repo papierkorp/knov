@@ -150,6 +150,7 @@ func StartServerChi() {
 			r.Get("/name", handleAPIGetMetadataName)
 			r.Get("/createdat", handleAPIGetMetadataCreatedAt)
 			r.Get("/lastedited", handleAPIGetMetadataLastEdited)
+			r.Get("/priority", handleAPIGetMetadataPriority)
 
 			r.Post("/collection", handleAPISetMetadataCollection)
 			r.Post("/filetype", handleAPISetMetadataFileType)
@@ -175,6 +176,21 @@ func StartServerChi() {
 			r.Get("/options/collections", handleAPIGetCollectionOptions)
 			r.Get("/options/tags", handleAPIGetTagOptions)
 			r.Get("/options/folders", handleAPIGetFolderOptions)
+
+			r.Get("/para/projects", handleAPIGetMetadataPARAProjects)
+			r.Get("/para/areas", handleAPIGetMetadataPARAreas)
+			r.Get("/para/resources", handleAPIGetMetadataPARAResources)
+			r.Get("/para/archive", handleAPIGetMetadataPARAArchive)
+
+			r.Post("/para/projects", handleAPISetMetadataPARAProjects)
+			r.Post("/para/areas", handleAPISetMetadataPARAreas)
+			r.Post("/para/resources", handleAPISetMetadataPARAResources)
+			r.Post("/para/archive", handleAPISetMetadataPARAArchive)
+
+			r.Get("/para/projects/all", handleAPIGetAllPARAProjects)
+			r.Get("/para/areas/all", handleAPIGetAllPARAreas)
+			r.Get("/para/resources/all", handleAPIGetAllPARAResources)
+			r.Get("/para/archive/all", handleAPIGetAllPARAArchive)
 		})
 
 		// ----------------------------------------------------------------------------------------

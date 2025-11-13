@@ -251,15 +251,18 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogDebug("browse request: %s=%s", metadata, value)
 
+	// Set operator based on field type - arrays use "contains", simple fields use "equals"
 	operator := "equals"
-	if metadata == "tags" || metadata == "folders" {
+	if metadata == "tags" || metadata == "folders" ||
+		metadata == "projects" || metadata == "areas" ||
+		metadata == "resources" || metadata == "archive" {
 		operator = "contains"
 	}
 
 	criteria := []files.FilterCriteria{
 		{
 			Metadata: metadata,
-			Operator: operator, // dynamically set based on field type
+			Operator: operator,
 			Value:    value,
 			Action:   "include",
 		},

@@ -10,6 +10,10 @@ KNOV is a flexible knowledge management system built with Go, HTMX, and Templ th
 - **Git Integration**: Version control for your knowledge base
 - **Dashboard System**: Customizable dashboards with widgets
 - **Multi-language Support**: English and German translations
+- **Metadata**: each file can get a lot of metadata for searching/filtering (but its not forced)
+  - **Tags**: fully customizable tags
+  - **PARA**: implemented PARA Method - you can attach each File with its corresponding PARA with multiple PARAS possible
+  - **ZK**: Different Filetypes accordingly to the ZK Method - can be used with or without PARA
 
 ## Architecture
 
@@ -24,12 +28,14 @@ KNOV is a flexible knowledge management system built with Go, HTMX, and Templ th
 KNOV uses a dual approach for themes:
 
 ### Builtin Theme
+
 - Embedded directly in the binary
 - No external dependencies
 - Always available
 - Self-contained with embedded CSS and templates
 
 ### Plugin Themes
+
 - Loaded as .so files
 - Can embed their own CSS and assets
 - Uploadable via admin interface

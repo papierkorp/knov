@@ -31,6 +31,14 @@
                         <span hx-get="/api/metadata/lastedited?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
                     <div class="metadata-row">
+                        <span class="metadata-label">type:</span>
+                        <span hx-get="/api/metadata/filetype?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+                    </div>
+                    <div class="metadata-row">
+                        <span class="metadata-label">priority:</span>
+                        <span hx-get="/api/metadata/priority?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+                    </div>
+                    <div class="metadata-row">
                         <span class="metadata-label">tags:</span>
                         <span hx-get="/api/metadata/file/tags?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
@@ -40,42 +48,61 @@
                     </div>
                 </div>
             </section>
+            
             <section class="sidebar-section">
-                <h3>links</h3>
-                <div class="links-container">
-                    <div class="links-group">
-                        <span class="links-label">parents:</span>
-                        <div hx-get="/api/links/parents?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                <h3>PARA organization</h3>
+                <div class="metadata-grid">
+                    <div class="metadata-row">
+                        <span class="metadata-label">projects:</span>
+                        <span hx-get="/api/metadata/para/projects?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
-                    <div class="links-group">
-                        <span class="links-label">ancestors:</span>
-                        <div hx-get="/api/links/ancestors?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                    <div class="metadata-row">
+                        <span class="metadata-label">areas:</span>
+                        <span hx-get="/api/metadata/para/areas?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
-                    <div class="links-group">
-                        <span class="links-label">children:</span>
-                        <div hx-get="/api/links/kids?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                    <div class="metadata-row">
+                        <span class="metadata-label">resources:</span>
+                        <span hx-get="/api/metadata/para/resources?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
-                    <div class="links-group">
-                        <span class="links-label">outbound:</span>
-                        <div hx-get="/api/links/used?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
-                    </div>
-                    <div class="links-group">
-                        <span class="links-label">inbound:</span>
-                        <div hx-get="/api/links/linkstohere?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                    <div class="metadata-row">
+                        <span class="metadata-label">archive:</span>
+                        <span hx-get="/api/metadata/para/archive?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
                 </div>
             </section>
+
             <section class="sidebar-section sidebar-toc">
                 <h3>table of contents</h3>
-                {{if eq (len .FileContent.TOC) 0}}
-                    <div class="toc-empty">no headings found</div>
-                {{else}}
+                {{ if .FileContent.TOC }}
                     <nav class="toc-nav">
-                        {{range .FileContent.TOC}}
-                            <a href="{{.Link}}" class="{{.Class}}" style="padding-left: {{mul (sub .Level 1) 12}}px;">{{.Text}}</a>
-                        {{end}}
+                        {{ range .FileContent.TOC }}
+                            <a href="#{{ .ID }}" style="padding-left: {{ mul .Level 16 }}px">{{ .Text }}</a>
+                        {{ end }}
                     </nav>
-                {{end}}
+                {{ else }}
+                    <div class="toc-empty">no headings found</div>
+                {{ end }}
+            </section>
+            <section class="sidebar-section">
+                <h3>connections</h3>
+                <div class="links-container">
+                    <div class="links-group">
+                        <div class="links-label">parents</div>
+                        <div hx-get="/api/links/parents?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                    </div>
+                    <div class="links-group">
+                        <div class="links-label">children</div>
+                        <div hx-get="/api/links/kids?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                    </div>
+                    <div class="links-group">
+                        <div class="links-label">links from</div>
+                        <div hx-get="/api/links/used?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                    </div>
+                    <div class="links-group">
+                        <div class="links-label">links to</div>
+                        <div hx-get="/api/links/linkstohere?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                    </div>
+                </div>
             </section>
         </aside>
     </div>
@@ -86,11 +113,9 @@
 <div id="view-fileview-compact">
     <div class="compact-header">
         <div class="compact-metadata">
-            <span hx-get="/api/metadata/file/collection?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+            <span>{{.FilePath}}</span>
             <span class="separator">•</span>
-            <span hx-get="/api/metadata/createdat?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            <span class="separator">•</span>
-            <span hx-get="/api/metadata/file/tags?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+            <span hx-get="/api/metadata/lastedited?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
         </div>
     </div>
     <article class="file-content">
@@ -102,21 +127,20 @@
 {{define "reader"}}
 <div id="view-fileview-reader">
     <div class="reader-controls">
-        <button class="font-size-btn" onclick="adjustFontSize(-1)" aria-label="decrease font size">A-</button>
-        <button class="font-size-btn" onclick="adjustFontSize(1)" aria-label="increase font size">A+</button>
+        <button class="font-size-btn" onclick="adjustFontSize(-2)">A-</button>
+        <button class="font-size-btn" onclick="adjustFontSize(2)">A+</button>
     </div>
-    <article class="file-content" id="reader-content">
+    <article class="file-content">
         {{.FileContent.HTML}}
     </article>
-    <script>
-        function adjustFontSize(delta) {
-            const content = document.getElementById('reader-content');
-            const currentSize = parseFloat(window.getComputedStyle(content).fontSize);
-            const newSize = currentSize + delta;
-            if (newSize >= 12 && newSize <= 32) {
-                content.style.fontSize = newSize + 'px';
-            }
-        }
-    </script>
 </div>
+
+<script>
+function adjustFontSize(delta) {
+    const content = document.querySelector('#view-fileview-reader .file-content');
+    const currentSize = parseInt(getComputedStyle(content).fontSize);
+    const newSize = Math.max(14, Math.min(28, currentSize + delta));
+    content.style.fontSize = newSize + 'px';
+}
+</script>
 {{end}}

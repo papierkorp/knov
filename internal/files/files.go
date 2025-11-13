@@ -231,6 +231,14 @@ func matchesCriterion(metadata *Metadata, criterion FilterCriteria) bool {
 		return matchesArrayCriterion(metadata.UsedLinks, criterion)
 	case "linkstohere":
 		return matchesArrayCriterion(metadata.LinksToHere, criterion)
+	case "projects":
+		return matchesArrayCriterion(metadata.PARA.Projects, criterion)
+	case "areas":
+		return matchesArrayCriterion(metadata.PARA.Areas, criterion)
+	case "resources":
+		return matchesArrayCriterion(metadata.PARA.Resources, criterion)
+	case "archive":
+		return matchesArrayCriterion(metadata.PARA.Archive, criterion)
 	case "priority":
 		fieldValue = string(metadata.Priority)
 	case "status":
