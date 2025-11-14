@@ -1,14 +1,13 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/logging"
+	"knov/internal/server/render"
 	"knov/internal/thememanager"
 )
 
@@ -28,14 +27,8 @@ func handleAPIGetConfig(w http.ResponseWriter, r *http.Request) {
 		User: userSettings,
 	}
 
-	var html strings.Builder
-	html.WriteString("<div class='config'>")
-	html.WriteString(fmt.Sprintf("<p>theme: %s</p>", userSettings.Theme))
-	html.WriteString(fmt.Sprintf("<p>language: %s</p>", userSettings.Language))
-	html.WriteString(fmt.Sprintf("<p>data path: %s</p>", appConfig.DataPath))
-	html.WriteString("</div>")
-
-	writeResponse(w, r, config, html.String())
+	html := render.RenderConfigDisplay(userSettings, appConfig)
+	writeResponse(w, r, config, html)
 }
 
 // @Summary Get current data path as input field
@@ -46,7 +39,7 @@ func handleAPIGetCurrentDataPath(w http.ResponseWriter, r *http.Request) {
 	appConfig := configmanager.GetAppConfig()
 	dataPath := appConfig.DataPath
 
-	html := fmt.Sprintf(`<input type="text" name="dataPath" id="data-path" value="%s" placeholder="/path/to/data" required />`, dataPath)
+	html := render.RenderInputField("text", "dataPath", "data-path", dataPath, "/path/to/data", true)
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
@@ -78,7 +71,7 @@ func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	appConfig := configmanager.GetAppConfig()
 	repositoryURL := appConfig.GitRepoURL
 
-	html := fmt.Sprintf(`<input type="url" name="repositoryURL" id="git-url" value="%s" placeholder="https://github.com/user/repo.git" />`, repositoryURL)
+	html := render.RenderInputField("url", "repositoryURL", "git-url", repositoryURL, "https://github.com/user/repo.git", false)
 	writeResponse(w, r, repositoryURL, html)
 }
 
@@ -101,7 +94,7 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := "saved"
-	html := `<span class="status-ok">git url saved. restart required.</span>`
+	html := render.RenderStatusMessage(render.StatusOK, "git url saved. restart required.")
 	writeResponse(w, r, data, html)
 }
 
@@ -135,7 +128,7 @@ func handleAPIRestartApp(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("application restart requested")
 
 	data := "restarting"
-	html := `<span class="status-ok">restarting application...</span>`
+	html := render.RenderStatusMessage(render.StatusOK, "restarting application...")
 	writeResponse(w, r, data, html)
 
 	// give response time to send
@@ -169,7 +162,7 @@ func handleAPISetDataPath(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := "saved"
-	html := `<span class="status-ok">data path saved. restart required.</span>`
+	html := render.RenderStatusMessage("status-ok", "data path saved. restart required.")
 	writeResponse(w, r, data, html)
 }
 
@@ -200,16 +193,17 @@ func handleAPIGetColorSchemes(w http.ResponseWriter, r *http.Request) {
 
 	currentScheme := configmanager.GetColorScheme()
 
-	var html strings.Builder
-	for _, scheme := range metadata.ColorSchemes {
-		selected := ""
-		if scheme.Value == currentScheme {
-			selected = "selected"
+	// Convert thememanager color schemes to htmx select options
+	options := make([]render.SelectOption, len(metadata.ColorSchemes))
+	for i, scheme := range metadata.ColorSchemes {
+		options[i] = render.SelectOption{
+			Value: scheme.Value,
+			Label: scheme.Label,
 		}
-		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, scheme.Value, selected, scheme.Label))
 	}
 
-	writeResponse(w, r, metadata.ColorSchemes, html.String())
+	html := render.RenderSelectOptions(options, currentScheme)
+	writeResponse(w, r, metadata.ColorSchemes, html)
 }
 
 // @Summary Set color scheme
@@ -236,16 +230,9 @@ func handleAPIGetLanguages(w http.ResponseWriter, r *http.Request) {
 	languages := configmanager.GetAvailableLanguages()
 	currentLang := configmanager.GetLanguage()
 
-	var html strings.Builder
-	for _, lang := range languages {
-		selected := ""
-		if lang.Code == currentLang {
-			selected = "selected"
-		}
-		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, lang.Code, selected, lang.Name))
-	}
-
-	writeResponse(w, r, languages, html.String())
+	options := render.GetLanguageOptions()
+	html := render.RenderSelectOptions(options, currentLang)
+	writeResponse(w, r, languages, html)
 }
 
 // @Summary Get dark mode setting
@@ -254,13 +241,7 @@ func handleAPIGetLanguages(w http.ResponseWriter, r *http.Request) {
 // @Router /api/config/getDarkMode [get]
 func handleAPIGetDarkMode(w http.ResponseWriter, r *http.Request) {
 	darkMode := configmanager.GetDarkMode()
-
-	checked := ""
-	if darkMode {
-		checked = "checked"
-	}
-	html := fmt.Sprintf(`<input type="checkbox" name="darkMode" %s hx-post="/api/config/setDarkMode" hx-vals='js:{"enabled": event.target.checked}' hx-trigger="change" />`, checked)
-
+	html := render.RenderCheckbox("darkMode", "/api/config/setDarkMode", darkMode, `hx-vals='js:{"enabled": event.target.checked}' hx-trigger="change"`)
 	writeResponse(w, r, darkMode, html)
 }
 
@@ -283,8 +264,6 @@ func handleAPIGetDarkModeStatus(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/config/getCustomCSS [get]
 func handleAPIGetCustomCSS(w http.ResponseWriter, r *http.Request) {
-	editorHTML := `<textarea name="css" rows="20" style="width: 100%; font-family: monospace;" hx-post="/api/config/customCSS" hx-trigger="blur" hx-swap="none">{{CSS_CONTENT}}</textarea>`
-	html := configmanager.GetCustomCSSEditor(editorHTML)
-
+	html := render.RenderCustomCSSTextarea(configmanager.GetCustomCSS())
 	writeResponse(w, r, configmanager.GetCustomCSS(), html)
 }
