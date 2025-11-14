@@ -870,7 +870,6 @@ paths:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Create a new file with content
       parameters:
       - description: File path
         in: formData
@@ -880,14 +879,11 @@ paths:
       - description: File content
         in: formData
         name: content
+        required: true
         type: string
       produces:
       - text/html
-      responses:
-        "200":
-          description: file created
-          schema:
-            type: string
+      responses: {}
       summary: Create new file
       tags:
       - files
@@ -944,20 +940,15 @@ paths:
       - files
   /api/files/form:
     get:
-      description: Get file form for create or edit
       parameters:
-      - description: File path for edit mode
+      - description: File path (optional for new files)
         in: query
         name: filepath
         type: string
       produces:
       - text/html
-      responses:
-        "200":
-          description: file form html
-          schema:
-            type: string
-      summary: Get file form
+      responses: {}
+      summary: Get file form HTML
       tags:
       - files
   /api/files/header:
@@ -991,20 +982,28 @@ paths:
       - files
   /api/files/metadata-form:
     get:
-      description: Get standalone metadata form for a file
       parameters:
-      - description: File path for edit mode
+      - description: File path (optional for new files)
         in: query
         name: filepath
         type: string
       produces:
       - text/html
-      responses:
-        "200":
-          description: metadata form html
-          schema:
-            type: string
-      summary: Get metadata form
+      responses: {}
+      summary: Get metadata form HTML
+      tags:
+      - files
+  /api/files/metadata/form:
+    get:
+      parameters:
+      - description: File path (optional for new files)
+        in: query
+        name: filepath
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get metadata form HTML for file editing
       tags:
       - files
   /api/files/raw:

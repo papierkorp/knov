@@ -909,7 +909,6 @@ const docTemplate = `{
         },
         "/api/files/create": {
             "post": {
-                "description": "Create a new file with content",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -932,17 +931,11 @@ const docTemplate = `{
                         "type": "string",
                         "description": "File content",
                         "name": "content",
-                        "in": "formData"
+                        "in": "formData",
+                        "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "file created",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
+                "responses": {}
             }
         },
         "/api/files/filter": {
@@ -1022,30 +1015,22 @@ const docTemplate = `{
         },
         "/api/files/form": {
             "get": {
-                "description": "Get file form for create or edit",
                 "produces": [
                     "text/html"
                 ],
                 "tags": [
                     "files"
                 ],
-                "summary": "Get file form",
+                "summary": "Get file form HTML",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "File path for edit mode",
+                        "description": "File path (optional for new files)",
                         "name": "filepath",
                         "in": "query"
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "file form html",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
+                "responses": {}
             }
         },
         "/api/files/header": {
@@ -1093,30 +1078,42 @@ const docTemplate = `{
         },
         "/api/files/metadata-form": {
             "get": {
-                "description": "Get standalone metadata form for a file",
                 "produces": [
                     "text/html"
                 ],
                 "tags": [
                     "files"
                 ],
-                "summary": "Get metadata form",
+                "summary": "Get metadata form HTML",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "File path for edit mode",
+                        "description": "File path (optional for new files)",
                         "name": "filepath",
                         "in": "query"
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "metadata form html",
-                        "schema": {
-                            "type": "string"
-                        }
+                "responses": {}
+            }
+        },
+        "/api/files/metadata/form": {
+            "get": {
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get metadata form HTML for file editing",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path (optional for new files)",
+                        "name": "filepath",
+                        "in": "query"
                     }
-                }
+                ],
+                "responses": {}
             }
         },
         "/api/files/raw": {

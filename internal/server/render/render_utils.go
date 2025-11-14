@@ -129,3 +129,181 @@ func RenderFileDropdown(files []files.File, limit int) string {
 	html.WriteString(`</ul>`)
 	return html.String()
 }
+
+// GetFormValue returns form value at index, or empty string if index out of bounds
+func GetFormValue(slice []string, index int) string {
+	if index < len(slice) {
+		return slice[index]
+	}
+	return ""
+}
+
+// GenerateDatalistInputWithSave creates an input field with autocomplete and auto-save
+func GenerateDatalistInputWithSave(id, name, value, placeholder, apiEndpoint, filePath, saveEndpoint string) string {
+	datalistId := fmt.Sprintf("%s-list", id)
+	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" autocomplete="off" list="%s" placeholder="%s"
+	hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="change delay:500ms" hx-target="#metadata-save-status" hx-swap="innerHTML"/>
+<datalist id="%s" hx-get="%s" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
+	<option value="">loading options...</option>
+</datalist>`, id, name, value, datalistId, placeholder, saveEndpoint, filePath, datalistId, apiEndpoint)
+}
+
+// GenerateTagChipsInputWithSave creates a tag chips input with autocomplete and auto-save
+func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, filePath, saveEndpoint string) string {
+	datalistId := fmt.Sprintf("%s-list", id)
+	chipsId := fmt.Sprintf("%s-chips", id)
+	inputId := fmt.Sprintf("%s-input", id)
+	hiddenId := fmt.Sprintf("%s-hidden", id)
+
+	var datalistHTML string
+	if apiEndpoint != "" {
+		datalistHTML = fmt.Sprintf(`<datalist id="%s" hx-get="%s" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
+		<option value="">loading options...</option>
+	</datalist>`, datalistId, apiEndpoint)
+	} else {
+		datalistHTML = fmt.Sprintf(`<datalist id="%s"></datalist>`, datalistId)
+	}
+
+	return fmt.Sprintf(`<div class="tag-chips-container" id="%s">
+	<div class="tag-chips" id="%s-display"></div>
+	<input type="text" id="%s" class="tag-chips-input" autocomplete="off" list="%s" placeholder="%s"/>
+	<input type="hidden" id="%s" name="%s" value="%s"/>
+	%s
+</div>
+<script>
+(function() {
+	const container = document.getElementById('%s');
+	const display = document.getElementById('%s-display');
+	const input = document.getElementById('%s');
+	const hidden = document.getElementById('%s');
+
+	let tags = [];
+	let saveTimeout;
+
+	// initialize with existing values
+	if (hidden.value) {
+		tags = hidden.value.split(',').map(t => t.trim()).filter(t => t);
+		renderTags();
+	}
+
+	function renderTags() {
+		display.innerHTML = '';
+		tags.forEach((tag, index) => {
+			const chip = document.createElement('span');
+			chip.className = 'tag-chip';
+			chip.innerHTML = tag + '<button type="button" class="tag-chip-remove">×</button>';
+
+			const removeBtn = chip.querySelector('.tag-chip-remove');
+			removeBtn.addEventListener('click', function() {
+				removeTag(index);
+			});
+
+			display.appendChild(chip);
+		});
+		hidden.value = tags.join(', ');
+		saveData();
+	}
+
+	function addTag(value) {
+		const trimmed = value.trim();
+		if (trimmed && !tags.includes(trimmed)) {
+			tags.push(trimmed);
+			renderTags();
+			input.value = '';
+		}
+	}
+
+	function removeTag(index) {
+		tags.splice(index, 1);
+		renderTags();
+	}
+
+	function saveData() {
+		if ('%s' === '') return; // no filepath for new files
+
+		clearTimeout(saveTimeout);
+		saveTimeout = setTimeout(function() {
+			htmx.ajax('POST', '%s', {
+				values: {
+					'filepath': '%s',
+					'%s': hidden.value
+				},
+				target: '#metadata-save-status',
+				swap: 'innerHTML'
+			});
+		}, 500);
+	}
+
+	// handle input events
+	input.addEventListener('keydown', function(e) {
+		if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') {
+			e.preventDefault();
+			addTag(input.value);
+		} else if (e.key === 'Backspace' && input.value === '' && tags.length > 0) {
+			tags.pop();
+			renderTags();
+		}
+	});
+
+	// handle datalist selection
+	input.addEventListener('change', function() {
+		if (input.value) {
+			addTag(input.value);
+		}
+	});
+
+	// handle blur to catch paste events
+	input.addEventListener('blur', function() {
+		if (input.value) {
+			addTag(input.value);
+		}
+	});
+
+	// make container clickable to focus input
+	container.addEventListener('click', function() {
+		input.focus();
+	});
+})();
+</script>`, chipsId, chipsId, inputId, datalistId, placeholder, hiddenId, name, value, datalistHTML, chipsId, chipsId, inputId, hiddenId, filePath, saveEndpoint, filePath, name)
+}
+
+// RenderBrowseHTML renders a map of items with counts as browse links
+func RenderBrowseHTML(items map[string]int, urlPrefix string) string {
+	var html strings.Builder
+	html.WriteString(`<ul class="search-results-simple-list">`)
+
+	for item, count := range items {
+		html.WriteString(fmt.Sprintf(`
+			<li><a href="%s/%s">%s (%d)</a></li>`,
+			urlPrefix, item, item, count))
+	}
+
+	html.WriteString(`</ul>`)
+	return html.String()
+}
+
+// RenderMetadataLinksHTML creates HTML links for metadata items (tags, folders, collections)
+func RenderMetadataLinksHTML(items []string, browseType string) string {
+	if len(items) == 0 {
+		return `<span class="meta-empty">-</span>`
+	}
+
+	var html strings.Builder
+	for i, item := range items {
+		if i > 0 {
+			html.WriteString(", ")
+		}
+		html.WriteString(fmt.Sprintf(`<a href="/browse/%s/%s" class="meta-link">%s</a>`, browseType, item, item))
+	}
+
+	return html.String()
+}
+
+// RenderMetadataLinkHTML creates a single HTML link for metadata (e.g., collection)
+func RenderMetadataLinkHTML(item string, browseType string) string {
+	if item == "" {
+		return `<span class="meta-empty">-</span>`
+	}
+
+	return fmt.Sprintf(`<a href="/browse/%s/%s" class="meta-link">%s</a>`, browseType, item, item)
+}
