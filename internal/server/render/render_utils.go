@@ -3,6 +3,9 @@ package render
 
 import (
 	"fmt"
+	"strings"
+
+	"knov/internal/files"
 )
 
 // SelectOption represents an option in a select dropdown
@@ -71,4 +74,58 @@ func RenderTextarea(name, content string, rows int, extraAttrs string) string {
 		baseAttrs += " " + extraAttrs
 	}
 	return fmt.Sprintf(`<textarea %s>%s</textarea>`, baseAttrs, content)
+}
+
+// RenderFileCards renders files as cards without search context
+func RenderFileCards(files []files.File) string {
+	var html strings.Builder
+	html.WriteString(`<div class="search-results-cards">`)
+
+	for _, file := range files {
+		html.WriteString(fmt.Sprintf(`
+			<div class="search-card">
+				<h4><a href="/files/%s">%s</a></h4>
+			</div>`,
+			file.Path, file.Path))
+	}
+
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
+// RenderFileList renders files as simple list without search context
+func RenderFileList(files []files.File) string {
+	var html strings.Builder
+	html.WriteString(`<ul class="search-results-simple-list">`)
+
+	for _, file := range files {
+		html.WriteString(fmt.Sprintf(`
+			<li><a href="/files/%s">%s</a></li>`,
+			file.Path, file.Path))
+	}
+
+	html.WriteString(`</ul>`)
+	return html.String()
+}
+
+// RenderFileDropdown renders files as dropdown list with limit
+func RenderFileDropdown(files []files.File, limit int) string {
+	var html strings.Builder
+	html.WriteString(`<ul class="component-search-dropdown-list">`)
+
+	for i, file := range files {
+		if i >= limit {
+			break
+		}
+		html.WriteString(fmt.Sprintf(`
+			<li><a href="/files/%s">%s</a></li>`,
+			file.Path, file.Name))
+	}
+
+	if len(files) == 0 {
+		html.WriteString(`<li class="component-search-hint">no results found</li>`)
+	}
+
+	html.WriteString(`</ul>`)
+	return html.String()
 }

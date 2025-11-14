@@ -1,7 +1,9 @@
 // Package render - HTMX HTML rendering functions for server responses
 package render
 
-import "strings"
+import (
+	"strings"
+)
 
 // RenderFileViewOptions renders file view options for select dropdown
 func RenderFileViewOptions(views []string, selectedView string) string {

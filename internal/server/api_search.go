@@ -5,6 +5,7 @@ import (
 
 	"knov/internal/files"
 	"knov/internal/search"
+	"knov/internal/server/render"
 )
 
 // @Summary Search files
@@ -21,7 +22,7 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if query == "" {
-		emptyHTML := `<div class="search-hint">start typing to search...</div>`
+		emptyHTML := render.RenderSearchHint()
 		if format == "json" {
 			writeResponse(w, r, []files.File{}, emptyHTML)
 		} else {
@@ -55,16 +56,16 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 	case "json":
 		writeResponse(w, r, results, "")
 	case "dropdown":
-		html := files.BuildDropdownHTML(results, query)
+		html := render.RenderSearchDropdown(results, query)
 		w.Write([]byte(html))
 	case "list":
-		html := files.BuildListHTML(results, query)
+		html := render.RenderSearchList(results, query)
 		writeResponse(w, r, results, html)
 	case "cards":
-		html := files.BuildCardsHTML(results, query)
+		html := render.RenderSearchCards(results, query)
 		writeResponse(w, r, results, html)
 	default:
-		html := files.BuildDropdownHTML(results, query)
+		html := render.RenderSearchDropdown(results, query)
 		w.Write([]byte(html))
 	}
 }

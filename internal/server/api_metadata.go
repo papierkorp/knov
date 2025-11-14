@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"knov/internal/files"
+	"knov/internal/server/render"
 )
 
 // ----------------------------------------------------------------------------------------
@@ -619,7 +620,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := files.BuildBrowseHTML(tags, "/browse/tags")
+	html := render.RenderBrowseHTML(tags, "/browse/tags")
 	writeResponse(w, r, tags, html)
 }
 
@@ -635,7 +636,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := files.BuildBrowseHTML(collections, "/browse/collection")
+	html := render.RenderBrowseHTML(collections, "/browse/collection")
 	writeResponse(w, r, collections, html)
 }
 
@@ -651,7 +652,7 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := files.BuildBrowseHTML(folders, "/browse/folders")
+	html := render.RenderBrowseHTML(folders, "/browse/folders")
 	writeResponse(w, r, folders, html)
 }
 
@@ -679,7 +680,7 @@ func handleAPIGetFileMetadataTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := files.BuildMetadataLinksHTML(metadata.Tags, "tags")
+	html := render.RenderMetadataLinksHTML(metadata.Tags, "tags")
 	writeResponse(w, r, metadata.Tags, html)
 }
 
@@ -707,7 +708,7 @@ func handleAPIGetFileMetadataFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := files.BuildMetadataLinksHTML(metadata.Folders, "folders")
+	html := render.RenderMetadataLinksHTML(metadata.Folders, "folders")
 	writeResponse(w, r, metadata.Folders, html)
 }
 
@@ -735,7 +736,7 @@ func handleAPIGetFileMetadataCollection(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	html := files.BuildMetadataLinkHTML(metadata.Collection, "collection")
+	html := render.RenderMetadataLinkHTML(metadata.Collection, "collection")
 	writeResponse(w, r, metadata.Collection, html)
 }
 

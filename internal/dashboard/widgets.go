@@ -6,6 +6,7 @@ import (
 
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/server/render"
 	"knov/internal/utils"
 )
 
@@ -293,11 +294,11 @@ func renderFilterWidget(config *FilterConfig) (string, error) {
 
 	switch config.Display {
 	case "cards":
-		return files.BuildCardsHTML(filteredFiles, ""), nil
+		return render.RenderFileCards(filteredFiles), nil
 	case "dropdown":
-		return files.BuildDropdownHTML(filteredFiles, ""), nil
+		return render.RenderFileDropdown(filteredFiles, 10), nil
 	default:
-		return files.BuildListHTML(filteredFiles, ""), nil
+		return render.RenderFileList(filteredFiles), nil
 	}
 }
 
@@ -307,7 +308,7 @@ func renderTagsWidget() (string, error) {
 		return "", err
 	}
 
-	return files.BuildBrowseHTML(tagCount, "/browse/tags"), nil
+	return render.RenderBrowseHTML(tagCount, "/browse/tags"), nil
 }
 
 func renderCollectionsWidget() (string, error) {
@@ -316,7 +317,7 @@ func renderCollectionsWidget() (string, error) {
 		return "", err
 	}
 
-	return files.BuildBrowseHTML(collectionCount, "/browse/collection"), nil
+	return render.RenderBrowseHTML(collectionCount, "/browse/collection"), nil
 }
 
 func renderFoldersWidget() (string, error) {
@@ -325,5 +326,5 @@ func renderFoldersWidget() (string, error) {
 		return "", err
 	}
 
-	return files.BuildBrowseHTML(folderCount, "/browse/folders"), nil
+	return render.RenderBrowseHTML(folderCount, "/browse/folders"), nil
 }
