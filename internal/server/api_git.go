@@ -1,13 +1,11 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
-	"knov/internal/configmanager"
 	"knov/internal/git"
+	"knov/internal/server/render"
 )
 
 // @Summary Get recently changed files
@@ -29,17 +27,6 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var html strings.Builder
-	html.WriteString("<ul>")
-	for _, file := range files {
-		linkPath := strings.TrimPrefix(file.Path, configmanager.GetAppConfig().DataPath+"/")
-		html.WriteString(fmt.Sprintf(`<li>%s - <a href="/files/%s"><strong>%s</strong></a> (%s)</li>`,
-			file.Date,
-			linkPath,
-			file.Name,
-			file.Message))
-	}
-	html.WriteString("</ul>")
-
-	writeResponse(w, r, files, html.String())
+	html := render.RenderGitHistoryFileList(files)
+	writeResponse(w, r, files, html)
 }

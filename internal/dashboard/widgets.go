@@ -143,7 +143,7 @@ func renderFilterFormWidget() (string, error) {
 				const newRow = document.createElement('div');
 				newRow.className = 'filter-row';
 				newRow.id = 'filter-row-' + filterRowCount;
-				
+
 				const selectHTML = '<select name="metadata[]" id="metadata-' + filterRowCount + '" onchange="updateValueField(' + filterRowCount + ', this.value)">' +
 					'<option value="">Select Field</option>' +
 					'<option value="collection">Collection</option>' +
@@ -161,7 +161,7 @@ func renderFilterFormWidget() (string, error) {
                     '<option value="para_resources">PARA: Resources</option>' +
                     '<option value="para_archive">PARA: Archive</option>' +
 					'</select>';
-				
+
 				const operatorHTML = '<select name="operator[]" id="operator-' + filterRowCount + '">' +
 					'<option value="equals">Equals</option>' +
 					'<option value="contains">Contains</option>' +
@@ -169,18 +169,18 @@ func renderFilterFormWidget() (string, error) {
 					'<option value="less">Less Than</option>' +
 					'<option value="in">In Array</option>' +
 					'</select>';
-				
+
 				const valueHTML = '<div id="value-container-' + filterRowCount + '">' +
 					'<input type="text" name="value[]" id="value-' + filterRowCount + '" placeholder="Value"/>' +
 					'</div>';
-				
+
 				const actionHTML = '<select name="action[]" id="action-' + filterRowCount + '">' +
 					'<option value="include">Include</option>' +
 					'<option value="exclude">Exclude</option>' +
 					'</select>';
-				
+
 				const removeHTML = '<button type="button" onclick="removeFilterRow(' + filterRowCount + ')">Remove</button>';
-				
+
 				newRow.innerHTML = selectHTML + operatorHTML + valueHTML + actionHTML + removeHTML;
 				container.appendChild(newRow);
 				filterRowCount++;
@@ -193,7 +193,7 @@ func renderFilterFormWidget() (string, error) {
 
 		function updateValueField(rowIndex, fieldType) {
 			const container = document.getElementById('value-container-' + rowIndex);
-			
+
 			if (fieldType === 'collection') {
 				container.innerHTML = '<input type="text" name="value[]" autocomplete="off" id="value-' + rowIndex + '" list="collections-' + rowIndex + '" placeholder="Type or select collection (supports wildcards: project*)">' +
 					'<datalist id="collections-' + rowIndex + '" hx-get="/api/metadata/options/collections" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
@@ -226,7 +226,7 @@ func renderFilterFormWidget() (string, error) {
 			} else {
 				container.innerHTML = '<input type="text" name="value[]" id="value-' + rowIndex + '" placeholder="Value"/>';
 			}
-			
+
 			// Trigger HTMX processing for new elements
 			if (window.htmx) {
 				htmx.process(container);

@@ -1,12 +1,11 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"slices"
-	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/server/render"
 	"knov/internal/thememanager"
 )
 
@@ -24,17 +23,9 @@ func handleAPIGetAvailableFileViews(w http.ResponseWriter, r *http.Request) {
 		configmanager.SetFileView(currentView)
 	}
 
-	var html strings.Builder
-	for _, view := range views {
-		selected := ""
-		if view == currentView {
-			selected = "selected"
-		}
-		displayName := strings.Title(view)
-		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, view, selected, displayName))
-	}
+	html := render.RenderFileViewOptions(views, currentView)
 
-	writeResponse(w, r, views, html.String())
+	writeResponse(w, r, views, html)
 }
 
 // @Summary Set file view
