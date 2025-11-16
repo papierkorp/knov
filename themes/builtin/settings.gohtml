@@ -12,12 +12,12 @@
 <section class="settings-section">
     <h2>{{T "General Settings"}}</h2>
     <div class="setting-item">
-        <form hx-post="/api/config/setLanguage" hx-trigger="change">
+        <form hx-post="/api/config/language" hx-trigger="change">
             <label for="language">Select Language:</label>
             <select
                 name="language"
                 id="language"
-                hx-get="/api/config/getLanguages"
+                hx-get="/api/config/languages"
                 hx-trigger="load"
                 hx-swap="innerHTML"
             >
@@ -32,12 +32,12 @@
 <section class="settings-section">
     <h2>{{T "Theme Settings"}}</h2>
     <div class="setting-item">
-        <form hx-post="/api/themes/setTheme" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
+        <form hx-post="/api/themes/" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
             <label for="theme">Select Theme:</label>
             <select
                 name="theme"
                 id="theme"
-                hx-get="/api/themes/getAllThemes"
+                hx-get="/api/themes/"
                 hx-target="this"
                 hx-swap="innerHTML"
                 hx-trigger="load"
@@ -52,22 +52,22 @@
             <input
                 type="checkbox"
                 name="darkMode"
-                hx-get="/api/config/getDarkMode"
+                hx-get="/api/config/darkmode"
                 hx-trigger="load"
                 hx-swap="outerHTML"
-                hx-post="/api/config/setDarkMode"
+                hx-post="/api/config/darkmode"
                 hx-vals='js:{"enabled": event.target.checked}'
                 hx-trigger="load, change"
             />
         </label>
     </div>
     <div class="setting-item">
-        <form hx-post="/api/config/setColorScheme" hx-trigger="change">
+        <form hx-post="/api/config/colorscheme" hx-trigger="change">
             <label for="colorScheme">Color Scheme:</label>
             <select
                 name="colorScheme"
                 id="colorScheme"
-                hx-get="/api/config/getColorSchemes"
+                hx-get="/api/config/colorschemes"
                 hx-trigger="load"
                 hx-swap="innerHTML"
             >
@@ -76,12 +76,12 @@
         </form>
     </div>
     <div class="setting-item">
-        <form hx-post="/api/config/setFileView" hx-trigger="change">
+        <form hx-post="/api/config/fileview" hx-trigger="change">
             <label for="fileView">Select File View:</label>
             <select
                 name="fileView"
                 id="fileView"
-                hx-get="/api/config/getAvailableFileViews"
+                hx-get="/api/config/fileviews"
                 hx-trigger="load"
                 hx-swap="innerHTML"
             >
@@ -93,7 +93,7 @@
         <div id="customCssEditor">
             <h3>Custom CSS</h3>
             <span
-                hx-get="/api/config/getCustomCSS"
+                hx-get="/api/config/customcss"
                 hx-trigger="load"
                 hx-swap="innerHTML"
             >

@@ -20,7 +20,7 @@
                 <div class="metadata-grid">
                     <div class="metadata-row">
                         <span class="metadata-label">collection:</span>
-                        <span hx-get="/api/metadata/file/collection?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+                        <span hx-get="/api/metadata/collections?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
                     <div class="metadata-row">
                         <span class="metadata-label">created:</span>
@@ -40,11 +40,11 @@
                     </div>
                     <div class="metadata-row">
                         <span class="metadata-label">tags:</span>
-                        <span hx-get="/api/metadata/file/tags?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+                        <span hx-get="/api/metadata/tags?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
                     <div class="metadata-row">
                         <span class="metadata-label">folders:</span>
-                        <span hx-get="/api/metadata/file/folders?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+                        <span hx-get="/api/metadata/folders?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
                 </div>
             </section>
@@ -114,7 +114,7 @@
     <div class="compact-header">
         <div class="compact-metadata">
             <span>{{.FilePath}}</span>
-            <span class="separator">•</span>
+            <span class="separator">â€¢</span>
             <span hx-get="/api/metadata/lastedited?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
         </div>
     </div>

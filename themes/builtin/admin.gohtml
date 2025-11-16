@@ -7,10 +7,10 @@
             <div class="admin-grid">
                 <div class="admin-card">
                     <h3 class="tooltip" data-tooltip="{{T "Leave empty for local git repository only"}}">{{T "Git Repository"}}</h3>
-                    <form hx-post="/api/config/setRepositoryURL" hx-target="#git-result">
+                    <form hx-post="/api/config/repository" hx-target="#git-result">
                         <label for="git-url">{{T "Remote Repository URL"}} ({{T "optional"}}):</label>
                         <input type="url" name="repositoryURL" id="git-url" placeholder="https://github.com/user/repo.git"
-                               hx-get="/api/config/getCurrentRepositoryURL" hx-trigger="load" hx-target="this" hx-swap="outerHTML" />
+                               hx-get="/api/config/repository" hx-trigger="load" hx-target="this" hx-swap="outerHTML" />
                         <button type="submit">{{T "Set Remote Repository"}}</button>
                     </form>
                     <div id="git-result"></div>
@@ -18,10 +18,10 @@
 
                 <div class="admin-card">
                     <h3 class="tooltip" data-tooltip="{{T "Path to your data storage relative from the executable"}}">{{T "Data Path Configuration"}}</h3>
-                    <form hx-post="/api/config/setDataPath" hx-target="#datapath-result">
+                    <form hx-post="/api/config/datapath" hx-target="#datapath-result">
                         <label for="data-path">{{T "Data Path"}}:</label>
                         <input type="text" name="dataPath" id="data-path" placeholder="/path/to/data" required
-                               hx-get="/api/config/getCurrentDataPath" hx-trigger="load" hx-target="this" hx-swap="outerHTML" />
+                               hx-get="/api/config/datapath" hx-trigger="load" hx-target="this" hx-swap="outerHTML" />
                         <button type="submit">{{T "Set Data Path"}}</button>
                     </form>
                     <div id="datapath-result"></div>

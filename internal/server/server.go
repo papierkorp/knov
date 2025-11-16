@@ -9,9 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
 	"knov/internal/files"
@@ -19,6 +16,10 @@ import (
 	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/utils"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 var staticFiles embed.FS
@@ -91,33 +92,32 @@ func StartServerChi() {
 		// ---------------------------------------- THEMES ----------------------------------------
 		// ----------------------------------------------------------------------------------------
 		r.Route("/themes", func(r chi.Router) {
-			r.Get("/getAllThemes", handleAPIGetThemes)
-			r.Post("/setTheme", handleAPISetTheme)
-
+			r.Get("/", handleAPIGetThemes)
+			r.Post("/", handleAPISetTheme)
 		})
 		// ----------------------------------------------------------------------------------------
 		// ---------------------------------------- CONFIG ----------------------------------------
 		// ----------------------------------------------------------------------------------------
 		r.Route("/config", func(r chi.Router) {
 			// GET
-			r.Get("/getConfig", handleAPIGetConfig)
-			r.Get("/getCurrentDataPath", handleAPIGetCurrentDataPath)
-			r.Get("/getLanguages", handleAPIGetLanguages)
-			r.Get("/getRepositoryURL", handleAPIGetGitRepositoryURL)
-			r.Get("/getAvailableFileViews", handleAPIGetAvailableFileViews)
-			r.Get("/getCustomCSS", handleAPIGetCustomCSS)
-			r.Get("/getDarkMode", handleAPIGetDarkMode)
-			r.Get("/getColorSchemes", handleAPIGetColorSchemes)
-			r.Get("/getDarkModeStatus", handleAPIGetDarkModeStatus)
+			r.Get("/", handleAPIGetConfig)
+			r.Get("/datapath", handleAPIGetCurrentDataPath)
+			r.Get("/languages", handleAPIGetLanguages)
+			r.Get("/repository", handleAPIGetGitRepositoryURL)
+			r.Get("/fileviews", handleAPIGetAvailableFileViews)
+			r.Get("/customcss", handleAPIGetCustomCSS)
+			r.Get("/darkmode", handleAPIGetDarkMode)
+			r.Get("/colorschemes", handleAPIGetColorSchemes)
+			r.Get("/darkmode/status", handleAPIGetDarkModeStatus)
 
 			// POST
-			r.Post("/setLanguage", handleAPISetLanguage)
-			r.Post("/setRepositoryURL", handleAPISetGitRepositoryURL)
-			r.Post("/setFileView", handleAPISetFileView)
-			r.Post("/customCSS", handleCustomCSS)
-			r.Post("/setDataPath", handleAPISetDataPath)
-			r.Post("/setDarkMode", handleAPISetDarkMode)
-			r.Post("/setColorScheme", handleAPISetColorScheme)
+			r.Post("/language", handleAPISetLanguage)
+			r.Post("/repository", handleAPISetGitRepositoryURL)
+			r.Post("/fileview", handleAPISetFileView)
+			r.Post("/customcss", handleCustomCSS)
+			r.Post("/datapath", handleAPISetDataPath)
+			r.Post("/darkmode", handleAPISetDarkMode)
+			r.Post("/colorscheme", handleAPISetColorScheme)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -165,29 +165,23 @@ func StartServerChi() {
 			r.Post("/tags", handleAPISetMetadataTags)
 			r.Post("/parents", handleAPISetMetadataParents)
 			r.Post("/context/projects", handleAPISetMetadataContextProjects)
-
-			r.Get("/tags", handleAPIGetAllTags)
-			r.Get("/collections", handleAPIGetAllCollections)
-			r.Get("/folders", handleAPIGetAllFolders)
-			r.Get("/priority/all", handleAPIGetAllPriorities)
-			r.Get("/file/tags", handleAPIGetFileMetadataTags)
-			r.Get("/file/folders", handleAPIGetFileMetadataFolders)
-			r.Get("/file/collection", handleAPIGetFileMetadataCollection)
-
-			r.Get("/para/projects", handleAPIGetMetadataPARAProjects)
-			r.Get("/para/areas", handleAPIGetMetadataPARAreas)
-			r.Get("/para/resources", handleAPIGetMetadataPARAResources)
-			r.Get("/para/archive", handleAPIGetMetadataPARAArchive)
-
 			r.Post("/para/projects", handleAPISetMetadataPARAProjects)
 			r.Post("/para/areas", handleAPISetMetadataPARAreas)
 			r.Post("/para/resources", handleAPISetMetadataPARAResources)
 			r.Post("/para/archive", handleAPISetMetadataPARAArchive)
 
-			r.Get("/para/projects/all", handleAPIGetAllPARAProjects)
-			r.Get("/para/areas/all", handleAPIGetAllPARAreas)
-			r.Get("/para/resources/all", handleAPIGetAllPARAResources)
-			r.Get("/para/archive/all", handleAPIGetAllPARAArchive)
+			r.Get("/tags", handleAPIGetAllTags)
+			r.Get("/collections", handleAPIGetAllCollections)
+			r.Get("/folders", handleAPIGetAllFolders)
+			r.Get("/priorities", handleAPIGetAllPriorities)
+			r.Get("/tags/{fileId}", handleAPIGetFileMetadataTags)
+			r.Get("/folders/{fileId}", handleAPIGetFileMetadataFolders)
+			r.Get("/collection/{fileId}", handleAPIGetFileMetadataCollection)
+
+			r.Get("/para/projects", handleAPIGetAllPARAProjects)
+			r.Get("/para/areas", handleAPIGetAllPARAreas)
+			r.Get("/para/resources", handleAPIGetAllPARAResources)
+			r.Get("/para/archive", handleAPIGetAllPARAArchive)
 		})
 
 		// ----------------------------------------------------------------------------------------

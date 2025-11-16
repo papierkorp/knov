@@ -7,7 +7,7 @@
             <div class="files-list-container">
                 <div class="overview-breadcrumb">
                     <a href="/">{{T "Home"}}</a>
-                    → <span>{{T "All Files"}}</span>
+                    â†’ <span>{{T "All Files"}}</span>
                     <span id="current-file-breadcrumb"></span>
                 </div>
                 <div class="overview-list">
@@ -43,25 +43,25 @@
                 </div>
                 <div class="browse-section">
                     <h3>{{T "Projects"}}</h3>
-                    <div hx-get="/api/metadata/para/projects/all" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                    <div hx-get="/api/metadata/para/projects" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading projects..."}}
                     </div>
                 </div>
                 <div class="browse-section">  
                     <h3>{{T "Areas"}}</h3>
-                    <div hx-get="/api/metadata/para/areas/all" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                    <div hx-get="/api/metadata/para/areas" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading areas..."}}
                     </div>
                 </div>
                 <div class="browse-section">
                     <h3>{{T "Resources"}}</h3>
-                    <div hx-get="/api/metadata/para/resources/all" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                    <div hx-get="/api/metadata/para/resources" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading resources..."}}
                     </div>
                 </div>
                 <div class="browse-section">
                     <h3>{{T "Archive"}}</h3>
-                    <div hx-get="/api/metadata/para/archive/all" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                    <div hx-get="/api/metadata/para/archive" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading archive..."}}
                     </div>
                 </div>

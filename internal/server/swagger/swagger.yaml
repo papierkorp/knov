@@ -1262,7 +1262,14 @@ paths:
       - metadata
   /api/metadata/collections:
     get:
+      description: Get all collections with counts, or collection for a specific file
+        if filepath is provided
       parameters:
+      - description: File path (optional - if provided, returns collection for that
+          specific file)
+        in: query
+        name: filepath
+        type: string
       - description: Response format (options for HTML select options)
         in: query
         name: format
@@ -1277,7 +1284,7 @@ paths:
             additionalProperties:
               type: integer
             type: object
-      summary: Get all collections with counts
+      summary: Get all collections or collection for a specific file
       tags:
       - metadata
   /api/metadata/context/projects:
@@ -1457,7 +1464,14 @@ paths:
       - metadata
   /api/metadata/folders:
     get:
+      description: Get all folders with counts, or folders for a specific file if
+        filepath is provided
       parameters:
+      - description: File path (optional - if provided, returns folders for that specific
+          file)
+        in: query
+        name: filepath
+        type: string
       - description: Response format (options for HTML select options)
         in: query
         name: format
@@ -1472,7 +1486,7 @@ paths:
             additionalProperties:
               type: integer
             type: object
-      summary: Get all folders with counts
+      summary: Get all folders or folders for a specific file
       tags:
       - metadata
     post:
@@ -1590,18 +1604,29 @@ paths:
       - metadata
   /api/metadata/para/archive:
     get:
+      description: Get all PARA archive with counts, or archive for a specific file
+        if filepath is provided
       parameters:
-      - description: File path
+      - description: File path (optional - if provided, returns archive for that specific
+          file)
         in: query
         name: filepath
-        required: true
         type: string
+      - description: Response format (options for datalist)
+        enum:
+        - options
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      - text/html
       responses:
         "200":
           description: OK
           schema:
             type: string
-      summary: Get PARA archive for a file
+      summary: Get all PARA archive or archive for a specific file
       tags:
       - metadata
     post:
@@ -1629,9 +1654,16 @@ paths:
       summary: Set PARA archive
       tags:
       - metadata
-  /api/metadata/para/archive/all:
+  /api/metadata/para/areas:
     get:
+      description: Get all PARA areas with counts, or areas for a specific file if
+        filepath is provided
       parameters:
+      - description: File path (optional - if provided, returns areas for that specific
+          file)
+        in: query
+        name: filepath
+        type: string
       - description: Response format (options for datalist)
         enum:
         - options
@@ -1646,23 +1678,7 @@ paths:
           description: OK
           schema:
             type: string
-      summary: Get all PARA archive with counts
-      tags:
-      - metadata
-  /api/metadata/para/areas:
-    get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get PARA areas for a file
+      summary: Get all PARA areas or areas for a specific file
       tags:
       - metadata
     post:
@@ -1690,9 +1706,16 @@ paths:
       summary: Set PARA areas
       tags:
       - metadata
-  /api/metadata/para/areas/all:
+  /api/metadata/para/projects:
     get:
+      description: Get all PARA projects with counts, or projects for a specific file
+        if filepath is provided
       parameters:
+      - description: File path (optional - if provided, returns projects for that
+          specific file)
+        in: query
+        name: filepath
+        type: string
       - description: Response format (options for datalist)
         enum:
         - options
@@ -1707,23 +1730,7 @@ paths:
           description: OK
           schema:
             type: string
-      summary: Get all PARA areas with counts
-      tags:
-      - metadata
-  /api/metadata/para/projects:
-    get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get PARA projects for a file
+      summary: Get all PARA projects or projects for a specific file
       tags:
       - metadata
     post:
@@ -1751,9 +1758,16 @@ paths:
       summary: Set PARA projects
       tags:
       - metadata
-  /api/metadata/para/projects/all:
+  /api/metadata/para/resources:
     get:
+      description: Get all PARA resources with counts, or resources for a specific
+        file if filepath is provided
       parameters:
+      - description: File path (optional - if provided, returns resources for that
+          specific file)
+        in: query
+        name: filepath
+        type: string
       - description: Response format (options for datalist)
         enum:
         - options
@@ -1768,23 +1782,7 @@ paths:
           description: OK
           schema:
             type: string
-      summary: Get all PARA projects with counts
-      tags:
-      - metadata
-  /api/metadata/para/resources:
-    get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get PARA resources for a file
+      summary: Get all PARA resources or resources for a specific file
       tags:
       - metadata
     post:
@@ -1810,26 +1808,6 @@ paths:
           schema:
             type: string
       summary: Set PARA resources
-      tags:
-      - metadata
-  /api/metadata/para/resources/all:
-    get:
-      parameters:
-      - description: Response format (options for datalist)
-        enum:
-        - options
-        in: query
-        name: format
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get all PARA resources with counts
       tags:
       - metadata
   /api/metadata/parents:
@@ -1902,6 +1880,26 @@ paths:
       summary: Set file path
       tags:
       - metadata
+  /api/metadata/priorities:
+    get:
+      parameters:
+      - description: Response format (options for HTML select options)
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get all available priorities
+      tags:
+      - metadata
   /api/metadata/priority:
     get:
       parameters:
@@ -1941,26 +1939,6 @@ paths:
           schema:
             type: string
       summary: Set file priority
-      tags:
-      - metadata
-  /api/metadata/priority/all:
-    get:
-      parameters:
-      - description: Response format (options for HTML select options)
-        in: query
-        name: format
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              type: string
-            type: array
-      summary: Get all available priorities
       tags:
       - metadata
   /api/metadata/rebuild:
@@ -2009,7 +1987,14 @@ paths:
       - metadata
   /api/metadata/tags:
     get:
+      description: Get all tags with counts, or tags for a specific file if filepath
+        is provided
       parameters:
+      - description: File path (optional - if provided, returns tags for that specific
+          file)
+        in: query
+        name: filepath
+        type: string
       - description: Response format (options for HTML select options)
         in: query
         name: format
@@ -2024,7 +2009,7 @@ paths:
             additionalProperties:
               type: integer
             type: object
-      summary: Get all tags with counts
+      summary: Get all tags or tags for a specific file
       tags:
       - metadata
     post:

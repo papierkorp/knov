@@ -1495,6 +1495,7 @@ const docTemplate = `{
         },
         "/api/metadata/collections": {
             "get": {
+                "description": "Get all collections with counts, or collection for a specific file if filepath is provided",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -1502,8 +1503,14 @@ const docTemplate = `{
                 "tags": [
                     "metadata"
                 ],
-                "summary": "Get all collections with counts",
+                "summary": "Get all collections or collection for a specific file",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path (optional - if provided, returns collection for that specific file)",
+                        "name": "filepath",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "Response format (options for HTML select options)",
@@ -1790,6 +1797,7 @@ const docTemplate = `{
         },
         "/api/metadata/folders": {
             "get": {
+                "description": "Get all folders with counts, or folders for a specific file if filepath is provided",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -1797,8 +1805,14 @@ const docTemplate = `{
                 "tags": [
                     "metadata"
                 ],
-                "summary": "Get all folders with counts",
+                "summary": "Get all folders or folders for a specific file",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path (optional - if provided, returns folders for that specific file)",
+                        "name": "filepath",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "Response format (options for HTML select options)",
@@ -1990,17 +2004,30 @@ const docTemplate = `{
         },
         "/api/metadata/para/archive": {
             "get": {
+                "description": "Get all PARA archive with counts, or archive for a specific file if filepath is provided",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
                 "tags": [
                     "metadata"
                 ],
-                "summary": "Get PARA archive for a file",
+                "summary": "Get all PARA archive or archive for a specific file",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "File path",
+                        "description": "File path (optional - if provided, returns archive for that specific file)",
                         "name": "filepath",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "options"
+                        ],
+                        "type": "string",
+                        "description": "Response format (options for datalist)",
+                        "name": "format",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2050,8 +2077,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/metadata/para/archive/all": {
+        "/api/metadata/para/areas": {
             "get": {
+                "description": "Get all PARA areas with counts, or areas for a specific file if filepath is provided",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -2059,8 +2087,14 @@ const docTemplate = `{
                 "tags": [
                     "metadata"
                 ],
-                "summary": "Get all PARA archive with counts",
+                "summary": "Get all PARA areas or areas for a specific file",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path (optional - if provided, returns areas for that specific file)",
+                        "name": "filepath",
+                        "in": "query"
+                    },
                     {
                         "enum": [
                             "options"
@@ -2069,31 +2103,6 @@ const docTemplate = `{
                         "description": "Response format (options for datalist)",
                         "name": "format",
                         "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/para/areas": {
-            "get": {
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get PARA areas for a file",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -2143,8 +2152,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/metadata/para/areas/all": {
+        "/api/metadata/para/projects": {
             "get": {
+                "description": "Get all PARA projects with counts, or projects for a specific file if filepath is provided",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -2152,8 +2162,14 @@ const docTemplate = `{
                 "tags": [
                     "metadata"
                 ],
-                "summary": "Get all PARA areas with counts",
+                "summary": "Get all PARA projects or projects for a specific file",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path (optional - if provided, returns projects for that specific file)",
+                        "name": "filepath",
+                        "in": "query"
+                    },
                     {
                         "enum": [
                             "options"
@@ -2162,31 +2178,6 @@ const docTemplate = `{
                         "description": "Response format (options for datalist)",
                         "name": "format",
                         "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/para/projects": {
-            "get": {
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get PARA projects for a file",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -2236,8 +2227,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/metadata/para/projects/all": {
+        "/api/metadata/para/resources": {
             "get": {
+                "description": "Get all PARA resources with counts, or resources for a specific file if filepath is provided",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -2245,8 +2237,14 @@ const docTemplate = `{
                 "tags": [
                     "metadata"
                 ],
-                "summary": "Get all PARA projects with counts",
+                "summary": "Get all PARA resources or resources for a specific file",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path (optional - if provided, returns resources for that specific file)",
+                        "name": "filepath",
+                        "in": "query"
+                    },
                     {
                         "enum": [
                             "options"
@@ -2255,31 +2253,6 @@ const docTemplate = `{
                         "description": "Response format (options for datalist)",
                         "name": "format",
                         "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/para/resources": {
-            "get": {
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get PARA resources for a file",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -2317,37 +2290,6 @@ const docTemplate = `{
                         "name": "resources",
                         "in": "formData",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/para/resources/all": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get all PARA resources with counts",
-                "parameters": [
-                    {
-                        "enum": [
-                            "options"
-                        ],
-                        "type": "string",
-                        "description": "Response format (options for datalist)",
-                        "name": "format",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2465,6 +2407,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/priorities": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all available priorities",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Response format (options for HTML select options)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/priority": {
             "get": {
                 "tags": [
@@ -2522,37 +2495,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/priority/all": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get all available priorities",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Response format (options for HTML select options)",
-                        "name": "format",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
                         }
                     }
                 }
@@ -2626,6 +2568,7 @@ const docTemplate = `{
         },
         "/api/metadata/tags": {
             "get": {
+                "description": "Get all tags with counts, or tags for a specific file if filepath is provided",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -2633,8 +2576,14 @@ const docTemplate = `{
                 "tags": [
                     "metadata"
                 ],
-                "summary": "Get all tags with counts",
+                "summary": "Get all tags or tags for a specific file",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path (optional - if provided, returns tags for that specific file)",
+                        "name": "filepath",
+                        "in": "query"
+                    },
                     {
                         "type": "string",
                         "description": "Response format (options for HTML select options)",

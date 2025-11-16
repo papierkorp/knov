@@ -608,13 +608,24 @@ func handleAPISetMetadataFolders(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, "folders updated", html.String())
 }
 
-// @Summary Get all tags with counts
+// @Summary Get all tags or tags for a specific file
+// @Description Get all tags with counts, or tags for a specific file if filepath is provided
 // @Tags metadata
+// @Param filepath query string false "File path (optional - if provided, returns tags for that specific file)"
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
 // @Success 200 {object} map[string]int
 // @Router /api/metadata/tags [get]
 func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+
+	// if filepath is provided, return tags for that specific file
+	if filepath != "" {
+		handleAPIGetFileMetadataTags(w, r)
+		return
+	}
+
+	// otherwise, return all tags
 	format := r.URL.Query().Get("format")
 
 	tags, err := files.GetAllTags()
@@ -637,13 +648,24 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, tags, html.String())
 }
 
-// @Summary Get all collections with counts
+// @Summary Get all collections or collection for a specific file
+// @Description Get all collections with counts, or collection for a specific file if filepath is provided
 // @Tags metadata
+// @Param filepath query string false "File path (optional - if provided, returns collection for that specific file)"
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
 // @Success 200 {object} map[string]int
 // @Router /api/metadata/collections [get]
 func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+
+	// if filepath is provided, return collection for that specific file
+	if filepath != "" {
+		handleAPIGetFileMetadataCollection(w, r)
+		return
+	}
+
+	// otherwise, return all collections
 	format := r.URL.Query().Get("format")
 
 	collections, err := files.GetAllCollections()
@@ -666,13 +688,24 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, collections, html.String())
 }
 
-// @Summary Get all folders with counts
+// @Summary Get all folders or folders for a specific file
+// @Description Get all folders with counts, or folders for a specific file if filepath is provided
 // @Tags metadata
+// @Param filepath query string false "File path (optional - if provided, returns folders for that specific file)"
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
 // @Success 200 {object} map[string]int
 // @Router /api/metadata/folders [get]
 func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+
+	// if filepath is provided, return folders for that specific file
+	if filepath != "" {
+		handleAPIGetFileMetadataFolders(w, r)
+		return
+	}
+
+	// otherwise, return all folders
 	format := r.URL.Query().Get("format")
 
 	folders, err := files.GetAllFolders()
@@ -700,7 +733,7 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
 // @Success 200 {array} string
-// @Router /api/metadata/priority/all [get]
+// @Router /api/metadata/priorities [get]
 func handleAPIGetAllPriorities(w http.ResponseWriter, r *http.Request) {
 	format := r.URL.Query().Get("format")
 
@@ -1258,13 +1291,24 @@ func handleAPIGetMetadataPARAArchive(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, metadata.PARA.Archive, html)
 }
 
-// @Summary Get all PARA projects with counts
+// @Summary Get all PARA projects or projects for a specific file
+// @Description Get all PARA projects with counts, or projects for a specific file if filepath is provided
 // @Tags metadata
+// @Param filepath query string false "File path (optional - if provided, returns projects for that specific file)"
 // @Param format query string false "Response format (options for datalist)" Enums(options)
 // @Produce json,html
 // @Success 200 {string} string
-// @Router /api/metadata/para/projects/all [get]
+// @Router /api/metadata/para/projects [get]
 func handleAPIGetAllPARAProjects(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+
+	// if filepath is provided, return projects for that specific file
+	if filepath != "" {
+		handleAPIGetMetadataPARAProjects(w, r)
+		return
+	}
+
+	// otherwise, return all projects
 	format := r.URL.Query().Get("format")
 
 	projectCount, err := files.GetAllPARAProjects()
@@ -1297,13 +1341,24 @@ func handleAPIGetAllPARAProjects(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, projectCount, html.String())
 }
 
-// @Summary Get all PARA areas with counts
+// @Summary Get all PARA areas or areas for a specific file
+// @Description Get all PARA areas with counts, or areas for a specific file if filepath is provided
 // @Tags metadata
+// @Param filepath query string false "File path (optional - if provided, returns areas for that specific file)"
 // @Param format query string false "Response format (options for datalist)" Enums(options)
 // @Produce json,html
 // @Success 200 {string} string
-// @Router /api/metadata/para/areas/all [get]
+// @Router /api/metadata/para/areas [get]
 func handleAPIGetAllPARAreas(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+
+	// if filepath is provided, return areas for that specific file
+	if filepath != "" {
+		handleAPIGetMetadataPARAreas(w, r)
+		return
+	}
+
+	// otherwise, return all areas
 	format := r.URL.Query().Get("format")
 
 	areaCount, err := files.GetAllPARAreas()
@@ -1336,13 +1391,24 @@ func handleAPIGetAllPARAreas(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, areaCount, html.String())
 }
 
-// @Summary Get all PARA resources with counts
+// @Summary Get all PARA resources or resources for a specific file
+// @Description Get all PARA resources with counts, or resources for a specific file if filepath is provided
 // @Tags metadata
+// @Param filepath query string false "File path (optional - if provided, returns resources for that specific file)"
 // @Param format query string false "Response format (options for datalist)" Enums(options)
 // @Produce json,html
 // @Success 200 {string} string
-// @Router /api/metadata/para/resources/all [get]
+// @Router /api/metadata/para/resources [get]
 func handleAPIGetAllPARAResources(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+
+	// if filepath is provided, return resources for that specific file
+	if filepath != "" {
+		handleAPIGetMetadataPARAResources(w, r)
+		return
+	}
+
+	// otherwise, return all resources
 	format := r.URL.Query().Get("format")
 
 	resourceCount, err := files.GetAllPARAResources()
@@ -1375,13 +1441,24 @@ func handleAPIGetAllPARAResources(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, resourceCount, html.String())
 }
 
-// @Summary Get all PARA archive with counts
+// @Summary Get all PARA archive or archive for a specific file
+// @Description Get all PARA archive with counts, or archive for a specific file if filepath is provided
 // @Tags metadata
+// @Param filepath query string false "File path (optional - if provided, returns archive for that specific file)"
 // @Param format query string false "Response format (options for datalist)" Enums(options)
 // @Produce json,html
 // @Success 200 {string} string
-// @Router /api/metadata/para/archive/all [get]
+// @Router /api/metadata/para/archive [get]
 func handleAPIGetAllPARAArchive(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+
+	// if filepath is provided, return archive for that specific file
+	if filepath != "" {
+		handleAPIGetMetadataPARAArchive(w, r)
+		return
+	}
+
+	// otherwise, return all archive
 	format := r.URL.Query().Get("format")
 
 	archiveCount, err := files.GetAllPARAArchive()
