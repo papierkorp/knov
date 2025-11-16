@@ -610,50 +610,120 @@ func handleAPISetMetadataFolders(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Get all tags with counts
 // @Tags metadata
+// @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
 // @Success 200 {object} map[string]int
 // @Router /api/metadata/tags [get]
 func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+
 	tags, err := files.GetAllTags()
 	if err != nil {
 		http.Error(w, "failed to get tags", http.StatusInternalServerError)
 		return
 	}
 
-	html := render.RenderBrowseHTML(tags, "/browse/tags")
-	writeResponse(w, r, tags, html)
+	var html strings.Builder
+	if format == "options" {
+		for tag := range tags {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, tag, tag))
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	html.WriteString(render.RenderBrowseHTML(tags, "/browse/tags"))
+	writeResponse(w, r, tags, html.String())
 }
 
 // @Summary Get all collections with counts
 // @Tags metadata
+// @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
 // @Success 200 {object} map[string]int
 // @Router /api/metadata/collections [get]
 func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+
 	collections, err := files.GetAllCollections()
 	if err != nil {
 		http.Error(w, "failed to get collections", http.StatusInternalServerError)
 		return
 	}
 
-	html := render.RenderBrowseHTML(collections, "/browse/collection")
-	writeResponse(w, r, collections, html)
+	var html strings.Builder
+	if format == "options" {
+		for collection := range collections {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, collection, collection))
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	html.WriteString(render.RenderBrowseHTML(collections, "/browse/collection"))
+	writeResponse(w, r, collections, html.String())
 }
 
 // @Summary Get all folders with counts
 // @Tags metadata
+// @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
 // @Success 200 {object} map[string]int
 // @Router /api/metadata/folders [get]
 func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+
 	folders, err := files.GetAllFolders()
 	if err != nil {
 		http.Error(w, "failed to get folders", http.StatusInternalServerError)
 		return
 	}
 
-	html := render.RenderBrowseHTML(folders, "/browse/folders")
-	writeResponse(w, r, folders, html)
+	var html strings.Builder
+	if format == "options" {
+		for folder := range folders {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, folder, folder))
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	html.WriteString(render.RenderBrowseHTML(folders, "/browse/folders"))
+	writeResponse(w, r, folders, html.String())
+}
+
+// @Summary Get all available priorities
+// @Tags metadata
+// @Param format query string false "Response format (options for HTML select options)"
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/metadata/priority/all [get]
+func handleAPIGetAllPriorities(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+
+	priorities := []files.Priority{
+		files.PriorityLow,
+		files.PriorityMedium,
+		files.PriorityHigh,
+	}
+
+	var html strings.Builder
+	if format == "options" {
+		for _, p := range priorities {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, p, p))
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	for _, p := range priorities {
+		html.WriteString(fmt.Sprintf(`<div class="priority-option">%s</div>`, p))
+	}
+	writeResponse(w, r, priorities, html.String())
 }
 
 // @Summary Get tags for a specific file
@@ -780,128 +850,6 @@ func handleAPISetMetadataContextProjects(w http.ResponseWriter, r *http.Request)
 
 	html := fmt.Sprintf(`<span class="context-projects">%s</span>`, strings.Join(projects, ", "))
 	writeResponse(w, r, "projects updated", html)
-}
-
-// @Summary Get all available priorities
-// @Tags metadata
-// @Produce json,html
-// @Success 200 {array} string
-// @Router /api/metadata/options/priorities [get]
-func handleAPIGetMetadataPriorities(w http.ResponseWriter, r *http.Request) {
-	priorities := []files.Priority{
-		files.PriorityLow,
-		files.PriorityMedium,
-		files.PriorityHigh,
-	}
-
-	var html strings.Builder
-	for _, p := range priorities {
-		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, p, p))
-	}
-
-	writeResponse(w, r, priorities, html.String())
-}
-
-// @Summary Get all available file types
-// @Tags metadata
-// @Produce json,html
-// @Success 200 {array} string
-// @Router /api/metadata/options/filetypes [get]
-func handleAPIGetMetadataFileTypes(w http.ResponseWriter, r *http.Request) {
-	fileTypes := []files.Filetype{
-		files.FileTypeFleeting,
-		files.FileTypeLiterature,
-		files.FileTypePermanent,
-		files.FileTypeMOC,
-		files.FileTypeTodo,
-	}
-
-	var html strings.Builder
-	for _, ft := range fileTypes {
-		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, ft, ft))
-	}
-
-	writeResponse(w, r, fileTypes, html.String())
-}
-
-// @Summary Get all available status options
-// @Tags metadata
-// @Produce json,html
-// @Success 200 {array} string
-// @Router /api/metadata/options/status [get]
-func handleAPIGetMetadataStatus(w http.ResponseWriter, r *http.Request) {
-	status := []files.Status{
-		files.StatusDraft,
-		files.StatusPublished,
-		files.StatusArchived,
-	}
-
-	var html strings.Builder
-	for _, s := range status {
-		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, s, s))
-	}
-
-	writeResponse(w, r, status, html.String())
-}
-
-// @Summary Get collection options for filter
-// @Tags metadata
-// @Produce json,html
-// @Success 200 {array} string
-// @Router /api/metadata/options/collections [get]
-func handleAPIGetCollectionOptions(w http.ResponseWriter, r *http.Request) {
-	collections, err := files.GetAllCollections()
-	if err != nil {
-		http.Error(w, "failed to get collections", http.StatusInternalServerError)
-		return
-	}
-
-	var html strings.Builder
-	for collection := range collections {
-		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, collection, collection))
-	}
-
-	writeResponse(w, r, collections, html.String())
-}
-
-// @Summary Get tag options for filter
-// @Tags metadata
-// @Produce json,html
-// @Success 200 {array} string
-// @Router /api/metadata/options/tags [get]
-func handleAPIGetTagOptions(w http.ResponseWriter, r *http.Request) {
-	tags, err := files.GetAllTags()
-	if err != nil {
-		http.Error(w, "failed to get tags", http.StatusInternalServerError)
-		return
-	}
-
-	var html strings.Builder
-	for tag := range tags {
-		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, tag, tag))
-	}
-
-	writeResponse(w, r, tags, html.String())
-}
-
-// @Summary Get folder options for filter
-// @Tags metadata
-// @Produce json,html
-// @Success 200 {array} string
-// @Router /api/metadata/options/folders [get]
-func handleAPIGetFolderOptions(w http.ResponseWriter, r *http.Request) {
-	folders, err := files.GetAllFolders()
-	if err != nil {
-		http.Error(w, "failed to get folders", http.StatusInternalServerError)
-		return
-	}
-
-	var html strings.Builder
-	for folder := range folders {
-		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, folder, folder))
-	}
-
-	writeResponse(w, r, folders, html.String())
 }
 
 // @Summary Set PARA projects

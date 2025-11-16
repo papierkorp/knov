@@ -1,11 +1,10 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
 
 	"knov/internal/logging"
+	"knov/internal/server/render"
 	"knov/internal/thememanager"
 )
 
@@ -28,16 +27,8 @@ func handleAPIGetThemes(w http.ResponseWriter, r *http.Request) {
 		Available: availableThemes,
 	}
 
-	var html strings.Builder
-	for _, theme := range availableThemes {
-		selected := ""
-		if theme.Name == currentTheme.Name {
-			selected = "selected"
-		}
-		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, theme.Name, selected, theme.Name))
-	}
-
-	writeResponse(w, r, response, html.String())
+	html := render.RenderThemeOptions(availableThemes, currentTheme)
+	writeResponse(w, r, response, html)
 }
 
 // @Summary Set theme

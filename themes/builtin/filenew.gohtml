@@ -1,14 +1,22 @@
 {{ define "content" }}
 <div id="page-filenew">
-	<h1>{{ T "Create a New File" }}</h1>
+    <h1>{{ T "Create a New File" }}</h1>
 	<div class="file-create-form">
 		<div
-			hx-get="/api/files/form"
+			hx-get="/api/files/metadata-form"
 			hx-trigger="load"
 			hx-target="this"
 			hx-swap="outerHTML"
 		>
-			loading file form...
+			loading metadata...
+		</div>
+		<div
+			hx-get="/api/files/markdown-form"
+			hx-trigger="load"
+			hx-target="this"
+			hx-swap="outerHTML"
+		>
+			loading editor...
 		</div>
 	</div>
 </div>

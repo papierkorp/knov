@@ -980,6 +980,20 @@ paths:
       summary: Get all files
       tags:
       - files
+  /api/files/markdown-form:
+    get:
+      description: Returns a markdown editor form for creating or editing files
+      parameters:
+      - description: File path (optional for new files)
+        in: query
+        name: filepath
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get markdown editor form HTML
+      tags:
+      - files
   /api/files/metadata-form:
     get:
       parameters:
@@ -1248,6 +1262,11 @@ paths:
       - metadata
   /api/metadata/collections:
     get:
+      parameters:
+      - description: Response format (options for HTML select options)
+        in: query
+        name: format
+        type: string
       produces:
       - application/json
       - text/html
@@ -1438,6 +1457,11 @@ paths:
       - metadata
   /api/metadata/folders:
     get:
+      parameters:
+      - description: Response format (options for HTML select options)
+        in: query
+        name: format
+        type: string
       produces:
       - application/json
       - text/html
@@ -1562,96 +1586,6 @@ paths:
           schema:
             type: string
       summary: Set file name
-      tags:
-      - metadata
-  /api/metadata/options/collections:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              type: string
-            type: array
-      summary: Get collection options for filter
-      tags:
-      - metadata
-  /api/metadata/options/filetypes:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              type: string
-            type: array
-      summary: Get all available file types
-      tags:
-      - metadata
-  /api/metadata/options/folders:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              type: string
-            type: array
-      summary: Get folder options for filter
-      tags:
-      - metadata
-  /api/metadata/options/priorities:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              type: string
-            type: array
-      summary: Get all available priorities
-      tags:
-      - metadata
-  /api/metadata/options/status:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              type: string
-            type: array
-      summary: Get all available status options
-      tags:
-      - metadata
-  /api/metadata/options/tags:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              type: string
-            type: array
-      summary: Get tag options for filter
       tags:
       - metadata
   /api/metadata/para/archive:
@@ -2009,6 +1943,26 @@ paths:
       summary: Set file priority
       tags:
       - metadata
+  /api/metadata/priority/all:
+    get:
+      parameters:
+      - description: Response format (options for HTML select options)
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get all available priorities
+      tags:
+      - metadata
   /api/metadata/rebuild:
     post:
       description: Creates metadata for all files that don't have metadata yet
@@ -2055,6 +2009,11 @@ paths:
       - metadata
   /api/metadata/tags:
     get:
+      parameters:
+      - description: Response format (options for HTML select options)
+        in: query
+        name: format
+        type: string
       produces:
       - application/json
       - text/html

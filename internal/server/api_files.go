@@ -2,7 +2,6 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -274,21 +273,7 @@ func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/form [get]
 func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
-
-	// Simple file form - you can enhance this based on your needs
-	html := fmt.Sprintf(`
-		<form class="file-form">
-			<div class="form-group">
-				<label>File Path:</label>
-				<input type="text" name="filepath" value="%s" placeholder="path/to/file.md" />
-			</div>
-			<div class="form-group">
-				<label>Content:</label>
-				<textarea name="content" rows="10" placeholder="File content here..."></textarea>
-			</div>
-			<button type="submit">Save File</button>
-		</form>`, filePath)
-
+	html := render.RenderFileForm(filePath)
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
@@ -335,7 +320,6 @@ func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
 
 	fullPath := utils.ToFullPath(filePath)
 
-	// Create directory if it doesn't exist
 	dir := filepath.Dir(fullPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		logging.LogError("failed to create directory %s: %v", dir, err)
@@ -343,7 +327,6 @@ func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Write file
 	err := os.WriteFile(fullPath, []byte(content), 0644)
 	if err != nil {
 		logging.LogError("failed to create file %s: %v", fullPath, err)
@@ -352,9 +335,20 @@ func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo("created file: %s", filePath)
-	successMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "file created successfully")
-	html := render.RenderStatusMessage(render.StatusOK, successMsg)
+	w.Header().Set("HX-Redirect", "/files/"+filePath)
+	w.WriteHeader(http.StatusOK)
+}
 
+// @Summary Get markdown editor form HTML
+// @Description Returns a markdown editor form for creating or editing files
+// @Tags files
+// @Param filepath query string false "File path (optional for new files)"
+// @Produce html
+// @Router /api/files/markdown-form [get]
+func handleAPIMarkdownEditorForm(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+
+	html := render.RenderMarkdownEditorForm(filePath)
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }

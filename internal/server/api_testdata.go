@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 
+	"knov/internal/server/render"
 	"knov/internal/testdata"
 )
 
@@ -21,7 +22,7 @@ func handleAPISetupTestData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]string{"status": "ok", "message": "test data setup completed"}
-	html := `<span class="status-ok">Test data setup completed</span>`
+	html := render.RenderStatusMessage(render.StatusOK, "test data setup completed")
 	writeResponse(w, r, data, html)
 }
 
@@ -40,6 +41,7 @@ func handleAPICleanTestData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]string{"status": "ok", "message": "test data cleaned"}
-	html := `<span class="status-ok">Test data cleaned</span>`
+	html := render.RenderStatusMessage(render.StatusOK, "test data cleaned")
 	writeResponse(w, r, data, html)
 }
+

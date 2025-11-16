@@ -1,12 +1,20 @@
 {{ define "content" }}
 <div id="page-fileedit">
-	{{ if .FilePath }}
+    {{ if .FilePath }}
 		<h2>
 			{{ T "Edit" }}:
 			<a href="/files/{{ .FilePath }}">{{ .FilePath }}</a>
 		</h2>
 		<div
-			hx-get="/api/files/form?filepath={{ .FilePath }}"
+			hx-get="/api/files/metadata-form?filepath={{ .FilePath }}"
+			hx-trigger="load"
+			hx-target="this"
+			hx-swap="outerHTML"
+		>
+			loading metadata...
+		</div>
+		<div
+			hx-get="/api/files/markdown-form?filepath={{ .FilePath }}"
 			hx-trigger="load"
 			hx-target="this"
 			hx-swap="outerHTML"

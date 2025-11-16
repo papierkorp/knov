@@ -1076,6 +1076,27 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/files/markdown-form": {
+            "get": {
+                "description": "Returns a markdown editor form for creating or editing files",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get markdown editor form HTML",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path (optional for new files)",
+                        "name": "filepath",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/files/metadata-form": {
             "get": {
                 "produces": [
@@ -1482,6 +1503,14 @@ const docTemplate = `{
                     "metadata"
                 ],
                 "summary": "Get all collections with counts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Response format (options for HTML select options)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1769,6 +1798,14 @@ const docTemplate = `{
                     "metadata"
                 ],
                 "summary": "Get all folders with counts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Response format (options for HTML select options)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1946,144 +1983,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/options/collections": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get collection options for filter",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/options/filetypes": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get all available file types",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/options/folders": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get folder options for filter",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/options/priorities": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get all available priorities",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/options/status": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get all available status options",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/options/tags": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get tag options for filter",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
                         }
                     }
                 }
@@ -2628,6 +2527,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/priority/all": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all available priorities",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Response format (options for HTML select options)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/rebuild": {
             "post": {
                 "description": "Creates metadata for all files that don't have metadata yet",
@@ -2704,6 +2634,14 @@ const docTemplate = `{
                     "metadata"
                 ],
                 "summary": "Get all tags with counts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Response format (options for HTML select options)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

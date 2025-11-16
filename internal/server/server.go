@@ -134,6 +134,7 @@ func StartServerChi() {
 			r.Get("/form", handleAPIFileForm)
 			r.Get("/metadata-form", handleAPIMetadataForm)
 			r.Post("/create", handleAPIFileCreate)
+			r.Get("/markdown-form", handleAPIMarkdownEditorForm)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -146,7 +147,6 @@ func StartServerChi() {
 
 			r.Get("/collection", handleAPIGetMetadataCollection)
 			r.Get("/filetype", handleAPIGetMetadataFileType)
-			r.Get("/status", handleAPIGetMetadataStatus)
 			r.Get("/path", handleAPIGetMetadataPath)
 			r.Get("/name", handleAPIGetMetadataName)
 			r.Get("/createdat", handleAPIGetMetadataCreatedAt)
@@ -169,16 +169,10 @@ func StartServerChi() {
 			r.Get("/tags", handleAPIGetAllTags)
 			r.Get("/collections", handleAPIGetAllCollections)
 			r.Get("/folders", handleAPIGetAllFolders)
+			r.Get("/priority/all", handleAPIGetAllPriorities)
 			r.Get("/file/tags", handleAPIGetFileMetadataTags)
 			r.Get("/file/folders", handleAPIGetFileMetadataFolders)
 			r.Get("/file/collection", handleAPIGetFileMetadataCollection)
-
-			r.Get("/options/filetypes", handleAPIGetMetadataFileTypes)
-			r.Get("/options/priorities", handleAPIGetMetadataPriorities)
-			r.Get("/options/status", handleAPIGetMetadataStatus)
-			r.Get("/options/collections", handleAPIGetCollectionOptions)
-			r.Get("/options/tags", handleAPIGetTagOptions)
-			r.Get("/options/folders", handleAPIGetFolderOptions)
 
 			r.Get("/para/projects", handleAPIGetMetadataPARAProjects)
 			r.Get("/para/areas", handleAPIGetMetadataPARAreas)
