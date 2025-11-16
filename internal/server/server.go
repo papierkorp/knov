@@ -164,7 +164,6 @@ func StartServerChi() {
 			r.Post("/folders", handleAPISetMetadataFolders)
 			r.Post("/tags", handleAPISetMetadataTags)
 			r.Post("/parents", handleAPISetMetadataParents)
-			r.Post("/context/projects", handleAPISetMetadataContextProjects)
 			r.Post("/para/projects", handleAPISetMetadataPARAProjects)
 			r.Post("/para/areas", handleAPISetMetadataPARAreas)
 			r.Post("/para/resources", handleAPISetMetadataPARAResources)
@@ -417,9 +416,16 @@ func handleOverview(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleSearchPage(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("search")
-	data := thememanager.NewBaseTemplateData("search", viewName)
+	baseData := thememanager.NewBaseTemplateData("search", viewName)
+
+	data := thememanager.SearchPageData{
+		BaseTemplateData: baseData,
+		SearchQuery:      query,
+	}
 
 	err := tm.Render(w, "search", data)
 	if err != nil {

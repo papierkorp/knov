@@ -438,7 +438,7 @@ func RenderFilterCriteriaRow(widgetIndex, criteriaIndex int, criteria *files.Fil
 
 	// remove button (if not the first criteria)
 	if criteriaIndex > 0 {
-		html.WriteString(`<button type="button" onclick="this.closest('.filter-criteria-row').remove()" class="btn-remove-criteria">Ãƒâ€"</button>`)
+		html.WriteString(`<button type="button" onclick="this.closest('.filter-criteria-row').remove()" class="btn-remove-criteria">remove"</button>`)
 	}
 
 	html.WriteString(`</div>`)

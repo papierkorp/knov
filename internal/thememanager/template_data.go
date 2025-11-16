@@ -201,3 +201,13 @@ func NewDashboardEditTemplateData(dash *dashboard.Dashboard, viewName string) Da
 		Dashboard:        dash,
 	}
 }
+
+// -----------------------------------------------
+// ------------ Search TemplateData ---------------
+// -----------------------------------------------
+
+// SearchPageData extends BaseTemplateData for search page
+type SearchPageData struct {
+	BaseTemplateData
+	SearchQuery string
+}

@@ -5,14 +5,20 @@
         <input
             type="text"
             placeholder="{{T "Search files..."}}"
-            hx-get="/api/search?format=cards"
+            hx-get="/api/search?format=list"
             hx-target="#page-search-results"
             hx-trigger="keyup changed delay:300ms, load"
             name="q"
+            id="search-page-input"
+            value="{{ .SearchQuery }}"
         />
     </div>
     <div id="page-search-results">
-        <p>{{T "Enter a search term"}}</p>
+        {{ if .SearchQuery }}
+            <p>{{T "Loading results..."}}</p>
+        {{ else }}
+            <p>{{T "Enter a search term"}}</p>
+        {{ end }}
     </div>
 </div>
 {{ end }}

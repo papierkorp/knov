@@ -843,48 +843,6 @@ func handleAPIGetFileMetadataCollection(w http.ResponseWriter, r *http.Request) 
 	writeResponse(w, r, metadata.Collection, html)
 }
 
-// @Summary Set file context projects
-// @Tags metadata
-// @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Param filepath formData string true "File path"
-// @Param projects formData string true "Comma-separated project list"
-// @Success 200 {string} string
-// @Router /api/metadata/context/projects [post]
-func handleAPISetMetadataContextProjects(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	filepath := r.FormValue("filepath")
-	projectsStr := r.FormValue("projects")
-
-	if filepath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	var projects []string
-	if projectsStr != "" {
-		projects = strings.Split(projectsStr, ",")
-		for i := range projects {
-			projects[i] = strings.TrimSpace(projects[i])
-		}
-	}
-
-	metadata := &files.Metadata{
-		Path: filepath,
-		PARA: files.PARA{
-			Projects: projects,
-		},
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
-		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
-		return
-	}
-
-	html := fmt.Sprintf(`<span class="context-projects">%s</span>`, strings.Join(projects, ", "))
-	writeResponse(w, r, "projects updated", html)
-}
-
 // @Summary Set PARA projects
 // @Tags metadata
 // @Accept application/x-www-form-urlencoded

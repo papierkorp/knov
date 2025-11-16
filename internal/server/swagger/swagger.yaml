@@ -1287,32 +1287,6 @@ paths:
       summary: Get all collections or collection for a specific file
       tags:
       - metadata
-  /api/metadata/context/projects:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: File path
-        in: formData
-        name: filepath
-        required: true
-        type: string
-      - description: Comma-separated project list
-        in: formData
-        name: projects
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Set file context projects
-      tags:
-      - metadata
   /api/metadata/createdat:
     get:
       parameters:
