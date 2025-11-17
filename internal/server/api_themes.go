@@ -3,9 +3,12 @@ package server
 import (
 	"net/http"
 
+	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/server/render"
 	"knov/internal/thememanager"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // @Summary Get themes
@@ -38,7 +41,7 @@ func handleAPIGetThemes(w http.ResponseWriter, r *http.Request) {
 // @Param theme formData string true "Theme name to set"
 // @Produce json,html
 // @Success 303 "Redirect to settings page"
-// @Router /api/themes/setTheme [post]
+// @Router /api/themes/ [post]
 func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	themeName := r.FormValue("theme")
@@ -65,4 +68,65 @@ func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
 	// theme not found
 	logging.LogError("theme not found: %s", themeName)
 	w.WriteHeader(http.StatusBadRequest)
+}
+
+// @Summary Get theme settings
+// @Description Get all settings for a specific theme
+// @Tags themes
+// @Param themeName path string true "Theme name"
+// @Produce json,html
+// @Success 200 {object} object "Theme settings object"
+// @Router /api/themes/{themeName}/settings [get]
+func handleAPIGetThemeSettings(w http.ResponseWriter, r *http.Request) {
+	themeName := chi.URLParam(r, "themeName")
+
+	if themeName == "" {
+		http.Error(w, "theme name is required", http.StatusBadRequest)
+		return
+	}
+
+	settings := configmanager.GetCurrentThemeSettings()
+	html := render.RenderThemeSettings(settings, themeName)
+	writeResponse(w, r, settings, html)
+}
+
+// @Summary Update theme setting
+// @Description Update a specific setting for a theme
+// @Tags themes
+// @Accept application/x-www-form-urlencoded
+// @Param themeName path string true "Theme name"
+// @Param settingKey path string true "Setting key to update"
+// @Param value formData string true "Setting value"
+// @Produce json,html
+// @Success 200 "Setting updated successfully"
+// @Router /api/themes/{themeName}/settings/{settingKey} [put]
+func handleAPISetThemeSetting(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	// Extract parameters from URL using chi
+	themeName := chi.URLParam(r, "themeName")
+	settingKey := chi.URLParam(r, "settingKey")
+	value := r.FormValue("value")
+
+	if themeName == "" || settingKey == "" {
+		http.Error(w, "theme name and setting key are required", http.StatusBadRequest)
+		return
+	}
+
+	// convert value based on expected type
+	var settingValue interface{}
+	switch value {
+	case "true":
+		settingValue = true
+	case "false":
+		settingValue = false
+	default:
+		settingValue = value
+	}
+
+	configmanager.SetThemeSetting(themeName, settingKey, settingValue)
+	logging.LogDebug("theme setting updated: %s.%s = %v", themeName, settingKey, settingValue)
+
+	w.Header().Set("HX-Refresh", "true")
+	w.WriteHeader(http.StatusOK)
 }

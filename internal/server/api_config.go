@@ -109,9 +109,7 @@ func handleCustomCSS(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	css := r.FormValue("css")
 
-	settings := configmanager.GetUserSettings()
-	settings.CustomCSS = css
-	configmanager.SetUserSettings(settings)
+	configmanager.SetCustomCSS(css)
 
 	w.Header().Set("HX-Refresh", "true")
 	w.WriteHeader(http.StatusOK)
@@ -170,7 +168,7 @@ func handleAPISetDataPath(w http.ResponseWriter, r *http.Request) {
 // @Tags config
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
-// @Router /api/config/setDarkMode [post]
+// @Router /api/config/darkmode [post]
 func handleAPISetDarkMode(w http.ResponseWriter, r *http.Request) {
 	enabled := r.FormValue("enabled") == "true"
 	configmanager.SetDarkMode(enabled)
@@ -184,33 +182,34 @@ func handleAPISetDarkMode(w http.ResponseWriter, r *http.Request) {
 // @Router /api/config/getColorSchemes [get]
 func handleAPIGetColorSchemes(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	metadata := tm.GetCurrentThemeMetadata()
+	themeSettings := tm.GetCurrentThemeSettingsSchema()
 
-	if len(metadata.ColorSchemes) == 0 {
+	colorSchemeSetting, exists := themeSettings["colorScheme"]
+	if !exists || len(colorSchemeSetting.Options) == 0 {
 		writeResponse(w, r, []string{}, "<option>no color schemes available</option>")
 		return
 	}
 
 	currentScheme := configmanager.GetColorScheme()
 
-	// Convert thememanager color schemes to htmx select options
-	options := make([]render.SelectOption, len(metadata.ColorSchemes))
-	for i, scheme := range metadata.ColorSchemes {
+	// Convert theme setting options to htmx select options
+	options := make([]render.SelectOption, len(colorSchemeSetting.Options))
+	for i, option := range colorSchemeSetting.Options {
 		options[i] = render.SelectOption{
-			Value: scheme.Value,
-			Label: scheme.Label,
+			Value: option,
+			Label: option,
 		}
 	}
 
 	html := render.RenderSelectOptions(options, currentScheme)
-	writeResponse(w, r, metadata.ColorSchemes, html)
+	writeResponse(w, r, colorSchemeSetting.Options, html)
 }
 
 // @Summary Set color scheme
 // @Tags config
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
-// @Router /api/config/setColorScheme [post]
+// @Router /api/config/colorschemes [post]
 func handleAPISetColorScheme(w http.ResponseWriter, r *http.Request) {
 	scheme := r.FormValue("colorScheme")
 
@@ -238,10 +237,10 @@ func handleAPIGetLanguages(w http.ResponseWriter, r *http.Request) {
 // @Summary Get dark mode setting
 // @Tags config
 // @Produce json,html
-// @Router /api/config/getDarkMode [get]
+// @Router /api/config/darkmode [get]
 func handleAPIGetDarkMode(w http.ResponseWriter, r *http.Request) {
 	darkMode := configmanager.GetDarkMode()
-	html := render.RenderCheckbox("darkMode", "/api/config/setDarkMode", darkMode, `hx-vals='js:{"enabled": event.target.checked}' hx-trigger="change"`)
+	html := render.RenderCheckbox("darkMode", "/api/config/darkmode", darkMode, `hx-vals='js:{"enabled": event.target.checked}' hx-trigger="change"`)
 	writeResponse(w, r, darkMode, html)
 }
 

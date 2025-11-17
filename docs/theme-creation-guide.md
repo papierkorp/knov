@@ -27,17 +27,7 @@ Contains theme metadata and view definitions.
   "views": {
     "base": [""],
     "settings": [""]
-  },
-  "colorSchemes": [
-    {
-      "value": "default",
-      "label": "Default"
-    },
-    {
-      "value": "dark",
-      "label": "Dark Theme"
-    }
-  ]
+  }
 }
 ```
 
@@ -48,7 +38,71 @@ Contains theme metadata and view definitions.
 - `author`: Your name or organization
 - `description`: Brief theme description
 - `views`: Define available views for each template
-- `colorSchemes`: Array of color scheme options for your theme (required)
+- `themeSettings`: Optional theme-specific settings schema
+
+### Theme Settings (Optional)
+
+Themes can define custom settings that users can configure. Add a `themeSettings` object to your theme.json:
+
+```json
+{
+  "name": "My Theme",
+  "themeSettings": {
+    "sidebarWidth": {
+      "type": "range",
+      "min": 200,
+      "max": 400,
+      "default": 250,
+      "label": "Sidebar Width",
+      "description": "Adjust the width of the sidebar in pixels"
+    },
+    "enableAnimations": {
+      "type": "boolean",
+      "default": true,
+      "label": "Enable Animations",
+      "description": "Turn animations on or off"
+    },
+    "layoutStyle": {
+      "type": "select",
+      "options": ["compact", "spacious", "minimal"],
+      "default": "compact",
+      "label": "Layout Style"
+    },
+    "customCSS": {
+      "type": "textarea",
+      "default": "",
+      "label": "Custom CSS",
+      "description": "Add your custom styles"
+    }
+  }
+}
+```
+
+**Setting Types:**
+
+- `boolean`: Checkbox input
+- `select`: Dropdown with predefined options
+- `range`: Slider with min/max values
+- `textarea`: Multi-line text input
+- `text`: Single-line text input
+
+**Standard Settings (Recommended):**
+
+Most themes should implement these standard settings for consistency:
+
+- `darkMode` (boolean): Enable dark theme appearance
+- `colorScheme` (select): Color scheme selection (replaces the old colorSchemes array)
+- `customCSS` (textarea): Custom CSS input
+
+**Required fields for each setting:**
+- `type`: The input type
+- `default`: Default value
+- `label`: User-friendly display name
+
+**Optional fields:**
+- `description`: Help text for the setting
+- `options`: Array of options for select type
+- `min`/`max`: Range limits for range type
 
 ### 2. base.gotmpl
 
@@ -168,6 +222,24 @@ Templates receive the following data:
 - `{{.Title}}` - Current page title
 - `{{.Themes}}` - List of all themes
 - `{{.CurrentTheme}}` - Name of active theme
+- `{{.ThemeSettings}}` - Current theme's setting values (settings page only)
+- `{{.ThemeSettingsSchema}}` - Current theme's settings schema (settings page only)
+
+### Accessing Theme Settings in Templates
+
+In your templates, you can access theme settings like this:
+
+```html
+{{if .ThemeSettings.enableAnimations}}
+  <div class="animated">Content with animations</div>
+{{else}}
+  <div class="static">Content without animations</div>
+{{end}}
+
+<div style="width: {{.ThemeSettings.sidebarWidth}}px;">
+  Sidebar with custom width
+</div>
+```
 
 ## Views System
 
@@ -197,77 +269,6 @@ Define named views in theme.json:
 
 Then create corresponding `{{define}}` blocks in your template.
 
-## Color Schemes
-
-Color schemes allow users to switch between different color variations of your theme. **Every theme must define at least one color scheme.**
-
-### Defining Color Schemes
-
-Add a `colorSchemes` array to your theme.json with at least one scheme:
-
-```json
-{
-  "name": "My Theme",
-  "version": "1.0.0",
-  "author": "Me",
-  "description": "My custom theme",
-  "views": {
-    "base": [""],
-    "settings": [""]
-  },
-  "colorSchemes": [
-    {
-      "value": "light",
-      "label": "Light Mode"
-    },
-    {
-      "value": "dark",
-      "label": "Dark Mode"
-    },
-    {
-      "value": "ocean",
-      "label": "Ocean Blue"
-    }
-  ]
-}
-```
-
-**Required fields for each color scheme:**
-- `value`: The CSS selector value (used in `data-color-scheme="value"`)
-- `label`: User-friendly display name
-
-### Implementing in CSS
-
-Use the `data-color-scheme` attribute in your CSS:
-
-```css
-/* Default styles */
-:root {
-  --primary: #3b82f6;
-  --background: #ffffff;
-}
-
-/* Light color scheme */
-body[data-color-scheme="light"] {
-  --primary: #2563eb;
-  --background: #f8fafc;
-}
-
-/* Dark color scheme */
-body[data-color-scheme="dark"] {
-  --primary: #60a5fa;
-  --background: #1e293b;
-}
-
-/* Ocean color scheme */
-body[data-color-scheme="ocean"] {
-  --primary: #0891b2;
-  --background: #f0f9ff;
-}
-```
-
-The color scheme value is automatically set on the `<body>` element as `data-color-scheme="value"`.
-
 ## Testing Your Theme
 
 1. Place your theme folder in `themes/`
@@ -281,9 +282,8 @@ The color scheme value is automatically set on the `<body>` element as `data-col
 The system validates:
 
 - All required files exist and are not empty
-- theme.json contains all required fields (name, version, author, description, views, colorSchemes)
-- colorSchemes array has at least one color scheme
-- Each color scheme has required `value` and `label` fields
+- theme.json contains all required fields (name, version, author, description, views)
+- Theme settings (if defined) have valid types and required fields
 - All views defined in theme.json exist as templates
 - Templates parse correctly
 

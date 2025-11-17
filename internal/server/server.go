@@ -94,6 +94,12 @@ func StartServerChi() {
 		r.Route("/themes", func(r chi.Router) {
 			r.Get("/", handleAPIGetThemes)
 			r.Post("/", handleAPISetTheme)
+
+			// RESTful theme settings routes
+			r.Route("/{themeName}/settings", func(r chi.Router) {
+				r.Get("/", handleAPIGetThemeSettings)
+				r.Put("/{settingKey}", handleAPISetThemeSetting)
+			})
 		})
 		// ----------------------------------------------------------------------------------------
 		// ---------------------------------------- CONFIG ----------------------------------------
@@ -278,7 +284,7 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		cssFile := strings.TrimPrefix(filePath, "css/")
 
 		if cssFile == "custom.css" {
-			customCSS := configmanager.GetUserSettings().CustomCSS
+			customCSS := configmanager.GetCustomCSS()
 			w.Write([]byte(customCSS))
 			return
 		}
@@ -420,12 +426,7 @@ func handleSearchPage(w http.ResponseWriter, r *http.Request) {
 
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("search")
-	baseData := thememanager.NewBaseTemplateData("search", viewName)
-
-	data := thememanager.SearchPageData{
-		BaseTemplateData: baseData,
-		SearchQuery:      query,
-	}
+	data := thememanager.NewSearchPageData(query, viewName)
 
 	err := tm.Render(w, "search", data)
 	if err != nil {

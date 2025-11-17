@@ -332,6 +332,17 @@ paths:
       summary: Get paginated table
       tags:
       - components
+  /api/config/colorschemes:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Set color scheme
+      tags:
+      - config
   /api/config/customCSS:
     post:
       consumes:
@@ -351,6 +362,25 @@ paths:
           schema:
             type: string
       summary: Save custom CSS for current user
+      tags:
+      - config
+  /api/config/darkmode:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get dark mode setting
+      tags:
+      - config
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Set dark mode
       tags:
       - config
   /api/config/getAvailableFileViews:
@@ -397,15 +427,6 @@ paths:
       summary: Get custom CSS
       tags:
       - config
-  /api/config/getDarkMode:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Get dark mode setting
-      tags:
-      - config
   /api/config/getDarkModeStatus:
     get:
       produces:
@@ -435,28 +456,6 @@ paths:
           schema:
             type: string
       summary: Get git repository URL
-      tags:
-      - config
-  /api/config/setColorScheme:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Set color scheme
-      tags:
-      - config
-  /api/config/setDarkMode:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Set dark mode
       tags:
       - config
   /api/config/setDataPath:
@@ -2088,21 +2087,7 @@ paths:
       summary: Setup test data
       tags:
       - testdata
-  /api/themes/getAllThemes:
-    get:
-      description: Get current theme and available themes
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: '{"current":"themename","available":["theme1","theme2"]}'
-          schema:
-            type: string
-      summary: Get themes
-      tags:
-      - themes
-  /api/themes/setTheme:
+  /api/themes/:
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -2120,6 +2105,70 @@ paths:
         "303":
           description: Redirect to settings page
       summary: Set theme
+      tags:
+      - themes
+  /api/themes/{themeName}/settings:
+    get:
+      description: Get all settings for a specific theme
+      parameters:
+      - description: Theme name
+        in: path
+        name: themeName
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: Theme settings object
+          schema:
+            type: object
+      summary: Get theme settings
+      tags:
+      - themes
+  /api/themes/{themeName}/settings/{settingKey}:
+    put:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Update a specific setting for a theme
+      parameters:
+      - description: Theme name
+        in: path
+        name: themeName
+        required: true
+        type: string
+      - description: Setting key to update
+        in: path
+        name: settingKey
+        required: true
+        type: string
+      - description: Setting value
+        in: formData
+        name: value
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: Setting updated successfully
+      summary: Update theme setting
+      tags:
+      - themes
+  /api/themes/getAllThemes:
+    get:
+      description: Get current theme and available themes
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: '{"current":"themename","available":["theme1","theme2"]}'
+          schema:
+            type: string
+      summary: Get themes
       tags:
       - themes
 swagger: "2.0"

@@ -21,6 +21,7 @@ type BaseTemplateData struct {
 	CurrentTheme string
 	DarkMode     bool
 	ColorScheme  string
+	FontFamily   string
 	Language     string
 	Themes       []Theme
 	ViewName     string
@@ -34,6 +35,7 @@ func NewBaseTemplateData(title, viewName string) BaseTemplateData {
 		CurrentTheme: themeManager.GetCurrentThemeName(),
 		DarkMode:     configmanager.GetDarkMode(),
 		ColorScheme:  configmanager.GetColorScheme(),
+		FontFamily:   configmanager.GetFontFamily(),
 		Language:     configmanager.GetLanguage(),
 		Themes:       themeManager.GetAvailableThemes(),
 		ViewName:     viewName,
@@ -87,16 +89,20 @@ func CreateFuncMap() template.FuncMap {
 // SettingsTemplateData extends base with settings-specific data
 type SettingsTemplateData struct {
 	BaseTemplateData
-	AvailableLanguages []configmanager.Language
-	AvailableThemes    []Theme
+	AvailableLanguages   []configmanager.Language
+	AvailableThemes      []Theme
+	CurrentThemeSettings map[string]interface{}
+	ThemeSettingsSchema  map[string]ThemeSetting
 }
 
 // NewSettingsTemplateData creates settings-specific data
 func NewSettingsTemplateData(viewName string) SettingsTemplateData {
 	return SettingsTemplateData{
-		BaseTemplateData:   NewBaseTemplateData("Settings", viewName),
-		AvailableLanguages: configmanager.GetAvailableLanguages(),
-		AvailableThemes:    themeManager.GetAvailableThemes(),
+		BaseTemplateData:     NewBaseTemplateData("Settings", viewName),
+		AvailableLanguages:   configmanager.GetAvailableLanguages(),
+		AvailableThemes:      themeManager.GetAvailableThemes(),
+		CurrentThemeSettings: configmanager.GetCurrentThemeSettings(),
+		ThemeSettingsSchema:  themeManager.GetCurrentThemeSettingsSchema(),
 	}
 }
 
@@ -203,11 +209,19 @@ func NewDashboardEditTemplateData(dash *dashboard.Dashboard, viewName string) Da
 }
 
 // -----------------------------------------------
-// ------------ Search TemplateData ---------------
+// ------------ Search TemplateData -------------
 // -----------------------------------------------
 
-// SearchPageData extends BaseTemplateData for search page
+// SearchPageData extends base with search-specific data
 type SearchPageData struct {
 	BaseTemplateData
 	SearchQuery string
+}
+
+// NewSearchPageData creates search page specific data
+func NewSearchPageData(searchQuery, viewName string) SearchPageData {
+	return SearchPageData{
+		BaseTemplateData: NewBaseTemplateData("Search", viewName),
+		SearchQuery:      searchQuery,
+	}
 }

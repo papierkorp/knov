@@ -41,9 +41,23 @@ Example user settings:
   "fileView": "detailed",
   "darkMode": false,
   "colorScheme": "default",
-  "customCSS": ""
+  "customCSS": "",
+  "themeSettings": {
+    "builtin": {
+      "sidebarWidth": 300,
+      "enableAnimations": false,
+      "fontFamily": "serif"
+    },
+    "myCustomTheme": {
+      "customSetting": "value"
+    }
+  }
 }
 ```
+
+### Theme Settings
+
+Theme-specific settings are stored under `themeSettings` with the theme name as the key. Each theme can define its own settings schema in its `theme.json` file, and user preferences are stored per theme.
 
 ## Deployment Examples
 

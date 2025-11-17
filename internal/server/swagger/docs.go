@@ -111,6 +111,22 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/config/colorschemes": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Set color scheme",
+                "responses": {}
+            }
+        },
         "/api/config/customCSS": {
             "post": {
                 "consumes": [
@@ -141,6 +157,33 @@ const docTemplate = `{
                         }
                     }
                 }
+            }
+        },
+        "/api/config/darkmode": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get dark mode setting",
+                "responses": {}
+            },
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Set dark mode",
+                "responses": {}
             }
         },
         "/api/config/getAvailableFileViews": {
@@ -207,19 +250,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/getDarkMode": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Get dark mode setting",
-                "responses": {}
-            }
-        },
         "/api/config/getDarkModeStatus": {
             "get": {
                 "produces": [
@@ -264,38 +294,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/api/config/setColorScheme": {
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Set color scheme",
-                "responses": {}
-            }
-        },
-        "/api/config/setDarkMode": {
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Set dark mode",
-                "responses": {}
             }
         },
         "/api/config/setDataPath": {
@@ -2714,28 +2712,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/themes/getAllThemes": {
-            "get": {
-                "description": "Get current theme and available themes",
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "themes"
-                ],
-                "summary": "Get themes",
-                "responses": {
-                    "200": {
-                        "description": "{\"current\":\"themename\",\"available\":[\"theme1\",\"theme2\"]}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/themes/setTheme": {
+        "/api/themes/": {
             "post": {
                 "description": "Set new theme via form parameter",
                 "consumes": [
@@ -2761,6 +2738,101 @@ const docTemplate = `{
                 "responses": {
                     "303": {
                         "description": "Redirect to settings page"
+                    }
+                }
+            }
+        },
+        "/api/themes/getAllThemes": {
+            "get": {
+                "description": "Get current theme and available themes",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "themes"
+                ],
+                "summary": "Get themes",
+                "responses": {
+                    "200": {
+                        "description": "{\"current\":\"themename\",\"available\":[\"theme1\",\"theme2\"]}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/themes/{themeName}/settings": {
+            "get": {
+                "description": "Get all settings for a specific theme",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "themes"
+                ],
+                "summary": "Get theme settings",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Theme name",
+                        "name": "themeName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Theme settings object",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/themes/{themeName}/settings/{settingKey}": {
+            "put": {
+                "description": "Update a specific setting for a theme",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "themes"
+                ],
+                "summary": "Update theme setting",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Theme name",
+                        "name": "themeName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Setting key to update",
+                        "name": "settingKey",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Setting value",
+                        "name": "value",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Setting updated successfully"
                     }
                 }
             }

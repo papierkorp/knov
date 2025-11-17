@@ -20,12 +20,10 @@ var configPath string
 
 // UserSettings contains user-specific settings stored in JSON
 type UserSettings struct {
-	Theme       string `json:"theme"`
-	Language    string `json:"language"`
-	FileView    string `json:"fileView"`
-	DarkMode    bool   `json:"darkMode"`
-	ColorScheme string `json:"colorScheme"`
-	CustomCSS   string `json:"customCSS"`
+	Theme         string                   `json:"theme"`
+	Language      string                   `json:"language"`
+	FileView      string                   `json:"fileView"`
+	ThemeSettings map[string]ThemeSettings `json:"themeSettings,omitempty"`
 }
 
 // InitUserSettings initializes user settings from direct JSON file for specific user
@@ -33,11 +31,10 @@ func InitUserSettings(userID string) {
 	currentUserID = userID
 	configPath = GetAppConfig().ConfigPath
 	userSettings = UserSettings{
-		Theme:       "builtin",
-		Language:    "en",
-		FileView:    "detailed",
-		DarkMode:    false,
-		ColorScheme: "default",
+		Theme:         "builtin",
+		Language:      "en",
+		FileView:      "detailed",
+		ThemeSettings: make(map[string]ThemeSettings),
 	}
 
 	settingsPath := getUserSettingsPath(userID)
@@ -114,41 +111,5 @@ func GetFileView() string {
 // SetFileView updates user settings with new file view
 func SetFileView(view string) {
 	userSettings.FileView = view
-	saveUserSettings()
-}
-
-// GetDarkMode returns current dark mode setting
-func GetDarkMode() bool {
-	return userSettings.DarkMode
-}
-
-// SetDarkMode updates dark mode setting
-func SetDarkMode(enabled bool) {
-	userSettings.DarkMode = enabled
-	saveUserSettings()
-}
-
-// GetColorScheme returns current color scheme
-func GetColorScheme() string {
-	if userSettings.ColorScheme == "" {
-		return "default"
-	}
-	return userSettings.ColorScheme
-}
-
-// SetColorScheme updates color scheme setting
-func SetColorScheme(scheme string) {
-	userSettings.ColorScheme = scheme
-	saveUserSettings()
-}
-
-// GetCustomCSS returns current custom CSS
-func GetCustomCSS() string {
-	return userSettings.CustomCSS
-}
-
-// SetCustomCSS updates custom CSS setting
-func SetCustomCSS(css string) {
-	userSettings.CustomCSS = css
 	saveUserSettings()
 }

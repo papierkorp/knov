@@ -7,6 +7,16 @@
       "translation": ""
     },
     {
+      "id": "add archived items",
+      "message": "add archived items",
+      "translation": ""
+    },
+    {
+      "id": "add areas of responsibility",
+      "message": "add areas of responsibility",
+      "translation": ""
+    },
+    {
       "id": "+ add criteria",
       "message": "+ add criteria",
       "translation": ""
@@ -17,8 +27,28 @@
       "translation": "Add Filter"
     },
     {
+      "id": "add folders",
+      "message": "add folders",
+      "translation": ""
+    },
+    {
       "id": "Add Note",
       "message": "Add Note",
+      "translation": ""
+    },
+    {
+      "id": "add projects",
+      "message": "add projects",
+      "translation": ""
+    },
+    {
+      "id": "add resources",
+      "message": "add resources",
+      "translation": ""
+    },
+    {
+      "id": "add tags",
+      "message": "add tags",
       "translation": ""
     },
     {
@@ -47,9 +77,39 @@
       "translation": "Apply Filter"
     },
     {
+      "id": "archive",
+      "message": "archive",
+      "translation": ""
+    },
+    {
+      "id": "Archive",
+      "message": "Archive",
+      "translation": ""
+    },
+    {
+      "id": "areas",
+      "message": "areas",
+      "translation": ""
+    },
+    {
+      "id": "Areas",
+      "message": "Areas",
+      "translation": ""
+    },
+    {
       "id": "Are you sure?",
       "message": "Are you sure?",
       "translation": "Are you sure?"
+    },
+    {
+      "id": "assign to collection",
+      "message": "assign to collection",
+      "translation": ""
+    },
+    {
+      "id": "basic metadata",
+      "message": "basic metadata",
+      "translation": ""
     },
     {
       "id": "Boards",
@@ -67,11 +127,6 @@
       "translation": "Browse by Metadata"
     },
     {
-      "id": "cancel",
-      "message": "cancel",
-      "translation": ""
-    },
-    {
       "id": "Cancel",
       "message": "Cancel",
       "translation": "Cancel"
@@ -79,6 +134,11 @@
     {
       "id": "Clean Test Data",
       "message": "Clean Test Data",
+      "translation": ""
+    },
+    {
+      "id": "collection",
+      "message": "collection",
       "translation": ""
     },
     {
@@ -90,11 +150,6 @@
       "id": "Collections",
       "message": "Collections",
       "translation": "Collections"
-    },
-    {
-      "id": "configuration",
-      "message": "configuration",
-      "translation": ""
     },
     {
       "id": "Contains",
@@ -122,11 +177,6 @@
       "translation": "Created Date"
     },
     {
-      "id": "create file",
-      "message": "create file",
-      "translation": ""
-    },
-    {
       "id": "Create New Dashboard",
       "message": "Create New Dashboard",
       "translation": "Create New Dashboard"
@@ -139,6 +189,11 @@
     {
       "id": "dashboard created",
       "message": "dashboard created",
+      "translation": ""
+    },
+    {
+      "id": "dashboard created successfully!",
+      "message": "dashboard created successfully!",
       "translation": ""
     },
     {
@@ -187,8 +242,8 @@
       "translation": ""
     },
     {
-      "id": "display settings",
-      "message": "display settings",
+      "id": "display options",
+      "message": "display options",
       "translation": ""
     },
     {
@@ -202,18 +257,13 @@
       "translation": "Edit Dashboard"
     },
     {
-      "id": "edit file",
-      "message": "edit file",
-      "translation": ""
-    },
-    {
       "id": "Enter a search term",
       "message": "Enter a search term",
       "translation": "Enter a search term"
     },
     {
-      "id": "enter widget title",
-      "message": "enter widget title",
+      "id": "enter name",
+      "message": "enter name",
       "translation": ""
     },
     {
@@ -247,16 +297,6 @@
       "translation": ""
     },
     {
-      "id": "file created successfully!",
-      "message": "file created successfully!",
-      "translation": ""
-    },
-    {
-      "id": "file path",
-      "message": "file path",
-      "translation": ""
-    },
-    {
       "id": "File path not provided",
       "message": "File path not provided",
       "translation": ""
@@ -285,6 +325,11 @@
       "id": "Filtered results will appear here",
       "message": "Filtered results will appear here",
       "translation": "Filtered results will appear here"
+    },
+    {
+      "id": "folders",
+      "message": "folders",
+      "translation": ""
     },
     {
       "id": "Folders",
@@ -392,6 +437,16 @@
       "translation": ""
     },
     {
+      "id": "loading archive...",
+      "message": "loading archive...",
+      "translation": ""
+    },
+    {
+      "id": "loading areas...",
+      "message": "loading areas...",
+      "translation": ""
+    },
+    {
       "id": "loading collections...",
       "message": "loading collections...",
       "translation": ""
@@ -412,8 +467,23 @@
       "translation": ""
     },
     {
+      "id": "loading projects...",
+      "message": "loading projects...",
+      "translation": ""
+    },
+    {
       "id": "Loading recent changes...",
       "message": "Loading recent changes...",
+      "translation": ""
+    },
+    {
+      "id": "loading resources...",
+      "message": "loading resources...",
+      "translation": ""
+    },
+    {
+      "id": "Loading results...",
+      "message": "Loading results...",
       "translation": ""
     },
     {
@@ -435,6 +505,11 @@
       "id": "Metadata Filter",
       "message": "Metadata Filter",
       "translation": "Metadata Filter"
+    },
+    {
+      "id": "name",
+      "message": "name",
+      "translation": ""
     },
     {
       "id": "New Dashboard",
@@ -467,6 +542,11 @@
       "translation": ""
     },
     {
+      "id": "optional title",
+      "message": "optional title",
+      "translation": ""
+    },
+    {
       "id": "OR",
       "message": "OR",
       "translation": "OR"
@@ -482,8 +562,8 @@
       "translation": "OVERVIEW"
     },
     {
-      "id": "path/to/filename.md",
-      "message": "path/to/filename.md",
+      "id": "PARA method",
+      "message": "PARA method",
       "translation": ""
     },
     {
@@ -497,6 +577,21 @@
       "translation": "Playground"
     },
     {
+      "id": "position x",
+      "message": "position x",
+      "translation": ""
+    },
+    {
+      "id": "position y",
+      "message": "position y",
+      "translation": ""
+    },
+    {
+      "id": "priority",
+      "message": "priority",
+      "translation": ""
+    },
+    {
       "id": "Priority",
       "message": "Priority",
       "translation": "Priority"
@@ -504,6 +599,16 @@
     {
       "id": "Project Overview",
       "message": "Project Overview",
+      "translation": ""
+    },
+    {
+      "id": "projects",
+      "message": "projects",
+      "translation": ""
+    },
+    {
+      "id": "Projects",
+      "message": "Projects",
       "translation": ""
     },
     {
@@ -527,14 +632,19 @@
       "translation": ""
     },
     {
-      "id": "remove",
-      "message": "remove",
-      "translation": ""
-    },
-    {
       "id": "Rename",
       "message": "Rename",
       "translation": "Rename"
+    },
+    {
+      "id": "resources",
+      "message": "resources",
+      "translation": ""
+    },
+    {
+      "id": "Resources",
+      "message": "Resources",
+      "translation": ""
     },
     {
       "id": "Restart System",
@@ -544,11 +654,6 @@
     {
       "id": "Restart the system? This will disconnect all users.",
       "message": "Restart the system? This will disconnect all users.",
-      "translation": ""
-    },
-    {
-      "id": "save",
-      "message": "save",
       "translation": ""
     },
     {
@@ -587,8 +692,18 @@
       "translation": ""
     },
     {
+      "id": "select widget type",
+      "message": "select widget type",
+      "translation": ""
+    },
+    {
       "id": "Set Data Path",
       "message": "Set Data Path",
+      "translation": ""
+    },
+    {
+      "id": "set priority (1-5)",
+      "message": "set priority (1-5)",
       "translation": ""
     },
     {
@@ -652,9 +767,19 @@
       "translation": ""
     },
     {
+      "id": "tags",
+      "message": "tags",
+      "translation": ""
+    },
+    {
       "id": "Tags",
       "message": "Tags",
       "translation": "Tags"
+    },
+    {
+      "id": "tags & folders",
+      "message": "tags & folders",
+      "translation": ""
     },
     {
       "id": "Test Data Management",
@@ -665,16 +790,6 @@
       "id": "Theme Settings",
       "message": "Theme Settings",
       "translation": "Theme Settings"
-    },
-    {
-      "id": "title",
-      "message": "title",
-      "translation": ""
-    },
-    {
-      "id": "type",
-      "message": "type",
-      "translation": ""
     },
     {
       "id": "Type",
@@ -702,11 +817,6 @@
       "translation": ""
     },
     {
-      "id": "view file",
-      "message": "view file",
-      "translation": ""
-    },
-    {
       "id": "visible to all users",
       "message": "visible to all users",
       "translation": ""
@@ -717,8 +827,23 @@
       "translation": ""
     },
     {
+      "id": "widget",
+      "message": "widget",
+      "translation": ""
+    },
+    {
       "id": "widgets",
       "message": "widgets",
+      "translation": ""
+    },
+    {
+      "id": "widget title",
+      "message": "widget title",
+      "translation": ""
+    },
+    {
+      "id": "widget type",
+      "message": "widget type",
       "translation": ""
     }
   ]

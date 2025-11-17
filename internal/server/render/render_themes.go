@@ -20,3 +20,11 @@ func RenderThemeOptions(availableThemes []thememanager.Theme, currentTheme theme
 	}
 	return html.String()
 }
+
+// RenderThemeSettings renders theme settings as HTML for display
+func RenderThemeSettings(settings interface{}, themeName string) string {
+	return fmt.Sprintf(`<div id="theme-settings-%s">
+		<h4>Settings for %s</h4>
+		<pre>%+v</pre>
+	</div>`, themeName, themeName, settings)
+}

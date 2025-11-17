@@ -21,22 +21,28 @@
     "dashboardedit": [""],
     "dashboardnew": [""]
   },
-  "colorSchemes": [
-    {
-      "value": "default",
-      "label": "Default (Blue)"
+  "themeSettings": {
+    "darkMode": {
+      "type": "boolean",
+      "default": false,
+      "label": "Dark Mode"
     },
-    {
-      "value": "green",
-      "label": "Green"
+    "colorScheme": {
+      "type": "select",
+      "options": ["default", "green", "red", "purple"],
+      "default": "default",
+      "label": "Color Scheme"
     },
-    {
-      "value": "red",
-      "label": "Red"
+    "customCSS": {
+      "type": "textarea",
+      "default": "",
+      "label": "Custom CSS"
     },
-    {
-      "value": "purple",
-      "label": "Purple"
+    "fontFamily": {
+      "type": "select",
+      "options": ["system", "serif", "mono"],
+      "default": "system",
+      "label": "Font Family"
     }
-  ]
+  }
 }

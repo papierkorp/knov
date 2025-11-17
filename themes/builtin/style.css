@@ -51,6 +51,29 @@ body {
     overflow-x: hidden;
 }
 
+/* font family settings */
+body[data-font-family="system"] {
+    font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+}
+
+body[data-font-family="serif"] {
+    font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+body[data-font-family="mono"] {
+    font-family:
+        "Fira Code", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
+        "Courier New", monospace;
+}
+
 /* dark mode */
 body[data-dark-mode="true"] {
     --bg: #1f2937;

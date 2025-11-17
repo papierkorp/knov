@@ -1,30 +1,17 @@
 {{ define "content" }}
 <h1>{{T "Settings"}}</h1>
 
-<form hx-post="/api/themes/setTheme" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
+<form hx-post="/api/themes" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
     <label for="theme">theme:</label>
     <select
         name="theme"
         id="theme"
-        hx-get="/api/themes/getAllThemes"
+        hx-get="/api/themes"
         hx-target="this"
         hx-swap="innerHTML"
         hx-trigger="load"
     >
         <option>loading themes...</option>
-    </select>
-</form>
-
-<form hx-post="/api/config/setColorScheme" hx-trigger="change">
-    <label for="colorScheme">color scheme:</label>
-    <select
-        name="colorScheme"
-        id="colorScheme"
-        hx-get="/api/config/getColorSchemes"
-        hx-trigger="load"
-        hx-swap="innerHTML"
-    >
-        <option>loading schemes...</option>
     </select>
 </form>
 {{ end }}
