@@ -165,7 +165,7 @@ func RenderWidgetForm(index int, widget *dashboard.Widget) string {
 	html.WriteString(fmt.Sprintf(`<div class="widget-form" data-widget-index="%d">`, index))
 	html.WriteString(`<div class="widget-header">`)
 	html.WriteString(fmt.Sprintf(`<h5>%s</h5>`, translation.SprintfForRequest(configmanager.GetLanguage(), "widget")))
-	html.WriteString(`<button type="button" onclick="this.parentElement.parentElement.remove()" class="btn-remove-widget">×</button>`)
+	html.WriteString(`<button type="button" onclick="this.parentElement.parentElement.remove()" class="btn-remove-widget">x</button>`)
 	html.WriteString(`</div>`)
 
 	// widget type selector
@@ -374,7 +374,7 @@ func RenderFilterCriteriaRow(widgetIndex, criteriaIndex int, criteria *files.Fil
 	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "field")))
 	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][criteria][%d][metadata]" class="form-select">`, widgetIndex, criteriaIndex))
 
-	metadataOptions := []string{"collection", "tags", "type", "status", "priority", "createdAt", "lastEdited", "folders", "boards"}
+	metadataOptions := []string{"collection", "tags", "type", "status", "priority", "createdAt", "lastEdited", "folders", "boards", "para_projects", "para_areas", "para_resources", "para_archive"}
 	selectedMetadata := "collection"
 	if criteria != nil {
 		selectedMetadata = criteria.Metadata

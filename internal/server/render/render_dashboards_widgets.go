@@ -166,6 +166,26 @@ func renderFilterFormWidget() (string, error) {
 				container.innerHTML = '<select name="value[]" id="value-' + rowIndex + '" hx-get="/api/metadata/options/priorities" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
 					'<option value="">loading priorities...</option>' +
 					'</select>';
+			} else if (fieldType === 'para_projects') {
+				container.innerHTML = '<input type="text" name="value[]" id="value-' + rowIndex + '" autocomplete="off" list="para-projects-' + rowIndex + '" placeholder="type or select project">' +
+					'<datalist id="para-projects-' + rowIndex + '" hx-get="/api/metadata/para/projects?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
+					'<option value="">loading projects...</option>' +
+					'</datalist>';
+			} else if (fieldType === 'para_areas') {
+				container.innerHTML = '<input type="text" name="value[]" id="value-' + rowIndex + '" autocomplete="off" list="para-areas-' + rowIndex + '" placeholder="type or select area">' +
+					'<datalist id="para-areas-' + rowIndex + '" hx-get="/api/metadata/para/areas?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
+					'<option value="">loading areas...</option>' +
+					'</datalist>';
+			} else if (fieldType === 'para_resources') {
+				container.innerHTML = '<input type="text" name="value[]" id="value-' + rowIndex + '" autocomplete="off" list="para-resources-' + rowIndex + '" placeholder="type or select resource">' +
+					'<datalist id="para-resources-' + rowIndex + '" hx-get="/api/metadata/para/resources?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
+					'<option value="">loading resources...</option>' +
+					'</datalist>';
+			} else if (fieldType === 'para_archive') {
+				container.innerHTML = '<input type="text" name="value[]" id="value-' + rowIndex + '" autocomplete="off" list="para-archive-' + rowIndex + '" placeholder="type or select archive">' +
+					'<datalist id="para-archive-' + rowIndex + '" hx-get="/api/metadata/para/archive?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
+					'<option value="">loading archive...</option>' +
+					'</datalist>';
 			} else if (fieldType === 'createdAt' || fieldType === 'lastEdited') {
 				container.innerHTML = '<input type="date" name="value[]" id="value-' + rowIndex + '" placeholder="yyyy-mm-dd"/>';
 			} else {
