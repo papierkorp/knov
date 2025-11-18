@@ -271,7 +271,7 @@ func matchesCriterion(metadata *Metadata, criterion FilterCriteria) bool {
 func matchesTagCriterion(tags []string, criterion FilterCriteria) bool {
 	switch criterion.Operator {
 	case "equals":
-		// If criterion value contains comma, treat as exact array match
+		// check for array
 		if strings.Contains(criterion.Value, ",") {
 			expectedTags := strings.Split(criterion.Value, ",")
 			if len(expectedTags) != len(tags) {
@@ -284,13 +284,23 @@ func matchesTagCriterion(tags []string, criterion FilterCriteria) bool {
 			}
 			return true
 		} else {
-			// Single tag - check if file contains this tag
+			// single tag
 			return slices.Contains(tags, criterion.Value)
 		}
 	case "contains":
-		return slices.Contains(tags, criterion.Value)
+		for _, tag := range tags {
+			if strings.Contains(strings.ToLower(tag), strings.ToLower(criterion.Value)) {
+				return true
+			}
+		}
+		return false
 	case "not_contains":
-		return !slices.Contains(tags, criterion.Value)
+		for _, tag := range tags {
+			if strings.Contains(strings.ToLower(tag), strings.ToLower(criterion.Value)) {
+				return false
+			}
+		}
+		return true
 	case "empty":
 		return len(tags) == 0
 	case "not_empty":
@@ -305,9 +315,21 @@ func matchesArrayCriterion(array []string, criterion FilterCriteria) bool {
 	case "equals":
 		return slices.Contains(array, criterion.Value)
 	case "contains":
-		return slices.Contains(array, criterion.Value)
+		// Check if any array element contains the search value as substring
+		for _, item := range array {
+			if strings.Contains(strings.ToLower(item), strings.ToLower(criterion.Value)) {
+				return true
+			}
+		}
+		return false
 	case "not_contains":
-		return !slices.Contains(array, criterion.Value)
+		// Check that NO array element contains the search value as substring
+		for _, item := range array {
+			if strings.Contains(strings.ToLower(item), strings.ToLower(criterion.Value)) {
+				return false
+			}
+		}
+		return true
 	case "empty":
 		return len(array) == 0
 	case "not_empty":
