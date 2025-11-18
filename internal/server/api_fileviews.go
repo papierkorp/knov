@@ -12,7 +12,7 @@ import (
 // @Summary Get available file views for current theme
 // @Tags config
 // @Produce json,html
-// @Router /api/config/getAvailableFileViews [get]
+// @Router /api/config/fileviews [get]
 func handleAPIGetAvailableFileViews(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	views := tm.GetAvailableViews("fileview")
@@ -32,7 +32,7 @@ func handleAPIGetAvailableFileViews(w http.ResponseWriter, r *http.Request) {
 // @Tags config
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
-// @Router /api/config/setFileView [post]
+// @Router /api/config/fileview [post]
 func handleAPISetFileView(w http.ResponseWriter, r *http.Request) {
 	view := r.FormValue("fileView")
 

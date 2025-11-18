@@ -111,7 +111,20 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/config/colorschemes": {
+        "/api/config": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get current configuration",
+                "responses": {}
+            }
+        },
+        "/api/config/colorscheme": {
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -127,7 +140,31 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/customCSS": {
+        "/api/config/colorschemes": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get available color schemes",
+                "responses": {}
+            }
+        },
+        "/api/config/customcss": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get custom CSS",
+                "responses": {}
+            },
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -186,71 +223,7 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/getAvailableFileViews": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Get available file views for current theme",
-                "responses": {}
-            }
-        },
-        "/api/config/getColorSchemes": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Get available color schemes",
-                "responses": {}
-            }
-        },
-        "/api/config/getConfig": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Get current configuration",
-                "responses": {}
-            }
-        },
-        "/api/config/getCurrentDataPath": {
-            "get": {
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Get current data path as input field",
-                "responses": {}
-            }
-        },
-        "/api/config/getCustomCSS": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Get custom CSS",
-                "responses": {}
-            }
-        },
-        "/api/config/getDarkModeStatus": {
+        "/api/config/darkmode/status": {
             "get": {
                 "produces": [
                     "application/json",
@@ -263,40 +236,17 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/getLanguages": {
+        "/api/config/datapath": {
             "get": {
                 "produces": [
-                    "application/json",
                     "text/html"
                 ],
                 "tags": [
                     "config"
                 ],
-                "summary": "Get available languages",
+                "summary": "Get current data path as input field",
                 "responses": {}
-            }
-        },
-        "/api/config/getRepositoryURL": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Get git repository URL",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/config/setDataPath": {
+            },
             "post": {
                 "description": "updates data path in .env file (requires restart)",
                 "consumes": [
@@ -329,7 +279,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/config/setFileView": {
+        "/api/config/fileview": {
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -345,7 +295,20 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/setLanguage": {
+        "/api/config/fileviews": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get available file views for current theme",
+                "responses": {}
+            }
+        },
+        "/api/config/language": {
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -361,7 +324,38 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/setRepositoryURL": {
+        "/api/config/languages": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get available languages",
+                "responses": {}
+            }
+        },
+        "/api/config/repository": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get git repository URL",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "updates git repository url in .env file (requires restart)",
                 "consumes": [
@@ -561,6 +555,42 @@ const docTemplate = `{
             }
         },
         "/api/dashboards/widget-config": {
+            "get": {
+                "description": "Get configuration form for specific widget type",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Get widget configuration form",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Widget index",
+                        "name": "index",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Widget type",
+                        "name": "widgets[X][type]",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "widget config html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Get configuration form for specific widget type",
                 "consumes": [
@@ -578,8 +608,14 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Widget index",
                         "name": "index",
-                        "in": "formData",
+                        "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Widget type",
+                        "name": "widgets[X][type]",
+                        "in": "query"
                     }
                 ],
                 "responses": {

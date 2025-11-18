@@ -511,9 +511,11 @@ func handleAPIWidgetForm(w http.ResponseWriter, r *http.Request) {
 // @Description Get configuration form for specific widget type
 // @Tags dashboards
 // @Accept application/x-www-form-urlencoded
-// @Param index formData string true "Widget index"
+// @Param index query string true "Widget index"
+// @Param widgets[X][type] query string false "Widget type"
 // @Produce text/html
 // @Success 200 {string} string "widget config html"
+// @Router /api/dashboards/widget-config [get]
 // @Router /api/dashboards/widget-config [post]
 func handleAPIWidgetConfig(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
@@ -521,15 +523,37 @@ func handleAPIWidgetConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	indexStr := r.FormValue("index")
+	var indexStr, widgetType string
+
+	if r.Method == "GET" {
+		// Handle GET request with query parameters
+		indexStr = r.URL.Query().Get("index")
+
+		// Parse widget type from query parameters like widgets[0][type]
+		for key, values := range r.URL.Query() {
+			if strings.Contains(key, "][type]") && len(values) > 0 {
+				widgetType = values[0]
+				break
+			}
+		}
+	} else {
+		// Handle POST request with form data
+		indexStr = r.FormValue("index")
+
+		// Try to get widget type from form data
+		if indexStr != "" {
+			if index, err := strconv.Atoi(indexStr); err == nil {
+				widgetType = r.FormValue(fmt.Sprintf("widgets[%d][type]", index))
+			}
+		}
+	}
+
 	index, err := strconv.Atoi(indexStr)
 	if err != nil {
 		http.Error(w, "invalid index", http.StatusBadRequest)
 		return
 	}
 
-	// get widget type from the select element that triggered this
-	widgetType := r.FormValue(fmt.Sprintf("widgets[%d][type]", index))
 	if widgetType == "" {
 		// empty type, show placeholder
 		html := fmt.Sprintf(`<div class="config-placeholder"><p>%s</p></div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "select a widget type to see configuration options"))

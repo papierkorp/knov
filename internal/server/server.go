@@ -214,15 +214,16 @@ func StartServerChi() {
 		r.Route("/dashboards", func(r chi.Router) {
 			r.Get("/", handleAPIGetDashboards)
 			r.Post("/", handleAPICreateDashboard)
+			r.Get("/form", handleAPIDashboardForm)
+			r.Post("/widget-form", handleAPIWidgetForm)
+			r.Post("/widget-config", handleAPIWidgetConfig)
+			r.Get("/widget-config", handleAPIWidgetConfig)
+			r.Post("/filter-criteria", handleAPIFilterCriteria)
 			r.Get("/{id}", handleAPIGetDashboard)
 			r.Patch("/{id}", handleAPIUpdateDashboard)
 			r.Delete("/{id}", handleAPIDeleteDashboard)
 			r.Post("/widget/{id}", handleAPIRenderWidget)
 			r.Post("/{id}/rename", handleAPIRenameDashboard)
-			r.Get("/form", handleAPIDashboardForm)
-			r.Post("/widget-form", handleAPIWidgetForm)
-			r.Post("/widget-config", handleAPIWidgetConfig)
-			r.Post("/filter-criteria", handleAPIFilterCriteria)
 		})
 
 		// ----------------------------------------------------------------------------------------

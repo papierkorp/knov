@@ -14,7 +14,7 @@ import (
 // @Summary Get current configuration
 // @Tags config
 // @Produce json,html
-// @Router /api/config/getConfig [get]
+// @Router /api/config [get]
 func handleAPIGetConfig(w http.ResponseWriter, r *http.Request) {
 	appConfig := configmanager.GetAppConfig()
 	userSettings := configmanager.GetUserSettings()
@@ -34,7 +34,7 @@ func handleAPIGetConfig(w http.ResponseWriter, r *http.Request) {
 // @Summary Get current data path as input field
 // @Tags config
 // @Produce html
-// @Router /api/config/getCurrentDataPath [get]
+// @Router /api/config/datapath [get]
 func handleAPIGetCurrentDataPath(w http.ResponseWriter, r *http.Request) {
 	appConfig := configmanager.GetAppConfig()
 	dataPath := appConfig.DataPath
@@ -48,7 +48,7 @@ func handleAPIGetCurrentDataPath(w http.ResponseWriter, r *http.Request) {
 // @Tags config
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
-// @Router /api/config/setLanguage [post]
+// @Router /api/config/language [post]
 func handleAPISetLanguage(w http.ResponseWriter, r *http.Request) {
 	lang := r.FormValue("language")
 
@@ -66,7 +66,7 @@ func handleAPISetLanguage(w http.ResponseWriter, r *http.Request) {
 // @Tags config
 // @Produce json,html
 // @Success 200 {object} string
-// @Router /api/config/getRepositoryURL [get]
+// @Router /api/config/repository [get]
 func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	appConfig := configmanager.GetAppConfig()
 	repositoryURL := appConfig.GitRepoURL
@@ -82,7 +82,7 @@ func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 // @Param repositoryUrl formData string true "repository url"
 // @Produce json,html
 // @Success 200 {string} string "saved"
-// @Router /api/config/setRepositoryURL [post]
+// @Router /api/config/repository [post]
 func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	repositoryURL := r.FormValue("repositoryUrl")
@@ -104,7 +104,7 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 // @Param css formData string true "CSS content"
 // @Produce json,html
 // @Success 200 {string} string "css saved"
-// @Router /api/config/customCSS [post]
+// @Router /api/config/customcss [post]
 func handleCustomCSS(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	css := r.FormValue("css")
@@ -143,7 +143,7 @@ func handleAPIRestartApp(w http.ResponseWriter, r *http.Request) {
 // @Param dataPath formData string true "data path"
 // @Produce json,html
 // @Success 200 {string} string "saved"
-// @Router /api/config/setDataPath [post]
+// @Router /api/config/datapath [post]
 func handleAPISetDataPath(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	dataPath := r.FormValue("dataPath")
@@ -179,7 +179,7 @@ func handleAPISetDarkMode(w http.ResponseWriter, r *http.Request) {
 // @Summary Get available color schemes
 // @Tags config
 // @Produce json,html
-// @Router /api/config/getColorSchemes [get]
+// @Router /api/config/colorschemes [get]
 func handleAPIGetColorSchemes(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	themeSettings := tm.GetCurrentThemeSettingsSchema()
@@ -209,7 +209,7 @@ func handleAPIGetColorSchemes(w http.ResponseWriter, r *http.Request) {
 // @Tags config
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
-// @Router /api/config/colorschemes [post]
+// @Router /api/config/colorscheme [post]
 func handleAPISetColorScheme(w http.ResponseWriter, r *http.Request) {
 	scheme := r.FormValue("colorScheme")
 
@@ -224,7 +224,7 @@ func handleAPISetColorScheme(w http.ResponseWriter, r *http.Request) {
 // @Summary Get available languages
 // @Tags config
 // @Produce json,html
-// @Router /api/config/getLanguages [get]
+// @Router /api/config/languages [get]
 func handleAPIGetLanguages(w http.ResponseWriter, r *http.Request) {
 	languages := configmanager.GetAvailableLanguages()
 	currentLang := configmanager.GetLanguage()
@@ -247,7 +247,7 @@ func handleAPIGetDarkMode(w http.ResponseWriter, r *http.Request) {
 // @Summary Get dark mode status as boolean
 // @Tags config
 // @Produce json,html
-// @Router /api/config/getDarkModeStatus [get]
+// @Router /api/config/darkmode/status [get]
 func handleAPIGetDarkModeStatus(w http.ResponseWriter, r *http.Request) {
 	darkMode := configmanager.GetDarkMode()
 
@@ -261,7 +261,7 @@ func handleAPIGetDarkModeStatus(w http.ResponseWriter, r *http.Request) {
 // @Summary Get custom CSS
 // @Tags config
 // @Produce json,html
-// @Router /api/config/getCustomCSS [get]
+// @Router /api/config/customcss [get]
 func handleAPIGetCustomCSS(w http.ResponseWriter, r *http.Request) {
 	html := render.RenderCustomCSSTextarea(configmanager.GetCustomCSS())
 	writeResponse(w, r, configmanager.GetCustomCSS(), html)

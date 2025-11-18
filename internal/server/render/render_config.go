@@ -33,6 +33,6 @@ func GetLanguageOptions() []SelectOption {
 
 // RenderCustomCSSTextarea renders the custom CSS editor textarea
 func RenderCustomCSSTextarea(content string) string {
-	extraAttrs := `style="width: 100%; font-family: monospace;" hx-post="/api/config/customCSS" hx-trigger="blur" hx-swap="none"`
+	extraAttrs := `style="width: 100%; font-family: monospace;" hx-post="/api/config/customcss" hx-trigger="blur" hx-swap="none"`
 	return RenderTextarea("css", content, 20, extraAttrs)
 }

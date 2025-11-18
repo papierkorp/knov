@@ -332,7 +332,16 @@ paths:
       summary: Get paginated table
       tags:
       - components
-  /api/config/colorschemes:
+  /api/config:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get current configuration
+      tags:
+      - config
+  /api/config/colorscheme:
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -343,7 +352,24 @@ paths:
       summary: Set color scheme
       tags:
       - config
-  /api/config/customCSS:
+  /api/config/colorschemes:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get available color schemes
+      tags:
+      - config
+  /api/config/customcss:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get custom CSS
+      tags:
+      - config
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -383,51 +409,7 @@ paths:
       summary: Set dark mode
       tags:
       - config
-  /api/config/getAvailableFileViews:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Get available file views for current theme
-      tags:
-      - config
-  /api/config/getColorSchemes:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Get available color schemes
-      tags:
-      - config
-  /api/config/getConfig:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Get current configuration
-      tags:
-      - config
-  /api/config/getCurrentDataPath:
-    get:
-      produces:
-      - text/html
-      responses: {}
-      summary: Get current data path as input field
-      tags:
-      - config
-  /api/config/getCustomCSS:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Get custom CSS
-      tags:
-      - config
-  /api/config/getDarkModeStatus:
+  /api/config/darkmode/status:
     get:
       produces:
       - application/json
@@ -436,29 +418,14 @@ paths:
       summary: Get dark mode status as boolean
       tags:
       - config
-  /api/config/getLanguages:
+  /api/config/datapath:
     get:
       produces:
-      - application/json
       - text/html
       responses: {}
-      summary: Get available languages
+      summary: Get current data path as input field
       tags:
       - config
-  /api/config/getRepositoryURL:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get git repository URL
-      tags:
-      - config
-  /api/config/setDataPath:
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -480,7 +447,7 @@ paths:
       summary: Update data path
       tags:
       - config
-  /api/config/setFileView:
+  /api/config/fileview:
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -491,7 +458,16 @@ paths:
       summary: Set file view
       tags:
       - config
-  /api/config/setLanguage:
+  /api/config/fileviews:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get available file views for current theme
+      tags:
+      - config
+  /api/config/language:
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -502,7 +478,28 @@ paths:
       summary: Set language
       tags:
       - config
-  /api/config/setRepositoryURL:
+  /api/config/languages:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get available languages
+      tags:
+      - config
+  /api/config/repository:
+    get:
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get git repository URL
+      tags:
+      - config
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -754,15 +751,43 @@ paths:
       tags:
       - dashboards
   /api/dashboards/widget-config:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Get configuration form for specific widget type
+      parameters:
+      - description: Widget index
+        in: query
+        name: index
+        required: true
+        type: string
+      - description: Widget type
+        in: query
+        name: widgets[X][type]
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: widget config html
+          schema:
+            type: string
+      summary: Get widget configuration form
+      tags:
+      - dashboards
     post:
       consumes:
       - application/x-www-form-urlencoded
       description: Get configuration form for specific widget type
       parameters:
       - description: Widget index
-        in: formData
+        in: query
         name: index
         required: true
+        type: string
+      - description: Widget type
+        in: query
+        name: widgets[X][type]
         type: string
       produces:
       - text/html
