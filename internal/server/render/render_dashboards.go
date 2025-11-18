@@ -7,7 +7,6 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
-	"knov/internal/files"
 	"knov/internal/translation"
 )
 
@@ -238,73 +237,7 @@ func RenderWidgetConfig(index int, widgetType string, config *dashboard.WidgetCo
 
 	switch widgetType {
 	case "filter":
-		html.WriteString(`<div class="config-form">`)
-		html.WriteString(fmt.Sprintf(`<h5>%s</h5>`, translation.SprintfForRequest(configmanager.GetLanguage(), "filter configuration")))
-		html.WriteString(`<div class="config-section">`)
-		html.WriteString(fmt.Sprintf(`<h6>%s</h6>`, translation.SprintfForRequest(configmanager.GetLanguage(), "display options")))
-
-		html.WriteString(`<div class="config-row">`)
-		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "display")))
-		html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][display]" class="form-select">`, index))
-
-		displayOptions := []string{"list", "cards", "dropdown"}
-		selectedDisplay := "list"
-		if config != nil && config.Filter != nil {
-			selectedDisplay = config.Filter.Display
-		}
-
-		for _, option := range displayOptions {
-			selected := ""
-			if option == selectedDisplay {
-				selected = "selected"
-			}
-			html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, option, selected, option))
-		}
-		html.WriteString(`</select>`)
-		html.WriteString(`</div>`)
-
-		html.WriteString(`<div class="config-row">`)
-		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "limit")))
-		limit := "10"
-		if config != nil && config.Filter != nil && config.Filter.Limit > 0 {
-			limit = fmt.Sprintf("%d", config.Filter.Limit)
-		}
-		html.WriteString(fmt.Sprintf(`<input type="number" name="widgets[%d][config][limit]" value="%s" min="1" class="form-input"/>`, index, limit))
-		html.WriteString(`</div>`)
-
-		html.WriteString(`<div class="config-row">`)
-		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "logic")))
-		html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][logic]" class="form-select">`, index))
-
-		selectedLogic := "and"
-		if config != nil && config.Filter != nil {
-			selectedLogic = config.Filter.Logic
-		}
-
-		html.WriteString(fmt.Sprintf(`<option value="and" %s>and</option>`, ternary(selectedLogic == "and", "selected", "")))
-		html.WriteString(fmt.Sprintf(`<option value="or" %s>or</option>`, ternary(selectedLogic == "or", "selected", "")))
-		html.WriteString(`</select>`)
-		html.WriteString(`</div>`)
-		html.WriteString(`</div>`)
-
-		// filter criteria section
-		html.WriteString(`<div class="config-section">`)
-		html.WriteString(fmt.Sprintf(`<h6>%s</h6>`, translation.SprintfForRequest(configmanager.GetLanguage(), "filter criteria")))
-		html.WriteString(fmt.Sprintf(`<div id="filter-criteria-container-%d">`, index))
-
-		// add existing criteria or one empty criteria
-		if config != nil && config.Filter != nil && len(config.Filter.Criteria) > 0 {
-			for i, criteria := range config.Filter.Criteria {
-				html.WriteString(RenderFilterCriteriaRow(index, i, &criteria))
-			}
-		} else {
-			html.WriteString(RenderFilterCriteriaRow(index, 0, nil))
-		}
-
-		html.WriteString(`</div>`)
-		html.WriteString(fmt.Sprintf(`<button type="button" hx-post="/api/dashboards/filter-criteria" hx-target="#filter-criteria-container-%d" hx-swap="beforeend" hx-vals='{"widget_index": "%d"}' class="btn-add-criteria">%s</button>`, index, index, translation.SprintfForRequest(configmanager.GetLanguage(), "+ add criteria")))
-		html.WriteString(`</div>`)
-		html.WriteString(`</div>`)
+		return RenderFilterWidgetConfig(index, config)
 
 	case "fileContent":
 		html.WriteString(`<div class="config-form">`)
@@ -353,7 +286,7 @@ func RenderWidgetConfig(index int, widgetType string, config *dashboard.WidgetCo
 		html.WriteString(`</div>`)
 
 	case "filterForm", "tags", "collections", "folders":
-		widgetName := strings.Title(widgetType)
+		widgetName := string(widgetType)
 		html.WriteString(`<div class="config-form">`)
 		html.WriteString(fmt.Sprintf(`<h5>%s widget configuration</h5>`, strings.ToLower(widgetName)))
 		html.WriteString(fmt.Sprintf(`<p class="config-note">%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no configuration needed")))
@@ -361,95 +294,4 @@ func RenderWidgetConfig(index int, widgetType string, config *dashboard.WidgetCo
 	}
 
 	return html.String()
-}
-
-// RenderFilterCriteriaRow renders a single filter criteria row
-func RenderFilterCriteriaRow(widgetIndex, criteriaIndex int, criteria *files.FilterCriteria) string {
-	var html strings.Builder
-
-	html.WriteString(fmt.Sprintf(`<div class="filter-criteria-row" data-criteria-index="%d">`, criteriaIndex))
-
-	// metadata field selector
-	html.WriteString(`<div class="filter-field-group">`)
-	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "field")))
-	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][criteria][%d][metadata]" class="form-select">`, widgetIndex, criteriaIndex))
-
-	metadataOptions := []string{"collection", "tags", "type", "status", "priority", "createdAt", "lastEdited", "folders", "boards", "para_projects", "para_areas", "para_resources", "para_archive"}
-	selectedMetadata := "collection"
-	if criteria != nil {
-		selectedMetadata = criteria.Metadata
-	}
-
-	for _, option := range metadataOptions {
-		selected := ""
-		if option == selectedMetadata {
-			selected = "selected"
-		}
-		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, option, selected, option))
-	}
-	html.WriteString(`</select>`)
-	html.WriteString(`</div>`)
-
-	// operator selector
-	html.WriteString(`<div class="filter-field-group">`)
-	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "operator")))
-	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][criteria][%d][operator]" class="form-select">`, widgetIndex, criteriaIndex))
-
-	operatorOptions := []string{"equals", "contains", "greater", "less", "in"}
-	selectedOperator := "equals"
-	if criteria != nil {
-		selectedOperator = criteria.Operator
-	}
-
-	for _, option := range operatorOptions {
-		selected := ""
-		if option == selectedOperator {
-			selected = "selected"
-		}
-		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, option, selected, option))
-	}
-	html.WriteString(`</select>`)
-	html.WriteString(`</div>`)
-
-	// value input
-	html.WriteString(`<div class="filter-field-group">`)
-	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "value")))
-	value := ""
-	if criteria != nil {
-		value = criteria.Value
-	}
-	html.WriteString(fmt.Sprintf(`<input type="text" name="widgets[%d][config][criteria][%d][value]" value="%s" placeholder="%s" class="form-input"/>`, widgetIndex, criteriaIndex, value, translation.SprintfForRequest(configmanager.GetLanguage(), "value")))
-	html.WriteString(`</div>`)
-
-	// action selector
-	html.WriteString(`<div class="filter-field-group">`)
-	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "action")))
-	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][criteria][%d][action]" class="form-select">`, widgetIndex, criteriaIndex))
-
-	selectedAction := "include"
-	if criteria != nil {
-		selectedAction = criteria.Action
-	}
-
-	html.WriteString(fmt.Sprintf(`<option value="include" %s>include</option>`, ternary(selectedAction == "include", "selected", "")))
-	html.WriteString(fmt.Sprintf(`<option value="exclude" %s>exclude</option>`, ternary(selectedAction == "exclude", "selected", "")))
-	html.WriteString(`</select>`)
-	html.WriteString(`</div>`)
-
-	// remove button (if not the first criteria)
-	if criteriaIndex > 0 {
-		html.WriteString(`<button type="button" onclick="this.closest('.filter-criteria-row').remove()" class="btn-remove-criteria">remove"</button>`)
-	}
-
-	html.WriteString(`</div>`)
-
-	return html.String()
-}
-
-// ternary helper function
-func ternary(condition bool, ifTrue, ifFalse string) string {
-	if condition {
-		return ifTrue
-	}
-	return ifFalse
 }
