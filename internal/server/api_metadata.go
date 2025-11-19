@@ -118,6 +118,49 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, data, html)
 }
 
+// @Summary Export all metadata
+// @Description Export all metadata as JSON or CSV file
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce application/json,text/csv
+// @Param format formData string false "Export format (json or csv)" default(json)
+// @Success 200 {file} file "exported metadata file"
+// @Failure 500 {string} string "failed to export metadata"
+// @Router /api/metadata/export [post]
+func handleAPIExportMetadata(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	format := r.FormValue("format")
+	if format == "" {
+		format = "json"
+	}
+
+	allMetadata, err := files.MetaDataExportAll()
+	if err != nil {
+		http.Error(w, "failed to export metadata", http.StatusInternalServerError)
+		return
+	}
+
+	switch format {
+	case "csv":
+		w.Header().Set("Content-Type", "text/csv")
+		w.Header().Set("Content-Disposition", "attachment; filename=metadata_export.csv")
+
+		csvData := render.RenderMetadataCSV(allMetadata)
+		w.Write([]byte(csvData))
+
+	case "json":
+		fallthrough
+	default:
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Disposition", "attachment; filename=metadata_export.json")
+
+		if err := json.NewEncoder(w).Encode(allMetadata); err != nil {
+			http.Error(w, "failed to encode json", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 // ----------------------------------------------------------------------------------------
 // ---------------------------------- GET INDIVIDUAL ----------------------------------
 // ----------------------------------------------------------------------------------------

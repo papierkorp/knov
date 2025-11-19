@@ -41,6 +41,19 @@
                 </div>
 
                 <div class="admin-card">
+                    <h3 class="tooltip" data-tooltip="{{T "Export all metadata to file"}}">{{T "Data Export"}}</h3>
+                    <form action="/api/metadata/export" method="post">
+                        <label for="export-format">{{T "Export format"}}:</label>
+                        <select name="format" id="export-format">
+                            <option value="json">JSON</option>
+                            <option value="csv">CSV</option>
+                        </select>
+                        <button type="submit">{{T "Export Metadata"}}</button>
+                    </form>
+                    <div id="export-result"></div>
+                </div>
+
+                <div class="admin-card">
                     <h3 class="tooltip" data-tooltip="{{T "Setup some test Data Files"}}">{{T "Test Data Management"}}</h3>
                     <button hx-post="/api/testdata/setup" hx-target="#testdata-result" hx-confirm="{{T "Setup test data? This will create example files."}}">
                         {{T "Setup Test Data"}}

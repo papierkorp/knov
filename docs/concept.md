@@ -14,6 +14,7 @@ KNOV is a flexible knowledge management system built with Go, HTMX, and Templ th
   - **Tags**: fully customizable tags
   - **PARA**: implemented PARA Method - you can attach each File with its corresponding PARA with multiple PARAS possible
   - **ZK**: Different Filetypes accordingly to the ZK Method - can be used with or without PARA
+  - **collection**: organizational field to group related files - defaults to the first folder in filepath or "default" - can be changed manually
 
 ## Architecture
 

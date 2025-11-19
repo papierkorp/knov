@@ -2,6 +2,7 @@
 package render
 
 import (
+	"fmt"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -152,4 +153,49 @@ func RenderMetadataForm(filePath string) (string, error) {
 	html.WriteString(`</form>`) // close metadata form
 
 	return html.String(), nil
+}
+
+// RenderMetadataCSV generates CSV content for metadata export
+func RenderMetadataCSV(metadata []*files.Metadata) string {
+	var csv strings.Builder
+
+	// header
+	csv.WriteString("path,name,collection,filetype,status,priority,createdat,lastedited,tags,folders,para_projects,para_areas,para_resources,para_archive\n")
+
+	for _, m := range metadata {
+		if m == nil {
+			continue
+		}
+
+		// escape csv values
+		path := escapeCSV(m.Path)
+		name := escapeCSV(m.Name)
+		collection := escapeCSV(m.Collection)
+		filetype := escapeCSV(string(m.FileType))
+		status := escapeCSV(string(m.Status))
+		priority := escapeCSV(string(m.Priority))
+		createdat := m.CreatedAt.Format("2006-01-02 15:04:05")
+		lastedited := m.LastEdited.Format("2006-01-02 15:04:05")
+		tags := escapeCSV(strings.Join(m.Tags, ";"))
+		folders := escapeCSV(strings.Join(m.Folders, ";"))
+		projects := escapeCSV(strings.Join(m.PARA.Projects, ";"))
+		areas := escapeCSV(strings.Join(m.PARA.Areas, ";"))
+		resources := escapeCSV(strings.Join(m.PARA.Resources, ";"))
+		archive := escapeCSV(strings.Join(m.PARA.Archive, ";"))
+
+		csv.WriteString(fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+			path, name, collection, filetype, status, priority, createdat, lastedited,
+			tags, folders, projects, areas, resources, archive))
+	}
+
+	return csv.String()
+}
+
+// escapeCSV escapes a string for CSV format
+func escapeCSV(s string) string {
+	if strings.Contains(s, ",") || strings.Contains(s, "\"") || strings.Contains(s, "\n") {
+		s = strings.ReplaceAll(s, "\"", "\"\"")
+		return "\"" + s + "\""
+	}
+	return s
 }

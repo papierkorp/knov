@@ -430,3 +430,36 @@ func GetAllPARAArchive() (map[string]int, error) {
 	}
 	return archiveCount, nil
 }
+
+// MetaDataExportAll exports all metadata in the specified format
+func MetaDataExportAll() ([]*Metadata, error) {
+	keys, err := storage.GetStorage().List("")
+	if err != nil {
+		logging.LogError("failed to list metadata keys: %v", err)
+		return nil, err
+	}
+
+	var allMetadata []*Metadata
+	for _, key := range keys {
+		data, err := storage.GetStorage().Get(key)
+		if err != nil {
+			logging.LogWarning("failed to get metadata for key %s: %v", key, err)
+			continue
+		}
+
+		if data == nil {
+			continue
+		}
+
+		var metadata Metadata
+		if err := json.Unmarshal(data, &metadata); err != nil {
+			logging.LogWarning("failed to unmarshal metadata for key %s: %v", key, err)
+			continue
+		}
+
+		allMetadata = append(allMetadata, &metadata)
+	}
+
+	logging.LogDebug("exported %d metadata entries", len(allMetadata))
+	return allMetadata, nil
+}

@@ -1724,6 +1724,45 @@
                 }
             }
         },
+        "/api/metadata/export": {
+            "post": {
+                "description": "Export all metadata as JSON or CSV file",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/csv"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Export all metadata",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "json",
+                        "description": "Export format (json or csv)",
+                        "name": "format",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "exported metadata file",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to export metadata",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/file/collection": {
             "get": {
                 "produces": [

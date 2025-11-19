@@ -1431,6 +1431,32 @@ paths:
       summary: Set file creation date
       tags:
       - metadata
+  /api/metadata/export:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Export all metadata as JSON or CSV file
+      parameters:
+      - default: json
+        description: Export format (json or csv)
+        in: formData
+        name: format
+        type: string
+      produces:
+      - application/json
+      - text/csv
+      responses:
+        "200":
+          description: exported metadata file
+          schema:
+            type: file
+        "500":
+          description: failed to export metadata
+          schema:
+            type: string
+      summary: Export all metadata
+      tags:
+      - metadata
   /api/metadata/file/collection:
     get:
       parameters:

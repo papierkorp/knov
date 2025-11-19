@@ -150,6 +150,7 @@ func StartServerChi() {
 			r.Get("/", handleAPIGetMetadata)
 			r.Post("/", handleAPISetMetadata)
 			r.Post("/rebuild", handleAPIRebuildMetadata)
+			r.Post("/export", handleAPIExportMetadata)
 
 			r.Get("/collection", handleAPIGetMetadataCollection)
 			r.Get("/filetype", handleAPIGetMetadataFileType)
