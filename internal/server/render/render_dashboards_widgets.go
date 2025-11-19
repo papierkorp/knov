@@ -27,6 +27,14 @@ func RenderWidget(widgetType dashboard.WidgetType, config dashboard.WidgetConfig
 		return renderCollectionsWidget()
 	case dashboard.WidgetTypeFolders:
 		return renderFoldersWidget()
+	case dashboard.WidgetTypeParaProjects:
+		return renderParaProjectsWidget()
+	case dashboard.WidgetTypeParaAreas:
+		return renderParaAreasWidget()
+	case dashboard.WidgetTypeParaResources:
+		return renderParaResourcesWidget()
+	case dashboard.WidgetTypeParaArchive:
+		return renderParaArchiveWidget()
 	default:
 		return "", fmt.Errorf("unknown widget type: %s", widgetType)
 	}
@@ -88,4 +96,40 @@ func renderFoldersWidget() (string, error) {
 	}
 
 	return RenderBrowseHTML(folderCount, "/browse/folders"), nil
+}
+
+func renderParaProjectsWidget() (string, error) {
+	projectCount, err := files.GetAllPARAProjects()
+	if err != nil {
+		return "", err
+	}
+
+	return RenderBrowseHTML(projectCount, "/browse/para_projects"), nil
+}
+
+func renderParaAreasWidget() (string, error) {
+	areaCount, err := files.GetAllPARAreas()
+	if err != nil {
+		return "", err
+	}
+
+	return RenderBrowseHTML(areaCount, "/browse/para_areas"), nil
+}
+
+func renderParaResourcesWidget() (string, error) {
+	resourceCount, err := files.GetAllPARAResources()
+	if err != nil {
+		return "", err
+	}
+
+	return RenderBrowseHTML(resourceCount, "/browse/para_resources"), nil
+}
+
+func renderParaArchiveWidget() (string, error) {
+	archiveCount, err := files.GetAllPARAArchive()
+	if err != nil {
+		return "", err
+	}
+
+	return RenderBrowseHTML(archiveCount, "/browse/para_archive"), nil
 }

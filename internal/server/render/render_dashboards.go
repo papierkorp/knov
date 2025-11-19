@@ -172,7 +172,7 @@ func RenderWidgetForm(index int, widget *dashboard.Widget) string {
 	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "widget type")))
 	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][type]" required class="form-select widget-type-select" hx-get="/api/dashboards/widget-config" hx-target="#widget-config-%d" hx-swap="innerHTML" hx-vals='{"index": "%d"}' hx-include="[name='widgets[%d][type]']">`, index, index, index, index))
 
-	widgetTypes := []string{"filter", "filterForm", "fileContent", "static", "tags", "collections", "folders"}
+	widgetTypes := []string{"filter", "filterForm", "fileContent", "static", "tags", "collections", "folders", "para_projects", "para_areas", "para_resources", "para_archive"}
 	selectedType := ""
 	if widget != nil {
 		selectedType = string(widget.Type)

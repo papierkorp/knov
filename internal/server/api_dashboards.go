@@ -566,3 +566,83 @@ func handleAPIWidgetConfig(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
+
+// @Summary Get filter value input HTML based on metadata field
+// @Description Returns appropriate input HTML with datalist for filter value based on selected metadata field
+// @Tags dashboards
+// @Param widget_index formData string true "Widget index"
+// @Param criteria_index formData string true "Criteria index"
+// @Param widgets[X][config][criteria][Y][metadata] formData string true "Metadata field type"
+// @Produce html
+// @Success 200 {string} string "HTML input with datalist"
+// @Router /api/dashboards/filter-value-input [get]
+func handleAPIGetFilterValueInput(w http.ResponseWriter, r *http.Request) {
+	widgetIndexStr := r.URL.Query().Get("widget_index")
+	criteriaIndexStr := r.URL.Query().Get("criteria_index")
+
+	widgetIndex, err := strconv.Atoi(widgetIndexStr)
+	if err != nil {
+		http.Error(w, "invalid widget_index", http.StatusBadRequest)
+		return
+	}
+
+	criteriaIndex, err := strconv.Atoi(criteriaIndexStr)
+	if err != nil {
+		http.Error(w, "invalid criteria_index", http.StatusBadRequest)
+		return
+	}
+
+	// get the metadata field from the select
+	metadataField := r.URL.Query().Get(fmt.Sprintf("widgets[%d][config][criteria][%d][metadata]", widgetIndex, criteriaIndex))
+
+	valueInputId := fmt.Sprintf("widget-%d-criteria-%d-value", widgetIndex, criteriaIndex)
+	valueInputName := fmt.Sprintf("widgets[%d][config][criteria][%d][value]", widgetIndex, criteriaIndex)
+
+	html := render.RenderFilterValueInput(valueInputId, valueInputName, "", metadataField)
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// @Summary Get a new filter row for filterForm widget
+// @Description Returns HTML for a new filter row to be added to filterForm widget
+// @Tags dashboards
+// @Produce html
+// @Success 200 {string} string "HTML filter row"
+// @Router /api/dashboards/filterform-row [post]
+func handleAPIGetFilterFormRow(w http.ResponseWriter, r *http.Request) {
+	// get current row count from request (if available) or use default
+	// for simplicity, we'll use a timestamp-based index to ensure uniqueness
+	index := int(time.Now().UnixNano() % 10000)
+
+	html := render.RenderFilterFormRow(index)
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// @Summary Get filter value input for filterForm widget
+// @Description Returns appropriate input HTML with datalist for filterForm value based on selected metadata field
+// @Tags dashboards
+// @Param row_index formData string true "Row index"
+// @Param metadata[] formData string true "Metadata field type"
+// @Produce html
+// @Success 200 {string} string "HTML input with datalist"
+// @Router /api/dashboards/filterform-value-input [get]
+func handleAPIGetFilterFormValueInput(w http.ResponseWriter, r *http.Request) {
+	rowIndexStr := r.URL.Query().Get("row_index")
+
+	rowIndex, err := strconv.Atoi(rowIndexStr)
+	if err != nil {
+		http.Error(w, "invalid row_index", http.StatusBadRequest)
+		return
+	}
+
+	// get the metadata field from the select - note the array syntax
+	metadataField := r.URL.Query().Get("metadata[]")
+
+	html := render.RenderFilterFormValueInput(rowIndex, metadataField)
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}

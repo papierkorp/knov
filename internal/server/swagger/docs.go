@@ -526,6 +526,105 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/dashboards/filter-value-input": {
+            "get": {
+                "description": "Returns appropriate input HTML with datalist for filter value based on selected metadata field",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Get filter value input HTML based on metadata field",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Widget index",
+                        "name": "widget_index",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Criteria index",
+                        "name": "criteria_index",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Metadata field type",
+                        "name": "widgets[X][config][criteria][Y][metadata]",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "HTML input with datalist",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboards/filterform-row": {
+            "post": {
+                "description": "Returns HTML for a new filter row to be added to filterForm widget",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Get a new filter row for filterForm widget",
+                "responses": {
+                    "200": {
+                        "description": "HTML filter row",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboards/filterform-value-input": {
+            "get": {
+                "description": "Returns appropriate input HTML with datalist for filterForm value based on selected metadata field",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Get filter value input for filterForm widget",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Row index",
+                        "name": "row_index",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Metadata field type",
+                        "name": "metadata[]",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "HTML input with datalist",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/dashboards/form": {
             "get": {
                 "description": "Get dashboard form for create or edit",
@@ -1790,6 +1889,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/filetypes": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all available filetypes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Response format (options for HTML select options)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/folders": {
             "get": {
                 "description": "Get all folders with counts, or folders for a specific file if filepath is provided",
@@ -2561,6 +2691,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/statuses": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all available statuses",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Response format (options for HTML select options)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/tags": {
             "get": {
                 "description": "Get all tags with counts, or tags for a specific file if filepath is provided",
@@ -3010,7 +3171,11 @@ const docTemplate = `{
                 "static",
                 "tags",
                 "collections",
-                "folders"
+                "folders",
+                "para_projects",
+                "para_areas",
+                "para_resources",
+                "para_archive"
             ],
             "x-enum-varnames": [
                 "WidgetTypeFilter",
@@ -3019,7 +3184,11 @@ const docTemplate = `{
                 "WidgetTypeStatic",
                 "WidgetTypeTags",
                 "WidgetTypeCollections",
-                "WidgetTypeFolders"
+                "WidgetTypeFolders",
+                "WidgetTypeParaProjects",
+                "WidgetTypeParaAreas",
+                "WidgetTypeParaResources",
+                "WidgetTypeParaArchive"
             ]
         },
         "files.File": {

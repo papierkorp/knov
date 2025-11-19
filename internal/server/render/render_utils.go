@@ -138,6 +138,15 @@ func GetFormValue(slice []string, index int) string {
 	return ""
 }
 
+// GenerateDatalistInput creates an input field with autocomplete (without save)
+func GenerateDatalistInput(id, name, value, placeholder, apiEndpoint string) string {
+	datalistId := fmt.Sprintf("%s-list", id)
+	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" autocomplete="off" list="%s" placeholder="%s"/>
+<datalist id="%s" hx-get="%s" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
+	<option value="">loading options...</option>
+</datalist>`, id, name, value, datalistId, placeholder, datalistId, apiEndpoint)
+}
+
 // GenerateDatalistInputWithSave creates an input field with autocomplete and auto-save
 func GenerateDatalistInputWithSave(id, name, value, placeholder, apiEndpoint, filePath, saveEndpoint string) string {
 	datalistId := fmt.Sprintf("%s-list", id)
@@ -191,7 +200,7 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 		tags.forEach((tag, index) => {
 			const chip = document.createElement('span');
 			chip.className = 'tag-chip';
-			chip.innerHTML = tag + '<button type="button" class="tag-chip-remove">×</button>';
+			chip.innerHTML = tag + '<button type="button" class="tag-chip-remove">&times;</button>';
 
 			const removeBtn = chip.querySelector('.tag-chip-remove');
 			removeBtn.addEventListener('click', function() {

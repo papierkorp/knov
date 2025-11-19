@@ -759,6 +759,70 @@ func handleAPIGetAllPriorities(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, priorities, html.String())
 }
 
+// @Summary Get all available statuses
+// @Tags metadata
+// @Param format query string false "Response format (options for HTML select options)"
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/metadata/statuses [get]
+func handleAPIGetAllStatuses(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+
+	statuses := []files.Status{
+		files.StatusDraft,
+		files.StatusPublished,
+		files.StatusArchived,
+	}
+
+	var html strings.Builder
+	if format == "options" {
+		for _, s := range statuses {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, s, s))
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	for _, s := range statuses {
+		html.WriteString(fmt.Sprintf(`<div class="status-option">%s</div>`, s))
+	}
+	writeResponse(w, r, statuses, html.String())
+}
+
+// @Summary Get all available filetypes
+// @Tags metadata
+// @Param format query string false "Response format (options for HTML select options)"
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/metadata/filetypes [get]
+func handleAPIGetAllFiletypes(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+
+	filetypes := []files.Filetype{
+		files.FileTypeTodo,
+		files.FileTypeFleeting,
+		files.FileTypeLiterature,
+		files.FileTypeMOC,
+		files.FileTypePermanent,
+	}
+
+	var html strings.Builder
+	if format == "options" {
+		for _, ft := range filetypes {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, ft, ft))
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	for _, ft := range filetypes {
+		html.WriteString(fmt.Sprintf(`<div class="filetype-option">%s</div>`, ft))
+	}
+	writeResponse(w, r, filetypes, html.String())
+}
+
 // @Summary Get tags for a specific file
 // @Tags metadata
 // @Param filepath query string true "File path"

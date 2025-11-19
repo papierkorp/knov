@@ -49,7 +49,7 @@ func RenderMetadataForm(filePath string) (string, error) {
 	html.WriteString(`<label for="meta-priority">` + translation.SprintfForRequest(configmanager.GetLanguage(), "priority") + `</label>`)
 	html.WriteString(GenerateDatalistInputWithSave("meta-priority", "priority", priority,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "set priority (1-5)"),
-		"/api/metadata/priority/all?format=options", filePath, "/api/metadata/priority"))
+		"/api/metadata/priorities?format=options", filePath, "/api/metadata/priority"))
 	html.WriteString(`</div>`)
 
 	// collection field
@@ -109,7 +109,7 @@ func RenderMetadataForm(filePath string) (string, error) {
 	html.WriteString(`<label for="meta-projects">` + translation.SprintfForRequest(configmanager.GetLanguage(), "projects") + `</label>`)
 	html.WriteString(GenerateTagChipsInputWithSave("meta-projects", "projects", projectsStr,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add projects"),
-		"/api/metadata/para/projects/all?format=options", filePath, "/api/metadata/para/projects"))
+		"/api/metadata/para/projects?format=options", filePath, "/api/metadata/para/projects"))
 	html.WriteString(`</div>`)
 
 	// areas field
@@ -121,7 +121,7 @@ func RenderMetadataForm(filePath string) (string, error) {
 	html.WriteString(`<label for="meta-areas">` + translation.SprintfForRequest(configmanager.GetLanguage(), "areas") + `</label>`)
 	html.WriteString(GenerateTagChipsInputWithSave("meta-areas", "areas", areasStr,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add areas of responsibility"),
-		"/api/metadata/para/areas/all?format=options", filePath, "/api/metadata/para/areas"))
+		"/api/metadata/para/areas?format=options", filePath, "/api/metadata/para/areas"))
 	html.WriteString(`</div>`)
 
 	// resources field
@@ -133,7 +133,7 @@ func RenderMetadataForm(filePath string) (string, error) {
 	html.WriteString(`<label for="meta-resources">` + translation.SprintfForRequest(configmanager.GetLanguage(), "resources") + `</label>`)
 	html.WriteString(GenerateTagChipsInputWithSave("meta-resources", "resources", resourcesStr,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add resources"),
-		"/api/metadata/para/resources/all?format=options", filePath, "/api/metadata/para/resources"))
+		"/api/metadata/para/resources?format=options", filePath, "/api/metadata/para/resources"))
 	html.WriteString(`</div>`)
 
 	// archive field
@@ -145,7 +145,7 @@ func RenderMetadataForm(filePath string) (string, error) {
 	html.WriteString(`<label for="meta-archive">` + translation.SprintfForRequest(configmanager.GetLanguage(), "archive") + `</label>`)
 	html.WriteString(GenerateTagChipsInputWithSave("meta-archive", "archive", archiveStr,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add archived items"),
-		"/api/metadata/para/archive/all?format=options", filePath, "/api/metadata/para/archive"))
+		"/api/metadata/para/archive?format=options", filePath, "/api/metadata/para/archive"))
 	html.WriteString(`</div>`)
 
 	html.WriteString(`</div>`)  // close para form group

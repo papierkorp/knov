@@ -94,6 +94,10 @@ definitions:
     - tags
     - collections
     - folders
+    - para_projects
+    - para_areas
+    - para_resources
+    - para_archive
     type: string
     x-enum-varnames:
     - WidgetTypeFilter
@@ -103,6 +107,10 @@ definitions:
     - WidgetTypeTags
     - WidgetTypeCollections
     - WidgetTypeFolders
+    - WidgetTypeParaProjects
+    - WidgetTypeParaAreas
+    - WidgetTypeParaResources
+    - WidgetTypeParaArchive
   files.File:
     properties:
       metadata:
@@ -730,6 +738,74 @@ paths:
           schema:
             type: string
       summary: Add filter criteria row
+      tags:
+      - dashboards
+  /api/dashboards/filter-value-input:
+    get:
+      description: Returns appropriate input HTML with datalist for filter value based
+        on selected metadata field
+      parameters:
+      - description: Widget index
+        in: formData
+        name: widget_index
+        required: true
+        type: string
+      - description: Criteria index
+        in: formData
+        name: criteria_index
+        required: true
+        type: string
+      - description: Metadata field type
+        in: formData
+        name: widgets[X][config][criteria][Y][metadata]
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML input with datalist
+          schema:
+            type: string
+      summary: Get filter value input HTML based on metadata field
+      tags:
+      - dashboards
+  /api/dashboards/filterform-row:
+    post:
+      description: Returns HTML for a new filter row to be added to filterForm widget
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML filter row
+          schema:
+            type: string
+      summary: Get a new filter row for filterForm widget
+      tags:
+      - dashboards
+  /api/dashboards/filterform-value-input:
+    get:
+      description: Returns appropriate input HTML with datalist for filterForm value
+        based on selected metadata field
+      parameters:
+      - description: Row index
+        in: formData
+        name: row_index
+        required: true
+        type: string
+      - description: Metadata field type
+        in: formData
+        name: metadata[]
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML input with datalist
+          schema:
+            type: string
+      summary: Get filter value input for filterForm widget
       tags:
       - dashboards
   /api/dashboards/form:
@@ -1460,6 +1536,26 @@ paths:
       summary: Set file type
       tags:
       - metadata
+  /api/metadata/filetypes:
+    get:
+      parameters:
+      - description: Response format (options for HTML select options)
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get all available filetypes
+      tags:
+      - metadata
   /api/metadata/folders:
     get:
       description: Get all folders with counts, or folders for a specific file if
@@ -1981,6 +2077,26 @@ paths:
           schema:
             type: string
       summary: Set file status
+      tags:
+      - metadata
+  /api/metadata/statuses:
+    get:
+      parameters:
+      - description: Response format (options for HTML select options)
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get all available statuses
       tags:
       - metadata
   /api/metadata/tags:

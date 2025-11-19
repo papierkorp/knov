@@ -201,7 +201,10 @@ func RenderFilterCriteriaRow(widgetIndex, criteriaIndex int, criteria *files.Fil
 		selectedMetadata = criteria.Metadata
 	}
 
-	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][criteria][%d][metadata]" class="form-select">`, widgetIndex, criteriaIndex))
+	valueContainerId := fmt.Sprintf("widget-%d-criteria-%d-value-container", widgetIndex, criteriaIndex)
+
+	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][criteria][%d][metadata]" class="form-select" hx-get="/api/dashboards/filter-value-input" hx-target="#%s" hx-swap="innerHTML" hx-vals='{"widget_index": "%d", "criteria_index": "%d"}' hx-include="this">`,
+		widgetIndex, criteriaIndex, valueContainerId, widgetIndex, criteriaIndex))
 	html.WriteString(`<option value="">select field</option>`)
 	html.WriteString(RenderMetadataFieldOptions(selectedMetadata))
 	html.WriteString(`</select>`)
@@ -221,14 +224,20 @@ func RenderFilterCriteriaRow(widgetIndex, criteriaIndex int, criteria *files.Fil
 	html.WriteString(`</select>`)
 	html.WriteString(`</div>`)
 
-	// value input
+	// value input (wrapped in container for dynamic updates)
 	html.WriteString(`<div class="filter-field-group">`)
 	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "value")))
 	value := ""
 	if criteria != nil {
 		value = criteria.Value
 	}
-	html.WriteString(fmt.Sprintf(`<input type="text" name="widgets[%d][config][criteria][%d][value]" value="%s" class="form-input" placeholder="value"/>`, widgetIndex, criteriaIndex, value))
+
+	// wrap value input in container div for dynamic updates via HTMX
+	html.WriteString(fmt.Sprintf(`<div id="%s">`, valueContainerId))
+	valueInputId := fmt.Sprintf("widget-%d-criteria-%d-value", widgetIndex, criteriaIndex)
+	valueInputName := fmt.Sprintf("widgets[%d][config][criteria][%d][value]", widgetIndex, criteriaIndex)
+	html.WriteString(RenderFilterValueInput(valueInputId, valueInputName, value, selectedMetadata))
+	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
 
 	// action selector
@@ -259,149 +268,166 @@ func RenderFilterCriteriaRow(widgetIndex, criteriaIndex int, criteria *files.Fil
 }
 
 func renderFilterFormWidget() (string, error) {
-	metadataSelect := RenderMetadataFieldSelect("metadata[]", "metadata-0", "", "updateValueField(0, this.value)")
-	operatorOptions := RenderOperatorOptions("")
-	actionOptions := RenderActionOptions("")
+	var html strings.Builder
 
-	return fmt.Sprintf(`<div class="widget-filter-form">
-		<form id="metadata-filter-form" hx-post="/api/files/filter" hx-target="#filter-results">
-			<div>
-				<button type="submit">apply filter</button>
-				<select name="logic" id="logic-operator">
-					<option value="and">and</option>
-					<option value="or">or</option>
-				</select>
-				<button type="button" onclick="addFilterRow()">add filter</button>
-			</div>
-			<div id="filter-container">
-				<div class="filter-row" id="filter-row-0">
-					%s
-					<select name="operator[]" id="operator-0">
-						%s
-					</select>
-					<div id="value-container-0">
-						<input type="text" name="value[]" id="value-0" placeholder="value"/>
-					</div>
-					<select name="action[]" id="action-0">
-						%s
-					</select>
-					<button type="button" onclick="removeFilterRow(0)">remove</button>
-				</div>
-			</div>
-			<div id="filter-results"></div>
-		</form>
+	html.WriteString(`<div class="widget-filter-form">`)
+	html.WriteString(`<form id="metadata-filter-form" hx-post="/api/files/filter" hx-target="#filter-results">`)
+	html.WriteString(`<div>`)
+	html.WriteString(`<button type="submit">apply filter</button>`)
+	html.WriteString(`<select name="logic" id="logic-operator">`)
+	html.WriteString(`<option value="and">and</option>`)
+	html.WriteString(`<option value="or">or</option>`)
+	html.WriteString(`</select>`)
+	html.WriteString(`<button type="button" hx-post="/api/dashboards/filterform-row" hx-target="#filter-container" hx-swap="beforeend">add filter</button>`)
+	html.WriteString(`</div>`)
+	html.WriteString(`<div id="filter-container">`)
 
-		<script>
-			let filterRowCount = 1;
+	// add first filter row
+	html.WriteString(RenderFilterFormRow(0))
 
-			function addFilterRow() {
-				const container = document.getElementById('filter-container');
-				const newRow = document.createElement('div');
-				newRow.className = 'filter-row';
-				newRow.id = 'filter-row-' + filterRowCount;
+	html.WriteString(`</div>`)
+	html.WriteString(`<div id="filter-results"></div>`)
+	html.WriteString(`</form>`)
+	html.WriteString(`</div>`)
 
-				const selectHTML = '<select name="metadata[]" id="metadata-' + filterRowCount + '" onchange="updateValueField(' + filterRowCount + ', this.value)">' +
-					'<option value="">select field</option>' +
-					'%s' +
-					'</select>';
+	return html.String(), nil
+}
 
-				const operatorHTML = '<select name="operator[]" id="operator-' + filterRowCount + '">' +
-					'%s' +
-					'</select>';
+// RenderFilterFormRow renders a single filter row for the filterForm widget
+func RenderFilterFormRow(index int) string {
+	var html strings.Builder
 
-				const valueHTML = '<div id="value-container-' + filterRowCount + '">' +
-					'<input type="text" name="value[]" id="value-' + filterRowCount + '" placeholder="value"/>' +
-					'</div>';
+	html.WriteString(fmt.Sprintf(`<div class="filter-row" id="filter-row-%d">`, index))
+	html.WriteString(`<hr />`)
 
-				const actionHTML = '<select name="action[]" id="action-' + filterRowCount + '">' +
-					'%s' +
-					'</select>';
+	// metadata field select
+	valueContainerId := fmt.Sprintf("filterform-value-container-%d", index)
+	html.WriteString(fmt.Sprintf(`<select name="metadata[]" id="metadata-%d" class="form-select" hx-get="/api/dashboards/filterform-value-input" hx-target="#%s" hx-swap="innerHTML" hx-vals='{"row_index": "%d"}' hx-include="this">`,
+		index, valueContainerId, index))
+	html.WriteString(`<option value="">select field</option>`)
+	html.WriteString(RenderMetadataFieldOptions(""))
+	html.WriteString(`</select>`)
 
-				const removeHTML = '<button type="button" onclick="removeFilterRow(' + filterRowCount + ')">remove</button>';
+	// operator select
+	html.WriteString(fmt.Sprintf(`<select name="operator[]" id="operator-%d" class="form-select">`, index))
+	html.WriteString(RenderOperatorOptions(""))
+	html.WriteString(`</select>`)
 
-				newRow.innerHTML = selectHTML + operatorHTML + valueHTML + actionHTML + removeHTML;
-				container.appendChild(newRow);
-				filterRowCount++;
-			}
+	// value input container
+	html.WriteString(fmt.Sprintf(`<div id="%s">`, valueContainerId))
+	html.WriteString(fmt.Sprintf(`<input type="text" name="value[]" id="value-%d" placeholder="value" class="form-input"/>`, index))
+	html.WriteString(`</div>`)
 
-			function removeFilterRow(index) {
-				const row = document.getElementById('filter-row-' + index);
-				if (row) row.remove();
-			}
+	// action select
+	html.WriteString(fmt.Sprintf(`<select name="action[]" id="action-%d" class="form-select">`, index))
+	html.WriteString(RenderActionOptions(""))
+	html.WriteString(`</select>`)
 
-		function updateValueField(rowIndex, fieldType) {
-			const container = document.getElementById('value-container-' + rowIndex);
+	// remove button (only for rows after the first)
+	if index > 0 {
+		html.WriteString(fmt.Sprintf(`<button type="button" onclick="document.getElementById('filter-row-%d').remove()">remove</button>`, index))
+	}
 
-			if (fieldType === 'collection') {
-				container.innerHTML = '<input type="text" name="value[]" autocomplete="off" id="value-' + rowIndex + '" list="collections-' + rowIndex + '" placeholder="type or select collection (supports wildcards: project*)">' +
-					'<datalist id="collections-' + rowIndex + '" hx-get="/api/metadata/options/collections" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
-					'<option value="">loading collections...</option>' +
-					'</datalist>';
-			} else if (fieldType === 'tags') {
-				container.innerHTML = '<input type="text" name="value[]" id="value-' + rowIndex + '" autocomplete="off" list="tags-' + rowIndex + '" placeholder="type or select tag (supports wildcards: para/p/*, zk/*)">' +
-					'<datalist id="tags-' + rowIndex + '" hx-get="/api/metadata/options/tags" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
-					'<option value="">loading tags...</option>' +
-					'</datalist>';
-			} else if (fieldType === 'folders') {
-				container.innerHTML = '<input type="text" name="value[]" id="value-' + rowIndex + '" autocomplete="off" list="folders-' + rowIndex + '" placeholder="type or select folder (supports wildcards: guides/*, *temp*)">' +
-					'<datalist id="folders-' + rowIndex + '" hx-get="/api/metadata/options/folders" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
-					'<option value="">loading folders...</option>' +
-					'</datalist>';
-			} else if (fieldType === 'type') {
-				container.innerHTML = '<select name="value[]" id="value-' + rowIndex + '" hx-get="/api/metadata/options/filetypes" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
-					'<option value="">loading types...</option>' +
-					'</select>';
-			} else if (fieldType === 'status') {
-				container.innerHTML = '<select name="value[]" id="value-' + rowIndex + '" hx-get="/api/metadata/options/status" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
-					'<option value="">loading status...</option>' +
-					'</select>';
-			} else if (fieldType === 'priority') {
-				container.innerHTML = '<select name="value[]" id="value-' + rowIndex + '" hx-get="/api/metadata/options/priorities" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
-					'<option value="">loading priorities...</option>' +
-					'</select>';
-			} else if (fieldType === 'para_projects') {
-				container.innerHTML = '<input type="text" name="value[]" id="value-' + rowIndex + '" autocomplete="off" list="para-projects-' + rowIndex + '" placeholder="type or select project">' +
-					'<datalist id="para-projects-' + rowIndex + '" hx-get="/api/metadata/para/projects?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
-					'<option value="">loading projects...</option>' +
-					'</datalist>';
-			} else if (fieldType === 'para_areas') {
-				container.innerHTML = '<input type="text" name="value[]" id="value-' + rowIndex + '" autocomplete="off" list="para-areas-' + rowIndex + '" placeholder="type or select area">' +
-					'<datalist id="para-areas-' + rowIndex + '" hx-get="/api/metadata/para/areas?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
-					'<option value="">loading areas...</option>' +
-					'</datalist>';
-			} else if (fieldType === 'para_resources') {
-				container.innerHTML = '<input type="text" name="value[]" id="value-' + rowIndex + '" autocomplete="off" list="para-resources-' + rowIndex + '" placeholder="type or select resource">' +
-					'<datalist id="para-resources-' + rowIndex + '" hx-get="/api/metadata/para/resources?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
-					'<option value="">loading resources...</option>' +
-					'</datalist>';
-			} else if (fieldType === 'para_archive') {
-				container.innerHTML = '<input type="text" name="value[]" id="value-' + rowIndex + '" autocomplete="off" list="para-archive-' + rowIndex + '" placeholder="type or select archive">' +
-					'<datalist id="para-archive-' + rowIndex + '" hx-get="/api/metadata/para/archive?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML">' +
-					'<option value="">loading archive...</option>' +
-					'</datalist>';
-			} else if (fieldType === 'createdAt' || fieldType === 'lastEdited') {
-				container.innerHTML = '<input type="date" name="value[]" id="value-' + rowIndex + '" placeholder="yyyy-mm-dd"/>';
-			} else {
-				container.innerHTML = '<input type="text" name="value[]" id="value-' + rowIndex + '" placeholder="value"/>';
-			}
+	html.WriteString(`</div>`)
 
-			// trigger htmx processing for new elements
-			if (window.htmx) {
-				htmx.process(container);
-			}
-		}
+	return html.String()
+}
 
-			// initialize first row
-			document.addEventListener('DOMContentLoaded', function() {
-				updateValueField(0, document.getElementById('metadata-0').value);
-			});
-		</script>
-	</div>`,
-		metadataSelect,
-		operatorOptions,
-		actionOptions,
-		RenderMetadataFieldOptions(""),
-		RenderOperatorOptions(""),
-		RenderActionOptions(""),
-	), nil
+// RenderFilterFormValueInput generates an input with datalist for filterForm widget
+func RenderFilterFormValueInput(index int, metadataField string) string {
+	inputId := fmt.Sprintf("value-%d", index)
+	inputName := "value[]"
+
+	var apiEndpoint string
+	var placeholder string
+
+	switch metadataField {
+	case "collection":
+		apiEndpoint = "/api/metadata/collections?format=options"
+		placeholder = "type or select collection (supports wildcards: project*)"
+	case "tags":
+		apiEndpoint = "/api/metadata/tags?format=options"
+		placeholder = "type or select tag (supports wildcards: para/p/*, zk/*)"
+	case "folders":
+		apiEndpoint = "/api/metadata/folders?format=options"
+		placeholder = "type or select folder (supports wildcards: guides/*, *temp*)"
+	case "type":
+		apiEndpoint = "/api/metadata/filetypes?format=options"
+		placeholder = "select file type"
+	case "status":
+		apiEndpoint = "/api/metadata/statuses?format=options"
+		placeholder = "select status"
+	case "priority":
+		apiEndpoint = "/api/metadata/priorities?format=options"
+		placeholder = "select priority"
+	case "para_projects":
+		apiEndpoint = "/api/metadata/para/projects?format=options"
+		placeholder = "type or select project"
+	case "para_areas":
+		apiEndpoint = "/api/metadata/para/areas?format=options"
+		placeholder = "type or select area"
+	case "para_resources":
+		apiEndpoint = "/api/metadata/para/resources?format=options"
+		placeholder = "type or select resource"
+	case "para_archive":
+		apiEndpoint = "/api/metadata/para/archive?format=options"
+		placeholder = "type or select archive"
+	case "createdAt", "lastEdited":
+		return fmt.Sprintf(`<input type="date" name="%s" id="%s" placeholder="yyyy-mm-dd" class="form-input"/>`,
+			inputName, inputId)
+	default:
+		placeholder = "value"
+		return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="" class="form-input" placeholder="%s"/>`,
+			inputId, inputName, placeholder)
+	}
+
+	// use GenerateDatalistInput without save functionality
+	return GenerateDatalistInput(inputId, inputName, "", placeholder, apiEndpoint)
+}
+
+// RenderFilterValueInput generates an input with datalist based on metadata field type
+func RenderFilterValueInput(id, name, value, metadataField string) string {
+	var apiEndpoint string
+	var placeholder string
+
+	switch metadataField {
+	case "collection":
+		apiEndpoint = "/api/metadata/collections?format=options"
+		placeholder = "type or select collection"
+	case "tags":
+		apiEndpoint = "/api/metadata/tags?format=options"
+		placeholder = "type or select tag"
+	case "folders":
+		apiEndpoint = "/api/metadata/folders?format=options"
+		placeholder = "type or select folder"
+	case "type":
+		apiEndpoint = "/api/metadata/filetypes?format=options"
+		placeholder = "select file type"
+	case "status":
+		apiEndpoint = "/api/metadata/statuses?format=options"
+		placeholder = "select status"
+	case "priority":
+		apiEndpoint = "/api/metadata/priorities?format=options"
+		placeholder = "select priority"
+	case "para_projects":
+		apiEndpoint = "/api/metadata/para/projects?format=options"
+		placeholder = "type or select project"
+	case "para_areas":
+		apiEndpoint = "/api/metadata/para/areas?format=options"
+		placeholder = "type or select area"
+	case "para_resources":
+		apiEndpoint = "/api/metadata/para/resources?format=options"
+		placeholder = "type or select resource"
+	case "para_archive":
+		apiEndpoint = "/api/metadata/para/archive?format=options"
+		placeholder = "type or select archive item"
+	default:
+		placeholder = "enter value"
+		// no datalist for other fields
+		return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" placeholder="%s"/>`,
+			id, name, value, placeholder)
+	}
+
+	// use GenerateDatalistInput without save functionality
+	return GenerateDatalistInput(id, name, value, placeholder, apiEndpoint)
 }
