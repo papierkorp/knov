@@ -127,6 +127,7 @@ definitions:
     - literature
     - moc
     - permanent
+    - filter
     type: string
     x-enum-varnames:
     - FileTypeTodo
@@ -134,6 +135,7 @@ definitions:
     - FileTypeLiterature
     - FileTypeMOC
     - FileTypePermanent
+    - FileTypeFilter
   files.FilterCriteria:
     properties:
       action:
@@ -981,10 +983,31 @@ paths:
         name: content
         required: true
         type: string
+      - description: File type (todo, fleeting, literature, moc, permanent, filter)
+        in: formData
+        name: filetype
+        type: string
       produces:
       - text/html
       responses: {}
       summary: Create new file
+      tags:
+      - files
+  /api/files/create-filter:
+    get:
+      description: Creates a new filter file with default name and redirects to it
+      produces:
+      - text/html
+      responses:
+        "302":
+          description: redirect to new filter file
+          schema:
+            type: string
+        "500":
+          description: failed to create filter file
+          schema:
+            type: string
+      summary: Create new filter file directly
       tags:
       - files
   /api/files/filter:
@@ -1088,6 +1111,10 @@ paths:
         in: query
         name: filepath
         type: string
+      - description: File type for new files
+        in: query
+        name: type
+        type: string
       produces:
       - text/html
       responses: {}
@@ -1100,6 +1127,10 @@ paths:
       - description: File path (optional for new files)
         in: query
         name: filepath
+        type: string
+      - description: File type to pre-select
+        in: query
+        name: type
         type: string
       produces:
       - text/html
@@ -1442,9 +1473,15 @@ paths:
         in: formData
         name: format
         type: string
+      - default: download
+        description: Display mode (download or preview)
+        in: formData
+        name: display
+        type: string
       produces:
       - application/json
       - text/csv
+      - text/html
       responses:
         "200":
           description: exported metadata file

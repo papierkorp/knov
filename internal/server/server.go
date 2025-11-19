@@ -140,6 +140,7 @@ func StartServerChi() {
 			r.Get("/form", handleAPIFileForm)
 			r.Get("/metadata-form", handleAPIMetadataForm)
 			r.Post("/create", handleAPIFileCreate)
+			r.Get("/create-filter", handleAPICreateFilter)
 			r.Get("/markdown-form", handleAPIMarkdownEditorForm)
 		})
 
@@ -573,7 +574,10 @@ func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 func handleFileNew(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	viewName := getViewName("filenew")
-	data := thememanager.NewBaseTemplateData("Create New File", viewName)
+
+	// Get the file type from query parameter
+	fileType := r.URL.Query().Get("type")
+	data := thememanager.NewFileNewTemplateData("Create New File", viewName, fileType)
 
 	err := tm.Render(w, "filenew", data)
 	if err != nil {

@@ -122,8 +122,9 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 // @Description Export all metadata as JSON or CSV file
 // @Tags metadata
 // @Accept application/x-www-form-urlencoded
-// @Produce application/json,text/csv
+// @Produce application/json,text/csv,text/html
 // @Param format formData string false "Export format (json or csv)" default(json)
+// @Param display formData string false "Display mode (download or preview)" default(download)
 // @Success 200 {file} file "exported metadata file"
 // @Failure 500 {string} string "failed to export metadata"
 // @Router /api/metadata/export [post]
@@ -134,12 +135,49 @@ func handleAPIExportMetadata(w http.ResponseWriter, r *http.Request) {
 		format = "json"
 	}
 
+	display := r.FormValue("display")
+	if display == "" {
+		display = "download"
+	}
+
 	allMetadata, err := files.MetaDataExportAll()
 	if err != nil {
 		http.Error(w, "failed to export metadata", http.StatusInternalServerError)
 		return
 	}
 
+	if display == "preview" {
+		// Show as code block with download button
+		var content string
+		var filename string
+
+		switch format {
+		case "csv":
+			content = render.RenderMetadataCSV(allMetadata)
+			filename = "metadata_export.csv"
+		default:
+			jsonData, _ := json.MarshalIndent(allMetadata, "", "  ")
+			content = string(jsonData)
+			filename = "metadata_export.json"
+		}
+
+		html := fmt.Sprintf(`
+			<div class="export-preview">
+				<div class="export-actions">
+					<a href="/api/metadata/export?format=%s&display=download" download="%s" class="download-btn">
+						{{T "Download %s"}}
+					</a>
+				</div>
+				<pre><code>%s</code></pre>
+			</div>
+		`, format, filename, filename, content)
+
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html))
+		return
+	}
+
+	// Default: direct file download
 	switch format {
 	case "csv":
 		w.Header().Set("Content-Type", "text/csv")
@@ -848,6 +886,7 @@ func handleAPIGetAllFiletypes(w http.ResponseWriter, r *http.Request) {
 		files.FileTypeLiterature,
 		files.FileTypeMOC,
 		files.FileTypePermanent,
+		files.FileTypeFilter,
 	}
 
 	var html strings.Builder
@@ -855,6 +894,41 @@ func handleAPIGetAllFiletypes(w http.ResponseWriter, r *http.Request) {
 		for _, ft := range filetypes {
 			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, ft, ft))
 		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	if format == "dropdown" {
+		// dashboard and general note links
+		html.WriteString(`<a href="/dashboard/new">New Dashboard</a>`)
+		html.WriteString(`<a href="/files/new">Add Note</a>`)
+		html.WriteString(`<div class="dropdown-divider"></div>`)
+
+		// dynamic file type links
+		fileTypeNames := map[string]string{
+			"todo":       "Add Todo",
+			"fleeting":   "Add Fleeting Note",
+			"literature": "Add Literature Note",
+			"moc":        "Add MOC",
+			"permanent":  "Add Permanent Note",
+			"filter":     "Add Filter",
+		}
+
+		for _, ft := range filetypes {
+			displayName := fileTypeNames[string(ft)]
+			if displayName == "" {
+				displayName = "Add " + strings.Title(string(ft))
+			}
+
+			// filter type gets special direct creation endpoint
+			if ft == files.FileTypeFilter {
+				html.WriteString(fmt.Sprintf(`<a href="/api/files/create-filter">%s</a>`, displayName))
+			} else {
+				html.WriteString(fmt.Sprintf(`<a href="/files/new?type=%s">%s</a>`, ft, displayName))
+			}
+		}
+
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html.String()))
 		return

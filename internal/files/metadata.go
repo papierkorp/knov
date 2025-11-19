@@ -23,6 +23,7 @@ const (
 	FileTypeLiterature Filetype = "literature"
 	FileTypeMOC        Filetype = "moc"
 	FileTypePermanent  Filetype = "permanent"
+	FileTypeFilter     Filetype = "filter"
 
 	StatusDraft     Status = "draft"
 	StatusPublished Status = "published"

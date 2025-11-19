@@ -76,6 +76,31 @@ func GetAllFiles() ([]File, error) {
 
 // GetFileContent converts file content to html based on detected type
 func GetFileContent(filePath string) (*FileContent, error) {
+	// Check if this is a filter file by extension or metadata
+	if strings.HasSuffix(strings.ToLower(filePath), ".filter") {
+		filterHTML, err := renderFilterFormContent()
+		if err != nil {
+			return nil, fmt.Errorf("failed to render filter form: %v", err)
+		}
+		return &FileContent{
+			HTML: filterHTML,
+			TOC:  []TOCItem{},
+		}, nil
+	}
+
+	// Check if this is a filter file type and render filter form instead
+	metadata, err := MetaDataGet(filePath)
+	if err == nil && metadata != nil && metadata.FileType == FileTypeFilter {
+		filterHTML, err := renderFilterFormContent()
+		if err != nil {
+			return nil, fmt.Errorf("failed to render filter form: %v", err)
+		}
+		return &FileContent{
+			HTML: filterHTML,
+			TOC:  []TOCItem{},
+		}, nil
+	}
+
 	handler := fileTypeRegistry.GetHandler(filePath)
 	if handler == nil {
 		return nil, fmt.Errorf("no handler found for file: %s", filePath)
@@ -396,4 +421,39 @@ func SaveRawContent(filePath string, content string) error {
 
 	logging.LogInfo("saved file: %s", filePath)
 	return nil
+}
+
+// renderFilterFormContent generates the filter form HTML for filter file type
+func renderFilterFormContent() (string, error) {
+	// Simple filter form that uses the existing filter API
+	html := `
+	<div class="filter-file-content">
+		<h2>File Filter</h2>
+		<form id="filter-form" hx-post="/api/files/filter" hx-target="#filter-results">
+			<div class="filter-controls">
+				<button type="submit" class="btn-primary">apply filter</button>
+				<select name="logic" id="logic-operator" class="form-select">
+					<option value="and">and</option>
+					<option value="or">or</option>
+				</select>
+				<button type="button" hx-post="/api/dashboards/filterform-row" hx-target="#filter-criteria" hx-swap="beforeend" class="btn-secondary">add criterion</button>
+			</div>
+			<div id="filter-criteria" class="filter-criteria-container">
+				<!-- initial filter row will be added here -->
+			</div>
+			<div id="filter-results" class="filter-results"></div>
+		</form>
+	</div>
+	<script>
+		// Add initial filter row when the content loads
+		document.addEventListener('DOMContentLoaded', function() {
+			htmx.ajax('POST', '/api/dashboards/filterform-row', {
+				target: '#filter-criteria',
+				swap: 'beforeend'
+			});
+		});
+	</script>
+	`
+
+	return html, nil
 }
