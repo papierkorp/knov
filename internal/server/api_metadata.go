@@ -848,6 +848,7 @@ func handleAPIGetAllFiletypes(w http.ResponseWriter, r *http.Request) {
 		files.FileTypeLiterature,
 		files.FileTypeMOC,
 		files.FileTypePermanent,
+		files.FileTypeFilter,
 	}
 
 	var html strings.Builder

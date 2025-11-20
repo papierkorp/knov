@@ -127,13 +127,24 @@ definitions:
     - literature
     - moc
     - permanent
+    - filter
     type: string
+    x-enum-comments:
+      FileTypeMOC: maps of content - indexes to link related notes
+    x-enum-descriptions:
+    - ""
+    - ""
+    - ""
+    - maps of content - indexes to link related notes
+    - ""
+    - ""
     x-enum-varnames:
     - FileTypeTodo
     - FileTypeFleeting
     - FileTypeLiterature
     - FileTypeMOC
     - FileTypePermanent
+    - FileTypeFilter
   files.FilterCriteria:
     properties:
       action:

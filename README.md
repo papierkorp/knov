@@ -2,8 +2,6 @@
 
 # todo
 
-- move templ to go html templates
-- deliver everything in builtin template with htmx (no forms... and so on in the html)
 - Dashboard
   - make the positions work with a custom layout work
   - UI advanced
@@ -24,7 +22,8 @@
 - add todo filetype
 
 # done
-
+- move templ to go html templates
+- deliver everything in builtin template with htmx (no forms... and so on in the html)
 - add a editor (textbox) and the neccessary form e.g. parents, collection
 - create folder structure for different file types
   - project (has board/boards) => own repository for each project

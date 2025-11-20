@@ -6,6 +6,7 @@ import (
 )
 
 var globalStorageManager *StorageManager
+var globalConfigStorageManager *StorageManager
 
 // Storage interface defines methods for storing and retrieving data
 type Storage interface {
@@ -28,16 +29,16 @@ func Init(storageMethod, configPath string) error {
 
 	switch storageMethod {
 	case "json":
-		backend, err = NewJSONStorage(configPath)
+		backend, err = NewJSONStorage()
 	case "sqlite":
 		logging.LogError("sqlite storage not implemented yet, using json")
-		backend, err = NewJSONStorage(configPath)
+		backend, err = NewJSONStorage()
 	case "postgres":
 		logging.LogError("postgres storage not implemented yet, using json")
-		backend, err = NewJSONStorage(configPath)
+		backend, err = NewJSONStorage()
 	default:
 		logging.LogWarning("unknown storage type '%s', using json", storageMethod)
-		backend, err = NewJSONStorage(configPath)
+		backend, err = NewJSONStorage()
 	}
 
 	if err != nil {
@@ -47,6 +48,23 @@ func Init(storageMethod, configPath string) error {
 
 	globalStorageManager = &StorageManager{backend: backend}
 	logging.LogInfo("storage initialized: %s", storageMethod)
+
+	// Initialize config storage
+	var configBackend Storage
+	switch storageMethod {
+	case "json":
+		configBackend, err = NewConfigJSONStorage(configPath)
+	default:
+		configBackend, err = NewConfigJSONStorage(configPath)
+	}
+
+	if err != nil {
+		logging.LogError("failed to initialize config storage: %v", err)
+		return err
+	}
+
+	globalConfigStorageManager = &StorageManager{backend: configBackend}
+	logging.LogInfo("config storage initialized: %s", storageMethod)
 
 	return nil
 }
@@ -79,4 +97,9 @@ func (sm *StorageManager) Exists(key string) bool {
 // GetStorage returns the global storage manager
 func GetStorage() *StorageManager {
 	return globalStorageManager
+}
+
+// GetConfigStorage returns the global config storage manager
+func GetConfigStorage() *StorageManager {
+	return globalConfigStorageManager
 }

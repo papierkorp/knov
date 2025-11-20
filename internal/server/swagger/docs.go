@@ -3251,14 +3251,27 @@ const docTemplate = `{
                 "fleeting",
                 "literature",
                 "moc",
-                "permanent"
+                "permanent",
+                "filter"
+            ],
+            "x-enum-comments": {
+                "FileTypeMOC": "maps of content - indexes to link related notes"
+            },
+            "x-enum-descriptions": [
+                "",
+                "",
+                "",
+                "maps of content - indexes to link related notes",
+                "",
+                ""
             ],
             "x-enum-varnames": [
                 "FileTypeTodo",
                 "FileTypeFleeting",
                 "FileTypeLiterature",
                 "FileTypeMOC",
-                "FileTypePermanent"
+                "FileTypePermanent",
+                "FileTypeFilter"
             ]
         },
         "files.FilterCriteria": {

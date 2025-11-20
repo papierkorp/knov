@@ -18,7 +18,7 @@ type JSONStorage struct {
 }
 
 // NewJSONStorage creates a new JSON storage instance
-func NewJSONStorage(configPath string) (*JSONStorage, error) {
+func NewJSONStorage() (*JSONStorage, error) {
 	basePath := ".metadata"
 	if err := os.MkdirAll(basePath, 0755); err != nil {
 		return nil, err
@@ -26,6 +26,17 @@ func NewJSONStorage(configPath string) (*JSONStorage, error) {
 
 	return &JSONStorage{
 		basePath: basePath,
+	}, nil
+}
+
+// NewConfigJSONStorage creates a new config JSON storage instance
+func NewConfigJSONStorage(configPath string) (*JSONStorage, error) {
+	if err := os.MkdirAll(configPath, 0755); err != nil {
+		return nil, err
+	}
+
+	return &JSONStorage{
+		basePath: configPath,
 	}, nil
 }
 

@@ -21,8 +21,9 @@ const (
 	FileTypeTodo       Filetype = "todo"
 	FileTypeFleeting   Filetype = "fleeting"
 	FileTypeLiterature Filetype = "literature"
-	FileTypeMOC        Filetype = "moc"
+	FileTypeMOC        Filetype = "moc" // maps of content - indexes to link related notes
 	FileTypePermanent  Filetype = "permanent"
+	FileTypeFilter     Filetype = "filter"
 
 	StatusDraft     Status = "draft"
 	StatusPublished Status = "published"

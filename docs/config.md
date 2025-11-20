@@ -21,7 +21,7 @@ KNOV supports configuration through environment variables and configuration file
 
 Metadata files are created in `<knov executable>./metadata/`
 
-User settings are stored as direct JSON files in `{KNOV_CONFIG_PATH}/user/`
+User settings and dashboards are stored as JSON files in `{KNOV_CONFIG_PATH}/`
 
 ### Git Configuration
 
@@ -94,3 +94,57 @@ Themes are automatically discovered from `{KNOV_THEMES_PATH}/*.so` files.
 The builtin theme is always available and embedded in the binary.
 
 Upload new themes via the admin interface at `/admin`.
+
+### Theme Overrides
+
+You can override individual templates from any active theme by placing custom template files in the `themes/overwrite/` directory. This allows you to modify specific pages without creating a complete custom theme.
+
+**Directory Structure:**
+```
+themes/
+├── overwrite/
+│   ├── base.gohtml          # Override base template
+│   ├── settings.gohtml      # Override settings template
+│   ├── fileview.gohtml      # Override file view template
+│   └── ...                  # Other template overrides
+└── your-theme/
+    └── ...
+```
+
+**How it works:**
+1. Place your custom template files in `themes/overwrite/` using the same filename as the original template
+2. Template files should have the `.gohtml` extension
+3. When rendering a page, the system first checks for an overwrite template
+4. If found and valid, the overwrite template is used instead of the theme's template
+5. If the overwrite template has errors, the system falls back to the original theme template
+
+**Example Override:**
+Create `themes/overwrite/base.gohtml` to customize the base template:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{.Title}} - Custom Override</title>
+    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <header>My Custom Header</header>
+    <main>
+      <!-- Your custom content here -->
+    </main>
+  </body>
+</html>
+```
+
+**Available Templates to Override:**
+- `base.gohtml` - Base layout template
+- `settings.gohtml` - Settings page
+- `fileview.gohtml` - File viewing page
+- `fileedit.gohtml` - File editing page
+- `browsefiles.gohtml` - File browser
+- `search.gohtml` - Search results
+- `dashboard*.gohtml` - Dashboard templates
+- And others as defined by your theme
+
+Template overrides must follow the same structure and data expectations as the original templates.

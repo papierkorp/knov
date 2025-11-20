@@ -37,13 +37,13 @@ func GetAll() ([]Dashboard, error) {
 	var dashboards []Dashboard
 
 	// Get global dashboards
-	globalKeys, err := storage.GetStorage().List("dashboard/")
+	globalKeys, err := storage.GetConfigStorage().List("dashboard/")
 	if err != nil {
 		return nil, err
 	}
 
 	for _, key := range globalKeys {
-		data, err := storage.GetStorage().Get(key)
+		data, err := storage.GetConfigStorage().Get(key)
 		if err != nil {
 			logging.LogWarning("failed to get dashboard %s: %v", key, err)
 			continue
@@ -60,10 +60,10 @@ func GetAll() ([]Dashboard, error) {
 
 	// Get user dashboards if not global
 	userPrefix := fmt.Sprintf("user/%s/dashboard/", currentUserID)
-	userKeys, err := storage.GetStorage().List(userPrefix)
+	userKeys, err := storage.GetConfigStorage().List(userPrefix)
 	if err == nil {
 		for _, key := range userKeys {
-			data, err := storage.GetStorage().Get(key)
+			data, err := storage.GetConfigStorage().Get(key)
 			if err != nil {
 				logging.LogWarning("failed to get user dashboard %s: %v", key, err)
 				continue
@@ -87,12 +87,12 @@ func GetAll() ([]Dashboard, error) {
 func Get(id string) (*Dashboard, error) {
 	// Try global first
 	key := fmt.Sprintf("dashboard/%s", id)
-	data, err := storage.GetStorage().Get(key)
+	data, err := storage.GetConfigStorage().Get(key)
 
 	// If not found globally, try user-specific
 	if data == nil && err == nil {
 		key = fmt.Sprintf("user/%s/dashboard/%s", currentUserID, id)
-		data, err = storage.GetStorage().Get(key)
+		data, err = storage.GetConfigStorage().Get(key)
 	}
 
 	if err != nil {
@@ -151,7 +151,7 @@ func Create(dashboard *Dashboard) error {
 		key = fmt.Sprintf("user/%s/dashboard/%s", currentUserID, dashboard.ID)
 	}
 
-	if err := storage.GetStorage().Set(key, data); err != nil {
+	if err := storage.GetConfigStorage().Set(key, data); err != nil {
 		return err
 	}
 
@@ -178,7 +178,7 @@ func Update(dashboard *Dashboard) error {
 		key = fmt.Sprintf("user/%s/dashboard/%s", currentUserID, dashboard.ID)
 	}
 
-	if err := storage.GetStorage().Set(key, data); err != nil {
+	if err := storage.GetConfigStorage().Set(key, data); err != nil {
 		return err
 	}
 
@@ -210,7 +210,7 @@ func Delete(id string) error {
 		key = fmt.Sprintf("user/%s/dashboard/%s", currentUserID, id)
 	}
 
-	if err := storage.GetStorage().Delete(key); err != nil {
+	if err := storage.GetConfigStorage().Delete(key); err != nil {
 		return err
 	}
 

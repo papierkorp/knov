@@ -219,7 +219,7 @@ func createTestMetadata() error {
 
 	statuses := []files.Status{files.StatusDraft, files.StatusPublished, files.StatusPublished, files.StatusDraft}
 	priorities := []files.Priority{files.PriorityLow, files.PriorityMedium, files.PriorityHigh}
-	fileTypes := []files.Filetype{files.FileTypeFleeting, files.FileTypeLiterature, files.FileTypePermanent, files.FileTypeMOC}
+	fileTypes := []files.Filetype{files.FileTypeFleeting, files.FileTypeLiterature, files.FileTypePermanent, files.FileTypeMOC, files.FileTypeFilter}
 
 	for i, file := range testFiles {
 		filename := filepath.Base(file)
