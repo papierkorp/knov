@@ -1066,41 +1066,9 @@ const docTemplate = `{
                         "name": "content",
                         "in": "formData",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "File type (todo, fleeting, literature, moc, permanent, filter)",
-                        "name": "filetype",
-                        "in": "formData"
                     }
                 ],
                 "responses": {}
-            }
-        },
-        "/api/files/create-filter": {
-            "get": {
-                "description": "Creates a new filter file with default name and redirects to it",
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "Create new filter file directly",
-                "responses": {
-                    "302": {
-                        "description": "redirect to new filter file",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "failed to create filter file",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
             }
         },
         "/api/files/filter": {
@@ -1257,12 +1225,6 @@ const docTemplate = `{
                         "description": "File path (optional for new files)",
                         "name": "filepath",
                         "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "File type for new files",
-                        "name": "type",
-                        "in": "query"
                     }
                 ],
                 "responses": {}
@@ -1282,12 +1244,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "File path (optional for new files)",
                         "name": "filepath",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "File type to pre-select",
-                        "name": "type",
                         "in": "query"
                     }
                 ],
@@ -1782,8 +1738,7 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json",
-                    "text/csv",
-                    "text/html"
+                    "text/csv"
                 ],
                 "tags": [
                     "metadata"
@@ -1795,13 +1750,6 @@ const docTemplate = `{
                         "default": "json",
                         "description": "Export format (json or csv)",
                         "name": "format",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "default": "download",
-                        "description": "Display mode (download or preview)",
-                        "name": "display",
                         "in": "formData"
                     }
                 ],
@@ -3303,16 +3251,14 @@ const docTemplate = `{
                 "fleeting",
                 "literature",
                 "moc",
-                "permanent",
-                "filter"
+                "permanent"
             ],
             "x-enum-varnames": [
                 "FileTypeTodo",
                 "FileTypeFleeting",
                 "FileTypeLiterature",
                 "FileTypeMOC",
-                "FileTypePermanent",
-                "FileTypeFilter"
+                "FileTypePermanent"
             ]
         },
         "files.FilterCriteria": {

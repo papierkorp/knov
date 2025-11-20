@@ -225,21 +225,3 @@ func NewSearchPageData(searchQuery, viewName string) SearchPageData {
 		SearchQuery:      searchQuery,
 	}
 }
-
-// -----------------------------------------------
-// ------------ FileNew TemplateData ------------
-// -----------------------------------------------
-
-// FileNewTemplateData extends base with file creation specific data
-type FileNewTemplateData struct {
-	BaseTemplateData
-	FileType string
-}
-
-// NewFileNewTemplateData creates file new specific data
-func NewFileNewTemplateData(title, viewName, fileType string) FileNewTemplateData {
-	return FileNewTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title, viewName),
-		FileType:         fileType,
-	}
-}

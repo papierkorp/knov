@@ -3,7 +3,7 @@
     <h1>{{ T "Create a New File" }}</h1>
 	<div class="file-create-form">
 		<div
-			hx-get="/api/files/metadata-form{{ if .FileType }}?type={{ .FileType }}{{ end }}"
+			hx-get="/api/files/metadata-form"
 			hx-trigger="load"
 			hx-target="this"
 			hx-swap="outerHTML"
@@ -11,7 +11,7 @@
 			loading metadata...
 		</div>
 		<div
-			hx-get="/api/files/markdown-form{{ if .FileType }}?type={{ .FileType }}{{ end }}"
+			hx-get="/api/files/markdown-form"
 			hx-trigger="load"
 			hx-target="this"
 			hx-swap="outerHTML"

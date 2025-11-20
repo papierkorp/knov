@@ -2,12 +2,10 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
@@ -181,23 +179,10 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Prevent saving filter files
-	if strings.HasSuffix(strings.ToLower(filepath), ".filter") {
-		http.Error(w, "filter files cannot be edited", http.StatusBadRequest)
-		return
-	}
-
-	// Also check by metadata
-	metadata, err := files.MetaDataGet(filepath)
-	if err == nil && metadata != nil && metadata.FileType == files.FileTypeFilter {
-		http.Error(w, "filter files cannot be edited", http.StatusBadRequest)
-		return
-	}
-
 	content := r.FormValue("content")
 	fullPath := utils.ToFullPath(filepath)
 
-	err = os.WriteFile(fullPath, []byte(content), 0644)
+	err := os.WriteFile(fullPath, []byte(content), 0644)
 	if err != nil {
 		logging.LogError("failed to save file %s: %v", fullPath, err)
 		http.Error(w, "failed to save file", http.StatusInternalServerError)
@@ -296,35 +281,16 @@ func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
 // @Summary Get metadata form HTML
 // @Tags files
 // @Param filepath query string false "File path (optional for new files)"
-// @Param type query string false "File type to pre-select"
 // @Produce html
 // @Router /api/files/metadata-form [get]
 func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
-	fileType := r.URL.Query().Get("type")
 
 	html, err := render.RenderMetadataForm(filePath)
 	if err != nil {
 		logging.LogError("failed to generate metadata form: %v", err)
 		http.Error(w, "failed to generate metadata form", http.StatusInternalServerError)
 		return
-	}
-
-	// if file type is specified, inject JavaScript to pre-select it
-	if fileType != "" {
-		html += fmt.Sprintf(`
-		<script>
-			document.addEventListener('DOMContentLoaded', function() {
-				setTimeout(function() {
-					const fileTypeSelect = document.querySelector('select[name="filetype"], select[hx-trigger*="filetype"]');
-					if (fileTypeSelect) {
-						fileTypeSelect.value = '%s';
-						fileTypeSelect.dispatchEvent(new Event('change'));
-					}
-				}, 100);
-			});
-		</script>
-		`, fileType)
 	}
 
 	w.Header().Set("Content-Type", "text/html")
@@ -337,7 +303,6 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 // @Produce html
 // @Param filepath formData string true "File path"
 // @Param content formData string true "File content"
-// @Param filetype formData string false "File type (todo, fleeting, literature, moc, permanent, filter)"
 // @Router /api/files/create [post]
 func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
@@ -347,7 +312,6 @@ func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
 
 	filePath := r.FormValue("filepath")
 	content := r.FormValue("content")
-	fileType := r.FormValue("filetype")
 
 	if filePath == "" {
 		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
@@ -370,103 +334,21 @@ func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// create metadata with file type if specified
-	if fileType != "" {
-		metadata := &files.Metadata{
-			Path:     filePath,
-			FileType: files.Filetype(fileType),
-		}
-		if err := files.MetaDataSave(metadata); err != nil {
-			logging.LogWarning("failed to save file type metadata: %v", err)
-		} else {
-			logging.LogDebug("saved file type metadata: %s -> %s", filePath, fileType)
-		}
-	}
-
 	logging.LogInfo("created file: %s", filePath)
 	w.Header().Set("HX-Redirect", "/files/"+filePath)
 	w.WriteHeader(http.StatusOK)
-}
-
-// @Summary Create new filter file directly
-// @Description Creates a new filter file with default name and redirects to it
-// @Tags files
-// @Produce html
-// @Success 302 {string} string "redirect to new filter file"
-// @Failure 500 {string} string "failed to create filter file"
-// @Router /api/files/create-filter [get]
-func handleAPICreateFilter(w http.ResponseWriter, r *http.Request) {
-	// generate unique filter filename
-	timestamp := time.Now().Format("20060102-150405")
-	fileName := fmt.Sprintf("filter-%s.filter", timestamp)
-	filePath := fileName
-	fullPath := utils.ToFullPath(filePath)
-
-	// create minimal filter file content
-	content := fmt.Sprintf("# Filter - %s\n\nThis is a filter file. The content below will be replaced with an interactive filter form.\n", timestamp)
-
-	// create the file
-	err := os.WriteFile(fullPath, []byte(content), 0644)
-	if err != nil {
-		logging.LogError("failed to create filter file %s: %v", fullPath, err)
-		http.Error(w, "failed to create filter file", http.StatusInternalServerError)
-		return
-	}
-
-	// create metadata with filter file type
-	metadata := &files.Metadata{
-		Path:     filePath,
-		FileType: files.FileTypeFilter,
-	}
-	if err := files.MetaDataSave(metadata); err != nil {
-		logging.LogWarning("failed to save filter metadata: %v", err)
-	}
-
-	logging.LogInfo("created filter file: %s", filePath)
-	http.Redirect(w, r, "/files/"+filePath, http.StatusSeeOther)
 }
 
 // @Summary Get markdown editor form HTML
 // @Description Returns a markdown editor form for creating or editing files
 // @Tags files
 // @Param filepath query string false "File path (optional for new files)"
-// @Param type query string false "File type for new files"
 // @Produce html
 // @Router /api/files/markdown-form [get]
 func handleAPIMarkdownEditorForm(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
-	fileType := r.URL.Query().Get("type")
-
-	// Don't show markdown editor for filter files
-	if strings.HasSuffix(strings.ToLower(filePath), ".filter") {
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(`<div class="info-message">Filter files display an interactive filter form and cannot be edited as text.</div>`))
-		return
-	}
-
-	// Also check by file type
-	if filePath != "" {
-		metadata, err := files.MetaDataGet(filePath)
-		if err == nil && metadata != nil && metadata.FileType == files.FileTypeFilter {
-			w.Header().Set("Content-Type", "text/html")
-			w.Write([]byte(`<div class="info-message">Filter files display an interactive filter form and cannot be edited as text.</div>`))
-			return
-		}
-	}
 
 	html := render.RenderMarkdownEditorForm(filePath)
-
-	// if file type is specified, inject it into the form
-	if fileType != "" && filePath == "" {
-		// add hidden field for file type in new file creation
-		hiddenField := fmt.Sprintf(`<input type="hidden" name="filetype" value="%s">`, fileType)
-		// insert the hidden field after the first input tag
-		if strings.Contains(html, `<input type="hidden" name="filepath"`) {
-			html = strings.Replace(html, `<input type="hidden" name="filepath"`, hiddenField+`
-			<input type="hidden" name="filepath"`, 1)
-		}
-	}
-
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
