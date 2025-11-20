@@ -20,6 +20,10 @@ KNOV (knowledge vault) is a flexible knowledge management system.
 - **Flat Files + GIT Integration**: 
   - Version control for your knowledge base with GIT
   - All your data in a git repo available as files and also accessible via text-editor/ide
+  - different methods to add files
+    - via app with a button
+    - via file browser
+    - via git push
 - **Dashboard System**: 
   - Customizable dashboards with a lot of widgets to display your data like you want
 - **Multi-language Support**:
