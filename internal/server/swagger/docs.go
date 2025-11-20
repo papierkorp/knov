@@ -3101,33 +3101,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dashboard.FiletypeConfig": {
-            "type": "object",
-            "properties": {
-                "criteria": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/filter.Criteria"
-                    }
-                },
-                "description": {
-                    "type": "string"
-                },
-                "display": {
-                    "description": "list, cards, dropdown",
-                    "type": "string"
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "logic": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
         "dashboard.FilterConfig": {
             "type": "object",
             "properties": {
@@ -3204,9 +3177,6 @@ const docTemplate = `{
                 "fileContent": {
                     "$ref": "#/definitions/dashboard.FileContentConfig"
                 },
-                "filetype": {
-                    "$ref": "#/definitions/dashboard.FiletypeConfig"
-                },
                 "filter": {
                     "$ref": "#/definitions/dashboard.FilterConfig"
                 },
@@ -3231,7 +3201,6 @@ const docTemplate = `{
             "enum": [
                 "filter",
                 "filterForm",
-                "filetype",
                 "fileContent",
                 "static",
                 "tags",
@@ -3242,27 +3211,9 @@ const docTemplate = `{
                 "para_resources",
                 "para_archive"
             ],
-            "x-enum-comments": {
-                "WidgetTypeFiletype": "new filetype widget"
-            },
-            "x-enum-descriptions": [
-                "",
-                "",
-                "new filetype widget",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
-            ],
             "x-enum-varnames": [
                 "WidgetTypeFilter",
                 "WidgetTypeFilterForm",
-                "WidgetTypeFiletype",
                 "WidgetTypeFileContent",
                 "WidgetTypeStatic",
                 "WidgetTypeTags",

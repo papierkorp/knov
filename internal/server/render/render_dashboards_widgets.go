@@ -175,7 +175,7 @@ func renderFilterFormWidget() (string, error) {
 	html.WriteString(`<option value="and">and</option>`)
 	html.WriteString(`<option value="or">or</option>`)
 	html.WriteString(`</select>`)
-	html.WriteString(`<button type="button" hx-get="/api/filter/criteria-row" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">add filter</button>`)
+	html.WriteString(`<button type="button" hx-post="/api/filter/add-criteria" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">add filter</button>`)
 	html.WriteString(`</div>`)
 
 	// criteria container
@@ -215,9 +215,9 @@ func RenderFilterWidgetConfig(index int, config *dashboard.WidgetConfig) string 
 		selectedDisplay = config.Filter.Display
 	}
 
-	html.WriteString(fmt.Sprintf(`<option value="list" %s>list</option>`, ternary(selectedDisplay == "list", "selected", "")))
-	html.WriteString(fmt.Sprintf(`<option value="cards" %s>cards</option>`, ternary(selectedDisplay == "cards", "selected", "")))
-	html.WriteString(fmt.Sprintf(`<option value="dropdown" %s>dropdown</option>`, ternary(selectedDisplay == "dropdown", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="list" %s>list</option>`, utils.Ternary(selectedDisplay == "list", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="cards" %s>cards</option>`, utils.Ternary(selectedDisplay == "cards", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="dropdown" %s>dropdown</option>`, utils.Ternary(selectedDisplay == "dropdown", "selected", "")))
 	html.WriteString(`</select>`)
 	html.WriteString(`</div>`)
 

@@ -86,7 +86,6 @@ func StartServerChi() {
 
 		r.Route("/filter", func(r chi.Router) {
 			r.Post("/", handleAPIFilterFiles)
-			r.Get("/criteria-row", handleAPIGetFilterCriteriaRow)
 			r.Get("/form", handleAPIGetFilterForm)
 			r.Get("/value-input", handleAPIGetFilterValueInput)
 			r.Post("/add-criteria", handleAPIAddFilterCriteria)

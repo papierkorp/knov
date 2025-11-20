@@ -6,7 +6,49 @@ import (
 	"strings"
 
 	"knov/internal/filter"
+	"knov/internal/utils"
 )
+
+// ----------------------------------------------------------------------------------------
+// ------------------------------------------ FORM ----------------------------------------
+// ----------------------------------------------------------------------------------------
+
+// RenderFilterForm renders a standalone filter form
+func RenderFilterForm(config *filter.Config) string {
+	var html strings.Builder
+
+	html.WriteString(`<form id="filter-form" hx-post="/api/filter" hx-target="#filter-results">`)
+
+	// controls
+	html.WriteString(`<div class="filter-controls">`)
+	html.WriteString(`<button type="submit" class="btn-primary">apply filter</button>`)
+	html.WriteString(`<select name="logic" class="form-select">`)
+
+	selectedLogic := "and"
+	if config != nil {
+		selectedLogic = config.Logic
+	}
+
+	html.WriteString(fmt.Sprintf(`<option value="and" %s>and</option>`, utils.Ternary(selectedLogic == "and", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="or" %s>or</option>`, utils.Ternary(selectedLogic == "or", "selected", "")))
+	html.WriteString(`</select>`)
+	html.WriteString(`<button type="button" hx-post="/api/filter/add-criteria" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">add filter</button>`)
+	html.WriteString(`</div>`)
+
+	// criteria
+	html.WriteString(`<div id="filter-criteria-container" class="filter-criteria-container">`)
+	if config != nil && len(config.Criteria) > 0 {
+		for i, criteria := range config.Criteria {
+			html.WriteString(RenderFilterCriteriaRow(i, &criteria))
+		}
+	} else {
+		html.WriteString(RenderFilterCriteriaRow(0, nil))
+	}
+	html.WriteString(`</div>`)
+
+	html.WriteString(`</form>`)
+	return html.String()
+}
 
 // RenderFilterResult renders filter results based on display type
 func RenderFilterResult(result *filter.Result, display string) string {
@@ -28,42 +70,9 @@ func RenderFilterResult(result *filter.Result, display string) string {
 	}
 }
 
-// RenderFilterForm renders a standalone filter form
-func RenderFilterForm(config *filter.Config) string {
-	var html strings.Builder
-
-	html.WriteString(`<form id="filter-form" hx-post="/api/filter" hx-target="#filter-results">`)
-
-	// controls
-	html.WriteString(`<div class="filter-controls">`)
-	html.WriteString(`<button type="submit" class="btn-primary">apply filter</button>`)
-	html.WriteString(`<select name="logic" class="form-select">`)
-
-	selectedLogic := "and"
-	if config != nil {
-		selectedLogic = config.Logic
-	}
-
-	html.WriteString(fmt.Sprintf(`<option value="and" %s>and</option>`, ternary(selectedLogic == "and", "selected", "")))
-	html.WriteString(fmt.Sprintf(`<option value="or" %s>or</option>`, ternary(selectedLogic == "or", "selected", "")))
-	html.WriteString(`</select>`)
-	html.WriteString(`<button type="button" hx-get="/api/filter/criteria-row" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">add filter</button>`)
-	html.WriteString(`</div>`)
-
-	// criteria
-	html.WriteString(`<div id="filter-criteria-container" class="filter-criteria-container">`)
-	if config != nil && len(config.Criteria) > 0 {
-		for i, criteria := range config.Criteria {
-			html.WriteString(RenderFilterCriteriaRow(i, &criteria))
-		}
-	} else {
-		html.WriteString(RenderFilterCriteriaRow(0, nil))
-	}
-	html.WriteString(`</div>`)
-
-	html.WriteString(`</form>`)
-	return html.String()
-}
+// ----------------------------------------------------------------------------------------
+// ------------------------------------ single criteria ----------------------------------
+// ----------------------------------------------------------------------------------------
 
 // RenderFilterCriteriaRow renders a single filter criteria row
 func RenderFilterCriteriaRow(index int, criteria *filter.Criteria) string {
@@ -73,9 +82,10 @@ func RenderFilterCriteriaRow(index int, criteria *filter.Criteria) string {
 
 	// metadata field select
 	html.WriteString(`<div class="filter-field">`)
+	html.WriteString(`<hr />`)
 	html.WriteString(`<label>field</label>`)
-	html.WriteString(fmt.Sprintf(`<select name="metadata[]" class="form-select" hx-get="/api/filter/value-input" hx-target="#filter-value-container-%d" hx-swap="innerHTML" hx-vals='{"row_index": "%d"}' hx-include="this">`,
-		index, index))
+	html.WriteString(fmt.Sprintf(`<select name="metadata[%d]" class="form-select" hx-get="/api/filter/value-input" hx-target="#filter-value-container-%d" hx-swap="innerHTML" hx-vals='{"row_index": "%d"}' hx-include="this">`,
+		index, index, index))
 	html.WriteString(`<option value="">select field</option>`)
 
 	selectedMetadata := ""
@@ -89,7 +99,7 @@ func RenderFilterCriteriaRow(index int, criteria *filter.Criteria) string {
 	// operator select
 	html.WriteString(`<div class="filter-field">`)
 	html.WriteString(`<label>operator</label>`)
-	html.WriteString(`<select name="operator[]" class="form-select">`)
+	html.WriteString(fmt.Sprintf(`<select name="operator[%d]" class="form-select">`, index))
 
 	selectedOperator := "equals"
 	if criteria != nil {
@@ -112,7 +122,7 @@ func RenderFilterCriteriaRow(index int, criteria *filter.Criteria) string {
 	}
 
 	inputId := fmt.Sprintf("filter-value-%d", index)
-	inputName := "value[]"
+	inputName := fmt.Sprintf("value[%d]", index)
 	html.WriteString(RenderFilterValueInput(inputId, inputName, value, metadataField))
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
@@ -120,7 +130,7 @@ func RenderFilterCriteriaRow(index int, criteria *filter.Criteria) string {
 	// action select
 	html.WriteString(`<div class="filter-field">`)
 	html.WriteString(`<label>action</label>`)
-	html.WriteString(`<select name="action[]" class="form-select">`)
+	html.WriteString(fmt.Sprintf(`<select name="action[%d]" class="form-select">`, index))
 
 	selectedAction := "include"
 	if criteria != nil {
@@ -246,12 +256,4 @@ func RenderFilterValueInput(id, name, value, metadataField string) string {
 
 	// use GenerateDatalistInput without save functionality
 	return GenerateDatalistInput(id, name, value, placeholder, apiEndpoint)
-}
-
-// helper function to replace utils.Ternary dependency
-func ternary(condition bool, ifTrue, ifFalse string) string {
-	if condition {
-		return ifTrue
-	}
-	return ifFalse
 }

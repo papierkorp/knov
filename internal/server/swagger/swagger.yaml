@@ -20,24 +20,6 @@ definitions:
       filePath:
         type: string
     type: object
-  dashboard.FiletypeConfig:
-    properties:
-      criteria:
-        items:
-          $ref: '#/definitions/filter.Criteria'
-        type: array
-      description:
-        type: string
-      display:
-        description: list, cards, dropdown
-        type: string
-      limit:
-        type: integer
-      logic:
-        type: string
-      title:
-        type: string
-    type: object
   dashboard.FilterConfig:
     properties:
       criteria:
@@ -91,8 +73,6 @@ definitions:
     properties:
       fileContent:
         $ref: '#/definitions/dashboard.FileContentConfig'
-      filetype:
-        $ref: '#/definitions/dashboard.FiletypeConfig'
       filter:
         $ref: '#/definitions/dashboard.FilterConfig'
       static:
@@ -109,7 +89,6 @@ definitions:
     enum:
     - filter
     - filterForm
-    - filetype
     - fileContent
     - static
     - tags
@@ -120,25 +99,9 @@ definitions:
     - para_resources
     - para_archive
     type: string
-    x-enum-comments:
-      WidgetTypeFiletype: new filetype widget
-    x-enum-descriptions:
-    - ""
-    - ""
-    - new filetype widget
-    - ""
-    - ""
-    - ""
-    - ""
-    - ""
-    - ""
-    - ""
-    - ""
-    - ""
     x-enum-varnames:
     - WidgetTypeFilter
     - WidgetTypeFilterForm
-    - WidgetTypeFiletype
     - WidgetTypeFileContent
     - WidgetTypeStatic
     - WidgetTypeTags

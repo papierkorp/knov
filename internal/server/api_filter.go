@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"knov/internal/filter"
@@ -121,14 +122,18 @@ func handleAPIGetFilterValueInput(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata := r.FormValue("metadata")
 	rowIndexStr := r.FormValue("row_index")
-	value := r.FormValue("value")
-
 	rowIndex, err := strconv.Atoi(rowIndexStr)
 	if err != nil {
 		rowIndex = 0
 	}
+
+	// get metadata from indexed field name
+	metadataFieldName := fmt.Sprintf("metadata[%d]", rowIndex)
+	metadata := r.FormValue(metadataFieldName)
+	value := r.FormValue("value")
+
+	logging.LogDebug("filter value input: rowIndex=%d, metadata=%s", rowIndex, metadata)
 
 	inputId := fmt.Sprintf("filter-value-%d", rowIndex)
 	inputName := fmt.Sprintf("value[%d]", rowIndex)
@@ -177,63 +182,118 @@ func parseFilterConfigFromForm(r *http.Request) *filter.Config {
 	}
 
 	var criteria []filter.Criteria
-	metadata := r.Form["metadata[]"]
-	if len(metadata) == 0 {
-		// try alternative form encoding
-		for i := 0; i < 50; i++ { // safety limit
-			meta := r.FormValue(fmt.Sprintf("metadata[%d]", i))
-			if meta == "" {
-				break
+
+	// Extract all indexed form values
+	formData := make(map[int]map[string]string)
+
+	for key, values := range r.Form {
+		if len(values) == 0 {
+			continue
+		}
+
+		var field string
+		var index int
+		var err error
+
+		if strings.HasPrefix(key, "metadata[") && strings.HasSuffix(key, "]") {
+			field = "metadata"
+			indexStr := key[9 : len(key)-1] // extract index from metadata[index]
+			index, err = strconv.Atoi(indexStr)
+		} else if strings.HasPrefix(key, "operator[") && strings.HasSuffix(key, "]") {
+			field = "operator"
+			indexStr := key[9 : len(key)-1] // extract index from operator[index]
+			index, err = strconv.Atoi(indexStr)
+		} else if strings.HasPrefix(key, "value[") && strings.HasSuffix(key, "]") {
+			field = "value"
+			indexStr := key[6 : len(key)-1] // extract index from value[index]
+			index, err = strconv.Atoi(indexStr)
+		} else if strings.HasPrefix(key, "action[") && strings.HasSuffix(key, "]") {
+			field = "action"
+			indexStr := key[7 : len(key)-1] // extract index from action[index]
+			index, err = strconv.Atoi(indexStr)
+		} else {
+			continue
+		}
+
+		if err != nil {
+			continue
+		}
+
+		if formData[index] == nil {
+			formData[index] = make(map[string]string)
+		}
+		formData[index][field] = values[0]
+	}
+
+	// fallback to array form if no indexed data found
+	if len(formData) == 0 {
+		metadata := r.Form["metadata[]"]
+		operators := r.Form["operator[]"]
+		values := r.Form["value[]"]
+		actions := r.Form["action[]"]
+
+		maxLen := len(metadata)
+		if len(operators) > maxLen {
+			maxLen = len(operators)
+		}
+		if len(values) > maxLen {
+			maxLen = len(values)
+		}
+		if len(actions) > maxLen {
+			maxLen = len(actions)
+		}
+
+		for i := 0; i < maxLen; i++ {
+			if formData[i] == nil {
+				formData[i] = make(map[string]string)
 			}
-			metadata = append(metadata, meta)
-		}
-	}
 
-	operators := r.Form["operator[]"]
-	if len(operators) == 0 {
-		for i := 0; i < len(metadata); i++ {
-			op := r.FormValue(fmt.Sprintf("operator[%d]", i))
-			if op == "" {
-				op = "equals"
+			if i < len(metadata) {
+				formData[i]["metadata"] = metadata[i]
 			}
-			operators = append(operators, op)
-		}
-	}
-
-	values := r.Form["value[]"]
-	if len(values) == 0 {
-		for i := 0; i < len(metadata); i++ {
-			val := r.FormValue(fmt.Sprintf("value[%d]", i))
-			values = append(values, val)
-		}
-	}
-
-	actions := r.Form["action[]"]
-	if len(actions) == 0 {
-		for i := 0; i < len(metadata); i++ {
-			act := r.FormValue(fmt.Sprintf("action[%d]", i))
-			if act == "" {
-				act = "include"
+			if i < len(operators) {
+				formData[i]["operator"] = operators[i]
+			} else {
+				formData[i]["operator"] = "equals"
 			}
-			actions = append(actions, act)
+			if i < len(values) {
+				formData[i]["value"] = values[i]
+			}
+			if i < len(actions) {
+				formData[i]["action"] = actions[i]
+			} else {
+				formData[i]["action"] = "include"
+			}
 		}
 	}
 
-	maxLen := len(metadata)
-	for i := 0; i < maxLen; i++ {
-		if i < len(operators) && i < len(values) && metadata[i] != "" && operators[i] != "" && values[i] != "" {
-			action := "include"
-			if i < len(actions) && actions[i] != "" {
-				action = actions[i]
+	// build criteria from grouped form data
+	for _, data := range formData {
+		metadata := data["metadata"]
+		operator := data["operator"]
+		value := data["value"]
+		action := data["action"]
+
+		if metadata != "" && operator != "" && value != "" {
+			if operator == "" {
+				operator = "equals"
+			}
+			if action == "" {
+				action = "include"
 			}
 
 			criteria = append(criteria, filter.Criteria{
-				Metadata: metadata[i],
-				Operator: operators[i],
-				Value:    values[i],
+				Metadata: metadata,
+				Operator: operator,
+				Value:    value,
 				Action:   action,
 			})
 		}
+	}
+
+	logging.LogDebug("parsed %d filter criteria", len(criteria))
+	for i, c := range criteria {
+		logging.LogDebug("criteria %d: %s %s %s (%s)", i, c.Metadata, c.Operator, c.Value, c.Action)
 	}
 
 	return &filter.Config{
