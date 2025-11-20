@@ -20,11 +20,29 @@ definitions:
       filePath:
         type: string
     type: object
+  dashboard.FiletypeConfig:
+    properties:
+      criteria:
+        items:
+          $ref: '#/definitions/filter.Criteria'
+        type: array
+      description:
+        type: string
+      display:
+        description: list, cards, dropdown
+        type: string
+      limit:
+        type: integer
+      logic:
+        type: string
+      title:
+        type: string
+    type: object
   dashboard.FilterConfig:
     properties:
       criteria:
         items:
-          $ref: '#/definitions/files.FilterCriteria'
+          $ref: '#/definitions/filter.Criteria'
         type: array
       display:
         description: list, cards, dropdown
@@ -73,6 +91,8 @@ definitions:
     properties:
       fileContent:
         $ref: '#/definitions/dashboard.FileContentConfig'
+      filetype:
+        $ref: '#/definitions/dashboard.FiletypeConfig'
       filter:
         $ref: '#/definitions/dashboard.FilterConfig'
       static:
@@ -89,6 +109,7 @@ definitions:
     enum:
     - filter
     - filterForm
+    - filetype
     - fileContent
     - static
     - tags
@@ -99,9 +120,25 @@ definitions:
     - para_resources
     - para_archive
     type: string
+    x-enum-comments:
+      WidgetTypeFiletype: new filetype widget
+    x-enum-descriptions:
+    - ""
+    - ""
+    - new filetype widget
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
     x-enum-varnames:
     - WidgetTypeFilter
     - WidgetTypeFilterForm
+    - WidgetTypeFiletype
     - WidgetTypeFileContent
     - WidgetTypeStatic
     - WidgetTypeTags
@@ -145,17 +182,6 @@ definitions:
     - FileTypeMOC
     - FileTypePermanent
     - FileTypeFilter
-  files.FilterCriteria:
-    properties:
-      action:
-        type: string
-      metadata:
-        type: string
-      operator:
-        type: string
-      value:
-        type: string
-    type: object
   files.Metadata:
     properties:
       ancestor:
@@ -279,6 +305,30 @@ definitions:
     - StatusDraft
     - StatusPublished
     - StatusArchived
+  filter.Criteria:
+    properties:
+      action:
+        type: string
+      metadata:
+        type: string
+      operator:
+        type: string
+      value:
+        type: string
+    type: object
+  filter.Result:
+    properties:
+      files:
+        items:
+          $ref: '#/definitions/files.File'
+        type: array
+      filter_count:
+        type: integer
+      logic:
+        type: string
+      total:
+        type: integer
+    type: object
 host: localhost:1324
 info:
   contact: {}
@@ -730,95 +780,6 @@ paths:
       summary: Rename dashboard
       tags:
       - dashboards
-  /api/dashboards/filter-criteria:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      description: Add new filter criteria row for filter widget configuration
-      parameters:
-      - description: Widget index
-        in: formData
-        name: widget_index
-        required: true
-        type: string
-      produces:
-      - text/html
-      responses:
-        "200":
-          description: filter criteria row html
-          schema:
-            type: string
-      summary: Add filter criteria row
-      tags:
-      - dashboards
-  /api/dashboards/filter-value-input:
-    get:
-      description: Returns appropriate input HTML with datalist for filter value based
-        on selected metadata field
-      parameters:
-      - description: Widget index
-        in: formData
-        name: widget_index
-        required: true
-        type: string
-      - description: Criteria index
-        in: formData
-        name: criteria_index
-        required: true
-        type: string
-      - description: Metadata field type
-        in: formData
-        name: widgets[X][config][criteria][Y][metadata]
-        required: true
-        type: string
-      produces:
-      - text/html
-      responses:
-        "200":
-          description: HTML input with datalist
-          schema:
-            type: string
-      summary: Get filter value input HTML based on metadata field
-      tags:
-      - dashboards
-  /api/dashboards/filterform-row:
-    post:
-      description: Returns HTML for a new filter row to be added to filterForm widget
-      produces:
-      - text/html
-      responses:
-        "200":
-          description: HTML filter row
-          schema:
-            type: string
-      summary: Get a new filter row for filterForm widget
-      tags:
-      - dashboards
-  /api/dashboards/filterform-value-input:
-    get:
-      description: Returns appropriate input HTML with datalist for filterForm value
-        based on selected metadata field
-      parameters:
-      - description: Row index
-        in: formData
-        name: row_index
-        required: true
-        type: string
-      - description: Metadata field type
-        in: formData
-        name: metadata[]
-        required: true
-        type: string
-      produces:
-      - text/html
-      responses:
-        "200":
-          description: HTML input with datalist
-          schema:
-            type: string
-      summary: Get filter value input for filterForm widget
-      tags:
-      - dashboards
   /api/dashboards/form:
     get:
       description: Get dashboard form for create or edit
@@ -998,57 +959,6 @@ paths:
       summary: Create new file
       tags:
       - files
-  /api/files/filter:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - collectionFormat: csv
-        description: Metadata fields to filter on
-        in: formData
-        items:
-          type: string
-        name: metadata[]
-        type: array
-      - collectionFormat: csv
-        description: Filter operators (equals, contains, greater, less, in)
-        in: formData
-        items:
-          type: string
-        name: operator[]
-        type: array
-      - collectionFormat: csv
-        description: Filter values
-        in: formData
-        items:
-          type: string
-        name: value[]
-        type: array
-      - collectionFormat: csv
-        description: Filter actions (include, exclude)
-        in: formData
-        items:
-          type: string
-        name: action[]
-        type: array
-      - default: and
-        description: Logic operator for combining criteria (and, or)
-        in: formData
-        name: logic
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/files.File'
-            type: array
-      summary: Filter files by metadata
-      tags:
-      - files
   /api/files/form:
     get:
       parameters:
@@ -1172,6 +1082,140 @@ paths:
       summary: Save file content
       tags:
       - files
+  /api/filter:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Filter files based on metadata criteria with configurable logic
+        and display
+      parameters:
+      - description: Metadata field names
+        in: formData
+        name: metadata[]
+        type: array
+      - description: Filter operators (equals, contains, greater, less, in)
+        in: formData
+        name: operator[]
+        type: array
+      - description: Filter values
+        in: formData
+        name: value[]
+        type: array
+      - description: Filter actions (include, exclude)
+        in: formData
+        name: action[]
+        type: array
+      - default: and
+        description: Logic operator (and/or)
+        in: formData
+        name: logic
+        type: string
+      - default: list
+        description: Display type (list, cards, dropdown, table)
+        in: formData
+        name: display
+        type: string
+      - default: 50
+        description: Maximum number of results
+        in: formData
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/filter.Result'
+      summary: Filter files by metadata
+      tags:
+      - filter
+  /api/filter/add-criteria:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Add new filter criteria row for filter forms
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: filter criteria row html
+          schema:
+            type: string
+      summary: Add filter criteria
+      tags:
+      - filter
+  /api/filter/criteria-row:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Get HTML for a new filter criteria row
+      parameters:
+      - description: Row index
+        in: formData
+        name: row_index
+        type: integer
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: filter criteria row html
+          schema:
+            type: string
+      summary: Get filter criteria row
+      tags:
+      - filter
+  /api/filter/form:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Get HTML for complete filter form
+      parameters:
+      - description: Filter configuration JSON
+        in: formData
+        name: config
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: filter form html
+          schema:
+            type: string
+      summary: Get filter form
+      tags:
+      - filter
+  /api/filter/value-input:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Get HTML for filter value input based on metadata field type
+      parameters:
+      - description: Metadata field name
+        in: formData
+        name: metadata
+        required: true
+        type: string
+      - description: Row index
+        in: formData
+        name: row_index
+        required: true
+        type: integer
+      - description: Current value
+        in: formData
+        name: value
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: filter value input html
+          schema:
+            type: string
+      summary: Get filter value input
+      tags:
+      - filter
   /api/git/latestchanges:
     get:
       produces:

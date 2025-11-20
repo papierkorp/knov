@@ -494,137 +494,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/dashboards/filter-criteria": {
-            "post": {
-                "description": "Add new filter criteria row for filter widget configuration",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "dashboards"
-                ],
-                "summary": "Add filter criteria row",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Widget index",
-                        "name": "widget_index",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "filter criteria row html",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/dashboards/filter-value-input": {
-            "get": {
-                "description": "Returns appropriate input HTML with datalist for filter value based on selected metadata field",
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "dashboards"
-                ],
-                "summary": "Get filter value input HTML based on metadata field",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Widget index",
-                        "name": "widget_index",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Criteria index",
-                        "name": "criteria_index",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Metadata field type",
-                        "name": "widgets[X][config][criteria][Y][metadata]",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "HTML input with datalist",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/dashboards/filterform-row": {
-            "post": {
-                "description": "Returns HTML for a new filter row to be added to filterForm widget",
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "dashboards"
-                ],
-                "summary": "Get a new filter row for filterForm widget",
-                "responses": {
-                    "200": {
-                        "description": "HTML filter row",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/dashboards/filterform-value-input": {
-            "get": {
-                "description": "Returns appropriate input HTML with datalist for filterForm value based on selected metadata field",
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "dashboards"
-                ],
-                "summary": "Get filter value input for filterForm widget",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Row index",
-                        "name": "row_index",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Metadata field type",
-                        "name": "metadata[]",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "HTML input with datalist",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/dashboards/form": {
             "get": {
                 "description": "Get dashboard form for create or edit",
@@ -1071,81 +940,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/files/filter": {
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "Filter files by metadata",
-                "parameters": [
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "Metadata fields to filter on",
-                        "name": "metadata[]",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "Filter operators (equals, contains, greater, less, in)",
-                        "name": "operator[]",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "Filter values",
-                        "name": "value[]",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "csv",
-                        "description": "Filter actions (include, exclude)",
-                        "name": "action[]",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "default": "and",
-                        "description": "Logic operator for combining criteria (and, or)",
-                        "name": "logic",
-                        "in": "formData"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/files.File"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/files/form": {
             "get": {
                 "produces": [
@@ -1329,6 +1123,207 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {}
+            }
+        },
+        "/api/filter": {
+            "post": {
+                "description": "Filter files based on metadata criteria with configurable logic and display",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "filter"
+                ],
+                "summary": "Filter files by metadata",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "description": "Metadata field names",
+                        "name": "metadata[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Filter operators (equals, contains, greater, less, in)",
+                        "name": "operator[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Filter values",
+                        "name": "value[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Filter actions (include, exclude)",
+                        "name": "action[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "default": "and",
+                        "description": "Logic operator (and/or)",
+                        "name": "logic",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "default": "list",
+                        "description": "Display type (list, cards, dropdown, table)",
+                        "name": "display",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 50,
+                        "description": "Maximum number of results",
+                        "name": "limit",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/filter.Result"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/filter/add-criteria": {
+            "post": {
+                "description": "Add new filter criteria row for filter forms",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "filter"
+                ],
+                "summary": "Add filter criteria",
+                "responses": {
+                    "200": {
+                        "description": "filter criteria row html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/filter/criteria-row": {
+            "get": {
+                "description": "Get HTML for a new filter criteria row",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "filter"
+                ],
+                "summary": "Get filter criteria row",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Row index",
+                        "name": "row_index",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "filter criteria row html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/filter/form": {
+            "get": {
+                "description": "Get HTML for complete filter form",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "filter"
+                ],
+                "summary": "Get filter form",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter configuration JSON",
+                        "name": "config",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "filter form html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/filter/value-input": {
+            "get": {
+                "description": "Get HTML for filter value input based on metadata field type",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "filter"
+                ],
+                "summary": "Get filter value input",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Metadata field name",
+                        "name": "metadata",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Row index",
+                        "name": "row_index",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Current value",
+                        "name": "value",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "filter value input html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/api/git/latestchanges": {
@@ -3106,13 +3101,40 @@ const docTemplate = `{
                 }
             }
         },
+        "dashboard.FiletypeConfig": {
+            "type": "object",
+            "properties": {
+                "criteria": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/filter.Criteria"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "display": {
+                    "description": "list, cards, dropdown",
+                    "type": "string"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "logic": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "dashboard.FilterConfig": {
             "type": "object",
             "properties": {
                 "criteria": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/files.FilterCriteria"
+                        "$ref": "#/definitions/filter.Criteria"
                     }
                 },
                 "display": {
@@ -3182,6 +3204,9 @@ const docTemplate = `{
                 "fileContent": {
                     "$ref": "#/definitions/dashboard.FileContentConfig"
                 },
+                "filetype": {
+                    "$ref": "#/definitions/dashboard.FiletypeConfig"
+                },
                 "filter": {
                     "$ref": "#/definitions/dashboard.FilterConfig"
                 },
@@ -3206,6 +3231,7 @@ const docTemplate = `{
             "enum": [
                 "filter",
                 "filterForm",
+                "filetype",
                 "fileContent",
                 "static",
                 "tags",
@@ -3216,9 +3242,27 @@ const docTemplate = `{
                 "para_resources",
                 "para_archive"
             ],
+            "x-enum-comments": {
+                "WidgetTypeFiletype": "new filetype widget"
+            },
+            "x-enum-descriptions": [
+                "",
+                "",
+                "new filetype widget",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+            ],
             "x-enum-varnames": [
                 "WidgetTypeFilter",
                 "WidgetTypeFilterForm",
+                "WidgetTypeFiletype",
                 "WidgetTypeFileContent",
                 "WidgetTypeStatic",
                 "WidgetTypeTags",
@@ -3273,23 +3317,6 @@ const docTemplate = `{
                 "FileTypePermanent",
                 "FileTypeFilter"
             ]
-        },
-        "files.FilterCriteria": {
-            "type": "object",
-            "properties": {
-                "action": {
-                    "type": "string"
-                },
-                "metadata": {
-                    "type": "string"
-                },
-                "operator": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
-                }
-            }
         },
         "files.Metadata": {
             "type": "object",
@@ -3470,6 +3497,43 @@ const docTemplate = `{
                 "StatusPublished",
                 "StatusArchived"
             ]
+        },
+        "filter.Criteria": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "filter.Result": {
+            "type": "object",
+            "properties": {
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/files.File"
+                    }
+                },
+                "filter_count": {
+                    "type": "integer"
+                },
+                "logic": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
         }
     }
 }`

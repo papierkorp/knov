@@ -14,7 +14,7 @@
 {{ define "metadata-filter" }}
 <section>
     <h3>{{T "Metadata Filter"}}</h3>
-    <form id="metadata-filter-form" hx-post="/api/files/filter" hx-target="#filter-results">
+    <form id="metadata-filter-form" hx-post="/api/filter" hx-target="#filter-results">
         <div>
             <button type="submit">{{T "Apply Filter"}}</button>
             <select name="logic" id="logic-operator">

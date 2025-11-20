@@ -2,6 +2,7 @@
 
 # todo
 
+- func getEditor(filepath string) -> switch metadata.FileType + handleFileEdit - switch editor
 - Dashboard
   - make the positions work with a custom layout work
   - UI advanced

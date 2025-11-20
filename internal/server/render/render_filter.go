@@ -1,0 +1,257 @@
+// Package render - Basic filter HTML rendering functions
+package render
+
+import (
+	"fmt"
+	"strings"
+
+	"knov/internal/filter"
+)
+
+// RenderFilterResult renders filter results based on display type
+func RenderFilterResult(result *filter.Result, display string) string {
+	if result == nil || len(result.Files) == 0 {
+		return `<div id="filter-results" class="filter-no-results">
+			<p>no files found matching filter criteria</p>
+		</div>`
+	}
+
+	switch display {
+	case "cards":
+		return fmt.Sprintf(`<div id="filter-results">%s</div>`, RenderFileCards(result.Files))
+	case "dropdown":
+		return fmt.Sprintf(`<div id="filter-results">%s</div>`, RenderFileDropdown(result.Files, result.Total))
+	case "table":
+		return fmt.Sprintf(`<div id="filter-results">%s</div>`, RenderFileList(result.Files))
+	default:
+		return fmt.Sprintf(`<div id="filter-results">%s</div>`, RenderFileList(result.Files))
+	}
+}
+
+// RenderFilterForm renders a standalone filter form
+func RenderFilterForm(config *filter.Config) string {
+	var html strings.Builder
+
+	html.WriteString(`<form id="filter-form" hx-post="/api/filter" hx-target="#filter-results">`)
+
+	// controls
+	html.WriteString(`<div class="filter-controls">`)
+	html.WriteString(`<button type="submit" class="btn-primary">apply filter</button>`)
+	html.WriteString(`<select name="logic" class="form-select">`)
+
+	selectedLogic := "and"
+	if config != nil {
+		selectedLogic = config.Logic
+	}
+
+	html.WriteString(fmt.Sprintf(`<option value="and" %s>and</option>`, ternary(selectedLogic == "and", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="or" %s>or</option>`, ternary(selectedLogic == "or", "selected", "")))
+	html.WriteString(`</select>`)
+	html.WriteString(`<button type="button" hx-get="/api/filter/criteria-row" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">add filter</button>`)
+	html.WriteString(`</div>`)
+
+	// criteria
+	html.WriteString(`<div id="filter-criteria-container" class="filter-criteria-container">`)
+	if config != nil && len(config.Criteria) > 0 {
+		for i, criteria := range config.Criteria {
+			html.WriteString(RenderFilterCriteriaRow(i, &criteria))
+		}
+	} else {
+		html.WriteString(RenderFilterCriteriaRow(0, nil))
+	}
+	html.WriteString(`</div>`)
+
+	html.WriteString(`</form>`)
+	return html.String()
+}
+
+// RenderFilterCriteriaRow renders a single filter criteria row
+func RenderFilterCriteriaRow(index int, criteria *filter.Criteria) string {
+	var html strings.Builder
+
+	html.WriteString(fmt.Sprintf(`<div class="filter-criteria-row" data-index="%d">`, index))
+
+	// metadata field select
+	html.WriteString(`<div class="filter-field">`)
+	html.WriteString(`<label>field</label>`)
+	html.WriteString(fmt.Sprintf(`<select name="metadata[]" class="form-select" hx-get="/api/filter/value-input" hx-target="#filter-value-container-%d" hx-swap="innerHTML" hx-vals='{"row_index": "%d"}' hx-include="this">`,
+		index, index))
+	html.WriteString(`<option value="">select field</option>`)
+
+	selectedMetadata := ""
+	if criteria != nil {
+		selectedMetadata = criteria.Metadata
+	}
+	html.WriteString(RenderMetadataFieldOptions(selectedMetadata))
+	html.WriteString(`</select>`)
+	html.WriteString(`</div>`)
+
+	// operator select
+	html.WriteString(`<div class="filter-field">`)
+	html.WriteString(`<label>operator</label>`)
+	html.WriteString(`<select name="operator[]" class="form-select">`)
+
+	selectedOperator := "equals"
+	if criteria != nil {
+		selectedOperator = criteria.Operator
+	}
+	html.WriteString(RenderOperatorOptions(selectedOperator))
+	html.WriteString(`</select>`)
+	html.WriteString(`</div>`)
+
+	// value input
+	html.WriteString(`<div class="filter-field">`)
+	html.WriteString(`<label>value</label>`)
+	html.WriteString(fmt.Sprintf(`<div id="filter-value-container-%d">`, index))
+
+	value := ""
+	metadataField := ""
+	if criteria != nil {
+		value = criteria.Value
+		metadataField = criteria.Metadata
+	}
+
+	inputId := fmt.Sprintf("filter-value-%d", index)
+	inputName := "value[]"
+	html.WriteString(RenderFilterValueInput(inputId, inputName, value, metadataField))
+	html.WriteString(`</div>`)
+	html.WriteString(`</div>`)
+
+	// action select
+	html.WriteString(`<div class="filter-field">`)
+	html.WriteString(`<label>action</label>`)
+	html.WriteString(`<select name="action[]" class="form-select">`)
+
+	selectedAction := "include"
+	if criteria != nil {
+		selectedAction = criteria.Action
+	}
+	html.WriteString(RenderActionOptions(selectedAction))
+	html.WriteString(`</select>`)
+	html.WriteString(`</div>`)
+
+	// remove button
+	if index > 0 {
+		html.WriteString(`<div class="filter-field">`)
+		html.WriteString(`<button type="button" onclick="this.closest('.filter-criteria-row').remove()" class="btn-danger btn-small">remove</button>`)
+		html.WriteString(`</div>`)
+	}
+
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
+// RenderMetadataFieldOptions returns HTML options for metadata field selectors
+func RenderMetadataFieldOptions(selectedValue string) string {
+	var html strings.Builder
+
+	fields := filter.GetMetadataFields()
+	for _, field := range fields {
+		selected := ""
+		if field == selectedValue {
+			selected = "selected"
+		}
+		displayText := field
+		if strings.HasPrefix(field, "para_") {
+			displayText = "para: " + strings.TrimPrefix(field, "para_")
+		}
+		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, field, selected, displayText))
+	}
+
+	return html.String()
+}
+
+// RenderOperatorOptions returns HTML options for operator selectors
+func RenderOperatorOptions(selectedValue string) string {
+	var html strings.Builder
+
+	operators := filter.GetOperators()
+	displayTexts := []string{"equals", "contains", "greater than", "less than", "in array"}
+
+	for i, operator := range operators {
+		selected := ""
+		if operator == selectedValue {
+			selected = "selected"
+		}
+		displayText := operator
+		if i < len(displayTexts) {
+			displayText = displayTexts[i]
+		}
+		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, operator, selected, displayText))
+	}
+
+	return html.String()
+}
+
+// RenderActionOptions returns HTML options for action selectors
+func RenderActionOptions(selectedValue string) string {
+	var html strings.Builder
+
+	actions := filter.GetActions()
+	for _, action := range actions {
+		selected := ""
+		if action == selectedValue {
+			selected = "selected"
+		}
+		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, action, selected, action))
+	}
+
+	return html.String()
+}
+
+// RenderFilterValueInput generates an input with datalist based on metadata field type
+func RenderFilterValueInput(id, name, value, metadataField string) string {
+	var apiEndpoint string
+	var placeholder string
+
+	switch metadataField {
+	case "collection":
+		apiEndpoint = "/api/metadata/collections?format=options"
+		placeholder = "type or select collection"
+	case "tags":
+		apiEndpoint = "/api/metadata/tags?format=options"
+		placeholder = "type or select tag"
+	case "folders":
+		apiEndpoint = "/api/metadata/folders?format=options"
+		placeholder = "type or select folder"
+	case "type":
+		apiEndpoint = "/api/metadata/filetypes?format=options"
+		placeholder = "select file type"
+	case "status":
+		apiEndpoint = "/api/metadata/statuses?format=options"
+		placeholder = "select status"
+	case "priority":
+		apiEndpoint = "/api/metadata/priorities?format=options"
+		placeholder = "select priority"
+	case "para_projects":
+		apiEndpoint = "/api/metadata/para/projects?format=options"
+		placeholder = "type or select project"
+	case "para_areas":
+		apiEndpoint = "/api/metadata/para/areas?format=options"
+		placeholder = "type or select area"
+	case "para_resources":
+		apiEndpoint = "/api/metadata/para/resources?format=options"
+		placeholder = "type or select resource"
+	case "para_archive":
+		apiEndpoint = "/api/metadata/para/archive?format=options"
+		placeholder = "type or select archive item"
+	case "createdAt", "lastEdited":
+		return fmt.Sprintf(`<input type="date" name="%s" id="%s" value="%s" placeholder="yyyy-mm-dd" class="form-input"/>`,
+			name, id, value)
+	default:
+		placeholder = "enter value"
+		return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" placeholder="%s"/>`,
+			id, name, value, placeholder)
+	}
+
+	// use GenerateDatalistInput without save functionality
+	return GenerateDatalistInput(id, name, value, placeholder, apiEndpoint)
+}
+
+// helper function to replace utils.Ternary dependency
+func ternary(condition bool, ifTrue, ifFalse string) string {
+	if condition {
+		return ifTrue
+	}
+	return ifFalse
+}

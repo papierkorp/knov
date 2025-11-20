@@ -9,6 +9,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/filter"
 	"knov/internal/logging"
 	"knov/internal/server/render"
 	"knov/internal/translation"
@@ -57,64 +58,6 @@ func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(content.HTML))
-}
-
-// @Summary Filter files by metadata
-// @Tags files
-// @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Param metadata[] formData []string false "Metadata fields to filter on"
-// @Param operator[] formData []string false "Filter operators (equals, contains, greater, less, in)"
-// @Param value[] formData []string false "Filter values"
-// @Param action[] formData []string false "Filter actions (include, exclude)"
-// @Param logic formData string false "Logic operator for combining criteria (and, or)" default(and)
-// @Success 200 {array} files.File
-// @Router /api/files/filter [post]
-func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
-	logging.LogDebug("filter request received")
-
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
-		return
-	}
-
-	logic := r.FormValue("logic")
-	if logic == "" {
-		logic = "and"
-	}
-
-	var criteria []files.FilterCriteria
-	metadata := r.Form["metadata[]"]
-	operators := r.Form["operator[]"]
-	values := r.Form["value[]"]
-	actions := r.Form["action[]"]
-
-	maxLen := len(metadata)
-
-	for i := range maxLen {
-		if i < len(operators) && i < len(values) && metadata[i] != "" && operators[i] != "" {
-			criteria = append(criteria, files.FilterCriteria{
-				Metadata: metadata[i],
-				Operator: operators[i],
-				Value:    values[i],
-				Action:   render.GetFormValue(actions, i),
-			})
-		}
-	}
-
-	logging.LogDebug("built %d filter criteria: %+v", len(criteria), criteria)
-
-	filteredFiles, err := files.FilterFilesByMetadata(criteria, logic)
-	if err != nil {
-		logging.LogError("failed to filter files: %v", err)
-		http.Error(w, "failed to filter files", http.StatusInternalServerError)
-		return
-	}
-
-	logging.LogDebug("filtered %d files", len(filteredFiles))
-
-	html := render.RenderFilteredFiles(filteredFiles)
-	writeResponse(w, r, filteredFiles, html)
 }
 
 // @Summary Get file header with link and breadcrumb
@@ -223,7 +166,7 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 		operator = "contains"
 	}
 
-	criteria := []files.FilterCriteria{
+	criteria := []filter.Criteria{
 		{
 			Metadata: metadata,
 			Operator: operator,
@@ -234,7 +177,7 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogDebug("browse criteria: %+v", criteria)
 
-	browsedFiles, err := files.FilterFilesByMetadata(criteria, "and")
+	browsedFiles, err := filter.FilterFiles(criteria, "and")
 	if err != nil {
 		logging.LogError("failed to browse files: %v", err)
 		http.Error(w, "failed to browse files", http.StatusInternalServerError)

@@ -81,6 +81,18 @@ func StartServerChi() {
 		r.Get("/search", handleAPISearch)
 
 		// ----------------------------------------------------------------------------------------
+		// ----------------------------------------- FILTER ----------------------------------------
+		// ----------------------------------------------------------------------------------------
+
+		r.Route("/filter", func(r chi.Router) {
+			r.Post("/", handleAPIFilterFiles)
+			r.Get("/criteria-row", handleAPIGetFilterCriteriaRow)
+			r.Get("/form", handleAPIGetFilterForm)
+			r.Get("/value-input", handleAPIGetFilterValueInput)
+			r.Post("/add-criteria", handleAPIAddFilterCriteria)
+		})
+
+		// ----------------------------------------------------------------------------------------
 		// ------------------------------------ system routes ------------------------------------
 		// ----------------------------------------------------------------------------------------
 
@@ -221,10 +233,6 @@ func StartServerChi() {
 			r.Post("/widget-form", handleAPIWidgetForm)
 			r.Post("/widget-config", handleAPIWidgetConfig)
 			r.Get("/widget-config", handleAPIWidgetConfig)
-			r.Post("/filter-criteria", handleAPIFilterCriteria)
-			r.Get("/filter-value-input", handleAPIGetFilterValueInput)
-			r.Post("/filterform-row", handleAPIGetFilterFormRow)
-			r.Get("/filterform-value-input", handleAPIGetFilterFormValueInput)
 			r.Get("/{id}", handleAPIGetDashboard)
 			r.Patch("/{id}", handleAPIUpdateDashboard)
 			r.Delete("/{id}", handleAPIDeleteDashboard)

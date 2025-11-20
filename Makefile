@@ -2,10 +2,10 @@
 APP_NAME := knov
 
 # ------------- actual usage -------------
-dev: swaggo-api-init templ-generate
+dev: swaggo-api-init 
 	KNOV_LOG_LEVEL=debug go run ./
 
-prod: clean swaggo-api-init templ-generate translation
+prod: clean swaggo-api-init translation
 	go build -o bin/$(APP_NAME) ./
 	GOOS=windows GOARCH=amd64 go build -o bin/$(APP_NAME).exe ./
 
@@ -26,10 +26,7 @@ clean:
 translation:
 	cd internal/translation && go generate
 
-templ-generate:
-	TEMPL_EXPERIMENT=rawgo templ generate
-
 swaggo-api-init:
 	swag init -g main.go -d . -o internal/server/swagger
 
-.PHONY: templ-generate dev swaggo-api-init rmt translation prod docker docker-build docker-run clean
+.PHONY: dev swaggo-api-init rmt translation prod docker docker-build docker-run clean

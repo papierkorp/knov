@@ -3,9 +3,11 @@ package render
 
 import (
 	"fmt"
+	"strings"
 
 	"knov/internal/dashboard"
 	"knov/internal/files"
+	"knov/internal/filter"
 	"knov/internal/logging"
 	"knov/internal/utils"
 )
@@ -14,7 +16,17 @@ import (
 func RenderWidget(widgetType dashboard.WidgetType, config dashboard.WidgetConfig) (string, error) {
 	switch widgetType {
 	case dashboard.WidgetTypeFilter:
-		return renderFilterWidget(config.Filter)
+		// convert dashboard FilterConfig to filter.Config
+		if config.Filter == nil {
+			return "", fmt.Errorf("filter config is required")
+		}
+		filterConfig := &filter.Config{
+			Criteria: config.Filter.Criteria,
+			Logic:    config.Filter.Logic,
+			Display:  config.Filter.Display,
+			Limit:    config.Filter.Limit,
+		}
+		return renderFilterWidget(filterConfig)
 	case dashboard.WidgetTypeFilterForm:
 		return renderFilterFormWidget()
 	case dashboard.WidgetTypeFileContent:
@@ -132,4 +144,95 @@ func renderParaArchiveWidget() (string, error) {
 	}
 
 	return RenderBrowseHTML(archiveCount, "/browse/para_archive"), nil
+}
+
+// renderFilterWidget renders a filter widget for dashboards
+func renderFilterWidget(config *filter.Config) (string, error) {
+	if config == nil {
+		return "", fmt.Errorf("filter config is required")
+	}
+
+	result, err := filter.FilterFilesWithConfig(config)
+	if err != nil {
+		return "", err
+	}
+
+	return RenderFilterResult(result, config.Display), nil
+}
+
+// renderFilterFormWidget renders an interactive filter form widget
+func renderFilterFormWidget() (string, error) {
+	var html strings.Builder
+
+	html.WriteString(`<div class="widget-filter-form">`)
+	html.WriteString(`<h4>filter</h4>`)
+	html.WriteString(`<form id="filter-form" hx-post="/api/filter" hx-target="#filter-results">`)
+
+	// controls row
+	html.WriteString(`<div class="filter-controls">`)
+	html.WriteString(`<button type="submit" class="btn-primary">apply filter</button>`)
+	html.WriteString(`<select name="logic" class="form-select">`)
+	html.WriteString(`<option value="and">and</option>`)
+	html.WriteString(`<option value="or">or</option>`)
+	html.WriteString(`</select>`)
+	html.WriteString(`<button type="button" hx-get="/api/filter/criteria-row" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">add filter</button>`)
+	html.WriteString(`</div>`)
+
+	// criteria container
+	html.WriteString(`<div id="filter-criteria-container" class="filter-criteria-container">`)
+	html.WriteString(RenderFilterCriteriaRow(0, nil))
+	html.WriteString(`</div>`)
+
+	// results container
+	html.WriteString(`<div id="filter-results" class="filter-results">`)
+	html.WriteString(`<p class="filter-placeholder">filtered results will appear here</p>`)
+	html.WriteString(`</div>`)
+
+	html.WriteString(`</form>`)
+	html.WriteString(`</div>`)
+
+	return html.String(), nil
+}
+
+// RenderFilterWidgetConfig renders widget-specific configuration form for filter widgets
+func RenderFilterWidgetConfig(index int, config *dashboard.WidgetConfig) string {
+	var html strings.Builder
+
+	html.WriteString(`<div class="config-form">`)
+	html.WriteString(`<h5>filter configuration</h5>`)
+
+	// display & limits section
+	html.WriteString(`<div class="config-section">`)
+	html.WriteString(`<h6>display & limits</h6>`)
+
+	// display type
+	html.WriteString(`<div class="config-row">`)
+	html.WriteString(`<label>display:</label>`)
+	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][filter][display]" class="form-select">`, index))
+
+	selectedDisplay := "list"
+	if config != nil && config.Filter != nil {
+		selectedDisplay = config.Filter.Display
+	}
+
+	html.WriteString(fmt.Sprintf(`<option value="list" %s>list</option>`, ternary(selectedDisplay == "list", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="cards" %s>cards</option>`, ternary(selectedDisplay == "cards", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="dropdown" %s>dropdown</option>`, ternary(selectedDisplay == "dropdown", "selected", "")))
+	html.WriteString(`</select>`)
+	html.WriteString(`</div>`)
+
+	// limit
+	html.WriteString(`<div class="config-row">`)
+	html.WriteString(`<label>limit:</label>`)
+	limitValue := "10"
+	if config != nil && config.Filter != nil && config.Filter.Limit > 0 {
+		limitValue = fmt.Sprintf("%d", config.Filter.Limit)
+	}
+	html.WriteString(fmt.Sprintf(`<input type="number" name="widgets[%d][config][filter][limit]" value="%s" min="1" class="form-input"/>`, index, limitValue))
+	html.WriteString(`</div>`)
+
+	html.WriteString(`</div>`)
+	html.WriteString(`</div>`)
+
+	return html.String()
 }
