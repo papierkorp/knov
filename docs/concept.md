@@ -59,3 +59,8 @@ Settings are stored as .json files in the `KNOV_CONFIG_PATH` for each user indiv
 - **Backend**: Go with Chi router
 - **Frontend**: HTMX + Go HTML templates
 - **Storage**: JSON-based configuration storage
+
+# PKMS
+
+zk/zettelkasten = stage of development
+para = purpose/context
