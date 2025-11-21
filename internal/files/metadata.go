@@ -24,6 +24,7 @@ const (
 	FileTypeMOC        Filetype = "moc" // maps of content - indexes to link related notes
 	FileTypePermanent  Filetype = "permanent"
 	FileTypeFilter     Filetype = "filter"
+	FileTypeJournaling Filetype = "journaling"
 
 	StatusDraft     Status = "draft"
 	StatusPublished Status = "published"

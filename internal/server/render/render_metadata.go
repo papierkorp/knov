@@ -65,6 +65,30 @@ func RenderMetadataForm(filePath string) (string, error) {
 		"/api/metadata/collections?format=options", filePath, "/api/metadata/collection"))
 	html.WriteString(`</div>`)
 
+	// filetype field
+	filetype := ""
+	if metadata != nil {
+		filetype = string(metadata.FileType)
+	}
+	html.WriteString(`<div class="form-field">`)
+	html.WriteString(`<label for="meta-filetype">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file type") + `</label>`)
+	html.WriteString(GenerateDatalistInputWithSave("meta-filetype", "filetype", filetype,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "select file type"),
+		"/api/metadata/filetypes?format=options", filePath, "/api/metadata/filetype"))
+	html.WriteString(`</div>`)
+
+	// status field
+	status := ""
+	if metadata != nil {
+		status = string(metadata.Status)
+	}
+	html.WriteString(`<div class="form-field">`)
+	html.WriteString(`<label for="meta-status">` + translation.SprintfForRequest(configmanager.GetLanguage(), "status") + `</label>`)
+	html.WriteString(GenerateDatalistInputWithSave("meta-status", "status", status,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "select status"),
+		"/api/metadata/statuses?format=options", filePath, "/api/metadata/status"))
+	html.WriteString(`</div>`)
+
 	html.WriteString(`</div>`) // close basic form group
 
 	// tags and folders section

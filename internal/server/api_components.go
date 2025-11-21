@@ -103,27 +103,3 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
-
-// @Summary Get file editor
-// @Tags components
-// @Param filepath query string true "File path"
-// @Produce html
-// @Router /api/components/editor [get]
-func handleAPIGetEditor(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	if filepath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	fullPath := utils.ToFullPath(filepath)
-	content, err := files.GetRawContent(fullPath)
-	if err != nil {
-		content = "" // empty for new files
-	}
-
-	html := render.RenderEditorComponent(filepath, content)
-
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
-}

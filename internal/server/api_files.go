@@ -281,17 +281,3 @@ func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("HX-Redirect", "/files/"+filePath)
 	w.WriteHeader(http.StatusOK)
 }
-
-// @Summary Get markdown editor form HTML
-// @Description Returns a markdown editor form for creating or editing files
-// @Tags files
-// @Param filepath query string false "File path (optional for new files)"
-// @Produce html
-// @Router /api/files/markdown-form [get]
-func handleAPIMarkdownEditorForm(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
-
-	html := render.RenderMarkdownEditorForm(filePath)
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
-}

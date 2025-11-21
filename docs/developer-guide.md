@@ -103,7 +103,50 @@ go build -buildmode=plugin -o mytheme.so .
 1. Add handler function to appropriate `internal/server/api_*.go` file
 2. Add route in `internal/server/server.go`
 3. Add Swagger documentation comments
-4. Regenerate docs with `make docs`
+4. Run `make docs` to regenerate Swagger documentation
+
+### Editor System
+
+The application uses a dynamic editor system that selects the appropriate editor based on file type:
+
+- **Location**: `internal/server/api_editor.go`
+- **Routes**: `/api/editor/*`
+- **Editor Types**:
+  - `markdown-editor`: For markdown files (detected via MarkdownHandler)
+  - `textarea-editor`: For dokuwiki and plaintext files (detected via respective handlers)
+  - `list-editor`: For todo and journaling filetypes (TODO)
+  - `filter-editor`: For filter filetypes (TODO)
+  - `index-editor`: For MOC (maps of content) filetypes (TODO)
+
+The `GetEditor()` function determines the appropriate editor based on:
+1. File `FileType` from metadata (todo, fleeting, literature, permanent, moc, filter, journaling)
+2. Syntax detected by filetype handlers using `CanHandle()` methods
+
+**Syntax Detection**:
+- Syntax is always dynamically detected using the filetype handler registry
+- The system uses `CanHandle()` methods from registered handlers:
+  - **MarkdownHandler**: Detects `.md` and `.markdown` files → markdown-editor
+  - **DokuwikiHandler**: Detects `.txt` files with DokuWiki syntax (headers like `====== title ======`) → textarea-editor
+  - **PlaintextHandler**: Detects plain `.txt` files → textarea-editor
+- Detection happens at request time based on file extension and content
+- No syntax metadata is stored - always uses fresh detection
+
+### Metadata Fields
+
+Files have the following metadata fields:
+- **name**: Manual filename
+- **path**: Automatic file path
+- **collection**: Collection name (auto-detected from folder structure)
+- **filetype**: Type of file (fleeting, literature, permanent, moc, filter, todo, journaling)
+- **status**: Status (draft, published, archived)
+- **priority**: Priority level (low, medium, high)
+- **tags**: Manual tags
+- **folders**: Automatic folder hierarchy
+- **PARA**: Projects, Areas, Resources, Archive organization
+- Timestamps: createdAt, lastEdited, targetDate
+- Links: parents, kids, ancestors, usedLinks, linksToHere
+
+Note: Syntax is NOT stored in metadata - it is dynamically detected using filetype handlers. Regenerate docs with `make docs`
 
 ### Theme-Friendly APIs
 

@@ -92,6 +92,16 @@ func StartServerChi() {
 		})
 
 		// ----------------------------------------------------------------------------------------
+		// ---------------------------------------- EDITOR ----------------------------------------
+		// ----------------------------------------------------------------------------------------
+
+		r.Route("/editor", func(r chi.Router) {
+			r.Get("/", handleAPIGetEditorHandler)
+			r.Get("/markdown-form", handleAPIMarkdownEditorForm)
+			r.Get("/textarea", handleAPIGetTextareaEditor)
+		})
+
+		// ----------------------------------------------------------------------------------------
 		// ------------------------------------ system routes ------------------------------------
 		// ----------------------------------------------------------------------------------------
 
@@ -151,7 +161,6 @@ func StartServerChi() {
 			r.Get("/form", handleAPIFileForm)
 			r.Get("/metadata-form", handleAPIMetadataForm)
 			r.Post("/create", handleAPIFileCreate)
-			r.Get("/markdown-form", handleAPIMarkdownEditorForm)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -254,7 +263,6 @@ func StartServerChi() {
 
 		r.Route("/components", func(r chi.Router) {
 			r.Get("/table", handleAPIGetTable)
-			r.Get("/editor", handleAPIGetEditor)
 		})
 	})
 

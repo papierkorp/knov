@@ -15,27 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/components/editor": {
-            "get": {
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "components"
-                ],
-                "summary": "Get file editor",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        },
         "/api/components/table": {
             "get": {
                 "description": "Returns paginated, sortable, searchable table HTML fragment",
@@ -849,6 +828,70 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/editor": {
+            "get": {
+                "description": "Returns the appropriate editor based on file metadata",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Get appropriate editor for file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file path (optional for new files)",
+                        "name": "filepath",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/editor/markdown-form": {
+            "get": {
+                "description": "Returns a markdown editor form for creating or editing files",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Get markdown editor form HTML",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file path (optional for new files)",
+                        "name": "filepath",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/editor/textarea": {
+            "get": {
+                "description": "Returns a simple textarea editor component for editing file content",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Get textarea editor component",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/files/browse": {
             "get": {
                 "produces": [
@@ -997,27 +1040,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Response format (options for HTML select options)",
                         "name": "format",
-                        "in": "query"
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/api/files/markdown-form": {
-            "get": {
-                "description": "Returns a markdown editor form for creating or editing files",
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "Get markdown editor form HTML",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path (optional for new files)",
-                        "name": "filepath",
                         "in": "query"
                     }
                 ],
@@ -3247,7 +3269,8 @@ const docTemplate = `{
                 "literature",
                 "moc",
                 "permanent",
-                "filter"
+                "filter",
+                "journaling"
             ],
             "x-enum-comments": {
                 "FileTypeMOC": "maps of content - indexes to link related notes"
@@ -3258,6 +3281,7 @@ const docTemplate = `{
                 "",
                 "maps of content - indexes to link related notes",
                 "",
+                "",
                 ""
             ],
             "x-enum-varnames": [
@@ -3266,7 +3290,8 @@ const docTemplate = `{
                 "FileTypeLiterature",
                 "FileTypeMOC",
                 "FileTypePermanent",
-                "FileTypeFilter"
+                "FileTypeFilter",
+                "FileTypeJournaling"
             ]
         },
         "files.Metadata": {

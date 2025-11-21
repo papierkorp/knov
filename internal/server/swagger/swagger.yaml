@@ -128,6 +128,7 @@ definitions:
     - moc
     - permanent
     - filter
+    - journaling
     type: string
     x-enum-comments:
       FileTypeMOC: maps of content - indexes to link related notes
@@ -138,6 +139,7 @@ definitions:
     - maps of content - indexes to link related notes
     - ""
     - ""
+    - ""
     x-enum-varnames:
     - FileTypeTodo
     - FileTypeFleeting
@@ -145,6 +147,7 @@ definitions:
     - FileTypeMOC
     - FileTypePermanent
     - FileTypeFilter
+    - FileTypeJournaling
   files.Metadata:
     properties:
       ancestor:
@@ -299,20 +302,6 @@ info:
   title: Knov API
   version: "1.0"
 paths:
-  /api/components/editor:
-    get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      produces:
-      - text/html
-      responses: {}
-      summary: Get file editor
-      tags:
-      - components
   /api/components/table:
     get:
       description: Returns paginated, sortable, searchable table HTML fragment
@@ -861,6 +850,49 @@ paths:
       summary: Render dashboard widget
       tags:
       - widgets
+  /api/editor:
+    get:
+      description: Returns the appropriate editor based on file metadata
+      parameters:
+      - description: file path (optional for new files)
+        in: query
+        name: filepath
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get appropriate editor for file
+      tags:
+      - editor
+  /api/editor/markdown-form:
+    get:
+      description: Returns a markdown editor form for creating or editing files
+      parameters:
+      - description: file path (optional for new files)
+        in: query
+        name: filepath
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get markdown editor form HTML
+      tags:
+      - editor
+  /api/editor/textarea:
+    get:
+      description: Returns a simple textarea editor component for editing file content
+      parameters:
+      - description: file path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get textarea editor component
+      tags:
+      - editor
   /api/files/browse:
     get:
       parameters:
@@ -962,20 +994,6 @@ paths:
       - text/html
       responses: {}
       summary: Get all files
-      tags:
-      - files
-  /api/files/markdown-form:
-    get:
-      description: Returns a markdown editor form for creating or editing files
-      parameters:
-      - description: File path (optional for new files)
-        in: query
-        name: filepath
-        type: string
-      produces:
-      - text/html
-      responses: {}
-      summary: Get markdown editor form HTML
       tags:
       - files
   /api/files/metadata-form:
