@@ -70,19 +70,6 @@
                     </div>
                 </div>
             </section>
-
-            <section class="sidebar-section sidebar-toc">
-                <h3>table of contents</h3>
-                {{ if .FileContent.TOC }}
-                    <nav class="toc-nav">
-                        {{ range .FileContent.TOC }}
-                            <a href="#{{ .ID }}" style="padding-left: {{ mul .Level 16 }}px">{{ .Text }}</a>
-                        {{ end }}
-                    </nav>
-                {{ else }}
-                    <div class="toc-empty">no headings found</div>
-                {{ end }}
-            </section>
             <section class="sidebar-section">
                 <h3>connections</h3>
                 <div class="links-container">
@@ -107,6 +94,18 @@
                         <div hx-get="/api/links/linkstohere?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
                 </div>
+            </section>
+            <section class="sidebar-section sidebar-toc">
+                <h3>table of contents</h3>
+                {{ if .FileContent.TOC }}
+                    <nav class="toc-nav">
+                        {{ range .FileContent.TOC }}
+                            <a href="#{{ .ID }}" style="padding-left: {{ mul .Level 16 }}px">{{ .Text }}</a>
+                        {{ end }}
+                    </nav>
+                {{ else }}
+                    <div class="toc-empty">no headings found</div>
+                {{ end }}
             </section>
         </aside>
     </div>
