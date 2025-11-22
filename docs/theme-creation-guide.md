@@ -16,7 +16,7 @@ themes/your-theme-name/
 
 ### 1. theme.json
 
-Contains theme metadata and view definitions.
+Contains theme metadata and settings.
 
 ```json
 {
@@ -24,9 +24,12 @@ Contains theme metadata and view definitions.
   "version": "1.0.0",
   "author": "Your Name",
   "description": "A brief description",
-  "views": {
-    "base": [""],
-    "settings": [""]
+  "themeSettings": {
+    "darkMode": {
+      "type": "boolean",
+      "default": false,
+      "label": "Dark Mode"
+    }
   }
 }
 ```
@@ -37,7 +40,6 @@ Contains theme metadata and view definitions.
 - `version`: Theme version (use semantic versioning)
 - `author`: Your name or organization
 - `description`: Brief theme description
-- `views`: Define available views for each template
 - `themeSettings`: Optional theme-specific settings schema
 
 ### Theme Settings (Optional)
@@ -91,7 +93,8 @@ Themes can define custom settings that users can configure. Add a `themeSettings
 Most themes should implement these standard settings for consistency:
 
 - `darkMode` (boolean): Enable dark theme appearance
-- `colorScheme` (select): Color scheme selection (replaces the old colorSchemes array)
+- `colorScheme` (select): Color scheme selection
+- `fileView` (select): File view layout options (e.g., detailed, compact, reader)
 - `customCSS` (textarea): Custom CSS input
 
 **Required fields for each setting:**
@@ -108,7 +111,7 @@ Most themes should implement these standard settings for consistency:
 
 Main template file. Must exist and contain valid HTML.
 
-**Simple example (no named views):**
+**Example:**
 
 ```html
 <!DOCTYPE html>
@@ -125,44 +128,6 @@ Main template file. Must exist and contain valid HTML.
     </div>
   </body>
 </html>
-```
-
-**With named views:**
-
-```html
-{{define "basic"}}
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>{{.Title}}</title>
-    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
-  </head>
-  <body>
-    <h1>Basic View</h1>
-  </body>
-</html>
-{{end}} {{define "advanced"}}
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>{{.Title}}</title>
-    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
-  </head>
-  <body>
-    <h1>Advanced View</h1>
-    <p>More features here</p>
-  </body>
-</html>
-{{end}}
-```
-
-If using named views, update `theme.json`:
-
-```json
-"views": {
-  "base": ["basic", "advanced"],
-  "settings": [""]
-}
 ```
 
 ### 3. settings.gotmpl
@@ -222,52 +187,38 @@ Templates receive the following data:
 - `{{.Title}}` - Current page title
 - `{{.Themes}}` - List of all themes
 - `{{.CurrentTheme}}` - Name of active theme
-- `{{.ThemeSettings}}` - Current theme's setting values (settings page only)
-- `{{.ThemeSettingsSchema}}` - Current theme's settings schema (settings page only)
+- `{{.ThemeSettings}}` - Current theme's setting values (available in all templates)
+- `{{.Language}}` - Current language code
 
 ### Accessing Theme Settings in Templates
 
 In your templates, you can access theme settings like this:
 
 ```html
-{{if .ThemeSettings.enableAnimations}}
+{{if index .ThemeSettings "enableAnimations"}}
   <div class="animated">Content with animations</div>
 {{else}}
   <div class="static">Content without animations</div>
 {{end}}
 
-<div style="width: {{.ThemeSettings.sidebarWidth}}px;">
+<div style="width: {{index .ThemeSettings "sidebarWidth"}}px;">
   Sidebar with custom width
 </div>
 ```
 
-## Views System
+**Example: Using fileView setting for conditional rendering**
 
-### Simple Theme (No Named Views)
-
-Use empty string in views array:
-
-```json
-"views": {
-  "base": [""],
-  "settings": [""]
-}
+```html
+{{ define "content" }}
+{{if eq (index .ThemeSettings "fileView") "compact"}}
+    {{ template "compact" . }}
+{{else if eq (index .ThemeSettings "fileView") "reader"}}
+    {{ template "reader" . }}
+{{else}}
+    {{ template "detailed" . }}
+{{end}}
+{{ end }}
 ```
-
-Template needs no `{{define}}` blocks.
-
-### Multiple Views
-
-Define named views in theme.json:
-
-```json
-"views": {
-  "base": ["basic", "advanced"],
-  "settings": [""]
-}
-```
-
-Then create corresponding `{{define}}` blocks in your template.
 
 ## Testing Your Theme
 
@@ -275,16 +226,15 @@ Then create corresponding `{{define}}` blocks in your template.
 2. Run the application: `make dev`
 3. Navigate to `http://localhost:1325/settings`
 4. Select your theme from the dropdown
-5. Test all pages and views
+5. Test all pages
 
 ## Validation
 
 The system validates:
 
 - All required files exist and are not empty
-- theme.json contains all required fields (name, version, author, description, views)
+- theme.json contains all required fields (name, version, author, description)
 - Theme settings (if defined) have valid types and required fields
-- All views defined in theme.json exist as templates
 - Templates parse correctly
 
 If validation fails, check console output for error messages.

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"knov/internal/configmanager"
@@ -126,6 +127,74 @@ func handleAPISetThemeSetting(w http.ResponseWriter, r *http.Request) {
 
 	configmanager.SetThemeSetting(themeName, settingKey, settingValue)
 	logging.LogDebug("theme setting updated: %s.%s = %v", themeName, settingKey, settingValue)
+
+	w.Header().Set("HX-Refresh", "true")
+	w.WriteHeader(http.StatusOK)
+}
+
+// @Summary Get theme settings form
+// @Description Get all theme settings as HTML form elements
+// @Tags themes
+// @Produce html
+// @Success 200 {string} string "HTML form elements"
+// @Router /api/themes/settings [get]
+func handleAPIGetThemeSettingsForm(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	schema := tm.GetCurrentThemeSettingsSchema()
+	currentValues := configmanager.GetCurrentThemeSettings()
+
+	html := render.RenderThemeSettingsForm(schema, currentValues)
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// @Summary Update theme setting
+// @Description Update a specific setting for the current theme
+// @Tags themes
+// @Accept application/x-www-form-urlencoded
+// @Param key formData string true "Setting key"
+// @Param value formData string true "Setting value"
+// @Produce json,html
+// @Success 200 "Setting updated successfully"
+// @Router /api/themes/settings [post]
+func handleAPIUpdateThemeSetting(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	key := r.FormValue("key")
+	value := r.FormValue("value")
+
+	if key == "" {
+		http.Error(w, "key parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	currentTheme := configmanager.GetUserSettings().Theme
+	tm := thememanager.GetThemeManager()
+	schema := tm.GetCurrentThemeSettingsSchema()
+
+	// get setting definition to determine type
+	setting, exists := schema[key]
+	if !exists {
+		http.Error(w, "unknown setting key", http.StatusBadRequest)
+		return
+	}
+
+	// convert value based on expected type
+	var settingValue interface{}
+	switch setting.Type {
+	case "boolean":
+		settingValue = value == "true"
+	case "number":
+		var num float64
+		fmt.Sscanf(value, "%f", &num)
+		settingValue = num
+	default:
+		settingValue = value
+	}
+
+	configmanager.SetThemeSetting(currentTheme, key, settingValue)
+	logging.LogDebug("theme setting updated: %s = %v", key, settingValue)
 
 	w.Header().Set("HX-Refresh", "true")
 	w.WriteHeader(http.StatusOK)

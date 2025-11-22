@@ -17,29 +17,23 @@ import (
 
 // BaseTemplateData contains data needed by all templates
 type BaseTemplateData struct {
-	Title        string
-	CurrentTheme string
-	DarkMode     bool
-	ColorScheme  string
-	FontFamily   string
-	Language     string
-	Themes       []Theme
-	ViewName     string
-	T            func(string, ...any) string
+	Title         string
+	CurrentTheme  string
+	ThemeSettings map[string]interface{}
+	Language      string
+	Themes        []Theme
+	T             func(string, ...any) string
 }
 
 // NewBaseTemplateData creates base data used by all templates
-func NewBaseTemplateData(title, viewName string) BaseTemplateData {
+func NewBaseTemplateData(title string) BaseTemplateData {
 	return BaseTemplateData{
-		Title:        title,
-		CurrentTheme: themeManager.GetCurrentThemeName(),
-		DarkMode:     configmanager.GetDarkMode(),
-		ColorScheme:  configmanager.GetColorScheme(),
-		FontFamily:   configmanager.GetFontFamily(),
-		Language:     configmanager.GetLanguage(),
-		Themes:       themeManager.GetAvailableThemes(),
-		ViewName:     viewName,
-		T:            translation.Sprintf,
+		Title:         title,
+		CurrentTheme:  themeManager.GetCurrentThemeName(),
+		ThemeSettings: configmanager.GetCurrentThemeSettings(),
+		Language:      configmanager.GetLanguage(),
+		Themes:        themeManager.GetAvailableThemes(),
+		T:             translation.Sprintf,
 	}
 }
 
@@ -96,9 +90,9 @@ type SettingsTemplateData struct {
 }
 
 // NewSettingsTemplateData creates settings-specific data
-func NewSettingsTemplateData(viewName string) SettingsTemplateData {
+func NewSettingsTemplateData() SettingsTemplateData {
 	return SettingsTemplateData{
-		BaseTemplateData:     NewBaseTemplateData("Settings", viewName),
+		BaseTemplateData:     NewBaseTemplateData("Settings"),
 		AvailableLanguages:   configmanager.GetAvailableLanguages(),
 		AvailableThemes:      themeManager.GetAvailableThemes(),
 		CurrentThemeSettings: configmanager.GetCurrentThemeSettings(),
@@ -118,9 +112,9 @@ type FileViewTemplateData struct {
 }
 
 // NewFileViewTemplateData creates file view specific data
-func NewFileViewTemplateData(title, filePath string, fileContent *files.FileContent, viewName string) FileViewTemplateData {
+func NewFileViewTemplateData(title, filePath string, fileContent *files.FileContent) FileViewTemplateData {
 	return FileViewTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title, viewName),
+		BaseTemplateData: NewBaseTemplateData(title),
 		FilePath:         filePath,
 		FileContent:      fileContent,
 	}
@@ -137,13 +131,13 @@ type FileEditTemplateData struct {
 }
 
 // NewFileEditTemplateData creates file edit specific data
-func NewFileEditTemplateData(filePath, viewName string) FileEditTemplateData {
+func NewFileEditTemplateData(filePath string) FileEditTemplateData {
 	title := "Edit File"
 	if filePath != "" {
 		title = "Edit: " + filePath
 	}
 	return FileEditTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title, viewName),
+		BaseTemplateData: NewBaseTemplateData(title),
 		FilePath:         filePath,
 	}
 }
@@ -160,9 +154,9 @@ type BrowseFilesTemplateData struct {
 }
 
 // NewBrowseFilesTemplateData creates browse files specific data
-func NewBrowseFilesTemplateData(metadataType, value, viewName string) BrowseFilesTemplateData {
+func NewBrowseFilesTemplateData(metadataType, value string) BrowseFilesTemplateData {
 	return BrowseFilesTemplateData{
-		BaseTemplateData: NewBaseTemplateData("Browse Files", viewName),
+		BaseTemplateData: NewBaseTemplateData("Browse Files"),
 		MetadataType:     metadataType,
 		Value:            value,
 	}
@@ -179,13 +173,13 @@ type DashboardTemplateData struct {
 }
 
 // NewDashboardTemplateData creates dashboard view specific data
-func NewDashboardTemplateData(dash *dashboard.Dashboard, viewName string) DashboardTemplateData {
+func NewDashboardTemplateData(dash *dashboard.Dashboard) DashboardTemplateData {
 	title := "Dashboard"
 	if dash != nil {
 		title = dash.Name
 	}
 	return DashboardTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title, viewName),
+		BaseTemplateData: NewBaseTemplateData(title),
 		Dashboard:        dash,
 	}
 }
@@ -197,13 +191,13 @@ type DashboardEditTemplateData struct {
 }
 
 // NewDashboardEditTemplateData creates dashboard edit specific data
-func NewDashboardEditTemplateData(dash *dashboard.Dashboard, viewName string) DashboardEditTemplateData {
+func NewDashboardEditTemplateData(dash *dashboard.Dashboard) DashboardEditTemplateData {
 	title := "Edit Dashboard"
 	if dash != nil {
 		title = "Edit Dashboard: " + dash.Name
 	}
 	return DashboardEditTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title, viewName),
+		BaseTemplateData: NewBaseTemplateData(title),
 		Dashboard:        dash,
 	}
 }
@@ -219,9 +213,9 @@ type SearchPageData struct {
 }
 
 // NewSearchPageData creates search page specific data
-func NewSearchPageData(searchQuery, viewName string) SearchPageData {
+func NewSearchPageData(searchQuery string) SearchPageData {
 	return SearchPageData{
-		BaseTemplateData: NewBaseTemplateData("Search", viewName),
+		BaseTemplateData: NewBaseTemplateData("Search"),
 		SearchQuery:      searchQuery,
 	}
 }

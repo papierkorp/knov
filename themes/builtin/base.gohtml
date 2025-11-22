@@ -12,9 +12,9 @@
 </head>
 <body
     data-theme="{{ .CurrentTheme }}"
-    data-dark-mode="{{ .DarkMode }}"
-    data-color-scheme="{{ .ColorScheme }}"
-    data-font-family="{{ .FontFamily }}"
+    data-dark-mode="{{ index .ThemeSettings "darkMode" }}"
+    data-color-scheme="{{ index .ThemeSettings "colorScheme" }}"
+    data-font-family="{{ index .ThemeSettings "fontFamily" }}"
     data-language="{{ .Language }}">
     <div id="wrapper">
         {{ template "header" . }}

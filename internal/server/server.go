@@ -116,6 +116,10 @@ func StartServerChi() {
 			r.Get("/", handleAPIGetThemes)
 			r.Post("/", handleAPISetTheme)
 
+			// current theme settings routes
+			r.Get("/settings", handleAPIGetThemeSettingsForm)
+			r.Post("/settings", handleAPIUpdateThemeSetting)
+
 			// RESTful theme settings routes
 			r.Route("/{themeName}/settings", func(r chi.Router) {
 				r.Get("/", handleAPIGetThemeSettings)
@@ -131,20 +135,11 @@ func StartServerChi() {
 			r.Get("/datapath", handleAPIGetCurrentDataPath)
 			r.Get("/languages", handleAPIGetLanguages)
 			r.Get("/repository", handleAPIGetGitRepositoryURL)
-			r.Get("/fileviews", handleAPIGetAvailableFileViews)
-			r.Get("/customcss", handleAPIGetCustomCSS)
-			r.Get("/darkmode", handleAPIGetDarkMode)
-			r.Get("/colorschemes", handleAPIGetColorSchemes)
-			r.Get("/darkmode/status", handleAPIGetDarkModeStatus)
 
 			// POST
 			r.Post("/language", handleAPISetLanguage)
 			r.Post("/repository", handleAPISetGitRepositoryURL)
-			r.Post("/fileview", handleAPISetFileView)
-			r.Post("/customcss", handleCustomCSS)
 			r.Post("/datapath", handleAPISetDataPath)
-			r.Post("/darkmode", handleAPISetDarkMode)
-			r.Post("/colorscheme", handleAPISetColorScheme)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -306,7 +301,13 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		cssFile := strings.TrimPrefix(filePath, "css/")
 
 		if cssFile == "custom.css" {
-			customCSS := configmanager.GetCustomCSS()
+			currentTheme := configmanager.GetUserSettings().Theme
+			customCSS := ""
+			if val := configmanager.GetThemeSetting(currentTheme, "customCSS"); val != nil {
+				if css, ok := val.(string); ok {
+					customCSS = css
+				}
+			}
 			w.Write([]byte(customCSS))
 			return
 		}
@@ -347,22 +348,13 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getViewName(templateName string) string {
-	if templateName == "fileview" {
-		return configmanager.GetFileView()
-	}
-	// todo: get from configmanager - usersettings for other templates
-	return ""
-}
-
 // ----------------------------------------------------------------------------------------
 // ------------------------------------ default routes ------------------------------------
 // ----------------------------------------------------------------------------------------
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("home")
-	data := thememanager.NewBaseTemplateData("home", viewName)
+	data := thememanager.NewBaseTemplateData("home")
 
 	err := tm.Render(w, "home", data)
 	if err != nil {
@@ -373,8 +365,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 
 func handleSettings(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("settings")
-	data := thememanager.NewSettingsTemplateData(viewName)
+	data := thememanager.NewSettingsTemplateData()
 
 	err := tm.Render(w, "settings", data)
 	if err != nil {
@@ -385,8 +376,8 @@ func handleSettings(w http.ResponseWriter, r *http.Request) {
 
 func handleAdmin(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("admin")
-	data := thememanager.NewBaseTemplateData("Admin", viewName)
+	// viewName removed
+	data := thememanager.NewBaseTemplateData("Admin")
 
 	err := tm.Render(w, "admin", data)
 	if err != nil {
@@ -397,8 +388,7 @@ func handleAdmin(w http.ResponseWriter, r *http.Request) {
 
 func handlePlayground(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("playground")
-	data := thememanager.NewBaseTemplateData("playground", viewName)
+	data := thememanager.NewBaseTemplateData("playground")
 
 	err := tm.Render(w, "playground", data)
 	if err != nil {
@@ -409,8 +399,7 @@ func handlePlayground(w http.ResponseWriter, r *http.Request) {
 
 func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("latestchanges")
-	data := thememanager.NewBaseTemplateData("latestchanges", viewName)
+	data := thememanager.NewBaseTemplateData("latestchanges")
 
 	err := tm.Render(w, "latestchanges", data)
 	if err != nil {
@@ -421,8 +410,7 @@ func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
 
 func handleHistory(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("history")
-	data := thememanager.NewBaseTemplateData("history", viewName)
+	data := thememanager.NewBaseTemplateData("history")
 
 	err := tm.Render(w, "history", data)
 	if err != nil {
@@ -433,8 +421,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 
 func handleOverview(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("overview")
-	data := thememanager.NewBaseTemplateData("overview", viewName)
+	data := thememanager.NewBaseTemplateData("overview")
 
 	err := tm.Render(w, "overview", data)
 	if err != nil {
@@ -447,8 +434,7 @@ func handleSearchPage(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("search")
-	data := thememanager.NewSearchPageData(query, viewName)
+	data := thememanager.NewSearchPageData(query)
 
 	err := tm.Render(w, "search", data)
 	if err != nil {
@@ -469,9 +455,8 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 	// query := fmt.Sprintf("%s:%s", metadataType, value)
 
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("browsefiles")
 	title := fmt.Sprintf("Browse: %s", value)
-	data := thememanager.NewBrowseFilesTemplateData(metadataType, value, viewName)
+	data := thememanager.NewBrowseFilesTemplateData(metadataType, value)
 	data.Title = title
 
 	err := tm.Render(w, "browsefiles", data)
@@ -483,8 +468,7 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 func handleDashboardNew(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("dashboardnew")
-	data := thememanager.NewBaseTemplateData("Create New Dashboard", viewName)
+	data := thememanager.NewBaseTemplateData("Create New Dashboard")
 
 	err := tm.Render(w, "dashboardnew", data)
 	if err != nil {
@@ -502,8 +486,7 @@ func handleDashboardEdit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("dashboardedit")
-	data := thememanager.NewDashboardEditTemplateData(dash, viewName)
+	data := thememanager.NewDashboardEditTemplateData(dash)
 
 	err = tm.Render(w, "dashboardedit", data)
 	if err != nil {
@@ -525,8 +508,7 @@ func handleDashboardView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("dashboardview")
-	data := thememanager.NewDashboardTemplateData(dash, viewName)
+	data := thememanager.NewDashboardTemplateData(dash)
 
 	err = tm.Render(w, "dashboardview", data)
 	if err != nil {
@@ -560,8 +542,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 
 	// For full page requests, render through template system
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("fileview")
-	data := thememanager.NewFileViewTemplateData(filepath.Base(filePath), filePath, fileContent, viewName)
+	data := thememanager.NewFileViewTemplateData(filepath.Base(filePath), filePath, fileContent)
 
 	// Always render through base template, not individual views
 	err = tm.Render(w, "fileview", data)
@@ -575,8 +556,7 @@ func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/files/edit/")
 
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("fileedit")
-	data := thememanager.NewFileEditTemplateData(filePath, viewName)
+	data := thememanager.NewFileEditTemplateData(filePath)
 
 	err := tm.Render(w, "fileedit", data)
 	if err != nil {
@@ -587,8 +567,7 @@ func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 
 func handleFileNew(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	viewName := getViewName("filenew")
-	data := thememanager.NewBaseTemplateData("Create New File", viewName)
+	data := thememanager.NewBaseTemplateData("Create New File")
 
 	err := tm.Render(w, "filenew", data)
 	if err != nil {

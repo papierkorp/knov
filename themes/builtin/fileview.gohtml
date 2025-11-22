@@ -1,7 +1,7 @@
 {{ define "content" }}
-{{if eq .ViewName "compact"}}
+{{if eq (index .ThemeSettings "fileView") "compact"}}
     {{ template "compact" . }}
-{{else if eq .ViewName "reader"}}
+{{else if eq (index .ThemeSettings "fileView") "reader"}}
     {{ template "reader" . }}
 {{else}}
     {{ template "detailed" . }}

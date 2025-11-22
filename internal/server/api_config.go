@@ -8,7 +8,6 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/server/render"
-	"knov/internal/thememanager"
 )
 
 // @Summary Get current configuration
@@ -98,23 +97,6 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, data, html)
 }
 
-// @Summary Save custom CSS for current user
-// @Tags config
-// @Accept application/x-www-form-urlencoded
-// @Param css formData string true "CSS content"
-// @Produce json,html
-// @Success 200 {string} string "css saved"
-// @Router /api/config/customcss [post]
-func handleCustomCSS(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	css := r.FormValue("css")
-
-	configmanager.SetCustomCSS(css)
-
-	w.Header().Set("HX-Refresh", "true")
-	w.WriteHeader(http.StatusOK)
-}
-
 // @Summary Restart application
 // @Description Restarts the application (requires process manager like systemd or docker)
 // @Tags system
@@ -164,63 +146,6 @@ func handleAPISetDataPath(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, data, html)
 }
 
-// @Summary Set dark mode
-// @Tags config
-// @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Router /api/config/darkmode [post]
-func handleAPISetDarkMode(w http.ResponseWriter, r *http.Request) {
-	enabled := r.FormValue("enabled") == "true"
-	configmanager.SetDarkMode(enabled)
-	w.Header().Set("HX-Refresh", "true")
-	w.WriteHeader(http.StatusOK)
-}
-
-// @Summary Get available color schemes
-// @Tags config
-// @Produce json,html
-// @Router /api/config/colorschemes [get]
-func handleAPIGetColorSchemes(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-	themeSettings := tm.GetCurrentThemeSettingsSchema()
-
-	colorSchemeSetting, exists := themeSettings["colorScheme"]
-	if !exists || len(colorSchemeSetting.Options) == 0 {
-		writeResponse(w, r, []string{}, "<option>no color schemes available</option>")
-		return
-	}
-
-	currentScheme := configmanager.GetColorScheme()
-
-	// Convert theme setting options to htmx select options
-	options := make([]render.SelectOption, len(colorSchemeSetting.Options))
-	for i, option := range colorSchemeSetting.Options {
-		options[i] = render.SelectOption{
-			Value: option,
-			Label: option,
-		}
-	}
-
-	html := render.RenderSelectOptions(options, currentScheme)
-	writeResponse(w, r, colorSchemeSetting.Options, html)
-}
-
-// @Summary Set color scheme
-// @Tags config
-// @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Router /api/config/colorscheme [post]
-func handleAPISetColorScheme(w http.ResponseWriter, r *http.Request) {
-	scheme := r.FormValue("colorScheme")
-
-	if scheme != "" {
-		configmanager.SetColorScheme(scheme)
-	}
-
-	w.Header().Set("HX-Refresh", "true")
-	w.WriteHeader(http.StatusOK)
-}
-
 // @Summary Get available languages
 // @Tags config
 // @Produce json,html
@@ -232,37 +157,4 @@ func handleAPIGetLanguages(w http.ResponseWriter, r *http.Request) {
 	options := render.GetLanguageOptions()
 	html := render.RenderSelectOptions(options, currentLang)
 	writeResponse(w, r, languages, html)
-}
-
-// @Summary Get dark mode setting
-// @Tags config
-// @Produce json,html
-// @Router /api/config/darkmode [get]
-func handleAPIGetDarkMode(w http.ResponseWriter, r *http.Request) {
-	darkMode := configmanager.GetDarkMode()
-	html := render.RenderCheckbox("darkMode", "/api/config/darkmode", darkMode, `hx-vals='js:{"enabled": event.target.checked}' hx-trigger="change"`)
-	writeResponse(w, r, darkMode, html)
-}
-
-// @Summary Get dark mode status as boolean
-// @Tags config
-// @Produce json,html
-// @Router /api/config/darkmode/status [get]
-func handleAPIGetDarkModeStatus(w http.ResponseWriter, r *http.Request) {
-	darkMode := configmanager.GetDarkMode()
-
-	if darkMode {
-		w.Write([]byte("true"))
-	} else {
-		w.Write([]byte("false"))
-	}
-}
-
-// @Summary Get custom CSS
-// @Tags config
-// @Produce json,html
-// @Router /api/config/customcss [get]
-func handleAPIGetCustomCSS(w http.ResponseWriter, r *http.Request) {
-	html := render.RenderCustomCSSTextarea(configmanager.GetCustomCSS())
-	writeResponse(w, r, configmanager.GetCustomCSS(), html)
 }

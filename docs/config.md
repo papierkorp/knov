@@ -38,18 +38,17 @@ Example user settings:
 {
   "theme": "builtin",
   "language": "en",
-  "fileView": "detailed",
-  "darkMode": false,
-  "colorScheme": "default",
-  "customCSS": "",
   "themeSettings": {
     "builtin": {
-      "sidebarWidth": 300,
-      "enableAnimations": false,
-      "fontFamily": "serif"
+      "darkMode": false,
+      "colorScheme": "default",
+      "customCSS": "",
+      "fileView": "detailed"
     },
     "myCustomTheme": {
-      "customSetting": "value"
+      "customColor": "#ff0000",
+      "fontSize": 16,
+      "enableFeature": true
     }
   }
 }
@@ -57,7 +56,7 @@ Example user settings:
 
 ### Theme Settings
 
-Theme-specific settings are stored under `themeSettings` with the theme name as the key. Each theme can define its own settings schema in its `theme.json` file, and user preferences are stored per theme.
+Theme-specific settings are stored under `themeSettings` as key-value pairs, with the theme name as the key. Settings structure is completely generic - themes define their settings in `theme.json` and the app stores them as-is without any predefined structure. This allows theme creators to define any settings they need.
 
 ## Deployment Examples
 
@@ -102,13 +101,13 @@ You can override individual templates from any active theme by placing custom te
 **Directory Structure:**
 ```
 themes/
-├── overwrite/
-│   ├── base.gohtml          # Override base template
-│   ├── settings.gohtml      # Override settings template
-│   ├── fileview.gohtml      # Override file view template
-│   └── ...                  # Other template overrides
-└── your-theme/
-    └── ...
+â”œâ”€â”€ overwrite/
+â”‚   â”œâ”€â”€ base.gohtml          # Override base template
+â”‚   â”œâ”€â”€ settings.gohtml      # Override settings template
+â”‚   â”œâ”€â”€ fileview.gohtml      # Override file view template
+â”‚   â””â”€â”€ ...                  # Other template overrides
+â””â”€â”€ your-theme/
+    â””â”€â”€ ...
 ```
 
 **How it works:**

@@ -362,83 +362,6 @@ paths:
       summary: Get current configuration
       tags:
       - config
-  /api/config/colorscheme:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Set color scheme
-      tags:
-      - config
-  /api/config/colorschemes:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Get available color schemes
-      tags:
-      - config
-  /api/config/customcss:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Get custom CSS
-      tags:
-      - config
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: CSS content
-        in: formData
-        name: css
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: css saved
-          schema:
-            type: string
-      summary: Save custom CSS for current user
-      tags:
-      - config
-  /api/config/darkmode:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Get dark mode setting
-      tags:
-      - config
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Set dark mode
-      tags:
-      - config
-  /api/config/darkmode/status:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Get dark mode status as boolean
-      tags:
-      - config
   /api/config/datapath:
     get:
       produces:
@@ -466,26 +389,6 @@ paths:
           schema:
             type: string
       summary: Update data path
-      tags:
-      - config
-  /api/config/fileview:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Set file view
-      tags:
-      - config
-  /api/config/fileviews:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Get available file views for current theme
       tags:
       - config
   /api/config/language:
@@ -2372,6 +2275,43 @@ paths:
           schema:
             type: string
       summary: Get themes
+      tags:
+      - themes
+  /api/themes/settings:
+    get:
+      description: Get all theme settings as HTML form elements
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML form elements
+          schema:
+            type: string
+      summary: Get theme settings form
+      tags:
+      - themes
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Update a specific setting for the current theme
+      parameters:
+      - description: Setting key
+        in: formData
+        name: key
+        required: true
+        type: string
+      - description: Setting value
+        in: formData
+        name: value
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: Setting updated successfully
+      summary: Update theme setting
       tags:
       - themes
 swagger: "2.0"

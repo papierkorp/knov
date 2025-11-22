@@ -46,60 +46,13 @@
             </select>
         </form>
     </div>
-    <div class="setting-item">
-        <label>
-            Dark Mode
-            <input
-                type="checkbox"
-                name="darkMode"
-                hx-get="/api/config/darkmode"
-                hx-trigger="load"
-                hx-swap="outerHTML"
-                hx-post="/api/config/darkmode"
-                hx-vals='js:{"enabled": event.target.checked}'
-                hx-trigger="load, change"
-            />
-        </label>
-    </div>
-    <div class="setting-item">
-        <form hx-post="/api/config/colorscheme" hx-trigger="change">
-            <label for="colorScheme">Color Scheme:</label>
-            <select
-                name="colorScheme"
-                id="colorScheme"
-                hx-get="/api/config/colorschemes"
-                hx-trigger="load"
-                hx-swap="innerHTML"
-            >
-                <option>Loading schemes...</option>
-            </select>
-        </form>
-    </div>
-    <div class="setting-item">
-        <form hx-post="/api/config/fileview" hx-trigger="change">
-            <label for="fileView">Select File View:</label>
-            <select
-                name="fileView"
-                id="fileView"
-                hx-get="/api/config/fileviews"
-                hx-trigger="load"
-                hx-swap="innerHTML"
-            >
-                <option>Loading views...</option>
-            </select>
-        </form>
-    </div>
-    <div class="setting-item">
-        <div id="customCssEditor">
-            <h3>Custom CSS</h3>
-            <span
-                hx-get="/api/config/customcss"
-                hx-trigger="load"
-                hx-swap="innerHTML"
-            >
-                <textarea name="css" rows="20" style="width: 100%; font-family: monospace;" placeholder="Loading CSS..."></textarea>
-            </span>
-        </div>
+    <div
+        id="theme-settings-container"
+        hx-get="/api/themes/settings"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+    >
+        <p>Loading theme settings...</p>
     </div>
 </section>
 {{ end }}

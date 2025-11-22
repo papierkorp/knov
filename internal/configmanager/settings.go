@@ -20,10 +20,9 @@ var configPath string
 
 // UserSettings contains user-specific settings stored in JSON
 type UserSettings struct {
-	Theme         string                   `json:"theme"`
-	Language      string                   `json:"language"`
-	FileView      string                   `json:"fileView"`
-	ThemeSettings map[string]ThemeSettings `json:"themeSettings,omitempty"`
+	Theme         string           `json:"theme"`
+	Language      string           `json:"language"`
+	ThemeSettings AllThemeSettings `json:"themeSettings,omitempty"`
 }
 
 // InitUserSettings initializes user settings from direct JSON file for specific user
@@ -33,8 +32,7 @@ func InitUserSettings(userID string) {
 	userSettings = UserSettings{
 		Theme:         "builtin",
 		Language:      "en",
-		FileView:      "detailed",
-		ThemeSettings: make(map[string]ThemeSettings),
+		ThemeSettings: make(AllThemeSettings),
 	}
 
 	settingsPath := getUserSettingsPath(userID)
@@ -98,18 +96,4 @@ func saveUserSettings() error {
 // getUserSettingsPath returns the file path for user settings JSON file
 func getUserSettingsPath(userID string) string {
 	return filepath.Join(configPath, "user", userID, "settings.json")
-}
-
-// GetFileView returns current file view from user settings
-func GetFileView() string {
-	if userSettings.FileView == "" {
-		return "detailed"
-	}
-	return userSettings.FileView
-}
-
-// SetFileView updates user settings with new file view
-func SetFileView(view string) {
-	userSettings.FileView = view
-	saveUserSettings()
 }

@@ -3,24 +3,6 @@
   "version": "1.0.0",
   "author": "System",
   "description": "Default builtin theme",
-  "views": {
-    "base": [""],
-    "settings": [""],
-    "home": [""],
-    "admin": [""],
-    "search": [""],
-    "overview": [""],
-    "playground": [""],
-    "history": [""],
-    "latestchanges": [""],
-    "browsefiles": [""],
-    "fileview": ["detailed", "compact", "reader"],
-    "fileedit": [""],
-    "filenew": [""],
-    "dashboardview": [""],
-    "dashboardedit": [""],
-    "dashboardnew": [""]
-  },
   "themeSettings": {
     "darkMode": {
       "type": "boolean",
@@ -37,6 +19,12 @@
       "type": "textarea",
       "default": "",
       "label": "Custom CSS"
+    },
+    "fileView": {
+      "type": "select",
+      "options": ["detailed", "compact", "reader"],
+      "default": "detailed",
+      "label": "File View"
     },
     "fontFamily": {
       "type": "select",

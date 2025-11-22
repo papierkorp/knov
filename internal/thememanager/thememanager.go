@@ -36,7 +36,6 @@ type ThemeMetadata struct {
 	Version       string                  `json:"version"`
 	Author        string                  `json:"author"`
 	Description   string                  `json:"description"`
-	Views         TemplateViews           `json:"views"`
 	ThemeSettings map[string]ThemeSetting `json:"themeSettings,omitempty"`
 }
 
@@ -67,30 +66,6 @@ type ThemeTemplates struct {
 	playground    *template.Template
 	search        *template.Template
 	settings      *template.Template
-}
-
-type TemplateViews struct {
-	AdminViews         []string `json:"admin"`
-	BaseViews          []string `json:"base"`
-	BrowseFilesViews   []string `json:"browsefiles"`
-	DashboardViews     []string `json:"dashboardview"`
-	DashboardEditViews []string `json:"dashboardedit"`
-	DashboardNewViews  []string `json:"dashboardnew"`
-	FileEditViews      []string `json:"fileedit"`
-	FileNewViews       []string `json:"filenew"`
-	FileViewViews      []string `json:"fileview"`
-	HistoryViews       []string `json:"history"`
-	HomeViews          []string `json:"home"`
-	LatestChangesViews []string `json:"latestchanges"`
-	OverviewViews      []string `json:"overview"`
-	PlaygroundViews    []string `json:"playground"`
-	SearchViews        []string `json:"search"`
-	SettingsViews      []string `json:"settings"`
-}
-
-type TemplateEntry struct {
-	Tmpl  *template.Template
-	Views []string
 }
 
 func InitThemeManager() {
@@ -168,13 +143,6 @@ func LoadSingleTheme(themeName, themesDir string) error {
 	err = json.Unmarshal(data, &metadata)
 	if err != nil {
 		return fmt.Errorf("invalid json in theme.json: %w", err)
-	}
-
-	if len(metadata.Views.BaseViews) == 0 {
-		metadata.Views.BaseViews = []string{}
-	}
-	if len(metadata.Views.SettingsViews) == 0 {
-		metadata.Views.SettingsViews = []string{}
 	}
 
 	// ---------------------- Generate Theme ----------------------
@@ -283,22 +251,13 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data 
 	overwritePath := filepath.Join("themes", "overwrite", templateName+".gohtml")
 	err = validateTemplateFile(overwritePath)
 	if err == nil {
-		requiredViews := tm.GetAvailableViews(templateName)
-
 		overwriteTemplate, parseErr := template.ParseFiles(overwritePath)
 
 		if parseErr != nil {
 			fmt.Printf("warning: failed to parse overwrite template '%s': %v, using theme template\n", templateName, parseErr)
 		} else {
-			fmt.Printf("requiredViews: %v", requiredViews)
-			validateErr := validateTemplate(templateName, overwriteTemplate, requiredViews, "overwrite")
-			fmt.Printf("validateTemplate overwrite: %v", validateErr)
-			if validateErr != nil {
-				fmt.Printf("warning: overwrite template validation failed for '%s': %v, using theme template\n", templateName, validateErr)
-			} else {
-				template = overwriteTemplate
-				fmt.Printf("using overwrite template for '%s'\n", templateName)
-			}
+			template = overwriteTemplate
+			fmt.Printf("using overwrite template for '%s'\n", templateName)
 		}
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -402,10 +361,6 @@ func GetThemeManager() ThemeManager {
 	return *themeManager
 }
 
-func (tm *ThemeManager) GetAvailableViews(templateName string) []string {
-	return tm.GetViews(templateName)
-}
-
 func (tm *ThemeManager) GetAvailableThemes() []Theme {
 	return tm.themes
 }
@@ -460,24 +415,24 @@ func (tm *ThemeManager) SetCurrentTheme(theme Theme) error {
 	return nil
 }
 
-func (t *Theme) TemplateMap() map[string]TemplateEntry {
-	return map[string]TemplateEntry{
-		"admin":         {t.Templates.admin, t.Metadata.Views.AdminViews},
-		"base":          {t.Templates.base, t.Metadata.Views.BaseViews},
-		"browsefiles":   {t.Templates.browsefiles, t.Metadata.Views.BrowseFilesViews},
-		"dashboardview": {t.Templates.dashboardview, t.Metadata.Views.DashboardViews},
-		"dashboardedit": {t.Templates.dashboardedit, t.Metadata.Views.DashboardEditViews},
-		"dashboardnew":  {t.Templates.dashboardnew, t.Metadata.Views.DashboardNewViews},
-		"fileedit":      {t.Templates.fileedit, t.Metadata.Views.FileEditViews},
-		"filenew":       {t.Templates.filenew, t.Metadata.Views.FileNewViews},
-		"fileview":      {t.Templates.fileview, t.Metadata.Views.FileViewViews},
-		"history":       {t.Templates.history, t.Metadata.Views.HistoryViews},
-		"home":          {t.Templates.home, t.Metadata.Views.HomeViews},
-		"latestchanges": {t.Templates.latestchanges, t.Metadata.Views.LatestChangesViews},
-		"overview":      {t.Templates.overview, t.Metadata.Views.OverviewViews},
-		"playground":    {t.Templates.playground, t.Metadata.Views.PlaygroundViews},
-		"search":        {t.Templates.search, t.Metadata.Views.SearchViews},
-		"settings":      {t.Templates.settings, t.Metadata.Views.SettingsViews},
+func (t *Theme) TemplateMap() map[string]*template.Template {
+	return map[string]*template.Template{
+		"admin":         t.Templates.admin,
+		"base":          t.Templates.base,
+		"browsefiles":   t.Templates.browsefiles,
+		"dashboardview": t.Templates.dashboardview,
+		"dashboardedit": t.Templates.dashboardedit,
+		"dashboardnew":  t.Templates.dashboardnew,
+		"fileedit":      t.Templates.fileedit,
+		"filenew":       t.Templates.filenew,
+		"fileview":      t.Templates.fileview,
+		"history":       t.Templates.history,
+		"home":          t.Templates.home,
+		"latestchanges": t.Templates.latestchanges,
+		"overview":      t.Templates.overview,
+		"playground":    t.Templates.playground,
+		"search":        t.Templates.search,
+		"settings":      t.Templates.settings,
 	}
 }
 
@@ -490,27 +445,11 @@ func (tm *ThemeManager) GetTemplate(name string) (*template.Template, error) {
 		currentTheme = tm.GetCurrentTheme()
 	}
 
-	entry, ok := currentTheme.TemplateMap()[name]
+	tmpl, ok := currentTheme.TemplateMap()[name]
 	if !ok {
 		return nil, fmt.Errorf("unknown template: %s", name)
 	}
-	return entry.Tmpl, nil
-}
-
-func (tm *ThemeManager) GetViews(name string) []string {
-	currentTheme := tm.GetCurrentTheme()
-
-	// if current theme is empty, try to set builtin as default
-	if currentTheme.Name == "" {
-		setBuiltinAsDefault()
-		currentTheme = tm.GetCurrentTheme()
-	}
-
-	entry, ok := currentTheme.TemplateMap()[name]
-	if !ok {
-		return []string{}
-	}
-	return entry.Views
+	return tmpl, nil
 }
 
 // -----------------------------------------------
@@ -556,16 +495,10 @@ func validateTheme(theme Theme) error {
 		return fmt.Errorf("theme '%s' is missing 'description' in theme.json", theme.Name)
 	}
 
-	for name, entry := range theme.TemplateMap() {
-		if entry.Tmpl == nil {
-			continue // or return an error if required
-		}
-		if len(entry.Views) == 0 {
-			return fmt.Errorf("theme '%s' is missing 'views.%s' in theme.json", theme.Name, name)
-		}
-
-		if err := validateTemplate(name, entry.Tmpl, entry.Views, theme.Name); err != nil {
-			return err
+	// validate that all templates are loaded
+	for name, tmpl := range theme.TemplateMap() {
+		if tmpl == nil {
+			return fmt.Errorf("theme '%s' is missing template: %s", theme.Name, name)
 		}
 	}
 
@@ -587,18 +520,5 @@ func validateTemplateFile(templatePath string) error {
 	if info.Size() == 0 {
 		return fmt.Errorf("template file is empty: %s", templatePath)
 	}
-	return nil
-}
-
-func validateTemplate(templateName string, tmpl *template.Template, views []string, themeName string) error {
-	for _, view := range views {
-		if view == "" || view == "default" || view == templateName {
-			continue
-		}
-		if tmpl.Lookup(view) == nil {
-			return fmt.Errorf("theme '%s': view '%s' not found in %s.gohtml", themeName, view, templateName)
-		}
-	}
-
 	return nil
 }
