@@ -17,7 +17,7 @@ import (
 // @Tags themes
 // @Produce json,html
 // @Success 200 {string} string "{"current":"themename","available":["theme1","theme2"]}"
-// @Router /api/themes/getAllThemes [get]
+// @Router /api/themes [get]
 func handleAPIGetThemes(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	currentTheme := tm.GetCurrentTheme()

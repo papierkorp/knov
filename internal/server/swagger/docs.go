@@ -2824,6 +2824,27 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/themes": {
+            "get": {
+                "description": "Get current theme and available themes",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "themes"
+                ],
+                "summary": "Get themes",
+                "responses": {
+                    "200": {
+                        "description": "{\"current\":\"themename\",\"available\":[\"theme1\",\"theme2\"]}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/themes/": {
             "post": {
                 "description": "Set new theme via form parameter",
@@ -2850,27 +2871,6 @@ const docTemplate = `{
                 "responses": {
                     "303": {
                         "description": "Redirect to settings page"
-                    }
-                }
-            }
-        },
-        "/api/themes/getAllThemes": {
-            "get": {
-                "description": "Get current theme and available themes",
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "themes"
-                ],
-                "summary": "Get themes",
-                "responses": {
-                    "200": {
-                        "description": "{\"current\":\"themename\",\"available\":[\"theme1\",\"theme2\"]}",
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 }
             }

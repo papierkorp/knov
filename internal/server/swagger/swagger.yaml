@@ -2193,6 +2193,20 @@ paths:
       summary: Setup test data
       tags:
       - testdata
+  /api/themes:
+    get:
+      description: Get current theme and available themes
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: '{"current":"themename","available":["theme1","theme2"]}'
+          schema:
+            type: string
+      summary: Get themes
+      tags:
+      - themes
   /api/themes/:
     post:
       consumes:
@@ -2261,20 +2275,6 @@ paths:
         "200":
           description: Setting updated successfully
       summary: Update theme setting
-      tags:
-      - themes
-  /api/themes/getAllThemes:
-    get:
-      description: Get current theme and available themes
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: '{"current":"themename","available":["theme1","theme2"]}'
-          schema:
-            type: string
-      summary: Get themes
       tags:
       - themes
   /api/themes/settings:
