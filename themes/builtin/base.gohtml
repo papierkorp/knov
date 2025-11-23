@@ -60,9 +60,16 @@
         <div class="dropdown-navbar">
             <button class="btn-add">+</button>
             <div class="dropdown-navbar-content">
-                <a href="/dashboard/new">{{T "New Dashboard"}}</a>
-                <a href="/files/new">{{T "Add Note"}}</a>
-                <a href="#" onclick="alert('Add Todo - Coming Soon')">{{T "Add Todo"}}</a>
+                <a href="/dashboard/new">📊 {{T "New Dashboard"}}</a>
+                <hr style="margin: 4px 0; border: none; border-top: 1px solid var(--border);">
+                <a href="/files/new/fleeting">💡 {{T "Fleeting Note"}}</a>
+                <a href="/files/new/literature">📚 {{T "Literature Note"}}</a>
+                <a href="/files/new/permanent">💎 {{T "Permanent Note"}}</a>
+                <a href="/files/new/moc">🗺️ {{T "MOC"}}</a>
+                <hr style="margin: 4px 0; border: none; border-top: 1px solid var(--border);">
+                <a href="/files/new/todo">✅ {{T "Todo"}}</a>
+                <a href="/files/new/journaling">📝 {{T "Journal Entry"}}</a>
+                <a href="/files/new/filter">🔍 {{T "Filter"}}</a>
             </div>
         </div>
         <div class="dropdown-navbar" id="edit-dropdown">

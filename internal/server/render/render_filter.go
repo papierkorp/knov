@@ -13,13 +13,44 @@ import (
 // ------------------------------------------ FORM ----------------------------------------
 // ----------------------------------------------------------------------------------------
 
-// RenderFilterForm renders a standalone filter form
-func RenderFilterForm(config *filter.Config) string {
+// RenderFilterCriteriaFields renders just the logic selector, add button, and criteria (no submit button)
+func RenderFilterCriteriaFields(config *filter.Config) string {
 	var html strings.Builder
 
-	html.WriteString(`<form id="filter-form" hx-post="/api/filter" hx-target="#filter-results">`)
+	// logic selector and add button
+	html.WriteString(`<div class="filter-controls">`)
+	html.WriteString(`<select name="logic" class="form-select">`)
 
-	// controls
+	selectedLogic := "and"
+	if config != nil {
+		selectedLogic = config.Logic
+	}
+
+	html.WriteString(fmt.Sprintf(`<option value="and" %s>and</option>`, utils.Ternary(selectedLogic == "and", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="or" %s>or</option>`, utils.Ternary(selectedLogic == "or", "selected", "")))
+	html.WriteString(`</select>`)
+	html.WriteString(`<button type="button" hx-post="/api/filter/add-criteria" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">add filter</button>`)
+	html.WriteString(`</div>`)
+
+	// criteria
+	html.WriteString(`<div id="filter-criteria-container" class="filter-criteria-container">`)
+	if config != nil && len(config.Criteria) > 0 {
+		for i, criteria := range config.Criteria {
+			html.WriteString(RenderFilterCriteriaRow(i, &criteria))
+		}
+	} else {
+		html.WriteString(RenderFilterCriteriaRow(0, nil))
+	}
+	html.WriteString(`</div>`)
+
+	return html.String()
+}
+
+// RenderFilterFormContents renders the filter form contents with submit button
+func RenderFilterFormContents(config *filter.Config) string {
+	var html strings.Builder
+
+	// controls with submit button
 	html.WriteString(`<div class="filter-controls">`)
 	html.WriteString(`<button type="submit" class="btn-primary">apply filter</button>`)
 	html.WriteString(`<select name="logic" class="form-select">`)
@@ -46,6 +77,15 @@ func RenderFilterForm(config *filter.Config) string {
 	}
 	html.WriteString(`</div>`)
 
+	return html.String()
+}
+
+// RenderFilterForm renders a standalone filter form
+func RenderFilterForm(config *filter.Config) string {
+	var html strings.Builder
+
+	html.WriteString(`<form id="filter-form" hx-post="/api/filter" hx-target="#filter-results">`)
+	html.WriteString(RenderFilterFormContents(config))
 	html.WriteString(`</form>`)
 	return html.String()
 }

@@ -98,8 +98,10 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 		// TODO: implement list editor
 		html = render.RenderTextareaEditorComponent(filepath, content)
 	case editorTypeFilter:
-		// TODO: implement filter editor
-		html = render.RenderTextareaEditorComponent(filepath, content)
+		if err != nil {
+			content = ""
+		}
+		html = render.RenderFilterEditor(filepath, content)
 	case editorTypeIndex:
 		// TODO: implement index editor
 		html = render.RenderTextareaEditorComponent(filepath, content)
@@ -146,6 +148,83 @@ func handleAPIGetTextareaEditor(w http.ResponseWriter, r *http.Request) {
 
 	html := render.RenderTextareaEditorComponent(filepath, content)
 
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// @Summary Get filter editor for new files
+// @Description Returns filter editor for creating .filter files
+// @Tags editor
+// @Produce html
+// @Router /api/editor/new/filter [get]
+func handleAPINewFilterEditor(w http.ResponseWriter, r *http.Request) {
+	html := render.RenderFilterEditor("", "")
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// @Summary Get markdown editor for new fleeting notes
+// @Description Returns markdown editor for creating .md files with fleeting metadata
+// @Tags editor
+// @Produce html
+// @Router /api/editor/new/fleeting [get]
+func handleAPINewFleetingEditor(w http.ResponseWriter, r *http.Request) {
+	html := render.RenderMarkdownEditorForm("")
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// @Summary Get markdown editor for new literature notes
+// @Description Returns markdown editor for creating .md files with literature metadata
+// @Tags editor
+// @Produce html
+// @Router /api/editor/new/literature [get]
+func handleAPINewLiteratureEditor(w http.ResponseWriter, r *http.Request) {
+	html := render.RenderMarkdownEditorForm("")
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// @Summary Get markdown editor for new permanent notes
+// @Description Returns markdown editor for creating .md files with permanent metadata
+// @Tags editor
+// @Produce html
+// @Router /api/editor/new/permanent [get]
+func handleAPINewPermanentEditor(w http.ResponseWriter, r *http.Request) {
+	html := render.RenderMarkdownEditorForm("")
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// @Summary Get markdown editor for new MOC
+// @Description Returns markdown editor for creating .md files with moc metadata
+// @Tags editor
+// @Produce html
+// @Router /api/editor/new/moc [get]
+func handleAPINewMOCEditor(w http.ResponseWriter, r *http.Request) {
+	html := render.RenderMarkdownEditorForm("")
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// @Summary Get textarea editor for new todo
+// @Description Returns textarea editor for creating .md files with todo metadata
+// @Tags editor
+// @Produce html
+// @Router /api/editor/new/todo [get]
+func handleAPINewTodoEditor(w http.ResponseWriter, r *http.Request) {
+	html := render.RenderTextareaEditorComponent("", "")
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// @Summary Get textarea editor for new journal entry
+// @Description Returns textarea editor for creating .md files with journaling metadata
+// @Tags editor
+// @Produce html
+// @Router /api/editor/new/journaling [get]
+func handleAPINewJournalingEditor(w http.ResponseWriter, r *http.Request) {
+	html := render.RenderTextareaEditorComponent("", "")
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }

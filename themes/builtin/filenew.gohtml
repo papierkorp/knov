@@ -3,15 +3,7 @@
     <h1>{{ T "Create a New File" }}</h1>
 	<div class="file-create-form">
 		<div
-			hx-get="/api/files/metadata-form"
-			hx-trigger="load"
-			hx-target="this"
-			hx-swap="outerHTML"
-		>
-			loading metadata...
-		</div>
-		<div
-			hx-get="/api/editor"
+			hx-get="/api/editor/new/{{ .FileType }}"
 			hx-trigger="load"
 			hx-target="this"
 			hx-swap="outerHTML"

@@ -18,6 +18,7 @@ func init() {
 	fileTypeRegistry = filetype.NewRegistry()
 	fileTypeRegistry.Register(filetype.NewMarkdownHandler())
 	fileTypeRegistry.Register(filetype.NewDokuwikiHandler())
+	fileTypeRegistry.Register(filetype.NewFilterHandler())
 	fileTypeRegistry.Register(filetype.NewPlaintextHandler())
 }
 

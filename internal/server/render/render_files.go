@@ -50,7 +50,7 @@ func RenderFilteredFiles(filteredFiles []files.File) string {
 
 // RenderFileHeader renders file header with breadcrumb
 func RenderFileHeader(filepath string) string {
-	return fmt.Sprintf(`<div id="current-file-breadcrumb"><a href="/files/%s">→ %s</a></div>`, filepath, filepath)
+	return fmt.Sprintf(`<div id="current-file-breadcrumb"><a href="/files/%s">â†’ %s</a></div>`, filepath, filepath)
 }
 
 // RenderBrowseFilesHTML renders browsed files as list - reuses RenderFileList
@@ -79,4 +79,11 @@ func RenderFileForm(filePath string) string {
 			</div>
 			<button type="submit">Save File</button>
 		</form>`, filePath)
+}
+
+// RenderFilterFileContent executes a filter file and renders results
+func RenderFilterFileContent(jsonContent string) string {
+	// This will be called from the server layer which has access to filter package
+	// The actual implementation will be in the API handler
+	return jsonContent
 }

@@ -142,6 +142,20 @@ func NewFileEditTemplateData(filePath string) FileEditTemplateData {
 	}
 }
 
+// FileNewTemplateData contains data for the new file page
+type FileNewTemplateData struct {
+	BaseTemplateData
+	FileType string
+}
+
+// NewFileNewTemplateData creates file new specific data
+func NewFileNewTemplateData(fileType string) FileNewTemplateData {
+	return FileNewTemplateData{
+		BaseTemplateData: NewBaseTemplateData("Create New File"),
+		FileType:         fileType,
+	}
+}
+
 // -----------------------------------------------
 // ---------- browsefiles TemplateData ----------
 // -----------------------------------------------

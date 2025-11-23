@@ -115,7 +115,7 @@ The application uses a dynamic editor system that selects the appropriate editor
   - `markdown-editor`: For markdown files (detected via MarkdownHandler)
   - `textarea-editor`: For dokuwiki and plaintext files (detected via respective handlers)
   - `list-editor`: For todo and journaling filetypes (TODO)
-  - `filter-editor`: For filter filetypes (TODO)
+  - `filter-editor`: For filter filetypes - JSON-based filter configuration with live preview
   - `index-editor`: For MOC (maps of content) filetypes (TODO)
 
 The `GetEditor()` function determines the appropriate editor based on:
@@ -127,9 +127,16 @@ The `GetEditor()` function determines the appropriate editor based on:
 - The system uses `CanHandle()` methods from registered handlers:
   - **MarkdownHandler**: Detects `.md` and `.markdown` files → markdown-editor
   - **DokuwikiHandler**: Detects `.txt` files with DokuWiki syntax (headers like `====== title ======`) → textarea-editor
+  - **FilterHandler**: Detects `.filter` files → filter-editor
   - **PlaintextHandler**: Detects plain `.txt` files → textarea-editor
 - Detection happens at request time based on file extension and content
 - No syntax metadata is stored - always uses fresh detection
+
+**Filter Editor**:
+- Edit mode: Shows JSON configuration editor with live preview
+- View mode: Displays filtered results based on saved configuration
+- Configuration format: JSON with `criteria`, `logic`, `display`, and `limit` fields
+- Uses existing `/api/filter` endpoint for previewing and applying filters
 
 ### Metadata Fields
 

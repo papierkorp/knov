@@ -56,6 +56,13 @@ func StartServerChi() {
 	r.Get("/overview", handleOverview)
 	r.Get("/search", handleSearchPage)
 	r.Get("/files/edit/*", handleFileEdit)
+	r.Get("/files/new/filter", handleFileNewFilter)
+	r.Get("/files/new/fleeting", handleFileNewFleeting)
+	r.Get("/files/new/literature", handleFileNewLiterature)
+	r.Get("/files/new/permanent", handleFileNewPermanent)
+	r.Get("/files/new/moc", handleFileNewMOC)
+	r.Get("/files/new/todo", handleFileNewTodo)
+	r.Get("/files/new/journaling", handleFileNewJournaling)
 	r.Get("/files/new", handleFileNew)
 	r.Get("/files/*", handleFileContent)
 	r.Get("/dashboard", handleDashboardView)
@@ -99,6 +106,15 @@ func StartServerChi() {
 			r.Get("/", handleAPIGetEditorHandler)
 			r.Get("/markdown-form", handleAPIMarkdownEditorForm)
 			r.Get("/textarea", handleAPIGetTextareaEditor)
+
+			// new file editors by filetype
+			r.Get("/new/filter", handleAPINewFilterEditor)
+			r.Get("/new/fleeting", handleAPINewFleetingEditor)
+			r.Get("/new/literature", handleAPINewLiteratureEditor)
+			r.Get("/new/permanent", handleAPINewPermanentEditor)
+			r.Get("/new/moc", handleAPINewMOCEditor)
+			r.Get("/new/todo", handleAPINewTodoEditor)
+			r.Get("/new/journaling", handleAPINewJournalingEditor)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -155,7 +171,7 @@ func StartServerChi() {
 			r.Get("/browse", handleAPIBrowseFiles)
 			r.Get("/form", handleAPIFileForm)
 			r.Get("/metadata-form", handleAPIMetadataForm)
-			r.Post("/create", handleAPIFileCreate)
+			r.Post("/new", handleAPIFileCreate)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -566,9 +582,81 @@ func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleFileNew(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewBaseTemplateData("Create New File")
+	fileType := r.URL.Query().Get("type")
 
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData(fileType)
+
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewFilter(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("filter")
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewFleeting(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("fleeting")
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewLiterature(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("literature")
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewPermanent(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("permanent")
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewMOC(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("moc")
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewTodo(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("todo")
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewJournaling(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("journaling")
 	err := tm.Render(w, "filenew", data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)

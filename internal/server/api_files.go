@@ -246,7 +246,7 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 // @Produce html
 // @Param filepath formData string true "File path"
 // @Param content formData string true "File content"
-// @Router /api/files/create [post]
+// @Router /api/files/new [post]
 func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "failed to parse form", http.StatusBadRequest)

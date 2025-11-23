@@ -781,6 +781,71 @@ paths:
       summary: Get markdown editor form HTML
       tags:
       - editor
+  /api/editor/new/filter:
+    get:
+      description: Returns filter editor for creating .filter files
+      produces:
+      - text/html
+      responses: {}
+      summary: Get filter editor for new files
+      tags:
+      - editor
+  /api/editor/new/fleeting:
+    get:
+      description: Returns markdown editor for creating .md files with fleeting metadata
+      produces:
+      - text/html
+      responses: {}
+      summary: Get markdown editor for new fleeting notes
+      tags:
+      - editor
+  /api/editor/new/journaling:
+    get:
+      description: Returns textarea editor for creating .md files with journaling
+        metadata
+      produces:
+      - text/html
+      responses: {}
+      summary: Get textarea editor for new journal entry
+      tags:
+      - editor
+  /api/editor/new/literature:
+    get:
+      description: Returns markdown editor for creating .md files with literature
+        metadata
+      produces:
+      - text/html
+      responses: {}
+      summary: Get markdown editor for new literature notes
+      tags:
+      - editor
+  /api/editor/new/moc:
+    get:
+      description: Returns markdown editor for creating .md files with moc metadata
+      produces:
+      - text/html
+      responses: {}
+      summary: Get markdown editor for new MOC
+      tags:
+      - editor
+  /api/editor/new/permanent:
+    get:
+      description: Returns markdown editor for creating .md files with permanent metadata
+      produces:
+      - text/html
+      responses: {}
+      summary: Get markdown editor for new permanent notes
+      tags:
+      - editor
+  /api/editor/new/todo:
+    get:
+      description: Returns textarea editor for creating .md files with todo metadata
+      produces:
+      - text/html
+      responses: {}
+      summary: Get textarea editor for new todo
+      tags:
+      - editor
   /api/editor/textarea:
     get:
       description: Returns a simple textarea editor component for editing file content
@@ -834,27 +899,6 @@ paths:
       - text/html
       responses: {}
       summary: Get file content as html
-      tags:
-      - files
-  /api/files/create:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: File path
-        in: formData
-        name: filepath
-        required: true
-        type: string
-      - description: File content
-        in: formData
-        name: content
-        required: true
-        type: string
-      produces:
-      - text/html
-      responses: {}
-      summary: Create new file
       tags:
       - files
   /api/files/form:
@@ -923,6 +967,27 @@ paths:
       - text/html
       responses: {}
       summary: Get metadata form HTML for file editing
+      tags:
+      - files
+  /api/files/new:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: File content
+        in: formData
+        name: content
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Create new file
       tags:
       - files
   /api/files/raw:

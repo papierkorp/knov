@@ -729,6 +729,97 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/editor/new/filter": {
+            "get": {
+                "description": "Returns filter editor for creating .filter files",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Get filter editor for new files",
+                "responses": {}
+            }
+        },
+        "/api/editor/new/fleeting": {
+            "get": {
+                "description": "Returns markdown editor for creating .md files with fleeting metadata",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Get markdown editor for new fleeting notes",
+                "responses": {}
+            }
+        },
+        "/api/editor/new/journaling": {
+            "get": {
+                "description": "Returns textarea editor for creating .md files with journaling metadata",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Get textarea editor for new journal entry",
+                "responses": {}
+            }
+        },
+        "/api/editor/new/literature": {
+            "get": {
+                "description": "Returns markdown editor for creating .md files with literature metadata",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Get markdown editor for new literature notes",
+                "responses": {}
+            }
+        },
+        "/api/editor/new/moc": {
+            "get": {
+                "description": "Returns markdown editor for creating .md files with moc metadata",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Get markdown editor for new MOC",
+                "responses": {}
+            }
+        },
+        "/api/editor/new/permanent": {
+            "get": {
+                "description": "Returns markdown editor for creating .md files with permanent metadata",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Get markdown editor for new permanent notes",
+                "responses": {}
+            }
+        },
+        "/api/editor/new/todo": {
+            "get": {
+                "description": "Returns textarea editor for creating .md files with todo metadata",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Get textarea editor for new todo",
+                "responses": {}
+            }
+        },
         "/api/editor/textarea": {
             "get": {
                 "description": "Returns a simple textarea editor component for editing file content",
@@ -805,37 +896,6 @@ const docTemplate = `{
                         "description": "File path",
                         "name": "filepath",
                         "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/api/files/create": {
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "Create new file",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "File content",
-                        "name": "content",
-                        "in": "formData",
                         "required": true
                     }
                 ],
@@ -940,6 +1000,37 @@ const docTemplate = `{
                         "description": "File path (optional for new files)",
                         "name": "filepath",
                         "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/files/new": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Create new file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "File content",
+                        "name": "content",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {}
