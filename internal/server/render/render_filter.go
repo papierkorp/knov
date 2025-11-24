@@ -15,9 +15,22 @@ import (
 
 // RenderFilterForm renders a standalone filter form
 func RenderFilterForm(config *filter.Config) string {
+	return RenderFilterFormWithAction(config, "/api/filter", "", false)
+}
+
+// RenderFilterFormWithAction renders a filter form with custom action and options
+func RenderFilterFormWithAction(config *filter.Config, action string, filePath string, includeFilePathInput bool) string {
 	var html strings.Builder
 
-	html.WriteString(`<form id="filter-form" hx-post="/api/filter" hx-target="#filter-results">`)
+	html.WriteString(fmt.Sprintf(`<form id="filter-form" hx-post="%s" hx-target="#filter-results">`, action))
+
+	// add filepath input for new files
+	if includeFilePathInput {
+		html.WriteString(`<div class="form-group">`)
+		html.WriteString(`<label>filter name:</label>`)
+		html.WriteString(`<input type="text" name="filepath" placeholder="filters/my-filter" required />`)
+		html.WriteString(`</div>`)
+	}
 
 	// controls
 	html.WriteString(`<div class="filter-controls">`)

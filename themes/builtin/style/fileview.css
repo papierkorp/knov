@@ -190,3 +190,32 @@
         max-height: none;
     }
 }
+
+/* ---------------------------------------------------------------------------------------- */
+/* --------------------------------- Filter File View ------------------------------------ */
+/* ---------------------------------------------------------------------------------------- */
+
+#page-fileview .filter-file-view h2 {
+    color: var(--primary);
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 8px;
+}
+
+#page-fileview .filter-info {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+#page-fileview .filter-info p {
+    margin: 4px 0;
+    color: var(--text);
+}
+
+#page-fileview .filter-info strong {
+    color: var(--primary);
+    font-weight: 600;
+}

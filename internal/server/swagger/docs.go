@@ -689,7 +689,7 @@ const docTemplate = `{
         },
         "/api/editor": {
             "get": {
-                "description": "Returns the appropriate editor based on file metadata",
+                "description": "Returns the appropriate editor based on file metadata or filetype parameter",
                 "produces": [
                     "text/html"
                 ],
@@ -702,6 +702,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "file path (optional for new files)",
                         "name": "filepath",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "file type (optional for new files)",
+                        "name": "filetype",
                         "in": "query"
                     }
                 ],
@@ -919,6 +925,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "File path (optional for new files)",
                         "name": "filepath",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Default file type (optional for new files)",
+                        "name": "filetype",
                         "in": "query"
                     }
                 ],
@@ -1155,6 +1167,68 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "filter form html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/filter/save": {
+            "post": {
+                "description": "Save filter configuration as JSON file with .filter extension",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "filter"
+                ],
+                "summary": "Save filter configuration",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter file path (without extension, optional for new files)",
+                        "name": "filepath",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Metadata field names",
+                        "name": "metadata[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Filter operators (equals, contains, greater, less, in)",
+                        "name": "operator[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Filter values",
+                        "name": "value[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Filter actions (include, exclude)",
+                        "name": "action[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "default": "and",
+                        "description": "Logic operator (and/or)",
+                        "name": "logic",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success message",
                         "schema": {
                             "type": "string"
                         }

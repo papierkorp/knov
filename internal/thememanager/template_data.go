@@ -163,6 +163,25 @@ func NewBrowseFilesTemplateData(metadataType, value string) BrowseFilesTemplateD
 }
 
 // -----------------------------------------------
+// ---------- FileNew TemplateData --------------
+// -----------------------------------------------
+
+// FileNewTemplateData extends base with file creation specific data
+type FileNewTemplateData struct {
+	BaseTemplateData
+	FileType string
+}
+
+// NewFileNewTemplateData creates file creation specific data
+func NewFileNewTemplateData(fileType string) FileNewTemplateData {
+	title := "Create New " + fileType
+	return FileNewTemplateData{
+		BaseTemplateData: NewBaseTemplateData(title),
+		FileType:         fileType,
+	}
+}
+
+// -----------------------------------------------
 // ---------- Dashboard TemplateData -------------
 // -----------------------------------------------
 

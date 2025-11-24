@@ -11,7 +11,7 @@ import (
 )
 
 // RenderMetadataForm renders the complete metadata form for a file
-func RenderMetadataForm(filePath string) (string, error) {
+func RenderMetadataForm(filePath string, defaultFiletype string) (string, error) {
 	var html strings.Builder
 	var metadata *files.Metadata
 	var err error
@@ -65,8 +65,8 @@ func RenderMetadataForm(filePath string) (string, error) {
 		"/api/metadata/collections?format=options", filePath, "/api/metadata/collection"))
 	html.WriteString(`</div>`)
 
-	// filetype field
-	filetype := ""
+	// filetype field - use defaultFiletype if provided and no existing metadata
+	filetype := defaultFiletype
 	if metadata != nil {
 		filetype = string(metadata.FileType)
 	}

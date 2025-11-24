@@ -755,11 +755,16 @@ paths:
       - widgets
   /api/editor:
     get:
-      description: Returns the appropriate editor based on file metadata
+      description: Returns the appropriate editor based on file metadata or filetype
+        parameter
       parameters:
       - description: file path (optional for new files)
         in: query
         name: filepath
+        type: string
+      - description: file type (optional for new files)
+        in: query
+        name: filetype
         type: string
       produces:
       - text/html
@@ -905,6 +910,10 @@ paths:
       - description: File path (optional for new files)
         in: query
         name: filepath
+        type: string
+      - description: Default file type (optional for new files)
+        in: query
+        name: filetype
         type: string
       produces:
       - text/html
@@ -1068,6 +1077,47 @@ paths:
           schema:
             type: string
       summary: Get filter form
+      tags:
+      - filter
+  /api/filter/save:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Save filter configuration as JSON file with .filter extension
+      parameters:
+      - description: Filter file path (without extension, optional for new files)
+        in: formData
+        name: filepath
+        type: string
+      - description: Metadata field names
+        in: formData
+        name: metadata[]
+        type: array
+      - description: Filter operators (equals, contains, greater, less, in)
+        in: formData
+        name: operator[]
+        type: array
+      - description: Filter values
+        in: formData
+        name: value[]
+        type: array
+      - description: Filter actions (include, exclude)
+        in: formData
+        name: action[]
+        type: array
+      - default: and
+        description: Logic operator (and/or)
+        in: formData
+        name: logic
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: success message
+          schema:
+            type: string
+      summary: Save filter configuration
       tags:
       - filter
   /api/filter/value-input:

@@ -36,7 +36,7 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	config := parseFilterConfigFromForm(r)
+	config := filter.ParseFilterConfigFromForm(r)
 	if err := filter.ValidateConfig(config); err != nil {
 		logging.LogError("invalid filter config: %v", err)
 		http.Error(w, fmt.Sprintf("invalid filter config: %v", err), http.StatusBadRequest)
@@ -80,6 +80,60 @@ func handleAPIGetFilterCriteriaRow(w http.ResponseWriter, r *http.Request) {
 	html := render.RenderFilterCriteriaRow(index, nil)
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
+}
+
+// @Summary Save filter configuration
+// @Description Save filter configuration as JSON file with .filter extension
+// @Tags filter
+// @Accept application/x-www-form-urlencoded
+// @Param filepath formData string false "Filter file path (without extension, optional for new files)"
+// @Param metadata[] formData array false "Metadata field names"
+// @Param operator[] formData array false "Filter operators (equals, contains, greater, less, in)"
+// @Param value[] formData array false "Filter values"
+// @Param action[] formData array false "Filter actions (include, exclude)"
+// @Param logic formData string false "Logic operator (and/or)" default(and)
+// @Produce html
+// @Success 200 {string} string "success message"
+// @Router /api/filter/save [post]
+func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	// get file path
+	filePath := r.FormValue("filepath")
+	if filePath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	// parse filter config from form using existing function
+	config := filter.ParseFilterConfigFromForm(r)
+
+	// save using the new filter package function
+	if err := filter.SaveFilterConfig(config, filePath); err != nil {
+		logging.LogError("failed to save filter config: %v", err)
+		http.Error(w, fmt.Sprintf("failed to save filter: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// ensure proper file extension for redirect
+	if !strings.HasSuffix(filePath, ".filter") {
+		filePath = filePath + ".filter"
+	}
+
+	// create success response
+	successData := map[string]interface{}{
+		"status":   "success",
+		"message":  "filter saved successfully",
+		"filePath": filePath,
+	}
+
+	successHTML := fmt.Sprintf(`<div class="success">filter saved successfully!</div>
+		<script>setTimeout(() => window.location.href = '/files/%s', 1000);</script>`, filePath)
+
+	writeResponse(w, r, successData, successHTML)
 }
 
 // @Summary Get filter form
@@ -162,144 +216,4 @@ func handleAPIAddFilterCriteria(w http.ResponseWriter, r *http.Request) {
 	html := render.RenderFilterCriteriaRow(criteriaIndex, nil)
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
-}
-
-func parseFilterConfigFromForm(r *http.Request) *filter.Config {
-	logic := r.FormValue("logic")
-	if logic == "" {
-		logic = "and"
-	}
-
-	display := r.FormValue("display")
-	if display == "" {
-		display = "list"
-	}
-
-	limitStr := r.FormValue("limit")
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit <= 0 {
-		limit = 50
-	}
-
-	var criteria []filter.Criteria
-
-	// Extract all indexed form values
-	formData := make(map[int]map[string]string)
-
-	for key, values := range r.Form {
-		if len(values) == 0 {
-			continue
-		}
-
-		var field string
-		var index int
-		var err error
-
-		if strings.HasPrefix(key, "metadata[") && strings.HasSuffix(key, "]") {
-			field = "metadata"
-			indexStr := key[9 : len(key)-1] // extract index from metadata[index]
-			index, err = strconv.Atoi(indexStr)
-		} else if strings.HasPrefix(key, "operator[") && strings.HasSuffix(key, "]") {
-			field = "operator"
-			indexStr := key[9 : len(key)-1] // extract index from operator[index]
-			index, err = strconv.Atoi(indexStr)
-		} else if strings.HasPrefix(key, "value[") && strings.HasSuffix(key, "]") {
-			field = "value"
-			indexStr := key[6 : len(key)-1] // extract index from value[index]
-			index, err = strconv.Atoi(indexStr)
-		} else if strings.HasPrefix(key, "action[") && strings.HasSuffix(key, "]") {
-			field = "action"
-			indexStr := key[7 : len(key)-1] // extract index from action[index]
-			index, err = strconv.Atoi(indexStr)
-		} else {
-			continue
-		}
-
-		if err != nil {
-			continue
-		}
-
-		if formData[index] == nil {
-			formData[index] = make(map[string]string)
-		}
-		formData[index][field] = values[0]
-	}
-
-	// fallback to array form if no indexed data found
-	if len(formData) == 0 {
-		metadata := r.Form["metadata[]"]
-		operators := r.Form["operator[]"]
-		values := r.Form["value[]"]
-		actions := r.Form["action[]"]
-
-		maxLen := len(metadata)
-		if len(operators) > maxLen {
-			maxLen = len(operators)
-		}
-		if len(values) > maxLen {
-			maxLen = len(values)
-		}
-		if len(actions) > maxLen {
-			maxLen = len(actions)
-		}
-
-		for i := 0; i < maxLen; i++ {
-			if formData[i] == nil {
-				formData[i] = make(map[string]string)
-			}
-
-			if i < len(metadata) {
-				formData[i]["metadata"] = metadata[i]
-			}
-			if i < len(operators) {
-				formData[i]["operator"] = operators[i]
-			} else {
-				formData[i]["operator"] = "equals"
-			}
-			if i < len(values) {
-				formData[i]["value"] = values[i]
-			}
-			if i < len(actions) {
-				formData[i]["action"] = actions[i]
-			} else {
-				formData[i]["action"] = "include"
-			}
-		}
-	}
-
-	// build criteria from grouped form data
-	for _, data := range formData {
-		metadata := data["metadata"]
-		operator := data["operator"]
-		value := data["value"]
-		action := data["action"]
-
-		if metadata != "" && operator != "" && value != "" {
-			if operator == "" {
-				operator = "equals"
-			}
-			if action == "" {
-				action = "include"
-			}
-
-			criteria = append(criteria, filter.Criteria{
-				Metadata: metadata,
-				Operator: operator,
-				Value:    value,
-				Action:   action,
-			})
-		}
-	}
-
-	logging.LogDebug("parsed %d filter criteria", len(criteria))
-	for i, c := range criteria {
-		logging.LogDebug("criteria %d: %s %s %s (%s)", i, c.Metadata, c.Operator, c.Value, c.Action)
-	}
-
-	return &filter.Config{
-		Criteria: criteria,
-		Logic:    logic,
-		Display:  display,
-		Limit:    limit,
-	}
 }

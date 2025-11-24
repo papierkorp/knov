@@ -2,11 +2,17 @@
 package filter
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/utils"
 )
 
 // Criteria represents a single filter condition
@@ -289,4 +295,191 @@ func contains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+// SaveFilterConfig validates and saves a filter configuration to file
+func SaveFilterConfig(config *Config, filePath string) error {
+	// validate the configuration first
+	if err := ValidateConfig(config); err != nil {
+		return fmt.Errorf("invalid filter config: %w", err)
+	}
+
+	// ensure filepath has .filter extension
+	if !strings.HasSuffix(filePath, ".filter") {
+		filePath = filePath + ".filter"
+	}
+
+	// convert config to JSON
+	jsonData, err := json.MarshalIndent(config, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal filter config: %w", err)
+	}
+
+	fullPath := utils.ToFullPath(filePath)
+
+	// create directory if needed
+	dir := filepath.Dir(fullPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		logging.LogError("failed to create directory %s: %v", dir, err)
+		return fmt.Errorf("failed to create directory: %w", err)
+	}
+
+	// save JSON to file
+	if err := os.WriteFile(fullPath, jsonData, 0644); err != nil {
+		logging.LogError("failed to save filter file %s: %v", fullPath, err)
+		return fmt.Errorf("failed to save filter file: %w", err)
+	}
+
+	// create metadata for the filter file
+	metadata := &files.Metadata{
+		Path:     filePath,
+		FileType: files.FileTypeFilter,
+	}
+	if err := files.MetaDataSave(metadata); err != nil {
+		logging.LogError("failed to save filter metadata: %v", err)
+		// don't fail the request, just log the error since file was saved successfully
+	}
+
+	logging.LogInfo("saved filter file: %s", filePath)
+	return nil
+}
+
+func ParseFilterConfigFromForm(r *http.Request) *Config {
+	logic := r.FormValue("logic")
+	if logic == "" {
+		logic = "and"
+	}
+
+	display := r.FormValue("display")
+	if display == "" {
+		display = "list"
+	}
+
+	limitStr := r.FormValue("limit")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 50
+	}
+
+	var criteria []Criteria
+
+	// Extract all indexed form values
+	formData := make(map[int]map[string]string)
+
+	for key, values := range r.Form {
+		if len(values) == 0 {
+			continue
+		}
+
+		var field string
+		var index int
+		var err error
+
+		if strings.HasPrefix(key, "metadata[") && strings.HasSuffix(key, "]") {
+			field = "metadata"
+			indexStr := key[9 : len(key)-1] // extract index from metadata[index]
+			index, err = strconv.Atoi(indexStr)
+		} else if strings.HasPrefix(key, "operator[") && strings.HasSuffix(key, "]") {
+			field = "operator"
+			indexStr := key[9 : len(key)-1] // extract index from operator[index]
+			index, err = strconv.Atoi(indexStr)
+		} else if strings.HasPrefix(key, "value[") && strings.HasSuffix(key, "]") {
+			field = "value"
+			indexStr := key[6 : len(key)-1] // extract index from value[index]
+			index, err = strconv.Atoi(indexStr)
+		} else if strings.HasPrefix(key, "action[") && strings.HasSuffix(key, "]") {
+			field = "action"
+			indexStr := key[7 : len(key)-1] // extract index from action[index]
+			index, err = strconv.Atoi(indexStr)
+		} else {
+			continue
+		}
+
+		if err != nil {
+			continue
+		}
+
+		if formData[index] == nil {
+			formData[index] = make(map[string]string)
+		}
+		formData[index][field] = values[0]
+	}
+
+	// fallback to array form if no indexed data found
+	if len(formData) == 0 {
+		metadata := r.Form["metadata[]"]
+		operators := r.Form["operator[]"]
+		values := r.Form["value[]"]
+		actions := r.Form["action[]"]
+
+		maxLen := len(metadata)
+		if len(operators) > maxLen {
+			maxLen = len(operators)
+		}
+		if len(values) > maxLen {
+			maxLen = len(values)
+		}
+		if len(actions) > maxLen {
+			maxLen = len(actions)
+		}
+
+		for i := 0; i < maxLen; i++ {
+			if formData[i] == nil {
+				formData[i] = make(map[string]string)
+			}
+
+			if i < len(metadata) {
+				formData[i]["metadata"] = metadata[i]
+			}
+			if i < len(operators) {
+				formData[i]["operator"] = operators[i]
+			} else {
+				formData[i]["operator"] = "equals"
+			}
+			if i < len(values) {
+				formData[i]["value"] = values[i]
+			}
+			if i < len(actions) {
+				formData[i]["action"] = actions[i]
+			} else {
+				formData[i]["action"] = "include"
+			}
+		}
+	}
+
+	// build criteria from grouped form data
+	for _, data := range formData {
+		metadata := data["metadata"]
+		operator := data["operator"]
+		value := data["value"]
+		action := data["action"]
+
+		if metadata != "" && operator != "" && value != "" {
+			if operator == "" {
+				operator = "equals"
+			}
+			if action == "" {
+				action = "include"
+			}
+
+			criteria = append(criteria, Criteria{
+				Metadata: metadata,
+				Operator: operator,
+				Value:    value,
+				Action:   action,
+			})
+		}
+	}
+
+	logging.LogDebug("parsed %d filter criteria", len(criteria))
+	for i, c := range criteria {
+		logging.LogDebug("criteria %d: %s %s %s (%s)", i, c.Metadata, c.Operator, c.Value, c.Action)
+	}
+
+	return &Config{
+		Criteria: criteria,
+		Logic:    logic,
+		Display:  display,
+		Limit:    limit,
+	}
 }

@@ -60,48 +60,76 @@ func GetEditor(filepath string) (editorType, error) {
 }
 
 // @Summary Get appropriate editor for file
-// @Description Returns the appropriate editor based on file metadata
+// @Description Returns the appropriate editor based on file metadata or filetype parameter
 // @Tags editor
 // @Param filepath query string false "file path (optional for new files)"
+// @Param filetype query string false "file type (optional for new files)"
 // @Produce html
 // @Router /api/editor [get]
 func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
+	filetype := r.URL.Query().Get("filetype")
 
-	// if no filepath provided, default to markdown editor for new files
-	if filepath == "" {
-		html := render.RenderMarkdownEditorForm("")
+	var html string
+	var editorType editorType
+	var err error
+
+	// if filetype parameter is provided (for new files), use that to determine editor
+	if filetype != "" {
+		switch files.Filetype(filetype) {
+		case files.FileTypeTodo, files.FileTypeJournaling:
+			editorType = editorTypeList
+		case files.FileTypeFilter:
+			editorType = editorTypeFilter
+		case files.FileTypeMOC:
+			editorType = editorTypeIndex
+		case files.FileTypeFleeting, files.FileTypePermanent, files.FileTypeLiterature:
+			editorType = editorTypeMarkdown
+		default:
+			editorType = editorTypeMarkdown
+		}
+	} else if filepath == "" {
+		// no filepath and no filetype provided, default to markdown editor for new files
+		html = render.RenderMarkdownEditorForm("")
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
 		return
+	} else {
+		// use existing logic for files with path
+		editorType, err = GetEditor(filepath)
+		if err != nil {
+			logging.LogError("failed to determine editor type for %s: %v", filepath, err)
+			editorType = editorTypeMarkdown // fallback
+		}
 	}
 
-	editorType, err := GetEditor(filepath)
-	if err != nil {
-		logging.LogError("failed to determine editor type for %s: %v", filepath, err)
-		// fallback to markdown editor on error
-		editorType = editorTypeMarkdown
+	// get file content if editing existing file
+	var content string
+	if filepath != "" {
+		fullPath := utils.ToFullPath(filepath)
+		if rawContent, err := files.GetRawContent(fullPath); err == nil {
+			content = rawContent
+		}
 	}
 
-	fullPath := utils.ToFullPath(filepath)
-	content, err := files.GetRawContent(fullPath)
-	var html string
+	// render the appropriate editor
 	switch editorType {
 	case editorTypeMarkdown:
 		html = render.RenderMarkdownEditorForm(filepath)
 	case editorTypeTextarea:
-		if err != nil {
-			content = ""
-		}
 		html = render.RenderTextareaEditorComponent(filepath, content)
 	case editorTypeList:
-		// TODO: implement list editor
+		// TODO: implement list editor, fallback to textarea for now
 		html = render.RenderTextareaEditorComponent(filepath, content)
 	case editorTypeFilter:
-		// TODO: implement filter editor
-		html = render.RenderTextareaEditorComponent(filepath, content)
+		var renderErr error
+		html, renderErr = render.RenderFilterEditor(filepath)
+		if renderErr != nil {
+			logging.LogError("failed to render filter editor: %v", renderErr)
+			html = render.RenderTextareaEditorComponent(filepath, content)
+		}
 	case editorTypeIndex:
-		// TODO: implement index editor
+		// TODO: implement index editor, fallback to textarea for now
 		html = render.RenderTextareaEditorComponent(filepath, content)
 	default:
 		html = render.RenderMarkdownEditorForm(filepath)

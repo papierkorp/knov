@@ -10,6 +10,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
+	"knov/internal/filter"
 	"knov/internal/logging"
 	"knov/internal/server/render"
 	"knov/internal/translation"
@@ -68,7 +69,7 @@ func parseWidgetsFromForm(r *http.Request) ([]dashboard.Widget, error) {
 		var config dashboard.WidgetConfig
 		switch widgetType {
 		case dashboard.WidgetTypeFilter:
-			filterConfig := parseFilterConfigFromForm(r)
+			filterConfig := filter.ParseFilterConfigFromForm(r)
 			config.Filter = &dashboard.FilterConfig{
 				Criteria: filterConfig.Criteria,
 				Logic:    filterConfig.Logic,

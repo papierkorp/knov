@@ -3,6 +3,7 @@ package server
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,7 +13,9 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
 	"knov/internal/files"
+	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/server/render"
 	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/utils"
@@ -56,7 +59,16 @@ func StartServerChi() {
 	r.Get("/overview", handleOverview)
 	r.Get("/search", handleSearchPage)
 	r.Get("/files/edit/*", handleFileEdit)
-	r.Get("/files/new", handleFileNew)
+
+	// specific file creation routes must come before wildcard
+	r.Get("/files/new/todo", handleFileNewTodo)
+	r.Get("/files/new/fleeting", handleFileNewFleeting)
+	r.Get("/files/new/literature", handleFileNewLiterature)
+	r.Get("/files/new/moc", handleFileNewMOC)
+	r.Get("/files/new/permanent", handleFileNewPermanent)
+	r.Get("/files/new/filter", handleFileNewFilter)
+	r.Get("/files/new/journaling", handleFileNewJournaling)
+
 	r.Get("/files/*", handleFileContent)
 	r.Get("/dashboard", handleDashboardView)
 	r.Get("/dashboard/{id}", handleDashboardView)
@@ -89,6 +101,7 @@ func StartServerChi() {
 			r.Get("/form", handleAPIGetFilterForm)
 			r.Get("/value-input", handleAPIGetFilterValueInput)
 			r.Post("/add-criteria", handleAPIAddFilterCriteria)
+			r.Post("/save", handleAPIFilterSave)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -155,7 +168,6 @@ func StartServerChi() {
 			r.Get("/browse", handleAPIBrowseFiles)
 			r.Get("/form", handleAPIFileForm)
 			r.Get("/metadata-form", handleAPIMetadataForm)
-			r.Post("/create", handleAPIFileCreate)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -528,6 +540,11 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if ext == ".filter" {
+		handleFilterFileContent(w, r, filePath, fullPath)
+		return
+	}
+
 	fileContent, err := files.GetFileContent(fullPath)
 	if err != nil {
 		http.Error(w, "failed to get file content", http.StatusInternalServerError)
@@ -552,6 +569,74 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func handleFilterFileContent(w http.ResponseWriter, r *http.Request, filePath, fullPath string) {
+	// read the JSON filter configuration
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		http.Error(w, "failed to read filter file", http.StatusInternalServerError)
+		logging.LogError("failed to read filter file %s: %v", fullPath, err)
+		return
+	}
+
+	// parse the filter configuration
+	var config filter.Config
+	if err := json.Unmarshal(content, &config); err != nil {
+		http.Error(w, "invalid filter configuration", http.StatusInternalServerError)
+		logging.LogError("failed to parse filter config in %s: %v", fullPath, err)
+		return
+	}
+
+	// validate the filter configuration
+	if err := filter.ValidateConfig(&config); err != nil {
+		http.Error(w, "invalid filter configuration", http.StatusInternalServerError)
+		logging.LogError("invalid filter config in %s: %v", fullPath, err)
+		return
+	}
+
+	// execute the filter
+	result, err := filter.FilterFilesWithConfig(&config)
+	if err != nil {
+		http.Error(w, "failed to execute filter", http.StatusInternalServerError)
+		logging.LogError("failed to execute filter from %s: %v", fullPath, err)
+		return
+	}
+
+	// render the filter results
+	var html string
+	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
+		// for snippet requests, just return the filter results HTML
+		html = render.RenderFilterResult(result, config.Display)
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html))
+		return
+	}
+
+	// for full page requests, create a file content structure with the results
+	resultsHTML := render.RenderFilterResult(result, config.Display)
+	filterTitle := fmt.Sprintf("Filter: %s", filepath.Base(filePath))
+
+	// create a synthetic file content structure
+	fileContent := &files.FileContent{
+		HTML: fmt.Sprintf(`<div class="filter-file-view">
+			<h2>%s</h2>
+			%s
+		</div>`,
+			filterTitle,
+			resultsHTML),
+		TOC: []files.TOCItem{},
+	}
+
+	// render through template system
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileViewTemplateData(filterTitle, filePath, fileContent)
+
+	err = tm.Render(w, "fileview", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
 func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/files/edit/")
 
@@ -565,9 +650,79 @@ func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleFileNew(w http.ResponseWriter, r *http.Request) {
+// ----------------------------------------------------------------------------------------
+// -------------------------------- Filetype-specific handlers ---------------------------
+// ----------------------------------------------------------------------------------------
+
+func handleFileNewTodo(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewBaseTemplateData("Create New File")
+	data := thememanager.NewFileNewTemplateData("todo")
+
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewFleeting(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("fleeting")
+
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewLiterature(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("literature")
+
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewMOC(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("moc")
+
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewPermanent(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("permanent")
+
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewFilter(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("filter")
+
+	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileNewJournaling(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("journaling")
 
 	err := tm.Render(w, "filenew", data)
 	if err != nil {

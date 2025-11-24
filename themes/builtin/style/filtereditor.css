@@ -1,0 +1,78 @@
+/* ---------------------------------------------------------------------------------------- */
+/* --------------------------------- Filter Editor --------------------------------------- */
+/* ---------------------------------------------------------------------------------------- */
+
+#page-filenew .filter-editor,
+#page-fileedit .filter-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#page-filenew .filter-form-container,
+#page-fileedit .filter-form-container,
+#page-filenew .filter-results-container,
+#page-fileedit .filter-results-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+#page-filenew .filter-form-container h4,
+#page-fileedit .filter-form-container h4,
+#page-filenew .filter-results-container h4,
+#page-fileedit .filter-results-container h4 {
+    margin: 0 0 12px 0;
+    color: var(--text);
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+}
+
+#page-filenew .filter-criteria-row,
+#page-fileedit .filter-criteria-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+
+#page-filenew .filter-field,
+#page-fileedit .filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#page-filenew .filter-field label,
+#page-fileedit .filter-field label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+#page-filenew .filter-controls,
+#page-fileedit .filter-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+
+#page-filenew .filter-no-results,
+#page-fileedit .filter-no-results {
+    color: var(--text-secondary);
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}

@@ -2,10 +2,13 @@
 package render
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"knov/internal/files"
+	"knov/internal/filter"
+	"knov/internal/logging"
 	"knov/internal/utils"
 )
 
@@ -95,4 +98,69 @@ func jsEscapeString(s string) string {
 	s = strings.ReplaceAll(s, "`", "\\`")
 	s = strings.ReplaceAll(s, "$", "\\$")
 	return "`" + s + "`"
+}
+
+// ----------------------------------------------------------------------------------------
+// ---------------------------------- Filter Editor -----------------------------------
+// ----------------------------------------------------------------------------------------
+
+// RenderFilterEditor renders a filter editor with form and result display
+func RenderFilterEditor(filePath string) (string, error) {
+	var html strings.Builder
+
+	html.WriteString(`<div class="filter-editor" id="filter-editor">`)
+
+	// load existing config if editing
+	var config *filter.Config
+	if filePath != "" {
+		// for existing filter files, try to load the saved JSON
+		if content, err := files.GetRawContent(filePath); err == nil {
+			config = &filter.Config{}
+			if err := json.Unmarshal([]byte(content), config); err != nil {
+				logging.LogError("failed to parse existing filter config: %v", err)
+				config = nil
+			}
+		}
+	}
+
+	// render the filter form with save functionality
+	html.WriteString(`<div class="filter-form-container">`)
+	html.WriteString(`<h4>filter configuration</h4>`)
+
+	// determine action and whether to include filepath input
+	isEdit := filePath != ""
+	action := "/api/filter/save"
+	if isEdit {
+		action = fmt.Sprintf("/api/files/save/%s", filePath)
+	}
+	includeFilePath := !isEdit
+
+	// use the updated RenderFilterFormWithAction
+	filterFormHTML := RenderFilterFormWithAction(config, action, filePath, includeFilePath)
+
+	// modify the form to change button text and target
+	if isEdit {
+		filterFormHTML = strings.Replace(filterFormHTML, `hx-target="#filter-results"`, `hx-target="#editor-status"`, 1)
+		filterFormHTML = strings.Replace(filterFormHTML, `class="btn-primary">apply filter`, `class="btn-primary">save filter`, 1)
+	} else {
+		filterFormHTML = strings.Replace(filterFormHTML, `hx-target="#filter-results"`, `hx-target="#editor-status"`, 1)
+		filterFormHTML = strings.Replace(filterFormHTML, `class="btn-primary">apply filter`, `class="btn-primary">save filter`, 1)
+	}
+
+	html.WriteString(filterFormHTML)
+	html.WriteString(`<div id="editor-status"></div>`)
+	html.WriteString(`</div>`)
+
+	// render results container with preview functionality
+	html.WriteString(`<div class="filter-results-container">`)
+	html.WriteString(`<h4>filter preview</h4>`)
+	html.WriteString(`<button type="button" hx-post="/api/filter" hx-include="#filter-form" hx-target="#filter-results" class="btn-secondary">preview results</button>`)
+	html.WriteString(`<div id="filter-results" class="filter-results">`)
+	html.WriteString(`<p class="filter-no-results">configure filter above and click preview to see results</p>`)
+	html.WriteString(`</div>`)
+	html.WriteString(`</div>`)
+
+	html.WriteString(`</div>`)
+
+	return html.String(), nil
 }

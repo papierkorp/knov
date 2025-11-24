@@ -198,7 +198,7 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 
-	html, err := render.RenderMetadataForm(filePath)
+	html, err := render.RenderMetadataForm(filePath, "")
 	if err != nil {
 		logging.LogError("failed to generate metadata form: %v", err)
 		http.Error(w, "failed to generate metadata form", http.StatusInternalServerError)
@@ -224,12 +224,14 @@ func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
 // @Summary Get metadata form HTML
 // @Tags files
 // @Param filepath query string false "File path (optional for new files)"
+// @Param filetype query string false "Default file type (optional for new files)"
 // @Produce html
 // @Router /api/files/metadata-form [get]
 func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
+	defaultFiletype := r.URL.Query().Get("filetype")
 
-	html, err := render.RenderMetadataForm(filePath)
+	html, err := render.RenderMetadataForm(filePath, defaultFiletype)
 	if err != nil {
 		logging.LogError("failed to generate metadata form: %v", err)
 		http.Error(w, "failed to generate metadata form", http.StatusInternalServerError)
