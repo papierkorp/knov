@@ -1,5 +1,4 @@
-// Package filetype provides code syntax highlighting
-package filetype
+package parser
 
 import (
 	"bytes"

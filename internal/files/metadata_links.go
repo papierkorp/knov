@@ -103,7 +103,7 @@ func updateUsedLinks(metadata *Metadata) {
 		return
 	}
 
-	handler := fileTypeRegistry.GetHandler(fullPath)
+	handler := parserRegistry.GetHandler(fullPath)
 	if handler == nil {
 		logging.LogWarning("no handler found for file %s", fullPath)
 		return

@@ -7,23 +7,23 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
-	"knov/internal/filetype"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/utils"
 )
 
-var fileTypeRegistry *filetype.Registry
+var parserRegistry *parser.Registry
 
 func init() {
-	fileTypeRegistry = filetype.NewRegistry()
-	fileTypeRegistry.Register(filetype.NewMarkdownHandler())
-	fileTypeRegistry.Register(filetype.NewDokuwikiHandler())
-	fileTypeRegistry.Register(filetype.NewPlaintextHandler())
+	parserRegistry = parser.NewRegistry()
+	parserRegistry.Register(parser.NewMarkdownHandler())
+	parserRegistry.Register(parser.NewDokuwikiHandler())
+	parserRegistry.Register(parser.NewPlaintextHandler())
 }
 
-// GetFileTypeRegistry returns the global file type registry
-func GetFileTypeRegistry() *filetype.Registry {
-	return fileTypeRegistry
+// GetParserRegistry returns the global file type registry
+func GetParserRegistry() *parser.Registry {
+	return parserRegistry
 }
 
 // File represents a file in the system
@@ -74,7 +74,7 @@ func GetAllFiles() ([]File, error) {
 
 // GetFileContent converts file content to html based on detected type
 func GetFileContent(filePath string) (*FileContent, error) {
-	handler := fileTypeRegistry.GetHandler(filePath)
+	handler := parserRegistry.GetHandler(filePath)
 	if handler == nil {
 		return nil, fmt.Errorf("no handler found for file: %s", filePath)
 	}
@@ -122,7 +122,7 @@ func GetAllFilesWithMetadata() ([]File, error) {
 
 // GetRawContent returns raw file content as string
 func GetRawContent(filePath string) (string, error) {
-	handler := fileTypeRegistry.GetHandler(filePath)
+	handler := parserRegistry.GetHandler(filePath)
 	if handler == nil {
 		return "", fmt.Errorf("no handler found for file: %s", filePath)
 	}

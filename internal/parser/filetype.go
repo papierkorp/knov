@@ -1,4 +1,4 @@
-package filetype
+package parser
 
 // Handler manages all operations for a specific file type
 type Handler interface {

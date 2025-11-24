@@ -1,4 +1,4 @@
-package filetype
+package parser
 
 import (
 	"fmt"
@@ -175,9 +175,9 @@ func RenderTableHTML(data *TableData, filepath string, page, size int, sortCol i
 	html += `<div class="table-container">`
 	html += `<div class="table-controls">`
 	html += fmt.Sprintf(`
-		<input type="text" 
-		       class="table-search" 
-		       placeholder="Search table..." 
+		<input type="text"
+		       class="table-search"
+		       placeholder="Search table..."
 		       value="%s"
 		       hx-get="/api/components/table?%s&page=1"
 		       hx-trigger="keyup changed delay:300ms"

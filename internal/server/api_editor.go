@@ -25,7 +25,7 @@ func GetEditor(filepath string) (editorType, error) {
 	metadata, err := files.MetaDataGet(filepath)
 
 	// always detect syntax from file type handler
-	handler := files.GetFileTypeRegistry().GetHandler(filepath)
+	handler := files.GetParserRegistry().GetHandler(filepath)
 	var handlerName string
 	if handler != nil {
 		handlerName = handler.Name()

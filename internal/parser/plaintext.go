@@ -1,4 +1,4 @@
-package filetype
+package parser
 
 import (
 	"os"

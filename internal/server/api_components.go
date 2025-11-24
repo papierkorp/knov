@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"knov/internal/files"
-	"knov/internal/filetype"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/server/render"
 	"knov/internal/utils"
 )
@@ -69,14 +69,14 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler := files.GetFileTypeRegistry().GetHandler(fullPath)
+	handler := files.GetParserRegistry().GetHandler(fullPath)
 	if handler == nil {
 		http.Error(w, "unsupported file type", http.StatusBadRequest)
 		return
 	}
 
-	var tableData *filetype.TableData
-	if dokuwikiHandler, ok := handler.(*filetype.DokuwikiHandler); ok {
+	var tableData *parser.TableData
+	if dokuwikiHandler, ok := handler.(*parser.DokuwikiHandler); ok {
 		tableData, err = dokuwikiHandler.ParseDokuWikiTable(string(fileContent))
 		if err != nil {
 			logging.LogError("failed to parse dokuwiki table: %v", err)
@@ -89,14 +89,14 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if searchQuery != "" {
-		tableData = filetype.SearchTable(tableData, searchQuery)
+		tableData = parser.SearchTable(tableData, searchQuery)
 	}
 
 	if sortCol >= 0 {
-		tableData = filetype.SortTable(tableData, sortCol, sortOrder)
+		tableData = parser.SortTable(tableData, sortCol, sortOrder)
 	}
 
-	paginatedData := filetype.PaginateTable(tableData, page, size)
+	paginatedData := parser.PaginateTable(tableData, page, size)
 
 	html := render.RenderTableComponent(paginatedData, filepath, page, size, sortCol, sortOrder, searchQuery)
 

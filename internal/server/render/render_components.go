@@ -2,10 +2,10 @@
 package render
 
 import (
-	"knov/internal/filetype"
+	"knov/internal/parser"
 )
 
 // RenderTableComponent renders a paginated, sortable, searchable table HTML fragment
-func RenderTableComponent(tableData *filetype.TableData, filepath string, page, size, sortCol int, sortOrder, searchQuery string) string {
-	return filetype.RenderTableHTML(tableData, filepath, page, size, sortCol, sortOrder, searchQuery)
+func RenderTableComponent(tableData *parser.TableData, filepath string, page, size, sortCol int, sortOrder, searchQuery string) string {
+	return parser.RenderTableHTML(tableData, filepath, page, size, sortCol, sortOrder, searchQuery)
 }
