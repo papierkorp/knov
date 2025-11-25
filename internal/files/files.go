@@ -127,7 +127,8 @@ func GetRawContent(filePath string) (string, error) {
 		return "", fmt.Errorf("no handler found for file: %s", filePath)
 	}
 
-	content, err := handler.GetContent(filePath)
+	fullPath := utils.ToFullPath(filePath)
+	content, err := handler.GetContent(fullPath)
 	if err != nil {
 		return "", err
 	}

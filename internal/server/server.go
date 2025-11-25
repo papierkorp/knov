@@ -580,10 +580,21 @@ func handleFilterFileContent(w http.ResponseWriter, r *http.Request, filePath, f
 
 	// parse the filter configuration
 	var config filter.Config
-	if err := json.Unmarshal(content, &config); err != nil {
-		http.Error(w, "invalid filter configuration", http.StatusInternalServerError)
-		logging.LogError("failed to parse filter config in %s: %v", fullPath, err)
-		return
+	if len(content) == 0 {
+		// use default configuration for empty files
+		config = filter.Config{
+			Criteria: []filter.Criteria{},
+			Logic:    "and",
+			Display:  "list",
+			Limit:    50,
+		}
+		logging.LogInfo("using default configuration for empty filter file: %s", fullPath)
+	} else {
+		if err := json.Unmarshal(content, &config); err != nil {
+			http.Error(w, "invalid filter configuration", http.StatusInternalServerError)
+			logging.LogError("failed to parse filter config in %s: %v", fullPath, err)
+			return
+		}
 	}
 
 	// validate the filter configuration

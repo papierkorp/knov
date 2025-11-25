@@ -115,10 +115,21 @@ func RenderFilterEditor(filePath string) (string, error) {
 	if filePath != "" {
 		// for existing filter files, try to load the saved JSON
 		if content, err := files.GetRawContent(filePath); err == nil {
-			config = &filter.Config{}
-			if err := json.Unmarshal([]byte(content), config); err != nil {
-				logging.LogError("failed to parse existing filter config: %v", err)
-				config = nil
+			if len(content) == 0 {
+				// use default configuration for empty files
+				config = &filter.Config{
+					Criteria: []filter.Criteria{},
+					Logic:    "and",
+					Display:  "list",
+					Limit:    50,
+				}
+				logging.LogInfo("using default configuration for empty filter file in editor: %s", filePath)
+			} else {
+				config = &filter.Config{}
+				if err := json.Unmarshal([]byte(content), config); err != nil {
+					logging.LogError("failed to parse existing filter config: %v", err)
+					config = nil
+				}
 			}
 		}
 	}
