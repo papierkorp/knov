@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/translation"
 )
 
 // SelectOption represents an option in a select dropdown
@@ -123,7 +125,7 @@ func RenderFileDropdown(files []files.File, limit int) string {
 	}
 
 	if len(files) == 0 {
-		html.WriteString(`<li class="component-search-hint">no results found</li>`)
+		html.WriteString(`<li class="component-search-hint">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no results found") + `</li>`)
 	}
 
 	html.WriteString(`</ul>`)
@@ -143,8 +145,8 @@ func GenerateDatalistInput(id, name, value, placeholder, apiEndpoint string) str
 	datalistId := fmt.Sprintf("%s-list", id)
 	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" autocomplete="off" list="%s" placeholder="%s"/>
 <datalist id="%s" hx-get="%s" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
-	<option value="">loading options...</option>
-</datalist>`, id, name, value, datalistId, placeholder, datalistId, apiEndpoint)
+	<option value="">%s</option>
+</datalist>`, id, name, value, datalistId, placeholder, datalistId, apiEndpoint, translation.SprintfForRequest(configmanager.GetLanguage(), "loading options..."))
 }
 
 // GenerateDatalistInputWithSave creates an input field with autocomplete and auto-save
@@ -153,8 +155,8 @@ func GenerateDatalistInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" autocomplete="off" list="%s" placeholder="%s"
 	hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="change delay:500ms" hx-target="#metadata-save-status" hx-swap="innerHTML"/>
 <datalist id="%s" hx-get="%s" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
-	<option value="">loading options...</option>
-</datalist>`, id, name, value, datalistId, placeholder, saveEndpoint, filePath, datalistId, apiEndpoint)
+	<option value="">%s</option>
+</datalist>`, id, name, value, datalistId, placeholder, saveEndpoint, filePath, datalistId, apiEndpoint, translation.SprintfForRequest(configmanager.GetLanguage(), "loading options..."))
 }
 
 // GenerateTagChipsInputWithSave creates a tag chips input with autocomplete and auto-save
@@ -167,8 +169,8 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 	var datalistHTML string
 	if apiEndpoint != "" {
 		datalistHTML = fmt.Sprintf(`<datalist id="%s" hx-get="%s" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
-		<option value="">loading options...</option>
-	</datalist>`, datalistId, apiEndpoint)
+		<option value="">%s</option>
+	</datalist>`, datalistId, apiEndpoint, translation.SprintfForRequest(configmanager.GetLanguage(), "loading options..."))
 	} else {
 		datalistHTML = fmt.Sprintf(`<datalist id="%s"></datalist>`, datalistId)
 	}

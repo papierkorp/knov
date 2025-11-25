@@ -24,7 +24,7 @@ import (
 func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	allFiles, err := files.GetAllFiles()
 	if err != nil {
-		http.Error(w, "failed to get files", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
 		return
 	}
 
@@ -52,7 +52,7 @@ func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 
 	content, err := files.GetFileContent(fullPath)
 	if err != nil {
-		http.Error(w, "failed to get file content", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"), http.StatusInternalServerError)
 		return
 	}
 
@@ -68,7 +68,7 @@ func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
 		return
 	}
 
@@ -91,7 +91,7 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
 		return
 	}
 
@@ -99,7 +99,7 @@ func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 	content, err := files.GetRawContent(fullPath)
 	if err != nil {
 		logging.LogError("failed to get raw content: %v", err)
-		http.Error(w, "failed to get raw content", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get raw content"), http.StatusInternalServerError)
 		return
 	}
 
@@ -118,7 +118,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	filepath := strings.TrimPrefix(r.URL.Path, "/api/files/save/")
 
 	if filepath == "" {
-		http.Error(w, "missing filepath", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
 		return
 	}
 
@@ -128,7 +128,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	err := os.WriteFile(fullPath, []byte(content), 0644)
 	if err != nil {
 		logging.LogError("failed to save file %s: %v", fullPath, err)
-		http.Error(w, "failed to save file", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
 		return
 	}
 
@@ -152,7 +152,7 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 	value := r.URL.Query().Get("value")
 
 	if metadata == "" || value == "" {
-		http.Error(w, "missing metadata or value parameter", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing metadata or value parameter"), http.StatusBadRequest)
 		return
 	}
 
@@ -193,7 +193,7 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 	browsedFiles, err := filter.FilterFiles(criteria, "and")
 	if err != nil {
 		logging.LogError("failed to browse files: %v", err)
-		http.Error(w, "failed to browse files", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to browse files"), http.StatusInternalServerError)
 		return
 	}
 
@@ -214,7 +214,7 @@ func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
 	html, err := render.RenderMetadataForm(filePath, "")
 	if err != nil {
 		logging.LogError("failed to generate metadata form: %v", err)
-		http.Error(w, "failed to generate metadata form", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to generate metadata form"), http.StatusInternalServerError)
 		return
 	}
 
@@ -247,7 +247,7 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 	html, err := render.RenderMetadataForm(filePath, defaultFiletype)
 	if err != nil {
 		logging.LogError("failed to generate metadata form: %v", err)
-		http.Error(w, "failed to generate metadata form", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to generate metadata form"), http.StatusInternalServerError)
 		return
 	}
 
@@ -264,7 +264,7 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/create [post]
 func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
 		return
 	}
 
@@ -272,7 +272,7 @@ func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 
 	if filePath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
 		return
 	}
 
@@ -281,14 +281,14 @@ func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
 	dir := filepath.Dir(fullPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		logging.LogError("failed to create directory %s: %v", dir, err)
-		http.Error(w, "failed to create directory", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
 		return
 	}
 
 	err := os.WriteFile(fullPath, []byte(content), 0644)
 	if err != nil {
 		logging.LogError("failed to create file %s: %v", fullPath, err)
-		http.Error(w, "failed to create file", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create file"), http.StatusInternalServerError)
 		return
 	}
 

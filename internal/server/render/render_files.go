@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/translation"
 )
 
 // RenderFilesOptions renders file list as select options
 func RenderFilesOptions(allFiles []files.File) string {
 	var html strings.Builder
-	html.WriteString(`<option value="">select a file...</option>`)
+	html.WriteString(`<option value="">` + translation.SprintfForRequest(configmanager.GetLanguage(), "select a file...") + `</option>`)
 	for _, file := range allFiles {
 		path := strings.TrimPrefix(file.Path, "data/")
 		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, path, path))
@@ -43,24 +45,24 @@ func RenderFilesList(allFiles []files.File) string {
 // RenderFilteredFiles renders filtered files list with count - reuses RenderFileList
 func RenderFilteredFiles(filteredFiles []files.File) string {
 	var html strings.Builder
-	html.WriteString(fmt.Sprintf("<p>found %d files</p>", len(filteredFiles)))
+	html.WriteString(fmt.Sprintf("<p>%s</p>", translation.SprintfForRequest(configmanager.GetLanguage(), "found %d files", len(filteredFiles))))
 	html.WriteString(RenderFileList(filteredFiles))
 	return html.String()
 }
 
 // RenderFileHeader renders file header with breadcrumb
 func RenderFileHeader(filepath string) string {
-	return fmt.Sprintf(`<div id="current-file-breadcrumb"><a href="/files/%s">→ %s</a></div>`, filepath, filepath)
+	return fmt.Sprintf(`<div id="current-file-breadcrumb"><a href="/files/%s">â†’ %s</a></div>`, filepath, filepath)
 }
 
 // RenderBrowseFilesHTML renders browsed files as list - reuses RenderFileList
 func RenderBrowseFilesHTML(files []files.File) string {
 	if len(files) == 0 {
-		return "<p>no files found</p>"
+		return "<p>" + translation.SprintfForRequest(configmanager.GetLanguage(), "no files found") + "</p>"
 	}
 
 	var html strings.Builder
-	html.WriteString(fmt.Sprintf("<p>found %d files</p>", len(files)))
+	html.WriteString(fmt.Sprintf("<p>%s</p>", translation.SprintfForRequest(configmanager.GetLanguage(), "found %d files", len(files))))
 	html.WriteString(RenderFileList(files))
 	return html.String()
 }
@@ -70,13 +72,19 @@ func RenderFileForm(filePath string) string {
 	return fmt.Sprintf(`
 		<form class="file-form">
 			<div class="form-group">
-				<label>File Path:</label>
-				<input type="text" name="filepath" value="%s" placeholder="path/to/file.md" />
+				<label>%s:</label>
+				<input type="text" name="filepath" value="%s" placeholder="%s" />
 			</div>
 			<div class="form-group">
-				<label>Content:</label>
-				<textarea name="content" rows="10" placeholder="File content here..."></textarea>
+				<label>%s:</label>
+				<textarea name="content" rows="10" placeholder="%s"></textarea>
 			</div>
-			<button type="submit">Save File</button>
-		</form>`, filePath)
+			<button type="submit">%s</button>
+		</form>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
+		filePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "path/to/file.md"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "content"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "file content here..."),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "save file"))
 }

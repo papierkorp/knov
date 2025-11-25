@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/translation"
 	"knov/internal/utils"
 )
 
@@ -18,7 +20,7 @@ func RenderWidget(widgetType dashboard.WidgetType, config dashboard.WidgetConfig
 	case dashboard.WidgetTypeFilter:
 		// convert dashboard FilterConfig to filter.Config
 		if config.Filter == nil {
-			return "", fmt.Errorf("filter config is required")
+			return "", fmt.Errorf(translation.SprintfForRequest(configmanager.GetLanguage(), "filter config is required"))
 		}
 		filterConfig := &filter.Config{
 			Criteria: config.Filter.Criteria,
@@ -48,13 +50,13 @@ func RenderWidget(widgetType dashboard.WidgetType, config dashboard.WidgetConfig
 	case dashboard.WidgetTypeParaArchive:
 		return renderParaArchiveWidget()
 	default:
-		return "", fmt.Errorf("unknown widget type: %s", widgetType)
+		return "", fmt.Errorf(translation.SprintfForRequest(configmanager.GetLanguage(), "unknown widget type: %s", widgetType))
 	}
 }
 
 func renderFileContentWidget(config *dashboard.FileContentConfig) (string, error) {
 	if config == nil || config.FilePath == "" {
-		return "", fmt.Errorf("file path is required")
+		return "", fmt.Errorf(translation.SprintfForRequest(configmanager.GetLanguage(), "file path is required"))
 	}
 
 	fullPath := utils.ToFullPath(config.FilePath)
@@ -69,7 +71,7 @@ func renderFileContentWidget(config *dashboard.FileContentConfig) (string, error
 
 func renderStaticWidget(config *dashboard.StaticConfig) (string, error) {
 	if config == nil || config.Content == "" {
-		return "", fmt.Errorf("static content is required")
+		return "", fmt.Errorf(translation.SprintfForRequest(configmanager.GetLanguage(), "static content is required"))
 	}
 
 	switch config.Format {
@@ -149,7 +151,7 @@ func renderParaArchiveWidget() (string, error) {
 // renderFilterWidget renders a filter widget for dashboards
 func renderFilterWidget(config *filter.Config) (string, error) {
 	if config == nil {
-		return "", fmt.Errorf("filter config is required")
+		return "", fmt.Errorf(translation.SprintfForRequest(configmanager.GetLanguage(), "filter config is required"))
 	}
 
 	result, err := filter.FilterFilesWithConfig(config)
@@ -170,12 +172,12 @@ func renderFilterFormWidget() (string, error) {
 
 	// controls row
 	html.WriteString(`<div class="filter-controls">`)
-	html.WriteString(`<button type="submit" class="btn-primary">apply filter</button>`)
+	html.WriteString(`<button type="submit" class="btn-primary">` + translation.SprintfForRequest(configmanager.GetLanguage(), "apply filter") + `</button>`)
 	html.WriteString(`<select name="logic" class="form-select">`)
 	html.WriteString(`<option value="and">and</option>`)
 	html.WriteString(`<option value="or">or</option>`)
 	html.WriteString(`</select>`)
-	html.WriteString(`<button type="button" hx-post="/api/filter/add-criteria" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">add filter</button>`)
+	html.WriteString(`<button type="button" hx-post="/api/filter/add-criteria" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">` + translation.SprintfForRequest(configmanager.GetLanguage(), "add filter") + `</button>`)
 	html.WriteString(`</div>`)
 
 	// criteria container
@@ -185,7 +187,7 @@ func renderFilterFormWidget() (string, error) {
 
 	// results container
 	html.WriteString(`<div id="filter-results" class="filter-results">`)
-	html.WriteString(`<p class="filter-placeholder">filtered results will appear here</p>`)
+	html.WriteString(`<p class="filter-placeholder">` + translation.SprintfForRequest(configmanager.GetLanguage(), "filtered results will appear here") + `</p>`)
 	html.WriteString(`</div>`)
 
 	html.WriteString(`</form>`)

@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"knov/internal/configmanager"
+	"knov/internal/translation"
 	"knov/internal/utils"
 )
 
@@ -34,7 +36,7 @@ func RenderLinksList(links []string) string {
 // RenderParentLinks renders parent links or no parents message
 func RenderParentLinks(parents []string) string {
 	if len(parents) == 0 {
-		return RenderNoLinksMessage("no parents")
+		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no parents"))
 	}
 	return RenderLinksList(parents)
 }
@@ -42,7 +44,7 @@ func RenderParentLinks(parents []string) string {
 // RenderAncestorLinks renders ancestor links or no ancestors message
 func RenderAncestorLinks(ancestors []string) string {
 	if len(ancestors) == 0 {
-		return RenderNoLinksMessage("no ancestors")
+		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no ancestors"))
 	}
 	return RenderLinksList(ancestors)
 }
@@ -50,7 +52,7 @@ func RenderAncestorLinks(ancestors []string) string {
 // RenderKidsLinks renders children links or no children message
 func RenderKidsLinks(kids []string) string {
 	if len(kids) == 0 {
-		return RenderNoLinksMessage("no children")
+		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no children"))
 	}
 	return RenderLinksList(kids)
 }
@@ -58,7 +60,7 @@ func RenderKidsLinks(kids []string) string {
 // RenderUsedLinks renders used/outbound links or no outbound links message
 func RenderUsedLinks(usedLinks []string) string {
 	if len(usedLinks) == 0 {
-		return RenderNoLinksMessage("no outbound links")
+		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no outbound links"))
 	}
 	return RenderLinksList(usedLinks)
 }
@@ -66,7 +68,7 @@ func RenderUsedLinks(usedLinks []string) string {
 // RenderLinksToHere renders inbound links or no inbound links message
 func RenderLinksToHere(linksToHere []string) string {
 	if len(linksToHere) == 0 {
-		return RenderNoLinksMessage("no inbound links")
+		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no inbound links"))
 	}
 	return RenderLinksList(linksToHere)
 }

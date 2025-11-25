@@ -46,7 +46,7 @@ func RenderDashboardUpdated(dashID string) string {
 
 // RenderDashboardInfo renders basic dashboard information
 func RenderDashboardInfo(dash *dashboard.Dashboard) string {
-	return fmt.Sprintf(`<div><h3>%s</h3><p>Layout: %s</p></div>`, dash.Name, dash.Layout)
+	return fmt.Sprintf(`<div><h3>%s</h3><p>%s: %s</p></div>`, dash.Name, translation.SprintfForRequest(configmanager.GetLanguage(), "layout"), dash.Layout)
 }
 
 // RenderDashboardDeleted renders success message for deleted dashboard
@@ -56,7 +56,7 @@ func RenderDashboardDeleted() string {
 
 // RenderDashboardRenamed renders success message for renamed dashboard
 func RenderDashboardRenamed() string {
-	return `<div>dashboard renamed successfully</div>`
+	return fmt.Sprintf(`<div>%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard renamed successfully"))
 }
 
 // RenderDashboardForm renders the complete dashboard form for create or edit

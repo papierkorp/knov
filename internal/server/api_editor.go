@@ -3,9 +3,11 @@ package server
 import (
 	"net/http"
 
+	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/server/render"
+	"knov/internal/translation"
 	"knov/internal/utils"
 )
 
@@ -162,7 +164,7 @@ func handleAPIMarkdownEditorForm(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetTextareaEditor(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
 		return
 	}
 

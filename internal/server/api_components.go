@@ -5,10 +5,12 @@ import (
 	"os"
 	"strconv"
 
+	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/server/render"
+	"knov/internal/translation"
 	"knov/internal/utils"
 )
 
@@ -29,7 +31,7 @@ import (
 func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
-		http.Error(w, "filepath parameter required", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath parameter required"), http.StatusBadRequest)
 		return
 	}
 
@@ -65,13 +67,13 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 	fileContent, err := os.ReadFile(fullPath)
 	if err != nil {
 		logging.LogError("failed to read file %s: %v", fullPath, err)
-		http.Error(w, "failed to read file", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
 		return
 	}
 
 	handler := files.GetParserRegistry().GetHandler(fullPath)
 	if handler == nil {
-		http.Error(w, "unsupported file type", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unsupported file type"), http.StatusBadRequest)
 		return
 	}
 
@@ -80,11 +82,11 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 		tableData, err = dokuwikiHandler.ParseDokuWikiTable(string(fileContent))
 		if err != nil {
 			logging.LogError("failed to parse dokuwiki table: %v", err)
-			http.Error(w, "failed to parse table", http.StatusInternalServerError)
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse table"), http.StatusInternalServerError)
 			return
 		}
 	} else {
-		http.Error(w, "table parsing not supported for this file type", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "table parsing not supported for this file type"), http.StatusBadRequest)
 		return
 	}
 

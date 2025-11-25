@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"knov/internal/configmanager"
 	"knov/internal/git"
 	"knov/internal/server/render"
+	"knov/internal/translation"
 )
 
 // @Summary Get recently changed files
@@ -23,7 +25,7 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 
 	files, err := git.GetRecentlyChangedFiles(count)
 	if err != nil {
-		http.Error(w, "failed to get recent files", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get recent files"), http.StatusInternalServerError)
 		return
 	}
 

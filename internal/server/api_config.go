@@ -8,6 +8,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/server/render"
+	"knov/internal/translation"
 )
 
 // @Summary Get current configuration
@@ -38,7 +39,7 @@ func handleAPIGetCurrentDataPath(w http.ResponseWriter, r *http.Request) {
 	appConfig := configmanager.GetAppConfig()
 	dataPath := appConfig.DataPath
 
-	html := render.RenderInputField("text", "dataPath", "data-path", dataPath, "/path/to/data", true)
+	html := render.RenderInputField("text", "dataPath", "data-path", dataPath, translation.SprintfForRequest(configmanager.GetLanguage(), "/path/to/data"), true)
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
@@ -70,7 +71,7 @@ func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	appConfig := configmanager.GetAppConfig()
 	repositoryURL := appConfig.GitRepoURL
 
-	html := render.RenderInputField("url", "repositoryURL", "git-url", repositoryURL, "https://github.com/user/repo.git", false)
+	html := render.RenderInputField("url", "repositoryURL", "git-url", repositoryURL, translation.SprintfForRequest(configmanager.GetLanguage(), "https://github.com/user/repo.git"), false)
 	writeResponse(w, r, repositoryURL, html)
 }
 
@@ -88,12 +89,12 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 
 	if err := configmanager.UpdateEnvFile("KNOV_GIT_REPO_URL", repositoryURL); err != nil {
 		logging.LogError("failed to update env file: %v", err)
-		http.Error(w, "failed to save", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save"), http.StatusInternalServerError)
 		return
 	}
 
 	data := "saved"
-	html := render.RenderStatusMessage(render.StatusOK, "git url saved. restart required.")
+	html := render.RenderStatusMessage(render.StatusOK, translation.SprintfForRequest(configmanager.GetLanguage(), "git url saved. restart required."))
 	writeResponse(w, r, data, html)
 }
 
@@ -108,7 +109,7 @@ func handleAPIRestartApp(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("application restart requested")
 
 	data := "restarting"
-	html := render.RenderStatusMessage(render.StatusOK, "restarting application...")
+	html := render.RenderStatusMessage(render.StatusOK, translation.SprintfForRequest(configmanager.GetLanguage(), "restarting application..."))
 	writeResponse(w, r, data, html)
 
 	// give response time to send
@@ -131,18 +132,18 @@ func handleAPISetDataPath(w http.ResponseWriter, r *http.Request) {
 	dataPath := r.FormValue("dataPath")
 
 	if dataPath == "" {
-		http.Error(w, "data path cannot be empty", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "data path cannot be empty"), http.StatusBadRequest)
 		return
 	}
 
 	if err := configmanager.UpdateEnvFile("KNOV_DATA_PATH", dataPath); err != nil {
 		logging.LogError("failed to update env file: %v", err)
-		http.Error(w, "failed to save", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save"), http.StatusInternalServerError)
 		return
 	}
 
 	data := "saved"
-	html := render.RenderStatusMessage("status-ok", "data path saved. restart required.")
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "data path saved. restart required."))
 	writeResponse(w, r, data, html)
 }
 

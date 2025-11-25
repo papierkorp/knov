@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/filter"
+	"knov/internal/translation"
 	"knov/internal/utils"
 )
 
@@ -27,14 +29,14 @@ func RenderFilterFormWithAction(config *filter.Config, action string, filePath s
 	// add filepath input for new files
 	if includeFilePathInput {
 		html.WriteString(`<div class="form-group">`)
-		html.WriteString(`<label>file path:</label>`)
+		html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "file path") + `:</label>`)
 		html.WriteString(`<input type="text" name="filepath" placeholder="filters/my-filter" required />`)
 		html.WriteString(`</div>`)
 	}
 
 	// controls
 	html.WriteString(`<div class="filter-controls">`)
-	html.WriteString(`<button type="submit" class="btn-primary">apply filter</button>`)
+	html.WriteString(`<button type="submit" class="btn-primary">` + translation.SprintfForRequest(configmanager.GetLanguage(), "apply filter") + `</button>`)
 	html.WriteString(`<select name="logic" class="form-select">`)
 
 	selectedLogic := "and"
@@ -45,7 +47,7 @@ func RenderFilterFormWithAction(config *filter.Config, action string, filePath s
 	html.WriteString(fmt.Sprintf(`<option value="and" %s>and</option>`, utils.Ternary(selectedLogic == "and", "selected", "")))
 	html.WriteString(fmt.Sprintf(`<option value="or" %s>or</option>`, utils.Ternary(selectedLogic == "or", "selected", "")))
 	html.WriteString(`</select>`)
-	html.WriteString(`<button type="button" hx-post="/api/filter/add-criteria" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">add filter</button>`)
+	html.WriteString(`<button type="button" hx-post="/api/filter/add-criteria" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">` + translation.SprintfForRequest(configmanager.GetLanguage(), "add filter") + `</button>`)
 	html.WriteString(`</div>`)
 
 	// criteria

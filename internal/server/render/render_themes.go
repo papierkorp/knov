@@ -6,7 +6,9 @@ import (
 	"sort"
 	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/thememanager"
+	"knov/internal/translation"
 )
 
 // RenderThemeOptions renders theme options for select dropdown
@@ -25,9 +27,9 @@ func RenderThemeOptions(availableThemes []thememanager.Theme, currentTheme theme
 // RenderThemeSettings renders theme settings as HTML for display
 func RenderThemeSettings(settings interface{}, themeName string) string {
 	return fmt.Sprintf(`<div id="theme-settings-%s">
-		<h4>Settings for %s</h4>
+		<h4>%s</h4>
 		<pre>%+v</pre>
-	</div>`, themeName, themeName, settings)
+	</div>`, themeName, translation.SprintfForRequest(configmanager.GetLanguage(), "settings for %s", themeName), settings)
 }
 
 // RenderThemeSettingsForm renders all theme settings as form elements

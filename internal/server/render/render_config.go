@@ -4,6 +4,7 @@ package render
 import (
 	"fmt"
 	"knov/internal/configmanager"
+	"knov/internal/translation"
 	"strings"
 )
 
@@ -11,9 +12,9 @@ import (
 func RenderConfigDisplay(userSettings configmanager.UserSettings, appConfig configmanager.AppConfig) string {
 	var html strings.Builder
 	html.WriteString("<div class='config'>")
-	html.WriteString(fmt.Sprintf("<p>theme: %s</p>", userSettings.Theme))
-	html.WriteString(fmt.Sprintf("<p>language: %s</p>", userSettings.Language))
-	html.WriteString(fmt.Sprintf("<p>data path: %s</p>", appConfig.DataPath))
+	html.WriteString(fmt.Sprintf("<p>%s: %s</p>", translation.SprintfForRequest(configmanager.GetLanguage(), "theme"), userSettings.Theme))
+	html.WriteString(fmt.Sprintf("<p>%s: %s</p>", translation.SprintfForRequest(configmanager.GetLanguage(), "language"), userSettings.Language))
+	html.WriteString(fmt.Sprintf("<p>%s: %s</p>", translation.SprintfForRequest(configmanager.GetLanguage(), "data path"), appConfig.DataPath))
 	html.WriteString("</div>")
 	return html.String()
 }

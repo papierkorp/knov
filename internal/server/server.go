@@ -18,6 +18,7 @@ import (
 	"knov/internal/server/render"
 	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
+	"knov/internal/translation"
 	"knov/internal/utils"
 
 	"github.com/go-chi/chi/v5"
@@ -493,7 +494,7 @@ func handleDashboardEdit(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	dash, err := dashboard.Get(id)
 	if err != nil {
-		http.Error(w, "dashboard not found", http.StatusNotFound)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard not found"), http.StatusNotFound)
 		return
 	}
 
@@ -547,7 +548,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 
 	fileContent, err := files.GetFileContent(fullPath)
 	if err != nil {
-		http.Error(w, "failed to get file content", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"), http.StatusInternalServerError)
 		return
 	}
 

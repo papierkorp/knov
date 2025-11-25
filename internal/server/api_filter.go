@@ -9,9 +9,11 @@ import (
 	"strings"
 	"time"
 
+	"knov/internal/configmanager"
 	"knov/internal/filter"
 	"knov/internal/logging"
 	"knov/internal/server/render"
+	"knov/internal/translation"
 )
 
 // @Summary Filter files by metadata
@@ -32,14 +34,14 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 	logging.LogDebug("filter request received")
 
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
 		return
 	}
 
 	config := filter.ParseFilterConfigFromForm(r)
 	if err := filter.ValidateConfig(config); err != nil {
 		logging.LogError("invalid filter config: %v", err)
-		http.Error(w, fmt.Sprintf("invalid filter config: %v", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf(translation.SprintfForRequest(configmanager.GetLanguage(), "invalid filter config: %v"), err), http.StatusBadRequest)
 		return
 	}
 
@@ -48,7 +50,7 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 	result, err := filter.FilterFilesWithConfig(config)
 	if err != nil {
 		logging.LogError("failed to filter files: %v", err)
-		http.Error(w, "failed to filter files", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to filter files"), http.StatusInternalServerError)
 		return
 	}
 
@@ -97,14 +99,14 @@ func handleAPIGetFilterCriteriaRow(w http.ResponseWriter, r *http.Request) {
 // @Router /api/filter/save [post]
 func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
 		return
 	}
 
 	// get file path
 	filePath := r.FormValue("filepath")
 	if filePath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
 		return
 	}
 
@@ -114,7 +116,7 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	// save using the new filter package function
 	if err := filter.SaveFilterConfig(config, filePath); err != nil {
 		logging.LogError("failed to save filter config: %v", err)
-		http.Error(w, fmt.Sprintf("failed to save filter: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save filter: %v"), err), http.StatusInternalServerError)
 		return
 	}
 
@@ -172,7 +174,7 @@ func handleAPIGetFilterForm(w http.ResponseWriter, r *http.Request) {
 // @Router /api/filter/value-input [get]
 func handleAPIGetFilterValueInput(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
 		return
 	}
 
@@ -206,7 +208,7 @@ func handleAPIGetFilterValueInput(w http.ResponseWriter, r *http.Request) {
 // @Router /api/filter/add-criteria [post]
 func handleAPIAddFilterCriteria(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
 		return
 	}
 

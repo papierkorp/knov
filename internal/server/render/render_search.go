@@ -6,12 +6,14 @@ import (
 	"net/url"
 	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/translation"
 )
 
 // RenderSearchHint renders an empty search hint message
 func RenderSearchHint() string {
-	return `<div class="search-hint">start typing to search...</div>`
+	return `<div class="search-hint">` + translation.SprintfForRequest(configmanager.GetLanguage(), "start typing to search...") + `</div>`
 }
 
 // RenderSearchDropdown creates dropdown HTML for file results with search features
@@ -32,13 +34,13 @@ func RenderSearchDropdown(results []files.File, query string) string {
 	if len(results) > displayCount {
 		html.WriteString(fmt.Sprintf(`
 			<li class="component-search-more-item">
-								<a href="/search?q=%s" class="component-search-more-link">view all %d results →</a>
+								<a href="/search?q=%s" class="component-search-more-link">view all %d results â†’</a>
 							</li>`,
 			url.QueryEscape(query), len(results)))
 	}
 
 	if len(results) == 0 {
-		html.WriteString(`<li class="component-search-hint">no results found</li>`)
+		html.WriteString(`<li class="component-search-hint">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no results found") + `</li>`)
 	}
 
 	html.WriteString(`</ul>`)
@@ -49,7 +51,7 @@ func RenderSearchDropdown(results []files.File, query string) string {
 func RenderSearchCards(results []files.File, query string) string {
 	var html strings.Builder
 	if query != "" {
-		html.WriteString(fmt.Sprintf(`<p>found %d results for "%s"</p>`, len(results), query))
+		html.WriteString(fmt.Sprintf(`<p>%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "found %d results for \"%s\"", len(results), query)))
 	}
 	html.WriteString(RenderFileCards(results))
 	return html.String()
@@ -59,7 +61,7 @@ func RenderSearchCards(results []files.File, query string) string {
 func RenderSearchList(results []files.File, query string) string {
 	var html strings.Builder
 	if query != "" {
-		html.WriteString(fmt.Sprintf(`<p>found %d results for "%s"</p>`, len(results), query))
+		html.WriteString(fmt.Sprintf(`<p>%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "found %d results for \"%s\"", len(results), query)))
 	}
 	html.WriteString(RenderFileList(results))
 	return html.String()

@@ -3,6 +3,9 @@ package server
 
 import (
 	"net/http"
+
+	"knov/internal/configmanager"
+	"knov/internal/translation"
 )
 
 // @Summary Health check
@@ -11,6 +14,6 @@ import (
 // @Router /api/health [get]
 func handleAPIHealth(w http.ResponseWriter, r *http.Request) {
 	data := map[string]string{"status": "ok"}
-	html := `<span class="health-ok">OK</span>`
+	html := `<span class="health-ok">` + translation.SprintfForRequest(configmanager.GetLanguage(), "OK") + `</span>`
 	writeResponse(w, r, data, html)
 }

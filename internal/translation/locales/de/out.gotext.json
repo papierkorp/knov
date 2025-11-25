@@ -12,6 +12,11 @@
             "translation": ""
         },
         {
+            "id": "add filter",
+            "message": "add filter",
+            "translation": ""
+        },
+        {
             "id": "Add Filter",
             "message": "Add Filter",
             "translation": ""
@@ -49,6 +54,11 @@
         {
             "id": "AND",
             "message": "AND",
+            "translation": ""
+        },
+        {
+            "id": "apply filter",
+            "message": "apply filter",
             "translation": ""
         },
         {
@@ -107,6 +117,11 @@
             "translation": "Nach Metadata durchsuchen"
         },
         {
+            "id": "cancel",
+            "message": "cancel",
+            "translation": ""
+        },
+        {
             "id": "Cancel",
             "message": "Cancel",
             "translation": "Abbrechen"
@@ -129,6 +144,11 @@
         {
             "id": "Collections",
             "message": "Collections",
+            "translation": ""
+        },
+        {
+            "id": "configure filter above and click preview to see results",
+            "message": "configure filter above and click preview to see results",
             "translation": ""
         },
         {
@@ -182,8 +202,23 @@
             "translation": ""
         },
         {
+            "id": "dashboardId is required",
+            "message": "dashboardId is required",
+            "translation": ""
+        },
+        {
             "id": "dashboard name",
             "message": "dashboard name",
+            "translation": ""
+        },
+        {
+            "id": "dashboard not found",
+            "message": "dashboard not found",
+            "translation": ""
+        },
+        {
+            "id": "dashboard renamed successfully",
+            "message": "dashboard renamed successfully",
             "translation": ""
         },
         {
@@ -202,13 +237,28 @@
             "translation": ""
         },
         {
+            "id": "data path",
+            "message": "data path",
+            "translation": ""
+        },
+        {
             "id": "Data Path",
             "message": "Data Path",
             "translation": ""
         },
         {
+            "id": "data path cannot be empty",
+            "message": "data path cannot be empty",
+            "translation": ""
+        },
+        {
             "id": "Data Path Configuration",
             "message": "Data Path Configuration",
+            "translation": ""
+        },
+        {
+            "id": "data path saved. restart required.",
+            "message": "data path saved. restart required.",
             "translation": ""
         },
         {
@@ -272,6 +322,105 @@
             "translation": ""
         },
         {
+            "id": "failed to browse files",
+            "message": "failed to browse files",
+            "translation": ""
+        },
+        {
+            "id": "failed to create directory",
+            "message": "failed to create directory",
+            "translation": ""
+        },
+        {
+            "id": "failed to create file",
+            "message": "failed to create file",
+            "translation": ""
+        },
+        {
+            "id": "failed to filter files",
+            "message": "failed to filter files",
+            "translation": ""
+        },
+        {
+            "id": "failed to generate metadata form",
+            "message": "failed to generate metadata form",
+            "translation": ""
+        },
+        {
+            "id": "failed to get dashboards",
+            "message": "failed to get dashboards",
+            "translation": ""
+        },
+        {
+            "id": "failed to get file content",
+            "message": "failed to get file content",
+            "translation": ""
+        },
+        {
+            "id": "failed to get files",
+            "message": "failed to get files",
+            "translation": ""
+        },
+        {
+            "id": "failed to get raw content",
+            "message": "failed to get raw content",
+            "translation": ""
+        },
+        {
+            "id": "failed to get recent files",
+            "message": "failed to get recent files",
+            "translation": ""
+        },
+        {
+            "id": "failed to parse form",
+            "message": "failed to parse form",
+            "translation": ""
+        },
+        {
+            "id": "failed to parse table",
+            "message": "failed to parse table",
+            "translation": ""
+        },
+        {
+            "id": "failed to parse widgets",
+            "message": "failed to parse widgets",
+            "translation": ""
+        },
+        {
+            "id": "failed to read file",
+            "message": "failed to read file",
+            "translation": ""
+        },
+        {
+            "id": "failed to render widget",
+            "message": "failed to render widget",
+            "translation": ""
+        },
+        {
+            "id": "failed to save",
+            "message": "failed to save",
+            "translation": ""
+        },
+        {
+            "id": "failed to save file",
+            "message": "failed to save file",
+            "translation": ""
+        },
+        {
+            "id": "failed to save filter: {Arg_1}",
+            "message": "failed to save filter: {Arg_1}",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ]
+        },
+        {
             "id": "file",
             "message": "file",
             "translation": ""
@@ -282,8 +431,28 @@
             "translation": ""
         },
         {
+            "id": "file content here...",
+            "message": "file content here...",
+            "translation": ""
+        },
+        {
+            "id": "file path",
+            "message": "file path",
+            "translation": "Dateipfad"
+        },
+        {
+            "id": "file path is required",
+            "message": "file path is required",
+            "translation": ""
+        },
+        {
             "id": "File path not provided",
             "message": "File path not provided",
+            "translation": ""
+        },
+        {
+            "id": "filepath parameter required",
+            "message": "filepath parameter required",
             "translation": ""
         },
         {
@@ -307,8 +476,28 @@
             "translation": ""
         },
         {
+            "id": "filter config is required",
+            "message": "filter config is required",
+            "translation": ""
+        },
+        {
+            "id": "filter configuration",
+            "message": "filter configuration",
+            "translation": ""
+        },
+        {
+            "id": "filtered results will appear here",
+            "message": "filtered results will appear here",
+            "translation": ""
+        },
+        {
             "id": "Filtered results will appear here",
             "message": "Filtered results will appear here",
+            "translation": ""
+        },
+        {
+            "id": "filter preview",
+            "message": "filter preview",
             "translation": ""
         },
         {
@@ -339,6 +528,11 @@
         {
             "id": "Git Repository",
             "message": "Git Repository",
+            "translation": ""
+        },
+        {
+            "id": "git url saved. restart required.",
+            "message": "git url saved. restart required.",
             "translation": ""
         },
         {
@@ -382,6 +576,11 @@
             "translation": "Start"
         },
         {
+            "id": "https://github.com/user/repo.git",
+            "message": "https://github.com/user/repo.git",
+            "translation": ""
+        },
+        {
             "id": "In Array",
             "message": "In Array",
             "translation": ""
@@ -392,8 +591,32 @@
             "translation": ""
         },
         {
+            "id": "invalid filter config: {Arg_1}",
+            "message": "invalid filter config: {Arg_1}",
+            "translation": "",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ]
+        },
+        {
+            "id": "invalid index",
+            "message": "invalid index",
+            "translation": ""
+        },
+        {
             "id": "Journaling",
             "message": "Journaling",
+            "translation": ""
+        },
+        {
+            "id": "language",
+            "message": "language",
             "translation": ""
         },
         {
@@ -462,6 +685,11 @@
             "translation": ""
         },
         {
+            "id": "loading options...",
+            "message": "loading options...",
+            "translation": ""
+        },
+        {
             "id": "loading projects...",
             "message": "loading projects...",
             "translation": ""
@@ -497,6 +725,21 @@
             "translation": ""
         },
         {
+            "id": "missing filepath",
+            "message": "missing filepath",
+            "translation": ""
+        },
+        {
+            "id": "missing filepath parameter",
+            "message": "missing filepath parameter",
+            "translation": ""
+        },
+        {
+            "id": "missing metadata or value parameter",
+            "message": "missing metadata or value parameter",
+            "translation": ""
+        },
+        {
             "id": "MOC",
             "message": "MOC",
             "translation": ""
@@ -504,6 +747,21 @@
         {
             "id": "name",
             "message": "name",
+            "translation": ""
+        },
+        {
+            "id": "name is required",
+            "message": "name is required",
+            "translation": ""
+        },
+        {
+            "id": "no ancestors",
+            "message": "no ancestors",
+            "translation": ""
+        },
+        {
+            "id": "no children",
+            "message": "no children",
             "translation": ""
         },
         {
@@ -517,8 +775,43 @@
             "translation": ""
         },
         {
+            "id": "no files found",
+            "message": "no files found",
+            "translation": ""
+        },
+        {
+            "id": "no inbound links",
+            "message": "no inbound links",
+            "translation": ""
+        },
+        {
+            "id": "no outbound links",
+            "message": "no outbound links",
+            "translation": ""
+        },
+        {
+            "id": "no parents",
+            "message": "no parents",
+            "translation": ""
+        },
+        {
+            "id": "no parents found",
+            "message": "no parents found",
+            "translation": ""
+        },
+        {
+            "id": "no results found",
+            "message": "no results found",
+            "translation": ""
+        },
+        {
             "id": "No widgets configured",
             "message": "No widgets configured",
+            "translation": ""
+        },
+        {
+            "id": "OK",
+            "message": "OK",
             "translation": ""
         },
         {
@@ -552,6 +845,16 @@
             "translation": ""
         },
         {
+            "id": "/path/to/data",
+            "message": "/path/to/data",
+            "translation": ""
+        },
+        {
+            "id": "path/to/file.md",
+            "message": "path/to/file.md",
+            "translation": ""
+        },
+        {
             "id": "Path to your data storage relative from the executable",
             "message": "Path to your data storage relative from the executable",
             "translation": ""
@@ -574,6 +877,11 @@
         {
             "id": "position y",
             "message": "position y",
+            "translation": ""
+        },
+        {
+            "id": "preview results",
+            "message": "preview results",
             "translation": ""
         },
         {
@@ -637,6 +945,11 @@
             "translation": ""
         },
         {
+            "id": "restarting application...",
+            "message": "restarting application...",
+            "translation": ""
+        },
+        {
             "id": "Restart System",
             "message": "Restart System",
             "translation": ""
@@ -647,8 +960,23 @@
             "translation": ""
         },
         {
+            "id": "save",
+            "message": "save",
+            "translation": ""
+        },
+        {
             "id": "save changes",
             "message": "save changes",
+            "translation": ""
+        },
+        {
+            "id": "save file",
+            "message": "save file",
+            "translation": ""
+        },
+        {
+            "id": "save filter",
+            "message": "save filter",
             "translation": ""
         },
         {
@@ -670,6 +998,11 @@
             "id": "Search Results",
             "message": "Search Results",
             "translation": "Suchergebnisse"
+        },
+        {
+            "id": "select a file...",
+            "message": "select a file...",
+            "translation": ""
         },
         {
             "id": "select a widget type to see configuration options",
@@ -742,6 +1075,11 @@
             "translation": ""
         },
         {
+            "id": "static content is required",
+            "message": "static content is required",
+            "translation": ""
+        },
+        {
             "id": "status",
             "message": "status",
             "translation": ""
@@ -772,6 +1110,11 @@
             "translation": ""
         },
         {
+            "id": "table parsing not supported for this file type",
+            "message": "table parsing not supported for this file type",
+            "translation": ""
+        },
+        {
             "id": "tags",
             "message": "tags",
             "translation": ""
@@ -792,6 +1135,11 @@
             "translation": ""
         },
         {
+            "id": "theme",
+            "message": "theme",
+            "translation": ""
+        },
+        {
             "id": "Theme Settings",
             "message": "Theme Settings",
             "translation": "Theme Einstellungen"
@@ -804,6 +1152,11 @@
         {
             "id": "Type",
             "message": "Type",
+            "translation": ""
+        },
+        {
+            "id": "unsupported file type",
+            "message": "unsupported file type",
             "translation": ""
         },
         {
@@ -834,6 +1187,11 @@
         {
             "id": "widget",
             "message": "widget",
+            "translation": ""
+        },
+        {
+            "id": "widget not found",
+            "message": "widget not found",
             "translation": ""
         },
         {
