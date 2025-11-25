@@ -2,11 +2,6 @@
   "language": "de",
   "messages": [
     {
-      "id": "action",
-      "message": "action",
-      "translation": ""
-    },
-    {
       "id": "add archived items",
       "message": "add archived items",
       "translation": ""
@@ -14,11 +9,6 @@
     {
       "id": "add areas of responsibility",
       "message": "add areas of responsibility",
-      "translation": ""
-    },
-    {
-      "id": "+ add criteria",
-      "message": "+ add criteria",
       "translation": ""
     },
     {
@@ -30,11 +20,6 @@
       "id": "add folders",
       "message": "add folders",
       "translation": ""
-    },
-    {
-      "id": "Add Note",
-      "message": "Add Note",
-      "translation": "Neue Datei erstellen"
     },
     {
       "id": "add projects",
@@ -50,11 +35,6 @@
       "id": "add tags",
       "message": "add tags",
       "translation": ""
-    },
-    {
-      "id": "Add Todo",
-      "message": "Add Todo",
-      "translation": "Neues Todo erstellen"
     },
     {
       "id": "Admin",
@@ -162,9 +142,9 @@
       "translation": ""
     },
     {
-      "id": "Create a New File",
-      "message": "Create a New File",
-      "translation": "Neue Datei erstellen"
+      "id": "Create a New",
+      "message": "Create a New",
+      "translation": ""
     },
     {
       "id": "create dashboard",
@@ -217,6 +197,11 @@
       "translation": ""
     },
     {
+      "id": "Data Export",
+      "message": "Data Export",
+      "translation": ""
+    },
+    {
       "id": "Data Path",
       "message": "Data Path",
       "translation": ""
@@ -234,16 +219,6 @@
     {
       "id": "Design your custom dashboard with widgets",
       "message": "Design your custom dashboard with widgets",
-      "translation": ""
-    },
-    {
-      "id": "display",
-      "message": "display",
-      "translation": ""
-    },
-    {
-      "id": "display options",
-      "message": "display options",
       "translation": ""
     },
     {
@@ -282,8 +257,18 @@
       "translation": ""
     },
     {
-      "id": "field",
-      "message": "field",
+      "id": "Export all metadata to file",
+      "message": "Export all metadata to file",
+      "translation": ""
+    },
+    {
+      "id": "Export format",
+      "message": "Export format",
+      "translation": ""
+    },
+    {
+      "id": "Export Metadata",
+      "message": "Export Metadata",
       "translation": ""
     },
     {
@@ -312,18 +297,23 @@
       "translation": ""
     },
     {
-      "id": "filter configuration",
-      "message": "filter configuration",
+      "id": "file type",
+      "message": "file type",
       "translation": ""
     },
     {
-      "id": "filter criteria",
-      "message": "filter criteria",
+      "id": "Filter",
+      "message": "Filter",
       "translation": ""
     },
     {
       "id": "Filtered results will appear here",
       "message": "Filtered results will appear here",
+      "translation": ""
+    },
+    {
+      "id": "Fleeting",
+      "message": "Fleeting",
       "translation": ""
     },
     {
@@ -402,6 +392,11 @@
       "translation": ""
     },
     {
+      "id": "Journaling",
+      "message": "Journaling",
+      "translation": ""
+    },
+    {
       "id": "Last Edited",
       "message": "Last Edited",
       "translation": "Zuletzt bearbeitet"
@@ -427,8 +422,8 @@
       "translation": ""
     },
     {
-      "id": "limit",
-      "message": "limit",
+      "id": "Literature",
+      "message": "Literature",
       "translation": ""
     },
     {
@@ -497,24 +492,19 @@
       "translation": ""
     },
     {
-      "id": "logic",
-      "message": "logic",
+      "id": "Metadata Filter",
+      "message": "Metadata Filter",
       "translation": ""
     },
     {
-      "id": "Metadata Filter",
-      "message": "Metadata Filter",
+      "id": "MOC",
+      "message": "MOC",
       "translation": ""
     },
     {
       "id": "name",
       "message": "name",
       "translation": ""
-    },
-    {
-      "id": "New Dashboard",
-      "message": "New Dashboard",
-      "translation": "Neues Dashboard"
     },
     {
       "id": "no configuration needed",
@@ -529,11 +519,6 @@
     {
       "id": "No widgets configured",
       "message": "No widgets configured",
-      "translation": ""
-    },
-    {
-      "id": "operator",
-      "message": "operator",
       "translation": ""
     },
     {
@@ -569,6 +554,11 @@
     {
       "id": "Path to your data storage relative from the executable",
       "message": "Path to your data storage relative from the executable",
+      "translation": ""
+    },
+    {
+      "id": "Permanent",
+      "message": "Permanent",
       "translation": ""
     },
     {
@@ -687,6 +677,16 @@
       "translation": ""
     },
     {
+      "id": "select file type",
+      "message": "select file type",
+      "translation": ""
+    },
+    {
+      "id": "select status",
+      "message": "select status",
+      "translation": ""
+    },
+    {
       "id": "select the file you want to display",
       "message": "select the file you want to display",
       "translation": ""
@@ -742,6 +742,11 @@
       "translation": ""
     },
     {
+      "id": "status",
+      "message": "status",
+      "translation": ""
+    },
+    {
       "id": "Status",
       "message": "Status",
       "translation": ""
@@ -792,6 +797,11 @@
       "translation": "Theme Einstellungen"
     },
     {
+      "id": "Todo",
+      "message": "Todo",
+      "translation": ""
+    },
+    {
       "id": "Type",
       "message": "Type",
       "translation": ""
@@ -799,11 +809,6 @@
     {
       "id": "Update your dashboard configuration",
       "message": "Update your dashboard configuration",
-      "translation": ""
-    },
-    {
-      "id": "value",
-      "message": "value",
       "translation": ""
     },
     {

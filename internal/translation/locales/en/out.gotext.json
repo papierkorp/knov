@@ -2,13 +2,6 @@
     "language": "en",
     "messages": [
         {
-            "id": "action",
-            "message": "action",
-            "translation": "action",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "add archived items",
             "message": "add archived items",
             "translation": "add archived items",
@@ -23,13 +16,6 @@
             "fuzzy": true
         },
         {
-            "id": "+ add criteria",
-            "message": "+ add criteria",
-            "translation": "+ add criteria",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Add Filter",
             "message": "Add Filter",
             "translation": "Add Filter"
@@ -38,13 +24,6 @@
             "id": "add folders",
             "message": "add folders",
             "translation": "add folders",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Add Note",
-            "message": "Add Note",
-            "translation": "Add Note",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -66,13 +45,6 @@
             "id": "add tags",
             "message": "add tags",
             "translation": "add tags",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Add Todo",
-            "message": "Add Todo",
-            "translation": "Add Todo",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -200,9 +172,9 @@
             "fuzzy": true
         },
         {
-            "id": "Create a New File",
-            "message": "Create a New File",
-            "translation": "Create a New File",
+            "id": "Create a New",
+            "message": "Create a New",
+            "translation": "Create a New",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -273,6 +245,13 @@
             "fuzzy": true
         },
         {
+            "id": "Data Export",
+            "message": "Data Export",
+            "translation": "Data Export",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Data Path",
             "message": "Data Path",
             "translation": "Data Path",
@@ -295,20 +274,6 @@
             "id": "Design your custom dashboard with widgets",
             "message": "Design your custom dashboard with widgets",
             "translation": "Design your custom dashboard with widgets"
-        },
-        {
-            "id": "display",
-            "message": "display",
-            "translation": "display",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "display options",
-            "message": "display options",
-            "translation": "display options",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
         },
         {
             "id": "Edit",
@@ -350,9 +315,23 @@
             "translation": "Exclude"
         },
         {
-            "id": "field",
-            "message": "field",
-            "translation": "field",
+            "id": "Export all metadata to file",
+            "message": "Export all metadata to file",
+            "translation": "Export all metadata to file",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Export format",
+            "message": "Export format",
+            "translation": "Export format",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Export Metadata",
+            "message": "Export Metadata",
+            "translation": "Export Metadata",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -390,16 +369,16 @@
             "translation": "Files with"
         },
         {
-            "id": "filter configuration",
-            "message": "filter configuration",
-            "translation": "filter configuration",
+            "id": "file type",
+            "message": "file type",
+            "translation": "file type",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "filter criteria",
-            "message": "filter criteria",
-            "translation": "filter criteria",
+            "id": "Filter",
+            "message": "Filter",
+            "translation": "Filter",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -407,6 +386,13 @@
             "id": "Filtered results will appear here",
             "message": "Filtered results will appear here",
             "translation": "Filtered results will appear here"
+        },
+        {
+            "id": "Fleeting",
+            "message": "Fleeting",
+            "translation": "Fleeting",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
         },
         {
             "id": "folders",
@@ -494,6 +480,13 @@
             "translation": "Include"
         },
         {
+            "id": "Journaling",
+            "message": "Journaling",
+            "translation": "Journaling",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Last Edited",
             "message": "Last Edited",
             "translation": "Last Edited"
@@ -523,9 +516,9 @@
             "translation": "Less Than"
         },
         {
-            "id": "limit",
-            "message": "limit",
-            "translation": "limit",
+            "id": "Literature",
+            "message": "Literature",
+            "translation": "Literature",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -617,16 +610,16 @@
             "translation": "loading widget..."
         },
         {
-            "id": "logic",
-            "message": "logic",
-            "translation": "logic",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Metadata Filter",
             "message": "Metadata Filter",
             "translation": "Metadata Filter"
+        },
+        {
+            "id": "MOC",
+            "message": "MOC",
+            "translation": "MOC",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
         },
         {
             "id": "name",
@@ -634,11 +627,6 @@
             "translation": "name",
             "translatorComment": "Copied from source.",
             "fuzzy": true
-        },
-        {
-            "id": "New Dashboard",
-            "message": "New Dashboard",
-            "translation": "New Dashboard"
         },
         {
             "id": "no configuration needed",
@@ -658,13 +646,6 @@
             "id": "No widgets configured",
             "message": "No widgets configured",
             "translation": "No widgets configured"
-        },
-        {
-            "id": "operator",
-            "message": "operator",
-            "translation": "operator",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
         },
         {
             "id": "optional",
@@ -706,6 +687,13 @@
             "id": "Path to your data storage relative from the executable",
             "message": "Path to your data storage relative from the executable",
             "translation": "Path to your data storage relative from the executable",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Permanent",
+            "message": "Permanent",
+            "translation": "Permanent",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -855,6 +843,20 @@
             "fuzzy": true
         },
         {
+            "id": "select file type",
+            "message": "select file type",
+            "translation": "select file type",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "select status",
+            "message": "select status",
+            "translation": "select status",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "select the file you want to display",
             "message": "select the file you want to display",
             "translation": "select the file you want to display",
@@ -930,6 +932,13 @@
             "fuzzy": true
         },
         {
+            "id": "status",
+            "message": "status",
+            "translation": "status",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Status",
             "message": "Status",
             "translation": "Status"
@@ -994,6 +1003,13 @@
             "translation": "Theme Settings"
         },
         {
+            "id": "Todo",
+            "message": "Todo",
+            "translation": "Todo",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Type",
             "message": "Type",
             "translation": "Type"
@@ -1002,13 +1018,6 @@
             "id": "Update your dashboard configuration",
             "message": "Update your dashboard configuration",
             "translation": "Update your dashboard configuration"
-        },
-        {
-            "id": "value",
-            "message": "value",
-            "translation": "value",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
         },
         {
             "id": "Value",

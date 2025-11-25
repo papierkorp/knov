@@ -27,7 +27,7 @@ func RenderFilterFormWithAction(config *filter.Config, action string, filePath s
 	// add filepath input for new files
 	if includeFilePathInput {
 		html.WriteString(`<div class="form-group">`)
-		html.WriteString(`<label>filter name:</label>`)
+		html.WriteString(`<label>file path:</label>`)
 		html.WriteString(`<input type="text" name="filepath" placeholder="filters/my-filter" required />`)
 		html.WriteString(`</div>`)
 	}
