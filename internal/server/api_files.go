@@ -158,6 +158,19 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogDebug("browse request: %s=%s", metadata, value)
 
+	// Map URL-friendly field names to actual filter field names
+	actualMetadata := metadata
+	switch metadata {
+	case "projects":
+		actualMetadata = "para_projects"
+	case "areas":
+		actualMetadata = "para_areas"
+	case "resources":
+		actualMetadata = "para_resources"
+	case "archive":
+		actualMetadata = "para_archive"
+	}
+
 	// Set operator based on field type - arrays use "contains", simple fields use "equals"
 	operator := "equals"
 	if metadata == "tags" || metadata == "folders" ||
@@ -168,14 +181,14 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 	criteria := []filter.Criteria{
 		{
-			Metadata: metadata,
+			Metadata: actualMetadata,
 			Operator: operator,
 			Value:    value,
 			Action:   "include",
 		},
 	}
 
-	logging.LogDebug("browse criteria: %+v", criteria)
+	logging.LogDebug("browse criteria: metadata=%s (mapped to %s), operator=%s, value=%s", metadata, actualMetadata, operator, value)
 
 	browsedFiles, err := filter.FilterFiles(criteria, "and")
 	if err != nil {
