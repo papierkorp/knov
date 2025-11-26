@@ -62,7 +62,7 @@ func StartServerChi() {
 	r.Get("/search", handleSearchPage)
 	r.Get("/files/edit/*", handleFileEdit)
 
-	// specific file creation routes must come before wildcard
+	// use filenew template
 	r.Get("/files/new/todo", handleFileNewTodo)
 	r.Get("/files/new/fleeting", handleFileNewFleeting)
 	r.Get("/files/new/literature", handleFileNewLiterature)
