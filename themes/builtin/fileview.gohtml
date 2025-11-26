@@ -15,6 +15,7 @@
             {{.FileContent.HTML}}
         </article>
         <aside class="file-sidebar">
+            {{if index .ThemeSettings "sidebarMetadata"}}
             <section class="sidebar-section">
                 <h3>metadata</h3>
                 <div class="metadata-grid">
@@ -48,7 +49,9 @@
                     </div>
                 </div>
             </section>
+            {{end}}
 
+            {{if index .ThemeSettings "sidebarPara"}}
             <section class="sidebar-section">
                 <h3>PARA organization</h3>
                 <div class="metadata-grid">
@@ -70,6 +73,8 @@
                     </div>
                 </div>
             </section>
+            {{end}}
+            {{if index .ThemeSettings "sidebarConnections"}}
             <section class="sidebar-section">
                 <h3>connections</h3>
                 <div class="links-container">
@@ -95,6 +100,8 @@
                     </div>
                 </div>
             </section>
+            {{end}}
+            {{if index .ThemeSettings "sidebarToc"}}
             <section class="sidebar-section sidebar-toc">
                 <h3>table of contents</h3>
                 {{ if .FileContent.TOC }}
@@ -107,6 +114,7 @@
                     <div class="toc-empty">no headings found</div>
                 {{ end }}
             </section>
+            {{end}}
         </aside>
     </div>
 </div>

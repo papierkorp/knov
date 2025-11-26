@@ -31,6 +31,26 @@
       "options": ["system", "serif", "mono"],
       "default": "system",
       "label": "Font Family"
+    },
+    "sidebarMetadata": {
+      "type": "boolean",
+      "default": true,
+      "label": "Show Metadata"
+    },
+    "sidebarPara": {
+      "type": "boolean",
+      "default": true,
+      "label": "Show PARA Organization"
+    },
+    "sidebarConnections": {
+      "type": "boolean",
+      "default": true,
+      "label": "Show Connections"
+    },
+    "sidebarToc": {
+      "type": "boolean",
+      "default": true,
+      "label": "Show Table of Contents"
     }
   }
 }

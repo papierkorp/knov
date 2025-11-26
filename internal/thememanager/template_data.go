@@ -30,11 +30,31 @@ func NewBaseTemplateData(title string) BaseTemplateData {
 	return BaseTemplateData{
 		Title:         title,
 		CurrentTheme:  themeManager.GetCurrentThemeName(),
-		ThemeSettings: configmanager.GetCurrentThemeSettings(),
+		ThemeSettings: getMergedThemeSettings(),
 		Language:      configmanager.GetLanguage(),
 		Themes:        themeManager.GetAvailableThemes(),
 		T:             translation.Sprintf,
 	}
+}
+
+// getMergedThemeSettings merges user settings with theme schema defaults
+func getMergedThemeSettings() map[string]interface{} {
+	userSettings := configmanager.GetCurrentThemeSettings()
+	schema := themeManager.GetCurrentThemeSettingsSchema()
+
+	merged := make(map[string]interface{})
+
+	// first, add all defaults from schema
+	for key, setting := range schema {
+		merged[key] = setting.Default
+	}
+
+	// then override with user settings
+	for key, value := range userSettings {
+		merged[key] = value
+	}
+
+	return merged
 }
 
 // CreateFuncMap creates template function map for HTML templates
@@ -95,7 +115,7 @@ func NewSettingsTemplateData() SettingsTemplateData {
 		BaseTemplateData:     NewBaseTemplateData("Settings"),
 		AvailableLanguages:   configmanager.GetAvailableLanguages(),
 		AvailableThemes:      themeManager.GetAvailableThemes(),
-		CurrentThemeSettings: configmanager.GetCurrentThemeSettings(),
+		CurrentThemeSettings: getMergedThemeSettings(),
 		ThemeSettingsSchema:  themeManager.GetCurrentThemeSettingsSchema(),
 	}
 }
