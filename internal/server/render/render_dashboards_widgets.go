@@ -2,6 +2,7 @@
 package render
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -20,7 +21,7 @@ func RenderWidget(widgetType dashboard.WidgetType, config dashboard.WidgetConfig
 	case dashboard.WidgetTypeFilter:
 		// convert dashboard FilterConfig to filter.Config
 		if config.Filter == nil {
-			return "", fmt.Errorf(translation.SprintfForRequest(configmanager.GetLanguage(), "filter config is required"))
+			return "", errors.New(translation.SprintfForRequest(configmanager.GetLanguage(), "filter config is required"))
 		}
 		filterConfig := &filter.Config{
 			Criteria: config.Filter.Criteria,
@@ -50,13 +51,14 @@ func RenderWidget(widgetType dashboard.WidgetType, config dashboard.WidgetConfig
 	case dashboard.WidgetTypeParaArchive:
 		return renderParaArchiveWidget()
 	default:
-		return "", fmt.Errorf(translation.SprintfForRequest(configmanager.GetLanguage(), "unknown widget type: %s", widgetType))
+		msg := translation.SprintfForRequest(configmanager.GetLanguage(), "unknown widget type: %s", widgetType)
+		return "", errors.New(msg)
 	}
 }
 
 func renderFileContentWidget(config *dashboard.FileContentConfig) (string, error) {
 	if config == nil || config.FilePath == "" {
-		return "", fmt.Errorf(translation.SprintfForRequest(configmanager.GetLanguage(), "file path is required"))
+		return "", errors.New(translation.SprintfForRequest(configmanager.GetLanguage(), "file path is required"))
 	}
 
 	fullPath := utils.ToFullPath(config.FilePath)
@@ -71,7 +73,7 @@ func renderFileContentWidget(config *dashboard.FileContentConfig) (string, error
 
 func renderStaticWidget(config *dashboard.StaticConfig) (string, error) {
 	if config == nil || config.Content == "" {
-		return "", fmt.Errorf(translation.SprintfForRequest(configmanager.GetLanguage(), "static content is required"))
+		return "", errors.New(translation.SprintfForRequest(configmanager.GetLanguage(), "static content is required"))
 	}
 
 	switch config.Format {
@@ -151,7 +153,7 @@ func renderParaArchiveWidget() (string, error) {
 // renderFilterWidget renders a filter widget for dashboards
 func renderFilterWidget(config *filter.Config) (string, error) {
 	if config == nil {
-		return "", fmt.Errorf(translation.SprintfForRequest(configmanager.GetLanguage(), "filter config is required"))
+		return "", errors.New(translation.SprintfForRequest(configmanager.GetLanguage(), "filter config is required"))
 	}
 
 	result, err := filter.FilterFilesWithConfig(config)
