@@ -55,6 +55,7 @@ func StartServerChi() {
 	r.Get("/settings", handleSettings)
 	r.Get("/admin", handleAdmin)
 	r.Get("/playground", handlePlayground)
+	r.Get("/help", handleHelp)
 	r.Get("/latest-changes", handleLatestChanges)
 	r.Get("/history", handleHistory)
 	r.Get("/overview", handleOverview)
@@ -393,6 +394,17 @@ func handleAdmin(w http.ResponseWriter, r *http.Request) {
 	data := thememanager.NewBaseTemplateData("Admin")
 
 	err := tm.Render(w, "admin", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleHelp(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewBaseTemplateData("help")
+
+	err := tm.Render(w, "help", data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return

@@ -1,0 +1,230 @@
+{{ define "content" }}
+<div id="page-help">
+    <div class="help-container">
+        <header class="help-header">
+            <h1>{{T "KNOV - Quick Start Guide"}}</h1>
+            <p class="help-subtitle">{{T "Your personal knowledge management system"}}</p>
+        </header>
+
+        <section class="help-section">
+            <h2>{{T "What is KNOV?"}}</h2>
+            <div class="help-intro">
+                <p>{{T "KNOV (Knowledge Vault) is your personal digital library that helps you organize, search, and connect all your notes, documents, and ideas in one place. Think of it as a smart filing cabinet that remembers everything and helps you find what you need instantly."}}</p>
+            </div>
+
+            <div class="help-benefits">
+                <h3>{{T "Why Use KNOV?"}}</h3>
+                <ul class="benefits-list">
+                    <li>✅ <strong>{{T "Your Knowledge, Anywhere"}}</strong> - {{T "Works completely offline on your computer"}}</li>
+                    <li>✅ <strong>{{T "Never Lose Information"}}</strong> - {{T "Automatic version history with Git backup"}}</li>
+                    <li>✅ <strong>{{T "Find Anything Fast"}}</strong> - {{T "Powerful search through all your content"}}</li>
+                    <li>✅ <strong>{{T "Stay Organized"}}</strong> - {{T "Multiple ways to categorize and connect your notes"}}</li>
+                    <li>✅ <strong>{{T "Your Way"}}</strong> - {{T "Customize dashboards to see what matters to you"}}</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="help-section">
+            <h2>{{T "Getting Started"}}</h2>
+            <div class="getting-started">
+                <div class="step">
+                    <h3>{{T "1. First Launch"}}</h3>
+                    <p>{{T "You're already here! This is your personal dashboard - your home base for all your knowledge."}}</p>
+                </div>
+
+                <div class="step">
+                    <h3>{{T "2. Create Your First Note"}}</h3>
+                    <ul>
+                        <li>{{T "Click the"}} <strong>{{T "+ New File"}}</strong> {{T "button"}}</li>
+                        <li>{{T "Choose"}} <strong>{{T "Markdown"}}</strong> {{T "for formatted text notes"}}</li>
+                        <li>{{T "Write your content (use simple formatting like"}} <code>**{{T "bold"}}**</code> {{T "or"}} <code># {{T "Heading"}}</code>)</li>
+                        <li>{{T "Click"}} <strong>{{T "Save"}}</strong></li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <h3>{{T "3. Add Information Tags"}}</h3>
+                    <p>{{T "Every note can be labeled with helpful information:"}}</p>
+                    <ul>
+                        <li><strong>{{T "Tags"}}</strong>: {{T "Add keywords like work, personal, ideas"}}</li>
+                        <li><strong>{{T "Collection"}}</strong>: {{T "Group related notes (like Projects or Recipes)"}}</li>
+                        <li><strong>{{T "Priority"}}</strong>: {{T "Mark as High, Medium, or Low importance"}}</li>
+                        <li><strong>{{T "Status"}}</strong>: {{T "Track progress (Draft, In Progress, Complete)"}}</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="help-section">
+            <h2>{{T "Key Features"}}</h2>
+
+            <div class="feature">
+                <h3>🔍 {{T "Smart Search & Filtering"}}</h3>
+                <ul>
+                    <li><strong>{{T "Quick Search"}}</strong>: {{T "Type anything to find notes containing those words"}}</li>
+                    <li><strong>{{T "Advanced Filters"}}</strong>: {{T "Find notes by tags, date, priority, or any combination"}}</li>
+                    <li><strong>{{T "Saved Filters"}}</strong>: {{T "Create and save your most-used search combinations"}}</li>
+                </ul>
+            </div>
+
+            <div class="feature">
+                <h3>📊 {{T "Personal Dashboards"}}</h3>
+                <ul>
+                    <li><strong>{{T "Customize Your View"}}</strong>: {{T "Add widgets showing recent notes, important tasks, or specific topics"}}</li>
+                    <li><strong>{{T "Multiple Dashboards"}}</strong>: {{T "Create different views for work, personal, or projects"}}</li>
+                    <li><strong>{{T "Widget Types"}}</strong>: {{T "Recent files, notes by tags or collections, custom filtered lists, quick folder access"}}</li>
+                </ul>
+            </div>
+
+            <div class="feature">
+                <h3>🗂️ {{T "Organization Methods"}}</h3>
+                <p><em>{{T "Choose what works for you - use one or combine them:"}}</em></p>
+                <ol>
+                    <li><strong>{{T "Simple Folders"}}</strong>: {{T "Organize like files on your computer"}}</li>
+                    <li><strong>{{T "Tags"}}</strong>: {{T "Label notes with keywords for flexible grouping"}}</li>
+                    <li><strong>{{T "Collections"}}</strong>: {{T "Group related content together"}}</li>
+                    <li><strong>{{T "PARA Method"}}</strong>: {{T "Organize by Projects, Areas, Resources, and Archive"}}</li>
+                    <li><strong>{{T "Connections"}}</strong>: {{T "Link related notes together"}}</li>
+                </ol>
+            </div>
+
+            <div class="feature">
+                <h3>🔗 {{T "Smart Connections"}}</h3>
+                <ul>
+                    <li><strong>{{T "Link Notes"}}</strong>: {{T "Reference other notes using"}} <code>[[{{T "Note Name"}}]]</code></li>
+                    <li><strong>{{T "See Relationships"}}</strong>: {{T "View which notes connect to each other"}}</li>
+                    <li><strong>{{T "Build Knowledge Networks"}}</strong>: {{T "Watch your ideas connect and grow"}}</li>
+                </ul>
+            </div>
+
+            <div class="feature">
+                <h3>💾 {{T "Automatic Backup"}}</h3>
+                <ul>
+                    <li>{{T "All changes are automatically saved"}}</li>
+                    <li>{{T "Complete version history keeps your work safe"}}</li>
+                    <li>{{T "Export or sync with Git for extra security"}}</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="help-section">
+            <h2>{{T "Quick Tips"}}</h2>
+
+            <div class="tips-section">
+                <div class="tip-group">
+                    <h3>{{T "For New Users:"}}</h3>
+                    <ol>
+                        <li>{{T "Start Simple: Just create notes and add basic tags"}}</li>
+                        <li>{{T "Use Search: When you can't remember where something is, just search"}}</li>
+                        <li>{{T "Try Filters: Use the filter panel to find groups of related notes"}}</li>
+                        <li>{{T "Explore Gradually: Add more organization methods as you need them"}}</li>
+                    </ol>
+                </div>
+
+                <div class="tip-group">
+                    <h3>{{T "Daily Workflow:"}}</h3>
+                    <ol>
+                        <li><strong>{{T "Morning"}}</strong>: {{T "Check your dashboard for important items"}}</li>
+                        <li><strong>{{T "During Work"}}</strong>: {{T "Create notes as needed, add quick tags"}}</li>
+                        <li><strong>{{T "Evening"}}</strong>: {{T "Review and properly tag/organize new content"}}</li>
+                        <li><strong>{{T "Weekly"}}</strong>: {{T "Use filters to review progress and clean up"}}</li>
+                    </ol>
+                </div>
+
+                <div class="tip-group">
+                    <h3>{{T "Power User Tips:"}}</h3>
+                    <ul>
+                        <li><strong>{{T "Keyboard Shortcuts"}}</strong>: {{T "Learn them for faster navigation"}}</li>
+                        <li><strong>{{T "Batch Operations"}}</strong>: {{T "Select multiple notes to tag or move at once"}}</li>
+                        <li><strong>{{T "Template Notes"}}</strong>: {{T "Create standard formats for meeting notes, project plans, etc."}}</li>
+                        <li><strong>{{T "Dashboard Widgets"}}</strong>: {{T "Add filtered views of your most important content"}}</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="help-section">
+            <h2>{{T "Common Use Cases"}}</h2>
+
+            <div class="use-cases">
+                <div class="use-case">
+                    <h3>📝 {{T "Personal Knowledge Base"}}</h3>
+                    <ul>
+                        <li>{{T "Meeting notes with attendee tags"}}</li>
+                        <li>{{T "Learning materials organized by subject"}}</li>
+                        <li>{{T "Ideas and inspiration with topic tags"}}</li>
+                    </ul>
+                </div>
+
+                <div class="use-case">
+                    <h3>📋 {{T "Project Management"}}</h3>
+                    <ul>
+                        <li>{{T "Project notes with status tracking"}}</li>
+                        <li>{{T "Task lists with priority levels"}}</li>
+                        <li>{{T "Resource collections by project type"}}</li>
+                    </ul>
+                </div>
+
+                <div class="use-case">
+                    <h3>📚 {{T "Research & Study"}}</h3>
+                    <ul>
+                        <li>{{T "Research notes linked by topic"}}</li>
+                        <li>{{T "Source materials with reference tags"}}</li>
+                        <li>{{T "Study guides connected to main topics"}}</li>
+                    </ul>
+                </div>
+
+                <div class="use-case">
+                    <h3>💼 {{T "Work Documentation"}}</h3>
+                    <ul>
+                        <li>{{T "Process documentation by department"}}</li>
+                        <li>{{T "Training materials by skill level"}}</li>
+                        <li>{{T "Company knowledge organized by team"}}</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="help-section">
+            <h2>{{T "Need Help?"}}</h2>
+
+            <div class="help-resources">
+                <div class="resource-group">
+                    <h3>{{T "Built-in Help:"}}</h3>
+                    <ul>
+                        <li><strong>{{T "Settings Page"}}</strong>: {{T "Configure your preferences and data paths"}}</li>
+                        <li><strong>{{T "Filter Examples"}}</strong>: {{T "Try the sample filters to learn the system"}}</li>
+                        <li><strong>{{T "Theme Options"}}</strong>: {{T "Customize the look and feel"}}</li>
+                    </ul>
+                </div>
+
+                <div class="resource-group">
+                    <h3>{{T "Getting Support:"}}</h3>
+                    <ul>
+                        <li>{{T "Check the documentation for detailed guides"}}</li>
+                        <li>{{T "Use the search function - your answer might already be in your notes!"}}</li>
+                        <li>{{T "Remember: KNOV grows with you - start simple and add complexity as needed"}}</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <footer class="help-footer">
+            <div class="welcome-message">
+                <h2>{{T "Welcome to KNOV! Your knowledge journey starts now."}} 🚀</h2>
+                <p><em>{{T "Remember: The best knowledge management system is the one you actually use. Start with what feels natural and expand from there."}}</em></p>
+            </div>
+
+            <div class="quick-links">
+                <h3>{{T "Quick Links:"}}</h3>
+                <ul>
+                    <li><a href="/dashboard">{{T "Go to Dashboard"}}</a></li>
+                    <li><a href="/files/new">{{T "Create Your First Note"}}</a></li>
+                    <li><a href="/search">{{T "Search Your Knowledge"}}</a></li>
+                    <li><a href="/settings">{{T "Configure Settings"}}</a></li>
+                </ul>
+            </div>
+        </footer>
+    </div>
+</div>
+{{ end }}
