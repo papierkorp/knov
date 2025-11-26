@@ -30,7 +30,7 @@ func RenderFilterFormWithAction(config *filter.Config, action string, filePath s
 	if includeFilePathInput {
 		html.WriteString(`<div class="form-group">`)
 		html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "file path") + `:</label>`)
-		html.WriteString(`<input type="text" name="filepath" placeholder="filters/my-filter" required />`)
+		html.WriteString(`<input type="text" name="filepath" placeholder="` + translation.SprintfForRequest(configmanager.GetLanguage(), "filters/my-filter") + `" required />`)
 		html.WriteString(`</div>`)
 	}
 
@@ -44,8 +44,8 @@ func RenderFilterFormWithAction(config *filter.Config, action string, filePath s
 		selectedLogic = config.Logic
 	}
 
-	html.WriteString(fmt.Sprintf(`<option value="and" %s>and</option>`, utils.Ternary(selectedLogic == "and", "selected", "")))
-	html.WriteString(fmt.Sprintf(`<option value="or" %s>or</option>`, utils.Ternary(selectedLogic == "or", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="and" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "and")+`</option>`, utils.Ternary(selectedLogic == "and", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="or" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "or")+`</option>`, utils.Ternary(selectedLogic == "or", "selected", "")))
 	html.WriteString(`</select>`)
 	html.WriteString(`<button type="button" hx-post="/api/filter/add-criteria" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">` + translation.SprintfForRequest(configmanager.GetLanguage(), "add filter") + `</button>`)
 	html.WriteString(`</div>`)
@@ -97,11 +97,13 @@ func RenderFilterCriteriaRow(index int, criteria *filter.Criteria) string {
 
 	// metadata field select
 	html.WriteString(`<div class="filter-field">`)
-	html.WriteString(`<hr />`)
-	html.WriteString(`<label>field</label>`)
+	if index > 0 {
+		html.WriteString(`<hr />`)
+	}
+	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "field") + `</label>`)
 	html.WriteString(fmt.Sprintf(`<select name="metadata[%d]" class="form-select" hx-get="/api/filter/value-input" hx-target="#filter-value-container-%d" hx-swap="innerHTML" hx-vals='{"row_index": "%d"}' hx-include="this">`,
 		index, index, index))
-	html.WriteString(`<option value="">select field</option>`)
+	html.WriteString(`<option value="">` + translation.SprintfForRequest(configmanager.GetLanguage(), "select field") + `</option>`)
 
 	selectedMetadata := ""
 	if criteria != nil {
@@ -113,7 +115,7 @@ func RenderFilterCriteriaRow(index int, criteria *filter.Criteria) string {
 
 	// operator select
 	html.WriteString(`<div class="filter-field">`)
-	html.WriteString(`<label>operator</label>`)
+	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "operator") + `</label>`)
 	html.WriteString(fmt.Sprintf(`<select name="operator[%d]" class="form-select">`, index))
 
 	selectedOperator := "equals"
@@ -126,7 +128,7 @@ func RenderFilterCriteriaRow(index int, criteria *filter.Criteria) string {
 
 	// value input
 	html.WriteString(`<div class="filter-field">`)
-	html.WriteString(`<label>value</label>`)
+	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "value") + `</label>`)
 	html.WriteString(fmt.Sprintf(`<div id="filter-value-container-%d">`, index))
 
 	value := ""
@@ -144,7 +146,7 @@ func RenderFilterCriteriaRow(index int, criteria *filter.Criteria) string {
 
 	// action select
 	html.WriteString(`<div class="filter-field">`)
-	html.WriteString(`<label>action</label>`)
+	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "action") + `</label>`)
 	html.WriteString(fmt.Sprintf(`<select name="action[%d]" class="form-select">`, index))
 
 	selectedAction := "include"
@@ -158,7 +160,7 @@ func RenderFilterCriteriaRow(index int, criteria *filter.Criteria) string {
 	// remove button
 	if index > 0 {
 		html.WriteString(`<div class="filter-field">`)
-		html.WriteString(`<button type="button" onclick="this.closest('.filter-criteria-row').remove()" class="btn-danger btn-small">remove</button>`)
+		html.WriteString(`<button type="button" onclick="this.closest('.filter-criteria-row').remove()" class="btn-danger btn-small">` + translation.SprintfForRequest(configmanager.GetLanguage(), "remove") + `</button>`)
 		html.WriteString(`</div>`)
 	}
 
@@ -178,7 +180,7 @@ func RenderMetadataFieldOptions(selectedValue string) string {
 		}
 		displayText := field
 		if strings.HasPrefix(field, "para_") {
-			displayText = "para: " + strings.TrimPrefix(field, "para_")
+			displayText = translation.SprintfForRequest(configmanager.GetLanguage(), "para") + ": " + strings.TrimPrefix(field, "para_")
 		}
 		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, field, selected, displayText))
 	}
@@ -191,7 +193,13 @@ func RenderOperatorOptions(selectedValue string) string {
 	var html strings.Builder
 
 	operators := filter.GetOperators()
-	displayTexts := []string{"equals", "contains", "greater than", "less than", "in array"}
+	displayTexts := []string{
+		translation.SprintfForRequest(configmanager.GetLanguage(), "equals"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "contains"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "greater than"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "less than"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "in array"),
+	}
 
 	for i, operator := range operators {
 		selected := ""
@@ -218,7 +226,8 @@ func RenderActionOptions(selectedValue string) string {
 		if action == selectedValue {
 			selected = "selected"
 		}
-		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, action, selected, action))
+		displayText := translation.SprintfForRequest(configmanager.GetLanguage(), action)
+		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, action, selected, displayText))
 	}
 
 	return html.String()
@@ -232,39 +241,39 @@ func RenderFilterValueInput(id, name, value, metadataField string) string {
 	switch metadataField {
 	case "collection":
 		apiEndpoint = "/api/metadata/collections?format=options"
-		placeholder = "type or select collection"
+		placeholder = translation.SprintfForRequest(configmanager.GetLanguage(), "type or select collection")
 	case "tags":
 		apiEndpoint = "/api/metadata/tags?format=options"
-		placeholder = "type or select tag"
+		placeholder = translation.SprintfForRequest(configmanager.GetLanguage(), "type or select tag")
 	case "folders":
 		apiEndpoint = "/api/metadata/folders?format=options"
-		placeholder = "type or select folder"
+		placeholder = translation.SprintfForRequest(configmanager.GetLanguage(), "type or select folder")
 	case "type":
 		apiEndpoint = "/api/metadata/filetypes?format=options"
-		placeholder = "select file type"
+		placeholder = translation.SprintfForRequest(configmanager.GetLanguage(), "select file type")
 	case "status":
 		apiEndpoint = "/api/metadata/statuses?format=options"
-		placeholder = "select status"
+		placeholder = translation.SprintfForRequest(configmanager.GetLanguage(), "select status")
 	case "priority":
 		apiEndpoint = "/api/metadata/priorities?format=options"
-		placeholder = "select priority"
+		placeholder = translation.SprintfForRequest(configmanager.GetLanguage(), "select priority")
 	case "para_projects":
 		apiEndpoint = "/api/metadata/para/projects?format=options"
-		placeholder = "type or select project"
+		placeholder = translation.SprintfForRequest(configmanager.GetLanguage(), "type or select project")
 	case "para_areas":
 		apiEndpoint = "/api/metadata/para/areas?format=options"
-		placeholder = "type or select area"
+		placeholder = translation.SprintfForRequest(configmanager.GetLanguage(), "type or select area")
 	case "para_resources":
 		apiEndpoint = "/api/metadata/para/resources?format=options"
-		placeholder = "type or select resource"
+		placeholder = translation.SprintfForRequest(configmanager.GetLanguage(), "type or select resource")
 	case "para_archive":
 		apiEndpoint = "/api/metadata/para/archive?format=options"
-		placeholder = "type or select archive item"
+		placeholder = translation.SprintfForRequest(configmanager.GetLanguage(), "type or select archive item")
 	case "createdAt", "lastEdited":
-		return fmt.Sprintf(`<input type="date" name="%s" id="%s" value="%s" placeholder="yyyy-mm-dd" class="form-input"/>`,
-			name, id, value)
+		return fmt.Sprintf(`<input type="date" name="%s" id="%s" value="%s" placeholder="%s" class="form-input"/>`,
+			name, id, value, translation.SprintfForRequest(configmanager.GetLanguage(), "yyyy-mm-dd"))
 	default:
-		placeholder = "enter value"
+		placeholder = translation.SprintfForRequest(configmanager.GetLanguage(), "enter value")
 		return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" placeholder="%s"/>`,
 			id, name, value, placeholder)
 	}
