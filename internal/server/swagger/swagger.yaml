@@ -975,6 +975,80 @@ paths:
       summary: Save file content
       tags:
       - files
+  /api/files/versions/{filepath}:
+    get:
+      description: List all versions of a file or get specific version content
+      parameters:
+      - description: File path
+        in: path
+        name: filepath
+        required: true
+        type: string
+      - description: Specific commit (current, previous, or commit hash)
+        in: query
+        name: commit
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: File versions or specific version content
+      summary: Get file versions
+      tags:
+      - files
+  /api/files/versions/diff/{filepath}:
+    get:
+      description: Compare two versions of a file
+      parameters:
+      - description: File path
+        in: path
+        name: filepath
+        required: true
+        type: string
+      - description: From commit hash or 'current'
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: To commit hash or 'current'
+        in: query
+        name: to
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: File diff content
+      summary: Get file version diff
+      tags:
+      - files
+  /api/files/versions/restore/{filepath}:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Restore a file to a specific version
+      parameters:
+      - description: File path
+        in: path
+        name: filepath
+        required: true
+        type: string
+      - description: Commit hash to restore to
+        in: formData
+        name: commit
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: File restored successfully
+      summary: Restore file version
+      tags:
+      - files
   /api/filter:
     post:
       consumes:

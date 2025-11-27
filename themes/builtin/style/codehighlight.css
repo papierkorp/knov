@@ -229,3 +229,71 @@ body[data-dark-mode="true"] .chroma-nc {
 body[data-dark-mode="true"] .chroma-nf {
     color: #dcdcaa;
 }
+
+/* Git diff-specific highlighting */
+.chroma-gd {
+    color: #d73a49; /* deleted lines - red */
+    background-color: #ffeef0; /* light red background */
+}
+.chroma-gi {
+    color: #28a745; /* inserted lines - green */
+    background-color: #f0fff4; /* light green background */
+}
+.chroma-gh {
+    color: #6f42c1; /* diff header - purple */
+    font-weight: bold;
+}
+.chroma-gu {
+    color: #6f42c1; /* hunk header - purple */
+    font-weight: bold;
+}
+
+/* Diff content styling */
+.file-diff-content {
+    margin: 1rem 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.diff-header {
+    background: var(--bg-secondary);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.diff-header h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.diff-header p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+/* Override pre styling for diff content */
+.file-diff-content pre {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Dark mode diff styles */
+body[data-dark-mode="true"] .chroma-gd {
+    color: #f97583; /* deleted lines - lighter red */
+    background-color: #3a1a1a; /* dark red background */
+}
+body[data-dark-mode="true"] .chroma-gi {
+    color: #85e89d; /* inserted lines - lighter green */
+    background-color: #1a3a1a; /* dark green background */
+}
+body[data-dark-mode="true"] .chroma-gh {
+    color: #b392f0; /* diff header - lighter purple */
+}
+body[data-dark-mode="true"] .chroma-gu {
+    color: #b392f0; /* hunk header - lighter purple */
+}

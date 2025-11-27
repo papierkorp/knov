@@ -1,6 +1,60 @@
 {{ define "content" }}
 <div id="page-history">
-    <h1>{{T "History"}}</h1>
-    <p>{{T "Hello World from templ at History in the dark!"}}</p>
+    {{if .FilePath}}
+        <!-- File-specific history -->
+        <div class="file-history-header">
+            <h1>{{T "History"}}: <a href="/files/{{.FilePath}}" class="file-link">{{.FilePath}}</a></h1>
+            {{if .SelectedVersion}}
+                <div class="version-actions">
+                    {{if and (not .SingleVersion) (ne .SelectedVersion .CurrentVersion)}}
+                        <a href="/api/files/versions/diff/{{urlQuery .FilePath}}?from={{.SelectedVersion}}&to=current"
+                           hx-get="/api/files/versions/diff/{{urlQuery .FilePath}}?from={{.SelectedVersion}}&to=current"
+                           hx-target="#diff-content"
+                           hx-on::before-request="document.getElementById('diff-content').style.display = 'block'; document.getElementById('diff-content').innerHTML = '{{T "loading diff..."}}'"
+                           class="action-link action-compare">{{T "compare with current"}}</a>
+                    {{end}}
+                    {{if ne .SelectedVersion .CurrentVersion}}
+                        <form hx-post="/api/files/versions/restore/{{urlQuery .FilePath}}"
+                              hx-target="#restore-result"
+                              style="display: inline;">
+                            <input type="hidden" name="commit" value="{{.SelectedVersion}}">
+                            <button type="submit" class="action-button action-restore">{{T "restore this version"}}</button>
+                        </form>
+                    {{end}}
+                </div>
+                <div id="restore-result"></div>
+            {{end}}
+        </div>
+        <hr />
+        <div id="diff-content" class="diff-section">
+            <!-- Diff content loaded here via HTMX -->
+        </div>
+        <div class="file-history-content">
+            {{if .SelectedVersion}}
+                <!-- Show specific version content -->
+                <div hx-get="/api/files/versions/{{urlQuery .FilePath}}?commit={{.SelectedVersion}}"
+                     hx-trigger="load"
+                     hx-swap="outerHTML">
+                    {{T "loading version content..."}}
+                </div>
+            {{else}}
+                <!-- Show all versions list -->
+                <div hx-get="/api/files/versions/{{urlQuery .FilePath}}"
+                     hx-trigger="load"
+                     hx-swap="outerHTML">
+                    {{T "loading file history..."}}
+                </div>
+            {{end}}
+        </div>
+        <div id="restore-result"></div>
+
+    {{else}}
+        <!-- General history page -->
+        <h1>{{T "History"}}</h1>
+        <p>{{T "Recent File History"}}</p>
+        <div hx-get="/api/git/latestchanges" hx-trigger="load">
+            loading recent changes...
+        </div>
+    {{end}}
 </div>
 {{ end }}

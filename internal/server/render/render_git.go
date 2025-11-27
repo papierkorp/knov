@@ -3,7 +3,10 @@ package render
 
 import (
 	"fmt"
+	"knov/internal/configmanager"
 	"knov/internal/git"
+	"knov/internal/parser"
+	"knov/internal/translation"
 	"knov/internal/utils"
 	"strings"
 )
@@ -21,5 +24,157 @@ func RenderGitHistoryFileList(files []git.GitHistoryFile) string {
 			file.Message))
 	}
 	html.WriteString("</ul>")
+	return html.String()
+}
+
+// RenderFileVersionsList renders list of file versions as HTML
+func RenderFileVersionsList(versions []git.FileVersion, filePath string) string {
+	if len(versions) == 0 {
+		return `<div class="no-versions">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no version history available") + `</div>`
+	}
+
+	var html strings.Builder
+	html.WriteString(`<div class="file-versions-list">`)
+	html.WriteString(`<ul class="version-list">`)
+
+	for _, version := range versions {
+		cssClass := "version-item"
+		if version.IsCurrent {
+			cssClass += " current-version"
+		}
+
+		html.WriteString(fmt.Sprintf(`
+			<li class="%s">
+				<div class="version-header">
+					<span class="version-date">%s:</span>
+					<span class="version-message">%s</span>
+					<span class="version-author">%s %s</span>
+				</div>
+				<div class="version-actions">
+					<a href="/files/history/%s?commit=%s" class="action-link">%s</a>`,
+			cssClass,
+			version.Date,
+			version.Message,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "by"),
+			version.Author,
+			utils.ToRelativePath(filePath),
+			version.Commit,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "view"),
+		))
+
+		// only show compare button if there are multiple versions AND this is not the current version
+		if len(versions) > 1 && !version.IsCurrent {
+			html.WriteString(fmt.Sprintf(`
+					<a href="/api/files/versions/diff/%s?from=%s&to=current"
+					   hx-get="/api/files/versions/diff/%s?from=%s&to=current"
+					   hx-target="#diff-content"
+					   hx-on::before-request="document.getElementById('diff-content').style.display = 'block'; document.getElementById('diff-content').innerHTML = '%s'"
+					   class="action-link">%s</a>`,
+				utils.ToRelativePath(filePath),
+				version.Commit,
+				utils.ToRelativePath(filePath),
+				version.Commit,
+				translation.SprintfForRequest(configmanager.GetLanguage(), "loading diff..."),
+				translation.SprintfForRequest(configmanager.GetLanguage(), "compare"),
+			))
+		}
+
+		html.WriteString(`
+				</div>
+			</li>`)
+	}
+
+	html.WriteString(`</ul>`)
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
+// RenderFileVersionsSidebar renders compact list of file versions for sidebar
+func RenderFileVersionsSidebar(versions []git.FileVersion, filePath string) string {
+	if len(versions) == 0 {
+		return `<div class="no-versions">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no version history available") + `</div>`
+	}
+
+	var html strings.Builder
+	html.WriteString(`<div class="version-sidebar">`)
+	html.WriteString(`<ul class="version-list">`)
+
+	for i, version := range versions {
+		if i >= 5 { // limit to 5 recent versions in sidebar
+			break
+		}
+
+		cssClass := "sidebar-version"
+		if version.IsCurrent {
+			cssClass += " current"
+		}
+
+		html.WriteString(fmt.Sprintf(`
+			<li class="%s">
+				<a href="/files/history/%s?commit=%s">
+					<span class="version-date">%s:</span>
+					<span class="version-message">%s</span>
+				</a>
+			</li>`,
+			cssClass,
+			utils.ToRelativePath(filePath),
+			version.Commit,
+			version.Date,
+			version.Message,
+		))
+	}
+
+	html.WriteString(`</ul>`)
+
+	if len(versions) > 5 {
+		html.WriteString(fmt.Sprintf(`
+			<a href="/files/history/%s" class="view-all-versions">
+				%s
+			</a>`,
+			utils.ToRelativePath(filePath),
+			translation.SprintfForRequest(configmanager.GetLanguage(), "view all %d versions", len(versions)),
+		))
+	}
+
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
+// RenderFileAtVersion renders file content at a specific version
+func RenderFileAtVersion(content, filePath, commit, date, message string) string {
+	var html strings.Builder
+	html.WriteString(`<div class="file-version-content">`)
+	html.WriteString(fmt.Sprintf(`<div class="version-header">
+		<h3>%s %s %s - %s (%s)</h3>
+	</div>`,
+		filePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "at"),
+		date,
+		message,
+		commit))
+	html.WriteString(`<pre class="file-content">`)
+	html.WriteString(content)
+	html.WriteString(`</pre></div>`)
+	return html.String()
+}
+
+// RenderFileDiff renders diff between two file versions with syntax highlighting
+func RenderFileDiff(diff, filePath, fromCommit, toCommit string) string {
+	var html strings.Builder
+	html.WriteString(`<div class="file-diff-content">`)
+	html.WriteString(fmt.Sprintf(`<div class="diff-header">
+		<h3>%s: %s</h3>
+		<p>%s → %s</p>
+	</div>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "diff"),
+		filePath,
+		fromCommit,
+		toCommit))
+
+	// apply syntax highlighting to diff output
+	highlightedDiff := parser.HighlightCodeBlock(diff, "diff")
+	html.WriteString(highlightedDiff)
+
+	html.WriteString(`</div>`)
 	return html.String()
 }

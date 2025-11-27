@@ -1012,6 +1012,116 @@
                 "responses": {}
             }
         },
+        "/api/files/versions/diff/{filepath}": {
+            "get": {
+                "description": "Compare two versions of a file",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get file version diff",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "From commit hash or 'current'",
+                        "name": "from",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "To commit hash or 'current'",
+                        "name": "to",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File diff content"
+                    }
+                }
+            }
+        },
+        "/api/files/versions/restore/{filepath}": {
+            "post": {
+                "description": "Restore a file to a specific version",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Restore file version",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Commit hash to restore to",
+                        "name": "commit",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File restored successfully"
+                    }
+                }
+            }
+        },
+        "/api/files/versions/{filepath}": {
+            "get": {
+                "description": "List all versions of a file or get specific version content",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get file versions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specific commit (current, previous, or commit hash)",
+                        "name": "commit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File versions or specific version content"
+                    }
+                }
+            }
+        },
         "/api/filter": {
             "post": {
                 "description": "Filter files based on metadata criteria with configurable logic and display",

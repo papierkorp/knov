@@ -21,11 +21,15 @@ func SetupTestData() error {
 		return err
 	}
 
-	if err := createGitOperations(); err != nil {
+	if err := createGitOperations("initial test documentation"); err != nil {
 		return err
 	}
 
 	if err := setupTestMetadata(); err != nil {
+		return err
+	}
+
+	if err := simulateFileChange(); err != nil {
 		return err
 	}
 
@@ -87,6 +91,12 @@ func createTestStructure() error {
 		}
 	}
 
+	return setTestDataContent()
+}
+
+func setTestDataContent() error {
+	dataPath := configmanager.GetAppConfig().DataPath
+
 	testFiles := []string{
 		"test/testA/testA.md",
 		"test/testA/testAB.md",
@@ -136,7 +146,7 @@ func createTestStructure() error {
 	return nil
 }
 
-func createGitOperations() error {
+func createGitOperations(commitMessage string) error {
 	logging.LogInfo("creating git operations")
 
 	// Use the configmanager git initialization instead of manual git init
@@ -149,24 +159,9 @@ func createGitOperations() error {
 	cmd := exec.Command("git", "add", ".")
 	cmd.Dir = dataDir
 	cmd.Run()
-	cmd = exec.Command("git", "commit", "-m", "initial test documentation", "--allow-empty")
+	cmd = exec.Command("git", "commit", "-m", commitMessage, "--allow-empty")
 	cmd.Dir = dataDir
 	cmd.Run()
-
-	// Simulate file change for git history
-	gettingStartedPath := filepath.Join(dataDir, "getting-started.md")
-	if content, err := os.ReadFile(gettingStartedPath); err == nil {
-		updatedContent := string(content) + "\n\n## Recent Updates\n- Added troubleshooting section\n- Improved navigation"
-		os.WriteFile(gettingStartedPath, []byte(updatedContent), 0644)
-
-		cmd = exec.Command("git", "add", "getting-started.md")
-		cmd.Dir = dataDir
-		cmd.Run()
-
-		cmd = exec.Command("git", "commit", "-m", "update getting started guide")
-		cmd.Dir = dataDir
-		cmd.Run()
-	}
 
 	if err := createTestStructure(); err != nil {
 		return err
@@ -176,6 +171,56 @@ func createGitOperations() error {
 	cmd.Dir = dataDir
 	cmd.Run()
 	cmd = exec.Command("git", "commit", "-m", "add test structure")
+	cmd.Dir = dataDir
+	cmd.Run()
+
+	return nil
+}
+
+func simulateFileChange() error {
+	logging.LogInfo("simulating file changes for version history")
+
+	dataDir := configmanager.GetAppConfig().DataPath
+
+	// Simulate file change for git history on getting-started.md
+	gettingStartedPath := filepath.Join(dataDir, "getting-started.md")
+	if content, err := os.ReadFile(gettingStartedPath); err == nil {
+		updatedContent := string(content) + "\n\n## Recent Updates\n- Added troubleshooting section\n- Improved navigation"
+		os.WriteFile(gettingStartedPath, []byte(updatedContent), 0644)
+
+		cmd := exec.Command("git", "add", "getting-started.md")
+		cmd.Dir = dataDir
+		cmd.Run()
+
+		cmd = exec.Command("git", "commit", "-m", "update getting started guide")
+		cmd.Dir = dataDir
+		cmd.Run()
+	}
+
+	// Simulate changes on all test files to create multiple versions
+	testFiles := []string{
+		"test/testB/testB.md",
+		"test/testB/testBA.md",
+		"test/testB/testBB.md",
+		"test/testB/testBC.md",
+	}
+
+	for _, file := range testFiles {
+		fullPath := filepath.Join(dataDir, file)
+		if content, err := os.ReadFile(fullPath); err == nil {
+			updatedContent := string(content) + "\n\n## Version Update\n- Added documentation section\n- Enhanced content structure"
+			if err := os.WriteFile(fullPath, []byte(updatedContent), 0644); err != nil {
+				continue // skip files that can't be written
+			}
+		}
+	}
+
+	// Commit all test file changes
+	cmd := exec.Command("git", "add", "test/")
+	cmd.Dir = dataDir
+	cmd.Run()
+
+	cmd = exec.Command("git", "commit", "-m", "update test files with additional content")
 	cmd.Dir = dataDir
 	cmd.Run()
 

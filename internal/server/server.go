@@ -14,6 +14,7 @@ import (
 	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/filter"
+	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/server/render"
 	_ "knov/internal/server/swagger" // swaggo api docs
@@ -47,7 +48,7 @@ func StartServerChi() {
 	r.Use(middleware.Recoverer)
 
 	// ----------------------------------------------------------------------------------------
-	// ------------------------------------ default routes ------------------------------------
+	// ------------------------------------ template routes ------------------------------------
 	// ----------------------------------------------------------------------------------------
 
 	r.Get("/", handleHome)
@@ -58,6 +59,7 @@ func StartServerChi() {
 	r.Get("/help", handleHelp)
 	r.Get("/latest-changes", handleLatestChanges)
 	r.Get("/history", handleHistory)
+	r.Get("/files/history/*", handleHistory)
 	r.Get("/overview", handleOverview)
 	r.Get("/search", handleSearchPage)
 	r.Get("/files/edit/*", handleFileEdit)
@@ -170,6 +172,11 @@ func StartServerChi() {
 			r.Get("/browse", handleAPIBrowseFiles)
 			r.Get("/form", handleAPIFileForm)
 			r.Get("/metadata-form", handleAPIMetadataForm)
+
+			// file version routes
+			r.Get("/versions/diff/*", handleAPIGetFileVersionDiff)
+			r.Post("/versions/restore/*", handleAPIRestoreFileVersion)
+			r.Get("/versions/*", handleAPIGetFileVersions)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -434,10 +441,59 @@ func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleHistory(w http.ResponseWriter, r *http.Request) {
+	// check if this is a file history request
+	if strings.HasPrefix(r.URL.Path, "/files/history/") {
+		filePath := strings.TrimPrefix(r.URL.Path, "/files/history/")
+		handleFileHistory(w, r, filePath)
+		return
+	}
+
+	// general history page
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewBaseTemplateData("history")
 
 	err := tm.Render(w, "history", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileHistory(w http.ResponseWriter, r *http.Request, filePath string) {
+	if filePath == "" {
+		http.Error(w, "missing file path", http.StatusBadRequest)
+		return
+	}
+
+	// get full file path
+	fullPath := filepath.Join(configmanager.GetAppConfig().DataPath, filePath)
+
+	// get selected commit from query param
+	selectedCommit := r.URL.Query().Get("commit")
+
+	// get file history
+	versions, err := git.GetFileHistory(fullPath)
+	if err != nil {
+		logging.LogError("failed to get file history for %s: %v", filePath, err)
+		http.Error(w, "failed to get file history", http.StatusInternalServerError)
+		return
+	}
+
+	// convert versions to interface slice for template
+	allVersions := make([]interface{}, len(versions))
+	for i, v := range versions {
+		allVersions[i] = v
+	}
+
+	currentCommit := ""
+	if len(versions) > 0 {
+		currentCommit = versions[0].Commit
+	}
+
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewHistoryTemplateData(filePath, currentCommit, selectedCommit, allVersions, false)
+
+	err = tm.Render(w, "history", data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return

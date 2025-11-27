@@ -55,7 +55,6 @@
         <span class="span-header-git-operations">
             <a href="/overview">{{T "Overview"}}</a>
             <a href="/latest-changes">{{T "Latest Changes"}}</a>
-            <a href="/history">{{T "History"}}</a>
         </span>
         <div class="dropdown-navbar">
             <button class="btn-add">+</button>
@@ -76,6 +75,7 @@
             </button>
             <div class="dropdown-navbar-content" id="edit-dropdown-content">
                 <a href="#" id="edit-link">{{T "Edit"}}</a>
+                <a href="#" id="history-link">{{T "History"}}</a>
                 <a href="#" onclick="document.getElementById('rename-modal').style.display='flex'">
                     {{T "Rename"}}
                 </a>
@@ -154,6 +154,7 @@ const fileMatch = path.match(/\/files\/(.+)/);
 if (fileMatch && !path.includes('/edit/')) {
     const filepath = fileMatch[1];
     document.getElementById('edit-link').href = `/files/edit/${filepath}`;
+    document.getElementById('history-link').href = `/files/history/${filepath}`;
     document.getElementById('edit-dropdown').style.display = 'block';
 }
 </script>

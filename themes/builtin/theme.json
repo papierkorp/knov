@@ -51,6 +51,11 @@
       "type": "boolean",
       "default": true,
       "label": "Show Table of Contents"
+    },
+    "sidebarVersionHistory": {
+      "type": "boolean",
+      "default": true,
+      "label": "Show Version History"
     }
   }
 }

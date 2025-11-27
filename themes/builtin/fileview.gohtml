@@ -101,6 +101,17 @@
                 </div>
             </section>
             {{end}}
+            {{if index .ThemeSettings "sidebarVersionHistory"}}
+            <section class="sidebar-section sidebar-versions">
+                <h3>{{T "version history"}}</h3>
+                <div id="version-sidebar-content"
+                     hx-get="/api/files/versions/{{urlQuery .FilePath}}?sidebar=true"
+                     hx-trigger="load"
+                     hx-swap="innerHTML">
+                    {{T "loading versions..."}}
+                </div>
+            </section>
+            {{end}}
             {{if index .ThemeSettings "sidebarToc"}}
             <section class="sidebar-section sidebar-toc">
                 <h3>table of contents</h3>

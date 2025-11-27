@@ -258,3 +258,39 @@ func NewSearchPageData(searchQuery string) SearchPageData {
 		SearchQuery:      searchQuery,
 	}
 }
+
+// -----------------------------------------------
+// ------------ History TemplateData ------------
+// -----------------------------------------------
+
+// HistoryTemplateData extends base with file history specific data
+type HistoryTemplateData struct {
+	BaseTemplateData
+	FilePath        string
+	CurrentVersion  string
+	SelectedVersion string
+	AllVersions     []interface{} // FileVersion from git package
+	ShowDiff        bool
+	SingleVersion   bool // true if only one version exists
+}
+
+// NewHistoryTemplateData creates file history specific data
+func NewHistoryTemplateData(filePath, currentVersion, selectedVersion string, allVersions []interface{}, showDiff bool) HistoryTemplateData {
+	title := "File History"
+	if filePath != "" {
+		title = "History: " + filePath
+	}
+
+	// determine if this is a single version file
+	singleVersion := len(allVersions) <= 1
+
+	return HistoryTemplateData{
+		BaseTemplateData: NewBaseTemplateData(title),
+		FilePath:         filePath,
+		CurrentVersion:   currentVersion,
+		SelectedVersion:  selectedVersion,
+		AllVersions:      allVersions,
+		ShowDiff:         showDiff,
+		SingleVersion:    singleVersion,
+	}
+}
