@@ -65,6 +65,12 @@
                     <button hx-post="/api/testdata/clean" hx-target="#testdata-result" hx-confirm="{{T "WARNING - This will remove all files in the Data Folder!!."}}">
                         {{T "Clean Test Data"}}
                     </button>
+                    <button hx-post="/api/testdata/filtertest" hx-target="#testdata-result" hx-confirm="{{T "Run filter tests? This will create 12 test metadata objects."}}">
+                        {{T "Run Filter Tests"}}
+                    </button>
+                    <button hx-get="/api/testdata/filtertest/testdata" hx-target="#testdata-result">
+                        View Filter Test Metadata
+                    </button>
                     <div id="testdata-result"></div>
                 </div>
             </div>

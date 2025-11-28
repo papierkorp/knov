@@ -118,6 +118,9 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		if newMetadata.FileType != "" {
 			currentMetadata.FileType = newMetadata.FileType
 		}
+		if newMetadata.Collection != "" {
+			currentMetadata.Collection = newMetadata.Collection
+		}
 		if newMetadata.Status != "" {
 			currentMetadata.Status = newMetadata.Status
 		}

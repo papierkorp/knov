@@ -271,6 +271,20 @@ definitions:
     - StatusDraft
     - StatusPublished
     - StatusArchived
+  filter.Config:
+    properties:
+      criteria:
+        items:
+          $ref: '#/definitions/filter.Criteria'
+        type: array
+      display:
+        description: list, cards, dropdown
+        type: string
+      limit:
+        type: integer
+      logic:
+        type: string
+    type: object
   filter.Criteria:
     properties:
       action:
@@ -293,6 +307,46 @@ definitions:
       logic:
         type: string
       total:
+        type: integer
+    type: object
+  testdata.FilterTestResult:
+    properties:
+      actual_count:
+        type: integer
+      actual_files:
+        items:
+          type: string
+        type: array
+      config:
+        $ref: '#/definitions/filter.Config'
+      config_name:
+        type: string
+      description:
+        type: string
+      error:
+        type: string
+      expected_count:
+        type: integer
+      expected_files:
+        items:
+          type: string
+        type: array
+      success:
+        type: boolean
+    type: object
+  testdata.FilterTestResults:
+    properties:
+      failed_tests:
+        type: integer
+      passed_tests:
+        type: integer
+      results:
+        items:
+          $ref: '#/definitions/testdata.FilterTestResult'
+        type: array
+      success:
+        type: boolean
+      total_tests:
         type: integer
     type: object
 host: localhost:1324
@@ -2301,6 +2355,44 @@ paths:
           schema:
             type: string
       summary: Clean test data
+      tags:
+      - testdata
+  /api/testdata/filtertest:
+    post:
+      description: Executes comprehensive filter test scenarios with 12 test metadata
+        objects
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: filter test results
+          schema:
+            $ref: '#/definitions/testdata.FilterTestResults'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run filter tests
+      tags:
+      - testdata
+  /api/testdata/filtertest/testdata:
+    get:
+      description: Returns filter test metadata in table format showing all 12 test
+        objects
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: filter test metadata table
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get filter test metadata table
       tags:
       - testdata
   /api/testdata/setup:

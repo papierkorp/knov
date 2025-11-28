@@ -271,6 +271,8 @@ func StartServerChi() {
 		r.Route("/testdata", func(r chi.Router) {
 			r.Post("/setup", handleAPISetupTestData)
 			r.Post("/clean", handleAPICleanTestData)
+			r.Post("/filtertest", handleAPIFilterTest)
+			r.Get("/filtertest/testdata", handleAPIFilterTestMetadata)
 		})
 
 		// ----------------------------------------------------------------------------------------

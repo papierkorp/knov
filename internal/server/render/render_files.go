@@ -52,7 +52,7 @@ func RenderFilteredFiles(filteredFiles []files.File) string {
 
 // RenderFileHeader renders file header with breadcrumb
 func RenderFileHeader(filepath string) string {
-	return fmt.Sprintf(`<div id="current-file-breadcrumb"><a href="/files/%s">â†’ %s</a></div>`, filepath, filepath)
+	return fmt.Sprintf(`<div id="current-file-breadcrumb"><a href="/files/%s">→ %s</a></div>`, filepath, filepath)
 }
 
 // RenderBrowseFilesHTML renders browsed files as list - reuses RenderFileList

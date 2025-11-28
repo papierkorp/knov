@@ -148,6 +148,41 @@ Files have the following metadata fields:
 
 Note: Syntax is NOT stored in metadata - it is dynamically detected using filetype handlers. Regenerate docs with `make docs`
 
+### Filter Testing System
+
+The application includes a comprehensive filter testing system to ensure filter functionality works correctly:
+
+- **Location**: `internal/testdata/testfilter.go`
+- **API Endpoint**: `/api/testdata/filtertest`
+- **Admin Interface**: Available in the Test Data Management section
+
+**Filter Test Features**:
+- Creates 12 test metadata objects (filterTestA through filterTestL)
+- Tests various filter scenarios including:
+  - Single tag filtering (`experimental`, `basic`, etc.)
+  - AND/OR logic combinations
+  - Collection, status, priority filtering
+  - File type and folder filtering
+  - PARA organization filtering (projects, areas, resources)
+  - Exclusion filters
+  - Complex multi-criteria filters
+
+**Test Metadata Structure**:
+The test metadata objects are carefully designed with different:
+- Collections: `filter-tests`, `advanced-tests`, `basic-tests`, `integration-tests`, `performance-tests`, `special-tests`
+- Tags: Various combinations for testing different scenarios
+- File types: `fleeting`, `literature`, `permanent`, `journaling`, `moc`
+- Statuses: `draft`, `published`, `archived`
+- Priorities: `high`, `medium`, `low`
+- PARA organization: Different projects, areas, resources, and archive values
+
+**Running Filter Tests**:
+1. Via Admin Interface: Go to Admin → Test Data Management → "Run Filter Tests"
+2. Via API: `POST /api/testdata/filtertest`
+3. Returns detailed results including passed/failed tests and expected vs actual counts
+
+The testing system is essential for validating filter functionality during development and ensures that the filter system remains reliable as a cornerstone feature of the application.
+
 ### Theme-Friendly APIs
 
 - Use form data instead of JSON for consistency

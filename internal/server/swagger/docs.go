@@ -2987,6 +2987,60 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/testdata/filtertest": {
+            "post": {
+                "description": "Executes comprehensive filter test scenarios with 12 test metadata objects",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run filter tests",
+                "responses": {
+                    "200": {
+                        "description": "filter test results",
+                        "schema": {
+                            "$ref": "#/definitions/testdata.FilterTestResults"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/testdata/filtertest/testdata": {
+            "get": {
+                "description": "Returns filter test metadata in table format showing all 12 test objects",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Get filter test metadata table",
+                "responses": {
+                    "200": {
+                        "description": "filter test metadata table",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/testdata/setup": {
             "post": {
                 "description": "Creates test files, git operations, and metadata for testing",
@@ -3578,6 +3632,27 @@ const docTemplate = `{
                 "StatusArchived"
             ]
         },
+        "filter.Config": {
+            "type": "object",
+            "properties": {
+                "criteria": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/filter.Criteria"
+                    }
+                },
+                "display": {
+                    "description": "list, cards, dropdown",
+                    "type": "string"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "logic": {
+                    "type": "string"
+                }
+            }
+        },
         "filter.Criteria": {
             "type": "object",
             "properties": {
@@ -3611,6 +3686,67 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "testdata.FilterTestResult": {
+            "type": "object",
+            "properties": {
+                "actual_count": {
+                    "type": "integer"
+                },
+                "actual_files": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "config": {
+                    "$ref": "#/definitions/filter.Config"
+                },
+                "config_name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "expected_count": {
+                    "type": "integer"
+                },
+                "expected_files": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "testdata.FilterTestResults": {
+            "type": "object",
+            "properties": {
+                "failed_tests": {
+                    "type": "integer"
+                },
+                "passed_tests": {
+                    "type": "integer"
+                },
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/testdata.FilterTestResult"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "total_tests": {
                     "type": "integer"
                 }
             }

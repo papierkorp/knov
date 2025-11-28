@@ -192,7 +192,7 @@ func RenderFileDiff(diff, filePath, fromCommit, toCommit string) string {
 	html.WriteString(`<div class="file-diff-content">`)
 	html.WriteString(fmt.Sprintf(`<div class="diff-header">
 		<h3>%s: %s</h3>
-		<p>%s â†’ %s</p>
+		<p>%s | %s</p>
 	</div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "diff"),
 		filePath,

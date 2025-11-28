@@ -3,8 +3,11 @@ package server
 import (
 	"net/http"
 
+	"knov/internal/configmanager"
+	"knov/internal/logging"
 	"knov/internal/server/render"
 	"knov/internal/testdata"
+	"knov/internal/translation"
 )
 
 // @Summary Setup test data
@@ -45,3 +48,47 @@ func handleAPICleanTestData(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, data, html)
 }
 
+// @Summary Run filter tests
+// @Description Executes comprehensive filter test scenarios with 12 test metadata objects
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} testdata.FilterTestResults "filter test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/filtertest [post]
+func handleAPIFilterTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug("filter test request received")
+
+	results, err := testdata.RunFilterTests()
+	if err != nil {
+		logging.LogError("failed to run filter tests: %v", err)
+		errMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "failed to run filter tests: %v", err)
+		html := render.RenderStatusMessage(render.StatusError, errMsg)
+		writeResponse(w, r, nil, html)
+		return
+	}
+
+	html := render.RenderFilterTestResults(results)
+	writeResponse(w, r, results, html)
+}
+
+// @Summary Get filter test metadata table
+// @Description Returns filter test metadata in table format showing all 12 test objects
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} string "filter test metadata table"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/filtertest/testdata [get]
+func handleAPIFilterTestMetadata(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug("filter test metadata table request received")
+
+	metadataList := testdata.GetFilterTestMetadata()
+	if metadataList == nil {
+		errMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get filter test metadata")
+		html := render.RenderStatusMessage(render.StatusError, errMsg)
+		writeResponse(w, r, nil, html)
+		return
+	}
+
+	html := render.RenderFilterTestMetadataTable(metadataList)
+	writeResponse(w, r, metadataList, html)
+}
