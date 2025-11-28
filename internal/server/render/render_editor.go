@@ -11,7 +11,6 @@ import (
 	"knov/internal/filter"
 	"knov/internal/logging"
 	"knov/internal/translation"
-	"knov/internal/utils"
 )
 
 // RenderMarkdownEditorForm renders a markdown editor form for file creation/editing
@@ -20,8 +19,7 @@ func RenderMarkdownEditorForm(filePath string) string {
 	isEdit := filePath != ""
 
 	if isEdit {
-		fullPath := utils.ToFullPath(filePath)
-		rawContent, err := files.GetRawContent(fullPath)
+		rawContent, err := files.GetRawContent(filePath)
 		if err == nil {
 			content = rawContent
 		}
@@ -106,10 +104,12 @@ func RenderTextareaEditorComponent(filepath, content string) string {
 
 // jsEscapeString escapes a string for safe use in JavaScript
 func jsEscapeString(s string) string {
-	s = strings.ReplaceAll(s, "\\", "\\\\")
-	s = strings.ReplaceAll(s, "`", "\\`")
-	s = strings.ReplaceAll(s, "$", "\\$")
-	return "`" + s + "`"
+	jsonBytes, err := json.Marshal(s)
+	if err != nil {
+		logging.LogError("failed to marshal string for javascript: %v", err)
+		return `""`
+	}
+	return string(jsonBytes)
 }
 
 // ----------------------------------------------------------------------------------------

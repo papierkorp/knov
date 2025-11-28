@@ -8,7 +8,6 @@ import (
 	"knov/internal/logging"
 	"knov/internal/server/render"
 	"knov/internal/translation"
-	"knov/internal/utils"
 )
 
 // editorType defines the type of editor to be used
@@ -108,8 +107,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	// get file content if editing existing file
 	var content string
 	if filepath != "" {
-		fullPath := utils.ToFullPath(filepath)
-		if rawContent, err := files.GetRawContent(fullPath); err == nil {
+		if rawContent, err := files.GetRawContent(filepath); err == nil {
 			content = rawContent
 		}
 	}
@@ -168,8 +166,7 @@ func handleAPIGetTextareaEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := utils.ToFullPath(filepath)
-	content, err := files.GetRawContent(fullPath)
+	content, err := files.GetRawContent(filepath)
 	if err != nil {
 		content = "" // empty for new files
 	}
