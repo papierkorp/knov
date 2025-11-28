@@ -20,6 +20,7 @@ import (
 // @Tags files
 // @Param filepath path string true "File path"
 // @Param commit query string false "Specific commit (current, previous, or commit hash)"
+// @Param output query string false "Output format: full, sidebar, compact, content (default: full)"
 // @Produce json,html
 // @Success 200 "File versions or specific version content"
 // @Router /api/files/versions/{filepath} [get]
@@ -32,32 +33,24 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 
 	fullPath := filepath.Join(configmanager.GetAppConfig().DataPath, filePath)
 	commit := r.URL.Query().Get("commit")
+	output := r.URL.Query().Get("output")
+	if output == "" {
+		output = "full"
+	}
 
 	// if no commit specified, return list of all versions
 	if commit == "" {
 		versions, err := git.GetFileHistory(fullPath)
 		if err != nil {
 			logging.LogDebug("failed to get file history for %s: %v", filePath, err)
-			// if this is a sidebar request, return a friendlier message
-			if r.URL.Query().Get("sidebar") == "true" {
-				html := `<div class="no-versions">no git history available</div>`
-				w.Header().Set("Content-Type", "text/html")
-				w.Write([]byte(html))
-				return
-			}
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file history"), http.StatusInternalServerError)
-			return
-		}
-
-		// check if this is a sidebar request
-		if r.URL.Query().Get("sidebar") == "true" {
-			html := render.RenderFileVersionsSidebar(versions, filePath)
+			// return friendlier message
+			html := `<div class="no-versions">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no git history available") + `</div>`
 			w.Header().Set("Content-Type", "text/html")
 			w.Write([]byte(html))
 			return
 		}
 
-		html := render.RenderFileVersionsList(versions, filePath)
+		html := render.RenderFileVersionsList(versions, filePath, output)
 		writeResponse(w, r, versions, html)
 		return
 	}
@@ -72,7 +65,7 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
 			return
 		}
-		html := render.RenderFileAtVersion(string(content), filePath, "current", "current", translation.SprintfForRequest(configmanager.GetLanguage(), "current version"))
+		html := render.RenderFileAtVersion(string(content), filePath, "current", "current", translation.SprintfForRequest(configmanager.GetLanguage(), "current version"), output)
 		writeResponse(w, r, string(content), html)
 		return
 
@@ -91,14 +84,9 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 	content, err := git.GetFileAtCommit(fullPath, commit)
 	if err != nil {
 		logging.LogDebug("failed to get file %s at commit %s: %v", filePath, commit, err)
-		// check if this is a sidebar request and return a friendlier message
-		if r.URL.Query().Get("sidebar") == "true" {
-			html := `<div class="version-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "version no longer available") + `</div>`
-			w.Header().Set("Content-Type", "text/html")
-			w.Write([]byte(html))
-			return
-		}
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "version no longer available"), http.StatusNotFound)
+		html := `<div class="version-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "version no longer available") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html))
 		return
 	}
 
@@ -111,7 +99,7 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 		logging.LogDebug("failed to get commit details for %s: %v", commit, err)
 	}
 
-	html := render.RenderFileAtVersion(content, filePath, commit, date, message)
+	html := render.RenderFileAtVersion(content, filePath, commit, date, message, output)
 	writeResponse(w, r, content, html)
 }
 

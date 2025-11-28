@@ -28,130 +28,158 @@ func RenderGitHistoryFileList(files []git.GitHistoryFile) string {
 }
 
 // RenderFileVersionsList renders list of file versions as HTML
-func RenderFileVersionsList(versions []git.FileVersion, filePath string) string {
+// output can be "full", "sidebar", or "compact"
+func RenderFileVersionsList(versions []git.FileVersion, filePath string, output string) string {
 	if len(versions) == 0 {
 		return `<div class="no-versions">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no version history available") + `</div>`
 	}
 
 	var html strings.Builder
-	html.WriteString(`<div class="file-versions-list">`)
-	html.WriteString(`<ul class="version-list">`)
 
-	for _, version := range versions {
-		cssClass := "version-item"
-		if version.IsCurrent {
-			cssClass += " current-version"
+	switch output {
+	case "sidebar":
+		html.WriteString(`<div class="version-sidebar">`)
+		html.WriteString(`<ul class="version-list">`)
+
+		maxVersions := 5
+		if len(versions) < maxVersions {
+			maxVersions = len(versions)
 		}
 
-		html.WriteString(fmt.Sprintf(`
-			<li class="%s">
-				<div class="version-header">
-					<span class="version-date">%s:</span>
-					<span class="version-message">%s</span>
-					<span class="version-author">%s %s</span>
-				</div>
-				<div class="version-actions">
-					<a href="/files/history/%s?commit=%s" class="action-link">%s</a>`,
-			cssClass,
-			version.Date,
-			version.Message,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "by"),
-			version.Author,
-			utils.ToRelativePath(filePath),
-			version.Commit,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "view"),
-		))
+		for i := 0; i < maxVersions; i++ {
+			version := versions[i]
+			cssClass := "sidebar-version"
+			if version.IsCurrent {
+				cssClass += " current"
+			}
 
-		// only show compare button if there are multiple versions AND this is not the current version
-		if len(versions) > 1 && !version.IsCurrent {
 			html.WriteString(fmt.Sprintf(`
-					<a href="/api/files/versions/diff/%s?from=%s&to=current"
-					   hx-get="/api/files/versions/diff/%s?from=%s&to=current"
-					   hx-target="#diff-content"
-					   hx-on::before-request="document.getElementById('diff-content').style.display = 'block'; document.getElementById('diff-content').innerHTML = '%s'"
-					   class="action-link">%s</a>`,
+				<li class="%s">
+					<a href="/files/history/%s?commit=%s">
+						<span class="version-date">%s:</span>
+						<span class="version-message">%s</span>
+					</a>
+				</li>`,
+				cssClass,
 				utils.ToRelativePath(filePath),
 				version.Commit,
-				utils.ToRelativePath(filePath),
-				version.Commit,
-				translation.SprintfForRequest(configmanager.GetLanguage(), "loading diff..."),
-				translation.SprintfForRequest(configmanager.GetLanguage(), "compare"),
+				version.Date,
+				version.Message,
 			))
 		}
 
-		html.WriteString(`
-				</div>
-			</li>`)
-	}
+		html.WriteString(`</ul>`)
 
-	html.WriteString(`</ul>`)
-	html.WriteString(`</div>`)
-	return html.String()
-}
-
-// RenderFileVersionsSidebar renders compact list of file versions for sidebar
-func RenderFileVersionsSidebar(versions []git.FileVersion, filePath string) string {
-	if len(versions) == 0 {
-		return `<div class="no-versions">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no version history available") + `</div>`
-	}
-
-	var html strings.Builder
-	html.WriteString(`<div class="version-sidebar">`)
-	html.WriteString(`<ul class="version-list">`)
-
-	for i, version := range versions {
-		if i >= 5 { // limit to 5 recent versions in sidebar
-			break
+		if len(versions) > 5 {
+			html.WriteString(fmt.Sprintf(`
+				<a href="/files/history/%s" class="view-all-versions">
+					%s
+				</a>`,
+				utils.ToRelativePath(filePath),
+				translation.SprintfForRequest(configmanager.GetLanguage(), "view all %d versions", len(versions)),
+			))
 		}
 
-		cssClass := "sidebar-version"
-		if version.IsCurrent {
-			cssClass += " current"
+		html.WriteString(`</div>`)
+
+	case "compact":
+		html.WriteString(`<div class="file-versions-compact">`)
+		html.WriteString(`<ul class="version-list">`)
+
+		for _, version := range versions {
+			cssClass := "version-item"
+			if version.IsCurrent {
+				cssClass += " current-version"
+			}
+
+			html.WriteString(fmt.Sprintf(`
+				<li class="%s">
+					<span class="version-date">%s</span> - <span class="version-message">%s</span>
+				</li>`,
+				cssClass,
+				version.Date,
+				version.Message,
+			))
 		}
 
-		html.WriteString(fmt.Sprintf(`
-			<li class="%s">
-				<a href="/files/history/%s?commit=%s">
-					<span class="version-date">%s:</span>
-					<span class="version-message">%s</span>
-				</a>
-			</li>`,
-			cssClass,
-			utils.ToRelativePath(filePath),
-			version.Commit,
-			version.Date,
-			version.Message,
-		))
+		html.WriteString(`</ul>`)
+		html.WriteString(`</div>`)
+
+	default: // "full"
+		html.WriteString(`<div class="file-versions-list">`)
+		html.WriteString(`<ul class="version-list">`)
+
+		for _, version := range versions {
+			cssClass := "version-item"
+			if version.IsCurrent {
+				cssClass += " current-version"
+			}
+
+			html.WriteString(fmt.Sprintf(`
+				<li class="%s">
+					<div class="version-header">
+						<span class="version-date">%s:</span>
+						<span class="version-message">%s</span>
+						<span class="version-author">%s %s</span>
+					</div>
+					<div class="version-actions">
+						<a href="/files/history/%s?commit=%s" class="action-link">%s</a>`,
+				cssClass,
+				version.Date,
+				version.Message,
+				translation.SprintfForRequest(configmanager.GetLanguage(), "by"),
+				version.Author,
+				utils.ToRelativePath(filePath),
+				version.Commit,
+				translation.SprintfForRequest(configmanager.GetLanguage(), "view"),
+			))
+
+			// only show compare button if there are multiple versions AND this is not the current version
+			if len(versions) > 1 && !version.IsCurrent {
+				html.WriteString(fmt.Sprintf(`
+						<a href="/api/files/versions/diff/%s?from=%s&to=current"
+						   hx-get="/api/files/versions/diff/%s?from=%s&to=current"
+						   hx-target="#diff-content"
+						   hx-on::before-request="document.getElementById('diff-content').style.display = 'block'; document.getElementById('diff-content').innerHTML = '%s'"
+						   class="action-link">%s</a>`,
+					utils.ToRelativePath(filePath),
+					version.Commit,
+					utils.ToRelativePath(filePath),
+					version.Commit,
+					translation.SprintfForRequest(configmanager.GetLanguage(), "loading diff..."),
+					translation.SprintfForRequest(configmanager.GetLanguage(), "compare"),
+				))
+			}
+
+			html.WriteString(`
+					</div>
+				</li>`)
+		}
+
+		html.WriteString(`</ul>`)
+		html.WriteString(`</div>`)
 	}
 
-	html.WriteString(`</ul>`)
-
-	if len(versions) > 5 {
-		html.WriteString(fmt.Sprintf(`
-			<a href="/files/history/%s" class="view-all-versions">
-				%s
-			</a>`,
-			utils.ToRelativePath(filePath),
-			translation.SprintfForRequest(configmanager.GetLanguage(), "view all %d versions", len(versions)),
-		))
-	}
-
-	html.WriteString(`</div>`)
 	return html.String()
 }
 
 // RenderFileAtVersion renders file content at a specific version
-func RenderFileAtVersion(content, filePath, commit, date, message string) string {
+// output can be "full" (with title) or "content" (without title)
+func RenderFileAtVersion(content, filePath, commit, date, message string, output string) string {
 	var html strings.Builder
 	html.WriteString(`<div class="file-version-content">`)
-	html.WriteString(fmt.Sprintf(`<div class="version-header">
-		<h3>%s %s %s - %s (%s)</h3>
-	</div>`,
-		filePath,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "at"),
-		date,
-		message,
-		commit))
+
+	if output != "content" { // default to showing title unless explicitly set to "content"
+		html.WriteString(fmt.Sprintf(`<div class="version-header">
+			<h3>%s %s %s - %s (%s)</h3>
+		</div>`,
+			filePath,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "at"),
+			date,
+			message,
+			commit))
+	}
+
 	html.WriteString(`<pre class="file-content">`)
 	html.WriteString(content)
 	html.WriteString(`</pre></div>`)
@@ -164,7 +192,7 @@ func RenderFileDiff(diff, filePath, fromCommit, toCommit string) string {
 	html.WriteString(`<div class="file-diff-content">`)
 	html.WriteString(fmt.Sprintf(`<div class="diff-header">
 		<h3>%s: %s</h3>
-		<p>%s → %s</p>
+		<p>%s â†’ %s</p>
 	</div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "diff"),
 		filePath,

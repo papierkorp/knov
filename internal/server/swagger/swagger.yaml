@@ -988,6 +988,10 @@ paths:
         in: query
         name: commit
         type: string
+      - description: 'Output format: full, sidebar, compact, content (default: full)'
+        in: query
+        name: output
+        type: string
       produces:
       - application/json
       - text/html

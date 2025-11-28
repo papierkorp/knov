@@ -1119,6 +1119,12 @@ const docTemplate = `{
                         "description": "Specific commit (current, previous, or commit hash)",
                         "name": "commit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Output format: full, sidebar, compact, content (default: full)",
+                        "name": "output",
+                        "in": "query"
                     }
                 ],
                 "responses": {

@@ -355,6 +355,9 @@ type FileVersion struct {
 	IsCurrent bool   `json:"is_current"`
 }
 
+// FileVersionList is a list of file versions
+type FileVersionList []FileVersion
+
 // GetFileHistory returns the git history for a specific file
 func GetFileHistory(filePath string) ([]FileVersion, error) {
 	dataDir := configmanager.GetAppConfig().DataPath

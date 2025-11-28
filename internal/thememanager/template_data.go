@@ -8,6 +8,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
 	"knov/internal/files"
+	"knov/internal/git"
 	"knov/internal/translation"
 )
 
@@ -269,14 +270,14 @@ type HistoryTemplateData struct {
 	FilePath        string
 	CurrentVersion  string
 	SelectedVersion string
-	AllVersions     []interface{} // FileVersion from git package
+	AllVersions     git.FileVersionList // FileVersion from git package
 	ShowDiff        bool
 	SingleVersion   bool // true if only one version exists
 }
 
 // NewHistoryTemplateData creates file history specific data
-func NewHistoryTemplateData(filePath, currentVersion, selectedVersion string, allVersions []interface{}, showDiff bool) HistoryTemplateData {
-	title := "File History"
+func NewHistoryTemplateData(filePath, currentVersion, selectedVersion string, allVersions git.FileVersionList, showDiff bool) HistoryTemplateData {
+	title := "History"
 	if filePath != "" {
 		title = "History: " + filePath
 	}

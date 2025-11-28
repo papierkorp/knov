@@ -441,59 +441,50 @@ func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleHistory(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+
 	// check if this is a file history request
 	if strings.HasPrefix(r.URL.Path, "/files/history/") {
 		filePath := strings.TrimPrefix(r.URL.Path, "/files/history/")
-		handleFileHistory(w, r, filePath)
+
+		if filePath == "" {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"), http.StatusBadRequest)
+			return
+		}
+
+		// get full file path
+		fullPath := filepath.Join(configmanager.GetAppConfig().DataPath, filePath)
+
+		// get selected commit from query param
+		selectedCommit := r.URL.Query().Get("commit")
+
+		// get file history
+		versions, err := git.GetFileHistory(fullPath)
+		if err != nil {
+			logging.LogError("failed to get file history for %s: %v", filePath, err)
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file history"), http.StatusInternalServerError)
+			return
+		}
+
+		currentCommit := ""
+		if len(versions) > 0 {
+			currentCommit = versions[0].Commit
+		}
+
+		data := thememanager.NewHistoryTemplateData(filePath, currentCommit, selectedCommit, versions, false)
+
+		err = tm.Render(w, "history", data)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
 	// general history page
-	tm := thememanager.GetThemeManager()
 	data := thememanager.NewBaseTemplateData("history")
 
 	err := tm.Render(w, "history", data)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-		return
-	}
-}
-
-func handleFileHistory(w http.ResponseWriter, r *http.Request, filePath string) {
-	if filePath == "" {
-		http.Error(w, "missing file path", http.StatusBadRequest)
-		return
-	}
-
-	// get full file path
-	fullPath := filepath.Join(configmanager.GetAppConfig().DataPath, filePath)
-
-	// get selected commit from query param
-	selectedCommit := r.URL.Query().Get("commit")
-
-	// get file history
-	versions, err := git.GetFileHistory(fullPath)
-	if err != nil {
-		logging.LogError("failed to get file history for %s: %v", filePath, err)
-		http.Error(w, "failed to get file history", http.StatusInternalServerError)
-		return
-	}
-
-	// convert versions to interface slice for template
-	allVersions := make([]interface{}, len(versions))
-	for i, v := range versions {
-		allVersions[i] = v
-	}
-
-	currentCommit := ""
-	if len(versions) > 0 {
-		currentCommit = versions[0].Commit
-	}
-
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewHistoryTemplateData(filePath, currentCommit, selectedCommit, allVersions, false)
-
-	err = tm.Render(w, "history", data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
