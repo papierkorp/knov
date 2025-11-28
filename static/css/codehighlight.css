@@ -1,0 +1,261 @@
+/* syntax highlighting for code blocks */
+pre {
+    background: var(--bg-secondary);
+    color: var(--text);
+    padding: 1em 1em 1em 1em;
+    border-radius: 6px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    margin: 1em 0;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+pre code {
+    background: transparent;
+    padding: 0;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* chroma token colors - light mode */
+.chroma-k {
+    color: #0000ff;
+} /* keyword */
+.chroma-kc {
+    color: #0000ff;
+} /* keyword constant */
+.chroma-kd {
+    color: #0000ff;
+} /* keyword declaration */
+.chroma-kn {
+    color: #0000ff;
+} /* keyword namespace */
+.chroma-kp {
+    color: #0000ff;
+} /* keyword pseudo */
+.chroma-kr {
+    color: #0000ff;
+} /* keyword reserved */
+.chroma-kt {
+    color: #2b91af;
+} /* keyword type */
+.chroma-s {
+    color: #a31515;
+} /* string */
+.chroma-s1 {
+    color: #a31515;
+} /* string single */
+.chroma-s2 {
+    color: #a31515;
+} /* string double */
+.chroma-sb {
+    color: #a31515;
+} /* string backtick */
+.chroma-sc {
+    color: #a31515;
+} /* string char */
+.chroma-sd {
+    color: #a31515;
+} /* string doc */
+.chroma-se {
+    color: #a31515;
+} /* string escape */
+.chroma-sh {
+    color: #a31515;
+} /* string heredoc */
+.chroma-si {
+    color: #a31515;
+} /* string interpol */
+.chroma-sx {
+    color: #a31515;
+} /* string other */
+.chroma-sr {
+    color: #a31515;
+} /* string regex */
+.chroma-ss {
+    color: #a31515;
+} /* string symbol */
+.chroma-m {
+    color: #09885a;
+} /* number */
+.chroma-mb {
+    color: #09885a;
+} /* number bin */
+.chroma-mf {
+    color: #09885a;
+} /* number float */
+.chroma-mh {
+    color: #09885a;
+} /* number hex */
+.chroma-mi {
+    color: #09885a;
+} /* number integer */
+.chroma-mo {
+    color: #09885a;
+} /* number oct */
+.chroma-c {
+    color: #008000;
+    font-style: italic;
+} /* comment */
+.chroma-c1 {
+    color: #008000;
+    font-style: italic;
+} /* comment single */
+.chroma-cm {
+    color: #008000;
+    font-style: italic;
+} /* comment multi */
+.chroma-cp {
+    color: #008000;
+} /* comment preproc */
+.chroma-n {
+    color: var(--text);
+} /* name */
+.chroma-na {
+    color: #ff0000;
+} /* name attribute */
+.chroma-nb {
+    color: #2b91af;
+} /* name builtin */
+.chroma-nc {
+    color: #2b91af;
+} /* name class */
+.chroma-nf {
+    color: var(--text);
+} /* name function */
+.chroma-o {
+    color: var(--text);
+} /* operator */
+.chroma-gd {
+    color: #d73a49;
+    background-color: #ffeef0;
+}
+.chroma-gi {
+    color: #28a745;
+    background-color: #f0fff4;
+}
+.chroma-gh {
+    color: #6f42c1;
+    font-weight: bold;
+}
+.chroma-gu {
+    color: #6f42c1;
+    font-weight: bold;
+}
+
+/* dark mode overrides */
+body[data-dark-mode="true"] .chroma-k {
+    color: #569cd6;
+}
+body[data-dark-mode="true"] .chroma-kc {
+    color: #569cd6;
+}
+body[data-dark-mode="true"] .chroma-kd {
+    color: #569cd6;
+}
+body[data-dark-mode="true"] .chroma-kn {
+    color: #569cd6;
+}
+body[data-dark-mode="true"] .chroma-kp {
+    color: #569cd6;
+}
+body[data-dark-mode="true"] .chroma-kr {
+    color: #569cd6;
+}
+body[data-dark-mode="true"] .chroma-kt {
+    color: #4ec9b0;
+}
+body[data-dark-mode="true"] .chroma-s {
+    color: #ce9178;
+}
+body[data-dark-mode="true"] .chroma-s1 {
+    color: #ce9178;
+}
+body[data-dark-mode="true"] .chroma-s2 {
+    color: #ce9178;
+}
+body[data-dark-mode="true"] .chroma-sb {
+    color: #ce9178;
+}
+body[data-dark-mode="true"] .chroma-sc {
+    color: #ce9178;
+}
+body[data-dark-mode="true"] .chroma-sd {
+    color: #ce9178;
+}
+body[data-dark-mode="true"] .chroma-se {
+    color: #ce9178;
+}
+body[data-dark-mode="true"] .chroma-sh {
+    color: #ce9178;
+}
+body[data-dark-mode="true"] .chroma-si {
+    color: #ce9178;
+}
+body[data-dark-mode="true"] .chroma-sx {
+    color: #ce9178;
+}
+body[data-dark-mode="true"] .chroma-sr {
+    color: #ce9178;
+}
+body[data-dark-mode="true"] .chroma-ss {
+    color: #ce9178;
+}
+body[data-dark-mode="true"] .chroma-m {
+    color: #b5cea8;
+}
+body[data-dark-mode="true"] .chroma-mb {
+    color: #b5cea8;
+}
+body[data-dark-mode="true"] .chroma-mf {
+    color: #b5cea8;
+}
+body[data-dark-mode="true"] .chroma-mh {
+    color: #b5cea8;
+}
+body[data-dark-mode="true"] .chroma-mi {
+    color: #b5cea8;
+}
+body[data-dark-mode="true"] .chroma-mo {
+    color: #b5cea8;
+}
+body[data-dark-mode="true"] .chroma-c {
+    color: #6a9955;
+}
+body[data-dark-mode="true"] .chroma-c1 {
+    color: #6a9955;
+}
+body[data-dark-mode="true"] .chroma-cm {
+    color: #6a9955;
+}
+body[data-dark-mode="true"] .chroma-cp {
+    color: #6a9955;
+}
+body[data-dark-mode="true"] .chroma-na {
+    color: #9cdcfe;
+}
+body[data-dark-mode="true"] .chroma-nb {
+    color: #4ec9b0;
+}
+body[data-dark-mode="true"] .chroma-nc {
+    color: #4ec9b0;
+}
+body[data-dark-mode="true"] .chroma-nf {
+    color: #dcdcaa;
+}
+body[data-dark-mode="true"] .chroma-gd {
+    color: #f97583;
+    background-color: #3a1a1a;
+}
+body[data-dark-mode="true"] .chroma-gi {
+    color: #85e89d;
+    background-color: #1a3a1a;
+}
+body[data-dark-mode="true"] .chroma-gh {
+    color: #b392f0;
+}
+body[data-dark-mode="true"] .chroma-gu {
+    color: #b392f0;
+}

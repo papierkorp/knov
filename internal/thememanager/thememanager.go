@@ -265,7 +265,35 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data 
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	return template.Execute(w, data)
+	// render template to buffer first to inject default CSS
+	var buf strings.Builder
+	err = template.Execute(&buf, data)
+	if err != nil {
+		return err
+	}
+
+	// inject default CSS link into <head> section
+	html := injectDefaultCSS(buf.String())
+
+	// write final HTML to response
+	_, err = w.Write([]byte(html))
+	return err
+}
+
+// injectDefaultCSS injects the default codehighlight.css link into the HTML <head>
+func injectDefaultCSS(html string) string {
+	// find the closing </head> tag
+	headCloseIndex := strings.Index(html, "</head>")
+	if headCloseIndex == -1 {
+		// no </head> found, return as is
+		return html
+	}
+
+	// inject default CSS link before </head>
+	defaultCSSLink := `    <link href="/static/css/codehighlight.css" rel="stylesheet" />
+`
+
+	return html[:headCloseIndex] + defaultCSSLink + html[headCloseIndex:]
 }
 
 // -----------------------------------------------
