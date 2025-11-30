@@ -8,19 +8,19 @@
 </head>
 <body
     data-theme="{{ .CurrentTheme }}"
-    data-dark-mode="{{ .DarkMode }}"
-    data-color-scheme="{{ .ColorScheme }}"
+    data-dark-mode="{{ index .ThemeSettings "darkMode" }}"
+    data-color-scheme="{{ index .ThemeSettings "colorScheme" }}"
     data-language="{{ .Language }}">
-    
+
     <nav>
         <a href="/">home</a>
         <a href="/settings">settings</a>
     </nav>
-    
+
     <main>
         {{ template "content" . }}
     </main>
-    
+
     <script src="/static/htmx.min.js"></script>
 </body>
 </html>
