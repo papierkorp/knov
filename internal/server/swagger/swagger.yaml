@@ -111,6 +111,10 @@ definitions:
     - WidgetTypeParaAreas
     - WidgetTypeParaResources
     - WidgetTypeParaArchive
+  files.CollectionCount:
+    additionalProperties:
+      type: integer
+    type: object
   files.File:
     properties:
       metadata:
@@ -148,6 +152,14 @@ definitions:
     - FileTypePermanent
     - FileTypeFilter
     - FileTypeJournaling
+  files.FiletypeCount:
+    additionalProperties:
+      type: integer
+    type: object
+  files.FolderCount:
+    additionalProperties:
+      type: integer
+    type: object
   files.Metadata:
     properties:
       ancestor:
@@ -251,6 +263,22 @@ definitions:
           type: string
         type: array
     type: object
+  files.PARAArchiveCount:
+    additionalProperties:
+      type: integer
+    type: object
+  files.PARAAreaCount:
+    additionalProperties:
+      type: integer
+    type: object
+  files.PARAProjectCount:
+    additionalProperties:
+      type: integer
+    type: object
+  files.PARAResourceCount:
+    additionalProperties:
+      type: integer
+    type: object
   files.Priority:
     enum:
     - low
@@ -261,6 +289,10 @@ definitions:
     - PriorityLow
     - PriorityMedium
     - PriorityHigh
+  files.PriorityCount:
+    additionalProperties:
+      type: integer
+    type: object
   files.Status:
     enum:
     - draft
@@ -271,6 +303,14 @@ definitions:
     - StatusDraft
     - StatusPublished
     - StatusArchived
+  files.StatusCount:
+    additionalProperties:
+      type: integer
+    type: object
+  files.TagCount:
+    additionalProperties:
+      type: integer
+    type: object
   filter.Config:
     properties:
       criteria:
@@ -1576,9 +1616,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: integer
-            type: object
+            $ref: '#/definitions/files.CollectionCount'
       summary: Get all collections or collection for a specific file
       tags:
       - metadata
@@ -1771,9 +1809,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: integer
-            type: object
+            $ref: '#/definitions/files.FiletypeCount'
       summary: Get all available filetypes
       tags:
       - metadata
@@ -1798,9 +1834,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: integer
-            type: object
+            $ref: '#/definitions/files.FolderCount'
       summary: Get all folders or folders for a specific file
       tags:
       - metadata
@@ -1940,7 +1974,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/files.PARAArchiveCount'
       summary: Get all PARA archive or archive for a specific file
       tags:
       - metadata
@@ -1992,7 +2026,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/files.PARAAreaCount'
       summary: Get all PARA areas or areas for a specific file
       tags:
       - metadata
@@ -2044,7 +2078,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/files.PARAProjectCount'
       summary: Get all PARA projects or projects for a specific file
       tags:
       - metadata
@@ -2096,7 +2130,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/files.PARAResourceCount'
       summary: Get all PARA resources or resources for a specific file
       tags:
       - metadata
@@ -2209,9 +2243,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: integer
-            type: object
+            $ref: '#/definitions/files.PriorityCount'
       summary: Get all available priorities
       tags:
       - metadata
@@ -2332,9 +2364,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: integer
-            type: object
+            $ref: '#/definitions/files.StatusCount'
       summary: Get all available statuses
       tags:
       - metadata
@@ -2359,9 +2389,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: integer
-            type: object
+            $ref: '#/definitions/files.TagCount'
       summary: Get all tags or tags for a specific file
       tags:
       - metadata

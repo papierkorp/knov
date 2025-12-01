@@ -35,6 +35,79 @@ const (
 	PriorityHigh   Priority = "high"
 )
 
+// typed count maps for metadata aggregations
+type TagCount map[string]int
+type CollectionCount map[string]int
+type FolderCount map[string]int
+type FiletypeCount map[string]int
+type PriorityCount map[string]int
+type StatusCount map[string]int
+type PARAProjectCount map[string]int
+type PARAAreaCount map[string]int
+type PARAResourceCount map[string]int
+type PARAArchiveCount map[string]int
+
+// AllFiletypes returns all available file types
+func AllFiletypes() []Filetype {
+	return []Filetype{
+		FileTypeTodo,
+		FileTypeFleeting,
+		FileTypeLiterature,
+		FileTypeMOC,
+		FileTypePermanent,
+		FileTypeFilter,
+		FileTypeJournaling,
+	}
+}
+
+// AllPriorities returns all available priorities
+func AllPriorities() []Priority {
+	return []Priority{
+		PriorityLow,
+		PriorityMedium,
+		PriorityHigh,
+	}
+}
+
+// AllStatuses returns all available statuses
+func AllStatuses() []Status {
+	return []Status{
+		StatusDraft,
+		StatusPublished,
+		StatusArchived,
+	}
+}
+
+// IsValidFiletype checks if a filetype is valid
+func IsValidFiletype(ft Filetype) bool {
+	for _, valid := range AllFiletypes() {
+		if ft == valid {
+			return true
+		}
+	}
+	return false
+}
+
+// IsValidPriority checks if a priority is valid
+func IsValidPriority(p Priority) bool {
+	for _, valid := range AllPriorities() {
+		if p == valid {
+			return true
+		}
+	}
+	return false
+}
+
+// IsValidStatus checks if a status is valid
+func IsValidStatus(s Status) bool {
+	for _, valid := range AllStatuses() {
+		if s == valid {
+			return true
+		}
+	}
+	return false
+}
+
 // Metadata represents file metadata
 type Metadata struct {
 	Name        string    `json:"name"`        // manual filename
@@ -292,13 +365,13 @@ func MetaDataInitializeAll() error {
 }
 
 // GetAllTags returns all unique tags with their counts
-func GetAllTags() (map[string]int, error) {
+func GetAllTags() (TagCount, error) {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return nil, err
 	}
 
-	tagCount := make(map[string]int)
+	tagCount := make(TagCount)
 	for _, file := range allFiles {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil || metadata == nil {
@@ -314,13 +387,13 @@ func GetAllTags() (map[string]int, error) {
 }
 
 // GetAllCollections returns all unique collections with their counts
-func GetAllCollections() (map[string]int, error) {
+func GetAllCollections() (CollectionCount, error) {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return nil, err
 	}
 
-	collectionCount := make(map[string]int)
+	collectionCount := make(CollectionCount)
 	for _, file := range allFiles {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil || metadata == nil {
@@ -334,13 +407,13 @@ func GetAllCollections() (map[string]int, error) {
 }
 
 // GetAllFolders returns all unique folders with their counts
-func GetAllFolders() (map[string]int, error) {
+func GetAllFolders() (FolderCount, error) {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return nil, err
 	}
 
-	folderCount := make(map[string]int)
+	folderCount := make(FolderCount)
 	for _, file := range allFiles {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil || metadata == nil {
@@ -356,13 +429,13 @@ func GetAllFolders() (map[string]int, error) {
 }
 
 // GetAllFiletypes returns all unique file types with their counts
-func GetAllFiletypes() (map[string]int, error) {
+func GetAllFiletypes() (FiletypeCount, error) {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return nil, err
 	}
 
-	filetypeCount := make(map[string]int)
+	filetypeCount := make(FiletypeCount)
 	for _, file := range allFiles {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil || metadata == nil {
@@ -376,13 +449,13 @@ func GetAllFiletypes() (map[string]int, error) {
 }
 
 // GetAllPriorities returns all unique priorities with their counts
-func GetAllPriorities() (map[string]int, error) {
+func GetAllPriorities() (PriorityCount, error) {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return nil, err
 	}
 
-	priorityCount := make(map[string]int)
+	priorityCount := make(PriorityCount)
 	for _, file := range allFiles {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil || metadata == nil {
@@ -396,13 +469,13 @@ func GetAllPriorities() (map[string]int, error) {
 }
 
 // GetAllStatuses returns all unique statuses with their counts
-func GetAllStatuses() (map[string]int, error) {
+func GetAllStatuses() (StatusCount, error) {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return nil, err
 	}
 
-	statusCount := make(map[string]int)
+	statusCount := make(StatusCount)
 	for _, file := range allFiles {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil || metadata == nil {
@@ -428,13 +501,14 @@ func MetaDataDelete(filepath string) error {
 }
 
 // GetAllPARAProjects returns all unique PARA projects with their counts
-func GetAllPARAProjects() (map[string]int, error) {
+// GetAllPARAProjects returns all unique PARA projects with their counts
+func GetAllPARAProjects() (PARAProjectCount, error) {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return nil, err
 	}
 
-	projectCount := make(map[string]int)
+	projectCount := make(PARAProjectCount)
 	for _, file := range allFiles {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil || metadata == nil {
@@ -450,13 +524,13 @@ func GetAllPARAProjects() (map[string]int, error) {
 }
 
 // GetAllPARAreas returns all unique PARA areas with their counts
-func GetAllPARAreas() (map[string]int, error) {
+func GetAllPARAreas() (PARAAreaCount, error) {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return nil, err
 	}
 
-	areaCount := make(map[string]int)
+	areaCount := make(PARAAreaCount)
 	for _, file := range allFiles {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil || metadata == nil {
@@ -472,13 +546,13 @@ func GetAllPARAreas() (map[string]int, error) {
 }
 
 // GetAllPARAResources returns all unique PARA resources with their counts
-func GetAllPARAResources() (map[string]int, error) {
+func GetAllPARAResources() (PARAResourceCount, error) {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return nil, err
 	}
 
-	resourceCount := make(map[string]int)
+	resourceCount := make(PARAResourceCount)
 	for _, file := range allFiles {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil || metadata == nil {
@@ -494,13 +568,13 @@ func GetAllPARAResources() (map[string]int, error) {
 }
 
 // GetAllPARAArchive returns all unique PARA archive with their counts
-func GetAllPARAArchive() (map[string]int, error) {
+func GetAllPARAArchive() (PARAArchiveCount, error) {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return nil, err
 	}
 
-	archiveCount := make(map[string]int)
+	archiveCount := make(PARAArchiveCount)
 	for _, file := range allFiles {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil || metadata == nil {

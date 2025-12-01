@@ -657,7 +657,7 @@ func handleAPISetMetadataFolders(w http.ResponseWriter, r *http.Request) {
 // @Param filepath query string false "File path (optional - if provided, returns tags for that specific file)"
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
-// @Success 200 {object} map[string]int
+// @Success 200 {object} files.TagCount
 // @Router /api/metadata/tags [get]
 func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
@@ -697,7 +697,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 // @Param filepath query string false "File path (optional - if provided, returns collection for that specific file)"
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
-// @Success 200 {object} map[string]int
+// @Success 200 {object} files.CollectionCount
 // @Router /api/metadata/collections [get]
 func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
@@ -737,7 +737,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 // @Param filepath query string false "File path (optional - if provided, returns folders for that specific file)"
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
-// @Success 200 {object} map[string]int
+// @Success 200 {object} files.FolderCount
 // @Router /api/metadata/folders [get]
 func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
@@ -775,19 +775,14 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 // @Tags metadata
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
-// @Success 200 {object} map[string]int
+// @Success 200 {object} files.PriorityCount
 // @Router /api/metadata/priorities [get]
 func handleAPIGetAllPriorities(w http.ResponseWriter, r *http.Request) {
 	format := r.URL.Query().Get("format")
 
 	if format == "options" {
-		priorities := []files.Priority{
-			files.PriorityLow,
-			files.PriorityMedium,
-			files.PriorityHigh,
-		}
 		var html strings.Builder
-		for _, p := range priorities {
+		for _, p := range files.AllPriorities() {
 			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, p, p))
 		}
 		w.Header().Set("Content-Type", "text/html")
@@ -809,19 +804,14 @@ func handleAPIGetAllPriorities(w http.ResponseWriter, r *http.Request) {
 // @Tags metadata
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
-// @Success 200 {object} map[string]int
+// @Success 200 {object} files.StatusCount
 // @Router /api/metadata/statuses [get]
 func handleAPIGetAllStatuses(w http.ResponseWriter, r *http.Request) {
 	format := r.URL.Query().Get("format")
 
 	if format == "options" {
-		statuses := []files.Status{
-			files.StatusDraft,
-			files.StatusPublished,
-			files.StatusArchived,
-		}
 		var html strings.Builder
-		for _, s := range statuses {
+		for _, s := range files.AllStatuses() {
 			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, s, s))
 		}
 		w.Header().Set("Content-Type", "text/html")
@@ -843,23 +833,14 @@ func handleAPIGetAllStatuses(w http.ResponseWriter, r *http.Request) {
 // @Tags metadata
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
-// @Success 200 {object} map[string]int
+// @Success 200 {object} files.FiletypeCount
 // @Router /api/metadata/filetypes [get]
 func handleAPIGetAllFiletypes(w http.ResponseWriter, r *http.Request) {
 	format := r.URL.Query().Get("format")
 
 	if format == "options" {
-		filetypes := []files.Filetype{
-			files.FileTypeTodo,
-			files.FileTypeFleeting,
-			files.FileTypeLiterature,
-			files.FileTypeMOC,
-			files.FileTypePermanent,
-			files.FileTypeFilter,
-			files.FileTypeJournaling,
-		}
 		var html strings.Builder
-		for _, ft := range filetypes {
+		for _, ft := range files.AllFiletypes() {
 			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, ft, ft))
 		}
 		w.Header().Set("Content-Type", "text/html")
@@ -1396,7 +1377,7 @@ func handleAPIGetMetadataPARAArchive(w http.ResponseWriter, r *http.Request) {
 // @Param filepath query string false "File path (optional - if provided, returns projects for that specific file)"
 // @Param format query string false "Response format (options for datalist)" Enums(options)
 // @Produce json,html
-// @Success 200 {string} string
+// @Success 200 {object} files.PARAProjectCount
 // @Router /api/metadata/para/projects [get]
 func handleAPIGetAllPARAProjects(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
@@ -1446,7 +1427,7 @@ func handleAPIGetAllPARAProjects(w http.ResponseWriter, r *http.Request) {
 // @Param filepath query string false "File path (optional - if provided, returns areas for that specific file)"
 // @Param format query string false "Response format (options for datalist)" Enums(options)
 // @Produce json,html
-// @Success 200 {string} string
+// @Success 200 {object} files.PARAAreaCount
 // @Router /api/metadata/para/areas [get]
 func handleAPIGetAllPARAreas(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
@@ -1496,7 +1477,7 @@ func handleAPIGetAllPARAreas(w http.ResponseWriter, r *http.Request) {
 // @Param filepath query string false "File path (optional - if provided, returns resources for that specific file)"
 // @Param format query string false "Response format (options for datalist)" Enums(options)
 // @Produce json,html
-// @Success 200 {string} string
+// @Success 200 {object} files.PARAResourceCount
 // @Router /api/metadata/para/resources [get]
 func handleAPIGetAllPARAResources(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
@@ -1546,7 +1527,7 @@ func handleAPIGetAllPARAResources(w http.ResponseWriter, r *http.Request) {
 // @Param filepath query string false "File path (optional - if provided, returns archive for that specific file)"
 // @Param format query string false "Response format (options for datalist)" Enums(options)
 // @Produce json,html
-// @Success 200 {string} string
+// @Success 200 {object} files.PARAArchiveCount
 // @Router /api/metadata/para/archive [get]
 func handleAPIGetAllPARAArchive(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")

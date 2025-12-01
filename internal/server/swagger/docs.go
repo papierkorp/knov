@@ -1829,10 +1829,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
-                            }
+                            "$ref": "#/definitions/files.CollectionCount"
                         }
                     }
                 }
@@ -2124,10 +2121,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
-                            }
+                            "$ref": "#/definitions/files.FiletypeCount"
                         }
                     }
                 }
@@ -2162,10 +2156,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
-                            }
+                            "$ref": "#/definitions/files.FolderCount"
                         }
                     }
                 }
@@ -2372,7 +2363,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/files.PARAArchiveCount"
                         }
                     }
                 }
@@ -2447,7 +2438,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/files.PARAAreaCount"
                         }
                     }
                 }
@@ -2522,7 +2513,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/files.PARAProjectCount"
                         }
                     }
                 }
@@ -2597,7 +2588,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/files.PARAResourceCount"
                         }
                     }
                 }
@@ -2767,10 +2758,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
-                            }
+                            "$ref": "#/definitions/files.PriorityCount"
                         }
                     }
                 }
@@ -2953,10 +2941,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
-                            }
+                            "$ref": "#/definitions/files.StatusCount"
                         }
                     }
                 }
@@ -2991,10 +2976,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
-                            }
+                            "$ref": "#/definitions/files.TagCount"
                         }
                     }
                 }
@@ -3540,6 +3522,12 @@ const docTemplate = `{
                 "WidgetTypeParaArchive"
             ]
         },
+        "files.CollectionCount": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
         "files.File": {
             "type": "object",
             "properties": {
@@ -3586,6 +3574,18 @@ const docTemplate = `{
                 "FileTypeFilter",
                 "FileTypeJournaling"
             ]
+        },
+        "files.FiletypeCount": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
+        "files.FolderCount": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
         },
         "files.Metadata": {
             "type": "object",
@@ -3741,6 +3741,30 @@ const docTemplate = `{
                 }
             }
         },
+        "files.PARAArchiveCount": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
+        "files.PARAAreaCount": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
+        "files.PARAProjectCount": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
+        "files.PARAResourceCount": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
         "files.Priority": {
             "type": "string",
             "enum": [
@@ -3754,6 +3778,12 @@ const docTemplate = `{
                 "PriorityHigh"
             ]
         },
+        "files.PriorityCount": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
         "files.Status": {
             "type": "string",
             "enum": [
@@ -3766,6 +3796,18 @@ const docTemplate = `{
                 "StatusPublished",
                 "StatusArchived"
             ]
+        },
+        "files.StatusCount": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
+        "files.TagCount": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
         },
         "filter.Config": {
             "type": "object",
