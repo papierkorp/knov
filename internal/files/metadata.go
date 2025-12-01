@@ -218,6 +218,25 @@ func MetaDataSave(m *Metadata) error {
 	return nil
 }
 
+// metaDataSaveRaw saves metadata directly without triggering metaDataUpdate
+// used internally to avoid cascading updates when updating link relationships
+func metaDataSaveRaw(m *Metadata) error {
+	data, err := json.Marshal(m)
+	if err != nil {
+		logging.LogError("failed to marshal metadata: %v", err)
+		return err
+	}
+
+	key := m.Path
+	if err := storage.GetStorage().Set(key, data); err != nil {
+		logging.LogError("failed to save metadata for %s: %v", m.Path, err)
+		return err
+	}
+
+	logging.LogDebug("metadata saved (raw) for: %s", m.Path)
+	return nil
+}
+
 // MetaDataGet retrieves metadata using the configured storage method
 func MetaDataGet(filepath string) (*Metadata, error) {
 	key := utils.ToRelativePath(filepath)

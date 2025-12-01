@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -89,6 +88,9 @@ func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
 	var links []string
 	text := string(content)
 
+	// remove code blocks to avoid extracting links from code
+	text = removeCodeBlocks(text)
+
 	// extract wiki-style links [[path]]
 	wikiLinkRegex := regexp.MustCompile(`\[\[([^\]]+)\]\]`)
 	wikiMatches := wikiLinkRegex.FindAllStringSubmatch(text, -1)
@@ -107,14 +109,27 @@ func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
 	for _, match := range mdMatches {
 		if len(match) > 2 {
 			link := strings.TrimSpace(match[2])
-			if link != "" && !strings.HasPrefix(link, "http") {
+			// skip external urls and anchors
+			if link != "" && !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") && !strings.HasPrefix(link, "#") {
 				links = append(links, link)
 			}
 		}
 	}
-	fmt.Println("LINKS_--------------------: ", links)
 
 	return links
+}
+
+// removeCodeBlocks removes fenced code blocks and inline code from markdown text
+func removeCodeBlocks(text string) string {
+	// remove fenced code blocks (```...```)
+	fencedCodeRegex := regexp.MustCompile("(?s)```[^`]*```")
+	text = fencedCodeRegex.ReplaceAllString(text, "")
+
+	// remove inline code (`...`)
+	inlineCodeRegex := regexp.MustCompile("`[^`]*`")
+	text = inlineCodeRegex.ReplaceAllString(text, "")
+
+	return text
 }
 
 func (h *MarkdownHandler) Name() string {

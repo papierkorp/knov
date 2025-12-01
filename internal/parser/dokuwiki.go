@@ -227,6 +227,9 @@ func (h *DokuwikiHandler) extractDokuWikiLinks(content string) []string {
 	var links []string
 	linkSet := make(map[string]bool)
 
+	// remove code blocks to avoid extracting links from code
+	content = h.removeDokuWikiCodeBlocks(content)
+
 	re := regexp.MustCompile(`\[\[([^\]|]+)(?:\|[^\]]+)?\]\]`)
 	matches := re.FindAllStringSubmatch(content, -1)
 
@@ -246,6 +249,29 @@ func (h *DokuwikiHandler) extractDokuWikiLinks(content string) []string {
 	}
 
 	return links
+}
+
+// removeDokuWikiCodeBlocks removes code blocks from dokuwiki content
+func (h *DokuwikiHandler) removeDokuWikiCodeBlocks(content string) string {
+	// remove <code>...</code> blocks
+	content = regexp.MustCompile(`(?s)<code[^>]*>.*?</code>`).ReplaceAllString(content, "")
+
+	// remove <file>...</file> blocks
+	content = regexp.MustCompile(`(?s)<file[^>]*>.*?</file>`).ReplaceAllString(content, "")
+
+	// remove <sxh>...</sxh> blocks
+	content = regexp.MustCompile(`(?s)<sxh[^>]*>.*?</sxh>`).ReplaceAllString(content, "")
+
+	// remove <codify>...</codify> blocks
+	content = regexp.MustCompile(`(?s)<codify[^>]*>.*?</codify>`).ReplaceAllString(content, "")
+
+	// remove <html>...</html> blocks
+	content = regexp.MustCompile(`(?s)<html[^>]*>.*?</html>`).ReplaceAllString(content, "")
+
+	// remove <nowiki>...</nowiki> blocks
+	content = regexp.MustCompile(`(?s)<nowiki>.*?</nowiki>`).ReplaceAllString(content, "")
+
+	return content
 }
 
 // ParseDokuWikiTable extracts table data from dokuwiki content
@@ -371,7 +397,7 @@ func (h *DokuwikiHandler) detectCellAlignment(cell string) string {
 func (h *DokuwikiHandler) detectCellType(content string) string {
 	content = strings.TrimSpace(content)
 
-	if matched, _ := regexp.MatchString(`^[$€£¥]\s*[\d,]+\.?\d*$`, content); matched {
+	if matched, _ := regexp.MatchString(`^[$â‚¬Â£Â¥]\s*[\d,]+\.?\d*$`, content); matched {
 		return "currency"
 	}
 	if matched, _ := regexp.MatchString(`^\d+\.?\d*$`, content); matched {

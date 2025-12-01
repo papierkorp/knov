@@ -91,11 +91,11 @@
                         <div hx-get="/api/links/kids?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
                     <div class="links-group">
-                        <div class="links-label">links from</div>
+                        <div class="links-label">links to</div>
                         <div hx-get="/api/links/used?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
                     <div class="links-group">
-                        <div class="links-label">links to</div>
+                        <div class="links-label">links from</div>
                         <div hx-get="/api/links/linkstohere?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
                 </div>

@@ -2,6 +2,7 @@
 package cronjob
 
 import (
+	"slices"
 	"time"
 
 	"knov/internal/configmanager"
@@ -159,6 +160,15 @@ func runFileJobs() {
 	// remove duplicates
 	filesToProcess = removeDuplicates(filesToProcess)
 	filesToDelete = removeDuplicates(filesToDelete)
+
+	// remove deleted files from process list
+	var filteredProcess []string
+	for _, file := range filesToProcess {
+		if !slices.Contains(filesToDelete, file) {
+			filteredProcess = append(filteredProcess, file)
+		}
+	}
+	filesToProcess = filteredProcess
 
 	// process deleted files first
 	if len(filesToDelete) > 0 {

@@ -17,6 +17,7 @@ func MetaDataLinksRebuild() error {
 		return err
 	}
 
+	// first pass: clear old data and update ancestors and usedlinks
 	for _, file := range files {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil {
@@ -33,7 +34,35 @@ func MetaDataLinksRebuild() error {
 		metadata.LinksToHere = []string{}
 
 		updateAncestors(metadata)
-		updateUsedLinks(metadata)
+
+		// extract used links without updating linkstohere yet
+		fullPath := utils.ToFullPath(metadata.Path)
+		contentData, err := os.ReadFile(fullPath)
+		if err == nil {
+			handler := parserRegistry.GetHandler(fullPath)
+			if handler != nil {
+				links := handler.ExtractLinks(contentData)
+				for _, link := range links {
+					cleanLink := utils.CleanLink(link)
+					if cleanLink != "" && cleanLink != metadata.Path && !slices.Contains(metadata.UsedLinks, cleanLink) {
+						metadata.UsedLinks = append(metadata.UsedLinks, cleanLink)
+					}
+				}
+			}
+		}
+
+		if err := MetaDataSave(metadata); err != nil {
+			logging.LogWarning("failed to save metadata for %s: %v", metadata.Path, err)
+		}
+	}
+
+	// second pass: update kids and linkstohere for all files
+	for _, file := range files {
+		metadata, err := MetaDataGet(file.Path)
+		if err != nil || metadata == nil {
+			continue
+		}
+
 		updateKidsAndLinksToHere(metadata)
 
 		if err := MetaDataSave(metadata); err != nil {
@@ -112,6 +141,10 @@ func updateUsedLinks(metadata *Metadata) {
 	links := handler.ExtractLinks(contentData)
 	logging.LogInfo("extracted %d links from %s", len(links), metadata.Path)
 
+	// store old links to detect removals
+	oldUsedLinks := make([]string, len(metadata.UsedLinks))
+	copy(oldUsedLinks, metadata.UsedLinks)
+
 	metadata.UsedLinks = []string{}
 
 	for _, link := range links {
@@ -127,6 +160,54 @@ func updateUsedLinks(metadata *Metadata) {
 	}
 
 	logging.LogDebug("cleaned used links for %s: %v", metadata.Path, metadata.UsedLinks)
+
+	// update linkstohere in the found files
+	updateLinksToHere(metadata, oldUsedLinks)
+}
+
+func updateLinksToHere(metadata *Metadata, oldUsedLinks []string) {
+	logging.LogInfo("updating linkstohere for linked files from %s", metadata.Path)
+
+	// add current file to linkstohere for new links
+	for _, usedLink := range metadata.UsedLinks {
+		linkedMetadata, err := MetaDataGet(usedLink)
+		if err != nil || linkedMetadata == nil {
+			logging.LogDebug("skipping linkstohere update for %s: metadata not found", usedLink)
+			continue
+		}
+
+		// add current file to linkstohere if not already present
+		if !slices.Contains(linkedMetadata.LinksToHere, metadata.Path) {
+			linkedMetadata.LinksToHere = append(linkedMetadata.LinksToHere, metadata.Path)
+
+			if err := metaDataSaveRaw(linkedMetadata); err != nil {
+				logging.LogWarning("failed to save linkstohere for %s: %v", usedLink, err)
+			} else {
+				logging.LogInfo("added %s to linkstohere of %s", metadata.Path, usedLink)
+			}
+		}
+	}
+
+	// remove current file from linkstohere for removed links
+	for _, oldLink := range oldUsedLinks {
+		if !slices.Contains(metadata.UsedLinks, oldLink) {
+			linkedMetadata, err := MetaDataGet(oldLink)
+			if err != nil || linkedMetadata == nil {
+				continue
+			}
+
+			// remove current file from linkstohere
+			if idx := slices.Index(linkedMetadata.LinksToHere, metadata.Path); idx != -1 {
+				linkedMetadata.LinksToHere = slices.Delete(linkedMetadata.LinksToHere, idx, idx+1)
+
+				if err := metaDataSaveRaw(linkedMetadata); err != nil {
+					logging.LogWarning("failed to save linkstohere for %s: %v", oldLink, err)
+				} else {
+					logging.LogInfo("removed %s from linkstohere of %s", metadata.Path, oldLink)
+				}
+			}
+		}
+	}
 }
 
 func updateKidsAndLinksToHere(metadata *Metadata) {
