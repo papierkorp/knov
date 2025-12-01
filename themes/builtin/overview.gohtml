@@ -42,6 +42,24 @@
                     </div>
                 </div>
                 <div class="browse-section">
+                    <h3>{{T "Type"}}</h3>
+                    <div hx-get="/api/metadata/filetypes" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                        {{T "loading types..."}}
+                    </div>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Priority"}}</h3>
+                    <div hx-get="/api/metadata/priorities" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                        {{T "loading priorities..."}}
+                    </div>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Status"}}</h3>
+                    <div hx-get="/api/metadata/statuses" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                        {{T "loading statuses..."}}
+                    </div>
+                </div>
+                <div class="browse-section">
                     <h3>{{T "Projects"}}</h3>
                     <div hx-get="/api/metadata/para/projects" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading projects..."}}

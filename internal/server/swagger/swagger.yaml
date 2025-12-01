@@ -1771,9 +1771,9 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              type: string
-            type: array
+            additionalProperties:
+              type: integer
+            type: object
       summary: Get all available filetypes
       tags:
       - metadata
@@ -2209,9 +2209,9 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              type: string
-            type: array
+            additionalProperties:
+              type: integer
+            type: object
       summary: Get all available priorities
       tags:
       - metadata
@@ -2275,6 +2275,24 @@ paths:
       tags:
       - metadata
   /api/metadata/status:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get file status
+      tags:
+      - metadata
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -2314,9 +2332,9 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              type: string
-            type: array
+            additionalProperties:
+              type: integer
+            type: object
       summary: Get all available statuses
       tags:
       - metadata

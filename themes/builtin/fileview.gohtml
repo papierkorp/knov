@@ -40,6 +40,10 @@
                         <span hx-get="/api/metadata/priority?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
                     <div class="metadata-row">
+                        <span class="metadata-label">status:</span>
+                        <span hx-get="/api/metadata/status?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+                    </div>
+                    <div class="metadata-row">
                         <span class="metadata-label">tags:</span>
                         <span hx-get="/api/metadata/tags?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>

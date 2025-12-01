@@ -23,6 +23,20 @@ Metadata files are created in `<knov executable>./metadata/`
 
 User settings and dashboards are stored as JSON files in `{KNOV_CONFIG_PATH}/`
 
+## Metadata Browsing
+
+KNOV provides browsing capabilities for the following metadata fields on the overview page (`/overview`):
+
+- **Tags**: Browse files by tags
+- **Collections**: Browse files by collection
+- **Folders**: Browse files by folder
+- **Type**: Browse files by type (todo, fleeting, literature, moc, permanent, filter, journaling)
+- **Priority**: Browse files by priority (low, medium, high)
+- **Status**: Browse files by status (draft, published, archived)
+- **PARA Organization**: Browse files by projects, areas, resources, and archive
+
+Each browse link shows the count of files with that metadata value. Clicking a browse link displays all files with that specific metadata.
+
 ### Git Configuration
 
 - `KNOV_GIT_REPOSITORY`: Git repository URL for your knowledge base
@@ -101,13 +115,13 @@ You can override individual templates from any active theme by placing custom te
 **Directory Structure:**
 ```
 themes/
-â”œâ”€â”€ overwrite/
-â”‚   â”œâ”€â”€ base.gohtml          # Override base template
-â”‚   â”œâ”€â”€ settings.gohtml      # Override settings template
-â”‚   â”œâ”€â”€ fileview.gohtml      # Override file view template
-â”‚   â””â”€â”€ ...                  # Other template overrides
-â””â”€â”€ your-theme/
-    â””â”€â”€ ...
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ overwrite/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ base.gohtml          # Override base template
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ settings.gohtml      # Override settings template
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ fileview.gohtml      # Override file view template
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ ...                  # Other template overrides
+Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ your-theme/
+    Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ ...
 ```
 
 **How it works:**

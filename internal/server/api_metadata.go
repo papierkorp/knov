@@ -189,7 +189,7 @@ func handleAPIGetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="collection">%s</span>`, metadata.Collection)
+	html := render.RenderMetadataLinkHTML(metadata.Collection, "collections")
 	writeResponse(w, r, metadata.Collection, html)
 }
 
@@ -217,7 +217,7 @@ func handleAPIGetMetadataFileType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="filetype">%s</span>`, metadata.FileType)
+	html := render.RenderMetadataLinkHTML(string(metadata.FileType), "type")
 	writeResponse(w, r, string(metadata.FileType), html)
 }
 
@@ -775,19 +775,18 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 // @Tags metadata
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
-// @Success 200 {array} string
+// @Success 200 {object} map[string]int
 // @Router /api/metadata/priorities [get]
 func handleAPIGetAllPriorities(w http.ResponseWriter, r *http.Request) {
 	format := r.URL.Query().Get("format")
 
-	priorities := []files.Priority{
-		files.PriorityLow,
-		files.PriorityMedium,
-		files.PriorityHigh,
-	}
-
-	var html strings.Builder
 	if format == "options" {
+		priorities := []files.Priority{
+			files.PriorityLow,
+			files.PriorityMedium,
+			files.PriorityHigh,
+		}
+		var html strings.Builder
 		for _, p := range priorities {
 			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, p, p))
 		}
@@ -796,29 +795,32 @@ func handleAPIGetAllPriorities(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, p := range priorities {
-		html.WriteString(fmt.Sprintf(`<div class="priority-option">%s</div>`, p))
+	priorities, err := files.GetAllPriorities()
+	if err != nil {
+		http.Error(w, "failed to get priorities", http.StatusInternalServerError)
+		return
 	}
-	writeResponse(w, r, priorities, html.String())
+
+	html := render.RenderBrowseHTML(priorities, "/browse/priority")
+	writeResponse(w, r, priorities, html)
 }
 
 // @Summary Get all available statuses
 // @Tags metadata
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
-// @Success 200 {array} string
+// @Success 200 {object} map[string]int
 // @Router /api/metadata/statuses [get]
 func handleAPIGetAllStatuses(w http.ResponseWriter, r *http.Request) {
 	format := r.URL.Query().Get("format")
 
-	statuses := []files.Status{
-		files.StatusDraft,
-		files.StatusPublished,
-		files.StatusArchived,
-	}
-
-	var html strings.Builder
 	if format == "options" {
+		statuses := []files.Status{
+			files.StatusDraft,
+			files.StatusPublished,
+			files.StatusArchived,
+		}
+		var html strings.Builder
 		for _, s := range statuses {
 			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, s, s))
 		}
@@ -827,33 +829,36 @@ func handleAPIGetAllStatuses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, s := range statuses {
-		html.WriteString(fmt.Sprintf(`<div class="status-option">%s</div>`, s))
+	statuses, err := files.GetAllStatuses()
+	if err != nil {
+		http.Error(w, "failed to get statuses", http.StatusInternalServerError)
+		return
 	}
-	writeResponse(w, r, statuses, html.String())
+
+	html := render.RenderBrowseHTML(statuses, "/browse/status")
+	writeResponse(w, r, statuses, html)
 }
 
 // @Summary Get all available filetypes
 // @Tags metadata
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
-// @Success 200 {array} string
+// @Success 200 {object} map[string]int
 // @Router /api/metadata/filetypes [get]
 func handleAPIGetAllFiletypes(w http.ResponseWriter, r *http.Request) {
 	format := r.URL.Query().Get("format")
 
-	filetypes := []files.Filetype{
-		files.FileTypeTodo,
-		files.FileTypeFleeting,
-		files.FileTypeLiterature,
-		files.FileTypeMOC,
-		files.FileTypePermanent,
-		files.FileTypeFilter,
-		files.FileTypeJournaling,
-	}
-
-	var html strings.Builder
 	if format == "options" {
+		filetypes := []files.Filetype{
+			files.FileTypeTodo,
+			files.FileTypeFleeting,
+			files.FileTypeLiterature,
+			files.FileTypeMOC,
+			files.FileTypePermanent,
+			files.FileTypeFilter,
+			files.FileTypeJournaling,
+		}
+		var html strings.Builder
 		for _, ft := range filetypes {
 			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, ft, ft))
 		}
@@ -862,10 +867,14 @@ func handleAPIGetAllFiletypes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, ft := range filetypes {
-		html.WriteString(fmt.Sprintf(`<div class="filetype-option">%s</div>`, ft))
+	filetypes, err := files.GetAllFiletypes()
+	if err != nil {
+		http.Error(w, "failed to get filetypes", http.StatusInternalServerError)
+		return
 	}
-	writeResponse(w, r, filetypes, html.String())
+
+	html := render.RenderBrowseHTML(filetypes, "/browse/type")
+	writeResponse(w, r, filetypes, html)
 }
 
 // @Summary Get tags for a specific file
@@ -1218,8 +1227,31 @@ func handleAPIGetMetadataPriority(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="priority">%s</span>`, metadata.Priority)
+	html := render.RenderMetadataLinkHTML(string(metadata.Priority), "priority")
 	writeResponse(w, r, string(metadata.Priority), html)
+}
+
+// @Summary Get file status
+// @Tags metadata
+// @Param filepath query string true "File path"
+// @Produce json,html
+// @Success 200 {string} string
+// @Router /api/metadata/status [get]
+func handleAPIGetMetadataStatus(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	metadata, err := files.MetaDataGet(filepath)
+	if err != nil || metadata == nil {
+		http.Error(w, "metadata not found", http.StatusNotFound)
+		return
+	}
+
+	html := render.RenderMetadataLinkHTML(string(metadata.Status), "status")
+	writeResponse(w, r, string(metadata.Status), html)
 }
 
 // @Summary Get PARA projects for a file

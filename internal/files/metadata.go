@@ -355,6 +355,66 @@ func GetAllFolders() (map[string]int, error) {
 	return folderCount, nil
 }
 
+// GetAllFiletypes returns all unique file types with their counts
+func GetAllFiletypes() (map[string]int, error) {
+	allFiles, err := GetAllFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	filetypeCount := make(map[string]int)
+	for _, file := range allFiles {
+		metadata, err := MetaDataGet(file.Path)
+		if err != nil || metadata == nil {
+			continue
+		}
+		if metadata.FileType != "" {
+			filetypeCount[string(metadata.FileType)]++
+		}
+	}
+	return filetypeCount, nil
+}
+
+// GetAllPriorities returns all unique priorities with their counts
+func GetAllPriorities() (map[string]int, error) {
+	allFiles, err := GetAllFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	priorityCount := make(map[string]int)
+	for _, file := range allFiles {
+		metadata, err := MetaDataGet(file.Path)
+		if err != nil || metadata == nil {
+			continue
+		}
+		if metadata.Priority != "" {
+			priorityCount[string(metadata.Priority)]++
+		}
+	}
+	return priorityCount, nil
+}
+
+// GetAllStatuses returns all unique statuses with their counts
+func GetAllStatuses() (map[string]int, error) {
+	allFiles, err := GetAllFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	statusCount := make(map[string]int)
+	for _, file := range allFiles {
+		metadata, err := MetaDataGet(file.Path)
+		if err != nil || metadata == nil {
+			continue
+		}
+		if metadata.Status != "" {
+			statusCount[string(metadata.Status)]++
+		}
+	}
+	return statusCount, nil
+}
+
 // MetaDataDelete removes metadata for a file
 func MetaDataDelete(filepath string) error {
 	key := utils.ToRelativePath(filepath)
