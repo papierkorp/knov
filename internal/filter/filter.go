@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -147,6 +148,8 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 	var metadataValue string
 
 	switch criterion.Metadata {
+	case "name":
+		metadataValue = metadata.Name
 	case "collection":
 		metadataValue = metadata.Collection
 	case "tags":
@@ -214,6 +217,13 @@ func matchesOperator(metadataValue, operator, criteriaValue string) bool {
 		return metadataValue == criteriaValue
 	case "contains":
 		return strings.Contains(strings.ToLower(metadataValue), strings.ToLower(criteriaValue))
+	case "regex":
+		matched, err := regexp.MatchString(criteriaValue, metadataValue)
+		if err != nil {
+			logging.LogWarning("invalid regex pattern: %s", criteriaValue)
+			return false
+		}
+		return matched
 	case "greater":
 		return metadataValue > criteriaValue
 	case "less":
@@ -234,6 +244,7 @@ func matchesOperator(metadataValue, operator, criteriaValue string) bool {
 // GetMetadataFields returns available metadata fields for filtering
 func GetMetadataFields() []string {
 	return []string{
+		"name",
 		"collection",
 		"tags",
 		"type",
@@ -251,7 +262,7 @@ func GetMetadataFields() []string {
 
 // GetOperators returns available filter operators
 func GetOperators() []string {
-	return []string{"equals", "contains", "greater", "less", "in"}
+	return []string{"equals", "contains", "regex", "greater", "less", "in"}
 }
 
 // GetActions returns available filter actions

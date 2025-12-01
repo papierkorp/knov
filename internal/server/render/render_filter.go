@@ -196,6 +196,7 @@ func RenderOperatorOptions(selectedValue string) string {
 	displayTexts := []string{
 		translation.SprintfForRequest(configmanager.GetLanguage(), "equals"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "contains"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "regex"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "greater than"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "less than"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "in array"),
