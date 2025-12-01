@@ -39,247 +39,466 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
-	"/path/to/data": 172,
-	"<h3>welcome!</h3><p>your static content here</p>": 123,
-	"AND":                     37,
-	"Add Filter":              31,
-	"Admin":                   36,
-	"All Files":               0,
-	"Apply Filter":            39,
-	"Archive":                 41,
-	"Are you sure?":           44,
-	"Areas":                   43,
-	"Boards":                  47,
-	"Browse":                  48,
-	"Browse by Metadata":      1,
-	"Cancel":                  2,
-	"Clean Test Data":         50,
-	"Collection":              52,
-	"Collections":             53,
-	"Contains":                55,
-	"Create New Dashboard":    4,
-	"Create a New":            57,
-	"Created Date":            3,
-	"Dashboard":               59,
-	"Data Export":             69,
-	"Data Path":               71,
-	"Data Path Configuration": 73,
-	"Delete":                  5,
-	"Design your custom dashboard with widgets": 75,
-	"Edit":                              6,
-	"Edit Dashboard":                    7,
-	"Enter a search term":               8,
-	"Equals":                            77,
-	"Error":                             78,
-	"Exclude":                           79,
-	"Export Metadata":                   82,
-	"Export all metadata to file":       80,
-	"Export format":                     81,
-	"File path not provided":            105,
-	"Files with":                        108,
-	"Filter":                            110,
-	"Filtered results will appear here": 114,
-	"Fleeting":                          116,
-	"Folders":                           10,
-	"General Settings":                  11,
-	"Git Repository":                    119,
-	"Greater Than":                      122,
-	"Hello World from templ at History in the dark!": 124,
-	"Hello World from templ at home in the dark!":    12,
-	"Help":           13,
-	"History":        14,
-	"Home":           15,
-	"In Array":       126,
-	"Include":        127,
-	"Journaling":     130,
-	"Last Edited":    16,
-	"Latest Changes": 17,
-	"Leave empty for local git repository only": 133,
-	"Less Than":                 134,
-	"Literature":                135,
-	"Loading files...":          141,
-	"Loading recent changes...": 145,
-	"Loading results...":        147,
-	"Loading...":                136,
-	"MOC":                       154,
-	"Metadata Filter":           150,
-	"No dashboard found":        160,
-	"No widgets configured":     167,
-	"OK":                        168,
-	"OR":                        18,
-	"OVERVIEW":                  20,
-	"Overview":                  19,
-	"PARA method":               171,
-	"Path to your data storage relative from the executable": 174,
-	"Permanent":        175,
-	"Playground":       21,
-	"Priority":         180,
-	"Project Overview": 181,
-	"Projects":         183,
-	"Rebuild Metadata": 185,
-	"Rebuild all metadata? This may take a while.": 184,
-	"Recent File History":                          186,
-	"Remote Repository URL":                        187,
-	"Rename":                                       22,
-	"Resources":                                    189,
-	"Restart System":                               191,
-	"Restart the system? This will disconnect all users.": 192,
-	"Search Results":             25,
-	"Search files...":            24,
-	"Search..":                   23,
-	"Set Data Path":              204,
-	"Set Remote Repository":      206,
+	"+ New File":                280,
+	"/path/to/data":             307,
+	"1. First Launch":           28,
+	"2. Create Your First Note": 29,
+	"3. Add Information Tags":   30,
+	"<h3>welcome!</h3><p>your static content here</p>": 213,
+	"AND":          52,
+	"Actual Files": 32,
+	"Add Filter":   38,
+	"Add filtered views of your most important content":                     39,
+	"Add keywords like work, personal, ideas":                               41,
+	"Add widgets showing recent notes, important tasks, or specific topics": 47,
+	"Admin":                               48,
+	"Advanced Filters":                    49,
+	"All Files":                           0,
+	"All changes are automatically saved": 50,
+	"Apply Filter":                        54,
+	"Archive":                             56,
+	"Are you sure?":                       59,
+	"Areas":                               58,
+	"Automatic Backup":                    62,
+	"Automatic version history with Git backup": 63,
+	"Batch Operations":                          65,
+	"Boards":                                    66,
+	"Browse":                                    68,
+	"Browse by Metadata":                        1,
+	"Build Knowledge Networks":                  69,
+	"Built-in Help:":                            70,
+	"Cancel":                                    2,
+	"Check the documentation for detailed guides": 75,
+	"Check your dashboard for important items":    76,
+	"Choose": 77,
+	"Choose what works for you - use one or combine them:": 78,
+	"Clean Test Data":                     79,
+	"Click":                               80,
+	"Click the":                           81,
+	"Collection":                          83,
+	"Collections":                         84,
+	"Common Use Cases":                    85,
+	"Company knowledge organized by team": 86,
+	"Complete version history keeps your work safe": 89,
+	"Configure Settings":                            92,
+	"Configure your preferences and data paths":     93,
+	"Connections":            94,
+	"Contains":               96,
+	"Create New Dashboard":   4,
+	"Create Your First Note": 104,
+	"Create a New":           99,
+	"Create and save your most-used search combinations":             98,
+	"Create different views for work, personal, or projects":         101,
+	"Create notes as needed, add quick tags":                         102,
+	"Create standard formats for meeting notes, project plans, etc.": 103,
+	"Created Date":        3,
+	"Customize Your View": 108,
+	"Customize dashboards to see what matters to you": 106,
+	"Customize the look and feel":                     107,
+	"Daily Workflow:":                                 109,
+	"Dashboard":                                       110,
+	"Dashboard Widgets":                               120,
+	"Data Export":                                     121,
+	"Data Path":                                       123,
+	"Data Path Configuration":                         125,
+	"Delete":                                          5,
+	"Design your custom dashboard with widgets":       127,
+	"During Work":                                     132,
+	"Edit":                                            6,
+	"Edit Dashboard":                                  7,
+	"Enter a search term":                             8,
+	"Equals":                                          137,
+	"Error":                                           138,
+	"Evening":                                         139,
+	"Every note can be labeled with helpful information:": 140,
+	"Exclude":        141,
+	"Expected Files": 142,
+	"Explore Gradually: Add more organization methods as you need them": 143,
+	"Export Metadata":                            146,
+	"Export all metadata to file":                144,
+	"Export format":                              145,
+	"Export or sync with Git for extra security": 147,
+	"File path not provided":                     177,
+	"Files Comparison":                           180,
+	"Files with":                                 181,
+	"Filter":                                     184,
+	"Filter Configuration":                       187,
+	"Filter Examples":                            191,
+	"Filter Test Metadata":                       194,
+	"Filter Test Results Summary":                195,
+	"Filtered results will appear here":          190,
+	"Find Anything Fast":                         196,
+	"Find notes by tags, date, priority, or any combination": 197,
+	"Fleeting":                       198,
+	"Folders":                        10,
+	"For New Users:":                 202,
+	"General Settings":               11,
+	"Getting Started":                203,
+	"Getting Support:":               204,
+	"Git Repository":                 205,
+	"Go to Dashboard":                208,
+	"Greater Than":                   210,
+	"Group related content together": 211,
+	"Group related notes (like Projects or Recipes)": 212,
+	"Heading": 214,
+	"Hello World from templ at home in the dark!": 12,
+	"Help":                                  13,
+	"History":                               14,
+	"Home":                                  15,
+	"Ideas and inspiration with topic tags": 216,
+	"In Array":                              218,
+	"Include":                               219,
+	"Journaling":                            224,
+	"KNOV (Knowledge Vault) is your personal digital library that helps you organize, search, and connect all your notes, documents, and ideas in one place. Think of it as a smart filing cabinet that remembers everything and helps you find what you need instantly.": 227,
+	"KNOV - Quick Start Guide": 228,
+	"Key Features":             226,
+	"Keyboard Shortcuts":       225,
+	"Label notes with keywords for flexible grouping": 229,
+	"Last Edited":                               16,
+	"Latest Changes":                            17,
+	"Learn them for faster navigation":          233,
+	"Learning materials organized by subject":   232,
+	"Leave empty for local git repository only": 234,
+	"Less Than":                                 236,
+	"Link Notes":                                238,
+	"Link related notes together":               239,
+	"Literature":                                241,
+	"Loading files...":                          249,
+	"Loading recent changes...":                 253,
+	"Loading results...":                        255,
+	"Loading...":                                242,
+	"MOC":                                       272,
+	"Mark as High, Medium, or Low importance":   261,
+	"Markdown":                                  262,
+	"Meeting notes with attendee tags":          263,
+	"Metadata Filter":                           264,
+	"Morning":                                   273,
+	"Multiple Dashboards":                       274,
+	"Multiple ways to categorize and connect your notes": 275,
+	"Need Help?":             278,
+	"Never Lose Information": 279,
+	"No dashboard found":     284,
+	"No widgets configured":  295,
+	"Note Name":              293,
+	"OK":                     296,
+	"OR":                     18,
+	"OVERVIEW":               20,
+	"Organization Methods":   301,
+	"Organize by Projects, Areas, Resources, and Archive": 302,
+	"Organize like files on your computer":                303,
+	"Overview":                                            19,
+	"PARA Method":                                         306,
+	"PARA method":                                         305,
+	"Path to your data storage relative from the executable": 310,
+	"Permanent":               311,
+	"Personal Dashboards":     312,
+	"Personal Knowledge Base": 313,
+	"Playground":              21,
+	"Power User Tips:":        317,
+	"Powerful search through all your content": 316,
+	"Priority":                            321,
+	"Process documentation by department": 322,
+	"Project Management":                  323,
+	"Project Overview":                    325,
+	"Project notes with status tracking":  324,
+	"Projects":                            327,
+	"Quick Links:":                        328,
+	"Quick Search":                        329,
+	"Quick Tips":                          330,
+	"Rebuild Metadata":                    332,
+	"Rebuild all metadata? This may take a while.": 331,
+	"Recent File History":                          333,
+	"Recent files, notes by tags or collections, custom filtered lists, quick folder access": 334,
+	"Reference other notes using": 335,
+	"Remember: KNOV grows with you - start simple and add complexity as needed":                                                        337,
+	"Remember: The best knowledge management system is the one you actually use. Start with what feels natural and expand from there.": 338,
+	"Remote Repository URL":                339,
+	"Rename":                               22,
+	"Research & Study":                     342,
+	"Research notes linked by topic":       341,
+	"Resource collections by project type": 343,
+	"Resources":                            345,
+	"Restart System":                       347,
+	"Restart the system? This will disconnect all users.": 348,
+	"Review and properly tag/organize new content":        350,
+	"Run Cronjob":      351,
+	"Run Filter Tests": 352,
+	"Run filter tests? This will create 12 test metadata objects.": 353,
+	"Save":                  355,
+	"Saved Filters":         357,
+	"Search Results":        25,
+	"Search Your Knowledge": 363,
+	"Search files...":       24,
+	"Search..":              23,
+	"See Relationships":     364,
+	"Select multiple notes to tag or move at once": 369,
+	"Set Data Path":              375,
+	"Set Remote Repository":      377,
 	"Settings":                   26,
-	"Setup Test Data":            208,
-	"Setup some test Data Files": 207,
-	"Setup test data? This will create example files.": 209,
-	"Status":                              214,
-	"Swagger":                             215,
-	"System Actions":                      216,
-	"System Administration":               217,
-	"System maintenance operations":       218,
-	"Tags":                                221,
-	"Test Data Management":                223,
-	"Theme Settings":                      27,
-	"Todo":                                225,
-	"Type":                                226,
-	"Update your dashboard configuration": 228,
-	"Value":                               229,
-	"WARNING - This will remove all files in the Data Folder!!.": 232,
-	"add archived items":          28,
-	"add areas of responsibility": 29,
-	"add filter":                  30,
-	"add folders":                 32,
-	"add projects":                33,
-	"add resources":               34,
-	"add tags":                    35,
-	"apply filter":                38,
-	"archive":                     40,
-	"areas":                       42,
-	"assign to collection":        45,
-	"basic metadata":              46,
-	"cancel":                      49,
-	"collection":                  51,
-	"configure filter above and click preview to see results": 54,
-	"content":                             56,
-	"create dashboard":                    58,
-	"dashboard created":                   60,
-	"dashboard created successfully!":     61,
-	"dashboard deleted":                   62,
-	"dashboard name":                      64,
-	"dashboard not found":                 65,
-	"dashboard renamed successfully":      66,
-	"dashboard settings":                  67,
-	"dashboard updated successfully!":     68,
-	"dashboardId is required":             63,
-	"data path":                           70,
-	"data path cannot be empty":           72,
-	"data path saved. restart required.":  74,
-	"enter name":                          76,
-	"failed to browse files":              83,
-	"failed to create directory":          84,
-	"failed to create file":               85,
-	"failed to filter files":              86,
-	"failed to generate metadata form":    87,
-	"failed to get dashboards":            88,
-	"failed to get file content":          89,
-	"failed to get files":                 90,
-	"failed to get raw content":           91,
-	"failed to get recent files":          92,
-	"failed to parse form":                93,
-	"failed to parse table":               94,
-	"failed to parse widgets":             95,
-	"failed to read file":                 96,
-	"failed to render widget":             97,
-	"failed to save":                      98,
-	"failed to save file":                 99,
-	"failed to save filter: %v":           100,
-	"file":                                101,
-	"file content configuration":          102,
-	"file content here...":                103,
+	"Settings Page":              378,
+	"Setup Test Data":            380,
+	"Setup some test Data Files": 379,
+	"Setup test data? This will create example files.": 381,
+	"Simple Folders":                                     382,
+	"Smart Connections":                                  383,
+	"Smart Search & Filtering":                           384,
+	"Source materials with reference tags":               385,
+	"Start Simple: Just create notes and add basic tags": 386,
+	"Status":                                391,
+	"Stay Organized":                        392,
+	"Study guides connected to main topics": 393,
+	"Swagger":                               394,
+	"System Actions":                        395,
+	"System Administration":                 396,
+	"System maintenance operations":         397,
+	"Tags":                                  400,
+	"Task lists with priority levels":       402,
+	"Template Notes":                        403,
+	"Test Data Management":                  404,
+	"Theme Options":                         406,
+	"Theme Settings":                        27,
+	"Todo":                                  408,
+	"Track progress (Draft, In Progress, Complete)":                     409,
+	"Training materials by skill level":                                 410,
+	"Try Filters: Use the filter panel to find groups of related notes": 411,
+	"Try the sample filters to learn the system":                        412,
+	"Type": 413,
+	"Type anything to find notes containing those words":                    414,
+	"Update your dashboard configuration":                                   423,
+	"Use Search: When you can't remember where something is, just search":   425,
+	"Use filters to review progress and clean up":                           424,
+	"Use the search function - your answer might already be in your notes!": 426,
+	"Value":                                  428,
+	"View which notes connect to each other": 435,
+	"WARNING - This will remove all files in the Data Folder!!.": 437,
+	"Watch your ideas connect and grow":                          438,
+	"Weekly":                                                     439,
+	"Welcome to KNOV! Your knowledge journey starts now.":        440,
+	"What is KNOV?":                                              441,
+	"Why Use KNOV?":                                              442,
+	"Widget Types":                                               448,
+	"Work Documentation":                                         449,
+	"Works completely offline on your computer":                  450,
+	"Write your content (use simple formatting like":             451,
+	"You're already here! This is your personal dashboard - your home base for all your knowledge.": 452,
+	"Your Knowledge, Anywhere": 453,
+	"Your Way":                 455,
+	"Your personal knowledge management system": 454,
+	"action":                      31,
+	"add archived items":          33,
+	"add areas of responsibility": 34,
+	"add criteria":                35,
+	"add file":                    36,
+	"add filter":                  37,
+	"add folders":                 40,
+	"add projects":                42,
+	"add resources":               43,
+	"add separator":               44,
+	"add tags":                    45,
+	"add title":                   46,
+	"and":                         51,
+	"apply filter":                53,
+	"archive":                     55,
+	"areas":                       57,
+	"assign to collection":        60,
+	"at":                          61,
+	"basic metadata":              64,
+	"bold":                        67,
+	"button":                      71,
+	"by":                          72,
+	"cancel":                      73,
+	"cards":                       74,
+	"collection":                  82,
+	"compare":                     87,
+	"compare with current":        88,
+	"configure filter above and click preview to see results":  90,
+	"configure filter above and click view results to preview": 91,
+	"contains":                            95,
+	"content":                             97,
+	"create dashboard":                    100,
+	"current version":                     105,
+	"dashboard created":                   111,
+	"dashboard created successfully!":     112,
+	"dashboard deleted":                   113,
+	"dashboard name":                      115,
+	"dashboard not found":                 116,
+	"dashboard renamed successfully":      117,
+	"dashboard settings":                  118,
+	"dashboard updated successfully!":     119,
+	"dashboardId is required":             114,
+	"data path":                           122,
+	"data path cannot be empty":           124,
+	"data path saved. restart required.":  126,
+	"diff":                                128,
+	"display":                             129,
+	"display & limits":                    130,
+	"dropdown":                            131,
+	"enter name":                          133,
+	"enter title":                         134,
+	"enter value":                         135,
+	"equals":                              136,
+	"failed to browse files":              148,
+	"failed to create directory":          149,
+	"failed to create file":               150,
+	"failed to filter files":              151,
+	"failed to generate metadata form":    152,
+	"failed to get current commit":        153,
+	"failed to get dashboards":            154,
+	"failed to get file content":          155,
+	"failed to get file diff":             156,
+	"failed to get file history":          157,
+	"failed to get files":                 158,
+	"failed to get filter test metadata":  159,
+	"failed to get raw content":           160,
+	"failed to get recent files":          161,
+	"failed to parse form":                162,
+	"failed to parse table":               163,
+	"failed to parse widgets":             164,
+	"failed to read file":                 165,
+	"failed to render widget":             166,
+	"failed to restore file":              167,
+	"failed to save":                      168,
+	"failed to save file":                 169,
+	"failed to save filter: %v":           170,
+	"failed to save index":                171,
+	"field":                               172,
+	"file":                                173,
+	"file content configuration":          174,
+	"file content here...":                175,
 	"file path":                           9,
-	"file path is required":               104,
-	"file saved successfully":             107,
-	"file type":                           109,
-	"filepath parameter required":         106,
-	"filter config is required":           111,
-	"filter configuration":                112,
-	"filter preview":                      115,
-	"filtered results will appear here":   113,
-	"folders":                             117,
-	"format":                              118,
-	"git url saved. restart required.":    120,
-	"global dashboard":                    121,
-	"https://github.com/user/repo.git":    125,
-	"invalid filter config: %v":           128,
-	"invalid index":                       129,
-	"language":                            131,
-	"layout":                              132,
-	"loading archive...":                  137,
-	"loading areas...":                    138,
-	"loading collections...":              139,
-	"loading files...":                    140,
-	"loading folders...":                  142,
-	"loading options...":                  143,
-	"loading projects...":                 144,
-	"loading resources...":                146,
-	"loading tags...":                     148,
-	"loading widget...":                   149,
-	"missing filepath":                    151,
-	"missing filepath parameter":          152,
-	"missing metadata or value parameter": 153,
-	"name":                                155,
-	"name is required":                    156,
-	"no ancestors":                        157,
-	"no children":                         158,
-	"no configuration needed":             159,
-	"no files found":                      161,
-	"no inbound links":                    162,
-	"no outbound links":                   163,
-	"no parents":                          164,
-	"no parents found":                    165,
-	"no results found":                    166,
-	"optional":                            169,
-	"optional title":                      170,
-	"path/to/file.md":                     173,
-	"position x":                          176,
-	"position y":                          177,
-	"preview results":                     178,
-	"priority":                            179,
-	"projects":                            182,
-	"resources":                           188,
-	"restarting application...":           190,
-	"save":                                193,
-	"save changes":                        194,
-	"save file":                           195,
-	"save filter":                         196,
-	"scanning .gohtml template files...":  197,
-	"select a file...":                    198,
-	"select a widget type to see configuration options": 199,
-	"select file type":                               200,
-	"select status":                                  201,
-	"select the file you want to display":            202,
-	"select widget type":                             203,
-	"set priority (1-5)":                             205,
-	"start typing to search...":                      210,
-	"static content configuration":                   211,
-	"static content is required":                     212,
-	"status":                                         213,
-	"table parsing not supported for this file type": 219,
-	"tags":                  220,
-	"tags & folders":        222,
-	"theme":                 224,
-	"unsupported file type": 227,
-	"view dashboard":        230,
-	"visible to all users":  231,
-	"widget":                233,
-	"widget not found":      234,
-	"widget title":          236,
-	"widget type":           237,
-	"widgets":               235,
+	"file path is required":               176,
+	"file saved successfully":             179,
+	"file type":                           182,
+	"filepath parameter required":         178,
+	"filter":                              183,
+	"filter config is required":           185,
+	"filter configuration":                186,
+	"filter criteria":                     188,
+	"filter preview":                      192,
+	"filtered results will appear here":   189,
+	"filters/my-filter":                   193,
+	"folders":                             199,
+	"for formatted text notes":            200,
+	"format":                              201,
+	"git url saved. restart required.":    206,
+	"global dashboard":                    207,
+	"greater than":                        209,
+	"https://github.com/user/repo.git":    215,
+	"in array":                            217,
+	"index configuration":                 220,
+	"index saved successfully":            221,
+	"invalid filter config: %v":           222,
+	"invalid index":                       223,
+	"language":                            230,
+	"layout":                              231,
+	"less than":                           235,
+	"limit":                               237,
+	"list":                                240,
+	"loading archive...":                  243,
+	"loading areas...":                    244,
+	"loading collections...":              245,
+	"loading diff...":                     246,
+	"loading file history...":             247,
+	"loading files...":                    248,
+	"loading folders...":                  250,
+	"loading options...":                  251,
+	"loading projects...":                 252,
+	"loading resources...":                254,
+	"loading tags...":                     256,
+	"loading version content...":          257,
+	"loading versions...":                 258,
+	"loading widget...":                   259,
+	"logic":                               260,
+	"missing commit parameter":            265,
+	"missing file path":                   266,
+	"missing filepath":                    267,
+	"missing filepath parameter":          268,
+	"missing from or to parameters":       269,
+	"missing metadata or value parameter": 270,
+	"missing type":                        271,
+	"name":                                276,
+	"name is required":                    277,
+	"no ancestors":                        281,
+	"no children":                         282,
+	"no configuration needed":             283,
+	"no files found":                      285,
+	"no git history available":            286,
+	"no inbound links":                    287,
+	"no outbound links":                   288,
+	"no parents":                          289,
+	"no parents found":                    290,
+	"no previous version available":       291,
+	"no results found":                    292,
+	"no version history available":        294,
+	"operator":                            297,
+	"optional":                            298,
+	"optional title":                      299,
+	"or":                                  300,
+	"para":                                304,
+	"path/to/file":                        308,
+	"path/to/file.md":                     309,
+	"position x":                          314,
+	"position y":                          315,
+	"preview":                             318,
+	"preview results":                     319,
+	"priority":                            320,
+	"projects":                            326,
+	"regex":                               336,
+	"remove":                              340,
+	"resources":                           344,
+	"restarting application...":           346,
+	"restore this version":                349,
+	"save":                                354,
+	"save changes":                        356,
+	"save file":                           358,
+	"save filter":                         359,
+	"save index":                          360,
+	"scanning .gohtml template files...":  361,
+	"search files":                        362,
+	"select a file...":                    365,
+	"select a widget type to see configuration options": 366,
+	"select field":                        367,
+	"select file type":                    368,
+	"select priority":                     370,
+	"select status":                       371,
+	"select the file you want to display": 372,
+	"select widget type":                  373,
+	"separator":                           374,
+	"set priority (1-5)":                  376,
+	"start typing to search...":           387,
+	"static content configuration":        388,
+	"static content is required":          389,
+	"status":                              390,
+	"table parsing not supported for this file type": 398,
+	"tags":                        399,
+	"tags & folders":              401,
+	"theme":                       405,
+	"title":                       407,
+	"type or select archive item": 415,
+	"type or select area":         416,
+	"type or select collection":   417,
+	"type or select folder":       418,
+	"type or select project":      419,
+	"type or select resource":     420,
+	"type or select tag":          421,
+	"unsupported file type":       422,
+	"value":                       427,
+	"version history":             429,
+	"version no longer available": 430,
+	"view":                        431,
+	"view dashboard":              432,
+	"view file":                   433,
+	"view results":                434,
+	"visible to all users":        436,
+	"widget":                      443,
+	"widget not found":            444,
+	"widget title":                446,
+	"widget type":                 447,
+	"widgets":                     445,
+	"yyyy-mm-dd":                  456,
 }
 
-var deIndex = []uint32{ // 239 elements
+var deIndex = []uint32{ // 458 elements
 	// Entry 0 - 1F
 	0x00000000, 0x0000000d, 0x00000027, 0x00000031,
 	0x00000041, 0x0000005b, 0x00000064, 0x0000006f,
@@ -347,8 +566,70 @@ var deIndex = []uint32{ // 239 elements
 	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
 	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
 	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
-	0x0000018b, 0x0000018b, 0x0000018b,
-} // Size: 980 bytes
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	// Entry 100 - 11F
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	// Entry 120 - 13F
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	// Entry 140 - 15F
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	// Entry 160 - 17F
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	// Entry 180 - 19F
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	// Entry 1A0 - 1BF
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	// Entry 1C0 - 1DF
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b, 0x0000018b, 0x0000018b,
+	0x0000018b, 0x0000018b,
+} // Size: 1856 bytes
 
 const deData string = "" + // Size: 395 bytes
 	"\x02Alle Dateien\x02Nach Metadata durchsuchen\x02Abbrechen\x02erstlltes " +
@@ -359,7 +640,7 @@ const deData string = "" + // Size: 395 bytes
 	"lwiese\x02Umbenennen\x02Suche..\x02Dateien durchsuchen...\x02Suchergebni" +
 	"sse\x02Einstellungen\x02Theme Einstellungen"
 
-var enIndex = []uint32{ // 239 elements
+var enIndex = []uint32{ // 458 elements
 	// Entry 0 - 1F
 	0x00000000, 0x0000000a, 0x0000001d, 0x00000024,
 	0x00000031, 0x00000046, 0x0000004d, 0x00000052,
@@ -368,137 +649,288 @@ var enIndex = []uint32{ // 239 elements
 	0x000000d6, 0x000000e2, 0x000000f1, 0x000000f4,
 	0x000000fd, 0x00000106, 0x00000111, 0x00000118,
 	0x00000121, 0x00000131, 0x00000140, 0x00000149,
-	0x00000158, 0x0000016b, 0x00000187, 0x00000192,
+	0x00000158, 0x00000168, 0x00000182, 0x0000019a,
 	// Entry 20 - 3F
-	0x0000019d, 0x000001a9, 0x000001b6, 0x000001c4,
-	0x000001cd, 0x000001d3, 0x000001d7, 0x000001e4,
-	0x000001f1, 0x000001f9, 0x00000201, 0x00000207,
-	0x0000020d, 0x0000021b, 0x00000230, 0x0000023f,
-	0x00000246, 0x0000024d, 0x00000254, 0x00000264,
-	0x0000026f, 0x0000027a, 0x00000286, 0x000002be,
-	0x000002c7, 0x000002cf, 0x000002dc, 0x000002ed,
-	0x000002f7, 0x00000309, 0x00000329, 0x0000033b,
+	0x000001a1, 0x000001ae, 0x000001c1, 0x000001dd,
+	0x000001ea, 0x000001f3, 0x000001fe, 0x00000209,
+	0x0000023b, 0x00000247, 0x0000026f, 0x0000027c,
+	0x0000028a, 0x00000298, 0x000002a1, 0x000002ab,
+	0x000002f1, 0x000002f7, 0x00000308, 0x0000032c,
+	0x00000330, 0x00000334, 0x00000341, 0x0000034e,
+	0x00000356, 0x0000035e, 0x00000364, 0x0000036a,
+	0x00000378, 0x0000038d, 0x00000390, 0x000003a1,
 	// Entry 40 - 5F
-	0x00000353, 0x00000362, 0x00000376, 0x00000395,
-	0x000003a8, 0x000003c8, 0x000003d4, 0x000003de,
-	0x000003e8, 0x00000402, 0x0000041a, 0x0000043d,
-	0x00000467, 0x00000472, 0x00000479, 0x0000047f,
-	0x00000487, 0x000004a3, 0x000004b1, 0x000004c1,
-	0x000004d8, 0x000004f3, 0x00000509, 0x00000520,
-	0x00000541, 0x0000055a, 0x00000575, 0x00000589,
-	0x000005a3, 0x000005be, 0x000005d3, 0x000005e9,
+	0x000003cb, 0x000003da, 0x000003eb, 0x000003f2,
+	0x000003f7, 0x000003fe, 0x00000417, 0x00000426,
+	0x0000042d, 0x00000430, 0x00000437, 0x0000043d,
+	0x00000469, 0x00000492, 0x00000499, 0x000004ce,
+	0x000004de, 0x000004e4, 0x000004ee, 0x000004f9,
+	0x00000504, 0x00000510, 0x00000521, 0x00000545,
+	0x0000054d, 0x00000562, 0x00000590, 0x000005c8,
+	0x00000601, 0x00000614, 0x0000063e, 0x0000064a,
 	// Entry 60 - 7F
-	0x00000601, 0x00000615, 0x0000062d, 0x0000063c,
-	0x00000650, 0x0000066d, 0x00000672, 0x0000068d,
-	0x000006a2, 0x000006b8, 0x000006cf, 0x000006eb,
-	0x00000703, 0x0000070e, 0x00000718, 0x0000071f,
-	0x00000739, 0x0000074e, 0x00000770, 0x00000792,
-	0x000007a1, 0x000007aa, 0x000007b2, 0x000007b9,
-	0x000007c8, 0x000007e9, 0x000007fa, 0x00000807,
-	0x00000838, 0x00000867, 0x00000888, 0x00000891,
+	0x00000653, 0x0000065c, 0x00000664, 0x00000697,
+	0x000006a4, 0x000006b5, 0x000006ec, 0x00000713,
+	0x00000752, 0x00000769, 0x00000779, 0x000007a9,
+	0x000007c5, 0x000007d9, 0x000007e9, 0x000007f3,
+	0x00000805, 0x00000825, 0x00000837, 0x0000084f,
+	0x0000085e, 0x00000872, 0x00000891, 0x000008a4,
+	0x000008c4, 0x000008d6, 0x000008e2, 0x000008ec,
+	0x000008f6, 0x00000910, 0x00000928, 0x0000094b,
 	// Entry 80 - 9F
-	0x00000899, 0x000008b6, 0x000008c4, 0x000008cf,
-	0x000008d8, 0x000008df, 0x00000909, 0x00000913,
-	0x0000091e, 0x00000929, 0x0000093c, 0x0000094d,
-	0x00000964, 0x00000975, 0x00000986, 0x00000999,
-	0x000009ac, 0x000009c0, 0x000009da, 0x000009ef,
-	0x00000a02, 0x00000a12, 0x00000a24, 0x00000a34,
-	0x00000a45, 0x00000a60, 0x00000a84, 0x00000a88,
-	0x00000a8d, 0x00000a9e, 0x00000aab, 0x00000ab7,
+	0x00000975, 0x0000097a, 0x00000982, 0x00000993,
+	0x0000099c, 0x000009a8, 0x000009b3, 0x000009bf,
+	0x000009cb, 0x000009d2, 0x000009d9, 0x000009df,
+	0x000009e7, 0x00000a1b, 0x00000a23, 0x00000a32,
+	0x00000a74, 0x00000a90, 0x00000a9e, 0x00000aae,
+	0x00000ad9, 0x00000af0, 0x00000b0b, 0x00000b21,
+	0x00000b38, 0x00000b59, 0x00000b76, 0x00000b8f,
+	0x00000baa, 0x00000bc2, 0x00000bdd, 0x00000bf1,
 	// Entry A0 - BF
-	0x00000acf, 0x00000ae2, 0x00000af1, 0x00000b02,
-	0x00000b14, 0x00000b1f, 0x00000b30, 0x00000b41,
-	0x00000b57, 0x00000b5a, 0x00000b63, 0x00000b72,
-	0x00000b7e, 0x00000b8c, 0x00000b9c, 0x00000bd3,
-	0x00000bdd, 0x00000be8, 0x00000bf3, 0x00000c03,
-	0x00000c0c, 0x00000c15, 0x00000c26, 0x00000c2f,
-	0x00000c38, 0x00000c65, 0x00000c76, 0x00000c8a,
-	0x00000ca0, 0x00000caa, 0x00000cb4, 0x00000cce,
+	0x00000c14, 0x00000c2e, 0x00000c49, 0x00000c5e,
+	0x00000c74, 0x00000c8c, 0x00000ca0, 0x00000cb8,
+	0x00000ccf, 0x00000cde, 0x00000cf2, 0x00000d0f,
+	0x00000d24, 0x00000d2a, 0x00000d2f, 0x00000d4a,
+	0x00000d5f, 0x00000d75, 0x00000d8c, 0x00000da8,
+	0x00000dc0, 0x00000dd1, 0x00000ddc, 0x00000de6,
+	0x00000ded, 0x00000df4, 0x00000e0e, 0x00000e23,
+	0x00000e38, 0x00000e48, 0x00000e6a, 0x00000e8c,
 	// Entry C0 - DF
-	0x00000cdd, 0x00000d11, 0x00000d16, 0x00000d23,
-	0x00000d2d, 0x00000d39, 0x00000d5c, 0x00000d6d,
-	0x00000d9f, 0x00000db0, 0x00000dbe, 0x00000de2,
-	0x00000df5, 0x00000e03, 0x00000e16, 0x00000e2c,
-	0x00000e47, 0x00000e57, 0x00000e88, 0x00000ea2,
-	0x00000ebf, 0x00000eda, 0x00000ee1, 0x00000ee8,
-	0x00000ef0, 0x00000eff, 0x00000f15, 0x00000f33,
-	0x00000f62, 0x00000f67, 0x00000f6c, 0x00000f7b,
+	0x00000e9c, 0x00000eab, 0x00000ebd, 0x00000ed2,
+	0x00000eee, 0x00000f01, 0x00000f38, 0x00000f41,
+	0x00000f49, 0x00000f62, 0x00000f69, 0x00000f78,
+	0x00000f88, 0x00000f99, 0x00000fa8, 0x00000fc9,
+	0x00000fda, 0x00000fea, 0x00000ff7, 0x00001004,
+	0x00001023, 0x00001052, 0x00001083, 0x0000108b,
+	0x000010ac, 0x000010d2, 0x000010db, 0x000010e4,
+	0x000010ec, 0x00001100, 0x00001119, 0x00001136,
 	// Entry E0 - FF
-	0x00000f90, 0x00000f96, 0x00000f9b, 0x00000fa0,
-	0x00000fb6, 0x00000fda, 0x00000fe0, 0x00000fef,
-	0x00001004, 0x0000103f, 0x00001046, 0x00001057,
-	0x0000105f, 0x0000106c, 0x00001078,
-} // Size: 980 bytes
+	0x00001144, 0x0000114f, 0x00001162, 0x0000116f,
+	0x00001273, 0x0000128c, 0x000012bc, 0x000012c5,
+	0x000012cc, 0x000012f4, 0x00001315, 0x0000133f,
+	0x00001349, 0x00001353, 0x00001359, 0x00001364,
+	0x00001380, 0x00001385, 0x00001390, 0x0000139b,
+	0x000013ae, 0x000013bf, 0x000013d6, 0x000013e6,
+	0x000013fe, 0x0000140f, 0x00001420, 0x00001433,
+	0x00001446, 0x0000145a, 0x00001474, 0x00001489,
+	// Entry 100 - 11F
+	0x0000149c, 0x000014ac, 0x000014c7, 0x000014db,
+	0x000014ed, 0x000014f3, 0x0000151b, 0x00001524,
+	0x00001545, 0x00001555, 0x0000156e, 0x00001580,
+	0x00001591, 0x000015ac, 0x000015ca, 0x000015ee,
+	0x000015fb, 0x000015ff, 0x00001607, 0x0000161b,
+	0x0000164e, 0x00001653, 0x00001664, 0x0000166f,
+	0x00001686, 0x00001691, 0x0000169e, 0x000016aa,
+	0x000016c2, 0x000016d5, 0x000016e4, 0x000016fd,
+	// Entry 120 - 13F
+	0x0000170e, 0x00001720, 0x0000172b, 0x0000173c,
+	0x0000175a, 0x0000176b, 0x00001775, 0x00001792,
+	0x000017a8, 0x000017ab, 0x000017b4, 0x000017bd,
+	0x000017cc, 0x000017cf, 0x000017e4, 0x00001818,
+	0x0000183d, 0x00001842, 0x0000184e, 0x0000185a,
+	0x00001868, 0x00001875, 0x00001885, 0x000018bc,
+	0x000018c6, 0x000018da, 0x000018f2, 0x000018fd,
+	0x00001908, 0x00001931, 0x00001942, 0x0000194a,
+	// Entry 140 - 15F
+	0x0000195a, 0x00001963, 0x0000196c, 0x00001990,
+	0x000019a3, 0x000019c6, 0x000019d7, 0x000019e0,
+	0x000019e9, 0x000019f6, 0x00001a03, 0x00001a0e,
+	0x00001a3b, 0x00001a4c, 0x00001a60, 0x00001ab7,
+	0x00001ad3, 0x00001ad9, 0x00001b23, 0x00001ba4,
+	0x00001bba, 0x00001bc1, 0x00001be0, 0x00001bf1,
+	0x00001c16, 0x00001c20, 0x00001c2a, 0x00001c44,
+	0x00001c53, 0x00001c87, 0x00001c9c, 0x00001cc9,
+	// Entry 160 - 17F
+	0x00001cd5, 0x00001ce6, 0x00001d23, 0x00001d28,
+	0x00001d2d, 0x00001d3a, 0x00001d48, 0x00001d52,
+	0x00001d5e, 0x00001d69, 0x00001d8c, 0x00001d99,
+	0x00001daf, 0x00001dc1, 0x00001dd2, 0x00001e04,
+	0x00001e11, 0x00001e22, 0x00001e4f, 0x00001e5f,
+	0x00001e6d, 0x00001e91, 0x00001ea4, 0x00001eae,
+	0x00001ebc, 0x00001ecf, 0x00001ee5, 0x00001ef3,
+	0x00001f0e, 0x00001f1e, 0x00001f4f, 0x00001f5e,
+	// Entry 180 - 19F
+	0x00001f70, 0x00001f89, 0x00001fae, 0x00001fe1,
+	0x00001ffb, 0x00002018, 0x00002033, 0x0000203a,
+	0x00002041, 0x00002050, 0x00002076, 0x0000207e,
+	0x0000208d, 0x000020a3, 0x000020c1, 0x000020f0,
+	0x000020f5, 0x000020fa, 0x00002109, 0x00002129,
+	0x00002138, 0x0000214d, 0x00002153, 0x00002161,
+	0x00002167, 0x0000216c, 0x0000219a, 0x000021bc,
+	0x000021fe, 0x00002229, 0x0000222e, 0x00002261,
+	// Entry 1A0 - 1BF
+	0x0000227d, 0x00002291, 0x000022ab, 0x000022c1,
+	0x000022d8, 0x000022f0, 0x00002303, 0x00002319,
+	0x0000233d, 0x00002369, 0x000023ad, 0x000023f3,
+	0x000023f9, 0x000023ff, 0x0000240f, 0x0000242b,
+	0x00002430, 0x0000243f, 0x00002449, 0x00002456,
+	0x0000247d, 0x00002492, 0x000024cd, 0x000024ef,
+	0x000024f6, 0x0000252a, 0x00002538, 0x00002546,
+	0x0000254d, 0x0000255e, 0x00002566, 0x00002573,
+	// Entry 1C0 - 1DF
+	0x0000257f, 0x0000258c, 0x0000259f, 0x000025c9,
+	0x000025f8, 0x00002656, 0x0000266f, 0x00002699,
+	0x000026a2, 0x000026ad,
+} // Size: 1856 bytes
 
-const enData string = "" + // Size: 4216 bytes
+const enData string = "" + // Size: 9901 bytes
 	"\x02All Files\x02Browse by Metadata\x02Cancel\x02Created Date\x02Create " +
 	"New Dashboard\x02Delete\x02Edit\x02Edit Dashboard\x02Enter a search term" +
 	"\x02file path\x02Folders\x02General Settings\x02Hello World from templ a" +
 	"t home in the dark!\x02Help\x02History\x02Home\x02Last Edited\x02Latest " +
 	"Changes\x02OR\x02Overview\x02OVERVIEW\x02Playground\x02Rename\x02Search." +
 	".\x02Search files...\x02Search Results\x02Settings\x02Theme Settings\x02" +
-	"add archived items\x02add areas of responsibility\x02add filter\x02Add F" +
-	"ilter\x02add folders\x02add projects\x02add resources\x02add tags\x02Adm" +
-	"in\x02AND\x02apply filter\x02Apply Filter\x02archive\x02Archive\x02areas" +
-	"\x02Areas\x02Are you sure?\x02assign to collection\x02basic metadata\x02" +
-	"Boards\x02Browse\x02cancel\x02Clean Test Data\x02collection\x02Collectio" +
-	"n\x02Collections\x02configure filter above and click preview to see resu" +
-	"lts\x02Contains\x02content\x02Create a New\x02create dashboard\x02Dashbo" +
-	"ard\x02dashboard created\x02dashboard created successfully!\x02dashboard" +
-	" deleted\x02dashboardId is required\x02dashboard name\x02dashboard not f" +
-	"ound\x02dashboard renamed successfully\x02dashboard settings\x02dashboar" +
-	"d updated successfully!\x02Data Export\x02data path\x02Data Path\x02data" +
-	" path cannot be empty\x02Data Path Configuration\x02data path saved. res" +
-	"tart required.\x02Design your custom dashboard with widgets\x02enter nam" +
-	"e\x02Equals\x02Error\x02Exclude\x02Export all metadata to file\x02Export" +
-	" format\x02Export Metadata\x02failed to browse files\x02failed to create" +
-	" directory\x02failed to create file\x02failed to filter files\x02failed " +
-	"to generate metadata form\x02failed to get dashboards\x02failed to get f" +
-	"ile content\x02failed to get files\x02failed to get raw content\x02faile" +
-	"d to get recent files\x02failed to parse form\x02failed to parse table" +
-	"\x02failed to parse widgets\x02failed to read file\x02failed to render w" +
-	"idget\x02failed to save\x02failed to save file\x02failed to save filter:" +
-	" %[1]v\x02file\x02file content configuration\x02file content here...\x02" +
-	"file path is required\x02File path not provided\x02filepath parameter re" +
-	"quired\x02file saved successfully\x02Files with\x02file type\x02Filter" +
-	"\x02filter config is required\x02filter configuration\x02filtered result" +
-	"s will appear here\x02Filtered results will appear here\x02filter previe" +
-	"w\x02Fleeting\x02folders\x02format\x02Git Repository\x02git url saved. r" +
-	"estart required.\x02global dashboard\x02Greater Than\x02<h3>welcome!</h3" +
-	"><p>your static content here</p>\x02Hello World from templ at History in" +
-	" the dark!\x02https://github.com/user/repo.git\x02In Array\x02Include" +
-	"\x02invalid filter config: %[1]v\x02invalid index\x02Journaling\x02langu" +
-	"age\x02layout\x02Leave empty for local git repository only\x02Less Than" +
-	"\x02Literature\x02Loading...\x02loading archive...\x02loading areas..." +
-	"\x02loading collections...\x02loading files...\x02Loading files...\x02lo" +
-	"ading folders...\x02loading options...\x02loading projects...\x02Loading" +
-	" recent changes...\x02loading resources...\x02Loading results...\x02load" +
-	"ing tags...\x02loading widget...\x02Metadata Filter\x02missing filepath" +
-	"\x02missing filepath parameter\x02missing metadata or value parameter" +
-	"\x02MOC\x02name\x02name is required\x02no ancestors\x02no children\x02no" +
-	" configuration needed\x02No dashboard found\x02no files found\x02no inbo" +
-	"und links\x02no outbound links\x02no parents\x02no parents found\x02no r" +
-	"esults found\x02No widgets configured\x02OK\x02optional\x02optional titl" +
-	"e\x02PARA method\x02/path/to/data\x02path/to/file.md\x02Path to your dat" +
-	"a storage relative from the executable\x02Permanent\x02position x\x02pos" +
-	"ition y\x02preview results\x02priority\x02Priority\x02Project Overview" +
-	"\x02projects\x02Projects\x02Rebuild all metadata? This may take a while." +
-	"\x02Rebuild Metadata\x02Recent File History\x02Remote Repository URL\x02" +
-	"resources\x02Resources\x02restarting application...\x02Restart System" +
-	"\x02Restart the system? This will disconnect all users.\x02save\x02save " +
-	"changes\x02save file\x02save filter\x02scanning .gohtml template files.." +
-	".\x02select a file...\x02select a widget type to see configuration optio" +
-	"ns\x02select file type\x02select status\x02select the file you want to d" +
-	"isplay\x02select widget type\x02Set Data Path\x02set priority (1-5)\x02S" +
-	"et Remote Repository\x02Setup some test Data Files\x02Setup Test Data" +
-	"\x02Setup test data? This will create example files.\x02start typing to " +
-	"search...\x02static content configuration\x02static content is required" +
-	"\x02status\x02Status\x02Swagger\x02System Actions\x02System Administrati" +
-	"on\x02System maintenance operations\x02table parsing not supported for t" +
-	"his file type\x02tags\x02Tags\x02tags & folders\x02Test Data Management" +
-	"\x02theme\x02Todo\x02Type\x02unsupported file type\x02Update your dashbo" +
-	"ard configuration\x02Value\x02view dashboard\x02visible to all users\x02" +
-	"WARNING - This will remove all files in the Data Folder!!.\x02widget\x02" +
-	"widget not found\x02widgets\x02widget title\x02widget type"
+	"1. First Launch\x022. Create Your First Note\x023. Add Information Tags" +
+	"\x02action\x02Actual Files\x02add archived items\x02add areas of respons" +
+	"ibility\x02add criteria\x02add file\x02add filter\x02Add Filter\x02Add f" +
+	"iltered views of your most important content\x02add folders\x02Add keywo" +
+	"rds like work, personal, ideas\x02add projects\x02add resources\x02add s" +
+	"eparator\x02add tags\x02add title\x02Add widgets showing recent notes, i" +
+	"mportant tasks, or specific topics\x02Admin\x02Advanced Filters\x02All c" +
+	"hanges are automatically saved\x02and\x02AND\x02apply filter\x02Apply Fi" +
+	"lter\x02archive\x02Archive\x02areas\x02Areas\x02Are you sure?\x02assign " +
+	"to collection\x02at\x02Automatic Backup\x02Automatic version history wit" +
+	"h Git backup\x02basic metadata\x02Batch Operations\x02Boards\x02bold\x02" +
+	"Browse\x02Build Knowledge Networks\x02Built-in Help:\x02button\x02by\x02" +
+	"cancel\x02cards\x02Check the documentation for detailed guides\x02Check " +
+	"your dashboard for important items\x02Choose\x02Choose what works for yo" +
+	"u - use one or combine them:\x02Clean Test Data\x02Click\x02Click the" +
+	"\x02collection\x02Collection\x02Collections\x02Common Use Cases\x02Compa" +
+	"ny knowledge organized by team\x02compare\x02compare with current\x02Com" +
+	"plete version history keeps your work safe\x02configure filter above and" +
+	" click preview to see results\x02configure filter above and click view r" +
+	"esults to preview\x02Configure Settings\x02Configure your preferences an" +
+	"d data paths\x02Connections\x02contains\x02Contains\x02content\x02Create" +
+	" and save your most-used search combinations\x02Create a New\x02create d" +
+	"ashboard\x02Create different views for work, personal, or projects\x02Cr" +
+	"eate notes as needed, add quick tags\x02Create standard formats for meet" +
+	"ing notes, project plans, etc.\x02Create Your First Note\x02current vers" +
+	"ion\x02Customize dashboards to see what matters to you\x02Customize the " +
+	"look and feel\x02Customize Your View\x02Daily Workflow:\x02Dashboard\x02" +
+	"dashboard created\x02dashboard created successfully!\x02dashboard delete" +
+	"d\x02dashboardId is required\x02dashboard name\x02dashboard not found" +
+	"\x02dashboard renamed successfully\x02dashboard settings\x02dashboard up" +
+	"dated successfully!\x02Dashboard Widgets\x02Data Export\x02data path\x02" +
+	"Data Path\x02data path cannot be empty\x02Data Path Configuration\x02dat" +
+	"a path saved. restart required.\x02Design your custom dashboard with wid" +
+	"gets\x02diff\x02display\x02display & limits\x02dropdown\x02During Work" +
+	"\x02enter name\x02enter title\x02enter value\x02equals\x02Equals\x02Erro" +
+	"r\x02Evening\x02Every note can be labeled with helpful information:\x02E" +
+	"xclude\x02Expected Files\x02Explore Gradually: Add more organization met" +
+	"hods as you need them\x02Export all metadata to file\x02Export format" +
+	"\x02Export Metadata\x02Export or sync with Git for extra security\x02fai" +
+	"led to browse files\x02failed to create directory\x02failed to create fi" +
+	"le\x02failed to filter files\x02failed to generate metadata form\x02fail" +
+	"ed to get current commit\x02failed to get dashboards\x02failed to get fi" +
+	"le content\x02failed to get file diff\x02failed to get file history\x02f" +
+	"ailed to get files\x02failed to get filter test metadata\x02failed to ge" +
+	"t raw content\x02failed to get recent files\x02failed to parse form\x02f" +
+	"ailed to parse table\x02failed to parse widgets\x02failed to read file" +
+	"\x02failed to render widget\x02failed to restore file\x02failed to save" +
+	"\x02failed to save file\x02failed to save filter: %[1]v\x02failed to sav" +
+	"e index\x02field\x02file\x02file content configuration\x02file content h" +
+	"ere...\x02file path is required\x02File path not provided\x02filepath pa" +
+	"rameter required\x02file saved successfully\x02Files Comparison\x02Files" +
+	" with\x02file type\x02filter\x02Filter\x02filter config is required\x02f" +
+	"ilter configuration\x02Filter Configuration\x02filter criteria\x02filter" +
+	"ed results will appear here\x02Filtered results will appear here\x02Filt" +
+	"er Examples\x02filter preview\x02filters/my-filter\x02Filter Test Metada" +
+	"ta\x02Filter Test Results Summary\x02Find Anything Fast\x02Find notes by" +
+	" tags, date, priority, or any combination\x02Fleeting\x02folders\x02for " +
+	"formatted text notes\x02format\x02For New Users:\x02Getting Started\x02G" +
+	"etting Support:\x02Git Repository\x02git url saved. restart required." +
+	"\x02global dashboard\x02Go to Dashboard\x02greater than\x02Greater Than" +
+	"\x02Group related content together\x02Group related notes (like Projects" +
+	" or Recipes)\x02<h3>welcome!</h3><p>your static content here</p>\x02Head" +
+	"ing\x02https://github.com/user/repo.git\x02Ideas and inspiration with to" +
+	"pic tags\x02in array\x02In Array\x02Include\x02index configuration\x02in" +
+	"dex saved successfully\x02invalid filter config: %[1]v\x02invalid index" +
+	"\x02Journaling\x02Keyboard Shortcuts\x02Key Features\x02KNOV (Knowledge " +
+	"Vault) is your personal digital library that helps you organize, search," +
+	" and connect all your notes, documents, and ideas in one place. Think of" +
+	" it as a smart filing cabinet that remembers everything and helps you fi" +
+	"nd what you need instantly.\x02KNOV - Quick Start Guide\x02Label notes w" +
+	"ith keywords for flexible grouping\x02language\x02layout\x02Learning mat" +
+	"erials organized by subject\x02Learn them for faster navigation\x02Leave" +
+	" empty for local git repository only\x02less than\x02Less Than\x02limit" +
+	"\x02Link Notes\x02Link related notes together\x02list\x02Literature\x02L" +
+	"oading...\x02loading archive...\x02loading areas...\x02loading collectio" +
+	"ns...\x02loading diff...\x02loading file history...\x02loading files..." +
+	"\x02Loading files...\x02loading folders...\x02loading options...\x02load" +
+	"ing projects...\x02Loading recent changes...\x02loading resources...\x02" +
+	"Loading results...\x02loading tags...\x02loading version content...\x02l" +
+	"oading versions...\x02loading widget...\x02logic\x02Mark as High, Medium" +
+	", or Low importance\x02Markdown\x02Meeting notes with attendee tags\x02M" +
+	"etadata Filter\x02missing commit parameter\x02missing file path\x02missi" +
+	"ng filepath\x02missing filepath parameter\x02missing from or to paramete" +
+	"rs\x02missing metadata or value parameter\x02missing type\x02MOC\x02Morn" +
+	"ing\x02Multiple Dashboards\x02Multiple ways to categorize and connect yo" +
+	"ur notes\x02name\x02name is required\x02Need Help?\x02Never Lose Informa" +
+	"tion\x02+ New File\x02no ancestors\x02no children\x02no configuration ne" +
+	"eded\x02No dashboard found\x02no files found\x02no git history available" +
+	"\x02no inbound links\x02no outbound links\x02no parents\x02no parents fo" +
+	"und\x02no previous version available\x02no results found\x02Note Name" +
+	"\x02no version history available\x02No widgets configured\x02OK\x02opera" +
+	"tor\x02optional\x02optional title\x02or\x02Organization Methods\x02Organ" +
+	"ize by Projects, Areas, Resources, and Archive\x02Organize like files on" +
+	" your computer\x02para\x02PARA method\x02PARA Method\x02/path/to/data" +
+	"\x02path/to/file\x02path/to/file.md\x02Path to your data storage relativ" +
+	"e from the executable\x02Permanent\x02Personal Dashboards\x02Personal Kn" +
+	"owledge Base\x02position x\x02position y\x02Powerful search through all " +
+	"your content\x02Power User Tips:\x02preview\x02preview results\x02priori" +
+	"ty\x02Priority\x02Process documentation by department\x02Project Managem" +
+	"ent\x02Project notes with status tracking\x02Project Overview\x02project" +
+	"s\x02Projects\x02Quick Links:\x02Quick Search\x02Quick Tips\x02Rebuild a" +
+	"ll metadata? This may take a while.\x02Rebuild Metadata\x02Recent File H" +
+	"istory\x02Recent files, notes by tags or collections, custom filtered li" +
+	"sts, quick folder access\x02Reference other notes using\x02regex\x02Reme" +
+	"mber: KNOV grows with you - start simple and add complexity as needed" +
+	"\x02Remember: The best knowledge management system is the one you actual" +
+	"ly use. Start with what feels natural and expand from there.\x02Remote R" +
+	"epository URL\x02remove\x02Research notes linked by topic\x02Research & " +
+	"Study\x02Resource collections by project type\x02resources\x02Resources" +
+	"\x02restarting application...\x02Restart System\x02Restart the system? T" +
+	"his will disconnect all users.\x02restore this version\x02Review and pro" +
+	"perly tag/organize new content\x02Run Cronjob\x02Run Filter Tests\x02Run" +
+	" filter tests? This will create 12 test metadata objects.\x02save\x02Sav" +
+	"e\x02save changes\x02Saved Filters\x02save file\x02save filter\x02save i" +
+	"ndex\x02scanning .gohtml template files...\x02search files\x02Search You" +
+	"r Knowledge\x02See Relationships\x02select a file...\x02select a widget " +
+	"type to see configuration options\x02select field\x02select file type" +
+	"\x02Select multiple notes to tag or move at once\x02select priority\x02s" +
+	"elect status\x02select the file you want to display\x02select widget typ" +
+	"e\x02separator\x02Set Data Path\x02set priority (1-5)\x02Set Remote Repo" +
+	"sitory\x02Settings Page\x02Setup some test Data Files\x02Setup Test Data" +
+	"\x02Setup test data? This will create example files.\x02Simple Folders" +
+	"\x02Smart Connections\x02Smart Search & Filtering\x02Source materials wi" +
+	"th reference tags\x02Start Simple: Just create notes and add basic tags" +
+	"\x02start typing to search...\x02static content configuration\x02static " +
+	"content is required\x02status\x02Status\x02Stay Organized\x02Study guide" +
+	"s connected to main topics\x02Swagger\x02System Actions\x02System Admini" +
+	"stration\x02System maintenance operations\x02table parsing not supported" +
+	" for this file type\x02tags\x02Tags\x02tags & folders\x02Task lists with" +
+	" priority levels\x02Template Notes\x02Test Data Management\x02theme\x02T" +
+	"heme Options\x02title\x02Todo\x02Track progress (Draft, In Progress, Com" +
+	"plete)\x02Training materials by skill level\x02Try Filters: Use the filt" +
+	"er panel to find groups of related notes\x02Try the sample filters to le" +
+	"arn the system\x02Type\x02Type anything to find notes containing those w" +
+	"ords\x02type or select archive item\x02type or select area\x02type or se" +
+	"lect collection\x02type or select folder\x02type or select project\x02ty" +
+	"pe or select resource\x02type or select tag\x02unsupported file type\x02" +
+	"Update your dashboard configuration\x02Use filters to review progress an" +
+	"d clean up\x02Use Search: When you can't remember where something is, ju" +
+	"st search\x02Use the search function - your answer might already be in y" +
+	"our notes!\x02value\x02Value\x02version history\x02version no longer ava" +
+	"ilable\x02view\x02view dashboard\x02view file\x02view results\x02View wh" +
+	"ich notes connect to each other\x02visible to all users\x02WARNING - Thi" +
+	"s will remove all files in the Data Folder!!.\x02Watch your ideas connec" +
+	"t and grow\x02Weekly\x02Welcome to KNOV! Your knowledge journey starts n" +
+	"ow.\x02What is KNOV?\x02Why Use KNOV?\x02widget\x02widget not found\x02w" +
+	"idgets\x02widget title\x02widget type\x02Widget Types\x02Work Documentat" +
+	"ion\x02Works completely offline on your computer\x02Write your content (" +
+	"use simple formatting like\x02You're already here! This is your personal" +
+	" dashboard - your home base for all your knowledge.\x02Your Knowledge, A" +
+	"nywhere\x02Your personal knowledge management system\x02Your Way\x02yyyy" +
+	"-mm-dd"
 
-	// Total table size 6571 bytes (6KiB); checksum: E423B0C2
+	// Total table size 14008 bytes (13KiB); checksum: BCB05908

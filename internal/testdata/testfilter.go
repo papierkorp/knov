@@ -598,6 +598,85 @@ func RunFilterTests() (*FilterTestResults, error) {
 			expectedFiles: []string{"filter-tests/basic/filterTestF.md"},
 			description:   "filter by PARA areas containing 'unique_quality_assurance' AND resources containing 'docs'",
 		},
+		{
+			name: "name_regex_markdown_files",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "name",
+						Operator: "regex",
+						Value:    `\.md$`,
+						Action:   "include",
+					},
+					{
+						Metadata: "collection",
+						Operator: "contains",
+						Value:    "filter-testing",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 12,
+			expectedFiles: []string{
+				"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/filterTestC.md",
+				"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md",
+				"filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md",
+				"filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md",
+				"filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md",
+				"filter-tests/special/filterTestL.md",
+			},
+			description: "filter by name using regex to find all .md files in filter-testing collection",
+		},
+		{
+			name: "name_contains_with_folder",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "name",
+						Operator: "contains",
+						Value:    "filterTest",
+						Action:   "include",
+					},
+					{
+						Metadata: "folders",
+						Operator: "contains",
+						Value:    "advanced",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 2,
+			expectedFiles: []string{"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md"},
+			description:   "filter by name containing 'filterTest' AND folder containing 'advanced'",
+		},
+		{
+			name: "name_regex_pattern_with_status",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "name",
+						Operator: "regex",
+						Value:    `^filterTest[A-C]\.md$`,
+						Action:   "include",
+					},
+					{
+						Metadata: "status",
+						Operator: "equals",
+						Value:    "published",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 2,
+			expectedFiles: []string{"filter-tests/filterTestB.md", "filter-tests/filterTestC.md"},
+			description:   "filter by name using regex pattern (filterTestA-C.md) AND status equals published",
+		},
 	}
 
 	// run each test
