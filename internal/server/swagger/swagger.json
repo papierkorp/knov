@@ -220,6 +220,36 @@
                 }
             }
         },
+        "/api/cronjob": {
+            "post": {
+                "description": "Manually triggers the cronjob execution (file processing and search indexing)",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "cronjob"
+                ],
+                "summary": "Run cronjob",
+                "responses": {
+                    "200": {
+                        "description": "{\"status\":\"ok\",\"message\":\"cronjob executed successfully\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/dashboards": {
             "get": {
                 "description": "Get list of all dashboards for current user",

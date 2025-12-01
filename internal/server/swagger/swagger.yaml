@@ -499,6 +499,27 @@ paths:
       summary: Update git repository URL
       tags:
       - config
+  /api/cronjob:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Manually triggers the cronjob execution (file processing and search
+        indexing)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: '{"status":"ok","message":"cronjob executed successfully"}'
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run cronjob
+      tags:
+      - cronjob
   /api/dashboards:
     get:
       description: Get list of all dashboards for current user

@@ -38,6 +38,11 @@
                     </button>
                     <div id="rebuild-result"></div>
 
+                    <button hx-post="/api/cronjob" hx-target="#cronjob-result">
+                        {{T "Run Cronjob"}}
+                    </button>
+                    <div id="cronjob-result"></div>
+
                     <button hx-post="/api/system/restart" hx-target="#restart-result" hx-confirm="{{T "Restart the system? This will disconnect all users."}}">
                         {{T "Restart System"}}
                     </button>

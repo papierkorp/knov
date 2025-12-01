@@ -86,6 +86,14 @@ func Stop() {
 	}
 }
 
+// Run manually triggers both file and search cronjobs
+func Run() {
+	logging.LogInfo("manually triggering cronjobs")
+	runFileJobs()
+	runSearchJob()
+	logging.LogInfo("manual cronjob execution completed")
+}
+
 func runFileJobs() {
 	logging.LogDebug("running file cronjobs")
 
