@@ -1,13 +1,16 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/server/render"
 	"knov/internal/translation"
+	"knov/internal/utils"
 )
 
 // editorType defines the type of editor to be used
@@ -129,8 +132,12 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 			html = render.RenderTextareaEditorComponent(filepath, content)
 		}
 	case editorTypeIndex:
-		// TODO: implement index editor, fallback to textarea for now
-		html = render.RenderTextareaEditorComponent(filepath, content)
+		var renderErr error
+		html, renderErr = render.RenderIndexEditor(filepath)
+		if renderErr != nil {
+			logging.LogError("failed to render index editor: %v", renderErr)
+			html = render.RenderTextareaEditorComponent(filepath, content)
+		}
 	default:
 		html = render.RenderMarkdownEditorForm(filepath)
 	}
@@ -175,4 +182,214 @@ func handleAPIGetTextareaEditor(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
+}
+
+// @Summary Save index editor
+// @Description Saves an index/MOC file
+// @Tags editor
+// @Accept x-www-form-urlencoded
+// @Param filepath formData string true "file path"
+// @Param entries[][type] formData string false "entry type"
+// @Param entries[][value] formData string false "entry value"
+// @Produce html
+// @Router /api/editor/indexeditor [post]
+func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+
+	filepath := r.FormValue("filepath")
+	if filepath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
+		return
+	}
+
+	// ensure .index or .moc extension (but not both)
+	if !strings.HasSuffix(filepath, ".index") && !strings.HasSuffix(filepath, ".moc") {
+		filepath = filepath + ".index"
+	}
+
+	// convert to full path
+	fullPath := utils.ToFullPath(filepath)
+
+	// parse entries
+	var config render.IndexConfig
+	config.Entries = []render.IndexEntry{}
+
+	// parse entries[i][type] and entries[i][value]
+	i := 0
+	for {
+		typeKey := fmt.Sprintf("entries[%d][type]", i)
+		valueKey := fmt.Sprintf("entries[%d][value]", i)
+
+		entryType := r.FormValue(typeKey)
+		if entryType == "" {
+			break // no more entries
+		}
+
+		entryValue := r.FormValue(valueKey)
+		config.Entries = append(config.Entries, render.IndexEntry{
+			Type:  entryType,
+			Value: entryValue,
+		})
+		i++
+	}
+
+	// convert to markdown format with links (so existing link detection works)
+	var markdown strings.Builder
+	for _, entry := range config.Entries {
+		switch entry.Type {
+		case "separator":
+			markdown.WriteString("\n---\n\n")
+		case "file":
+			if entry.Value != "" {
+				// create markdown link: [filename](filename)
+				markdown.WriteString(fmt.Sprintf("- [%s](%s)\n", entry.Value, entry.Value))
+			}
+		case "title":
+			if entry.Value != "" {
+				markdown.WriteString(fmt.Sprintf("\n## %s\n\n", entry.Value))
+			}
+		}
+	}
+
+	// save as markdown file
+	if err := files.SaveRawContent(fullPath, markdown.String()); err != nil {
+		logging.LogError("failed to write index file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save index"), http.StatusInternalServerError)
+		return
+	}
+
+	// create/update metadata with filetype "moc" and collection based on filename
+	collectionName := filepath
+	if strings.HasSuffix(collectionName, ".index") {
+		collectionName = strings.TrimSuffix(collectionName, ".index")
+	}
+	if strings.HasSuffix(collectionName, ".moc") {
+		collectionName = strings.TrimSuffix(collectionName, ".moc")
+	}
+
+	metadata := &files.Metadata{
+		Path:       filepath,
+		FileType:   files.FileTypeMOC,
+		Collection: collectionName,
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		logging.LogError("failed to save metadata for index file %s: %v", filepath, err)
+		// don't fail the whole request, just log the error
+	} else {
+		logging.LogInfo("saved metadata for index file: %s (collection: %s)", filepath, collectionName)
+	}
+
+	logging.LogInfo("saved index file: %s", filepath)
+	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "index saved successfully"),
+		filepath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(render.RenderStatusMessage(render.StatusOK, successMsg)))
+}
+
+// @Summary Add index entry
+// @Description Adds a new entry to the index editor
+// @Tags editor
+// @Accept x-www-form-urlencoded
+// @Param type formData string true "entry type (separator, file, title)"
+// @Produce html
+// @Router /api/editor/indexeditor/add-entry [post]
+func handleAPIAddIndexEntry(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+
+	entryType := r.FormValue("type")
+	if entryType == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing type"), http.StatusBadRequest)
+		return
+	}
+
+	// get current count of entries
+	container := r.FormValue("container")
+	_ = container // not used, we'll use JavaScript to count
+
+	// create new entry with next index (JavaScript will handle proper indexing)
+	entry := render.IndexEntry{
+		Type:  entryType,
+		Value: "",
+	}
+
+	// render entry row with index 999 (will be reindexed by JavaScript)
+	html := renderIndexEntryRowHelper(999, entry)
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
+}
+
+// renderIndexEntryRowHelper is a helper to render index entry rows for API responses
+func renderIndexEntryRowHelper(index int, entry render.IndexEntry) string {
+	var html strings.Builder
+
+	html.WriteString(fmt.Sprintf(`<div class="entry-row" data-entry-index="%d">`, index))
+
+	// controls on the left
+	html.WriteString(`<div class="entry-controls">`)
+	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, -1)" class="btn-move">↑</button>`, index))
+	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, 1)" class="btn-move">↓</button>`, index))
+	html.WriteString(fmt.Sprintf(`<button type="button" onclick="removeEntry(this)" class="btn-remove">×</button>`))
+	html.WriteString(`</div>`)
+
+	// content on the right
+	html.WriteString(`<div class="entry-content">`)
+	html.WriteString(fmt.Sprintf(`<input type="hidden" name="entries[%d][type]" value="%s"/>`, index, entry.Type))
+
+	switch entry.Type {
+	case "separator":
+		html.WriteString(`<div class="entry-separator">`)
+		html.WriteString(fmt.Sprintf(`<span>%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "separator")))
+		html.WriteString(`</div>`)
+
+	case "file":
+		html.WriteString(`<div class="entry-file">`)
+		html.WriteString(fmt.Sprintf(`<label>%s:</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file")))
+		inputID := fmt.Sprintf("entry-file-%d", index)
+		html.WriteString(render.GenerateDatalistInput(inputID, fmt.Sprintf("entries[%d][value]", index), entry.Value, translation.SprintfForRequest(configmanager.GetLanguage(), "search files"), "/api/files/list?format=datalist"))
+		html.WriteString(`</div>`)
+
+	case "title":
+		html.WriteString(`<div class="entry-title">`)
+		html.WriteString(fmt.Sprintf(`<label>%s:</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "title")))
+		html.WriteString(fmt.Sprintf(`<input type="text" name="entries[%d][value]" value="%s" class="form-input" placeholder="%s"/>`, index, entry.Value, translation.SprintfForRequest(configmanager.GetLanguage(), "enter title")))
+		html.WriteString(`</div>`)
+	}
+
+	html.WriteString(`</div>`)
+	html.WriteString(`</div>`)
+
+	// Use HTMX event to trigger reindexing after content is swapped
+	html.WriteString(`<script>
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+	if (evt.detail.target.id === 'entries-container') {
+		console.log('htmx:afterSwap triggered for entries-container');
+		if (typeof window.reindexEntries === 'function') {
+			window.reindexEntries();
+		}
+	}
+});
+</script>`)
+
+	return html.String()
+}
+
+// @Summary Save filter editor
+// @Description Saves a filter file (redirects to existing filter save endpoint)
+// @Tags editor
+// @Accept x-www-form-urlencoded
+// @Produce html
+// @Router /api/editor/filtereditor [post]
+func handleAPISaveFilterEditor(w http.ResponseWriter, r *http.Request) {
+	// this is just a redirect to the existing filter save endpoint
+	handleAPIFilterSave(w, r)
 }

@@ -21,6 +21,16 @@ func RenderFilesOptions(allFiles []files.File) string {
 	return html.String()
 }
 
+// RenderFilesDatalist renders files as datalist options
+func RenderFilesDatalist(allFiles []files.File) string {
+	var html strings.Builder
+	for _, file := range allFiles {
+		path := strings.TrimPrefix(file.Path, "data/")
+		html.WriteString(fmt.Sprintf(`<option value="%s">`, path))
+	}
+	return html.String()
+}
+
 // RenderFilesList renders files as interactive list with HTMX
 func RenderFilesList(allFiles []files.File) string {
 	var html strings.Builder

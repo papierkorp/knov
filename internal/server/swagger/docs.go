@@ -714,6 +714,84 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/editor/filtereditor": {
+            "post": {
+                "description": "Saves a filter file (redirects to existing filter save endpoint)",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Save filter editor",
+                "responses": {}
+            }
+        },
+        "/api/editor/indexeditor": {
+            "post": {
+                "description": "Saves an index/MOC file",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Save index editor",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "entry type",
+                        "name": "entries[][type]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "entry value",
+                        "name": "entries[][value]",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/editor/indexeditor/add-entry": {
+            "post": {
+                "description": "Adds a new entry to the index editor",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Add index entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "entry type (separator, file, title)",
+                        "name": "type",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/editor/markdown-form": {
             "get": {
                 "description": "Returns a markdown editor form for creating or editing files",

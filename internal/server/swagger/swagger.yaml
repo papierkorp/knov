@@ -826,6 +826,59 @@ paths:
       summary: Get appropriate editor for file
       tags:
       - editor
+  /api/editor/filtereditor:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Saves a filter file (redirects to existing filter save endpoint)
+      produces:
+      - text/html
+      responses: {}
+      summary: Save filter editor
+      tags:
+      - editor
+  /api/editor/indexeditor:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Saves an index/MOC file
+      parameters:
+      - description: file path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: entry type
+        in: formData
+        name: entries[][type]
+        type: string
+      - description: entry value
+        in: formData
+        name: entries[][value]
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Save index editor
+      tags:
+      - editor
+  /api/editor/indexeditor/add-entry:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Adds a new entry to the index editor
+      parameters:
+      - description: entry type (separator, file, title)
+        in: formData
+        name: type
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Add index entry
+      tags:
+      - editor
   /api/editor/markdown-form:
     get:
       description: Returns a markdown editor form for creating or editing files

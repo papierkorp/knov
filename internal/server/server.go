@@ -116,6 +116,9 @@ func StartServerChi() {
 			r.Get("/", handleAPIGetEditorHandler)
 			r.Get("/markdown-form", handleAPIMarkdownEditorForm)
 			r.Get("/textarea", handleAPIGetTextareaEditor)
+			r.Post("/indexeditor", handleAPISaveIndexEditor)
+			r.Post("/indexeditor/add-entry", handleAPIAddIndexEntry)
+			r.Post("/filtereditor", handleAPISaveFilterEditor)
 		})
 
 		// ----------------------------------------------------------------------------------------

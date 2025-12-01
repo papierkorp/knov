@@ -409,3 +409,137 @@ body[data-dark-mode="true"] #page-filenew .toastui-editor-contents td,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-contents th {
     color: var(--text) !important;
 }
+
+/* ==================== Index Editor Styles ==================== */
+
+/* Entry row layout - controls on left, content on right */
+#page-fileedit .entry-row,
+#page-filenew .entry-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 12px;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 6px;
+    background: var(--bg-secondary, #f9fafb);
+}
+
+/* Controls column on the left */
+#page-fileedit .entry-controls,
+#page-filenew .entry-controls {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Control buttons */
+#page-fileedit .entry-controls .btn-move,
+#page-filenew .entry-controls .btn-move,
+#page-fileedit .entry-controls .btn-remove,
+#page-filenew .entry-controls .btn-remove {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 4px;
+    background: var(--bg, #ffffff);
+    color: var(--text, #1f2937);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+#page-fileedit .entry-controls .btn-move:hover,
+#page-filenew .entry-controls .btn-move:hover {
+    background: var(--bg-tertiary, #f3f4f6);
+    border-color: var(--text-secondary, #6b7280);
+}
+
+#page-fileedit .entry-controls .btn-remove,
+#page-filenew .entry-controls .btn-remove {
+    color: var(--error, #ef4444);
+}
+
+#page-fileedit .entry-controls .btn-remove:hover,
+#page-filenew .entry-controls .btn-remove:hover {
+    background: var(--error-bg, #fee2e2);
+    border-color: var(--error, #ef4444);
+}
+
+/* Content column on the right */
+#page-fileedit .entry-content,
+#page-filenew .entry-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Entry types */
+#page-fileedit .entry-separator,
+#page-filenew .entry-separator,
+#page-fileedit .entry-file,
+#page-filenew .entry-file,
+#page-fileedit .entry-title,
+#page-filenew .entry-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#page-fileedit .entry-separator span,
+#page-filenew .entry-separator span {
+    font-style: italic;
+    color: var(--text-secondary, #6b7280);
+}
+
+#page-fileedit .entry-file label,
+#page-filenew .entry-file label,
+#page-fileedit .entry-title label,
+#page-filenew .entry-title label {
+    font-weight: 500;
+    color: var(--text-secondary, #6b7280);
+    min-width: 60px;
+    flex-shrink: 0;
+}
+
+#page-fileedit .entry-file input,
+#page-filenew .entry-file input,
+#page-fileedit .entry-title input,
+#page-filenew .entry-title input {
+    flex: 1;
+}
+
+/* Entries container */
+#page-fileedit .entries-container,
+#page-filenew .entries-container {
+    margin-bottom: 16px;
+}
+
+/* Dark mode */
+body[data-dark-mode="true"] #page-fileedit .entry-row,
+body[data-dark-mode="true"] #page-filenew .entry-row {
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+
+body[data-dark-mode="true"] #page-fileedit .entry-controls .btn-move,
+body[data-dark-mode="true"] #page-filenew .entry-controls .btn-move,
+body[data-dark-mode="true"] #page-fileedit .entry-controls .btn-remove,
+body[data-dark-mode="true"] #page-filenew .entry-controls .btn-remove {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+body[data-dark-mode="true"] #page-fileedit .entry-controls .btn-move:hover,
+body[data-dark-mode="true"] #page-filenew .entry-controls .btn-move:hover {
+    background: var(--bg-tertiary);
+}
+
+body[data-dark-mode="true"] #page-fileedit .entry-controls .btn-remove:hover,
+body[data-dark-mode="true"] #page-filenew .entry-controls .btn-remove:hover {
+    background: var(--error-bg);
+}

@@ -37,6 +37,13 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if format == "datalist" {
+		html := render.RenderFilesDatalist(allFiles)
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html))
+		return
+	}
+
 	html := render.RenderFilesList(allFiles)
 	writeResponse(w, r, allFiles, html)
 }
