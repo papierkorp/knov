@@ -35,27 +35,27 @@ func HighlightCode(code, language string) string {
 	// tokenize and format
 	iterator, err := lexer.Tokenise(nil, code)
 	if err != nil {
-		return fmt.Sprintf("<pre><code>%s</code></pre>", html.EscapeString(code))
+		return fmt.Sprintf("<pre class=\"chroma\"><code>%s</code></pre>", html.EscapeString(code))
 	}
 
 	var buf bytes.Buffer
 	err = formatter.Format(&buf, style, iterator)
 	if err != nil {
-		return fmt.Sprintf("<pre><code>%s</code></pre>", html.EscapeString(code))
+		return fmt.Sprintf("<pre class=\"chroma\"><code>%s</code></pre>", html.EscapeString(code))
 	}
 
 	return buf.String()
 }
 
-// HighlightCodeBlock wraps highlighted code in pre/code tags if not already wrapped
+// HighlightCodeBlock ensures code is properly wrapped in a single pre block
 func HighlightCodeBlock(code, language string) string {
 	highlighted := HighlightCode(code, language)
 
-	// if already wrapped in <pre>, return as is
-	if strings.HasPrefix(highlighted, "<pre") {
-		return highlighted
+	// if chroma didn't wrap in <pre> (when using inline spans only), wrap it
+	if !strings.HasPrefix(highlighted, "<pre") {
+		return fmt.Sprintf(`<pre class="chroma"><code class="language-%s">%s</code></pre>`, language, highlighted)
 	}
 
-	// otherwise wrap it
-	return fmt.Sprintf(`<pre class="chroma"><code class="language-%s">%s</code></pre>`, language, highlighted)
+	// chroma already wrapped it properly
+	return highlighted
 }
