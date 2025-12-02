@@ -84,11 +84,12 @@ func RenderFileCards(files []files.File) string {
 	html.WriteString(`<div class="search-results-cards">`)
 
 	for _, file := range files {
+		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`
 			<div class="search-card">
 				<h4><a href="/files/%s">%s</a></h4>
 			</div>`,
-			file.Path, file.Path))
+			file.Path, displayText))
 	}
 
 	html.WriteString(`</div>`)
@@ -101,9 +102,10 @@ func RenderFileList(files []files.File) string {
 	html.WriteString(`<ul class="search-results-simple-list">`)
 
 	for _, file := range files {
+		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`
 			<li><a href="/files/%s">%s</a></li>`,
-			file.Path, file.Path))
+			file.Path, displayText))
 	}
 
 	html.WriteString(`</ul>`)
@@ -119,9 +121,10 @@ func RenderFileDropdown(files []files.File, limit int) string {
 		if i >= limit {
 			break
 		}
+		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`
 			<li><a href="/files/%s">%s</a></li>`,
-			file.Path, file.Name))
+			file.Path, displayText))
 	}
 
 	if len(files) == 0 {

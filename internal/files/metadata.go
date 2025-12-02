@@ -112,6 +112,7 @@ func IsValidStatus(s Status) bool {
 type Metadata struct {
 	Name        string    `json:"name"`        // manual filename
 	Path        string    `json:"path"`        // auto
+	Title       string    `json:"title"`       // auto
 	CreatedAt   time.Time `json:"createdAt"`   // auto
 	LastEdited  time.Time `json:"lastEdited"`  // auto
 	TargetDate  time.Time `json:"targetDate"`  // auto
@@ -263,6 +264,7 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 
 	updateAncestors(currentMetadata)
 	updateUsedLinks(currentMetadata)
+	updateTitle(currentMetadata)
 	// updateKidsAndLinksToHere(currentMetadata) // shouldnt run with every filesave since it loops through all files
 
 	return currentMetadata
@@ -620,4 +622,67 @@ func MetaDataExportAll() ([]*Metadata, error) {
 
 	logging.LogDebug("exported %d metadata entries", len(allMetadata))
 	return allMetadata, nil
+}
+
+// updateTitle extracts title from the first header line in the file content
+func updateTitle(metadata *Metadata) {
+	fullPath := utils.ToFullPath(metadata.Path)
+
+	logging.LogDebug("extracting title for %s", metadata.Path)
+
+	file, err := os.Open(fullPath)
+	if err != nil {
+		logging.LogWarning("failed to open file %s: %v", fullPath, err)
+		return
+	}
+	defer file.Close()
+
+	// read only the first few lines to find the header
+	buffer := make([]byte, 1024)
+	n, err := file.Read(buffer)
+	if err != nil && n == 0 {
+		logging.LogWarning("failed to read file %s: %v", fullPath, err)
+		return
+	}
+
+	content := string(buffer[:n])
+	lines := strings.Split(content, "\n")
+
+	// look for first header in the first few lines
+	for i, line := range lines {
+		if i > 10 { // only check first 10 lines
+			break
+		}
+
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		var title string
+
+		// markdown headers: # Header
+		if strings.HasPrefix(line, "#") {
+			title = strings.TrimSpace(strings.TrimLeft(line, "#"))
+		}
+
+		// dokuwiki headers: ====== Header ======
+		if strings.HasPrefix(line, "======") && strings.HasSuffix(line, "======") {
+			title = strings.TrimSpace(strings.Trim(line, "="))
+		} else if strings.HasPrefix(line, "=====") && strings.HasSuffix(line, "=====") {
+			title = strings.TrimSpace(strings.Trim(line, "="))
+		} else if strings.HasPrefix(line, "====") && strings.HasSuffix(line, "====") {
+			title = strings.TrimSpace(strings.Trim(line, "="))
+		}
+
+		if title != "" {
+			metadata.Title = title
+			logging.LogDebug("extracted title for %s: %s", metadata.Path, title)
+			return
+		}
+	}
+
+	// no title found, clear any existing title
+	metadata.Title = ""
+	logging.LogDebug("no title found for %s", metadata.Path)
 }

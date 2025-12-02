@@ -6,7 +6,7 @@
   "themeSettings": {
     "darkMode": {
       "type": "boolean",
-      "default": true,
+      "default": false,
       "label": "Dark Mode"
     },
     "colorScheme": {
@@ -56,6 +56,13 @@
       "type": "boolean",
       "default": true,
       "label": "Show Version History"
+    },
+    "linkDisplayMode": {
+      "type": "select",
+      "options": ["filename", "filepath", "title"],
+      "default": "filename",
+      "label": "Link Display Mode",
+      "description": "Show filenames, file paths, or extracted titles in links"
     }
   }
 }

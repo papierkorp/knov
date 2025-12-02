@@ -37,6 +37,7 @@ func RenderFilesList(allFiles []files.File) string {
 	var html strings.Builder
 	html.WriteString("<ul>")
 	for _, file := range allFiles {
+		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`
 			<li>
 				<a href="#"
@@ -47,7 +48,7 @@ func RenderFilesList(allFiles []files.File) string {
 			</li>`,
 			file.Path,
 			file.Path,
-			file.Path))
+			displayText))
 	}
 	html.WriteString("</ul>")
 	return html.String()
@@ -128,7 +129,7 @@ func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir [
 			html.WriteString(fmt.Sprintf(`
 				<li class="folder-item folder-parent">
 					<a href="#" hx-get="/api/files/folder?path=%s" hx-target="#folder-content">
-						📁 ..
+						() ..
 					</a>
 				</li>`,
 				parentPath))
@@ -138,7 +139,7 @@ func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir [
 			html.WriteString(fmt.Sprintf(`
 				<li class="folder-item">
 					<a href="#" hx-get="/api/files/folder?path=%s" hx-target="#folder-content">
-						📁 %s
+						() %s
 					</a>
 				</li>`,
 				folder.Path, folder.Name))
@@ -155,10 +156,10 @@ func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir [
 			html.WriteString(fmt.Sprintf(`
 				<li class="file-item">
 					<a href="/files/%s">
-						📄 %s
+						() %s
 					</a>
 				</li>`,
-				file.Path, file.Name))
+				file.Path, GetLinkDisplayText(file.Path)))
 		}
 		html.WriteString(`</ul></div>`)
 	}

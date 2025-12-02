@@ -3,7 +3,7 @@ APP_NAME := knov
 
 # ------------- actual usage -------------
 dev: swaggo-api-init 
-	KNOV_LOG_LEVEL=info go run ./
+	KNOV_LOG_LEVEL=debug go run ./
 
 prod: clean swaggo-api-init translation
 	go build -o bin/$(APP_NAME) ./

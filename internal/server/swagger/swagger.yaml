@@ -230,6 +230,9 @@ definitions:
       targetDate:
         description: auto
         type: string
+      title:
+        description: auto
+        type: string
       type:
         allOf:
         - $ref: '#/definitions/files.Filetype'

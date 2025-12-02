@@ -3715,6 +3715,10 @@ const docTemplate = `{
                     "description": "auto",
                     "type": "string"
                 },
+                "title": {
+                    "description": "auto",
+                    "type": "string"
+                },
                 "type": {
                     "description": "manual - with add new",
                     "allOf": [
