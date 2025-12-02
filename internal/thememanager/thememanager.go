@@ -12,6 +12,7 @@ import (
 	"text/template"
 
 	"knov/internal/configmanager"
+	"knov/internal/logging"
 )
 
 // -----------------------------------------------
@@ -113,7 +114,7 @@ func loadAllThemes() error {
 
 		err := LoadSingleTheme(themeName, themesDir)
 		if err != nil {
-			fmt.Printf("warning: failed to load theme '%s': %v\n", themeName, err)
+			logging.LogWarning("failed to load theme '%s': %v", themeName, err)
 			continue
 		}
 	}
@@ -215,7 +216,7 @@ func LoadSingleTheme(themeName, themesDir string) error {
 		case "settings":
 			templates.settings = tmpl
 		default:
-			fmt.Printf("warning: unknown template file '%s' -> ignoring\n", filePath)
+			logging.LogWarning("unknown template file '%s' -> ignoring", filePath)
 		}
 	}
 
@@ -235,7 +236,7 @@ func LoadSingleTheme(themeName, themesDir string) error {
 		return fmt.Errorf("could not add theme: %w", err)
 	}
 
-	fmt.Printf("added theme: %s\n", metadata.Name)
+	logging.LogInfo("added theme: %s", metadata.Name)
 
 	return nil
 }
@@ -263,10 +264,10 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data 
 		overwriteTemplate, parseErr := template.ParseFiles(overwritePath)
 
 		if parseErr != nil {
-			fmt.Printf("warning: failed to parse overwrite template '%s': %v, using theme template\n", templateName, parseErr)
+			logging.LogWarning("failed to parse overwrite template '%s': %v, using theme template", templateName, parseErr)
 		} else {
 			template = overwriteTemplate
-			fmt.Printf("using overwrite template for '%s'\n", templateName)
+			logging.LogDebug("using overwrite template for '%s'", templateName)
 		}
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -349,7 +350,7 @@ func initBuiltInTheme(builtinTheme embed.FS) error {
 		return fmt.Errorf("failed to extract builtin theme: %w", err)
 	}
 
-	fmt.Println("extracted builtin theme")
+	logging.LogInfo("extracted builtin theme")
 	return nil
 }
 
@@ -359,14 +360,14 @@ func setBuiltinAsDefault() {
 		if theme.Name == "builtin" {
 			err := themeManager.SetCurrentTheme(theme)
 			if err != nil {
-				fmt.Printf("error: failed to set builtin theme: %v\n", err)
+				logging.LogError("failed to set builtin theme: %v", err)
 			} else {
-				fmt.Printf("current theme set to: builtin\n")
+				logging.LogInfo("current theme set to: builtin")
 			}
 			return
 		}
 	}
-	fmt.Printf("error: builtin theme not found\n")
+	logging.LogError("builtin theme not found")
 }
 
 // -----------------------------------------------
@@ -381,16 +382,16 @@ func SetTheme() {
 		if theme.Name == savedThemeName {
 			err := themeManager.SetCurrentTheme(theme)
 			if err != nil {
-				fmt.Printf("warning: failed to set saved theme '%s': %v, falling back to builtin\n", savedThemeName, err)
+				logging.LogWarning("failed to set saved theme '%s': %v, falling back to builtin", savedThemeName, err)
 				setBuiltinAsDefault()
 			} else {
-				fmt.Printf("current theme set to: %s\n", savedThemeName)
+				logging.LogInfo("current theme set to: %s", savedThemeName)
 			}
 			return
 		}
 	}
 
-	fmt.Printf("warning: saved theme '%s' not found, falling back to builtin\n", savedThemeName)
+	logging.LogWarning("saved theme '%s' not found, falling back to builtin", savedThemeName)
 	setBuiltinAsDefault()
 }
 
