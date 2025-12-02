@@ -816,6 +816,38 @@
                 "responses": {}
             }
         },
+        "/api/editor/listeditor": {
+            "post": {
+                "description": "Saves a list file for todo and journaling file types",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Save list editor",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "list content as json",
+                        "name": "content",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/editor/markdown-form": {
             "get": {
                 "description": "Returns a markdown editor form for creating or editing files",

@@ -1,0 +1,150 @@
+/* List Editor Styles */
+
+#component-list-editor * {
+    box-sizing: border-box;
+}
+
+#component-list-editor ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#component-list-editor .item-row {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    position: relative;
+}
+
+#component-list-editor .drag-handle {
+    cursor: move;
+    padding: 4px 8px;
+    margin-right: 10px;
+    color: var(--text-secondary, #6c757d);
+    font-size: 18px;
+    user-select: none;
+}
+
+#component-list-editor .drag-handle:hover {
+    color: var(--text-primary, #495057);
+}
+
+#component-list-editor .nested-list {
+    margin-left: 40px;
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+#component-list-editor .sortable-ghost {
+    opacity: 0.4;
+    background: var(--accent-color, #007bff);
+}
+
+#component-list-editor .sortable-drag {
+    opacity: 0.8;
+}
+
+#component-list-editor .drop-indicator.drop-before .item-row::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--success-color, #28a745);
+    border-radius: 2px;
+    z-index: 1000;
+}
+
+#component-list-editor .drop-indicator.drop-after .item-row::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--success-color, #28a745);
+    border-radius: 2px;
+    z-index: 1000;
+}
+
+#component-list-editor .drop-indicator.drop-as-child .item-row {
+    background: var(--success-bg, #d4edda) !important;
+    border: 2px dashed var(--success-color, #28a745) !important;
+}
+
+#component-list-editor .list-item {
+    position: relative;
+}
+
+#component-list-editor .list-item.selected .item-row {
+    background: var(--item-selected-bg, rgba(0, 123, 255, 0.1));
+}
+
+#component-list-editor .item-content {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 4px;
+    min-height: 40px;
+    background: var(--input-bg, white);
+    color: var(--text-primary, black);
+}
+
+#component-list-editor .item-content:focus {
+    outline: 2px solid var(--accent-color, #007bff);
+    border-color: var(--accent-color, #007bff);
+}
+
+#component-list-editor .item-content[contenteditable]:empty::before {
+    content: attr(data-placeholder);
+    color: var(--text-secondary, #999);
+}
+
+#component-list-editor .controls {
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#component-list-editor .controls button {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color, #ccc);
+    border-radius: 4px;
+    background: var(--button-bg, white);
+    color: var(--text-primary, black);
+    cursor: pointer;
+}
+
+#component-list-editor .controls button:hover {
+    background: var(--button-hover-bg, #f0f0f0);
+}
+
+#component-list-editor .controls .separator {
+    margin: 0 4px;
+    color: var(--border-color, #ccc);
+}
+
+#component-list-editor .controls .danger {
+    background: var(--danger-color, #dc3545);
+    color: white;
+}
+
+#component-list-editor .controls .danger:hover {
+    background: var(--danger-hover, #c82333);
+}
+
+#component-list-editor .form-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+}
+
+#component-list-editor .editor-container {
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 4px;
+    padding: 16px;
+    min-height: 400px;
+}

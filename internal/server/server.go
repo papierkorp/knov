@@ -121,6 +121,7 @@ func StartServerChi() {
 			r.Post("/indexeditor", handleAPISaveIndexEditor)
 			r.Post("/indexeditor/add-entry", handleAPIAddIndexEntry)
 			r.Post("/filtereditor", handleAPISaveFilterEditor)
+			r.Post("/listeditor", handleAPISaveListEditor)
 		})
 
 		// ----------------------------------------------------------------------------------------

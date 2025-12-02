@@ -943,6 +943,28 @@ paths:
       summary: Add index entry
       tags:
       - editor
+  /api/editor/listeditor:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Saves a list file for todo and journaling file types
+      parameters:
+      - description: file path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: list content as json
+        in: formData
+        name: content
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Save list editor
+      tags:
+      - editor
   /api/editor/markdown-form:
     get:
       description: Returns a markdown editor form for creating or editing files

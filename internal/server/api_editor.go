@@ -1,8 +1,11 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -122,8 +125,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	case editorTypeTextarea:
 		html = render.RenderTextareaEditorComponent(filepath, content)
 	case editorTypeList:
-		// TODO: implement list editor, fallback to textarea for now
-		html = render.RenderTextareaEditorComponent(filepath, content)
+		html = render.RenderListEditor(filepath)
 	case editorTypeFilter:
 		var renderErr error
 		html, renderErr = render.RenderFilterEditor(filepath)
@@ -392,4 +394,88 @@ document.body.addEventListener('htmx:afterSwap', function(evt) {
 func handleAPISaveFilterEditor(w http.ResponseWriter, r *http.Request) {
 	// this is just a redirect to the existing filter save endpoint
 	handleAPIFilterSave(w, r)
+}
+
+// @Summary Save list editor
+// @Description Saves a list file for todo and journaling file types
+// @Tags editor
+// @Accept x-www-form-urlencoded
+// @Param filepath formData string true "file path"
+// @Param content formData string true "list content as json"
+// @Produce html
+// @Router /api/editor/listeditor [post]
+func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+
+	filePath := r.FormValue("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
+		return
+	}
+
+	content := r.FormValue("content")
+
+	// ensure .list extension
+	if !strings.HasSuffix(filePath, ".list") {
+		filePath = filePath + ".list"
+	}
+
+	// parse JSON content from frontend
+	var listItems []render.ListItem
+	if err := json.Unmarshal([]byte(content), &listItems); err != nil {
+		logging.LogError("failed to parse list items: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse list content"), http.StatusBadRequest)
+		return
+	}
+
+	// convert to markdown format
+	markdown := render.ConvertListItemsToMarkdown(listItems, 0)
+
+	// convert to full path
+	fullPath := utils.ToFullPath(filePath)
+
+	// create directory if it doesn't exist
+	dir := filepath.Dir(fullPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		logging.LogError("failed to create directory %s: %v", dir, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
+		return
+	}
+
+	// save content as markdown
+	if err := files.SaveRawContent(fullPath, markdown); err != nil {
+		logging.LogError("failed to write list file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save list"), http.StatusInternalServerError)
+		return
+	}
+
+	// determine filetype from path or default to todo
+	filetype := files.FileTypeTodo
+	if strings.Contains(strings.ToLower(filePath), "journal") {
+		filetype = files.FileTypeJournaling
+	}
+
+	// create/update metadata
+	metadata := &files.Metadata{
+		Path:     filePath,
+		FileType: filetype,
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		logging.LogError("failed to save metadata for list file %s: %v", filePath, err)
+		// don't fail the whole request, just log the error
+	} else {
+		logging.LogInfo("saved metadata for list file: %s (filetype: %s)", filePath, filetype)
+	}
+
+	logging.LogInfo("saved list file: %s", filePath)
+	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"),
+		filePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(render.RenderStatusMessage(render.StatusOK, successMsg)))
 }

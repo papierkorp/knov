@@ -23,7 +23,7 @@ func NewMarkdownHandler() *MarkdownHandler {
 
 func (h *MarkdownHandler) CanHandle(filename string) bool {
 	ext := strings.ToLower(filepath.Ext(filename))
-	return ext == ".md" || ext == ".markdown" || ext == ".index" || ext == ".moc"
+	return ext == ".md" || ext == ".markdown" || ext == ".index" || ext == ".moc" || ext == ".list"
 }
 
 func (h *MarkdownHandler) GetContent(filepath string) ([]byte, error) {
