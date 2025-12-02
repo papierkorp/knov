@@ -11,6 +11,150 @@
     min-width: 0;
 }
 
+/* file content headers styling */
+#view-fileview-detailed .file-content h1 {
+    font-size: 1.5em;
+    font-style: italic;
+    letter-spacing: 5px;
+    border-left: 5px solid var(--primary);
+    padding: 0.5em;
+    margin-top: 3em;
+    background-color: var(--bg-secondary);
+    overflow-wrap: break-word;
+    color: var(--text);
+}
+
+#view-fileview-detailed .file-content h2 {
+    font-size: 1.25em;
+    letter-spacing: 5px;
+    border-bottom: 1px solid var(--primary);
+    margin-top: 2.5em;
+    padding-bottom: 0.5em;
+    padding-left: 0;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
+
+#view-fileview-detailed .file-content h3 {
+    font-size: 1.12em;
+    letter-spacing: 5px;
+    border-bottom: 1px dotted var(--text-secondary);
+    margin-top: 2em;
+    padding-bottom: 0.5em;
+    padding-left: 0;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
+
+#view-fileview-detailed .file-content h4 {
+    font-size: 1.12em;
+    letter-spacing: 5px;
+    border-bottom: 1px dotted var(--text-secondary);
+    margin-top: 2em;
+    padding-bottom: 0.5em;
+    padding-left: 2em;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
+
+#view-fileview-detailed .file-content h5 {
+    font-size: 1.12em;
+    letter-spacing: 5px;
+    border-bottom: 1px dotted var(--text-secondary);
+    margin-top: 2em;
+    padding-bottom: 0.5em;
+    padding-left: 4em;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
+
+#view-fileview-detailed .file-content h6 {
+    font-size: 1.12em;
+    letter-spacing: 5px;
+    border-bottom: 1px dotted var(--text-secondary);
+    margin-top: 2em;
+    padding-bottom: 0.5em;
+    padding-left: 6em;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
+
+/* compact view headers */
+#view-fileview-compact .file-content h1 {
+    font-size: 1.5em;
+    font-style: italic;
+    letter-spacing: 5px;
+    border-left: 5px solid var(--primary);
+    padding: 0.5em;
+    margin-top: 3em;
+    background-color: var(--bg-secondary);
+    overflow-wrap: break-word;
+    color: var(--text);
+}
+
+#view-fileview-compact .file-content h2 {
+    font-size: 1.25em;
+    letter-spacing: 5px;
+    border-bottom: 1px solid var(--primary);
+    margin-top: 2.5em;
+    padding-bottom: 0.5em;
+    padding-left: 0;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
+
+#view-fileview-compact .file-content h3,
+#view-fileview-compact .file-content h4,
+#view-fileview-compact .file-content h5,
+#view-fileview-compact .file-content h6 {
+    font-size: 1.12em;
+    letter-spacing: 5px;
+    border-bottom: 1px dotted var(--text-secondary);
+    margin-top: 2em;
+    padding-bottom: 0.5em;
+    padding-left: 0;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
+
+/* reader view headers */
+#view-fileview-reader .file-content h1 {
+    font-size: 1.5em;
+    font-style: italic;
+    letter-spacing: 5px;
+    border-left: 5px solid var(--primary);
+    padding: 0.5em;
+    margin-top: 3em;
+    background-color: var(--bg-secondary);
+    overflow-wrap: break-word;
+    color: var(--text);
+}
+
+#view-fileview-reader .file-content h2 {
+    font-size: 1.25em;
+    letter-spacing: 5px;
+    border-bottom: 1px solid var(--primary);
+    margin-top: 2.5em;
+    padding-bottom: 0.5em;
+    padding-left: 0;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
+
+#view-fileview-reader .file-content h3,
+#view-fileview-reader .file-content h4,
+#view-fileview-reader .file-content h5,
+#view-fileview-reader .file-content h6 {
+    font-size: 1.12em;
+    letter-spacing: 5px;
+    border-bottom: 1px dotted var(--text-secondary);
+    margin-top: 2em;
+    padding-bottom: 0.5em;
+    padding-left: 0;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
+
 #view-fileview-detailed .file-sidebar {
     display: flex;
     flex-direction: column;
@@ -30,6 +174,10 @@
     font-weight: 600;
     color: var(--primary);
     text-transform: lowercase;
+    letter-spacing: normal;
+    border: none;
+    padding: 0;
+    background: none;
 }
 
 #view-fileview-detailed .metadata-grid {
@@ -191,15 +339,13 @@
     }
 }
 
-/* ---------------------------------------------------------------------------------------- */
-/* --------------------------------- Filter File View ------------------------------------ */
-/* ---------------------------------------------------------------------------------------- */
-
+/* filter file view */
 #page-fileview .filter-file-view h2 {
     color: var(--primary);
     margin-bottom: 16px;
     border-bottom: 2px solid var(--primary);
     padding-bottom: 8px;
+    letter-spacing: normal;
 }
 
 #page-fileview .filter-info {

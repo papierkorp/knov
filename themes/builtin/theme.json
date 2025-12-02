@@ -6,7 +6,7 @@
   "themeSettings": {
     "darkMode": {
       "type": "boolean",
-      "default": false,
+      "default": true,
       "label": "Dark Mode"
     },
     "colorScheme": {
