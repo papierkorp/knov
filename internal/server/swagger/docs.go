@@ -956,6 +956,30 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/files/folder": {
+            "get": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get folder structure",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "folder path (root if empty)",
+                        "name": "path",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/files/form": {
             "get": {
                 "produces": [

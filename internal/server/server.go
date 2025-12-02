@@ -181,6 +181,7 @@ func StartServerChi() {
 			r.Get("/browse", handleAPIBrowseFiles)
 			r.Get("/form", handleAPIFileForm)
 			r.Get("/metadata-form", handleAPIMetadataForm)
+			r.Get("/folder", handleAPIGetFolder)
 
 			// file version routes
 			r.Get("/versions/diff/*", handleAPIGetFileVersionDiff)

@@ -16,6 +16,52 @@ import (
 	"knov/internal/utils"
 )
 
+// @Summary Get folder structure
+// @Tags files
+// @Param path query string false "folder path (root if empty)"
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Router /api/files/folder [get]
+func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
+	folderPath := r.URL.Query().Get("path")
+
+	dataPath := configmanager.GetAppConfig().DataPath
+	fullPath := filepath.Join(dataPath, folderPath)
+
+	// read directory
+	entries, err := os.ReadDir(fullPath)
+	if err != nil {
+		logging.LogError("failed to read folder %s: %v", fullPath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read folder"), http.StatusInternalServerError)
+		return
+	}
+
+	var folders []render.FolderEntry
+	var filesInDir []render.FolderEntry
+
+	for _, entry := range entries {
+		entryPath := filepath.Join(folderPath, entry.Name())
+		item := render.FolderEntry{
+			Name:  entry.Name(),
+			Path:  entryPath,
+			IsDir: entry.IsDir(),
+		}
+
+		if entry.IsDir() {
+			folders = append(folders, item)
+		} else {
+			filesInDir = append(filesInDir, item)
+		}
+	}
+
+	html := render.RenderFolderContent(folderPath, folders, filesInDir)
+	writeResponse(w, r, map[string]interface{}{
+		"path":    folderPath,
+		"folders": folders,
+		"files":   filesInDir,
+	}, html)
+}
+
 // @Summary Get all files
 // @Tags files
 // @Param format query string false "Response format (options for HTML select options)"

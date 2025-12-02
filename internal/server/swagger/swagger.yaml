@@ -1030,6 +1030,22 @@ paths:
       summary: Create new file
       tags:
       - files
+  /api/files/folder:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: folder path (root if empty)
+        in: query
+        name: path
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get folder structure
+      tags:
+      - files
   /api/files/form:
     get:
       parameters:

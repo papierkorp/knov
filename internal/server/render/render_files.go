@@ -3,6 +3,7 @@ package render
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -62,7 +63,7 @@ func RenderFilteredFiles(filteredFiles []files.File) string {
 
 // RenderFileHeader renders file header with breadcrumb
 func RenderFileHeader(filepath string) string {
-	return fmt.Sprintf(`<div id="current-file-breadcrumb"><a href="/files/%s">→ %s</a></div>`, filepath, filepath)
+	return fmt.Sprintf(`<hr/><div id="current-file-breadcrumb"><a href="/files/%s">→ %s</a></div>`, filepath, filepath)
 }
 
 // RenderBrowseFilesHTML renders browsed files as list - reuses RenderFileList
@@ -97,4 +98,75 @@ func RenderFileForm(filePath string) string {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "content"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file content here..."),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save file"))
+}
+
+// FolderEntry represents a folder or file entry
+type FolderEntry struct {
+	Name  string
+	Path  string
+	IsDir bool
+}
+
+// RenderFolderContent renders folder structure with folders and files
+func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir []FolderEntry) string {
+	var html strings.Builder
+
+	html.WriteString(`<div class="folder-content">`)
+
+	// folders section
+	if len(folders) > 0 || currentPath != "" {
+		html.WriteString(`<div class="folders-list">`)
+		html.WriteString(fmt.Sprintf(`<h3>%s</h3>`, translation.SprintfForRequest(configmanager.GetLanguage(), "folders")))
+		html.WriteString(`<ul>`)
+
+		// add parent folder link if not at root
+		if currentPath != "" {
+			parentPath := filepath.Dir(currentPath)
+			if parentPath == "." {
+				parentPath = ""
+			}
+			html.WriteString(fmt.Sprintf(`
+				<li class="folder-item folder-parent">
+					<a href="#" hx-get="/api/files/folder?path=%s" hx-target="#folder-content">
+						📁 ..
+					</a>
+				</li>`,
+				parentPath))
+		}
+
+		for _, folder := range folders {
+			html.WriteString(fmt.Sprintf(`
+				<li class="folder-item">
+					<a href="#" hx-get="/api/files/folder?path=%s" hx-target="#folder-content">
+						📁 %s
+					</a>
+				</li>`,
+				folder.Path, folder.Name))
+		}
+		html.WriteString(`</ul></div>`)
+	}
+
+	// files section
+	if len(filesInDir) > 0 {
+		html.WriteString(`<div class="files-list">`)
+		html.WriteString(fmt.Sprintf(`<h3>%s</h3>`, translation.SprintfForRequest(configmanager.GetLanguage(), "files")))
+		html.WriteString(`<ul>`)
+		for _, file := range filesInDir {
+			html.WriteString(fmt.Sprintf(`
+				<li class="file-item">
+					<a href="/files/%s">
+						📄 %s
+					</a>
+				</li>`,
+				file.Path, file.Name))
+		}
+		html.WriteString(`</ul></div>`)
+	}
+
+	if len(folders) == 0 && len(filesInDir) == 0 {
+		html.WriteString(fmt.Sprintf(`<p>%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "folder is empty")))
+	}
+
+	html.WriteString(`</div>`)
+	return html.String()
 }

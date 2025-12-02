@@ -280,6 +280,13 @@
             "translation": "Browse"
         },
         {
+            "id": "Browse by Folder Structure",
+            "message": "Browse by Folder Structure",
+            "translation": "Browse by Folder Structure",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Browse by Metadata",
             "message": "Browse by Metadata",
             "translation": "Browse by Metadata"
@@ -987,6 +994,13 @@
             "fuzzy": true
         },
         {
+            "id": "failed to read folder",
+            "message": "failed to read folder",
+            "translation": "failed to read folder",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "failed to render widget",
             "message": "failed to render widget",
             "translation": "failed to render widget",
@@ -1090,6 +1104,13 @@
             "id": "filepath parameter required",
             "message": "filepath parameter required",
             "translation": "filepath parameter required",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "files",
+            "message": "files",
+            "translation": "files",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1226,6 +1247,13 @@
             "id": "Fleeting",
             "message": "Fleeting",
             "translation": "Fleeting",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "folder is empty",
+            "message": "folder is empty",
+            "translation": "folder is empty",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1640,6 +1668,13 @@
             "fuzzy": true
         },
         {
+            "id": "loading priorities...",
+            "message": "loading priorities...",
+            "translation": "loading priorities...",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "loading projects...",
             "message": "loading projects...",
             "translation": "loading projects...",
@@ -1668,9 +1703,23 @@
             "fuzzy": true
         },
         {
+            "id": "loading statuses...",
+            "message": "loading statuses...",
+            "translation": "loading statuses...",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "loading tags...",
             "message": "loading tags...",
             "translation": "loading tags...",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "loading types...",
+            "message": "loading types...",
+            "translation": "loading types...",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2342,6 +2391,13 @@
             "id": "Review and properly tag/organize new content",
             "message": "Review and properly tag/organize new content",
             "translation": "Review and properly tag/organize new content",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "root",
+            "message": "root",
+            "translation": "root",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },

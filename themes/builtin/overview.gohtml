@@ -15,11 +15,30 @@
                         Loading files...
                     </div>
                 </div>
-                <hr/>
                 <div id="file-header"></div>
                 <div id="file-content"></div>
             </div>
         </section>
+
+        <div>
+            <hr/>
+        </div>
+        <section class="overview-folder-browser">
+            <h2>{{T "Browse by Folder Structure"}}</h2>
+            <div class="folder-browser-container">
+                <div class="breadcrumb" id="folder-breadcrumb">
+                    <a href="#" hx-get="/api/files/folder?path=" hx-target="#folder-content">
+                        {{T "root"}}
+                    </a>
+                </div>
+                <div id="folder-content" hx-get="/api/files/folder?path=" hx-trigger="load"></div>
+            </div>
+        </section>
+
+        <div>
+            <hr/>
+        </div>
+
         <section class="overview-browse">
             <h2>{{T "Browse by Metadata"}}</h2>
             <div class="browse-grid">

@@ -212,6 +212,11 @@
       "translation": "Browse"
     },
     {
+      "id": "Browse by Folder Structure",
+      "message": "Browse by Folder Structure",
+      "translation": ""
+    },
+    {
       "id": "Browse by Metadata",
       "message": "Browse by Metadata",
       "translation": "Browse by Metadata"
@@ -737,6 +742,11 @@
       "translation": ""
     },
     {
+      "id": "failed to read folder",
+      "message": "failed to read folder",
+      "translation": ""
+    },
+    {
       "id": "failed to render widget",
       "message": "failed to render widget",
       "translation": ""
@@ -804,6 +814,11 @@
     {
       "id": "filepath parameter required",
       "message": "filepath parameter required",
+      "translation": ""
+    },
+    {
+      "id": "files",
+      "message": "files",
       "translation": ""
     },
     {
@@ -904,6 +919,11 @@
     {
       "id": "Fleeting",
       "message": "Fleeting",
+      "translation": ""
+    },
+    {
+      "id": "folder is empty",
+      "message": "folder is empty",
       "translation": ""
     },
     {
@@ -1212,6 +1232,11 @@
       "translation": ""
     },
     {
+      "id": "loading priorities...",
+      "message": "loading priorities...",
+      "translation": ""
+    },
+    {
       "id": "loading projects...",
       "message": "loading projects...",
       "translation": ""
@@ -1232,8 +1257,18 @@
       "translation": ""
     },
     {
+      "id": "loading statuses...",
+      "message": "loading statuses...",
+      "translation": ""
+    },
+    {
       "id": "loading tags...",
       "message": "loading tags...",
+      "translation": ""
+    },
+    {
+      "id": "loading types...",
+      "message": "loading types...",
       "translation": ""
     },
     {
@@ -1729,6 +1764,11 @@
     {
       "id": "Review and properly tag/organize new content",
       "message": "Review and properly tag/organize new content",
+      "translation": ""
+    },
+    {
+      "id": "root",
+      "message": "root",
       "translation": ""
     },
     {

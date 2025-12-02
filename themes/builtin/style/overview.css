@@ -26,6 +26,10 @@
     #page-overview .files-list-container ul {
         grid-template-columns: 1fr;
     }
+
+    #page-overview .folder-content {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 #page-overview .overview-browse {
@@ -59,4 +63,92 @@
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+/* folder browser section */
+#page-overview .overview-folder-browser {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+#page-overview .overview-folder-browser h2 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+}
+
+#page-overview .folder-browser-container .breadcrumb {
+    padding: 10px;
+    background: var(--bg);
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+}
+
+#page-overview .folder-browser-container .breadcrumb a {
+    color: var(--primary);
+    text-decoration: none;
+    padding: 5px 10px;
+}
+
+#page-overview .folder-browser-container .breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+#page-overview .folder-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+#page-overview .folders-list,
+#page-overview .files-list {
+    padding: 15px;
+    background: var(--bg);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+#page-overview .folders-list h3,
+#page-overview .files-list h3 {
+    margin: 0 0 15px 0;
+    color: var(--primary);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#page-overview .folders-list ul,
+#page-overview .files-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#page-overview .folder-item,
+#page-overview .file-item {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+#page-overview .folder-item:hover,
+#page-overview .file-item:hover {
+    background: var(--bg-secondary);
+}
+
+#page-overview .folder-item a,
+#page-overview .file-item a {
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#page-overview .folder-item a:hover,
+#page-overview .file-item a:hover {
+    color: var(--primary);
 }
