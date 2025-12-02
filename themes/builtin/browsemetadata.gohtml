@@ -1,0 +1,58 @@
+{{ define "content" }}
+<div id="page-browse-metadata">
+    <div class="browse-header">
+        <h1>{{T "Browse"}}: {{ .MetadataType }}</h1>
+        <div class="browse-breadcrumb">
+            <a href="/">{{T "Home"}}</a>
+            → <a href="/browse">{{T "Browse"}}</a>
+            → <span>{{ .MetadataType }}</span>
+        </div>
+    </div>
+
+    <div class="browse-content">
+        {{ if eq .MetadataType "tag" }}
+            <div hx-get="/api/metadata/tags" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                {{T "loading tags..."}}
+            </div>
+        {{ else if eq .MetadataType "collection" }}
+            <div hx-get="/api/metadata/collections" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                {{T "loading collections..."}}
+            </div>
+        {{ else if eq .MetadataType "folder" }}
+            <div hx-get="/api/metadata/folders" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                {{T "loading folders..."}}
+            </div>
+        {{ else if eq .MetadataType "type" }}
+            <div hx-get="/api/metadata/filetypes" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                {{T "loading types..."}}
+            </div>
+        {{ else if eq .MetadataType "priority" }}
+            <div hx-get="/api/metadata/priorities" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                {{T "loading priorities..."}}
+            </div>
+        {{ else if eq .MetadataType "status" }}
+            <div hx-get="/api/metadata/statuses" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                {{T "loading statuses..."}}
+            </div>
+        {{ else if eq .MetadataType "projects" }}
+            <div hx-get="/api/metadata/para/projects" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                {{T "loading projects..."}}
+            </div>
+        {{ else if eq .MetadataType "areas" }}
+            <div hx-get="/api/metadata/para/areas" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                {{T "loading areas..."}}
+            </div>
+        {{ else if eq .MetadataType "resources" }}
+            <div hx-get="/api/metadata/para/resources" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                {{T "loading resources..."}}
+            </div>
+        {{ else if eq .MetadataType "archive" }}
+            <div hx-get="/api/metadata/para/archive" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                {{T "loading archive..."}}
+            </div>
+        {{ else }}
+            <p>{{T "Unknown metadata type"}}: {{ .MetadataType }}</p>
+        {{ end }}
+    </div>
+</div>
+{{ end }}

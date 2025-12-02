@@ -1771,6 +1771,13 @@
             "fuzzy": true
         },
         {
+            "id": "Metadata",
+            "message": "Metadata",
+            "translation": "Metadata",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Metadata Filter",
             "message": "Metadata Filter",
             "translation": "Metadata Filter"
@@ -2918,6 +2925,13 @@
             "fuzzy": true
         },
         {
+            "id": "Unknown metadata type",
+            "message": "Unknown metadata type",
+            "translation": "Unknown metadata type",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "unsupported file type",
             "message": "unsupported file type",
             "translation": "unsupported file type",
@@ -2980,6 +2994,76 @@
             "id": "view",
             "message": "view",
             "translation": "view",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "View all archive",
+            "message": "View all archive",
+            "translation": "View all archive",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "View all areas",
+            "message": "View all areas",
+            "translation": "View all areas",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "View all collections",
+            "message": "View all collections",
+            "translation": "View all collections",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "View all folders",
+            "message": "View all folders",
+            "translation": "View all folders",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "View all priorities",
+            "message": "View all priorities",
+            "translation": "View all priorities",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "View all projects",
+            "message": "View all projects",
+            "translation": "View all projects",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "View all resources",
+            "message": "View all resources",
+            "translation": "View all resources",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "View all statuses",
+            "message": "View all statuses",
+            "translation": "View all statuses",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "View all tags",
+            "message": "View all tags",
+            "translation": "View all tags",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "View all types",
+            "message": "View all types",
+            "translation": "View all types",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },

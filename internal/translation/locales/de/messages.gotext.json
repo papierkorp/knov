@@ -1307,6 +1307,11 @@
       "translation": ""
     },
     {
+      "id": "Metadata",
+      "message": "Metadata",
+      "translation": ""
+    },
+    {
       "id": "Metadata Filter",
       "message": "Metadata Filter",
       "translation": ""
@@ -2152,6 +2157,11 @@
       "translation": ""
     },
     {
+      "id": "Unknown metadata type",
+      "message": "Unknown metadata type",
+      "translation": ""
+    },
+    {
       "id": "unsupported file type",
       "message": "unsupported file type",
       "translation": ""
@@ -2199,6 +2209,56 @@
     {
       "id": "view",
       "message": "view",
+      "translation": ""
+    },
+    {
+      "id": "View all archive",
+      "message": "View all archive",
+      "translation": ""
+    },
+    {
+      "id": "View all areas",
+      "message": "View all areas",
+      "translation": ""
+    },
+    {
+      "id": "View all collections",
+      "message": "View all collections",
+      "translation": ""
+    },
+    {
+      "id": "View all folders",
+      "message": "View all folders",
+      "translation": ""
+    },
+    {
+      "id": "View all priorities",
+      "message": "View all priorities",
+      "translation": ""
+    },
+    {
+      "id": "View all projects",
+      "message": "View all projects",
+      "translation": ""
+    },
+    {
+      "id": "View all resources",
+      "message": "View all resources",
+      "translation": ""
+    },
+    {
+      "id": "View all statuses",
+      "message": "View all statuses",
+      "translation": ""
+    },
+    {
+      "id": "View all tags",
+      "message": "View all tags",
+      "translation": ""
+    },
+    {
+      "id": "View all types",
+      "message": "View all types",
       "translation": ""
     },
     {

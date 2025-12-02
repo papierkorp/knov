@@ -78,6 +78,8 @@ func StartServerChi() {
 	r.Get("/dashboard/{id}", handleDashboardView)
 	r.Get("/dashboard/new", handleDashboardNew)
 	r.Get("/dashboard/edit/{id}", handleDashboardEdit)
+	r.Get("/browse", handleBrowse)
+	r.Get("/browse/{metadata}", handleBrowseMetadata)
 	r.Get("/browse/{metadata}/{value}", handleBrowseFiles)
 
 	// ----------------------------------------------------------------------------------------
@@ -326,8 +328,6 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("handleStatic called for: %s (base: %s)\n", filePath, basePath)
-
 	if basePath == "static" && strings.HasPrefix(filePath, "css/") {
 		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
@@ -545,6 +545,35 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 	data.Title = title
 
 	err := tm.Render(w, "browsefiles", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleBrowse(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewBaseTemplateData("Browse")
+
+	err := tm.Render(w, "browse", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleBrowseMetadata(w http.ResponseWriter, r *http.Request) {
+	metadataType := chi.URLParam(r, "metadata")
+
+	if metadataType == "" {
+		http.Error(w, "missing metadata type", http.StatusBadRequest)
+		return
+	}
+
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewBrowseMetadataTemplateData(metadataType)
+
+	err := tm.Render(w, "browsemetadata", data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return

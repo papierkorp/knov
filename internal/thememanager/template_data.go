@@ -2,6 +2,7 @@ package thememanager
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"text/template"
 
@@ -180,6 +181,25 @@ func NewBrowseFilesTemplateData(metadataType, value string) BrowseFilesTemplateD
 		BaseTemplateData: NewBaseTemplateData("Browse Files"),
 		MetadataType:     metadataType,
 		Value:            value,
+	}
+}
+
+// -----------------------------------------------
+// -------- browsemetadata TemplateData ---------
+// -----------------------------------------------
+
+// BrowseMetadataTemplateData extends base with metadata type browsing data
+type BrowseMetadataTemplateData struct {
+	BaseTemplateData
+	MetadataType string
+}
+
+// NewBrowseMetadataTemplateData creates browse metadata specific data
+func NewBrowseMetadataTemplateData(metadataType string) BrowseMetadataTemplateData {
+	title := fmt.Sprintf("Browse: %s", metadataType)
+	return BrowseMetadataTemplateData{
+		BaseTemplateData: NewBaseTemplateData(title),
+		MetadataType:     metadataType,
 	}
 }
 

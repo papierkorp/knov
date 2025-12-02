@@ -19,85 +19,68 @@
                 <div id="file-content"></div>
             </div>
         </section>
-
         <div>
             <hr/>
         </div>
-        <section class="overview-folder-browser">
-            <h2>{{T "Browse by Folder Structure"}}</h2>
-            <div class="folder-browser-container">
-                <div class="breadcrumb" id="folder-breadcrumb">
-                    <a href="#" hx-get="/api/files/folder?path=" hx-target="#folder-content">
-                        {{T "root"}}
-                    </a>
-                </div>
-                <div id="folder-content" hx-get="/api/files/folder?path=" hx-trigger="load"></div>
-            </div>
-        </section>
-
-        <div>
-            <hr/>
-        </div>
-
         <section class="overview-browse">
-            <h2>{{T "Browse by Metadata"}}</h2>
+            <h2><a href="/browse">{{T "Metadata"}}</a></h2>
             <div class="browse-grid">
                 <div class="browse-section">
-                    <h3>{{T "Tags"}}</h3>
+                    <h3><a href="/browse/tag">{{T "Tags"}}</a></h3>
                     <div hx-get="/api/metadata/tags" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading tags..."}}
                     </div>
                 </div>
                 <div class="browse-section">
-                    <h3>{{T "Collections"}}</h3>
+                    <h3><a href="/browse/collection">{{T "Collections"}}</a></h3>
                     <div hx-get="/api/metadata/collections" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading collections..."}}
                     </div>
                 </div>
                 <div class="browse-section">
-                    <h3>{{T "Folders"}}</h3>
+                    <h3><a href="/browse/folder">{{T "Folders"}}</a></h3>
                     <div hx-get="/api/metadata/folders" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading folders..."}}
                     </div>
                 </div>
                 <div class="browse-section">
-                    <h3>{{T "Type"}}</h3>
+                    <h3><a href="/browse/type">{{T "Type"}}</a></h3>
                     <div hx-get="/api/metadata/filetypes" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading types..."}}
                     </div>
                 </div>
                 <div class="browse-section">
-                    <h3>{{T "Priority"}}</h3>
+                    <h3><a href="/browse/priority">{{T "Priority"}}</a></h3>
                     <div hx-get="/api/metadata/priorities" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading priorities..."}}
                     </div>
                 </div>
                 <div class="browse-section">
-                    <h3>{{T "Status"}}</h3>
+                    <h3><a href="/browse/status">{{T "Status"}}</a></h3>
                     <div hx-get="/api/metadata/statuses" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading statuses..."}}
                     </div>
                 </div>
                 <div class="browse-section">
-                    <h3>{{T "Projects"}}</h3>
+                    <h3><a href="/browse/projects">{{T "Projects"}}</a></h3>
                     <div hx-get="/api/metadata/para/projects" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading projects..."}}
                     </div>
                 </div>
                 <div class="browse-section">
-                    <h3>{{T "Areas"}}</h3>
+                    <h3><a href="/browse/areas">{{T "Areas"}}</a></h3>
                     <div hx-get="/api/metadata/para/areas" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading areas..."}}
                     </div>
                 </div>
                 <div class="browse-section">
-                    <h3>{{T "Resources"}}</h3>
+                    <h3><a href="/browse/resources">{{T "Resources"}}</a></h3>
                     <div hx-get="/api/metadata/para/resources" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading resources..."}}
                     </div>
                 </div>
                 <div class="browse-section">
-                    <h3>{{T "Archive"}}</h3>
+                    <h3><a href="/browse/archive">{{T "Archive"}}</a></h3>
                     <div hx-get="/api/metadata/para/archive" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                         {{T "loading archive..."}}
                     </div>

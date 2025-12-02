@@ -50,23 +50,25 @@ type ThemeSetting struct {
 }
 
 type ThemeTemplates struct {
-	admin         *template.Template
-	base          *template.Template
-	browsefiles   *template.Template
-	dashboardview *template.Template
-	dashboardedit *template.Template
-	dashboardnew  *template.Template
-	fileedit      *template.Template
-	filenew       *template.Template
-	fileview      *template.Template
-	help          *template.Template
-	history       *template.Template
-	home          *template.Template
-	latestchanges *template.Template
-	overview      *template.Template
-	playground    *template.Template
-	search        *template.Template
-	settings      *template.Template
+	admin          *template.Template
+	base           *template.Template
+	browse         *template.Template
+	browsemetadata *template.Template
+	browsefiles    *template.Template
+	dashboardview  *template.Template
+	dashboardedit  *template.Template
+	dashboardnew   *template.Template
+	fileedit       *template.Template
+	filenew        *template.Template
+	fileview       *template.Template
+	help           *template.Template
+	history        *template.Template
+	home           *template.Template
+	latestchanges  *template.Template
+	overview       *template.Template
+	playground     *template.Template
+	search         *template.Template
+	settings       *template.Template
 }
 
 func InitThemeManager() {
@@ -178,6 +180,10 @@ func LoadSingleTheme(themeName, themesDir string) error {
 			templates.admin = tmpl
 		case "base":
 			templates.base = tmpl
+		case "browse":
+			templates.browse = tmpl
+		case "browsemetadata":
+			templates.browsemetadata = tmpl
 		case "browsefiles":
 			templates.browsefiles = tmpl
 		case "dashboardview":
@@ -448,23 +454,25 @@ func (tm *ThemeManager) SetCurrentTheme(theme Theme) error {
 
 func (t *Theme) TemplateMap() map[string]*template.Template {
 	return map[string]*template.Template{
-		"admin":         t.Templates.admin,
-		"base":          t.Templates.base,
-		"browsefiles":   t.Templates.browsefiles,
-		"dashboardview": t.Templates.dashboardview,
-		"dashboardedit": t.Templates.dashboardedit,
-		"dashboardnew":  t.Templates.dashboardnew,
-		"fileedit":      t.Templates.fileedit,
-		"filenew":       t.Templates.filenew,
-		"fileview":      t.Templates.fileview,
-		"help":          t.Templates.help,
-		"history":       t.Templates.history,
-		"home":          t.Templates.home,
-		"latestchanges": t.Templates.latestchanges,
-		"overview":      t.Templates.overview,
-		"playground":    t.Templates.playground,
-		"search":        t.Templates.search,
-		"settings":      t.Templates.settings,
+		"admin":          t.Templates.admin,
+		"base":           t.Templates.base,
+		"browse":         t.Templates.browse,
+		"browsemetadata": t.Templates.browsemetadata,
+		"browsefiles":    t.Templates.browsefiles,
+		"dashboardview":  t.Templates.dashboardview,
+		"dashboardedit":  t.Templates.dashboardedit,
+		"dashboardnew":   t.Templates.dashboardnew,
+		"fileedit":       t.Templates.fileedit,
+		"filenew":        t.Templates.filenew,
+		"fileview":       t.Templates.fileview,
+		"help":           t.Templates.help,
+		"history":        t.Templates.history,
+		"home":           t.Templates.home,
+		"latestchanges":  t.Templates.latestchanges,
+		"overview":       t.Templates.overview,
+		"playground":     t.Templates.playground,
+		"search":         t.Templates.search,
+		"settings":       t.Templates.settings,
 	}
 }
 

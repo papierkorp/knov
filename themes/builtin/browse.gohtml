@@ -1,0 +1,65 @@
+{{ define "content" }}
+<div id="page-browse">
+    <h1>{{T "Browse"}}</h1>
+
+    <div class="browse-sections">
+        <section class="browse-folder-browser">
+            <h2>{{T "Browse by Folder Structure"}}</h2>
+            <div class="folder-browser-container">
+                <div class="breadcrumb" id="folder-breadcrumb">
+                    <a href="#" hx-get="/api/files/folder?path=" hx-target="#folder-content">
+                        {{T "root"}}
+                    </a>
+                </div>
+                <div id="folder-content" hx-get="/api/files/folder?path=" hx-trigger="load"></div>
+            </div>
+        </section>
+
+        <section class="browse-metadata">
+            <h2>{{T "Browse by Metadata"}}</h2>
+            <div class="browse-grid">
+                <div class="browse-section">
+                    <h3>{{T "Tags"}}</h3>
+                    <a href="/browse/tag" class="browse-link">{{T "View all tags"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Collections"}}</h3>
+                    <a href="/browse/collection" class="browse-link">{{T "View all collections"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Folders"}}</h3>
+                    <a href="/browse/folder" class="browse-link">{{T "View all folders"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Type"}}</h3>
+                    <a href="/browse/type" class="browse-link">{{T "View all types"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Priority"}}</h3>
+                    <a href="/browse/priority" class="browse-link">{{T "View all priorities"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Status"}}</h3>
+                    <a href="/browse/status" class="browse-link">{{T "View all statuses"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Projects"}}</h3>
+                    <a href="/browse/projects" class="browse-link">{{T "View all projects"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Areas"}}</h3>
+                    <a href="/browse/areas" class="browse-link">{{T "View all areas"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Resources"}}</h3>
+                    <a href="/browse/resources" class="browse-link">{{T "View all resources"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "Archive"}}</h3>
+                    <a href="/browse/archive" class="browse-link">{{T "View all archive"}}</a>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{{ end }}
