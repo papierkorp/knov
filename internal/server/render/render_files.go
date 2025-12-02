@@ -129,7 +129,7 @@ func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir [
 			html.WriteString(fmt.Sprintf(`
 				<li class="folder-item folder-parent">
 					<a href="#" hx-get="/api/files/folder?path=%s" hx-target="#folder-content">
-						() ..
+						/ ..
 					</a>
 				</li>`,
 				parentPath))
@@ -139,7 +139,7 @@ func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir [
 			html.WriteString(fmt.Sprintf(`
 				<li class="folder-item">
 					<a href="#" hx-get="/api/files/folder?path=%s" hx-target="#folder-content">
-						() %s
+						/ %s
 					</a>
 				</li>`,
 				folder.Path, folder.Name))

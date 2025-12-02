@@ -4,15 +4,15 @@
         <h1>{{T "Files with"}} {{ .MetadataType }}: <span class="filter-value">{{ .Value }}</span></h1>
         <div class="browse-breadcrumb">
             <a href="/">{{T "Home"}}</a>
-            → <a href="/overview">{{T "Browse"}}</a>
+            → <a href="/browse">{{T "Browse"}}</a>
             → <span>{{ .MetadataType }}: {{ .Value }}</span>
         </div>
     </div>
     <div class="browse-content">
-        <div 
-            hx-get="/api/files/browse?metadata={{ .MetadataType }}&value={{ urlQuery .Value }}" 
-            hx-trigger="load" 
-            hx-headers='{"Accept": "text/html"}' 
+        <div
+            hx-get="/api/files/browse?metadata={{ .MetadataType }}&value={{ urlQuery .Value }}"
+            hx-trigger="load"
+            hx-headers='{"Accept": "text/html"}'
             class="filter-results"
         >
             {{T "Loading files..."}}
