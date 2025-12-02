@@ -1,0 +1,39 @@
+#page-help h1 {
+    font-size: 1.5em;
+    font-style: italic;
+    letter-spacing: 5px;
+    border-left: 5px solid var(--primary);
+    padding: 0.5em;
+    margin-top: 3em;
+    background-color: var(--bg-secondary);
+    overflow-wrap: break-word;
+    color: var(--text);
+}
+
+#page-help h1:first-child {
+    margin-top: 0em;
+}
+
+#page-help h2 {
+    font-size: 1.25em;
+    letter-spacing: 5px;
+    border-bottom: 1px solid var(--primary);
+    margin-top: 2.5em;
+    padding-bottom: 0.5em;
+    padding-left: 0;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
+
+#page-help h3,
+#page-help h4,
+#page-help h5,
+#page-help h6 {
+    font-size: 1.12em;
+    border-bottom: 1px dotted var(--text-secondary);
+    margin-top: 2em;
+    padding-bottom: 0.5em;
+    padding-left: 0;
+    color: var(--text);
+    overflow-wrap: break-word;
+}
