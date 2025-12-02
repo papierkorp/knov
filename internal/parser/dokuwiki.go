@@ -212,11 +212,33 @@ func (h *DokuwikiHandler) processDokuWikiLinks(content string) string {
 			title = strings.TrimSpace(matches[2])
 		}
 
+		// check if it's a URL (external link)
+		if strings.HasPrefix(link, "http://") || strings.HasPrefix(link, "https://") {
+			return `<a href="` + link + `" target="_blank" rel="noopener noreferrer">` + title + `</a>`
+		}
+
+		// check for special protocols (apt://, etc.)
+		if strings.Contains(link, "://") {
+			return `<a href="` + link + `" target="_blank" rel="noopener noreferrer">` + title + `</a>`
+		}
+
+		// handle internal dokuwiki links with namespaces (colons) and anchors
+		var anchor string
+		if strings.Contains(link, "#") {
+			parts := strings.Split(link, "#")
+			link = parts[0]
+			anchor = "#" + parts[1]
+		}
+
+		// convert dokuwiki namespace (colons) to filesystem path (slashes)
+		link = strings.ReplaceAll(link, ":", "/")
+
+		// add .txt extension if no extension present
 		if !strings.HasSuffix(link, ".md") && !strings.HasSuffix(link, ".txt") {
 			link += ".txt"
 		}
 
-		return `<a href="/files/` + link + `">` + title + `</a>`
+		return `<a href="/files/` + link + anchor + `">` + title + `</a>`
 	})
 
 	return content
@@ -241,7 +263,25 @@ func (h *DokuwikiHandler) extractDokuWikiLinks(content string) []string {
 			}
 			link = strings.TrimSpace(link)
 
-			if !linkSet[link] {
+			// skip URLs and special protocols - only extract internal links for metadata
+			if strings.Contains(link, "://") {
+				continue
+			}
+
+			// remove anchor for metadata (but keep the base link)
+			if strings.Contains(link, "#") {
+				link = strings.Split(link, "#")[0]
+			}
+
+			// convert dokuwiki namespace (colons) to filesystem path (slashes)
+			link = strings.ReplaceAll(link, ":", "/")
+
+			// add .txt extension for dokuwiki files
+			if link != "" && !strings.HasSuffix(link, ".md") && !strings.HasSuffix(link, ".txt") {
+				link += ".txt"
+			}
+
+			if link != "" && !linkSet[link] {
 				linkSet[link] = true
 				links = append(links, link)
 			}
@@ -397,7 +437,7 @@ func (h *DokuwikiHandler) detectCellAlignment(cell string) string {
 func (h *DokuwikiHandler) detectCellType(content string) string {
 	content = strings.TrimSpace(content)
 
-	if matched, _ := regexp.MatchString(`^[$â‚¬Â£Â¥]\s*[\d,]+\.?\d*$`, content); matched {
+	if matched, _ := regexp.MatchString(`^[$Ã¢â€šÂ¬Ã‚Â£Ã‚Â¥]\s*[\d,]+\.?\d*$`, content); matched {
 		return "currency"
 	}
 	if matched, _ := regexp.MatchString(`^\d+\.?\d*$`, content); matched {
