@@ -91,9 +91,23 @@
             "fuzzy": true
         },
         {
+            "id": "add item",
+            "message": "add item",
+            "translation": "add item",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Add keywords like work, personal, ideas",
             "message": "Add keywords like work, personal, ideas",
             "translation": "Add keywords like work, personal, ideas",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "add nested item",
+            "message": "add nested item",
+            "translation": "add nested item",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -454,13 +468,6 @@
             "fuzzy": true
         },
         {
-            "id": "Configure Settings",
-            "message": "Configure Settings",
-            "translation": "Configure Settings",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Configure your preferences and data paths",
             "message": "Configure your preferences and data paths",
             "translation": "Configure your preferences and data paths",
@@ -542,13 +549,6 @@
             "id": "Create standard formats for meeting notes, project plans, etc.",
             "message": "Create standard formats for meeting notes, project plans, etc.",
             "translation": "Create standard formats for meeting notes, project plans, etc.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Create Your First Note",
-            "message": "Create Your First Note",
-            "translation": "Create Your First Note",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -707,9 +707,23 @@
             "fuzzy": true
         },
         {
+            "id": "delete",
+            "message": "delete",
+            "translation": "delete",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Delete",
             "message": "Delete",
             "translation": "Delete"
+        },
+        {
+            "id": "delete this item and all its nested items?",
+            "message": "delete this item and all its nested items?",
+            "translation": "delete this item and all its nested items?",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
         },
         {
             "id": "Design your custom dashboard with widgets",
@@ -973,6 +987,13 @@
             "fuzzy": true
         },
         {
+            "id": "failed to parse list content",
+            "message": "failed to parse list content",
+            "translation": "failed to parse list content",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "failed to parse table",
             "message": "failed to parse table",
             "translation": "failed to parse table",
@@ -1048,6 +1069,13 @@
             "id": "failed to save index",
             "message": "failed to save index",
             "translation": "failed to save index",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to save list",
+            "message": "failed to save list",
+            "translation": "failed to save list",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1331,13 +1359,6 @@
             "fuzzy": true
         },
         {
-            "id": "Go to Dashboard",
-            "message": "Go to Dashboard",
-            "translation": "Go to Dashboard",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "greater than",
             "message": "greater than",
             "translation": "greater than",
@@ -1427,6 +1448,13 @@
             "id": "Include",
             "message": "Include",
             "translation": "Include"
+        },
+        {
+            "id": "indent",
+            "message": "indent",
+            "translation": "indent",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
         },
         {
             "id": "index configuration",
@@ -1589,6 +1617,13 @@
             "id": "list",
             "message": "list",
             "translation": "list",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "list saved successfully",
+            "message": "list saved successfully",
+            "translation": "list saved successfully",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2059,6 +2094,13 @@
             "fuzzy": true
         },
         {
+            "id": "outdent",
+            "message": "outdent",
+            "translation": "outdent",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Overview",
             "message": "Overview",
             "translation": "Overview"
@@ -2104,6 +2146,13 @@
             "fuzzy": true
         },
         {
+            "id": "path/to/file.list",
+            "message": "path/to/file.list",
+            "translation": "path/to/file.list",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "path/to/file.md",
             "message": "path/to/file.md",
             "translation": "path/to/file.md",
@@ -2142,6 +2191,20 @@
             "id": "Playground",
             "message": "Playground",
             "translation": "Playground"
+        },
+        {
+            "id": "please add a regular item first, then click on it to add a nested item under it",
+            "message": "please add a regular item first, then click on it to add a nested item under it",
+            "translation": "please add a regular item first, then click on it to add a nested item under it",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "please select an item first",
+            "message": "please select an item first",
+            "translation": "please select an item first",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
         },
         {
             "id": "position x",
@@ -2236,13 +2299,6 @@
             "id": "Projects",
             "message": "Projects",
             "translation": "Projects",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Quick Links:",
-            "message": "Quick Links:",
-            "translation": "Quick Links:",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2508,13 +2564,6 @@
             "translation": "Search Results"
         },
         {
-            "id": "Search Your Knowledge",
-            "message": "Search Your Knowledge",
-            "translation": "Search Your Knowledge",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "See Relationships",
             "message": "See Relationships",
             "translation": "See Relationships",
@@ -2646,6 +2695,13 @@
             "fuzzy": true
         },
         {
+            "id": "shift+tab",
+            "message": "shift+tab",
+            "translation": "shift+tab",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Simple Folders",
             "message": "Simple Folders",
             "translation": "Simple Folders",
@@ -2752,6 +2808,13 @@
             "id": "System maintenance operations",
             "message": "System maintenance operations",
             "translation": "System maintenance operations",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "tab",
+            "message": "tab",
+            "translation": "tab",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2872,6 +2935,13 @@
             "id": "Type anything to find notes containing those words",
             "message": "Type anything to find notes containing those words",
             "translation": "Type anything to find notes containing those words",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "type here...",
+            "message": "type here...",
+            "translation": "type here...",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },

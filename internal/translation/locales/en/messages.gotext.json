@@ -67,8 +67,18 @@
       "translation": ""
     },
     {
+      "id": "add item",
+      "message": "add item",
+      "translation": ""
+    },
+    {
       "id": "Add keywords like work, personal, ideas",
       "message": "Add keywords like work, personal, ideas",
+      "translation": ""
+    },
+    {
+      "id": "add nested item",
+      "message": "add nested item",
       "translation": ""
     },
     {
@@ -342,11 +352,6 @@
       "translation": ""
     },
     {
-      "id": "Configure Settings",
-      "message": "Configure Settings",
-      "translation": ""
-    },
-    {
       "id": "Configure your preferences and data paths",
       "message": "Configure your preferences and data paths",
       "translation": ""
@@ -409,11 +414,6 @@
     {
       "id": "Create standard formats for meeting notes, project plans, etc.",
       "message": "Create standard formats for meeting notes, project plans, etc.",
-      "translation": ""
-    },
-    {
-      "id": "Create Your First Note",
-      "message": "Create Your First Note",
       "translation": ""
     },
     {
@@ -527,9 +527,19 @@
       "translation": ""
     },
     {
+      "id": "delete",
+      "message": "delete",
+      "translation": ""
+    },
+    {
       "id": "Delete",
       "message": "Delete",
       "translation": "Delete"
+    },
+    {
+      "id": "delete this item and all its nested items?",
+      "message": "delete this item and all its nested items?",
+      "translation": ""
     },
     {
       "id": "Design your custom dashboard with widgets",
@@ -727,6 +737,11 @@
       "translation": ""
     },
     {
+      "id": "failed to parse list content",
+      "message": "failed to parse list content",
+      "translation": ""
+    },
+    {
       "id": "failed to parse table",
       "message": "failed to parse table",
       "translation": ""
@@ -774,6 +789,11 @@
     {
       "id": "failed to save index",
       "message": "failed to save index",
+      "translation": ""
+    },
+    {
+      "id": "failed to save list",
+      "message": "failed to save list",
       "translation": ""
     },
     {
@@ -982,11 +1002,6 @@
       "translation": ""
     },
     {
-      "id": "Go to Dashboard",
-      "message": "Go to Dashboard",
-      "translation": ""
-    },
-    {
       "id": "greater than",
       "message": "greater than",
       "translation": ""
@@ -1060,6 +1075,11 @@
       "id": "Include",
       "message": "Include",
       "translation": "Include"
+    },
+    {
+      "id": "indent",
+      "message": "indent",
+      "translation": ""
     },
     {
       "id": "index configuration",
@@ -1174,6 +1194,11 @@
     {
       "id": "list",
       "message": "list",
+      "translation": ""
+    },
+    {
+      "id": "list saved successfully",
+      "message": "list saved successfully",
       "translation": ""
     },
     {
@@ -1517,6 +1542,11 @@
       "translation": ""
     },
     {
+      "id": "outdent",
+      "message": "outdent",
+      "translation": ""
+    },
+    {
       "id": "Overview",
       "message": "Overview",
       "translation": "Overview"
@@ -1552,6 +1582,11 @@
       "translation": ""
     },
     {
+      "id": "path/to/file.list",
+      "message": "path/to/file.list",
+      "translation": ""
+    },
+    {
       "id": "path/to/file.md",
       "message": "path/to/file.md",
       "translation": ""
@@ -1580,6 +1615,16 @@
       "id": "Playground",
       "message": "Playground",
       "translation": "Playground"
+    },
+    {
+      "id": "please add a regular item first, then click on it to add a nested item under it",
+      "message": "please add a regular item first, then click on it to add a nested item under it",
+      "translation": ""
+    },
+    {
+      "id": "please select an item first",
+      "message": "please select an item first",
+      "translation": ""
     },
     {
       "id": "position x",
@@ -1649,11 +1694,6 @@
     {
       "id": "Projects",
       "message": "Projects",
-      "translation": ""
-    },
-    {
-      "id": "Quick Links:",
-      "message": "Quick Links:",
       "translation": ""
     },
     {
@@ -1852,11 +1892,6 @@
       "translation": "Search Results"
     },
     {
-      "id": "Search Your Knowledge",
-      "message": "Search Your Knowledge",
-      "translation": ""
-    },
-    {
       "id": "See Relationships",
       "message": "See Relationships",
       "translation": ""
@@ -1952,6 +1987,11 @@
       "translation": ""
     },
     {
+      "id": "shift+tab",
+      "message": "shift+tab",
+      "translation": ""
+    },
+    {
       "id": "Simple Folders",
       "message": "Simple Folders",
       "translation": ""
@@ -2029,6 +2069,11 @@
     {
       "id": "System maintenance operations",
       "message": "System maintenance operations",
+      "translation": ""
+    },
+    {
+      "id": "tab",
+      "message": "tab",
       "translation": ""
     },
     {
@@ -2119,6 +2164,11 @@
     {
       "id": "Type anything to find notes containing those words",
       "message": "Type anything to find notes containing those words",
+      "translation": ""
+    },
+    {
+      "id": "type here...",
+      "message": "type here...",
       "translation": ""
     },
     {
