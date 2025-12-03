@@ -33,7 +33,7 @@ func main() {
 	configmanager.InitAppConfig()
 	translation.Init()
 	storage.Init(configmanager.GetStorageMethod(), configmanager.GetConfigPath())
-	configmanager.InitUserSettings("default")
+	configmanager.InitUserSettings()
 	translation.SetLanguage(configmanager.GetLanguage())
 
 	thememanager.InitThemeManager()

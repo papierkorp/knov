@@ -119,7 +119,6 @@ func parseWidgetsFromForm(r *http.Request) ([]dashboard.Widget, error) {
 // @Produce json,html
 // @Param name formData string true "Dashboard name"
 // @Param layout formData string true "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)"
-// @Param global formData string false "Global dashboard (true/false)"
 // @Param widgets[0][type] formData string false "Widget type (filter, filterForm, fileContent, static, tags, collections, folders)"
 // @Param widgets[0][title] formData string false "Widget title"
 // @Param widgets[0][position][x] formData int false "Widget X position"
@@ -135,14 +134,11 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 
 	name := r.FormValue("name")
 	layout := dashboard.Layout(r.FormValue("layout"))
-	globalStr := r.FormValue("global")
 
 	if name == "" {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "name is required"), http.StatusBadRequest)
 		return
 	}
-
-	global, _ := strconv.ParseBool(globalStr)
 
 	// Parse widgets from form data - handle both old and new format
 	widgets, err := parseWidgetsFromForm(r)
@@ -155,7 +151,6 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 	dash := &dashboard.Dashboard{
 		Name:    name,
 		Layout:  layout,
-		Global:  global,
 		Widgets: widgets,
 	}
 
@@ -198,7 +193,6 @@ func handleAPIGetDashboard(w http.ResponseWriter, r *http.Request) {
 // @Param id path string true "Dashboard ID"
 // @Param name formData string false "Dashboard name"
 // @Param layout formData string false "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)"
-// @Param global formData string false "Global dashboard"
 // @Param widgets[0][type] formData string false "Widget type"
 // @Param widgets[0][title] formData string false "Widget title"
 // @Param widgets[0][position][x] formData int false "Widget X position"
@@ -226,12 +220,6 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 	if layout := r.FormValue("layout"); layout != "" {
 		dash.Layout = dashboard.Layout(layout)
-	}
-	if globalStr := r.FormValue("global"); globalStr != "" {
-		global, _ := strconv.ParseBool(globalStr)
-		dash.Global = global
-	} else {
-		dash.Global = false
 	}
 
 	widgets, err := parseWidgetsFromForm(r)

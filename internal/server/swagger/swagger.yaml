@@ -2,8 +2,6 @@ basePath: /
 definitions:
   dashboard.Dashboard:
     properties:
-      global:
-        type: boolean
       id:
         type: string
       layout:
@@ -599,10 +597,6 @@ paths:
         name: layout
         required: true
         type: string
-      - description: Global dashboard (true/false)
-        in: formData
-        name: global
-        type: string
       - description: Widget type (filter, filterForm, fileContent, static, tags, collections,
           folders)
         in: formData
@@ -691,10 +685,6 @@ paths:
       - description: Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)
         in: formData
         name: layout
-        type: string
-      - description: Global dashboard
-        in: formData
-        name: global
         type: string
       - description: Widget type
         in: formData

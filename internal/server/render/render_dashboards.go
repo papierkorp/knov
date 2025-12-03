@@ -108,19 +108,6 @@ func RenderDashboardForm(dash *dashboard.Dashboard, isEdit bool) string {
 	html.WriteString(`</select>`)
 	html.WriteString(`</div>`)
 
-	// global checkbox
-	html.WriteString(`<div class="form-group checkbox-group">`)
-	html.WriteString(`<label class="checkbox-label">`)
-	globalChecked := ""
-	if dash != nil && dash.Global {
-		globalChecked = "checked"
-	}
-	html.WriteString(fmt.Sprintf(`<input type="checkbox" name="global" value="true" %s class="form-checkbox"/>`, globalChecked))
-	html.WriteString(`<span class="checkmark"></span>`)
-	html.WriteString(translation.SprintfForRequest(configmanager.GetLanguage(), "global dashboard"))
-	html.WriteString(fmt.Sprintf(`<small>%s</small>`, translation.SprintfForRequest(configmanager.GetLanguage(), "visible to all users")))
-	html.WriteString(`</label>`)
-	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
 

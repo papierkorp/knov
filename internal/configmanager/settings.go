@@ -15,7 +15,6 @@ import (
 // -----------------------------------------------------------------------------
 
 var userSettings UserSettings
-var currentUserID string
 var configPath string
 
 // UserSettings contains user-specific settings stored in JSON
@@ -25,9 +24,8 @@ type UserSettings struct {
 	ThemeSettings AllThemeSettings `json:"themeSettings,omitempty"`
 }
 
-// InitUserSettings initializes user settings from direct JSON file for specific user
-func InitUserSettings(userID string) {
-	currentUserID = userID
+// InitUserSettings initializes user settings from direct JSON file
+func InitUserSettings() {
 	configPath = GetAppConfig().ConfigPath
 	userSettings = UserSettings{
 		Theme:         "builtin",
@@ -35,25 +33,25 @@ func InitUserSettings(userID string) {
 		ThemeSettings: make(AllThemeSettings),
 	}
 
-	settingsPath := getUserSettingsPath(userID)
+	settingsPath := getUserSettingsPath()
 	data, err := os.ReadFile(settingsPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			logging.LogInfo("no user settings found for user %s, using defaults", userID)
+			logging.LogInfo("no user settings found, using defaults")
 			saveUserSettings()
 			return
 		}
-		logging.LogError("failed to read user settings for user %s: %v", userID, err)
+		logging.LogError("failed to read user settings: %v", err)
 		return
 	}
 
 	if err := json.Unmarshal(data, &userSettings); err != nil {
-		logging.LogError("failed to decode user settings for user %s: %s", userID, err)
+		logging.LogError("failed to decode user settings: %s", err)
 		return
 	}
 
 	translation.SetLanguage(userSettings.Language)
-	logging.LogInfo("user settings loaded for user: %s", userID)
+	logging.LogInfo("user settings loaded")
 }
 
 // GetUserSettings returns current user settings
@@ -67,18 +65,13 @@ func SetUserSettings(settings UserSettings) {
 	saveUserSettings()
 }
 
-// SwitchUser changes the active user and loads their settings
-func SwitchUser(userID string) {
-	InitUserSettings(userID)
-}
-
 func saveUserSettings() error {
 	data, err := json.Marshal(userSettings)
 	if err != nil {
 		return fmt.Errorf("failed to marshal user settings: %s", err)
 	}
 
-	settingsPath := getUserSettingsPath(currentUserID)
+	settingsPath := getUserSettingsPath()
 	settingsDir := filepath.Dir(settingsPath)
 
 	if err := os.MkdirAll(settingsDir, 0755); err != nil {
@@ -89,11 +82,11 @@ func saveUserSettings() error {
 		return fmt.Errorf("failed to save user settings: %s", err)
 	}
 
-	logging.LogInfo("user settings saved for user: %s", currentUserID)
+	logging.LogInfo("user settings saved")
 	return nil
 }
 
 // getUserSettingsPath returns the file path for user settings JSON file
-func getUserSettingsPath(userID string) string {
-	return filepath.Join(configPath, "user", userID, "settings.json")
+func getUserSettingsPath() string {
+	return filepath.Join(configPath, "settings.json")
 }

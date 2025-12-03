@@ -317,12 +317,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Global dashboard (true/false)",
-                        "name": "global",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
                         "description": "Widget type (filter, filterForm, fileContent, static, tags, collections, folders)",
                         "name": "widgets[0][type]",
                         "in": "formData"
@@ -629,12 +623,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Dashboard layout (oneColumn, twoColumns, threeColumns, fourColumns)",
                         "name": "layout",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Global dashboard",
-                        "name": "global",
                         "in": "formData"
                     },
                     {
@@ -3426,9 +3414,6 @@ const docTemplate = `{
         "dashboard.Dashboard": {
             "type": "object",
             "properties": {
-                "global": {
-                    "type": "boolean"
-                },
                 "id": {
                     "type": "string"
                 },
