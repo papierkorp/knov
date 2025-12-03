@@ -7,55 +7,65 @@
     "darkMode": {
       "type": "boolean",
       "default": false,
-      "label": "Dark Mode"
+      "label": "Dark Mode",
+      "description": "enable dark theme appearance for better readability in low light"
     },
     "colorScheme": {
       "type": "select",
       "options": ["default", "green", "red", "purple"],
       "default": "default",
-      "label": "Color Scheme"
+      "label": "Color Scheme",
+      "description": "choose the color theme for the interface"
     },
     "customCSS": {
       "type": "textarea",
       "default": "",
-      "label": "Custom CSS"
+      "label": "Custom CSS",
+      "description": "add your own css styles to customize the appearance"
     },
     "fileView": {
       "type": "select",
       "options": ["detailed", "compact", "reader"],
       "default": "detailed",
-      "label": "File View"
+      "label": "File View",
+      "description": "choose how files are displayed - detailed shows metadata, compact saves space, reader optimizes for reading"
     },
     "fontFamily": {
       "type": "select",
       "options": ["system", "serif", "mono"],
       "default": "system",
-      "label": "Font Family"
+      "label": "Font Family",
+      "description": "select the font style for text display"
     },
     "sidebarMetadata": {
       "type": "boolean",
       "default": true,
-      "label": "Show Metadata"
+      "label": "Show Metadata",
+      "description": "display file metadata information in the sidebar"
     },
     "sidebarPara": {
       "type": "boolean",
       "default": true,
-      "label": "Show PARA Organization"
+      "label": "Show PARA Organization",
+      "description": "show para method organization structure in the sidebar"
     },
     "sidebarConnections": {
       "type": "boolean",
       "default": true,
-      "label": "Show Connections"
+      "label": "Show Connections",
+      "description": "display linked files and connections in the sidebar"
     },
     "sidebarToc": {
       "type": "boolean",
       "default": true,
-      "label": "Show Table of Contents"
+      "label": "Show Table of Contents",
+      "description": "show document outline and table of contents"
     },
     "sidebarVersionHistory": {
       "type": "boolean",
       "default": true,
-      "label": "Show Version History"
+      "label": "Show Version History",
+      "description": "display file version history and changes"
     },
     "linkDisplayMode": {
       "type": "select",

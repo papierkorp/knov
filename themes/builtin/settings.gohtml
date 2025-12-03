@@ -13,7 +13,7 @@
     <h2>{{T "General Settings"}}</h2>
     <div class="setting-item">
         <form hx-post="/api/config/language" hx-trigger="change">
-            <label for="language">Select Language:</label>
+            <label for="language" class="tooltip" data-tooltip="{{T "choose your preferred interface language"}}">{{T "Select Language"}}:</label>
             <select
                 name="language"
                 id="language"
@@ -33,7 +33,7 @@
     <h2>{{T "Theme Settings"}}</h2>
     <div class="setting-item">
         <form hx-post="/api/themes/" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
-            <label for="theme">Select Theme:</label>
+            <label for="theme" class="tooltip" data-tooltip="{{T "choose the visual appearance of the interface"}}">{{T "Select Theme"}}:</label>
             <select
                 name="theme"
                 id="theme"
