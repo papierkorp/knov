@@ -52,11 +52,6 @@
       "translation": ""
     },
     {
-      "id": "Add Filter",
-      "message": "Add Filter",
-      "translation": "Add Filter"
-    },
-    {
       "id": "Add filtered views of your most important content",
       "message": "Add filtered views of your most important content",
       "translation": ""
@@ -137,19 +132,9 @@
       "translation": ""
     },
     {
-      "id": "AND",
-      "message": "AND",
-      "translation": "AND"
-    },
-    {
       "id": "apply filter",
       "message": "apply filter",
       "translation": ""
-    },
-    {
-      "id": "Apply Filter",
-      "message": "Apply Filter",
-      "translation": "Apply Filter"
     },
     {
       "id": "archive",
@@ -205,11 +190,6 @@
       "id": "Batch Operations",
       "message": "Batch Operations",
       "translation": ""
-    },
-    {
-      "id": "Boards",
-      "message": "Boards",
-      "translation": "Boards"
     },
     {
       "id": "bold",
@@ -282,8 +262,18 @@
       "translation": ""
     },
     {
+      "id": "choose the visual appearance of the interface",
+      "message": "choose the visual appearance of the interface",
+      "translation": ""
+    },
+    {
       "id": "Choose what works for you - use one or combine them:",
       "message": "Choose what works for you - use one or combine them:",
+      "translation": ""
+    },
+    {
+      "id": "choose your preferred interface language",
+      "message": "choose your preferred interface language",
       "translation": ""
     },
     {
@@ -367,11 +357,6 @@
       "translation": ""
     },
     {
-      "id": "Contains",
-      "message": "Contains",
-      "translation": "Contains"
-    },
-    {
       "id": "content",
       "message": "content",
       "translation": ""
@@ -390,11 +375,6 @@
       "id": "create dashboard",
       "message": "create dashboard",
       "translation": ""
-    },
-    {
-      "id": "Created Date",
-      "message": "Created Date",
-      "translation": "Created Date"
     },
     {
       "id": "Create different views for work, personal, or projects",
@@ -607,11 +587,6 @@
       "translation": ""
     },
     {
-      "id": "Equals",
-      "message": "Equals",
-      "translation": "Equals"
-    },
-    {
       "id": "Error",
       "message": "Error",
       "translation": ""
@@ -625,11 +600,6 @@
       "id": "Every note can be labeled with helpful information:",
       "message": "Every note can be labeled with helpful information:",
       "translation": ""
-    },
-    {
-      "id": "Exclude",
-      "message": "Exclude",
-      "translation": "Exclude"
     },
     {
       "id": "Expected Files",
@@ -669,11 +639,6 @@
     {
       "id": "failed to create directory",
       "message": "failed to create directory",
-      "translation": ""
-    },
-    {
-      "id": "failed to create file",
-      "message": "failed to create file",
       "translation": ""
     },
     {
@@ -897,11 +862,6 @@
       "translation": ""
     },
     {
-      "id": "Filtered results will appear here",
-      "message": "Filtered results will appear here",
-      "translation": "Filtered results will appear here"
-    },
-    {
       "id": "Filter Examples",
       "message": "Filter Examples",
       "translation": ""
@@ -997,19 +957,9 @@
       "translation": ""
     },
     {
-      "id": "global dashboard",
-      "message": "global dashboard",
-      "translation": ""
-    },
-    {
       "id": "greater than",
       "message": "greater than",
       "translation": ""
-    },
-    {
-      "id": "Greater Than",
-      "message": "Greater Than",
-      "translation": "Greater Than"
     },
     {
       "id": "Group related content together",
@@ -1030,11 +980,6 @@
       "id": "Heading",
       "message": "Heading",
       "translation": ""
-    },
-    {
-      "id": "Hello World from templ at home in the dark!",
-      "message": "Hello World from templ at home in the dark!",
-      "translation": "Hello World from templ at home in the dark!"
     },
     {
       "id": "Help",
@@ -1065,16 +1010,6 @@
       "id": "in array",
       "message": "in array",
       "translation": ""
-    },
-    {
-      "id": "In Array",
-      "message": "In Array",
-      "translation": "In Array"
-    },
-    {
-      "id": "Include",
-      "message": "Include",
-      "translation": "Include"
     },
     {
       "id": "indent",
@@ -1137,11 +1072,6 @@
       "translation": ""
     },
     {
-      "id": "Last Edited",
-      "message": "Last Edited",
-      "translation": "Last Edited"
-    },
-    {
       "id": "Latest Changes",
       "message": "Latest Changes",
       "translation": "Latest Changes"
@@ -1170,11 +1100,6 @@
       "id": "less than",
       "message": "less than",
       "translation": ""
-    },
-    {
-      "id": "Less Than",
-      "message": "Less Than",
-      "translation": "Less Than"
     },
     {
       "id": "limit",
@@ -1335,11 +1260,6 @@
       "id": "Metadata",
       "message": "Metadata",
       "translation": ""
-    },
-    {
-      "id": "Metadata Filter",
-      "message": "Metadata Filter",
-      "translation": "Metadata Filter"
     },
     {
       "id": "missing commit parameter",
@@ -1522,11 +1442,6 @@
       "translation": ""
     },
     {
-      "id": "OR",
-      "message": "OR",
-      "translation": "OR"
-    },
-    {
       "id": "Organization Methods",
       "message": "Organization Methods",
       "translation": ""
@@ -1679,11 +1594,6 @@
     {
       "id": "Project notes with status tracking",
       "message": "Project notes with status tracking",
-      "translation": ""
-    },
-    {
-      "id": "Project Overview",
-      "message": "Project Overview",
       "translation": ""
     },
     {
@@ -1917,6 +1827,11 @@
       "translation": ""
     },
     {
+      "id": "Select Language",
+      "message": "Select Language",
+      "translation": ""
+    },
+    {
       "id": "Select multiple notes to tag or move at once",
       "message": "Select multiple notes to tag or move at once",
       "translation": ""
@@ -1934,6 +1849,11 @@
     {
       "id": "select the file you want to display",
       "message": "select the file you want to display",
+      "translation": ""
+    },
+    {
+      "id": "Select Theme",
+      "message": "Select Theme",
       "translation": ""
     },
     {
@@ -2242,11 +2162,6 @@
       "translation": ""
     },
     {
-      "id": "Value",
-      "message": "Value",
-      "translation": "Value"
-    },
-    {
       "id": "version history",
       "message": "version history",
       "translation": ""
@@ -2332,11 +2247,6 @@
       "translation": ""
     },
     {
-      "id": "visible to all users",
-      "message": "visible to all users",
-      "translation": ""
-    },
-    {
       "id": "WARNING - This will remove all files in the Data Folder!!.",
       "message": "WARNING - This will remove all files in the Data Folder!!.",
       "translation": ""
@@ -2409,6 +2319,11 @@
     {
       "id": "Write your content (use simple formatting like",
       "message": "Write your content (use simple formatting like",
+      "translation": ""
+    },
+    {
+      "id": "Yo",
+      "message": "Yo",
       "translation": ""
     },
     {

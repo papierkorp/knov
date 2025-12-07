@@ -25,10 +25,8 @@ func RenderMarkdownEditorForm(filePath string) string {
 		}
 	}
 
-	action := "/api/files/create"
-	if isEdit {
-		action = fmt.Sprintf("/api/files/save/%s", filePath)
-	}
+	// use same endpoint for both create and edit
+	action := "/api/files/save"
 
 	pathReadonly := ""
 	if isEdit {
@@ -52,7 +50,7 @@ func RenderMarkdownEditorForm(filePath string) string {
 			</div>
 			<div class="form-actions">
 				<button type="submit" class="btn-primary">%s</button>
-				<button type="button" onclick="window.location.href='%s'" class="btn-secondary">%s</button>
+				<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
 			</div>
 			<div id="editor-status"></div>
 		</form>
@@ -85,6 +83,11 @@ func RenderMarkdownEditorForm(filePath string) string {
 
 // RenderTextareaEditorComponent renders a textarea editor component with save/cancel buttons
 func RenderTextareaEditorComponent(filepath, content string) string {
+	cancelURL := "/"
+	if filepath != "" {
+		cancelURL = fmt.Sprintf("/files/%s", filepath)
+	}
+
 	return fmt.Sprintf(`
 		<div id="component-textarea-editor">
 			<form hx-post="/api/files/save" hx-target="#editor-status">
@@ -92,13 +95,14 @@ func RenderTextareaEditorComponent(filepath, content string) string {
 				<textarea name="content" rows="25" style="width: 100%%; font-family: monospace; padding: 12px;">%s</textarea>
 				<div style="margin-top: 12px;">
 					<button type="submit" class="btn-primary">%s</button>
-					<button type="button" onclick="location.reload()" class="btn-secondary">%s</button>
+					<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
 				</div>
 			</form>
 			<div id="editor-status"></div>
 		</div>
 	`, filepath, content,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save"),
+		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"))
 }
 
@@ -389,9 +393,9 @@ func renderIndexEntryRow(index int, entry IndexEntry) string {
 
 	// controls on the left
 	html.WriteString(`<div class="entry-controls">`)
-	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, -1)" class="btn-move">↑</button>`, index))
-	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, 1)" class="btn-move">↓</button>`, index))
-	html.WriteString(fmt.Sprintf(`<button type="button" onclick="removeEntry(this)" class="btn-remove">×</button>`))
+	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, -1)" class="btn-move">â†‘</button>`, index))
+	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, 1)" class="btn-move">â†“</button>`, index))
+	html.WriteString(fmt.Sprintf(`<button type="button" onclick="removeEntry(this)" class="btn-remove">Ã—</button>`))
 	html.WriteString(`</div>`)
 
 	// content on the right

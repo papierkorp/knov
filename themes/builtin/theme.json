@@ -6,7 +6,7 @@
   "themeSettings": {
     "darkMode": {
       "type": "boolean",
-      "default": false,
+      "default": true,
       "label": "Dark Mode",
       "description": "enable dark theme appearance for better readability in low light"
     },

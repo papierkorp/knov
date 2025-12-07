@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"html"
-	"strings"
 
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/alecthomas/chroma/v2/lexers"
@@ -30,6 +29,7 @@ func HighlightCode(code, language string) string {
 	formatter := chromahtml.New(
 		chromahtml.WithClasses(true),
 		chromahtml.ClassPrefix("chroma-"),
+		chromahtml.PreventSurroundingPre(true),
 	)
 
 	// tokenize and format
@@ -50,12 +50,5 @@ func HighlightCode(code, language string) string {
 // HighlightCodeBlock ensures code is properly wrapped in a single pre block
 func HighlightCodeBlock(code, language string) string {
 	highlighted := HighlightCode(code, language)
-
-	// if chroma didn't wrap in <pre> (when using inline spans only), wrap it
-	if !strings.HasPrefix(highlighted, "<pre") {
-		return fmt.Sprintf(`<pre class="chroma"><code class="language-%s">%s</code></pre>`, language, highlighted)
-	}
-
-	// chroma already wrapped it properly
-	return highlighted
+	return fmt.Sprintf(`<pre class="chroma"><code class="language-%s">%s</code></pre>`, language, highlighted)
 }

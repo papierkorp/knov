@@ -41,6 +41,12 @@ func RenderStatusMessage(class StatusClass, message string) string {
 	return fmt.Sprintf(`<span class="%s">%s</span>`, string(class), message)
 }
 
+// RenderStatusMessageWithLink renders a status message span with a link
+func RenderStatusMessageWithLink(class StatusClass, message, linkURL, linkText string) string {
+	return fmt.Sprintf(`<span class="%s">%s: <a href="%s">%s</a></span>`,
+		string(class), message, linkURL, linkText)
+}
+
 // RenderSelectOptions renders option elements for select dropdown
 func RenderSelectOptions(options []SelectOption, selectedValue string) string {
 	var html string

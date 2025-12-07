@@ -163,20 +163,38 @@ func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 // @Summary Save file content
 // @Tags files
 // @Accept application/x-www-form-urlencoded
-// @Param filepath path string true "File path"
+// @Param filepath formData string true "File path"
 // @Param content formData string true "File content"
 // @Produce html
-// @Router /api/files/save/{filepath} [post]
+// @Router /api/files/save [post]
 func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
-	filepath := strings.TrimPrefix(r.URL.Path, "/api/files/save/")
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
 
-	if filepath == "" {
+	filePath := r.FormValue("filepath")
+	if filePath == "" {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
 		return
 	}
 
 	content := r.FormValue("content")
-	fullPath := utils.ToFullPath(filepath)
+	fullPath := utils.ToFullPath(filePath)
+
+	// check if file exists (to determine if this is creation or update)
+	_, statErr := os.Stat(fullPath)
+	isNewFile := os.IsNotExist(statErr)
+
+	// create directories if they don't exist
+	if isNewFile {
+		dir := filepath.Dir(fullPath)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			logging.LogError("failed to create directory %s: %v", dir, err)
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
+			return
+		}
+	}
 
 	err := os.WriteFile(fullPath, []byte(content), 0644)
 	if err != nil {
@@ -185,9 +203,18 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logging.LogInfo("saved file: %s", filepath)
+	logging.LogInfo("saved file: %s", filePath)
+
+	// if this was a new file creation, redirect to the file view
+	if isNewFile {
+		w.Header().Set("HX-Redirect", "/files/"+filePath)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// for existing file updates, show success message with link to file view
 	successMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully")
-	html := render.RenderStatusMessage(render.StatusOK, successMsg)
+	html := render.RenderStatusMessageWithLink(render.StatusOK, successMsg, "/files/"+filePath, filePath)
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
@@ -306,46 +333,4 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
-}
-
-// @Summary Create new file
-// @Tags files
-// @Accept application/x-www-form-urlencoded
-// @Produce html
-// @Param filepath formData string true "File path"
-// @Param content formData string true "File content"
-// @Router /api/files/create [post]
-func handleAPIFileCreate(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
-		return
-	}
-
-	filePath := r.FormValue("filepath")
-	content := r.FormValue("content")
-
-	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
-		return
-	}
-
-	fullPath := utils.ToFullPath(filePath)
-
-	dir := filepath.Dir(fullPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		logging.LogError("failed to create directory %s: %v", dir, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
-		return
-	}
-
-	err := os.WriteFile(fullPath, []byte(content), 0644)
-	if err != nil {
-		logging.LogError("failed to create file %s: %v", fullPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create file"), http.StatusInternalServerError)
-		return
-	}
-
-	logging.LogInfo("created file: %s", filePath)
-	w.Header().Set("HX-Redirect", "/files/"+filePath)
-	w.WriteHeader(http.StatusOK)
 }

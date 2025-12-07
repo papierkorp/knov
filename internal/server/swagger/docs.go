@@ -945,37 +945,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/files/create": {
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "files"
-                ],
-                "summary": "Create new file",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "File content",
-                        "name": "content",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        },
         "/api/files/folder": {
             "get": {
                 "consumes": [
@@ -1139,7 +1108,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/files/save/{filepath}": {
+        "/api/files/save": {
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -1156,7 +1125,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "File path",
                         "name": "filepath",
-                        "in": "path",
+                        "in": "formData",
                         "required": true
                     },
                     {

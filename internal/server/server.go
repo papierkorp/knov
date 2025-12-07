@@ -180,7 +180,8 @@ func StartServerChi() {
 			r.Post("/filter", handleAPIFilterFiles)
 			r.Get("/header", handleAPIGetFileHeader)
 			r.Get("/raw", handleAPIGetRawContent)
-			r.Post("/save/*", handleAPIFileSave)
+			r.Post("/save", handleAPIFileSave)
+			r.Post("/save/", handleAPIFileSave) // handle trailing slash
 			r.Get("/browse", handleAPIBrowseFiles)
 			r.Get("/form", handleAPIFileForm)
 			r.Get("/metadata-form", handleAPIMetadataForm)
