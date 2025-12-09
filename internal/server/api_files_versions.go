@@ -150,6 +150,32 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 		toCommit = currentCommit
 	}
 
+	if toCommit == "previous" {
+		// get file history to find previous commit
+		versions, err := git.GetFileHistory(fullPath)
+		if err != nil || len(versions) < 2 {
+			logging.LogError("failed to get previous commit for %s: %v", filePath, err)
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get previous commit"), http.StatusInternalServerError)
+			return
+		}
+		// find the commit after fromCommit in the history
+		for i, v := range versions {
+			if v.Commit == fromCommit && i+1 < len(versions) {
+				toCommit = versions[i+1].Commit
+				break
+			}
+		}
+		if toCommit == "previous" {
+			// couldn't find previous commit, use the last one
+			if len(versions) > 1 {
+				toCommit = versions[1].Commit
+			} else {
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version found"), http.StatusNotFound)
+				return
+			}
+		}
+	}
+
 	diff, err := git.GetFileDiff(fullPath, fromCommit, toCommit)
 	if err != nil {
 		logging.LogError("failed to get diff for %s between %s and %s: %v", filePath, fromCommit, toCommit, err)

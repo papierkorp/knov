@@ -6,13 +6,6 @@
             <h1>{{T "History"}}: <a href="/files/{{.FilePath}}" class="file-link">{{.FilePath}}</a></h1>
             {{if .SelectedVersion}}
                 <div class="version-actions">
-                    {{if and (not .SingleVersion) (ne .SelectedVersion .CurrentVersion)}}
-                        <a href="/api/files/versions/diff/{{urlQuery .FilePath}}?from={{.SelectedVersion}}&to=current"
-                           hx-get="/api/files/versions/diff/{{urlQuery .FilePath}}?from={{.SelectedVersion}}&to=current"
-                           hx-target="#diff-content"
-                           hx-on::before-request="document.getElementById('diff-content').style.display = 'block'; document.getElementById('diff-content').innerHTML = '{{T "loading diff..."}}'"
-                           class="action-link action-compare">{{T "compare with current"}}</a>
-                    {{end}}
                     {{if ne .SelectedVersion .CurrentVersion}}
                         <form hx-post="/api/files/versions/restore/{{urlQuery .FilePath}}"
                               hx-target="#restore-result"
@@ -26,8 +19,15 @@
             {{end}}
         </div>
         <hr />
-        <div id="diff-content" class="diff-section">
-            <!-- Diff content loaded here via HTMX -->
+        <div id="diff-content" class="diff-section" {{if .SelectedVersion}}style="display: block;"{{end}}>
+            {{if .SelectedVersion}}
+                <!-- Auto-load diff for selected version -->
+                <div hx-get="/api/files/versions/diff/{{urlQuery .FilePath}}?from={{.SelectedVersion}}&to={{if eq .SelectedVersion .CurrentVersion}}previous{{else}}current{{end}}"
+                     hx-trigger="load"
+                     hx-swap="innerHTML">
+                    {{T "loading diff..."}}
+                </div>
+            {{end}}
         </div>
         <div class="file-history-content">
             {{if .SelectedVersion}}

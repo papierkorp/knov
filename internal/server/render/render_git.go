@@ -123,7 +123,9 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 						<span class="version-author">%s %s</span>
 					</div>
 					<div class="version-actions">
-						<a href="/files/history/%s?commit=%s" class="action-link">%s</a>`,
+						<a href="/files/history/%s?commit=%s" class="action-link">%s</a>
+					</div>
+				</li>`,
 				cssClass,
 				version.Date,
 				version.Message,
@@ -133,27 +135,6 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 				version.Commit,
 				translation.SprintfForRequest(configmanager.GetLanguage(), "view"),
 			))
-
-			// only show compare button if there are multiple versions AND this is not the current version
-			if len(versions) > 1 && !version.IsCurrent {
-				html.WriteString(fmt.Sprintf(`
-						<a href="/api/files/versions/diff/%s?from=%s&to=current"
-						   hx-get="/api/files/versions/diff/%s?from=%s&to=current"
-						   hx-target="#diff-content"
-						   hx-on::before-request="document.getElementById('diff-content').style.display = 'block'; document.getElementById('diff-content').innerHTML = '%s'"
-						   class="action-link">%s</a>`,
-					utils.ToRelativePath(filePath),
-					version.Commit,
-					utils.ToRelativePath(filePath),
-					version.Commit,
-					translation.SprintfForRequest(configmanager.GetLanguage(), "loading diff..."),
-					translation.SprintfForRequest(configmanager.GetLanguage(), "compare"),
-				))
-			}
-
-			html.WriteString(`
-					</div>
-				</li>`)
 		}
 
 		html.WriteString(`</ul>`)

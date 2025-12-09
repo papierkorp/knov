@@ -107,7 +107,7 @@
             {{end}}
             {{if index .ThemeSettings "sidebarVersionHistory"}}
             <section class="sidebar-section sidebar-versions">
-                <h3>{{T "version history"}}</h3>
+                <h3><a href="/files/history/{{urlQuery .FilePath}}">{{T "version history"}}</a></h3>
                 <div id="version-sidebar-content"
                      hx-get="/api/files/versions/{{urlQuery .FilePath}}?sidebar=true"
                      hx-trigger="load"

@@ -101,6 +101,21 @@ func runFileJobs() {
 	var filesToProcess []string
 	var filesToDelete []string
 
+	// check for modified files and commit them
+	modifiedFiles, err := git.GetModifiedFiles()
+	if err != nil {
+		logging.LogError("cronjob: failed to get modified files: %v", err)
+	} else if len(modifiedFiles) > 0 {
+		logging.LogInfo("detected %d modified files", len(modifiedFiles))
+
+		// commit the modifications
+		if err := git.CommitModifiedFiles(modifiedFiles); err != nil {
+			logging.LogError("cronjob: failed to commit modified files: %v", err)
+		} else {
+			filesToProcess = append(filesToProcess, modifiedFiles...)
+		}
+	}
+
 	// check for uncommitted deleted files
 	uncommittedDeleted, err := git.GetUncommittedDeletedFiles()
 	if err != nil {

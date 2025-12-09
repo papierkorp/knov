@@ -316,6 +316,41 @@ func GetUncommittedDeletedFiles() ([]string, error) {
 	return deletedFiles, nil
 }
 
+// GetModifiedFiles returns files that are modified but not yet committed
+func GetModifiedFiles() ([]string, error) {
+	dataDir := configmanager.GetAppConfig().DataPath
+
+	// check if git repo exists
+	gitDir := filepath.Join(dataDir, ".git")
+	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
+		logging.LogDebug("no git repository found")
+		return nil, nil
+	}
+
+	// git ls-files --modified
+	cmd := exec.Command("git", "ls-files", "--modified")
+	cmd.Dir = dataDir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		logging.LogError("failed to list modified files: %v, output: %s", err, string(output))
+		return nil, err
+	}
+
+	if len(output) == 0 {
+		return nil, nil
+	}
+
+	files := strings.Split(strings.TrimSpace(string(output)), "\n")
+	var modifiedFiles []string
+	for _, file := range files {
+		if file != "" {
+			modifiedFiles = append(modifiedFiles, file)
+		}
+	}
+
+	return modifiedFiles, nil
+}
+
 // CommitDeletedFiles commits all deleted files
 func CommitDeletedFiles(deletedFiles []string) error {
 	if len(deletedFiles) == 0 {
@@ -343,6 +378,37 @@ func CommitDeletedFiles(deletedFiles []string) error {
 	}
 
 	logging.LogInfo("auto-committed %d deleted files to git", len(deletedFiles))
+	return nil
+}
+
+// CommitModifiedFiles commits all modified files
+func CommitModifiedFiles(modifiedFiles []string) error {
+	if len(modifiedFiles) == 0 {
+		return nil
+	}
+
+	dataDir := configmanager.GetAppConfig().DataPath
+
+	// stage all modified files
+	args := append([]string{"add"}, modifiedFiles...)
+	cmd := exec.Command("git", args...)
+	cmd.Dir = dataDir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		logging.LogError("failed to stage modified files: %v, output: %s", err, string(output))
+		return err
+	}
+
+	// commit modifications
+	cmd = exec.Command("git", "commit", "-m", "auto-commit: files modified")
+	cmd.Dir = dataDir
+	output, err = cmd.CombinedOutput()
+	if err != nil {
+		logging.LogError("failed to commit modified files: %v, output: %s", err, string(output))
+		return err
+	}
+
+	logging.LogInfo("auto-committed %d modified files to git", len(modifiedFiles))
 	return nil
 }
 
