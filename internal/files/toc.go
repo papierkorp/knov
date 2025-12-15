@@ -25,7 +25,11 @@ func GenerateTOC(html string) []TOCItem {
 	for _, match := range matches {
 		level := int(match[1][0] - '0')
 		existingID := match[2]
-		text := stripHTMLTags(match[3])
+
+		// remove header anchor links before extracting text
+		content := match[3]
+		content = regexp.MustCompile(`<a\s+href="#[^"]*"\s+class="header-anchor"[^>]*>#</a>`).ReplaceAllString(content, "")
+		text := stripHTMLTags(content)
 
 		id := existingID
 		if id == "" {

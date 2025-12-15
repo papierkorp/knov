@@ -15,11 +15,11 @@
             <div class="help-benefits">
                 <h3>{{T "Why Use KNOV?"}}</h3>
                 <ul class="benefits-list">
-                    <li>✅ <strong>{{T "Your Knowledge, Anywhere"}}</strong> - {{T "Works completely offline on your computer"}}</li>
-                    <li>✅ <strong>{{T "Never Lose Information"}}</strong> - {{T "Automatic version history with Git backup"}}</li>
-                    <li>✅ <strong>{{T "Find Anything Fast"}}</strong> - {{T "Powerful search through all your content"}}</li>
-                    <li>✅ <strong>{{T "Stay Organized"}}</strong> - {{T "Multiple ways to categorize and connect your notes"}}</li>
-                    <li>✅ <strong>{{T "Your Way"}}</strong> - {{T "Customize dashboards to see what matters to you"}}</li>
+                    <li>{{T "Your Knowledge, Anywhere"}} - {{T "Works completely offline on your computer"}}</li>
+                    <li>{{T "Never Lose Information"}} - {{T "Automatic version history with Git backup"}}</li>
+                    <li>{{T "Find Anything Fast"}} - {{T "Powerful search through all your content"}}</li>
+                    <li>{{T "Stay Organized"}} - {{T "Multiple ways to categorize and connect your notes"}}</li>
+                    <li>{{T "Your Way"}} - {{T "Customize dashboards to see what matters to you"}}</li>
                 </ul>
             </div>
         </section>
@@ -37,7 +37,7 @@
                     <ul>
                         <li>{{T "Click the"}} <strong>{{T "+ New File"}}</strong> {{T "button"}}</li>
                         <li>{{T "Choose"}} <strong>{{T "Markdown"}}</strong> {{T "for formatted text notes"}}</li>
-                        <li>{{T "Write your content (use simple formatting like"}} <code>**{{T "bold"}}**</code> {{T "or"}} <code># {{T "Heading"}}</code>)</li>
+                        <li>{{T "Write content with simple formatting"}} (<code>**{{T "bold"}}**</code>, <code># {{T "Heading"}}</code>)</li>
                         <li>{{T "Click"}} <strong>{{T "Save"}}</strong></li>
                     </ul>
                 </div>
@@ -59,160 +59,200 @@
             <h2>{{T "Key Features"}}</h2>
 
             <div class="feature">
-                <h3>🔍 {{T "Smart Search & Filtering"}}</h3>
+                <h3>{{T "Filter System"}}</h3>
+                <p>{{T "Powerful filtering system to find exactly what you need:"}}</p>
                 <ul>
-                    <li><strong>{{T "Quick Search"}}</strong>: {{T "Type anything to find notes containing those words"}}</li>
-                    <li><strong>{{T "Advanced Filters"}}</strong>: {{T "Find notes by tags, date, priority, or any combination"}}</li>
-                    <li><strong>{{T "Saved Filters"}}</strong>: {{T "Create and save your most-used search combinations"}}</li>
+                    <li><strong>{{T "Filter Criteria"}}</strong>:
+                        <ul>
+                            <li>{{T "Basic fields: name, collection, tags"}}</li>
+                            <li>{{T "Status fields: type, status, priority"}}</li>
+                            <li>{{T "Time fields: creation and modification dates"}}</li>
+                        </ul>
+                    </li>
+                    <li><strong>{{T "Matching Options"}}</strong>:
+                        <ul>
+                            <li>{{T "Equals - exact match"}}</li>
+                            <li>{{T "Contains - partial match"}}</li>
+                            <li>{{T "'In' - match any from list"}}</li>
+                        </ul>
+                    </li>
+                    <li><strong>{{T "Logic"}}</strong>: {{T "Combine with AND/OR logic"}}</li>
+                    <li><strong>{{T "Actions"}}</strong>: {{T "Include or exclude matching files"}}</li>
+                    <li><strong>{{T "Display"}}</strong>: {{T "List, cards, dropdown, or table views"}}</li>
+                    <li><strong>{{T "Limits"}}</strong>: {{T "Control result count"}}</li>
+                    <li><strong>{{T "Save & Reuse"}}</strong>: {{T "Save filter configurations as files"}}</li>
                 </ul>
             </div>
 
             <div class="feature">
-                <h3>📊 {{T "Personal Dashboards"}}</h3>
+                <h3>{{T "Dashboard System"}}</h3>
+                <p>{{T "Customizable dashboards with various widget types:"}}</p>
                 <ul>
-                    <li><strong>{{T "Customize Your View"}}</strong>: {{T "Add widgets showing recent notes, important tasks, or specific topics"}}</li>
-                    <li><strong>{{T "Multiple Dashboards"}}</strong>: {{T "Create different views for work, personal, or projects"}}</li>
-                    <li><strong>{{T "Widget Types"}}</strong>: {{T "Recent files, notes by tags or collections, custom filtered lists, quick folder access"}}</li>
+                    <li><strong>{{T "Content Widgets"}}</strong>:
+                        <ul>
+                            <li>{{T "Filter results - display filtered files"}}</li>
+                            <li>{{T "Filter forms - interactive filtering"}}</li>
+                            <li>{{T "File content - show specific files"}}</li>
+                            <li>{{T "Static content - custom HTML/Markdown"}}</li>
+                        </ul>
+                    </li>
+                    <li><strong>{{T "Navigation Widgets"}}</strong>:
+                        <ul>
+                            <li>{{T "Tags - browse all tags"}}</li>
+                            <li>{{T "Collections - access collections"}}</li>
+                            <li>{{T "Folders - folder navigation"}}</li>
+                        </ul>
+                    </li>
+                    <li><strong>{{T "PARA Widgets"}}</strong>:
+                        <ul>
+                            <li>{{T "Projects, Areas, Resources, Archive views"}}</li>
+                        </ul>
+                    </li>
+                    <li><strong>{{T "Layout"}}</strong>: {{T "1-4 column layouts with custom positioning"}}</li>
                 </ul>
             </div>
 
             <div class="feature">
-                <h3>🗂️ {{T "Organization Methods"}}</h3>
+                <h3>{{T "Organization Methods"}}</h3>
                 <p><em>{{T "Choose what works for you - use one or combine them:"}}</em></p>
-                <ol>
-                    <li><strong>{{T "Simple Folders"}}</strong>: {{T "Organize like files on your computer"}}</li>
-                    <li><strong>{{T "Tags"}}</strong>: {{T "Label notes with keywords for flexible grouping"}}</li>
-                    <li><strong>{{T "Collections"}}</strong>: {{T "Group related content together"}}</li>
-                    <li><strong>{{T "PARA Method"}}</strong>: {{T "Organize by Projects, Areas, Resources, and Archive"}}</li>
-                    <li><strong>{{T "Connections"}}</strong>: {{T "Link related notes together"}}</li>
-                </ol>
-            </div>
-
-            <div class="feature">
-                <h3>🔗 {{T "Smart Connections"}}</h3>
                 <ul>
-                    <li><strong>{{T "Link Notes"}}</strong>: {{T "Reference other notes using"}} <code>[[{{T "Note Name"}}]]</code></li>
-                    <li><strong>{{T "See Relationships"}}</strong>: {{T "View which notes connect to each other"}}</li>
-                    <li><strong>{{T "Build Knowledge Networks"}}</strong>: {{T "Watch your ideas connect and grow"}}</li>
+                    <li><strong>{{T "Simple Folders"}}</strong>: {{T "Traditional hierarchy organization"}}</li>
+                    <li><strong>{{T "Tags"}}</strong>: {{T "Keyword-based labeling"}}</li>
+                    <li><strong>{{T "Collections"}}</strong>: {{T "Group files by topic or purpose"}}</li>
+                    <li><strong>{{T "PARA Method"}}</strong>: {{T "Organize by actionability"}}
+                        <ul>
+                            <li><strong>{{T "Projects"}}</strong>: {{T "Outcomes with deadlines"}}</li>
+                            <li><strong>{{T "Areas"}}</strong>: {{T "Ongoing responsibilities"}}</li>
+                            <li><strong>{{T "Resources"}}</strong>: {{T "Future reference topics"}}</li>
+                            <li><strong>{{T "Archive"}}</strong>: {{T "Inactive items"}}</li>
+                        </ul>
+                    </li>
+                    <li><strong>{{T "Zettelkasten Types"}}</strong>: {{T "Knowledge development stages"}}
+                        <ul>
+                            <li><strong>{{T "Fleeting"}}</strong>: {{T "Quick thoughts"}}</li>
+                            <li><strong>{{T "Literature"}}</strong>: {{T "External source notes"}}</li>
+                            <li><strong>{{T "Permanent"}}</strong>: {{T "Connected insights"}}</li>
+                            <li><strong>{{T "MOC"}}</strong>: {{T "Maps linking related notes"}}</li>
+                            <li><strong>{{T "Todo"}}</strong>: {{T "Action items"}}</li>
+                            <li><strong>{{T "Journaling"}}</strong>: {{T "Personal reflection"}}</li>
+                            <li><strong>{{T "Filter"}}</strong>: {{T "Saved searches"}}</li>
+                        </ul>
+                    </li>
+                    <li><strong>{{T "Connections"}}</strong>: {{T "File relationships"}}
+                        <ul>
+                            <li><strong>{{T "Parent System"}}</strong>: {{T "Manual hierarchy assignment"}}</li>
+                            <li><strong>{{T "Ancestors"}}</strong>: {{T "Auto-calculated top-level parents"}}</li>
+                            <li><strong>{{T "Children"}}</strong>: {{T "Files with current as parent"}}</li>
+                            <li><strong>{{T "Content Links"}}</strong>: {{T "Wikilinks between files"}}</li>
+                            <li><strong>{{T "Backlinks"}}</strong>: {{T "Files linking to current"}}</li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
-
-            <div class="feature">
-                <h3>💾 {{T "Automatic Backup"}}</h3>
-                <ul>
-                    <li>{{T "All changes are automatically saved"}}</li>
-                    <li>{{T "Complete version history keeps your work safe"}}</li>
-                    <li>{{T "Export or sync with Git for extra security"}}</li>
-                </ul>
-            </div>
         </section>
 
         <section class="help-section">
-            <h2>{{T "Quick Tips"}}</h2>
+            <h2>{{T "Example Workflows"}}</h2>
 
-            <div class="tips-section">
-                <div class="tip-group">
-                    <h3>{{T "For New Users:"}}</h3>
-                    <ol>
-                        <li>{{T "Start Simple: Just create notes and add basic tags"}}</li>
-                        <li>{{T "Use Search: When you can't remember where something is, just search"}}</li>
-                        <li>{{T "Try Filters: Use the filter panel to find groups of related notes"}}</li>
-                        <li>{{T "Explore Gradually: Add more organization methods as you need them"}}</li>
-                    </ol>
+            <p>{{T "Here are proven workflows you can adapt for KNOV. For more ideas, explore"}} <a href="https://www.reddit.com/r/PKMS/" target="_blank">{{T "Reddit PKMS community"}}</a>{{T "."}}</p>
+
+            <div class="workflow-section">
+                <div class="workflow">
+                    <h3>{{T "PARA + Zettelkasten Knowledge System"}}</h3>
+                    <p class="workflow-reference">
+                        <strong>{{T "Reference"}}</strong>: <a href="https://www.reddit.com/r/PKMS/comments/1of4m2g/a_simple_tagbased_para_zettelkasten_system_using/" target="_blank">{{T "Original PARA + Zettelkasten system"}}</a> {{T "- adapted for KNOV's built-in features"}}
+                    </p>
+
+                    <p>{{T "Combine actionable PARA organization with knowledge development stages using KNOV's built-in features:"}}</p>
+
+                    <div class="workflow-summary">
+                        <strong>{{T "Setup"}}</strong>
+                        <ul>
+                            <li><strong>{{T "File Types"}}</strong>: {{T "Use built-in Zettelkasten types"}}
+                                <ul>
+                                    <li>{{T "Fleeting - quick captures and initial thoughts"}}</li>
+                                    <li>{{T "Literature - notes from books, articles, videos"}}</li>
+                                    <li>{{T "Permanent - developed insights ready for connection"}}</li>
+                                    <li>{{T "MOC - maps organizing related permanent notes"}}</li>
+                                </ul>
+                            </li>
+                            <li><strong>{{T "PARA Organization"}}</strong>: {{T "Use built-in PARA fields"}}
+                                <ul>
+                                    <li>{{T "Projects - assign to specific outcomes with deadlines"}}</li>
+                                    <li>{{T "Areas - group by life/work responsibilities"}}</li>
+                                    <li>{{T "Resources - topics for future reference"}}</li>
+                                    <li>{{T "Archive - completed or inactive items"}}</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <strong>{{T "Daily Practice"}}</strong>
+                        <ul>
+                            <li><strong>{{T "Capture"}}</strong>: {{T "Create fleeting notes for quick thoughts"}}</li>
+                            <li><strong>{{T "Process"}}</strong>: {{T "Weekly review to promote fleeting → literature → permanent"}}</li>
+                            <li><strong>{{T "Connect"}}</strong>: {{T "Link notes using wikilinks and parent/child relationships"}}</li>
+                            <li><strong>{{T "Organize"}}</strong>: {{T "Use simple tags + collections, let PARA fields handle structure"}}</li>
+                            <li><strong>{{T "Review"}}</strong>: {{T "Monthly cleanup and MOC updates"}}</li>
+                        </ul>
+                    </div>
+
                 </div>
 
-                <div class="tip-group">
-                    <h3>{{T "Daily Workflow:"}}</h3>
-                    <ol>
-                        <li><strong>{{T "Morning"}}</strong>: {{T "Check your dashboard for important items"}}</li>
-                        <li><strong>{{T "During Work"}}</strong>: {{T "Create notes as needed, add quick tags"}}</li>
-                        <li><strong>{{T "Evening"}}</strong>: {{T "Review and properly tag/organize new content"}}</li>
-                        <li><strong>{{T "Weekly"}}</strong>: {{T "Use filters to review progress and clean up"}}</li>
-                    </ol>
-                </div>
+                <div class="workflow">
+                    <h3>{{T "Daily Productivity Journal"}}</h3>
+                    <p>{{T "Adapt Jeff Huang's text file system using KNOV's journaling and todo features:"}}</p>
 
-                <div class="tip-group">
-                    <h3>{{T "Power User Tips:"}}</h3>
-                    <ul>
-                        <li><strong>{{T "Keyboard Shortcuts"}}</strong>: {{T "Learn them for faster navigation"}}</li>
-                        <li><strong>{{T "Batch Operations"}}</strong>: {{T "Select multiple notes to tag or move at once"}}</li>
-                        <li><strong>{{T "Template Notes"}}</strong>: {{T "Create standard formats for meeting notes, project plans, etc."}}</li>
-                        <li><strong>{{T "Dashboard Widgets"}}</strong>: {{T "Add filtered views of your most important content"}}</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
+                    <p class="workflow-reference">
+                        <strong>{{T "Reference"}}</strong>: <a href="https://jeffhuang.com/productivity_text_file/" target="_blank">{{T "Jeff Huang's productivity system"}}</a> {{T "- adapted for KNOV's structure"}}
+                    </p>
 
-        <section class="help-section">
-            <h2>{{T "Common Use Cases"}}</h2>
+                    <div class="workflow-summary">
+                        <strong>{{T "Setup"}}</strong>
+                        <ul>
+                            <li><strong>{{T "File Types"}}</strong>: {{T "Use Todo and Journaling file types"}}</li>
+                            <li><strong>{{T "Collections"}}</strong>: {{T "Group by time periods or projects"}}</li>
+                            <li><strong>{{T "Tags"}}</strong>: {{T "Use #idea, #annual, #followup for quick searches"}}</li>
+                        </ul>
 
-            <div class="use-cases">
-                <div class="use-case">
-                    <h3>📝 {{T "Personal Knowledge Base"}}</h3>
-                    <ul>
-                        <li>{{T "Meeting notes with attendee tags"}}</li>
-                        <li>{{T "Learning materials organized by subject"}}</li>
-                        <li>{{T "Ideas and inspiration with topic tags"}}</li>
-                    </ul>
-                </div>
+                        <strong>{{T "Daily Practice"}}</strong>
+                        <ul>
+                            <li><strong>{{T "Evening Planning"}}</strong>:
+                                <ul>
+                                    <li>{{T "Create tomorrow's todo file with calendar items"}}</li>
+                                    <li>{{T "Break large tasks into manageable pieces"}}</li>
+                                </ul>
+                            </li>
+                            <li><strong>{{T "During the Day"}}</strong>:
+                                <ul>
+                                    <li>{{T "Add notes and outcomes directly to todo file"}}</li>
+                                    <li>{{T "Track meetings, decisions, and ideas"}}</li>
+                                </ul>
+                            </li>
+                            <li><strong>{{T "End of Day"}}</strong>:
+                                <ul>
+                                    <li>{{T "Review completed work"}}</li>
+                                    <li>{{T "Move incomplete items to future dates"}}</li>
+                                </ul>
+                            </li>
+                        </ul>
 
-                <div class="use-case">
-                    <h3>📋 {{T "Project Management"}}</h3>
-                    <ul>
-                        <li>{{T "Project notes with status tracking"}}</li>
-                        <li>{{T "Task lists with priority levels"}}</li>
-                        <li>{{T "Resource collections by project type"}}</li>
-                    </ul>
-                </div>
+                        <strong>{{T "Benefits"}}</strong>
+                        <ul>
+                            <li>{{T "Searchable record of all activities"}}</li>
+                            <li>{{T "Clear daily focus without overwhelm"}}</li>
+                            <li>{{T "Historical perspective on workload"}}</li>
+                        </ul>
+                    </div>
 
-                <div class="use-case">
-                    <h3>📚 {{T "Research & Study"}}</h3>
-                    <ul>
-                        <li>{{T "Research notes linked by topic"}}</li>
-                        <li>{{T "Source materials with reference tags"}}</li>
-                        <li>{{T "Study guides connected to main topics"}}</li>
-                    </ul>
-                </div>
 
-                <div class="use-case">
-                    <h3>💼 {{T "Work Documentation"}}</h3>
-                    <ul>
-                        <li>{{T "Process documentation by department"}}</li>
-                        <li>{{T "Training materials by skill level"}}</li>
-                        <li>{{T "Company knowledge organized by team"}}</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <section class="help-section">
-            <h2>{{T "Need Help?"}}</h2>
-
-            <div class="help-resources">
-                <div class="resource-group">
-                    <h3>{{T "Built-in Help:"}}</h3>
-                    <ul>
-                        <li><strong>{{T "Settings Page"}}</strong>: {{T "Configure your preferences and data paths"}}</li>
-                        <li><strong>{{T "Filter Examples"}}</strong>: {{T "Try the sample filters to learn the system"}}</li>
-                        <li><strong>{{T "Theme Options"}}</strong>: {{T "Customize the look and feel"}}</li>
-                    </ul>
-                </div>
-
-                <div class="resource-group">
-                    <h3>{{T "Getting Support:"}}</h3>
-                    <ul>
-                        <li>{{T "Check the documentation for detailed guides"}}</li>
-                        <li>{{T "Use the search function - your answer might already be in your notes!"}}</li>
-                        <li>{{T "Remember: KNOV grows with you - start simple and add complexity as needed"}}</li>
-                    </ul>
                 </div>
             </div>
         </section>
 
         <footer class="help-footer">
             <div class="welcome-message">
-                <h2>{{T "Welcome to KNOV! Your knowledge journey starts now."}} 🚀</h2>
-                <p><em>{{T "Remember: The best knowledge management system is the one you actually use. Start with what feels natural and expand from there."}}</em></p>
+                <h2>{{T "Welcome to KNOV! Your knowledge journey starts now."}}</h2>
+                <p><em>{{T "The best system is the one you actually use. Start simple and expand as needed."}}</em></p>
             </div>
 
         </footer>
