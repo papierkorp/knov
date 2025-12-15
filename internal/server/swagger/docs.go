@@ -3698,7 +3698,7 @@ const docTemplate = `{
                     }
                 },
                 "targetDate": {
-                    "description": "auto",
+                    "description": "manual",
                     "type": "string"
                 },
                 "title": {

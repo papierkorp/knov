@@ -115,7 +115,7 @@ type Metadata struct {
 	Title       string    `json:"title"`       // auto
 	CreatedAt   time.Time `json:"createdAt"`   // auto
 	LastEdited  time.Time `json:"lastEdited"`  // auto
-	TargetDate  time.Time `json:"targetDate"`  // auto
+	TargetDate  time.Time `json:"targetDate"`  // manual
 	Collection  string    `json:"collection"`  // auto / manual possible
 	Folders     []string  `json:"folders"`     // auto
 	Tags        []string  `json:"tags"`        // manual

@@ -38,6 +38,10 @@ body[data-color-scheme="purple"] {
     --neutral: #64748b;
 }
 
+html {
+    scroll-padding-top: 80px;
+}
+
 /* light mode */
 body {
     --bg: #e5e7eb;

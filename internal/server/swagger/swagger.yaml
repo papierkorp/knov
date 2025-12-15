@@ -226,7 +226,7 @@ definitions:
           type: string
         type: array
       targetDate:
-        description: auto
+        description: manual
         type: string
       title:
         description: auto
