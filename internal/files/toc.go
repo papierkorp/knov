@@ -44,7 +44,7 @@ func GenerateTOC(html string) []TOCItem {
 	return toc
 }
 
-// InjectHeaderIDs adds IDs to headers that don't have them
+// InjectHeaderIDs adds IDs to headers that don't have them and adds anchor links
 func InjectHeaderIDs(html string) string {
 	usedIDs := make(map[string]int)
 	headerRegex := regexp.MustCompile(`<h([1-6])(\s+id="[^"]*")?([^>]*)>(.*?)</h([1-6])>`)
@@ -52,18 +52,23 @@ func InjectHeaderIDs(html string) string {
 	return headerRegex.ReplaceAllStringFunc(html, func(match string) string {
 		parts := headerRegex.FindStringSubmatch(match)
 		level := parts[1]
-		hasID := parts[2] != ""
+		existingID := strings.TrimSpace(strings.Trim(parts[2], `" id=`))
 		attrs := parts[3]
 		content := parts[4]
 
-		if hasID {
-			return match
+		var id string
+		if existingID != "" {
+			id = existingID
+		} else {
+			text := stripHTMLTags(content)
+			id = generateID(text, usedIDs)
 		}
 
-		text := stripHTMLTags(content)
-		id := generateID(text, usedIDs)
+		// add anchor link to header content
+		anchorLink := `<a href="#` + id + `" class="header-anchor" aria-hidden="true">#</a>`
+		newContent := content + anchorLink
 
-		return "<h" + level + ` id="` + id + `"` + attrs + ">" + content + "</h" + level + ">"
+		return "<h" + level + ` id="` + id + `"` + attrs + ">" + newContent + "</h" + level + ">"
 	})
 }
 

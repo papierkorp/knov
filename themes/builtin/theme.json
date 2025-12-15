@@ -69,10 +69,18 @@
     },
     "linkDisplayMode": {
       "type": "select",
-      "options": ["filename", "filepath", "title"],
+      "options": [
+        "filename",
+        "filepath",
+        "title",
+        "title-filepath",
+        "title-filename",
+        "filename-title",
+        "filepath-title"
+      ],
       "default": "filename",
       "label": "Link Display Mode",
-      "description": "Show filenames, file paths, or extracted titles in links"
+      "description": "show filenames, file paths, or extracted titles in links"
     }
   }
 }

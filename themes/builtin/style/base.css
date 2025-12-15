@@ -9,6 +9,9 @@
     gap: 20px;
     border-bottom: 2px solid var(--primary);
     flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 #component-header .header-left,
@@ -190,8 +193,9 @@
     }
 
     #component-header .header-mid {
-        flex: 1 1 100%;
+        /*flex: 1 1 100%;*/
         order: 3;
+        margin: auto;
     }
 
     #component-header .span-header-git-operations {

@@ -31,21 +31,52 @@ func GetLinkDisplayText(filePath string) string {
 		displayMode = "filename"
 	}
 
+	// get the components we might need
+	filename := filepath.Base(filePath)
+	var title string
+	metadata, err := files.MetaDataGet(filePath)
+	if err == nil && metadata != nil && metadata.Title != "" {
+		title = metadata.Title
+	}
+
 	switch displayMode {
 	case "filename":
-		return filepath.Base(filePath)
+		return filename
 	case "filepath":
 		return filePath
 	case "title":
-		metadata, err := files.MetaDataGet(filePath)
-		if err == nil && metadata != nil && metadata.Title != "" {
-			return metadata.Title
+		if title != "" {
+			return title
 		}
 		// fallback to filename if no title available
-		return filepath.Base(filePath)
+		return filename
+	case "title-filepath":
+		if title != "" {
+			return fmt.Sprintf(`%s <small>(%s)</small>`, title, filePath)
+		}
+		// fallback to filename with filepath if no title available
+		return fmt.Sprintf(`%s <small>(%s)</small>`, filename, filePath)
+	case "title-filename":
+		if title != "" {
+			return fmt.Sprintf(`%s <small>(%s)</small>`, title, filename)
+		}
+		// fallback to just filename if no title available
+		return filename
+	case "filename-title":
+		if title != "" {
+			return fmt.Sprintf(`%s <small>(%s)</small>`, filename, title)
+		}
+		// fallback to just filename if no title available
+		return filename
+	case "filepath-title":
+		if title != "" {
+			return fmt.Sprintf(`%s <small>(%s)</small>`, filePath, title)
+		}
+		// fallback to just filepath if no title available
+		return filePath
 	default:
 		// fallback to filename for unknown modes
-		return filepath.Base(filePath)
+		return filename
 	}
 }
 

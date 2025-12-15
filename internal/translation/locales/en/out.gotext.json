@@ -427,20 +427,6 @@
             "fuzzy": true
         },
         {
-            "id": "compare",
-            "message": "compare",
-            "translation": "compare",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "compare with current",
-            "message": "compare with current",
-            "translation": "compare with current",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Complete version history keeps your work safe",
             "message": "Complete version history keeps your work safe",
             "translation": "Complete version history keeps your work safe",
@@ -929,6 +915,13 @@
             "id": "failed to get filter test metadata",
             "message": "failed to get filter test metadata",
             "translation": "failed to get filter test metadata",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to get previous commit",
+            "message": "failed to get previous commit",
+            "translation": "failed to get previous commit",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1923,6 +1916,13 @@
             "id": "no previous version available",
             "message": "no previous version available",
             "translation": "no previous version available",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "no previous version found",
+            "message": "no previous version found",
+            "translation": "no previous version found",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },

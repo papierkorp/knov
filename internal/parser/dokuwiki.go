@@ -67,13 +67,14 @@ func (h *DokuwikiHandler) Name() string {
 
 // parseDokuWiki converts DokuWiki syntax to HTML
 func (h *DokuwikiHandler) parseDokuWiki(content string) string {
-	content = h.processDokuWikiCodeBlocks(content)
-
+	// process headers first, before code blocks to avoid conflicts
 	content = regexp.MustCompile(`======\s*(.+?)\s*======`).ReplaceAllString(content, "<h1>$1</h1>")
 	content = regexp.MustCompile(`=====\s*(.+?)\s*=====`).ReplaceAllString(content, "<h2>$1</h2>")
 	content = regexp.MustCompile(`====\s*(.+?)\s*====`).ReplaceAllString(content, "<h3>$1</h3>")
 	content = regexp.MustCompile(`===\s*(.+?)\s*===`).ReplaceAllString(content, "<h4>$1</h4>")
 	content = regexp.MustCompile(`==\s*(.+?)\s*==`).ReplaceAllString(content, "<h5>$1</h5>")
+
+	content = h.processDokuWikiCodeBlocks(content)
 
 	content = regexp.MustCompile(`\*\*(.+?)\*\*`).ReplaceAllString(content, "<strong>$1</strong>")
 	content = regexp.MustCompile(`//(.+?)//`).ReplaceAllString(content, "<em>$1</em>")
@@ -437,7 +438,7 @@ func (h *DokuwikiHandler) detectCellAlignment(cell string) string {
 func (h *DokuwikiHandler) detectCellType(content string) string {
 	content = strings.TrimSpace(content)
 
-	if matched, _ := regexp.MatchString(`^[$Ã¢â€šÂ¬Ã‚Â£Ã‚Â¥]\s*[\d,]+\.?\d*$`, content); matched {
+	if matched, _ := regexp.MatchString(`^[$ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â£Ãƒâ€šÃ‚Â¥]\s*[\d,]+\.?\d*$`, content); matched {
 		return "currency"
 	}
 	if matched, _ := regexp.MatchString(`^\d+\.?\d*$`, content); matched {

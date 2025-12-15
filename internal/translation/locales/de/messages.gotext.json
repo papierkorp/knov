@@ -317,16 +317,6 @@
       "translation": ""
     },
     {
-      "id": "compare",
-      "message": "compare",
-      "translation": ""
-    },
-    {
-      "id": "compare with current",
-      "message": "compare with current",
-      "translation": ""
-    },
-    {
       "id": "Complete version history keeps your work safe",
       "message": "Complete version history keeps your work safe",
       "translation": ""
@@ -684,6 +674,11 @@
     {
       "id": "failed to get filter test metadata",
       "message": "failed to get filter test metadata",
+      "translation": ""
+    },
+    {
+      "id": "failed to get previous commit",
+      "message": "failed to get previous commit",
       "translation": ""
     },
     {
@@ -1394,6 +1389,11 @@
     {
       "id": "no previous version available",
       "message": "no previous version available",
+      "translation": ""
+    },
+    {
+      "id": "no previous version found",
+      "message": "no previous version found",
       "translation": ""
     },
     {

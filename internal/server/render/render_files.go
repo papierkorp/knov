@@ -40,9 +40,10 @@ func RenderFilesList(allFiles []files.File) string {
 		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`
 			<li>
-				<a href="#"
+				<a href="#file-header"
 					hx-get="/files/%s?snippet=true"
 					hx-target="#file-content"
+					hx-swap="innerHTML show:bottom"
 					hx-on::after-request="htmx.ajax('GET', '/api/files/header?filepath=%s', {target: '#file-header'})"
 				>%s</a>
 			</li>`,
