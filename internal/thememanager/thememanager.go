@@ -299,6 +299,7 @@ func injectDefaultCSS(html string) string {
 	// inject default CSS links before </head>
 	defaultCSSLinks := `    <link href="/static/css/codehighlight.css" rel="stylesheet" />
     <link href="/static/css/listeditor.css" rel="stylesheet" />
+    <link href="/static/css/tableeditor.css" rel="stylesheet" />
 `
 
 	return html[:headCloseIndex] + defaultCSSLinks + html[headCloseIndex:]

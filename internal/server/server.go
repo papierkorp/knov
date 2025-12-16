@@ -296,6 +296,8 @@ func StartServerChi() {
 
 		r.Route("/components", func(r chi.Router) {
 			r.Get("/table", handleAPIGetTable)
+			r.Get("/table/editor", handleAPIGetTableEditor)
+			r.Put("/table", handleAPIPutTable)
 		})
 	})
 

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -514,6 +515,65 @@ func (h *DokuwikiHandler) processDokuWikiLists(content string) string {
 	for len(listStack) > 0 {
 		result = append(result, "</"+listStack[len(listStack)-1]+">")
 		listStack = listStack[:len(listStack)-1]
+	}
+
+	return strings.Join(result, "\n")
+}
+
+// ConvertJSONToDokuWikiTable converts JSON table data to DokuWiki table syntax
+func (h *DokuwikiHandler) ConvertJSONToDokuWikiTable(jsonData string) (string, error) {
+	var tableJSON struct {
+		Headers []string   `json:"headers"`
+		Data    [][]string `json:"data"`
+	}
+
+	if err := json.Unmarshal([]byte(jsonData), &tableJSON); err != nil {
+		return "", err
+	}
+
+	var lines []string
+
+	// add header row
+	if len(tableJSON.Headers) > 0 {
+		headerLine := "^ " + strings.Join(tableJSON.Headers, " ^ ") + " ^"
+		lines = append(lines, headerLine)
+	}
+
+	// add data rows
+	for _, row := range tableJSON.Data {
+		if len(row) > 0 {
+			rowLine := "| " + strings.Join(row, " | ") + " |"
+			lines = append(lines, rowLine)
+		}
+	}
+
+	return strings.Join(lines, "\n"), nil
+}
+
+// ReplaceTableInContent replaces the first table in content with new table syntax
+func (h *DokuwikiHandler) ReplaceTableInContent(content, newTable string) string {
+	lines := strings.Split(content, "\n")
+	var result []string
+	var inTable bool
+	var tableReplaced bool
+
+	for _, line := range lines {
+		if strings.HasPrefix(line, "^") || strings.HasPrefix(line, "|") {
+			if !inTable {
+				inTable = true
+				if !tableReplaced {
+					// replace first table
+					result = append(result, newTable)
+					tableReplaced = true
+				}
+			}
+			// skip original table lines
+		} else {
+			if inTable {
+				inTable = false
+			}
+			result = append(result, line)
+		}
 	}
 
 	return strings.Join(result, "\n")

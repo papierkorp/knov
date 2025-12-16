@@ -448,6 +448,66 @@ paths:
       summary: Get paginated table
       tags:
       - components
+    put:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Updates table content from jspreadsheet editor
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Table data as JSON
+        in: formData
+        name: data
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: updated table html
+          schema:
+            type: string
+        "400":
+          description: invalid parameters
+          schema:
+            type: string
+        "500":
+          description: failed to save table
+          schema:
+            type: string
+      summary: Update table
+      tags:
+      - components
+  /api/components/table/editor:
+    get:
+      description: Returns table editor HTML with jspreadsheet
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: table editor html
+          schema:
+            type: string
+        "400":
+          description: invalid parameters
+          schema:
+            type: string
+        "500":
+          description: failed to read file
+          schema:
+            type: string
+      summary: Get table editor
+      tags:
+      - components
   /api/config:
     get:
       produces:

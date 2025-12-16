@@ -1,0 +1,74 @@
+/* table editor styles */
+.table-editor-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+}
+
+.btn-table-edit,
+.btn-table-save,
+.btn-table-cancel {
+    background: var(--primary);
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-table-edit:hover,
+.btn-table-save:hover {
+    background: var(--accent);
+}
+
+.btn-table-cancel {
+    background: var(--neutral);
+}
+
+.btn-table-cancel:hover {
+    background: #475569;
+}
+
+.table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 10px;
+}
+
+#spreadsheet {
+    margin-top: 10px;
+}
+
+/* jspreadsheet overrides for theme compatibility */
+.jexcel_container {
+    background: var(--bg);
+}
+
+.jexcel thead td {
+    background: var(--bg-secondary);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.jexcel tbody tr {
+    background: var(--bg);
+    color: var(--text);
+}
+
+.jexcel tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+.jexcel td {
+    border-color: var(--border);
+    color: var(--text);
+}

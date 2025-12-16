@@ -131,7 +131,7 @@ func SearchTable(data *TableData, query string) *TableData {
 }
 
 func parseNumber(s string) float64 {
-	s = regexp.MustCompile(`[$€£¥,\s]`).ReplaceAllString(s, "")
+	s = regexp.MustCompile(`[$â‚¬Â£Â¥,\s]`).ReplaceAllString(s, "")
 	num, _ := strconv.ParseFloat(s, 64)
 	return num
 }
@@ -184,7 +184,13 @@ func RenderTableHTML(data *TableData, filepath string, page, size int, sortCol i
 		       hx-target="#table-wrapper"
 		       hx-include="this"
 		       name="search">
-	`, searchQuery, baseParams)
+		<button class="btn-table-edit"
+		        hx-get="/api/components/table/editor?filepath=%s"
+		        hx-target="#table-wrapper"
+		        hx-swap="outerHTML">
+		    <i class="fa fa-edit"></i> Edit Table
+		</button>
+	`, searchQuery, baseParams, filepath)
 	html += `</div>`
 
 	html += `<div class="table-wrapper">`
@@ -197,10 +203,10 @@ func RenderTableHTML(data *TableData, filepath string, page, size int, sortCol i
 		if sortCol == header.ColumnIdx {
 			if sortOrder == "asc" {
 				nextOrder = "desc"
-				sortIndicator = " ↑"
+				sortIndicator = " â†‘"
 			} else {
 				nextOrder = "asc"
-				sortIndicator = " ↓"
+				sortIndicator = " â†“"
 			}
 		}
 
@@ -268,4 +274,90 @@ func RenderTableHTML(data *TableData, filepath string, page, size int, sortCol i
 	html += `</div>`
 
 	return html
+}
+
+// RenderTableEditorHTML renders the jspreadsheet editor
+func RenderTableEditorHTML(data *TableData, filepath string) string {
+	var html strings.Builder
+
+	html.WriteString(`<div class="table-wrapper" id="table-wrapper">`)
+	html.WriteString(`<div class="table-editor-controls">`)
+	html.WriteString(`<button class="btn-table-save" onclick="saveTable()"><i class="fa fa-save"></i> Save</button>`)
+	html.WriteString(fmt.Sprintf(`<button class="btn-table-cancel" hx-get="/api/components/table?filepath=%s&page=1&size=25" hx-target="#table-wrapper" hx-swap="outerHTML"><i class="fa fa-times"></i> Cancel</button>`, filepath))
+	html.WriteString(`</div>`)
+	html.WriteString(`<div id="spreadsheet"></div>`)
+	html.WriteString(`<script>`)
+	html.WriteString(fmt.Sprintf(`
+		const tableData = %s;
+		const filepath = '%s';
+
+		const spreadsheet = jspreadsheet(document.getElementById('spreadsheet'), {
+			data: tableData.rows,
+			columns: tableData.columns,
+			minDimensions: [tableData.columns.length, Math.max(10, tableData.rows.length)],
+			tableOverflow: true,
+			tableWidth: '100%%',
+			tableHeight: '500px',
+			allowInsertRow: true,
+			allowInsertColumn: true,
+			allowDeleteRow: true,
+			allowDeleteColumn: true,
+			allowRenameColumn: true,
+			contextMenu: true,
+		});
+
+		function saveTable() {
+			const data = spreadsheet.getData();
+			const headers = spreadsheet.getHeaders();
+			const tableJSON = JSON.stringify({ headers: headers, data: data });
+
+			const formData = new FormData();
+			formData.append('filepath', filepath);
+			formData.append('data', tableJSON);
+
+			htmx.ajax('PUT', '/api/components/table', {
+				target: '#table-wrapper',
+				swap: 'outerHTML',
+				values: { filepath: filepath, data: tableJSON }
+			});
+		}
+	`, convertTableDataToJSON(data), filepath))
+	html.WriteString(`</script>`)
+	html.WriteString(`</div>`)
+
+	return html.String()
+}
+
+// convertTableDataToJSON converts TableData to JSON format for jspreadsheet
+func convertTableDataToJSON(data *TableData) string {
+	var columns []string
+	var rows [][]string
+
+	// build columns
+	for _, header := range data.Headers {
+		columns = append(columns, fmt.Sprintf(`{type: 'text', title: '%s', width: 120}`, header.Content))
+	}
+
+	// build rows
+	for _, row := range data.Rows {
+		var rowData []string
+		for _, cell := range row {
+			// escape single quotes
+			escaped := strings.ReplaceAll(cell.Content, "'", "\\'")
+			rowData = append(rowData, fmt.Sprintf(`'%s'`, escaped))
+		}
+		rows = append(rows, rowData)
+	}
+
+	// build json manually
+	var jsonParts []string
+	jsonParts = append(jsonParts, fmt.Sprintf(`"columns": [%s]`, strings.Join(columns, ",")))
+
+	var rowsJSON []string
+	for _, row := range rows {
+		rowsJSON = append(rowsJSON, fmt.Sprintf(`[%s]`, strings.Join(row, ",")))
+	}
+	jsonParts = append(jsonParts, fmt.Sprintf(`"rows": [%s]`, strings.Join(rowsJSON, ",")))
+
+	return fmt.Sprintf(`{%s}`, strings.Join(jsonParts, ","))
 }
