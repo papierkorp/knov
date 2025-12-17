@@ -218,7 +218,7 @@
 #view-fileview-detailed .sidebar-toc {
     position: sticky;
     top: 80px;
-    max-height: calc(100vh - 40px);
+    max-height: calc(100vh - 120px);
     overflow-y: auto;
 }
 

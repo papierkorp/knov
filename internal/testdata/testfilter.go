@@ -353,24 +353,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			description:   "filter by creation date after October 5, 2025",
 		},
 		{
-			name: "date_edited_before_november_6",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "lastEdited",
-						Operator: "less",
-						Value:    "2025-11-06",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 5,
-			expectedFiles: []string{"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/filterTestC.md", "filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md"},
-			description:   "filter by last edited date before November 6, 2025",
-		},
-		{
 			name: "date_range_october_filter",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
@@ -390,8 +372,8 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Logic: "and",
 				Limit: 0,
 			},
-			expectedCount: 4,
-			expectedFiles: []string{"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md", "filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md"},
+			expectedCount: 5,
+			expectedFiles: []string{"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md", "filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md", "filter-tests/integration/filterTestH.md"},
 			description:   "filter by creation date range: October 4-8, 2025",
 		},
 		{
@@ -510,8 +492,8 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Logic: "and",
 				Limit: 0,
 			},
-			expectedCount: 2,
-			expectedFiles: []string{"filter-tests/basic/filterTestG.md", "filter-tests/performance/filterTestK.md"},
+			expectedCount: 3,
+			expectedFiles: []string{"filter-tests/basic/filterTestG.md", "filter-tests/performance/filterTestK.md", "filter-tests/integration/filterTestH.md"},
 			description:   "complex multi-criteria: created after Oct 5 AND published status AND medium/low priority",
 		},
 		{

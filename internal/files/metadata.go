@@ -198,6 +198,9 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		if newMetadata.Status != "" {
 			currentMetadata.Status = newMetadata.Status
 		}
+		if !newMetadata.CreatedAt.IsZero() {
+			currentMetadata.CreatedAt = newMetadata.CreatedAt
+		}
 		if newMetadata.Priority != "" {
 			currentMetadata.Priority = newMetadata.Priority
 		}
