@@ -954,12 +954,15 @@ func handleAPISetMetadataPARAProjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// always create a slice, even if empty
 	var projects []string
 	if projectsStr != "" {
 		projects = strings.Split(projectsStr, ",")
 		for i := range projects {
 			projects[i] = strings.TrimSpace(projects[i])
 		}
+	} else {
+		projects = []string{} // explicit empty slice, not nil
 	}
 
 	metadata := &files.Metadata{
@@ -975,7 +978,7 @@ func handleAPISetMetadataPARAProjects(w http.ResponseWriter, r *http.Request) {
 	}
 
 	html := fmt.Sprintf(`<span class="para-projects">%s</span>`, strings.Join(projects, ", "))
-	writeResponse(w, r, "projects updated", html)
+	writeResponse(w, r, translation.SprintfForRequest(configmanager.GetLanguage(), "projects updated"), html)
 }
 
 // @Summary Set PARA areas
@@ -996,12 +999,15 @@ func handleAPISetMetadataPARAreas(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// always create a slice, even if empty
 	var areas []string
 	if areasStr != "" {
 		areas = strings.Split(areasStr, ",")
 		for i := range areas {
 			areas[i] = strings.TrimSpace(areas[i])
 		}
+	} else {
+		areas = []string{} // explicit empty slice, not nil
 	}
 
 	metadata := &files.Metadata{
@@ -1017,7 +1023,7 @@ func handleAPISetMetadataPARAreas(w http.ResponseWriter, r *http.Request) {
 	}
 
 	html := fmt.Sprintf(`<span class="para-areas">%s</span>`, strings.Join(areas, ", "))
-	writeResponse(w, r, "areas updated", html)
+	writeResponse(w, r, translation.SprintfForRequest(configmanager.GetLanguage(), "areas updated"), html)
 }
 
 // @Summary Set PARA resources
@@ -1038,12 +1044,15 @@ func handleAPISetMetadataPARAResources(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// always create a slice, even if empty
 	var resources []string
 	if resourcesStr != "" {
 		resources = strings.Split(resourcesStr, ",")
 		for i := range resources {
 			resources[i] = strings.TrimSpace(resources[i])
 		}
+	} else {
+		resources = []string{} // explicit empty slice, not nil
 	}
 
 	metadata := &files.Metadata{
@@ -1059,7 +1068,7 @@ func handleAPISetMetadataPARAResources(w http.ResponseWriter, r *http.Request) {
 	}
 
 	html := fmt.Sprintf(`<span class="para-resources">%s</span>`, strings.Join(resources, ", "))
-	writeResponse(w, r, "resources updated", html)
+	writeResponse(w, r, translation.SprintfForRequest(configmanager.GetLanguage(), "resources updated"), html)
 }
 
 // @Summary Set PARA archive
@@ -1080,12 +1089,15 @@ func handleAPISetMetadataPARAArchive(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// always create a slice, even if empty
 	var archive []string
 	if archiveStr != "" {
 		archive = strings.Split(archiveStr, ",")
 		for i := range archive {
 			archive[i] = strings.TrimSpace(archive[i])
 		}
+	} else {
+		archive = []string{} // explicit empty slice, not nil
 	}
 
 	metadata := &files.Metadata{
@@ -1101,7 +1113,7 @@ func handleAPISetMetadataPARAArchive(w http.ResponseWriter, r *http.Request) {
 	}
 
 	html := fmt.Sprintf(`<span class="para-archive">%s</span>`, strings.Join(archive, ", "))
-	writeResponse(w, r, "archive updated", html)
+	writeResponse(w, r, translation.SprintfForRequest(configmanager.GetLanguage(), "archive updated"), html)
 }
 
 // @Summary Set file tags
@@ -1122,13 +1134,26 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// always create a slice, even if empty
 	var tags []string
 	if tagsStr != "" {
 		tags = strings.Split(tagsStr, ",")
 		for i := range tags {
 			tags[i] = strings.TrimSpace(tags[i])
 		}
+		// remove empty strings that might result from trimming
+		var filteredTags []string
+		for _, tag := range tags {
+			if tag != "" {
+				filteredTags = append(filteredTags, tag)
+			}
+		}
+		tags = filteredTags
+	} else {
+		tags = []string{} // explicit empty slice, not nil
 	}
+
+	logging.LogInfo("setting tags for %s: tagsStr='%s', tags=%v, isNil=%t, length=%d", filepath, tagsStr, tags, tags == nil, len(tags))
 
 	metadata := &files.Metadata{
 		Path: filepath,
@@ -1140,7 +1165,7 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="tags-updated">tags updated</span>`)
+	html := fmt.Sprintf(`<span class="tags-updated">%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "tags updated"))
 	writeResponse(w, r, "tags updated", html)
 }
 
@@ -1162,12 +1187,15 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// always create a slice, even if empty
 	var parents []string
 	if parentsStr != "" {
 		parents = strings.Split(parentsStr, ",")
 		for i := range parents {
 			parents[i] = strings.TrimSpace(parents[i])
 		}
+	} else {
+		parents = []string{} // explicit empty slice, not nil
 	}
 
 	metadata := &files.Metadata{
@@ -1180,7 +1208,7 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="parents-updated">parents updated</span>`)
+	html := fmt.Sprintf(`<span class="parents-updated">%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "parents updated"))
 	writeResponse(w, r, "parents updated", html)
 }
 

@@ -188,7 +188,7 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 	<div class="tag-chips" id="%s-display"></div>
 	<input type="text" id="%s" class="tag-chips-input" autocomplete="off" list="%s" placeholder="%s"/>
 	<input type="hidden" id="%s" name="%s" value="%s"
-		hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="change from:body delay:500ms" hx-target="#metadata-save-status" hx-swap="innerHTML"/>
+		hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="change delay:500ms" hx-target="#metadata-save-status" hx-swap="innerHTML"/>
 	%s
 </div>
 <script>
@@ -201,14 +201,17 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 	let tags = [];
 	let initialized = false;
 
+	console.log('Tag chips initialized, hidden field:', hidden);
+
 	// initialize with existing values (no auto-save)
 	if (hidden.value) {
 		tags = hidden.value.split(',').map(t => t.trim()).filter(t => t);
+		console.log('Initial tags loaded:', tags);
 		renderTags();
-		initialized = true; // mark as initialized after first render
 	}
 
 	function renderTags() {
+		console.log('renderTags called, tags:', tags, 'initialized:', initialized);
 		display.innerHTML = '';
 		tags.forEach((tag, index) => {
 			const chip = document.createElement('span');
@@ -217,29 +220,40 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 
 			const removeBtn = chip.querySelector('.tag-chip-remove');
 			removeBtn.addEventListener('click', function() {
+				console.log('Removing tag at index:', index);
 				removeTag(index);
 			});
 
 			display.appendChild(chip);
 		});
 		hidden.value = tags.join(', ');
+		console.log('Hidden field updated to:', hidden.value);
 		// only trigger save after initialization
 		if (initialized) {
+			console.log('Triggering HTMX change event');
 			htmx.trigger(hidden, 'change');
+		} else {
+			console.log('Not triggering HTMX - not initialized yet');
 		}
 	}
 
 	function addTag(value) {
 		const trimmed = value.trim();
+		console.log('addTag called with:', value, 'trimmed:', trimmed);
 		if (trimmed && !tags.includes(trimmed)) {
 			tags.push(trimmed);
+			console.log('Tag added, new tags:', tags);
 			renderTags();
 			input.value = '';
+		} else {
+			console.log('Tag not added - empty or duplicate');
 		}
 	}
 
 	function removeTag(index) {
+		console.log('removeTag called with index:', index);
 		tags.splice(index, 1);
+		console.log('Tag removed, new tags:', tags);
 		renderTags();
 	}
 
@@ -247,8 +261,10 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 	input.addEventListener('keydown', function(e) {
 		if (e.key === 'Enter' || e.key === ',' || e.key === 'Tab') {
 			e.preventDefault();
+			console.log('Key event triggered addTag with:', input.value);
 			addTag(input.value);
 		} else if (e.key === 'Backspace' && input.value === '' && tags.length > 0) {
+			console.log('Backspace - removing last tag');
 			tags.pop();
 			renderTags();
 		}
@@ -256,6 +272,7 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 
 	// handle datalist selection
 	input.addEventListener('change', function() {
+		console.log('Input change event with:', input.value);
 		if (input.value) {
 			addTag(input.value);
 		}
@@ -263,6 +280,7 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 
 	// handle blur to catch paste events
 	input.addEventListener('blur', function() {
+		console.log('Input blur event with:', input.value);
 		if (input.value) {
 			addTag(input.value);
 		}
@@ -272,6 +290,12 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 	container.addEventListener('click', function() {
 		input.focus();
 	});
+
+	// mark as initialized after setup
+	setTimeout(function() {
+		initialized = true;
+		console.log('Tag chips fully initialized');
+	}, 100);
 })();
 </script>`, chipsId, chipsId, inputId, datalistId, placeholder, hiddenId, name, value, saveEndpoint, filePath, datalistHTML, chipsId, chipsId, inputId, hiddenId)
 }

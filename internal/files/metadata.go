@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -179,15 +180,26 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 
 	// save previous data
 	if newMetadata != nil {
-		if len(newMetadata.Tags) > 0 {
+		// store old parents for cleanup
+		var oldParents []string
+		if currentMetadata.Parents != nil {
+			oldParents = make([]string, len(currentMetadata.Parents))
+			copy(oldParents, currentMetadata.Parents)
+		}
+
+		// allow explicit setting of empty arrays by checking if field was provided
+		if newMetadata.Tags != nil {
+			logging.LogInfo("updating tags for %s: old=%v, new=%v", currentMetadata.Path, currentMetadata.Tags, newMetadata.Tags)
 			currentMetadata.Tags = newMetadata.Tags
 		}
-		if len(newMetadata.Parents) > 0 {
+		if newMetadata.Parents != nil {
 			normalized := make([]string, 0, len(newMetadata.Parents))
 			for _, parent := range newMetadata.Parents {
 				normalized = append(normalized, utils.CleanLink(parent))
 			}
 			currentMetadata.Parents = normalized
+			// update parent-child relationships when parents change
+			updateParentChildRelationships(currentMetadata, oldParents)
 		}
 		if newMetadata.FileType != "" {
 			currentMetadata.FileType = newMetadata.FileType
@@ -204,16 +216,16 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		if newMetadata.Priority != "" {
 			currentMetadata.Priority = newMetadata.Priority
 		}
-		if len(newMetadata.PARA.Projects) > 0 {
+		if newMetadata.PARA.Projects != nil {
 			currentMetadata.PARA.Projects = newMetadata.PARA.Projects
 		}
-		if len(newMetadata.PARA.Areas) > 0 {
+		if newMetadata.PARA.Areas != nil {
 			currentMetadata.PARA.Areas = newMetadata.PARA.Areas
 		}
-		if len(newMetadata.PARA.Resources) > 0 {
+		if newMetadata.PARA.Resources != nil {
 			currentMetadata.PARA.Resources = newMetadata.PARA.Resources
 		}
-		if len(newMetadata.PARA.Archive) > 0 {
+		if newMetadata.PARA.Archive != nil {
 			currentMetadata.PARA.Archive = newMetadata.PARA.Archive
 		}
 	}
@@ -688,4 +700,55 @@ func updateTitle(metadata *Metadata) {
 	// no title found, clear any existing title
 	metadata.Title = ""
 	logging.LogDebug("no title found for %s", metadata.Path)
+}
+
+// updateParentChildRelationships updates parent-child relationships when parents change
+func updateParentChildRelationships(metadata *Metadata, oldParents []string) {
+	logging.LogInfo("updating parent-child relationships for %s: old=%v, new=%v", metadata.Path, oldParents, metadata.Parents)
+
+	// remove this file from old parents' kids lists
+	for _, oldParent := range oldParents {
+		if !slices.Contains(metadata.Parents, oldParent) {
+			// this parent was removed, update its kids list
+			parentMetadata, err := MetaDataGet(oldParent)
+			if err != nil || parentMetadata == nil {
+				logging.LogWarning("failed to get metadata for former parent %s: %v", oldParent, err)
+				continue
+			}
+
+			// remove current file from parent's kids list
+			if idx := slices.Index(parentMetadata.Kids, metadata.Path); idx != -1 {
+				parentMetadata.Kids = slices.Delete(parentMetadata.Kids, idx, idx+1)
+
+				if err := metaDataSaveRaw(parentMetadata); err != nil {
+					logging.LogWarning("failed to update kids list for %s: %v", oldParent, err)
+				} else {
+					logging.LogInfo("removed %s from kids list of %s", metadata.Path, oldParent)
+				}
+			}
+		}
+	}
+
+	// add this file to new parents' kids lists
+	for _, newParent := range metadata.Parents {
+		if !slices.Contains(oldParents, newParent) {
+			// this parent was added, update its kids list
+			parentMetadata, err := MetaDataGet(newParent)
+			if err != nil || parentMetadata == nil {
+				logging.LogWarning("failed to get metadata for new parent %s: %v", newParent, err)
+				continue
+			}
+
+			// add current file to parent's kids list if not already there
+			if !slices.Contains(parentMetadata.Kids, metadata.Path) {
+				parentMetadata.Kids = append(parentMetadata.Kids, metadata.Path)
+
+				if err := metaDataSaveRaw(parentMetadata); err != nil {
+					logging.LogWarning("failed to update kids list for %s: %v", newParent, err)
+				} else {
+					logging.LogInfo("added %s to kids list of %s", metadata.Path, newParent)
+				}
+			}
+		}
+	}
 }

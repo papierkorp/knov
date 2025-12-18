@@ -75,10 +75,6 @@ func MetaDataLinksRebuild() error {
 }
 
 func updateAncestors(metadata *Metadata) {
-	if len(metadata.Parents) == 0 {
-		return
-	}
-
 	visited := make(map[string]bool)
 	var ancestors []string
 
