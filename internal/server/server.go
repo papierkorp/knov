@@ -219,6 +219,7 @@ func StartServerChi() {
 			r.Post("/name", handleAPISetMetadataName)
 			r.Post("/createdat", handleAPISetMetadataCreatedAt)
 			r.Post("/lastedited", handleAPISetMetadataLastEdited)
+			r.Post("/targetdate", handleAPISetMetadataTargetDate)
 			r.Post("/folders", handleAPISetMetadataFolders)
 			r.Post("/tags", handleAPISetMetadataTags)
 			r.Post("/parents", handleAPISetMetadataParents)

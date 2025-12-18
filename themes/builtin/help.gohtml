@@ -200,62 +200,48 @@
 
                 <div class="workflow">
                     <h3>{{T "Daily Productivity Journal"}}</h3>
-                    <p>{{T "Adapt Jeff Huang's text file system using KNOV's journaling and todo features:"}}</p>
+                    <p>{{T "A simple text-file system for staying organized using your calendar and daily todo files."}}</p>
 
                     <p class="workflow-reference">
-                        <strong>{{T "Reference"}}</strong>: <a href="https://jeffhuang.com/productivity_text_file/" target="_blank">{{T "Jeff Huang's productivity system"}}</a> {{T "- adapted for KNOV's structure"}}
+                        <strong>{{T "Reference"}}</strong>: <a href="https://jeffhuang.com/productivity_text_file/" target="_blank">{{T "Jeff Huang's productivity system"}}</a> {{T "- adapted for KNOV"}}
                     </p>
 
                     <div class="workflow-summary">
-                        <strong>{{T "Setup"}}</strong>
-                        <ul>
-                            <li><strong>{{T "File Types"}}</strong>: {{T "Use Todo and Journaling file types"}}</li>
-                            <li><strong>{{T "Collections"}}</strong>: {{T "Group by time periods or projects"}}</li>
-                            <li><strong>{{T "Tags"}}</strong>: {{T "Use #idea, #annual, #followup for quick searches"}}</li>
-                        </ul>
-
-                        <strong>{{T "Daily Practice"}}</strong>
-                        <ul>
-                            <li><strong>{{T "Evening Planning"}}</strong>:
+                        <strong>{{T "How it works"}}</strong>
+                        <ol>
+                            <li><strong>{{T "Calendar is your main source of truth"}}</strong>:
                                 <ul>
-                                    <li>{{T "Create tomorrow's todo file with calendar items"}}</li>
-                                    <li>{{T "Break large tasks into manageable pieces"}}</li>
+                                    <li>{{T "Put everything in your calendar"}}</li>
+                                    <li>{{T "Even tasks without fixed times - schedule them on the date you want to think about it"}}</li>
                                 </ul>
                             </li>
-                            <li><strong>{{T "During the Day"}}</strong>:
+                            <li><strong>{{T "Every evening, create tomorrow's daily list - this happens automatically with knov"}}</strong>:
                                 <ul>
-                                    <li>{{T "Add notes and outcomes directly to todo file"}}</li>
-                                    <li>{{T "Track meetings, decisions, and ideas"}}</li>
+                                    <li>{{T "Copy all calendar items into a new todo file"}}</li>
+                                    <li>{{T "Include scheduled tasks (e.g. 2pm meeting)"}}</li>
+                                    <li>{{T "Include errands (e.g. sign a form)"}}</li>
+                                    <li>{{T "Include work items (e.g. review a paper)"}}</li>
                                 </ul>
                             </li>
-                            <li><strong>{{T "End of Day"}}</strong>:
+                            <li><strong>{{T "If you have too much for one day"}}</strong>:
                                 <ul>
-                                    <li>{{T "Review completed work"}}</li>
-                                    <li>{{T "Move incomplete items to future dates"}}</li>
+                                    <li>{{T "Reschedule things in your calendar for another date"}}</li>
+                                    <li>{{T "Break big tasks into smaller pieces"}}</li>
                                 </ul>
                             </li>
-                        </ul>
-
-                        <strong>{{T "Benefits"}}</strong>
-                        <ul>
-                            <li>{{T "Searchable record of all activities"}}</li>
-                            <li>{{T "Clear daily focus without overwhelm"}}</li>
-                            <li>{{T "Historical perspective on workload"}}</li>
-                        </ul>
+                            <li><strong>{{T "During the day"}}</strong>:
+                                <ul>
+                                    <li>{{T "Add notes and outcomes to your todo file"}}</li>
+                                    <li>{{T "Your todo list becomes a record of what you actually did"}}</li>
+                                </ul>
+                            </li>
+                        </ol>
                     </div>
 
 
                 </div>
             </div>
         </section>
-
-        <footer class="help-footer">
-            <div class="welcome-message">
-                <h2>{{T "Welcome to KNOV! Your knowledge journey starts now."}}</h2>
-                <p><em>{{T "The best system is the one you actually use. Start simple and expand as needed."}}</em></p>
-            </div>
-
-        </footer>
     </div>
 </div>
 {{ end }}

@@ -9,8 +9,11 @@ import (
 	"strings"
 	"time"
 
+	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/logging"
 	"knov/internal/server/render"
+	"knov/internal/translation"
 )
 
 // ----------------------------------------------------------------------------------------
@@ -671,24 +674,21 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all tags
 	format := r.URL.Query().Get("format")
 
+	// for form options, return empty options since we can't predict tags
+	if format == "options" {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("")) // empty options for now
+		return
+	}
+
 	tags, err := files.GetAllTags()
 	if err != nil {
-		http.Error(w, "failed to get tags", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"), http.StatusInternalServerError)
 		return
 	}
 
-	var html strings.Builder
-	if format == "options" {
-		for tag := range tags {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, tag, tag))
-		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
-		return
-	}
-
-	html.WriteString(render.RenderBrowseHTML(tags, "/browse/tags"))
-	writeResponse(w, r, tags, html.String())
+	html := render.RenderBrowseHTML(tags, "/browse/tags")
+	writeResponse(w, r, tags, html)
 }
 
 // @Summary Get all collections or collection for a specific file
@@ -711,24 +711,21 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all collections
 	format := r.URL.Query().Get("format")
 
+	// for form options, return empty options since we can't predict collections
+	if format == "options" {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("")) // empty options for now
+		return
+	}
+
 	collections, err := files.GetAllCollections()
 	if err != nil {
-		http.Error(w, "failed to get collections", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"), http.StatusInternalServerError)
 		return
 	}
 
-	var html strings.Builder
-	if format == "options" {
-		for collection := range collections {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, collection, collection))
-		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
-		return
-	}
-
-	html.WriteString(render.RenderBrowseHTML(collections, "/browse/collection"))
-	writeResponse(w, r, collections, html.String())
+	html := render.RenderBrowseHTML(collections, "/browse/collection")
+	writeResponse(w, r, collections, html)
 }
 
 // @Summary Get all folders or folders for a specific file
@@ -751,24 +748,21 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all folders
 	format := r.URL.Query().Get("format")
 
+	// for form options, return empty options since we can't predict folders
+	if format == "options" {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("")) // empty options for now
+		return
+	}
+
 	folders, err := files.GetAllFolders()
 	if err != nil {
-		http.Error(w, "failed to get folders", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"), http.StatusInternalServerError)
 		return
 	}
 
-	var html strings.Builder
-	if format == "options" {
-		for folder := range folders {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, folder, folder))
-		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
-		return
-	}
-
-	html.WriteString(render.RenderBrowseHTML(folders, "/browse/folders"))
-	writeResponse(w, r, folders, html.String())
+	html := render.RenderBrowseHTML(folders, "/browse/folders")
+	writeResponse(w, r, folders, html)
 }
 
 // @Summary Get all available priorities
@@ -792,7 +786,7 @@ func handleAPIGetAllPriorities(w http.ResponseWriter, r *http.Request) {
 
 	priorities, err := files.GetAllPriorities()
 	if err != nil {
-		http.Error(w, "failed to get priorities", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get priorities"), http.StatusInternalServerError)
 		return
 	}
 
@@ -821,7 +815,7 @@ func handleAPIGetAllStatuses(w http.ResponseWriter, r *http.Request) {
 
 	statuses, err := files.GetAllStatuses()
 	if err != nil {
-		http.Error(w, "failed to get statuses", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get statuses"), http.StatusInternalServerError)
 		return
 	}
 
@@ -850,7 +844,7 @@ func handleAPIGetAllFiletypes(w http.ResponseWriter, r *http.Request) {
 
 	filetypes, err := files.GetAllFiletypes()
 	if err != nil {
-		http.Error(w, "failed to get filetypes", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get filetypes"), http.StatusInternalServerError)
 		return
 	}
 
@@ -1391,26 +1385,23 @@ func handleAPIGetAllPARAProjects(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all projects
 	format := r.URL.Query().Get("format")
 
+	// for form options, return empty options since we can't predict projects
+	if format == "options" {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("")) // empty options for now
+		return
+	}
+
 	projectCount, err := files.GetAllPARAProjects()
 	if err != nil {
-		http.Error(w, "failed to get projects", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get projects"), http.StatusInternalServerError)
 		return
 	}
 
 	var html strings.Builder
-	if format == "options" {
-		// return option elements for datalist
-		for project := range projectCount {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, project, project))
-		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
-		return
-	}
-
 	// default: return div elements for display
 	if len(projectCount) == 0 {
-		html.WriteString(`<div class="no-items">no projects found</div>`)
+		html.WriteString(`<div class="no-items">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no projects found") + `</div>`)
 	} else {
 		for project, count := range projectCount {
 			html.WriteString(fmt.Sprintf(`<div class="meta-item"><a href="/browse/projects/%s" class="meta-link">%s</a> <span class="meta-count">(%d)</span></div>`,
@@ -1441,26 +1432,23 @@ func handleAPIGetAllPARAreas(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all areas
 	format := r.URL.Query().Get("format")
 
+	// for form options, return empty options since we can't predict areas
+	if format == "options" {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("")) // empty options for now
+		return
+	}
+
 	areaCount, err := files.GetAllPARAreas()
 	if err != nil {
-		http.Error(w, "failed to get areas", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get areas"), http.StatusInternalServerError)
 		return
 	}
 
 	var html strings.Builder
-	if format == "options" {
-		// return option elements for datalist
-		for area := range areaCount {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, area, area))
-		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
-		return
-	}
-
 	// default: return div elements for display
 	if len(areaCount) == 0 {
-		html.WriteString(`<div class="no-items">no areas found</div>`)
+		html.WriteString(`<div class="no-items">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no areas found") + `</div>`)
 	} else {
 		for area, count := range areaCount {
 			html.WriteString(fmt.Sprintf(`<div class="meta-item"><a href="/browse/areas/%s" class="meta-link">%s</a> <span class="meta-count">(%d)</span></div>`,
@@ -1491,26 +1479,23 @@ func handleAPIGetAllPARAResources(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all resources
 	format := r.URL.Query().Get("format")
 
+	// for form options, return empty options since we can't predict resources
+	if format == "options" {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("")) // empty options for now
+		return
+	}
+
 	resourceCount, err := files.GetAllPARAResources()
 	if err != nil {
-		http.Error(w, "failed to get resources", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get resources"), http.StatusInternalServerError)
 		return
 	}
 
 	var html strings.Builder
-	if format == "options" {
-		// return option elements for datalist
-		for resource := range resourceCount {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, resource, resource))
-		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
-		return
-	}
-
 	// default: return div elements for display
 	if len(resourceCount) == 0 {
-		html.WriteString(`<div class="no-items">no resources found</div>`)
+		html.WriteString(`<div class="no-items">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no resources found") + `</div>`)
 	} else {
 		for resource, count := range resourceCount {
 			html.WriteString(fmt.Sprintf(`<div class="meta-item"><a href="/browse/resources/%s" class="meta-link">%s</a> <span class="meta-count">(%d)</span></div>`,
@@ -1541,26 +1526,23 @@ func handleAPIGetAllPARAArchive(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all archive
 	format := r.URL.Query().Get("format")
 
+	// for form options, return empty options since we can't predict archive items
+	if format == "options" {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("")) // empty options for now
+		return
+	}
+
 	archiveCount, err := files.GetAllPARAArchive()
 	if err != nil {
-		http.Error(w, "failed to get archive", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get archive"), http.StatusInternalServerError)
 		return
 	}
 
 	var html strings.Builder
-	if format == "options" {
-		// return option elements for datalist
-		for archive := range archiveCount {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, archive, archive))
-		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
-		return
-	}
-
 	// default: return div elements for display
 	if len(archiveCount) == 0 {
-		html.WriteString(`<div class="no-items">no archive found</div>`)
+		html.WriteString(`<div class="no-items">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no archive found") + `</div>`)
 	} else {
 		for archive, count := range archiveCount {
 			html.WriteString(fmt.Sprintf(`<div class="meta-item"><a href="/browse/archive/%s" class="meta-link">%s</a> <span class="meta-count">(%d)</span></div>`,
@@ -1569,4 +1551,45 @@ func handleAPIGetAllPARAArchive(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, r, archiveCount, html.String())
+}
+
+// @Summary Set file target date
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param targetdate formData string false "Target date (YYYY-MM-DD HH:MM:SS, empty to clear)"
+// @Success 200 {string} string
+// @Router /api/metadata/targetdate [post]
+func handleAPISetMetadataTargetDate(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filepath := r.FormValue("filepath")
+	targetDateStr := r.FormValue("targetdate")
+
+	if filepath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+
+	metadata := &files.Metadata{
+		Path: filepath,
+	}
+
+	if targetDateStr != "" {
+		targetDate, err := time.Parse("2006-01-02 15:04:05", targetDateStr)
+		if err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid date format"), http.StatusBadRequest)
+			return
+		}
+		metadata.TargetDate = targetDate
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		logging.LogError("failed to save target date metadata: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+		return
+	}
+
+	html := fmt.Sprintf(`<span class="targetdate">%s</span>`, targetDateStr)
+	writeResponse(w, r, "target date updated", html)
 }

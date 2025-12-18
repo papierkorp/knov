@@ -24,10 +24,11 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 	}
 
 	html.WriteString(`<form id="metadata-form" class="metadata-form">`)
+	html.WriteString(`<div id="metadata-save-status" class="save-status"></div>`)
 
-	// basic metadata section
+	// basic metadata section - all fields in one section
 	html.WriteString(`<div class="form-group">`)
-	html.WriteString(`<h3>` + translation.SprintfForRequest(configmanager.GetLanguage(), "basic metadata") + `</h3>`)
+	html.WriteString(`<h3>` + translation.SprintfForRequest(configmanager.GetLanguage(), "metadata") + `</h3>`)
 
 	// name field
 	name := ""
@@ -89,11 +90,29 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 		"/api/metadata/statuses?format=options", filePath, "/api/metadata/status"))
 	html.WriteString(`</div>`)
 
-	html.WriteString(`</div>`) // close basic form group
+	// target date field
+	targetDate := ""
+	if metadata != nil && !metadata.TargetDate.IsZero() {
+		targetDate = metadata.TargetDate.Format("2006-01-02 15:04:05")
+	}
+	html.WriteString(`<div class="form-field">`)
+	html.WriteString(`<label for="meta-targetdate">` + translation.SprintfForRequest(configmanager.GetLanguage(), "target date") + `</label>`)
+	html.WriteString(GenerateDatalistInputWithSave("meta-targetdate", "targetdate", targetDate,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "set target date (YYYY-MM-DD HH:MM:SS)"),
+		"", filePath, "/api/metadata/targetdate"))
+	html.WriteString(`</div>`)
 
-	// tags and folders section
-	html.WriteString(`<div class="form-group">`)
-	html.WriteString(`<h3>` + translation.SprintfForRequest(configmanager.GetLanguage(), "tags & folders") + `</h3>`)
+	// parents field
+	parentsStr := ""
+	if metadata != nil && len(metadata.Parents) > 0 {
+		parentsStr = strings.Join(metadata.Parents, ", ")
+	}
+	html.WriteString(`<div class="form-field">`)
+	html.WriteString(`<label for="meta-parents">` + translation.SprintfForRequest(configmanager.GetLanguage(), "parents") + `</label>`)
+	html.WriteString(GenerateTagChipsInputWithSave("meta-parents", "parents", parentsStr,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "add parent files"),
+		"/api/files?format=options", filePath, "/api/metadata/parents"))
+	html.WriteString(`</div>`)
 
 	// tags field
 	tagsStr := ""
@@ -107,19 +126,7 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 		"/api/metadata/tags?format=options", filePath, "/api/metadata/tags"))
 	html.WriteString(`</div>`)
 
-	// folders field
-	foldersStr := ""
-	if metadata != nil && len(metadata.Folders) > 0 {
-		foldersStr = strings.Join(metadata.Folders, ", ")
-	}
-	html.WriteString(`<div class="form-field">`)
-	html.WriteString(`<label for="meta-folders">` + translation.SprintfForRequest(configmanager.GetLanguage(), "folders") + `</label>`)
-	html.WriteString(GenerateTagChipsInputWithSave("meta-folders", "folders", foldersStr,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "add folders"),
-		"/api/metadata/folders?format=options", filePath, "/api/metadata/folders"))
-	html.WriteString(`</div>`)
-
-	html.WriteString(`</div>`) // close tags form group
+	html.WriteString(`</div>`) // close basic form group
 
 	// PARA section
 	html.WriteString(`<div class="form-group">`)

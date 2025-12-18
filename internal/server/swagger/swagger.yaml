@@ -2428,6 +2428,31 @@ paths:
       summary: Set file tags
       tags:
       - metadata
+  /api/metadata/targetdate:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Target date (YYYY-MM-DD HH:MM:SS, empty to clear)
+        in: formData
+        name: targetdate
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file target date
+      tags:
+      - metadata
   /api/search:
     get:
       parameters:

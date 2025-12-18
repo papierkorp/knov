@@ -162,7 +162,7 @@ func GenerateDatalistInput(id, name, value, placeholder, apiEndpoint string) str
 func GenerateDatalistInputWithSave(id, name, value, placeholder, apiEndpoint, filePath, saveEndpoint string) string {
 	datalistId := fmt.Sprintf("%s-list", id)
 	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" autocomplete="off" list="%s" placeholder="%s"
-	hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="change delay:500ms" hx-target="#metadata-save-status" hx-swap="innerHTML"/>
+	hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="input delay:500ms" hx-target="#metadata-save-status" hx-swap="innerHTML"/>
 <datalist id="%s" hx-get="%s" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
 	<option value="">%s</option>
 </datalist>`, id, name, value, datalistId, placeholder, saveEndpoint, filePath, datalistId, apiEndpoint, translation.SprintfForRequest(configmanager.GetLanguage(), "loading options..."))
@@ -187,7 +187,8 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 	return fmt.Sprintf(`<div class="tag-chips-container" id="%s">
 	<div class="tag-chips" id="%s-display"></div>
 	<input type="text" id="%s" class="tag-chips-input" autocomplete="off" list="%s" placeholder="%s"/>
-	<input type="hidden" id="%s" name="%s" value="%s"/>
+	<input type="hidden" id="%s" name="%s" value="%s"
+		hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="change from:body delay:500ms" hx-target="#metadata-save-status" hx-swap="innerHTML"/>
 	%s
 </div>
 <script>
@@ -198,12 +199,13 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 	const hidden = document.getElementById('%s');
 
 	let tags = [];
-	let saveTimeout;
+	let initialized = false;
 
-	// initialize with existing values
+	// initialize with existing values (no auto-save)
 	if (hidden.value) {
 		tags = hidden.value.split(',').map(t => t.trim()).filter(t => t);
 		renderTags();
+		initialized = true; // mark as initialized after first render
 	}
 
 	function renderTags() {
@@ -221,7 +223,10 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 			display.appendChild(chip);
 		});
 		hidden.value = tags.join(', ');
-		saveData();
+		// only trigger save after initialization
+		if (initialized) {
+			htmx.trigger(hidden, 'change');
+		}
 	}
 
 	function addTag(value) {
@@ -236,22 +241,6 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 	function removeTag(index) {
 		tags.splice(index, 1);
 		renderTags();
-	}
-
-	function saveData() {
-		if ('%s' === '') return; // no filepath for new files
-
-		clearTimeout(saveTimeout);
-		saveTimeout = setTimeout(function() {
-			htmx.ajax('POST', '%s', {
-				values: {
-					'filepath': '%s',
-					'%s': hidden.value
-				},
-				target: '#metadata-save-status',
-				swap: 'innerHTML'
-			});
-		}, 500);
 	}
 
 	// handle input events
@@ -284,7 +273,7 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 		input.focus();
 	});
 })();
-</script>`, chipsId, chipsId, inputId, datalistId, placeholder, hiddenId, name, value, datalistHTML, chipsId, chipsId, inputId, hiddenId, filePath, saveEndpoint, filePath, name)
+</script>`, chipsId, chipsId, inputId, datalistId, placeholder, hiddenId, name, value, saveEndpoint, filePath, datalistHTML, chipsId, chipsId, inputId, hiddenId)
 }
 
 // RenderBrowseHTML renders a map of items with counts as browse links
