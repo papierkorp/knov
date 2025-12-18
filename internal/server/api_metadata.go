@@ -1153,8 +1153,6 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 		tags = []string{} // explicit empty slice, not nil
 	}
 
-	logging.LogInfo("setting tags for %s: tagsStr='%s', tags=%v, isNil=%t, length=%d", filepath, tagsStr, tags, tags == nil, len(tags))
-
 	metadata := &files.Metadata{
 		Path: filepath,
 		Tags: tags,

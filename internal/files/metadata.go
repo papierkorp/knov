@@ -189,7 +189,6 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 
 		// allow explicit setting of empty arrays by checking if field was provided
 		if newMetadata.Tags != nil {
-			logging.LogInfo("updating tags for %s: old=%v, new=%v", currentMetadata.Path, currentMetadata.Tags, newMetadata.Tags)
 			currentMetadata.Tags = newMetadata.Tags
 		}
 		if newMetadata.Parents != nil {
