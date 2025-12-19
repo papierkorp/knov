@@ -14,10 +14,6 @@
     grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 
-#page-overview #current-file-breadcrumb {
-    margin: 40px 20px;
-}
-
 #page-overview .overview-browse {
     background: var(--bg-secondary);
     padding: 20px;

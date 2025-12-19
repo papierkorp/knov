@@ -32,7 +32,7 @@ func RenderFilesDatalist(allFiles []files.File) string {
 	return html.String()
 }
 
-// RenderFilesList renders files as interactive list with HTMX
+// RenderFilesList renders files as list with direct navigation links
 func RenderFilesList(allFiles []files.File) string {
 	var html strings.Builder
 	html.WriteString("<ul>")
@@ -40,14 +40,8 @@ func RenderFilesList(allFiles []files.File) string {
 		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`
 			<li>
-				<a href="#file-content"
-					hx-get="/files/%s?snippet=true"
-					hx-target="#file-content"
-					hx-swap="innerHTML"
-					hx-on::after-request="htmx.ajax('GET', '/api/files/header?filepath=%s', {target: '#file-header'})"
-				>%s</a>
+				<a href="/files/%s">%s</a>
 			</li>`,
-			file.Path,
 			file.Path,
 			displayText))
 	}
