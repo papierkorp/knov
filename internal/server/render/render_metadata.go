@@ -50,7 +50,7 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 	html.WriteString(`<div class="form-field">`)
 	html.WriteString(`<label for="meta-priority">` + translation.SprintfForRequest(configmanager.GetLanguage(), "priority") + `</label>`)
 	html.WriteString(GenerateDatalistInputWithSave("meta-priority", "priority", priority,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "set priority (1-5)"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "set priority"),
 		"/api/metadata/priorities?format=options", filePath, "/api/metadata/priority"))
 	html.WriteString(`</div>`)
 

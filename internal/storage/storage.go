@@ -2,6 +2,9 @@
 package storage
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"knov/internal/logging"
 )
 
@@ -102,4 +105,22 @@ func GetStorage() *StorageManager {
 // GetConfigStorage returns the global config storage manager
 func GetConfigStorage() *StorageManager {
 	return globalConfigStorageManager
+}
+
+// SaveSystemData stores system data with a given key
+func (sm *StorageManager) SaveSystemData(key string, value interface{}) error {
+	data, err := json.Marshal(value)
+	if err != nil {
+		logging.LogError("failed to marshal system data for key %s: %v", key, err)
+		return err
+	}
+
+	systemKey := fmt.Sprintf(".system/%s", key)
+	return sm.Set(systemKey, data)
+}
+
+// GetSystemData retrieves system data by key
+func (sm *StorageManager) GetSystemData(key string) ([]byte, error) {
+	systemKey := fmt.Sprintf(".system/%s", key)
+	return sm.Get(systemKey)
 }

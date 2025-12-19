@@ -200,19 +200,23 @@ func runFileJobs() {
 	// process changed/new files
 	if len(filesToProcess) == 0 {
 		logging.LogDebug("no files to process")
-		return
+	} else {
+		logging.LogInfo("processing %d files", len(filesToProcess))
+
+		// process each file
+		for _, filePath := range filesToProcess {
+			metadata := &files.Metadata{Path: filePath}
+			if err := files.MetaDataSave(metadata); err != nil {
+				logging.LogError("cronjob: failed to save metadata for %s: %v", filePath, err)
+				continue
+			}
+			logging.LogDebug("processed metadata for %s", filePath)
+		}
 	}
 
-	logging.LogInfo("processing %d files", len(filesToProcess))
-
-	// process each file
-	for _, filePath := range filesToProcess {
-		metadata := &files.Metadata{Path: filePath}
-		if err := files.MetaDataSave(metadata); err != nil {
-			logging.LogError("cronjob: failed to save metadata for %s: %v", filePath, err)
-			continue
-		}
-		logging.LogDebug("processed metadata for %s", filePath)
+	// save all tags to system storage
+	if err := files.SaveAllTagsToSystemData(); err != nil {
+		logging.LogError("cronjob: failed to save tags to storage: %v", err)
 	}
 
 	logging.LogDebug("file cronjobs completed")

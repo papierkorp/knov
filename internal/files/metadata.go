@@ -753,3 +753,52 @@ func updateParentChildRelationships(metadata *Metadata, oldParents []string) {
 		}
 	}
 }
+
+// SaveAllTagsToSystemData saves all unique tags to system storage
+func SaveAllTagsToSystemData() error {
+	logging.LogDebug("saving all tags via storage system")
+
+	// get all tags
+	allTags, err := GetAllTags()
+	if err != nil {
+		return err
+	}
+
+	// extract tag names and sort them
+	var tagList []string
+	for tag := range allTags {
+		tagList = append(tagList, tag)
+	}
+
+	// sort alphabetically for consistency
+	slices.Sort(tagList)
+
+	// save using storage system
+	if err := storage.GetStorage().SaveSystemData("all_tags", tagList); err != nil {
+		return err
+	}
+
+	logging.LogInfo("saved %d tags via storage system", len(tagList))
+	return nil
+}
+
+// GetAllTagsFromSystemData retrieves cached tags from system storage
+func GetAllTagsFromSystemData() ([]string, error) {
+	data, err := storage.GetStorage().GetSystemData("all_tags")
+	if err != nil {
+		return nil, err
+	}
+
+	if data == nil {
+		// no cached data, return empty slice
+		return []string{}, nil
+	}
+
+	var tags []string
+	if err := json.Unmarshal(data, &tags); err != nil {
+		logging.LogError("failed to unmarshal cached tags: %v", err)
+		return nil, err
+	}
+
+	return tags, nil
+}
