@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 	"time"
 
@@ -674,10 +675,31 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all tags
 	format := r.URL.Query().Get("format")
 
-	// for form options, return empty options since we can't predict tags
+	// for form options, use cached data
 	if format == "options" {
+		cachedTags, err := files.GetAllTagsFromSystemData()
+		if err != nil {
+			logging.LogError("failed to get cached tags, fallback to live data: %v", err)
+			// fallback to live data
+			tags, err := files.GetAllTags()
+			if err != nil {
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"), http.StatusInternalServerError)
+				return
+			}
+			var tagList []string
+			for tag := range tags {
+				tagList = append(tagList, tag)
+			}
+			slices.Sort(tagList)
+			cachedTags = tagList
+		}
+
+		var html strings.Builder
+		for _, tag := range cachedTags {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, tag, tag))
+		}
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte("")) // empty options for now
+		w.Write([]byte(html.String()))
 		return
 	}
 
@@ -711,10 +733,31 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all collections
 	format := r.URL.Query().Get("format")
 
-	// for form options, return empty options since we can't predict collections
+	// for form options, use cached data
 	if format == "options" {
+		cachedCollections, err := files.GetAllCollectionsFromSystemData()
+		if err != nil {
+			logging.LogError("failed to get cached collections, fallback to live data: %v", err)
+			// fallback to live data
+			collections, err := files.GetAllCollections()
+			if err != nil {
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"), http.StatusInternalServerError)
+				return
+			}
+			var collectionList []string
+			for collection := range collections {
+				collectionList = append(collectionList, collection)
+			}
+			slices.Sort(collectionList)
+			cachedCollections = collectionList
+		}
+
+		var html strings.Builder
+		for _, collection := range cachedCollections {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, collection, collection))
+		}
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte("")) // empty options for now
+		w.Write([]byte(html.String()))
 		return
 	}
 
@@ -748,10 +791,31 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all folders
 	format := r.URL.Query().Get("format")
 
-	// for form options, return empty options since we can't predict folders
+	// for form options, use cached data
 	if format == "options" {
+		cachedFolders, err := files.GetAllFoldersFromSystemData()
+		if err != nil {
+			logging.LogError("failed to get cached folders, fallback to live data: %v", err)
+			// fallback to live data
+			folders, err := files.GetAllFolders()
+			if err != nil {
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"), http.StatusInternalServerError)
+				return
+			}
+			var folderList []string
+			for folder := range folders {
+				folderList = append(folderList, folder)
+			}
+			slices.Sort(folderList)
+			cachedFolders = folderList
+		}
+
+		var html strings.Builder
+		for _, folder := range cachedFolders {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, folder, folder))
+		}
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte("")) // empty options for now
+		w.Write([]byte(html.String()))
 		return
 	}
 
@@ -1411,10 +1475,31 @@ func handleAPIGetAllPARAProjects(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all projects
 	format := r.URL.Query().Get("format")
 
-	// for form options, return empty options since we can't predict projects
+	// for form options, use cached data
 	if format == "options" {
+		cachedProjects, err := files.GetAllPARAProjectsFromSystemData()
+		if err != nil {
+			logging.LogError("failed to get cached PARA projects, fallback to live data: %v", err)
+			// fallback to live data
+			projects, err := files.GetAllPARAProjects()
+			if err != nil {
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get projects"), http.StatusInternalServerError)
+				return
+			}
+			var projectList []string
+			for project := range projects {
+				projectList = append(projectList, project)
+			}
+			slices.Sort(projectList)
+			cachedProjects = projectList
+		}
+
+		var html strings.Builder
+		for _, project := range cachedProjects {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, project, project))
+		}
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte("")) // empty options for now
+		w.Write([]byte(html.String()))
 		return
 	}
 
@@ -1458,10 +1543,31 @@ func handleAPIGetAllPARAreas(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all areas
 	format := r.URL.Query().Get("format")
 
-	// for form options, return empty options since we can't predict areas
+	// for form options, use cached data
 	if format == "options" {
+		cachedAreas, err := files.GetAllPARAAreasFromSystemData()
+		if err != nil {
+			logging.LogError("failed to get cached PARA areas, fallback to live data: %v", err)
+			// fallback to live data
+			areas, err := files.GetAllPARAreas()
+			if err != nil {
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get areas"), http.StatusInternalServerError)
+				return
+			}
+			var areaList []string
+			for area := range areas {
+				areaList = append(areaList, area)
+			}
+			slices.Sort(areaList)
+			cachedAreas = areaList
+		}
+
+		var html strings.Builder
+		for _, area := range cachedAreas {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, area, area))
+		}
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte("")) // empty options for now
+		w.Write([]byte(html.String()))
 		return
 	}
 
@@ -1505,10 +1611,31 @@ func handleAPIGetAllPARAResources(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all resources
 	format := r.URL.Query().Get("format")
 
-	// for form options, return empty options since we can't predict resources
+	// for form options, use cached data
 	if format == "options" {
+		cachedResources, err := files.GetAllPARAResourcesFromSystemData()
+		if err != nil {
+			logging.LogError("failed to get cached PARA resources, fallback to live data: %v", err)
+			// fallback to live data
+			resources, err := files.GetAllPARAResources()
+			if err != nil {
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get resources"), http.StatusInternalServerError)
+				return
+			}
+			var resourceList []string
+			for resource := range resources {
+				resourceList = append(resourceList, resource)
+			}
+			slices.Sort(resourceList)
+			cachedResources = resourceList
+		}
+
+		var html strings.Builder
+		for _, resource := range cachedResources {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, resource, resource))
+		}
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte("")) // empty options for now
+		w.Write([]byte(html.String()))
 		return
 	}
 
@@ -1552,10 +1679,31 @@ func handleAPIGetAllPARAArchive(w http.ResponseWriter, r *http.Request) {
 	// otherwise, return all archive
 	format := r.URL.Query().Get("format")
 
-	// for form options, return empty options since we can't predict archive items
+	// for form options, use cached data
 	if format == "options" {
+		cachedArchive, err := files.GetAllPARAArchiveFromSystemData()
+		if err != nil {
+			logging.LogError("failed to get cached PARA archive, fallback to live data: %v", err)
+			// fallback to live data
+			archive, err := files.GetAllPARAArchive()
+			if err != nil {
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get archive"), http.StatusInternalServerError)
+				return
+			}
+			var archiveList []string
+			for archiveItem := range archive {
+				archiveList = append(archiveList, archiveItem)
+			}
+			slices.Sort(archiveList)
+			cachedArchive = archiveList
+		}
+
+		var html strings.Builder
+		for _, archiveItem := range cachedArchive {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, archiveItem, archiveItem))
+		}
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte("")) // empty options for now
+		w.Write([]byte(html.String()))
 		return
 	}
 
@@ -1638,9 +1786,6 @@ func handleAPISetMetadataTargetDate(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		metadata.TargetDate = targetDate
-	} else {
-		// explicitly set zero time to clear the target date
-		metadata.TargetDate = time.Time{}
 	}
 
 	if err := files.MetaDataSave(metadata); err != nil {
@@ -1649,11 +1794,6 @@ func handleAPISetMetadataTargetDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var html string
-	if targetDateStr != "" {
-		html = fmt.Sprintf(`<span class="targetdate">%s</span>`, targetDateStr)
-	} else {
-		html = `<span class="targetdate">-</span>`
-	}
+	html := fmt.Sprintf(`<span class="targetdate">%s</span>`, targetDateStr)
 	writeResponse(w, r, "target date updated", html)
 }

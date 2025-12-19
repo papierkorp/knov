@@ -754,51 +754,246 @@ func updateParentChildRelationships(metadata *Metadata, oldParents []string) {
 	}
 }
 
-// SaveAllTagsToSystemData saves all unique tags to system storage
-func SaveAllTagsToSystemData() error {
-	logging.LogDebug("saving all tags via storage system")
+// CacheKey represents system cache keys
+type CacheKey string
 
-	// get all tags
-	allTags, err := GetAllTags()
-	if err != nil {
-		return err
-	}
+const (
+	CacheKeyTags          CacheKey = "all_tags"
+	CacheKeyCollections   CacheKey = "all_collections"
+	CacheKeyFolders       CacheKey = "all_folders"
+	CacheKeyPARAProjects  CacheKey = "all_para_projects"
+	CacheKeyPARAreas      CacheKey = "all_para_areas"
+	CacheKeyPARAResources CacheKey = "all_para_resources"
+	CacheKeyPARAArchive   CacheKey = "all_para_archive"
+	CacheKeyFilePaths     CacheKey = "all_file_paths"
+)
 
-	// extract tag names and sort them
-	var tagList []string
-	for tag := range allTags {
-		tagList = append(tagList, tag)
-	}
+// SaveCachedStringList saves a sorted string list to system cache
+func SaveCachedStringList(key CacheKey, data []string) error {
+	logging.LogDebug("saving %s via storage system", key)
 
 	// sort alphabetically for consistency
-	slices.Sort(tagList)
+	sortedData := make([]string, len(data))
+	copy(sortedData, data)
+	slices.Sort(sortedData)
 
-	// save using storage system
-	if err := storage.GetStorage().SaveSystemData("all_tags", tagList); err != nil {
+	if err := storage.GetStorage().SaveSystemData(string(key), sortedData); err != nil {
 		return err
 	}
 
-	logging.LogInfo("saved %d tags via storage system", len(tagList))
+	logging.LogDebug("saved %d items for %s via storage system", len(sortedData), key)
 	return nil
 }
 
-// GetAllTagsFromSystemData retrieves cached tags from system storage
-func GetAllTagsFromSystemData() ([]string, error) {
-	data, err := storage.GetStorage().GetSystemData("all_tags")
+// GetCachedStringList retrieves a string list from system cache
+func GetCachedStringList(key CacheKey) ([]string, error) {
+	data, err := storage.GetStorage().GetSystemData(string(key))
 	if err != nil {
 		return nil, err
 	}
 
 	if data == nil {
-		// no cached data, return empty slice
 		return []string{}, nil
 	}
 
-	var tags []string
-	if err := json.Unmarshal(data, &tags); err != nil {
-		logging.LogError("failed to unmarshal cached tags: %v", err)
+	var items []string
+	if err := json.Unmarshal(data, &items); err != nil {
+		logging.LogError("failed to unmarshal cached %s: %v", key, err)
 		return nil, err
 	}
 
-	return tags, nil
+	return items, nil
+}
+
+// SaveAllTagsToSystemData saves all unique tags to system storage
+func SaveAllTagsToSystemData() error {
+	allTags, err := GetAllTags()
+	if err != nil {
+		return err
+	}
+
+	var tagList []string
+	for tag := range allTags {
+		tagList = append(tagList, tag)
+	}
+
+	return SaveCachedStringList(CacheKeyTags, tagList)
+}
+
+// GetAllTagsFromSystemData retrieves cached tags from system storage
+func GetAllTagsFromSystemData() ([]string, error) {
+	return GetCachedStringList(CacheKeyTags)
+}
+
+// SaveAllCollectionsToSystemData saves all unique collections to system storage
+func SaveAllCollectionsToSystemData() error {
+	allCollections, err := GetAllCollections()
+	if err != nil {
+		return err
+	}
+
+	var collectionList []string
+	for collection := range allCollections {
+		collectionList = append(collectionList, collection)
+	}
+
+	return SaveCachedStringList(CacheKeyCollections, collectionList)
+}
+
+// GetAllCollectionsFromSystemData retrieves cached collections from system storage
+func GetAllCollectionsFromSystemData() ([]string, error) {
+	return GetCachedStringList(CacheKeyCollections)
+}
+
+// SaveAllFoldersToSystemData saves all unique folders to system storage
+func SaveAllFoldersToSystemData() error {
+	allFolders, err := GetAllFolders()
+	if err != nil {
+		return err
+	}
+
+	var folderList []string
+	for folder := range allFolders {
+		folderList = append(folderList, folder)
+	}
+
+	return SaveCachedStringList(CacheKeyFolders, folderList)
+}
+
+// GetAllFoldersFromSystemData retrieves cached folders from system storage
+func GetAllFoldersFromSystemData() ([]string, error) {
+	return GetCachedStringList(CacheKeyFolders)
+}
+
+// SaveAllPARAProjectsToSystemData saves all PARA projects to system storage
+func SaveAllPARAProjectsToSystemData() error {
+	allProjects, err := GetAllPARAProjects()
+	if err != nil {
+		return err
+	}
+
+	var projectList []string
+	for project := range allProjects {
+		projectList = append(projectList, project)
+	}
+
+	return SaveCachedStringList(CacheKeyPARAProjects, projectList)
+}
+
+// GetAllPARAProjectsFromSystemData retrieves cached PARA projects from system storage
+func GetAllPARAProjectsFromSystemData() ([]string, error) {
+	return GetCachedStringList(CacheKeyPARAProjects)
+}
+
+// SaveAllPARAAreasToSystemData saves all PARA areas to system storage
+func SaveAllPARAAreasToSystemData() error {
+	allAreas, err := GetAllPARAreas()
+	if err != nil {
+		return err
+	}
+
+	var areaList []string
+	for area := range allAreas {
+		areaList = append(areaList, area)
+	}
+
+	return SaveCachedStringList(CacheKeyPARAreas, areaList)
+}
+
+// GetAllPARAAreasFromSystemData retrieves cached PARA areas from system storage
+func GetAllPARAAreasFromSystemData() ([]string, error) {
+	return GetCachedStringList(CacheKeyPARAreas)
+}
+
+// SaveAllPARAResourcesToSystemData saves all PARA resources to system storage
+func SaveAllPARAResourcesToSystemData() error {
+	allResources, err := GetAllPARAResources()
+	if err != nil {
+		return err
+	}
+
+	var resourceList []string
+	for resource := range allResources {
+		resourceList = append(resourceList, resource)
+	}
+
+	return SaveCachedStringList(CacheKeyPARAResources, resourceList)
+}
+
+// GetAllPARAResourcesFromSystemData retrieves cached PARA resources from system storage
+func GetAllPARAResourcesFromSystemData() ([]string, error) {
+	return GetCachedStringList(CacheKeyPARAResources)
+}
+
+// SaveAllPARAArchiveToSystemData saves all PARA archive items to system storage
+func SaveAllPARAArchiveToSystemData() error {
+	allArchive, err := GetAllPARAArchive()
+	if err != nil {
+		return err
+	}
+
+	var archiveList []string
+	for archive := range allArchive {
+		archiveList = append(archiveList, archive)
+	}
+
+	return SaveCachedStringList(CacheKeyPARAArchive, archiveList)
+}
+
+// GetAllPARAArchiveFromSystemData retrieves cached PARA archive from system storage
+func GetAllPARAArchiveFromSystemData() ([]string, error) {
+	return GetCachedStringList(CacheKeyPARAArchive)
+}
+
+// SaveAllFilePathsToSystemData saves all file paths to system storage
+func SaveAllFilePathsToSystemData() error {
+	allFiles, err := GetAllFiles()
+	if err != nil {
+		return err
+	}
+
+	var fileList []string
+	for _, file := range allFiles {
+		fileList = append(fileList, file.Path)
+	}
+
+	return SaveCachedStringList(CacheKeyFilePaths, fileList)
+}
+
+// GetAllFilePathsFromSystemData retrieves cached file paths from system storage
+func GetAllFilePathsFromSystemData() ([]string, error) {
+	return GetCachedStringList(CacheKeyFilePaths)
+}
+
+// SaveAllSystemDataToCache saves all metadata lists to system storage
+func SaveAllSystemDataToCache() error {
+	logging.LogDebug("saving all system data to cache")
+
+	if err := SaveAllTagsToSystemData(); err != nil {
+		return err
+	}
+	if err := SaveAllCollectionsToSystemData(); err != nil {
+		return err
+	}
+	if err := SaveAllFoldersToSystemData(); err != nil {
+		return err
+	}
+	if err := SaveAllPARAProjectsToSystemData(); err != nil {
+		return err
+	}
+	if err := SaveAllPARAAreasToSystemData(); err != nil {
+		return err
+	}
+	if err := SaveAllPARAResourcesToSystemData(); err != nil {
+		return err
+	}
+	if err := SaveAllPARAArchiveToSystemData(); err != nil {
+		return err
+	}
+	if err := SaveAllFilePathsToSystemData(); err != nil {
+		return err
+	}
+
+	logging.LogInfo("saved all system data to cache")
+	return nil
 }

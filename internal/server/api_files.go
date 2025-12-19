@@ -77,7 +77,17 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	format := r.URL.Query().Get("format")
 
 	if format == "options" {
-		html := render.RenderFilesOptions(allFiles)
+		cachedFilePaths, err := files.GetAllFilePathsFromSystemData()
+		if err != nil {
+			logging.LogError("failed to get cached file paths, fallback to live data: %v", err)
+			// fallback to live data
+			cachedFilePaths = make([]string, len(allFiles))
+			for i, file := range allFiles {
+				cachedFilePaths[i] = file.Path
+			}
+		}
+
+		html := render.RenderFilesOptionsFromPaths(cachedFilePaths)
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
 		return

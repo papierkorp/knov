@@ -214,9 +214,9 @@ func runFileJobs() {
 		}
 	}
 
-	// save all tags to system storage
-	if err := files.SaveAllTagsToSystemData(); err != nil {
-		logging.LogError("cronjob: failed to save tags to storage: %v", err)
+	// save all system data to cache
+	if err := files.SaveAllSystemDataToCache(); err != nil {
+		logging.LogError("cronjob: failed to save system data to cache: %v", err)
 	}
 
 	logging.LogDebug("file cronjobs completed")

@@ -22,6 +22,17 @@ func RenderFilesOptions(allFiles []files.File) string {
 	return html.String()
 }
 
+// RenderFilesOptionsFromPaths renders file paths as select options
+func RenderFilesOptionsFromPaths(filePaths []string) string {
+	var html strings.Builder
+	html.WriteString(`<option value="">` + translation.SprintfForRequest(configmanager.GetLanguage(), "select a file...") + `</option>`)
+	for _, path := range filePaths {
+		displayPath := strings.TrimPrefix(path, "data/")
+		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, displayPath, displayPath))
+	}
+	return html.String()
+}
+
 // RenderFilesDatalist renders files as datalist options
 func RenderFilesDatalist(allFiles []files.File) string {
 	var html strings.Builder
