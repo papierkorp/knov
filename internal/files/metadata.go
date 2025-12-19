@@ -965,35 +965,145 @@ func GetAllFilePathsFromSystemData() ([]string, error) {
 	return GetCachedStringList(CacheKeyFilePaths)
 }
 
-// SaveAllSystemDataToCache saves all metadata lists to system storage
-func SaveAllSystemDataToCache() error {
-	logging.LogDebug("saving all system data to cache")
+// MetadataCollector collects all metadata types in a single pass
+type MetadataCollector struct {
+	Tags          map[string]bool
+	Collections   map[string]bool
+	Folders       map[string]bool
+	PARAProjects  map[string]bool
+	PARAreas      map[string]bool
+	PARAResources map[string]bool
+	PARAArchive   map[string]bool
+	FilePaths     []string
+}
 
-	if err := SaveAllTagsToSystemData(); err != nil {
-		return err
+// NewMetadataCollector creates a new metadata collector
+func NewMetadataCollector() *MetadataCollector {
+	return &MetadataCollector{
+		Tags:          make(map[string]bool),
+		Collections:   make(map[string]bool),
+		Folders:       make(map[string]bool),
+		PARAProjects:  make(map[string]bool),
+		PARAreas:      make(map[string]bool),
+		PARAResources: make(map[string]bool),
+		PARAArchive:   make(map[string]bool),
+		FilePaths:     []string{},
 	}
-	if err := SaveAllCollectionsToSystemData(); err != nil {
-		return err
-	}
-	if err := SaveAllFoldersToSystemData(); err != nil {
-		return err
-	}
-	if err := SaveAllPARAProjectsToSystemData(); err != nil {
-		return err
-	}
-	if err := SaveAllPARAAreasToSystemData(); err != nil {
-		return err
-	}
-	if err := SaveAllPARAResourcesToSystemData(); err != nil {
-		return err
-	}
-	if err := SaveAllPARAArchiveToSystemData(); err != nil {
-		return err
-	}
-	if err := SaveAllFilePathsToSystemData(); err != nil {
-		return err
+}
+
+// CollectFromMetadata adds metadata to the collector
+func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Metadata) {
+	// collect file path
+	mc.FilePaths = append(mc.FilePaths, filePath)
+
+	if metadata == nil {
+		return
 	}
 
-	logging.LogInfo("saved all system data to cache")
+	// collect tags
+	for _, tag := range metadata.Tags {
+		if tag != "" {
+			mc.Tags[tag] = true
+		}
+	}
+
+	// collect collection
+	if metadata.Collection != "" {
+		mc.Collections[metadata.Collection] = true
+	}
+
+	// collect folders
+	for _, folder := range metadata.Folders {
+		if folder != "" {
+			mc.Folders[folder] = true
+		}
+	}
+
+	// collect PARA data
+	for _, project := range metadata.PARA.Projects {
+		if project != "" {
+			mc.PARAProjects[project] = true
+		}
+	}
+	for _, area := range metadata.PARA.Areas {
+		if area != "" {
+			mc.PARAreas[area] = true
+		}
+	}
+	for _, resource := range metadata.PARA.Resources {
+		if resource != "" {
+			mc.PARAResources[resource] = true
+		}
+	}
+	for _, archive := range metadata.PARA.Archive {
+		if archive != "" {
+			mc.PARAArchive[archive] = true
+		}
+	}
+}
+
+// SaveAllToCache saves all collected metadata to system cache
+func (mc *MetadataCollector) SaveAllToCache() error {
+	if err := SaveCachedStringList(CacheKeyTags, setToSortedSlice(mc.Tags)); err != nil {
+		return err
+	}
+	if err := SaveCachedStringList(CacheKeyCollections, setToSortedSlice(mc.Collections)); err != nil {
+		return err
+	}
+	if err := SaveCachedStringList(CacheKeyFolders, setToSortedSlice(mc.Folders)); err != nil {
+		return err
+	}
+	if err := SaveCachedStringList(CacheKeyPARAProjects, setToSortedSlice(mc.PARAProjects)); err != nil {
+		return err
+	}
+	if err := SaveCachedStringList(CacheKeyPARAreas, setToSortedSlice(mc.PARAreas)); err != nil {
+		return err
+	}
+	if err := SaveCachedStringList(CacheKeyPARAResources, setToSortedSlice(mc.PARAResources)); err != nil {
+		return err
+	}
+	if err := SaveCachedStringList(CacheKeyPARAArchive, setToSortedSlice(mc.PARAArchive)); err != nil {
+		return err
+	}
+	if err := SaveCachedStringList(CacheKeyFilePaths, mc.FilePaths); err != nil {
+		return err
+	}
 	return nil
+}
+
+// SaveAllSystemDataToCache saves all metadata lists to system storage in a single pass
+func SaveAllSystemDataToCache() error {
+	logging.LogDebug("saving all system data to cache in single pass")
+
+	allFiles, err := GetAllFiles()
+	if err != nil {
+		return err
+	}
+
+	collector := NewMetadataCollector()
+
+	for _, file := range allFiles {
+		metadata, err := MetaDataGet(file.Path)
+		if err != nil {
+			logging.LogDebug("failed to get metadata for %s, adding file path only: %v", file.Path, err)
+		}
+		collector.CollectFromMetadata(file.Path, metadata)
+	}
+
+	if err := collector.SaveAllToCache(); err != nil {
+		return err
+	}
+
+	logging.LogInfo("saved all system data to cache in single pass (%d files processed)", len(allFiles))
+	return nil
+}
+
+// setToSortedSlice converts a string set to a sorted slice
+func setToSortedSlice(set map[string]bool) []string {
+	slice := make([]string, 0, len(set))
+	for key := range set {
+		slice = append(slice, key)
+	}
+	slices.Sort(slice)
+	return slice
 }
