@@ -93,13 +93,11 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 	// target date field
 	targetDate := ""
 	if metadata != nil && !metadata.TargetDate.IsZero() {
-		targetDate = metadata.TargetDate.Format("2006-01-02 15:04:05")
+		targetDate = metadata.TargetDate.Format("2006-01-02")
 	}
 	html.WriteString(`<div class="form-field">`)
 	html.WriteString(`<label for="meta-targetdate">` + translation.SprintfForRequest(configmanager.GetLanguage(), "target date") + `</label>`)
-	html.WriteString(GenerateDatalistInputWithSave("meta-targetdate", "targetdate", targetDate,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "set target date (YYYY-MM-DD HH:MM:SS)"),
-		"", filePath, "/api/metadata/targetdate"))
+	html.WriteString(GenerateDateInputWithSave("meta-targetdate", "targetdate", targetDate, filePath, "/api/metadata/targetdate"))
 	html.WriteString(`</div>`)
 
 	// parents field

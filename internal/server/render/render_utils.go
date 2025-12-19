@@ -168,6 +168,12 @@ func GenerateDatalistInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 </datalist>`, id, name, value, datalistId, placeholder, saveEndpoint, filePath, datalistId, apiEndpoint, translation.SprintfForRequest(configmanager.GetLanguage(), "loading options..."))
 }
 
+// GenerateDateInputWithSave creates a date input field with auto-save
+func GenerateDateInputWithSave(id, name, value, filePath, saveEndpoint string) string {
+	return fmt.Sprintf(`<input type="date" id="%s" name="%s" value="%s" class="form-input"
+	hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="change" hx-target="#metadata-save-status" hx-swap="innerHTML"/>`, id, name, value, saveEndpoint, filePath)
+}
+
 // GenerateTagChipsInputWithSave creates a tag chips input with autocomplete and auto-save
 func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, filePath, saveEndpoint string) string {
 	datalistId := fmt.Sprintf("%s-list", id)

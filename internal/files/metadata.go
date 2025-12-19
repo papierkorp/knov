@@ -215,6 +215,8 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		if newMetadata.Priority != "" {
 			currentMetadata.Priority = newMetadata.Priority
 		}
+		// handle target date - allow both setting and clearing (zero time)
+		currentMetadata.TargetDate = newMetadata.TargetDate
 		if newMetadata.PARA.Projects != nil {
 			currentMetadata.PARA.Projects = newMetadata.PARA.Projects
 		}

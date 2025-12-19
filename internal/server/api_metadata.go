@@ -1579,12 +1579,42 @@ func handleAPIGetAllPARAArchive(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, archiveCount, html.String())
 }
 
+// @Summary Get file target date
+// @Tags metadata
+// @Param filepath query string true "File path"
+// @Produce json,html
+// @Success 200 {string} string
+// @Router /api/metadata/targetdate [get]
+func handleAPIGetMetadataTargetDate(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+
+	metadata, err := files.MetaDataGet(filepath)
+	if err != nil || metadata == nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		return
+	}
+
+	if metadata.TargetDate.IsZero() {
+		html := `<span class="targetdate">-</span>`
+		writeResponse(w, r, "-", html)
+		return
+	}
+
+	targetDateStr := metadata.TargetDate.Format("2006-01-02")
+	html := fmt.Sprintf(`<span class="targetdate">%s</span>`, targetDateStr)
+	writeResponse(w, r, targetDateStr, html)
+}
+
 // @Summary Set file target date
 // @Tags metadata
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
 // @Param filepath formData string true "File path"
-// @Param targetdate formData string false "Target date (YYYY-MM-DD HH:MM:SS, empty to clear)"
+// @Param targetdate formData string false "Target date (YYYY-MM-DD, empty to clear)"
 // @Success 200 {string} string
 // @Router /api/metadata/targetdate [post]
 func handleAPISetMetadataTargetDate(w http.ResponseWriter, r *http.Request) {
@@ -1602,12 +1632,15 @@ func handleAPISetMetadataTargetDate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if targetDateStr != "" {
-		targetDate, err := time.Parse("2006-01-02 15:04:05", targetDateStr)
+		targetDate, err := time.Parse("2006-01-02", targetDateStr)
 		if err != nil {
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid date format"), http.StatusBadRequest)
 			return
 		}
 		metadata.TargetDate = targetDate
+	} else {
+		// explicitly set zero time to clear the target date
+		metadata.TargetDate = time.Time{}
 	}
 
 	if err := files.MetaDataSave(metadata); err != nil {
@@ -1616,6 +1649,11 @@ func handleAPISetMetadataTargetDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="targetdate">%s</span>`, targetDateStr)
+	var html string
+	if targetDateStr != "" {
+		html = fmt.Sprintf(`<span class="targetdate">%s</span>`, targetDateStr)
+	} else {
+		html = `<span class="targetdate">-</span>`
+	}
 	writeResponse(w, r, "target date updated", html)
 }

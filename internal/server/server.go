@@ -210,6 +210,7 @@ func StartServerChi() {
 			r.Get("/lastedited", handleAPIGetMetadataLastEdited)
 			r.Get("/priority", handleAPIGetMetadataPriority)
 			r.Get("/status", handleAPIGetMetadataStatus)
+			r.Get("/targetdate", handleAPIGetMetadataTargetDate)
 
 			r.Post("/collection", handleAPISetMetadataCollection)
 			r.Post("/filetype", handleAPISetMetadataFileType)

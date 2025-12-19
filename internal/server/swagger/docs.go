@@ -3033,6 +3033,33 @@ const docTemplate = `{
             }
         },
         "/api/metadata/targetdate": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get file target date",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -3055,7 +3082,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Target date (YYYY-MM-DD HH:MM:SS, empty to clear)",
+                        "description": "Target date (YYYY-MM-DD, empty to clear)",
                         "name": "targetdate",
                         "in": "formData"
                     }
