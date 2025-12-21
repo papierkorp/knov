@@ -1,0 +1,212 @@
+/* table styling */
+#view-fileview-detailed .file-content table,
+#view-fileview-compact .file-content table,
+#view-fileview-reader .file-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5em 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+}
+
+#view-fileview-detailed .file-content thead,
+#view-fileview-compact .file-content thead,
+#view-fileview-reader .file-content thead {
+    background: var(--bg-secondary);
+    border-bottom: 2px solid var(--border);
+}
+
+#view-fileview-detailed .file-content th,
+#view-fileview-compact .file-content th,
+#view-fileview-reader .file-content th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+    border-right: 1px solid var(--border);
+}
+
+#view-fileview-detailed .file-content th:last-child,
+#view-fileview-compact .file-content th:last-child,
+#view-fileview-reader .file-content th:last-child {
+    border-right: none;
+}
+
+#view-fileview-detailed .file-content td,
+#view-fileview-compact .file-content td,
+#view-fileview-reader .file-content td {
+    padding: 10px 16px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+
+#view-fileview-detailed .file-content td:last-child,
+#view-fileview-compact .file-content td:last-child,
+#view-fileview-reader .file-content td:last-child {
+    border-right: none;
+}
+
+#view-fileview-detailed .file-content tbody tr:hover,
+#view-fileview-compact .file-content tbody tr:hover,
+#view-fileview-reader .file-content tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+#view-fileview-detailed .file-content tbody tr:last-child td,
+#view-fileview-compact .file-content tbody tr:last-child td,
+#view-fileview-reader .file-content tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* table alignment */
+#view-fileview-detailed .file-content td[data-align="center"],
+#view-fileview-detailed .file-content th[data-align="center"],
+#view-fileview-compact .file-content td[data-align="center"],
+#view-fileview-compact .file-content th[data-align="center"],
+#view-fileview-reader .file-content td[data-align="center"],
+#view-fileview-reader .file-content th[data-align="center"] {
+    text-align: center;
+}
+
+#view-fileview-detailed .file-content td[data-align="right"],
+#view-fileview-detailed .file-content th[data-align="right"],
+#view-fileview-compact .file-content td[data-align="right"],
+#view-fileview-compact .file-content th[data-align="right"],
+#view-fileview-reader .file-content td[data-align="right"],
+#view-fileview-reader .file-content th[data-align="right"] {
+    text-align: right;
+}
+
+/* dokuwiki-specific table styling */
+#view-fileview-detailed .dokuwiki-table,
+#view-fileview-compact .dokuwiki-table,
+#view-fileview-reader .dokuwiki-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5em 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+}
+
+#view-fileview-detailed .dokuwiki-table thead,
+#view-fileview-compact .dokuwiki-table thead,
+#view-fileview-reader .dokuwiki-table thead {
+    background: var(--bg-secondary);
+    border-bottom: 2px solid var(--border);
+}
+
+#view-fileview-detailed .dokuwiki-table th,
+#view-fileview-compact .dokuwiki-table th,
+#view-fileview-reader .dokuwiki-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+    border-right: 1px solid var(--border);
+}
+
+#view-fileview-detailed .dokuwiki-table th.sortable,
+#view-fileview-compact .dokuwiki-table th.sortable,
+#view-fileview-reader .dokuwiki-table th.sortable {
+    cursor: pointer;
+}
+
+#view-fileview-detailed .dokuwiki-table th.sortable:hover,
+#view-fileview-compact .dokuwiki-table th.sortable:hover,
+#view-fileview-reader .dokuwiki-table th.sortable:hover {
+    background: var(--bg-hover);
+}
+
+#view-fileview-detailed .dokuwiki-table td,
+#view-fileview-compact .dokuwiki-table td,
+#view-fileview-reader .dokuwiki-table td {
+    padding: 10px 16px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+
+#view-fileview-detailed .dokuwiki-table tbody tr:hover,
+#view-fileview-compact .dokuwiki-table tbody tr:hover,
+#view-fileview-reader .dokuwiki-table tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+/* table container and controls */
+#view-fileview-detailed .table-container,
+#view-fileview-compact .table-container,
+#view-fileview-reader .table-container {
+    margin: 1.5em 0;
+}
+
+#view-fileview-detailed .table-controls,
+#view-fileview-compact .table-controls,
+#view-fileview-reader .table-controls {
+    margin-bottom: 1em;
+}
+
+#view-fileview-detailed .table-search,
+#view-fileview-compact .table-search,
+#view-fileview-reader .table-search {
+    width: 100%;
+    max-width: 400px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+}
+
+#view-fileview-detailed .table-wrapper,
+#view-fileview-compact .table-wrapper,
+#view-fileview-reader .table-wrapper {
+    overflow-x: auto;
+}
+
+#view-fileview-detailed .pagination,
+#view-fileview-compact .pagination,
+#view-fileview-reader .pagination {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 1em;
+}
+
+#view-fileview-detailed .page-btn,
+#view-fileview-compact .page-btn,
+#view-fileview-reader .page-btn {
+    padding: 6px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    cursor: pointer;
+}
+
+#view-fileview-detailed .page-btn:hover:not(:disabled),
+#view-fileview-compact .page-btn:hover:not(:disabled),
+#view-fileview-reader .page-btn:hover:not(:disabled) {
+    background: var(--bg-hover);
+}
+
+#view-fileview-detailed .page-btn:disabled,
+#view-fileview-compact .page-btn:disabled,
+#view-fileview-reader .page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#view-fileview-detailed .page-info,
+#view-fileview-compact .page-info,
+#view-fileview-reader .page-info {
+    color: var(--text-secondary);
+}
+
+#view-fileview-detailed .table-info,
+#view-fileview-compact .table-info,
+#view-fileview-reader .table-info {
+    margin-top: 0.5em;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
