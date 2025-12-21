@@ -2,6 +2,13 @@
     "language": "en",
     "messages": [
         {
+            "id": "1-4 column layouts with custom positioning",
+            "message": "1-4 column layouts with custom positioning",
+            "translation": "1-4 column layouts with custom positioning",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "1. First Launch",
             "message": "1. First Launch",
             "translation": "1. First Launch",
@@ -30,9 +37,37 @@
             "fuzzy": true
         },
         {
+            "id": "Action items",
+            "message": "Action items",
+            "translation": "Action items",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Actions",
+            "message": "Actions",
+            "translation": "Actions",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Actual Files",
             "message": "Actual Files",
             "translation": "Actual Files",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "- adapted for KNOV",
+            "message": "- adapted for KNOV",
+            "translation": "- adapted for KNOV",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "- adapted for KNOV's built-in features",
+            "message": "- adapted for KNOV's built-in features",
+            "translation": "- adapted for KNOV's built-in features",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -72,20 +107,6 @@
             "fuzzy": true
         },
         {
-            "id": "Add filtered views of your most important content",
-            "message": "Add filtered views of your most important content",
-            "translation": "Add filtered views of your most important content",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "add folders",
-            "message": "add folders",
-            "translation": "add folders",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "add item",
             "message": "add item",
             "translation": "add item",
@@ -103,6 +124,20 @@
             "id": "add nested item",
             "message": "add nested item",
             "translation": "add nested item",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Add notes and outcomes to your todo file",
+            "message": "Add notes and outcomes to your todo file",
+            "translation": "Add notes and outcomes to your todo file",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "add parent files",
+            "message": "add parent files",
+            "translation": "add parent files",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -142,35 +177,21 @@
             "fuzzy": true
         },
         {
-            "id": "Add widgets showing recent notes, important tasks, or specific topics",
-            "message": "Add widgets showing recent notes, important tasks, or specific topics",
-            "translation": "Add widgets showing recent notes, important tasks, or specific topics",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Admin",
             "message": "Admin",
             "translation": "Admin"
         },
         {
-            "id": "Advanced Filters",
-            "message": "Advanced Filters",
-            "translation": "Advanced Filters",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "All changes are automatically saved",
-            "message": "All changes are automatically saved",
-            "translation": "All changes are automatically saved",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "All Files",
             "message": "All Files",
             "translation": "All Files"
+        },
+        {
+            "id": "Ancestors",
+            "message": "Ancestors",
+            "translation": "Ancestors",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
         },
         {
             "id": "and",
@@ -201,6 +222,20 @@
             "fuzzy": true
         },
         {
+            "id": "Archive - completed or inactive items",
+            "message": "Archive - completed or inactive items",
+            "translation": "Archive - completed or inactive items",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "archive updated",
+            "message": "archive updated",
+            "translation": "archive updated",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "areas",
             "message": "areas",
             "translation": "areas",
@@ -215,9 +250,30 @@
             "fuzzy": true
         },
         {
+            "id": "Areas - group by life/work responsibilities",
+            "message": "Areas - group by life/work responsibilities",
+            "translation": "Areas - group by life/work responsibilities",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "areas updated",
+            "message": "areas updated",
+            "translation": "areas updated",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Are you sure?",
             "message": "Are you sure?",
             "translation": "Are you sure?"
+        },
+        {
+            "id": "A simple text-file system for staying organized using your calendar and daily todo files.",
+            "message": "A simple text-file system for staying organized using your calendar and daily todo files.",
+            "translation": "A simple text-file system for staying organized using your calendar and daily todo files.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
         },
         {
             "id": "assign to collection",
@@ -234,9 +290,9 @@
             "fuzzy": true
         },
         {
-            "id": "Automatic Backup",
-            "message": "Automatic Backup",
-            "translation": "Automatic Backup",
+            "id": "Auto-calculated top-level parents",
+            "message": "Auto-calculated top-level parents",
+            "translation": "Auto-calculated top-level parents",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -248,16 +304,16 @@
             "fuzzy": true
         },
         {
-            "id": "basic metadata",
-            "message": "basic metadata",
-            "translation": "basic metadata",
+            "id": "Backlinks",
+            "message": "Backlinks",
+            "translation": "Backlinks",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Batch Operations",
-            "message": "Batch Operations",
-            "translation": "Batch Operations",
+            "id": "Basic fields: name, collection, tags",
+            "message": "Basic fields: name, collection, tags",
+            "translation": "Basic fields: name, collection, tags",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -265,6 +321,13 @@
             "id": "bold",
             "message": "bold",
             "translation": "bold",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Break big tasks into smaller pieces",
+            "message": "Break big tasks into smaller pieces",
+            "translation": "Break big tasks into smaller pieces",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -286,20 +349,6 @@
             "translation": "Browse by Metadata"
         },
         {
-            "id": "Build Knowledge Networks",
-            "message": "Build Knowledge Networks",
-            "translation": "Build Knowledge Networks",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Built-in Help:",
-            "message": "Built-in Help:",
-            "translation": "Built-in Help:",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "button",
             "message": "button",
             "translation": "button",
@@ -310,6 +359,13 @@
             "id": "by",
             "message": "by",
             "translation": "by",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Calendar is your main source of truth",
+            "message": "Calendar is your main source of truth",
+            "translation": "Calendar is your main source of truth",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -326,6 +382,13 @@
             "translation": "Cancel"
         },
         {
+            "id": "Capture",
+            "message": "Capture",
+            "translation": "Capture",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "cards",
             "message": "cards",
             "translation": "cards",
@@ -333,16 +396,9 @@
             "fuzzy": true
         },
         {
-            "id": "Check the documentation for detailed guides",
-            "message": "Check the documentation for detailed guides",
-            "translation": "Check the documentation for detailed guides",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Check your dashboard for important items",
-            "message": "Check your dashboard for important items",
-            "translation": "Check your dashboard for important items",
+            "id": "Children",
+            "message": "Children",
+            "translation": "Children",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -413,23 +469,23 @@
             "translation": "Collections"
         },
         {
-            "id": "Common Use Cases",
-            "message": "Common Use Cases",
-            "translation": "Common Use Cases",
+            "id": "Collections - access collections",
+            "message": "Collections - access collections",
+            "translation": "Collections - access collections",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Company knowledge organized by team",
-            "message": "Company knowledge organized by team",
-            "translation": "Company knowledge organized by team",
+            "id": "Combine actionable PARA organization with knowledge development stages using KNOV's built-in features:",
+            "message": "Combine actionable PARA organization with knowledge development stages using KNOV's built-in features:",
+            "translation": "Combine actionable PARA organization with knowledge development stages using KNOV's built-in features:",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Complete version history keeps your work safe",
-            "message": "Complete version history keeps your work safe",
-            "translation": "Complete version history keeps your work safe",
+            "id": "Combine with AND/OR logic",
+            "message": "Combine with AND/OR logic",
+            "translation": "Combine with AND/OR logic",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -448,9 +504,16 @@
             "fuzzy": true
         },
         {
-            "id": "Configure your preferences and data paths",
-            "message": "Configure your preferences and data paths",
-            "translation": "Configure your preferences and data paths",
+            "id": "Connect",
+            "message": "Connect",
+            "translation": "Connect",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Connected insights",
+            "message": "Connected insights",
+            "translation": "Connected insights",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -469,6 +532,13 @@
             "fuzzy": true
         },
         {
+            "id": "Contains - partial match",
+            "message": "Contains - partial match",
+            "translation": "Contains - partial match",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "content",
             "message": "content",
             "translation": "content",
@@ -476,9 +546,30 @@
             "fuzzy": true
         },
         {
-            "id": "Create and save your most-used search combinations",
-            "message": "Create and save your most-used search combinations",
-            "translation": "Create and save your most-used search combinations",
+            "id": "Content Links",
+            "message": "Content Links",
+            "translation": "Content Links",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Content Widgets",
+            "message": "Content Widgets",
+            "translation": "Content Widgets",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Control result count",
+            "message": "Control result count",
+            "translation": "Control result count",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Copy all calendar items into a new todo file",
+            "message": "Copy all calendar items into a new todo file",
+            "translation": "Copy all calendar items into a new todo file",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -497,9 +588,9 @@
             "fuzzy": true
         },
         {
-            "id": "Create different views for work, personal, or projects",
-            "message": "Create different views for work, personal, or projects",
-            "translation": "Create different views for work, personal, or projects",
+            "id": "Create fleeting notes for quick thoughts",
+            "message": "Create fleeting notes for quick thoughts",
+            "translation": "Create fleeting notes for quick thoughts",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -509,23 +600,16 @@
             "translation": "Create New Dashboard"
         },
         {
-            "id": "Create notes as needed, add quick tags",
-            "message": "Create notes as needed, add quick tags",
-            "translation": "Create notes as needed, add quick tags",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Create standard formats for meeting notes, project plans, etc.",
-            "message": "Create standard formats for meeting notes, project plans, etc.",
-            "translation": "Create standard formats for meeting notes, project plans, etc.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "current version",
             "message": "current version",
             "translation": "current version",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Customizable dashboards with various widget types:",
+            "message": "Customizable dashboards with various widget types:",
+            "translation": "Customizable dashboards with various widget types:",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -537,23 +621,16 @@
             "fuzzy": true
         },
         {
-            "id": "Customize the look and feel",
-            "message": "Customize the look and feel",
-            "translation": "Customize the look and feel",
+            "id": "Daily Practice",
+            "message": "Daily Practice",
+            "translation": "Daily Practice",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Customize Your View",
-            "message": "Customize Your View",
-            "translation": "Customize Your View",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Daily Workflow:",
-            "message": "Daily Workflow:",
-            "translation": "Daily Workflow:",
+            "id": "Daily Productivity Journal",
+            "message": "Daily Productivity Journal",
+            "translation": "Daily Productivity Journal",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -621,16 +698,16 @@
             "fuzzy": true
         },
         {
-            "id": "dashboard updated successfully!",
-            "message": "dashboard updated successfully!",
-            "translation": "dashboard updated successfully!",
+            "id": "Dashboard System",
+            "message": "Dashboard System",
+            "translation": "Dashboard System",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Dashboard Widgets",
-            "message": "Dashboard Widgets",
-            "translation": "Dashboard Widgets",
+            "id": "dashboard updated successfully!",
+            "message": "dashboard updated successfully!",
+            "translation": "dashboard updated successfully!",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -715,6 +792,13 @@
             "fuzzy": true
         },
         {
+            "id": "Display",
+            "message": "Display",
+            "translation": "Display",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "display \u0026 limits",
             "message": "display \u0026 limits",
             "translation": "display \u0026 limits",
@@ -729,9 +813,9 @@
             "fuzzy": true
         },
         {
-            "id": "During Work",
-            "message": "During Work",
-            "translation": "During Work",
+            "id": "During the day",
+            "message": "During the day",
+            "translation": "During the day",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -779,6 +863,13 @@
             "fuzzy": true
         },
         {
+            "id": "Equals - exact match",
+            "message": "Equals - exact match",
+            "translation": "Equals - exact match",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Error",
             "message": "Error",
             "translation": "Error",
@@ -786,9 +877,16 @@
             "fuzzy": true
         },
         {
-            "id": "Evening",
-            "message": "Evening",
-            "translation": "Evening",
+            "id": "Even tasks without fixed times - schedule them on the date you want to think about it",
+            "message": "Even tasks without fixed times - schedule them on the date you want to think about it",
+            "translation": "Even tasks without fixed times - schedule them on the date you want to think about it",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Every evening, create tomorrow's daily list - this happens automatically with knov",
+            "message": "Every evening, create tomorrow's daily list - this happens automatically with knov",
+            "translation": "Every evening, create tomorrow's daily list - this happens automatically with knov",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -800,16 +898,16 @@
             "fuzzy": true
         },
         {
-            "id": "Expected Files",
-            "message": "Expected Files",
-            "translation": "Expected Files",
+            "id": "Example Workflows",
+            "message": "Example Workflows",
+            "translation": "Example Workflows",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Explore Gradually: Add more organization methods as you need them",
-            "message": "Explore Gradually: Add more organization methods as you need them",
-            "translation": "Explore Gradually: Add more organization methods as you need them",
+            "id": "Expected Files",
+            "message": "Expected Files",
+            "translation": "Expected Files",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -835,9 +933,9 @@
             "fuzzy": true
         },
         {
-            "id": "Export or sync with Git for extra security",
-            "message": "Export or sync with Git for extra security",
-            "translation": "Export or sync with Git for extra security",
+            "id": "External source notes",
+            "message": "External source notes",
+            "translation": "External source notes",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -866,6 +964,27 @@
             "id": "failed to generate metadata form",
             "message": "failed to generate metadata form",
             "translation": "failed to generate metadata form",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to get archive",
+            "message": "failed to get archive",
+            "translation": "failed to get archive",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to get areas",
+            "message": "failed to get areas",
+            "translation": "failed to get areas",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to get collections",
+            "message": "failed to get collections",
+            "translation": "failed to get collections",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -912,6 +1031,13 @@
             "fuzzy": true
         },
         {
+            "id": "failed to get filetypes",
+            "message": "failed to get filetypes",
+            "translation": "failed to get filetypes",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "failed to get filter test metadata",
             "message": "failed to get filter test metadata",
             "translation": "failed to get filter test metadata",
@@ -919,9 +1045,30 @@
             "fuzzy": true
         },
         {
+            "id": "failed to get folders",
+            "message": "failed to get folders",
+            "translation": "failed to get folders",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "failed to get previous commit",
             "message": "failed to get previous commit",
             "translation": "failed to get previous commit",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to get priorities",
+            "message": "failed to get priorities",
+            "translation": "failed to get priorities",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to get projects",
+            "message": "failed to get projects",
+            "translation": "failed to get projects",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -936,6 +1083,27 @@
             "id": "failed to get recent files",
             "message": "failed to get recent files",
             "translation": "failed to get recent files",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to get resources",
+            "message": "failed to get resources",
+            "translation": "failed to get resources",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to get statuses",
+            "message": "failed to get statuses",
+            "translation": "failed to get statuses",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to get tags",
+            "message": "failed to get tags",
+            "translation": "failed to get tags",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1040,6 +1208,13 @@
             "fuzzy": true
         },
         {
+            "id": "failed to save metadata",
+            "message": "failed to save metadata",
+            "translation": "failed to save metadata",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "field",
             "message": "field",
             "translation": "field",
@@ -1064,6 +1239,13 @@
             "id": "file content here...",
             "message": "file content here...",
             "translation": "file content here...",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "File content - show specific files",
+            "message": "File content - show specific files",
+            "translation": "File content - show specific files",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1096,6 +1278,13 @@
             "fuzzy": true
         },
         {
+            "id": "File relationships",
+            "message": "File relationships",
+            "translation": "File relationships",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "files",
             "message": "files",
             "translation": "files",
@@ -1117,14 +1306,35 @@
             "fuzzy": true
         },
         {
+            "id": "Files linking to current",
+            "message": "Files linking to current",
+            "translation": "Files linking to current",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Files with",
             "message": "Files with",
             "translation": "Files with"
         },
         {
+            "id": "Files with current as parent",
+            "message": "Files with current as parent",
+            "translation": "Files with current as parent",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "file type",
             "message": "file type",
             "translation": "file type",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "File Types",
+            "message": "File Types",
+            "translation": "File Types",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1171,6 +1381,13 @@
             "fuzzy": true
         },
         {
+            "id": "Filter Criteria",
+            "message": "Filter Criteria",
+            "translation": "Filter Criteria",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "filtered results will appear here",
             "message": "filtered results will appear here",
             "translation": "filtered results will appear here",
@@ -1178,9 +1395,9 @@
             "fuzzy": true
         },
         {
-            "id": "Filter Examples",
-            "message": "Filter Examples",
-            "translation": "Filter Examples",
+            "id": "Filter forms - interactive filtering",
+            "message": "Filter forms - interactive filtering",
+            "translation": "Filter forms - interactive filtering",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1192,9 +1409,23 @@
             "fuzzy": true
         },
         {
+            "id": "Filter results - display filtered files",
+            "message": "Filter results - display filtered files",
+            "translation": "Filter results - display filtered files",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "filters/my-filter",
             "message": "filters/my-filter",
             "translation": "filters/my-filter",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Filter System",
+            "message": "Filter System",
+            "translation": "Filter System",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1220,16 +1451,16 @@
             "fuzzy": true
         },
         {
-            "id": "Find notes by tags, date, priority, or any combination",
-            "message": "Find notes by tags, date, priority, or any combination",
-            "translation": "Find notes by tags, date, priority, or any combination",
+            "id": "Fleeting",
+            "message": "Fleeting",
+            "translation": "Fleeting",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Fleeting",
-            "message": "Fleeting",
-            "translation": "Fleeting",
+            "id": "Fleeting - quick captures and initial thoughts",
+            "message": "Fleeting - quick captures and initial thoughts",
+            "translation": "Fleeting - quick captures and initial thoughts",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1253,6 +1484,13 @@
             "translation": "Folders"
         },
         {
+            "id": "Folders - folder navigation",
+            "message": "Folders - folder navigation",
+            "translation": "Folders - folder navigation",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "for formatted text notes",
             "message": "for formatted text notes",
             "translation": "for formatted text notes",
@@ -1267,9 +1505,9 @@
             "fuzzy": true
         },
         {
-            "id": "For New Users:",
-            "message": "For New Users:",
-            "translation": "For New Users:",
+            "id": "Future reference topics",
+            "message": "Future reference topics",
+            "translation": "Future reference topics",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1282,13 +1520,6 @@
             "id": "Getting Started",
             "message": "Getting Started",
             "translation": "Getting Started",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Getting Support:",
-            "message": "Getting Support:",
-            "translation": "Getting Support:",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1314,9 +1545,9 @@
             "fuzzy": true
         },
         {
-            "id": "Group related content together",
-            "message": "Group related content together",
-            "translation": "Group related content together",
+            "id": "Group files by topic or purpose",
+            "message": "Group files by topic or purpose",
+            "translation": "Group files by topic or purpose",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1347,6 +1578,13 @@
             "translation": "Help"
         },
         {
+            "id": "Here are proven workflows you can adapt for KNOV. For more ideas, explore",
+            "message": "Here are proven workflows you can adapt for KNOV. For more ideas, explore",
+            "translation": "Here are proven workflows you can adapt for KNOV. For more ideas, explore",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "History",
             "message": "History",
             "translation": "History"
@@ -1357,6 +1595,13 @@
             "translation": "Home"
         },
         {
+            "id": "How it works",
+            "message": "How it works",
+            "translation": "How it works",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "https://github.com/user/repo.git",
             "message": "https://github.com/user/repo.git",
             "translation": "https://github.com/user/repo.git",
@@ -1364,9 +1609,16 @@
             "fuzzy": true
         },
         {
-            "id": "Ideas and inspiration with topic tags",
-            "message": "Ideas and inspiration with topic tags",
-            "translation": "Ideas and inspiration with topic tags",
+            "id": "If you have too much for one day",
+            "message": "If you have too much for one day",
+            "translation": "If you have too much for one day",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Inactive items",
+            "message": "Inactive items",
+            "translation": "Inactive items",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1374,6 +1626,34 @@
             "id": "in array",
             "message": "in array",
             "translation": "in array",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Include errands (e.g. sign a form)",
+            "message": "Include errands (e.g. sign a form)",
+            "translation": "Include errands (e.g. sign a form)",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Include or exclude matching files",
+            "message": "Include or exclude matching files",
+            "translation": "Include or exclude matching files",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Include scheduled tasks (e.g. 2pm meeting)",
+            "message": "Include scheduled tasks (e.g. 2pm meeting)",
+            "translation": "Include scheduled tasks (e.g. 2pm meeting)",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Include work items (e.g. review a paper)",
+            "message": "Include work items (e.g. review a paper)",
+            "translation": "Include work items (e.g. review a paper)",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1395,6 +1675,20 @@
             "id": "index saved successfully",
             "message": "index saved successfully",
             "translation": "index saved successfully",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "'In' - match any from list",
+            "message": "'In' - match any from list",
+            "translation": "'In' - match any from list",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "invalid date format",
+            "message": "invalid date format",
+            "translation": "invalid date format",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1422,6 +1716,13 @@
             "fuzzy": true
         },
         {
+            "id": "Jeff Huang's productivity system",
+            "message": "Jeff Huang's productivity system",
+            "translation": "Jeff Huang's productivity system",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Journaling",
             "message": "Journaling",
             "translation": "Journaling",
@@ -1429,16 +1730,16 @@
             "fuzzy": true
         },
         {
-            "id": "Keyboard Shortcuts",
-            "message": "Keyboard Shortcuts",
-            "translation": "Keyboard Shortcuts",
+            "id": "Key Features",
+            "message": "Key Features",
+            "translation": "Key Features",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Key Features",
-            "message": "Key Features",
-            "translation": "Key Features",
+            "id": "Keyword-based labeling",
+            "message": "Keyword-based labeling",
+            "translation": "Keyword-based labeling",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1457,9 +1758,9 @@
             "fuzzy": true
         },
         {
-            "id": "Label notes with keywords for flexible grouping",
-            "message": "Label notes with keywords for flexible grouping",
-            "translation": "Label notes with keywords for flexible grouping",
+            "id": "Knowledge development stages",
+            "message": "Knowledge development stages",
+            "translation": "Knowledge development stages",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1483,16 +1784,9 @@
             "fuzzy": true
         },
         {
-            "id": "Learning materials organized by subject",
-            "message": "Learning materials organized by subject",
-            "translation": "Learning materials organized by subject",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Learn them for faster navigation",
-            "message": "Learn them for faster navigation",
-            "translation": "Learn them for faster navigation",
+            "id": "Layout",
+            "message": "Layout",
+            "translation": "Layout",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1518,16 +1812,16 @@
             "fuzzy": true
         },
         {
-            "id": "Link Notes",
-            "message": "Link Notes",
-            "translation": "Link Notes",
+            "id": "Limits",
+            "message": "Limits",
+            "translation": "Limits",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Link related notes together",
-            "message": "Link related notes together",
-            "translation": "Link related notes together",
+            "id": "Link notes using wikilinks and parent/child relationships",
+            "message": "Link notes using wikilinks and parent/child relationships",
+            "translation": "Link notes using wikilinks and parent/child relationships",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1535,6 +1829,13 @@
             "id": "list",
             "message": "list",
             "translation": "list",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "List, cards, dropdown, or table views",
+            "message": "List, cards, dropdown, or table views",
+            "translation": "List, cards, dropdown, or table views",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1549,6 +1850,13 @@
             "id": "Literature",
             "message": "Literature",
             "translation": "Literature",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Literature - notes from books, articles, videos",
+            "message": "Literature - notes from books, articles, videos",
+            "translation": "Literature - notes from books, articles, videos",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1703,6 +2011,27 @@
             "fuzzy": true
         },
         {
+            "id": "Logic",
+            "message": "Logic",
+            "translation": "Logic",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Manual hierarchy assignment",
+            "message": "Manual hierarchy assignment",
+            "translation": "Manual hierarchy assignment",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Maps linking related notes",
+            "message": "Maps linking related notes",
+            "translation": "Maps linking related notes",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Mark as High, Medium, or Low importance",
             "message": "Mark as High, Medium, or Low importance",
             "translation": "Mark as High, Medium, or Low importance",
@@ -1717,9 +2046,16 @@
             "fuzzy": true
         },
         {
-            "id": "Meeting notes with attendee tags",
-            "message": "Meeting notes with attendee tags",
-            "translation": "Meeting notes with attendee tags",
+            "id": "Matching Options",
+            "message": "Matching Options",
+            "translation": "Matching Options",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "metadata",
+            "message": "metadata",
+            "translation": "metadata",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1727,6 +2063,13 @@
             "id": "Metadata",
             "message": "Metadata",
             "translation": "Metadata",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "metadata not found",
+            "message": "metadata not found",
+            "translation": "metadata not found",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1787,16 +2130,16 @@
             "fuzzy": true
         },
         {
-            "id": "Morning",
-            "message": "Morning",
-            "translation": "Morning",
+            "id": "MOC - maps organizing related permanent notes",
+            "message": "MOC - maps organizing related permanent notes",
+            "translation": "MOC - maps organizing related permanent notes",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Multiple Dashboards",
-            "message": "Multiple Dashboards",
-            "translation": "Multiple Dashboards",
+            "id": "Monthly cleanup and MOC updates",
+            "message": "Monthly cleanup and MOC updates",
+            "translation": "Monthly cleanup and MOC updates",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1822,9 +2165,9 @@
             "fuzzy": true
         },
         {
-            "id": "Need Help?",
-            "message": "Need Help?",
-            "translation": "Need Help?",
+            "id": "Navigation Widgets",
+            "message": "Navigation Widgets",
+            "translation": "Navigation Widgets",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1846,6 +2189,20 @@
             "id": "no ancestors",
             "message": "no ancestors",
             "translation": "no ancestors",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "no archive found",
+            "message": "no archive found",
+            "translation": "no archive found",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "no areas found",
+            "message": "no areas found",
+            "translation": "no areas found",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1927,16 +2284,23 @@
             "fuzzy": true
         },
         {
-            "id": "no results found",
-            "message": "no results found",
-            "translation": "no results found",
+            "id": "no projects found",
+            "message": "no projects found",
+            "translation": "no projects found",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Note Name",
-            "message": "Note Name",
-            "translation": "Note Name",
+            "id": "no resources found",
+            "message": "no resources found",
+            "translation": "no resources found",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "no results found",
+            "message": "no results found",
+            "translation": "no results found",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1956,6 +2320,13 @@
             "id": "OK",
             "message": "OK",
             "translation": "OK",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Ongoing responsibilities",
+            "message": "Ongoing responsibilities",
+            "translation": "Ongoing responsibilities",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1995,16 +2366,30 @@
             "fuzzy": true
         },
         {
-            "id": "Organize by Projects, Areas, Resources, and Archive",
-            "message": "Organize by Projects, Areas, Resources, and Archive",
-            "translation": "Organize by Projects, Areas, Resources, and Archive",
+            "id": "Organize",
+            "message": "Organize",
+            "translation": "Organize",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Organize like files on your computer",
-            "message": "Organize like files on your computer",
-            "translation": "Organize like files on your computer",
+            "id": "Organize by actionability",
+            "message": "Organize by actionability",
+            "translation": "Organize by actionability",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Original PARA + Zettelkasten system",
+            "message": "Original PARA + Zettelkasten system",
+            "translation": "Original PARA + Zettelkasten system",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Outcomes with deadlines",
+            "message": "Outcomes with deadlines",
+            "translation": "Outcomes with deadlines",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2043,6 +2428,48 @@
             "id": "PARA Method",
             "message": "PARA Method",
             "translation": "PARA Method",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "PARA Organization",
+            "message": "PARA Organization",
+            "translation": "PARA Organization",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "PARA Widgets",
+            "message": "PARA Widgets",
+            "translation": "PARA Widgets",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "PARA + Zettelkasten Knowledge System",
+            "message": "PARA + Zettelkasten Knowledge System",
+            "translation": "PARA + Zettelkasten Knowledge System",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "parents",
+            "message": "parents",
+            "translation": "parents",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "parents updated",
+            "message": "parents updated",
+            "translation": "parents updated",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Parent System",
+            "message": "Parent System",
+            "translation": "Parent System",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2089,16 +2516,16 @@
             "fuzzy": true
         },
         {
-            "id": "Personal Dashboards",
-            "message": "Personal Dashboards",
-            "translation": "Personal Dashboards",
+            "id": "Permanent - developed insights ready for connection",
+            "message": "Permanent - developed insights ready for connection",
+            "translation": "Permanent - developed insights ready for connection",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Personal Knowledge Base",
-            "message": "Personal Knowledge Base",
-            "translation": "Personal Knowledge Base",
+            "id": "Personal reflection",
+            "message": "Personal reflection",
+            "translation": "Personal reflection",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2136,16 +2563,16 @@
             "fuzzy": true
         },
         {
-            "id": "Powerful search through all your content",
-            "message": "Powerful search through all your content",
-            "translation": "Powerful search through all your content",
+            "id": "Powerful filtering system to find exactly what you need:",
+            "message": "Powerful filtering system to find exactly what you need:",
+            "translation": "Powerful filtering system to find exactly what you need:",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Power User Tips:",
-            "message": "Power User Tips:",
-            "translation": "Power User Tips:",
+            "id": "Powerful search through all your content",
+            "message": "Powerful search through all your content",
+            "translation": "Powerful search through all your content",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2176,23 +2603,9 @@
             "translation": "Priority"
         },
         {
-            "id": "Process documentation by department",
-            "message": "Process documentation by department",
-            "translation": "Process documentation by department",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Project Management",
-            "message": "Project Management",
-            "translation": "Project Management",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Project notes with status tracking",
-            "message": "Project notes with status tracking",
-            "translation": "Project notes with status tracking",
+            "id": "Process",
+            "message": "Process",
+            "translation": "Process",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2211,16 +2624,37 @@
             "fuzzy": true
         },
         {
-            "id": "Quick Search",
-            "message": "Quick Search",
-            "translation": "Quick Search",
+            "id": "Projects, Areas, Resources, Archive views",
+            "message": "Projects, Areas, Resources, Archive views",
+            "translation": "Projects, Areas, Resources, Archive views",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Quick Tips",
-            "message": "Quick Tips",
-            "translation": "Quick Tips",
+            "id": "Projects - assign to specific outcomes with deadlines",
+            "message": "Projects - assign to specific outcomes with deadlines",
+            "translation": "Projects - assign to specific outcomes with deadlines",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "projects updated",
+            "message": "projects updated",
+            "translation": "projects updated",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Put everything in your calendar",
+            "message": "Put everything in your calendar",
+            "translation": "Put everything in your calendar",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Quick thoughts",
+            "message": "Quick thoughts",
+            "translation": "Quick thoughts",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2242,16 +2676,16 @@
             "translation": "Recent File History"
         },
         {
-            "id": "Recent files, notes by tags or collections, custom filtered lists, quick folder access",
-            "message": "Recent files, notes by tags or collections, custom filtered lists, quick folder access",
-            "translation": "Recent files, notes by tags or collections, custom filtered lists, quick folder access",
+            "id": "Reddit PKMS community",
+            "message": "Reddit PKMS community",
+            "translation": "Reddit PKMS community",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Reference other notes using",
-            "message": "Reference other notes using",
-            "translation": "Reference other notes using",
+            "id": "Reference",
+            "message": "Reference",
+            "translation": "Reference",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2259,20 +2693,6 @@
             "id": "regex",
             "message": "regex",
             "translation": "regex",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Remember: KNOV grows with you - start simple and add complexity as needed",
-            "message": "Remember: KNOV grows with you - start simple and add complexity as needed",
-            "translation": "Remember: KNOV grows with you - start simple and add complexity as needed",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Remember: The best knowledge management system is the one you actually use. Start with what feels natural and expand from there.",
-            "message": "Remember: The best knowledge management system is the one you actually use. Start with what feels natural and expand from there.",
-            "translation": "Remember: The best knowledge management system is the one you actually use. Start with what feels natural and expand from there.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2296,23 +2716,9 @@
             "translation": "Rename"
         },
         {
-            "id": "Research notes linked by topic",
-            "message": "Research notes linked by topic",
-            "translation": "Research notes linked by topic",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Research \u0026 Study",
-            "message": "Research \u0026 Study",
-            "translation": "Research \u0026 Study",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Resource collections by project type",
-            "message": "Resource collections by project type",
-            "translation": "Resource collections by project type",
+            "id": "Reschedule things in your calendar for another date",
+            "message": "Reschedule things in your calendar for another date",
+            "translation": "Reschedule things in your calendar for another date",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2327,6 +2733,20 @@
             "id": "Resources",
             "message": "Resources",
             "translation": "Resources",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Resources - topics for future reference",
+            "message": "Resources - topics for future reference",
+            "translation": "Resources - topics for future reference",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "resources updated",
+            "message": "resources updated",
+            "translation": "resources updated",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2359,9 +2779,9 @@
             "fuzzy": true
         },
         {
-            "id": "Review and properly tag/organize new content",
-            "message": "Review and properly tag/organize new content",
-            "translation": "Review and properly tag/organize new content",
+            "id": "Review",
+            "message": "Review",
+            "translation": "Review",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2415,9 +2835,9 @@
             "fuzzy": true
         },
         {
-            "id": "Saved Filters",
-            "message": "Saved Filters",
-            "translation": "Saved Filters",
+            "id": "Saved searches",
+            "message": "Saved searches",
+            "translation": "Saved searches",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2436,9 +2856,23 @@
             "fuzzy": true
         },
         {
+            "id": "Save filter configurations as files",
+            "message": "Save filter configurations as files",
+            "translation": "Save filter configurations as files",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "save index",
             "message": "save index",
             "translation": "save index",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Save \u0026 Reuse",
+            "message": "Save \u0026 Reuse",
+            "translation": "Save \u0026 Reuse",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2472,13 +2906,6 @@
             "translation": "Search Results"
         },
         {
-            "id": "See Relationships",
-            "message": "See Relationships",
-            "translation": "See Relationships",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "select a file...",
             "message": "select a file...",
             "translation": "select a file...",
@@ -2510,13 +2937,6 @@
             "id": "Select Language",
             "message": "Select Language",
             "translation": "Select Language",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Select multiple notes to tag or move at once",
-            "message": "Select multiple notes to tag or move at once",
-            "translation": "Select multiple notes to tag or move at once",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2589,9 +3009,9 @@
             "translation": "Settings"
         },
         {
-            "id": "Settings Page",
-            "message": "Settings Page",
-            "translation": "Settings Page",
+            "id": "Setup",
+            "message": "Setup",
+            "translation": "Setup",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2631,34 +3051,6 @@
             "fuzzy": true
         },
         {
-            "id": "Smart Connections",
-            "message": "Smart Connections",
-            "translation": "Smart Connections",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Smart Search \u0026 Filtering",
-            "message": "Smart Search \u0026 Filtering",
-            "translation": "Smart Search \u0026 Filtering",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Source materials with reference tags",
-            "message": "Source materials with reference tags",
-            "translation": "Source materials with reference tags",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Start Simple: Just create notes and add basic tags",
-            "message": "Start Simple: Just create notes and add basic tags",
-            "translation": "Start Simple: Just create notes and add basic tags",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "start typing to search...",
             "message": "start typing to search...",
             "translation": "start typing to search...",
@@ -2669,6 +3061,13 @@
             "id": "static content configuration",
             "message": "static content configuration",
             "translation": "static content configuration",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Static content - custom HTML/Markdown",
+            "message": "Static content - custom HTML/Markdown",
+            "translation": "Static content - custom HTML/Markdown",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2692,16 +3091,16 @@
             "translation": "Status"
         },
         {
-            "id": "Stay Organized",
-            "message": "Stay Organized",
-            "translation": "Stay Organized",
+            "id": "Status fields: type, status, priority",
+            "message": "Status fields: type, status, priority",
+            "translation": "Status fields: type, status, priority",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Study guides connected to main topics",
-            "message": "Study guides connected to main topics",
-            "translation": "Study guides connected to main topics",
+            "id": "Stay Organized",
+            "message": "Stay Organized",
+            "translation": "Stay Organized",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2760,23 +3159,23 @@
             "translation": "Tags"
         },
         {
-            "id": "tags \u0026 folders",
-            "message": "tags \u0026 folders",
-            "translation": "tags \u0026 folders",
+            "id": "Tags - browse all tags",
+            "message": "Tags - browse all tags",
+            "translation": "Tags - browse all tags",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Task lists with priority levels",
-            "message": "Task lists with priority levels",
-            "translation": "Task lists with priority levels",
+            "id": "tags updated",
+            "message": "tags updated",
+            "translation": "tags updated",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Template Notes",
-            "message": "Template Notes",
-            "translation": "Template Notes",
+            "id": "target date",
+            "message": "target date",
+            "translation": "target date",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2795,16 +3194,16 @@
             "fuzzy": true
         },
         {
-            "id": "Theme Options",
-            "message": "Theme Options",
-            "translation": "Theme Options",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Theme Settings",
             "message": "Theme Settings",
             "translation": "Theme Settings"
+        },
+        {
+            "id": "Time fields: creation and modification dates",
+            "message": "Time fields: creation and modification dates",
+            "translation": "Time fields: creation and modification dates",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
         },
         {
             "id": "title",
@@ -2828,23 +3227,9 @@
             "fuzzy": true
         },
         {
-            "id": "Training materials by skill level",
-            "message": "Training materials by skill level",
-            "translation": "Training materials by skill level",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Try Filters: Use the filter panel to find groups of related notes",
-            "message": "Try Filters: Use the filter panel to find groups of related notes",
-            "translation": "Try Filters: Use the filter panel to find groups of related notes",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Try the sample filters to learn the system",
-            "message": "Try the sample filters to learn the system",
-            "translation": "Try the sample filters to learn the system",
+            "id": "Traditional hierarchy organization",
+            "message": "Traditional hierarchy organization",
+            "translation": "Traditional hierarchy organization",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2852,13 +3237,6 @@
             "id": "Type",
             "message": "Type",
             "translation": "Type"
-        },
-        {
-            "id": "Type anything to find notes containing those words",
-            "message": "Type anything to find notes containing those words",
-            "translation": "Type anything to find notes containing those words",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
         },
         {
             "id": "type here...",
@@ -2936,23 +3314,23 @@
             "translation": "Update your dashboard configuration"
         },
         {
-            "id": "Use filters to review progress and clean up",
-            "message": "Use filters to review progress and clean up",
-            "translation": "Use filters to review progress and clean up",
+            "id": "Use built-in PARA fields",
+            "message": "Use built-in PARA fields",
+            "translation": "Use built-in PARA fields",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Use Search: When you can't remember where something is, just search",
-            "message": "Use Search: When you can't remember where something is, just search",
-            "translation": "Use Search: When you can't remember where something is, just search",
+            "id": "Use built-in Zettelkasten types",
+            "message": "Use built-in Zettelkasten types",
+            "translation": "Use built-in Zettelkasten types",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "Use the search function - your answer might already be in your notes!",
-            "message": "Use the search function - your answer might already be in your notes!",
-            "translation": "Use the search function - your answer might already be in your notes!",
+            "id": "Use simple tags + collections, let PARA fields handle structure",
+            "message": "Use simple tags + collections, let PARA fields handle structure",
+            "translation": "Use simple tags + collections, let PARA fields handle structure",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -3076,13 +3454,6 @@
             "fuzzy": true
         },
         {
-            "id": "View which notes connect to each other",
-            "message": "View which notes connect to each other",
-            "translation": "View which notes connect to each other",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "WARNING - This will remove all files in the Data Folder!!.",
             "message": "WARNING - This will remove all files in the Data Folder!!.",
             "translation": "WARNING - This will remove all files in the Data Folder!!.",
@@ -3090,23 +3461,9 @@
             "fuzzy": true
         },
         {
-            "id": "Watch your ideas connect and grow",
-            "message": "Watch your ideas connect and grow",
-            "translation": "Watch your ideas connect and grow",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Weekly",
-            "message": "Weekly",
-            "translation": "Weekly",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Welcome to KNOV! Your knowledge journey starts now.",
-            "message": "Welcome to KNOV! Your knowledge journey starts now.",
-            "translation": "Welcome to KNOV! Your knowledge journey starts now.",
+            "id": "Weekly review to promote fleeting → literature → permanent",
+            "message": "Weekly review to promote fleeting → literature → permanent",
+            "translation": "Weekly review to promote fleeting → literature → permanent",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -3160,16 +3517,9 @@
             "fuzzy": true
         },
         {
-            "id": "Widget Types",
-            "message": "Widget Types",
-            "translation": "Widget Types",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Work Documentation",
-            "message": "Work Documentation",
-            "translation": "Work Documentation",
+            "id": "Wikilinks between files",
+            "message": "Wikilinks between files",
+            "translation": "Wikilinks between files",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -3181,9 +3531,9 @@
             "fuzzy": true
         },
         {
-            "id": "Write your content (use simple formatting like",
-            "message": "Write your content (use simple formatting like",
-            "translation": "Write your content (use simple formatting like",
+            "id": "Write content with simple formatting",
+            "message": "Write content with simple formatting",
+            "translation": "Write content with simple formatting",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -3216,6 +3566,13 @@
             "fuzzy": true
         },
         {
+            "id": "Your todo list becomes a record of what you actually did",
+            "message": "Your todo list becomes a record of what you actually did",
+            "translation": "Your todo list becomes a record of what you actually did",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Your Way",
             "message": "Your Way",
             "translation": "Your Way",
@@ -3226,6 +3583,13 @@
             "id": "yyyy-mm-dd",
             "message": "yyyy-mm-dd",
             "translation": "yyyy-mm-dd",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Zettelkasten Types",
+            "message": "Zettelkasten Types",
+            "translation": "Zettelkasten Types",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         }

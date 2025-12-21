@@ -2,7 +2,9 @@
 
 # todo
 
-- func getEditor(filepath string) -> switch metadata.FileType + handleFileEdit - switch editor
+- PARA Metadata - should create a folder and if one is selected the other cant be selected
+- mkdir/copy on windows not working
+- if a file is moved (git..) look at linksto and in the target file  change the link
 - Dashboard
   - make the positions work with a custom layout work
   - UI advanced
@@ -19,10 +21,11 @@
   - get metadata for postgres
   - get metadata for yaml header
   - change linkRegex config to names, e.g. obsidian, notion, dokuwiki... instead of a regex? or add one regex string + confignames
-- users/groups/permissions?
-- add todo filetype
 
 # done
+- func getEditor(filepath string) -> switch metadata.FileType + handleFileEdit - switch editor
+- add todo filetype
+- [x] users/groups/permissions? - canceled
 - move templ to go html templates
 - deliver everything in builtin template with htmx (no forms... and so on in the html)
 - add a editor (textbox) and the neccessary form e.g. parents, collection
