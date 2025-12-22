@@ -1,0 +1,355 @@
+/* Table Editor Styles */
+
+/* table edit button below tables */
+.table-edit-wrapper {
+    margin-top: 8px;
+    margin-bottom: 16px;
+}
+
+.btn-table-edit {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-table-edit:hover {
+    background: var(--accent);
+    transform: translateY(-1px);
+}
+
+.btn-table-edit:active {
+    transform: translateY(0);
+}
+
+/* table editor page layout */
+#page-filedittable {
+    padding: 20px;
+}
+
+#page-filedittable .container {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+#page-filedittable h1 {
+    margin-bottom: 20px;
+    color: var(--text);
+}
+
+/* toolbar styling */
+#page-filedittable .table-editor-toolbar {
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+/* fg-grid container */
+#page-filedittable #fg-grid-container {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--bg);
+    min-height: 500px;
+}
+
+/* status messages */
+#page-filedittable .status-success {
+    color: #065f46;
+    background: #d1fae5;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-top: 12px;
+    border: 1px solid #10b981;
+}
+
+#page-filedittable .status-error {
+    color: #991b1b;
+    background: #fee2e2;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-top: 12px;
+    border: 1px solid #ef4444;
+}
+
+#page-filedittable .status-info {
+    color: #1e40af;
+    background: #dbeafe;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-top: 12px;
+    border: 1px solid #3b82f6;
+}
+
+/* button styles */
+#page-filedittable .btn-primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#page-filedittable .btn-primary:hover {
+    background: var(--accent);
+    transform: translateY(-1px);
+}
+
+#page-filedittable .btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#page-filedittable .btn-secondary:hover {
+    background: var(--border);
+    transform: translateY(-1px);
+}
+
+/* dark mode adjustments */
+body[data-dark-mode="true"] .table-edit-wrapper .btn-table-edit {
+    background: var(--primary);
+    color: white;
+}
+
+body[data-dark-mode="true"] #page-filedittable #fg-grid-container {
+    background: var(--bg);
+}
+
+body[data-dark-mode="true"] #page-filedittable .status-success {
+    color: #047857;
+    background: #064e3b;
+    border-color: #059669;
+}
+
+body[data-dark-mode="true"] #page-filedittable .status-error {
+    color: #dc2626;
+    background: #7f1d1d;
+    border-color: #b91c1c;
+}
+
+body[data-dark-mode="true"] #page-filedittable .status-info {
+    color: #2563eb;
+    background: #1e3a8a;
+    border-color: #1d4ed8;
+}
+
+/* dark mode selection styles */
+body[data-dark-mode="true"] #page-filedittable .editable-table td.selected {
+    background: rgba(59, 130, 246, 0.25) !important;
+    border-color: #60a5fa !important;
+}
+
+body[data-dark-mode="true"]
+    #page-filedittable
+    .editable-table
+    td.selected:focus {
+    background: rgba(59, 130, 246, 0.35) !important;
+}
+
+body[data-dark-mode="true"] #page-filedittable .selection-info {
+    background: #3b82f6;
+    color: white;
+}
+
+/* responsive design */
+@media (max-width: 768px) {
+    #page-filedittable {
+        padding: 10px;
+    }
+
+    #page-filedittable .table-editor-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    #page-filedittable .table-editor-toolbar > * {
+        text-align: center;
+    }
+
+    #page-filedittable #fg-grid-container {
+        min-height: 400px;
+    }
+}
+
+/* enhanced table editor styles */
+#page-filedittable .table-editor {
+    background: var(--bg);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+#page-filedittable .table-toolbar {
+    background: var(--bg-secondary);
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#page-filedittable .table-container {
+    overflow: auto;
+    max-height: 60vh;
+    min-height: 400px;
+}
+
+#page-filedittable .editable-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: inherit;
+    background: var(--bg);
+}
+
+#page-filedittable .editable-table th,
+#page-filedittable .editable-table td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    min-width: 120px;
+    position: relative;
+    transition:
+        background-color 0.2s,
+        border-color 0.2s;
+}
+
+#page-filedittable .editable-table th {
+    background: var(--bg-secondary);
+    font-weight: 600;
+    color: var(--text);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#page-filedittable .editable-table td[contenteditable="true"],
+#page-filedittable .editable-table th[contenteditable="true"] {
+    outline: none;
+    cursor: text;
+}
+
+#page-filedittable .editable-table td[contenteditable="true"]:hover,
+#page-filedittable .editable-table th[contenteditable="true"]:hover {
+    background: var(--accent-light, rgba(59, 130, 246, 0.1));
+}
+
+#page-filedittable .editable-table td[contenteditable="true"]:focus,
+#page-filedittable .editable-table th[contenteditable="true"]:focus {
+    background: var(--accent-light, rgba(59, 130, 246, 0.15));
+    border-color: var(--primary);
+    box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+/* multi-selection styles */
+#page-filedittable .editable-table td.selected {
+    background: var(--primary-light, rgba(59, 130, 246, 0.2)) !important;
+    border-color: var(--primary) !important;
+    box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+#page-filedittable .editable-table td.selected:focus {
+    background: var(--primary-light, rgba(59, 130, 246, 0.3)) !important;
+    box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+/* selection toolbar styles */
+#page-filedittable .toolbar-separator {
+    color: var(--text-secondary);
+    margin: 0 8px;
+    font-weight: normal;
+}
+
+#page-filedittable .selection-info {
+    background: var(--primary);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: 8px;
+    display: none;
+}
+
+/* disabled button styles */
+#page-filedittable .btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--bg-secondary);
+}
+
+#page-filedittable .btn-secondary:disabled:hover {
+    background: var(--bg-secondary);
+    transform: none;
+}
+
+#page-filedittable .editable-table td:empty::before,
+#page-filedittable .editable-table th:empty::before {
+    content: attr(placeholder);
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+#page-filedittable .table-instructions {
+    background: var(--bg-secondary);
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+#page-filedittable .instruction-item {
+    margin-bottom: 4px;
+    color: var(--text-secondary);
+}
+
+#page-filedittable .instruction-item:first-child {
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+/* responsive table */
+@media (max-width: 768px) {
+    #page-filedittable .table-toolbar {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    #page-filedittable .table-container {
+        font-size: 14px;
+    }
+
+    #page-filedittable .editable-table th,
+    #page-filedittable .editable-table td {
+        min-width: 100px;
+        padding: 6px 8px;
+    }
+}

@@ -34,7 +34,7 @@ func (h *PlaintextHandler) Parse(content []byte) ([]byte, error) {
 	return []byte(s), nil
 }
 
-func (h *PlaintextHandler) Render(content []byte) ([]byte, error) {
+func (h *PlaintextHandler) Render(content []byte, filePath string) ([]byte, error) {
 	html := "<pre>" + string(content) + "</pre>"
 	return []byte(html), nil
 }

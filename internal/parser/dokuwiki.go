@@ -53,7 +53,7 @@ func (h *DokuwikiHandler) Parse(content []byte) ([]byte, error) {
 	return []byte(parsed), nil
 }
 
-func (h *DokuwikiHandler) Render(content []byte) ([]byte, error) {
+func (h *DokuwikiHandler) Render(content []byte, filePath string) ([]byte, error) {
 	return content, nil
 }
 

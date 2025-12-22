@@ -89,7 +89,7 @@ func GetFileContent(filePath string) (*FileContent, error) {
 		return nil, err
 	}
 
-	html, err := handler.Render(parsed)
+	html, err := handler.Render(parsed, utils.ToRelativePath(filePath))
 	if err != nil {
 		return nil, err
 	}

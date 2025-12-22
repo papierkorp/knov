@@ -58,7 +58,7 @@ func (r *customRenderer) RenderNode(w io.Writer, node ast.Node, entering bool) a
 }
 
 // update the Render function to use custom renderer:
-func (h *MarkdownHandler) Render(content []byte) ([]byte, error) {
+func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error) {
 	extensions := gomarkdown_parser.CommonExtensions | gomarkdown_parser.AutoHeadingIDs
 	p := gomarkdown_parser.NewWithExtensions(extensions)
 
@@ -75,6 +75,18 @@ func (h *MarkdownHandler) Render(content []byte) ([]byte, error) {
 				w.Write([]byte(highlighted))
 				return ast.GoToNext, true
 			}
+
+			// Add edit button after table closing tag
+			if _, ok := node.(*ast.Table); ok && !entering {
+				w.Write([]byte("</table>"))
+				w.Write([]byte(`<div class="table-edit-wrapper">
+					<a href="/files/edittable/` + filePath + `" class="btn-table-edit">
+						<i class="fa fa-edit"></i> ` + "edit table" + `
+					</a>
+				</div>`))
+				return ast.GoToNext, true
+			}
+
 			return ast.GoToNext, false
 		},
 	}

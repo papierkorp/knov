@@ -63,6 +63,7 @@ func StartServerChi() {
 	r.Get("/overview", handleOverview)
 	r.Get("/search", handleSearchPage)
 	r.Get("/files/edit/*", handleFileEdit)
+	r.Get("/files/edittable/*", handleFileEditTable)
 
 	// use filenew template
 	r.Get("/files/new/todo", handleFileNewTodo)
@@ -122,6 +123,9 @@ func StartServerChi() {
 			r.Post("/indexeditor/add-entry", handleAPIAddIndexEntry)
 			r.Post("/filtereditor", handleAPISaveFilterEditor)
 			r.Post("/listeditor", handleAPISaveListEditor)
+
+			r.Post("/tableeditor", handleAPITableEditorSave)
+			r.Get("/tableeditor", handleAPITableEditorForm)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -210,7 +214,6 @@ func StartServerChi() {
 			r.Get("/lastedited", handleAPIGetMetadataLastEdited)
 			r.Get("/priority", handleAPIGetMetadataPriority)
 			r.Get("/status", handleAPIGetMetadataStatus)
-			r.Get("/targetdate", handleAPIGetMetadataTargetDate)
 
 			r.Post("/collection", handleAPISetMetadataCollection)
 			r.Post("/filetype", handleAPISetMetadataFileType)
@@ -842,6 +845,19 @@ func handleFileNewJournaling(w http.ResponseWriter, r *http.Request) {
 	data := thememanager.NewFileNewTemplateData("journaling")
 
 	err := tm.Render(w, "filenew", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleFileEditTable(w http.ResponseWriter, r *http.Request) {
+	filePath := strings.TrimPrefix(r.URL.Path, "/files/edittable/")
+
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileEditTableTemplateData(filePath)
+
+	err := tm.Render(w, "filedittable", data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return

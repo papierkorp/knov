@@ -12,7 +12,7 @@ type Handler interface {
 	Parse(content []byte) ([]byte, error)
 
 	// Render converts content to HTML
-	Render(content []byte) ([]byte, error)
+	Render(content []byte, filePath string) ([]byte, error)
 
 	// ExtractLinks extracts internal links from content
 	ExtractLinks(content []byte) []string

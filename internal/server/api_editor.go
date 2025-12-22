@@ -479,3 +479,63 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(render.RenderStatusMessage(render.StatusOK, successMsg)))
 }
+
+// @Summary Save table data
+// @Description Saves table data back to markdown file
+// @Tags editor
+// @Accept multipart/form-data
+// @Param filepath formData string true "file path"
+// @Param tableData formData string true "table data as JSON"
+// @Produce text/html
+// @Success 200 {string} string "success message"
+// @Failure 400 {string} string "invalid request"
+// @Failure 500 {string} string "server error"
+// @Router /api/editor/tableeditor [post]
+func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
+	filePath := r.FormValue("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid file path"), http.StatusBadRequest)
+		return
+	}
+
+	tableDataJSON := r.FormValue("tableData")
+	if tableDataJSON == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid table data"), http.StatusBadRequest)
+		return
+	}
+
+	// parse table data
+	var tableData render.TableData
+	if err := json.Unmarshal([]byte(tableDataJSON), &tableData); err != nil {
+		logging.LogError("failed to parse table data: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid table data format"), http.StatusBadRequest)
+		return
+	}
+
+	// get original content
+	originalContent, err := files.GetRawContent(filePath)
+	if err != nil {
+		logging.LogError("failed to read original file %s: %v", filePath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read original file"), http.StatusInternalServerError)
+		return
+	}
+
+	// replace table in original markdown
+	updatedContent := render.ReplaceTableInMarkdown(originalContent, &tableData)
+
+	// save updated content
+	fullPath := utils.ToFullPath(filePath)
+	if err := files.SaveRawContent(fullPath, updatedContent); err != nil {
+		logging.LogError("failed to save file %s: %v", filePath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("saved table in file: %s", filePath)
+	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "table saved successfully"),
+		filePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(render.RenderStatusMessage(render.StatusOK, successMsg)))
+}

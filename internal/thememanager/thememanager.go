@@ -60,6 +60,7 @@ type ThemeTemplates struct {
 	dashboardedit  *template.Template
 	dashboardnew   *template.Template
 	fileedit       *template.Template
+	filedittable   *template.Template
 	filenew        *template.Template
 	fileview       *template.Template
 	help           *template.Template
@@ -195,6 +196,8 @@ func LoadSingleTheme(themeName, themesDir string) error {
 			templates.dashboardnew = tmpl
 		case "fileedit":
 			templates.fileedit = tmpl
+		case "filedittable":
+			templates.filedittable = tmpl
 		case "filenew":
 			templates.filenew = tmpl
 		case "fileview":
@@ -299,6 +302,7 @@ func injectDefaultCSS(html string) string {
 	// inject default CSS links before </head>
 	defaultCSSLinks := `    <link href="/static/css/codehighlight.css" rel="stylesheet" />
     <link href="/static/css/listeditor.css" rel="stylesheet" />
+    <link href="/static/css/tableeditor.css" rel="stylesheet" />
 `
 
 	return html[:headCloseIndex] + defaultCSSLinks + html[headCloseIndex:]
@@ -465,6 +469,7 @@ func (t *Theme) TemplateMap() map[string]*template.Template {
 		"dashboardedit":  t.Templates.dashboardedit,
 		"dashboardnew":   t.Templates.dashboardnew,
 		"fileedit":       t.Templates.fileedit,
+		"filedittable":   t.Templates.filedittable,
 		"filenew":        t.Templates.filenew,
 		"fileview":       t.Templates.fileview,
 		"help":           t.Templates.help,

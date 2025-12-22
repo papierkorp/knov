@@ -1,0 +1,24 @@
+{{ define "content" }}
+<div id="page-filedittable">
+    <div class="container">
+        <h1>{{T "table editor"}}: {{ .FilePath }}</h1>
+        <div class="table-editor-toolbar">
+            <button type="button" onclick="saveTable()" class="btn-primary">
+                <i class="fa fa-save"></i> {{T "save"}}
+            </button>
+            <button type="button" onclick="cancelTableEdit()" class="btn-secondary">
+                {{T "cancel"}}
+            </button>
+        </div>
+        <div id="table-editor-container">
+            {{ .TableEditorHTML }}
+        </div>
+        <div id="table-editor-status"></div>
+    </div>
+</div>
+
+<script>
+{{ .JavaScript }}
+</script>
+{{ end }}
+bas
