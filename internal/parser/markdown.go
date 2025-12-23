@@ -7,7 +7,9 @@ import (
 	"regexp"
 	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/logging"
+	"knov/internal/translation"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
@@ -81,7 +83,7 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 				w.Write([]byte("</table>"))
 				w.Write([]byte(`<div class="table-edit-wrapper">
 					<a href="/files/edittable/` + filePath + `" class="btn-table-edit">
-						<i class="fa fa-edit"></i> ` + "edit table" + `
+						<i class="fa fa-edit"></i> ` + translation.SprintfForRequest(configmanager.GetLanguage(), "edit table") + `
 					</a>
 				</div>`))
 				return ast.GoToNext, true

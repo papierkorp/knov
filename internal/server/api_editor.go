@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -338,9 +339,9 @@ func renderIndexEntryRowHelper(index int, entry render.IndexEntry) string {
 
 	// controls on the left
 	html.WriteString(`<div class="entry-controls">`)
-	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, -1)" class="btn-move">↑</button>`, index))
-	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, 1)" class="btn-move">↓</button>`, index))
-	html.WriteString(fmt.Sprintf(`<button type="button" onclick="removeEntry(this)" class="btn-remove">×</button>`))
+	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, -1)" class="btn-move"><i class="fa-solid fa-arrow-up"></i></button>`, index))
+	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, 1)" class="btn-move"><i class="fa-solid fa-arrow-down"></i></button>`, index))
+	html.WriteString(fmt.Sprintf(`<button type="button" onclick="removeEntry(this)" class="btn-remove"><i class="fa-solid fa-xmark"></i></button>`))
 	html.WriteString(`</div>`)
 
 	// content on the right
@@ -485,31 +486,66 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 // @Tags editor
 // @Accept multipart/form-data
 // @Param filepath formData string true "file path"
-// @Param tableData formData string true "table data as JSON"
+// @Param headers formData string true "table headers as JSON array"
+// @Param rows formData string true "table rows as JSON array"
+// @Param tableIndex formData string true "table index in document"
 // @Produce text/html
 // @Success 200 {string} string "success message"
 // @Failure 400 {string} string "invalid request"
 // @Failure 500 {string} string "server error"
 // @Router /api/editor/tableeditor [post]
 func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
+	// parse multipart form data (FormData from JavaScript)
+	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10 MB max
+		logging.LogError("failed to parse multipart form: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+
 	filePath := r.FormValue("filepath")
+	logging.LogDebug("received filepath: '%s'", filePath)
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid file path"), http.StatusBadRequest)
+		logging.LogError("missing filepath in form data")
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"), http.StatusBadRequest)
 		return
 	}
 
-	tableDataJSON := r.FormValue("tableData")
-	if tableDataJSON == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid table data"), http.StatusBadRequest)
+	headersJSON := r.FormValue("headers")
+	rowsJSON := r.FormValue("rows")
+	tableIndexStr := r.FormValue("tableIndex")
+
+	logging.LogDebug("received headers: %d bytes, rows: %d bytes, tableIndex: %s", len(headersJSON), len(rowsJSON), tableIndexStr)
+
+	if headersJSON == "" || rowsJSON == "" || tableIndexStr == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing data"), http.StatusBadRequest)
 		return
 	}
 
-	// parse table data
-	var tableData render.TableData
-	if err := json.Unmarshal([]byte(tableDataJSON), &tableData); err != nil {
-		logging.LogError("failed to parse table data: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid table data format"), http.StatusBadRequest)
+	// parse headers
+	var headers []string
+	if err := json.Unmarshal([]byte(headersJSON), &headers); err != nil {
+		logging.LogError("failed to parse headers: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid data format"), http.StatusBadRequest)
 		return
+	}
+
+	// parse rows
+	var rows [][]string
+	if err := json.Unmarshal([]byte(rowsJSON), &rows); err != nil {
+		logging.LogError("failed to parse rows: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid data format"), http.StatusBadRequest)
+		return
+	}
+
+	// parse table index
+	tableIndex := 0
+	if tableIndexStr != "" {
+		var err error
+		tableIndex, err = strconv.Atoi(tableIndexStr)
+		if err != nil {
+			logging.LogError("failed to parse table index: %v", err)
+			tableIndex = 0
+		}
 	}
 
 	// get original content
@@ -521,7 +557,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// replace table in original markdown
-	updatedContent := render.ReplaceTableInMarkdown(originalContent, &tableData)
+	updatedContent := render.ReplaceTableInMarkdown(originalContent, headers, rows, tableIndex)
 
 	// save updated content
 	fullPath := utils.ToFullPath(filePath)
@@ -532,10 +568,29 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo("saved table in file: %s", filePath)
-	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "table saved successfully"),
+	successMsg := fmt.Sprintf(`<div class="status-success">%s <a href="/files/%s">%s</a></div>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"),
 		filePath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(render.RenderStatusMessage(render.StatusOK, successMsg)))
+	w.Write([]byte(successMsg))
+}
+
+// @Summary Get table editor form
+// @Description Returns table editor component with Handsontable
+// @Tags editor
+// @Param filepath query string true "file path"
+// @Produce html
+// @Router /api/editor/tableeditor [get]
+func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+
+	html := render.RenderTableEditorForm(filePath)
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
 }

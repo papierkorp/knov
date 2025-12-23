@@ -1,458 +1,343 @@
-// Package render - HTMX HTML rendering functions for table editor
+// Package render - table editor rendering
 package render
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/files"
+	"knov/internal/logging"
 	"knov/internal/translation"
 )
 
-// TableData represents a parsed markdown table for fg-grid
+// TableData represents the structure for Handsontable
 type TableData struct {
-	Headers []string   `json:"headers"`
-	Data    [][]string `json:"data"`
+	Headers    []string   `json:"headers"`
+	Rows       [][]string `json:"rows"`
+	TableIndex int        `json:"tableIndex"`
 }
 
-// ParseMarkdownTable extracts table data from markdown content
-func ParseMarkdownTable(markdownContent string) (*TableData, error) {
-	lines := strings.Split(markdownContent, "\n")
+// RenderTableEditorForm renders the complete table editor form
+func RenderTableEditorForm(filePath string) string {
+	content, err := files.GetRawContent(filePath)
+	if err != nil {
+		logging.LogError("failed to read file %s: %v", filePath, err)
+		return fmt.Sprintf(`<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
+	}
 
-	var tableStart, tableEnd int = -1, -1
+	// extract first table from markdown
+	tableData, tableIndex := extractTableFromMarkdown(content)
+	if tableData == nil {
+		return fmt.Sprintf(`<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"))
+	}
 
-	// find table boundaries
+	tableData.TableIndex = tableIndex
+
+	// convert to JSON
+	tableJSON, err := json.Marshal(tableData)
+	if err != nil {
+		logging.LogError("failed to marshal table data: %v", err)
+		return fmt.Sprintf(`<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to process table"))
+	}
+
+	html := fmt.Sprintf(`
+<div class="table-editor-toolbar">
+	<button type="button" onclick="saveTable()" class="btn-primary">
+		<i class="fa fa-save"></i> %s
+	</button>
+	<button type="button" onclick="cancelTableEdit()" class="btn-secondary">
+		%s
+	</button>
+</div>
+<div id="table-editor-container">
+	<div id="handsontable-container"></div>
+</div>
+<div id="table-editor-status"></div>
+
+<script>
+const tableData = %s;
+const filePath = '%s';
+
+const container = document.getElementById('handsontable-container');
+const hot = new Handsontable(container, {
+	data: tableData.rows,
+	colHeaders: tableData.headers,
+	rowHeaders: true,
+	contextMenu: true,
+	manualRowMove: true,
+	manualColumnMove: true,
+	navigableHeaders: true,
+	tabNavigation: true,
+	multiColumnSorting: true,
+	headerClassName: 'htLeft',
+	themeName: 'ht-theme-main-dark-auto',
+	licenseKey: 'non-commercial-and-evaluation',
+	minSpareRows: 1,
+	height: 'auto',
+	width: '100%%',
+	cells: function(row, col) {
+		return {
+			readOnly: false,
+		};
+	},
+	afterChange: function(changes, source) {
+		if (source !== 'loadData') {
+			console.log('table changed');
+		}
+	}
+});
+
+hot.addHook('afterOnCellMouseDown', function (event, coords, TD) {
+  if (coords.row === -1) {
+    // Column header row
+    if (event.detail === 2) {
+      // Double click
+      const colIndex = coords.col;
+      const currentHeader = hot.getColHeader(colIndex);
+      const newHeader = prompt('Edit column header:', currentHeader);
+
+      if (newHeader !== null && newHeader !== currentHeader && newHeader.trim() !== '') {
+        // Get current headers
+        const currentHeaders = hot.getSettings().colHeaders;
+        const newHeaders = [...currentHeaders]; // Create a copy
+        newHeaders[colIndex] = newHeader;
+
+        // Update the table with new headers
+        hot.updateSettings({ colHeaders: newHeaders });
+
+        // Also update the tableData.headers to keep in sync
+        tableData.headers = newHeaders;
+      }
+    }
+  }
+});
+
+
+function saveTable() {
+	const data = hot.getSourceData();
+	const headers = tableData.headers;
+	const tableIndex = tableData.tableIndex;
+
+	const formData = new FormData();
+	formData.append('filepath', filePath);
+	formData.append('headers', JSON.stringify(headers));
+	formData.append('rows', JSON.stringify(data));
+	formData.append('tableIndex', tableIndex.toString());
+
+	fetch('/api/editor/tableeditor', {
+		method: 'POST',
+		body: formData
+	})
+	.then(response => response.text())
+	.then(html => {
+		document.getElementById('table-editor-status').innerHTML = html;
+	})
+	.catch(error => {
+		document.getElementById('table-editor-status').innerHTML =
+			'<div class="status-error">%s: ' + error + '</div>';
+	});
+}
+
+function cancelTableEdit() {
+	window.location.href = '/files/' + filePath;
+}
+</script>
+`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "save"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
+		string(tableJSON),
+		jsEscape(filePath),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "error saving table"),
+	)
+
+	return html
+}
+
+// ReplaceTableInMarkdown replaces a table in markdown content
+func ReplaceTableInMarkdown(content string, headers []string, rows [][]string, tableIndex int) string {
+	lines := strings.Split(content, "\n")
+	var result []string
+	var inTable bool
+	var currentTable int
+	var tableStartIdx int
+
 	for i, line := range lines {
 		trimmed := strings.TrimSpace(line)
-		if strings.Contains(trimmed, "|") && !strings.HasPrefix(trimmed, "<!--") {
-			if tableStart == -1 {
-				tableStart = i
+
+		// detect table
+		if strings.HasPrefix(trimmed, "|") && strings.Contains(trimmed, "-") && !inTable {
+			currentTable++
+			if currentTable-1 == tableIndex {
+				inTable = true
+				tableStartIdx = i - 1 // include header
+				continue
 			}
-			tableEnd = i
-		} else if tableStart != -1 && trimmed == "" {
-			break
 		}
+
+		if inTable {
+			if strings.HasPrefix(trimmed, "|") {
+				continue // skip table rows
+			} else {
+				// table ended, insert new table
+				newTable := generateMarkdownTable(headers, rows)
+				result = append(result[:tableStartIdx], newTable...)
+				result = append(result, line)
+				inTable = false
+				continue
+			}
+		}
+
+		result = append(result, line)
 	}
 
-	if tableStart == -1 {
-		return nil, fmt.Errorf("no table found in markdown")
-	}
+	return strings.Join(result, "\n")
+}
 
-	tableLines := lines[tableStart : tableEnd+1]
+// extractTableFromMarkdown extracts the first markdown table
+func extractTableFromMarkdown(content string) (*TableData, int) {
+	lines := strings.Split(content, "\n")
+	var tableLines []string
+	var inTable bool
+	var tableIndex int
+	currentTable := 0
 
-	// parse table
-	var headers []string
-	var data [][]string
-
-	for i, line := range tableLines {
+	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
-		if trimmed == "" || !strings.Contains(trimmed, "|") {
-			continue
-		}
 
-		// skip separator line (usually contains --- or === )
-		if strings.Contains(trimmed, "-") && strings.Count(trimmed, "-") > 2 {
-			continue
-		}
-
-		// parse row
-		cells := strings.Split(trimmed, "|")
-		var cleanCells []string
-
-		for _, cell := range cells {
-			clean := strings.TrimSpace(cell)
-			if clean != "" {
-				cleanCells = append(cleanCells, clean)
+		// detect table start (header separator line)
+		if strings.HasPrefix(trimmed, "|") && strings.Contains(trimmed, "-") && !inTable {
+			inTable = true
+			currentTable++
+			// add the header line (previous line)
+			if len(tableLines) > 0 {
+				tableLines = tableLines[len(tableLines)-1:]
 			}
-		}
-
-		if len(cleanCells) == 0 {
+			tableLines = append(tableLines, line)
+			tableIndex = currentTable - 1
 			continue
 		}
 
-		if i == 0 || len(headers) == 0 {
-			headers = cleanCells
-		} else {
-			data = append(data, cleanCells)
+		if inTable {
+			if strings.HasPrefix(trimmed, "|") {
+				tableLines = append(tableLines, line)
+			} else {
+				// table ended
+				break
+			}
+		} else if strings.HasPrefix(trimmed, "|") {
+			// potential table header
+			tableLines = []string{line}
+		}
+	}
+
+	if len(tableLines) < 2 {
+		return nil, 0
+	}
+
+	return parseMarkdownTable(tableLines), tableIndex
+}
+
+// parseMarkdownTable parses markdown table lines into TableData
+func parseMarkdownTable(lines []string) *TableData {
+	if len(lines) < 2 {
+		return nil
+	}
+
+	// parse header
+	headerLine := strings.Trim(lines[0], " ")
+	headers := parseTableRow(headerLine)
+
+	// skip separator line (index 1)
+	var rows [][]string
+	for i := 2; i < len(lines); i++ {
+		row := parseTableRow(lines[i])
+		if len(row) > 0 {
+			// pad or trim to match header length
+			for len(row) < len(headers) {
+				row = append(row, "")
+			}
+			if len(row) > len(headers) {
+				row = row[:len(headers)]
+			}
+			rows = append(rows, row)
 		}
 	}
 
 	return &TableData{
 		Headers: headers,
-		Data:    data,
-	}, nil
+		Rows:    rows,
+	}
 }
 
-// ConvertTableDataToMarkdown converts table data back to markdown format
-func ConvertTableDataToMarkdown(tableData *TableData) string {
-	if tableData == nil || len(tableData.Headers) == 0 {
-		return ""
+// parseTableRow parses a single markdown table row
+func parseTableRow(line string) []string {
+	// remove leading/trailing pipes and whitespace
+	line = strings.Trim(line, " |")
+
+	// split by pipe
+	cells := strings.Split(line, "|")
+
+	var result []string
+	for _, cell := range cells {
+		result = append(result, strings.TrimSpace(cell))
 	}
 
-	var md strings.Builder
-
-	// write headers
-	md.WriteString("|")
-	for _, header := range tableData.Headers {
-		md.WriteString(" ")
-		md.WriteString(header)
-		md.WriteString(" |")
-	}
-	md.WriteString("\n")
-
-	// write separator
-	md.WriteString("|")
-	for range tableData.Headers {
-		md.WriteString("---|")
-	}
-	md.WriteString("\n")
-
-	// write data rows
-	for _, row := range tableData.Data {
-		md.WriteString("|")
-		for i := range tableData.Headers {
-			md.WriteString(" ")
-			if i < len(row) {
-				md.WriteString(row[i])
-			}
-			md.WriteString(" |")
-		}
-		md.WriteString("\n")
-	}
-
-	return md.String()
+	return result
 }
 
-// ReplaceTableInMarkdown replaces the first table found in markdown with new table data
-func ReplaceTableInMarkdown(originalMarkdown string, newTableData *TableData) string {
-	if newTableData == nil {
-		return originalMarkdown
+// generateMarkdownTable creates markdown table from data
+func generateMarkdownTable(headers []string, rows [][]string) []string {
+	var lines []string
+
+	// header row
+	headerRow := "| " + strings.Join(headers, " | ") + " |"
+	lines = append(lines, headerRow)
+
+	// separator row
+	separators := make([]string, len(headers))
+	for i := range separators {
+		separators[i] = "---"
 	}
-
-	lines := strings.Split(originalMarkdown, "\n")
-	var tableStart, tableEnd int = -1, -1
-
-	// find table boundaries
-	for i, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if strings.Contains(trimmed, "|") && !strings.HasPrefix(trimmed, "<!--") {
-			if tableStart == -1 {
-				tableStart = i
-			}
-			tableEnd = i
-		} else if tableStart != -1 && trimmed == "" {
-			break
-		}
-	}
-
-	if tableStart == -1 {
-		// no table found, append at end
-		return originalMarkdown + "\n\n" + ConvertTableDataToMarkdown(newTableData)
-	}
-
-	// replace existing table
-	beforeTable := lines[:tableStart]
-	afterTable := lines[tableEnd+1:]
-
-	newTable := strings.TrimSuffix(ConvertTableDataToMarkdown(newTableData), "\n")
-
-	var result strings.Builder
-
-	// add content before table
-	for i, line := range beforeTable {
-		if i > 0 {
-			result.WriteString("\n")
-		}
-		result.WriteString(line)
-	}
-
-	// add new table
-	if len(beforeTable) > 0 {
-		result.WriteString("\n")
-	}
-	result.WriteString(newTable)
-
-	// add content after table
-	for _, line := range afterTable {
-		result.WriteString("\n")
-		result.WriteString(line)
-	}
-
-	return result.String()
-}
-
-// RenderTableEditor renders the complete table editor HTML
-func RenderTableEditor(tableData *TableData) string {
-	var html strings.Builder
-
-	// main container
-	html.WriteString(`<div class="table-editor">`)
-
-	// toolbar
-	html.WriteString(`<div class="table-toolbar">`)
-	html.WriteString(`<button onclick="addRow()" class="btn-secondary" title="` + translation.SprintfForRequest(configmanager.GetLanguage(), "add row") + `">+ ` + translation.SprintfForRequest(configmanager.GetLanguage(), "row") + `</button>`)
-	html.WriteString(`<button onclick="addColumn()" class="btn-secondary" title="` + translation.SprintfForRequest(configmanager.GetLanguage(), "add column") + `">+ ` + translation.SprintfForRequest(configmanager.GetLanguage(), "column") + `</button>`)
-	html.WriteString(`<button onclick="deleteLastRow()" class="btn-secondary" title="` + translation.SprintfForRequest(configmanager.GetLanguage(), "delete last row") + `">- ` + translation.SprintfForRequest(configmanager.GetLanguage(), "row") + `</button>`)
-	html.WriteString(`<button onclick="deleteLastColumn()" class="btn-secondary" title="` + translation.SprintfForRequest(configmanager.GetLanguage(), "delete last column") + `">- ` + translation.SprintfForRequest(configmanager.GetLanguage(), "column") + `</button>`)
-	html.WriteString(`</div>`)
-
-	// table container
-	html.WriteString(`<div class="table-container">`)
-	html.WriteString(`<table class="editable-table" id="data-table">`)
-
-	// prepare data
-	headers := tableData.Headers
-	data := tableData.Data
-
-	// ensure we have at least basic structure
-	if len(headers) == 0 {
-		headers = []string{translation.SprintfForRequest(configmanager.GetLanguage(), "column 1")}
-	}
-	if len(data) == 0 {
-		data = [][]string{{""}}
-	}
-
-	// headers
-	html.WriteString(`<thead><tr>`)
-	for index, header := range headers {
-		colText := translation.SprintfForRequest(configmanager.GetLanguage(), "column")
-		html.WriteString(fmt.Sprintf(`<th contenteditable="true" data-col="%d" placeholder="%s %d">%s</th>`,
-			index, colText, index+1, header))
-	}
-	html.WriteString(`</tr></thead>`)
+	sepRow := "| " + strings.Join(separators, " | ") + " |"
+	lines = append(lines, sepRow)
 
 	// data rows
-	html.WriteString(`<tbody>`)
-	for rowIndex, row := range data {
-		html.WriteString(`<tr>`)
-		for colIndex := range headers {
-			cellValue := ""
-			if colIndex < len(row) {
-				cellValue = row[colIndex]
-			}
-			html.WriteString(fmt.Sprintf(`<td contenteditable="true" data-row="%d" data-col="%d" placeholder="...">%s</td>`,
-				rowIndex, colIndex, cellValue))
+	for _, row := range rows {
+		// ensure row matches header length
+		for len(row) < len(headers) {
+			row = append(row, "")
 		}
-		html.WriteString(`</tr>`)
+		if len(row) > len(headers) {
+			row = row[:len(headers)]
+		}
+
+		// skip empty rows
+		allEmpty := true
+		for _, cell := range row {
+			if strings.TrimSpace(cell) != "" {
+				allEmpty = false
+				break
+			}
+		}
+		if allEmpty {
+			continue
+		}
+
+		dataRow := "| " + strings.Join(row, " | ") + " |"
+		lines = append(lines, dataRow)
 	}
-	html.WriteString(`</tbody>`)
 
-	html.WriteString(`</table>`)
-	html.WriteString(`</div>`)
-
-	html.WriteString(`</div>`)
-
-	return html.String()
+	return lines
 }
 
-// RenderTableEditorJS renders the JavaScript functions for table editing
-func RenderTableEditorJS(filePath string) string {
-	var js strings.Builder
-
-	js.WriteString(fmt.Sprintf(`
-let filePath = '%s';
-
-// table editor is already loaded - no need to fetch
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('table editor ready');
-    setupKeyboardNavigation();
-});
-
-function setupKeyboardNavigation() {
-    const table = document.getElementById('data-table');
-    if (!table) return;
-
-    table.addEventListener('keydown', function(e) {
-        if (e.key === 'Tab') {
-            e.preventDefault();
-            const current = e.target;
-            if (current.tagName === 'TD' || current.tagName === 'TH') {
-                const cells = Array.from(table.querySelectorAll('td, th'));
-                const currentIndex = cells.indexOf(current);
-                const nextIndex = e.shiftKey ? currentIndex - 1 : currentIndex + 1;
-
-                if (nextIndex >= 0 && nextIndex < cells.length) {
-                    cells[nextIndex].focus();
-                }
-            }
-        } else if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const current = e.target;
-            if (current.tagName === 'TD') {
-                const currentRow = parseInt(current.dataset.row);
-                const currentCol = parseInt(current.dataset.col);
-                const nextCell = table.querySelector('td[data-row="' + (currentRow + 1) + '"][data-col="' + currentCol + '"]');
-                if (nextCell) {
-                    nextCell.focus();
-                }
-            }
-        }
-    });
-}
-
-function saveTable() {
-    let tableData = { headers: [], data: [] };
-
-    try {
-        const table = document.querySelector('#data-table');
-        if (table) {
-            const headerCells = table.querySelectorAll('thead th');
-            const bodyRows = table.querySelectorAll('tbody tr');
-
-            tableData.headers = Array.from(headerCells).map(cell => cell.textContent || '');
-            tableData.data = Array.from(bodyRows).map(row => {
-                const cells = row.querySelectorAll('td');
-                return Array.from(cells).map(cell => cell.textContent || '');
-            });
-        }
-
-        // ensure we have valid data
-        if (!tableData.headers || tableData.headers.length === 0) {
-            tableData.headers = ['%s'];
-        }
-        if (!tableData.data || tableData.data.length === 0) {
-            tableData.data = [['']];
-        }
-
-        // clean data
-        tableData.headers = tableData.headers.map(h => String(h || '').trim());
-        tableData.data = tableData.data.map(row => {
-            if (Array.isArray(row)) {
-                return row.map(cell => String(cell || '').trim());
-            }
-            return [''];
-        });
-
-        console.log('saving table data:', tableData);
-
-        const formData = new FormData();
-        formData.append('filepath', filePath);
-        formData.append('tableData', JSON.stringify(tableData));
-
-        // show loading
-        document.getElementById('table-editor-status').innerHTML =
-            '<div class="status-info">%s...</div>';
-
-        fetch('/api/editor/tableeditor', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.text())
-        .then(result => {
-            document.getElementById('table-editor-status').innerHTML = result;
-            // redirect to file view after successful save
-            if (result.includes('status-ok') || result.includes('status-success')) {
-                setTimeout(() => {
-                    window.location.href = '/files/' + filePath;
-                }, 1500);
-            }
-        })
-        .catch(error => {
-            console.error('error saving table:', error);
-            document.getElementById('table-editor-status').innerHTML =
-                '<div class="status-error">%s: ' + error.message + '</div>';
-        });
-    } catch (error) {
-        console.error('error getting table data:', error);
-        document.getElementById('table-editor-status').innerHTML =
-            '<div class="status-error">%s: ' + error.message + '</div>';
-    }
-}
-
-// table manipulation functions
-function addRow() {
-    const table = document.getElementById('data-table');
-    const tbody = table?.querySelector('tbody');
-    const headerCount = table?.querySelectorAll('thead th').length || 1;
-
-    if (tbody) {
-        const newRow = document.createElement('tr');
-        const rowIndex = tbody.children.length;
-
-        for (let i = 0; i < headerCount; i++) {
-            const cell = document.createElement('td');
-            cell.contentEditable = true;
-            cell.setAttribute('data-row', rowIndex);
-            cell.setAttribute('data-col', i);
-            cell.setAttribute('placeholder', '...');
-            newRow.appendChild(cell);
-        }
-        tbody.appendChild(newRow);
-
-        // focus first cell of new row
-        newRow.firstElementChild?.focus();
-    }
-}
-
-function addColumn() {
-    const table = document.getElementById('data-table');
-    if (!table) return;
-
-    // add header
-    const headerRow = table.querySelector('thead tr');
-    if (headerRow) {
-        const colIndex = headerRow.children.length;
-        const newHeader = document.createElement('th');
-        newHeader.contentEditable = true;
-        newHeader.setAttribute('data-col', colIndex);
-        newHeader.setAttribute('placeholder', '%s ' + (colIndex + 1));
-        newHeader.textContent = '%s ' + (colIndex + 1);
-        headerRow.appendChild(newHeader);
-    }
-
-    // add cells to existing data rows
-    const bodyRows = table.querySelectorAll('tbody tr');
-    bodyRows.forEach((row, rowIndex) => {
-        const colIndex = headerRow?.children.length - 1 || 0;
-        const newCell = document.createElement('td');
-        newCell.contentEditable = true;
-        newCell.setAttribute('data-row', rowIndex);
-        newCell.setAttribute('data-col', colIndex);
-        newCell.setAttribute('placeholder', '...');
-        row.appendChild(newCell);
-    });
-}
-
-function deleteLastRow() {
-    const table = document.getElementById('data-table');
-    const tbody = table?.querySelector('tbody');
-
-    if (tbody && tbody.children.length > 1) {
-        tbody.removeChild(tbody.lastElementChild);
-    }
-}
-
-function deleteLastColumn() {
-    const table = document.getElementById('data-table');
-    if (!table) return;
-
-    const headerRow = table.querySelector('thead tr');
-    const bodyRows = table.querySelectorAll('tbody tr');
-
-    if (headerRow && headerRow.children.length > 1) {
-        // remove header
-        headerRow.removeChild(headerRow.lastElementChild);
-
-        // remove last cell from each data row
-        bodyRows.forEach(row => {
-            if (row.lastElementChild) {
-                row.removeChild(row.lastElementChild);
-            }
-        });
-    }
-}
-
-function cancelTableEdit() {
-    window.location.href = '/files/' + filePath;
-}
-`,
-		filePath,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "column 1"),
-		translation.SprintfForRequest(configmanager.GetLanguage(), "saving table"),
-		translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save table"),
-		translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get table data"),
-		translation.SprintfForRequest(configmanager.GetLanguage(), "column"),
-		translation.SprintfForRequest(configmanager.GetLanguage(), "column")))
-
-	return js.String()
+// jsEscape escapes a string for use in JavaScript
+func jsEscape(s string) string {
+	s = strings.ReplaceAll(s, "\\", "\\\\")
+	s = strings.ReplaceAll(s, "'", "\\'")
+	s = strings.ReplaceAll(s, "\"", "\\\"")
+	s = strings.ReplaceAll(s, "\n", "\\n")
+	s = strings.ReplaceAll(s, "\r", "\\r")
+	return s
 }

@@ -612,6 +612,11 @@
             "translation": "Dashboard bearbeiten"
         },
         {
+            "id": "edit table",
+            "message": "edit table",
+            "translation": ""
+        },
+        {
             "id": "Enter a search term",
             "message": "Enter a search term",
             "translation": "Suchtext eingeben"
@@ -644,6 +649,11 @@
         {
             "id": "Error",
             "message": "Error",
+            "translation": ""
+        },
+        {
+            "id": "error saving table",
+            "message": "error saving table",
             "translation": ""
         },
         {
@@ -832,6 +842,11 @@
             "translation": ""
         },
         {
+            "id": "failed to process table",
+            "message": "failed to process table",
+            "translation": ""
+        },
+        {
             "id": "failed to read file",
             "message": "failed to read file",
             "translation": ""
@@ -839,6 +854,11 @@
         {
             "id": "failed to read folder",
             "message": "failed to read folder",
+            "translation": ""
+        },
+        {
+            "id": "failed to read original file",
+            "message": "failed to read original file",
             "translation": ""
         },
         {
@@ -1236,6 +1256,11 @@
             "translation": ""
         },
         {
+            "id": "invalid data format",
+            "message": "invalid data format",
+            "translation": ""
+        },
+        {
             "id": "invalid date format",
             "message": "invalid date format",
             "translation": ""
@@ -1362,6 +1387,11 @@
         {
             "id": "Literature - notes from books, articles, videos",
             "message": "Literature - notes from books, articles, videos",
+            "translation": ""
+        },
+        {
+            "id": "loading",
+            "message": "loading",
             "translation": ""
         },
         {
@@ -1525,6 +1555,11 @@
             "translation": ""
         },
         {
+            "id": "missing data",
+            "message": "missing data",
+            "translation": ""
+        },
+        {
             "id": "missing file path",
             "message": "missing file path",
             "translation": ""
@@ -1682,6 +1717,11 @@
         {
             "id": "no results found",
             "message": "no results found",
+            "translation": ""
+        },
+        {
+            "id": "no table found in file",
+            "message": "no table found in file",
             "translation": ""
         },
         {
@@ -2297,6 +2337,11 @@
         {
             "id": "tab",
             "message": "tab",
+            "translation": ""
+        },
+        {
+            "id": "table editor",
+            "message": "table editor",
             "translation": ""
         },
         {

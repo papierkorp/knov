@@ -830,6 +830,13 @@
             "translation": "Edit Dashboard"
         },
         {
+            "id": "edit table",
+            "message": "edit table",
+            "translation": "edit table",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Enter a search term",
             "message": "Enter a search term",
             "translation": "Enter a search term"
@@ -873,6 +880,13 @@
             "id": "Error",
             "message": "Error",
             "translation": "Error",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "error saving table",
+            "message": "error saving table",
+            "translation": "error saving table",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1136,6 +1150,13 @@
             "fuzzy": true
         },
         {
+            "id": "failed to process table",
+            "message": "failed to process table",
+            "translation": "failed to process table",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "failed to read file",
             "message": "failed to read file",
             "translation": "failed to read file",
@@ -1146,6 +1167,13 @@
             "id": "failed to read folder",
             "message": "failed to read folder",
             "translation": "failed to read folder",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to read original file",
+            "message": "failed to read original file",
+            "translation": "failed to read original file",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1686,6 +1714,13 @@
             "fuzzy": true
         },
         {
+            "id": "invalid data format",
+            "message": "invalid data format",
+            "translation": "invalid data format",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "invalid date format",
             "message": "invalid date format",
             "translation": "invalid date format",
@@ -1857,6 +1892,13 @@
             "id": "Literature - notes from books, articles, videos",
             "message": "Literature - notes from books, articles, videos",
             "translation": "Literature - notes from books, articles, videos",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "loading",
+            "message": "loading",
+            "translation": "loading",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2081,6 +2123,13 @@
             "fuzzy": true
         },
         {
+            "id": "missing data",
+            "message": "missing data",
+            "translation": "missing data",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "missing file path",
             "message": "missing file path",
             "translation": "missing file path",
@@ -2301,6 +2350,13 @@
             "id": "no results found",
             "message": "no results found",
             "translation": "no results found",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "no table found in file",
+            "message": "no table found in file",
+            "translation": "no table found in file",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -3136,6 +3192,13 @@
             "id": "tab",
             "message": "tab",
             "translation": "tab",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "table editor",
+            "message": "table editor",
+            "translation": "table editor",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },

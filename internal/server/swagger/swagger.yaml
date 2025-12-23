@@ -969,6 +969,64 @@ paths:
       summary: Get markdown editor form HTML
       tags:
       - editor
+  /api/editor/tableeditor:
+    get:
+      description: Returns table editor component with Handsontable
+      parameters:
+      - description: file path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get table editor form
+      tags:
+      - editor
+    post:
+      consumes:
+      - multipart/form-data
+      description: Saves table data back to markdown file
+      parameters:
+      - description: file path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: table headers as JSON array
+        in: formData
+        name: headers
+        required: true
+        type: string
+      - description: table rows as JSON array
+        in: formData
+        name: rows
+        required: true
+        type: string
+      - description: table index in document
+        in: formData
+        name: tableIndex
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: success message
+          schema:
+            type: string
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "500":
+          description: server error
+          schema:
+            type: string
+      summary: Save table data
+      tags:
+      - editor
   /api/editor/textarea:
     get:
       description: Returns a simple textarea editor component for editing file content
