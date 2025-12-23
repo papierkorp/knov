@@ -89,6 +89,7 @@ func StartServerChi() {
 
 	r.Get("/static/*", handleStatic)
 	r.Get("/themes/*", handleStatic)
+	r.Get("/webfonts/*", handleWebfontsRedirect)
 
 	// ----------------------------------------------------------------------------------------
 	// -------------------------------------- api routes --------------------------------------
@@ -368,6 +369,16 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/svg+xml")
 	case ".ico":
 		w.Header().Set("Content-Type", "image/x-icon")
+	case ".woff2":
+		w.Header().Set("Content-Type", "font/woff2")
+	case ".woff":
+		w.Header().Set("Content-Type", "font/woff")
+	case ".ttf":
+		w.Header().Set("Content-Type", "font/ttf")
+	case ".otf":
+		w.Header().Set("Content-Type", "font/otf")
+	case ".eot":
+		w.Header().Set("Content-Type", "application/vnd.ms-fontobject")
 	}
 
 	if basePath == "themes" {
@@ -387,6 +398,21 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Write(data)
 	}
+}
+
+// handleWebfontsRedirect redirects /webfonts/* requests to /static/webfonts/*
+func handleWebfontsRedirect(w http.ResponseWriter, r *http.Request) {
+	fontPath := strings.TrimPrefix(r.URL.Path, "/webfonts/")
+	newPath := "/static/webfonts/" + fontPath
+
+	// create new request for the static handler
+	newURL := *r.URL
+	newURL.Path = newPath
+
+	newReq := r.Clone(r.Context())
+	newReq.URL = &newURL
+
+	handleStatic(w, newReq)
 }
 
 // ----------------------------------------------------------------------------------------
