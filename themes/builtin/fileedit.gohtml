@@ -1,20 +1,31 @@
 {{ define "content" }}
 <div id="page-fileedit">
     {{ if .FilePath }}
-		<h2>
-			{{ T "Edit" }}:
-			<a href="/files/{{ .FilePath }}">{{ .FilePath }}</a>
-		</h2>
+		{{ if .SectionID }}
+			<h2>
+				{{ T "Edit Section" }}: {{ .SectionID }} {{ T "in" }}
+				<a href="/files/{{ .FilePath }}">{{ .FilePath }}</a>
+			</h2>
+		{{ else }}
+			<h2>
+				{{ T "Edit" }}:
+				<a href="/files/{{ .FilePath }}">{{ .FilePath }}</a>
+			</h2>
+		{{ end }}
+
+		{{ if not .SectionID }}
+			<div
+				hx-get="/api/files/metadata-form?filepath={{ .FilePath }}"
+				hx-trigger="load"
+				hx-target="this"
+				hx-swap="outerHTML"
+			>
+				loading metadata...
+			</div>
+		{{ end }}
+
 		<div
-			hx-get="/api/files/metadata-form?filepath={{ .FilePath }}"
-			hx-trigger="load"
-			hx-target="this"
-			hx-swap="outerHTML"
-		>
-			loading metadata...
-		</div>
-		<div
-			hx-get="/api/editor?filepath={{ .FilePath }}"
+			hx-get="/api/editor?filepath={{ .FilePath }}{{ if .SectionID }}&section={{ .SectionID }}{{ end }}"
 			hx-trigger="load"
 			hx-target="this"
 			hx-swap="outerHTML"

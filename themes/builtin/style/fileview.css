@@ -405,3 +405,41 @@
 #view-fileview-reader .file-content .header-anchor:hover {
     color: var(--primary);
 }
+
+/* Header edit buttons - styled like header anchors */
+.header-edit-btn {
+    opacity: 0;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.7em;
+    line-height: 1;
+    padding: 0.1em 0.15em;
+    margin-left: 0.5em;
+    transition: opacity 0.2s ease-in-out;
+}
+
+h1:hover .header-edit-btn,
+h2:hover .header-edit-btn,
+h3:hover .header-edit-btn,
+h4:hover .header-edit-btn,
+h5:hover .header-edit-btn,
+h6:hover .header-edit-btn {
+    opacity: 1;
+}
+
+.header-edit-btn:hover {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+/* Ensure proper spacing in headers */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}

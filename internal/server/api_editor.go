@@ -77,10 +77,19 @@ func GetEditor(filepath string) (editorType, error) {
 func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	filetype := r.URL.Query().Get("filetype")
+	sectionID := r.URL.Query().Get("section")
 
 	var html string
-	var editorType editorType
 	var err error
+	var editorType editorType
+
+	// if section is specified, use section editor regardless of file type
+	if sectionID != "" && filepath != "" {
+		html = render.RenderMarkdownSectionEditorForm(filepath, sectionID)
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html))
+		return
+	}
 
 	// if filetype parameter is provided (for new files), use that to determine editor
 	if filetype != "" {
@@ -593,4 +602,49 @@ func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
+}
+
+// @Summary Save section content
+// @Description Saves section content back to markdown file
+// @Tags editor
+// @Accept x-www-form-urlencoded
+// @Param filepath formData string true "file path"
+// @Param sectionid formData string true "section id"
+// @Param content formData string true "section content"
+// @Produce html
+// @Router /api/files/section/save [post]
+func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+
+	filePath := r.FormValue("filepath")
+	sectionID := r.FormValue("sectionid")
+	content := r.FormValue("content")
+
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"), http.StatusBadRequest)
+		return
+	}
+
+	if sectionID == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing section id"), http.StatusBadRequest)
+		return
+	}
+
+	// save section content using the files package
+	if err := files.SaveSectionContent(filePath, sectionID, content); err != nil {
+		logging.LogError("failed to save section %s in file %s: %v", sectionID, filePath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("saved section %s in file: %s", sectionID, filePath)
+	successMsg := fmt.Sprintf(`<div class="status-success">%s <a href="/files/%s">%s</a></div>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"),
+		filePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(successMsg))
 }

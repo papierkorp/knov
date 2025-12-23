@@ -1224,6 +1224,45 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/files/section/save": {
+            "post": {
+                "description": "Saves section content back to markdown file",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Save section content",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "section id",
+                        "name": "sectionid",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "section content",
+                        "name": "content",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/files/versions/diff/{filepath}": {
             "get": {
                 "description": "Compare two versions of a file",

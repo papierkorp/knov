@@ -1211,6 +1211,33 @@ paths:
       summary: Save file content
       tags:
       - files
+  /api/files/section/save:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Saves section content back to markdown file
+      parameters:
+      - description: file path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: section id
+        in: formData
+        name: sectionid
+        required: true
+        type: string
+      - description: section content
+        in: formData
+        name: content
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Save section content
+      tags:
+      - editor
   /api/files/versions/{filepath}:
     get:
       description: List all versions of a file or get specific version content

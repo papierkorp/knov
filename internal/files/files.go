@@ -136,6 +136,106 @@ func GetRawContent(filePath string) (string, error) {
 	return string(content), nil
 }
 
+// ExtractSectionContent extracts content of a specific section from markdown
+func ExtractSectionContent(filePath, sectionID string) (string, error) {
+	content, err := GetRawContent(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	return extractSectionFromMarkdown(content, sectionID), nil
+}
+
+// SaveSectionContent saves content to a specific section in a markdown file
+func SaveSectionContent(filePath, sectionID, sectionContent string) error {
+	originalContent, err := GetRawContent(filePath)
+	if err != nil {
+		return err
+	}
+
+	updatedContent := replaceSectionInMarkdown(originalContent, sectionID, sectionContent)
+	fullPath := utils.ToFullPath(filePath)
+	return SaveRawContent(fullPath, updatedContent)
+}
+
+// extractSectionFromMarkdown extracts content between headers including the header itself
+func extractSectionFromMarkdown(content, sectionID string) string {
+	lines := strings.Split(content, "\n")
+	usedIDs := make(map[string]int)
+	var sectionLines []string
+	inTargetSection := false
+
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+
+		// check if this is a header line
+		if strings.HasPrefix(trimmed, "#") {
+			// extract header text and generate ID
+			headerText := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
+			headerID := utils.GenerateID(headerText, usedIDs)
+
+			if headerID == sectionID && !inTargetSection {
+				// start of our target section - include the header
+				inTargetSection = true
+				sectionLines = append(sectionLines, line)
+				continue
+			} else if inTargetSection && headerID != sectionID {
+				// reached next section, stop
+				break
+			}
+		}
+
+		if inTargetSection {
+			sectionLines = append(sectionLines, line)
+		}
+	}
+
+	return strings.Join(sectionLines, "\n")
+}
+
+// replaceSectionInMarkdown replaces content of a specific section including the header
+func replaceSectionInMarkdown(content, sectionID, newContent string) string {
+	lines := strings.Split(content, "\n")
+	usedIDs := make(map[string]int)
+	var result []string
+	inTargetSection := false
+	headerLevel := 0
+
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+
+		// check if this is a header line
+		if strings.HasPrefix(trimmed, "#") {
+			level := len(trimmed) - len(strings.TrimLeft(trimmed, "#"))
+			headerText := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
+			headerID := utils.GenerateID(headerText, usedIDs)
+
+			if headerID == sectionID && !inTargetSection {
+				// start of our target section - replace with new content
+				inTargetSection = true
+				headerLevel = level
+				// add new content (which should include the header)
+				if strings.TrimSpace(newContent) != "" {
+					result = append(result, strings.Split(newContent, "\n")...)
+				}
+				continue
+			} else if inTargetSection && level <= headerLevel {
+				// reached next section of same or higher level, stop replacing
+				inTargetSection = false
+				result = append(result, line)
+				continue
+			}
+		}
+
+		if !inTargetSection {
+			result = append(result, line)
+		}
+		// if inTargetSection is true, we skip the line (replacement)
+	}
+
+	return strings.Join(result, "\n")
+}
+
 // SaveRawContent saves raw content to file (creates if not exists)
 func SaveRawContent(filePath string, content string) error {
 	dir := filepath.Dir(filePath)

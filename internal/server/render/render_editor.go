@@ -81,6 +81,70 @@ func RenderMarkdownEditorForm(filePath string) string {
 		jsEscapeString(content))
 }
 
+// RenderMarkdownSectionEditorForm renders a markdown editor form for editing a specific section
+func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
+	content := ""
+
+	// get section content
+	if filePath != "" && sectionID != "" {
+		sectionContent, err := files.ExtractSectionContent(filePath, sectionID)
+		if err == nil {
+			content = sectionContent
+		}
+	}
+
+	// use section save endpoint
+	action := "/api/files/section/save"
+
+	cancelURL := fmt.Sprintf("/files/%s", filePath)
+
+	return fmt.Sprintf(`
+		<form hx-post="%s" hx-target="#editor-status" class="file-form">
+			<div class="form-group">
+				<label>%s:</label>
+				<input type="text" name="filepath" value="%s" readonly />
+			</div>
+			<div class="form-group">
+				<label>%s:</label>
+				<input type="text" name="sectionid" value="%s" readonly />
+			</div>
+			<div class="form-group">
+				<div id="markdown-editor"></div>
+				<input type="hidden" name="content" id="editor-content" />
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="btn-primary">%s</button>
+				<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
+			</div>
+			<div id="editor-status"></div>
+		</form>
+		<script>
+			(function() {
+				const editor = new toastui.Editor({
+					el: document.querySelector('#markdown-editor'),
+					height: '500px',
+					initialEditType: 'markdown',
+					previewStyle: 'tab',
+					initialValue: %s,
+					theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default'
+				});
+
+				document.querySelector('.file-form').addEventListener('submit', function(e) {
+					document.getElementById('editor-content').value = editor.getMarkdown();
+				});
+			})();
+		</script>
+	`, action,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
+		filePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "section"),
+		sectionID,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "save section"),
+		cancelURL,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
+		jsEscapeString(content))
+}
+
 // RenderTextareaEditorComponent renders a textarea editor component with save/cancel buttons
 func RenderTextareaEditorComponent(filepath, content string) string {
 	cancelURL := "/"
