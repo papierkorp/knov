@@ -40,9 +40,9 @@ func Sprintf(key string, args ...any) string {
 	translated := globalPrinter.Sprintf(key, args...)
 
 	// If translation failed (returns same as input), log it for debugging
-	if translated == key && len(args) == 0 {
-		logging.LogDebug("translation missing for key: %s", key)
-	}
+	// if translated == key && len(args) == 0 {
+	// logging.LogDebug("translation missing for key: %s", key)
+	// }
 
 	return translated
 }
@@ -60,9 +60,9 @@ func SprintfForRequest(lang string, key string, args ...any) string {
 	translated := printer.Sprintf(key, args...)
 
 	// If translation failed, fallback to key
-	if translated == key && len(args) == 0 {
-		logging.LogDebug("translation missing for key: %s (lang: %s)", key, lang)
-	}
+	// if translated == key && len(args) == 0 {
+	// 	logging.LogDebug("translation missing for key: %s (lang: %s)", key, lang)
+	// }
 
 	return translated
 }

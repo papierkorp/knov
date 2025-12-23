@@ -785,9 +785,10 @@ func handleFilterFileContent(w http.ResponseWriter, r *http.Request, filePath, f
 
 func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/files/edit/")
+	sectionID := r.URL.Query().Get("section")
 
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileEditTemplateData(filePath)
+	data := thememanager.NewFileEditTemplateData(filePath, sectionID)
 
 	err := tm.Render(w, "fileedit", data)
 	if err != nil {
