@@ -99,13 +99,13 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	htmlOutput := markdown.ToHTML(content, p, renderer)
 
 	// Post-process to add header edit buttons outside the header tags
-	processedHTML := h.addHeaderEditButtons(string(htmlOutput), filePath)
+	processedHTML := h.addHeaderButtons(string(htmlOutput), filePath)
 
 	return []byte(processedHTML), nil
 }
 
-// addHeaderEditButtons adds edit buttons after header tags using post-processing
-func (h *MarkdownHandler) addHeaderEditButtons(htmlContent, filePath string) string {
+// addHeaderButtons adds edit buttons after header tags using post-processing
+func (h *MarkdownHandler) addHeaderButtons(htmlContent, filePath string) string {
 	// regex to match header tags with IDs
 	headerRegex := regexp.MustCompile(`<h([1-6])\s+id="([^"]+)"[^>]*>(.*?)</h[1-6]>`)
 
@@ -245,50 +245,4 @@ func (h *MarkdownHandler) ExtractSection(content []byte, sectionID string) (stri
 
 	sectionLines := lines[sectionStart:sectionEnd]
 	return strings.Join(sectionLines, "\n"), nil
-}
-
-// ReplaceSectionInMarkdown replaces a section in markdown content
-func (h *MarkdownHandler) ReplaceSectionInMarkdown(content []byte, sectionID, newSectionContent string) ([]byte, error) {
-	text := string(content)
-	lines := strings.Split(text, "\n")
-
-	var sectionStart, sectionEnd int
-	var inSection bool
-	usedIDs := make(map[string]int)
-
-	// find section start and end
-	for i, line := range lines {
-		if strings.HasPrefix(line, "#") {
-			headerText := regexp.MustCompile(`^#+\s*`).ReplaceAllString(line, "")
-			headerText = strings.TrimSpace(headerText)
-			generatedID := utils.GenerateID(headerText, usedIDs)
-
-			if generatedID == sectionID && !inSection {
-				sectionStart = i
-				inSection = true
-				continue
-			}
-
-			if inSection && generatedID != sectionID {
-				sectionEnd = i
-				break
-			}
-		}
-	}
-
-	if !inSection {
-		return nil, fmt.Errorf("section not found: %s", sectionID)
-	}
-
-	if sectionEnd == 0 {
-		sectionEnd = len(lines)
-	}
-
-	// replace section
-	newLines := make([]string, 0, len(lines))
-	newLines = append(newLines, lines[:sectionStart]...)
-	newLines = append(newLines, strings.Split(newSectionContent, "\n")...)
-	newLines = append(newLines, lines[sectionEnd:]...)
-
-	return []byte(strings.Join(newLines, "\n")), nil
 }
