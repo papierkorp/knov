@@ -124,7 +124,6 @@ func StartServerChi() {
 			r.Post("/indexeditor/add-entry", handleAPIAddIndexEntry)
 			r.Post("/filtereditor", handleAPISaveFilterEditor)
 			r.Post("/listeditor", handleAPISaveListEditor)
-
 			r.Post("/tableeditor", handleAPITableEditorSave)
 			r.Get("/tableeditor", handleAPITableEditorForm)
 		})
@@ -215,6 +214,7 @@ func StartServerChi() {
 			r.Get("/lastedited", handleAPIGetMetadataLastEdited)
 			r.Get("/priority", handleAPIGetMetadataPriority)
 			r.Get("/status", handleAPIGetMetadataStatus)
+			r.Get("/targetdate", handleAPIGetMetadataTargetDate)
 
 			r.Post("/collection", handleAPISetMetadataCollection)
 			r.Post("/filetype", handleAPISetMetadataFileType)

@@ -2,6 +2,8 @@
 
 # todo
 
+- edit just a header section instead of the whole file
+- display the content of multiple files (filter) in the dashboard (maybe use display content in filterview)
 - PARA Metadata - should create a folder and if one is selected the other cant be selected
 - mkdir/copy on windows not working
 - if a file is moved (git..) look at linksto and in the target file  change the link
