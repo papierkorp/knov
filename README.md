@@ -2,10 +2,8 @@
 
 # todo
 
-- edit just a header section instead of the whole file
 - display the content of multiple files (filter) in the dashboard (maybe use display content in filterview)
 - PARA Metadata - should create a folder and if one is selected the other cant be selected
-- mkdir/copy on windows not working
 - if a file is moved (git..) look at linksto and in the target file  change the link
 - Dashboard
   - make the positions work with a custom layout work
@@ -23,8 +21,12 @@
   - get metadata for postgres
   - get metadata for yaml header
   - change linkRegex config to names, e.g. obsidian, notion, dokuwiki... instead of a regex? or add one regex string + confignames
+- search
+  - optimise with sqlite.. (same as metadata)
 
 # done
+- edit just a header section instead of the whole file
+- mkdir/copy on windows not working
 - func getEditor(filepath string) -> switch metadata.FileType + handleFileEdit - switch editor
 - add todo filetype
 - [x] users/groups/permissions? - canceled

@@ -205,3 +205,4 @@ config/
 .storage
 .metadata
 metadata
+static/temp_extracted.go
