@@ -4,13 +4,16 @@ package git
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
+	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/logging"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 // GitHistoryFile represents a file in git history
@@ -22,71 +25,94 @@ type GitHistoryFile struct {
 	Message string `json:"message"`
 }
 
+// FileVersion represents a single version of a file
+type FileVersion struct {
+	Commit    string `json:"commit"`
+	Date      string `json:"date"`
+	Message   string `json:"message"`
+	Author    string `json:"author"`
+	IsCurrent bool   `json:"is_current"`
+}
+
+// FileVersionList is a list of file versions
+type FileVersionList []FileVersion
+
+// openRepo opens the git repository
+func openRepo() (*git.Repository, error) {
+	dataDir := configmanager.GetAppConfig().DataPath
+	return git.PlainOpen(dataDir)
+}
+
 // GetRecentlyChangedFiles returns list of recently changed files
 func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
-	dataDir := configmanager.GetAppConfig().DataPath
-	cmd := exec.Command("git", "log", "--oneline", "--name-only", "--pretty=format:%h|%ad|%s", "--date=short", "-n", strconv.Itoa(count))
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
+	repo, err := openRepo()
 	if err != nil {
-		logging.LogError("failed to get git history: %v, output: %s", err, string(output))
+		logging.LogError("failed to open git repository: %v", err)
 		return nil, err
 	}
 
-	var files []GitHistoryFile
-	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-
-	var currentCommit, currentDate, currentMessage string
-	for _, line := range lines {
-		if strings.Contains(line, "|") {
-			parts := strings.SplitN(line, "|", 3)
-			if len(parts) == 3 {
-				currentCommit = parts[0]
-				currentDate = parts[1]
-				currentMessage = parts[2]
-			}
-		} else if line != "" {
-			files = append(files, GitHistoryFile{
-				Name:    strings.Split(line, "/")[len(strings.Split(line, "/"))-1],
-				Path:    dataDir + "/" + line,
-				Commit:  currentCommit,
-				Date:    currentDate,
-				Message: currentMessage,
-			})
-		}
+	ref, err := repo.Head()
+	if err != nil {
+		return nil, err
 	}
 
-	return files, nil
+	iter, err := repo.Log(&git.LogOptions{From: ref.Hash()})
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	var files []GitHistoryFile
+	dataDir := configmanager.GetAppConfig().DataPath
+	commitCount := 0
+
+	err = iter.ForEach(func(c *object.Commit) error {
+		if commitCount >= count {
+			return nil
+		}
+
+		stats, err := c.Stats()
+		if err != nil {
+			return err
+		}
+
+		for _, stat := range stats {
+			files = append(files, GitHistoryFile{
+				Name:    filepath.Base(stat.Name),
+				Path:    filepath.Join(dataDir, stat.Name),
+				Commit:  c.Hash.String()[:7],
+				Date:    c.Author.When.Format("2006-01-02"),
+				Message: c.Message,
+			})
+		}
+		commitCount++
+		return nil
+	})
+
+	return files, err
 }
 
 // GetUntrackedFiles returns list of untracked files in git
 func GetUntrackedFiles() ([]string, error) {
-	dataDir := configmanager.GetAppConfig().DataPath
-
-	// check if git repo exists
-	gitDir := filepath.Join(dataDir, ".git")
-	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
+	repo, err := openRepo()
+	if err != nil {
 		logging.LogDebug("no git repository found")
 		return nil, nil
 	}
 
-	// git ls-files --others --exclude-standard
-	cmd := exec.Command("git", "ls-files", "--others", "--exclude-standard")
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
+	worktree, err := repo.Worktree()
 	if err != nil {
-		logging.LogError("failed to list untracked files: %v, output: %s", err, string(output))
 		return nil, err
 	}
 
-	if len(output) == 0 {
-		return nil, nil
+	status, err := worktree.Status()
+	if err != nil {
+		return nil, err
 	}
 
-	files := strings.Split(strings.TrimSpace(string(output)), "\n")
 	var untrackedFiles []string
-	for _, file := range files {
-		if file != "" {
+	for file, fileStatus := range status {
+		if fileStatus.Staging == git.Untracked && fileStatus.Worktree == git.Untracked {
 			untrackedFiles = append(untrackedFiles, file)
 		}
 	}
@@ -96,9 +122,6 @@ func GetUntrackedFiles() ([]string, error) {
 
 // AddNewFiles adds all untracked files in the data directory to git
 func AddNewFiles() ([]string, error) {
-	dataDir := configmanager.GetAppConfig().DataPath
-
-	// get list of untracked files before adding
 	untrackedFiles, err := GetUntrackedFiles()
 	if err != nil {
 		return nil, err
@@ -111,26 +134,565 @@ func AddNewFiles() ([]string, error) {
 
 	logging.LogInfo("found %d untracked files", len(untrackedFiles))
 
-	// git add .
-	cmd := exec.Command("git", "add", ".")
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
+	repo, err := openRepo()
 	if err != nil {
-		logging.LogError("failed to add files to git: %v, output: %s", err, string(output))
+		return nil, err
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return nil, err
+	}
+
+	// add all files
+	_, err = worktree.Add(".")
+	if err != nil {
+		logging.LogError("failed to add files to git: %v", err)
 		return nil, err
 	}
 
 	// commit changes
-	cmd = exec.Command("git", "commit", "-m", "auto-commit: new files added")
-	cmd.Dir = dataDir
-	output, err = cmd.CombinedOutput()
+	_, err = worktree.Commit("auto-commit: new files added", &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  "knov",
+			Email: "knov@localhost",
+			When:  time.Now(),
+		},
+	})
 	if err != nil {
-		logging.LogError("failed to commit files: %v, output: %s", err, string(output))
+		logging.LogError("failed to commit files: %v", err)
 		return nil, err
 	}
 
 	logging.LogInfo("auto-committed %d new files to git", len(untrackedFiles))
 	return untrackedFiles, nil
+}
+
+// CommitDeletedFiles commits all deleted files
+func CommitDeletedFiles(deletedFiles []string) error {
+	if len(deletedFiles) == 0 {
+		return nil
+	}
+
+	repo, err := openRepo()
+	if err != nil {
+		return err
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return err
+	}
+
+	// add deletions to staging
+	for _, file := range deletedFiles {
+		_, err = worktree.Add(file)
+		if err != nil {
+			logging.LogError("failed to stage deleted file %s: %v", file, err)
+			continue
+		}
+	}
+
+	// commit deletions
+	_, err = worktree.Commit("auto-commit: files deleted", &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  "knov",
+			Email: "knov@localhost",
+			When:  time.Now(),
+		},
+	})
+	if err != nil {
+		logging.LogError("failed to commit deleted files: %v", err)
+		return err
+	}
+
+	logging.LogInfo("auto-committed %d deleted files to git", len(deletedFiles))
+	return nil
+}
+
+// CommitModifiedFiles commits all modified files
+func CommitModifiedFiles(modifiedFiles []string) error {
+	if len(modifiedFiles) == 0 {
+		return nil
+	}
+
+	repo, err := openRepo()
+	if err != nil {
+		return err
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return err
+	}
+
+	// add modified files to staging
+	for _, file := range modifiedFiles {
+		_, err = worktree.Add(file)
+		if err != nil {
+			logging.LogError("failed to stage modified file %s: %v", file, err)
+			continue
+		}
+	}
+
+	// commit modifications
+	_, err = worktree.Commit("auto-commit: files modified", &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  "knov",
+			Email: "knov@localhost",
+			When:  time.Now(),
+		},
+	})
+	if err != nil {
+		logging.LogError("failed to commit modified files: %v", err)
+		return err
+	}
+
+	logging.LogInfo("auto-committed %d modified files to git", len(modifiedFiles))
+	return nil
+}
+
+// GetFileHistory returns the git history for a specific file
+func GetFileHistory(filePath string) ([]FileVersion, error) {
+	repo, err := openRepo()
+	if err != nil {
+		return nil, err
+	}
+
+	dataDir := configmanager.GetAppConfig().DataPath
+	relPath, err := filepath.Rel(dataDir, filePath)
+	if err != nil {
+		relPath = filePath
+	}
+
+	ref, err := repo.Head()
+	if err != nil {
+		return nil, err
+	}
+
+	iter, err := repo.Log(&git.LogOptions{
+		From:     ref.Hash(),
+		FileName: &relPath,
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	var versions []FileVersion
+	err = iter.ForEach(func(c *object.Commit) error {
+		versions = append(versions, FileVersion{
+			Commit:    c.Hash.String()[:7],
+			Date:      c.Author.When.Format("2006-01-02"),
+			Message:   c.Message,
+			Author:    c.Author.Name,
+			IsCurrent: false,
+		})
+		return nil
+	})
+
+	// mark the first (most recent) as current
+	if len(versions) > 0 {
+		versions[0].IsCurrent = true
+	}
+
+	return versions, err
+}
+
+// GetCurrentCommit returns the current HEAD commit hash
+func GetCurrentCommit() (string, error) {
+	repo, err := openRepo()
+	if err != nil {
+		return "", nil
+	}
+
+	ref, err := repo.Head()
+	if err != nil {
+		logging.LogError("failed to get current commit: %v", err)
+		return "", err
+	}
+
+	return ref.Hash().String(), nil
+}
+
+// GetFilesChangedSinceCommit returns files that changed since a specific commit
+func GetFilesChangedSinceCommit(lastCommit string) ([]string, error) {
+	repo, err := openRepo()
+	if err != nil {
+		return nil, err
+	}
+
+	if lastCommit == "" {
+		// if no last commit, return all files
+		ref, err := repo.Head()
+		if err != nil {
+			return nil, err
+		}
+
+		commit, err := repo.CommitObject(ref.Hash())
+		if err != nil {
+			return nil, err
+		}
+
+		tree, err := commit.Tree()
+		if err != nil {
+			return nil, err
+		}
+
+		var allFiles []string
+		err = tree.Files().ForEach(func(f *object.File) error {
+			allFiles = append(allFiles, f.Name)
+			return nil
+		})
+
+		return allFiles, err
+	}
+
+	// validate that the commit exists before using it
+	if !CommitExists(lastCommit) {
+		logging.LogWarning("commit %s no longer exists, resetting to process all files", lastCommit)
+		if err := SetLastProcessedCommit(""); err != nil {
+			logging.LogError("failed to reset last processed commit: %v", err)
+		}
+		return GetFilesChangedSinceCommit("")
+	}
+
+	// get current HEAD
+	ref, err := repo.Head()
+	if err != nil {
+		return nil, err
+	}
+
+	lastCommitHash, err := expandCommitHash(repo, lastCommit)
+	if err != nil {
+		logging.LogWarning("commit %s no longer exists, resetting to process all files: %v", lastCommit, err)
+		if err := SetLastProcessedCommit(""); err != nil {
+			logging.LogError("failed to reset last processed commit: %v", err)
+		}
+		return GetFilesChangedSinceCommit("")
+	}
+
+	headCommit, err := repo.CommitObject(ref.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	lastCommitObj, err := repo.CommitObject(lastCommitHash)
+	if err != nil {
+		return nil, err
+	}
+
+	headTree, err := headCommit.Tree()
+	if err != nil {
+		return nil, err
+	}
+
+	lastTree, err := lastCommitObj.Tree()
+	if err != nil {
+		return nil, err
+	}
+
+	changes, err := object.DiffTree(lastTree, headTree)
+	if err != nil {
+		return nil, err
+	}
+
+	var changedFiles []string
+	for _, change := range changes {
+		name := change.To.Name
+		if name == "" {
+			name = change.From.Name
+		}
+		if name != "" {
+			changedFiles = append(changedFiles, name)
+		}
+	}
+
+	return changedFiles, nil
+}
+
+// GetDeletedFilesSinceCommit returns files that were deleted since a specific commit
+func GetDeletedFilesSinceCommit(lastCommit string) ([]string, error) {
+	repo, err := openRepo()
+	if err != nil {
+		return nil, err
+	}
+
+	if lastCommit == "" {
+		return nil, nil
+	}
+
+	if !CommitExists(lastCommit) {
+		logging.LogWarning("commit %s no longer exists, cannot check for deleted files", lastCommit)
+		if err := SetLastProcessedCommit(""); err != nil {
+			logging.LogError("failed to reset last processed commit: %v", err)
+		}
+		return nil, nil
+	}
+
+	ref, err := repo.Head()
+	if err != nil {
+		return nil, err
+	}
+
+	lastCommitHash, err := expandCommitHash(repo, lastCommit)
+	if err != nil {
+		logging.LogWarning("commit %s no longer exists, cannot check for deleted files: %v", lastCommit, err)
+		if err := SetLastProcessedCommit(""); err != nil {
+			logging.LogError("failed to reset last processed commit: %v", err)
+		}
+		return nil, nil
+	}
+
+	headCommit, err := repo.CommitObject(ref.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	lastCommitObj, err := repo.CommitObject(lastCommitHash)
+	if err != nil {
+		return nil, err
+	}
+
+	headTree, err := headCommit.Tree()
+	if err != nil {
+		return nil, err
+	}
+
+	lastTree, err := lastCommitObj.Tree()
+	if err != nil {
+		return nil, err
+	}
+
+	changes, err := object.DiffTree(lastTree, headTree)
+	if err != nil {
+		return nil, err
+	}
+
+	var deletedFiles []string
+	for _, change := range changes {
+		if change.To.Name == "" && change.From.Name != "" {
+			deletedFiles = append(deletedFiles, change.From.Name)
+		}
+	}
+
+	return deletedFiles, nil
+}
+
+// GetUncommittedDeletedFiles returns files that are deleted but not yet committed
+func GetUncommittedDeletedFiles() ([]string, error) {
+	repo, err := openRepo()
+	if err != nil {
+		logging.LogDebug("no git repository found")
+		return nil, nil
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return nil, err
+	}
+
+	status, err := worktree.Status()
+	if err != nil {
+		return nil, err
+	}
+
+	var deletedFiles []string
+	for file, fileStatus := range status {
+		if fileStatus.Staging == git.Deleted || fileStatus.Worktree == git.Deleted {
+			deletedFiles = append(deletedFiles, file)
+		}
+	}
+
+	return deletedFiles, nil
+}
+
+// GetModifiedFiles returns files that are modified but not yet committed
+func GetModifiedFiles() ([]string, error) {
+	repo, err := openRepo()
+	if err != nil {
+		logging.LogDebug("no git repository found")
+		return nil, nil
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return nil, err
+	}
+
+	status, err := worktree.Status()
+	if err != nil {
+		return nil, err
+	}
+
+	var modifiedFiles []string
+	for file, fileStatus := range status {
+		if fileStatus.Staging == git.Modified || fileStatus.Worktree == git.Modified {
+			modifiedFiles = append(modifiedFiles, file)
+		}
+	}
+
+	return modifiedFiles, nil
+}
+
+// RestoreFileToCommit restores a file to a specific commit
+func RestoreFileToCommit(filePath, commit string) error {
+	repo, err := openRepo()
+	if err != nil {
+		return err
+	}
+
+	dataDir := configmanager.GetAppConfig().DataPath
+	relPath, err := filepath.Rel(dataDir, filePath)
+	if err != nil {
+		relPath = filePath
+	}
+
+	commitHash, err := expandCommitHash(repo, commit)
+	if err != nil {
+		logging.LogError("failed to find commit %s: %v", commit, err)
+		return err
+	}
+
+	commitObj, err := repo.CommitObject(commitHash)
+	if err != nil {
+		logging.LogError("failed to get commit %s: %v", commit, err)
+		return err
+	}
+
+	tree, err := commitObj.Tree()
+	if err != nil {
+		return err
+	}
+
+	file, err := tree.File(relPath)
+	if err != nil {
+		logging.LogError("failed to get file %s from commit %s: %v", relPath, commit, err)
+		return err
+	}
+
+	content, err := file.Contents()
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(filePath, []byte(content), 0644)
+	if err != nil {
+		return err
+	}
+
+	// add and commit the restored file
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return err
+	}
+
+	_, err = worktree.Add(relPath)
+	if err != nil {
+		logging.LogError("failed to add restored file %s: %v", relPath, err)
+		return err
+	}
+
+	commitMessage := fmt.Sprintf("restore %s to commit %s", relPath, commit)
+	_, err = worktree.Commit(commitMessage, &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  "knov",
+			Email: "knov@localhost",
+			When:  time.Now(),
+		},
+	})
+	if err != nil {
+		logging.LogError("failed to commit restored file %s: %v", relPath, err)
+		return err
+	}
+
+	logging.LogInfo("restored file %s to commit %s and logged the change", relPath, commit)
+	return nil
+}
+
+// GetCommitDetails returns details for a specific commit
+func GetCommitDetails(commit string) (string, string, error) {
+	repo, err := openRepo()
+	if err != nil {
+		return "", "", err
+	}
+
+	commitHash, err := expandCommitHash(repo, commit)
+	if err != nil {
+		logging.LogError("failed to find commit %s: %v", commit, err)
+		return "", "", err
+	}
+
+	commitObj, err := repo.CommitObject(commitHash)
+	if err != nil {
+		logging.LogError("failed to get commit details for %s: %v", commit, err)
+		return "", "", err
+	}
+
+	date := commitObj.Author.When.Format("2006-01-02")
+	message := strings.TrimSpace(commitObj.Message)
+
+	return date, message, nil
+}
+
+// CommitExists checks if a commit hash exists in the repository
+func CommitExists(commit string) bool {
+	if commit == "" {
+		return false
+	}
+
+	repo, err := openRepo()
+	if err != nil {
+		return false
+	}
+
+	// Handle short commit hashes by expanding to full hash
+	fullHash, err := expandCommitHash(repo, commit)
+	if err != nil {
+		return false
+	}
+
+	_, err = repo.CommitObject(fullHash)
+	return err == nil
+}
+
+// expandCommitHash expands a short commit hash to a full hash
+func expandCommitHash(repo *git.Repository, shortHash string) (plumbing.Hash, error) {
+	// If it's already a full hash, return it
+	if len(shortHash) == 40 {
+		return plumbing.NewHash(shortHash), nil
+	}
+
+	// Get all commit objects and find matching prefix
+	iter, err := repo.CommitObjects()
+	if err != nil {
+		return plumbing.Hash{}, err
+	}
+	defer iter.Close()
+
+	var matchedHash plumbing.Hash
+	matchCount := 0
+
+	err = iter.ForEach(func(c *object.Commit) error {
+		if strings.HasPrefix(c.Hash.String(), shortHash) {
+			matchedHash = c.Hash
+			matchCount++
+			if matchCount > 1 {
+				return fmt.Errorf("ambiguous commit hash: %s", shortHash)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return plumbing.Hash{}, err
+	}
+
+	if matchCount == 0 {
+		return plumbing.Hash{}, fmt.Errorf("commit not found: %s", shortHash)
+	}
+
+	return matchedHash, nil
 }
 
 // GetLastProcessedCommit returns the last commit that was processed for metadata
@@ -154,439 +716,133 @@ func SetLastProcessedCommit(commitHash string) error {
 	return os.WriteFile(commitFile, []byte(commitHash), 0644)
 }
 
-// GetCurrentCommit returns the current HEAD commit hash
-func GetCurrentCommit() (string, error) {
-	dataDir := configmanager.GetAppConfig().DataPath
-
-	// check if git repo exists
-	gitDir := filepath.Join(dataDir, ".git")
-	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
-		return "", nil
-	}
-
-	cmd := exec.Command("git", "rev-parse", "HEAD")
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
+// GetFileAtCommit returns the content of a file at a specific commit
+func GetFileAtCommit(filePath, commit string) (string, error) {
+	repo, err := openRepo()
 	if err != nil {
-		logging.LogError("failed to get current commit: %v, output: %s", err, string(output))
 		return "", err
 	}
 
-	return strings.TrimSpace(string(output)), nil
-}
-
-// GetFilesChangedSinceCommit returns files that changed since a specific commit
-func GetFilesChangedSinceCommit(lastCommit string) ([]string, error) {
 	dataDir := configmanager.GetAppConfig().DataPath
-
-	if lastCommit == "" {
-		// if no last commit, return all files
-		cmd := exec.Command("git", "ls-files")
-		cmd.Dir = dataDir
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			logging.LogError("failed to list all files: %v, output: %s", err, string(output))
-			return nil, err
-		}
-
-		if len(output) == 0 {
-			return nil, nil
-		}
-
-		files := strings.Split(strings.TrimSpace(string(output)), "\n")
-		var allFiles []string
-		for _, file := range files {
-			if file != "" {
-				allFiles = append(allFiles, file)
-			}
-		}
-		return allFiles, nil
-	}
-
-	// validate that the commit exists before using it
-	if !CommitExists(lastCommit) {
-		logging.LogWarning("commit %s no longer exists, resetting to process all files", lastCommit)
-		// reset the last processed commit since it's invalid
-		if err := SetLastProcessedCommit(""); err != nil {
-			logging.LogError("failed to reset last processed commit: %v", err)
-		}
-		// return all files to reprocess everything
-		return GetFilesChangedSinceCommit("")
-	}
-
-	// get files changed between lastCommit and HEAD
-	cmd := exec.Command("git", "diff", "--name-only", lastCommit+"..HEAD")
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logging.LogError("failed to get changed files: %v, output: %s", err, string(output))
-		return nil, err
-	}
-
-	if len(output) == 0 {
-		return nil, nil
-	}
-
-	files := strings.Split(strings.TrimSpace(string(output)), "\n")
-	var changedFiles []string
-	for _, file := range files {
-		if file != "" {
-			changedFiles = append(changedFiles, file)
-		}
-	}
-
-	return changedFiles, nil
-}
-
-// GetDeletedFilesSinceCommit returns files that were deleted since a specific commit
-func GetDeletedFilesSinceCommit(lastCommit string) ([]string, error) {
-	dataDir := configmanager.GetAppConfig().DataPath
-
-	if lastCommit == "" {
-		// no deleted files if no previous commit
-		return nil, nil
-	}
-
-	// validate that the commit exists before using it
-	if !CommitExists(lastCommit) {
-		logging.LogWarning("commit %s no longer exists, cannot check for deleted files", lastCommit)
-		// reset the last processed commit since it's invalid
-		if err := SetLastProcessedCommit(""); err != nil {
-			logging.LogError("failed to reset last processed commit: %v", err)
-		}
-		return nil, nil
-	}
-
-	// get deleted files between lastCommit and HEAD
-	cmd := exec.Command("git", "diff", "--name-only", "--diff-filter=D", lastCommit+"..HEAD")
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logging.LogError("failed to get deleted files: %v, output: %s", err, string(output))
-		return nil, err
-	}
-
-	if len(output) == 0 {
-		return nil, nil
-	}
-
-	files := strings.Split(strings.TrimSpace(string(output)), "\n")
-	var deletedFiles []string
-	for _, file := range files {
-		if file != "" {
-			deletedFiles = append(deletedFiles, file)
-		}
-	}
-
-	return deletedFiles, nil
-}
-
-// GetUncommittedDeletedFiles returns files that are deleted but not yet committed
-func GetUncommittedDeletedFiles() ([]string, error) {
-	dataDir := configmanager.GetAppConfig().DataPath
-
-	// check if git repo exists
-	gitDir := filepath.Join(dataDir, ".git")
-	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
-		logging.LogDebug("no git repository found")
-		return nil, nil
-	}
-
-	// git ls-files --deleted
-	cmd := exec.Command("git", "ls-files", "--deleted")
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logging.LogError("failed to list deleted files: %v, output: %s", err, string(output))
-		return nil, err
-	}
-
-	if len(output) == 0 {
-		return nil, nil
-	}
-
-	files := strings.Split(strings.TrimSpace(string(output)), "\n")
-	var deletedFiles []string
-	for _, file := range files {
-		if file != "" {
-			deletedFiles = append(deletedFiles, file)
-		}
-	}
-
-	return deletedFiles, nil
-}
-
-// GetModifiedFiles returns files that are modified but not yet committed
-func GetModifiedFiles() ([]string, error) {
-	dataDir := configmanager.GetAppConfig().DataPath
-
-	// check if git repo exists
-	gitDir := filepath.Join(dataDir, ".git")
-	if _, err := os.Stat(gitDir); os.IsNotExist(err) {
-		logging.LogDebug("no git repository found")
-		return nil, nil
-	}
-
-	// git ls-files --modified
-	cmd := exec.Command("git", "ls-files", "--modified")
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logging.LogError("failed to list modified files: %v, output: %s", err, string(output))
-		return nil, err
-	}
-
-	if len(output) == 0 {
-		return nil, nil
-	}
-
-	files := strings.Split(strings.TrimSpace(string(output)), "\n")
-	var modifiedFiles []string
-	for _, file := range files {
-		if file != "" {
-			modifiedFiles = append(modifiedFiles, file)
-		}
-	}
-
-	return modifiedFiles, nil
-}
-
-// CommitDeletedFiles commits all deleted files
-func CommitDeletedFiles(deletedFiles []string) error {
-	if len(deletedFiles) == 0 {
-		return nil
-	}
-
-	dataDir := configmanager.GetAppConfig().DataPath
-
-	// git add -u (add all deletions)
-	cmd := exec.Command("git", "add", "-u")
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logging.LogError("failed to stage deleted files: %v, output: %s", err, string(output))
-		return err
-	}
-
-	// commit deletions
-	cmd = exec.Command("git", "commit", "-m", "auto-commit: files deleted")
-	cmd.Dir = dataDir
-	output, err = cmd.CombinedOutput()
-	if err != nil {
-		logging.LogError("failed to commit deleted files: %v, output: %s", err, string(output))
-		return err
-	}
-
-	logging.LogInfo("auto-committed %d deleted files to git", len(deletedFiles))
-	return nil
-}
-
-// CommitModifiedFiles commits all modified files
-func CommitModifiedFiles(modifiedFiles []string) error {
-	if len(modifiedFiles) == 0 {
-		return nil
-	}
-
-	dataDir := configmanager.GetAppConfig().DataPath
-
-	// stage all modified files
-	args := append([]string{"add"}, modifiedFiles...)
-	cmd := exec.Command("git", args...)
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logging.LogError("failed to stage modified files: %v, output: %s", err, string(output))
-		return err
-	}
-
-	// commit modifications
-	cmd = exec.Command("git", "commit", "-m", "auto-commit: files modified")
-	cmd.Dir = dataDir
-	output, err = cmd.CombinedOutput()
-	if err != nil {
-		logging.LogError("failed to commit modified files: %v, output: %s", err, string(output))
-		return err
-	}
-
-	logging.LogInfo("auto-committed %d modified files to git", len(modifiedFiles))
-	return nil
-}
-
-// FileVersion represents a single version of a file
-type FileVersion struct {
-	Commit    string `json:"commit"`
-	Date      string `json:"date"`
-	Message   string `json:"message"`
-	Author    string `json:"author"`
-	IsCurrent bool   `json:"is_current"`
-}
-
-// FileVersionList is a list of file versions
-type FileVersionList []FileVersion
-
-// GetFileHistory returns the git history for a specific file
-func GetFileHistory(filePath string) ([]FileVersion, error) {
-	dataDir := configmanager.GetAppConfig().DataPath
-
-	// get relative path from data directory
 	relPath, err := filepath.Rel(dataDir, filePath)
 	if err != nil {
 		relPath = filePath
 	}
 
-	cmd := exec.Command("git", "log", "--pretty=format:%h|%ad|%s|%an", "--date=short", "--follow", "--", relPath)
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
+	// Expand short commit hash to full hash
+	commitHash, err := expandCommitHash(repo, commit)
 	if err != nil {
-		logging.LogError("failed to get file history for %s: %v, output: %s", relPath, err, string(output))
-		return nil, err
-	}
-
-	var versions []FileVersion
-	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-
-	currentCommit, _ := GetCurrentCommit()
-
-	for _, line := range lines {
-		if line == "" {
-			continue
-		}
-		parts := strings.SplitN(line, "|", 4)
-		if len(parts) == 4 {
-			isCurrent := parts[0] == currentCommit[:len(parts[0])]
-			versions = append(versions, FileVersion{
-				Commit:    parts[0],
-				Date:      parts[1],
-				Message:   parts[2],
-				Author:    parts[3],
-				IsCurrent: isCurrent,
-			})
-		}
-	}
-
-	return versions, nil
-}
-
-// GetFileAtCommit returns the content of a file at a specific commit
-func GetFileAtCommit(filePath, commit string) (string, error) {
-	dataDir := configmanager.GetAppConfig().DataPath
-
-	// validate that the commit exists before trying to access it
-	if !CommitExists(commit) {
-		logging.LogWarning("commit %s does not exist for file %s", commit, filePath)
+		logging.LogWarning("commit %s does not exist for file %s: %v", commit, filePath, err)
 		return "", fmt.Errorf("commit %s not found", commit)
 	}
 
-	// get relative path from data directory
-	relPath, err := filepath.Rel(dataDir, filePath)
+	commitObj, err := repo.CommitObject(commitHash)
 	if err != nil {
-		relPath = filePath
-	}
-
-	cmd := exec.Command("git", "show", commit+":"+relPath)
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logging.LogError("failed to get file at commit %s for %s: %v, output: %s", commit, relPath, err, string(output))
 		return "", err
 	}
 
-	return string(output), nil
+	tree, err := commitObj.Tree()
+	if err != nil {
+		return "", err
+	}
+
+	file, err := tree.File(relPath)
+	if err != nil {
+		logging.LogError("failed to get file %s at commit %s: %v", relPath, commit, err)
+		return "", err
+	}
+
+	content, err := file.Contents()
+	if err != nil {
+		return "", err
+	}
+
+	return content, nil
 }
 
 // GetFileDiff returns the diff between two commits for a file
 func GetFileDiff(filePath, fromCommit, toCommit string) (string, error) {
-	dataDir := configmanager.GetAppConfig().DataPath
-
-	// get relative path from data directory
-	relPath, err := filepath.Rel(dataDir, filePath)
+	repo, err := openRepo()
 	if err != nil {
-		relPath = filePath
-	}
-
-	cmd := exec.Command("git", "diff", fromCommit+".."+toCommit, "--", relPath)
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logging.LogError("failed to get diff for %s between %s and %s: %v, output: %s", relPath, fromCommit, toCommit, err, string(output))
 		return "", err
 	}
 
-	return string(output), nil
-}
-
-// RestoreFileToCommit restores a file to a specific commit
-func RestoreFileToCommit(filePath, commit string) error {
 	dataDir := configmanager.GetAppConfig().DataPath
-
-	// get relative path from data directory
 	relPath, err := filepath.Rel(dataDir, filePath)
 	if err != nil {
 		relPath = filePath
 	}
 
-	cmd := exec.Command("git", "checkout", commit, "--", relPath)
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
+	// Handle "previous" parameter
+	if toCommit == "previous" {
+		// Get the parent of fromCommit
+		fromHash, err := expandCommitHash(repo, fromCommit)
+		if err != nil {
+			return "", fmt.Errorf("failed to find commit %s: %v", fromCommit, err)
+		}
+
+		fromCommitObj, err := repo.CommitObject(fromHash)
+		if err != nil {
+			return "", err
+		}
+
+		parents := fromCommitObj.Parents()
+		defer parents.Close()
+
+		parentCommit, err := parents.Next()
+		if err != nil {
+			// No parent commit (probably the initial commit)
+			return "", fmt.Errorf("no parent commit found for %s", fromCommit)
+		}
+
+		toCommit = parentCommit.Hash.String()
+	}
+
+	// Expand commit hashes
+	fromCommitHash, err := expandCommitHash(repo, fromCommit)
 	if err != nil {
-		logging.LogError("failed to restore file %s to commit %s: %v, output: %s", relPath, commit, err, string(output))
-		return err
+		return "", fmt.Errorf("failed to find commit %s: %v", fromCommit, err)
 	}
 
-	// add and commit the restored file
-	cmd = exec.Command("git", "add", relPath)
-	cmd.Dir = dataDir
-	addOutput, err := cmd.CombinedOutput()
+	toCommitHash, err := expandCommitHash(repo, toCommit)
 	if err != nil {
-		logging.LogError("failed to add restored file %s: %v, output: %s", relPath, err, string(addOutput))
-		return err
+		return "", fmt.Errorf("failed to find commit %s: %v", toCommit, err)
 	}
 
-	// commit the restoration with descriptive message
-	commitMessage := fmt.Sprintf("restore %s to commit %s", relPath, commit)
-	cmd = exec.Command("git", "commit", "-m", commitMessage)
-	cmd.Dir = dataDir
-	commitOutput, err := cmd.CombinedOutput()
+	fromCommitObj, err := repo.CommitObject(fromCommitHash)
 	if err != nil {
-		logging.LogError("failed to commit restored file %s: %v, output: %s", relPath, err, string(commitOutput))
-		return err
+		return "", err
 	}
 
-	logging.LogInfo("restored file %s to commit %s and logged the change", relPath, commit)
-	return nil
-}
-
-// GetCommitDetails returns details for a specific commit
-func GetCommitDetails(commit string) (string, string, error) {
-	dataDir := configmanager.GetAppConfig().DataPath
-
-	cmd := exec.Command("git", "log", "--pretty=format:%ad|%s", "--date=short", "-1", commit)
-	cmd.Dir = dataDir
-	output, err := cmd.CombinedOutput()
+	toCommitObj, err := repo.CommitObject(toCommitHash)
 	if err != nil {
-		logging.LogError("failed to get commit details for %s: %v, output: %s", commit, err, string(output))
-		return "", "", err
+		return "", err
 	}
 
-	parts := strings.SplitN(strings.TrimSpace(string(output)), "|", 2)
-	if len(parts) == 2 {
-		return parts[0], parts[1], nil // date, message
+	fromTree, err := fromCommitObj.Tree()
+	if err != nil {
+		return "", err
 	}
 
-	return "", "", fmt.Errorf("could not parse commit details")
-}
-
-// CommitExists checks if a commit hash exists in the repository
-func CommitExists(commit string) bool {
-	if commit == "" {
-		return false
+	toTree, err := toCommitObj.Tree()
+	if err != nil {
+		return "", err
 	}
 
-	dataDir := configmanager.GetAppConfig().DataPath
+	changes, err := object.DiffTree(fromTree, toTree)
+	if err != nil {
+		return "", err
+	}
 
-	cmd := exec.Command("git", "cat-file", "-e", commit)
-	cmd.Dir = dataDir
-	err := cmd.Run()
+	for _, change := range changes {
+		if change.To.Name == relPath || change.From.Name == relPath {
+			patch, err := change.Patch()
+			if err != nil {
+				return "", err
+			}
+			return patch.String(), nil
+		}
+	}
 
-	return err == nil
+	return "", fmt.Errorf("no changes found for file %s between commits", relPath)
 }

@@ -4,12 +4,13 @@ package configmanager
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
 
 	"knov/internal/logging"
+
+	"github.com/go-git/go-git/v5"
 )
 
 // -----------------------------------------------------------------------------
@@ -131,16 +132,17 @@ func InitGitRepository() error {
 	}
 
 	if appConfig.GitRepoURL != "" {
-		cmd := exec.Command("git", "clone", appConfig.GitRepoURL, dataPath)
-		if err := cmd.Run(); err != nil {
+		_, err := git.PlainClone(dataPath, false, &git.CloneOptions{
+			URL: appConfig.GitRepoURL,
+		})
+		if err != nil {
 			logging.LogError("failed to clone repository: %v", err)
 			return err
 		}
 		logging.LogInfo("git repository cloned from %s to %s", appConfig.GitRepoURL, dataPath)
 	} else {
-		cmd := exec.Command("git", "init")
-		cmd.Dir = dataPath
-		if err := cmd.Run(); err != nil {
+		_, err := git.PlainInit(dataPath, false)
+		if err != nil {
 			logging.LogError("failed to initialize git repository: %v", err)
 			return err
 		}

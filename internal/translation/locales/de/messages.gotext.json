@@ -612,6 +612,16 @@
       "translation": "Dashboard bearbeiten"
     },
     {
+      "id": "edit section",
+      "message": "edit section",
+      "translation": ""
+    },
+    {
+      "id": "Edit Section",
+      "message": "Edit Section",
+      "translation": ""
+    },
+    {
       "id": "edit table",
       "message": "edit table",
       "translation": ""
@@ -1197,6 +1207,11 @@
       "translation": ""
     },
     {
+      "id": "in",
+      "message": "in",
+      "translation": ""
+    },
+    {
       "id": "Inactive items",
       "message": "Inactive items",
       "translation": ""
@@ -1564,6 +1579,11 @@
     {
       "id": "missing metadata or value parameter",
       "message": "missing metadata or value parameter",
+      "translation": ""
+    },
+    {
+      "id": "missing section id",
+      "message": "missing section id",
       "translation": ""
     },
     {
@@ -2127,6 +2147,11 @@
       "translation": ""
     },
     {
+      "id": "save section",
+      "message": "save section",
+      "translation": ""
+    },
+    {
       "id": "scanning .gohtml template files...",
       "message": "scanning .gohtml template files...",
       "translation": ""
@@ -2150,6 +2175,16 @@
       "id": "Search Results",
       "message": "Search Results",
       "translation": "Suchergebnisse"
+    },
+    {
+      "id": "section",
+      "message": "section",
+      "translation": ""
+    },
+    {
+      "id": "section saved successfully",
+      "message": "section saved successfully",
+      "translation": ""
     },
     {
       "id": "select a file...",

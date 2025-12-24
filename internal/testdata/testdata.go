@@ -4,7 +4,6 @@ package testdata
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -13,6 +12,9 @@ import (
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/utils"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 // SetupTestData creates test files and git operations
@@ -63,13 +65,25 @@ func copyTestFiles() error {
 		return err
 	}
 
-	cmd := exec.Command("cp", "-r", "internal/testdata/testfiles/.", dataPath+"/")
-	if err := cmd.Run(); err != nil {
-		logging.LogError("failed to copy test files: %v", err)
-		return err
-	}
+	srcDir := "internal/testdata/testfiles"
+	return filepath.WalkDir(srcDir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 
-	return nil
+		relPath, err := filepath.Rel(srcDir, path)
+		if err != nil {
+			return err
+		}
+
+		destPath := filepath.Join(dataPath, relPath)
+
+		if d.IsDir() {
+			return os.MkdirAll(destPath, 0755)
+		}
+
+		return utils.CopyFile(path, destPath)
+	})
 }
 
 func createTestStructure() error {
@@ -155,24 +169,56 @@ func createGitOperations(commitMessage string) error {
 	}
 
 	dataDir := configmanager.GetAppConfig().DataPath
+	repo, err := git.PlainOpen(dataDir)
+	if err != nil {
+		return err
+	}
 
-	cmd := exec.Command("git", "add", ".")
-	cmd.Dir = dataDir
-	cmd.Run()
-	cmd = exec.Command("git", "commit", "-m", commitMessage, "--allow-empty")
-	cmd.Dir = dataDir
-	cmd.Run()
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return err
+	}
+
+	// add all files
+	_, err = worktree.Add(".")
+	if err != nil {
+		logging.LogError("failed to add files: %v", err)
+	}
+
+	// commit with provided message
+	_, err = worktree.Commit(commitMessage, &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  "knov",
+			Email: "knov@localhost",
+			When:  time.Now(),
+		},
+		AllowEmptyCommits: true,
+	})
+	if err != nil {
+		logging.LogError("failed to commit: %v", err)
+	}
 
 	if err := createTestStructure(); err != nil {
 		return err
 	}
 
-	cmd = exec.Command("git", "add", ".")
-	cmd.Dir = dataDir
-	cmd.Run()
-	cmd = exec.Command("git", "commit", "-m", "add test structure")
-	cmd.Dir = dataDir
-	cmd.Run()
+	// add all files again
+	_, err = worktree.Add(".")
+	if err != nil {
+		logging.LogError("failed to add test structure files: %v", err)
+	}
+
+	// commit test structure
+	_, err = worktree.Commit("add test structure", &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  "knov",
+			Email: "knov@localhost",
+			When:  time.Now(),
+		},
+	})
+	if err != nil {
+		logging.LogError("failed to commit test structure: %v", err)
+	}
 
 	return nil
 }
