@@ -3607,7 +3607,7 @@ const docTemplate = `{
                     }
                 },
                 "display": {
-                    "description": "list, cards, dropdown",
+                    "description": "list, cards, dropdown, content",
                     "type": "string"
                 },
                 "limit": {
@@ -4022,7 +4022,7 @@ const docTemplate = `{
                     }
                 },
                 "display": {
-                    "description": "list, cards, dropdown",
+                    "description": "list, cards, dropdown, content",
                     "type": "string"
                 },
                 "limit": {

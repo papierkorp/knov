@@ -1,0 +1,20 @@
+/* Cards format */
+.search-results-cards {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.search-result-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    transition: all 0.2s;
+}
+
+.search-result-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 20%, transparent);
+}

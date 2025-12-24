@@ -218,12 +218,9 @@ func RenderFilterEditor(filePath string) (string, error) {
 	html.WriteString(`<div class="filter-form-container">`)
 	html.WriteString(`<h4>` + translation.SprintfForRequest(configmanager.GetLanguage(), "filter configuration") + `</h4>`)
 
-	// determine action and whether to include filepath input
+	// determine action - always use filter save endpoint for filter files
 	isEdit := filePath != ""
 	action := "/api/filter/save"
-	if isEdit {
-		action = fmt.Sprintf("/api/files/save/%s", filePath)
-	}
 	includeFilePath := !isEdit
 
 	// use the updated RenderFilterFormWithAction

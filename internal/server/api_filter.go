@@ -99,14 +99,20 @@ func handleAPIGetFilterCriteriaRow(w http.ResponseWriter, r *http.Request) {
 // @Router /api/filter/save [post]
 func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data. please check your input.") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errorHTML))
 		return
 	}
 
 	// get file path
 	filePath := r.FormValue("filepath")
 	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file path is required. please enter a file path.") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errorHTML))
 		return
 	}
 
@@ -116,7 +122,10 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	// save using the new filter package function
 	if err := filter.SaveFilterConfig(config, filePath); err != nil {
 		logging.LogError("failed to save filter config: %v", err)
-		http.Error(w, fmt.Sprintf(translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save filter: %v"), err), http.StatusInternalServerError)
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save filter. please check the logs for details.") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(errorHTML))
 		return
 	}
 
@@ -132,8 +141,9 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 		"filePath": filePath,
 	}
 
-	successHTML := fmt.Sprintf(`<div class="success">filter saved successfully!</div>
-		<script>setTimeout(() => window.location.href = '/files/%s', 1000);</script>`, filePath)
+	successHTML := fmt.Sprintf(`<div class="status-ok">%s</div>
+		<script>setTimeout(() => window.location.href = '/files/%s', 1000);</script>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "filter saved successfully!"), filePath)
 
 	writeResponse(w, r, successData, successHTML)
 }

@@ -32,6 +32,9 @@ func RenderFilterFormWithAction(config *filter.Config, action string, filePath s
 		html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "file path") + `:</label>`)
 		html.WriteString(`<input type="text" name="filepath" placeholder="` + translation.SprintfForRequest(configmanager.GetLanguage(), "filters/my-filter") + `" required />`)
 		html.WriteString(`</div>`)
+	} else if filePath != "" {
+		// for editing, include filepath as hidden input
+		html.WriteString(fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filePath))
 	}
 
 	// controls
@@ -48,6 +51,30 @@ func RenderFilterFormWithAction(config *filter.Config, action string, filePath s
 	html.WriteString(fmt.Sprintf(`<option value="or" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "or")+`</option>`, utils.Ternary(selectedLogic == "or", "selected", "")))
 	html.WriteString(`</select>`)
 	html.WriteString(`<button type="button" hx-post="/api/filter/add-criteria" hx-target="#filter-criteria-container" hx-swap="beforeend" class="btn-secondary">` + translation.SprintfForRequest(configmanager.GetLanguage(), "add filter") + `</button>`)
+	html.WriteString(`</div>`)
+
+	// display & limits section
+	html.WriteString(`<div class="filter-controls">`)
+	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "display") + `:</label>`)
+	html.WriteString(`<select name="display" class="form-select">`)
+
+	selectedDisplay := "list"
+	if config != nil {
+		selectedDisplay = config.Display
+	}
+
+	html.WriteString(fmt.Sprintf(`<option value="list" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "list")+`</option>`, utils.Ternary(selectedDisplay == "list", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="cards" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "cards")+`</option>`, utils.Ternary(selectedDisplay == "cards", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="dropdown" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "dropdown")+`</option>`, utils.Ternary(selectedDisplay == "dropdown", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="content" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "content")+`</option>`, utils.Ternary(selectedDisplay == "content", "selected", "")))
+	html.WriteString(`</select>`)
+
+	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "limit") + `:</label>`)
+	limitValue := "50"
+	if config != nil && config.Limit > 0 {
+		limitValue = fmt.Sprintf("%d", config.Limit)
+	}
+	html.WriteString(fmt.Sprintf(`<input type="number" name="limit" value="%s" min="1" class="form-input"/>`, limitValue))
 	html.WriteString(`</div>`)
 
 	// criteria
@@ -69,7 +96,7 @@ func RenderFilterFormWithAction(config *filter.Config, action string, filePath s
 func RenderFilterResult(result *filter.Result, display string) string {
 	if result == nil || len(result.Files) == 0 {
 		return `<div id="filter-results" class="filter-no-results">
-			<p>no files found matching filter criteria</p>
+			<p>` + translation.SprintfForRequest(configmanager.GetLanguage(), "no files found matching filter criteria") + `</p>
 		</div>`
 	}
 
@@ -77,7 +104,9 @@ func RenderFilterResult(result *filter.Result, display string) string {
 	case "cards":
 		return fmt.Sprintf(`<div id="filter-results">%s</div>`, RenderFileCards(result.Files))
 	case "dropdown":
-		return fmt.Sprintf(`<div id="filter-results">%s</div>`, RenderFileDropdown(result.Files, result.Total))
+		return RenderFileDropdown(result.Files, result.Total)
+	case "content":
+		return RenderFileContent(result.Files)
 	case "table":
 		return fmt.Sprintf(`<div id="filter-results">%s</div>`, RenderFileList(result.Files))
 	default:

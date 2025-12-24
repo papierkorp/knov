@@ -25,7 +25,7 @@ definitions:
           $ref: '#/definitions/filter.Criteria'
         type: array
       display:
-        description: list, cards, dropdown
+        description: list, cards, dropdown, content
         type: string
       limit:
         type: integer
@@ -319,7 +319,7 @@ definitions:
           $ref: '#/definitions/filter.Criteria'
         type: array
       display:
-        description: list, cards, dropdown
+        description: list, cards, dropdown, content
         type: string
       limit:
         type: integer

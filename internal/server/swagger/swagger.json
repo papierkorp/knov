@@ -3601,7 +3601,7 @@
                     }
                 },
                 "display": {
-                    "description": "list, cards, dropdown",
+                    "description": "list, cards, dropdown, content",
                     "type": "string"
                 },
                 "limit": {
@@ -4016,7 +4016,7 @@
                     }
                 },
                 "display": {
-                    "description": "list, cards, dropdown",
+                    "description": "list, cards, dropdown, content",
                     "type": "string"
                 },
                 "limit": {

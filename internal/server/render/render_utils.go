@@ -8,6 +8,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/translation"
+	"knov/internal/utils"
 )
 
 // SelectOption represents an option in a select dropdown
@@ -92,7 +93,7 @@ func RenderFileCards(files []files.File) string {
 	for _, file := range files {
 		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`
-			<div class="search-card">
+			<div class="search-result-card">
 				<h4><a href="/files/%s">%s</a></h4>
 			</div>`,
 			file.Path, displayText))
@@ -121,23 +122,60 @@ func RenderFileList(files []files.File) string {
 // RenderFileDropdown renders files as dropdown list with limit
 func RenderFileDropdown(files []files.File, limit int) string {
 	var html strings.Builder
-	html.WriteString(`<ul class="component-search-dropdown-list">`)
+	html.WriteString(`<div id="filter-results">`)
+	html.WriteString(`<select class="form-select" onchange="if(this.value) window.location.href='/files/'+this.value">`)
+	html.WriteString(`<option value="">` + translation.SprintfForRequest(configmanager.GetLanguage(), "select file...") + `</option>`)
+
+	displayLimit := limit
+	if limit <= 0 {
+		displayLimit = len(files)
+	}
 
 	for i, file := range files {
-		if i >= limit {
+		if i >= displayLimit {
 			break
 		}
 		displayText := GetLinkDisplayText(file.Path)
-		html.WriteString(fmt.Sprintf(`
-			<li><a href="/files/%s">%s</a></li>`,
-			file.Path, displayText))
+		html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, file.Path, displayText))
 	}
 
 	if len(files) == 0 {
-		html.WriteString(`<li class="component-search-hint">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no results found") + `</li>`)
+		html.WriteString(`<option disabled>` + translation.SprintfForRequest(configmanager.GetLanguage(), "no results found") + `</option>`)
 	}
 
-	html.WriteString(`</ul>`)
+	html.WriteString(`</select>`)
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
+// RenderFileContent renders files with their actual content displayed
+func RenderFileContent(filez []files.File) string {
+	var html strings.Builder
+	html.WriteString(`<div id="filter-results" class="filter-content-results">`)
+
+	for _, file := range filez {
+		displayText := GetLinkDisplayText(file.Path)
+		html.WriteString(fmt.Sprintf(`<div class="filter-content-item">
+			<h4><a href="/files/%s">%s</a></h4>
+			<div class="filter-content-body">`, file.Path, displayText))
+
+		// get file content
+		fullPath := utils.ToFullPath(file.Path)
+		content, err := files.GetFileContent(fullPath)
+		if err != nil {
+			html.WriteString(`<p class="filter-content-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "error loading content: %s", err.Error()) + `</p>`)
+		} else {
+			html.WriteString(content.HTML)
+		}
+
+		html.WriteString(`</div></div><hr />`)
+	}
+
+	if len(filez) == 0 {
+		html.WriteString(`<p class="filter-no-results">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no files found matching filter criteria") + `</p>`)
+	}
+
+	html.WriteString(`</div>`)
 	return html.String()
 }
 

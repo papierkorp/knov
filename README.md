@@ -2,17 +2,13 @@
 
 # todo
 
-- display the content of multiple files (filter) in the dashboard (maybe use display content in filterview)
 - PARA Metadata - should create a folder and if one is selected the other cant be selected
 - if a file is moved (git..) look at linksto and in the target file  change the link
 - Dashboard
   - make the positions work with a custom layout work
-  - UI advanced
-    - [ ] Add widget drag & drop reordering
-    - [ ] Implement widget resizing
-    - [ ] Add dashboard export/import
-    - [ ] Create dashboard templates/presets
-    - [ ] Add auto-refresh options
+  - Add widget drag & drop reordering
+  - Implement widget resizing
+  - Add dashboard export/import
 - metadata
   - save in a sqlite file
   - save in postgres
@@ -25,6 +21,7 @@
   - optimise with sqlite.. (same as metadata)
 
 # done
+- display the content of multiple files (filter) in the dashboard (maybe use display content in filterview)
 - edit just a header section instead of the whole file
 - mkdir/copy on windows not working
 - func getEditor(filepath string) -> switch metadata.FileType + handleFileEdit - switch editor

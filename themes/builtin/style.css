@@ -1,5 +1,6 @@
 @import url("./style/base.css");
 @import url("./style/codehighlight.css");
+@import url("./style/global.css");
 @import url("./style/tooltip.css");
 @import url("./style/playground.css");
 @import url("./style/fileview.css");

@@ -267,6 +267,7 @@ func RenderFilterWidgetConfig(index int, config *dashboard.WidgetConfig) string 
 	html.WriteString(fmt.Sprintf(`<option value="list" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "list")+`</option>`, utils.Ternary(selectedDisplay == "list", "selected", "")))
 	html.WriteString(fmt.Sprintf(`<option value="cards" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "cards")+`</option>`, utils.Ternary(selectedDisplay == "cards", "selected", "")))
 	html.WriteString(fmt.Sprintf(`<option value="dropdown" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "dropdown")+`</option>`, utils.Ternary(selectedDisplay == "dropdown", "selected", "")))
+	html.WriteString(fmt.Sprintf(`<option value="content" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "content")+`</option>`, utils.Ternary(selectedDisplay == "content", "selected", "")))
 	html.WriteString(`</select>`)
 	html.WriteString(`</div>`)
 

@@ -28,7 +28,7 @@ type Criteria struct {
 type Config struct {
 	Criteria []Criteria `json:"criteria"`
 	Logic    string     `json:"logic"`
-	Display  string     `json:"display"` // list, cards, dropdown
+	Display  string     `json:"display"` // list, cards, dropdown, content
 	Limit    int        `json:"limit"`
 }
 
