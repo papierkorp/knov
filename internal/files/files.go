@@ -136,91 +136,134 @@ func GetRawContent(filePath string) (string, error) {
 	return string(content), nil
 }
 
-// ExtractSectionContent extracts content of a specific section from markdown
+// ExtractSectionContent extracts content of a specific section from a file
 func ExtractSectionContent(filePath, sectionID string) (string, error) {
-	content, err := GetRawContent(filePath)
+	handler := parserRegistry.GetHandler(filePath)
+	if handler == nil {
+		return "", fmt.Errorf("no handler found for file: %s", filePath)
+	}
+
+	// check if this is a markdown file
+	if _, ok := handler.(*parser.MarkdownHandler); !ok {
+		return "", fmt.Errorf("section editing not supported for file type: %s", filePath)
+	}
+
+	fullPath := utils.ToFullPath(filePath)
+	content, err := handler.GetContent(fullPath)
 	if err != nil {
 		return "", err
 	}
 
-	return extractSectionFromMarkdown(content, sectionID), nil
+	return extractSectionFromMarkdown(string(content), sectionID)
 }
 
-// SaveSectionContent saves content to a specific section in a markdown file
+// SaveSectionContent saves content to a specific section in a file
 func SaveSectionContent(filePath, sectionID, sectionContent string) error {
-	originalContent, err := GetRawContent(filePath)
+	handler := parserRegistry.GetHandler(filePath)
+	if handler == nil {
+		return fmt.Errorf("no handler found for file: %s", filePath)
+	}
+
+	// check if this is a markdown file
+	if _, ok := handler.(*parser.MarkdownHandler); !ok {
+		return fmt.Errorf("section editing not supported for file type: %s", filePath)
+	}
+
+	fullPath := utils.ToFullPath(filePath)
+	originalContent, err := handler.GetContent(fullPath)
 	if err != nil {
 		return err
 	}
 
-	updatedContent := replaceSectionInMarkdown(originalContent, sectionID, sectionContent)
-	fullPath := utils.ToFullPath(filePath)
+	updatedContent, err := replaceSectionInMarkdown(string(originalContent), sectionID, sectionContent)
+	if err != nil {
+		return err
+	}
+
 	return SaveRawContent(fullPath, updatedContent)
 }
 
 // extractSectionFromMarkdown extracts content between headers including the header itself
-func extractSectionFromMarkdown(content, sectionID string) string {
+func extractSectionFromMarkdown(content, sectionID string) (string, error) {
 	lines := strings.Split(content, "\n")
-	usedIDs := make(map[string]int)
-	var sectionLines []string
-	inTargetSection := false
 
-	for _, line := range lines {
+	var sectionStart, sectionEnd int
+	var inSection bool
+	var inCodeBlock bool
+	usedIDs := make(map[string]int)
+
+	for i, line := range lines {
 		trimmed := strings.TrimSpace(line)
 
-		// check if this is a header line
-		if strings.HasPrefix(trimmed, "#") {
-			// extract header text and generate ID
+		// check for code block fences
+		if strings.HasPrefix(trimmed, "```") {
+			inCodeBlock = !inCodeBlock
+		}
+
+		// only process headers outside of code blocks
+		if !inCodeBlock && strings.HasPrefix(trimmed, "#") {
 			headerText := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
 			headerID := utils.GenerateID(headerText, usedIDs)
 
-			if headerID == sectionID && !inTargetSection {
-				// start of our target section - include the header
-				inTargetSection = true
-				sectionLines = append(sectionLines, line)
+			if headerID == sectionID && !inSection {
+				sectionStart = i
+				inSection = true
 				continue
-			} else if inTargetSection && headerID != sectionID {
-				// reached next section, stop
+			}
+
+			if inSection && headerID != sectionID {
+				sectionEnd = i
 				break
 			}
 		}
-
-		if inTargetSection {
-			sectionLines = append(sectionLines, line)
-		}
 	}
 
-	return strings.Join(sectionLines, "\n")
+	if !inSection {
+		return "", fmt.Errorf("section not found: %s", sectionID)
+	}
+
+	if sectionEnd == 0 {
+		sectionEnd = len(lines)
+	}
+
+	sectionLines := lines[sectionStart:sectionEnd]
+	return strings.Join(sectionLines, "\n"), nil
 }
 
 // replaceSectionInMarkdown replaces content of a specific section including the header
-func replaceSectionInMarkdown(content, sectionID, newContent string) string {
+func replaceSectionInMarkdown(content, sectionID, newContent string) (string, error) {
 	lines := strings.Split(content, "\n")
-	usedIDs := make(map[string]int)
+
 	var result []string
-	inTargetSection := false
-	headerLevel := 0
+	var inTargetSection bool
+	var inCodeBlock bool
+	var headerLevel int
+	usedIDs := make(map[string]int)
 
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
 
-		// check if this is a header line
-		if strings.HasPrefix(trimmed, "#") {
+		// check for code block fences
+		if strings.HasPrefix(trimmed, "```") {
+			inCodeBlock = !inCodeBlock
+		}
+
+		// only process headers outside of code blocks
+		if !inCodeBlock && strings.HasPrefix(trimmed, "#") {
 			level := len(trimmed) - len(strings.TrimLeft(trimmed, "#"))
 			headerText := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
 			headerID := utils.GenerateID(headerText, usedIDs)
 
 			if headerID == sectionID && !inTargetSection {
-				// start of our target section - replace with new content
+				// start of target section - replace with new content
 				inTargetSection = true
 				headerLevel = level
-				// add new content (which should include the header)
 				if strings.TrimSpace(newContent) != "" {
 					result = append(result, strings.Split(newContent, "\n")...)
 				}
 				continue
 			} else if inTargetSection && level <= headerLevel {
-				// reached next section of same or higher level, stop replacing
+				// reached next section of same or higher level
 				inTargetSection = false
 				result = append(result, line)
 				continue
@@ -230,10 +273,9 @@ func replaceSectionInMarkdown(content, sectionID, newContent string) string {
 		if !inTargetSection {
 			result = append(result, line)
 		}
-		// if inTargetSection is true, we skip the line (replacement)
 	}
 
-	return strings.Join(result, "\n")
+	return strings.Join(result, "\n"), nil
 }
 
 // SaveRawContent saves raw content to file (creates if not exists)

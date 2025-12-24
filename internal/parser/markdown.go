@@ -11,7 +11,6 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/translation"
-	"knov/internal/utils"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
@@ -204,45 +203,4 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 	})
 
 	return content
-}
-
-// ExtractSection extracts a markdown section by header ID
-func (h *MarkdownHandler) ExtractSection(content []byte, sectionID string) (string, error) {
-	text := string(content)
-	lines := strings.Split(text, "\n")
-
-	var sectionStart, sectionEnd int
-	var inSection bool
-	usedIDs := make(map[string]int)
-
-	// find section start and end
-	for i, line := range lines {
-		if strings.HasPrefix(line, "#") {
-			headerText := regexp.MustCompile(`^#+\s*`).ReplaceAllString(line, "")
-			headerText = strings.TrimSpace(headerText)
-			generatedID := utils.GenerateID(headerText, usedIDs)
-
-			if generatedID == sectionID && !inSection {
-				sectionStart = i
-				inSection = true
-				continue
-			}
-
-			if inSection && generatedID != sectionID {
-				sectionEnd = i
-				break
-			}
-		}
-	}
-
-	if !inSection {
-		return "", fmt.Errorf("section not found: %s", sectionID)
-	}
-
-	if sectionEnd == 0 {
-		sectionEnd = len(lines)
-	}
-
-	sectionLines := lines[sectionStart:sectionEnd]
-	return strings.Join(sectionLines, "\n"), nil
 }

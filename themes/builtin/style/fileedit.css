@@ -134,6 +134,18 @@ body[data-dark-mode="true"] #page-filenew .toastui-editor-md-delimiter {
     color: var(--text-secondary) !important;
 }
 
+/* fix table text color in markdown editing mode */
+body[data-dark-mode="true"]
+    #page-fileedit
+    .toastui-editor-md-table
+    .toastui-editor-md-table-cell,
+body[data-dark-mode="true"]
+    #page-filenew
+    .toastui-editor-md-table
+    .toastui-editor-md-table-cell {
+    color: var(--text) !important;
+}
+
 /* metadata form styling */
 #page-fileedit .metadata-form,
 #page-filenew .metadata-form {
