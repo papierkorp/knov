@@ -1082,6 +1082,27 @@ paths:
       summary: Get file content as html
       tags:
       - files
+  /api/files/delete/{filepath}:
+    delete:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Deletes a file and its metadata
+      parameters:
+      - description: File path to delete
+        in: path
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: success message
+          schema:
+            type: string
+      summary: Delete a file
+      tags:
+      - files
   /api/files/folder:
     get:
       consumes:
@@ -1188,6 +1209,32 @@ paths:
           schema:
             type: string
       summary: Get raw file content
+      tags:
+      - files
+  /api/files/rename/{filepath}:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Renames a file and updates all links pointing to it
+      parameters:
+      - description: Current file path
+        in: path
+        name: filepath
+        required: true
+        type: string
+      - description: New file name
+        in: formData
+        name: name
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: success message
+          schema:
+            type: string
+      summary: Rename a file
       tags:
       - files
   /api/files/save:

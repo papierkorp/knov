@@ -37,6 +37,13 @@ type FileVersion struct {
 // FileVersionList is a list of file versions
 type FileVersionList []FileVersion
 
+// FileMove represents a file that was moved/renamed
+type FileMove struct {
+	OldPath string `json:"oldPath"`
+	NewPath string `json:"newPath"`
+	Commit  string `json:"commit"`
+}
+
 // openRepo opens the git repository
 func openRepo() (*git.Repository, error) {
 	dataDir := configmanager.GetAppConfig().DataPath
@@ -845,4 +852,145 @@ func GetFileDiff(filePath, fromCommit, toCommit string) (string, error) {
 	}
 
 	return "", fmt.Errorf("no changes found for file %s between commits", relPath)
+}
+
+// GetFileRenames returns files that were moved/renamed since a specific commit
+func GetFileRenames(lastCommit string) ([]FileMove, error) {
+	repo, err := openRepo()
+	if err != nil {
+		return nil, err
+	}
+
+	if lastCommit == "" {
+		logging.LogDebug("no last commit provided, checking recent renames")
+		// if no last commit, check recent commits for renames
+		ref, err := repo.Head()
+		if err != nil {
+			return nil, err
+		}
+
+		commits, err := repo.Log(&git.LogOptions{From: ref.Hash()})
+		if err != nil {
+			return nil, err
+		}
+
+		var renames []FileMove
+		commitCount := 0
+		err = commits.ForEach(func(commit *object.Commit) error {
+			if commitCount >= 10 { // limit to recent 10 commits
+				return nil
+			}
+			commitCount++
+
+			if len(commit.ParentHashes) == 0 {
+				return nil // initial commit
+			}
+
+			parent, err := repo.CommitObject(commit.ParentHashes[0])
+			if err != nil {
+				return err
+			}
+
+			moves, err := detectMovesInCommit(repo, parent, commit)
+			if err != nil {
+				logging.LogWarning("failed to detect moves in commit %s: %v", commit.Hash.String()[:7], err)
+				return nil
+			}
+
+			renames = append(renames, moves...)
+			return nil
+		})
+
+		return renames, err
+	}
+
+	// check for renames since specific commit
+	if !CommitExists(lastCommit) {
+		logging.LogWarning("commit %s no longer exists, cannot check for renames", lastCommit)
+		return nil, fmt.Errorf("commit %s not found", lastCommit)
+	}
+
+	ref, err := repo.Head()
+	if err != nil {
+		return nil, err
+	}
+
+	lastCommitHash, err := expandCommitHash(repo, lastCommit)
+	if err != nil {
+		return nil, err
+	}
+
+	lastCommitObj, err := repo.CommitObject(lastCommitHash)
+	if err != nil {
+		return nil, err
+	}
+
+	headCommit, err := repo.CommitObject(ref.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	return detectMovesInCommit(repo, lastCommitObj, headCommit)
+}
+
+// detectMovesInCommit detects file moves between two commits
+func detectMovesInCommit(repo *git.Repository, fromCommit, toCommit *object.Commit) ([]FileMove, error) {
+	fromTree, err := fromCommit.Tree()
+	if err != nil {
+		return nil, err
+	}
+
+	toTree, err := toCommit.Tree()
+	if err != nil {
+		return nil, err
+	}
+
+	changes, err := object.DiffTree(fromTree, toTree)
+	if err != nil {
+		return nil, err
+	}
+
+	var renames []FileMove
+	deletedFiles := make(map[string]bool)
+	addedFiles := make(map[string]string) // path -> hash
+
+	// first pass: collect deletions and additions
+	for _, change := range changes {
+		switch change.To.Name {
+		case "":
+			// deletion
+			deletedFiles[change.From.Name] = true
+		default:
+			if change.From.Name == "" {
+				// addition
+				addedFiles[change.To.Name] = change.To.TreeEntry.Hash.String()
+			}
+		}
+	}
+
+	// second pass: match deletions with additions by content hash
+	for _, change := range changes {
+		if change.To.Name == "" && deletedFiles[change.From.Name] {
+			// this is a deleted file, look for matching addition
+			oldHash := change.From.TreeEntry.Hash.String()
+
+			for addedPath, addedHash := range addedFiles {
+				if oldHash == addedHash {
+					// found a match - this is a rename
+					renames = append(renames, FileMove{
+						OldPath: change.From.Name,
+						NewPath: addedPath,
+						Commit:  toCommit.Hash.String(),
+					})
+
+					// remove from tracking to avoid duplicate matches
+					delete(addedFiles, addedPath)
+					deletedFiles[change.From.Name] = false
+					break
+				}
+			}
+		}
+	}
+
+	return renames, nil
 }

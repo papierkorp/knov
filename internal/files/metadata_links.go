@@ -2,8 +2,10 @@
 package files
 
 import (
+	"fmt"
 	"os"
 	"slices"
+	"strings"
 
 	"knov/internal/logging"
 	"knov/internal/utils"
@@ -239,4 +241,190 @@ func updateKidsAndLinksToHere(metadata *Metadata) {
 
 	metadata.Kids = kids
 	metadata.LinksToHere = linksToHere
+}
+
+// UpdateLinksForMovedFile updates all files that link to a moved file with the new path
+func UpdateLinksForMovedFile(oldPath, newPath string) error {
+	logging.LogInfo("updating links for moved file: %s -> %s", oldPath, newPath)
+
+	// get metadata for the old path to find files that link to it
+	oldMetadata, err := MetaDataGet(oldPath)
+	if err != nil {
+		logging.LogWarning("could not get metadata for moved file %s: %v", oldPath, err)
+		// even if we can't get metadata, try to find linking files by scanning all files
+	}
+
+	var linkingFiles []string
+	if oldMetadata != nil && len(oldMetadata.LinksToHere) > 0 {
+		linkingFiles = oldMetadata.LinksToHere
+		logging.LogInfo("found %d files linking to %s from metadata", len(linkingFiles), oldPath)
+	} else {
+		// todo: remove running through all files
+		// fallback: scan all files to find ones that link to the old path
+		logging.LogInfo("scanning all files to find links to %s", oldPath)
+		allFiles, err := GetAllFiles()
+		if err != nil {
+			logging.LogError("failed to get all files for link update: %v", err)
+			return err
+		}
+
+		for _, file := range allFiles {
+			metadata, err := MetaDataGet(file.Path)
+			if err != nil || metadata == nil {
+				continue
+			}
+
+			if slices.Contains(metadata.UsedLinks, oldPath) {
+				linkingFiles = append(linkingFiles, file.Path)
+			}
+		}
+		logging.LogInfo("found %d files linking to %s from scan", len(linkingFiles), oldPath)
+	}
+
+	// update content in linking files
+	updatedFiles := 0
+	for _, linkingFilePath := range linkingFiles {
+		if err := updateLinksInFile(linkingFilePath, oldPath, newPath); err != nil {
+			logging.LogError("failed to update links in file %s: %v", linkingFilePath, err)
+			continue
+		}
+		updatedFiles++
+	}
+
+	// move metadata from old path to new path
+	if err := moveFileMetadata(oldPath, newPath); err != nil {
+		logging.LogError("failed to move metadata for %s: %v", oldPath, err)
+		// don't return error here, file content updates are more important
+	}
+
+	logging.LogInfo("successfully updated links in %d files for moved file %s -> %s", updatedFiles, oldPath, newPath)
+	return nil
+}
+
+// updateLinksInFile updates links within a single file
+func updateLinksInFile(filePath, oldPath, newPath string) error {
+	fullPath := utils.ToFullPath(filePath)
+
+	// read file content
+	contentData, err := os.ReadFile(fullPath)
+	if err != nil {
+		return fmt.Errorf("failed to read file %s: %w", filePath, err)
+	}
+
+	content := string(contentData)
+	originalContent := content
+
+	// get file handler for link format detection
+	handler := parserRegistry.GetHandler(fullPath)
+	if handler == nil {
+		logging.LogWarning("no handler found for file %s, skipping link update", filePath)
+		return nil
+	}
+
+	// update different link formats
+	updated := false
+
+	// markdown-style links: [text](oldPath) -> [text](newPath)
+	oldMarkdownLink := fmt.Sprintf("](%s)", oldPath)
+	newMarkdownLink := fmt.Sprintf("](%s)", newPath)
+	if strings.Contains(content, oldMarkdownLink) {
+		content = strings.ReplaceAll(content, oldMarkdownLink, newMarkdownLink)
+		updated = true
+		logging.LogDebug("updated markdown links in %s", filePath)
+	}
+
+	// wiki-style links: [[oldPath]] -> [[newPath]]
+	oldWikiLink := fmt.Sprintf("[[%s]]", oldPath)
+	newWikiLink := fmt.Sprintf("[[%s]]", newPath)
+	if strings.Contains(content, oldWikiLink) {
+		content = strings.ReplaceAll(content, oldWikiLink, newWikiLink)
+		updated = true
+		logging.LogDebug("updated wiki links in %s", filePath)
+	}
+
+	// dokuwiki-style links: [[oldPath|text]] -> [[newPath|text]]
+	// this is more complex as we need to preserve the text part
+	lines := strings.Split(content, "\n")
+	for i, line := range lines {
+		if strings.Contains(line, oldPath) {
+			// look for dokuwiki link pattern
+			start := strings.Index(line, "[["+oldPath)
+			if start != -1 {
+				end := strings.Index(line[start:], "]]")
+				if end != -1 {
+					end += start
+					linkPart := line[start+2 : end] // remove [[ and ]]
+
+					if strings.HasPrefix(linkPart, oldPath) {
+						if len(linkPart) == len(oldPath) {
+							// simple link [[oldPath]]
+							lines[i] = strings.Replace(line, "[["+oldPath+"]]", "[["+newPath+"]]", 1)
+							updated = true
+						} else if linkPart[len(oldPath)] == '|' {
+							// link with text [[oldPath|text]]
+							textPart := linkPart[len(oldPath):]
+							lines[i] = strings.Replace(line, "[["+oldPath+textPart+"]]", "[["+newPath+textPart+"]]", 1)
+							updated = true
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if updated {
+		content = strings.Join(lines, "\n")
+	}
+
+	// write back if changed
+	if updated && content != originalContent {
+		if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
+			return fmt.Errorf("failed to write updated content to %s: %w", filePath, err)
+		}
+
+		logging.LogInfo("updated links in file %s: %s -> %s", filePath, oldPath, newPath)
+
+		// trigger metadata update for the modified file to update its links
+		metadata := &Metadata{Path: filePath}
+		if err := MetaDataSave(metadata); err != nil {
+			logging.LogWarning("failed to update metadata for modified file %s: %v", filePath, err)
+		}
+	}
+
+	return nil
+}
+
+// moveFileMetadata moves metadata from old path to new path
+func moveFileMetadata(oldPath, newPath string) error {
+	// get existing metadata
+	metadata, err := MetaDataGet(oldPath)
+	if err != nil {
+		logging.LogDebug("no metadata found for %s, creating new metadata for %s", oldPath, newPath)
+		// create new metadata for new path
+		newMetadata := &Metadata{Path: newPath}
+		return MetaDataSave(newMetadata)
+	}
+
+	if metadata == nil {
+		// create new metadata for new path
+		newMetadata := &Metadata{Path: newPath}
+		return MetaDataSave(newMetadata)
+	}
+
+	// update path in metadata
+	metadata.Path = newPath
+
+	// save metadata with new path
+	if err := MetaDataSave(metadata); err != nil {
+		return fmt.Errorf("failed to save metadata for new path %s: %w", newPath, err)
+	}
+
+	// delete old metadata
+	if err := MetaDataDelete(oldPath); err != nil {
+		logging.LogWarning("failed to delete old metadata for %s: %v", oldPath, err)
+		// don't fail the operation for this
+	}
+
+	logging.LogInfo("moved metadata: %s -> %s", oldPath, newPath)
+	return nil
 }

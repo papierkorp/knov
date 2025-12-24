@@ -196,6 +196,10 @@ func StartServerChi() {
 			r.Get("/versions/diff/*", handleAPIGetFileVersionDiff)
 			r.Post("/versions/restore/*", handleAPIRestoreFileVersion)
 			r.Get("/versions/*", handleAPIGetFileVersions)
+
+			// file operations
+			r.Post("/rename/*", handleAPIRenameFile)
+			r.Delete("/delete/*", handleAPIDeleteFile)
 		})
 
 		// ----------------------------------------------------------------------------------------

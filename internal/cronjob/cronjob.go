@@ -165,6 +165,32 @@ func runFileJobs() {
 				filesToDelete = append(filesToDelete, deletedFiles...)
 			}
 
+			// check for file moves/renames
+			movedFiles, err := git.GetFileRenames(lastCommit)
+			if err != nil {
+				logging.LogError("cronjob: failed to get file renames: %v", err)
+			} else if len(movedFiles) > 0 {
+				logging.LogInfo("detected %d file moves since last commit", len(movedFiles))
+
+				// process each file move
+				for _, move := range movedFiles {
+					logging.LogInfo("processing file move: %s -> %s", move.OldPath, move.NewPath)
+
+					// update links in other files that reference the moved file
+					if err := files.UpdateLinksForMovedFile(move.OldPath, move.NewPath); err != nil {
+						logging.LogError("cronjob: failed to update links for moved file %s -> %s: %v", move.OldPath, move.NewPath, err)
+					} else {
+						logging.LogInfo("successfully updated links for moved file %s -> %s", move.OldPath, move.NewPath)
+					}
+
+					// add new path to processing queue to ensure metadata is updated
+					filesToProcess = append(filesToProcess, move.NewPath)
+
+					// ensure old path is cleaned up
+					filesToDelete = append(filesToDelete, move.OldPath)
+				}
+			}
+
 			// update last processed commit
 			if err := git.SetLastProcessedCommit(currentCommit); err != nil {
 				logging.LogError("cronjob: failed to save last processed commit: %v", err)

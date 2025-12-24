@@ -344,3 +344,160 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
+
+// @Summary Rename a file
+// @Description Renames a file and updates all links pointing to it
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Param filepath path string true "Current file path"
+// @Param name formData string true "New file name"
+// @Produce html
+// @Success 200 {string} string "success message"
+// @Router /api/files/rename/{filepath} [post]
+func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	// get current file path from URL
+	currentPath := strings.TrimPrefix(r.URL.Path, "/api/files/rename/")
+	if currentPath == "" {
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	// get new name from form
+	newName := r.FormValue("name")
+	if newName == "" {
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "new file name is required") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	// construct new path
+	dir := filepath.Dir(currentPath)
+	var newPath string
+	if dir == "." {
+		newPath = newName
+	} else {
+		newPath = filepath.Join(dir, newName)
+	}
+
+	logging.LogInfo("renaming file: %s -> %s", currentPath, newPath)
+
+	// check if current file exists
+	currentFullPath := utils.ToFullPath(currentPath)
+	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	// check if new path already exists
+	newFullPath := utils.ToFullPath(newPath)
+	if _, err := os.Stat(newFullPath); err == nil {
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file with new name already exists") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusConflict)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	// create directory for new path if needed
+	newDir := filepath.Dir(newFullPath)
+	if err := os.MkdirAll(newDir, 0755); err != nil {
+		logging.LogError("failed to create directory %s: %v", newDir, err)
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	// rename the file
+	if err := os.Rename(currentFullPath, newFullPath); err != nil {
+		logging.LogError("failed to rename file %s -> %s: %v", currentPath, newPath, err)
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	// update links in other files that reference this file
+	if err := files.UpdateLinksForMovedFile(currentPath, newPath); err != nil {
+		logging.LogWarning("failed to update links for renamed file %s -> %s: %v", currentPath, newPath, err)
+		// don't fail the operation for this, just log a warning
+	}
+
+	logging.LogInfo("successfully renamed file: %s -> %s", currentPath, newPath)
+
+	// redirect to the new file location
+	w.Header().Set("HX-Redirect", "/files/"+newPath)
+	w.WriteHeader(http.StatusOK)
+}
+
+// @Summary Delete a file
+// @Description Deletes a file and its metadata
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Param filepath path string true "File path to delete"
+// @Produce html
+// @Success 200 {string} string "success message"
+// @Router /api/files/delete/{filepath} [delete]
+func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
+	// get file path from URL
+	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/delete/")
+	if filePath == "" {
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	logging.LogInfo("deleting file: %s", filePath)
+
+	// check if file exists
+	fullPath := utils.ToFullPath(filePath)
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	// delete the file
+	if err := os.Remove(fullPath); err != nil {
+		logging.LogError("failed to delete file %s: %v", filePath, err)
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete file") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	// delete metadata
+	if err := files.MetaDataDelete(filePath); err != nil {
+		logging.LogWarning("failed to delete metadata for %s: %v", filePath, err)
+		// don't fail the operation for this, just log a warning
+	}
+
+	logging.LogInfo("successfully deleted file: %s", filePath)
+
+	// redirect to browse or home page
+	w.Header().Set("HX-Redirect", "/browse")
+	w.WriteHeader(http.StatusOK)
+}

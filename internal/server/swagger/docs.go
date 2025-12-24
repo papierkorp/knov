@@ -1030,6 +1030,38 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/files/delete/{filepath}": {
+            "delete": {
+                "description": "Deletes a file and its metadata",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Delete a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path to delete",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success message",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/folder": {
             "get": {
                 "consumes": [
@@ -1186,6 +1218,45 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "raw content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/files/rename/{filepath}": {
+            "post": {
+                "description": "Renames a file and updates all links pointing to it",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Rename a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Current file path",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "New file name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success message",
                         "schema": {
                             "type": "string"
                         }

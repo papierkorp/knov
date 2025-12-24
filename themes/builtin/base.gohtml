@@ -158,8 +158,12 @@ if (dashMatch) {
 const fileMatch = path.match(/\/files\/(.+)/);
 if (fileMatch && !path.includes('/edit/')) {
     const filepath = fileMatch[1];
+    const filename = filepath.split('/').pop(); // get just the filename
     document.getElementById('edit-link').href = `/files/edit/${filepath}`;
     document.getElementById('history-link').href = `/files/history/${filepath}`;
+    document.getElementById('rename-form').setAttribute('hx-post', `/api/files/rename/${filepath}`);
+    document.getElementById('delete-form').setAttribute('hx-delete', `/api/files/delete/${filepath}`);
+    document.getElementById('rename-input').value = filename; // populate with current filename
     document.getElementById('edit-dropdown').style.display = 'block';
 }
 </script>
