@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"time"
@@ -15,6 +17,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/server/render"
 	"knov/internal/translation"
+	"knov/internal/utils"
 )
 
 // ----------------------------------------------------------------------------------------
@@ -253,34 +256,6 @@ func handleAPIGetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, metadata.Path, html)
 }
 
-// @Summary Get file name
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Produce json,html
-// @Success 200 {string} string
-// @Router /api/metadata/name [get]
-func handleAPIGetMetadataName(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	if filepath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	metadata, err := files.MetaDataGet(filepath)
-	if err != nil {
-		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
-		return
-	}
-
-	if metadata == nil {
-		http.Error(w, "metadata not found", http.StatusNotFound)
-		return
-	}
-
-	html := fmt.Sprintf(`<span class="name">%s</span>`, metadata.Name)
-	writeResponse(w, r, metadata.Name, html)
-}
-
 // @Summary Get file creation date
 // @Tags metadata
 // @Param filepath query string true "File path"
@@ -477,57 +452,85 @@ func handleAPISetMetadataPriority(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/path [post]
 func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	filepath := r.FormValue("filepath")
+	filePath := r.FormValue("filepath")
 	newpath := r.FormValue("newpath")
 
-	if filepath == "" || newpath == "" {
-		http.Error(w, "missing filepath or newpath parameter", http.StatusBadRequest)
+	if filePath == "" || newpath == "" {
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or newpath parameter"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(html))
 		return
 	}
 
-	metadata := &files.Metadata{
-		Path: newpath,
-	}
+	// clean the new path
+	newpath = filepath.Clean(newpath)
 
-	if err := files.MetaDataSave(metadata); err != nil {
-		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
+	// if paths are the same, no change needed
+	if filePath == newpath {
+		html := render.RenderStatusMessage(render.StatusOK, newpath)
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html))
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="path">%s</span>`, newpath)
-	writeResponse(w, r, "path updated", html)
-}
+	logging.LogInfo("changing file path via metadata: %s -> %s", filePath, newpath)
 
-// @Summary Set file name
-// @Tags metadata
-// @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Param filepath formData string true "File path"
-// @Param name formData string true "New file name"
-// @Success 200 {string} string
-// @Router /api/metadata/name [post]
-func handleAPISetMetadataName(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	filepath := r.FormValue("filepath")
-	name := r.FormValue("name")
-
-	if filepath == "" || name == "" {
-		http.Error(w, "missing filepath or name parameter", http.StatusBadRequest)
+	// check if current file exists
+	currentFullPath := utils.ToFullPath(filePath)
+	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(html))
 		return
 	}
 
-	metadata := &files.Metadata{
-		Path: filepath,
-		Name: name,
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
-		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
+	// check if new path already exists
+	newFullPath := utils.ToFullPath(newpath)
+	if _, err := os.Stat(newFullPath); err == nil {
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusConflict)
+		w.Write([]byte(html))
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="name">%s</span>`, name)
-	writeResponse(w, r, "name updated", html)
+	// create directory for new path if needed
+	newDir := filepath.Dir(newFullPath)
+	if err := os.MkdirAll(newDir, 0755); err != nil {
+		logging.LogError("failed to create directory %s: %v", newDir, err)
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(html))
+		return
+	}
+
+	// move the physical file
+	if err := os.Rename(currentFullPath, newFullPath); err != nil {
+		logging.LogError("failed to move file %s -> %s: %v", filePath, newpath, err)
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(html))
+		return
+	}
+
+	// update links in other files that reference this file
+	if err := files.UpdateLinksForMovedFile(filePath, newpath); err != nil {
+		logging.LogWarning("failed to update links for moved file %s -> %s: %v", filePath, newpath, err)
+		// don't fail the operation for this, just log a warning
+	}
+
+	logging.LogInfo("successfully moved file via metadata: %s -> %s", filePath, newpath)
+
+	// show success message with link to new location
+	successMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully")
+	linkText := translation.SprintfForRequest(configmanager.GetLanguage(), "view file")
+	html := render.RenderStatusMessageWithLink(render.StatusOK, successMsg, "/files/"+newpath, linkText)
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html))
 }
 
 // @Summary Set file creation date

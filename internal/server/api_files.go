@@ -356,61 +356,55 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/rename/{filepath} [post]
 func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data") + `</div>`
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data"))
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(errorHTML))
+		w.Write([]byte(html))
 		return
 	}
 
 	// get current file path from URL
 	currentPath := strings.TrimPrefix(r.URL.Path, "/api/files/rename/")
 	if currentPath == "" {
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path") + `</div>`
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(errorHTML))
+		w.Write([]byte(html))
 		return
 	}
 
-	// get new name from form
+	// get new name from form (can be full path or just filename)
 	newName := r.FormValue("name")
 	if newName == "" {
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "new file name is required") + `</div>`
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "new file path is required"))
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(errorHTML))
+		w.Write([]byte(html))
 		return
 	}
 
-	// construct new path
-	dir := filepath.Dir(currentPath)
-	var newPath string
-	if dir == "." {
-		newPath = newName
-	} else {
-		newPath = filepath.Join(dir, newName)
-	}
+	// use the new name as the new path (allows for directory moves)
+	newPath := filepath.Clean(newName)
 
 	logging.LogInfo("renaming file: %s -> %s", currentPath, newPath)
 
 	// check if current file exists
 	currentFullPath := utils.ToFullPath(currentPath)
 	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist") + `</div>`
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist"))
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(errorHTML))
+		w.Write([]byte(html))
 		return
 	}
 
 	// check if new path already exists
 	newFullPath := utils.ToFullPath(newPath)
 	if _, err := os.Stat(newFullPath); err == nil {
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file with new name already exists") + `</div>`
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new name already exists"))
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusConflict)
-		w.Write([]byte(errorHTML))
+		w.Write([]byte(html))
 		return
 	}
 
@@ -418,20 +412,20 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	newDir := filepath.Dir(newFullPath)
 	if err := os.MkdirAll(newDir, 0755); err != nil {
 		logging.LogError("failed to create directory %s: %v", newDir, err)
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory") + `</div>`
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(errorHTML))
+		w.Write([]byte(html))
 		return
 	}
 
 	// rename the file
 	if err := os.Rename(currentFullPath, newFullPath); err != nil {
 		logging.LogError("failed to rename file %s -> %s: %v", currentPath, newPath, err)
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file") + `</div>`
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file"))
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(errorHTML))
+		w.Write([]byte(html))
 		return
 	}
 

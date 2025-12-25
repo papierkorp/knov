@@ -251,39 +251,24 @@ func UpdateLinksForMovedFile(oldPath, newPath string) error {
 	oldMetadata, err := MetaDataGet(oldPath)
 	if err != nil {
 		logging.LogWarning("could not get metadata for moved file %s: %v", oldPath, err)
-		// even if we can't get metadata, try to find linking files by scanning all files
+		return err
 	}
 
-	var linkingFiles []string
-	if oldMetadata != nil && len(oldMetadata.LinksToHere) > 0 {
-		linkingFiles = oldMetadata.LinksToHere
-		logging.LogInfo("found %d files linking to %s from metadata", len(linkingFiles), oldPath)
-	} else {
-		// todo: remove running through all files
-		// fallback: scan all files to find ones that link to the old path
-		logging.LogInfo("scanning all files to find links to %s", oldPath)
-		allFiles, err := GetAllFiles()
-		if err != nil {
-			logging.LogError("failed to get all files for link update: %v", err)
+	if oldMetadata == nil || len(oldMetadata.LinksToHere) == 0 {
+		logging.LogInfo("no files link to %s, skipping link updates", oldPath)
+		// still move metadata even if no files link to it
+		if err := moveFileMetadata(oldPath, newPath); err != nil {
+			logging.LogError("failed to move metadata for %s: %v", oldPath, err)
 			return err
 		}
-
-		for _, file := range allFiles {
-			metadata, err := MetaDataGet(file.Path)
-			if err != nil || metadata == nil {
-				continue
-			}
-
-			if slices.Contains(metadata.UsedLinks, oldPath) {
-				linkingFiles = append(linkingFiles, file.Path)
-			}
-		}
-		logging.LogInfo("found %d files linking to %s from scan", len(linkingFiles), oldPath)
+		return nil
 	}
+
+	logging.LogInfo("found %d files linking to %s from metadata", len(oldMetadata.LinksToHere), oldPath)
 
 	// update content in linking files
 	updatedFiles := 0
-	for _, linkingFilePath := range linkingFiles {
+	for _, linkingFilePath := range oldMetadata.LinksToHere {
 		if err := updateLinksInFile(linkingFilePath, oldPath, newPath); err != nil {
 			logging.LogError("failed to update links in file %s: %v", linkingFilePath, err)
 			continue

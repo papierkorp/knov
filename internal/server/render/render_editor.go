@@ -28,11 +28,6 @@ func RenderMarkdownEditorForm(filePath string) string {
 	// use same endpoint for both create and edit
 	action := "/api/files/save"
 
-	pathReadonly := ""
-	if isEdit {
-		pathReadonly = "readonly"
-	}
-
 	cancelURL := "/"
 	if isEdit {
 		cancelURL = fmt.Sprintf("/files/%s", filePath)
@@ -41,12 +36,9 @@ func RenderMarkdownEditorForm(filePath string) string {
 	return fmt.Sprintf(`
 		<form hx-post="%s" hx-target="#editor-status" class="file-form">
 			<div class="form-group">
-				<label>%s:</label>
-				<input type="text" name="filepath" value="%s" placeholder="%s" %s required />
-			</div>
-			<div class="form-group">
 				<div id="markdown-editor"></div>
 				<input type="hidden" name="content" id="editor-content" />
+				<input type="hidden" name="filepath" value="%s" />
 			</div>
 			<div class="form-actions">
 				<button type="submit" class="btn-primary">%s</button>
@@ -71,10 +63,7 @@ func RenderMarkdownEditorForm(filePath string) string {
 			})();
 		</script>
 	`, action,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
 		filePath,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "path/to/file.md"),
-		pathReadonly,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save file"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
@@ -102,15 +91,12 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 		<form hx-post="%s" hx-target="#editor-status" class="file-form">
 			<div class="form-group">
 				<label>%s:</label>
-				<input type="text" name="filepath" value="%s" readonly />
-			</div>
-			<div class="form-group">
-				<label>%s:</label>
 				<input type="text" name="sectionid" value="%s" readonly />
 			</div>
 			<div class="form-group">
 				<div id="markdown-editor"></div>
 				<input type="hidden" name="content" id="editor-content" />
+				<input type="hidden" name="filepath" value="%s" />
 			</div>
 			<div class="form-actions">
 				<button type="submit" class="btn-primary">%s</button>
@@ -135,10 +121,9 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 			})();
 		</script>
 	`, action,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
-		filePath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section"),
 		sectionID,
+		filePath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save section"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
@@ -456,7 +441,7 @@ func renderIndexEntryRow(index int, entry IndexEntry) string {
 	html.WriteString(`<div class="entry-controls">`)
 	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, -1)" class="btn-move"><i class="fa-solid fa-arrow-up"></i></button>`, index))
 	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, 1)" class="btn-move"><i class="fa-solid fa-arrow-down"></i></button>`, index))
-	html.WriteString(fmt.Sprintf(`<button type="button" onclick="removeEntry(this)" class="btn-remove"><i class="fa-solid fa-xmark"></i></button>`))
+	html.WriteString(`<button type="button" onclick="removeEntry(this)" class="btn-remove"><i class="fa-solid fa-xmark"></i></button>`)
 	html.WriteString(`</div>`)
 
 	// content on the right

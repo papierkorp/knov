@@ -275,12 +275,8 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 
 	// create/update metadata with filetype "moc" and collection based on filename
 	collectionName := filepath
-	if strings.HasSuffix(collectionName, ".index") {
-		collectionName = strings.TrimSuffix(collectionName, ".index")
-	}
-	if strings.HasSuffix(collectionName, ".moc") {
-		collectionName = strings.TrimSuffix(collectionName, ".moc")
-	}
+	collectionName = strings.TrimSuffix(collectionName, ".index")
+	collectionName = strings.TrimSuffix(collectionName, ".moc")
 
 	metadata := &files.Metadata{
 		Path:       filepath,
@@ -334,65 +330,10 @@ func handleAPIAddIndexEntry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// render entry row with index 999 (will be reindexed by JavaScript)
-	html := renderIndexEntryRowHelper(999, entry)
+	html := render.RenderIndexEntryRowHelper(999, entry)
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
-}
-
-// renderIndexEntryRowHelper is a helper to render index entry rows for API responses
-func renderIndexEntryRowHelper(index int, entry render.IndexEntry) string {
-	var html strings.Builder
-
-	html.WriteString(fmt.Sprintf(`<div class="entry-row" data-entry-index="%d">`, index))
-
-	// controls on the left
-	html.WriteString(`<div class="entry-controls">`)
-	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, -1)" class="btn-move"><i class="fa-solid fa-arrow-up"></i></button>`, index))
-	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, 1)" class="btn-move"><i class="fa-solid fa-arrow-down"></i></button>`, index))
-	html.WriteString(fmt.Sprintf(`<button type="button" onclick="removeEntry(this)" class="btn-remove"><i class="fa-solid fa-xmark"></i></button>`))
-	html.WriteString(`</div>`)
-
-	// content on the right
-	html.WriteString(`<div class="entry-content">`)
-	html.WriteString(fmt.Sprintf(`<input type="hidden" name="entries[%d][type]" value="%s"/>`, index, entry.Type))
-
-	switch entry.Type {
-	case "separator":
-		html.WriteString(`<div class="entry-separator">`)
-		html.WriteString(fmt.Sprintf(`<span>%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "separator")))
-		html.WriteString(`</div>`)
-
-	case "file":
-		html.WriteString(`<div class="entry-file">`)
-		html.WriteString(fmt.Sprintf(`<label>%s:</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file")))
-		inputID := fmt.Sprintf("entry-file-%d", index)
-		html.WriteString(render.GenerateDatalistInput(inputID, fmt.Sprintf("entries[%d][value]", index), entry.Value, translation.SprintfForRequest(configmanager.GetLanguage(), "search files"), "/api/files/list?format=datalist"))
-		html.WriteString(`</div>`)
-
-	case "title":
-		html.WriteString(`<div class="entry-title">`)
-		html.WriteString(fmt.Sprintf(`<label>%s:</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "title")))
-		html.WriteString(fmt.Sprintf(`<input type="text" name="entries[%d][value]" value="%s" class="form-input" placeholder="%s"/>`, index, entry.Value, translation.SprintfForRequest(configmanager.GetLanguage(), "enter title")))
-		html.WriteString(`</div>`)
-	}
-
-	html.WriteString(`</div>`)
-	html.WriteString(`</div>`)
-
-	// Use HTMX event to trigger reindexing after content is swapped
-	html.WriteString(`<script>
-document.body.addEventListener('htmx:afterSwap', function(evt) {
-	if (evt.detail.target.id === 'entries-container') {
-		console.log('htmx:afterSwap triggered for entries-container');
-		if (typeof window.reindexEntries === 'function') {
-			window.reindexEntries();
-		}
-	}
-});
-</script>`)
-
-	return html.String()
 }
 
 // @Summary Save filter editor

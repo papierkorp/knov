@@ -30,16 +30,16 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 	html.WriteString(`<div class="form-group">`)
 	html.WriteString(`<h3>` + translation.SprintfForRequest(configmanager.GetLanguage(), "metadata") + `</h3>`)
 
-	// name field
-	name := ""
-	if metadata != nil {
-		name = metadata.Name
+	// file path field (editable)
+	path := filePath
+	if path == "" {
+		path = ""
 	}
 	html.WriteString(`<div class="form-field">`)
-	html.WriteString(`<label for="meta-name">` + translation.SprintfForRequest(configmanager.GetLanguage(), "name") + `</label>`)
-	html.WriteString(GenerateDatalistInputWithSave("meta-name", "name", name,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "enter name"),
-		"", filePath, "/api/metadata/name"))
+	html.WriteString(`<label for="meta-path">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file path") + `</label>`)
+	html.WriteString(GenerateInputWithSaveOnBlur("meta-path", "newpath", path,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "enter file path"),
+		filePath, "/api/metadata/path"))
 	html.WriteString(`</div>`)
 
 	// priority field
@@ -124,19 +124,28 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 		"/api/metadata/tags?format=options", filePath, "/api/metadata/tags"))
 	html.WriteString(`</div>`)
 
-	html.WriteString(`</div>`) // close basic form group
+	// folders field
+	foldersStr := ""
+	if metadata != nil && len(metadata.Folders) > 0 {
+		foldersStr = strings.Join(metadata.Folders, ", ")
+	}
+	html.WriteString(`<div class="form-field">`)
+	html.WriteString(`<label for="meta-folders">` + translation.SprintfForRequest(configmanager.GetLanguage(), "folders") + `</label>`)
+	html.WriteString(GenerateTagChipsInputWithSave("meta-folders", "folders", foldersStr,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "add folder categories"),
+		"/api/metadata/folders?format=options", filePath, "/api/metadata/folders"))
+	html.WriteString(`</div>`)
 
-	// PARA section
-	html.WriteString(`<div class="form-group">`)
-	html.WriteString(`<h3>` + translation.SprintfForRequest(configmanager.GetLanguage(), "PARA method") + `</h3>`)
+	// PARA fields in a compact row layout
+	html.WriteString(`<div class="form-field-row">`)
 
 	// projects field
 	projectsStr := ""
 	if metadata != nil && len(metadata.PARA.Projects) > 0 {
 		projectsStr = strings.Join(metadata.PARA.Projects, ", ")
 	}
-	html.WriteString(`<div class="form-field">`)
-	html.WriteString(`<label for="meta-projects">` + translation.SprintfForRequest(configmanager.GetLanguage(), "projects") + `</label>`)
+	html.WriteString(`<div class="form-field-quarter">`)
+	html.WriteString(`<label for="meta-projects">` + translation.SprintfForRequest(configmanager.GetLanguage(), "para-projects") + `</label>`)
 	html.WriteString(GenerateTagChipsInputWithSave("meta-projects", "projects", projectsStr,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add projects"),
 		"/api/metadata/para/projects?format=options", filePath, "/api/metadata/para/projects"))
@@ -147,8 +156,8 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 	if metadata != nil && len(metadata.PARA.Areas) > 0 {
 		areasStr = strings.Join(metadata.PARA.Areas, ", ")
 	}
-	html.WriteString(`<div class="form-field">`)
-	html.WriteString(`<label for="meta-areas">` + translation.SprintfForRequest(configmanager.GetLanguage(), "areas") + `</label>`)
+	html.WriteString(`<div class="form-field-quarter">`)
+	html.WriteString(`<label for="meta-areas">` + translation.SprintfForRequest(configmanager.GetLanguage(), "para-areas") + `</label>`)
 	html.WriteString(GenerateTagChipsInputWithSave("meta-areas", "areas", areasStr,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add areas of responsibility"),
 		"/api/metadata/para/areas?format=options", filePath, "/api/metadata/para/areas"))
@@ -159,8 +168,8 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 	if metadata != nil && len(metadata.PARA.Resources) > 0 {
 		resourcesStr = strings.Join(metadata.PARA.Resources, ", ")
 	}
-	html.WriteString(`<div class="form-field">`)
-	html.WriteString(`<label for="meta-resources">` + translation.SprintfForRequest(configmanager.GetLanguage(), "resources") + `</label>`)
+	html.WriteString(`<div class="form-field-quarter">`)
+	html.WriteString(`<label for="meta-resources">` + translation.SprintfForRequest(configmanager.GetLanguage(), "para-resources") + `</label>`)
 	html.WriteString(GenerateTagChipsInputWithSave("meta-resources", "resources", resourcesStr,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add resources"),
 		"/api/metadata/para/resources?format=options", filePath, "/api/metadata/para/resources"))
@@ -171,14 +180,16 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 	if metadata != nil && len(metadata.PARA.Archive) > 0 {
 		archiveStr = strings.Join(metadata.PARA.Archive, ", ")
 	}
-	html.WriteString(`<div class="form-field">`)
-	html.WriteString(`<label for="meta-archive">` + translation.SprintfForRequest(configmanager.GetLanguage(), "archive") + `</label>`)
+	html.WriteString(`<div class="form-field-quarter">`)
+	html.WriteString(`<label for="meta-archive">` + translation.SprintfForRequest(configmanager.GetLanguage(), "para-archive") + `</label>`)
 	html.WriteString(GenerateTagChipsInputWithSave("meta-archive", "archive", archiveStr,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add archived items"),
 		"/api/metadata/para/archive?format=options", filePath, "/api/metadata/para/archive"))
 	html.WriteString(`</div>`)
 
-	html.WriteString(`</div>`)  // close para form group
+	html.WriteString(`</div>`) // close form-field-row
+
+	html.WriteString(`</div>`)  // close basic form group
 	html.WriteString(`</form>`) // close metadata form
 
 	return html.String(), nil

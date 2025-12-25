@@ -110,7 +110,7 @@
     <div class="modal-content">
         <h3>{{T "Rename"}}</h3>
         <form id="rename-form" hx-post="" hx-target="#rename-result">
-            <input type="text" name="name" id="rename-input" required/>
+            <input type="text" name="name" id="rename-input" placeholder="Enter new file path (e.g., folder/newname.md)" required/>
             <div class="modal-actions">
                 <button type="submit" class="btn-primary">{{T "Rename"}}</button>
                 <button
@@ -158,12 +158,11 @@ if (dashMatch) {
 const fileMatch = path.match(/\/files\/(.+)/);
 if (fileMatch && !path.includes('/edit/')) {
     const filepath = fileMatch[1];
-    const filename = filepath.split('/').pop(); // get just the filename
     document.getElementById('edit-link').href = `/files/edit/${filepath}`;
     document.getElementById('history-link').href = `/files/history/${filepath}`;
     document.getElementById('rename-form').setAttribute('hx-post', `/api/files/rename/${filepath}`);
     document.getElementById('delete-form').setAttribute('hx-delete', `/api/files/delete/${filepath}`);
-    document.getElementById('rename-input').value = filename; // populate with current filename
+    document.getElementById('rename-input').value = filepath; // populate with full filepath for directory moves
     document.getElementById('edit-dropdown').style.display = 'block';
 }
 </script>

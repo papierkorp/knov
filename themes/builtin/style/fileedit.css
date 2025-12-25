@@ -183,6 +183,42 @@ body[data-dark-mode="true"]
     flex-direction: column;
 }
 
+/* compact row layout for PARA fields */
+#page-fileedit .metadata-form .form-field-row,
+#page-filenew .metadata-form .form-field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+#page-fileedit .metadata-form .form-field-quarter,
+#page-filenew .metadata-form .form-field-quarter {
+    display: flex;
+    flex-direction: column;
+}
+
+#page-fileedit .metadata-form .form-field-quarter label,
+#page-filenew .metadata-form .form-field-quarter label {
+    font-size: 0.9em;
+    margin-bottom: 4px;
+}
+
+/* responsive adjustments for PARA fields */
+@media (max-width: 1024px) {
+    #page-fileedit .metadata-form .form-field-row,
+    #page-filenew .metadata-form .form-field-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    #page-fileedit .metadata-form .form-field-row,
+    #page-filenew .metadata-form .form-field-row {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* responsive adjustments for smaller screens */
 @media (max-width: 768px) {
     #page-fileedit .metadata-form .form-group,
@@ -389,6 +425,40 @@ body[data-dark-mode="true"]
 #page-filenew .metadata-form .save-status span {
     color: var(--success, #22c55e);
     font-weight: 500;
+}
+
+/* specific status message styles */
+#page-fileedit .metadata-form .save-status .status-ok,
+#page-filenew .metadata-form .save-status .status-ok {
+    color: var(--success, #22c55e);
+    font-weight: 500;
+}
+
+#page-fileedit .metadata-form .save-status .status-error,
+#page-filenew .metadata-form .save-status .status-error {
+    color: var(--error, #ef4444);
+    font-weight: 500;
+    background: var(--error-bg, rgba(239, 68, 68, 0.1));
+    border-color: var(--error, #ef4444);
+}
+
+/* direct status classes (when div has the class) */
+#page-fileedit .metadata-form .save-status.status-ok,
+#page-filenew .metadata-form .save-status.status-ok,
+#page-fileedit .metadata-form .status-ok,
+#page-filenew .metadata-form .status-ok {
+    color: var(--success, #22c55e);
+    background: var(--success-bg, rgba(34, 197, 94, 0.1));
+    border-color: var(--success, #22c55e);
+}
+
+#page-fileedit .metadata-form .save-status.status-error,
+#page-filenew .metadata-form .save-status.status-error,
+#page-fileedit .metadata-form .status-error,
+#page-filenew .metadata-form .status-error {
+    color: var(--error, #ef4444);
+    background: var(--error-bg, rgba(239, 68, 68, 0.1));
+    border-color: var(--error, #ef4444);
 }
 
 /* code blocks in preview */

@@ -2049,50 +2049,6 @@ paths:
       summary: Set file last edited date
       tags:
       - metadata
-  /api/metadata/name:
-    get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get file name
-      tags:
-      - metadata
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: File path
-        in: formData
-        name: filepath
-        required: true
-        type: string
-      - description: New file name
-        in: formData
-        name: name
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Set file name
-      tags:
-      - metadata
   /api/metadata/para/archive:
     get:
       description: Get all PARA archive with counts, or archive for a specific file

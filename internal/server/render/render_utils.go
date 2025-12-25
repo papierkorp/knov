@@ -148,6 +148,7 @@ func RenderFileDropdown(files []files.File, limit int) string {
 	return html.String()
 }
 
+// DONT RENAME filez to files since files.GetFileContent is not working than!!
 // RenderFileContent renders files with their actual content displayed
 func RenderFileContent(filez []files.File) string {
 	var html strings.Builder
@@ -168,7 +169,7 @@ func RenderFileContent(filez []files.File) string {
 			html.WriteString(content.HTML)
 		}
 
-		html.WriteString(`</div></div><hr />`)
+		html.WriteString(`</div></div>`)
 	}
 
 	if len(filez) == 0 {
@@ -322,6 +323,13 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 	}, 100);
 })();
 </script>`, chipsId, chipsId, inputId, datalistId, placeholder, hiddenId, name, value, saveEndpoint, filePath, datalistHTML, chipsId, chipsId, inputId, hiddenId)
+}
+
+// GenerateInputWithSaveOnBlur creates an input field that only saves when user leaves the field
+func GenerateInputWithSaveOnBlur(id, name, value, placeholder, filePath, saveEndpoint string) string {
+	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" placeholder="%s"
+	hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="blur" hx-target="#metadata-save-status" hx-swap="innerHTML"/>`,
+		id, name, value, placeholder, saveEndpoint, filePath)
 }
 
 // RenderBrowseHTML renders a map of items with counts as browse links

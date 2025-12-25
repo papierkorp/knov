@@ -20,6 +20,10 @@
                 <h3>metadata</h3>
                 <div class="metadata-grid">
                     <div class="metadata-row">
+                        <span class="metadata-label">path:</span>
+                        <span><a href="/files/{{urlQuery .FilePath}}">{{.FilePath}}</a></span>
+                    </div>
+                    <div class="metadata-row">
                         <span class="metadata-label">collection:</span>
                         <span hx-get="/api/metadata/collections?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
