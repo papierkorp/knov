@@ -2,6 +2,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 	"knov/internal/utils"
@@ -228,6 +230,61 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
+}
+
+// @Summary Export file to markdown
+// @Description Export dokuwiki file to markdown format
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Produce text/markdown
+// @Param filepath query string true "File path"
+// @Success 200 {file} file "markdown file"
+// @Failure 400 {string} string "invalid request"
+// @Failure 500 {string} string "export failed"
+// @Router /api/files/export/markdown [get]
+func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+
+	fullPath := utils.ToFullPath(filePath)
+
+	// get parser handler
+	handler := files.GetParserRegistry().GetHandler(fullPath)
+	if handler == nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unsupported file type"), http.StatusBadRequest)
+		return
+	}
+
+	// check if it's a dokuwiki handler
+	dokuwikiHandler, ok := handler.(*parser.DokuwikiHandler)
+	if !ok {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "markdown export only supported for dokuwiki files"), http.StatusBadRequest)
+		return
+	}
+
+	// read file content
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		logging.LogError("failed to read file %s: %v", fullPath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
+		return
+	}
+
+	// convert to markdown
+	markdown := dokuwikiHandler.ConvertToMarkdown(string(content))
+
+	// prepare download
+	filename := filepath.Base(filePath)
+	filename = strings.TrimSuffix(filename, filepath.Ext(filename)) + ".md"
+
+	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	w.Write([]byte(markdown))
+
+	logging.LogInfo("exported file to markdown: %s", filePath)
 }
 
 // @Summary Browse files by single metadata field

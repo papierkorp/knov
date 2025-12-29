@@ -16,10 +16,15 @@ single source of truth is the metadata - we just display it differently
 
 **views**
 
-based on dailysync setting:
 
-- if enabled: sync the links in the file
-- if disabled: no sync
+which parser to use (custom search for the links or plain markdown)
+
+- todo
+  - only available if sync is activated
+  - custom daily parser
+- note
+  - markdown parser
+
 
 **on load**
 
@@ -69,7 +74,7 @@ else use default markdown parser
   - are read only
   - links will never be updated (even if the note file is deleted)
 
-**event trigger/on reload**
+**event trigger/on reload - sync**
 
 if dailysync is activated:
 
@@ -86,7 +91,7 @@ if dailysync is activated:
 
 **new settings**
 
-- dailysync boolean enabled/disabled
+- dailysync boolean enabled/disabled - env
 
 ## kanban
 
@@ -100,20 +105,30 @@ if dailysync is activated:
 
 **views**
 
+(which data to display)
+
+- dailytodo
+  - only available if sync is activated
+  - sync the links in the file with the board (single source of truth is metadata)
+- filtertodo
+  - reuse filter
+
 **parser**
 
 **on load**
 
 **display**
 
-- 3 columns:
-  - today
-  - note
+- boards: (with sort + hide button)
+  - backlog
+  - doing
+  - review/waiting
   - done
-- - / add button: quick add of todo with targetDate and status
+- xxx columns based on view
+- + / add button: quick add of todo with targetDate and status
 - how to do it with cards/what to display... (do i get /api/kanban/card/<id> route?..)
 
-**event trigger/on reload**
+**event trigger/on reload - sync**
 
 - status change in kanban (link moved to another header) => move in kanban board..
 - targetDate change in calendar => remove/add to board
@@ -140,10 +155,13 @@ if dailysync is activated:
 
 **views**
 
-- daily
-  - show content of daily folder for this date
+which data to display
+
+- dailytodo
+  - show (parsed) content of daily folder for this date => links from daily file based on metadata status
   - show filenames/paths links
-- weekly/monthly
+- normal
+  - show based on target date + metadata status
   - show filenames/paths links
 
 **on load**
@@ -156,7 +174,7 @@ if dailysync is activated:
 - without a time for now
 - view based on htmx call
 
-**event trigger/on reload**
+**event trigger/on reload - sync**
 
 **on save**
 

@@ -191,6 +191,7 @@ func StartServerChi() {
 			r.Get("/form", handleAPIFileForm)
 			r.Get("/metadata-form", handleAPIMetadataForm)
 			r.Get("/folder", handleAPIGetFolder)
+			r.Get("/export/markdown", handleAPIExportToMarkdown)
 
 			// file version routes
 			r.Get("/versions/diff/*", handleAPIGetFileVersionDiff)

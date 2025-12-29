@@ -66,6 +66,9 @@ func copyTestFiles() error {
 	}
 
 	srcDir := "internal/testdata/testfiles"
+	if err := os.MkdirAll(filepath.Dir(srcDir), 0755); err != nil {
+		return err
+	}
 	return filepath.WalkDir(srcDir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -80,6 +83,11 @@ func copyTestFiles() error {
 
 		if d.IsDir() {
 			return os.MkdirAll(destPath, 0755)
+		}
+
+		// ensure parent directory exists before copying file
+		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+			return err
 		}
 
 		return utils.CopyFile(path, destPath)

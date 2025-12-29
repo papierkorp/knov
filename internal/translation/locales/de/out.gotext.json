@@ -77,6 +77,11 @@
             "translation": ""
         },
         {
+            "id": "add folder categories",
+            "message": "add folder categories",
+            "translation": ""
+        },
+        {
             "id": "add item",
             "message": "add item",
             "translation": ""
@@ -152,11 +157,6 @@
             "translation": ""
         },
         {
-            "id": "archive",
-            "message": "archive",
-            "translation": ""
-        },
-        {
             "id": "Archive",
             "message": "Archive",
             "translation": ""
@@ -169,11 +169,6 @@
         {
             "id": "archive updated",
             "message": "archive updated",
-            "translation": ""
-        },
-        {
-            "id": "areas",
-            "message": "areas",
             "translation": ""
         },
         {
@@ -442,6 +437,11 @@
             "translation": "Neues Dashboard erstellen"
         },
         {
+            "id": "current file does not exist",
+            "message": "current file does not exist",
+            "translation": ""
+        },
+        {
             "id": "current version",
             "message": "current version",
             "translation": ""
@@ -632,8 +632,8 @@
             "translation": "Suchtext eingeben"
         },
         {
-            "id": "enter name",
-            "message": "enter name",
+            "id": "enter file path",
+            "message": "enter file path",
             "translation": ""
         },
         {
@@ -707,6 +707,11 @@
             "translation": ""
         },
         {
+            "id": "Export to Markdown",
+            "message": "Export to Markdown",
+            "translation": ""
+        },
+        {
             "id": "External source notes",
             "message": "External source notes",
             "translation": ""
@@ -719,6 +724,11 @@
         {
             "id": "failed to create directory",
             "message": "failed to create directory",
+            "translation": ""
+        },
+        {
+            "id": "failed to delete file",
+            "message": "failed to delete file",
             "translation": ""
         },
         {
@@ -832,8 +842,23 @@
             "translation": ""
         },
         {
+            "id": "failed to move file",
+            "message": "failed to move file",
+            "translation": ""
+        },
+        {
             "id": "failed to parse form",
             "message": "failed to parse form",
+            "translation": ""
+        },
+        {
+            "id": "failed to parse form data",
+            "message": "failed to parse form data",
+            "translation": ""
+        },
+        {
+            "id": "failed to parse form data. please check your input.",
+            "message": "failed to parse form data. please check your input.",
             "translation": ""
         },
         {
@@ -872,6 +897,11 @@
             "translation": ""
         },
         {
+            "id": "failed to rename file",
+            "message": "failed to rename file",
+            "translation": ""
+        },
+        {
             "id": "failed to render widget",
             "message": "failed to render widget",
             "translation": ""
@@ -892,18 +922,9 @@
             "translation": ""
         },
         {
-            "id": "failed to save filter: {Arg_1}",
-            "message": "failed to save filter: {Arg_1}",
-            "translation": "",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ]
+            "id": "failed to save filter. please check the logs for details.",
+            "message": "failed to save filter. please check the logs for details.",
+            "translation": ""
         },
         {
             "id": "failed to save index",
@@ -946,6 +967,16 @@
             "translation": ""
         },
         {
+            "id": "file does not exist",
+            "message": "file does not exist",
+            "translation": ""
+        },
+        {
+            "id": "file moved successfully",
+            "message": "file moved successfully",
+            "translation": ""
+        },
+        {
             "id": "file path",
             "message": "file path",
             "translation": "Dateipfad"
@@ -953,6 +984,11 @@
         {
             "id": "file path is required",
             "message": "file path is required",
+            "translation": ""
+        },
+        {
+            "id": "file path is required. please enter a file path.",
+            "message": "file path is required. please enter a file path.",
             "translation": ""
         },
         {
@@ -1011,6 +1047,16 @@
             "translation": ""
         },
         {
+            "id": "file with new name already exists",
+            "message": "file with new name already exists",
+            "translation": ""
+        },
+        {
+            "id": "file with new path already exists",
+            "message": "file with new path already exists",
+            "translation": ""
+        },
+        {
             "id": "filter",
             "message": "filter",
             "translation": ""
@@ -1063,6 +1109,11 @@
         {
             "id": "Filter results - display filtered files",
             "message": "Filter results - display filtered files",
+            "translation": ""
+        },
+        {
+            "id": "filter saved successfully!",
+            "message": "filter saved successfully!",
             "translation": ""
         },
         {
@@ -1545,6 +1596,11 @@
             "translation": ""
         },
         {
+            "id": "markdown export only supported for dokuwiki files",
+            "message": "markdown export only supported for dokuwiki files",
+            "translation": ""
+        },
+        {
             "id": "Matching Options",
             "message": "Matching Options",
             "translation": ""
@@ -1582,6 +1638,11 @@
         {
             "id": "missing filepath",
             "message": "missing filepath",
+            "translation": ""
+        },
+        {
+            "id": "missing filepath or newpath parameter",
+            "message": "missing filepath or newpath parameter",
             "translation": ""
         },
         {
@@ -1630,11 +1691,6 @@
             "translation": ""
         },
         {
-            "id": "name",
-            "message": "name",
-            "translation": ""
-        },
-        {
             "id": "name is required",
             "message": "name is required",
             "translation": ""
@@ -1652,6 +1708,11 @@
         {
             "id": "+ New File",
             "message": "+ New File",
+            "translation": ""
+        },
+        {
+            "id": "new file path is required",
+            "message": "new file path is required",
             "translation": ""
         },
         {
@@ -1687,6 +1748,11 @@
         {
             "id": "no files found",
             "message": "no files found",
+            "translation": ""
+        },
+        {
+            "id": "no files found matching filter criteria",
+            "message": "no files found matching filter criteria",
             "translation": ""
         },
         {
@@ -1830,8 +1896,13 @@
             "translation": ""
         },
         {
-            "id": "PARA method",
-            "message": "PARA method",
+            "id": "para-archive",
+            "message": "para-archive",
+            "translation": ""
+        },
+        {
+            "id": "para-areas",
+            "message": "para-areas",
             "translation": ""
         },
         {
@@ -1842,6 +1913,16 @@
         {
             "id": "PARA Organization",
             "message": "PARA Organization",
+            "translation": ""
+        },
+        {
+            "id": "para-projects",
+            "message": "para-projects",
+            "translation": ""
+        },
+        {
+            "id": "para-resources",
+            "message": "para-resources",
             "translation": ""
         },
         {
@@ -1970,11 +2051,6 @@
             "translation": ""
         },
         {
-            "id": "projects",
-            "message": "projects",
-            "translation": ""
-        },
-        {
             "id": "Projects",
             "message": "Projects",
             "translation": ""
@@ -2052,11 +2128,6 @@
         {
             "id": "Reschedule things in your calendar for another date",
             "message": "Reschedule things in your calendar for another date",
-            "translation": ""
-        },
-        {
-            "id": "resources",
-            "message": "resources",
             "translation": ""
         },
         {
@@ -2217,6 +2288,11 @@
         {
             "id": "select field",
             "message": "select field",
+            "translation": ""
+        },
+        {
+            "id": "select file...",
+            "message": "select file...",
             "translation": ""
         },
         {

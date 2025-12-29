@@ -1056,6 +1056,50 @@
                 }
             }
         },
+        "/api/files/export/markdown": {
+            "get": {
+                "description": "Export dokuwiki file to markdown format",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/markdown"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Export file to markdown",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "markdown file",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "export failed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/folder": {
             "get": {
                 "consumes": [

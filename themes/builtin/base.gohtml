@@ -81,6 +81,9 @@
             <div class="dropdown-navbar-content" id="edit-dropdown-content">
                 <a href="#" id="edit-link">{{T "Edit"}}</a>
                 <a href="#" id="history-link">{{T "History"}}</a>
+                {{ if eq .FileType "dokuwiki" }}
+                <a href="#" id="export-markdown-link">{{T "Export to Markdown"}}</a>
+                {{ end }}
                 <a href="#" onclick="document.getElementById('rename-modal').style.display='flex'">
                     {{T "Rename"}}
                 </a>
@@ -164,6 +167,11 @@ if (fileMatch && !path.includes('/edit/')) {
     document.getElementById('delete-form').setAttribute('hx-delete', `/api/files/delete/${filepath}`);
     document.getElementById('rename-input').value = filepath; // populate with full filepath for directory moves
     document.getElementById('edit-dropdown').style.display = 'block';
+
+    {{ if eq .FileType "dokuwiki" }}
+    // set export to markdown link for dokuwiki files
+    document.getElementById('export-markdown-link').href = `/api/files/export/markdown?filepath=${encodeURIComponent(filepath)}`;
+    {{ end }}
 }
 </script>
 {{ end }}

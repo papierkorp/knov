@@ -65,6 +65,168 @@ func (h *DokuwikiHandler) Name() string {
 	return "dokuwiki"
 }
 
+// ConvertToMarkdown converts DokuWiki syntax to Markdown syntax
+func (h *DokuwikiHandler) ConvertToMarkdown(content string) string {
+	// headers
+	content = regexp.MustCompile(`======\s*(.+?)\s*======`).ReplaceAllString(content, "# $1")
+	content = regexp.MustCompile(`=====\s*(.+?)\s*=====`).ReplaceAllString(content, "## $1")
+	content = regexp.MustCompile(`====\s*(.+?)\s*====`).ReplaceAllString(content, "### $1")
+	content = regexp.MustCompile(`===\s*(.+?)\s*===`).ReplaceAllString(content, "#### $1")
+	content = regexp.MustCompile(`==\s*(.+?)\s*==`).ReplaceAllString(content, "##### $1")
+
+	// text formatting
+	content = regexp.MustCompile(`\*\*(.+?)\*\*`).ReplaceAllString(content, "**$1**") // bold already matches
+	content = regexp.MustCompile(`//(.+?)//`).ReplaceAllString(content, "*$1*")       // italic
+	content = regexp.MustCompile(`__(.+?)__`).ReplaceAllString(content, "<u>$1</u>")  // underline (no markdown equivalent)
+	content = regexp.MustCompile(`''(.+?)''`).ReplaceAllString(content, "`$1`")       // monospace/code
+
+	// links - [[link|text]] or [[link]]
+	linkRegex := regexp.MustCompile(`\[\[([^\]|]+)(?:\|([^\]]+))?\]\]`)
+	content = linkRegex.ReplaceAllStringFunc(content, func(match string) string {
+		matches := linkRegex.FindStringSubmatch(match)
+		if len(matches) < 2 {
+			return match
+		}
+		link := strings.TrimSpace(matches[1])
+		text := link
+		if len(matches) > 2 && matches[2] != "" {
+			text = strings.TrimSpace(matches[2])
+		}
+		// check if it's external link
+		if strings.HasPrefix(link, "http://") || strings.HasPrefix(link, "https://") {
+			return fmt.Sprintf("[%s](%s)", text, link)
+		}
+		// internal link - convert to markdown format
+		return fmt.Sprintf("[%s](%s)", text, link)
+	})
+
+	// code blocks
+	content = h.convertDokuWikiCodeBlocksToMarkdown(content)
+
+	// lists
+	content = h.convertDokuWikiListsToMarkdown(content)
+
+	// tables
+	content = h.convertDokuWikiTablesToMarkdown(content)
+
+	return content
+}
+
+// convertDokuWikiCodeBlocksToMarkdown converts code blocks
+func (h *DokuwikiHandler) convertDokuWikiCodeBlocksToMarkdown(content string) string {
+	// <code language>...</code>
+	codeRegex := regexp.MustCompile(`(?s)<code\s+([a-zA-Z0-9_-]+)>(.*?)</code>`)
+	content = codeRegex.ReplaceAllStringFunc(content, func(match string) string {
+		matches := codeRegex.FindStringSubmatch(match)
+		if len(matches) < 3 {
+			return match
+		}
+		lang := strings.TrimSpace(matches[1])
+		code := strings.TrimSpace(matches[2])
+		return fmt.Sprintf("```%s\n%s\n```", lang, code)
+	})
+
+	// <code>...</code> without language
+	simpleCodeRegex := regexp.MustCompile(`(?s)<code>(.*?)</code>`)
+	content = simpleCodeRegex.ReplaceAllStringFunc(content, func(match string) string {
+		matches := simpleCodeRegex.FindStringSubmatch(match)
+		if len(matches) < 2 {
+			return match
+		}
+		code := strings.TrimSpace(matches[1])
+		return fmt.Sprintf("```\n%s\n```", code)
+	})
+
+	// <file language>...</file>
+	fileRegex := regexp.MustCompile(`(?s)<file\s+([a-zA-Z0-9_-]+)>(.*?)</file>`)
+	content = fileRegex.ReplaceAllStringFunc(content, func(match string) string {
+		matches := fileRegex.FindStringSubmatch(match)
+		if len(matches) < 3 {
+			return match
+		}
+		lang := strings.TrimSpace(matches[1])
+		code := strings.TrimSpace(matches[2])
+		return fmt.Sprintf("```%s\n%s\n```", lang, code)
+	})
+
+	return content
+}
+
+// convertDokuWikiListsToMarkdown converts list syntax
+func (h *DokuwikiHandler) convertDokuWikiListsToMarkdown(content string) string {
+	lines := strings.Split(content, "\n")
+	var result []string
+
+	for _, line := range lines {
+		trimmed := strings.TrimRight(line, " \t")
+
+		// detect list items
+		if match := regexp.MustCompile(`^(  +)(\*|-) (.+)$`).FindStringSubmatch(trimmed); match != nil {
+			level := len(match[1]) / 2
+			listType := match[2]
+			item := match[3]
+			indent := strings.Repeat("  ", level-1)
+			if listType == "*" {
+				result = append(result, indent+"- "+item)
+			} else {
+				result = append(result, indent+"1. "+item)
+			}
+		} else {
+			result = append(result, line)
+		}
+	}
+
+	return strings.Join(result, "\n")
+}
+
+// convertDokuWikiTablesToMarkdown converts table syntax
+func (h *DokuwikiHandler) convertDokuWikiTablesToMarkdown(content string) string {
+	lines := strings.Split(content, "\n")
+	var result []string
+	var inTable bool
+	var firstRow bool
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+
+		if strings.HasPrefix(line, "^") || strings.HasPrefix(line, "|") {
+			if !inTable {
+				inTable = true
+				firstRow = true
+			}
+
+			// remove leading/trailing delimiters
+			line = strings.TrimPrefix(line, "^")
+			line = strings.TrimPrefix(line, "|")
+			line = strings.TrimSuffix(line, "^")
+			line = strings.TrimSuffix(line, "|")
+
+			// split by either ^ or |
+			cells := h.splitMixedDelimiters(line)
+			mdRow := "| " + strings.Join(cells, " | ") + " |"
+			result = append(result, mdRow)
+
+			// add separator after first row
+			if firstRow {
+				separator := "|"
+				for range cells {
+					separator += " --- |"
+				}
+				result = append(result, separator)
+				firstRow = false
+			}
+		} else {
+			if inTable {
+				inTable = false
+				firstRow = false
+			}
+			result = append(result, line)
+		}
+	}
+
+	return strings.Join(result, "\n")
+}
+
 // parseDokuWiki converts DokuWiki syntax to HTML
 func (h *DokuwikiHandler) parseDokuWiki(content string) string {
 	// process headers first, before code blocks to avoid conflicts

@@ -107,6 +107,13 @@
             "fuzzy": true
         },
         {
+            "id": "add folder categories",
+            "message": "add folder categories",
+            "translation": "add folder categories",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "add item",
             "message": "add item",
             "translation": "add item",
@@ -208,13 +215,6 @@
             "fuzzy": true
         },
         {
-            "id": "archive",
-            "message": "archive",
-            "translation": "archive",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Archive",
             "message": "Archive",
             "translation": "Archive",
@@ -232,13 +232,6 @@
             "id": "archive updated",
             "message": "archive updated",
             "translation": "archive updated",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "areas",
-            "message": "areas",
-            "translation": "areas",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -600,6 +593,13 @@
             "translation": "Create New Dashboard"
         },
         {
+            "id": "current file does not exist",
+            "message": "current file does not exist",
+            "translation": "current file does not exist",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "current version",
             "message": "current version",
             "translation": "current version",
@@ -856,9 +856,9 @@
             "translation": "Enter a search term"
         },
         {
-            "id": "enter name",
-            "message": "enter name",
-            "translation": "enter name",
+            "id": "enter file path",
+            "message": "enter file path",
+            "translation": "enter file path",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -961,6 +961,13 @@
             "fuzzy": true
         },
         {
+            "id": "Export to Markdown",
+            "message": "Export to Markdown",
+            "translation": "Export to Markdown",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "External source notes",
             "message": "External source notes",
             "translation": "External source notes",
@@ -978,6 +985,13 @@
             "id": "failed to create directory",
             "message": "failed to create directory",
             "translation": "failed to create directory",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to delete file",
+            "message": "failed to delete file",
+            "translation": "failed to delete file",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1136,9 +1150,30 @@
             "fuzzy": true
         },
         {
+            "id": "failed to move file",
+            "message": "failed to move file",
+            "translation": "failed to move file",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "failed to parse form",
             "message": "failed to parse form",
             "translation": "failed to parse form",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to parse form data",
+            "message": "failed to parse form data",
+            "translation": "failed to parse form data",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to parse form data. please check your input.",
+            "message": "failed to parse form data. please check your input.",
+            "translation": "failed to parse form data. please check your input.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1192,6 +1227,13 @@
             "fuzzy": true
         },
         {
+            "id": "failed to rename file",
+            "message": "failed to rename file",
+            "translation": "failed to rename file",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "failed to render widget",
             "message": "failed to render widget",
             "translation": "failed to render widget",
@@ -1220,19 +1262,10 @@
             "fuzzy": true
         },
         {
-            "id": "failed to save filter: {Arg_1}",
-            "message": "failed to save filter: {Arg_1}",
-            "translation": "failed to save filter: {Arg_1}",
+            "id": "failed to save filter. please check the logs for details.",
+            "message": "failed to save filter. please check the logs for details.",
+            "translation": "failed to save filter. please check the logs for details.",
             "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
             "fuzzy": true
         },
         {
@@ -1292,6 +1325,20 @@
             "fuzzy": true
         },
         {
+            "id": "file does not exist",
+            "message": "file does not exist",
+            "translation": "file does not exist",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "file moved successfully",
+            "message": "file moved successfully",
+            "translation": "file moved successfully",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "file path",
             "message": "file path",
             "translation": "file path",
@@ -1302,6 +1349,13 @@
             "id": "file path is required",
             "message": "file path is required",
             "translation": "file path is required",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "file path is required. please enter a file path.",
+            "message": "file path is required. please enter a file path.",
+            "translation": "file path is required. please enter a file path.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1381,6 +1435,20 @@
             "fuzzy": true
         },
         {
+            "id": "file with new name already exists",
+            "message": "file with new name already exists",
+            "translation": "file with new name already exists",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "file with new path already exists",
+            "message": "file with new path already exists",
+            "translation": "file with new path already exists",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "filter",
             "message": "filter",
             "translation": "filter",
@@ -1454,6 +1522,13 @@
             "id": "Filter results - display filtered files",
             "message": "Filter results - display filtered files",
             "translation": "Filter results - display filtered files",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "filter saved successfully!",
+            "message": "filter saved successfully!",
+            "translation": "filter saved successfully!",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2109,6 +2184,13 @@
             "fuzzy": true
         },
         {
+            "id": "markdown export only supported for dokuwiki files",
+            "message": "markdown export only supported for dokuwiki files",
+            "translation": "markdown export only supported for dokuwiki files",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Matching Options",
             "message": "Matching Options",
             "translation": "Matching Options",
@@ -2161,6 +2243,13 @@
             "id": "missing filepath",
             "message": "missing filepath",
             "translation": "missing filepath",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "missing filepath or newpath parameter",
+            "message": "missing filepath or newpath parameter",
+            "translation": "missing filepath or newpath parameter",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2228,13 +2317,6 @@
             "fuzzy": true
         },
         {
-            "id": "name",
-            "message": "name",
-            "translation": "name",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "name is required",
             "message": "name is required",
             "translation": "name is required",
@@ -2259,6 +2341,13 @@
             "id": "+ New File",
             "message": "+ New File",
             "translation": "+ New File",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "new file path is required",
+            "message": "new file path is required",
+            "translation": "new file path is required",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2308,6 +2397,13 @@
             "id": "no files found",
             "message": "no files found",
             "translation": "no files found",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "no files found matching filter criteria",
+            "message": "no files found matching filter criteria",
+            "translation": "no files found matching filter criteria",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2502,9 +2598,16 @@
             "fuzzy": true
         },
         {
-            "id": "PARA method",
-            "message": "PARA method",
-            "translation": "PARA method",
+            "id": "para-archive",
+            "message": "para-archive",
+            "translation": "para-archive",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "para-areas",
+            "message": "para-areas",
+            "translation": "para-areas",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2519,6 +2622,20 @@
             "id": "PARA Organization",
             "message": "PARA Organization",
             "translation": "PARA Organization",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "para-projects",
+            "message": "para-projects",
+            "translation": "para-projects",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "para-resources",
+            "message": "para-resources",
+            "translation": "para-resources",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2694,13 +2811,6 @@
             "fuzzy": true
         },
         {
-            "id": "projects",
-            "message": "projects",
-            "translation": "projects",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Projects",
             "message": "Projects",
             "translation": "Projects",
@@ -2803,13 +2913,6 @@
             "id": "Reschedule things in your calendar for another date",
             "message": "Reschedule things in your calendar for another date",
             "translation": "Reschedule things in your calendar for another date",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "resources",
-            "message": "resources",
-            "translation": "resources",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -3028,6 +3131,13 @@
             "id": "select field",
             "message": "select field",
             "translation": "select field",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "select file...",
+            "message": "select file...",
+            "translation": "select file...",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },

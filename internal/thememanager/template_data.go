@@ -11,6 +11,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/translation"
+	"knov/internal/utils"
 )
 
 // -----------------------------------------------
@@ -24,6 +25,7 @@ type BaseTemplateData struct {
 	ThemeSettings map[string]interface{}
 	Language      string
 	Themes        []Theme
+	FileType      string
 	T             func(string, ...any) string
 }
 
@@ -35,6 +37,7 @@ func NewBaseTemplateData(title string) BaseTemplateData {
 		ThemeSettings: getMergedThemeSettings(),
 		Language:      configmanager.GetLanguage(),
 		Themes:        themeManager.GetAvailableThemes(),
+		FileType:      "",
 		T:             translation.Sprintf,
 	}
 }
@@ -135,8 +138,19 @@ type FileViewTemplateData struct {
 
 // NewFileViewTemplateData creates file view specific data
 func NewFileViewTemplateData(title, filePath string, fileContent *files.FileContent) FileViewTemplateData {
+	baseData := NewBaseTemplateData(title)
+
+	// detect file type using parser registry
+	if filePath != "" {
+		fullPath := utils.ToFullPath(filePath)
+		handler := files.GetParserRegistry().GetHandler(fullPath)
+		if handler != nil {
+			baseData.FileType = handler.Name()
+		}
+	}
+
 	return FileViewTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title),
+		BaseTemplateData: baseData,
 		FilePath:         filePath,
 		FileContent:      fileContent,
 	}
