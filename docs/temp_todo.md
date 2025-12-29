@@ -98,7 +98,7 @@ if dailysync is activated:
 **routes**
 
 - /kanban
-- /kanban/<date> / /canban/from:<date>to:<date> (maybe with a PT parameter, so targetdate +x days)
+- /kanban/<date> / /canban/from:<date>to:<date> (maybe with a neededDays/workDays parameter, so targetdate +x days)
 - /api/kanban/board (with a parameter scope: for scope of today/week/month based on setting)
 - /api/kanban/move
 - /api/kanban/save
@@ -189,7 +189,7 @@ additional neccessary changes
 
 - when creating a fleeting note - add a targetdate of + 1 week
 - change the status (which isnt used at the moment) to the 3 kanban status
-- add a new metadata like PT or something like this (so i can have a range for targetDate e.g. targetdate+pt = date range)
+- add a new metadata like neededDays/workDays or something like this (so i can have a range for targetDate e.g. targetdate+neededDays/workDays = date range)
 - in server.go in /files/new/todo add parameter for quick adds for daily/calendar/kanban which automatically adds a targetDate of today and a status
 - syncViews(fileID, changeType) function which is called in handleAPIxxxSave for all 3 new saves
 
