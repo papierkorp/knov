@@ -2,6 +2,11 @@
 
 single source of truth is the metadata - we just display it differently
 
+## sync function
+
+1. change metadata (either status, targetDate/todoDate or parent)
+2. hx-reload /kanban, /daily and /calendar
+
 ## daily
 
 **routes**
@@ -26,16 +31,18 @@ which parser to use (custom search for the links or plain markdown)
   - markdown parser
 
 
-**on load**
+**on load/reload**
 
-- the file is saved in data/daily/<date>.md
-  - look in the data/daily folder for the current date if there is a file
-    - if there is no file and dailysync is activated:
-      - search for todos for today and add them all to the markdown file (metadata TargetDate) accordingly to the parser
-    - if there is no file and dailysync is deactivated:
-      - create a new emtpy file
-    - if there is a file
-      - load the existing file in edit mode
+the file is saved in data/daily/<date>.md, look in the data/daily folder for the current date if there is a file
+
+- if there is no file and dailysync is activated:
+  - search for todos for today and add them all to the markdown file (metadata TargetDate/todoDate) accordingly to the parser and with regex based on the status
+- if there is no file and dailysync is deactivated:
+  - create a new emtpy file
+- if there is a file and dailysync is activated:
+  - compare every link in the file with every todo of today and set the regex correctly
+- if there is a file ad dailysync is deactivated:
+  - load the existing file in edit mode
 
 **parser**
 
@@ -51,8 +58,8 @@ if dailysync is activated use the new parser:
     - status??
     - type fleeting
   - done:
-    - if moved to here => set status archived
-    - status archived
+    - if moved to here => set status done
+    - status done
 - each h1 header will have a list of (internal) links
 - these links will automatically switch if they are moved in the kanban board
 - or move in the kanban board if they are changed and saved here
@@ -78,20 +85,30 @@ else use default markdown parser
 
 if dailysync is activated:
 
-- status change in kanban => move the links
+- status change in kanban = update links based on regex => just reload /daily since it should load based on metadata
 - targetDate change in calendar => remove/add the link and remove/add Parentlink
-  else
+
+else
+
 - do nothing
 
 **on save**
 
-- check if the links were moved (parse) if yes => update metadata status of these files and reload /kanban
-- update the parent in each link
-- hx-trigger="change delay:1s"
+- check links:
+  - for new links: add current daily file as parent to the link file
+  - for existing links: do nothing
+  - for removed links: remove the current daily file as parent, remove targetDate/todoDate from metadata from linkfile and reload /calendar and /kanban
+  - for every link check regex (parser/regexsetting) => update metadata status of these files and reload /kanban
 
 **new settings**
 
 - dailysync boolean enabled/disabled - env
+- dailyregexposition: before/after as env var
+- regex for the parser as env vars (text/char before or after the link for the kanban board - can be changed by the user)
+  - regextodo - base: todo, o
+  - regexwaiting - base: waiting, ~
+  - regexdoing - base: doing, +
+  - regexdone - base: done, x
 
 ## kanban
 
@@ -115,14 +132,16 @@ if dailysync is activated:
 
 **parser**
 
+-
+
 **on load**
 
 **display**
 
 - boards: (with sort + hide button)
-  - backlog
+  - todo
   - doing
-  - review/waiting
+  - waiting
   - done
 - xxx columns based on view
 - + / add button: quick add of todo with targetDate and status
@@ -178,8 +197,8 @@ which data to display
 
 **on save**
 
-- allows drag and dropping the filenames into another date which changes the targetDate
-- if targetDate changed => reload /daily and /kanban
+- allows drag and dropping the filenames into another date which changes the targetDate/todoDate
+- if targetDate/todoDate changed => reload /daily and /kanban
 
 **new settings**
 
@@ -187,8 +206,9 @@ which data to display
 
 additional neccessary changes
 
+- rename targetDate to todoDate
 - when creating a fleeting note - add a targetdate of + 1 week
-- change the status (which isnt used at the moment) to the 3 kanban status
+- change the status (which isnt used at the moment) to the kanban status
 - add a new metadata like neededDays/workDays or something like this (so i can have a range for targetDate e.g. targetdate+neededDays/workDays = date range)
 - in server.go in /files/new/todo add parameter for quick adds for daily/calendar/kanban which automatically adds a targetDate of today and a status
 - syncViews(fileID, changeType) function which is called in handleAPIxxxSave for all 3 new saves

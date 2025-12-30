@@ -1106,6 +1106,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/files/export/zip": {
+            "post": {
+                "description": "Export all files from data directory as a zip archive",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/zip"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Export all files as zip",
+                "responses": {
+                    "200": {
+                        "description": "zip archive",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "500": {
+                        "description": "export failed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/folder": {
             "get": {
                 "consumes": [
