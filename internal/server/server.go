@@ -193,6 +193,7 @@ func StartServerChi() {
 			r.Get("/folder", handleAPIGetFolder)
 			r.Get("/export/markdown", handleAPIExportToMarkdown)
 			r.Post("/export/zip", handleAPIExportAllFiles)
+			r.Post("/export/markdown-converted", handleAPIExportAllFilesWithMarkdownConversion)
 
 			// file version routes
 			r.Get("/versions/diff/*", handleAPIGetFileVersionDiff)

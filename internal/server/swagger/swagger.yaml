@@ -1132,6 +1132,26 @@ paths:
       summary: Export file to markdown
       tags:
       - files
+  /api/files/export/markdown-converted:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Export all files from data directory as a zip archive, converting
+        dokuwiki files to markdown
+      produces:
+      - application/zip
+      responses:
+        "200":
+          description: zip archive
+          schema:
+            type: file
+        "500":
+          description: export failed
+          schema:
+            type: string
+      summary: Export all files with dokuwiki to markdown conversion
+      tags:
+      - files
   /api/files/export/zip:
     post:
       consumes:

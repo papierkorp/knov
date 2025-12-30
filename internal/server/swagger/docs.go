@@ -1106,6 +1106,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/files/export/markdown-converted": {
+            "post": {
+                "description": "Export all files from data directory as a zip archive, converting dokuwiki files to markdown",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/zip"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Export all files with dokuwiki to markdown conversion",
+                "responses": {
+                    "200": {
+                        "description": "zip archive",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "500": {
+                        "description": "export failed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/export/zip": {
             "post": {
                 "description": "Export all files from data directory as a zip archive",

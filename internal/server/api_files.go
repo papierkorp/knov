@@ -373,6 +373,105 @@ func handleAPIExportAllFiles(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("exported all files as zip: %s", filename)
 }
 
+// @Summary Export all files with dokuwiki to markdown conversion
+// @Description Export all files from data directory as a zip archive, converting dokuwiki files to markdown
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Produce application/zip
+// @Success 200 {file} file "zip archive"
+// @Failure 500 {string} string "export failed"
+// @Router /api/files/export/markdown-converted [post]
+func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *http.Request) {
+	dataPath := configmanager.GetAppConfig().DataPath
+
+	// create zip in memory
+	buf := new(bytes.Buffer)
+	zipWriter := zip.NewWriter(buf)
+
+	// walk through data directory
+	err := filepath.Walk(dataPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// skip .git directory
+		if info.IsDir() && info.Name() == ".git" {
+			return filepath.SkipDir
+		}
+
+		// skip directories
+		if info.IsDir() {
+			return nil
+		}
+
+		// get relative path
+		relPath, err := filepath.Rel(dataPath, path)
+		if err != nil {
+			return err
+		}
+
+		// read file content
+		content, err := os.ReadFile(path)
+		if err != nil {
+			logging.LogWarning("failed to read file %s: %v", path, err)
+			return nil // skip this file but continue
+		}
+
+		// check if file is dokuwiki and convert to markdown
+		handler := files.GetParserRegistry().GetHandler(path)
+		if handler != nil && handler.Name() == "dokuwiki" {
+			dokuwikiHandler, ok := handler.(*parser.DokuwikiHandler)
+			if ok {
+				// convert to markdown
+				markdown := dokuwikiHandler.ConvertToMarkdown(string(content))
+				content = []byte(markdown)
+
+				// change extension to .md
+				relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + ".md"
+
+				logging.LogDebug("converted dokuwiki file to markdown: %s", relPath)
+			}
+		}
+
+		// add file to zip
+		zipFile, err := zipWriter.Create(relPath)
+		if err != nil {
+			return err
+		}
+
+		_, err = zipFile.Write(content)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		logging.LogError("failed to create zip archive: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"), http.StatusInternalServerError)
+		return
+	}
+
+	// close zip writer
+	err = zipWriter.Close()
+	if err != nil {
+		logging.LogError("failed to close zip writer: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"), http.StatusInternalServerError)
+		return
+	}
+
+	// prepare download
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+	filename := fmt.Sprintf("knov-export-markdown_%s.zip", timestamp)
+
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	w.Write(buf.Bytes())
+
+	logging.LogInfo("exported all files as zip with markdown conversion: %s", filename)
+}
+
 // @Summary Browse files by single metadata field
 // @Tags files
 // @Produce json,html
