@@ -26,7 +26,7 @@ type UserSettings struct {
 
 // InitUserSettings initializes user settings from direct JSON file
 func InitUserSettings() {
-	configPath = GetAppConfig().ConfigPath
+	configPath = GetAppConfig().StorageConfigPath
 	userSettings = UserSettings{
 		Theme:         "builtin",
 		Language:      "en",

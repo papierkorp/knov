@@ -33,7 +33,7 @@ type Dashboard struct {
 func GetAll() ([]Dashboard, error) {
 	var dashboards []Dashboard
 
-	// Get all dashboards from global storage
+	// Get all dashboards from config storage
 	globalKeys, err := storage.GetConfigStorage().List("dashboard/")
 	if err != nil {
 		return nil, err

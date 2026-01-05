@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/logging"
 	"knov/internal/server/render"
@@ -47,7 +48,15 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogDebug("built filter config: %+v", config)
 
-	result, err := filter.FilterFilesWithConfig(config)
+	allFiles, err := files.GetAllFiles()
+	if err != nil {
+		logging.LogError("failed to get files: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
+		return
+	}
+
+	adapter := files.NewMetadataAdapter()
+	result, err := filter.FilterFilesWithConfig(allFiles, adapter, config)
 	if err != nil {
 		logging.LogError("failed to filter files: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to filter files"), http.StatusInternalServerError)
@@ -120,7 +129,8 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	config := filter.ParseFilterConfigFromForm(r)
 
 	// save using the new filter package function
-	if err := filter.SaveFilterConfig(config, filePath); err != nil {
+	adapter := files.NewMetadataAdapter()
+	if err := filter.SaveFilterConfig(adapter, config, filePath); err != nil {
 		logging.LogError("failed to save filter config: %v", err)
 		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save filter. please check the logs for details.") + `</div>`
 		w.Header().Set("Content-Type", "text/html")

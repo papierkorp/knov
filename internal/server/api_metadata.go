@@ -1277,6 +1277,57 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, "parents updated", html)
 }
 
+// @Summary Set file boards
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param boards formData string true "Comma-separated board names"
+// @Success 200 {string} string
+// @Router /api/metadata/boards [post]
+func handleAPISetMetadataBoards(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filepath := r.FormValue("filepath")
+	boardsStr := r.FormValue("boards")
+
+	if filepath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	// always create a slice, even if empty
+	var boards []string
+	if boardsStr != "" {
+		boards = strings.Split(boardsStr, ",")
+		for i := range boards {
+			boards[i] = strings.TrimSpace(boards[i])
+		}
+		// remove empty strings that might result from trimming
+		var filteredBoards []string
+		for _, board := range boards {
+			if board != "" {
+				filteredBoards = append(filteredBoards, board)
+			}
+		}
+		boards = filteredBoards
+	} else {
+		boards = []string{} // explicit empty slice, not nil
+	}
+
+	metadata := &files.Metadata{
+		Path:   filepath,
+		Boards: boards,
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
+		return
+	}
+
+	html := fmt.Sprintf(`<span class="boards-updated">%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "boards updated"))
+	writeResponse(w, r, "boards updated", html)
+}
+
 // @Summary Get file priority
 // @Tags metadata
 // @Param filepath query string true "File path"
@@ -1322,11 +1373,7 @@ func handleAPIGetMetadataStatus(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, string(metadata.Status), html)
 }
 
-// @Summary Get PARA projects for a file
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Success 200 {string} string
-// @Router /api/metadata/para/projects [get]
+// helper function - called by handleAPIGetAllPARAProjects when filepath is provided
 func handleAPIGetMetadataPARAProjects(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
@@ -1356,11 +1403,7 @@ func handleAPIGetMetadataPARAProjects(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, metadata.PARA.Projects, html)
 }
 
-// @Summary Get PARA areas for a file
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Success 200 {string} string
-// @Router /api/metadata/para/areas [get]
+// helper function - called by handleAPIGetAllPARAreas when filepath is provided
 func handleAPIGetMetadataPARAreas(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
@@ -1390,11 +1433,7 @@ func handleAPIGetMetadataPARAreas(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, metadata.PARA.Areas, html)
 }
 
-// @Summary Get PARA resources for a file
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Success 200 {string} string
-// @Router /api/metadata/para/resources [get]
+// helper function - called by handleAPIGetAllPARAResources when filepath is provided
 func handleAPIGetMetadataPARAResources(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
@@ -1424,11 +1463,7 @@ func handleAPIGetMetadataPARAResources(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, metadata.PARA.Resources, html)
 }
 
-// @Summary Get PARA archive for a file
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Success 200 {string} string
-// @Router /api/metadata/para/archive [get]
+// helper function - called by handleAPIGetAllPARAArchive when filepath is provided
 func handleAPIGetMetadataPARAArchive(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
@@ -1728,6 +1763,85 @@ func handleAPIGetAllPARAArchive(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, r, archiveCount, html.String())
+}
+
+// @Summary Get all boards or boards for a specific file
+// @Description Get all boards with counts, or boards for a specific file if filepath is provided
+// @Tags metadata
+// @Param filepath query string false "File path (optional - if provided, returns boards for that specific file)"
+// @Param format query string false "Response format (options for HTML select options)"
+// @Produce json,html
+// @Success 200 {object} files.BoardCount
+// @Router /api/metadata/boards [get]
+func handleAPIGetAllBoards(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+
+	// if filepath is provided, return boards for that specific file
+	if filepath != "" {
+		handleAPIGetFileMetadataBoards(w, r)
+		return
+	}
+
+	// otherwise, return all boards
+	format := r.URL.Query().Get("format")
+
+	// for form options, use cached data
+	if format == "options" {
+		cachedBoards, err := files.GetAllBoardsFromSystemData()
+		if err != nil {
+			logging.LogError("failed to get cached boards, fallback to live data: %v", err)
+			// fallback to live data
+			boards, err := files.GetAllBoards()
+			if err != nil {
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get boards"), http.StatusInternalServerError)
+				return
+			}
+			var boardList []string
+			for board := range boards {
+				boardList = append(boardList, board)
+			}
+			slices.Sort(boardList)
+			cachedBoards = boardList
+		}
+
+		var html strings.Builder
+		for _, board := range cachedBoards {
+			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, board, board))
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	boardCount, err := files.GetAllBoards()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get boards"), http.StatusInternalServerError)
+		return
+	}
+
+	html := render.RenderBrowseHTML(boardCount, "/browse/boards")
+	writeResponse(w, r, boardCount, html)
+}
+
+// helper function - called by handleAPIGetAllBoards when filepath is provided
+func handleAPIGetFileMetadataBoards(w http.ResponseWriter, r *http.Request) {
+	filepath := r.URL.Query().Get("filepath")
+	if filepath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath is required"), http.StatusBadRequest)
+		return
+	}
+
+	metadata, err := files.MetaDataGet(filepath)
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"), http.StatusInternalServerError)
+		return
+	}
+	if metadata == nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		return
+	}
+
+	writeResponse(w, r, metadata.Boards, "")
 }
 
 // @Summary Get file target date

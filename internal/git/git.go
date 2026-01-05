@@ -84,9 +84,18 @@ func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
 		}
 
 		for _, stat := range stats {
+			// stat.Name is relative to repo root
+			// if repo is above data dir, paths will include data dir name
+			// strip it to get path relative to data directory
+			relPath := stat.Name
+			dataDirName := filepath.Base(dataDir)
+			if strings.HasPrefix(relPath, dataDirName+string(filepath.Separator)) {
+				relPath = strings.TrimPrefix(relPath, dataDirName+string(filepath.Separator))
+			}
+
 			files = append(files, GitHistoryFile{
-				Name:    filepath.Base(stat.Name),
-				Path:    filepath.Join(dataDir, stat.Name),
+				Name:    filepath.Base(relPath),
+				Path:    relPath,
 				Commit:  c.Hash.String()[:7],
 				Date:    c.Author.When.Format("2006-01-02"),
 				Message: c.Message,

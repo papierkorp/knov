@@ -9,6 +9,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/parser"
+	"knov/internal/types"
 	"knov/internal/utils"
 )
 
@@ -26,12 +27,8 @@ func GetParserRegistry() *parser.Registry {
 	return parserRegistry
 }
 
-// File represents a file in the system
-type File struct {
-	Name     string    `json:"name"`
-	Path     string    `json:"path"`
-	Metadata *Metadata `json:"metadata,omitempty"`
-}
+// File is an alias for types.File
+type File = types.File
 
 type FileContent struct {
 	HTML string

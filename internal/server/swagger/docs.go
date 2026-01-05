@@ -2044,6 +2044,78 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/boards": {
+            "get": {
+                "description": "Get all boards with counts, or boards for a specific file if filepath is provided",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all boards or boards for a specific file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path (optional - if provided, returns boards for that specific file)",
+                        "name": "filepath",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Response format (options for HTML select options)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/files.BoardCount"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Set file boards",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated board names",
+                        "name": "boards",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/collection": {
             "get": {
                 "produces": [
@@ -3440,6 +3512,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/testdata/filtertest/log/{key}": {
+            "get": {
+                "description": "Downloads the filter test log from cache storage",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Download filter test log",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "log key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "log content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "log not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/testdata/filtertest/testdata": {
             "get": {
                 "description": "Returns filter test metadata in table format showing all 12 test objects",
@@ -3710,7 +3823,7 @@ const docTemplate = `{
                 "criteria": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/filter.Criteria"
+                        "$ref": "#/definitions/types.Criteria"
                     }
                 },
                 "display": {
@@ -3828,6 +3941,12 @@ const docTemplate = `{
                 "WidgetTypeParaArchive"
             ]
         },
+        "files.BoardCount": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
         "files.CollectionCount": {
             "type": "object",
             "additionalProperties": {
@@ -3838,7 +3957,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "metadata": {
-                    "$ref": "#/definitions/files.Metadata"
+                    "$ref": "#/definitions/types.Metadata"
                 },
                 "name": {
                     "type": "string"
@@ -3847,39 +3966,6 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "files.Filetype": {
-            "type": "string",
-            "enum": [
-                "todo",
-                "fleeting",
-                "literature",
-                "moc",
-                "permanent",
-                "filter",
-                "journaling"
-            ],
-            "x-enum-comments": {
-                "FileTypeMOC": "maps of content - indexes to link related notes"
-            },
-            "x-enum-descriptions": [
-                "",
-                "",
-                "",
-                "maps of content - indexes to link related notes",
-                "",
-                "",
-                ""
-            ],
-            "x-enum-varnames": [
-                "FileTypeTodo",
-                "FileTypeFleeting",
-                "FileTypeLiterature",
-                "FileTypeMOC",
-                "FileTypePermanent",
-                "FileTypeFilter",
-                "FileTypeJournaling"
-            ]
         },
         "files.FiletypeCount": {
             "type": "object",
@@ -3897,153 +3983,84 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "ancestor": {
-                    "description": "auto",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "boards": {
-                    "description": "auto",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "collection": {
-                    "description": "auto / manual possible",
                     "type": "string"
                 },
                 "createdAt": {
-                    "description": "auto",
                     "type": "string"
                 },
                 "folders": {
-                    "description": "auto",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "kids": {
-                    "description": "auto",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "lastEdited": {
-                    "description": "auto",
                     "type": "string"
                 },
                 "linksToHere": {
-                    "description": "auto",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "name": {
-                    "description": "manual filename",
                     "type": "string"
                 },
                 "para": {
-                    "description": "manual",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/files.PARA"
-                        }
-                    ]
+                    "$ref": "#/definitions/types.PARA"
                 },
                 "parents": {
-                    "description": "manual",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "path": {
-                    "description": "auto",
                     "type": "string"
                 },
                 "priority": {
-                    "description": "manual",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/files.Priority"
-                        }
-                    ]
+                    "$ref": "#/definitions/types.Priority"
                 },
                 "size": {
-                    "description": "auto",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "manual",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/files.Status"
-                        }
-                    ]
+                    "$ref": "#/definitions/types.Status"
                 },
                 "tags": {
-                    "description": "manual",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "targetDate": {
-                    "description": "manual",
                     "type": "string"
                 },
                 "title": {
-                    "description": "auto",
                     "type": "string"
                 },
                 "type": {
-                    "description": "manual - with add new",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/files.Filetype"
-                        }
-                    ]
+                    "$ref": "#/definitions/types.Filetype"
                 },
                 "usedLinks": {
-                    "description": "auto",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "files.PARA": {
-            "type": "object",
-            "properties": {
-                "archive": {
-                    "description": "Inactive items",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "areas": {
-                    "description": "Ongoing responsibilities",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "projects": {
-                    "description": "Active projects with deadlines",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "resources": {
-                    "description": "Future reference materials",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -4075,37 +4092,11 @@ const docTemplate = `{
                 "type": "integer"
             }
         },
-        "files.Priority": {
-            "type": "string",
-            "enum": [
-                "low",
-                "medium",
-                "high"
-            ],
-            "x-enum-varnames": [
-                "PriorityLow",
-                "PriorityMedium",
-                "PriorityHigh"
-            ]
-        },
         "files.PriorityCount": {
             "type": "object",
             "additionalProperties": {
                 "type": "integer"
             }
-        },
-        "files.Status": {
-            "type": "string",
-            "enum": [
-                "draft",
-                "published",
-                "archived"
-            ],
-            "x-enum-varnames": [
-                "StatusDraft",
-                "StatusPublished",
-                "StatusArchived"
-            ]
         },
         "files.StatusCount": {
             "type": "object",
@@ -4163,7 +4154,7 @@ const docTemplate = `{
                 "files": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/files.File"
+                        "$ref": "#/definitions/types.File"
                     }
                 },
                 "filter_count": {
@@ -4221,6 +4212,9 @@ const docTemplate = `{
                 "failed_tests": {
                     "type": "integer"
                 },
+                "log_file": {
+                    "type": "string"
+                },
                 "passed_tests": {
                     "type": "integer"
                 },
@@ -4237,6 +4231,202 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "types.Criteria": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.File": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "$ref": "#/definitions/types.Metadata"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Filetype": {
+            "type": "string",
+            "enum": [
+                "todo",
+                "fleeting",
+                "literature",
+                "moc",
+                "permanent",
+                "filter",
+                "journaling"
+            ],
+            "x-enum-varnames": [
+                "FileTypeTodo",
+                "FileTypeFleeting",
+                "FileTypeLiterature",
+                "FileTypeMOC",
+                "FileTypePermanent",
+                "FileTypeFilter",
+                "FileTypeJournaling"
+            ]
+        },
+        "types.Metadata": {
+            "type": "object",
+            "properties": {
+                "ancestor": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "boards": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "collection": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "folders": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "kids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "lastEdited": {
+                    "type": "string"
+                },
+                "linksToHere": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "para": {
+                    "$ref": "#/definitions/types.PARA"
+                },
+                "parents": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "path": {
+                    "type": "string"
+                },
+                "priority": {
+                    "$ref": "#/definitions/types.Priority"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/types.Status"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "targetDate": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/types.Filetype"
+                },
+                "usedLinks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "types.PARA": {
+            "type": "object",
+            "properties": {
+                "archive": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "areas": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "projects": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "resources": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "types.Priority": {
+            "type": "string",
+            "enum": [
+                "low",
+                "medium",
+                "high"
+            ],
+            "x-enum-varnames": [
+                "PriorityLow",
+                "PriorityMedium",
+                "PriorityHigh"
+            ]
+        },
+        "types.Status": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "published",
+                "archived"
+            ],
+            "x-enum-varnames": [
+                "StatusDraft",
+                "StatusPublished",
+                "StatusArchived"
+            ]
         }
     }
 }`

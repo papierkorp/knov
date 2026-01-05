@@ -27,11 +27,27 @@ type AppConfig struct {
 	ServerPort          string
 	LogLevel            string
 	GitRepoURL          string
-	Storage             string
 	SearchEngine        string
 	LinkRegex           []string
 	CronjobInterval     string
 	SearchIndexInterval string
+
+	// storage configuration
+	StorageConfigProvider   string
+	StorageMetadataProvider string
+	StorageCacheProvider    string
+	StorageConfigPath       string
+	StorageMetadataPath     string
+	StorageCachePath        string
+
+	// storage migration (one-time use)
+	MigrateStorage             bool
+	MigrateConfigOldProvider   string
+	MigrateConfigOldPath       string
+	MigrateMetadataOldProvider string
+	MigrateMetadataOldPath     string
+	MigrateCacheOldProvider    string
+	MigrateCacheOldPath        string
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -55,7 +71,6 @@ func InitAppConfig() {
 		ServerPort:   getEnv("KNOV_SERVER_PORT", "1324"),
 		LogLevel:     getEnv("KNOV_LOG_LEVEL", "info"),
 		GitRepoURL:   getEnv("KNOV_GIT_REPO_URL", ""),
-		Storage:      getEnv("KNOV_METADATA_STORAGE", "json"),
 		SearchEngine: getEnv("KNOV_SEARCH_ENGINE", "memory"),
 		LinkRegex: []string{
 			"\\[\\[([^\\]]+)\\]\\]",
@@ -65,6 +80,23 @@ func InitAppConfig() {
 		},
 		CronjobInterval:     getEnv("KNOV_CRONJOB_INTERVAL", "5m"),
 		SearchIndexInterval: getEnv("KNOV_SEARCH_INDEX_INTERVAL", "15m"),
+
+		// storage configuration
+		StorageConfigProvider:   getEnv("KNOV_STORAGE_CONFIG_PROVIDER", "json"),
+		StorageMetadataProvider: getEnv("KNOV_STORAGE_METADATA_PROVIDER", "json"),
+		StorageCacheProvider:    getEnv("KNOV_STORAGE_CACHE_PROVIDER", "json"),
+		StorageConfigPath:       getEnv("KNOV_STORAGE_CONFIG_PATH", filepath.Join(baseDir, "storage", "config")),
+		StorageMetadataPath:     getEnv("KNOV_STORAGE_METADATA_PATH", filepath.Join(baseDir, "storage", "metadata")),
+		StorageCachePath:        getEnv("KNOV_STORAGE_CACHE_PATH", filepath.Join(baseDir, "storage", "cache")),
+
+		// storage migration (one-time use)
+		MigrateStorage:             getEnv("KNOV_STORAGE_MIGRATE", "") == "true",
+		MigrateConfigOldProvider:   getEnv("KNOV_STORAGE_CONFIG_OLD_PROVIDER", ""),
+		MigrateConfigOldPath:       getEnv("KNOV_STORAGE_CONFIG_OLD_PATH", ""),
+		MigrateMetadataOldProvider: getEnv("KNOV_STORAGE_METADATA_OLD_PROVIDER", ""),
+		MigrateMetadataOldPath:     getEnv("KNOV_STORAGE_METADATA_OLD_PATH", ""),
+		MigrateCacheOldProvider:    getEnv("KNOV_STORAGE_CACHE_OLD_PROVIDER", ""),
+		MigrateCacheOldPath:        getEnv("KNOV_STORAGE_CACHE_OLD_PATH", ""),
 	}
 
 	initLogLevel()
@@ -79,6 +111,36 @@ func InitAppConfig() {
 // GetAppConfig returns the current app config
 func GetAppConfig() AppConfig {
 	return appConfig
+}
+
+// GetStorageConfigProvider returns the config storage provider
+func GetStorageConfigProvider() string {
+	return appConfig.StorageConfigProvider
+}
+
+// GetStorageMetadataProvider returns the metadata storage provider
+func GetStorageMetadataProvider() string {
+	return appConfig.StorageMetadataProvider
+}
+
+// GetStorageCacheProvider returns the cache storage provider
+func GetStorageCacheProvider() string {
+	return appConfig.StorageCacheProvider
+}
+
+// GetStorageConfigPath returns the config storage path
+func GetStorageConfigPath() string {
+	return appConfig.StorageConfigPath
+}
+
+// GetStorageMetadataPath returns the metadata storage path
+func GetStorageMetadataPath() string {
+	return appConfig.StorageMetadataPath
+}
+
+// GetStorageCachePath returns the cache storage path
+func GetStorageCachePath() string {
+	return appConfig.StorageCachePath
 }
 
 func getEnv(key, defaultValue string) string {
@@ -105,11 +167,6 @@ func SetLogLevel(level string) {
 
 	os.Setenv("KNOV_LOG_LEVEL", level)
 	logging.LogInfo("log level updated to: %s", level)
-}
-
-// GetStorageMethod returns storage method
-func GetStorageMethod() string {
-	return appConfig.Storage
 }
 
 // GetMetadataLinkRegex returns link regex patterns

@@ -7,22 +7,26 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 
-	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/types"
 	"knov/internal/utils"
 )
 
-// Criteria represents a single filter condition
-type Criteria struct {
-	Metadata string `json:"metadata"`
-	Operator string `json:"operator"`
-	Value    string `json:"value"`
-	Action   string `json:"action"`
+// MetadataGetter is an interface for getting file metadata
+type MetadataGetter interface {
+	GetMetadata(path string) (*types.Metadata, error)
 }
+
+// MetadataSaver is an interface for saving file metadata
+type MetadataSaver interface {
+	SaveMetadata(metadata *types.Metadata) error
+}
+
+// type alias for compatibility
+type Criteria = types.Criteria
 
 // Config represents filter configuration
 type Config struct {
@@ -34,27 +38,22 @@ type Config struct {
 
 // Result represents filter result with metadata
 type Result struct {
-	Files       []files.File `json:"files"`
+	Files       []types.File `json:"files"`
 	Total       int          `json:"total"`
 	FilterCount int          `json:"filter_count"`
 	Logic       string       `json:"logic"`
 }
 
-// FilterFiles filters files based on criteria
-func FilterFiles(criteria []Criteria, logic string) ([]files.File, error) {
-	allFiles, err := files.GetAllFiles()
-	if err != nil {
-		return nil, err
-	}
-
+// FilterFiles filters provided files based on criteria
+func FilterFiles(allFiles []types.File, getter MetadataGetter, criteria []Criteria, logic string) ([]types.File, error) {
 	if len(criteria) == 0 {
 		return allFiles, nil
 	}
 
-	var filteredFiles []files.File
+	var filteredFiles []types.File
 
 	for _, file := range allFiles {
-		fileMetadata, err := files.MetaDataGet(file.Path)
+		fileMetadata, err := getter.GetMetadata(file.Path)
 		if err != nil {
 			logging.LogWarning("failed to get metadata for %s: %v", file.Path, err)
 			continue
@@ -73,12 +72,17 @@ func FilterFiles(criteria []Criteria, logic string) ([]files.File, error) {
 }
 
 // FilterFilesWithConfig filters files using config and returns result
-func FilterFilesWithConfig(config *Config) (*Result, error) {
+func FilterFilesWithConfig(allFiles []types.File, getter MetadataGetter, config *Config) (*Result, error) {
 	if config == nil {
 		return nil, fmt.Errorf("filter config is required")
 	}
 
-	filteredFiles, err := FilterFiles(config.Criteria, config.Logic)
+	// validate configuration
+	if err := ValidateConfig(config); err != nil {
+		return nil, fmt.Errorf("invalid filter configuration: %v", err)
+	}
+
+	filteredFiles, err := FilterFiles(allFiles, getter, config.Criteria, config.Logic)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +102,7 @@ func FilterFilesWithConfig(config *Config) (*Result, error) {
 	}, nil
 }
 
-func matchesFilter(metadata *files.Metadata, criteria []Criteria, logic string) bool {
+func matchesFilter(metadata *types.Metadata, criteria []Criteria, logic string) bool {
 	if len(criteria) == 0 {
 		return true
 	}
@@ -144,120 +148,81 @@ func matchesFilter(metadata *files.Metadata, criteria []Criteria, logic string) 
 	}
 }
 
-func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
-	var metadataValue string
-
-	switch criterion.Metadata {
-	case "name":
-		metadataValue = metadata.Name
-	case "collection":
-		metadataValue = metadata.Collection
-	case "tags":
-		for _, tag := range metadata.Tags {
-			if matchesOperator(tag, criterion.Operator, criterion.Value) {
-				return true
-			}
-		}
-		return false
-	case "type":
-		metadataValue = string(metadata.FileType) // convert Filetype to string
-	case "status":
-		metadataValue = string(metadata.Status) // convert Status to string
-	case "priority":
-		metadataValue = string(metadata.Priority) // convert Priority to string
-	case "createdAt":
-		metadataValue = metadata.CreatedAt.Format("2006-01-02")
-	case "lastEdited":
-		metadataValue = metadata.LastEdited.Format("2006-01-02")
-	case "folders":
-		for _, folder := range metadata.Folders {
-			if matchesOperator(folder, criterion.Operator, criterion.Value) {
-				return true
-			}
-		}
-		return false
-	case "para_projects":
-		for _, project := range metadata.PARA.Projects {
-			if matchesOperator(project, criterion.Operator, criterion.Value) {
-				return true
-			}
-		}
-		return false
-	case "para_areas":
-		for _, area := range metadata.PARA.Areas {
-			if matchesOperator(area, criterion.Operator, criterion.Value) {
-				return true
-			}
-		}
-		return false
-	case "para_resources":
-		for _, resource := range metadata.PARA.Resources {
-			if matchesOperator(resource, criterion.Operator, criterion.Value) {
-				return true
-			}
-		}
-		return false
-	case "para_archive":
-		for _, archive := range metadata.PARA.Archive {
-			if matchesOperator(archive, criterion.Operator, criterion.Value) {
-				return true
-			}
-		}
-		return false
-	default:
+func matchesCriteria(metadata *types.Metadata, criterion Criteria) bool {
+	// get field descriptor
+	field, ok := types.GetFieldDescriptor(criterion.Metadata)
+	if !ok {
+		logging.LogWarning("unknown metadata field: %s", criterion.Metadata)
 		return false
 	}
 
-	return matchesOperator(metadataValue, criterion.Operator, criterion.Value)
+	// get field value from metadata
+	fieldValue := getMetadataFieldValue(metadata, field)
+	if fieldValue == nil {
+		return false
+	}
+
+	// get operator function
+	opType := types.OperatorType(criterion.Operator)
+	operatorFunc, err := GetOperator(opType)
+	if err != nil {
+		logging.LogWarning("unknown operator: %s", criterion.Operator)
+		return false
+	}
+
+	// apply operator
+	matches, err := operatorFunc(fieldValue, criterion.Value, field.Type)
+	if err != nil {
+		logging.LogWarning("error applying operator %s to field %s: %v", criterion.Operator, criterion.Metadata, err)
+		return false
+	}
+
+	return matches
 }
 
-func matchesOperator(metadataValue, operator, criteriaValue string) bool {
-	switch operator {
-	case "equals":
-		return metadataValue == criteriaValue
-	case "contains":
-		return strings.Contains(strings.ToLower(metadataValue), strings.ToLower(criteriaValue))
-	case "regex":
-		matched, err := regexp.MatchString(criteriaValue, metadataValue)
-		if err != nil {
-			logging.LogWarning("invalid regex pattern: %s", criteriaValue)
-			return false
-		}
-		return matched
-	case "greater":
-		return metadataValue > criteriaValue
-	case "less":
-		return metadataValue < criteriaValue
-	case "in":
-		values := strings.Split(criteriaValue, ",")
-		for _, value := range values {
-			if strings.TrimSpace(value) == metadataValue {
-				return true
-			}
-		}
-		return false
+// getMetadataFieldValue extracts the field value from metadata based on field descriptor
+func getMetadataFieldValue(metadata *types.Metadata, field *types.FieldDescriptor) interface{} {
+	switch field.Name {
+	case types.MetadataFields.Name.Name:
+		return metadata.Name
+	case types.MetadataFields.Path.Name:
+		return metadata.Path
+	case types.MetadataFields.Collection.Name:
+		return metadata.Collection
+	case types.MetadataFields.Tags.Name:
+		return metadata.Tags
+	case types.MetadataFields.Folders.Name:
+		return metadata.Folders
+	case types.MetadataFields.Boards.Name:
+		return metadata.Boards
+	case types.MetadataFields.CreatedAt.Name:
+		return metadata.CreatedAt
+	case types.MetadataFields.LastEdited.Name:
+		return metadata.LastEdited
+	case types.MetadataFields.TargetDate.Name:
+		return metadata.TargetDate
+	case types.MetadataFields.FileType.Name:
+		return string(metadata.FileType)
+	case types.MetadataFields.Status.Name:
+		return string(metadata.Status)
+	case types.MetadataFields.Priority.Name:
+		return string(metadata.Priority)
+	case types.MetadataFields.PARAProjects.Name:
+		return metadata.PARA.Projects
+	case types.MetadataFields.PARAreas.Name:
+		return metadata.PARA.Areas
+	case types.MetadataFields.PARAResources.Name:
+		return metadata.PARA.Resources
+	case types.MetadataFields.PARAArchive.Name:
+		return metadata.PARA.Archive
 	default:
-		return false
+		return nil
 	}
 }
 
 // GetMetadataFields returns available metadata fields for filtering
 func GetMetadataFields() []string {
-	return []string{
-		"name",
-		"collection",
-		"tags",
-		"type",
-		"status",
-		"priority",
-		"createdAt",
-		"lastEdited",
-		"folders",
-		"para_projects",
-		"para_areas",
-		"para_resources",
-		"para_archive",
-	}
+	return types.AllFieldNames()
 }
 
 // GetOperators returns available filter operators
@@ -270,46 +235,8 @@ func GetActions() []string {
 	return []string{"include", "exclude"}
 }
 
-// ValidateConfig validates filter configuration
-func ValidateConfig(config *Config) error {
-	if config == nil {
-		return fmt.Errorf("config cannot be nil")
-	}
-
-	if config.Logic != "and" && config.Logic != "or" {
-		return fmt.Errorf("logic must be 'and' or 'or'")
-	}
-
-	validFields := GetMetadataFields()
-	validOperators := GetOperators()
-	validActions := GetActions()
-
-	for _, criteria := range config.Criteria {
-		if !contains(validFields, criteria.Metadata) {
-			return fmt.Errorf("invalid metadata field: %s", criteria.Metadata)
-		}
-		if !contains(validOperators, criteria.Operator) {
-			return fmt.Errorf("invalid operator: %s", criteria.Operator)
-		}
-		if !contains(validActions, criteria.Action) {
-			return fmt.Errorf("invalid action: %s", criteria.Action)
-		}
-	}
-
-	return nil
-}
-
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}
-
 // SaveFilterConfig validates and saves a filter configuration to file
-func SaveFilterConfig(config *Config, filePath string) error {
+func SaveFilterConfig(saver MetadataSaver, config *Config, filePath string) error {
 	// validate the configuration first
 	if err := ValidateConfig(config); err != nil {
 		return fmt.Errorf("invalid filter config: %w", err)
@@ -342,11 +269,11 @@ func SaveFilterConfig(config *Config, filePath string) error {
 	}
 
 	// create metadata for the filter file
-	metadata := &files.Metadata{
+	metadata := &types.Metadata{
 		Path:     filePath,
-		FileType: files.FileTypeFilter,
+		FileType: types.FileTypeFilter,
 	}
-	if err := files.MetaDataSave(metadata); err != nil {
+	if err := saver.SaveMetadata(metadata); err != nil {
 		logging.LogError("failed to save filter metadata: %v", err)
 		// don't fail the request, just log the error since file was saved successfully
 	}

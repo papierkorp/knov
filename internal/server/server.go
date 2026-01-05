@@ -234,6 +234,7 @@ func StartServerChi() {
 			r.Post("/folders", handleAPISetMetadataFolders)
 			r.Post("/tags", handleAPISetMetadataTags)
 			r.Post("/parents", handleAPISetMetadataParents)
+			r.Post("/boards", handleAPISetMetadataBoards)
 			r.Post("/para/projects", handleAPISetMetadataPARAProjects)
 			r.Post("/para/areas", handleAPISetMetadataPARAreas)
 			r.Post("/para/resources", handleAPISetMetadataPARAResources)
@@ -242,6 +243,7 @@ func StartServerChi() {
 			r.Get("/tags", handleAPIGetAllTags)
 			r.Get("/collections", handleAPIGetAllCollections)
 			r.Get("/folders", handleAPIGetAllFolders)
+			r.Get("/boards", handleAPIGetAllBoards)
 			r.Get("/priorities", handleAPIGetAllPriorities)
 			r.Get("/statuses", handleAPIGetAllStatuses)
 			r.Get("/filetypes", handleAPIGetAllFiletypes)
@@ -300,6 +302,7 @@ func StartServerChi() {
 			r.Post("/clean", handleAPICleanTestData)
 			r.Post("/filtertest", handleAPIFilterTest)
 			r.Get("/filtertest/testdata", handleAPIFilterTestMetadata)
+			r.Get("/filtertest/log", handleAPIDownloadFilterTestLog)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -746,7 +749,15 @@ func handleFilterFileContent(w http.ResponseWriter, r *http.Request, filePath, f
 	}
 
 	// execute the filter
-	result, err := filter.FilterFilesWithConfig(&config)
+	allFiles, err := files.GetAllFiles()
+	if err != nil {
+		http.Error(w, "failed to get files", http.StatusInternalServerError)
+		logging.LogError("failed to get files: %v", err)
+		return
+	}
+
+	adapter := files.NewMetadataAdapter()
+	result, err := filter.FilterFilesWithConfig(allFiles, adapter, &config)
 	if err != nil {
 		http.Error(w, "failed to execute filter", http.StatusInternalServerError)
 		logging.LogError("failed to execute filter from %s: %v", fullPath, err)

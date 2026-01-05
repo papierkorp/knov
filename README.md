@@ -19,6 +19,12 @@
   - change linkRegex config to names, e.g. obsidian, notion, dokuwiki... instead of a regex? or add one regex string + confignames
 - search
   - optimise with sqlite.. (same as metadata)
+- performance updates
+  - add caching/indexing
+  - use Query() instead of a loop through files.GetAllFiles()
+  - use Query in filter.go
+Then: Consider adding Query() back
+Finally: Refactor filter.go to use it
 
 # done
 - display the content of multiple files (filter) in the dashboard (maybe use display content in filterview)

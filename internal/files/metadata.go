@@ -7,139 +7,38 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"time"
 
 	"knov/internal/logging"
 	"knov/internal/storage"
+	"knov/internal/types"
 	"knov/internal/utils"
 )
 
-type Filetype string
-type Status string
-type Priority string
+// type aliases for compatibility
+type Filetype = types.Filetype
+type Status = types.Status
+type Priority = types.Priority
+type Metadata = types.Metadata
+type PARA = types.PARA
+type TagCount = types.TagCount
+type CollectionCount = types.CollectionCount
+type FolderCount = types.FolderCount
+type BoardCount = types.BoardCount
+type FiletypeCount = types.FiletypeCount
+type PriorityCount = types.PriorityCount
+type StatusCount = types.StatusCount
+type PARAProjectCount = types.PARAProjectCount
+type PARAAreaCount = types.PARAAreaCount
+type PARAResourceCount = types.PARAResourceCount
+type PARAArchiveCount = types.PARAArchiveCount
 
-const (
-	FileTypeTodo       Filetype = "todo"
-	FileTypeFleeting   Filetype = "fleeting"
-	FileTypeLiterature Filetype = "literature"
-	FileTypeMOC        Filetype = "moc" // maps of content - indexes to link related notes
-	FileTypePermanent  Filetype = "permanent"
-	FileTypeFilter     Filetype = "filter"
-	FileTypeJournaling Filetype = "journaling"
-
-	StatusDraft     Status = "draft"
-	StatusPublished Status = "published"
-	StatusArchived  Status = "archived"
-
-	PriorityLow    Priority = "low"
-	PriorityMedium Priority = "medium"
-	PriorityHigh   Priority = "high"
-)
-
-// typed count maps for metadata aggregations
-type TagCount map[string]int
-type CollectionCount map[string]int
-type FolderCount map[string]int
-type FiletypeCount map[string]int
-type PriorityCount map[string]int
-type StatusCount map[string]int
-type PARAProjectCount map[string]int
-type PARAAreaCount map[string]int
-type PARAResourceCount map[string]int
-type PARAArchiveCount map[string]int
-
-// AllFiletypes returns all available file types
-func AllFiletypes() []Filetype {
-	return []Filetype{
-		FileTypeTodo,
-		FileTypeFleeting,
-		FileTypeLiterature,
-		FileTypeMOC,
-		FileTypePermanent,
-		FileTypeFilter,
-		FileTypeJournaling,
-	}
-}
-
-// AllPriorities returns all available priorities
-func AllPriorities() []Priority {
-	return []Priority{
-		PriorityLow,
-		PriorityMedium,
-		PriorityHigh,
-	}
-}
-
-// AllStatuses returns all available statuses
-func AllStatuses() []Status {
-	return []Status{
-		StatusDraft,
-		StatusPublished,
-		StatusArchived,
-	}
-}
-
-// IsValidFiletype checks if a filetype is valid
-func IsValidFiletype(ft Filetype) bool {
-	for _, valid := range AllFiletypes() {
-		if ft == valid {
-			return true
-		}
-	}
-	return false
-}
-
-// IsValidPriority checks if a priority is valid
-func IsValidPriority(p Priority) bool {
-	for _, valid := range AllPriorities() {
-		if p == valid {
-			return true
-		}
-	}
-	return false
-}
-
-// IsValidStatus checks if a status is valid
-func IsValidStatus(s Status) bool {
-	for _, valid := range AllStatuses() {
-		if s == valid {
-			return true
-		}
-	}
-	return false
-}
-
-// Metadata represents file metadata
-type Metadata struct {
-	Name        string    `json:"name"`        // manual filename
-	Path        string    `json:"path"`        // auto
-	Title       string    `json:"title"`       // auto
-	CreatedAt   time.Time `json:"createdAt"`   // auto
-	LastEdited  time.Time `json:"lastEdited"`  // auto
-	TargetDate  time.Time `json:"targetDate"`  // manual
-	Collection  string    `json:"collection"`  // auto / manual possible
-	Folders     []string  `json:"folders"`     // auto
-	Tags        []string  `json:"tags"`        // manual
-	Boards      []string  `json:"boards"`      // auto
-	Ancestor    []string  `json:"ancestor"`    // auto
-	Parents     []string  `json:"parents"`     // manual
-	Kids        []string  `json:"kids"`        // auto
-	UsedLinks   []string  `json:"usedLinks"`   // auto
-	LinksToHere []string  `json:"linksToHere"` // auto
-	FileType    Filetype  `json:"type"`        // manual - with add new
-	PARA        PARA      `json:"para"`        // manual
-	Status      Status    `json:"status"`      // manual
-	Priority    Priority  `json:"priority"`    // manual
-	Size        int64     `json:"size"`        // auto
-}
-
-// PARA represents PARA organization
-type PARA struct {
-	Projects  []string `json:"projects,omitempty"`  // Active projects with deadlines
-	Areas     []string `json:"areas,omitempty"`     // Ongoing responsibilities
-	Resources []string `json:"resources,omitempty"` // Future reference materials
-	Archive   []string `json:"archive,omitempty"`   // Inactive items
-}
+// forward functions to types package
+var AllFiletypes = types.AllFiletypes
+var AllPriorities = types.AllPriorities
+var AllStatuses = types.AllStatuses
+var IsValidFiletype = types.IsValidFiletype
+var IsValidPriority = types.IsValidPriority
+var IsValidStatus = types.IsValidStatus
 
 func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	currentMetadata, _ := MetaDataGet(filePath)
@@ -190,6 +89,9 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		// allow explicit setting of empty arrays by checking if field was provided
 		if newMetadata.Tags != nil {
 			currentMetadata.Tags = newMetadata.Tags
+		}
+		if newMetadata.Boards != nil {
+			currentMetadata.Boards = newMetadata.Boards
 		}
 		if newMetadata.Parents != nil {
 			normalized := make([]string, 0, len(newMetadata.Parents))
@@ -300,7 +202,7 @@ func MetaDataSave(m *Metadata) error {
 	}
 
 	key := finalMetadata.Path
-	if err := storage.GetStorage().Set(key, data); err != nil {
+	if err := storage.GetMetadataStorage().Set(key, data); err != nil {
 		logging.LogError("failed to save metadata for %s: %v", finalMetadata.Path, err)
 		return err
 	}
@@ -319,7 +221,7 @@ func metaDataSaveRaw(m *Metadata) error {
 	}
 
 	key := m.Path
-	if err := storage.GetStorage().Set(key, data); err != nil {
+	if err := storage.GetMetadataStorage().Set(key, data); err != nil {
 		logging.LogError("failed to save metadata for %s: %v", m.Path, err)
 		return err
 	}
@@ -331,7 +233,7 @@ func metaDataSaveRaw(m *Metadata) error {
 // MetaDataGet retrieves metadata using the configured storage method
 func MetaDataGet(filepath string) (*Metadata, error) {
 	key := utils.ToRelativePath(filepath)
-	data, err := storage.GetStorage().Get(key)
+	data, err := storage.GetMetadataStorage().Get(key)
 	if err != nil {
 		logging.LogError("failed to get metadata for %s: %v", filepath, err)
 		return nil, err
@@ -446,6 +348,28 @@ func GetAllFolders() (FolderCount, error) {
 	return folderCount, nil
 }
 
+// GetAllBoards returns all unique boards with their counts
+func GetAllBoards() (BoardCount, error) {
+	allFiles, err := GetAllFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	boardCount := make(BoardCount)
+	for _, file := range allFiles {
+		metadata, err := MetaDataGet(file.Path)
+		if err != nil || metadata == nil {
+			continue
+		}
+		for _, board := range metadata.Boards {
+			if board != "" {
+				boardCount[board]++
+			}
+		}
+	}
+	return boardCount, nil
+}
+
 // GetAllFiletypes returns all unique file types with their counts
 func GetAllFiletypes() (FiletypeCount, error) {
 	allFiles, err := GetAllFiles()
@@ -509,7 +433,7 @@ func GetAllStatuses() (StatusCount, error) {
 // MetaDataDelete removes metadata for a file
 func MetaDataDelete(filepath string) error {
 	key := utils.ToRelativePath(filepath)
-	if err := storage.GetStorage().Delete(key); err != nil {
+	if err := storage.GetMetadataStorage().Delete(key); err != nil {
 		logging.LogError("failed to delete metadata for %s: %v", filepath, err)
 		return err
 	}
@@ -609,7 +533,7 @@ func GetAllPARAArchive() (PARAArchiveCount, error) {
 
 // MetaDataExportAll exports all metadata in the specified format
 func MetaDataExportAll() ([]*Metadata, error) {
-	keys, err := storage.GetStorage().List("")
+	keys, err := storage.GetMetadataStorage().List("")
 	if err != nil {
 		logging.LogError("failed to list metadata keys: %v", err)
 		return nil, err
@@ -617,7 +541,7 @@ func MetaDataExportAll() ([]*Metadata, error) {
 
 	var allMetadata []*Metadata
 	for _, key := range keys {
-		data, err := storage.GetStorage().Get(key)
+		data, err := storage.GetMetadataStorage().Get(key)
 		if err != nil {
 			logging.LogWarning("failed to get metadata for key %s: %v", key, err)
 			continue
@@ -761,6 +685,7 @@ const (
 	CacheKeyTags          CacheKey = "all_tags"
 	CacheKeyCollections   CacheKey = "all_collections"
 	CacheKeyFolders       CacheKey = "all_folders"
+	CacheKeyBoards        CacheKey = "all_boards"
 	CacheKeyPARAProjects  CacheKey = "all_para_projects"
 	CacheKeyPARAreas      CacheKey = "all_para_areas"
 	CacheKeyPARAResources CacheKey = "all_para_resources"
@@ -777,7 +702,16 @@ func SaveCachedStringList(key CacheKey, data []string) error {
 	copy(sortedData, data)
 	slices.Sort(sortedData)
 
-	if err := storage.GetStorage().SaveSystemData(string(key), sortedData); err != nil {
+	// marshal to JSON string
+	jsonData, err := json.Marshal(sortedData)
+	if err != nil {
+		return err
+	}
+
+	if err := storage.SaveSystemData(storage.SystemData{
+		Key:   string(key),
+		Value: string(jsonData),
+	}); err != nil {
 		return err
 	}
 
@@ -787,7 +721,7 @@ func SaveCachedStringList(key CacheKey, data []string) error {
 
 // GetCachedStringList retrieves a string list from system cache
 func GetCachedStringList(key CacheKey) ([]string, error) {
-	data, err := storage.GetStorage().GetSystemData(string(key))
+	data, err := storage.GetSystemData(string(key))
 	if err != nil {
 		return nil, err
 	}
@@ -797,7 +731,7 @@ func GetCachedStringList(key CacheKey) ([]string, error) {
 	}
 
 	var items []string
-	if err := json.Unmarshal(data, &items); err != nil {
+	if err := json.Unmarshal([]byte(data.Value), &items); err != nil {
 		logging.LogError("failed to unmarshal cached %s: %v", key, err)
 		return nil, err
 	}
@@ -943,6 +877,26 @@ func SaveAllPARAArchiveToSystemData() error {
 // GetAllPARAArchiveFromSystemData retrieves cached PARA archive from system storage
 func GetAllPARAArchiveFromSystemData() ([]string, error) {
 	return GetCachedStringList(CacheKeyPARAArchive)
+}
+
+// SaveAllBoardsToSystemData saves all boards to system storage
+func SaveAllBoardsToSystemData() error {
+	allBoards, err := GetAllBoards()
+	if err != nil {
+		return err
+	}
+
+	var boardList []string
+	for board := range allBoards {
+		boardList = append(boardList, board)
+	}
+
+	return SaveCachedStringList(CacheKeyBoards, boardList)
+}
+
+// GetAllBoardsFromSystemData retrieves cached boards from system storage
+func GetAllBoardsFromSystemData() ([]string, error) {
+	return GetCachedStringList(CacheKeyBoards)
 }
 
 // SaveAllFilePathsToSystemData saves all file paths to system storage

@@ -156,7 +156,13 @@ func renderFilterWidget(config *filter.Config) (string, error) {
 		return "", errors.New(translation.SprintfForRequest(configmanager.GetLanguage(), "filter config is required"))
 	}
 
-	result, err := filter.FilterFilesWithConfig(config)
+	allFiles, err := files.GetAllFiles()
+	if err != nil {
+		return "", err
+	}
+
+	adapter := files.NewMetadataAdapter()
+	result, err := filter.FilterFilesWithConfig(allFiles, adapter, config)
 	if err != nil {
 		return "", err
 	}

@@ -522,7 +522,15 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogDebug("browse criteria: metadata=%s (mapped to %s), operator=%s, value=%s", metadata, actualMetadata, operator, value)
 
-	browsedFiles, err := filter.FilterFiles(criteria, "and")
+	allFiles, err := files.GetAllFiles()
+	if err != nil {
+		logging.LogError("failed to get files: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
+		return
+	}
+
+	adapter := files.NewMetadataAdapter()
+	browsedFiles, err := filter.FilterFiles(allFiles, adapter, criteria, "and")
 	if err != nil {
 		logging.LogError("failed to browse files: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to browse files"), http.StatusInternalServerError)

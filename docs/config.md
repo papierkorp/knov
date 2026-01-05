@@ -17,11 +17,147 @@ KNOV supports configuration through environment variables and configuration file
 
 ### Storage Configuration
 
-- `KNOV_STORAGE_METHOD`: Storage backend for metadata (default: "json")
+KNOV uses a multi-backend storage system with three separate storage types:
 
-Metadata files are created in `<knov executable>./metadata/`
+**Environment Variables:**
 
-User settings and dashboards are stored as JSON files in `{KNOV_CONFIG_PATH}/`
+- `KNOV_STORAGE_CONFIG_PROVIDER`: Provider for config storage (default: "json")
+- `KNOV_STORAGE_METADATA_PROVIDER`: Provider for metadata storage (default: "json")
+- `KNOV_STORAGE_CACHE_PROVIDER`: Provider for cache storage (default: "json")
+- `KNOV_STORAGE_CONFIG_PATH`: Path to config storage (default: "storage/config")
+- `KNOV_STORAGE_METADATA_PATH`: Path to metadata storage (default: "storage/metadata")
+- `KNOV_STORAGE_CACHE_PATH`: Path to cache storage (default: "storage/cache")
+
+**Available Providers:**
+- `json` - File-based JSON storage (default)
+- `sqlite` - SQLite database storage
+- `postgres` - PostgreSQL storage (not yet implemented)
+
+**Storage Types:**
+- **Config**: User settings, theme preferences, dashboards
+- **Metadata**: File metadata, tags, collections, PARA data
+- **Cache**: Derived data, search index, metadata aggregations (can be safely deleted and rebuilt)
+
+**Path Conventions:**
+
+⚠️ **IMPORTANT**: Use different path conventions for different providers!
+
+- **JSON**: Use directory paths **WITHOUT** `.db` extension
+  - Example: `./storage/metadata`
+  - JSON storage creates a directory and stores individual `.json` files inside
+
+- **SQLite**: Use file paths **WITH** `.db` extension
+  - Example: `./storage/metadata.db`
+  - SQLite storage creates a single database file
+
+**Example .env for JSON:**
+```bash
+KNOV_STORAGE_CONFIG_PROVIDER=json
+KNOV_STORAGE_METADATA_PROVIDER=json
+KNOV_STORAGE_CACHE_PROVIDER=json
+KNOV_STORAGE_CONFIG_PATH=./storage/config
+KNOV_STORAGE_METADATA_PATH=./storage/metadata
+KNOV_STORAGE_CACHE_PATH=./storage/cache
+```
+
+**Example .env for SQLite:**
+```bash
+KNOV_STORAGE_CONFIG_PROVIDER=sqlite
+KNOV_STORAGE_METADATA_PROVIDER=sqlite
+KNOV_STORAGE_CACHE_PROVIDER=sqlite
+KNOV_STORAGE_CONFIG_PATH=./storage/config.db
+KNOV_STORAGE_METADATA_PATH=./storage/metadata.db
+KNOV_STORAGE_CACHE_PATH=./storage/cache.db
+```
+
+#### Migrating Between Storage Providers
+
+Migrating between providers is easy with automatic migration:
+
+**Step 1: Update your .env**
+
+```bash
+# enable migration mode
+KNOV_STORAGE_MIGRATE=true
+
+# specify old storage (JSON - no .db extension)
+KNOV_STORAGE_METADATA_OLD_PROVIDER=json
+KNOV_STORAGE_METADATA_OLD_PATH=./storage/metadata
+
+# specify new storage (SQLite - with .db extension)
+KNOV_STORAGE_METADATA_PROVIDER=sqlite
+KNOV_STORAGE_METADATA_PATH=./storage/metadata.db
+```
+
+**Step 2: Start KNOV**
+
+```bash
+make dev
+# or
+./knov
+```
+
+The migration happens automatically on startup. You'll see logs like:
+```
+info [storage.go - AutoMigrate]: starting automatic storage migration...
+info [storage.go - AutoMigrate]: migrating metadata storage from json to current provider...
+info [migrate.go - MigrateMetadata]: migrated 150 metadata entries
+info [storage.go - AutoMigrate]: automatic migration completed successfully
+info [storage.go - AutoMigrate]: you can now remove KNOV_STORAGE_MIGRATE and KNOV_STORAGE_*_OLD_* env vars
+```
+
+**Step 3: Remove migration variables**
+
+After successful migration, remove these from .env:
+```bash
+KNOV_STORAGE_MIGRATE=true                          # ← remove
+KNOV_STORAGE_METADATA_OLD_PROVIDER=json            # ← remove
+KNOV_STORAGE_METADATA_OLD_PATH=./storage/metadata  # ← remove
+```
+
+**Step 4: Cleanup old storage**
+
+```bash
+# backup first (optional)
+tar -czf storage-backup.tar.gz storage/
+
+# remove old storage
+rm -rf storage/metadata/
+```
+
+**Migrating Multiple Storage Types:**
+
+You can migrate config, metadata, and cache all at once from JSON to SQLite:
+
+```bash
+KNOV_STORAGE_MIGRATE=true
+
+# config migration (json -> sqlite)
+KNOV_STORAGE_CONFIG_PROVIDER=sqlite
+KNOV_STORAGE_CONFIG_PATH=./storage/config.db
+KNOV_STORAGE_CONFIG_OLD_PROVIDER=json
+KNOV_STORAGE_CONFIG_OLD_PATH=./storage/config
+
+# metadata migration (json -> sqlite)
+KNOV_STORAGE_METADATA_PROVIDER=sqlite
+KNOV_STORAGE_METADATA_PATH=./storage/metadata.db
+KNOV_STORAGE_METADATA_OLD_PROVIDER=json
+KNOV_STORAGE_METADATA_OLD_PATH=./storage/metadata
+
+# cache migration (json -> sqlite) - optional, cache rebuilds automatically
+KNOV_STORAGE_CACHE_PROVIDER=sqlite
+KNOV_STORAGE_CACHE_PATH=./storage/cache.db
+KNOV_STORAGE_CACHE_OLD_PROVIDER=json
+KNOV_STORAGE_CACHE_OLD_PATH=./storage/cache
+```
+
+**Note on Cache Storage:**
+
+Cache storage can be safely deleted and rebuilt:
+```bash
+rm -rf storage/cache*
+# Cache will be rebuilt automatically on next cronjob run
+```
 
 ## Metadata Browsing
 
@@ -115,13 +251,13 @@ You can override individual templates from any active theme by placing custom te
 **Directory Structure:**
 ```
 themes/
-ÃƒÂ¢Ã¢â‚¬ÂÃ…â€œÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ overwrite/
-ÃƒÂ¢Ã¢â‚¬ÂÃ¢â‚¬Å¡   ÃƒÂ¢Ã¢â‚¬ÂÃ…â€œÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ base.gohtml          # Override base template
-ÃƒÂ¢Ã¢â‚¬ÂÃ¢â‚¬Å¡   ÃƒÂ¢Ã¢â‚¬ÂÃ…â€œÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ settings.gohtml      # Override settings template
-ÃƒÂ¢Ã¢â‚¬ÂÃ¢â‚¬Å¡   ÃƒÂ¢Ã¢â‚¬ÂÃ…â€œÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ fileview.gohtml      # Override file view template
-ÃƒÂ¢Ã¢â‚¬ÂÃ¢â‚¬Å¡   ÃƒÂ¢Ã¢â‚¬ÂÃ¢â‚¬ÂÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ ...                  # Other template overrides
-ÃƒÂ¢Ã¢â‚¬ÂÃ¢â‚¬ÂÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ your-theme/
-    ÃƒÂ¢Ã¢â‚¬ÂÃ¢â‚¬ÂÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ ...
+ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ overwrite/
+ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡   ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ base.gohtml          # Override base template
+ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡   ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ settings.gohtml      # Override settings template
+ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡   ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ fileview.gohtml      # Override file view template
+ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡   ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ ...                  # Other template overrides
+ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ your-theme/
+    ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ ...
 ```
 
 **How it works:**

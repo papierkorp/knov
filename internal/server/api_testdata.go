@@ -6,6 +6,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/server/render"
+	"knov/internal/storage"
 	"knov/internal/testdata"
 	"knov/internal/translation"
 )
@@ -91,4 +92,36 @@ func handleAPIFilterTestMetadata(w http.ResponseWriter, r *http.Request) {
 
 	html := render.RenderFilterTestMetadataTable(metadataList)
 	writeResponse(w, r, metadataList, html)
+}
+
+// @Summary Download filter test log
+// @Description Downloads the filter test log from cache storage
+// @Tags testdata
+// @Produce text/plain
+// @Param key path string true "log key"
+// @Success 200 {string} string "log content"
+// @Failure 404 {object} string "log not found"
+// @Failure 500 {object} string "internal server error"
+// @Router /api/testdata/filtertest/log/{key} [get]
+func handleAPIDownloadFilterTestLog(w http.ResponseWriter, r *http.Request) {
+	logKey := r.URL.Query().Get("key")
+	if logKey == "" {
+		http.Error(w, "missing log key", http.StatusBadRequest)
+		return
+	}
+
+	cacheStorage := storage.GetCacheStorage()
+	logContent, err := cacheStorage.Get(logKey)
+	if err != nil {
+		logging.LogDebug("log not found in cache: %s", logKey)
+		http.NotFound(w, r)
+		return
+	}
+
+	// set headers for download
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"filter-test-log.txt\"")
+
+	w.Write(logContent)
+	logging.LogDebug("served filter test log from cache: %s", logKey)
 }

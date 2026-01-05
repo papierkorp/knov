@@ -2,7 +2,7 @@
 package dashboard
 
 import (
-	"knov/internal/filter"
+	"knov/internal/types"
 )
 
 // WidgetPosition represents widget position on dashboard
@@ -39,10 +39,10 @@ const (
 
 // FilterConfig represents filter configuration for widgets
 type FilterConfig struct {
-	Criteria []filter.Criteria `json:"criteria"`
-	Logic    string            `json:"logic"`
-	Display  string            `json:"display"` // list, cards, dropdown, content
-	Limit    int               `json:"limit"`
+	Criteria []types.Criteria `json:"criteria"`
+	Logic    string           `json:"logic"`
+	Display  string           `json:"display"` // list, cards, dropdown, content
+	Limit    int              `json:"limit"`
 }
 
 // StaticConfig represents static content configuration

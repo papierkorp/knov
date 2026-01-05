@@ -22,7 +22,7 @@ definitions:
     properties:
       criteria:
         items:
-          $ref: '#/definitions/filter.Criteria'
+          $ref: '#/definitions/types.Criteria'
         type: array
       display:
         description: list, cards, dropdown, content
@@ -109,6 +109,10 @@ definitions:
     - WidgetTypeParaAreas
     - WidgetTypeParaResources
     - WidgetTypeParaArchive
+  files.BoardCount:
+    additionalProperties:
+      type: integer
+    type: object
   files.CollectionCount:
     additionalProperties:
       type: integer
@@ -116,40 +120,12 @@ definitions:
   files.File:
     properties:
       metadata:
-        $ref: '#/definitions/files.Metadata'
+        $ref: '#/definitions/types.Metadata'
       name:
         type: string
       path:
         type: string
     type: object
-  files.Filetype:
-    enum:
-    - todo
-    - fleeting
-    - literature
-    - moc
-    - permanent
-    - filter
-    - journaling
-    type: string
-    x-enum-comments:
-      FileTypeMOC: maps of content - indexes to link related notes
-    x-enum-descriptions:
-    - ""
-    - ""
-    - ""
-    - maps of content - indexes to link related notes
-    - ""
-    - ""
-    - ""
-    x-enum-varnames:
-    - FileTypeTodo
-    - FileTypeFleeting
-    - FileTypeLiterature
-    - FileTypeMOC
-    - FileTypePermanent
-    - FileTypeFilter
-    - FileTypeJournaling
   files.FiletypeCount:
     additionalProperties:
       type: integer
@@ -161,105 +137,58 @@ definitions:
   files.Metadata:
     properties:
       ancestor:
-        description: auto
         items:
           type: string
         type: array
       boards:
-        description: auto
         items:
           type: string
         type: array
       collection:
-        description: auto / manual possible
         type: string
       createdAt:
-        description: auto
         type: string
       folders:
-        description: auto
         items:
           type: string
         type: array
       kids:
-        description: auto
         items:
           type: string
         type: array
       lastEdited:
-        description: auto
         type: string
       linksToHere:
-        description: auto
         items:
           type: string
         type: array
       name:
-        description: manual filename
         type: string
       para:
-        allOf:
-        - $ref: '#/definitions/files.PARA'
-        description: manual
+        $ref: '#/definitions/types.PARA'
       parents:
-        description: manual
         items:
           type: string
         type: array
       path:
-        description: auto
         type: string
       priority:
-        allOf:
-        - $ref: '#/definitions/files.Priority'
-        description: manual
+        $ref: '#/definitions/types.Priority'
       size:
-        description: auto
         type: integer
       status:
-        allOf:
-        - $ref: '#/definitions/files.Status'
-        description: manual
+        $ref: '#/definitions/types.Status'
       tags:
-        description: manual
         items:
           type: string
         type: array
       targetDate:
-        description: manual
         type: string
       title:
-        description: auto
         type: string
       type:
-        allOf:
-        - $ref: '#/definitions/files.Filetype'
-        description: manual - with add new
+        $ref: '#/definitions/types.Filetype'
       usedLinks:
-        description: auto
-        items:
-          type: string
-        type: array
-    type: object
-  files.PARA:
-    properties:
-      archive:
-        description: Inactive items
-        items:
-          type: string
-        type: array
-      areas:
-        description: Ongoing responsibilities
-        items:
-          type: string
-        type: array
-      projects:
-        description: Active projects with deadlines
-        items:
-          type: string
-        type: array
-      resources:
-        description: Future reference materials
         items:
           type: string
         type: array
@@ -280,30 +209,10 @@ definitions:
     additionalProperties:
       type: integer
     type: object
-  files.Priority:
-    enum:
-    - low
-    - medium
-    - high
-    type: string
-    x-enum-varnames:
-    - PriorityLow
-    - PriorityMedium
-    - PriorityHigh
   files.PriorityCount:
     additionalProperties:
       type: integer
     type: object
-  files.Status:
-    enum:
-    - draft
-    - published
-    - archived
-    type: string
-    x-enum-varnames:
-    - StatusDraft
-    - StatusPublished
-    - StatusArchived
   files.StatusCount:
     additionalProperties:
       type: integer
@@ -341,7 +250,7 @@ definitions:
     properties:
       files:
         items:
-          $ref: '#/definitions/files.File'
+          $ref: '#/definitions/types.File'
         type: array
       filter_count:
         type: integer
@@ -379,6 +288,8 @@ definitions:
     properties:
       failed_tests:
         type: integer
+      log_file:
+        type: string
       passed_tests:
         type: integer
       results:
@@ -390,6 +301,142 @@ definitions:
       total_tests:
         type: integer
     type: object
+  types.Criteria:
+    properties:
+      action:
+        type: string
+      metadata:
+        type: string
+      operator:
+        type: string
+      value:
+        type: string
+    type: object
+  types.File:
+    properties:
+      metadata:
+        $ref: '#/definitions/types.Metadata'
+      name:
+        type: string
+      path:
+        type: string
+    type: object
+  types.Filetype:
+    enum:
+    - todo
+    - fleeting
+    - literature
+    - moc
+    - permanent
+    - filter
+    - journaling
+    type: string
+    x-enum-varnames:
+    - FileTypeTodo
+    - FileTypeFleeting
+    - FileTypeLiterature
+    - FileTypeMOC
+    - FileTypePermanent
+    - FileTypeFilter
+    - FileTypeJournaling
+  types.Metadata:
+    properties:
+      ancestor:
+        items:
+          type: string
+        type: array
+      boards:
+        items:
+          type: string
+        type: array
+      collection:
+        type: string
+      createdAt:
+        type: string
+      folders:
+        items:
+          type: string
+        type: array
+      kids:
+        items:
+          type: string
+        type: array
+      lastEdited:
+        type: string
+      linksToHere:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      para:
+        $ref: '#/definitions/types.PARA'
+      parents:
+        items:
+          type: string
+        type: array
+      path:
+        type: string
+      priority:
+        $ref: '#/definitions/types.Priority'
+      size:
+        type: integer
+      status:
+        $ref: '#/definitions/types.Status'
+      tags:
+        items:
+          type: string
+        type: array
+      targetDate:
+        type: string
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/types.Filetype'
+      usedLinks:
+        items:
+          type: string
+        type: array
+    type: object
+  types.PARA:
+    properties:
+      archive:
+        items:
+          type: string
+        type: array
+      areas:
+        items:
+          type: string
+        type: array
+      projects:
+        items:
+          type: string
+        type: array
+      resources:
+        items:
+          type: string
+        type: array
+    type: object
+  types.Priority:
+    enum:
+    - low
+    - medium
+    - high
+    type: string
+    x-enum-varnames:
+    - PriorityLow
+    - PriorityMedium
+    - PriorityHigh
+  types.Status:
+    enum:
+    - draft
+    - published
+    - archived
+    type: string
+    x-enum-varnames:
+    - StatusDraft
+    - StatusPublished
+    - StatusArchived
 host: localhost:1324
 info:
   contact: {}
@@ -1761,6 +1808,56 @@ paths:
       summary: Set metadata for a single file
       tags:
       - metadata
+  /api/metadata/boards:
+    get:
+      description: Get all boards with counts, or boards for a specific file if filepath
+        is provided
+      parameters:
+      - description: File path (optional - if provided, returns boards for that specific
+          file)
+        in: query
+        name: filepath
+        type: string
+      - description: Response format (options for HTML select options)
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/files.BoardCount'
+      summary: Get all boards or boards for a specific file
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Comma-separated board names
+        in: formData
+        name: boards
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set file boards
+      tags:
+      - metadata
   /api/metadata/collection:
     get:
       parameters:
@@ -2703,6 +2800,33 @@ paths:
           schema:
             type: string
       summary: Run filter tests
+      tags:
+      - testdata
+  /api/testdata/filtertest/log/{key}:
+    get:
+      description: Downloads the filter test log from cache storage
+      parameters:
+      - description: log key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: log content
+          schema:
+            type: string
+        "404":
+          description: log not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Download filter test log
       tags:
       - testdata
   /api/testdata/filtertest/testdata:

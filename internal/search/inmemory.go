@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
-	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/utils"
 )
 
 // InMemoryEngine ..
@@ -39,15 +39,14 @@ func (m *InMemoryEngine) IndexAllFiles() error {
 		return err
 	}
 
-	dataDir := configmanager.GetAppConfig().DataPath
 	for _, file := range allFiles {
-		fullPath := filepath.Join(dataDir, file.Path)
+		fullPath := utils.ToFullPath(file.Path)
 		content, err := os.ReadFile(fullPath)
 		if err != nil {
 			continue
 		}
 
-		metadata, _ := files.MetaDataGet(filepath.Join(dataDir, file.Path))
+		metadata, _ := files.MetaDataGet(file.Path)
 		tags := ""
 		if metadata != nil && len(metadata.Tags) > 0 {
 			tags = strings.Join(metadata.Tags, " ")

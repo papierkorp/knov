@@ -41,6 +41,26 @@ func RenderFilterTestResults(results *testdata.FilterTestResults) string {
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
 
+	// log file download link (if available)
+	if results.LogFile != "" {
+		html.WriteString(`<div class="test-log-download" style="background: #e7f3ff; border: 2px solid #0077cc; padding: 15px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">`)
+		html.WriteString(fmt.Sprintf(`<div style="display: flex; align-items: center; gap: 15px;">
+			<span style="font-size: 2em;">📋</span>
+			<div style="flex: 1;">
+				<h5 style="margin: 0 0 5px 0; color: #0056b3; font-size: 1.2em;">%s</h5>
+				<p style="margin: 0; color: #495057; font-size: 0.95em;">%s</p>
+			</div>
+			<a href="/api/testdata/filtertest/log?key=%s" download="filter-test-log.txt" style="background: #0077cc; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+				⬇️ %s
+			</a>
+		</div>`,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "Test Execution Log"),
+			translation.SprintfForRequest(configmanager.GetLanguage(), "download detailed log file with complete test execution output"),
+			results.LogFile,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "download log")))
+		html.WriteString(`</div>`)
+	}
+
 	// detailed results
 	for i, result := range results.Results {
 		statusClass := "test-passed"
@@ -82,7 +102,7 @@ func RenderFilterTestResults(results *testdata.FilterTestResults) string {
 
 		// filter configuration - collapsible with improved styling
 		html.WriteString(`<details class="test-config" style="margin: 0; background: white; overflow: hidden;">`)
-		html.WriteString(fmt.Sprintf(`<summary style="cursor: pointer; font-weight: bold; color: #495057; background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #dee2e6;">⚙️ %s</summary>`,
+		html.WriteString(fmt.Sprintf(`<summary style="cursor: pointer; font-weight: bold; color: #495057; background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #dee2e6;">⚙️ %s</summary>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "Filter Configuration")))
 
 		html.WriteString(`<div style="background: white; color: #212529; padding: 15px; border-left: 4px solid #007bff;">`)
@@ -105,7 +125,7 @@ func RenderFilterTestResults(results *testdata.FilterTestResults) string {
 
 		// files comparison - collapsible with improved readability
 		html.WriteString(`<details class="test-files" style="margin: 15px 0; background: white; border-radius: 5px; overflow: hidden;">`)
-		html.WriteString(fmt.Sprintf(`<summary style="cursor: pointer; font-weight: bold; color: #495057; background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #dee2e6;">📁 %s</summary>`,
+		html.WriteString(fmt.Sprintf(`<summary style="cursor: pointer; font-weight: bold; color: #495057; background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #dee2e6;">📁 %s</summary>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "Files Comparison")))
 
 		html.WriteString(`<div style="background: white; color: #212529; padding: 15px; border-left: 4px solid #28a745;">`)
@@ -113,7 +133,7 @@ func RenderFilterTestResults(results *testdata.FilterTestResults) string {
 
 		// expected files with better contrast
 		html.WriteString(`<div class="expected-files">`)
-		html.WriteString(fmt.Sprintf(`<h6 style="color: #155724; margin: 0 0 10px 0; background: #d1e7dd; padding: 8px 12px; border-radius: 4px; font-size: 1.05em;">📋 %s (%d)</h6>`,
+		html.WriteString(fmt.Sprintf(`<h6 style="color: #155724; margin: 0 0 10px 0; background: #d1e7dd; padding: 8px 12px; border-radius: 4px; font-size: 1.05em;">📁‹ %s (%d)</h6>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "Expected Files"),
 			len(result.ExpectedFiles)))
 		if len(result.ExpectedFiles) > 0 {
@@ -134,7 +154,7 @@ func RenderFilterTestResults(results *testdata.FilterTestResults) string {
 
 		// actual files with better contrast
 		html.WriteString(`<div class="actual-files">`)
-		html.WriteString(fmt.Sprintf(`<h6 style="color: #721c24; margin: 0 0 10px 0; background: #f8d7da; padding: 8px 12px; border-radius: 4px; font-size: 1.05em;">📄 %s (%d)</h6>`,
+		html.WriteString(fmt.Sprintf(`<h6 style="color: #721c24; margin: 0 0 10px 0; background: #f8d7da; padding: 8px 12px; border-radius: 4px; font-size: 1.05em;">📄„ %s (%d)</h6>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "Actual Files"),
 			len(result.ActualFiles)))
 		if len(result.ActualFiles) > 0 {
@@ -181,7 +201,7 @@ func RenderFilterTestMetadataTable(metadataList []*files.Metadata) string {
 	var html strings.Builder
 
 	html.WriteString(`<div class="filter-test-metadata-table">`)
-	html.WriteString(fmt.Sprintf(`<h3 style="margin: 0 0 20px 0; color: #212529;">📋 %s (%d)</h3>`,
+	html.WriteString(fmt.Sprintf(`<h3 style="margin: 0 0 20px 0; color: #212529;">📁‹ %s (%d)</h3>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "Filter Test Metadata"),
 		len(metadataList)))
 
