@@ -692,6 +692,16 @@
             "translation": ""
         },
         {
+            "id": "Export All Files",
+            "message": "Export All Files",
+            "translation": ""
+        },
+        {
+            "id": "Export All Files (DokuWiki to Markdown)",
+            "message": "Export All Files (DokuWiki to Markdown)",
+            "translation": ""
+        },
+        {
             "id": "Export all metadata to file",
             "message": "Export all metadata to file",
             "translation": ""
@@ -729,6 +739,11 @@
         {
             "id": "failed to delete file",
             "message": "failed to delete file",
+            "translation": ""
+        },
+        {
+            "id": "failed to export files",
+            "message": "failed to export files",
             "translation": ""
         },
         {
@@ -2186,8 +2201,8 @@
             "translation": ""
         },
         {
-            "id": "Run filter tests? This will create 12 test metadata objects.",
-            "message": "Run filter tests? This will create 12 test metadata objects.",
+            "id": "Run filter tests? This will create test metadata objects.",
+            "message": "Run filter tests? This will create test metadata objects.",
             "translation": ""
         },
         {

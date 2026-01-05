@@ -3,6 +3,9 @@ package testdata
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"knov/internal/files"
 	"knov/internal/filter"
@@ -35,9 +38,12 @@ type FilterTestResults struct {
 // CreateFilterTestMetadata creates 12 test metadata objects
 func CreateFilterTestMetadata() error {
 	logging.LogInfo("creating filter test metadata")
+	debugLogger := logging.LogBuilder("filter-debug")
+	debugLogger.Printf("creating filter test metadata and cache updates")
 
 	// first, create the actual test files on disk (clears existing filter-tests folder)
 	if err := createFilterTestFiles(); err != nil {
+		debugLogger.Printf("failed to create filter test files: %v", err)
 		return fmt.Errorf("failed to create filter test files: %v", err)
 	}
 
@@ -48,6 +54,7 @@ func CreateFilterTestMetadata() error {
 	for _, metadata := range testMetadataList {
 		if err := files.MetaDataSave(metadata); err != nil {
 			logging.LogError("failed to save metadata for %s: %v", metadata.Path, err)
+			debugLogger.Printf("error saving metadata for %s: %v", metadata.Path, err)
 			return fmt.Errorf("failed to save metadata for %s: %v", metadata.Path, err)
 		}
 		logging.LogDebug("saved metadata for %s", metadata.Path)
@@ -78,6 +85,7 @@ func CreateFilterTestMetadata() error {
 	}
 
 	logging.LogInfo("filter test metadata created successfully")
+	debugLogger.Printf("filter test metadata creation completed")
 	return nil
 }
 
@@ -89,9 +97,11 @@ func GetFilterTestMetadata() []*files.Metadata {
 // RunFilterTests executes various filter test scenarios
 func RunFilterTests() (*FilterTestResults, error) {
 	logging.LogInfo("running filter tests")
+	debugLogger := logging.LogBuilder("filter-debug")
 
 	// ensure test data exists
 	if err := CreateFilterTestMetadata(); err != nil {
+		debugLogger.Printf("failed to create filter test metadata: %v", err)
 		return nil, fmt.Errorf("failed to create filter test metadata: %v", err)
 	}
 
@@ -1147,8 +1157,11 @@ func RunFilterTests() (*FilterTestResults, error) {
 	}
 
 	// run each test
-	for _, test := range testConfigs {
+	for i, test := range testConfigs {
 		logging.LogDebug("running filter test: %s", test.name)
+
+		debugLogger.Printf("--- test %d/%d: %s ---", i+1, len(testConfigs), test.name)
+		debugLogger.Printf("description: %s", test.description)
 
 		result, err := filter.FilterFilesWithConfig(&test.config)
 		if err != nil {
@@ -1165,6 +1178,8 @@ func RunFilterTests() (*FilterTestResults, error) {
 			}
 			results.Results = append(results.Results, testResult)
 			results.FailedTests++
+			debugLogger.Printf("expected: %v", test.expectedFiles)
+			debugLogger.Printf("found: []")
 			continue
 		}
 
@@ -1176,6 +1191,9 @@ func RunFilterTests() (*FilterTestResults, error) {
 		for i, file := range result.Files {
 			actualFiles[i] = file.Path
 		}
+
+		debugLogger.Printf("expected: %v", test.expectedFiles)
+		debugLogger.Printf("found: %v", actualFiles)
 
 		testResult := FilterTestResult{
 			ConfigName:    test.name,
@@ -1201,6 +1219,20 @@ func RunFilterTests() (*FilterTestResults, error) {
 	results.TotalTests = len(testConfigs)
 	results.Success = results.FailedTests == 0
 
+	// set log file path using same base directory logic as configmanager
+	baseDir := "."
+	execPath, err := os.Executable()
+	if err == nil {
+		execDir := filepath.Dir(execPath)
+		// check if running from go build cache (go run)
+		if !strings.Contains(execDir, "go-build") {
+			baseDir = execDir
+		}
+	}
+	logFile := filepath.Join(baseDir, "logs", "filter-debug.log")
+	results.LogFile = logFile
+
 	logging.LogInfo("filter tests completed: %d passed, %d failed", results.PassedTests, results.FailedTests)
+	debugLogger.Printf("tests completed: %d passed, %d failed", results.PassedTests, results.FailedTests)
 	return results, nil
 }
