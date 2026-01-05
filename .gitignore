@@ -206,3 +206,6 @@ config/
 .metadata
 metadata
 static/temp_extracted.go
+cache.db
+metadata.db
+./storage/

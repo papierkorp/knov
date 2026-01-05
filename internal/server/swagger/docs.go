@@ -4221,6 +4221,9 @@ const docTemplate = `{
                 "failed_tests": {
                     "type": "integer"
                 },
+                "log_file": {
+                    "type": "string"
+                },
                 "passed_tests": {
                     "type": "integer"
                 },

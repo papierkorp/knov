@@ -29,6 +29,7 @@ type FilterTestResults struct {
 	FailedTests int                `json:"failed_tests"`
 	Success     bool               `json:"success"`
 	Results     []FilterTestResult `json:"results"`
+	LogFile     string             `json:"log_file,omitempty"`
 }
 
 // CreateFilterTestMetadata creates 12 test metadata objects
@@ -50,6 +51,30 @@ func CreateFilterTestMetadata() error {
 			return fmt.Errorf("failed to save metadata for %s: %v", metadata.Path, err)
 		}
 		logging.LogDebug("saved metadata for %s", metadata.Path)
+	}
+
+	// update all metadata caches
+	logging.LogInfo("updating metadata caches")
+	if err := files.SaveAllCollectionsToSystemData(); err != nil {
+		logging.LogWarning("failed to update collections cache: %v", err)
+	}
+	if err := files.SaveAllFoldersToSystemData(); err != nil {
+		logging.LogWarning("failed to update folders cache: %v", err)
+	}
+	if err := files.SaveAllTagsToSystemData(); err != nil {
+		logging.LogWarning("failed to update tags cache: %v", err)
+	}
+	if err := files.SaveAllPARAProjectsToSystemData(); err != nil {
+		logging.LogWarning("failed to update para projects cache: %v", err)
+	}
+	if err := files.SaveAllPARAAreasToSystemData(); err != nil {
+		logging.LogWarning("failed to update para areas cache: %v", err)
+	}
+	if err := files.SaveAllPARAResourcesToSystemData(); err != nil {
+		logging.LogWarning("failed to update para resources cache: %v", err)
+	}
+	if err := files.SaveAllPARAArchiveToSystemData(); err != nil {
+		logging.LogWarning("failed to update para archive cache: %v", err)
 	}
 
 	logging.LogInfo("filter test metadata created successfully")
@@ -348,8 +373,8 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Logic: "and",
 				Limit: 0,
 			},
-			expectedCount: 7,
-			expectedFiles: []string{"filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md", "filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md", "filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md", "filter-tests/special/filterTestL.md"},
+			expectedCount: 8,
+			expectedFiles: []string{"filter-tests/advanced/filterTestE.md", "filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md", "filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md", "filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md", "filter-tests/special/filterTestL.md"},
 			description:   "filter by creation date after October 5, 2025",
 		},
 		{
@@ -372,8 +397,8 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Logic: "and",
 				Limit: 0,
 			},
-			expectedCount: 5,
-			expectedFiles: []string{"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md", "filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md", "filter-tests/integration/filterTestH.md"},
+			expectedCount: 6,
+			expectedFiles: []string{"filter-tests/filterTestC.md", "filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md", "filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md", "filter-tests/integration/filterTestH.md"},
 			description:   "filter by creation date range: October 4-8, 2025",
 		},
 		{
@@ -486,6 +511,12 @@ func RunFilterTests() (*FilterTestResults, error) {
 						Metadata: "priority",
 						Operator: "in",
 						Value:    "medium,low",
+						Action:   "include",
+					},
+					{
+						Metadata: "collection",
+						Operator: "contains",
+						Value:    "filter-testing",
 						Action:   "include",
 					},
 				},
@@ -658,6 +689,460 @@ func RunFilterTests() (*FilterTestResults, error) {
 			expectedCount: 2,
 			expectedFiles: []string{"filter-tests/filterTestB.md", "filter-tests/filterTestC.md"},
 			description:   "filter by name using regex pattern (filterTestA-C.md) AND status equals published",
+		},
+		{
+			name: "para_archive_contains_old",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "para_archive",
+						Operator: "contains",
+						Value:    "old",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 2,
+			expectedFiles: []string{"filter-tests/advanced/filterTestE.md", "filter-tests/performance/filterTestJ.md"},
+			description:   "filter by PARA archive field containing 'old'",
+		},
+		{
+			name: "para_archive_in_multiple_values",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "para_archive",
+						Operator: "in",
+						Value:    "unique_old_prototypes,unique_old_benchmarks",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 2,
+			expectedFiles: []string{"filter-tests/advanced/filterTestE.md", "filter-tests/performance/filterTestJ.md"},
+			description:   "filter by PARA archive using 'in' operator with multiple values",
+		},
+		{
+			name: "lastEdited_after_november_3",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "lastEdited",
+						Operator: "greater",
+						Value:    "2025-11-03",
+						Action:   "include",
+					},
+					{
+						Metadata: "collection",
+						Operator: "contains",
+						Value:    "filter-testing",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 10,
+			expectedFiles: []string{
+				"filter-tests/filterTestC.md",
+				"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md",
+				"filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md",
+				"filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md",
+				"filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md",
+				"filter-tests/special/filterTestL.md",
+			},
+			description: "filter by lastEdited date after November 3, 2025 (C has Nov 3 12:00 which is > Nov 3 00:00)",
+		},
+		{
+			name: "boards_contains_filter_board",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "boards",
+						Operator: "contains",
+						Value:    "filter-board",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 3,
+			expectedFiles: []string{"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/filterTestC.md"},
+			description:   "filter by boards field containing 'filter-board'",
+		},
+		{
+			name: "exclude_status_draft",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "contains",
+						Value:    "filter-testing",
+						Action:   "include",
+					},
+					{
+						Metadata: "status",
+						Operator: "equals",
+						Value:    "draft",
+						Action:   "exclude",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 7,
+			expectedFiles: []string{
+				"filter-tests/filterTestB.md", "filter-tests/filterTestC.md",
+				"filter-tests/advanced/filterTestE.md",
+				"filter-tests/basic/filterTestG.md",
+				"filter-tests/integration/filterTestH.md",
+				"filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md",
+			},
+			description: "include filter-testing collection but exclude draft status",
+		},
+		{
+			name: "empty_result_set",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "para_archive",
+						Operator: "equals",
+						Value:    "unique_nonexistent_value",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 0,
+			expectedFiles: []string{},
+			description:   "query that should return no results (nonexistent PARA archive value)",
+		},
+		{
+			name: "priority_in_high_or_low",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "priority",
+						Operator: "in",
+						Value:    "high,low",
+						Action:   "include",
+					},
+					{
+						Metadata: "collection",
+						Operator: "contains",
+						Value:    "filter-testing",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 8,
+			expectedFiles: []string{
+				"filter-tests/filterTestA.md", "filter-tests/filterTestC.md",
+				"filter-tests/advanced/filterTestD.md", "filter-tests/basic/filterTestF.md",
+				"filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md",
+				"filter-tests/performance/filterTestK.md", "filter-tests/special/filterTestL.md",
+			},
+			description: "filter by priority using 'in' operator (high OR low)",
+		},
+		{
+			name: "limit_functionality",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "contains",
+						Value:    "filter-testing",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 5,
+			},
+			expectedCount: 5,
+			expectedFiles: nil,
+			description:   "test limit functionality - should return only 5 results",
+		},
+		{
+			name: "boards_in_multiple",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "boards",
+						Operator: "in",
+						Value:    "advanced-board,performance-board",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 5,
+			expectedFiles: []string{
+				"filter-tests/filterTestC.md",
+				"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md",
+				"filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md",
+			},
+			description: "filter by boards using 'in' operator with multiple board names",
+		},
+		{
+			name: "complex_para_and_tags",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "para_areas",
+						Operator: "contains",
+						Value:    "unique",
+						Action:   "include",
+					},
+					{
+						Metadata: "tags",
+						Operator: "contains",
+						Value:    "specific",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 9,
+			expectedFiles: []string{
+				"filter-tests/filterTestA.md", "filter-tests/filterTestC.md",
+				"filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md",
+				"filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md",
+				"filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md",
+				"filter-tests/special/filterTestL.md",
+			},
+			description: "complex filter combining PARA areas and tags",
+		},
+		{
+			name: "case_sensitivity_test",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "contains",
+						Value:    "FILTER-TESTING",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 12,
+			expectedFiles: []string{
+				"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/filterTestC.md",
+				"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md",
+				"filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md",
+				"filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md",
+				"filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md",
+				"filter-tests/special/filterTestL.md",
+			},
+			description: "test case insensitivity - sqlite like is case-insensitive by default",
+		},
+		{
+			name: "multiple_exclude_criteria",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "contains",
+						Value:    "filter-testing",
+						Action:   "include",
+					},
+					{
+						Metadata: "status",
+						Operator: "equals",
+						Value:    "draft",
+						Action:   "exclude",
+					},
+					{
+						Metadata: "priority",
+						Operator: "equals",
+						Value:    "low",
+						Action:   "exclude",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 4,
+			expectedFiles: []string{
+				"filter-tests/filterTestB.md",
+				"filter-tests/advanced/filterTestE.md",
+				"filter-tests/basic/filterTestG.md",
+				"filter-tests/performance/filterTestJ.md",
+			},
+			description: "multiple exclude criteria - exclude both draft status AND low priority",
+		},
+		{
+			name: "para_projects_in_operator",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "para_projects",
+						Operator: "in",
+						Value:    "unique_filter_system,unique_basic_functionality",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 5,
+			expectedFiles: []string{
+				"filter-tests/filterTestA.md", "filter-tests/filterTestB.md",
+				"filter-tests/advanced/filterTestD.md",
+				"filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md",
+			},
+			description: "filter PARA projects using 'in' operator - matches multiple project values",
+		},
+		{
+			name: "or_include_multiple_statuses",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "status",
+						Operator: "equals",
+						Value:    "draft",
+						Action:   "include",
+					},
+					{
+						Metadata: "status",
+						Operator: "equals",
+						Value:    "archived",
+						Action:   "include",
+					},
+					{
+						Metadata: "collection",
+						Operator: "equals",
+						Value:    "filter-testing-unique",
+						Action:   "include",
+					},
+				},
+				Logic: "or",
+				Limit: 0,
+			},
+			expectedCount: 9,
+			expectedFiles: []string{
+				"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/filterTestC.md",
+				"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md",
+				"filter-tests/basic/filterTestF.md",
+				"filter-tests/integration/filterTestI.md",
+				"filter-tests/performance/filterTestJ.md",
+				"filter-tests/special/filterTestL.md",
+			},
+			description: "or logic with include - status draft OR archived OR collection filter-testing-unique",
+		},
+		{
+			name: "or_exclude_multiple_priorities",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "contains",
+						Value:    "filter-testing",
+						Action:   "include",
+					},
+					{
+						Metadata: "priority",
+						Operator: "equals",
+						Value:    "high",
+						Action:   "exclude",
+					},
+					{
+						Metadata: "priority",
+						Operator: "equals",
+						Value:    "low",
+						Action:   "exclude",
+					},
+				},
+				Logic: "or",
+				Limit: 0,
+			},
+			expectedCount: 4,
+			expectedFiles: []string{
+				"filter-tests/filterTestB.md",
+				"filter-tests/advanced/filterTestE.md",
+				"filter-tests/basic/filterTestG.md",
+				"filter-tests/performance/filterTestJ.md",
+			},
+			description: "or logic with exclude - exclude high OR low priority (only medium remains)",
+		},
+		{
+			name: "or_mixed_tags_with_status_exclude",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "tags",
+						Operator: "contains",
+						Value:    "unique-experimental",
+						Action:   "include",
+					},
+					{
+						Metadata: "tags",
+						Operator: "contains",
+						Value:    "unique-stable",
+						Action:   "include",
+					},
+					{
+						Metadata: "status",
+						Operator: "equals",
+						Value:    "archived",
+						Action:   "exclude",
+					},
+				},
+				Logic: "or",
+				Limit: 0,
+			},
+			expectedCount: 3,
+			expectedFiles: []string{
+				"filter-tests/filterTestA.md", "filter-tests/filterTestB.md",
+				"filter-tests/advanced/filterTestD.md",
+			},
+			description: "or logic mixed - include experimental OR stable tags, exclude archived",
+		},
+		{
+			name: "or_complex_multi_field",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "tags",
+						Operator: "contains",
+						Value:    "unique-advanced",
+						Action:   "include",
+					},
+					{
+						Metadata: "tags",
+						Operator: "contains",
+						Value:    "unique-basic",
+						Action:   "include",
+					},
+					{
+						Metadata: "tags",
+						Operator: "contains",
+						Value:    "unique-performance",
+						Action:   "include",
+					},
+				},
+				Logic: "or",
+				Limit: 0,
+			},
+			expectedCount: 7,
+			expectedFiles: []string{
+				"filter-tests/filterTestC.md",
+				"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md",
+				"filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md",
+				"filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md",
+			},
+			description: "or logic multi-field - tags with unique-advanced OR unique-basic OR unique-performance",
 		},
 	}
 

@@ -1322,11 +1322,7 @@ func handleAPIGetMetadataStatus(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, string(metadata.Status), html)
 }
 
-// @Summary Get PARA projects for a file
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Success 200 {string} string
-// @Router /api/metadata/para/projects [get]
+// helper function - called by handleAPIGetAllPARAProjects when filepath is provided
 func handleAPIGetMetadataPARAProjects(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
@@ -1356,11 +1352,7 @@ func handleAPIGetMetadataPARAProjects(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, metadata.PARA.Projects, html)
 }
 
-// @Summary Get PARA areas for a file
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Success 200 {string} string
-// @Router /api/metadata/para/areas [get]
+// helper function - called by handleAPIGetAllPARAreas when filepath is provided
 func handleAPIGetMetadataPARAreas(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
@@ -1390,11 +1382,7 @@ func handleAPIGetMetadataPARAreas(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, metadata.PARA.Areas, html)
 }
 
-// @Summary Get PARA resources for a file
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Success 200 {string} string
-// @Router /api/metadata/para/resources [get]
+// helper function - called by handleAPIGetAllPARAResources when filepath is provided
 func handleAPIGetMetadataPARAResources(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
@@ -1424,11 +1412,7 @@ func handleAPIGetMetadataPARAResources(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, metadata.PARA.Resources, html)
 }
 
-// @Summary Get PARA archive for a file
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Success 200 {string} string
-// @Router /api/metadata/para/archive [get]
+// helper function - called by handleAPIGetAllPARAArchive when filepath is provided
 func handleAPIGetMetadataPARAArchive(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {

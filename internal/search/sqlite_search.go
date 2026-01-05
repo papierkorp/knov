@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	_ "github.com/mattn/go-sqlite3" // sqlite full text search
-	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/utils"
+
+	_ "github.com/mattn/go-sqlite3" // sqlite full text search
 )
 
 // SQLiteEngine ..
@@ -46,7 +46,6 @@ func (s *SQLiteEngine) IndexAllFiles() error {
 		return err
 	}
 
-	dataDir := configmanager.GetAppConfig().DataPath
 	for _, file := range allFiles {
 		fullPath := utils.ToFullPath(file.Path)
 		content, err := os.ReadFile(fullPath)
@@ -54,7 +53,7 @@ func (s *SQLiteEngine) IndexAllFiles() error {
 			continue
 		}
 
-		metadata, _ := files.MetaDataGet(filepath.Join(dataDir, file.Path))
+		metadata, _ := files.MetaDataGet(file.Path)
 		tags := ""
 		if metadata != nil && len(metadata.Tags) > 0 {
 			tags = strings.Join(metadata.Tags, " ")
@@ -74,7 +73,7 @@ func (s *SQLiteEngine) SearchFiles(query string, limit int) ([]files.File, error
 
 	searchPattern := "%" + strings.ToLower(query) + "%"
 	rows, err := s.db.Query(`
-        SELECT path FROM search_index 
+        SELECT path FROM search_index
         WHERE LOWER(title) LIKE ? OR LOWER(content) LIKE ? OR LOWER(tags) LIKE ?
         LIMIT ?`,
 		searchPattern, searchPattern, searchPattern, limit)
