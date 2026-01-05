@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"knov/internal/files"
 	"knov/internal/logging"
@@ -159,6 +160,13 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 			}
 		}
 		return false
+	case "boards":
+		for _, board := range metadata.Boards {
+			if matchesOperator(board, criterion.Operator, criterion.Value) {
+				return true
+			}
+		}
+		return false
 	case "type":
 		metadataValue = string(metadata.FileType) // convert Filetype to string
 	case "status":
@@ -225,8 +233,26 @@ func matchesOperator(metadataValue, operator, criteriaValue string) bool {
 		}
 		return matched
 	case "greater":
+		// try date comparison first for date-like values
+		if len(metadataValue) == 10 && len(criteriaValue) == 10 &&
+			strings.Contains(metadataValue, "-") && strings.Contains(criteriaValue, "-") {
+			metaDate, err1 := time.Parse("2006-01-02", metadataValue)
+			criteriaDate, err2 := time.Parse("2006-01-02", criteriaValue)
+			if err1 == nil && err2 == nil {
+				return metaDate.After(criteriaDate)
+			}
+		}
 		return metadataValue > criteriaValue
 	case "less":
+		// try date comparison first for date-like values
+		if len(metadataValue) == 10 && len(criteriaValue) == 10 &&
+			strings.Contains(metadataValue, "-") && strings.Contains(criteriaValue, "-") {
+			metaDate, err1 := time.Parse("2006-01-02", metadataValue)
+			criteriaDate, err2 := time.Parse("2006-01-02", criteriaValue)
+			if err1 == nil && err2 == nil {
+				return metaDate.Before(criteriaDate)
+			}
+		}
 		return metadataValue < criteriaValue
 	case "in":
 		values := strings.Split(criteriaValue, ",")
@@ -247,6 +273,7 @@ func GetMetadataFields() []string {
 		"name",
 		"collection",
 		"tags",
+		"boards",
 		"type",
 		"status",
 		"priority",

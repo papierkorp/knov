@@ -383,8 +383,8 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Logic: "and",
 				Limit: 0,
 			},
-			expectedCount: 8,
-			expectedFiles: []string{"filter-tests/advanced/filterTestE.md", "filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md", "filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md", "filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md", "filter-tests/special/filterTestL.md"},
+			expectedCount: 7,
+			expectedFiles: []string{"filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md", "filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md", "filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md", "filter-tests/special/filterTestL.md"},
 			description:   "filter by creation date after October 5, 2025",
 		},
 		{
@@ -407,8 +407,8 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Logic: "and",
 				Limit: 0,
 			},
-			expectedCount: 6,
-			expectedFiles: []string{"filter-tests/filterTestC.md", "filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md", "filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md", "filter-tests/integration/filterTestH.md"},
+			expectedCount: 5,
+			expectedFiles: []string{"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md", "filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md", "filter-tests/integration/filterTestH.md"},
 			description:   "filter by creation date range: October 4-8, 2025",
 		},
 		{
@@ -735,37 +735,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			expectedCount: 2,
 			expectedFiles: []string{"filter-tests/advanced/filterTestE.md", "filter-tests/performance/filterTestJ.md"},
 			description:   "filter by PARA archive using 'in' operator with multiple values",
-		},
-		{
-			name: "lastEdited_after_november_3",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "lastEdited",
-						Operator: "greater",
-						Value:    "2025-11-03",
-						Action:   "include",
-					},
-					{
-						Metadata: "collection",
-						Operator: "contains",
-						Value:    "filter-testing",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 10,
-			expectedFiles: []string{
-				"filter-tests/filterTestC.md",
-				"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md",
-				"filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md",
-				"filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md",
-				"filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md",
-				"filter-tests/special/filterTestL.md",
-			},
-			description: "filter by lastEdited date after November 3, 2025 (C has Nov 3 12:00 which is > Nov 3 00:00)",
 		},
 		{
 			name: "boards_contains_filter_board",

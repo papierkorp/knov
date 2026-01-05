@@ -191,6 +191,9 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		if newMetadata.Tags != nil {
 			currentMetadata.Tags = newMetadata.Tags
 		}
+		if newMetadata.Boards != nil {
+			currentMetadata.Boards = newMetadata.Boards
+		}
 		if newMetadata.Parents != nil {
 			normalized := make([]string, 0, len(newMetadata.Parents))
 			for _, parent := range newMetadata.Parents {
