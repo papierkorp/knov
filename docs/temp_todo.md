@@ -2,10 +2,20 @@
 
 single source of truth is the metadata - we just display it differently
 
-## sync function
+## new functions
 
-1. change metadata (either status, targetDate/todoDate or parent)
+### sync function
+
+is called for every save in /daily, /kanban and /calendar
+
+1. change metadata (either status, targetDate/todoDate or parent) based on give parameter
 2. hx-reload /kanban, /daily and /calendar
+
+### daily function
+
+is called for every load/reload of /daily
+
+1. 
 
 ## daily
 
@@ -213,6 +223,21 @@ additional neccessary changes
 - in server.go in /files/new/todo add parameter for quick adds for daily/calendar/kanban which automatically adds a targetDate of today and a status
 - syncViews(fileID, changeType) function which is called in handleAPIxxxSave for all 3 new saves
 
-#
+# storage
 
-also help with this: if i set a parent -
+give me some input for the storage system
+im thinkin about refactoring it to use it for this three types of storage:
+
+- config
+- metadata
+- cache
+
+i want envs to set either one of the 3 to an available storage (json files, sqlite, postgres)
+for cache i would like to use FTS5/BM25 for sqlite for example
+but everything based on the Storage interface
+
+at the moment config/metadata/cache is kinda a mixed bag - what would i have to do to make this work?
+dont give me a implemention just some ideas - is it possible? does it even make sense?
+
+no need for backwards compatibility since the software is still in development
+migration tools per storage type
