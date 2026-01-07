@@ -8,6 +8,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/cronjob"
 	"knov/internal/logging"
+	"knov/internal/repository"
 	"knov/internal/search"
 	"knov/internal/server"
 	"knov/internal/storage"
@@ -32,7 +33,13 @@ func main() {
 
 	configmanager.InitAppConfig()
 	translation.Init()
-	storage.Init(configmanager.GetStorageMethod(), configmanager.GetConfigPath())
+	storage.InitStorages(
+		configmanager.GetConfigStorageProvider(),
+		configmanager.GetMetadataStorageProvider(),
+		configmanager.GetCacheStorageProvider(),
+		configmanager.GetStoragePath(),
+	)
+	repository.InitRepositories()
 	configmanager.InitUserSettings()
 	translation.SetLanguage(configmanager.GetLanguage())
 

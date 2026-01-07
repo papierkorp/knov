@@ -24,9 +24,21 @@ func ToFullPath(relativePath string) string {
 // Output: "projects/file.md"
 func ToRelativePath(fullPath string) string {
 	dataPath := configmanager.GetAppConfig().DataPath
+	dataPathName := filepath.Base(filepath.Clean(dataPath))
 
-	// if path is already relative, return as-is
+	// if path is already relative, check if it starts with data path and strip it
 	if !filepath.IsAbs(fullPath) {
+		// normalize path separators
+		fullPath = filepath.ToSlash(fullPath)
+
+		// strip leading "data/" or "data\" if present
+		if strings.HasPrefix(fullPath, dataPathName+"/") {
+			return strings.TrimPrefix(fullPath, dataPathName+"/")
+		}
+		if strings.HasPrefix(fullPath, dataPathName+"\\") {
+			return strings.TrimPrefix(fullPath, dataPathName+"\\")
+		}
+
 		return fullPath
 	}
 

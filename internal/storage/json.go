@@ -13,30 +13,21 @@ import (
 
 // JSONStorage implements Storage interface using JSON files
 type JSONStorage struct {
-	basePath string
-	mutex    sync.RWMutex
+	basePath    string
+	storageType string
+	mutex       sync.RWMutex
 }
 
 // NewJSONStorage creates a new JSON storage instance
-func NewJSONStorage() (*JSONStorage, error) {
-	basePath := ".metadata"
-	if err := os.MkdirAll(basePath, 0755); err != nil {
+func NewJSONStorage(basePath, storageType string) (*JSONStorage, error) {
+	fullPath := filepath.Join(basePath, storageType)
+	if err := os.MkdirAll(fullPath, 0755); err != nil {
 		return nil, err
 	}
 
 	return &JSONStorage{
-		basePath: basePath,
-	}, nil
-}
-
-// NewConfigJSONStorage creates a new config JSON storage instance
-func NewConfigJSONStorage(configPath string) (*JSONStorage, error) {
-	if err := os.MkdirAll(configPath, 0755); err != nil {
-		return nil, err
-	}
-
-	return &JSONStorage{
-		basePath: configPath,
+		basePath:    fullPath,
+		storageType: storageType,
 	}, nil
 }
 
@@ -143,6 +134,44 @@ func (js *JSONStorage) List(prefix string) ([]string, error) {
 	return keys, nil
 }
 
+// GetAll returns all key-value pairs
+func (js *JSONStorage) GetAll() (map[string][]byte, error) {
+	js.mutex.RLock()
+	defer js.mutex.RUnlock()
+
+	result := make(map[string][]byte)
+
+	err := filepath.Walk(js.basePath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() && strings.HasSuffix(path, ".json") {
+			relPath, err := filepath.Rel(js.basePath, path)
+			if err != nil {
+				return err
+			}
+
+			key := js.pathToKey(relPath)
+			data, err := os.ReadFile(path)
+			if err != nil {
+				logging.LogWarning("failed to read file %s: %v", path, err)
+				return nil
+			}
+			result[key] = data
+		}
+		return nil
+	})
+
+	if err != nil {
+		logging.LogError("failed to get all keys: %v", err)
+		return nil, err
+	}
+
+	logging.LogDebug("retrieved %d key-value pairs", len(result))
+	return result, nil
+}
+
 // Exists checks if key exists
 func (js *JSONStorage) Exists(key string) bool {
 	js.mutex.RLock()
@@ -151,6 +180,11 @@ func (js *JSONStorage) Exists(key string) bool {
 	filePath := js.getFilePath(key)
 	_, err := os.Stat(filePath)
 	return err == nil
+}
+
+// GetBackendType returns the backend type
+func (js *JSONStorage) GetBackendType() string {
+	return "json"
 }
 
 // getFilePath converts key to file path

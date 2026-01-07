@@ -1,15 +1,11 @@
-// Package storage ..
+// Package storage provides storage abstraction layer
 package storage
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"knov/internal/logging"
 )
-
-var globalStorageManager *StorageManager
-var globalConfigStorageManager *StorageManager
 
 // Storage interface defines methods for storing and retrieving data
 type Storage interface {
@@ -17,59 +13,70 @@ type Storage interface {
 	Set(key string, data []byte) error
 	Delete(key string) error
 	List(prefix string) ([]string, error)
+	GetAll() (map[string][]byte, error)
 	Exists(key string) bool
+	GetBackendType() string
 }
 
-// StorageManager manages storage backend
+// StorageManager manages a storage backend
 type StorageManager struct {
 	backend Storage
 }
 
-// Init initializes the global storage manager
-func Init(storageMethod, configPath string) error {
+var (
+	configStorage   *StorageManager
+	metadataStorage *StorageManager
+	cacheStorage    *StorageManager
+)
+
+// InitStorages initializes all storage managers
+func InitStorages(configProvider, metadataProvider, cacheProvider, storagePath string) error {
+	var err error
+
+	// initialize config storage
+	configStorage, err = newStorageManager(configProvider, "config", storagePath)
+	if err != nil {
+		return fmt.Errorf("failed to initialize config storage: %w", err)
+	}
+	logging.LogInfo("config storage initialized: %s", configProvider)
+
+	// initialize metadata storage
+	metadataStorage, err = newStorageManager(metadataProvider, "metadata", storagePath)
+	if err != nil {
+		return fmt.Errorf("failed to initialize metadata storage: %w", err)
+	}
+	logging.LogInfo("metadata storage initialized: %s", metadataProvider)
+
+	// initialize cache storage
+	cacheStorage, err = newStorageManager(cacheProvider, "cache", storagePath)
+	if err != nil {
+		return fmt.Errorf("failed to initialize cache storage: %w", err)
+	}
+	logging.LogInfo("cache storage initialized: %s", cacheProvider)
+
+	return nil
+}
+
+// newStorageManager creates a storage manager for a specific provider
+func newStorageManager(provider, storageType, basePath string) (*StorageManager, error) {
 	var backend Storage
 	var err error
 
-	switch storageMethod {
+	switch provider {
 	case "json":
-		backend, err = NewJSONStorage()
+		backend, err = NewJSONStorage(basePath, storageType)
 	case "sqlite":
-		logging.LogError("sqlite storage not implemented yet, using json")
-		backend, err = NewJSONStorage()
-	case "postgres":
-		logging.LogError("postgres storage not implemented yet, using json")
-		backend, err = NewJSONStorage()
+		backend, err = NewSQLiteStorage(basePath, storageType)
 	default:
-		logging.LogWarning("unknown storage type '%s', using json", storageMethod)
-		backend, err = NewJSONStorage()
+		logging.LogWarning("unknown storage provider '%s', using json", provider)
+		backend, err = NewJSONStorage(basePath, storageType)
 	}
 
 	if err != nil {
-		logging.LogError("failed to initialize storage: %v", err)
-		return err
+		return nil, err
 	}
 
-	globalStorageManager = &StorageManager{backend: backend}
-	logging.LogInfo("storage initialized: %s", storageMethod)
-
-	// Initialize config storage
-	var configBackend Storage
-	switch storageMethod {
-	case "json":
-		configBackend, err = NewConfigJSONStorage(configPath)
-	default:
-		configBackend, err = NewConfigJSONStorage(configPath)
-	}
-
-	if err != nil {
-		logging.LogError("failed to initialize config storage: %v", err)
-		return err
-	}
-
-	globalConfigStorageManager = &StorageManager{backend: configBackend}
-	logging.LogInfo("config storage initialized: %s", storageMethod)
-
-	return nil
+	return &StorageManager{backend: backend}, nil
 }
 
 // Get retrieves data by key
@@ -92,35 +99,32 @@ func (sm *StorageManager) List(prefix string) ([]string, error) {
 	return sm.backend.List(prefix)
 }
 
+// GetAll returns all key-value pairs
+func (sm *StorageManager) GetAll() (map[string][]byte, error) {
+	return sm.backend.GetAll()
+}
+
 // Exists checks if key exists
 func (sm *StorageManager) Exists(key string) bool {
 	return sm.backend.Exists(key)
 }
 
-// GetStorage returns the global storage manager
-func GetStorage() *StorageManager {
-	return globalStorageManager
+// GetBackendType returns the backend type
+func (sm *StorageManager) GetBackendType() string {
+	return sm.backend.GetBackendType()
 }
 
-// GetConfigStorage returns the global config storage manager
+// GetConfigStorage returns the config storage manager
 func GetConfigStorage() *StorageManager {
-	return globalConfigStorageManager
+	return configStorage
 }
 
-// SaveSystemData stores system data with a given key
-func (sm *StorageManager) SaveSystemData(key string, value interface{}) error {
-	data, err := json.Marshal(value)
-	if err != nil {
-		logging.LogError("failed to marshal system data for key %s: %v", key, err)
-		return err
-	}
-
-	systemKey := fmt.Sprintf(".system/%s", key)
-	return sm.Set(systemKey, data)
+// GetMetadataStorage returns the metadata storage manager
+func GetMetadataStorage() *StorageManager {
+	return metadataStorage
 }
 
-// GetSystemData retrieves system data by key
-func (sm *StorageManager) GetSystemData(key string) ([]byte, error) {
-	systemKey := fmt.Sprintf(".system/%s", key)
-	return sm.Get(systemKey)
+// GetCacheStorage returns the cache storage manager
+func GetCacheStorage() *StorageManager {
+	return cacheStorage
 }

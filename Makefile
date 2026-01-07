@@ -1,13 +1,17 @@
 # Variables
 APP_NAME := knov
+BUILD_TAGS := fts5
 
 # ------------- actual usage -------------
-dev: swaggo-api-init 
+dev: swaggo-api-init
+	KNOV_LOG_LEVEL=debug go run -tags "$(BUILD_TAGS)" ./
+
+dev-fast: swaggo-api-init
 	KNOV_LOG_LEVEL=debug go run ./
 
 prod: clean swaggo-api-init translation
-	go build -o bin/$(APP_NAME) ./
-	GOOS=windows GOARCH=amd64 go build -o bin/$(APP_NAME).exe ./
+	go build -tags "$(BUILD_TAGS)" -o bin/$(APP_NAME) ./
+	GOOS=windows GOARCH=amd64 go build -tags "$(BUILD_TAGS)" -o bin/$(APP_NAME).exe ./
 
 # ------------- docker -------------
 
@@ -29,4 +33,4 @@ translation:
 swaggo-api-init:
 	swag init -g main.go -d . -o internal/server/swagger
 
-.PHONY: dev swaggo-api-init rmt translation prod docker docker-build docker-run clean
+.PHONY: dev dev-fast swaggo-api-init rmt translation prod docker docker-build docker-run clean

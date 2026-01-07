@@ -47,9 +47,10 @@ func CleanTestData() error {
 		return err
 	}
 
-	configPath := configmanager.GetConfigPath()
-	if err := os.RemoveAll(configPath + "/.metadata"); err != nil {
-		logging.LogError("failed to remove metadata directory: %v", err)
+	// Clean storage directory (metadata, config, cache)
+	storagePath := configmanager.GetStoragePath()
+	if err := os.RemoveAll(storagePath); err != nil {
+		logging.LogError("failed to remove storage directory: %v", err)
 		return err
 	}
 

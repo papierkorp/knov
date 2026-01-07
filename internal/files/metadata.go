@@ -3,6 +3,7 @@ package files
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -10,7 +11,7 @@ import (
 	"time"
 
 	"knov/internal/logging"
-	"knov/internal/storage"
+	"knov/internal/repository"
 	"knov/internal/utils"
 )
 
@@ -302,8 +303,7 @@ func MetaDataSave(m *Metadata) error {
 		return err
 	}
 
-	key := finalMetadata.Path
-	if err := storage.GetStorage().Set(key, data); err != nil {
+	if err := repository.GetFileRepository().SaveMetadata(finalMetadata.Path, data); err != nil {
 		logging.LogError("failed to save metadata for %s: %v", finalMetadata.Path, err)
 		return err
 	}
@@ -315,39 +315,37 @@ func MetaDataSave(m *Metadata) error {
 // metaDataSaveRaw saves metadata directly without triggering metaDataUpdate
 // used internally to avoid cascading updates when updating link relationships
 func metaDataSaveRaw(m *Metadata) error {
+	if m == nil {
+		return fmt.Errorf("metadata cannot be nil")
+	}
+
 	data, err := json.Marshal(m)
 	if err != nil {
-		logging.LogError("failed to marshal metadata: %v", err)
+		logging.LogError("failed to marshal metadata for %s: %v", m.Path, err)
 		return err
 	}
 
-	key := m.Path
-	if err := storage.GetStorage().Set(key, data); err != nil {
-		logging.LogError("failed to save metadata for %s: %v", m.Path, err)
-		return err
-	}
-
-	logging.LogDebug("metadata saved (raw) for: %s", m.Path)
-	return nil
+	logging.LogDebug("saving metadata for: %s", m.Path)
+	return repository.GetFileRepository().SaveMetadata(m.Path, data)
 }
 
 // MetaDataGet retrieves metadata using the configured storage method
 func MetaDataGet(filepath string) (*Metadata, error) {
-	key := utils.ToRelativePath(filepath)
-	data, err := storage.GetStorage().Get(key)
+	normalizedPath := utils.ToRelativePath(filepath)
+	logging.LogDebug("getting metadata for: %s", normalizedPath)
+
+	data, err := repository.GetFileRepository().GetMetadata(normalizedPath)
 	if err != nil {
-		logging.LogError("failed to get metadata for %s: %v", filepath, err)
 		return nil, err
 	}
 
 	if data == nil {
-		logging.LogDebug("no metadata found for file: %s", filepath)
 		return nil, nil
 	}
 
 	var metadata Metadata
 	if err := json.Unmarshal(data, &metadata); err != nil {
-		logging.LogError("failed to unmarshal metadata for %s: %v", filepath, err)
+		logging.LogError("failed to unmarshal metadata for %s: %v", normalizedPath, err)
 		return nil, err
 	}
 
@@ -511,14 +509,9 @@ func GetAllStatuses() (StatusCount, error) {
 
 // MetaDataDelete removes metadata for a file
 func MetaDataDelete(filepath string) error {
-	key := utils.ToRelativePath(filepath)
-	if err := storage.GetStorage().Delete(key); err != nil {
-		logging.LogError("failed to delete metadata for %s: %v", filepath, err)
-		return err
-	}
-
-	logging.LogDebug("metadata deleted for: %s", filepath)
-	return nil
+	normalizedPath := utils.ToRelativePath(filepath)
+	logging.LogInfo("deleting metadata for: %s", normalizedPath)
+	return repository.GetFileRepository().DeleteMetadata(normalizedPath)
 }
 
 // GetAllPARAProjects returns all unique PARA projects with their counts
@@ -612,34 +605,23 @@ func GetAllPARAArchive() (PARAArchiveCount, error) {
 
 // MetaDataExportAll exports all metadata in the specified format
 func MetaDataExportAll() ([]*Metadata, error) {
-	keys, err := storage.GetStorage().List("")
+	logging.LogDebug("exporting all metadata")
+
+	allData, err := repository.GetFileRepository().GetAllMetadata()
 	if err != nil {
-		logging.LogError("failed to list metadata keys: %v", err)
 		return nil, err
 	}
 
 	var allMetadata []*Metadata
-	for _, key := range keys {
-		data, err := storage.GetStorage().Get(key)
-		if err != nil {
-			logging.LogWarning("failed to get metadata for key %s: %v", key, err)
-			continue
-		}
-
-		if data == nil {
-			continue
-		}
-
+	for path, data := range allData {
 		var metadata Metadata
 		if err := json.Unmarshal(data, &metadata); err != nil {
-			logging.LogWarning("failed to unmarshal metadata for key %s: %v", key, err)
+			logging.LogWarning("failed to unmarshal metadata for %s: %v", path, err)
 			continue
 		}
-
 		allMetadata = append(allMetadata, &metadata)
 	}
 
-	logging.LogDebug("exported %d metadata entries", len(allMetadata))
 	return allMetadata, nil
 }
 
@@ -773,38 +755,23 @@ const (
 
 // SaveCachedStringList saves a sorted string list to system cache
 func SaveCachedStringList(key CacheKey, data []string) error {
-	logging.LogDebug("saving %s via storage system", key)
-
-	// sort alphabetically for consistency
+	logging.LogDebug("saving %s to cache", key)
 	sortedData := make([]string, len(data))
 	copy(sortedData, data)
 	slices.Sort(sortedData)
-
-	if err := storage.GetStorage().SaveSystemData(string(key), sortedData); err != nil {
-		return err
-	}
-
-	logging.LogDebug("saved %d items for %s via storage system", len(sortedData), key)
-	return nil
+	return repository.GetFileRepository().SaveToCache(string(key), sortedData)
 }
 
 // GetCachedStringList retrieves a string list from system cache
 func GetCachedStringList(key CacheKey) ([]string, error) {
-	data, err := storage.GetStorage().GetSystemData(string(key))
-	if err != nil {
-		return nil, err
-	}
-
-	if data == nil {
-		return []string{}, nil
-	}
-
 	var items []string
-	if err := json.Unmarshal(data, &items); err != nil {
-		logging.LogError("failed to unmarshal cached %s: %v", key, err)
+	err := repository.GetFileRepository().GetFromCache(string(key), &items)
+	if err != nil {
+		if strings.Contains(err.Error(), "key not found") {
+			return []string{}, nil
+		}
 		return nil, err
 	}
-
 	return items, nil
 }
 

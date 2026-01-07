@@ -93,8 +93,7 @@ func InitThemeManager() {
 // -----------------------------------------------
 
 func loadAllThemes() error {
-	// todo: use themespath config
-	themesDir := "themes"
+	themesDir := configmanager.GetThemesPath()
 
 	entries, err := os.ReadDir(themesDir)
 	if err != nil {

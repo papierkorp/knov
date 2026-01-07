@@ -2,11 +2,9 @@ package configmanager
 
 import (
 	"encoding/json"
-	"fmt"
-	"os"
-	"path/filepath"
 
 	"knov/internal/logging"
+	"knov/internal/storage"
 	"knov/internal/translation"
 )
 
@@ -15,7 +13,6 @@ import (
 // -----------------------------------------------------------------------------
 
 var userSettings UserSettings
-var configPath string
 
 // UserSettings contains user-specific settings stored in JSON
 type UserSettings struct {
@@ -24,24 +21,23 @@ type UserSettings struct {
 	ThemeSettings AllThemeSettings `json:"themeSettings,omitempty"`
 }
 
-// InitUserSettings initializes user settings from direct JSON file
+// InitUserSettings initializes user settings from storage
 func InitUserSettings() {
-	configPath = GetAppConfig().ConfigPath
 	userSettings = UserSettings{
 		Theme:         "builtin",
 		Language:      "en",
 		ThemeSettings: make(AllThemeSettings),
 	}
 
-	settingsPath := getUserSettingsPath()
-	data, err := os.ReadFile(settingsPath)
+	data, err := storage.GetConfigStorage().Get("settings")
 	if err != nil {
-		if os.IsNotExist(err) {
-			logging.LogInfo("no user settings found, using defaults")
-			saveUserSettings()
-			return
-		}
 		logging.LogError("failed to read user settings: %v", err)
+		return
+	}
+
+	if data == nil {
+		logging.LogInfo("no user settings found, using defaults")
+		saveUserSettings()
 		return
 	}
 
@@ -68,25 +64,15 @@ func SetUserSettings(settings UserSettings) {
 func saveUserSettings() error {
 	data, err := json.Marshal(userSettings)
 	if err != nil {
-		return fmt.Errorf("failed to marshal user settings: %s", err)
+		logging.LogError("failed to marshal user settings: %v", err)
+		return err
 	}
 
-	settingsPath := getUserSettingsPath()
-	settingsDir := filepath.Dir(settingsPath)
-
-	if err := os.MkdirAll(settingsDir, 0755); err != nil {
-		return fmt.Errorf("failed to create user settings directory: %s", err)
-	}
-
-	if err := os.WriteFile(settingsPath, data, 0644); err != nil {
-		return fmt.Errorf("failed to save user settings: %s", err)
+	if err := storage.GetConfigStorage().Set("settings", data); err != nil {
+		logging.LogError("failed to save user settings: %v", err)
+		return err
 	}
 
 	logging.LogInfo("user settings saved")
 	return nil
-}
-
-// getUserSettingsPath returns the file path for user settings JSON file
-func getUserSettingsPath() string {
-	return filepath.Join(configPath, "settings.json")
 }

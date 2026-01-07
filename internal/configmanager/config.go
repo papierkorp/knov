@@ -21,17 +21,19 @@ var appConfig AppConfig
 
 // AppConfig contains environment-based application configuration
 type AppConfig struct {
-	DataPath            string
-	ThemesPath          string
-	ConfigPath          string
-	ServerPort          string
-	LogLevel            string
-	GitRepoURL          string
-	Storage             string
-	SearchEngine        string
-	LinkRegex           []string
-	CronjobInterval     string
-	SearchIndexInterval string
+	DataPath                string
+	ThemesPath              string
+	StoragePath             string
+	ServerPort              string
+	LogLevel                string
+	GitRepoURL              string
+	ConfigStorageProvider   string
+	MetadataStorageProvider string
+	CacheStorageProvider    string
+	SearchEngine            string
+	LinkRegex               []string
+	CronjobInterval         string
+	SearchIndexInterval     string
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -49,14 +51,16 @@ func InitAppConfig() {
 	}
 
 	appConfig = AppConfig{
-		DataPath:     getEnv("KNOV_DATA_PATH", filepath.Join(baseDir, "data")),
-		ThemesPath:   getEnv("KNOV_THEMES_PATH", filepath.Join(baseDir, "themes")),
-		ConfigPath:   getEnv("KNOV_CONFIG_PATH", filepath.Join(baseDir, "config")),
-		ServerPort:   getEnv("KNOV_SERVER_PORT", "1324"),
-		LogLevel:     getEnv("KNOV_LOG_LEVEL", "info"),
-		GitRepoURL:   getEnv("KNOV_GIT_REPO_URL", ""),
-		Storage:      getEnv("KNOV_METADATA_STORAGE", "json"),
-		SearchEngine: getEnv("KNOV_SEARCH_ENGINE", "memory"),
+		DataPath:                getEnv("KNOV_DATA_PATH", filepath.Join(baseDir, "data")),
+		ThemesPath:              getEnv("KNOV_THEMES_PATH", filepath.Join(baseDir, "themes")),
+		StoragePath:             getEnv("KNOV_STORAGE_PATH", filepath.Join(baseDir, "storage")),
+		ServerPort:              getEnv("KNOV_SERVER_PORT", "1324"),
+		LogLevel:                getEnv("KNOV_LOG_LEVEL", "info"),
+		GitRepoURL:              getEnv("KNOV_GIT_REPO_URL", ""),
+		ConfigStorageProvider:   getEnv("KNOV_CONFIG_STORAGE_PROVIDER", "json"),
+		MetadataStorageProvider: getEnv("KNOV_METADATA_STORAGE_PROVIDER", "json"),
+		CacheStorageProvider:    getEnv("KNOV_CACHE_STORAGE_PROVIDER", "json"),
+		SearchEngine:            getEnv("KNOV_SEARCH_ENGINE", "repository"),
 		LinkRegex: []string{
 			"\\[\\[([^\\]]+)\\]\\]",
 			"\\[([^\\]]+)\\]\\([^)]+\\)",
@@ -107,9 +111,35 @@ func SetLogLevel(level string) {
 	logging.LogInfo("log level updated to: %s", level)
 }
 
-// GetStorageMethod returns storage method
-func GetStorageMethod() string {
-	return appConfig.Storage
+// GetDataPath returns the data path
+func GetDataPath() string {
+	return appConfig.DataPath
+}
+
+// GetThemesPath returns the themes path
+func GetThemesPath() string {
+	return appConfig.ThemesPath
+}
+
+// GetConfigPath returns the config path
+// GetStoragePath returns storage path
+func GetStoragePath() string {
+	return appConfig.StoragePath
+}
+
+// GetConfigStorageProvider returns config storage provider
+func GetConfigStorageProvider() string {
+	return appConfig.ConfigStorageProvider
+}
+
+// GetMetadataStorageProvider returns metadata storage provider
+func GetMetadataStorageProvider() string {
+	return appConfig.MetadataStorageProvider
+}
+
+// GetCacheStorageProvider returns cache storage provider
+func GetCacheStorageProvider() string {
+	return appConfig.CacheStorageProvider
 }
 
 // GetMetadataLinkRegex returns link regex patterns
@@ -212,12 +242,4 @@ func loadEnvFile() {
 	}
 
 	logging.LogInfo(".env file loaded")
-}
-
-func GetThemesPath() string {
-	return appConfig.ThemesPath
-}
-
-func GetConfigPath() string {
-	return appConfig.ConfigPath
 }
