@@ -5,11 +5,15 @@ import (
 	"embed"
 	"time"
 
+	"knov/internal/cacheStorage"
+	"knov/internal/configStorage"
 	"knov/internal/configmanager"
 	"knov/internal/cronjob"
 	"knov/internal/logging"
+	"knov/internal/metadataStorage"
 	"knov/internal/repository"
 	"knov/internal/search"
+	"knov/internal/searchStorage"
 	"knov/internal/server"
 	"knov/internal/storage"
 	"knov/internal/thememanager"
@@ -33,6 +37,7 @@ func main() {
 
 	configmanager.InitAppConfig()
 	translation.Init()
+
 	storage.InitStorages(
 		configmanager.GetConfigStorageProvider(),
 		configmanager.GetMetadataStorageProvider(),
@@ -40,6 +45,30 @@ func main() {
 		configmanager.GetStoragePath(),
 	)
 	repository.InitRepositories()
+
+	// initialize storage backends
+	appConfig := configmanager.GetAppConfig()
+
+	if err := configStorage.Init(appConfig.ConfigStorageProvider, appConfig.StoragePath); err != nil {
+		logging.LogError("failed to initialize config storage: %v", err)
+		return
+	}
+
+	if err := metadataStorage.Init(appConfig.MetadataStorageProvider, appConfig.StoragePath); err != nil {
+		logging.LogError("failed to initialize metadata storage: %v", err)
+		return
+	}
+
+	if err := cacheStorage.Init(appConfig.CacheStorageProvider, appConfig.StoragePath); err != nil {
+		logging.LogError("failed to initialize cache storage: %v", err)
+		return
+	}
+
+	if err := searchStorage.Init(appConfig.SearchStorageProvider, appConfig.StoragePath); err != nil {
+		logging.LogError("failed to initialize search storage: %v", err)
+		return
+	}
+
 	configmanager.InitUserSettings()
 	translation.SetLanguage(configmanager.GetLanguage())
 

@@ -30,6 +30,7 @@ type AppConfig struct {
 	ConfigStorageProvider   string
 	MetadataStorageProvider string
 	CacheStorageProvider    string
+	SearchStorageProvider   string
 	SearchEngine            string
 	LinkRegex               []string
 	CronjobInterval         string
@@ -59,7 +60,8 @@ func InitAppConfig() {
 		GitRepoURL:              getEnv("KNOV_GIT_REPO_URL", ""),
 		ConfigStorageProvider:   getEnv("KNOV_CONFIG_STORAGE_PROVIDER", "json"),
 		MetadataStorageProvider: getEnv("KNOV_METADATA_STORAGE_PROVIDER", "json"),
-		CacheStorageProvider:    getEnv("KNOV_CACHE_STORAGE_PROVIDER", "json"),
+		CacheStorageProvider:    getEnv("KNOV_CACHE_STORAGE_PROVIDER", "sqlite"),
+		SearchStorageProvider:   getEnv("KNOV_SEARCH_STORAGE_PROVIDER", "sqlite"),
 		SearchEngine:            getEnv("KNOV_SEARCH_ENGINE", "repository"),
 		LinkRegex: []string{
 			"\\[\\[([^\\]]+)\\]\\]",
