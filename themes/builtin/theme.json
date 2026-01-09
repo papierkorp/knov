@@ -85,7 +85,7 @@
     "searchResultsDisplay": {
       "type": "select",
       "options": ["list", "cards"],
-      "default": "list",
+      "default": "cards",
       "label": "Search Results Display",
       "description": "choose how search results are displayed - list shows compact links, cards show detailed previews"
     }

@@ -76,8 +76,15 @@ func SearchFiles(query string, limit int) ([]files.File, error) {
 func searchFilesRepository(query string, limit int) ([]files.File, error) {
 	logging.LogDebug("searching for: %s (limit: %d)", query, limit)
 
+	// use much higher FTS limit to ensure we get all relevant files before deduplication
+	// FTS can return multiple matches per file, so we need a higher limit to find all unique files
+	ftsLimit := limit * 10 // multiply by 10 to account for multiple matches per file
+	if ftsLimit < 100 {
+		ftsLimit = 100 // minimum FTS limit to ensure we don't miss files
+	}
+
 	// use FTS search from searchStorage for better performance
-	searchResults, err := searchStorage.SearchContent(query, limit)
+	searchResults, err := searchStorage.SearchContent(query, ftsLimit)
 	if err != nil {
 		logging.LogWarning("fts search failed, falling back to manual search: %v", err)
 		return searchFilesRepositoryFallback(query, limit)
@@ -102,6 +109,11 @@ func searchFilesRepository(query string, limit int) ([]files.File, error) {
 		if file, exists := fileMap[searchResult.Path]; exists && !seenPaths[searchResult.Path] {
 			results = append(results, file)
 			seenPaths[searchResult.Path] = true
+
+			// apply user's requested limit after deduplication
+			if limit > 0 && len(results) >= limit {
+				break
+			}
 		}
 	}
 

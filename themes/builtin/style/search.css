@@ -95,7 +95,7 @@
     color: var(--bg);
 }
 
-/* Cards format */
+/* Cards format - Improved with clickable hover effects */
 #page-search .search-results-cards {
     margin-top: 20px;
     display: grid;
@@ -114,6 +114,80 @@
 #page-search .search-result-card:hover {
     border-color: var(--primary);
     box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* Enhanced search result cards */
+#page-search #search-results-cards {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+#page-search #search-results-cards .search-result-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+#page-search #search-results-cards .search-result-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 25%, transparent);
+    transform: translateY(-2px);
+}
+
+#page-search #search-results-cards .search-result-title {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+#page-search #search-results-cards .search-result-title a {
+    color: var(--text);
+    text-decoration: none;
+    display: block;
+}
+
+#page-search #search-results-cards .search-result-title a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+#page-search #search-results-cards .search-result-context {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    word-wrap: break-word;
+}
+
+#page-search #search-results-cards .search-result-context mark {
+    background: var(--primary);
+    color: var(--bg);
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-weight: 500;
+}
+
+/* Responsive design for search results */
+@media (max-width: 768px) {
+    #page-search .search-results-simple-list {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    #page-search #search-results-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    #page-search .search-results-simple-list {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Filter results - content display */
