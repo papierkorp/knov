@@ -24,7 +24,7 @@ type sqliteStorage struct {
 
 // newSQLiteStorage creates a new SQLite metadata storage instance
 func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
-	fullPath := filepath.Join(storagePath, "metadata")
+	fullPath := filepath.Join(storagePath)
 	if err := os.MkdirAll(fullPath, 0755); err != nil {
 		return nil, err
 	}
