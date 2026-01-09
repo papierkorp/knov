@@ -203,9 +203,10 @@ data/*
 bin/
 config/
 .storage
+storage/
 .metadata
 metadata
 static/temp_extracted.go
-cache.db
-metadata.db
-./storage/*
+*.db
+*.db-wal
+*.db-shm
