@@ -26,7 +26,6 @@ type StorageManager struct {
 var (
 	configStorage   *StorageManager
 	metadataStorage *StorageManager
-	cacheStorage    *StorageManager
 )
 
 // InitStorages initializes all storage managers
@@ -47,13 +46,7 @@ func InitStorages(configProvider, metadataProvider, cacheProvider, storagePath s
 	}
 	logging.LogInfo("metadata storage initialized: %s", metadataProvider)
 
-	// initialize cache storage
-	cacheStorage, err = newStorageManager(cacheProvider, "cache", storagePath)
-	if err != nil {
-		return fmt.Errorf("failed to initialize cache storage: %w", err)
-	}
-	logging.LogInfo("cache storage initialized: %s", cacheProvider)
-
+	// Note: cache storage is now handled by cacheStorage package
 	return nil
 }
 
@@ -122,9 +115,4 @@ func GetConfigStorage() *StorageManager {
 // GetMetadataStorage returns the metadata storage manager
 func GetMetadataStorage() *StorageManager {
 	return metadataStorage
-}
-
-// GetCacheStorage returns the cache storage manager
-func GetCacheStorage() *StorageManager {
-	return cacheStorage
 }

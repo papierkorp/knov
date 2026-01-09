@@ -413,3 +413,103 @@ func moveFileMetadata(oldPath, newPath string) error {
 	logging.LogInfo("moved metadata: %s -> %s", oldPath, newPath)
 	return nil
 }
+
+// updateTitle extracts title from the first header line in the file content
+func updateTitle(metadata *Metadata) {
+	fullPath := utils.ToFullPath(metadata.Path)
+
+	logging.LogDebug("extracting title for %s", metadata.Path)
+
+	file, err := os.Open(fullPath)
+	if err != nil {
+		logging.LogWarning("failed to open file %s: %v", fullPath, err)
+		return
+	}
+	defer file.Close()
+
+	// read only the first few lines to find the header
+	buffer := make([]byte, 1024)
+	n, err := file.Read(buffer)
+	if err != nil && n == 0 {
+		logging.LogWarning("failed to read file %s: %v", fullPath, err)
+		return
+	}
+
+	content := string(buffer[:n])
+	lines := strings.Split(content, "\n")
+
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+
+		// check for markdown header
+		if strings.HasPrefix(trimmed, "# ") {
+			title := strings.TrimSpace(trimmed[2:])
+			if title != "" {
+				metadata.Title = title
+				logging.LogDebug("found title for %s: %s", metadata.Path, title)
+				return
+			}
+		}
+
+		// if we hit non-empty content that's not a header, stop looking
+		break
+	}
+
+	// no title found, clear any existing title
+	metadata.Title = ""
+	logging.LogDebug("no title found for %s", metadata.Path)
+}
+
+// updateParentChildRelationships updates parent-child relationships when parents change
+func updateParentChildRelationships(metadata *Metadata, oldParents []string) {
+	logging.LogInfo("updating parent-child relationships for %s: old=%v, new=%v", metadata.Path, oldParents, metadata.Parents)
+
+	// remove this file from old parents' kids lists
+	for _, oldParent := range oldParents {
+		if !slices.Contains(metadata.Parents, oldParent) {
+			// this parent was removed, update its kids list
+			parentMetadata, err := MetaDataGet(oldParent)
+			if err != nil || parentMetadata == nil {
+				logging.LogWarning("failed to get metadata for former parent %s: %v", oldParent, err)
+				continue
+			}
+
+			// remove current file from parent's kids list
+			if idx := slices.Index(parentMetadata.Kids, metadata.Path); idx != -1 {
+				parentMetadata.Kids = slices.Delete(parentMetadata.Kids, idx, idx+1)
+
+				if err := metaDataSaveRaw(parentMetadata); err != nil {
+					logging.LogWarning("failed to update kids list for %s: %v", oldParent, err)
+				} else {
+					logging.LogInfo("removed %s from kids list of %s", metadata.Path, oldParent)
+				}
+			}
+		}
+	}
+
+	// add this file to new parents' kids lists
+	for _, newParent := range metadata.Parents {
+		if !slices.Contains(oldParents, newParent) {
+			// this parent was added, update its kids list
+			parentMetadata, err := MetaDataGet(newParent)
+			if err != nil || parentMetadata == nil {
+				logging.LogWarning("failed to get metadata for new parent %s: %v", newParent, err)
+				continue
+			}
+
+			// add current file to parent's kids list if not already there
+			if !slices.Contains(parentMetadata.Kids, metadata.Path) {
+				parentMetadata.Kids = append(parentMetadata.Kids, metadata.Path)
+
+				if err := metaDataSaveRaw(parentMetadata); err != nil {
+					logging.LogWarning("failed to update kids list for %s: %v", newParent, err)
+				} else {
+					logging.LogInfo("added %s to kids list of %s", metadata.Path, newParent)
+				}
+			}
+		}
+	}
+}

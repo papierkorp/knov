@@ -16,7 +16,6 @@ var (
 func InitRepositories() {
 	fileRepo = &FileRepository{
 		metadataStorage: storage.GetMetadataStorage(),
-		cacheStorage:    storage.GetCacheStorage(),
 	}
 
 	logging.LogInfo("repositories initialized")

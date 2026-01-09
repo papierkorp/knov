@@ -3918,6 +3918,10 @@ const docTemplate = `{
                     "description": "auto",
                     "type": "string"
                 },
+                "folder": {
+                    "description": "auto",
+                    "type": "string"
+                },
                 "folders": {
                     "description": "auto",
                     "type": "array",

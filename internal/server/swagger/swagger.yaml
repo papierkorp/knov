@@ -176,6 +176,9 @@ definitions:
       createdAt:
         description: auto
         type: string
+      folder:
+        description: auto
+        type: string
       folders:
         description: auto
         items:
