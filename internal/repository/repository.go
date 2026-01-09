@@ -8,8 +8,7 @@ import (
 
 // Global repository instances
 var (
-	fileRepo   *FileRepository
-	searchRepo *SearchRepository
+	fileRepo *FileRepository
 )
 
 // InitRepositories initializes all repositories
@@ -20,19 +19,10 @@ func InitRepositories() {
 		cacheStorage:    storage.GetCacheStorage(),
 	}
 
-	searchRepo = &SearchRepository{
-		cacheStorage: storage.GetCacheStorage(),
-	}
-
 	logging.LogInfo("repositories initialized")
 }
 
 // GetFileRepository returns the global file repository instance
 func GetFileRepository() *FileRepository {
 	return fileRepo
-}
-
-// GetSearchRepository returns the global search repository instance
-func GetSearchRepository() *SearchRepository {
-	return searchRepo
 }

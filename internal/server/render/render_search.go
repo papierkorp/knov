@@ -32,12 +32,12 @@ func RenderSearchDropdown(results []files.File, query string) string {
 			file.Path, displayText))
 	}
 
-	if len(results) > displayCount {
+	if len(results) > 0 {
 		html.WriteString(fmt.Sprintf(`
 			<li class="component-search-more-item">
 								<a href="/search?q=%s" class="component-search-more-link">view all %d results →</a>
 							</li>`,
-			url.QueryEscape(query), len(results)))
+			url.QueryEscape(query), len(results)+1))
 	}
 
 	if len(results) == 0 {

@@ -9,7 +9,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/logging"
-	"knov/internal/repository"
+	"knov/internal/searchStorage"
 	"knov/internal/utils"
 )
 
@@ -37,7 +37,6 @@ func IndexAllFiles() error {
 
 	logging.LogInfo("indexing %d files for search", len(allFiles))
 
-	searchRepo := repository.GetSearchRepository()
 	for _, file := range allFiles {
 		fullPath := utils.ToFullPath(file.Path)
 		content, err := os.ReadFile(fullPath)
@@ -46,8 +45,8 @@ func IndexAllFiles() error {
 			continue
 		}
 
-		// index file using repository
-		if err := searchRepo.IndexFile(file.Path, content); err != nil {
+		// index file using searchStorage
+		if err := searchStorage.IndexFile(file.Path, content); err != nil {
 			logging.LogWarning("failed to index file %s: %v", file.Path, err)
 		}
 	}
@@ -73,10 +72,45 @@ func SearchFiles(query string, limit int) ([]files.File, error) {
 	return searchFilesRepository(query, limit)
 }
 
-// searchFilesRepository performs repository-based search
+// searchFilesRepository performs repository-based search using FTS
 func searchFilesRepository(query string, limit int) ([]files.File, error) {
 	logging.LogDebug("searching for: %s (limit: %d)", query, limit)
 
+	// use FTS search from searchStorage for better performance
+	searchResults, err := searchStorage.SearchContent(query, limit)
+	if err != nil {
+		logging.LogWarning("fts search failed, falling back to manual search: %v", err)
+		return searchFilesRepositoryFallback(query, limit)
+	}
+
+	// convert searchStorage results to files.File
+	allFiles, err := files.GetAllFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	// create a map for quick lookup
+	fileMap := make(map[string]files.File)
+	for _, file := range allFiles {
+		fileMap[file.Path] = file
+	}
+
+	// deduplicate results by tracking which paths we've already added
+	var results []files.File
+	seenPaths := make(map[string]bool)
+	for _, searchResult := range searchResults {
+		if file, exists := fileMap[searchResult.Path]; exists && !seenPaths[searchResult.Path] {
+			results = append(results, file)
+			seenPaths[searchResult.Path] = true
+		}
+	}
+
+	logging.LogDebug("found %d results for query: %s", len(results), query)
+	return results, nil
+}
+
+// searchFilesRepositoryFallback performs manual search when FTS fails
+func searchFilesRepositoryFallback(query string, limit int) ([]files.File, error) {
 	allFiles, err := files.GetAllFiles()
 	if err != nil {
 		return nil, err
@@ -85,15 +119,14 @@ func searchFilesRepository(query string, limit int) ([]files.File, error) {
 	queryLower := strings.ToLower(query)
 	var results []files.File
 
-	searchRepo := repository.GetSearchRepository()
 	for _, file := range allFiles {
 		// check if already at limit
 		if limit > 0 && len(results) >= limit {
 			break
 		}
 
-		// get indexed content from repository
-		contentData, err := searchRepo.GetIndexedContent(file.Path)
+		// get indexed content from searchStorage
+		contentData, err := searchStorage.GetIndexedContent(file.Path)
 		if err != nil || contentData == nil {
 			// try reading file directly if not indexed
 			fullPath := utils.ToFullPath(file.Path)
@@ -109,7 +142,6 @@ func searchFilesRepository(query string, limit int) ([]files.File, error) {
 		}
 	}
 
-	logging.LogDebug("found %d results for query: %s", len(results), query)
 	return results, nil
 }
 
