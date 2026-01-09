@@ -5,7 +5,7 @@
         <input
             type="text"
             placeholder="{{T "Search files..."}}"
-            hx-get="/api/search?format=list"
+            hx-get="/api/search?format={{ index .ThemeSettings "searchResultsDisplay" }}"
             hx-target="#page-search-results"
             hx-trigger="keyup changed delay:300ms, load"
             name="q"

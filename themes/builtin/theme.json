@@ -81,6 +81,13 @@
       "default": "filename",
       "label": "Link Display Mode",
       "description": "show filenames, file paths, or extracted titles in links"
+    },
+    "searchResultsDisplay": {
+      "type": "select",
+      "options": ["list", "cards"],
+      "default": "list",
+      "label": "Search Results Display",
+      "description": "choose how search results are displayed - list shows compact links, cards show detailed previews"
     }
   }
 }
