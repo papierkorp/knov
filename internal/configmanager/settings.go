@@ -3,8 +3,8 @@ package configmanager
 import (
 	"encoding/json"
 
+	"knov/internal/configStorage"
 	"knov/internal/logging"
-	"knov/internal/storage"
 	"knov/internal/translation"
 )
 
@@ -29,7 +29,7 @@ func InitUserSettings() {
 		ThemeSettings: make(AllThemeSettings),
 	}
 
-	data, err := storage.GetConfigStorage().Get("settings")
+	data, err := configStorage.Get("settings")
 	if err != nil {
 		logging.LogError("failed to read user settings: %v", err)
 		return
@@ -68,7 +68,7 @@ func saveUserSettings() error {
 		return err
 	}
 
-	if err := storage.GetConfigStorage().Set("settings", data); err != nil {
+	if err := configStorage.Set("settings", data); err != nil {
 		logging.LogError("failed to save user settings: %v", err)
 		return err
 	}

@@ -24,20 +24,12 @@ type StorageManager struct {
 }
 
 var (
-	configStorage   *StorageManager
 	metadataStorage *StorageManager
 )
 
 // InitStorages initializes all storage managers
-func InitStorages(configProvider, metadataProvider, cacheProvider, storagePath string) error {
+func InitStorages(metadataProvider, cacheProvider, storagePath string) error {
 	var err error
-
-	// initialize config storage
-	configStorage, err = newStorageManager(configProvider, "config", storagePath)
-	if err != nil {
-		return fmt.Errorf("failed to initialize config storage: %w", err)
-	}
-	logging.LogInfo("config storage initialized: %s", configProvider)
 
 	// initialize metadata storage
 	metadataStorage, err = newStorageManager(metadataProvider, "metadata", storagePath)
@@ -46,7 +38,7 @@ func InitStorages(configProvider, metadataProvider, cacheProvider, storagePath s
 	}
 	logging.LogInfo("metadata storage initialized: %s", metadataProvider)
 
-	// Note: cache storage is now handled by cacheStorage package
+	// Note: cache and config storage are now handled by their respective packages
 	return nil
 }
 
@@ -105,11 +97,6 @@ func (sm *StorageManager) Exists(key string) bool {
 // GetBackendType returns the backend type
 func (sm *StorageManager) GetBackendType() string {
 	return sm.backend.GetBackendType()
-}
-
-// GetConfigStorage returns the config storage manager
-func GetConfigStorage() *StorageManager {
-	return configStorage
 }
 
 // GetMetadataStorage returns the metadata storage manager

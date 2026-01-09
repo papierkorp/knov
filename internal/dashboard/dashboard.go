@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"knov/internal/configStorage"
 	"knov/internal/logging"
-	"knov/internal/storage"
 	"knov/internal/utils"
 )
 
@@ -34,13 +34,13 @@ func GetAll() ([]Dashboard, error) {
 	var dashboards []Dashboard
 
 	// Get all dashboards from global storage
-	globalKeys, err := storage.GetConfigStorage().List("dashboard/")
+	globalKeys, err := configStorage.List("dashboard/")
 	if err != nil {
 		return nil, err
 	}
 
 	for _, key := range globalKeys {
-		data, err := storage.GetConfigStorage().Get(key)
+		data, err := configStorage.Get(key)
 		if err != nil {
 			logging.LogWarning("failed to get dashboard %s: %v", key, err)
 			continue
@@ -62,7 +62,7 @@ func GetAll() ([]Dashboard, error) {
 // Get returns a specific dashboard
 func Get(id string) (*Dashboard, error) {
 	key := fmt.Sprintf("dashboard/%s", id)
-	data, err := storage.GetConfigStorage().Get(key)
+	data, err := configStorage.Get(key)
 
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func Create(dashboard *Dashboard) error {
 	}
 
 	key := fmt.Sprintf("dashboard/%s", dashboard.ID)
-	if err := storage.GetConfigStorage().Set(key, data); err != nil {
+	if err := configStorage.Set(key, data); err != nil {
 		return err
 	}
 
@@ -134,7 +134,7 @@ func Update(dashboard *Dashboard) error {
 	}
 
 	key := fmt.Sprintf("dashboard/%s", dashboard.ID)
-	if err := storage.GetConfigStorage().Set(key, data); err != nil {
+	if err := configStorage.Set(key, data); err != nil {
 		return err
 	}
 
@@ -160,7 +160,7 @@ func Delete(id string) error {
 	}
 
 	key := fmt.Sprintf("dashboard/%s", id)
-	if err := storage.GetConfigStorage().Delete(key); err != nil {
+	if err := configStorage.Delete(key); err != nil {
 		return err
 	}
 
