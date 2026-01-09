@@ -47,14 +47,7 @@ func CleanTestData() error {
 		return err
 	}
 
-	// Clean storage directory (metadata, config, cache)
-	storagePath := configmanager.GetStoragePath()
-	if err := os.RemoveAll(storagePath); err != nil {
-		logging.LogError("failed to remove storage directory: %v", err)
-		return err
-	}
-
-	logging.LogInfo("test data cleaned")
+	logging.LogInfo("test data cleaned - removed data directory: %s", dataPath)
 	return nil
 }
 
