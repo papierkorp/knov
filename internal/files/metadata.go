@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"knov/internal/logging"
-	"knov/internal/repository"
+	"knov/internal/metadataStorage"
 	"knov/internal/utils"
 )
 
@@ -306,7 +306,7 @@ func MetaDataSave(m *Metadata) error {
 		return err
 	}
 
-	if err := repository.GetFileRepository().SaveMetadata(finalMetadata.Path, data); err != nil {
+	if err := metadataStorage.Set(finalMetadata.Path, data); err != nil {
 		logging.LogError("failed to save metadata for %s: %v", finalMetadata.Path, err)
 		return err
 	}
@@ -323,7 +323,7 @@ func metaDataSaveRaw(m *Metadata) error {
 		return err
 	}
 
-	if err := repository.GetFileRepository().SaveMetadata(m.Path, data); err != nil {
+	if err := metadataStorage.Set(m.Path, data); err != nil {
 		logging.LogError("failed to save metadata for %s: %v", m.Path, err)
 		return err
 	}
@@ -336,7 +336,7 @@ func metaDataSaveRaw(m *Metadata) error {
 func MetaDataGet(filepath string) (*Metadata, error) {
 	normalizedPath := utils.ToRelativePath(filepath)
 
-	data, err := repository.GetFileRepository().GetMetadata(normalizedPath)
+	data, err := metadataStorage.Get(normalizedPath)
 	if err != nil {
 		return nil, err
 	}
@@ -391,7 +391,7 @@ func MetaDataInitializeAll() error {
 // MetaDataDelete removes metadata for a file path
 func MetaDataDelete(filepath string) error {
 	normalizedPath := utils.ToRelativePath(filepath)
-	return repository.GetFileRepository().DeleteMetadata(normalizedPath)
+	return metadataStorage.Delete(normalizedPath)
 }
 
 // MetaDataExportAll returns all metadata entries

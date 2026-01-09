@@ -11,11 +11,10 @@ import (
 	"knov/internal/cronjob"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
-	"knov/internal/repository"
 	"knov/internal/search"
 	"knov/internal/searchStorage"
 	"knov/internal/server"
-	"knov/internal/storage"
+
 	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
@@ -37,14 +36,6 @@ func main() {
 
 	configmanager.InitAppConfig()
 	translation.Init()
-
-	storage.InitStorages(
-		configmanager.GetConfigStorageProvider(),
-		configmanager.GetMetadataStorageProvider(),
-		configmanager.GetCacheStorageProvider(),
-		configmanager.GetStoragePath(),
-	)
-	repository.InitRepositories()
 
 	// initialize storage backends
 	appConfig := configmanager.GetAppConfig()
