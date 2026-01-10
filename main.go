@@ -15,6 +15,7 @@ import (
 	"knov/internal/searchStorage"
 	"knov/internal/server"
 
+	"knov/internal/testdata"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
@@ -25,6 +26,9 @@ var staticFS embed.FS
 //go:embed themes/builtin
 var builtinThemeFS embed.FS
 
+//go:embed internal/testdata/testfiles
+var testFilesFS embed.FS
+
 // @title Knov API
 // @version 1.0
 // @description KNOV API \n http://localhost:1324
@@ -33,6 +37,7 @@ var builtinThemeFS embed.FS
 func main() {
 	server.SetStaticFiles(staticFS)
 	thememanager.SetBuiltinFiles(builtinThemeFS)
+	testdata.SetTestFiles(testFilesFS)
 
 	configmanager.InitAppConfig()
 	translation.Init()

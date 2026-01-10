@@ -2,7 +2,9 @@
 package testdata
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,6 +18,13 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
+
+var testFilesFS embed.FS
+
+// SetTestFiles sets the embedded test files
+func SetTestFiles(filesFS embed.FS) {
+	testFilesFS = filesFS
+}
 
 // SetupTestData creates test files and git operations
 func SetupTestData() error {
@@ -60,12 +69,14 @@ func copyTestFiles() error {
 	}
 
 	srcDir := "internal/testdata/testfiles"
-	if err := os.MkdirAll(filepath.Dir(srcDir), 0755); err != nil {
-		return err
-	}
-	return filepath.WalkDir(srcDir, func(path string, d os.DirEntry, err error) error {
+
+	return fs.WalkDir(testFilesFS, srcDir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+
+		if path == srcDir {
+			return nil
 		}
 
 		relPath, err := filepath.Rel(srcDir, path)
@@ -84,7 +95,13 @@ func copyTestFiles() error {
 			return err
 		}
 
-		return utils.CopyFile(path, destPath)
+		// read from embedded FS and write to destination
+		data, err := testFilesFS.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		return os.WriteFile(destPath, data, 0644)
 	})
 }
 

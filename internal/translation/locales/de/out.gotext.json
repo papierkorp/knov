@@ -2,6 +2,31 @@
     "language": "de",
     "messages": [
         {
+            "id": "'In' - match any from list",
+            "message": "'In' - match any from list",
+            "translation": ""
+        },
+        {
+            "id": "+ New File",
+            "message": "+ New File",
+            "translation": ""
+        },
+        {
+            "id": "- adapted for KNOV",
+            "message": "- adapted for KNOV",
+            "translation": ""
+        },
+        {
+            "id": "- adapted for KNOV's built-in features",
+            "message": "- adapted for KNOV's built-in features",
+            "translation": ""
+        },
+        {
+            "id": "/path/to/data",
+            "message": "/path/to/data",
+            "translation": ""
+        },
+        {
             "id": "1-4 column layouts with custom positioning",
             "message": "1-4 column layouts with custom positioning",
             "translation": ""
@@ -22,8 +47,13 @@
             "translation": ""
         },
         {
-            "id": "action",
-            "message": "action",
+            "id": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
+            "message": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
+            "translation": ""
+        },
+        {
+            "id": "A simple text-file system for staying organized using your calendar and daily todo files.",
+            "message": "A simple text-file system for staying organized using your calendar and daily todo files.",
             "translation": ""
         },
         {
@@ -42,93 +72,13 @@
             "translation": ""
         },
         {
-            "id": "- adapted for KNOV",
-            "message": "- adapted for KNOV",
-            "translation": ""
-        },
-        {
-            "id": "- adapted for KNOV's built-in features",
-            "message": "- adapted for KNOV's built-in features",
-            "translation": ""
-        },
-        {
-            "id": "add archived items",
-            "message": "add archived items",
-            "translation": ""
-        },
-        {
-            "id": "add areas of responsibility",
-            "message": "add areas of responsibility",
-            "translation": ""
-        },
-        {
-            "id": "add criteria",
-            "message": "add criteria",
-            "translation": ""
-        },
-        {
-            "id": "add file",
-            "message": "add file",
-            "translation": ""
-        },
-        {
-            "id": "add filter",
-            "message": "add filter",
-            "translation": ""
-        },
-        {
-            "id": "add folder categories",
-            "message": "add folder categories",
-            "translation": ""
-        },
-        {
-            "id": "add item",
-            "message": "add item",
-            "translation": ""
-        },
-        {
             "id": "Add keywords like work, personal, ideas",
             "message": "Add keywords like work, personal, ideas",
             "translation": ""
         },
         {
-            "id": "add nested item",
-            "message": "add nested item",
-            "translation": ""
-        },
-        {
             "id": "Add notes and outcomes to your todo file",
             "message": "Add notes and outcomes to your todo file",
-            "translation": ""
-        },
-        {
-            "id": "add parent files",
-            "message": "add parent files",
-            "translation": ""
-        },
-        {
-            "id": "add projects",
-            "message": "add projects",
-            "translation": ""
-        },
-        {
-            "id": "add resources",
-            "message": "add resources",
-            "translation": ""
-        },
-        {
-            "id": "add separator",
-            "message": "add separator",
-            "translation": ""
-        },
-        {
-            "id": "add tags",
-            "message": "add tags",
-            "translation": ""
-        },
-        {
-            "id": "add title",
-            "message": "add title",
             "translation": ""
         },
         {
@@ -147,16 +97,6 @@
             "translation": ""
         },
         {
-            "id": "and",
-            "message": "and",
-            "translation": ""
-        },
-        {
-            "id": "apply filter",
-            "message": "apply filter",
-            "translation": ""
-        },
-        {
             "id": "Archive",
             "message": "Archive",
             "translation": ""
@@ -167,8 +107,8 @@
             "translation": ""
         },
         {
-            "id": "archive updated",
-            "message": "archive updated",
+            "id": "Are you sure?",
+            "message": "Are you sure?",
             "translation": ""
         },
         {
@@ -179,31 +119,6 @@
         {
             "id": "Areas - group by life/work responsibilities",
             "message": "Areas - group by life/work responsibilities",
-            "translation": ""
-        },
-        {
-            "id": "areas updated",
-            "message": "areas updated",
-            "translation": ""
-        },
-        {
-            "id": "Are you sure?",
-            "message": "Are you sure?",
-            "translation": ""
-        },
-        {
-            "id": "A simple text-file system for staying organized using your calendar and daily todo files.",
-            "message": "A simple text-file system for staying organized using your calendar and daily todo files.",
-            "translation": ""
-        },
-        {
-            "id": "assign to collection",
-            "message": "assign to collection",
-            "translation": ""
-        },
-        {
-            "id": "at",
-            "message": "at",
             "translation": ""
         },
         {
@@ -227,11 +142,6 @@
             "translation": ""
         },
         {
-            "id": "bold",
-            "message": "bold",
-            "translation": ""
-        },
-        {
             "id": "Break big tasks into smaller pieces",
             "message": "Break big tasks into smaller pieces",
             "translation": ""
@@ -252,23 +162,8 @@
             "translation": "Nach Metadata durchsuchen"
         },
         {
-            "id": "button",
-            "message": "button",
-            "translation": ""
-        },
-        {
-            "id": "by",
-            "message": "by",
-            "translation": ""
-        },
-        {
             "id": "Calendar is your main source of truth",
             "message": "Calendar is your main source of truth",
-            "translation": ""
-        },
-        {
-            "id": "cancel",
-            "message": "cancel",
             "translation": ""
         },
         {
@@ -282,11 +177,6 @@
             "translation": ""
         },
         {
-            "id": "cards",
-            "message": "cards",
-            "translation": ""
-        },
-        {
             "id": "Children",
             "message": "Children",
             "translation": ""
@@ -297,18 +187,8 @@
             "translation": ""
         },
         {
-            "id": "choose the visual appearance of the interface",
-            "message": "choose the visual appearance of the interface",
-            "translation": ""
-        },
-        {
             "id": "Choose what works for you - use one or combine them:",
             "message": "Choose what works for you - use one or combine them:",
-            "translation": ""
-        },
-        {
-            "id": "choose your preferred interface language",
-            "message": "choose your preferred interface language",
             "translation": ""
         },
         {
@@ -324,11 +204,6 @@
         {
             "id": "Click the",
             "message": "Click the",
-            "translation": ""
-        },
-        {
-            "id": "collection",
-            "message": "collection",
             "translation": ""
         },
         {
@@ -357,16 +232,6 @@
             "translation": ""
         },
         {
-            "id": "configure filter above and click preview to see results",
-            "message": "configure filter above and click preview to see results",
-            "translation": ""
-        },
-        {
-            "id": "configure filter above and click view results to preview",
-            "message": "configure filter above and click view results to preview",
-            "translation": ""
-        },
-        {
             "id": "Connect",
             "message": "Connect",
             "translation": ""
@@ -382,18 +247,8 @@
             "translation": ""
         },
         {
-            "id": "contains",
-            "message": "contains",
-            "translation": ""
-        },
-        {
             "id": "Contains - partial match",
             "message": "Contains - partial match",
-            "translation": ""
-        },
-        {
-            "id": "content",
-            "message": "content",
             "translation": ""
         },
         {
@@ -417,33 +272,18 @@
             "translation": ""
         },
         {
-            "id": "Create a New",
-            "message": "Create a New",
-            "translation": ""
-        },
-        {
-            "id": "create dashboard",
-            "message": "create dashboard",
-            "translation": ""
-        },
-        {
-            "id": "Create fleeting notes for quick thoughts",
-            "message": "Create fleeting notes for quick thoughts",
-            "translation": ""
-        },
-        {
             "id": "Create New Dashboard",
             "message": "Create New Dashboard",
             "translation": "Neues Dashboard erstellen"
         },
         {
-            "id": "current file does not exist",
-            "message": "current file does not exist",
+            "id": "Create a New",
+            "message": "Create a New",
             "translation": ""
         },
         {
-            "id": "current version",
-            "message": "current version",
+            "id": "Create fleeting notes for quick thoughts",
+            "message": "Create fleeting notes for quick thoughts",
             "translation": ""
         },
         {
@@ -472,53 +312,8 @@
             "translation": ""
         },
         {
-            "id": "dashboard created",
-            "message": "dashboard created",
-            "translation": ""
-        },
-        {
-            "id": "dashboard created successfully!",
-            "message": "dashboard created successfully!",
-            "translation": ""
-        },
-        {
-            "id": "dashboard deleted",
-            "message": "dashboard deleted",
-            "translation": ""
-        },
-        {
-            "id": "dashboardId is required",
-            "message": "dashboardId is required",
-            "translation": ""
-        },
-        {
-            "id": "dashboard name",
-            "message": "dashboard name",
-            "translation": ""
-        },
-        {
-            "id": "dashboard not found",
-            "message": "dashboard not found",
-            "translation": ""
-        },
-        {
-            "id": "dashboard renamed successfully",
-            "message": "dashboard renamed successfully",
-            "translation": ""
-        },
-        {
-            "id": "dashboard settings",
-            "message": "dashboard settings",
-            "translation": ""
-        },
-        {
             "id": "Dashboard System",
             "message": "Dashboard System",
-            "translation": ""
-        },
-        {
-            "id": "dashboard updated successfully!",
-            "message": "dashboard updated successfully!",
             "translation": ""
         },
         {
@@ -527,18 +322,8 @@
             "translation": ""
         },
         {
-            "id": "data path",
-            "message": "data path",
-            "translation": ""
-        },
-        {
             "id": "Data Path",
             "message": "Data Path",
-            "translation": ""
-        },
-        {
-            "id": "data path cannot be empty",
-            "message": "data path cannot be empty",
             "translation": ""
         },
         {
@@ -547,24 +332,9 @@
             "translation": ""
         },
         {
-            "id": "data path saved. restart required.",
-            "message": "data path saved. restart required.",
-            "translation": ""
-        },
-        {
-            "id": "delete",
-            "message": "delete",
-            "translation": ""
-        },
-        {
             "id": "Delete",
             "message": "Delete",
             "translation": "Löschen"
-        },
-        {
-            "id": "delete this item and all its nested items?",
-            "message": "delete this item and all its nested items?",
-            "translation": ""
         },
         {
             "id": "Design your custom dashboard with widgets",
@@ -572,28 +342,8 @@
             "translation": ""
         },
         {
-            "id": "diff",
-            "message": "diff",
-            "translation": ""
-        },
-        {
-            "id": "display",
-            "message": "display",
-            "translation": ""
-        },
-        {
             "id": "Display",
             "message": "Display",
-            "translation": ""
-        },
-        {
-            "id": "display \u0026 limits",
-            "message": "display \u0026 limits",
-            "translation": ""
-        },
-        {
-            "id": "dropdown",
-            "message": "dropdown",
             "translation": ""
         },
         {
@@ -612,44 +362,14 @@
             "translation": "Dashboard bearbeiten"
         },
         {
-            "id": "edit section",
-            "message": "edit section",
-            "translation": ""
-        },
-        {
             "id": "Edit Section",
             "message": "Edit Section",
-            "translation": ""
-        },
-        {
-            "id": "edit table",
-            "message": "edit table",
             "translation": ""
         },
         {
             "id": "Enter a search term",
             "message": "Enter a search term",
             "translation": "Suchtext eingeben"
-        },
-        {
-            "id": "enter file path",
-            "message": "enter file path",
-            "translation": ""
-        },
-        {
-            "id": "enter title",
-            "message": "enter title",
-            "translation": ""
-        },
-        {
-            "id": "enter value",
-            "message": "enter value",
-            "translation": ""
-        },
-        {
-            "id": "equals",
-            "message": "equals",
-            "translation": ""
         },
         {
             "id": "Equals - exact match",
@@ -659,11 +379,6 @@
         {
             "id": "Error",
             "message": "Error",
-            "translation": ""
-        },
-        {
-            "id": "error saving table",
-            "message": "error saving table",
             "translation": ""
         },
         {
@@ -702,6 +417,11 @@
             "translation": ""
         },
         {
+            "id": "Export Metadata",
+            "message": "Export Metadata",
+            "translation": ""
+        },
+        {
             "id": "Export all metadata to file",
             "message": "Export all metadata to file",
             "translation": ""
@@ -712,11 +432,6 @@
             "translation": ""
         },
         {
-            "id": "Export Metadata",
-            "message": "Export Metadata",
-            "translation": ""
-        },
-        {
             "id": "Export to Markdown",
             "message": "Export to Markdown",
             "translation": ""
@@ -724,6 +439,1211 @@
         {
             "id": "External source notes",
             "message": "External source notes",
+            "translation": ""
+        },
+        {
+            "id": "File Types",
+            "message": "File Types",
+            "translation": ""
+        },
+        {
+            "id": "File content - show specific files",
+            "message": "File content - show specific files",
+            "translation": ""
+        },
+        {
+            "id": "File path not provided",
+            "message": "File path not provided",
+            "translation": ""
+        },
+        {
+            "id": "File relationships",
+            "message": "File relationships",
+            "translation": ""
+        },
+        {
+            "id": "Files Comparison",
+            "message": "Files Comparison",
+            "translation": ""
+        },
+        {
+            "id": "Files linking to current",
+            "message": "Files linking to current",
+            "translation": ""
+        },
+        {
+            "id": "Files with",
+            "message": "Files with",
+            "translation": ""
+        },
+        {
+            "id": "Files with current as parent",
+            "message": "Files with current as parent",
+            "translation": ""
+        },
+        {
+            "id": "Filter",
+            "message": "Filter",
+            "translation": ""
+        },
+        {
+            "id": "Filter Configuration",
+            "message": "Filter Configuration",
+            "translation": ""
+        },
+        {
+            "id": "Filter Criteria",
+            "message": "Filter Criteria",
+            "translation": ""
+        },
+        {
+            "id": "Filter System",
+            "message": "Filter System",
+            "translation": ""
+        },
+        {
+            "id": "Filter Test Metadata",
+            "message": "Filter Test Metadata",
+            "translation": ""
+        },
+        {
+            "id": "Filter Test Results Summary",
+            "message": "Filter Test Results Summary",
+            "translation": ""
+        },
+        {
+            "id": "Filter forms - interactive filtering",
+            "message": "Filter forms - interactive filtering",
+            "translation": ""
+        },
+        {
+            "id": "Filter results - display filtered files",
+            "message": "Filter results - display filtered files",
+            "translation": ""
+        },
+        {
+            "id": "Find Anything Fast",
+            "message": "Find Anything Fast",
+            "translation": ""
+        },
+        {
+            "id": "Fleeting",
+            "message": "Fleeting",
+            "translation": ""
+        },
+        {
+            "id": "Fleeting - quick captures and initial thoughts",
+            "message": "Fleeting - quick captures and initial thoughts",
+            "translation": ""
+        },
+        {
+            "id": "Folders",
+            "message": "Folders",
+            "translation": "Ordner"
+        },
+        {
+            "id": "Folders - folder navigation",
+            "message": "Folders - folder navigation",
+            "translation": ""
+        },
+        {
+            "id": "Future reference topics",
+            "message": "Future reference topics",
+            "translation": ""
+        },
+        {
+            "id": "General Settings",
+            "message": "General Settings",
+            "translation": "Allgemeine Einstellungen"
+        },
+        {
+            "id": "Getting Started",
+            "message": "Getting Started",
+            "translation": ""
+        },
+        {
+            "id": "Git Repository",
+            "message": "Git Repository",
+            "translation": ""
+        },
+        {
+            "id": "Group files by topic or purpose",
+            "message": "Group files by topic or purpose",
+            "translation": ""
+        },
+        {
+            "id": "Group related notes (like Projects or Recipes)",
+            "message": "Group related notes (like Projects or Recipes)",
+            "translation": ""
+        },
+        {
+            "id": "Heading",
+            "message": "Heading",
+            "translation": ""
+        },
+        {
+            "id": "Help",
+            "message": "Help",
+            "translation": "Hilfe"
+        },
+        {
+            "id": "Here are proven workflows you can adapt for KNOV. For more ideas, explore",
+            "message": "Here are proven workflows you can adapt for KNOV. For more ideas, explore",
+            "translation": ""
+        },
+        {
+            "id": "History",
+            "message": "History",
+            "translation": "Dateiverlauf"
+        },
+        {
+            "id": "Home",
+            "message": "Home",
+            "translation": "Start"
+        },
+        {
+            "id": "How it works",
+            "message": "How it works",
+            "translation": ""
+        },
+        {
+            "id": "If you have too much for one day",
+            "message": "If you have too much for one day",
+            "translation": ""
+        },
+        {
+            "id": "Inactive items",
+            "message": "Inactive items",
+            "translation": ""
+        },
+        {
+            "id": "Include errands (e.g. sign a form)",
+            "message": "Include errands (e.g. sign a form)",
+            "translation": ""
+        },
+        {
+            "id": "Include or exclude matching files",
+            "message": "Include or exclude matching files",
+            "translation": ""
+        },
+        {
+            "id": "Include scheduled tasks (e.g. 2pm meeting)",
+            "message": "Include scheduled tasks (e.g. 2pm meeting)",
+            "translation": ""
+        },
+        {
+            "id": "Include work items (e.g. review a paper)",
+            "message": "Include work items (e.g. review a paper)",
+            "translation": ""
+        },
+        {
+            "id": "Jeff Huang's productivity system",
+            "message": "Jeff Huang's productivity system",
+            "translation": ""
+        },
+        {
+            "id": "Journaling",
+            "message": "Journaling",
+            "translation": ""
+        },
+        {
+            "id": "KNOV (Knowledge Vault) is your personal digital library that helps you organize, search, and connect all your notes, documents, and ideas in one place. Think of it as a smart filing cabinet that remembers everything and helps you find what you need instantly.",
+            "message": "KNOV (Knowledge Vault) is your personal digital library that helps you organize, search, and connect all your notes, documents, and ideas in one place. Think of it as a smart filing cabinet that remembers everything and helps you find what you need instantly.",
+            "translation": ""
+        },
+        {
+            "id": "KNOV - Quick Start Guide",
+            "message": "KNOV - Quick Start Guide",
+            "translation": ""
+        },
+        {
+            "id": "Key Features",
+            "message": "Key Features",
+            "translation": ""
+        },
+        {
+            "id": "Keyword-based labeling",
+            "message": "Keyword-based labeling",
+            "translation": ""
+        },
+        {
+            "id": "Knowledge development stages",
+            "message": "Knowledge development stages",
+            "translation": ""
+        },
+        {
+            "id": "Latest Changes",
+            "message": "Latest Changes",
+            "translation": "Letzte Änderungen"
+        },
+        {
+            "id": "Layout",
+            "message": "Layout",
+            "translation": ""
+        },
+        {
+            "id": "Leave empty for local git repository only",
+            "message": "Leave empty for local git repository only",
+            "translation": ""
+        },
+        {
+            "id": "Limits",
+            "message": "Limits",
+            "translation": ""
+        },
+        {
+            "id": "Link notes using wikilinks and parent/child relationships",
+            "message": "Link notes using wikilinks and parent/child relationships",
+            "translation": ""
+        },
+        {
+            "id": "List, cards, dropdown, or table views",
+            "message": "List, cards, dropdown, or table views",
+            "translation": ""
+        },
+        {
+            "id": "Literature",
+            "message": "Literature",
+            "translation": ""
+        },
+        {
+            "id": "Literature - notes from books, articles, videos",
+            "message": "Literature - notes from books, articles, videos",
+            "translation": ""
+        },
+        {
+            "id": "Loading files...",
+            "message": "Loading files...",
+            "translation": ""
+        },
+        {
+            "id": "Loading recent changes...",
+            "message": "Loading recent changes...",
+            "translation": ""
+        },
+        {
+            "id": "Loading results...",
+            "message": "Loading results...",
+            "translation": ""
+        },
+        {
+            "id": "Loading...",
+            "message": "Loading...",
+            "translation": ""
+        },
+        {
+            "id": "Logic",
+            "message": "Logic",
+            "translation": ""
+        },
+        {
+            "id": "MOC",
+            "message": "MOC",
+            "translation": ""
+        },
+        {
+            "id": "MOC - maps organizing related permanent notes",
+            "message": "MOC - maps organizing related permanent notes",
+            "translation": ""
+        },
+        {
+            "id": "Manual hierarchy assignment",
+            "message": "Manual hierarchy assignment",
+            "translation": ""
+        },
+        {
+            "id": "Maps linking related notes",
+            "message": "Maps linking related notes",
+            "translation": ""
+        },
+        {
+            "id": "Mark as High, Medium, or Low importance",
+            "message": "Mark as High, Medium, or Low importance",
+            "translation": ""
+        },
+        {
+            "id": "Markdown",
+            "message": "Markdown",
+            "translation": ""
+        },
+        {
+            "id": "Matching Options",
+            "message": "Matching Options",
+            "translation": ""
+        },
+        {
+            "id": "Metadata",
+            "message": "Metadata",
+            "translation": ""
+        },
+        {
+            "id": "Monthly cleanup and MOC updates",
+            "message": "Monthly cleanup and MOC updates",
+            "translation": ""
+        },
+        {
+            "id": "Multiple ways to categorize and connect your notes",
+            "message": "Multiple ways to categorize and connect your notes",
+            "translation": ""
+        },
+        {
+            "id": "Navigation Widgets",
+            "message": "Navigation Widgets",
+            "translation": ""
+        },
+        {
+            "id": "Never Lose Information",
+            "message": "Never Lose Information",
+            "translation": ""
+        },
+        {
+            "id": "No dashboard found",
+            "message": "No dashboard found",
+            "translation": ""
+        },
+        {
+            "id": "No widgets configured",
+            "message": "No widgets configured",
+            "translation": ""
+        },
+        {
+            "id": "OK",
+            "message": "OK",
+            "translation": ""
+        },
+        {
+            "id": "OVERVIEW",
+            "message": "OVERVIEW",
+            "translation": "ÜBERSICHT"
+        },
+        {
+            "id": "Ongoing responsibilities",
+            "message": "Ongoing responsibilities",
+            "translation": ""
+        },
+        {
+            "id": "Organization Methods",
+            "message": "Organization Methods",
+            "translation": ""
+        },
+        {
+            "id": "Organize",
+            "message": "Organize",
+            "translation": ""
+        },
+        {
+            "id": "Organize by actionability",
+            "message": "Organize by actionability",
+            "translation": ""
+        },
+        {
+            "id": "Original PARA + Zettelkasten system",
+            "message": "Original PARA + Zettelkasten system",
+            "translation": ""
+        },
+        {
+            "id": "Outcomes with deadlines",
+            "message": "Outcomes with deadlines",
+            "translation": ""
+        },
+        {
+            "id": "Overview",
+            "message": "Overview",
+            "translation": "Übersicht"
+        },
+        {
+            "id": "PARA + Zettelkasten Knowledge System",
+            "message": "PARA + Zettelkasten Knowledge System",
+            "translation": ""
+        },
+        {
+            "id": "PARA Method",
+            "message": "PARA Method",
+            "translation": ""
+        },
+        {
+            "id": "PARA Organization",
+            "message": "PARA Organization",
+            "translation": ""
+        },
+        {
+            "id": "PARA Widgets",
+            "message": "PARA Widgets",
+            "translation": ""
+        },
+        {
+            "id": "Parent System",
+            "message": "Parent System",
+            "translation": ""
+        },
+        {
+            "id": "Path to your data storage relative from the executable",
+            "message": "Path to your data storage relative from the executable",
+            "translation": ""
+        },
+        {
+            "id": "Permanent",
+            "message": "Permanent",
+            "translation": ""
+        },
+        {
+            "id": "Permanent - developed insights ready for connection",
+            "message": "Permanent - developed insights ready for connection",
+            "translation": ""
+        },
+        {
+            "id": "Personal reflection",
+            "message": "Personal reflection",
+            "translation": ""
+        },
+        {
+            "id": "Playground",
+            "message": "Playground",
+            "translation": "Spielwiese"
+        },
+        {
+            "id": "Powerful filtering system to find exactly what you need:",
+            "message": "Powerful filtering system to find exactly what you need:",
+            "translation": ""
+        },
+        {
+            "id": "Powerful search through all your content",
+            "message": "Powerful search through all your content",
+            "translation": ""
+        },
+        {
+            "id": "Priority",
+            "message": "Priority",
+            "translation": ""
+        },
+        {
+            "id": "Process",
+            "message": "Process",
+            "translation": ""
+        },
+        {
+            "id": "Projects",
+            "message": "Projects",
+            "translation": ""
+        },
+        {
+            "id": "Projects - assign to specific outcomes with deadlines",
+            "message": "Projects - assign to specific outcomes with deadlines",
+            "translation": ""
+        },
+        {
+            "id": "Projects, Areas, Resources, Archive views",
+            "message": "Projects, Areas, Resources, Archive views",
+            "translation": ""
+        },
+        {
+            "id": "Put everything in your calendar",
+            "message": "Put everything in your calendar",
+            "translation": ""
+        },
+        {
+            "id": "Quick thoughts",
+            "message": "Quick thoughts",
+            "translation": ""
+        },
+        {
+            "id": "Rebuild Metadata",
+            "message": "Rebuild Metadata",
+            "translation": ""
+        },
+        {
+            "id": "Rebuild all metadata? This may take a while.",
+            "message": "Rebuild all metadata? This may take a while.",
+            "translation": ""
+        },
+        {
+            "id": "Recent File History",
+            "message": "Recent File History",
+            "translation": ""
+        },
+        {
+            "id": "Reddit PKMS community",
+            "message": "Reddit PKMS community",
+            "translation": ""
+        },
+        {
+            "id": "Reference",
+            "message": "Reference",
+            "translation": ""
+        },
+        {
+            "id": "Remote Repository URL",
+            "message": "Remote Repository URL",
+            "translation": ""
+        },
+        {
+            "id": "Rename",
+            "message": "Rename",
+            "translation": "Umbenennen"
+        },
+        {
+            "id": "Reschedule things in your calendar for another date",
+            "message": "Reschedule things in your calendar for another date",
+            "translation": ""
+        },
+        {
+            "id": "Resources",
+            "message": "Resources",
+            "translation": ""
+        },
+        {
+            "id": "Resources - topics for future reference",
+            "message": "Resources - topics for future reference",
+            "translation": ""
+        },
+        {
+            "id": "Restart System",
+            "message": "Restart System",
+            "translation": ""
+        },
+        {
+            "id": "Restart the system? This will disconnect all users.",
+            "message": "Restart the system? This will disconnect all users.",
+            "translation": ""
+        },
+        {
+            "id": "Review",
+            "message": "Review",
+            "translation": ""
+        },
+        {
+            "id": "Run Cronjob",
+            "message": "Run Cronjob",
+            "translation": ""
+        },
+        {
+            "id": "Run Filter Tests",
+            "message": "Run Filter Tests",
+            "translation": ""
+        },
+        {
+            "id": "Run filter tests? This will create test metadata objects.",
+            "message": "Run filter tests? This will create test metadata objects.",
+            "translation": ""
+        },
+        {
+            "id": "Save",
+            "message": "Save",
+            "translation": ""
+        },
+        {
+            "id": "Save \u0026 Reuse",
+            "message": "Save \u0026 Reuse",
+            "translation": ""
+        },
+        {
+            "id": "Save filter configurations as files",
+            "message": "Save filter configurations as files",
+            "translation": ""
+        },
+        {
+            "id": "Saved searches",
+            "message": "Saved searches",
+            "translation": ""
+        },
+        {
+            "id": "Search Results",
+            "message": "Search Results",
+            "translation": "Suchergebnisse"
+        },
+        {
+            "id": "Search files...",
+            "message": "Search files...",
+            "translation": "Dateien durchsuchen..."
+        },
+        {
+            "id": "Search..",
+            "message": "Search..",
+            "translation": "Suche.."
+        },
+        {
+            "id": "Select Language",
+            "message": "Select Language",
+            "translation": ""
+        },
+        {
+            "id": "Select Theme",
+            "message": "Select Theme",
+            "translation": ""
+        },
+        {
+            "id": "Set Data Path",
+            "message": "Set Data Path",
+            "translation": ""
+        },
+        {
+            "id": "Set Remote Repository",
+            "message": "Set Remote Repository",
+            "translation": ""
+        },
+        {
+            "id": "Settings",
+            "message": "Settings",
+            "translation": "Einstellungen"
+        },
+        {
+            "id": "Setup",
+            "message": "Setup",
+            "translation": ""
+        },
+        {
+            "id": "Setup Test Data",
+            "message": "Setup Test Data",
+            "translation": ""
+        },
+        {
+            "id": "Setup some test Data Files",
+            "message": "Setup some test Data Files",
+            "translation": ""
+        },
+        {
+            "id": "Setup test data? This will create example files.",
+            "message": "Setup test data? This will create example files.",
+            "translation": ""
+        },
+        {
+            "id": "Simple Folders",
+            "message": "Simple Folders",
+            "translation": ""
+        },
+        {
+            "id": "Static content - custom HTML/Markdown",
+            "message": "Static content - custom HTML/Markdown",
+            "translation": ""
+        },
+        {
+            "id": "Status",
+            "message": "Status",
+            "translation": ""
+        },
+        {
+            "id": "Status fields: type, status, priority",
+            "message": "Status fields: type, status, priority",
+            "translation": ""
+        },
+        {
+            "id": "Stay Organized",
+            "message": "Stay Organized",
+            "translation": ""
+        },
+        {
+            "id": "Swagger",
+            "message": "Swagger",
+            "translation": ""
+        },
+        {
+            "id": "System Actions",
+            "message": "System Actions",
+            "translation": ""
+        },
+        {
+            "id": "System Administration",
+            "message": "System Administration",
+            "translation": ""
+        },
+        {
+            "id": "System maintenance operations",
+            "message": "System maintenance operations",
+            "translation": ""
+        },
+        {
+            "id": "Tags",
+            "message": "Tags",
+            "translation": ""
+        },
+        {
+            "id": "Tags - browse all tags",
+            "message": "Tags - browse all tags",
+            "translation": ""
+        },
+        {
+            "id": "Test Data Management",
+            "message": "Test Data Management",
+            "translation": ""
+        },
+        {
+            "id": "Theme Settings",
+            "message": "Theme Settings",
+            "translation": "Theme Einstellungen"
+        },
+        {
+            "id": "Time fields: creation and modification dates",
+            "message": "Time fields: creation and modification dates",
+            "translation": ""
+        },
+        {
+            "id": "Todo",
+            "message": "Todo",
+            "translation": ""
+        },
+        {
+            "id": "Track progress (Draft, In Progress, Complete)",
+            "message": "Track progress (Draft, In Progress, Complete)",
+            "translation": ""
+        },
+        {
+            "id": "Traditional hierarchy organization",
+            "message": "Traditional hierarchy organization",
+            "translation": ""
+        },
+        {
+            "id": "Type",
+            "message": "Type",
+            "translation": ""
+        },
+        {
+            "id": "Unknown metadata type",
+            "message": "Unknown metadata type",
+            "translation": ""
+        },
+        {
+            "id": "Update your dashboard configuration",
+            "message": "Update your dashboard configuration",
+            "translation": ""
+        },
+        {
+            "id": "Use built-in PARA fields",
+            "message": "Use built-in PARA fields",
+            "translation": ""
+        },
+        {
+            "id": "Use built-in Zettelkasten types",
+            "message": "Use built-in Zettelkasten types",
+            "translation": ""
+        },
+        {
+            "id": "Use simple tags + collections, let PARA fields handle structure",
+            "message": "Use simple tags + collections, let PARA fields handle structure",
+            "translation": ""
+        },
+        {
+            "id": "View all archive",
+            "message": "View all archive",
+            "translation": ""
+        },
+        {
+            "id": "View all areas",
+            "message": "View all areas",
+            "translation": ""
+        },
+        {
+            "id": "View all collections",
+            "message": "View all collections",
+            "translation": ""
+        },
+        {
+            "id": "View all folders",
+            "message": "View all folders",
+            "translation": ""
+        },
+        {
+            "id": "View all priorities",
+            "message": "View all priorities",
+            "translation": ""
+        },
+        {
+            "id": "View all projects",
+            "message": "View all projects",
+            "translation": ""
+        },
+        {
+            "id": "View all resources",
+            "message": "View all resources",
+            "translation": ""
+        },
+        {
+            "id": "View all statuses",
+            "message": "View all statuses",
+            "translation": ""
+        },
+        {
+            "id": "View all tags",
+            "message": "View all tags",
+            "translation": ""
+        },
+        {
+            "id": "View all types",
+            "message": "View all types",
+            "translation": ""
+        },
+        {
+            "id": "WARNING - This will remove all files in the Data Folder!!.",
+            "message": "WARNING - This will remove all files in the Data Folder!!.",
+            "translation": ""
+        },
+        {
+            "id": "Weekly review to promote fleeting → literature → permanent",
+            "message": "Weekly review to promote fleeting → literature → permanent",
+            "translation": ""
+        },
+        {
+            "id": "What is KNOV?",
+            "message": "What is KNOV?",
+            "translation": ""
+        },
+        {
+            "id": "Why Use KNOV?",
+            "message": "Why Use KNOV?",
+            "translation": ""
+        },
+        {
+            "id": "Wikilinks between files",
+            "message": "Wikilinks between files",
+            "translation": ""
+        },
+        {
+            "id": "Works completely offline on your computer",
+            "message": "Works completely offline on your computer",
+            "translation": ""
+        },
+        {
+            "id": "Write content with simple formatting",
+            "message": "Write content with simple formatting",
+            "translation": ""
+        },
+        {
+            "id": "Yo",
+            "message": "Yo",
+            "translation": ""
+        },
+        {
+            "id": "You're already here! This is your personal dashboard - your home base for all your knowledge.",
+            "message": "You're already here! This is your personal dashboard - your home base for all your knowledge.",
+            "translation": ""
+        },
+        {
+            "id": "Your Knowledge, Anywhere",
+            "message": "Your Knowledge, Anywhere",
+            "translation": ""
+        },
+        {
+            "id": "Your Way",
+            "message": "Your Way",
+            "translation": ""
+        },
+        {
+            "id": "Your personal knowledge management system",
+            "message": "Your personal knowledge management system",
+            "translation": ""
+        },
+        {
+            "id": "Your todo list becomes a record of what you actually did",
+            "message": "Your todo list becomes a record of what you actually did",
+            "translation": ""
+        },
+        {
+            "id": "Zettelkasten Types",
+            "message": "Zettelkasten Types",
+            "translation": ""
+        },
+        {
+            "id": "action",
+            "message": "action",
+            "translation": ""
+        },
+        {
+            "id": "add archived items",
+            "message": "add archived items",
+            "translation": ""
+        },
+        {
+            "id": "add areas of responsibility",
+            "message": "add areas of responsibility",
+            "translation": ""
+        },
+        {
+            "id": "add criteria",
+            "message": "add criteria",
+            "translation": ""
+        },
+        {
+            "id": "add file",
+            "message": "add file",
+            "translation": ""
+        },
+        {
+            "id": "add filter",
+            "message": "add filter",
+            "translation": ""
+        },
+        {
+            "id": "add folder categories",
+            "message": "add folder categories",
+            "translation": ""
+        },
+        {
+            "id": "add item",
+            "message": "add item",
+            "translation": ""
+        },
+        {
+            "id": "add nested item",
+            "message": "add nested item",
+            "translation": ""
+        },
+        {
+            "id": "add parent files",
+            "message": "add parent files",
+            "translation": ""
+        },
+        {
+            "id": "add projects",
+            "message": "add projects",
+            "translation": ""
+        },
+        {
+            "id": "add resources",
+            "message": "add resources",
+            "translation": ""
+        },
+        {
+            "id": "add separator",
+            "message": "add separator",
+            "translation": ""
+        },
+        {
+            "id": "add tags",
+            "message": "add tags",
+            "translation": ""
+        },
+        {
+            "id": "add title",
+            "message": "add title",
+            "translation": ""
+        },
+        {
+            "id": "and",
+            "message": "and",
+            "translation": ""
+        },
+        {
+            "id": "apply filter",
+            "message": "apply filter",
+            "translation": ""
+        },
+        {
+            "id": "archive updated",
+            "message": "archive updated",
+            "translation": ""
+        },
+        {
+            "id": "areas updated",
+            "message": "areas updated",
+            "translation": ""
+        },
+        {
+            "id": "assign to collection",
+            "message": "assign to collection",
+            "translation": ""
+        },
+        {
+            "id": "at",
+            "message": "at",
+            "translation": ""
+        },
+        {
+            "id": "bold",
+            "message": "bold",
+            "translation": ""
+        },
+        {
+            "id": "button",
+            "message": "button",
+            "translation": ""
+        },
+        {
+            "id": "by",
+            "message": "by",
+            "translation": ""
+        },
+        {
+            "id": "cancel",
+            "message": "cancel",
+            "translation": ""
+        },
+        {
+            "id": "cards",
+            "message": "cards",
+            "translation": ""
+        },
+        {
+            "id": "choose the visual appearance of the interface",
+            "message": "choose the visual appearance of the interface",
+            "translation": ""
+        },
+        {
+            "id": "choose your preferred interface language",
+            "message": "choose your preferred interface language",
+            "translation": ""
+        },
+        {
+            "id": "collection",
+            "message": "collection",
+            "translation": ""
+        },
+        {
+            "id": "configure filter above and click preview to see results",
+            "message": "configure filter above and click preview to see results",
+            "translation": ""
+        },
+        {
+            "id": "configure filter above and click view results to preview",
+            "message": "configure filter above and click view results to preview",
+            "translation": ""
+        },
+        {
+            "id": "contains",
+            "message": "contains",
+            "translation": ""
+        },
+        {
+            "id": "content",
+            "message": "content",
+            "translation": ""
+        },
+        {
+            "id": "create dashboard",
+            "message": "create dashboard",
+            "translation": ""
+        },
+        {
+            "id": "current file does not exist",
+            "message": "current file does not exist",
+            "translation": ""
+        },
+        {
+            "id": "current version",
+            "message": "current version",
+            "translation": ""
+        },
+        {
+            "id": "dashboard created",
+            "message": "dashboard created",
+            "translation": ""
+        },
+        {
+            "id": "dashboard created successfully!",
+            "message": "dashboard created successfully!",
+            "translation": ""
+        },
+        {
+            "id": "dashboard deleted",
+            "message": "dashboard deleted",
+            "translation": ""
+        },
+        {
+            "id": "dashboard name",
+            "message": "dashboard name",
+            "translation": ""
+        },
+        {
+            "id": "dashboard not found",
+            "message": "dashboard not found",
+            "translation": ""
+        },
+        {
+            "id": "dashboard renamed successfully",
+            "message": "dashboard renamed successfully",
+            "translation": ""
+        },
+        {
+            "id": "dashboard settings",
+            "message": "dashboard settings",
+            "translation": ""
+        },
+        {
+            "id": "dashboard updated successfully!",
+            "message": "dashboard updated successfully!",
+            "translation": ""
+        },
+        {
+            "id": "dashboardId is required",
+            "message": "dashboardId is required",
+            "translation": ""
+        },
+        {
+            "id": "data path",
+            "message": "data path",
+            "translation": ""
+        },
+        {
+            "id": "data path cannot be empty",
+            "message": "data path cannot be empty",
+            "translation": ""
+        },
+        {
+            "id": "data path saved. restart required.",
+            "message": "data path saved. restart required.",
+            "translation": ""
+        },
+        {
+            "id": "delete",
+            "message": "delete",
+            "translation": ""
+        },
+        {
+            "id": "delete this item and all its nested items?",
+            "message": "delete this item and all its nested items?",
+            "translation": ""
+        },
+        {
+            "id": "diff",
+            "message": "diff",
+            "translation": ""
+        },
+        {
+            "id": "display",
+            "message": "display",
+            "translation": ""
+        },
+        {
+            "id": "display \u0026 limits",
+            "message": "display \u0026 limits",
+            "translation": ""
+        },
+        {
+            "id": "dropdown",
+            "message": "dropdown",
+            "translation": ""
+        },
+        {
+            "id": "edit section",
+            "message": "edit section",
+            "translation": ""
+        },
+        {
+            "id": "edit table",
+            "message": "edit table",
+            "translation": ""
+        },
+        {
+            "id": "enter file path",
+            "message": "enter file path",
+            "translation": ""
+        },
+        {
+            "id": "enter title",
+            "message": "enter title",
+            "translation": ""
+        },
+        {
+            "id": "enter value",
+            "message": "enter value",
+            "translation": ""
+        },
+        {
+            "id": "equals",
+            "message": "equals",
+            "translation": ""
+        },
+        {
+            "id": "error saving table",
+            "message": "error saving table",
             "translation": ""
         },
         {
@@ -977,11 +1897,6 @@
             "translation": ""
         },
         {
-            "id": "File content - show specific files",
-            "message": "File content - show specific files",
-            "translation": ""
-        },
-        {
             "id": "file does not exist",
             "message": "file does not exist",
             "translation": ""
@@ -1007,58 +1922,13 @@
             "translation": ""
         },
         {
-            "id": "File path not provided",
-            "message": "File path not provided",
-            "translation": ""
-        },
-        {
-            "id": "filepath parameter required",
-            "message": "filepath parameter required",
-            "translation": ""
-        },
-        {
-            "id": "File relationships",
-            "message": "File relationships",
-            "translation": ""
-        },
-        {
-            "id": "files",
-            "message": "files",
-            "translation": ""
-        },
-        {
             "id": "file saved successfully",
             "message": "file saved successfully",
             "translation": ""
         },
         {
-            "id": "Files Comparison",
-            "message": "Files Comparison",
-            "translation": ""
-        },
-        {
-            "id": "Files linking to current",
-            "message": "Files linking to current",
-            "translation": ""
-        },
-        {
-            "id": "Files with",
-            "message": "Files with",
-            "translation": ""
-        },
-        {
-            "id": "Files with current as parent",
-            "message": "Files with current as parent",
-            "translation": ""
-        },
-        {
             "id": "file type",
             "message": "file type",
-            "translation": ""
-        },
-        {
-            "id": "File Types",
-            "message": "File Types",
             "translation": ""
         },
         {
@@ -1072,13 +1942,18 @@
             "translation": ""
         },
         {
-            "id": "filter",
-            "message": "filter",
+            "id": "filepath parameter required",
+            "message": "filepath parameter required",
             "translation": ""
         },
         {
-            "id": "Filter",
-            "message": "Filter",
+            "id": "files",
+            "message": "files",
+            "translation": ""
+        },
+        {
+            "id": "filter",
+            "message": "filter",
             "translation": ""
         },
         {
@@ -1092,28 +1967,8 @@
             "translation": ""
         },
         {
-            "id": "Filter Configuration",
-            "message": "Filter Configuration",
-            "translation": ""
-        },
-        {
             "id": "filter criteria",
             "message": "filter criteria",
-            "translation": ""
-        },
-        {
-            "id": "Filter Criteria",
-            "message": "Filter Criteria",
-            "translation": ""
-        },
-        {
-            "id": "filtered results will appear here",
-            "message": "filtered results will appear here",
-            "translation": ""
-        },
-        {
-            "id": "Filter forms - interactive filtering",
-            "message": "Filter forms - interactive filtering",
             "translation": ""
         },
         {
@@ -1122,48 +1977,18 @@
             "translation": ""
         },
         {
-            "id": "Filter results - display filtered files",
-            "message": "Filter results - display filtered files",
-            "translation": ""
-        },
-        {
             "id": "filter saved successfully!",
             "message": "filter saved successfully!",
             "translation": ""
         },
         {
+            "id": "filtered results will appear here",
+            "message": "filtered results will appear here",
+            "translation": ""
+        },
+        {
             "id": "filters/my-filter",
             "message": "filters/my-filter",
-            "translation": ""
-        },
-        {
-            "id": "Filter System",
-            "message": "Filter System",
-            "translation": ""
-        },
-        {
-            "id": "Filter Test Metadata",
-            "message": "Filter Test Metadata",
-            "translation": ""
-        },
-        {
-            "id": "Filter Test Results Summary",
-            "message": "Filter Test Results Summary",
-            "translation": ""
-        },
-        {
-            "id": "Find Anything Fast",
-            "message": "Find Anything Fast",
-            "translation": ""
-        },
-        {
-            "id": "Fleeting",
-            "message": "Fleeting",
-            "translation": ""
-        },
-        {
-            "id": "Fleeting - quick captures and initial thoughts",
-            "message": "Fleeting - quick captures and initial thoughts",
             "translation": ""
         },
         {
@@ -1177,16 +2002,6 @@
             "translation": ""
         },
         {
-            "id": "Folders",
-            "message": "Folders",
-            "translation": "Ordner"
-        },
-        {
-            "id": "Folders - folder navigation",
-            "message": "Folders - folder navigation",
-            "translation": ""
-        },
-        {
             "id": "for formatted text notes",
             "message": "for formatted text notes",
             "translation": ""
@@ -1194,26 +2009,6 @@
         {
             "id": "format",
             "message": "format",
-            "translation": ""
-        },
-        {
-            "id": "Future reference topics",
-            "message": "Future reference topics",
-            "translation": ""
-        },
-        {
-            "id": "General Settings",
-            "message": "General Settings",
-            "translation": "Allgemeine Einstellungen"
-        },
-        {
-            "id": "Getting Started",
-            "message": "Getting Started",
-            "translation": ""
-        },
-        {
-            "id": "Git Repository",
-            "message": "Git Repository",
             "translation": ""
         },
         {
@@ -1227,58 +2022,8 @@
             "translation": ""
         },
         {
-            "id": "Group files by topic or purpose",
-            "message": "Group files by topic or purpose",
-            "translation": ""
-        },
-        {
-            "id": "Group related notes (like Projects or Recipes)",
-            "message": "Group related notes (like Projects or Recipes)",
-            "translation": ""
-        },
-        {
-            "id": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
-            "message": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
-            "translation": ""
-        },
-        {
-            "id": "Heading",
-            "message": "Heading",
-            "translation": ""
-        },
-        {
-            "id": "Help",
-            "message": "Help",
-            "translation": "Hilfe"
-        },
-        {
-            "id": "Here are proven workflows you can adapt for KNOV. For more ideas, explore",
-            "message": "Here are proven workflows you can adapt for KNOV. For more ideas, explore",
-            "translation": ""
-        },
-        {
-            "id": "History",
-            "message": "History",
-            "translation": "Dateiverlauf"
-        },
-        {
-            "id": "Home",
-            "message": "Home",
-            "translation": "Start"
-        },
-        {
-            "id": "How it works",
-            "message": "How it works",
-            "translation": ""
-        },
-        {
             "id": "https://github.com/user/repo.git",
             "message": "https://github.com/user/repo.git",
-            "translation": ""
-        },
-        {
-            "id": "If you have too much for one day",
-            "message": "If you have too much for one day",
             "translation": ""
         },
         {
@@ -1287,33 +2032,8 @@
             "translation": ""
         },
         {
-            "id": "Inactive items",
-            "message": "Inactive items",
-            "translation": ""
-        },
-        {
             "id": "in array",
             "message": "in array",
-            "translation": ""
-        },
-        {
-            "id": "Include errands (e.g. sign a form)",
-            "message": "Include errands (e.g. sign a form)",
-            "translation": ""
-        },
-        {
-            "id": "Include or exclude matching files",
-            "message": "Include or exclude matching files",
-            "translation": ""
-        },
-        {
-            "id": "Include scheduled tasks (e.g. 2pm meeting)",
-            "message": "Include scheduled tasks (e.g. 2pm meeting)",
-            "translation": ""
-        },
-        {
-            "id": "Include work items (e.g. review a paper)",
-            "message": "Include work items (e.g. review a paper)",
             "translation": ""
         },
         {
@@ -1329,11 +2049,6 @@
         {
             "id": "index saved successfully",
             "message": "index saved successfully",
-            "translation": ""
-        },
-        {
-            "id": "'In' - match any from list",
-            "message": "'In' - match any from list",
             "translation": ""
         },
         {
@@ -1366,63 +2081,13 @@
             "translation": ""
         },
         {
-            "id": "Jeff Huang's productivity system",
-            "message": "Jeff Huang's productivity system",
-            "translation": ""
-        },
-        {
-            "id": "Journaling",
-            "message": "Journaling",
-            "translation": ""
-        },
-        {
-            "id": "Key Features",
-            "message": "Key Features",
-            "translation": ""
-        },
-        {
-            "id": "Keyword-based labeling",
-            "message": "Keyword-based labeling",
-            "translation": ""
-        },
-        {
-            "id": "KNOV (Knowledge Vault) is your personal digital library that helps you organize, search, and connect all your notes, documents, and ideas in one place. Think of it as a smart filing cabinet that remembers everything and helps you find what you need instantly.",
-            "message": "KNOV (Knowledge Vault) is your personal digital library that helps you organize, search, and connect all your notes, documents, and ideas in one place. Think of it as a smart filing cabinet that remembers everything and helps you find what you need instantly.",
-            "translation": ""
-        },
-        {
-            "id": "KNOV - Quick Start Guide",
-            "message": "KNOV - Quick Start Guide",
-            "translation": ""
-        },
-        {
-            "id": "Knowledge development stages",
-            "message": "Knowledge development stages",
-            "translation": ""
-        },
-        {
             "id": "language",
             "message": "language",
             "translation": ""
         },
         {
-            "id": "Latest Changes",
-            "message": "Latest Changes",
-            "translation": "Letzte Änderungen"
-        },
-        {
             "id": "layout",
             "message": "layout",
-            "translation": ""
-        },
-        {
-            "id": "Layout",
-            "message": "Layout",
-            "translation": ""
-        },
-        {
-            "id": "Leave empty for local git repository only",
-            "message": "Leave empty for local git repository only",
             "translation": ""
         },
         {
@@ -1436,23 +2101,8 @@
             "translation": ""
         },
         {
-            "id": "Limits",
-            "message": "Limits",
-            "translation": ""
-        },
-        {
-            "id": "Link notes using wikilinks and parent/child relationships",
-            "message": "Link notes using wikilinks and parent/child relationships",
-            "translation": ""
-        },
-        {
             "id": "list",
             "message": "list",
-            "translation": ""
-        },
-        {
-            "id": "List, cards, dropdown, or table views",
-            "message": "List, cards, dropdown, or table views",
             "translation": ""
         },
         {
@@ -1461,23 +2111,8 @@
             "translation": ""
         },
         {
-            "id": "Literature",
-            "message": "Literature",
-            "translation": ""
-        },
-        {
-            "id": "Literature - notes from books, articles, videos",
-            "message": "Literature - notes from books, articles, videos",
-            "translation": ""
-        },
-        {
             "id": "loading",
             "message": "loading",
-            "translation": ""
-        },
-        {
-            "id": "Loading...",
-            "message": "Loading...",
             "translation": ""
         },
         {
@@ -1511,11 +2146,6 @@
             "translation": ""
         },
         {
-            "id": "Loading files...",
-            "message": "Loading files...",
-            "translation": ""
-        },
-        {
             "id": "loading folders...",
             "message": "loading folders...",
             "translation": ""
@@ -1536,18 +2166,8 @@
             "translation": ""
         },
         {
-            "id": "Loading recent changes...",
-            "message": "Loading recent changes...",
-            "translation": ""
-        },
-        {
             "id": "loading resources...",
             "message": "loading resources...",
-            "translation": ""
-        },
-        {
-            "id": "Loading results...",
-            "message": "Loading results...",
             "translation": ""
         },
         {
@@ -1586,48 +2206,13 @@
             "translation": ""
         },
         {
-            "id": "Logic",
-            "message": "Logic",
-            "translation": ""
-        },
-        {
-            "id": "Manual hierarchy assignment",
-            "message": "Manual hierarchy assignment",
-            "translation": ""
-        },
-        {
-            "id": "Maps linking related notes",
-            "message": "Maps linking related notes",
-            "translation": ""
-        },
-        {
-            "id": "Mark as High, Medium, or Low importance",
-            "message": "Mark as High, Medium, or Low importance",
-            "translation": ""
-        },
-        {
-            "id": "Markdown",
-            "message": "Markdown",
-            "translation": ""
-        },
-        {
             "id": "markdown export only supported for dokuwiki files",
             "message": "markdown export only supported for dokuwiki files",
             "translation": ""
         },
         {
-            "id": "Matching Options",
-            "message": "Matching Options",
-            "translation": ""
-        },
-        {
             "id": "metadata",
             "message": "metadata",
-            "translation": ""
-        },
-        {
-            "id": "Metadata",
-            "message": "Metadata",
             "translation": ""
         },
         {
@@ -1686,43 +2271,8 @@
             "translation": ""
         },
         {
-            "id": "MOC",
-            "message": "MOC",
-            "translation": ""
-        },
-        {
-            "id": "MOC - maps organizing related permanent notes",
-            "message": "MOC - maps organizing related permanent notes",
-            "translation": ""
-        },
-        {
-            "id": "Monthly cleanup and MOC updates",
-            "message": "Monthly cleanup and MOC updates",
-            "translation": ""
-        },
-        {
-            "id": "Multiple ways to categorize and connect your notes",
-            "message": "Multiple ways to categorize and connect your notes",
-            "translation": ""
-        },
-        {
             "id": "name is required",
             "message": "name is required",
-            "translation": ""
-        },
-        {
-            "id": "Navigation Widgets",
-            "message": "Navigation Widgets",
-            "translation": ""
-        },
-        {
-            "id": "Never Lose Information",
-            "message": "Never Lose Information",
-            "translation": ""
-        },
-        {
-            "id": "+ New File",
-            "message": "+ New File",
             "translation": ""
         },
         {
@@ -1753,11 +2303,6 @@
         {
             "id": "no configuration needed",
             "message": "no configuration needed",
-            "translation": ""
-        },
-        {
-            "id": "No dashboard found",
-            "message": "No dashboard found",
             "translation": ""
         },
         {
@@ -1831,21 +2376,6 @@
             "translation": ""
         },
         {
-            "id": "No widgets configured",
-            "message": "No widgets configured",
-            "translation": ""
-        },
-        {
-            "id": "OK",
-            "message": "OK",
-            "translation": ""
-        },
-        {
-            "id": "Ongoing responsibilities",
-            "message": "Ongoing responsibilities",
-            "translation": ""
-        },
-        {
             "id": "operator",
             "message": "operator",
             "translation": ""
@@ -1866,44 +2396,9 @@
             "translation": ""
         },
         {
-            "id": "Organization Methods",
-            "message": "Organization Methods",
-            "translation": ""
-        },
-        {
-            "id": "Organize",
-            "message": "Organize",
-            "translation": ""
-        },
-        {
-            "id": "Organize by actionability",
-            "message": "Organize by actionability",
-            "translation": ""
-        },
-        {
-            "id": "Original PARA + Zettelkasten system",
-            "message": "Original PARA + Zettelkasten system",
-            "translation": ""
-        },
-        {
-            "id": "Outcomes with deadlines",
-            "message": "Outcomes with deadlines",
-            "translation": ""
-        },
-        {
             "id": "outdent",
             "message": "outdent",
             "translation": ""
-        },
-        {
-            "id": "Overview",
-            "message": "Overview",
-            "translation": "Übersicht"
-        },
-        {
-            "id": "OVERVIEW",
-            "message": "OVERVIEW",
-            "translation": "ÜBERSICHT"
         },
         {
             "id": "para",
@@ -1921,16 +2416,6 @@
             "translation": ""
         },
         {
-            "id": "PARA Method",
-            "message": "PARA Method",
-            "translation": ""
-        },
-        {
-            "id": "PARA Organization",
-            "message": "PARA Organization",
-            "translation": ""
-        },
-        {
             "id": "para-projects",
             "message": "para-projects",
             "translation": ""
@@ -1941,16 +2426,6 @@
             "translation": ""
         },
         {
-            "id": "PARA Widgets",
-            "message": "PARA Widgets",
-            "translation": ""
-        },
-        {
-            "id": "PARA + Zettelkasten Knowledge System",
-            "message": "PARA + Zettelkasten Knowledge System",
-            "translation": ""
-        },
-        {
             "id": "parents",
             "message": "parents",
             "translation": ""
@@ -1958,16 +2433,6 @@
         {
             "id": "parents updated",
             "message": "parents updated",
-            "translation": ""
-        },
-        {
-            "id": "Parent System",
-            "message": "Parent System",
-            "translation": ""
-        },
-        {
-            "id": "/path/to/data",
-            "message": "/path/to/data",
             "translation": ""
         },
         {
@@ -1984,31 +2449,6 @@
             "id": "path/to/file.md",
             "message": "path/to/file.md",
             "translation": ""
-        },
-        {
-            "id": "Path to your data storage relative from the executable",
-            "message": "Path to your data storage relative from the executable",
-            "translation": ""
-        },
-        {
-            "id": "Permanent",
-            "message": "Permanent",
-            "translation": ""
-        },
-        {
-            "id": "Permanent - developed insights ready for connection",
-            "message": "Permanent - developed insights ready for connection",
-            "translation": ""
-        },
-        {
-            "id": "Personal reflection",
-            "message": "Personal reflection",
-            "translation": ""
-        },
-        {
-            "id": "Playground",
-            "message": "Playground",
-            "translation": "Spielwiese"
         },
         {
             "id": "please add a regular item first, then click on it to add a nested item under it",
@@ -2031,16 +2471,6 @@
             "translation": ""
         },
         {
-            "id": "Powerful filtering system to find exactly what you need:",
-            "message": "Powerful filtering system to find exactly what you need:",
-            "translation": ""
-        },
-        {
-            "id": "Powerful search through all your content",
-            "message": "Powerful search through all your content",
-            "translation": ""
-        },
-        {
             "id": "preview",
             "message": "preview",
             "translation": ""
@@ -2056,68 +2486,8 @@
             "translation": ""
         },
         {
-            "id": "Priority",
-            "message": "Priority",
-            "translation": ""
-        },
-        {
-            "id": "Process",
-            "message": "Process",
-            "translation": ""
-        },
-        {
-            "id": "Projects",
-            "message": "Projects",
-            "translation": ""
-        },
-        {
-            "id": "Projects, Areas, Resources, Archive views",
-            "message": "Projects, Areas, Resources, Archive views",
-            "translation": ""
-        },
-        {
-            "id": "Projects - assign to specific outcomes with deadlines",
-            "message": "Projects - assign to specific outcomes with deadlines",
-            "translation": ""
-        },
-        {
             "id": "projects updated",
             "message": "projects updated",
-            "translation": ""
-        },
-        {
-            "id": "Put everything in your calendar",
-            "message": "Put everything in your calendar",
-            "translation": ""
-        },
-        {
-            "id": "Quick thoughts",
-            "message": "Quick thoughts",
-            "translation": ""
-        },
-        {
-            "id": "Rebuild all metadata? This may take a while.",
-            "message": "Rebuild all metadata? This may take a while.",
-            "translation": ""
-        },
-        {
-            "id": "Rebuild Metadata",
-            "message": "Rebuild Metadata",
-            "translation": ""
-        },
-        {
-            "id": "Recent File History",
-            "message": "Recent File History",
-            "translation": ""
-        },
-        {
-            "id": "Reddit PKMS community",
-            "message": "Reddit PKMS community",
-            "translation": ""
-        },
-        {
-            "id": "Reference",
-            "message": "Reference",
             "translation": ""
         },
         {
@@ -2126,33 +2496,8 @@
             "translation": ""
         },
         {
-            "id": "Remote Repository URL",
-            "message": "Remote Repository URL",
-            "translation": ""
-        },
-        {
             "id": "remove",
             "message": "remove",
-            "translation": ""
-        },
-        {
-            "id": "Rename",
-            "message": "Rename",
-            "translation": "Umbenennen"
-        },
-        {
-            "id": "Reschedule things in your calendar for another date",
-            "message": "Reschedule things in your calendar for another date",
-            "translation": ""
-        },
-        {
-            "id": "Resources",
-            "message": "Resources",
-            "translation": ""
-        },
-        {
-            "id": "Resources - topics for future reference",
-            "message": "Resources - topics for future reference",
             "translation": ""
         },
         {
@@ -2166,23 +2511,8 @@
             "translation": ""
         },
         {
-            "id": "Restart System",
-            "message": "Restart System",
-            "translation": ""
-        },
-        {
-            "id": "Restart the system? This will disconnect all users.",
-            "message": "Restart the system? This will disconnect all users.",
-            "translation": ""
-        },
-        {
             "id": "restore this version",
             "message": "restore this version",
-            "translation": ""
-        },
-        {
-            "id": "Review",
-            "message": "Review",
             "translation": ""
         },
         {
@@ -2191,38 +2521,13 @@
             "translation": ""
         },
         {
-            "id": "Run Cronjob",
-            "message": "Run Cronjob",
-            "translation": ""
-        },
-        {
-            "id": "Run Filter Tests",
-            "message": "Run Filter Tests",
-            "translation": ""
-        },
-        {
-            "id": "Run filter tests? This will create test metadata objects.",
-            "message": "Run filter tests? This will create test metadata objects.",
-            "translation": ""
-        },
-        {
             "id": "save",
             "message": "save",
             "translation": ""
         },
         {
-            "id": "Save",
-            "message": "Save",
-            "translation": ""
-        },
-        {
             "id": "save changes",
             "message": "save changes",
-            "translation": ""
-        },
-        {
-            "id": "Saved searches",
-            "message": "Saved searches",
             "translation": ""
         },
         {
@@ -2236,18 +2541,8 @@
             "translation": ""
         },
         {
-            "id": "Save filter configurations as files",
-            "message": "Save filter configurations as files",
-            "translation": ""
-        },
-        {
             "id": "save index",
             "message": "save index",
-            "translation": ""
-        },
-        {
-            "id": "Save \u0026 Reuse",
-            "message": "Save \u0026 Reuse",
             "translation": ""
         },
         {
@@ -2261,24 +2556,9 @@
             "translation": ""
         },
         {
-            "id": "Search..",
-            "message": "Search..",
-            "translation": "Suche.."
-        },
-        {
             "id": "search files",
             "message": "search files",
             "translation": ""
-        },
-        {
-            "id": "Search files...",
-            "message": "Search files...",
-            "translation": "Dateien durchsuchen..."
-        },
-        {
-            "id": "Search Results",
-            "message": "Search Results",
-            "translation": "Suchergebnisse"
         },
         {
             "id": "section",
@@ -2306,18 +2586,13 @@
             "translation": ""
         },
         {
-            "id": "select file...",
-            "message": "select file...",
-            "translation": ""
-        },
-        {
             "id": "select file type",
             "message": "select file type",
             "translation": ""
         },
         {
-            "id": "Select Language",
-            "message": "Select Language",
+            "id": "select file...",
+            "message": "select file...",
             "translation": ""
         },
         {
@@ -2336,11 +2611,6 @@
             "translation": ""
         },
         {
-            "id": "Select Theme",
-            "message": "Select Theme",
-            "translation": ""
-        },
-        {
             "id": "select widget type",
             "message": "select widget type",
             "translation": ""
@@ -2351,53 +2621,13 @@
             "translation": ""
         },
         {
-            "id": "Set Data Path",
-            "message": "Set Data Path",
-            "translation": ""
-        },
-        {
             "id": "set priority (1-5)",
             "message": "set priority (1-5)",
             "translation": ""
         },
         {
-            "id": "Set Remote Repository",
-            "message": "Set Remote Repository",
-            "translation": ""
-        },
-        {
-            "id": "Settings",
-            "message": "Settings",
-            "translation": "Einstellungen"
-        },
-        {
-            "id": "Setup",
-            "message": "Setup",
-            "translation": ""
-        },
-        {
-            "id": "Setup some test Data Files",
-            "message": "Setup some test Data Files",
-            "translation": ""
-        },
-        {
-            "id": "Setup Test Data",
-            "message": "Setup Test Data",
-            "translation": ""
-        },
-        {
-            "id": "Setup test data? This will create example files.",
-            "message": "Setup test data? This will create example files.",
-            "translation": ""
-        },
-        {
             "id": "shift+tab",
             "message": "shift+tab",
-            "translation": ""
-        },
-        {
-            "id": "Simple Folders",
-            "message": "Simple Folders",
             "translation": ""
         },
         {
@@ -2411,11 +2641,6 @@
             "translation": ""
         },
         {
-            "id": "Static content - custom HTML/Markdown",
-            "message": "Static content - custom HTML/Markdown",
-            "translation": ""
-        },
-        {
             "id": "static content is required",
             "message": "static content is required",
             "translation": ""
@@ -2423,41 +2648,6 @@
         {
             "id": "status",
             "message": "status",
-            "translation": ""
-        },
-        {
-            "id": "Status",
-            "message": "Status",
-            "translation": ""
-        },
-        {
-            "id": "Status fields: type, status, priority",
-            "message": "Status fields: type, status, priority",
-            "translation": ""
-        },
-        {
-            "id": "Stay Organized",
-            "message": "Stay Organized",
-            "translation": ""
-        },
-        {
-            "id": "Swagger",
-            "message": "Swagger",
-            "translation": ""
-        },
-        {
-            "id": "System Actions",
-            "message": "System Actions",
-            "translation": ""
-        },
-        {
-            "id": "System Administration",
-            "message": "System Administration",
-            "translation": ""
-        },
-        {
-            "id": "System maintenance operations",
-            "message": "System maintenance operations",
             "translation": ""
         },
         {
@@ -2481,16 +2671,6 @@
             "translation": ""
         },
         {
-            "id": "Tags",
-            "message": "Tags",
-            "translation": ""
-        },
-        {
-            "id": "Tags - browse all tags",
-            "message": "Tags - browse all tags",
-            "translation": ""
-        },
-        {
             "id": "tags updated",
             "message": "tags updated",
             "translation": ""
@@ -2501,48 +2681,13 @@
             "translation": ""
         },
         {
-            "id": "Test Data Management",
-            "message": "Test Data Management",
-            "translation": ""
-        },
-        {
             "id": "theme",
             "message": "theme",
             "translation": ""
         },
         {
-            "id": "Theme Settings",
-            "message": "Theme Settings",
-            "translation": "Theme Einstellungen"
-        },
-        {
-            "id": "Time fields: creation and modification dates",
-            "message": "Time fields: creation and modification dates",
-            "translation": ""
-        },
-        {
             "id": "title",
             "message": "title",
-            "translation": ""
-        },
-        {
-            "id": "Todo",
-            "message": "Todo",
-            "translation": ""
-        },
-        {
-            "id": "Track progress (Draft, In Progress, Complete)",
-            "message": "Track progress (Draft, In Progress, Complete)",
-            "translation": ""
-        },
-        {
-            "id": "Traditional hierarchy organization",
-            "message": "Traditional hierarchy organization",
-            "translation": ""
-        },
-        {
-            "id": "Type",
-            "message": "Type",
             "translation": ""
         },
         {
@@ -2586,33 +2731,8 @@
             "translation": ""
         },
         {
-            "id": "Unknown metadata type",
-            "message": "Unknown metadata type",
-            "translation": ""
-        },
-        {
             "id": "unsupported file type",
             "message": "unsupported file type",
-            "translation": ""
-        },
-        {
-            "id": "Update your dashboard configuration",
-            "message": "Update your dashboard configuration",
-            "translation": ""
-        },
-        {
-            "id": "Use built-in PARA fields",
-            "message": "Use built-in PARA fields",
-            "translation": ""
-        },
-        {
-            "id": "Use built-in Zettelkasten types",
-            "message": "Use built-in Zettelkasten types",
-            "translation": ""
-        },
-        {
-            "id": "Use simple tags + collections, let PARA fields handle structure",
-            "message": "Use simple tags + collections, let PARA fields handle structure",
             "translation": ""
         },
         {
@@ -2636,56 +2756,6 @@
             "translation": ""
         },
         {
-            "id": "View all archive",
-            "message": "View all archive",
-            "translation": ""
-        },
-        {
-            "id": "View all areas",
-            "message": "View all areas",
-            "translation": ""
-        },
-        {
-            "id": "View all collections",
-            "message": "View all collections",
-            "translation": ""
-        },
-        {
-            "id": "View all folders",
-            "message": "View all folders",
-            "translation": ""
-        },
-        {
-            "id": "View all priorities",
-            "message": "View all priorities",
-            "translation": ""
-        },
-        {
-            "id": "View all projects",
-            "message": "View all projects",
-            "translation": ""
-        },
-        {
-            "id": "View all resources",
-            "message": "View all resources",
-            "translation": ""
-        },
-        {
-            "id": "View all statuses",
-            "message": "View all statuses",
-            "translation": ""
-        },
-        {
-            "id": "View all tags",
-            "message": "View all tags",
-            "translation": ""
-        },
-        {
-            "id": "View all types",
-            "message": "View all types",
-            "translation": ""
-        },
-        {
             "id": "view dashboard",
             "message": "view dashboard",
             "translation": ""
@@ -2701,26 +2771,6 @@
             "translation": ""
         },
         {
-            "id": "WARNING - This will remove all files in the Data Folder!!.",
-            "message": "WARNING - This will remove all files in the Data Folder!!.",
-            "translation": ""
-        },
-        {
-            "id": "Weekly review to promote fleeting → literature → permanent",
-            "message": "Weekly review to promote fleeting → literature → permanent",
-            "translation": ""
-        },
-        {
-            "id": "What is KNOV?",
-            "message": "What is KNOV?",
-            "translation": ""
-        },
-        {
-            "id": "Why Use KNOV?",
-            "message": "Why Use KNOV?",
-            "translation": ""
-        },
-        {
             "id": "widget",
             "message": "widget",
             "translation": ""
@@ -2728,11 +2778,6 @@
         {
             "id": "widget not found",
             "message": "widget not found",
-            "translation": ""
-        },
-        {
-            "id": "widgets",
-            "message": "widgets",
             "translation": ""
         },
         {
@@ -2746,58 +2791,13 @@
             "translation": ""
         },
         {
-            "id": "Wikilinks between files",
-            "message": "Wikilinks between files",
-            "translation": ""
-        },
-        {
-            "id": "Works completely offline on your computer",
-            "message": "Works completely offline on your computer",
-            "translation": ""
-        },
-        {
-            "id": "Write content with simple formatting",
-            "message": "Write content with simple formatting",
-            "translation": ""
-        },
-        {
-            "id": "Yo",
-            "message": "Yo",
-            "translation": ""
-        },
-        {
-            "id": "You're already here! This is your personal dashboard - your home base for all your knowledge.",
-            "message": "You're already here! This is your personal dashboard - your home base for all your knowledge.",
-            "translation": ""
-        },
-        {
-            "id": "Your Knowledge, Anywhere",
-            "message": "Your Knowledge, Anywhere",
-            "translation": ""
-        },
-        {
-            "id": "Your personal knowledge management system",
-            "message": "Your personal knowledge management system",
-            "translation": ""
-        },
-        {
-            "id": "Your todo list becomes a record of what you actually did",
-            "message": "Your todo list becomes a record of what you actually did",
-            "translation": ""
-        },
-        {
-            "id": "Your Way",
-            "message": "Your Way",
+            "id": "widgets",
+            "message": "widgets",
             "translation": ""
         },
         {
             "id": "yyyy-mm-dd",
             "message": "yyyy-mm-dd",
-            "translation": ""
-        },
-        {
-            "id": "Zettelkasten Types",
-            "message": "Zettelkasten Types",
             "translation": ""
         }
     ]

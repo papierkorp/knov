@@ -713,7 +713,7 @@ func expandCommitHash(repo *git.Repository, shortHash string) (plumbing.Hash, er
 
 // GetLastProcessedCommit returns the last commit that was processed for metadata
 func GetLastProcessedCommit() (string, error) {
-	commitFile := filepath.Join("config", ".last_processed_commit")
+	commitFile := filepath.Join(configmanager.GetAppConfig().StoragePath, ".last_processed_commit")
 
 	data, err := os.ReadFile(commitFile)
 	if err != nil {
@@ -728,7 +728,12 @@ func GetLastProcessedCommit() (string, error) {
 
 // SetLastProcessedCommit saves the last processed commit hash
 func SetLastProcessedCommit(commitHash string) error {
-	commitFile := filepath.Join("config", ".last_processed_commit")
+	storagePath := configmanager.GetAppConfig().StoragePath
+	if err := os.MkdirAll(storagePath, 0755); err != nil {
+		return err
+	}
+
+	commitFile := filepath.Join(storagePath, ".last_processed_commit")
 	return os.WriteFile(commitFile, []byte(commitHash), 0644)
 }
 
