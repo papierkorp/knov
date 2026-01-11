@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/filter"
@@ -20,7 +21,6 @@ import (
 	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/translation"
-	"knov/internal/utils"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -672,7 +672,7 @@ func handleDashboardView(w http.ResponseWriter, r *http.Request) {
 
 func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/files/")
-	fullPath := utils.ToFullPath(filePath)
+	fullPath := contentStorage.ToDocsPath(filePath)
 	ext := strings.ToLower(filepath.Ext(fullPath))
 
 	if ext == ".pdf" {

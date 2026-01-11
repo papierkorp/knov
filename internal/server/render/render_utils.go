@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/translation"
-	"knov/internal/utils"
 )
 
 // SelectOption represents an option in a select dropdown
@@ -161,7 +161,7 @@ func RenderFileContent(filez []files.File) string {
 			<div class="filter-content-body">`, file.Path, displayText))
 
 		// get file content
-		fullPath := utils.ToFullPath(file.Path)
+		fullPath := contentStorage.ToDocsPath(file.Path)
 		content, err := files.GetFileContent(fullPath)
 		if err != nil {
 			html.WriteString(`<p class="filter-content-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "error loading content: %s", err.Error()) + `</p>`)

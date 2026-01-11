@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/utils"
 )
@@ -38,7 +39,7 @@ func MetaDataLinksRebuild() error {
 		updateAncestors(metadata)
 
 		// extract used links without updating linkstohere yet
-		fullPath := utils.ToFullPath(metadata.Path)
+		fullPath := contentStorage.ToDocsPath(metadata.Path)
 		contentData, err := os.ReadFile(fullPath)
 		if err == nil {
 			handler := parserRegistry.GetHandler(fullPath)
@@ -120,7 +121,7 @@ func findTopAncestor(filePath string, visited map[string]bool) string {
 }
 
 func updateUsedLinks(metadata *Metadata) {
-	fullPath := utils.ToFullPath(metadata.Path)
+	fullPath := contentStorage.ToDocsPath(metadata.Path)
 
 	logging.LogInfo("processing file for links: %s", fullPath)
 
@@ -288,7 +289,7 @@ func UpdateLinksForMovedFile(oldPath, newPath string) error {
 
 // updateLinksInFile updates links within a single file
 func updateLinksInFile(filePath, oldPath, newPath string) error {
-	fullPath := utils.ToFullPath(filePath)
+	fullPath := contentStorage.ToDocsPath(filePath)
 
 	// read file content
 	contentData, err := os.ReadFile(fullPath)
@@ -416,7 +417,7 @@ func moveFileMetadata(oldPath, newPath string) error {
 
 // updateTitle extracts title from the first header line in the file content
 func updateTitle(metadata *Metadata) {
-	fullPath := utils.ToFullPath(metadata.Path)
+	fullPath := contentStorage.ToDocsPath(metadata.Path)
 
 	logging.LogDebug("extracting title for %s", metadata.Path)
 

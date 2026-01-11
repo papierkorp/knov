@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/translation"
-	"knov/internal/utils"
 )
 
 // RenderSearchHint renders an empty search hint message
@@ -98,7 +98,7 @@ func extractSearchContext(filePath, query string) string {
 	}
 
 	// try to get file content
-	fullPath := utils.ToFullPath(filePath)
+	fullPath := contentStorage.ToDocsPath(filePath)
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
 		return ""

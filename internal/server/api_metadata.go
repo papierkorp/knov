@@ -13,11 +13,11 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/server/render"
 	"knov/internal/translation"
-	"knov/internal/utils"
 )
 
 // ----------------------------------------------------------------------------------------
@@ -477,7 +477,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("changing file path via metadata: %s -> %s", filePath, newpath)
 
 	// check if current file exists
-	currentFullPath := utils.ToFullPath(filePath)
+	currentFullPath := contentStorage.ToDocsPath(filePath)
 	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
 		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"))
 		w.Header().Set("Content-Type", "text/html")
@@ -487,7 +487,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if new path already exists
-	newFullPath := utils.ToFullPath(newpath)
+	newFullPath := contentStorage.ToDocsPath(newpath)
 	if _, err := os.Stat(newFullPath); err == nil {
 		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"))
 		w.Header().Set("Content-Type", "text/html")

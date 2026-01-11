@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
-	"knov/internal/utils"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -63,8 +63,8 @@ func CleanTestData() error {
 func copyTestFiles() error {
 	logging.LogInfo("copying test files")
 
-	dataPath := configmanager.GetAppConfig().DataPath
-	if err := os.MkdirAll(dataPath, 0755); err != nil {
+	docsPath := contentStorage.GetDocsPath()
+	if err := os.MkdirAll(docsPath, 0755); err != nil {
 		return err
 	}
 
@@ -84,7 +84,7 @@ func copyTestFiles() error {
 			return err
 		}
 
-		destPath := filepath.Join(dataPath, relPath)
+		destPath := filepath.Join(docsPath, relPath)
 
 		if d.IsDir() {
 			return os.MkdirAll(destPath, 0755)
@@ -326,7 +326,7 @@ func createTestMetadata() error {
 
 	for i, file := range testFiles {
 		filename := filepath.Base(file)
-		relPath := utils.ToRelativePath(file)
+		relPath := contentStorage.ToRelativePath(file)
 		folders := strings.Split(filepath.Dir(relPath), "/")
 
 		validFolders := []string{}
@@ -365,7 +365,7 @@ func createTestMetadata() error {
 			for j := 0; j < parentCount && j < i; j++ {
 				parentIdx := i - 1 - (j * 2)
 				if parentIdx >= 0 && parentIdx < i {
-					parentPath := utils.ToRelativePath(testFiles[parentIdx])
+					parentPath := contentStorage.ToRelativePath(testFiles[parentIdx])
 					if parentPath != relPath && !contains(parents, parentPath) {
 						parents = append(parents, parentPath)
 					}

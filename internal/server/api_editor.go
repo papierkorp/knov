@@ -10,11 +10,11 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/server/render"
 	"knov/internal/translation"
-	"knov/internal/utils"
 )
 
 // editorType defines the type of editor to be used
@@ -223,7 +223,7 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// convert to full path
-	fullPath := utils.ToFullPath(filepath)
+	fullPath := contentStorage.ToDocsPath(filepath)
 
 	// parse entries
 	var config render.IndexConfig
@@ -386,7 +386,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	markdown := render.ConvertListItemsToMarkdown(listItems, 0)
 
 	// convert to full path
-	fullPath := utils.ToFullPath(filePath)
+	fullPath := contentStorage.ToDocsPath(filePath)
 
 	// create directory if it doesn't exist
 	dir := filepath.Dir(fullPath)
@@ -510,7 +510,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	updatedContent := render.ReplaceTableInMarkdown(originalContent, headers, rows, tableIndex)
 
 	// save updated content
-	fullPath := utils.ToFullPath(filePath)
+	fullPath := contentStorage.ToDocsPath(filePath)
 	if err := files.SaveRawContent(fullPath, updatedContent); err != nil {
 		logging.LogError("failed to save file %s: %v", filePath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)

@@ -159,10 +159,6 @@ func InitGitRepository() error {
 		return nil
 	}
 
-	if err := os.MkdirAll(dataPath, 0755); err != nil {
-		return err
-	}
-
 	if appConfig.GitRepoURL != "" {
 		_, err := git.PlainClone(dataPath, false, &git.CloneOptions{
 			URL: appConfig.GitRepoURL,

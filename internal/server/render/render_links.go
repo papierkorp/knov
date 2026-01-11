@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/translation"
-	"knov/internal/utils"
 )
 
 // GetLinkDisplayText returns filename, filepath, or title based on theme setting
@@ -94,7 +94,7 @@ func RenderLinksList(links []string) string {
 	var html strings.Builder
 	html.WriteString(`<ul class="component-link-list">`)
 	for _, link := range links {
-		linkPath := utils.ToRelativePath(link)
+		linkPath := contentStorage.ToRelativePath(link)
 		displayText := GetLinkDisplayText(linkPath)
 		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s" title="%s">%s</a></li>`, linkPath, linkPath, displayText))
 	}

@@ -12,8 +12,8 @@
     },
     "colorScheme": {
       "type": "select",
-      "options": ["default", "green", "red", "purple"],
-      "default": "default",
+      "options": ["blue", "green", "red", "purple"],
+      "default": "green",
       "label": "Color Scheme",
       "description": "choose the color theme for the interface"
     },

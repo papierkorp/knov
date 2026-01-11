@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/utils"
@@ -40,9 +40,9 @@ type FileContent struct {
 
 // GetAllFiles returns list of all files
 func GetAllFiles() ([]File, error) {
-	dataDir := configmanager.GetAppConfig().DataPath
+	docsDir := contentStorage.GetDocsPath()
 	var files []File
-	err := filepath.Walk(dataDir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(docsDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -52,7 +52,7 @@ func GetAllFiles() ([]File, error) {
 		}
 
 		if !info.IsDir() {
-			relativePath, err := filepath.Rel(dataDir, path)
+			relativePath, err := filepath.Rel(docsDir, path)
 			if err != nil {
 				return err
 			}
@@ -89,12 +89,12 @@ func GetFileContent(filePath string) (*FileContent, error) {
 		return nil, err
 	}
 
-	html, err := handler.Render(parsed, utils.ToRelativePath(filePath))
+	html, err := handler.Render(parsed, contentStorage.ToRelativePath(filePath))
 	if err != nil {
 		return nil, err
 	}
 
-	relativePath := utils.ToRelativePath(filePath)
+	relativePath := contentStorage.ToRelativePath(filePath)
 	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", relativePath)
 
 	processedContent = InjectHeaderIDs(processedContent)
@@ -127,7 +127,7 @@ func GetRawContent(filePath string) (string, error) {
 		return "", fmt.Errorf("no handler found for file: %s", filePath)
 	}
 
-	fullPath := utils.ToFullPath(filePath)
+	fullPath := contentStorage.ToDocsPath(filePath)
 	content, err := handler.GetContent(fullPath)
 	if err != nil {
 		return "", err
@@ -148,7 +148,7 @@ func ExtractSectionContent(filePath, sectionID string) (string, error) {
 		return "", fmt.Errorf("section editing not supported for file type: %s", filePath)
 	}
 
-	fullPath := utils.ToFullPath(filePath)
+	fullPath := contentStorage.ToDocsPath(filePath)
 	content, err := handler.GetContent(fullPath)
 	if err != nil {
 		return "", err
@@ -169,7 +169,7 @@ func SaveSectionContent(filePath, sectionID, sectionContent string) error {
 		return fmt.Errorf("section editing not supported for file type: %s", filePath)
 	}
 
-	fullPath := utils.ToFullPath(filePath)
+	fullPath := contentStorage.ToDocsPath(filePath)
 	originalContent, err := handler.GetContent(fullPath)
 	if err != nil {
 		return err

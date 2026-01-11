@@ -55,7 +55,7 @@ Example user settings:
   "themeSettings": {
     "builtin": {
       "darkMode": false,
-      "colorScheme": "default",
+      "colorScheme": "green",
       "customCSS": "",
       "fileView": "detailed"
     },

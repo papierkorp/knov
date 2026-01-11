@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/searchStorage"
-	"knov/internal/utils"
 )
 
 // InitSearch initializes search by indexing all files
@@ -38,7 +38,7 @@ func IndexAllFiles() error {
 	logging.LogInfo("indexing %d files for search", len(allFiles))
 
 	for _, file := range allFiles {
-		fullPath := utils.ToFullPath(file.Path)
+		fullPath := contentStorage.ToDocsPath(file.Path)
 		content, err := os.ReadFile(fullPath)
 		if err != nil {
 			logging.LogWarning("failed to read file %s for indexing: %v", file.Path, err)
@@ -141,7 +141,7 @@ func searchFilesRepositoryFallback(query string, limit int) ([]files.File, error
 		contentData, err := searchStorage.GetIndexedContent(file.Path)
 		if err != nil || contentData == nil {
 			// try reading file directly if not indexed
-			fullPath := utils.ToFullPath(file.Path)
+			fullPath := contentStorage.ToDocsPath(file.Path)
 			contentData, err = os.ReadFile(fullPath)
 			if err != nil {
 				continue
@@ -174,7 +174,7 @@ func searchFilesGrep(query string, limit int) ([]files.File, error) {
 			break
 		}
 
-		fullPath := utils.ToFullPath(file.Path)
+		fullPath := contentStorage.ToDocsPath(file.Path)
 		content, err := os.ReadFile(fullPath)
 		if err != nil {
 			continue

@@ -3,12 +3,13 @@ package render
 
 import (
 	"fmt"
+	"strings"
+
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/git"
 	"knov/internal/parser"
 	"knov/internal/translation"
-	"knov/internal/utils"
-	"strings"
 )
 
 // RenderGitHistoryFileList renders a list of git history files as HTML
@@ -16,7 +17,7 @@ func RenderGitHistoryFileList(files []git.GitHistoryFile) string {
 	var html strings.Builder
 	html.WriteString("<ul>")
 	for _, file := range files {
-		linkPath := utils.ToRelativePath(file.Path)
+		linkPath := contentStorage.ToRelativePath(file.Path)
 		html.WriteString(fmt.Sprintf(`<li>%s - <a href="/files/%s"><strong>%s</strong></a> (%s)</li>`,
 			file.Date,
 			linkPath,
@@ -61,7 +62,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 					</a>
 				</li>`,
 				cssClass,
-				utils.ToRelativePath(filePath),
+				contentStorage.ToRelativePath(filePath),
 				version.Commit,
 				version.Date,
 				version.Message,
@@ -75,7 +76,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 				<a href="/files/history/%s" class="view-all-versions">
 					%s
 				</a>`,
-				utils.ToRelativePath(filePath),
+				contentStorage.ToRelativePath(filePath),
 				translation.SprintfForRequest(configmanager.GetLanguage(), "view all %d versions", len(versions)),
 			))
 		}
@@ -131,7 +132,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 				version.Message,
 				translation.SprintfForRequest(configmanager.GetLanguage(), "by"),
 				version.Author,
-				utils.ToRelativePath(filePath),
+				contentStorage.ToRelativePath(filePath),
 				version.Commit,
 				translation.SprintfForRequest(configmanager.GetLanguage(), "view"),
 			))

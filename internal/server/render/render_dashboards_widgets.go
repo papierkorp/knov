@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/filter"
@@ -61,7 +62,7 @@ func renderFileContentWidget(config *dashboard.FileContentConfig) (string, error
 		return "", errors.New(translation.SprintfForRequest(configmanager.GetLanguage(), "file path is required"))
 	}
 
-	fullPath := utils.ToFullPath(config.FilePath)
+	fullPath := contentStorage.ToDocsPath(config.FilePath)
 	content, err := files.GetFileContent(fullPath)
 	if err != nil {
 		logging.LogError("failed to get file content: %v", err)

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
 	"knov/internal/utils"
@@ -145,8 +146,8 @@ type PARA struct {
 func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	currentMetadata, _ := MetaDataGet(filePath)
 
-	normalizedPath := utils.ToRelativePath(filePath)
-	fullPath := utils.ToFullPath(normalizedPath)
+	normalizedPath := contentStorage.ToRelativePath(filePath)
+	fullPath := contentStorage.ToDocsPath(normalizedPath)
 
 	// get file size
 	fileInfo, err := os.Stat(fullPath)
@@ -334,7 +335,7 @@ func metaDataSaveRaw(m *Metadata) error {
 
 // MetaDataGet retrieves metadata for a file path
 func MetaDataGet(filepath string) (*Metadata, error) {
-	normalizedPath := utils.ToRelativePath(filepath)
+	normalizedPath := contentStorage.ToRelativePath(filepath)
 
 	data, err := metadataStorage.Get(normalizedPath)
 	if err != nil {
@@ -390,7 +391,7 @@ func MetaDataInitializeAll() error {
 
 // MetaDataDelete removes metadata for a file path
 func MetaDataDelete(filepath string) error {
-	normalizedPath := utils.ToRelativePath(filepath)
+	normalizedPath := contentStorage.ToRelativePath(filepath)
 	return metadataStorage.Delete(normalizedPath)
 }
 

@@ -8,6 +8,7 @@ import (
 	"knov/internal/cacheStorage"
 	"knov/internal/configStorage"
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/cronjob"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
@@ -41,6 +42,12 @@ func main() {
 
 	configmanager.InitAppConfig()
 	translation.Init()
+
+	// initialize content storage (creates data/docs and data/media directories)
+	if err := contentStorage.Init(); err != nil {
+		logging.LogError("failed to initialize content storage: %v", err)
+		return
+	}
 
 	// initialize storage backends
 	appConfig := configmanager.GetAppConfig()
