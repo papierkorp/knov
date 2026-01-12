@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/logging"
 )
 
@@ -14,10 +14,10 @@ import (
 func createFilterTestFiles() error {
 	logging.LogInfo("creating filter test files on disk")
 
-	dataPath := configmanager.GetAppConfig().DataPath
+	docsPath := contentStorage.GetDocsPath()
 
 	// remove existing filter-tests directory to ensure clean state
-	filterTestsPath := filepath.Join(dataPath, "filter-tests")
+	filterTestsPath := filepath.Join(docsPath, "filter-tests")
 	if _, err := os.Stat(filterTestsPath); err == nil {
 		logging.LogInfo("removing existing filter-tests directory")
 		if err := os.RemoveAll(filterTestsPath); err != nil {
@@ -374,7 +374,7 @@ special-filter-testing
 
 	// create directories and files
 	for _, file := range testFiles {
-		fullPath := filepath.Join(dataPath, file.path)
+		fullPath := filepath.Join(docsPath, file.path)
 
 		// create directory if it doesn't exist
 		dir := filepath.Dir(fullPath)

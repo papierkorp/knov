@@ -108,7 +108,7 @@ func copyTestFiles() error {
 func createTestStructure() error {
 	logging.LogInfo("creating test structure")
 
-	dataPath := configmanager.GetAppConfig().DataPath
+	docsPath := contentStorage.GetDocsPath()
 
 	dirs := []string{
 		"test/testA/testAA",
@@ -119,7 +119,7 @@ func createTestStructure() error {
 	}
 
 	for _, dir := range dirs {
-		if err := os.MkdirAll(filepath.Join(dataPath, dir), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Join(docsPath, dir), 0755); err != nil {
 			return err
 		}
 	}
@@ -128,7 +128,7 @@ func createTestStructure() error {
 }
 
 func setTestDataContent() error {
-	dataPath := configmanager.GetAppConfig().DataPath
+	docsPath := contentStorage.GetDocsPath()
 
 	testFiles := []string{
 		"test/testA/testA.md",
@@ -151,7 +151,7 @@ func setTestDataContent() error {
 	}
 
 	for i, file := range testFiles {
-		fullPath := filepath.Join(dataPath, file)
+		fullPath := filepath.Join(docsPath, file)
 
 		// create content with links
 		content := "# " + filepath.Base(file) + "\n\n**This is a test file.**\n\n"

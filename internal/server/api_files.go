@@ -46,7 +46,7 @@ func handleAPIGetFolderSuggestions(w http.ResponseWriter, r *http.Request) {
 	var html strings.Builder
 	for _, folderPath := range folderPaths {
 		// add suggestion with placeholder filename
-		suggestion := folderPath + "filename.md"
+		suggestion := folderPath
 		html.WriteString(fmt.Sprintf(`<option value="%s"></option>`, suggestion))
 	}
 
