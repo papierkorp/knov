@@ -119,10 +119,6 @@ func RenderListEditor(filepath string) string {
 	}
 
 	action := "/api/editor/listeditor"
-	pathReadonly := ""
-	if isEdit {
-		pathReadonly = "readonly"
-	}
 
 	cancelURL := "/"
 	if isEdit {
@@ -145,13 +141,23 @@ func RenderListEditor(filepath string) string {
 		}
 	}
 
+	// generate filepath input - use datalist for new files, simple input for editing
+	var filepathInputHTML string
+	if isEdit {
+		filepathInputHTML = fmt.Sprintf(`<input type="text" name="filepath" value="%s" readonly required class="form-input" />`, filepath)
+	} else {
+		datalistInput := GenerateDatalistInput("filepath-input", "filepath", "", translation.SprintfForRequest(lang, "path/to/file.list"), "/api/files/folder-suggestions")
+		// add required attribute
+		filepathInputHTML = strings.Replace(datalistInput, `class="form-input"`, `class="form-input" required`, 1)
+	}
+
 	return fmt.Sprintf(`
 <div id="component-list-editor">
 
 	<form hx-post="%s" hx-target="#editor-status" id="list-editor-form">
 		<div class="form-group">
 			<label>%s:</label>
-			<input type="text" name="filepath" value="%s" placeholder="%s" %s required />
+			%s
 		</div>
 
 		<div class="controls">
@@ -598,9 +604,7 @@ func RenderListEditor(filepath string) string {
 	`,
 		action,
 		translation.SprintfForRequest(lang, "file path"),
-		filepath,
-		translation.SprintfForRequest(lang, "path/to/file.list"),
-		pathReadonly,
+		filepathInputHTML,
 		translation.SprintfForRequest(lang, "add item"),
 		translation.SprintfForRequest(lang, "add nested item"),
 		translation.SprintfForRequest(lang, "bold"),

@@ -380,7 +380,10 @@ func RenderIndexEditor(filePath string) (string, error) {
 	if !isEdit {
 		html.WriteString(`<div class="form-group">`)
 		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file path")))
-		html.WriteString(fmt.Sprintf(`<input type="text" name="filepath" class="form-input" placeholder="%s" required/>`, translation.SprintfForRequest(configmanager.GetLanguage(), "path/to/file")))
+		datalistInput := GenerateDatalistInput("filepath-input", "filepath", "", translation.SprintfForRequest(configmanager.GetLanguage(), "path/to/file"), "/api/files/folder-suggestions")
+		// add required attribute
+		datalistInput = strings.Replace(datalistInput, `class="form-input"`, `class="form-input" required`, 1)
+		html.WriteString(datalistInput)
 		html.WriteString(`</div>`)
 	} else {
 		html.WriteString(fmt.Sprintf(`<input type="hidden" name="filepath" value="%s"/>`, filePath))

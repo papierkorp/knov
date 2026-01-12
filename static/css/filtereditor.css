@@ -30,6 +30,49 @@
     padding-bottom: 8px;
 }
 
+/* Enhanced filter editor form styling - match new markdown file design */
+#page-filenew .filter-form-container .form-group,
+#page-fileedit .filter-form-container .form-group {
+    margin-bottom: 16px;
+}
+
+#page-filenew .filter-form-container .form-group label,
+#page-fileedit .filter-form-container .form-group label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+#page-filenew .filter-form-container input[type="text"],
+#page-fileedit .filter-form-container input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+#page-filenew .filter-form-container input[type="text"]:focus,
+#page-fileedit .filter-form-container input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+#page-filenew .filter-form-container input[type="text"]::placeholder,
+#page-fileedit .filter-form-container input[type="text"]::placeholder {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
 #page-filenew .filter-criteria-row,
 #page-fileedit .filter-criteria-row {
     display: grid;

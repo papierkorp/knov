@@ -30,7 +30,10 @@ func RenderFilterFormWithAction(config *filter.Config, action string, filePath s
 	if includeFilePathInput {
 		html.WriteString(`<div class="form-group">`)
 		html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "file path") + `:</label>`)
-		html.WriteString(`<input type="text" name="filepath" placeholder="` + translation.SprintfForRequest(configmanager.GetLanguage(), "filters/my-filter") + `" required />`)
+		datalistInput := GenerateDatalistInput("filepath-input", "filepath", "", translation.SprintfForRequest(configmanager.GetLanguage(), "filters/my-filter"), "/api/files/folder-suggestions")
+		// add required attribute
+		datalistInput = strings.Replace(datalistInput, `class="form-input"`, `class="form-input" required`, 1)
+		html.WriteString(datalistInput)
 		html.WriteString(`</div>`)
 	} else if filePath != "" {
 		// for editing, include filepath as hidden input

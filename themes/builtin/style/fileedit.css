@@ -726,3 +726,201 @@ body[data-dark-mode="true"] #page-fileedit .entry-controls .btn-remove:hover,
 body[data-dark-mode="true"] #page-filenew .entry-controls .btn-remove:hover {
     background: var(--error-bg);
 }
+
+/* MOC/Index Editor Styling - Enhanced buttons and file path input */
+#page-fileedit .index-form-container,
+#page-filenew .index-form-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+}
+
+#page-fileedit .index-form-container h4,
+#page-filenew .index-form-container h4 {
+    color: var(--text);
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+}
+
+/* Enhanced file path input for MOC/journal/todo/filter - match new markdown file styling */
+#page-fileedit .index-form-container .form-group,
+#page-filenew .index-form-container .form-group {
+    margin-bottom: 16px;
+}
+
+#page-fileedit .index-form-container .form-group label,
+#page-filenew .index-form-container .form-group label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+#page-fileedit .index-form-container .form-input,
+#page-filenew .index-form-container .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+#page-fileedit .index-form-container .form-input:focus,
+#page-filenew .index-form-container .form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+#page-fileedit .index-form-container .form-input::placeholder,
+#page-filenew .index-form-container .form-input::placeholder {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Enhanced MOC action buttons - more appealing design */
+#page-fileedit .index-form-container .form-actions,
+#page-filenew .index-form-container .form-actions {
+    display: flex;
+    gap: 12px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+#page-fileedit .index-form-container .btn-secondary,
+#page-filenew .index-form-container .btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+#page-fileedit .index-form-container .btn-secondary:hover,
+#page-filenew .index-form-container .btn-secondary:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+#page-fileedit .index-form-container .btn-secondary:active,
+#page-filenew .index-form-container .btn-secondary:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Add icons to buttons for better visual appeal */
+#page-fileedit .index-form-container .btn-secondary:before,
+#page-filenew .index-form-container .btn-secondary:before {
+    content: "➕";
+    font-size: 0.8em;
+    margin-right: 2px;
+}
+
+/* Specific icons for different button types */
+#page-fileedit
+    .index-form-container
+    .btn-secondary[hx-vals*='"type":"separator"']:before,
+#page-filenew
+    .index-form-container
+    .btn-secondary[hx-vals*='"type":"separator"']:before {
+    content: "━";
+}
+
+#page-fileedit
+    .index-form-container
+    .btn-secondary[hx-vals*='"type":"file"']:before,
+#page-filenew
+    .index-form-container
+    .btn-secondary[hx-vals*='"type":"file"']:before {
+    content: "📄";
+}
+
+#page-fileedit
+    .index-form-container
+    .btn-secondary[hx-vals*='"type":"title"']:before,
+#page-filenew
+    .index-form-container
+    .btn-secondary[hx-vals*='"type":"title"']:before {
+    content: "📝";
+}
+
+/* Enhanced save button styling */
+#page-fileedit .index-form-container .btn-primary,
+#page-filenew .index-form-container .btn-primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#page-fileedit .index-form-container .btn-primary:hover,
+#page-filenew .index-form-container .btn-primary:hover {
+    background: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+#page-fileedit .index-form-container .btn-primary:active,
+#page-filenew .index-form-container .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode adjustments for MOC editor */
+body[data-dark-mode="true"] #page-fileedit .index-form-container,
+body[data-dark-mode="true"] #page-filenew .index-form-container {
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+
+body[data-dark-mode="true"] #page-fileedit .index-form-container .btn-secondary,
+body[data-dark-mode="true"] #page-filenew .index-form-container .btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+body[data-dark-mode="true"]
+    #page-fileedit
+    .index-form-container
+    .btn-secondary:hover,
+body[data-dark-mode="true"]
+    #page-filenew
+    .index-form-container
+    .btn-secondary:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}

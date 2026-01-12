@@ -10,6 +10,44 @@
     margin: 0;
 }
 
+/* Enhanced form styling for list editor - match new markdown file design */
+#component-list-editor .form-group {
+    margin-bottom: 16px;
+}
+
+#component-list-editor .form-group label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+#component-list-editor input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+#component-list-editor input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+#component-list-editor input[type="text"]::placeholder {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
 #component-list-editor .item-row {
     display: flex;
     align-items: center;
