@@ -1188,6 +1188,26 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/files/folder-suggestions": {
+            "get": {
+                "description": "Returns folder path suggestions for file creation form",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get folder path suggestions for datalist",
+                "responses": {
+                    "200": {
+                        "description": "datalist options html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/form": {
             "get": {
                 "produces": [

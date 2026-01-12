@@ -107,7 +107,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if filepath == "" {
 		// no filepath and no filetype provided, default to markdown editor for new files
-		html = render.RenderMarkdownEditorForm("")
+		html = render.RenderMarkdownEditorForm("", "")
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
 		return
@@ -131,7 +131,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	// render the appropriate editor
 	switch editorType {
 	case editorTypeMarkdown:
-		html = render.RenderMarkdownEditorForm(filepath)
+		html = render.RenderMarkdownEditorForm(filepath, filetype)
 	case editorTypeTextarea:
 		html = render.RenderTextareaEditorComponent(filepath, content)
 	case editorTypeList:
@@ -151,7 +151,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 			html = render.RenderTextareaEditorComponent(filepath, content)
 		}
 	default:
-		html = render.RenderMarkdownEditorForm(filepath)
+		html = render.RenderMarkdownEditorForm(filepath, "")
 	}
 
 	w.Header().Set("Content-Type", "text/html")

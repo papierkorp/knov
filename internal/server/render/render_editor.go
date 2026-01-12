@@ -14,7 +14,7 @@ import (
 )
 
 // RenderMarkdownEditorForm renders a markdown editor form for file creation/editing
-func RenderMarkdownEditorForm(filePath string) string {
+func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
 	content := ""
 	isEdit := filePath != ""
 
@@ -33,12 +33,43 @@ func RenderMarkdownEditorForm(filePath string) string {
 		cancelURL = fmt.Sprintf("/files/%s", filePath)
 	}
 
-	return fmt.Sprintf(`
+	// determine filetype for new files
+	var currentFiletype string
+	if len(filetype) > 0 {
+		currentFiletype = filetype[0]
+	}
+
+	// add filepath input for new files (except fleeting)
+	filepathInput := ""
+	if !isEdit {
+		if currentFiletype == "fleeting" {
+			// for fleeting files, auto-generate filename and hide from user
+			filepathInput = fmt.Sprintf(`<input type="hidden" name="filetype" value="%s" />`, currentFiletype)
+		} else {
+			filepathInput = fmt.Sprintf(`
+				<div class="form-group">
+					<label for="filepath-input">%s</label>
+					<input type="text" id="filepath-input" name="filepath" required placeholder="%s" class="form-input" list="folder-suggestions" />
+					<datalist id="folder-suggestions" hx-get="/api/files/folder-suggestions" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></datalist>
+				</div>`,
+				translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
+				translation.SprintfForRequest(configmanager.GetLanguage(), "my-file.md"))
+
+			// add hidden filetype input for new files
+			if currentFiletype != "" {
+				filepathInput += fmt.Sprintf(`<input type="hidden" name="filetype" value="%s" />`, currentFiletype)
+			}
+		}
+	} else {
+		filepathInput = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filePath)
+	}
+
+	formTemplate := `
 		<form hx-post="%s" hx-target="#editor-status" class="file-form">
+			%s
 			<div class="form-group">
 				<div id="markdown-editor"></div>
 				<input type="hidden" name="content" id="editor-content" />
-				<input type="hidden" name="filepath" value="%s" />
 			</div>
 			<div class="form-actions">
 				<button type="submit" class="btn-primary">%s</button>
@@ -62,9 +93,17 @@ func RenderMarkdownEditorForm(filePath string) string {
 				});
 			})();
 		</script>
-	`, action,
-		filePath,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "save file"),
+	`
+
+	// determine save button text based on filetype
+	saveButtonText := translation.SprintfForRequest(configmanager.GetLanguage(), "save file")
+	if currentFiletype == "fleeting" && !isEdit {
+		saveButtonText = translation.SprintfForRequest(configmanager.GetLanguage(), "save note")
+	}
+
+	return fmt.Sprintf(formTemplate, action,
+		filepathInput,
+		saveButtonText,
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
 		jsEscapeString(content))

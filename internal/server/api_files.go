@@ -19,7 +19,40 @@ import (
 	"knov/internal/parser"
 	"knov/internal/server/render"
 	"knov/internal/translation"
+	"knov/internal/utils"
 )
+
+// @Summary Get folder path suggestions for datalist
+// @Description Returns folder path suggestions for file creation form
+// @Tags files
+// @Produce html
+// @Success 200 {string} string "datalist options html"
+// @Router /api/files/folder-suggestions [get]
+func handleAPIGetFolderSuggestions(w http.ResponseWriter, r *http.Request) {
+	// get cached folder paths, fallback to live data if needed
+	folderPaths, err := files.GetAllFolderPathsFromSystemData()
+	if err != nil {
+		logging.LogError("failed to get cached folder paths, fallback to live data: %v", err)
+		// fallback to live data
+		folderPaths, err = files.GetAllFolderPaths()
+		if err != nil {
+			logging.LogError("failed to get folder paths: %v", err)
+			w.Header().Set("Content-Type", "text/html")
+			w.Write([]byte(""))
+			return
+		}
+	}
+
+	var html strings.Builder
+	for _, folderPath := range folderPaths {
+		// add suggestion with placeholder filename
+		suggestion := folderPath + "filename.md"
+		html.WriteString(fmt.Sprintf(`<option value="%s"></option>`, suggestion))
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(html.String()))
+}
 
 // @Summary Get folder structure
 // @Tags files
@@ -189,12 +222,37 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filePath := r.FormValue("filepath")
+	formFiletype := r.FormValue("filetype")
+	content := r.FormValue("content")
+
+	// auto-generate filepath for fleeting files
+	if filePath == "" && formFiletype == "fleeting" {
+		// generate unique filename from first line of content
+		filename := generateUniqueFleetingFilename(content)
+		filePath = fmt.Sprintf("fleeting/%s.md", filename)
+		logging.LogInfo("auto-generated fleeting filepath: %s", filePath)
+	}
+
 	if filePath == "" {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
 		return
 	}
 
-	content := r.FormValue("content")
+	// check file extension and add .md if missing for markdown files
+	if !strings.Contains(filePath, ".") {
+		// no extension provided, add appropriate extension based on filetype
+		switch formFiletype {
+		case "todo", "fleeting", "literature", "permanent", "moc":
+			filePath = filePath + ".md"
+		case "filter":
+			filePath = filePath + ".filter"
+		case "journaling":
+			filePath = filePath + ".list"
+		default:
+			filePath = filePath + ".md"
+		}
+	}
+
 	fullPath := contentStorage.ToDocsPath(filePath)
 
 	// check if file exists (to determine if this is creation or update)
@@ -219,6 +277,46 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo("saved file: %s", filePath)
+
+	// create metadata for new files
+	if isNewFile {
+		// determine filetype based on form parameter or default to permanent
+		var filetype files.Filetype = files.FileTypePermanent // default
+
+		formFiletype := r.FormValue("filetype")
+		if formFiletype != "" {
+			switch formFiletype {
+			case "todo":
+				filetype = files.FileTypeTodo
+			case "fleeting":
+				filetype = files.FileTypeFleeting
+			case "literature":
+				filetype = files.FileTypeLiterature
+			case "permanent":
+				filetype = files.FileTypePermanent
+			case "moc":
+				filetype = files.FileTypeMOC
+			case "filter":
+				filetype = files.FileTypeFilter
+			case "journaling":
+				filetype = files.FileTypeJournaling
+			default:
+				filetype = files.FileTypePermanent
+			}
+		}
+
+		metadata := &files.Metadata{
+			Path:     filePath,
+			FileType: filetype,
+		}
+
+		if err := files.MetaDataSave(metadata); err != nil {
+			logging.LogError("failed to save metadata for new file %s: %v", filePath, err)
+			// don't fail the whole request, just log the error
+		} else {
+			logging.LogInfo("created metadata for new file: %s (filetype: %s)", filePath, filetype)
+		}
+	}
 
 	// if this was a new file creation, redirect to the file view
 	if isNewFile {
@@ -736,4 +834,37 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 	// redirect to browse or home page
 	w.Header().Set("HX-Redirect", "/browse")
 	w.WriteHeader(http.StatusOK)
+}
+
+// generateUniqueFleetingFilename creates a unique sanitized filename, adding numbers if duplicates exist
+func generateUniqueFleetingFilename(content string) string {
+	// get base filename from content
+	baseFilename := utils.SanitizeFilename(content, 20)
+	filename := baseFilename
+	counter := 2
+
+	// check if file exists and increment counter until we find a unique name
+	for {
+		testPath := fmt.Sprintf("fleeting/%s.md", filename)
+		fullTestPath := contentStorage.ToDocsPath(testPath)
+
+		// check if file exists
+		if _, err := os.Stat(fullTestPath); os.IsNotExist(err) {
+			// file doesn't exist, we can use this filename
+			break
+		}
+
+		// file exists, try with counter
+		filename = fmt.Sprintf("%s-%d", baseFilename, counter)
+		counter++
+
+		// safety check to prevent infinite loop
+		if counter > 100 {
+			// fallback to timestamp if we somehow can't find a unique name
+			logging.LogWarning("could not generate unique fleeting filename after 100 attempts, falling back to timestamp")
+			return time.Now().Format("2006-01-02-150405")
+		}
+	}
+
+	return filename
 }

@@ -1192,6 +1192,19 @@ paths:
       summary: Get folder structure
       tags:
       - files
+  /api/files/folder-suggestions:
+    get:
+      description: Returns folder path suggestions for file creation form
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: datalist options html
+          schema:
+            type: string
+      summary: Get folder path suggestions for datalist
+      tags:
+      - files
   /api/files/form:
     get:
       parameters:

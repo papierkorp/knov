@@ -1,6 +1,10 @@
 {{ define "content" }}
 <div id="page-filenew">
-    <h1>{{ T "Create a New" }} {{ .FileType }}</h1>
+    {{ if eq .FileType "fleeting" }}
+        <h1>{{ T "Quick Note" }}</h1>
+    {{ else }}
+        <h1>{{ T "Create a New" }} {{ .FileType }}</h1>
+    {{ end }}
 	<div class="file-create-form">
 		<div
 			hx-get="/api/editor?filetype={{ .FileType }}"

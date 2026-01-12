@@ -3,6 +3,68 @@
     margin-bottom: 12px;
 }
 
+/* form description styling */
+#page-filenew .form-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    font-style: italic;
+}
+
+/* file creation form styles */
+#page-filenew .file-form .form-group {
+    margin-bottom: 16px;
+}
+
+#page-filenew .file-form .form-group label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+#page-filenew .file-form .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+#page-filenew .file-form .form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+#page-filenew .file-form .form-input[list] {
+    position: relative;
+}
+
+#page-filenew .file-form datalist {
+    position: absolute;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    width: 100%;
+    top: 100%;
+    left: 0;
+}
+
+#page-filenew .file-form .form-actions {
+    margin-top: 16px;
+}
+
 /* move write/preview tabs to top right */
 #page-fileedit .toastui-editor-md-tab-container,
 #page-filenew .toastui-editor-md-tab-container {

@@ -3,6 +3,7 @@ package files
 
 import (
 	"encoding/json"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -17,6 +18,7 @@ const (
 	CacheKeyTags          CacheKey = "all_tags"
 	CacheKeyCollections   CacheKey = "all_collections"
 	CacheKeyFolders       CacheKey = "all_folders"
+	CacheKeyFolderPaths   CacheKey = "all_folder_paths"
 	CacheKeyPARAProjects  CacheKey = "all_para_projects"
 	CacheKeyPARAreas      CacheKey = "all_para_areas"
 	CacheKeyPARAResources CacheKey = "all_para_resources"
@@ -447,6 +449,7 @@ type MetadataCollector struct {
 	Tags          map[string]bool
 	Collections   map[string]bool
 	Folders       map[string]bool
+	FolderPaths   map[string]bool
 	PARAProjects  map[string]bool
 	PARAreas      map[string]bool
 	PARAResources map[string]bool
@@ -460,6 +463,7 @@ func NewMetadataCollector() *MetadataCollector {
 		Tags:          make(map[string]bool),
 		Collections:   make(map[string]bool),
 		Folders:       make(map[string]bool),
+		FolderPaths:   make(map[string]bool),
 		PARAProjects:  make(map[string]bool),
 		PARAreas:      make(map[string]bool),
 		PARAResources: make(map[string]bool),
@@ -488,6 +492,17 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 	// collect folders
 	if metadata.Folder != "" {
 		mc.Folders[metadata.Folder] = true
+	}
+
+	// collect folder paths from file path
+	dir := filepath.Dir(filePath)
+	if dir != "." && dir != "" {
+		// generate all parent paths: xxx/, xxx/yyy/, xxx/yyy/zzz/
+		parts := strings.Split(dir, string(filepath.Separator))
+		for i := 1; i <= len(parts); i++ {
+			path := strings.Join(parts[:i], "/") + "/"
+			mc.FolderPaths[path] = true
+		}
 	}
 
 	// collect PARA data
@@ -522,6 +537,9 @@ func (mc *MetadataCollector) SaveAllToCache() error {
 		return err
 	}
 	if err := saveStringListToCache(CacheKeyFolders, setToSortedSlice(mc.Folders)); err != nil {
+		return err
+	}
+	if err := saveStringListToCache(CacheKeyFolderPaths, setToSortedSlice(mc.FolderPaths)); err != nil {
 		return err
 	}
 	if err := saveStringListToCache(CacheKeyPARAProjects, setToSortedSlice(mc.PARAProjects)); err != nil {
@@ -567,6 +585,55 @@ func SaveAllSystemDataToCache() error {
 
 	logging.LogInfo("system metadata cache update completed")
 	return nil
+}
+
+// GetAllFolderPathsFromSystemData retrieves cached folder path suggestions from system storage
+func GetAllFolderPathsFromSystemData() ([]string, error) {
+	return getStringListFromCache(CacheKeyFolderPaths)
+}
+
+// GetAllFolderPaths returns all unique folder paths for suggestions
+// For xxx/yyy/zzz it returns: xxx/, xxx/yyy/, xxx/yyy/zzz/
+func GetAllFolderPaths() ([]string, error) {
+	allFiles, err := GetAllFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	folderPaths := make(map[string]bool)
+
+	for _, file := range allFiles {
+		// get directory path
+		dir := filepath.Dir(file.Path)
+		if dir == "." || dir == "" {
+			continue
+		}
+
+		// generate all parent paths
+		parts := strings.Split(dir, string(filepath.Separator))
+		for i := 1; i <= len(parts); i++ {
+			path := strings.Join(parts[:i], "/") + "/"
+			folderPaths[path] = true
+		}
+	}
+
+	var result []string
+	for path := range folderPaths {
+		result = append(result, path)
+	}
+
+	slices.Sort(result)
+	return result, nil
+}
+
+// SaveAllFolderPathsToSystemData saves all folder path suggestions to system storage
+func SaveAllFolderPathsToSystemData() error {
+	folderPaths, err := GetAllFolderPaths()
+	if err != nil {
+		return err
+	}
+
+	return saveStringListToCache(CacheKeyFolderPaths, folderPaths)
 }
 
 // setToSortedSlice converts a map[string]bool to a sorted slice
