@@ -210,3 +210,6 @@ static/temp_extracted.go
 *.db
 *.db-wal
 *.db-shm
+internal/translation/catalog.go
+internal/translation/locales/*/out.gotext.json
+internal/translation/temp_extracted.go
