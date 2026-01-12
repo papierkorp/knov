@@ -86,62 +86,72 @@
     padding: 8px 12px;
 }
 
-/* Add button */
-#component-header .btn-add {
-    font-size: 2em;
-    color: var(--text);
-    background: inherit;
-    border: none;
-    padding: 0 4px;
-}
-
-#component-header .btn-add:hover {
-    background: var(--accent);
-    color: var(--bg);
-}
-
-/* Dropdown */
-#component-header .dropdown-navbar {
-    position: relative;
-}
-
+/* Dropdown buttons - standardized styling */
+#component-header .btn-add,
+#component-header .btn-edit,
 #component-header .btn-menu-dropdown {
-    font-size: 2em;
+    position: relative;
+    font-size: 1.5em;
     color: var(--text);
     background: inherit;
     border: none;
-    padding: 0 4px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    cursor: pointer;
 }
 
+#component-header .btn-add:hover,
+#component-header .btn-edit:hover,
 #component-header .btn-menu-dropdown:hover {
     background: var(--accent);
     color: var(--bg);
 }
 
-#component-header .dropdown-navbar-content {
-    display: none;
-    position: absolute;
-    right: 0;
+/* Popover dropdown content */
+#component-header .dropdown-navbar-content[popover] {
+    position: fixed;
     background: var(--bg);
     min-width: 160px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: 1;
     border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0;
+    margin: 0;
+    inset: unset;
 }
 
-#component-header .dropdown-navbar-content a {
+#component-header .dropdown-navbar-content[popover] a,
+#component-header .dropdown-navbar-content[popover] button {
     display: block;
     padding: 8px 12px;
     border: none;
+    background: inherit;
+    color: var(--text);
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+    font-size: inherit;
+    text-decoration: none;
+    border-radius: 0;
 }
 
-#component-header .dropdown-navbar-content a:hover {
+#component-header .dropdown-navbar-content[popover] a:first-child,
+#component-header .dropdown-navbar-content[popover] button:first-child {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+#component-header .dropdown-navbar-content[popover] a:last-child,
+#component-header .dropdown-navbar-content[popover] button:last-child {
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+#component-header .dropdown-navbar-content[popover] a:hover,
+#component-header .dropdown-navbar-content[popover] button:hover {
     background: var(--accent);
     color: var(--bg);
-}
-
-#component-header .dropdown-navbar:hover .dropdown-navbar-content {
-    display: block;
 }
 
 /* Search */
@@ -205,5 +215,17 @@
     #component-header .span-header-git-operations a {
         font-size: 14px;
         padding: 2px;
+    }
+
+    /* Mobile popover adjustments */
+    #component-header .dropdown-navbar-content[popover] {
+        min-width: 140px;
+        font-size: 14px;
+    }
+
+    #component-header .dropdown-navbar-content[popover] a,
+    #component-header .dropdown-navbar-content[popover] button {
+        padding: 12px 16px;
+        font-size: 14px;
     }
 }

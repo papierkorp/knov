@@ -5,25 +5,32 @@
 - Go 1.21 or later
 - Git
 - Make
-- Node.js (for frontend tools)
+- Swag CLI: `go install github.com/swaggo/swag/cmd/swag@latest`
+- MinGW-w64 (for Windows cross-compilation): `sudo apt-get install mingw-w64` (Linux) or `brew install mingw-w64` (macOS)
+
 
 ## Quick Start
 
 Clone and setup:
 
-    git clone https://github.com/company/knowledge-system.git
-    cd knowledge-system
-    go mod download
+```bash
+git clone https://github.com/papierkorp/knov.git
+cd knov
+go mod download
+```
 
 Install required tools:
 
-    go install github.com/a-h/templ/cmd/templ@latest
-    go install github.com/swaggo/swag/cmd/swag@latest
-    go install golang.org/x/text/cmd/gotext@latest
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
+go install golang.org/x/text/cmd/gotext@latest
+```
 
 Start development server:
 
-    make dev
+```bash
+make dev
+```
 
 ## Development Workflow
 

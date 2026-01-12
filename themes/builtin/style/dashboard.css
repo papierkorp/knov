@@ -505,51 +505,37 @@
     }
 }
 
-/* Edit button */
-#component-header .btn-edit {
-    font-size: 1.5em;
-    color: var(--text);
-    background: inherit;
+/* Popover styles */
+[popover] {
+    padding: 0;
     border: none;
-    padding: 0 4px;
+    background: transparent;
+    overflow: visible;
 }
 
-#component-header .btn-edit:hover {
-    background: var(--accent);
-    color: var(--bg);
-}
-
-/* Modal styles */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+[popover]::backdrop {
     background: rgba(0, 0, 0, 0.5);
-    z-index: 2000;
-    align-items: center;
-    justify-content: center;
 }
 
-.modal-content {
+[popover] .modal-content {
     background: var(--bg);
     color: var(--text);
     padding: 30px;
     border-radius: 8px;
     min-width: 400px;
     border: 2px solid var(--primary);
+    margin: 20vh auto;
+    position: relative;
 }
 
-.modal-content h3 {
+[popover] .modal-content h3 {
     margin-top: 0;
     color: var(--accent);
     border-bottom: 1px solid var(--primary);
     padding-bottom: 10px;
 }
 
-.modal-content input {
+[popover] .modal-content input {
     width: 100%;
     padding: 10px;
     margin: 15px 0;
@@ -560,13 +546,13 @@
     font-size: 14px;
 }
 
-.modal-actions {
+[popover] .modal-actions {
     display: flex;
     gap: 10px;
     margin-top: 20px;
 }
 
-.modal-actions button {
+[popover] .modal-actions button {
     flex: 1;
     padding: 10px;
     border: none;
@@ -575,6 +561,26 @@
     font-size: 14px;
     font-weight: 500;
     transition: all 0.2s;
+}
+
+/* Responsive popover styles */
+@media (max-width: 768px) {
+    [popover] .modal-content {
+        min-width: auto;
+        width: 90vw;
+        max-width: 400px;
+        margin: 10vh auto;
+        padding: 20px;
+    }
+
+    [popover] .modal-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    [popover] .modal-actions button {
+        flex: none;
+    }
 }
 
 .btn-danger {

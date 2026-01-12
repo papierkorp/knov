@@ -61,47 +61,41 @@
             <a href="/browse">{{T "Browse"}}</a>
             <a href="/latest-changes">{{T "Latest Changes"}}</a>
         </span>
-        <div class="dropdown-navbar">
-            <button class="btn-add">+</button>
-            <div class="dropdown-navbar-content">
-                <a href="/dashboard/new">{{T "Dashboard"}}</a>
-                <a href="/files/new/todo">{{T "Todo"}}</a>
-                <a href="/files/new/fleeting">{{T "Fleeting"}}</a>
-                <a href="/files/new/literature">{{T "Literature"}}</a>
-                <a href="/files/new/permanent">{{T "Permanent"}}</a>
-                <a href="/files/new/moc">{{T "MOC"}}</a>
-                <a href="/files/new/filter">{{T "Filter"}}</a>
-                <a href="/files/new/journaling">{{T "Journaling"}}</a>
-            </div>
+        <button class="btn-add" popovertarget="add-dropdown">+</button>
+        <div id="add-dropdown" popover="auto" class="dropdown-navbar-content">
+            <a href="/dashboard/new">{{T "Dashboard"}}</a>
+            <a href="/files/new/todo">{{T "Todo"}}</a>
+            <a href="/files/new/fleeting">{{T "Fleeting"}}</a>
+            <a href="/files/new/literature">{{T "Literature"}}</a>
+            <a href="/files/new/permanent">{{T "Permanent"}}</a>
+            <a href="/files/new/moc">{{T "MOC"}}</a>
+            <a href="/files/new/filter">{{T "Filter"}}</a>
+            <a href="/files/new/journaling">{{T "Journaling"}}</a>
         </div>
-        <div class="dropdown-navbar" id="edit-dropdown">
-            <button class="btn-edit">
-                <i class="fa fa-pen-to-square"></i>
+        <button class="btn-edit" popovertarget="edit-dropdown-content">
+            <i class="fa fa-pen-to-square"></i>
+        </button>
+        <div id="edit-dropdown-content" popover="auto" class="dropdown-navbar-content">
+            <a href="#" id="edit-link">{{T "Edit"}}</a>
+            <a href="#" id="history-link">{{T "History"}}</a>
+            {{ if eq .FileType "dokuwiki" }}
+            <a href="#" id="export-markdown-link">{{T "Export to Markdown"}}</a>
+            {{ end }}
+            <button type="button" popovertarget="rename-modal">
+                {{T "Rename"}}
             </button>
-            <div class="dropdown-navbar-content" id="edit-dropdown-content">
-                <a href="#" id="edit-link">{{T "Edit"}}</a>
-                <a href="#" id="history-link">{{T "History"}}</a>
-                {{ if eq .FileType "dokuwiki" }}
-                <a href="#" id="export-markdown-link">{{T "Export to Markdown"}}</a>
-                {{ end }}
-                <a href="#" onclick="document.getElementById('rename-modal').style.display='flex'">
-                    {{T "Rename"}}
-                </a>
-                <a href="#" onclick="document.getElementById('delete-modal').style.display='flex'">
-                    {{T "Delete"}}
-                </a>
-            </div>
+            <button type="button" popovertarget="delete-modal">
+                {{T "Delete"}}
+            </button>
         </div>
-        <div class="dropdown-navbar">
-            <button class="btn-menu-dropdown">
-                <i class="fa fa-bars" aria-hidden="true"></i>
-            </button>
-            <div class="dropdown-navbar-content">
-                <a href="/">{{T "Home"}}</a>
-                <a href="/help">{{T "Help"}}</a>
-                <a href="/settings">{{T "Settings"}}</a>
-                <a href="/admin">{{T "Admin"}}</a>
-            </div>
+        <button class="btn-menu-dropdown" popovertarget="menu-dropdown">
+            <i class="fa fa-bars" aria-hidden="true"></i>
+        </button>
+        <div id="menu-dropdown" popover="auto" class="dropdown-navbar-content">
+            <a href="/">{{T "Home"}}</a>
+            <a href="/help">{{T "Help"}}</a>
+            <a href="/settings">{{T "Settings"}}</a>
+            <a href="/admin">{{T "Admin"}}</a>
         </div>
     </div>
 </header>
@@ -109,17 +103,14 @@
 {{ end }}
 
 {{ define "edit" }}
-<div id="rename-modal" class="modal">
+<div id="rename-modal" popover>
     <div class="modal-content">
         <h3>{{T "Rename"}}</h3>
         <form id="rename-form" hx-post="" hx-target="#rename-result">
             <input type="text" name="name" id="rename-input" placeholder="Enter new file path (e.g., folder/newname.md)" required/>
             <div class="modal-actions">
                 <button type="submit" class="btn-primary">{{T "Rename"}}</button>
-                <button
-                    type="button"
-                    class="btn-secondary"
-                    onclick="document.getElementById('rename-modal').style.display='none'">
+                <button type="button" class="btn-secondary" popovertarget="rename-modal" popovertargetaction="hide">
                     {{T "Cancel"}}
                 </button>
             </div>
@@ -127,17 +118,14 @@
         <div id="rename-result"></div>
     </div>
 </div>
-<div id="delete-modal" class="modal">
+<div id="delete-modal" popover>
     <div class="modal-content">
         <h3>{{T "Delete"}}</h3>
         <p>{{T "Are you sure?"}}</p>
         <form id="delete-form" hx-delete="" hx-target="#delete-result">
             <div class="modal-actions">
                 <button type="submit" class="btn-danger">{{T "Delete"}}</button>
-                <button
-                    type="button"
-                    class="btn-secondary"
-                    onclick="document.getElementById('delete-modal').style.display='none'">
+                <button type="button" class="btn-secondary" popovertarget="delete-modal" popovertargetaction="hide">
                     {{T "Cancel"}}
                 </button>
             </div>
@@ -166,12 +154,46 @@ if (fileMatch && !path.includes('/edit/')) {
     document.getElementById('rename-form').setAttribute('hx-post', `/api/files/rename/${filepath}`);
     document.getElementById('delete-form').setAttribute('hx-delete', `/api/files/delete/${filepath}`);
     document.getElementById('rename-input').value = filepath; // populate with full filepath for directory moves
-    document.getElementById('edit-dropdown').style.display = 'block';
 
     {{ if eq .FileType "dokuwiki" }}
     // set export to markdown link for dokuwiki files
     document.getElementById('export-markdown-link').href = `/api/files/export/markdown?filepath=${encodeURIComponent(filepath)}`;
     {{ end }}
 }
+
+// Position popovers relative to their trigger buttons
+function positionPopover(popoverId) {
+    const trigger = document.querySelector(`[popovertarget="${popoverId}"]`);
+    const popover = document.getElementById(popoverId);
+
+    if (!trigger || !popover) return;
+
+    popover.addEventListener('beforetoggle', (event) => {
+        if (event.newState === 'open') {
+            requestAnimationFrame(() => {
+                const triggerRect = trigger.getBoundingClientRect();
+                const popoverRect = popover.getBoundingClientRect();
+
+                // Position below and align to right edge of trigger
+                const left = triggerRect.right - popoverRect.width;
+                const top = triggerRect.bottom + 8;
+
+                // Keep within viewport
+                const maxLeft = window.innerWidth - popoverRect.width - 8;
+                const maxTop = window.innerHeight - popoverRect.height - 8;
+
+                popover.style.left = Math.max(8, Math.min(left, maxLeft)) + 'px';
+                popover.style.top = Math.max(8, Math.min(top, maxTop)) + 'px';
+            });
+        }
+    });
+}
+
+// Setup positioning for all dropdowns
+document.addEventListener('DOMContentLoaded', () => {
+    positionPopover('add-dropdown');
+    positionPopover('edit-dropdown-content');
+    positionPopover('menu-dropdown');
+});
 </script>
 {{ end }}
