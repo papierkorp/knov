@@ -19,6 +19,15 @@ type UserSettings struct {
 	Theme         string           `json:"theme"`
 	Language      string           `json:"language"`
 	ThemeSettings AllThemeSettings `json:"themeSettings,omitempty"`
+	MediaSettings MediaSettings    `json:"mediaSettings,omitempty"`
+}
+
+// MediaSettings contains media upload and management settings
+type MediaSettings struct {
+	MaxUploadSizeMB       int      `json:"maxUploadSizeMB"`
+	AllowedMimeTypes      []string `json:"allowedMimeTypes"`
+	OrphanedMediaBehavior string   `json:"orphanedMediaBehavior"` // "keep" or "manual"
+	OrphanedMediaAgeDays  int      `json:"orphanedMediaAgeDays"`
 }
 
 // InitUserSettings initializes user settings from storage
@@ -27,6 +36,12 @@ func InitUserSettings() {
 		Theme:         "builtin",
 		Language:      "en",
 		ThemeSettings: make(AllThemeSettings),
+		MediaSettings: MediaSettings{
+			MaxUploadSizeMB:       10,
+			AllowedMimeTypes:      []string{"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml", "application/pdf"},
+			OrphanedMediaBehavior: "manual",
+			OrphanedMediaAgeDays:  7,
+		},
 	}
 
 	data, err := configStorage.Get("settings")

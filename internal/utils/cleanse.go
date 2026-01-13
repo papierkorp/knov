@@ -111,3 +111,54 @@ func SanitizeFilename(content string, maxLength int) string {
 
 	return filename
 }
+
+// SanitizeMediaFilename sanitizes a media filename for safe storage
+func SanitizeMediaFilename(filename string) string {
+	if filename == "" {
+		return "media-" + time.Now().Format("2006-01-02-150405")
+	}
+
+	// sanitize for filesystem - keep only alphanumeric, hyphens, underscores, dots, and spaces
+	var sanitized strings.Builder
+	for _, r := range filename {
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' || r == '_' || r == '.' || r == ' ' {
+			sanitized.WriteRune(r)
+		}
+	}
+
+	result := sanitized.String()
+	result = strings.TrimSpace(result)
+
+	// replace spaces with hyphens
+	result = strings.ReplaceAll(result, " ", "-")
+	// remove multiple consecutive hyphens
+	for strings.Contains(result, "--") {
+		result = strings.ReplaceAll(result, "--", "-")
+	}
+	// trim leading/trailing hyphens
+	result = strings.Trim(result, "-")
+
+	if result == "" {
+		return "media-" + time.Now().Format("2006-01-02-150405")
+	}
+
+	// ensure filename doesn't exceed 255 characters (filesystem limit)
+	if len(result) > 255 {
+		// find the last dot to preserve extension
+		lastDot := strings.LastIndex(result, ".")
+		if lastDot > 0 && lastDot < len(result)-1 {
+			ext := result[lastDot:]
+			name := result[:lastDot]
+			maxNameLength := 255 - len(ext)
+			if maxNameLength > 0 {
+				result = name[:maxNameLength] + ext
+			} else {
+				result = result[:255]
+			}
+		} else {
+			result = result[:255]
+		}
+	}
+
+	return result
+}

@@ -1971,6 +1971,73 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/media/upload": {
+            "post": {
+                "description": "Upload a media file with context path for directory mirroring",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Upload media file",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Media file to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Current file being edited (for directory structure)",
+                        "name": "context_path",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Upload success with file path",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "invalid request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "413": {
+                        "description": "file too large",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "415": {
+                        "description": "unsupported file type",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "upload failed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata": {
             "get": {
                 "description": "Get metadata for a file by providing filepath as query parameter",
@@ -3877,7 +3944,10 @@ const docTemplate = `{
                 "moc",
                 "permanent",
                 "filter",
-                "journaling"
+                "journaling",
+                "image",
+                "video",
+                "pdf"
             ],
             "x-enum-comments": {
                 "FileTypeMOC": "maps of content - indexes to link related notes"
@@ -3889,6 +3959,9 @@ const docTemplate = `{
                 "maps of content - indexes to link related notes",
                 "",
                 "",
+                "",
+                "",
+                "",
                 ""
             ],
             "x-enum-varnames": [
@@ -3898,7 +3971,10 @@ const docTemplate = `{
                 "FileTypeMOC",
                 "FileTypePermanent",
                 "FileTypeFilter",
-                "FileTypeJournaling"
+                "FileTypeJournaling",
+                "FileTypeImage",
+                "FileTypeVideo",
+                "FileTypePDF"
             ]
         },
         "files.FiletypeCount": {

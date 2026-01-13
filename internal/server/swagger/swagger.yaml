@@ -131,6 +131,9 @@ definitions:
     - permanent
     - filter
     - journaling
+    - image
+    - video
+    - pdf
     type: string
     x-enum-comments:
       FileTypeMOC: maps of content - indexes to link related notes
@@ -142,6 +145,9 @@ definitions:
     - ""
     - ""
     - ""
+    - ""
+    - ""
+    - ""
     x-enum-varnames:
     - FileTypeTodo
     - FileTypeFleeting
@@ -150,6 +156,9 @@ definitions:
     - FileTypePermanent
     - FileTypeFilter
     - FileTypeJournaling
+    - FileTypeImage
+    - FileTypeVideo
+    - FileTypePDF
   files.FiletypeCount:
     additionalProperties:
       type: integer
@@ -1717,6 +1726,51 @@ paths:
       summary: Get used links for a file
       tags:
       - links
+  /api/media/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a media file with context path for directory mirroring
+      parameters:
+      - description: Media file to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Current file being edited (for directory structure)
+        in: formData
+        name: context_path
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: Upload success with file path
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "413":
+          description: file too large
+          schema:
+            type: string
+        "415":
+          description: unsupported file type
+          schema:
+            type: string
+        "500":
+          description: upload failed
+          schema:
+            type: string
+      summary: Upload media file
+      tags:
+      - media
   /api/metadata:
     get:
       description: Get metadata for a file by providing filepath as query parameter

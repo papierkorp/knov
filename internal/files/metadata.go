@@ -27,6 +27,9 @@ const (
 	FileTypePermanent  Filetype = "permanent"
 	FileTypeFilter     Filetype = "filter"
 	FileTypeJournaling Filetype = "journaling"
+	FileTypeImage      Filetype = "image"
+	FileTypeVideo      Filetype = "video"
+	FileTypePDF        Filetype = "pdf"
 
 	StatusDraft     Status = "draft"
 	StatusPublished Status = "published"
@@ -59,6 +62,9 @@ func AllFiletypes() []Filetype {
 		FileTypePermanent,
 		FileTypeFilter,
 		FileTypeJournaling,
+		FileTypeImage,
+		FileTypeVideo,
+		FileTypePDF,
 	}
 }
 
@@ -415,4 +421,11 @@ func MetaDataExportAll() ([]*Metadata, error) {
 	}
 
 	return allMetadata, nil
+}
+
+// ValidateMediaMimeType checks if a MIME type is allowed for media uploads
+func ValidateMediaMimeType(mimeType string) bool {
+	// TODO: implement actual validation using user settings
+	// For now, return true as placeholder
+	return true
 }
