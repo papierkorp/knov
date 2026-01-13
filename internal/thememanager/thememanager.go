@@ -303,6 +303,7 @@ func injectDefaultCSS(html string) string {
     <link href="/static/css/listeditor.css" rel="stylesheet" />
     <link href="/static/css/tableeditor.css" rel="stylesheet" />
     <link href="/static/css/filtereditor.css" rel="stylesheet" />
+    <link href="/static/css/markdowneditor.css" rel="stylesheet" />
 `
 
 	return html[:headCloseIndex] + defaultCSSLinks + html[headCloseIndex:]
