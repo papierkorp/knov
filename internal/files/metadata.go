@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
@@ -425,7 +426,43 @@ func MetaDataExportAll() ([]*Metadata, error) {
 
 // ValidateMediaMimeType checks if a MIME type is allowed for media uploads
 func ValidateMediaMimeType(mimeType string) bool {
-	// TODO: implement actual validation using user settings
-	// For now, return true as placeholder
-	return true
+	if mimeType == "" {
+		logging.LogWarning("empty mime type provided for validation")
+		return false
+	}
+
+	// get current media settings
+	mediaSettings := configmanager.GetUserSettings().MediaSettings
+	allowedTypes := mediaSettings.AllowedMimeTypes
+
+	// if no allowed types configured, deny by default for security
+	if len(allowedTypes) == 0 {
+		logging.LogWarning("no allowed mime types configured, denying upload")
+		return false
+	}
+
+	// normalize MIME type using utils function
+	mimeType = utils.Normalize(mimeType)
+	logging.LogDebug("validating mime type: %s against allowed types: %v", mimeType, allowedTypes)
+
+	// check exact matches first
+	for _, allowedType := range allowedTypes {
+		allowedType = utils.Normalize(allowedType)
+		if allowedType == mimeType {
+			logging.LogDebug("mime type %s allowed (exact match)", mimeType)
+			return true
+		}
+
+		// handle wildcard patterns like "image/*"
+		if strings.HasSuffix(allowedType, "/*") {
+			category := strings.TrimSuffix(allowedType, "/*")
+			if strings.HasPrefix(mimeType, category+"/") {
+				logging.LogDebug("mime type %s allowed (wildcard match: %s)", mimeType, allowedType)
+				return true
+			}
+		}
+	}
+
+	logging.LogWarning("mime type %s not allowed, blocked upload", mimeType)
+	return false
 }

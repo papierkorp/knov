@@ -162,3 +162,8 @@ func SanitizeMediaFilename(filename string) string {
 
 	return result
 }
+
+// Normalize standardizes string input by trimming whitespace and converting to lowercase
+func Normalize(input string) string {
+	return strings.ToLower(strings.TrimSpace(input))
+}

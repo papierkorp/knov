@@ -38,7 +38,7 @@ func InitUserSettings() {
 		ThemeSettings: make(AllThemeSettings),
 		MediaSettings: MediaSettings{
 			MaxUploadSizeMB:       10,
-			AllowedMimeTypes:      []string{"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml", "application/pdf"},
+			AllowedMimeTypes:      []string{"image/*", "application/pdf", "video/mp4", "video/webm"},
 			OrphanedMediaBehavior: "manual",
 			OrphanedMediaAgeDays:  7,
 		},
