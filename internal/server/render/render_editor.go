@@ -85,7 +85,78 @@ func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
 					initialEditType: 'markdown',
 					previewStyle: 'tab',
 					initialValue: %s,
-					theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default'
+					theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default',
+					hooks: {
+						addImageBlobHook: function(blob, callback, source) {
+							// Get current file path from URL - much simpler!
+							const currentPath = window.location.pathname;
+							let contextPath = null;
+
+							// Extract filepath from URLs like /files/path/to/file.md or /files/edit/path/to/file.md
+							if (currentPath.startsWith('/files/edit/')) {
+								contextPath = currentPath.substring('/files/edit/'.length);
+							} else if (currentPath.startsWith('/files/')) {
+								contextPath = currentPath.substring('/files/'.length);
+							}
+
+							if (!contextPath) {
+								alert('Please save the document first to enable image uploads.');
+								return;
+							}
+
+							// Create form data for upload
+							const formData = new FormData();
+							formData.append('file', blob);
+							formData.append('context_path', contextPath);
+
+							// Show upload progress with proper dark mode styling
+							const uploadMessage = document.createElement('div');
+							const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
+							uploadMessage.className = 'upload-notification';
+							uploadMessage.style.cssText = 'position: fixed; top: 10px; right: 10px; padding: 12px 16px; border-radius: 6px; z-index: 9999; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+							uploadMessage.style.backgroundColor = isDarkMode ? '#374151' : '#0ea5e9';
+							uploadMessage.style.color = isDarkMode ? '#f9fafb' : '#ffffff';
+							uploadMessage.textContent = 'Uploading image...';
+							document.body.appendChild(uploadMessage);
+
+							// Upload to media API
+							fetch('/api/media/upload', {
+								method: 'POST',
+								body: formData,
+								headers: {
+									'Accept': 'application/json'
+								}
+							})
+							.then(response => {
+								if (!response.ok) {
+									throw new Error('Upload failed: ' + response.statusText);
+								}
+								return response.json();
+							})
+							.then(data => {
+								// Remove upload message
+								document.body.removeChild(uploadMessage);
+
+								// Insert the uploaded image with relative path
+								const imagePath = 'media/' + data.path;
+								callback(imagePath, blob.name || 'Uploaded Image');
+
+								console.log('Image uploaded successfully:', data);
+							})
+							.catch(error => {
+								// Remove upload message
+								if (document.body.contains(uploadMessage)) {
+									document.body.removeChild(uploadMessage);
+								}
+
+								console.error('Image upload failed:', error);
+								alert('Failed to upload image: ' + error.message);
+
+								// Call callback with empty string to cancel insertion
+								callback('', '');
+							});
+						}
+					}
 				});
 
 				document.querySelector('.file-form').addEventListener('submit', function(e) {
@@ -304,8 +375,7 @@ func ParseMarkdownToIndexConfig(content string) *IndexConfig {
 		}
 
 		// title (## header)
-		if strings.HasPrefix(line, "## ") {
-			title := strings.TrimPrefix(line, "## ")
+		if title, found := strings.CutPrefix(line, "## "); found {
 			config.Entries = append(config.Entries, IndexEntry{
 				Type:  "title",
 				Value: title,
@@ -374,19 +444,19 @@ func RenderIndexEditor(filePath string) (string, error) {
 	isEdit := filePath != ""
 	action := "/api/editor/indexeditor"
 
-	html.WriteString(fmt.Sprintf(`<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" id="index-form">`, action))
+	fmt.Fprintf(&html, `<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" id="index-form">`, action)
 
 	// filepath input for new files
 	if !isEdit {
 		html.WriteString(`<div class="form-group">`)
-		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file path")))
+		fmt.Fprintf(&html, `<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file path"))
 		datalistInput := GenerateDatalistInput("filepath-input", "filepath", "", translation.SprintfForRequest(configmanager.GetLanguage(), "path/to/file"), "/api/files/folder-suggestions")
 		// add required attribute
 		datalistInput = strings.Replace(datalistInput, `class="form-input"`, `class="form-input" required`, 1)
 		html.WriteString(datalistInput)
 		html.WriteString(`</div>`)
 	} else {
-		html.WriteString(fmt.Sprintf(`<input type="hidden" name="filepath" value="%s"/>`, filePath))
+		fmt.Fprintf(&html, `<input type="hidden" name="filepath" value="%s"/>`, filePath)
 	}
 
 	// entries container
@@ -401,15 +471,15 @@ func RenderIndexEditor(filePath string) (string, error) {
 
 	// add entry buttons
 	html.WriteString(`<div class="form-actions">`)
-	html.WriteString(fmt.Sprintf(`<button type="button" hx-post="/api/editor/indexeditor/add-entry" hx-vals='{"type":"separator"}' hx-target="#entries-container" hx-swap="beforeend" class="btn-secondary">%s</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "add separator")))
-	html.WriteString(fmt.Sprintf(`<button type="button" hx-post="/api/editor/indexeditor/add-entry" hx-vals='{"type":"file"}' hx-target="#entries-container" hx-swap="beforeend" class="btn-secondary">%s</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "add file")))
-	html.WriteString(fmt.Sprintf(`<button type="button" hx-post="/api/editor/indexeditor/add-entry" hx-vals='{"type":"title"}' hx-target="#entries-container" hx-swap="beforeend" class="btn-secondary">%s</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "add title")))
+	fmt.Fprintf(&html, `<button type="button" hx-post="/api/editor/indexeditor/add-entry" hx-vals='{"type":"separator"}' hx-target="#entries-container" hx-swap="beforeend" class="btn-secondary">%s</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "add separator"))
+	fmt.Fprintf(&html, `<button type="button" hx-post="/api/editor/indexeditor/add-entry" hx-vals='{"type":"file"}' hx-target="#entries-container" hx-swap="beforeend" class="btn-secondary">%s</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "add file"))
+	fmt.Fprintf(&html, `<button type="button" hx-post="/api/editor/indexeditor/add-entry" hx-vals='{"type":"title"}' hx-target="#entries-container" hx-swap="beforeend" class="btn-secondary">%s</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "add title"))
 	html.WriteString(`</div>`)
 
 	// save button
 	html.WriteString(`<div class="form-actions">`)
 	saveText := translation.SprintfForRequest(configmanager.GetLanguage(), "save index")
-	html.WriteString(fmt.Sprintf(`<button type="submit" class="btn-primary">%s</button>`, saveText))
+	fmt.Fprintf(&html, `<button type="submit" class="btn-primary">%s</button>`, saveText)
 	html.WriteString(`</div>`)
 
 	html.WriteString(`</form>`)
@@ -477,36 +547,36 @@ window.reindexEntries = function() {
 func renderIndexEntryRow(index int, entry IndexEntry) string {
 	var html strings.Builder
 
-	html.WriteString(fmt.Sprintf(`<div class="entry-row" data-entry-index="%d">`, index))
+	fmt.Fprintf(&html, `<div class="entry-row" data-entry-index="%d">`, index)
 
 	// controls on the left
 	html.WriteString(`<div class="entry-controls">`)
-	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, -1)" class="btn-move"><i class="fa-solid fa-arrow-up"></i></button>`, index))
-	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveEntry(%d, 1)" class="btn-move"><i class="fa-solid fa-arrow-down"></i></button>`, index))
+	fmt.Fprintf(&html, `<button type="button" onclick="moveEntry(%d, -1)" class="btn-move"><i class="fa-solid fa-arrow-up"></i></button>`, index)
+	fmt.Fprintf(&html, `<button type="button" onclick="moveEntry(%d, 1)" class="btn-move"><i class="fa-solid fa-arrow-down"></i></button>`, index)
 	html.WriteString(`<button type="button" onclick="removeEntry(this)" class="btn-remove"><i class="fa-solid fa-xmark"></i></button>`)
 	html.WriteString(`</div>`)
 
 	// content on the right
 	html.WriteString(`<div class="entry-content">`)
-	html.WriteString(fmt.Sprintf(`<input type="hidden" name="entries[%d][type]" value="%s"/>`, index, entry.Type))
+	fmt.Fprintf(&html, `<input type="hidden" name="entries[%d][type]" value="%s"/>`, index, entry.Type)
 
 	switch entry.Type {
 	case "separator":
 		html.WriteString(`<div class="entry-separator">`)
-		html.WriteString(fmt.Sprintf(`<span>%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "separator")))
+		fmt.Fprintf(&html, `<span>%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "separator"))
 		html.WriteString(`</div>`)
 
 	case "file":
 		html.WriteString(`<div class="entry-file">`)
-		html.WriteString(fmt.Sprintf(`<label>%s:</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file")))
+		fmt.Fprintf(&html, `<label>%s:</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file"))
 		inputID := fmt.Sprintf("entry-file-%d", index)
 		html.WriteString(GenerateDatalistInput(inputID, fmt.Sprintf("entries[%d][value]", index), entry.Value, translation.SprintfForRequest(configmanager.GetLanguage(), "search files"), "/api/files/list?format=datalist"))
 		html.WriteString(`</div>`)
 
 	case "title":
 		html.WriteString(`<div class="entry-title">`)
-		html.WriteString(fmt.Sprintf(`<label>%s:</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "title")))
-		html.WriteString(fmt.Sprintf(`<input type="text" name="entries[%d][value]" value="%s" class="form-input" placeholder="%s"/>`, index, entry.Value, translation.SprintfForRequest(configmanager.GetLanguage(), "enter title")))
+		fmt.Fprintf(&html, `<label>%s:</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "title"))
+		fmt.Fprintf(&html, `<input type="text" name="entries[%d][value]" value="%s" class="form-input" placeholder="%s"/>`, index, entry.Value, translation.SprintfForRequest(configmanager.GetLanguage(), "enter title"))
 		html.WriteString(`</div>`)
 	}
 
