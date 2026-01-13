@@ -182,7 +182,26 @@ func setTestDataContent() error {
 func createGitOperations(commitMessage string) error {
 	logging.LogInfo("creating git operations")
 
-	// Use the configmanager git initialization instead of manual git init
+	// commit initial files
+	if err := commitGitChanges(commitMessage); err != nil {
+		return err
+	}
+
+	// create test structure
+	if err := createTestStructure(); err != nil {
+		return err
+	}
+
+	// commit test structure
+	if err := commitGitChanges("add test structure"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func commitGitChanges(commitMessage string) error {
+	// use the configmanager git initialization instead of manual git init
 	if err := configmanager.InitGitRepository(); err != nil {
 		return err
 	}
@@ -217,45 +236,21 @@ func createGitOperations(commitMessage string) error {
 		logging.LogError("failed to commit: %v", err)
 	}
 
-	if err := createTestStructure(); err != nil {
-		return err
-	}
-
-	// add all files again
-	_, err = worktree.Add(".")
-	if err != nil {
-		logging.LogError("failed to add test structure files: %v", err)
-	}
-
-	// commit test structure
-	_, err = worktree.Commit("add test structure", &git.CommitOptions{
-		Author: &object.Signature{
-			Name:  "knov",
-			Email: "knov@localhost",
-			When:  time.Now(),
-		},
-	})
-	if err != nil {
-		logging.LogError("failed to commit test structure: %v", err)
-	}
-
 	return nil
 }
 
 func simulateFileChange() error {
 	logging.LogInfo("simulating file changes for version history")
 
-	dataDir := configmanager.GetAppConfig().DataPath
-
 	// simulate file change for git history on getting-started.md
-	gettingStartedPath := filepath.Join(dataDir, "getting-started.md")
+	gettingStartedPath := contentStorage.ToDocsPath("getting-started.md")
 	if content, err := os.ReadFile(gettingStartedPath); err == nil {
 		updatedContent := string(content) + "\n\n## Recent Updates\n- Added troubleshooting section\n- Improved navigation"
 		os.WriteFile(gettingStartedPath, []byte(updatedContent), 0644)
 	}
 
 	// create git commit for getting-started.md
-	if err := createGitOperations("update getting started guide"); err != nil {
+	if err := commitGitChanges("update getting started guide"); err != nil {
 		logging.LogWarning("failed to commit getting-started.md changes: %v", err)
 	}
 
@@ -268,7 +263,7 @@ func simulateFileChange() error {
 	}
 
 	for _, file := range testFiles {
-		fullPath := filepath.Join(dataDir, file)
+		fullPath := contentStorage.ToDocsPath(file)
 		if content, err := os.ReadFile(fullPath); err == nil {
 			updatedContent := string(content) + "\n\n## Version Update\n- Added documentation section\n- Enhanced content structure"
 			if err := os.WriteFile(fullPath, []byte(updatedContent), 0644); err != nil {
@@ -278,7 +273,7 @@ func simulateFileChange() error {
 	}
 
 	// create git commit for test files
-	if err := createGitOperations("update test files with additional content"); err != nil {
+	if err := commitGitChanges("update test files with additional content"); err != nil {
 		logging.LogWarning("failed to commit test file changes: %v", err)
 	}
 
@@ -304,8 +299,7 @@ func setupTestMetadata() error {
 
 func createTestMetadata() error {
 	var testFiles []string
-	dataPath := configmanager.GetAppConfig().DataPath
-	testDir := filepath.Join(dataPath, "test")
+	testDir := filepath.Join(contentStorage.GetDocsPath(), "test")
 
 	err := filepath.Walk(testDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
