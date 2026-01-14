@@ -14,16 +14,19 @@
     <h2>{{T "General Settings"}}</h2>
     <div class="setting-item">
         <form hx-post="/api/config/language" hx-trigger="change">
-            <label for="language" class="tooltip" data-tooltip="{{T "choose your preferred interface language"}}">{{T "Select Language"}}:</label>
-            <select
-                name="language"
-                id="language"
-                hx-get="/api/config/languages"
-                hx-trigger="load"
-                hx-swap="innerHTML"
-            >
-                <option>Loading languages...</option>
-            </select>
+            <label for="language">
+                {{T "Select Language"}}
+                <select
+                    name="language"
+                    id="language"
+                    hx-get="/api/config/languages"
+                    hx-trigger="load"
+                    hx-swap="innerHTML"
+                >
+                    <option>{{T "Loading languages..."}}</option>
+                </select>
+            </label>
+            <div class="help-text">{{T "choose your preferred interface language"}}</div>
         </form>
     </div>
 </section>
@@ -34,17 +37,20 @@
     <h2>{{T "Theme Settings"}}</h2>
     <div class="setting-item">
         <form hx-post="/api/themes/" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
-            <label for="theme" class="tooltip" data-tooltip="{{T "choose the visual appearance of the interface"}}">{{T "Select Theme"}}:</label>
-            <select
-                name="theme"
-                id="theme"
-                hx-get="/api/themes/"
-                hx-target="this"
-                hx-swap="innerHTML"
-                hx-trigger="load"
-            >
-                <option>Loading themes...</option>
-            </select>
+            <label for="theme">
+                {{T "Select Theme"}}
+                <select
+                    name="theme"
+                    id="theme"
+                    hx-get="/api/themes/"
+                    hx-target="this"
+                    hx-swap="innerHTML"
+                    hx-trigger="load"
+                >
+                    <option>{{T "Loading themes..."}}</option>
+                </select>
+            </label>
+            <div class="help-text">{{T "choose the visual appearance of the interface"}}</div>
         </form>
     </div>
     <div
@@ -53,7 +59,7 @@
         hx-trigger="load"
         hx-swap="innerHTML"
     >
-        <p>Loading theme settings...</p>
+        <p>{{T "Loading theme settings..."}}</p>
     </div>
 </section>
 {{ end }}
@@ -64,36 +70,48 @@
 
     <div class="setting-item">
         <form hx-post="/api/config/media/upload-size" hx-trigger="change delay:500ms">
-            <label for="maxUploadSizeMB" class="tooltip" data-tooltip="{{T "maximum file size in megabytes for uploads"}}">{{T "Max Upload Size (MB)"}}:</label>
-            <input type="number" name="maxUploadSizeMB" id="maxUploadSizeMB"
-                   value="{{ .UserSettings.MediaSettings.MaxUploadSizeMB }}"
-                   min="1" max="100" class="form-input">
+            <label for="maxUploadSizeMB">
+                {{T "Max Upload Size (MB)"}}
+                <input type="number" name="maxUploadSizeMB" id="maxUploadSizeMB"
+                       value="{{ .UserSettings.MediaSettings.MaxUploadSizeMB }}"
+                       min="1" max="100" class="form-input">
+            </label>
+            <div class="help-text">{{T "maximum file size in megabytes for uploads"}}</div>
         </form>
     </div>
 
     <div class="setting-item">
         <form hx-post="/api/config/media/mime-types" hx-trigger="change delay:1s">
-            <label for="allowedMimeTypes" class="tooltip" data-tooltip="{{T "comma-separated list of allowed MIME types (e.g., image/*, application/pdf)"}}">{{T "Allowed MIME Types"}}:</label>
-            <textarea name="allowedMimeTypes" id="allowedMimeTypes" rows="3" class="form-textarea" placeholder="image/*, application/pdf, video/mp4">{{range $index, $mimeType := .UserSettings.MediaSettings.AllowedMimeTypes}}{{if $index}}, {{end}}{{$mimeType}}{{end}}</textarea>
+            <label for="allowedMimeTypes">
+                {{T "Allowed MIME Types"}}
+                <textarea name="allowedMimeTypes" id="allowedMimeTypes" rows="3" class="form-textarea" placeholder="image/*, application/pdf, video/mp4">{{range $index, $mimeType := .UserSettings.MediaSettings.AllowedMimeTypes}}{{if $index}}, {{end}}{{$mimeType}}{{end}}</textarea>
+            </label>
+            <div class="help-text">{{T "comma-separated list of allowed MIME types (e.g., image/*, application/pdf)"}}</div>
         </form>
     </div>
 
     <div class="setting-item">
         <form hx-post="/api/config/media/orphaned-behavior" hx-trigger="change">
-            <label for="orphanedMediaBehavior" class="tooltip" data-tooltip="{{T "how to handle media files no longer referenced in documents"}}">{{T "Orphaned Media Behavior"}}:</label>
-            <select name="orphanedMediaBehavior" id="orphanedMediaBehavior" class="form-select">
-                <option value="keep" {{ if eq .UserSettings.MediaSettings.OrphanedMediaBehavior "keep" }}selected{{ end }}>{{T "Keep Files"}}</option>
-                <option value="manual" {{ if eq .UserSettings.MediaSettings.OrphanedMediaBehavior "manual" }}selected{{ end }}>{{T "Manual Cleanup"}}</option>
-            </select>
+            <label for="orphanedMediaBehavior">
+                {{T "Orphaned Media Behavior"}}
+                <select name="orphanedMediaBehavior" id="orphanedMediaBehavior" class="form-select">
+                    <option value="keep" {{ if eq .UserSettings.MediaSettings.OrphanedMediaBehavior "keep" }}selected{{ end }}>{{T "Keep Files"}}</option>
+                    <option value="manual" {{ if eq .UserSettings.MediaSettings.OrphanedMediaBehavior "manual" }}selected{{ end }}>{{T "Manual Cleanup"}}</option>
+                </select>
+            </label>
+            <div class="help-text">{{T "how to handle media files no longer referenced in documents"}}</div>
         </form>
     </div>
 
     <div class="setting-item">
         <form hx-post="/api/config/media/orphaned-age" hx-trigger="change delay:500ms">
-            <label for="orphanedMediaAgeDays" class="tooltip" data-tooltip="{{T "number of days before orphaned files can be cleaned up"}}">{{T "Orphaned Media Age (Days)"}}:</label>
-            <input type="number" name="orphanedMediaAgeDays" id="orphanedMediaAgeDays"
-                   value="{{ .UserSettings.MediaSettings.OrphanedMediaAgeDays }}"
-                   min="1" max="365" class="form-input">
+            <label for="orphanedMediaAgeDays">
+                {{T "Orphaned Media Age (Days)"}}
+                <input type="number" name="orphanedMediaAgeDays" id="orphanedMediaAgeDays"
+                       value="{{ .UserSettings.MediaSettings.OrphanedMediaAgeDays }}"
+                       min="1" max="365" class="form-input">
+            </label>
+            <div class="help-text">{{T "number of days before orphaned files can be cleaned up"}}</div>
         </form>
     </div>
 </section>

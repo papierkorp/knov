@@ -191,6 +191,48 @@ The testing system is essential for validating filter functionality during devel
 - Keep APIs generic and theme-agnostic
 - Return HTMX-compatible responses
 
+## UI/UX Design
+
+### Admin & Settings Pages
+
+The admin and settings pages use a unified card-based design system that provides:
+
+- **Consistent Layout**: Both pages use the same section and card structure for visual uniformity
+- **Configurable Help Text**: Support for both tooltip and help-text description display modes
+  - `help-text`: Always-visible descriptions below form elements (used for settings pages)
+  - `tooltips`: Hover-only tooltips for compact views
+- **Responsive Design**: Mobile-friendly layouts that adapt to different screen sizes
+- **Visual Hierarchy**: Clear headings, sections, and card-based organization
+
+### Styling Guidelines
+
+- Use ID selectors for page-specific styling (`#page-admin`, `#page-settings`)
+- Keep global styles in `style.css`
+- Use component-specific files for detailed styling (e.g., `settings-admin.css`)
+- Follow theme-agnostic design patterns using CSS custom properties
+
+### Accessibility Improvements
+
+- Configurable description display: choose between always-visible help text or tooltips based on context
+- Proper form labeling and structure
+- Keyboard navigation support
+- ARIA-compliant interactive elements
+
+### Theme Settings Rendering
+
+Theme settings can use different description display modes:
+
+```go
+// For settings pages (always visible help text)
+html := render.RenderThemeSettingsForm(schema, values, "help-text")
+
+// For compact views (hover tooltips)
+html := render.RenderThemeSettingsForm(schema, values, "tooltips")
+```
+- Proper form labeling and structure
+- Keyboard navigation support
+- ARIA-compliant interactive elements
+
 ## Translation
 
 Add translatable strings in templates:

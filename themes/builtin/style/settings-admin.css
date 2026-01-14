@@ -1,0 +1,311 @@
+/* Admin & Settings Pages Shared Styles */
+
+/* Page containers */
+#page-admin,
+#page-settings {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+#page-admin h1,
+#page-settings h1 {
+    color: var(--primary);
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* Section layouts */
+#page-admin .admin-sections,
+#page-settings .settings-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Card-based design for both pages */
+#page-admin .admin-section,
+#page-settings .settings-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#page-admin .admin-section h2,
+#page-settings .settings-section h2 {
+    color: var(--primary);
+    font-size: 1.5rem;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border);
+}
+
+/* Grid layout for admin cards */
+#page-admin .admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+#page-admin .admin-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+#page-admin .admin-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+#page-admin .admin-card h3 {
+    color: var(--text);
+    font-size: 1.2rem;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Settings items layout */
+#page-settings .setting-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+#page-settings .setting-item:hover {
+    border-color: var(--primary);
+}
+
+/* Form styling */
+#page-admin form,
+#page-settings form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#page-admin label,
+#page-settings label {
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#page-admin input,
+#page-admin select,
+#page-admin textarea,
+#page-settings input,
+#page-settings select,
+#page-settings textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+#page-admin input:focus,
+#page-admin select:focus,
+#page-admin textarea:focus,
+#page-settings input:focus,
+#page-settings select:focus,
+#page-settings textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* Improved checkbox styling */
+#page-admin input[type="checkbox"],
+#page-settings input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    cursor: pointer;
+    position: relative;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    transition: all 0.2s ease;
+}
+
+#page-admin input[type="checkbox"]:hover,
+#page-settings input[type="checkbox"]:hover {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+#page-admin input[type="checkbox"]:focus,
+#page-settings input[type="checkbox"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+#page-admin input[type="checkbox"]:checked,
+#page-settings input[type="checkbox"]:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+#page-admin input[type="checkbox"]:checked::after,
+#page-settings input[type="checkbox"]:checked::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 0.9rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* Checkbox label styling for better clickability */
+#page-admin label:has(input[type="checkbox"]),
+#page-settings label:has(input[type="checkbox"]) {
+    flex-direction: row;
+    align-items: center;
+    cursor: pointer;
+    gap: 0.5rem;
+}
+
+#page-admin button,
+#page-settings button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    align-self: flex-start;
+}
+
+#page-admin button:hover,
+#page-settings button:hover {
+    background: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#page-admin button:active,
+#page-settings button:active {
+    transform: translateY(0);
+}
+
+/* Help text styling - replacing tooltips */
+#page-admin .help-text,
+#page-settings .help-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: color-mix(in srgb, var(--primary) 5%, transparent);
+    border-left: 3px solid var(--primary);
+    border-radius: 0 4px 4px 0;
+}
+
+/* Result containers */
+#page-admin [id*="-result"],
+#page-settings [id*="-result"] {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 4px;
+    min-height: 1.5rem;
+}
+
+/* Navigation links in admin */
+#page-admin ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+#page-admin li {
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    transition: transform 0.2s ease;
+}
+
+#page-admin li:hover {
+    transform: translateY(-2px);
+}
+
+#page-admin li a {
+    display: block;
+    padding: 1rem 2rem;
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+#page-admin li a:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Theme settings container styling */
+#page-settings #theme-settings-container {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    #page-admin,
+    #page-settings {
+        padding: 0.5rem;
+    }
+
+    #page-admin .admin-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    #page-admin .admin-card,
+    #page-settings .setting-item {
+        padding: 1rem;
+    }
+
+    #page-admin h1,
+    #page-settings h1 {
+        font-size: 1.5rem;
+    }
+
+    #page-admin ul {
+        flex-direction: column;
+        align-items: center;
+    }
+}
