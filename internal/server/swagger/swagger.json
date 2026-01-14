@@ -169,6 +169,106 @@
                 "responses": {}
             }
         },
+        "/api/config/media/mime-types": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update allowed MIME types",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comma-separated list of allowed MIME types",
+                        "name": "allowedMimeTypes",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/media/orphaned-age": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update orphaned media age",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Number of days before orphaned files can be cleaned up",
+                        "name": "orphanedMediaAgeDays",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/media/orphaned-behavior": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update orphaned media behavior",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Orphaned media behavior (keep or manual)",
+                        "name": "orphanedMediaBehavior",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/media/upload-size": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update media upload size limit",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Maximum upload size in MB",
+                        "name": "maxUploadSizeMB",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/config/repository": {
             "get": {
                 "produces": [

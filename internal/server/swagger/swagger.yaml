@@ -520,6 +520,74 @@ paths:
       summary: Get available languages
       tags:
       - config
+  /api/config/media/mime-types:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Comma-separated list of allowed MIME types
+        in: formData
+        name: allowedMimeTypes
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update allowed MIME types
+      tags:
+      - config
+  /api/config/media/orphaned-age:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Number of days before orphaned files can be cleaned up
+        in: formData
+        name: orphanedMediaAgeDays
+        required: true
+        type: integer
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update orphaned media age
+      tags:
+      - config
+  /api/config/media/orphaned-behavior:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Orphaned media behavior (keep or manual)
+        in: formData
+        name: orphanedMediaBehavior
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update orphaned media behavior
+      tags:
+      - config
+  /api/config/media/upload-size:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Maximum upload size in MB
+        in: formData
+        name: maxUploadSizeMB
+        required: true
+        type: integer
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update media upload size limit
+      tags:
+      - config
   /api/config/repository:
     get:
       produces:

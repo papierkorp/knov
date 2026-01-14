@@ -173,6 +173,12 @@ func StartServerChi() {
 			r.Post("/language", handleAPISetLanguage)
 			r.Post("/repository", handleAPISetGitRepositoryURL)
 			r.Post("/datapath", handleAPISetDataPath)
+
+			// Media settings endpoints
+			r.Post("/media/upload-size", handleAPIUpdateMediaUploadSize)
+			r.Post("/media/mime-types", handleAPIUpdateMediaMimeTypes)
+			r.Post("/media/orphaned-behavior", handleAPIUpdateOrphanedBehavior)
+			r.Post("/media/orphaned-age", handleAPIUpdateOrphanedAge)
 		})
 
 		// ----------------------------------------------------------------------------------------

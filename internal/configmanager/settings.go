@@ -37,8 +37,33 @@ func InitUserSettings() {
 		Language:      "en",
 		ThemeSettings: make(AllThemeSettings),
 		MediaSettings: MediaSettings{
-			MaxUploadSizeMB:       10,
-			AllowedMimeTypes:      []string{"image/*", "application/pdf", "video/mp4", "video/webm"},
+			MaxUploadSizeMB: 10,
+			AllowedMimeTypes: []string{
+				// Images (safe to display)
+				"image/jpeg",
+				"image/gif",
+				"image/png",
+				"image/webp",
+				"image/vnd.microsoft.icon",
+				"image/svg+xml",
+				// Audio
+				"audio/mpeg",
+				"audio/ogg",
+				"audio/wav",
+				// Video
+				"video/webm",
+				"video/ogg",
+				"video/mp4",
+				// Documents
+				"application/pdf",
+				// Subtitles
+				"text/vtt",
+				// Uncomment these for trusted users only (security risk):
+				// "text/html",    // Cross-site scripting risk
+				// "text/plain",   // Could be used for spam
+				// "text/xml",     // Potential security risk
+				// "text/csv",     // Data extraction risk
+			},
 			OrphanedMediaBehavior: "manual",
 			OrphanedMediaAgeDays:  7,
 		},

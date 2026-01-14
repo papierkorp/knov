@@ -3,6 +3,8 @@ package server
 import (
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"knov/internal/configmanager"
@@ -158,4 +160,150 @@ func handleAPIGetLanguages(w http.ResponseWriter, r *http.Request) {
 	options := render.GetLanguageOptions()
 	html := render.RenderSelectOptions(options, currentLang)
 	writeResponse(w, r, languages, html)
+}
+
+// @Summary Update media upload size limit
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param maxUploadSizeMB formData int true "Maximum upload size in MB"
+// @Produce json,html
+// @Router /api/config/media/upload-size [post]
+func handleAPIUpdateMediaUploadSize(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	sizeStr := r.FormValue("maxUploadSizeMB")
+	if sizeStr == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing upload size"), http.StatusBadRequest)
+		return
+	}
+
+	size, err := strconv.Atoi(sizeStr)
+	if err != nil || size < 1 || size > 100 {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid upload size"), http.StatusBadRequest)
+		return
+	}
+
+	// update settings
+	userSettings := configmanager.GetUserSettings()
+	userSettings.MediaSettings.MaxUploadSizeMB = size
+
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("updated media upload size to %d MB", size)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "upload size updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update allowed MIME types
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param allowedMimeTypes formData string true "Comma-separated list of allowed MIME types"
+// @Produce json,html
+// @Router /api/config/media/mime-types [post]
+func handleAPIUpdateMediaMimeTypes(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	mimeTypesStr := r.FormValue("allowedMimeTypes")
+	if mimeTypesStr == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing mime types"), http.StatusBadRequest)
+		return
+	}
+
+	// parse comma-separated list
+	var mimeTypes []string
+	for _, mimeType := range strings.Split(mimeTypesStr, ",") {
+		trimmed := strings.TrimSpace(mimeType)
+		if trimmed != "" {
+			mimeTypes = append(mimeTypes, trimmed)
+		}
+	}
+
+	if len(mimeTypes) == 0 {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "at least one mime type required"), http.StatusBadRequest)
+		return
+	}
+
+	// update settings
+	userSettings := configmanager.GetUserSettings()
+	userSettings.MediaSettings.AllowedMimeTypes = mimeTypes
+
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("updated allowed mime types: %v", mimeTypes)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "mime types updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update orphaned media behavior
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param orphanedMediaBehavior formData string true "Orphaned media behavior (keep or manual)"
+// @Produce json,html
+// @Router /api/config/media/orphaned-behavior [post]
+func handleAPIUpdateOrphanedBehavior(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	behavior := r.FormValue("orphanedMediaBehavior")
+	if behavior != "keep" && behavior != "manual" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid behavior option"), http.StatusBadRequest)
+		return
+	}
+
+	// update settings
+	userSettings := configmanager.GetUserSettings()
+	userSettings.MediaSettings.OrphanedMediaBehavior = behavior
+
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("updated orphaned media behavior to: %s", behavior)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "orphaned media behavior updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update orphaned media age
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param orphanedMediaAgeDays formData int true "Number of days before orphaned files can be cleaned up"
+// @Produce json,html
+// @Router /api/config/media/orphaned-age [post]
+func handleAPIUpdateOrphanedAge(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	ageStr := r.FormValue("orphanedMediaAgeDays")
+	if ageStr == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing age value"), http.StatusBadRequest)
+		return
+	}
+
+	age, err := strconv.Atoi(ageStr)
+	if err != nil || age < 1 || age > 365 {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid age value"), http.StatusBadRequest)
+		return
+	}
+
+	// update settings
+	userSettings := configmanager.GetUserSettings()
+	userSettings.MediaSettings.OrphanedMediaAgeDays = age
+
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("updated orphaned media age to %d days", age)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "orphaned media age updated"))
+	writeResponse(w, r, "saved", html)
 }
