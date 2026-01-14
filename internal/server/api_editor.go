@@ -211,19 +211,20 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filepath := r.FormValue("filepath")
-	if filepath == "" {
+	// dont rename to filepath otherwise filepath.join will not work anymore because of the import
+	filezpath := r.FormValue("filepath")
+	if filezpath == "" {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
 		return
 	}
 
 	// ensure .index or .moc extension (but not both)
-	if !strings.HasSuffix(filepath, ".index") && !strings.HasSuffix(filepath, ".moc") {
-		filepath = filepath + ".index"
+	if !strings.HasSuffix(filezpath, ".index") && !strings.HasSuffix(filezpath, ".moc") {
+		filezpath = filezpath + ".index"
 	}
 
 	// convert to full path
-	fullPath := contentStorage.ToDocsPath(filepath)
+	fullPath := contentStorage.ToDocsPath(filezpath)
 
 	// parse entries
 	var config render.IndexConfig
@@ -274,27 +275,27 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// create/update metadata with filetype "moc" and collection based on filename
-	collectionName := filepath
+	collectionName := filezpath
 	collectionName = strings.TrimSuffix(collectionName, ".index")
 	collectionName = strings.TrimSuffix(collectionName, ".moc")
 
 	metadata := &files.Metadata{
-		Path:       filepath,
+		Path:       filepath.Join("docs", filezpath),
 		FileType:   files.FileTypeMOC,
 		Collection: collectionName,
 	}
 
 	if err := files.MetaDataSave(metadata); err != nil {
-		logging.LogError("failed to save metadata for index file %s: %v", filepath, err)
+		logging.LogError("failed to save metadata for index file %s: %v", filezpath, err)
 		// don't fail the whole request, just log the error
 	} else {
-		logging.LogInfo("saved metadata for index file: %s (collection: %s)", filepath, collectionName)
+		logging.LogInfo("saved metadata for index file: %s (collection: %s)", filezpath, collectionName)
 	}
 
-	logging.LogInfo("saved index file: %s", filepath)
+	logging.LogInfo("saved index file: %s", filezpath)
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "index saved successfully"),
-		filepath,
+		filezpath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(render.RenderStatusMessage(render.StatusOK, successMsg)))
@@ -411,7 +412,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 
 	// create/update metadata
 	metadata := &files.Metadata{
-		Path:     filePath,
+		Path:     filepath.Join("docs", filePath),
 		FileType: filetype,
 	}
 

@@ -2,6 +2,9 @@
 package utils
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -190,4 +193,44 @@ func StripPathPrefix(path, prefix string) string {
 	}
 
 	return normalizedPath
+}
+
+// ResolveFilenameConflicts checks for existing files and appends -1, -2, etc. to avoid conflicts
+func ResolveFilenameConflicts(fullPath, relativePath string) string {
+	// if file doesn't exist, return original path
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		return relativePath
+	}
+
+	// extract filename parts
+	dir := filepath.Dir(relativePath)
+	filename := filepath.Base(relativePath)
+	ext := filepath.Ext(filename)
+	nameWithoutExt := strings.TrimSuffix(filename, ext)
+
+	// try appending numbers until we find a non-existing filename
+	for i := 1; i < 1000; i++ { // reasonable limit
+		newFilename := fmt.Sprintf("%s-%d%s", nameWithoutExt, i, ext)
+		var newPath string
+		if dir != "" && dir != "." {
+			newPath = filepath.Join(dir, newFilename)
+		} else {
+			newPath = newFilename
+		}
+
+		// construct full path based on the same directory structure as fullPath
+		baseDir := filepath.Dir(fullPath)
+		fullNewPath := filepath.Join(baseDir, filepath.Base(newPath))
+		if _, err := os.Stat(fullNewPath); os.IsNotExist(err) {
+			return newPath
+		}
+	}
+
+	// fallback: use timestamp if we couldn't resolve conflicts
+	timestamp := SanitizeFilename("", 20) // this generates timestamp
+	newFilename := fmt.Sprintf("%s-%s%s", nameWithoutExt, timestamp, ext)
+	if dir != "" && dir != "." {
+		return filepath.Join(dir, newFilename)
+	}
+	return newFilename
 }

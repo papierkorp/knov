@@ -31,6 +31,7 @@ const (
 	FileTypeImage      Filetype = "image"
 	FileTypeVideo      Filetype = "video"
 	FileTypePDF        Filetype = "pdf"
+	FileTypeText       Filetype = "text"
 
 	StatusDraft     Status = "draft"
 	StatusPublished Status = "published"
@@ -66,6 +67,7 @@ func AllFiletypes() []Filetype {
 		FileTypeImage,
 		FileTypeVideo,
 		FileTypePDF,
+		FileTypeText,
 	}
 }
 

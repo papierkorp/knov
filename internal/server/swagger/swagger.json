@@ -4041,7 +4041,8 @@
                 "journaling",
                 "image",
                 "video",
-                "pdf"
+                "pdf",
+                "text"
             ],
             "x-enum-comments": {
                 "FileTypeMOC": "maps of content - indexes to link related notes"
@@ -4051,6 +4052,7 @@
                 "",
                 "",
                 "maps of content - indexes to link related notes",
+                "",
                 "",
                 "",
                 "",
@@ -4068,7 +4070,8 @@
                 "FileTypeJournaling",
                 "FileTypeImage",
                 "FileTypeVideo",
-                "FileTypePDF"
+                "FileTypePDF",
+                "FileTypeText"
             ]
         },
         "files.FiletypeCount": {

@@ -306,7 +306,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		}
 
 		metadata := &files.Metadata{
-			Path:     filePath,
+			Path:     filepath.Join("docs", filePath), // Add docs/ prefix to distinguish from media
 			FileType: filetype,
 		}
 

@@ -86,9 +86,33 @@ func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
 					previewStyle: 'tab',
 					initialValue: %s,
 					theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default',
+					language: 'en-US',
+					i18n: {
+						// Main popup texts
+						'File': 'File',
+						'URL': 'URL',
+						'Select image': 'Select file',
+						'Select Image': 'Select File',
+						'File URL': 'File URL',
+						'Image URL': 'File URL',
+						'Description': 'Description',
+						'OK': 'OK',
+						'Cancel': 'Cancel',
+						// Toolbar tooltips
+						'Insert Image': 'Insert File',
+						'Insert image': 'Insert file',
+						'image': 'file',
+						'Image': 'File',
+						// File dialog
+						'Choose a file': 'Choose a file',
+						'No file selected': 'No file selected'
+					},
 					hooks: {
 						addImageBlobHook: function(blob, callback, source) {
-							// Get current file path from URL - much simpler!
+							// Prevent default ToastUI behavior by immediately calling callback
+							// This stops ToastUI from inserting base64 data URLs as fallback
+
+							// Get current file path from URL
 							const currentPath = window.location.pathname;
 							let contextPath = null;
 
@@ -100,8 +124,10 @@ func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
 							}
 
 							if (!contextPath) {
-								alert('Please save the document first to enable image uploads.');
-								return;
+								alert('please save the document first to enable file uploads.');
+								// Prevent insertion by calling callback with empty values
+								callback('', '');
+								return false;
 							}
 
 							// Create form data for upload
@@ -129,19 +155,24 @@ func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
 							})
 							.then(response => {
 								if (!response.ok) {
-									throw new Error('Upload failed: ' + response.statusText);
+									// try to get the error message from response text
+									return response.text().then(errorText => {
+										throw new Error(errorText || 'upload failed: ' + response.statusText);
+									});
 								}
 								return response.json();
 							})
 							.then(data => {
 								// Remove upload message
-								document.body.removeChild(uploadMessage);
+								if (document.body.contains(uploadMessage)) {
+									document.body.removeChild(uploadMessage);
+								}
 
-								// Insert the uploaded image with relative path
-								const imagePath = 'media/' + data.path;
-								callback(imagePath, blob.name || 'Uploaded Image');
+								// Insert the uploaded file with relative path
+								const filePath = 'media/' + data.path;
+								callback(filePath, data.filename || 'uploaded file');
 
-								console.log('Image uploaded successfully:', data);
+								console.log('file uploaded successfully:', data);
 							})
 							.catch(error => {
 								// Remove upload message
@@ -149,12 +180,15 @@ func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
 									document.body.removeChild(uploadMessage);
 								}
 
-								console.error('Image upload failed:', error);
-								alert('Failed to upload image: ' + error.message);
+								console.error('file upload failed:', error);
+								alert('failed to upload file: ' + error.message);
 
-								// Call callback with empty string to cancel insertion
+								// Prevent insertion by calling callback with empty values
 								callback('', '');
 							});
+
+							// Return false to prevent ToastUI from using default blob behavior
+							return false;
 						}
 					}
 				});
@@ -222,7 +256,105 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 					initialEditType: 'markdown',
 					previewStyle: 'tab',
 					initialValue: %s,
-					theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default'
+					theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default',
+					language: 'en-US',
+					i18n: {
+						// Main popup texts
+						'File': 'File',
+						'URL': 'URL',
+						'Select image': 'Select file',
+						'Select Image': 'Select File',
+						'File URL': 'File URL',
+						'Image URL': 'File URL',
+						'Description': 'Description',
+						'OK': 'OK',
+						'Cancel': 'Cancel',
+						// Toolbar tooltips
+						'Insert Image': 'Insert File',
+						'Insert image': 'Insert file',
+						'image': 'file',
+						'Image': 'File',
+						// File dialog
+						'Choose a file': 'Choose a file',
+						'No file selected': 'No file selected'
+					},
+					hooks: {
+						addImageBlobHook: function(blob, callback, source) {
+							// Get current file path from URL
+							const currentPath = window.location.pathname;
+							let contextPath = null;
+
+							// Extract filepath from URLs like /files/path/to/file.md or /files/edit/path/to/file.md
+							if (currentPath.startsWith('/files/edit/')) {
+								contextPath = currentPath.substring('/files/edit/'.length);
+							} else if (currentPath.startsWith('/files/')) {
+								contextPath = currentPath.substring('/files/'.length);
+							}
+
+							if (!contextPath) {
+								alert('please save the document first to enable file uploads.');
+								// Prevent insertion by calling callback with empty values
+								callback('', '');
+								return false;
+							}
+
+							// Create form data for upload
+							const formData = new FormData();
+							formData.append('file', blob);
+							formData.append('context_path', contextPath);
+
+							// Show upload progress using custom notification class
+							const uploadMessage = document.createElement('div');
+							uploadMessage.className = 'file-upload-notification';
+							uploadMessage.textContent = 'uploading file...';
+							document.body.appendChild(uploadMessage);
+
+							// Upload to media API
+							fetch('/api/media/upload', {
+								method: 'POST',
+								body: formData,
+								headers: {
+									'Accept': 'application/json'
+								}
+							})
+							.then(response => {
+								if (!response.ok) {
+									// try to get the error message from response text
+									return response.text().then(errorText => {
+										throw new Error(errorText || 'upload failed: ' + response.statusText);
+									});
+								}
+								return response.json();
+							})
+							.then(data => {
+								// Remove upload message
+								if (document.body.contains(uploadMessage)) {
+									document.body.removeChild(uploadMessage);
+								}
+
+								// Insert the uploaded file with relative path
+								const filePath = 'media/' + data.path;
+								callback(filePath, data.filename || 'uploaded file');
+
+								console.log('file uploaded successfully:', data);
+							})
+							.catch(error => {
+								// Remove upload message
+								if (document.body.contains(uploadMessage)) {
+									document.body.removeChild(uploadMessage);
+								}
+
+								console.error('file upload failed:', error);
+								alert('failed to upload file: ' + error.message);
+
+								// Prevent insertion by calling callback with empty values
+								callback('', '');
+							});
+
+							// Return false to prevent ToastUI from using default blob behavior
+							return false;
+						}
+					}
 				});
 
 				document.querySelector('.file-form').addEventListener('submit', function(e) {

@@ -4047,7 +4047,8 @@ const docTemplate = `{
                 "journaling",
                 "image",
                 "video",
-                "pdf"
+                "pdf",
+                "text"
             ],
             "x-enum-comments": {
                 "FileTypeMOC": "maps of content - indexes to link related notes"
@@ -4057,6 +4058,7 @@ const docTemplate = `{
                 "",
                 "",
                 "maps of content - indexes to link related notes",
+                "",
                 "",
                 "",
                 "",
@@ -4074,7 +4076,8 @@ const docTemplate = `{
                 "FileTypeJournaling",
                 "FileTypeImage",
                 "FileTypeVideo",
-                "FileTypePDF"
+                "FileTypePDF",
+                "FileTypeText"
             ]
         },
         "files.FiletypeCount": {

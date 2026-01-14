@@ -134,6 +134,7 @@ definitions:
     - image
     - video
     - pdf
+    - text
     type: string
     x-enum-comments:
       FileTypeMOC: maps of content - indexes to link related notes
@@ -142,6 +143,7 @@ definitions:
     - ""
     - ""
     - maps of content - indexes to link related notes
+    - ""
     - ""
     - ""
     - ""
@@ -159,6 +161,7 @@ definitions:
     - FileTypeImage
     - FileTypeVideo
     - FileTypePDF
+    - FileTypeText
   files.FiletypeCount:
     additionalProperties:
       type: integer
