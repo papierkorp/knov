@@ -167,3 +167,27 @@ func SanitizeMediaFilename(filename string) string {
 func Normalize(input string) string {
 	return strings.ToLower(strings.TrimSpace(input))
 }
+
+// StripPathPrefix removes a specified prefix from a path to prevent duplication
+// Example: StripPathPrefix("docs/ai.md", "docs/") -> "ai.md"
+// Example: StripPathPrefix("media/images/photo.jpg", "media/") -> "images/photo.jpg"
+func StripPathPrefix(path, prefix string) string {
+	if path == "" {
+		return path
+	}
+
+	// normalize path separators to forward slashes
+	normalizedPath := strings.ReplaceAll(path, "\\", "/")
+
+	// ensure prefix ends with slash for proper matching
+	if prefix != "" && !strings.HasSuffix(prefix, "/") {
+		prefix = prefix + "/"
+	}
+
+	// strip the prefix if it exists
+	if strings.HasPrefix(normalizedPath, prefix) {
+		return strings.TrimPrefix(normalizedPath, prefix)
+	}
+
+	return normalizedPath
+}

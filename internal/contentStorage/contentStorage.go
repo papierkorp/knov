@@ -9,6 +9,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/logging"
+	"knov/internal/utils"
 )
 
 // Init initializes content storage directories
@@ -47,23 +48,31 @@ func GetMediaPath() string {
 }
 
 // ToDocsPath converts relative path to full docs path
-// Input: "projects/file.md"
+// Input: "projects/file.md" or "docs/projects/file.md"
 // Output: "/full/path/to/data/docs/projects/file.md"
 func ToDocsPath(relativePath string) string {
 	if filepath.IsAbs(relativePath) {
 		return relativePath
 	}
-	return filepath.Join(GetDocsPath(), relativePath)
+
+	// normalize path and strip docs prefix if present
+	normalizedPath := NormalizeDocsPath(relativePath)
+
+	return filepath.Join(GetDocsPath(), normalizedPath)
 }
 
 // ToMediaPath converts relative path to full media path
-// Input: "images/photo.jpg"
+// Input: "images/photo.jpg" or "media/images/photo.jpg"
 // Output: "/full/path/to/data/media/images/photo.jpg"
 func ToMediaPath(relativePath string) string {
 	if filepath.IsAbs(relativePath) {
 		return relativePath
 	}
-	return filepath.Join(GetMediaPath(), relativePath)
+
+	// normalize path and strip media prefix if present
+	normalizedPath := NormalizeMediaPath(relativePath)
+
+	return filepath.Join(GetMediaPath(), normalizedPath)
 }
 
 // ToRelativePath removes data directory prefix to get relative path
@@ -87,11 +96,13 @@ func ToRelativePath(fullPath string) string {
 		}
 
 		// strip leading "docs/" or "media/" if present (for subdirectories)
-		if strings.HasPrefix(fullPath, "docs/") {
-			return strings.TrimPrefix(fullPath, "docs/")
+		cleanPath := NormalizeDocsPath(fullPath)
+		if cleanPath != fullPath {
+			return cleanPath
 		}
-		if strings.HasPrefix(fullPath, "media/") {
-			return strings.TrimPrefix(fullPath, "media/")
+		cleanPath = NormalizeMediaPath(fullPath)
+		if cleanPath != fullPath {
+			return cleanPath
 		}
 
 		return fullPath
@@ -119,11 +130,13 @@ func ToRelativePath(fullPath string) string {
 	relPath, err := filepath.Rel(dataPath, fullPath)
 	if err == nil && !strings.HasPrefix(relPath, "..") {
 		// if it's in docs/ or media/ subdirectory, strip that prefix
-		if strings.HasPrefix(relPath, "docs"+string(filepath.Separator)) {
-			return strings.TrimPrefix(relPath, "docs"+string(filepath.Separator))
+		cleanPath := utils.StripPathPrefix(relPath, "docs")
+		if cleanPath != relPath {
+			return cleanPath
 		}
-		if strings.HasPrefix(relPath, "media"+string(filepath.Separator)) {
-			return strings.TrimPrefix(relPath, "media"+string(filepath.Separator))
+		cleanPath = utils.StripPathPrefix(relPath, "media")
+		if cleanPath != relPath {
+			return cleanPath
 		}
 		return relPath
 	}
@@ -133,11 +146,13 @@ func ToRelativePath(fullPath string) string {
 	if strings.HasPrefix(fullPath, dataPrefix) {
 		stripped := strings.TrimPrefix(fullPath, dataPrefix)
 		// also strip docs/ or media/ if present
-		if strings.HasPrefix(stripped, "docs"+string(filepath.Separator)) {
-			return strings.TrimPrefix(stripped, "docs"+string(filepath.Separator))
+		cleanPath := NormalizeDocsPath(stripped)
+		if cleanPath != stripped {
+			return cleanPath
 		}
-		if strings.HasPrefix(stripped, "media"+string(filepath.Separator)) {
-			return strings.TrimPrefix(stripped, "media"+string(filepath.Separator))
+		cleanPath = NormalizeMediaPath(stripped)
+		if cleanPath != stripped {
+			return cleanPath
 		}
 		return stripped
 	}
@@ -150,4 +165,14 @@ func ToRelativePath(fullPath string) string {
 	// if not under data path, return the full path as-is
 	// this can happen if files are outside the data directory
 	return fullPath
+}
+
+// NormalizeDocsPath normalizes a docs path by stripping "docs/" prefix if present
+func NormalizeDocsPath(path string) string {
+	return utils.StripPathPrefix(path, "docs")
+}
+
+// NormalizeMediaPath normalizes a media path by stripping "media/" prefix if present
+func NormalizeMediaPath(path string) string {
+	return utils.StripPathPrefix(path, "media")
 }

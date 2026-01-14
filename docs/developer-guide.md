@@ -97,6 +97,50 @@ cd themes/mytheme
 go build -buildmode=plugin -o mytheme.so .
 ```
 
+## File Path Handling
+
+### Content Storage Paths
+
+The application uses standardized path handling to manage files:
+
+- **Docs Path**: `data/docs/` - for document files
+- **Media Path**: `data/media/` - for media files
+
+### Path Utility Functions
+
+**Core utilities in `internal/utils/cleanse.go`:**
+- `StripPathPrefix(path, prefix)` - Generic function to strip any prefix from a path
+- `NormalizeDocsPath(path)` - Strips "docs/" prefix if present
+- `NormalizeMediaPath(path)` - Strips "media/" prefix if present
+
+**Storage utilities in `internal/contentStorage/contentStorage.go`:**
+- `ToDocsPath(relativePath)` - Converts relative paths to full docs paths
+  - Input: `"ai.md"` or `"docs/ai.md"` → Output: `"/data/docs/ai.md"`
+  - Uses `NormalizeDocsPath()` internally
+- `ToMediaPath(relativePath)` - Converts relative paths to full media paths
+  - Input: `"image.jpg"` or `"media/image.jpg"` → Output: `"/data/media/image.jpg"`
+  - Uses `NormalizeMediaPath()` internally
+- `ToRelativePath(fullPath)` - Strips data directory prefixes to get relative paths
+
+### API Path Parameters
+
+When handling file paths in API endpoints:
+- Accept paths with or without directory prefixes ("docs/", "media/")
+- Use `ToDocsPath()` and `ToMediaPath()` for automatic normalization
+- For custom normalization, use `utils.StripPathPrefix(path, "custom/")`
+- This prevents path duplication issues like `data/docs/docs/file.md`
+
+### Example Usage
+
+```go
+// In API handlers
+normalizedPath := utils.NormalizeDocsPath("docs/projects/file.md") // -> "projects/file.md"
+fullPath := contentStorage.ToDocsPath(normalizedPath) // -> "/data/docs/projects/file.md"
+
+// Custom prefix stripping
+cleanPath := utils.StripPathPrefix("temp/uploads/file.txt", "temp/") // -> "uploads/file.txt"
+```
+
 ## API Development
 
 ### Adding New Endpoints
@@ -220,15 +264,22 @@ The admin and settings pages use a unified card-based design system that provide
 
 ### Theme Settings Rendering
 
-Theme settings can use different description display modes:
+Theme settings can use different description display modes via the `DescriptionType` enum:
 
 ```go
+// Import the render package for the enum
+import "knov/internal/server/render"
+
 // For settings pages (always visible help text)
-html := render.RenderThemeSettingsForm(schema, values, "help-text")
+html := render.RenderThemeSettingsForm(schema, values, render.DescriptionTypeHelpText)
 
 // For compact views (hover tooltips)
-html := render.RenderThemeSettingsForm(schema, values, "tooltips")
+html := render.RenderThemeSettingsForm(schema, values, render.DescriptionTypeTooltips)
 ```
+
+**Available types:**
+- `render.DescriptionTypeHelpText`: Always-visible descriptions below form elements
+- `render.DescriptionTypeTooltips`: Hover-only tooltips for compact views
 - Proper form labeling and structure
 - Keyboard navigation support
 - ARIA-compliant interactive elements
