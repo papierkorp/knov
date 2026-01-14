@@ -321,6 +321,10 @@ func createTestMetadata() error {
 	for i, file := range testFiles {
 		filename := filepath.Base(file)
 		relPath := contentStorage.ToRelativePath(file)
+		// ensure relPath doesn't already have docs/ prefix to avoid double prefix
+		relPath = strings.TrimPrefix(relPath, "docs/")
+		// add docs/ prefix for metadata path
+		metadataPath := filepath.Join("docs", relPath)
 		folders := strings.Split(filepath.Dir(relPath), "/")
 
 		validFolders := []string{}
@@ -360,8 +364,9 @@ func createTestMetadata() error {
 				parentIdx := i - 1 - (j * 2)
 				if parentIdx >= 0 && parentIdx < i {
 					parentPath := contentStorage.ToRelativePath(testFiles[parentIdx])
-					if parentPath != relPath && !contains(parents, parentPath) {
-						parents = append(parents, parentPath)
+					parentMetadataPath := filepath.Join("docs", parentPath)
+					if parentMetadataPath != metadataPath && !contains(parents, parentMetadataPath) {
+						parents = append(parents, parentMetadataPath)
 					}
 				}
 			}
@@ -369,7 +374,7 @@ func createTestMetadata() error {
 
 		metadata := &files.Metadata{
 			Name:       filename,
-			Path:       relPath,
+			Path:       metadataPath,
 			CreatedAt:  time.Date(2025, 9, createDay, 8+(i%8), (i*7)%60, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 9, editDay, 10+(i%6), (i*13)%60, 0, 0, time.UTC),
 			Collection: collection,

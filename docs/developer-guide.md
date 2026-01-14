@@ -115,10 +115,10 @@ The application uses standardized path handling to manage files:
 
 **Storage utilities in `internal/contentStorage/contentStorage.go`:**
 - `ToDocsPath(relativePath)` - Converts relative paths to full docs paths
-  - Input: `"ai.md"` or `"docs/ai.md"` → Output: `"/data/docs/ai.md"`
+  - Input: `"ai.md"` or `"docs/ai.md"` â†’ Output: `"/data/docs/ai.md"`
   - Uses `NormalizeDocsPath()` internally
 - `ToMediaPath(relativePath)` - Converts relative paths to full media paths
-  - Input: `"image.jpg"` or `"media/image.jpg"` → Output: `"/data/media/image.jpg"`
+  - Input: `"image.jpg"` or `"media/image.jpg"` â†’ Output: `"/data/media/image.jpg"`
   - Uses `NormalizeMediaPath()` internally
 - `ToRelativePath(fullPath)` - Strips data directory prefixes to get relative paths
 
@@ -129,6 +129,11 @@ When handling file paths in API endpoints:
 - Use `ToDocsPath()` and `ToMediaPath()` for automatic normalization
 - For custom normalization, use `utils.StripPathPrefix(path, "custom/")`
 - This prevents path duplication issues like `data/docs/docs/file.md`
+
+**Important: Metadata Path Handling**
+- Metadata paths are stored WITH prefixes: `docs/folder/file.md` for documents, `media/folder/image.png` for media
+- Use `getFilePathForMetadata()` helper function to get correct filesystem paths from metadata paths
+- The `metaDataUpdate()` function automatically handles both docs and media files based on path prefix
 
 ### Example Usage
 
@@ -170,9 +175,9 @@ The `GetEditor()` function determines the appropriate editor based on:
 **Syntax Detection**:
 - Syntax is always dynamically detected using the filetype handler registry
 - The system uses `CanHandle()` methods from registered handlers:
-  - **MarkdownHandler**: Detects `.md` and `.markdown` files → markdown-editor
-  - **DokuwikiHandler**: Detects `.txt` files with DokuWiki syntax (headers like `====== title ======`) → textarea-editor
-  - **PlaintextHandler**: Detects plain `.txt` files → textarea-editor
+  - **MarkdownHandler**: Detects `.md` and `.markdown` files â†’ markdown-editor
+  - **DokuwikiHandler**: Detects `.txt` files with DokuWiki syntax (headers like `====== title ======`) â†’ textarea-editor
+  - **PlaintextHandler**: Detects plain `.txt` files â†’ textarea-editor
 - Detection happens at request time based on file extension and content
 - No syntax metadata is stored - always uses fresh detection
 
@@ -222,7 +227,7 @@ The test metadata objects are carefully designed with different:
 - PARA organization: Different projects, areas, resources, and archive values
 
 **Running Filter Tests**:
-1. Via Admin Interface: Go to Admin → Test Data Management → "Run Filter Tests"
+1. Via Admin Interface: Go to Admin â†’ Test Data Management â†’ "Run Filter Tests"
 2. Via API: `POST /api/testdata/filtertest`
 3. Returns detailed results including passed/failed tests and expected vs actual counts
 

@@ -13,7 +13,7 @@ func getFilterTestMetadata() []*files.Metadata {
 		// filterTestA
 		{
 			Name:       "filterTestA.md",
-			Path:       "filter-tests/filterTestA.md",
+			Path:       "docs/filter-tests/filterTestA.md",
 			CreatedAt:  time.Date(2025, 10, 1, 10, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 1, 10, 0, 0, 0, time.UTC),
 			Collection: "filter-testing-unique",
@@ -33,7 +33,7 @@ func getFilterTestMetadata() []*files.Metadata {
 		// filterTestB
 		{
 			Name:       "filterTestB.md",
-			Path:       "filter-tests/filterTestB.md",
+			Path:       "docs/filter-tests/filterTestB.md",
 			CreatedAt:  time.Date(2025, 10, 2, 11, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 2, 11, 0, 0, 0, time.UTC),
 			Collection: "filter-testing-unique",
@@ -53,7 +53,7 @@ func getFilterTestMetadata() []*files.Metadata {
 		// filterTestC
 		{
 			Name:       "filterTestC.md",
-			Path:       "filter-tests/filterTestC.md",
+			Path:       "docs/filter-tests/filterTestC.md",
 			CreatedAt:  time.Date(2025, 10, 3, 12, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 3, 12, 0, 0, 0, time.UTC),
 			Collection: "filter-testing-unique",
@@ -73,7 +73,7 @@ func getFilterTestMetadata() []*files.Metadata {
 		// filterTestD
 		{
 			Name:       "filterTestD.md",
-			Path:       "filter-tests/advanced/filterTestD.md",
+			Path:       "docs/filter-tests/advanced/filterTestD.md",
 			CreatedAt:  time.Date(2025, 10, 4, 13, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 4, 13, 0, 0, 0, time.UTC),
 			Collection: "advanced-filter-testing",
@@ -93,7 +93,7 @@ func getFilterTestMetadata() []*files.Metadata {
 		// filterTestE
 		{
 			Name:       "filterTestE.md",
-			Path:       "filter-tests/advanced/filterTestE.md",
+			Path:       "docs/filter-tests/advanced/filterTestE.md",
 			CreatedAt:  time.Date(2025, 10, 5, 14, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 5, 14, 0, 0, 0, time.UTC),
 			Collection: "advanced-filter-testing",
@@ -113,7 +113,7 @@ func getFilterTestMetadata() []*files.Metadata {
 		// filterTestF
 		{
 			Name:       "filterTestF.md",
-			Path:       "filter-tests/basic/filterTestF.md",
+			Path:       "docs/filter-tests/basic/filterTestF.md",
 			CreatedAt:  time.Date(2025, 10, 6, 15, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 6, 15, 0, 0, 0, time.UTC),
 			Collection: "basic-filter-testing",
@@ -133,7 +133,7 @@ func getFilterTestMetadata() []*files.Metadata {
 		// filterTestG
 		{
 			Name:       "filterTestG.md",
-			Path:       "filter-tests/basic/filterTestG.md",
+			Path:       "docs/filter-tests/basic/filterTestG.md",
 			CreatedAt:  time.Date(2025, 10, 7, 16, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 7, 16, 0, 0, 0, time.UTC),
 			Collection: "basic-filter-testing",
@@ -153,7 +153,7 @@ func getFilterTestMetadata() []*files.Metadata {
 		// filterTestH
 		{
 			Name:       "filterTestH.md",
-			Path:       "filter-tests/integration/filterTestH.md",
+			Path:       "docs/filter-tests/integration/filterTestH.md",
 			CreatedAt:  time.Date(2025, 10, 8, 17, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 8, 17, 0, 0, 0, time.UTC),
 			Collection: "integration-filter-testing",
@@ -173,7 +173,7 @@ func getFilterTestMetadata() []*files.Metadata {
 		// filterTestI
 		{
 			Name:       "filterTestI.md",
-			Path:       "filter-tests/integration/filterTestI.md",
+			Path:       "docs/filter-tests/integration/filterTestI.md",
 			CreatedAt:  time.Date(2025, 10, 9, 18, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 9, 18, 0, 0, 0, time.UTC),
 			Collection: "integration-filter-testing",
@@ -193,7 +193,7 @@ func getFilterTestMetadata() []*files.Metadata {
 		// filterTestJ
 		{
 			Name:       "filterTestJ.md",
-			Path:       "filter-tests/performance/filterTestJ.md",
+			Path:       "docs/filter-tests/performance/filterTestJ.md",
 			CreatedAt:  time.Date(2025, 10, 10, 19, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 10, 19, 0, 0, 0, time.UTC),
 			Collection: "performance-filter-testing",
@@ -213,7 +213,7 @@ func getFilterTestMetadata() []*files.Metadata {
 		// filterTestK
 		{
 			Name:       "filterTestK.md",
-			Path:       "filter-tests/performance/filterTestK.md",
+			Path:       "docs/filter-tests/performance/filterTestK.md",
 			CreatedAt:  time.Date(2025, 10, 11, 20, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 11, 20, 0, 0, 0, time.UTC),
 			Collection: "performance-filter-testing",
@@ -233,7 +233,7 @@ func getFilterTestMetadata() []*files.Metadata {
 		// filterTestL
 		{
 			Name:       "filterTestL.md",
-			Path:       "filter-tests/special/filterTestL.md",
+			Path:       "docs/filter-tests/special/filterTestL.md",
 			CreatedAt:  time.Date(2025, 10, 12, 21, 0, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 11, 12, 21, 0, 0, 0, time.UTC),
 			Collection: "special-filter-testing",

@@ -140,8 +140,15 @@ func searchFilesRepositoryFallback(query string, limit int) ([]files.File, error
 		// get indexed content from searchStorage
 		contentData, err := searchStorage.GetIndexedContent(file.Path)
 		if err != nil || contentData == nil {
-			// try reading file directly if not indexed
-			fullPath := contentStorage.ToDocsPath(file.Path)
+			// try reading file directly if not indexed - use correct path
+			var fullPath string
+			if strings.HasPrefix(file.Path, "media/") {
+				normalizedPath := contentStorage.ToRelativePath(file.Path)
+				fullPath = contentStorage.ToMediaPath(normalizedPath)
+			} else {
+				fullPath = contentStorage.ToDocsPath(file.Path)
+			}
+
 			contentData, err = os.ReadFile(fullPath)
 			if err != nil {
 				continue
@@ -174,7 +181,15 @@ func searchFilesGrep(query string, limit int) ([]files.File, error) {
 			break
 		}
 
-		fullPath := contentStorage.ToDocsPath(file.Path)
+		// get correct path based on file type
+		var fullPath string
+		if strings.HasPrefix(file.Path, "media/") {
+			normalizedPath := contentStorage.ToRelativePath(file.Path)
+			fullPath = contentStorage.ToMediaPath(normalizedPath)
+		} else {
+			fullPath = contentStorage.ToDocsPath(file.Path)
+		}
+
 		content, err := os.ReadFile(fullPath)
 		if err != nil {
 			continue

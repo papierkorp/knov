@@ -16,6 +16,18 @@ import (
 	"knov/internal/utils"
 )
 
+// getFilePathForMetadata returns the correct file system path for a metadata path
+func getFilePathForMetadata(metadataPath string) string {
+	if strings.HasPrefix(metadataPath, "media/") {
+		normalizedPath := contentStorage.ToRelativePath(metadataPath)
+		return contentStorage.ToMediaPath(normalizedPath)
+	}
+
+	// default to docs path (handles both docs/ prefixed and non-prefixed paths)
+	normalizedPath := contentStorage.ToRelativePath(metadataPath)
+	return contentStorage.ToDocsPath(normalizedPath)
+}
+
 type Filetype string
 type Status string
 type Priority string
@@ -155,8 +167,23 @@ type PARA struct {
 func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	currentMetadata, _ := MetaDataGet(filePath)
 
-	normalizedPath := contentStorage.ToRelativePath(filePath)
-	fullPath := contentStorage.ToDocsPath(normalizedPath)
+	// determine if this is a media file or docs file based on the original path
+	isMediaFile := strings.HasPrefix(filePath, "media/")
+
+	var fullPath string
+	var metadataPath string
+
+	if isMediaFile {
+		// for media files, keep the media/ prefix in metadata but get actual file path
+		normalizedPath := contentStorage.ToRelativePath(filePath)
+		fullPath = contentStorage.ToMediaPath(normalizedPath)
+		metadataPath = filePath // keep original path with media/ prefix
+	} else {
+		// for docs files, keep the docs/ prefix in metadata but get actual file path
+		normalizedPath := contentStorage.ToRelativePath(filePath)
+		fullPath = contentStorage.ToDocsPath(normalizedPath)
+		metadataPath = filePath // keep original path with docs/ prefix
+	}
 
 	// get file size
 	fileInfo, err := os.Stat(fullPath)
@@ -169,17 +196,19 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	if currentMetadata == nil {
 		// initialize new metadata
 		currentMetadata = &Metadata{
-			Path:      normalizedPath,
+			Path:      metadataPath,
 			CreatedAt: time.Now(),
 		}
 	}
 
 	// update path and time fields
-	currentMetadata.Path = normalizedPath
+	currentMetadata.Path = metadataPath
 	currentMetadata.LastEdited = time.Now()
 	currentMetadata.Size = newMetadata.Size
 
-	// update collection based on folder structure
+	// update collection and folder based on folder structure (use path without docs/media prefix)
+	normalizedPath := contentStorage.ToRelativePath(filePath)
+
 	if newMetadata.Collection == "" {
 		folderPath := filepath.Dir(normalizedPath)
 		if folderPath != "." && folderPath != "" {
@@ -344,7 +373,15 @@ func metaDataSaveRaw(m *Metadata) error {
 
 // MetaDataGet retrieves metadata for a file path
 func MetaDataGet(filepath string) (*Metadata, error) {
-	normalizedPath := contentStorage.ToRelativePath(filepath)
+	// if the path already has docs/ or media/ prefix, use it as-is for metadata lookup
+	var normalizedPath string
+	if strings.HasPrefix(filepath, "docs/") || strings.HasPrefix(filepath, "media/") {
+		normalizedPath = filepath
+	} else {
+		normalizedPath = contentStorage.ToRelativePath(filepath)
+	}
+
+	logging.LogDebug("MetaDataGet: filepath='%s' -> normalizedPath='%s'", filepath, normalizedPath)
 
 	data, err := metadataStorage.Get(normalizedPath)
 	if err != nil {

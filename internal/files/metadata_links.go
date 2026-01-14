@@ -121,7 +121,12 @@ func findTopAncestor(filePath string, visited map[string]bool) string {
 }
 
 func updateUsedLinks(metadata *Metadata) {
-	fullPath := contentStorage.ToDocsPath(metadata.Path)
+	// skip link extraction for media files
+	if strings.HasPrefix(metadata.Path, "media/") {
+		return
+	}
+
+	fullPath := getFilePathForMetadata(metadata.Path)
 
 	logging.LogInfo("processing file for links: %s", fullPath)
 
@@ -289,7 +294,7 @@ func UpdateLinksForMovedFile(oldPath, newPath string) error {
 
 // updateLinksInFile updates links within a single file
 func updateLinksInFile(filePath, oldPath, newPath string) error {
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := getFilePathForMetadata(filePath)
 
 	// read file content
 	contentData, err := os.ReadFile(fullPath)
@@ -417,7 +422,12 @@ func moveFileMetadata(oldPath, newPath string) error {
 
 // updateTitle extracts title from the first header line in the file content
 func updateTitle(metadata *Metadata) {
-	fullPath := contentStorage.ToDocsPath(metadata.Path)
+	// skip title extraction for media files
+	if strings.HasPrefix(metadata.Path, "media/") {
+		return
+	}
+
+	fullPath := getFilePathForMetadata(metadata.Path)
 
 	logging.LogDebug("extracting title for %s", metadata.Path)
 
