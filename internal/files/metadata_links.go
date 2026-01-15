@@ -22,9 +22,12 @@ func MetaDataLinksRebuild() error {
 
 	// first pass: clear old data and update ancestors and usedlinks
 	for _, file := range files {
-		metadata, err := MetaDataGet(file.Path)
+		// normalize path to ensure correct prefix for metadata lookup
+		normalizedPath := contentStorage.EnsureMetadataPrefix(file.Path)
+
+		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil {
-			logging.LogWarning("failed to load metadata for %s: %v", file.Path, err)
+			logging.LogWarning("failed to load metadata for %s: %v", normalizedPath, err)
 			continue
 		}
 		if metadata == nil {
@@ -61,7 +64,10 @@ func MetaDataLinksRebuild() error {
 
 	// second pass: update kids and linkstohere for all files
 	for _, file := range files {
-		metadata, err := MetaDataGet(file.Path)
+		// normalize path to ensure correct prefix for metadata lookup
+		normalizedPath := contentStorage.EnsureMetadataPrefix(file.Path)
+
+		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil || metadata == nil {
 			continue
 		}

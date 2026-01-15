@@ -56,7 +56,7 @@ func ToDocsPath(relativePath string) string {
 	}
 
 	// normalize path and strip docs prefix if present
-	normalizedPath := NormalizeDocsPath(relativePath)
+	normalizedPath := StripDocsPrefix(relativePath)
 
 	return filepath.Join(GetDocsPath(), normalizedPath)
 }
@@ -70,7 +70,7 @@ func ToMediaPath(relativePath string) string {
 	}
 
 	// normalize path and strip media prefix if present
-	normalizedPath := NormalizeMediaPath(relativePath)
+	normalizedPath := StripMediaPrefix(relativePath)
 
 	return filepath.Join(GetMediaPath(), normalizedPath)
 }
@@ -96,11 +96,11 @@ func ToRelativePath(fullPath string) string {
 		}
 
 		// strip leading "docs/" or "media/" if present (for subdirectories)
-		cleanPath := NormalizeDocsPath(fullPath)
+		cleanPath := StripDocsPrefix(fullPath)
 		if cleanPath != fullPath {
 			return cleanPath
 		}
-		cleanPath = NormalizeMediaPath(fullPath)
+		cleanPath = StripMediaPrefix(fullPath)
 		if cleanPath != fullPath {
 			return cleanPath
 		}
@@ -146,11 +146,11 @@ func ToRelativePath(fullPath string) string {
 	if strings.HasPrefix(fullPath, dataPrefix) {
 		stripped := strings.TrimPrefix(fullPath, dataPrefix)
 		// also strip docs/ or media/ if present
-		cleanPath := NormalizeDocsPath(stripped)
+		cleanPath := StripDocsPrefix(stripped)
 		if cleanPath != stripped {
 			return cleanPath
 		}
-		cleanPath = NormalizeMediaPath(stripped)
+		cleanPath = StripMediaPrefix(stripped)
 		if cleanPath != stripped {
 			return cleanPath
 		}
@@ -167,12 +167,29 @@ func ToRelativePath(fullPath string) string {
 	return fullPath
 }
 
-// NormalizeDocsPath normalizes a docs path by stripping "docs/" prefix if present
-func NormalizeDocsPath(path string) string {
+// StripDocsPrefix normalizes a docs path by stripping "docs/" prefix if present
+func StripDocsPrefix(path string) string {
 	return utils.StripPathPrefix(path, "docs")
 }
 
-// NormalizeMediaPath normalizes a media path by stripping "media/" prefix if present
-func NormalizeMediaPath(path string) string {
+// StripMediaPrefix normalizes a media path by stripping "media/" prefix if present
+func StripMediaPrefix(path string) string {
 	return utils.StripPathPrefix(path, "media")
+}
+
+// EnsureMetadataPrefix ensures the filepath has the correct prefix for metadata storage
+// - paths with media/ prefix are left as-is
+// - paths with docs/ prefix are left as-is
+// - paths without either prefix get docs/ prefix added (assumes docs files)
+func EnsureMetadataPrefix(gitPath string) string {
+	// normalize path separators to forward slashes
+	gitPath = filepath.ToSlash(gitPath)
+
+	// if path already has media/ or docs/ prefix, return as-is
+	if strings.HasPrefix(gitPath, "media/") || strings.HasPrefix(gitPath, "docs/") {
+		return gitPath
+	}
+
+	// add docs/ prefix for all other paths
+	return filepath.Join("docs", gitPath)
 }

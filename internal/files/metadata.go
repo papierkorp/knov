@@ -410,10 +410,13 @@ func MetaDataInitializeAll() error {
 	}
 
 	for _, file := range allFiles {
+		// normalize path to ensure correct prefix for metadata storage
+		normalizedPath := contentStorage.EnsureMetadataPrefix(file.Path)
+
 		// check if metadata already exists
-		metadata, err := MetaDataGet(file.Path)
+		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil {
-			logging.LogWarning("error checking metadata for %s: %v", file.Path, err)
+			logging.LogWarning("error checking metadata for %s: %v", normalizedPath, err)
 			continue
 		}
 
@@ -423,11 +426,11 @@ func MetaDataInitializeAll() error {
 		}
 
 		// create new metadata
-		newMetadata := &Metadata{Path: file.Path}
+		newMetadata := &Metadata{Path: normalizedPath}
 		if err := MetaDataSave(newMetadata); err != nil {
-			logging.LogWarning("failed to initialize metadata for %s: %v", file.Path, err)
+			logging.LogWarning("failed to initialize metadata for %s: %v", normalizedPath, err)
 		} else {
-			logging.LogInfo("initialized metadata for %s", file.Path)
+			logging.LogInfo("initialized metadata for %s", normalizedPath)
 		}
 	}
 

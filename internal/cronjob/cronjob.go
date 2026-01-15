@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/logging"
@@ -174,13 +175,17 @@ func runFileJobs() {
 
 				// process each file move
 				for _, move := range movedFiles {
-					logging.LogInfo("processing file move: %s -> %s", move.OldPath, move.NewPath)
+					// normalize paths for metadata operations
+					oldNormalized := contentStorage.EnsureMetadataPrefix(move.OldPath)
+					newNormalized := contentStorage.EnsureMetadataPrefix(move.NewPath)
+
+					logging.LogInfo("processing file move: %s -> %s", oldNormalized, newNormalized)
 
 					// update links in other files that reference the moved file
-					if err := files.UpdateLinksForMovedFile(move.OldPath, move.NewPath); err != nil {
-						logging.LogError("cronjob: failed to update links for moved file %s -> %s: %v", move.OldPath, move.NewPath, err)
+					if err := files.UpdateLinksForMovedFile(oldNormalized, newNormalized); err != nil {
+						logging.LogError("cronjob: failed to update links for moved file %s -> %s: %v", oldNormalized, newNormalized, err)
 					} else {
-						logging.LogInfo("successfully updated links for moved file %s -> %s", move.OldPath, move.NewPath)
+						logging.LogInfo("successfully updated links for moved file %s -> %s", oldNormalized, newNormalized)
 					}
 
 					// add new path to processing queue to ensure metadata is updated
@@ -215,11 +220,13 @@ func runFileJobs() {
 	if len(filesToDelete) > 0 {
 		logging.LogInfo("deleting metadata for %d files", len(filesToDelete))
 		for _, filePath := range filesToDelete {
-			if err := files.MetaDataDelete(filePath); err != nil {
-				logging.LogError("cronjob: failed to delete metadata for %s: %v", filePath, err)
+			// normalize path to ensure correct prefix for metadata lookup
+			normalizedPath := contentStorage.EnsureMetadataPrefix(filePath)
+			if err := files.MetaDataDelete(normalizedPath); err != nil {
+				logging.LogError("cronjob: failed to delete metadata for %s: %v", normalizedPath, err)
 				continue
 			}
-			logging.LogDebug("deleted metadata for %s", filePath)
+			logging.LogDebug("deleted metadata for %s", normalizedPath)
 		}
 	}
 
@@ -231,12 +238,14 @@ func runFileJobs() {
 
 		// process each file
 		for _, filePath := range filesToProcess {
-			metadata := &files.Metadata{Path: filePath}
+			// normalize path to ensure correct prefix for metadata lookup
+			normalizedPath := contentStorage.EnsureMetadataPrefix(filePath)
+			metadata := &files.Metadata{Path: normalizedPath}
 			if err := files.MetaDataSave(metadata); err != nil {
-				logging.LogError("cronjob: failed to save metadata for %s: %v", filePath, err)
+				logging.LogError("cronjob: failed to save metadata for %s: %v", normalizedPath, err)
 				continue
 			}
-			logging.LogDebug("processed metadata for %s", filePath)
+			logging.LogDebug("processed metadata for %s", normalizedPath)
 		}
 	}
 

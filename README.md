@@ -2,6 +2,11 @@
 
 # todo
 
+- rework docs folder manually without ai
+  - first set the files to be created (install.md, dev-guide.md, ai.md, features/concept.md,example_workflows.md)
+  - combine with help.gohtml of builtin theme
+  - use the docs folder as testdata and remove the internal/testdata/testfiles
+- sqlite metadata db - collection is a path should be a folder
 - PARA Metadata - should create a folder and if one is selected the other cant be selected
 - if a file is moved (git..) look at linksto and in the target file  change the link
 - Dashboard

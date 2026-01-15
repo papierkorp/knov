@@ -60,6 +60,14 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 		contextDir = ""
 	}
 
+	// strip docs/ prefix from context dir to avoid media/docs/... paths
+	// media should mirror docs structure without the docs/ prefix
+	if contextDir == "docs" {
+		contextDir = ""
+	} else {
+		contextDir = contentStorage.StripDocsPrefix(contextDir)
+	}
+
 	// sanitize filename
 	sanitizedName := utils.SanitizeMediaFilename(header.Filename)
 
