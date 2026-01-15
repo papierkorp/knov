@@ -2,6 +2,7 @@
 
 # todo
 
+- make certain settings required in thememanager
 - rework docs folder manually without ai
   - first set the files to be created (install.md, dev-guide.md, ai.md, features/concept.md,example_workflows.md)
   - combine with help.gohtml of builtin theme
