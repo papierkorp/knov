@@ -1,4 +1,4 @@
-// Package contentStorage provides content storage directory management and path utilities
+// Package contentStorage provides content storage functionality
 package contentStorage
 
 import (
@@ -12,39 +12,85 @@ import (
 	"knov/internal/utils"
 )
 
-// Init initializes content storage directories
+// ContentStorage interface defines methods for content storage
+type ContentStorage interface {
+	ReadFile(path string) ([]byte, error)
+	WriteFile(path string, data []byte, perm os.FileMode) error
+	DeleteFile(path string) error
+	FileExists(path string) (bool, error)
+	MkdirAll(path string, perm os.FileMode) error
+	ListFiles() ([]string, error)
+	GetDocsPath() string
+	GetMediaPath() string
+	GetGitPath() string
+	GetBackendType() string
+}
+
+var storage ContentStorage
+
+// Init initializes content storage with the specified provider
 func Init() error {
 	dataPath := configmanager.GetAppConfig().DataPath
 
-	// create main data directory
-	if err := os.MkdirAll(dataPath, 0755); err != nil {
-		return fmt.Errorf("failed to create data directory: %w", err)
+	// for now, only filesystem provider is supported
+	var err error
+	storage, err = newFilesystemStorage(dataPath)
+	if err != nil {
+		return fmt.Errorf("failed to initialize content storage: %w", err)
 	}
 
-	// create docs subdirectory
-	docsPath := filepath.Join(dataPath, "docs")
-	if err := os.MkdirAll(docsPath, 0755); err != nil {
-		return fmt.Errorf("failed to create docs directory: %w", err)
-	}
-
-	// create media subdirectory
-	mediaPath := filepath.Join(dataPath, "media")
-	if err := os.MkdirAll(mediaPath, 0755); err != nil {
-		return fmt.Errorf("failed to create media directory: %w", err)
-	}
-
-	logging.LogInfo("content storage initialized")
+	logging.LogInfo("content storage initialized: filesystem")
 	return nil
+}
+
+// ReadFile reads content from a file
+func ReadFile(path string) ([]byte, error) {
+	return storage.ReadFile(path)
+}
+
+// WriteFile writes content to a file
+func WriteFile(path string, data []byte, perm os.FileMode) error {
+	return storage.WriteFile(path, data, perm)
+}
+
+// DeleteFile removes a file
+func DeleteFile(path string) error {
+	return storage.DeleteFile(path)
+}
+
+// FileExists checks if a file exists
+func FileExists(path string) (bool, error) {
+	return storage.FileExists(path)
+}
+
+// MkdirAll creates a directory path
+func MkdirAll(path string, perm os.FileMode) error {
+	return storage.MkdirAll(path, perm)
+}
+
+// ListFiles lists all files recursively
+func ListFiles() ([]string, error) {
+	return storage.ListFiles()
+}
+
+// GetBackendType returns the backend type
+func GetBackendType() string {
+	return storage.GetBackendType()
+}
+
+// GetGitPath returns the full path to git directory
+func GetGitPath() string {
+	return storage.GetGitPath()
 }
 
 // GetDocsPath returns the full path to docs directory
 func GetDocsPath() string {
-	return filepath.Join(configmanager.GetAppConfig().DataPath, "docs")
+	return storage.GetDocsPath()
 }
 
 // GetMediaPath returns the full path to media directory
 func GetMediaPath() string {
-	return filepath.Join(configmanager.GetAppConfig().DataPath, "media")
+	return storage.GetMediaPath()
 }
 
 // ToDocsPath converts relative path to full docs path
