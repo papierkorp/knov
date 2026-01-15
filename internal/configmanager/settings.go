@@ -116,3 +116,12 @@ func saveUserSettings() error {
 	logging.LogInfo("user settings saved")
 	return nil
 }
+
+// GetMaxUploadSize returns the maximum upload size in bytes
+func GetMaxUploadSize() int64 {
+	maxUploadSizeMB := userSettings.MediaSettings.MaxUploadSizeMB
+	if maxUploadSizeMB <= 0 {
+		maxUploadSizeMB = 10 // 10MB default
+	}
+	return int64(maxUploadSizeMB) * 1024 * 1024
+}

@@ -37,94 +37,45 @@ func CleanLink(link string) string {
 	return cleanLink
 }
 
-// SanitizeFilename creates a sanitized filename from content, with optional length limit
-func SanitizeFilename(content string, maxLength int) string {
-	if content == "" {
-		// fallback to timestamp if no content
-		return time.Now().Format("2006-01-02-150405")
-	}
+// SanitizeFilename creates a sanitized filename with configurable options
+func SanitizeFilename(input string, maxLength int, preserveExtensions bool, extractFromContent bool) string {
+	if extractFromContent && input != "" {
+		// extract filename from markdown content
+		lines := strings.Split(input, "\n")
+		var firstLine string
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if line != "" {
+				firstLine = line
+				break
+			}
+		}
 
-	// split into lines and get first non-empty line
-	lines := strings.Split(content, "\n")
-	var firstLine string
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line != "" {
-			firstLine = line
-			break
+		if firstLine != "" {
+			// remove markdown syntax
+			firstLine = strings.TrimSpace(firstLine)
+			firstLine = strings.TrimLeft(firstLine, "#")
+			firstLine = strings.TrimSpace(firstLine)
+			firstLine = strings.ReplaceAll(firstLine, "**", "")
+			firstLine = strings.ReplaceAll(firstLine, "*", "")
+			firstLine = strings.ReplaceAll(firstLine, "__", "")
+			firstLine = strings.ReplaceAll(firstLine, "_", "")
+			input = firstLine
 		}
 	}
 
-	if firstLine == "" {
-		// fallback to timestamp if no meaningful content
+	// fallback to timestamp if input is empty
+	if input == "" {
 		return time.Now().Format("2006-01-02-150405")
 	}
 
-	// remove markdown syntax
-	firstLine = strings.TrimSpace(firstLine)
-	// remove markdown headers
-	firstLine = strings.TrimLeft(firstLine, "#")
-	firstLine = strings.TrimSpace(firstLine)
-	// remove markdown bold/italic
-	firstLine = strings.ReplaceAll(firstLine, "**", "")
-	firstLine = strings.ReplaceAll(firstLine, "*", "")
-	firstLine = strings.ReplaceAll(firstLine, "__", "")
-	firstLine = strings.ReplaceAll(firstLine, "_", "")
-
-	// sanitize for filesystem - keep only alphanumeric, hyphens, underscores, and spaces
+	// sanitize for filesystem - keep only safe characters
 	var sanitized strings.Builder
-	for _, r := range firstLine {
+	for _, r := range input {
 		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' || r == '_' || r == ' ' {
 			sanitized.WriteRune(r)
-		}
-	}
-
-	filename := sanitized.String()
-	filename = strings.TrimSpace(filename)
-
-	// replace spaces with hyphens
-	filename = strings.ReplaceAll(filename, " ", "-")
-	// remove multiple consecutive hyphens
-	for strings.Contains(filename, "--") {
-		filename = strings.ReplaceAll(filename, "--", "-")
-	}
-	// trim leading/trailing hyphens
-	filename = strings.Trim(filename, "-")
-
-	if filename == "" {
-		// fallback to timestamp if sanitization resulted in empty string
-		return time.Now().Format("2006-01-02-150405")
-	}
-
-	// truncate to specified length (default to 20 if maxLength <= 0)
-	if maxLength <= 0 {
-		maxLength = 20
-	}
-
-	if len(filename) > maxLength {
-		filename = filename[:maxLength]
-		// trim trailing hyphen if cut in the middle
-		filename = strings.TrimSuffix(filename, "-")
-	}
-
-	// ensure it's not empty after truncation
-	if filename == "" {
-		return time.Now().Format("2006-01-02-150405")
-	}
-
-	return filename
-}
-
-// SanitizeMediaFilename sanitizes a media filename for safe storage
-func SanitizeMediaFilename(filename string) string {
-	if filename == "" {
-		return "media-" + time.Now().Format("2006-01-02-150405")
-	}
-
-	// sanitize for filesystem - keep only alphanumeric, hyphens, underscores, dots, and spaces
-	var sanitized strings.Builder
-	for _, r := range filename {
-		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' || r == '_' || r == '.' || r == ' ' {
+		} else if r == '.' && preserveExtensions {
+			// preserve dots for file extensions
 			sanitized.WriteRune(r)
 		}
 	}
@@ -142,24 +93,29 @@ func SanitizeMediaFilename(filename string) string {
 	result = strings.Trim(result, "-")
 
 	if result == "" {
-		return "media-" + time.Now().Format("2006-01-02-150405")
+		return time.Now().Format("2006-01-02-150405")
 	}
 
-	// ensure filename doesn't exceed 255 characters (filesystem limit)
-	if len(result) > 255 {
-		// find the last dot to preserve extension
-		lastDot := strings.LastIndex(result, ".")
-		if lastDot > 0 && lastDot < len(result)-1 {
-			ext := result[lastDot:]
-			name := result[:lastDot]
-			maxNameLength := 255 - len(ext)
-			if maxNameLength > 0 {
-				result = name[:maxNameLength] + ext
+	// apply length limit
+	if maxLength > 0 && len(result) > maxLength {
+		if preserveExtensions {
+			// preserve extension if possible
+			lastDot := strings.LastIndex(result, ".")
+			if lastDot > 0 && lastDot < len(result)-1 {
+				ext := result[lastDot:]
+				name := result[:lastDot]
+				maxNameLength := maxLength - len(ext)
+				if maxNameLength > 0 {
+					result = name[:maxNameLength] + ext
+				} else {
+					result = result[:maxLength]
+				}
 			} else {
-				result = result[:255]
+				result = result[:maxLength]
 			}
 		} else {
-			result = result[:255]
+			result = result[:maxLength]
+			result = strings.TrimSuffix(result, "-")
 		}
 	}
 
@@ -227,7 +183,7 @@ func ResolveFilenameConflicts(fullPath, relativePath string) string {
 	}
 
 	// fallback: use timestamp if we couldn't resolve conflicts
-	timestamp := SanitizeFilename("", 20) // this generates timestamp
+	timestamp := SanitizeFilename("", 20, false, true) // this generates timestamp
 	newFilename := fmt.Sprintf("%s-%s%s", nameWithoutExt, timestamp, ext)
 	if dir != "" && dir != "." {
 		return filepath.Join(dir, newFilename)

@@ -839,7 +839,7 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 // generateUniqueFleetingFilename creates a unique sanitized filename, adding numbers if duplicates exist
 func generateUniqueFleetingFilename(content string) string {
 	// get base filename from content
-	baseFilename := utils.SanitizeFilename(content, 20)
+	baseFilename := utils.SanitizeFilename(content, 20, false, true)
 	filename := baseFilename
 	counter := 2
 

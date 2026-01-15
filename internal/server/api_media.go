@@ -42,10 +42,7 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// parse multipart form with size limit
-	maxUploadSize := int64(configmanager.GetUserSettings().MediaSettings.MaxUploadSizeMB) * 1024 * 1024
-	if maxUploadSize == 0 {
-		maxUploadSize = 10 * 1024 * 1024 // 10MB default
-	}
+	maxUploadSize := configmanager.GetMaxUploadSize()
 
 	err := r.ParseMultipartForm(maxUploadSize)
 	if err != nil {

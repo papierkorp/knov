@@ -26,11 +26,8 @@ type MediaUploadResult struct {
 
 // UploadMedia handles the core media upload logic
 func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath string) (*MediaUploadResult, error) {
-	// get max upload size
-	maxUploadSize := int64(configmanager.GetUserSettings().MediaSettings.MaxUploadSizeMB) * 1024 * 1024
-	if maxUploadSize == 0 {
-		maxUploadSize = 10 * 1024 * 1024 // 10MB default
-	}
+	// get max upload size from settings
+	maxUploadSize := configmanager.GetMaxUploadSize()
 
 	// read file content
 	fileBytes, err := io.ReadAll(file)
@@ -69,7 +66,7 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	}
 
 	// sanitize filename
-	sanitizedName := utils.SanitizeMediaFilename(header.Filename)
+	sanitizedName := utils.SanitizeFilename(header.Filename, 255, true, false)
 
 	// create media path mirroring docs structure
 	var mediaPath string
