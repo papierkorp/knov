@@ -353,3 +353,38 @@ func NewFileEditTableTemplateData(filePath string) FileEditTableTemplateData {
 		FilePath:         filePath,
 	}
 }
+
+// -----------------------------------------------
+// --------- Media Overview TemplateData --------
+// -----------------------------------------------
+
+// MediaOverviewTemplateData extends base with media overview data
+type MediaOverviewTemplateData struct {
+	BaseTemplateData
+}
+
+// NewMediaOverviewTemplateData creates media overview specific data
+func NewMediaOverviewTemplateData() MediaOverviewTemplateData {
+	return MediaOverviewTemplateData{
+		BaseTemplateData: NewBaseTemplateData("media overview"),
+	}
+}
+
+// -----------------------------------------------
+// --------- Media Detail TemplateData ----------
+// -----------------------------------------------
+
+// MediaDetailTemplateData extends base with media detail data
+type MediaDetailTemplateData struct {
+	BaseTemplateData
+	MediaPath string
+}
+
+// NewMediaDetailTemplateData creates media detail specific data
+func NewMediaDetailTemplateData(mediaPath string) MediaDetailTemplateData {
+	title := "media: " + mediaPath
+	return MediaDetailTemplateData{
+		BaseTemplateData: NewBaseTemplateData(title),
+		MediaPath:        mediaPath,
+	}
+}

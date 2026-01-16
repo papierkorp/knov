@@ -90,6 +90,15 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 				return ast.GoToNext, true
 			}
 
+			// Handle media images - convert media/ paths to /static/media/
+			if img, ok := node.(*ast.Image); ok && entering {
+				dest := string(img.Destination)
+				if strings.HasPrefix(dest, "media/") {
+					// Convert media/ to /static/media/ for proper serving
+					img.Destination = []byte("/static/" + dest)
+				}
+			}
+
 			return ast.GoToNext, false
 		},
 	}
@@ -181,16 +190,28 @@ func (h *MarkdownHandler) Name() string {
 
 // processMarkdownLinks converts markdown-style links to HTML anchors
 func (h *MarkdownHandler) processMarkdownLinks(content string) string {
-	re := regexp.MustCompile(`\[([^\]]+)\]\(([^)]+)\)`)
+	// regex that captures both regular and image links
+	re := regexp.MustCompile(`(!)?\[([^\]]+)\]\(([^)]+)\)`)
 
 	content = re.ReplaceAllStringFunc(content, func(match string) string {
 		matches := re.FindStringSubmatch(match)
-		if len(matches) < 3 {
+		if len(matches) < 4 {
 			return match
 		}
 
-		text := strings.TrimSpace(matches[1])
-		url := strings.TrimSpace(matches[2])
+		isImage := matches[1] == "!"
+		text := strings.TrimSpace(matches[2])
+		url := strings.TrimSpace(matches[3])
+
+		// if it's an image link, don't process it - return as-is
+		if isImage {
+			return match
+		}
+
+		// if it's a media link, convert to media route
+		if strings.HasPrefix(url, "media/") {
+			return `<a href="/static/` + url + `">` + text + `</a>`
+		}
 
 		if !strings.Contains(url, "://") && !strings.HasPrefix(url, "#") {
 			if !strings.HasSuffix(url, ".md") {

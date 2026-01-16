@@ -124,9 +124,9 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 
 	logging.LogInfo("uploaded media file: %s (%s, %d bytes)", fullMediaPath, contentType, len(fileBytes))
 
-	// return result
+	// return result with relative path for markdown links
 	return &MediaUploadResult{
-		Path:        finalMediaPath,
+		Path:        finalMediaPath, // Return just the relative path without media/ prefix
 		Filename:    filepath.Base(finalMediaPath),
 		ContentType: contentType,
 		Size:        strconv.Itoa(len(fileBytes)),

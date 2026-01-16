@@ -59,11 +59,12 @@ func StartServerChi() {
 	r.Get("/help", handleHelp)
 	r.Get("/latest-changes", handleLatestChanges)
 	r.Get("/history", handleHistory)
-	r.Get("/files/history/*", handleHistory)
 	r.Get("/overview", handleOverview)
 	r.Get("/search", handleSearchPage)
+	r.Get("/files/*", handleFileContent)
 	r.Get("/files/edit/*", handleFileEdit)
 	r.Get("/files/edittable/*", handleFileEditTable)
+	r.Get("/files/history/*", handleHistory)
 
 	// use filenew template
 	r.Get("/files/new/todo", handleFileNewTodo)
@@ -74,7 +75,6 @@ func StartServerChi() {
 	r.Get("/files/new/filter", handleFileNewFilter)
 	r.Get("/files/new/journaling", handleFileNewJournaling)
 
-	r.Get("/files/*", handleFileContent)
 	r.Get("/dashboard", handleDashboardView)
 	r.Get("/dashboard/{id}", handleDashboardView)
 	r.Get("/dashboard/new", handleDashboardNew)
@@ -82,6 +82,8 @@ func StartServerChi() {
 	r.Get("/browse", handleBrowse)
 	r.Get("/browse/{metadata}", handleBrowseMetadata)
 	r.Get("/browse/{metadata}/{value}", handleBrowseFiles)
+	r.Get("/media", handleMediaOverview)
+	r.Get("/media/*", handleMediaDetail)
 
 	// ----------------------------------------------------------------------------------------
 	// ------------------------------------- static routes -------------------------------------
@@ -90,6 +92,7 @@ func StartServerChi() {
 	r.Get("/static/*", handleStatic)
 	r.Get("/themes/*", handleStatic)
 	r.Get("/webfonts/*", handleWebfontsRedirect)
+	r.Get("/static/media/*", handleMediaStatic)
 
 	// ----------------------------------------------------------------------------------------
 	// -------------------------------------- api routes --------------------------------------
@@ -217,6 +220,9 @@ func StartServerChi() {
 		// ----------------------------------------------------------------------------------------
 		r.Route("/media", func(r chi.Router) {
 			r.Post("/upload", handleAPIMediaUpload)
+			r.Get("/list", handleAPIGetAllMedia)
+			r.Get("/detail/*", handleAPIGetMediaDetail)
+			r.Delete("/*", handleAPIDeleteMedia)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -376,6 +382,8 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ext := strings.ToLower(filepath.Ext(filePath))
+
+	// Set content type headers before serving files
 	switch ext {
 	case ".js":
 		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
@@ -407,6 +415,22 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 			http.NotFound(w, r)
 			return
 		}
+
+		// For CSS files, read and serve manually to ensure correct MIME type
+		if ext == ".css" {
+			cssData, err := os.ReadFile(fullPath)
+			if err != nil {
+				logging.LogError("failed to read theme CSS file %s: %v", fullPath, err)
+				http.NotFound(w, r)
+				return
+			}
+			w.Header().Set("Content-Type", "text/css; charset=utf-8")
+			w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+			w.Write(cssData)
+			logging.LogDebug("serving theme CSS file: %s", fullPath)
+			return
+		}
+
 		logging.LogDebug("serving theme file: %s", fullPath)
 		http.ServeFile(w, r, fullPath)
 	} else {
@@ -433,6 +457,60 @@ func handleWebfontsRedirect(w http.ResponseWriter, r *http.Request) {
 	newReq.URL = &newURL
 
 	handleStatic(w, newReq)
+}
+
+// handleMediaStatic serves media files from the data directory
+func handleMediaStatic(w http.ResponseWriter, r *http.Request) {
+	mediaPath := strings.TrimPrefix(r.URL.Path, "/static/media/")
+	if mediaPath == "" {
+		http.NotFound(w, r)
+		return
+	}
+
+	// get full media file path
+	fullPath := contentStorage.ToMediaPath(mediaPath)
+
+	// check if file exists
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		logging.LogWarning("media file not found: %s", fullPath)
+		http.NotFound(w, r)
+		return
+	}
+
+	// set appropriate content type based on file extension
+	ext := strings.ToLower(filepath.Ext(mediaPath))
+	switch ext {
+	case ".png":
+		w.Header().Set("Content-Type", "image/png")
+	case ".jpg", ".jpeg":
+		w.Header().Set("Content-Type", "image/jpeg")
+	case ".gif":
+		w.Header().Set("Content-Type", "image/gif")
+	case ".webp":
+		w.Header().Set("Content-Type", "image/webp")
+	case ".svg":
+		w.Header().Set("Content-Type", "image/svg+xml")
+	case ".ico":
+		w.Header().Set("Content-Type", "image/x-icon")
+	case ".mp4":
+		w.Header().Set("Content-Type", "video/mp4")
+	case ".webm":
+		w.Header().Set("Content-Type", "video/webm")
+	case ".ogg":
+		w.Header().Set("Content-Type", "video/ogg")
+	case ".mp3":
+		w.Header().Set("Content-Type", "audio/mpeg")
+	case ".wav":
+		w.Header().Set("Content-Type", "audio/wav")
+	case ".pdf":
+		w.Header().Set("Content-Type", "application/pdf")
+	}
+
+	// set cache headers for media files
+	w.Header().Set("Cache-Control", "public, max-age=31536000") // 1 year
+
+	logging.LogDebug("serving media file: %s", fullPath)
+	http.ServeFile(w, r, fullPath)
 }
 
 // ----------------------------------------------------------------------------------------
@@ -609,6 +687,34 @@ func handleBrowse(w http.ResponseWriter, r *http.Request) {
 	data := thememanager.NewBaseTemplateData("Browse")
 
 	err := tm.Render(w, "browse", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleMediaOverview(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewMediaOverviewTemplateData()
+
+	err := tm.Render(w, "mediaoverview", data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleMediaDetail(w http.ResponseWriter, r *http.Request) {
+	mediaPath := chi.URLParam(r, "*")
+	if mediaPath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing media path"), http.StatusBadRequest)
+		return
+	}
+
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewMediaDetailTemplateData(mediaPath)
+
+	err := tm.Render(w, "mediadetail", data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return

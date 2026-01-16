@@ -71,6 +71,8 @@ type ThemeTemplates struct {
 	playground     *template.Template
 	search         *template.Template
 	settings       *template.Template
+	mediaoverview  *template.Template
+	mediadetail    *template.Template
 }
 
 func InitThemeManager() {
@@ -217,6 +219,10 @@ func LoadSingleTheme(themeName, themesDir string) error {
 			templates.search = tmpl
 		case "settings":
 			templates.settings = tmpl
+		case "mediaoverview":
+			templates.mediaoverview = tmpl
+		case "mediadetail":
+			templates.mediadetail = tmpl
 		default:
 			logging.LogWarning("unknown template file '%s' -> ignoring", filePath)
 		}
@@ -481,6 +487,8 @@ func (t *Theme) TemplateMap() map[string]*template.Template {
 		"playground":     t.Templates.playground,
 		"search":         t.Templates.search,
 		"settings":       t.Templates.settings,
+		"mediaoverview":  t.Templates.mediaoverview,
+		"mediadetail":    t.Templates.mediadetail,
 	}
 }
 

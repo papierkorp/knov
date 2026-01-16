@@ -2065,6 +2065,77 @@
                 "responses": {}
             }
         },
+        "/api/media/detail/{mediapath}": {
+            "get": {
+                "description": "Get detailed information about a specific media file",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Get media file details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Media file path",
+                        "name": "mediapath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Media file details",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "media file not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/media/list": {
+            "get": {
+                "description": "Get list of all media files with metadata",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Get all media files",
+                "responses": {
+                    "200": {
+                        "description": "List of media files",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/media/upload": {
             "post": {
                 "description": "Upload a media file with context path for directory mirroring",
@@ -2125,6 +2196,53 @@
                     },
                     "500": {
                         "description": "upload failed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/media/{mediapath}": {
+            "delete": {
+                "description": "Deletes a media file and its metadata",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Delete media file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Media file path to delete",
+                        "name": "mediapath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success message",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "missing media path",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "media file not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
                         "schema": {
                             "type": "string"
                         }

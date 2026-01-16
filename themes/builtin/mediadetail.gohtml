@@ -1,0 +1,16 @@
+{{ define "content" }}
+<div id="page-media-detail">
+    <div class="media-detail-header">
+        <div class="media-breadcrumb">
+            <a href="/">{{T "Home"}}</a>
+            → <a href="/media">{{T "Media"}}</a>
+            → <span>{{.MediaPath}}</span>
+        </div>
+    </div>
+    <div class="media-detail-content">
+        <div hx-get="/api/media/detail/{{.MediaPath}}" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+            {{T "loading media details..."}}
+        </div>
+    </div>
+</div>
+{{ end }}

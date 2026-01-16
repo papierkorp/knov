@@ -72,6 +72,56 @@ func GetAllFiles() ([]File, error) {
 	return files, nil
 }
 
+// GetAllMediaFiles returns list of all media files using contentStorage
+func GetAllMediaFiles() ([]File, error) {
+	mediaDir := contentStorage.GetMediaPath()
+	var files []File
+
+	// check if media directory exists
+	if _, err := os.Stat(mediaDir); os.IsNotExist(err) {
+		logging.LogDebug("media directory does not exist: %s", mediaDir)
+		return files, nil // return empty slice, not error
+	}
+
+	err := filepath.Walk(mediaDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil // skip directories
+		}
+
+		relativePath, err := filepath.Rel(mediaDir, path)
+		if err != nil {
+			return err
+		}
+
+		// add media/ prefix to distinguish from docs files
+		mediaPath := filepath.Join("media", relativePath)
+
+		// get metadata if it exists
+		metadata, _ := MetaDataGet(mediaPath)
+
+		file := File{
+			Name:     info.Name(),
+			Path:     mediaPath,
+			Metadata: metadata,
+		}
+		files = append(files, file)
+
+		return nil
+	})
+
+	if err != nil {
+		logging.LogError("failed to walk media directory: %v", err)
+		return nil, err
+	}
+
+	logging.LogDebug("found %d media files", len(files))
+	return files, nil
+}
+
 // GetFileContent converts file content to html based on detected type
 func GetFileContent(filePath string) (*FileContent, error) {
 	handler := parserRegistry.GetHandler(filePath)

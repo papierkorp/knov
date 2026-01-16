@@ -4,12 +4,17 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/server/render"
 	"knov/internal/translation"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // @Summary Upload media file
@@ -85,4 +90,142 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, r, responseData, fmt.Sprintf("media uploaded: %s", result.Path))
+}
+
+// @Summary Get all media files
+// @Description Get list of all media files with metadata
+// @Tags media
+// @Produce json,html
+// @Success 200 {object} map[string]interface{} "List of media files"
+// @Failure 500 {string} string "internal error"
+// @Router /api/media/list [get]
+func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
+	mediaFiles, err := files.GetAllMediaFiles()
+	if err != nil {
+		logging.LogError("failed to get media files: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load media files"), http.StatusInternalServerError)
+		return
+	}
+
+	// determine response format
+	acceptHeader := r.Header.Get("Accept")
+	if strings.Contains(acceptHeader, "text/html") {
+		// render HTML response
+		html := render.RenderMediaList(mediaFiles)
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html))
+		return
+	}
+
+	// return JSON response
+	writeResponse(w, r, mediaFiles, fmt.Sprintf("found %d media files", len(mediaFiles)))
+}
+
+// @Summary Get media file details
+// @Description Get detailed information about a specific media file
+// @Tags media
+// @Param mediapath path string true "Media file path"
+// @Produce json,html
+// @Success 200 {object} map[string]interface{} "Media file details"
+// @Failure 404 {string} string "media file not found"
+// @Failure 500 {string} string "internal error"
+// @Router /api/media/detail/{mediapath} [get]
+func handleAPIGetMediaDetail(w http.ResponseWriter, r *http.Request) {
+	mediaPath := chi.URLParam(r, "*")
+	if mediaPath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing media path"), http.StatusBadRequest)
+		return
+	}
+
+	// add media prefix if not present
+	if !strings.HasPrefix(mediaPath, "media/") {
+		mediaPath = "media/" + mediaPath
+	}
+
+	metadata, err := files.MetaDataGet(mediaPath)
+	if err != nil {
+		logging.LogError("failed to get metadata for %s: %v", mediaPath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "media file not found"), http.StatusNotFound)
+		return
+	}
+
+	if metadata == nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "media file not found"), http.StatusNotFound)
+		return
+	}
+
+	// determine response format
+	acceptHeader := r.Header.Get("Accept")
+	if strings.Contains(acceptHeader, "text/html") {
+		// render HTML response
+		html := render.RenderMediaDetail(metadata)
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html))
+		return
+	}
+
+	// return JSON response
+	writeResponse(w, r, metadata, fmt.Sprintf("media details for %s", mediaPath))
+}
+
+// @Summary Delete media file
+// @Description Deletes a media file and its metadata
+// @Tags media
+// @Param mediapath path string true "Media file path to delete"
+// @Produce html
+// @Success 200 {string} string "success message"
+// @Failure 400 {string} string "missing media path"
+// @Failure 404 {string} string "media file not found"
+// @Failure 500 {string} string "internal error"
+// @Router /api/media/{mediapath} [delete]
+func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
+	mediaPath := chi.URLParam(r, "*")
+	if mediaPath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing media path"), http.StatusBadRequest)
+		return
+	}
+
+	// add media prefix if not present
+	fullMediaPath := mediaPath
+	if !strings.HasPrefix(mediaPath, "media/") {
+		fullMediaPath = "media/" + mediaPath
+	}
+
+	logging.LogInfo("deleting media file: %s", fullMediaPath)
+
+	// check if file exists
+	fullPath := contentStorage.ToMediaPath(strings.TrimPrefix(fullMediaPath, "media/"))
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "media file not found"), http.StatusNotFound)
+		return
+	}
+
+	// delete file from filesystem
+	if err := os.Remove(fullPath); err != nil {
+		logging.LogError("failed to delete media file %s: %v", fullPath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete file"), http.StatusInternalServerError)
+		return
+	}
+
+	// delete metadata
+	if err := files.MetaDataDelete(fullMediaPath); err != nil {
+		logging.LogWarning("failed to delete metadata for media file %s: %v", fullMediaPath, err)
+		// don't fail the whole operation, just log warning
+	}
+
+	logging.LogInfo("successfully deleted media file: %s", fullMediaPath)
+
+	// return updated media list
+	mediaFiles, err := files.GetAllMediaFiles()
+	if err != nil {
+		logging.LogError("failed to get media files after deletion: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to refresh media list"), http.StatusInternalServerError)
+		return
+	}
+
+	// render updated media list
+	html := render.RenderMediaList(mediaFiles)
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(html))
 }
