@@ -29,10 +29,16 @@ func CleanLink(link string) string {
 	cleanLink = strings.Split(cleanLink, "|")[0]
 	cleanLink = strings.TrimSpace(cleanLink)
 
-	// only add .md if no extension is present (preserve .txt, .md, etc.)
-	if !strings.HasSuffix(cleanLink, ".md") && !strings.HasSuffix(cleanLink, ".txt") {
-		cleanLink = cleanLink + ".md"
+	// don't add .md extension to media files or files with existing extensions
+	if strings.HasPrefix(cleanLink, "media/") ||
+		strings.HasSuffix(cleanLink, ".md") ||
+		strings.HasSuffix(cleanLink, ".txt") ||
+		strings.Contains(filepath.Base(cleanLink), ".") {
+		return cleanLink
 	}
+
+	// only add .md if no extension is present
+	cleanLink = cleanLink + ".md"
 
 	return cleanLink
 }

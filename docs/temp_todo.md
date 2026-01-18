@@ -241,3 +241,37 @@ dont give me a implemention just some ideas - is it possible? does it even make 
 
 no need for backwards compatibility since the software is still in development
 migration tools per storage type
+
+
+# current
+
+i just implemented the whole media stuff so we can upload images/files now i still have a few problems left:
+
+- files.go - getAllmediaFiles should get files from contentStorage and not walk the files itself - isnt this the purpose of the contentStorage?
+- do i even need handleAPIGetMediaDetail? cant i just use handleAPIGetMetadata for this?
+  - handleAPIGetMediaDetail use contentStorage.EnsureMetadataPrefix and rename EnsureMetadataPrefix to EnsurePrefix
+- in handleAPIDeleteMedia - use contentStorage.DeleteFile instead of doing it directly..
+- in the fileview (e.g.: http://localhost:1324/files/example_markdown.md)
+  - it should just be preview and not the whole file which breaks the layout
+  - but make it a link to /media/xxx.png
+- in detailview
+  - add a view in fullscreen button (e.g. http://localhost:1324/static/media/Screenshot-from-2026-01-05-10-04-16.png)
+  - add a used In so we can see where this file is used with links to the file in question
+
+dont give me any code or implementation just your ideas
+
+- admin dashboard
+  - Add "Orphaned Media" section showing unused uploads
+  - use the LinksToHere metadata to check if its still referenced - if there is no more link its orphaned (can be added to the cronjob)
+  - LinksToHere is set with every file for every link (i dont know if file/image links are included?) and could be set with the rebuild metadata
+  - Manual bulk cleanup with age filters
+  - Storage stats
+  - we will need a few new api routes for this
+- add a /files routes with a fileOverview route so we are consistent
+
+build the links for media files after uploading them
+
+
+**contentStorage**
+
+add a 

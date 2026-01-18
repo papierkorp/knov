@@ -120,6 +120,36 @@ func (fs *filesystemStorage) ListFiles() ([]string, error) {
 	return files, err
 }
 
+// ListMediaFiles lists all media files recursively
+func (fs *filesystemStorage) ListMediaFiles() ([]string, error) {
+	var files []string
+
+	// check if media directory exists
+	if _, err := os.Stat(fs.mediaPath); os.IsNotExist(err) {
+		return files, nil // return empty slice, not error
+	}
+
+	err := filepath.Walk(fs.mediaPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil // skip directories
+		}
+
+		// get relative path from media directory
+		relPath, err := filepath.Rel(fs.mediaPath, path)
+		if err != nil {
+			return err
+		}
+		files = append(files, relPath)
+		return nil
+	})
+
+	return files, err
+}
+
 // GetDocsPath returns the docs directory path
 func (fs *filesystemStorage) GetDocsPath() string {
 	return fs.docsPath

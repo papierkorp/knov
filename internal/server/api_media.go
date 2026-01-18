@@ -4,7 +4,6 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -195,13 +194,14 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 
 	// check if file exists
 	fullPath := contentStorage.ToMediaPath(strings.TrimPrefix(fullMediaPath, "media/"))
-	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+	exists, err := contentStorage.FileExists(fullPath)
+	if err != nil || !exists {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "media file not found"), http.StatusNotFound)
 		return
 	}
 
 	// delete file from filesystem
-	if err := os.Remove(fullPath); err != nil {
+	if err := contentStorage.DeleteFile(fullPath); err != nil {
 		logging.LogError("failed to delete media file %s: %v", fullPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete file"), http.StatusInternalServerError)
 		return

@@ -20,6 +20,7 @@ type ContentStorage interface {
 	FileExists(path string) (bool, error)
 	MkdirAll(path string, perm os.FileMode) error
 	ListFiles() ([]string, error)
+	ListMediaFiles() ([]string, error)
 	GetDocsPath() string
 	GetMediaPath() string
 	GetGitPath() string
@@ -71,6 +72,11 @@ func MkdirAll(path string, perm os.FileMode) error {
 // ListFiles lists all files recursively
 func ListFiles() ([]string, error) {
 	return storage.ListFiles()
+}
+
+// ListMediaFiles lists all media files recursively
+func ListMediaFiles() ([]string, error) {
+	return storage.ListMediaFiles()
 }
 
 // GetBackendType returns the backend type
@@ -223,11 +229,11 @@ func StripMediaPrefix(path string) string {
 	return utils.StripPathPrefix(path, "media")
 }
 
-// EnsureMetadataPrefix ensures the filepath has the correct prefix for metadata storage
+// EnsurePrefix ensures the filepath has the correct prefix for metadata storage
 // - paths with media/ prefix are left as-is
 // - paths with docs/ prefix are left as-is
 // - paths without either prefix get docs/ prefix added (assumes docs files)
-func EnsureMetadataPrefix(gitPath string) string {
+func EnsurePrefix(gitPath string) string {
 	// normalize path separators to forward slashes
 	gitPath = filepath.ToSlash(gitPath)
 

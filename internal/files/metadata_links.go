@@ -23,7 +23,7 @@ func MetaDataLinksRebuild() error {
 	// first pass: clear old data and update ancestors and usedlinks
 	for _, file := range files {
 		// normalize path to ensure correct prefix for metadata lookup
-		normalizedPath := contentStorage.EnsureMetadataPrefix(file.Path)
+		normalizedPath := contentStorage.EnsurePrefix(file.Path)
 
 		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil {
@@ -65,7 +65,7 @@ func MetaDataLinksRebuild() error {
 	// second pass: update kids and linkstohere for all files
 	for _, file := range files {
 		// normalize path to ensure correct prefix for metadata lookup
-		normalizedPath := contentStorage.EnsureMetadataPrefix(file.Path)
+		normalizedPath := contentStorage.EnsurePrefix(file.Path)
 
 		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil || metadata == nil {
