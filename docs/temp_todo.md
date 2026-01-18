@@ -272,6 +272,23 @@ dont give me any code or implementation just your ideas
 build the links for media files after uploading them
 
 
-**contentStorage**
-
-add a 
+**media**
+- getMediaPreview route?
+- markdown.go - processMarkdownLinks - media
+- remove /static/media/* route and function and use /media/* instead for this
+- remove/move the /overview route to a new /browse/files route (also in the thememanager)
+- remove/move the /media route to a new /browse/media route (also in the thememanager)
+- rename /media/* function from handleMediaDetail to handleMedia
+- remove handleAPIGetMediaDetails - use handleAPIGetMetadata instead (since we use the same metadata for media as for files - maybe we need to adjust the function a little)
+- use contentStorage.DeleteFile in handleAPIDeleteMedia
+- use contentStorage.WriteFile in UploadMedia
+- move media_utils.go from utils to media.go
+**storage/files**
+- remove GetAllMediaFiles from files.go and use ListMediaFiles from contentStorage instead
+- remove GetAllFiles from files.go and use ListFiles from contentStorage instead
+- add GetFileInfo to contentStorage
+- change GetFileContent - use contentStorage.ReadFile and remove from Handler interface
+- remove GetRawContent - use contentStorage.ReadFile instead
+- remove SaveRawContent - use contentStorage.WriteFile instead
+- move ExtractSectionContent to markdown parser package
+- move SaveSectionContent to markdown parser package

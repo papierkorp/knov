@@ -156,20 +156,6 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	}, nil
 }
 
-// GetAllFilesWithMetadata returns files with metadata
-func GetAllFilesWithMetadata() ([]File, error) {
-	files, err := GetAllFiles()
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range files {
-		files[i].Metadata = nil
-	}
-
-	return files, nil
-}
-
 // GetRawContent returns raw file content as string
 func GetRawContent(filePath string) (string, error) {
 	handler := parserRegistry.GetHandler(filePath)
