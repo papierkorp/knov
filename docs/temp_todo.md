@@ -284,5 +284,17 @@ build the links for media files after uploading them
 - use contentStorage.WriteFile in UploadMedia
 - move media_utils.go from utils to media.go
 **storage/files**
-- move ExtractSectionContent to markdown parser package
-- move SaveSectionContent to markdown parser package
+now i want to work on the parser package as well as ExtractSectionContent and SaveSectionContent from files.go
+- no need for backwards compatibility
+- create a new types package for the table types
+- create a new contenthandler package interface like this: extractsection, savesection, extracttable, savetable, supportssection, supportstable
+  - then create a markdown implementation for this handler
+- refactor/move old functions from the parser to the new contenthandler
+- move ExtractSectionContent/SaveSectionContent and its utils to the new contenthandler and remove them from the files package
+- update all references of the old parder to use the new contenthandler instead
+
+i think the best way to go is to create a contenthandler package and move most of the non reading part of the parser and part of the files.go file into this new package
+im not satisfied with the current setup i dont think ExtractSectionContent/SaveSectionContent belong to either parser nor files..
+what do you suggest? what is the best practice for this? dont give me any code or implementation yet just your ideas
+
+
