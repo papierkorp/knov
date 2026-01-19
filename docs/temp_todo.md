@@ -284,11 +284,5 @@ build the links for media files after uploading them
 - use contentStorage.WriteFile in UploadMedia
 - move media_utils.go from utils to media.go
 **storage/files**
-- remove GetAllMediaFiles from files.go and use ListMediaFiles from contentStorage instead
-- remove GetAllFiles from files.go and use ListFiles from contentStorage instead
-- add GetFileInfo to contentStorage
-- change GetFileContent - use contentStorage.ReadFile and remove from Handler interface
-- remove GetRawContent - use contentStorage.ReadFile instead
-- remove SaveRawContent - use contentStorage.WriteFile instead
 - move ExtractSectionContent to markdown parser package
 - move SaveSectionContent to markdown parser package
