@@ -1,10 +1,7 @@
 package parser
 
 import (
-	"os"
 	"strings"
-
-	"knov/internal/logging"
 )
 
 type PlaintextHandler struct{}
@@ -15,15 +12,6 @@ func NewPlaintextHandler() *PlaintextHandler {
 
 func (h *PlaintextHandler) CanHandle(filename string) bool {
 	return true
-}
-
-func (h *PlaintextHandler) GetContent(filepath string) ([]byte, error) {
-	content, err := os.ReadFile(filepath)
-	if err != nil {
-		logging.LogError("failed to read file %s: %v", filepath, err)
-		return nil, err
-	}
-	return content, nil
 }
 
 func (h *PlaintextHandler) Parse(content []byte) ([]byte, error) {

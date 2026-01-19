@@ -7,9 +7,10 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
-	"knov/internal/files"
+	"knov/internal/contentStorage"
 	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/translation"
 )
 
@@ -19,9 +20,10 @@ func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
 	isEdit := filePath != ""
 
 	if isEdit {
-		rawContent, err := files.GetRawContent(filePath)
+		fullPath := contentStorage.ToDocsPath(filePath)
+		rawContent, err := contentStorage.ReadFile(fullPath)
 		if err == nil {
-			content = rawContent
+			content = string(rawContent)
 		}
 	}
 
@@ -220,7 +222,7 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 
 	// get section content
 	if filePath != "" && sectionID != "" {
-		sectionContent, err := files.ExtractSectionContent(filePath, sectionID)
+		sectionContent, err := parser.ExtractSectionContent(filePath, sectionID)
 		if err == nil {
 			content = sectionContent
 		}
@@ -421,7 +423,8 @@ func RenderFilterEditor(filePath string) (string, error) {
 	var config *filter.Config
 	if filePath != "" {
 		// for existing filter files, try to load the saved JSON
-		if content, err := files.GetRawContent(filePath); err == nil {
+		fullPath := contentStorage.ToDocsPath(filePath)
+		if content, err := contentStorage.ReadFile(fullPath); err == nil {
 			if len(content) == 0 {
 				// use default configuration for empty files
 				config = &filter.Config{
@@ -433,7 +436,7 @@ func RenderFilterEditor(filePath string) (string, error) {
 				logging.LogInfo("using default configuration for empty filter file in editor: %s", filePath)
 			} else {
 				config = &filter.Config{}
-				if err := json.Unmarshal([]byte(content), config); err != nil {
+				if err := json.Unmarshal(content, config); err != nil {
 					logging.LogError("failed to parse existing filter config: %v", err)
 					config = nil
 				}
@@ -554,10 +557,11 @@ func RenderIndexEditor(filePath string) (string, error) {
 	// load existing config if editing
 	var config *IndexConfig
 	if filePath != "" {
-		if content, err := files.GetRawContent(filePath); err == nil {
+		fullPath := contentStorage.ToDocsPath(filePath)
+		if content, err := contentStorage.ReadFile(fullPath); err == nil {
 			if len(content) > 0 {
 				// parse markdown to extract entries
-				config = ParseMarkdownToIndexConfig(content)
+				config = ParseMarkdownToIndexConfig(string(content))
 			}
 		}
 	}

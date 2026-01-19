@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
-	"knov/internal/files"
+	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/translation"
 )
@@ -21,14 +21,15 @@ type TableData struct {
 
 // RenderTableEditorForm renders the complete table editor form
 func RenderTableEditorForm(filePath string) string {
-	content, err := files.GetRawContent(filePath)
+	fullPath := contentStorage.ToDocsPath(filePath)
+	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		logging.LogError("failed to read file %s: %v", filePath, err)
 		return fmt.Sprintf(`<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
 	}
 
 	// extract first table from markdown
-	tableData, tableIndex := extractTableFromMarkdown(content)
+	tableData, tableIndex := extractTableFromMarkdown(string(content))
 	if tableData == nil {
 		return fmt.Sprintf(`<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"))
 	}

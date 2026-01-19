@@ -21,6 +21,7 @@ type ContentStorage interface {
 	MkdirAll(path string, perm os.FileMode) error
 	ListFiles() ([]string, error)
 	ListMediaFiles() ([]string, error)
+	GetFileInfo(path string) (os.FileInfo, error)
 	GetDocsPath() string
 	GetMediaPath() string
 	GetGitPath() string
@@ -77,6 +78,11 @@ func ListFiles() ([]string, error) {
 // ListMediaFiles lists all media files recursively
 func ListMediaFiles() ([]string, error) {
 	return storage.ListMediaFiles()
+}
+
+// GetFileInfo returns file information for the given path
+func GetFileInfo(path string) (os.FileInfo, error) {
+	return storage.GetFileInfo(path)
 }
 
 // GetBackendType returns the backend type

@@ -3,14 +3,14 @@ package parser
 import (
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	"knov/internal/configmanager"
-	"knov/internal/logging"
+	"knov/internal/contentStorage"
 	"knov/internal/translation"
+	"knov/internal/utils"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
@@ -27,15 +27,6 @@ func NewMarkdownHandler() *MarkdownHandler {
 func (h *MarkdownHandler) CanHandle(filename string) bool {
 	ext := strings.ToLower(filepath.Ext(filename))
 	return ext == ".md" || ext == ".markdown" || ext == ".index" || ext == ".moc" || ext == ".list"
-}
-
-func (h *MarkdownHandler) GetContent(filepath string) ([]byte, error) {
-	content, err := os.ReadFile(filepath)
-	if err != nil {
-		logging.LogError("failed to read file %s: %v", filepath, err)
-		return nil, err
-	}
-	return content, nil
 }
 
 func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
@@ -224,4 +215,126 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 	})
 
 	return content
+}
+
+// ExtractSectionContent extracts content of a specific section from a markdown file
+func ExtractSectionContent(filePath, sectionID string) (string, error) {
+	fullPath := contentStorage.ToDocsPath(filePath)
+	content, err := contentStorage.ReadFile(fullPath)
+	if err != nil {
+		return "", err
+	}
+
+	return extractSectionFromMarkdown(string(content), sectionID)
+}
+
+// SaveSectionContent saves content to a specific section in a markdown file
+func SaveSectionContent(filePath, sectionID, sectionContent string) error {
+	fullPath := contentStorage.ToDocsPath(filePath)
+	originalContent, err := contentStorage.ReadFile(fullPath)
+	if err != nil {
+		return err
+	}
+
+	updatedContent, err := replaceSectionInMarkdown(string(originalContent), sectionID, sectionContent)
+	if err != nil {
+		return err
+	}
+
+	return contentStorage.WriteFile(fullPath, []byte(updatedContent), 0644)
+}
+
+// extractSectionFromMarkdown extracts content between headers including the header itself
+func extractSectionFromMarkdown(content, sectionID string) (string, error) {
+	lines := strings.Split(content, "\n")
+
+	var sectionStart, sectionEnd int
+	var inSection bool
+	var inCodeBlock bool
+	usedIDs := make(map[string]int)
+
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+
+		// check for code block fences
+		if strings.HasPrefix(trimmed, "```") {
+			inCodeBlock = !inCodeBlock
+		}
+
+		// only process headers outside of code blocks
+		if !inCodeBlock && strings.HasPrefix(trimmed, "#") {
+			headerText := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
+			headerID := utils.GenerateID(headerText, usedIDs)
+
+			if headerID == sectionID && !inSection {
+				sectionStart = i
+				inSection = true
+				continue
+			}
+
+			if inSection && headerID != sectionID {
+				sectionEnd = i
+				break
+			}
+		}
+	}
+
+	if !inSection {
+		return "", fmt.Errorf("section not found: %s", sectionID)
+	}
+
+	if sectionEnd == 0 {
+		sectionEnd = len(lines)
+	}
+
+	sectionLines := lines[sectionStart:sectionEnd]
+	return strings.Join(sectionLines, "\n"), nil
+}
+
+// replaceSectionInMarkdown replaces content of a specific section including the header
+func replaceSectionInMarkdown(content, sectionID, newContent string) (string, error) {
+	lines := strings.Split(content, "\n")
+
+	var result []string
+	var inTargetSection bool
+	var inCodeBlock bool
+	var headerLevel int
+	usedIDs := make(map[string]int)
+
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+
+		// check for code block fences
+		if strings.HasPrefix(trimmed, "```") {
+			inCodeBlock = !inCodeBlock
+		}
+
+		// only process headers outside of code blocks
+		if !inCodeBlock && strings.HasPrefix(trimmed, "#") {
+			level := len(trimmed) - len(strings.TrimLeft(trimmed, "#"))
+			headerText := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
+			headerID := utils.GenerateID(headerText, usedIDs)
+
+			if headerID == sectionID && !inTargetSection {
+				// start of target section - replace with new content
+				inTargetSection = true
+				headerLevel = level
+				if strings.TrimSpace(newContent) != "" {
+					result = append(result, strings.Split(newContent, "\n")...)
+				}
+				continue
+			} else if inTargetSection && level <= headerLevel {
+				// reached next section of same or higher level
+				inTargetSection = false
+				result = append(result, line)
+				continue
+			}
+		}
+
+		if !inTargetSection {
+			result = append(result, line)
+		}
+	}
+
+	return strings.Join(result, "\n"), nil
 }

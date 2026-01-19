@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-
-	"knov/internal/logging"
 )
 
 type DokuwikiHandler struct{}
@@ -37,15 +35,6 @@ func (h *DokuwikiHandler) CanHandle(filename string) bool {
 	}
 
 	return false
-}
-
-func (h *DokuwikiHandler) GetContent(filepath string) ([]byte, error) {
-	content, err := os.ReadFile(filepath)
-	if err != nil {
-		logging.LogError("failed to read file %s: %v", filepath, err)
-		return nil, err
-	}
-	return content, nil
 }
 
 func (h *DokuwikiHandler) Parse(content []byte) ([]byte, error) {
@@ -600,7 +589,7 @@ func (h *DokuwikiHandler) detectCellAlignment(cell string) string {
 func (h *DokuwikiHandler) detectCellType(content string) string {
 	content = strings.TrimSpace(content)
 
-	if matched, _ := regexp.MatchString(`^[$£€¥]\s*[\d,]+\.?\d*$`, content); matched {
+	if matched, _ := regexp.MatchString(`^[$Â£â‚¬Â¥]\s*[\d,]+\.?\d*$`, content); matched {
 		return "currency"
 	}
 	if matched, _ := regexp.MatchString(`^\d+\.?\d*$`, content); matched {

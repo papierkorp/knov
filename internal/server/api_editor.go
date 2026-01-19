@@ -13,6 +13,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -123,8 +124,9 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	// get file content if editing existing file
 	var content string
 	if filepath != "" {
-		if rawContent, err := files.GetRawContent(filepath); err == nil {
-			content = rawContent
+		fullPath := contentStorage.ToDocsPath(filepath)
+		if rawContent, err := contentStorage.ReadFile(fullPath); err == nil {
+			content = string(rawContent)
 		}
 	}
 
@@ -185,12 +187,16 @@ func handleAPIGetTextareaEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	content, err := files.GetRawContent(filepath)
+	fullPath := contentStorage.ToDocsPath(filepath)
+	content, err := contentStorage.ReadFile(fullPath)
+	var contentStr string
 	if err != nil {
-		content = "" // empty for new files
+		contentStr = "" // empty for new files
+	} else {
+		contentStr = string(content)
 	}
 
-	html := render.RenderTextareaEditorComponent(filepath, content)
+	html := render.RenderTextareaEditorComponent(filepath, contentStr)
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
@@ -268,7 +274,7 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// save as markdown file
-	if err := files.SaveRawContent(fullPath, markdown.String()); err != nil {
+	if err := contentStorage.WriteFile(fullPath, []byte(markdown.String()), 0644); err != nil {
 		logging.LogError("failed to write index file: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save index"), http.StatusInternalServerError)
 		return
@@ -398,7 +404,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// save content as markdown
-	if err := files.SaveRawContent(fullPath, markdown); err != nil {
+	if err := contentStorage.WriteFile(fullPath, []byte(markdown), 0644); err != nil {
 		logging.LogError("failed to write list file: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save list"), http.StatusInternalServerError)
 		return
@@ -500,7 +506,8 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get original content
-	originalContent, err := files.GetRawContent(filePath)
+	fullPath := contentStorage.ToDocsPath(filePath)
+	originalContent, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		logging.LogError("failed to read original file %s: %v", filePath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read original file"), http.StatusInternalServerError)
@@ -508,11 +515,10 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// replace table in original markdown
-	updatedContent := render.ReplaceTableInMarkdown(originalContent, headers, rows, tableIndex)
+	updatedContent := render.ReplaceTableInMarkdown(string(originalContent), headers, rows, tableIndex)
 
 	// save updated content
-	fullPath := contentStorage.ToDocsPath(filePath)
-	if err := files.SaveRawContent(fullPath, updatedContent); err != nil {
+	if err := contentStorage.WriteFile(fullPath, []byte(updatedContent), 0644); err != nil {
 		logging.LogError("failed to save file %s: %v", filePath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
 		return
@@ -575,8 +581,8 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// save section content using the files package
-	if err := files.SaveSectionContent(filePath, sectionID, content); err != nil {
+	// save section content using the parser package
+	if err := parser.SaveSectionContent(filePath, sectionID, content); err != nil {
 		logging.LogError("failed to save section %s in file %s: %v", sectionID, filePath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
 		return

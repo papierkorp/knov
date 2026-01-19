@@ -150,6 +150,11 @@ func (fs *filesystemStorage) ListMediaFiles() ([]string, error) {
 	return files, err
 }
 
+// GetFileInfo returns file information for the given path
+func (fs *filesystemStorage) GetFileInfo(path string) (os.FileInfo, error) {
+	return os.Stat(path)
+}
+
 // GetDocsPath returns the docs directory path
 func (fs *filesystemStorage) GetDocsPath() string {
 	return fs.docsPath

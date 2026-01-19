@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
-	"knov/internal/files"
+	"knov/internal/contentStorage"
 	"knov/internal/translation"
 )
 
@@ -112,9 +112,10 @@ func RenderListEditor(filepath string) string {
 	isEdit := filepath != ""
 
 	if isEdit {
-		rawContent, err := files.GetRawContent(filepath)
+		fullPath := contentStorage.ToDocsPath(filepath)
+		rawContent, err := contentStorage.ReadFile(fullPath)
 		if err == nil {
-			content = rawContent
+			content = string(rawContent)
 		}
 	}
 

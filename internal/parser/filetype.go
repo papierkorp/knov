@@ -5,9 +5,6 @@ type Handler interface {
 	// CanHandle returns true if this handler supports the file
 	CanHandle(filename string) bool
 
-	// GetContent reads and returns raw file content
-	GetContent(filepath string) ([]byte, error)
-
 	// Parse converts raw content to intermediate format if needed
 	Parse(content []byte) ([]byte, error)
 

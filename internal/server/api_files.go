@@ -197,15 +197,15 @@ func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fullPath := contentStorage.ToDocsPath(filepath)
-	content, err := files.GetRawContent(fullPath)
+	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		logging.LogError("failed to get raw content: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get raw content"), http.StatusInternalServerError)
 		return
 	}
 
-	data := map[string]string{"content": content}
-	writeResponse(w, r, data, content)
+	data := map[string]string{"content": string(content)}
+	writeResponse(w, r, data, string(content))
 }
 
 // @Summary Save file content

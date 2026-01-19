@@ -411,7 +411,7 @@ func MetaDataInitializeAll() error {
 
 	for _, file := range allFiles {
 		// normalize path to ensure correct prefix for metadata storage
-		normalizedPath := contentStorage.EnsureMetadataPrefix(file.Path)
+		normalizedPath := contentStorage.EnsurePrefix(file.Path)
 
 		// check if metadata already exists
 		metadata, err := MetaDataGet(normalizedPath)
