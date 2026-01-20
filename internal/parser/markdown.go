@@ -134,13 +134,26 @@ func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
 	// remove code blocks to avoid extracting links from code
 	text = removeCodeBlocks(text)
 
-	// extract wiki-style links [[path]]
-	wikiLinkRegex := regexp.MustCompile(`\[\[([^\]]+)\]\]`)
+	// extract wiki-style links [[path|text]] or [[path]]
+	wikiLinkRegex := regexp.MustCompile(`\[\[([^\]|]+)(?:\|[^\]]+)?\]\]`)
 	wikiMatches := wikiLinkRegex.FindAllStringSubmatch(text, -1)
 	for _, match := range wikiMatches {
 		if len(match) > 1 {
 			link := strings.TrimSpace(match[1])
-			if link != "" {
+			// skip external urls
+			if link != "" && !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") && !strings.Contains(link, "://") {
+				links = append(links, link)
+			}
+		}
+	}
+
+	// extract media links {{path}}
+	mediaLinkRegex := regexp.MustCompile(`\{\{([^\}]+)\}\}`)
+	mediaMatches := mediaLinkRegex.FindAllStringSubmatch(text, -1)
+	for _, match := range mediaMatches {
+		if len(match) > 1 {
+			link := strings.TrimSpace(match[1])
+			if link != "" && !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") {
 				links = append(links, link)
 			}
 		}
@@ -181,7 +194,55 @@ func (h *MarkdownHandler) Name() string {
 
 // processMarkdownLinks converts markdown-style links to HTML anchors
 func (h *MarkdownHandler) processMarkdownLinks(content string) string {
-	// regex that captures both regular and image links
+	// first, convert wiki-style links [[link|text]] and [[link]] to markdown format
+	wikiLinkRegex := regexp.MustCompile(`\[\[([^\]|]+)(?:\|([^\]]+))?\]\]`)
+	content = wikiLinkRegex.ReplaceAllStringFunc(content, func(match string) string {
+		matches := wikiLinkRegex.FindStringSubmatch(match)
+		if len(matches) < 2 {
+			return match
+		}
+
+		link := strings.TrimSpace(matches[1])
+		text := link
+		if len(matches) > 2 && matches[2] != "" {
+			text = strings.TrimSpace(matches[2])
+		}
+
+		// external links
+		if strings.HasPrefix(link, "http://") || strings.HasPrefix(link, "https://") || strings.Contains(link, "://") {
+			return fmt.Sprintf(`<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>`, link, text)
+		}
+
+		// internal links
+		if !strings.HasSuffix(link, ".md") && !strings.HasSuffix(link, ".txt") {
+			link += ".md"
+		}
+		return fmt.Sprintf(`<a href="/files/%s">%s</a>`, link, text)
+	})
+
+	// convert media links {{link}} to markdown image syntax
+	mediaLinkRegex := regexp.MustCompile(`\{\{([^\}]+)\}\}`)
+	content = mediaLinkRegex.ReplaceAllStringFunc(content, func(match string) string {
+		matches := mediaLinkRegex.FindStringSubmatch(match)
+		if len(matches) < 2 {
+			return match
+		}
+
+		link := strings.TrimSpace(matches[1])
+
+		// if it starts with media/, it's a media file
+		if strings.HasPrefix(link, "media/") {
+			return fmt.Sprintf(`<a href="/static/%s">%s</a>`, link, filepath.Base(link))
+		}
+
+		// otherwise treat as file link
+		if !strings.HasSuffix(link, ".md") && !strings.HasSuffix(link, ".txt") {
+			link += ".md"
+		}
+		return fmt.Sprintf(`<a href="/files/%s">%s</a>`, link, filepath.Base(link))
+	})
+
+	// process regular markdown links [text](url)
 	re := regexp.MustCompile(`(!)?\[([^\]]+)\]\(([^)]+)\)`)
 
 	content = re.ReplaceAllStringFunc(content, func(match string) string {

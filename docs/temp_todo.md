@@ -286,7 +286,7 @@ build the links for media files after uploading them
 **storage/files**
 now i want to work on the parser package as well as ExtractSectionContent and SaveSectionContent from files.go
 - no need for backwards compatibility
-- create a new types package for the table types
+- to prepare for this create a new types package for the table types and use this instead
 - create a new contenthandler package interface like this: extractsection, savesection, extracttable, savetable, supportssection, supportstable
   - then create a markdown implementation for this handler
 - refactor/move old functions from the parser to the new contenthandler

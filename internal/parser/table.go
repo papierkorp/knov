@@ -6,33 +6,11 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"knov/internal/types"
 )
 
-// TableData represents parsed table structure
-type TableData struct {
-	Headers []TableHeader
-	Rows    [][]TableCell
-	Total   int
-}
-
-// TableHeader represents a column header with metadata
-type TableHeader struct {
-	Content   string
-	DataType  string
-	Align     string
-	Sortable  bool
-	ColumnIdx int
-}
-
-// TableCell represents a single table cell with metadata
-type TableCell struct {
-	Content  string
-	DataType string
-	Align    string
-	RawValue string
-}
-
-func PaginateTable(data *TableData, page, size int) *TableData {
+func PaginateTable(data *types.TableData, page, size int) *types.TableData {
 	if page < 1 {
 		page = 1
 	}
@@ -44,9 +22,9 @@ func PaginateTable(data *TableData, page, size int) *TableData {
 	end := start + size
 
 	if start >= len(data.Rows) {
-		return &TableData{
+		return &types.TableData{
 			Headers: data.Headers,
-			Rows:    [][]TableCell{},
+			Rows:    [][]types.TableCell{},
 			Total:   data.Total,
 		}
 	}
@@ -55,19 +33,19 @@ func PaginateTable(data *TableData, page, size int) *TableData {
 		end = len(data.Rows)
 	}
 
-	return &TableData{
+	return &types.TableData{
 		Headers: data.Headers,
 		Rows:    data.Rows[start:end],
 		Total:   data.Total,
 	}
 }
 
-func SortTable(data *TableData, column int, order string) *TableData {
+func SortTable(data *types.TableData, column int, order string) *types.TableData {
 	if column < 0 || column >= len(data.Headers) {
 		return data
 	}
 
-	sortedRows := make([][]TableCell, len(data.Rows))
+	sortedRows := make([][]types.TableCell, len(data.Rows))
 	copy(sortedRows, data.Rows)
 	header := data.Headers[column]
 
@@ -99,20 +77,20 @@ func SortTable(data *TableData, column int, order string) *TableData {
 		return less
 	})
 
-	return &TableData{
+	return &types.TableData{
 		Headers: data.Headers,
 		Rows:    sortedRows,
 		Total:   data.Total,
 	}
 }
 
-func SearchTable(data *TableData, query string) *TableData {
+func SearchTable(data *types.TableData, query string) *types.TableData {
 	if query == "" {
 		return data
 	}
 
 	query = strings.ToLower(query)
-	var filteredRows [][]TableCell
+	var filteredRows [][]types.TableCell
 
 	for _, row := range data.Rows {
 		for _, cell := range row {
@@ -123,7 +101,7 @@ func SearchTable(data *TableData, query string) *TableData {
 		}
 	}
 
-	return &TableData{
+	return &types.TableData{
 		Headers: data.Headers,
 		Rows:    filteredRows,
 		Total:   len(filteredRows),
@@ -131,7 +109,7 @@ func SearchTable(data *TableData, query string) *TableData {
 }
 
 func parseNumber(s string) float64 {
-	s = regexp.MustCompile(`[$€£¥,\s]`).ReplaceAllString(s, "")
+	s = regexp.MustCompile(`[$â‚¬Â£Â¥,\s]`).ReplaceAllString(s, "")
 	num, _ := strconv.ParseFloat(s, 64)
 	return num
 }
@@ -153,7 +131,7 @@ func parseDate(s string) int64 {
 	return 0
 }
 
-func RenderTableHTML(data *TableData, filepath string, page, size int, sortCol int, sortOrder string, searchQuery string) string {
+func RenderTableHTML(data *types.TableData, filepath string, page, size int, sortCol int, sortOrder string, searchQuery string) string {
 	var html string
 
 	totalPages := (data.Total + size - 1) / size
@@ -197,10 +175,10 @@ func RenderTableHTML(data *TableData, filepath string, page, size int, sortCol i
 		if sortCol == header.ColumnIdx {
 			if sortOrder == "asc" {
 				nextOrder = "desc"
-				sortIndicator = " ↑"
+				sortIndicator = " â†‘"
 			} else {
 				nextOrder = "asc"
-				sortIndicator = " ↓"
+				sortIndicator = " â†“"
 			}
 		}
 

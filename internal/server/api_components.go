@@ -12,6 +12,7 @@ import (
 	"knov/internal/parser"
 	"knov/internal/server/render"
 	"knov/internal/translation"
+	"knov/internal/types"
 )
 
 // @Summary Get paginated table
@@ -77,7 +78,7 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var tableData *parser.TableData
+	var tableData *types.TableData
 	if dokuwikiHandler, ok := handler.(*parser.DokuwikiHandler); ok {
 		tableData, err = dokuwikiHandler.ParseDokuWikiTable(string(fileContent))
 		if err != nil {

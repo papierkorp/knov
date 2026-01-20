@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"knov/internal/types"
 )
 
 type DokuwikiHandler struct{}
@@ -237,6 +239,7 @@ func (h *DokuwikiHandler) parseDokuWiki(content string) string {
 	content = h.processDokuWikiFolded(content)
 	content = h.replaceTablesWithHTMX(content)
 	content = h.processDokuWikiLinks(content)
+	content = h.processDokuWikiMediaLinks(content)
 	content = h.processDokuWikiLists(content)
 
 	lines := strings.Split(content, "\n\n")
@@ -396,6 +399,49 @@ func (h *DokuwikiHandler) processDokuWikiLinks(content string) string {
 	return content
 }
 
+// processDokuWikiMediaLinks converts {{link}} syntax to HTML links
+func (h *DokuwikiHandler) processDokuWikiMediaLinks(content string) string {
+	re := regexp.MustCompile(`\{\{([^\}]+)\}\}`)
+
+	content = re.ReplaceAllStringFunc(content, func(match string) string {
+		matches := re.FindStringSubmatch(match)
+		if len(matches) < 2 {
+			return match
+		}
+
+		link := strings.TrimSpace(matches[1])
+		title := filepath.Base(link)
+
+		// check if it's a URL (external link)
+		if strings.HasPrefix(link, "http://") || strings.HasPrefix(link, "https://") {
+			return `<a href="` + link + `" target="_blank" rel="noopener noreferrer">` + title + `</a>`
+		}
+
+		// check for special protocols
+		if strings.Contains(link, "://") {
+			return `<a href="` + link + `" target="_blank" rel="noopener noreferrer">` + title + `</a>`
+		}
+
+		// if it starts with media/, it's a media file
+		if strings.HasPrefix(link, "media/") {
+			return `<a href="/static/` + link + `">` + title + `</a>`
+		}
+
+		// otherwise treat as internal file link
+		// convert dokuwiki namespace (colons) to filesystem path (slashes)
+		link = strings.ReplaceAll(link, ":", "/")
+
+		// add .txt extension if no extension present
+		if !strings.HasSuffix(link, ".md") && !strings.HasSuffix(link, ".txt") {
+			link += ".txt"
+		}
+
+		return `<a href="/files/` + link + `">` + title + `</a>`
+	})
+
+	return content
+}
+
 // extractDokuWikiLinks extracts all links from dokuwiki content
 func (h *DokuwikiHandler) extractDokuWikiLinks(content string) []string {
 	var links []string
@@ -440,6 +486,34 @@ func (h *DokuwikiHandler) extractDokuWikiLinks(content string) []string {
 		}
 	}
 
+	// extract media links {{link}}
+	mediaRe := regexp.MustCompile(`\{\{([^\}]+)\}\}`)
+	mediaMatches := mediaRe.FindAllStringSubmatch(content, -1)
+
+	for _, match := range mediaMatches {
+		if len(match) > 1 {
+			link := strings.TrimSpace(match[1])
+
+			// skip URLs and special protocols
+			if strings.Contains(link, "://") {
+				continue
+			}
+
+			// convert dokuwiki namespace (colons) to filesystem path (slashes)
+			link = strings.ReplaceAll(link, ":", "/")
+
+			// add .txt extension for dokuwiki files (if not media/)
+			if link != "" && !strings.HasPrefix(link, "media/") && !strings.HasSuffix(link, ".md") && !strings.HasSuffix(link, ".txt") {
+				link += ".txt"
+			}
+
+			if link != "" && !linkSet[link] {
+				linkSet[link] = true
+				links = append(links, link)
+			}
+		}
+	}
+
 	return links
 }
 
@@ -467,10 +541,10 @@ func (h *DokuwikiHandler) removeDokuWikiCodeBlocks(content string) string {
 }
 
 // ParseDokuWikiTable extracts table data from dokuwiki content
-func (h *DokuwikiHandler) ParseDokuWikiTable(content string) (*TableData, error) {
+func (h *DokuwikiHandler) ParseDokuWikiTable(content string) (*types.TableData, error) {
 	lines := strings.Split(content, "\n")
-	var headers []TableHeader
-	var rows [][]TableCell
+	var headers []types.TableHeader
+	var rows [][]types.TableCell
 	var inTable bool
 	headerParsed := false
 
@@ -494,7 +568,7 @@ func (h *DokuwikiHandler) ParseDokuWikiTable(content string) (*TableData, error)
 					align := h.detectCellAlignment(cell)
 					dataType := h.detectCellType(cellContent)
 
-					headers = append(headers, TableHeader{
+					headers = append(headers, types.TableHeader{
 						Content:   cellContent,
 						DataType:  dataType,
 						Align:     align,
@@ -504,7 +578,7 @@ func (h *DokuwikiHandler) ParseDokuWikiTable(content string) (*TableData, error)
 				}
 				headerParsed = true
 			} else {
-				var row []TableCell
+				var row []types.TableCell
 				for i, cell := range cells {
 					cellContent := strings.TrimSpace(cell)
 					align := h.detectCellAlignment(cell)
@@ -519,7 +593,7 @@ func (h *DokuwikiHandler) ParseDokuWikiTable(content string) (*TableData, error)
 						}
 					}
 
-					row = append(row, TableCell{
+					row = append(row, types.TableCell{
 						Content:  cellContent,
 						DataType: dataType,
 						Align:    align,
@@ -533,7 +607,7 @@ func (h *DokuwikiHandler) ParseDokuWikiTable(content string) (*TableData, error)
 		}
 	}
 
-	return &TableData{
+	return &types.TableData{
 		Headers: headers,
 		Rows:    rows,
 		Total:   len(rows),
@@ -589,7 +663,7 @@ func (h *DokuwikiHandler) detectCellAlignment(cell string) string {
 func (h *DokuwikiHandler) detectCellType(content string) string {
 	content = strings.TrimSpace(content)
 
-	if matched, _ := regexp.MatchString(`^[$Â£â‚¬Â¥]\s*[\d,]+\.?\d*$`, content); matched {
+	if matched, _ := regexp.MatchString(`^[$Ã‚Â£Ã¢â€šÂ¬Ã‚Â¥]\s*[\d,]+\.?\d*$`, content); matched {
 		return "currency"
 	}
 	if matched, _ := regexp.MatchString(`^\d+\.?\d*$`, content); matched {
