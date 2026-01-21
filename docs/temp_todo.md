@@ -281,6 +281,7 @@ build the links for media files after uploading them
 - remove/move the /overview route to a new /browse/files route (also in the thememanager)
 - remove/move the /media route to a new /browse/media route (also in the thememanager)
 - rename /media/* function from handleMediaDetail to handleMedia
+
 - use contentStorage.DeleteFile in handleAPIDeleteMedia
 - use contentStorage.WriteFile in UploadMedia
 - move media_utils.go from utils to media.go

@@ -9,7 +9,6 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/translation"
-	"knov/internal/utils"
 )
 
 // RenderMediaUploadComponent renders a media upload component
@@ -94,11 +93,11 @@ func RenderMediaList(mediaFiles []files.File) string {
 
 		// media preview/thumbnail
 		html.WriteString(`<div class="media-preview">`)
-		if utils.IsImageFile(fileExt) {
+		if files.IsImageFile(fileExt) {
 			html.WriteString(fmt.Sprintf(`<a href="/media/%s" target="_blank">
 				<img src="/static/media/%s" alt="%s" loading="lazy" class="media-thumbnail">
 			</a>`, relativePath, relativePath, filename))
-		} else if utils.IsVideoFile(fileExt) {
+		} else if files.IsVideoFile(fileExt) {
 			html.WriteString(fmt.Sprintf(`<div class="media-video-preview">
 				<video preload="none" class="media-thumbnail" poster="">
 					<source src="/static/media/%s" type="video/%s">
@@ -108,7 +107,7 @@ func RenderMediaList(mediaFiles []files.File) string {
 				</div>
 			</div>`, relativePath, strings.TrimPrefix(fileExt, ".")))
 		} else {
-			icon := utils.GetFileTypeIcon(fileExt)
+			icon := files.GetFileTypeIcon(fileExt)
 			html.WriteString(fmt.Sprintf(`<div class="media-icon">
 				<i class="fas %s"></i>
 			</div>`, icon))
@@ -169,21 +168,21 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 
 	// media preview section
 	html.WriteString(`<div class="media-preview-large">`)
-	if utils.IsImageFile(fileExt) {
+	if files.IsImageFile(fileExt) {
 		html.WriteString(fmt.Sprintf(`<img src="/static/media/%s" alt="%s" class="media-preview-image">`,
 			relativePath, filename))
-	} else if utils.IsVideoFile(fileExt) {
+	} else if files.IsVideoFile(fileExt) {
 		html.WriteString(fmt.Sprintf(`<video controls class="media-preview-video">
 			<source src="/static/media/%s" type="video/%s">
 			`+translation.SprintfForRequest(configmanager.GetLanguage(), "your browser does not support video playback")+`
 		</video>`, relativePath, strings.TrimPrefix(fileExt, ".")))
-	} else if utils.IsAudioFile(fileExt) {
+	} else if files.IsAudioFile(fileExt) {
 		html.WriteString(fmt.Sprintf(`<audio controls class="media-preview-audio">
 			<source src="/static/media/%s" type="audio/%s">
 			`+translation.SprintfForRequest(configmanager.GetLanguage(), "your browser does not support audio playback")+`
 		</audio>`, relativePath, strings.TrimPrefix(fileExt, ".")))
 	} else {
-		icon := utils.GetFileTypeIcon(fileExt)
+		icon := files.GetFileTypeIcon(fileExt)
 		html.WriteString(fmt.Sprintf(`<div class="media-preview-icon">
 			<i class="fas %s"></i>
 			<p>%s</p>
