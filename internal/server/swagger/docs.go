@@ -2077,49 +2077,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/media/detail/{mediapath}": {
-            "get": {
-                "description": "Get detailed information about a specific media file",
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "media"
-                ],
-                "summary": "Get media file details",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Media file path",
-                        "name": "mediapath",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Media file details",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "media file not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "internal error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/media/list": {
             "get": {
                 "description": "Get list of all media files with metadata",
@@ -2264,7 +2221,7 @@ const docTemplate = `{
         },
         "/api/metadata": {
             "get": {
-                "description": "Get metadata for a file by providing filepath as query parameter",
+                "description": "Get metadata for a file by providing filepath as query parameter or path parameter",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -2276,10 +2233,15 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "File path",
+                        "description": "File path (query parameter)",
                         "name": "filepath",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "File path (path parameter)",
+                        "name": "filepath",
+                        "in": "path"
                     }
                 ],
                 "responses": {

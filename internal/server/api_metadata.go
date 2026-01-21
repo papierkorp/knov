@@ -18,6 +18,8 @@ import (
 	"knov/internal/logging"
 	"knov/internal/server/render"
 	"knov/internal/translation"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // normalizeFilePathForMetadata ensures the filepath has the correct prefix for metadata lookup
@@ -38,48 +40,80 @@ func normalizeFilePathForMetadata(filePath string) string {
 // ----------------------------------------------------------------------------------------
 
 // @Summary Get metadata for a single file
-// @Description Get metadata for a file by providing filepath as query parameter
+// @Description Get metadata for a file by providing filepath as query parameter or path parameter
 // @Tags metadata
 // @Produce json,html
-// @Param filepath query string true "File path"
+// @Param filepath query string false "File path (query parameter)"
+// @Param filepath path string false "File path (path parameter)"
 // @Success 200 {object} files.Metadata
 // @Failure 400 {string} string "missing filepath parameter"
 // @Failure 404 {string} string "metadata not found"
 // @Failure 500 {string} string "failed to get metadata"
 // @Router /api/metadata [get]
 func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
+	// try to get filepath from query parameter first
 	filePath := r.URL.Query().Get("filepath")
+
+	// if no query parameter, try to get from path parameter (for media detail compatibility)
 	if filePath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		filePath = chi.URLParam(r, "*")
+	}
+
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
 		return
+	}
+
+	// add media prefix if not present and looks like media path
+	if !strings.HasPrefix(filePath, "media/") && !strings.HasPrefix(filePath, "docs/") && chi.URLParam(r, "*") != "" {
+		filePath = "media/" + filePath
 	}
 
 	// normalize path to ensure correct prefix for metadata lookup
 	normalizedPath := normalizeFilePathForMetadata(filePath)
 	metadata, err := files.MetaDataGet(normalizedPath)
 	if err != nil {
-		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
+		logging.LogError("failed to get metadata for %s: %v", normalizedPath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"), http.StatusInternalServerError)
 		return
 	}
 
 	if metadata == nil {
-		http.Error(w, "metadata not found", http.StatusNotFound)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
 		return
 	}
 
-	var html strings.Builder
-	html.WriteString("<div class='component-metadata'>")
-	html.WriteString(fmt.Sprintf("<p>Path: %s</p>", metadata.Path))
-	html.WriteString(fmt.Sprintf("<p>Collection: %s</p>", metadata.Collection))
-	html.WriteString(fmt.Sprintf("<p>Type: %s</p>", metadata.FileType))
-	html.WriteString(fmt.Sprintf("<p>Status: %s</p>", metadata.Status))
-	html.WriteString(fmt.Sprintf("<p>Priority: %s</p>", metadata.Priority))
-	if len(metadata.Tags) > 0 {
-		html.WriteString(fmt.Sprintf("<p>Tags: %s</p>", strings.Join(metadata.Tags, ", ")))
-	}
-	html.WriteString("</div>")
+	// determine response format
+	acceptHeader := r.Header.Get("Accept")
+	if strings.Contains(acceptHeader, "text/html") {
+		// for media files, use media detail rendering
+		if strings.HasPrefix(normalizedPath, "media/") {
+			html := render.RenderMediaDetail(metadata)
+			w.Header().Set("Content-Type", "text/html")
+			w.Write([]byte(html))
+			return
+		}
 
-	writeResponse(w, r, metadata, html.String())
+		// for regular files, use simple HTML format
+		var html strings.Builder
+		html.WriteString("<div class='component-metadata'>")
+		html.WriteString(fmt.Sprintf("<p>Path: %s</p>", metadata.Path))
+		html.WriteString(fmt.Sprintf("<p>Collection: %s</p>", metadata.Collection))
+		html.WriteString(fmt.Sprintf("<p>Type: %s</p>", metadata.FileType))
+		html.WriteString(fmt.Sprintf("<p>Status: %s</p>", metadata.Status))
+		html.WriteString(fmt.Sprintf("<p>Priority: %s</p>", metadata.Priority))
+		if len(metadata.Tags) > 0 {
+			html.WriteString(fmt.Sprintf("<p>Tags: %s</p>", strings.Join(metadata.Tags, ", ")))
+		}
+		html.WriteString("</div>")
+
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	// return JSON response
+	writeResponse(w, r, metadata, fmt.Sprintf("metadata for %s", normalizedPath))
 }
 
 // @Summary Set metadata for a single file
@@ -741,7 +775,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderBrowseHTML(tags, "/browse/tags")
+	html := render.RenderBrowseHTML(tags, "/browse/tag")
 	writeResponse(w, r, tags, html)
 }
 
@@ -857,7 +891,7 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderBrowseHTML(folders, "/browse/folders")
+	html := render.RenderBrowseHTML(folders, "/browse/folder")
 	writeResponse(w, r, folders, html)
 }
 

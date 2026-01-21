@@ -274,14 +274,13 @@ build the links for media files after uploading them
 
 **media**
 - getMediaPreview route?
-- markdown.go - processMarkdownLinks - media
-- remove handleAPIGetMediaDetails - use handleAPIGetMetadata instead (since we use the same metadata for media as for files - maybe we need to adjust the function a little)
-
-- remove /static/media/* route and function and use /media/* instead for this
-- remove/move the /overview route to a new /browse/files route (also in the thememanager)
-- remove/move the /media route to a new /browse/media route (also in the thememanager)
-- rename /media/* function from handleMediaDetail to handleMedia
-
-- use contentStorage.DeleteFile in handleAPIDeleteMedia
-- use contentStorage.WriteFile in UploadMedia
-- move media_utils.go from utils to media.go
+- remove the /api/media/detail/* route and use the api/metadata route instead
+- do we really need filepath query and filepath string?
+**mapping**
+- problem
+  - database = singular
+  - api endpoints/url = plural
+  - and the mapping is done where needed =>
+- create a new mapping package (e.g. tag/tags)
+**readability**
+- we have A LOT of conversions for the filepath - either to add/remove docs or media to the filepath - is there a good way to consolidate this into one package instead of doing it everywhere?

@@ -1,0 +1,52 @@
+{{ define "content" }}
+<div id="page-files-overview">
+    <div class="overview-header">
+        <h1>{{T "Files Overview"}}</h1>
+        <div class="overview-breadcrumb">
+            <a href="/">{{T "Home"}}</a>
+            → <span>{{T "Files"}}</span>
+        </div>
+    </div>
+
+    <div class="overview-sections">
+        <section class="overview-files">
+            <h2>{{T "All Files"}}</h2>
+            <div class="overview-list">
+                <div hx-get="/api/files/list" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+                    {{T "Loading files..."}}
+                </div>
+            </div>
+        </section>
+
+        <section class="overview-browse">
+            <h2>{{T "Browse Files"}}</h2>
+            <div class="browse-grid">
+                <div class="browse-section">
+                    <h3>{{T "By Tags"}}</h3>
+                    <a href="/browse/tag" class="browse-link">{{T "View all tags"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "By Collections"}}</h3>
+                    <a href="/browse/collection" class="browse-link">{{T "View all collections"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "By Folders"}}</h3>
+                    <a href="/browse/folder" class="browse-link">{{T "View all folders"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "By Type"}}</h3>
+                    <a href="/browse/filetype" class="browse-link">{{T "View all types"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "By Status"}}</h3>
+                    <a href="/browse/status" class="browse-link">{{T "View all statuses"}}</a>
+                </div>
+                <div class="browse-section">
+                    <h3>{{T "By Priority"}}</h3>
+                    <a href="/browse/priority" class="browse-link">{{T "View all priorities"}}</a>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{{ end }}

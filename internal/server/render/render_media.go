@@ -54,18 +54,18 @@ func RenderMediaPreview(mediaPath, contentType string) string {
 		return fmt.Sprintf(`<div class="media-preview">%s</div>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "unknown file type"))
 	case contentType[:6] == "image/":
-		return fmt.Sprintf(`<div class="media-preview"><img src="/static/media/%s" alt="media preview" style="max-width: 300px; max-height: 300px;"></div>`, relativePath)
+		return fmt.Sprintf(`<div class="media-preview"><img src="/media/%s" alt="media preview" style="max-width: 300px; max-height: 300px;"></div>`, relativePath)
 	case contentType[:6] == "video/":
-		return fmt.Sprintf(`<div class="media-preview"><video controls style="max-width: 300px; max-height: 300px;"><source src="/static/media/%s" type="%s"></video></div>`, relativePath, contentType)
+		return fmt.Sprintf(`<div class="media-preview"><video controls style="max-width: 300px; max-height: 300px;"><source src="/media/%s" type="%s"></video></div>`, relativePath, contentType)
 	case contentType == "application/pdf":
-		return fmt.Sprintf(`<div class="media-preview"><iframe src="/static/media/%s" style="width: 300px; height: 400px;"></iframe></div>`, relativePath)
+		return fmt.Sprintf(`<div class="media-preview"><iframe src="/media/%s" style="width: 300px; height: 400px;"></iframe></div>`, relativePath)
 	case contentType[:5] == "text/":
-		return fmt.Sprintf(`<div class="media-preview">%s: <a href="/static/media/%s" target="_blank">%s</a></div>`,
+		return fmt.Sprintf(`<div class="media-preview">%s: <a href="/media/%s" target="_blank">%s</a></div>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "text file"),
 			relativePath,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "view"))
 	default:
-		return fmt.Sprintf(`<div class="media-preview">%s: <a href="/static/media/%s" download>%s</a></div>`,
+		return fmt.Sprintf(`<div class="media-preview">%s: <a href="/media/%s" download>%s</a></div>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "file"),
 			relativePath,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "download"))
@@ -95,12 +95,12 @@ func RenderMediaList(mediaFiles []files.File) string {
 		html.WriteString(`<div class="media-preview">`)
 		if files.IsImageFile(fileExt) {
 			html.WriteString(fmt.Sprintf(`<a href="/media/%s" target="_blank">
-				<img src="/static/media/%s" alt="%s" loading="lazy" class="media-thumbnail">
+				<img src="/media/%s" alt="%s" loading="lazy" class="media-thumbnail">
 			</a>`, relativePath, relativePath, filename))
 		} else if files.IsVideoFile(fileExt) {
 			html.WriteString(fmt.Sprintf(`<div class="media-video-preview">
 				<video preload="none" class="media-thumbnail" poster="">
-					<source src="/static/media/%s" type="video/%s">
+					<source src="/media/%s" type="video/%s">
 				</video>
 				<div class="video-overlay">
 					<i class="fas fa-play"></i>
@@ -130,7 +130,7 @@ func RenderMediaList(mediaFiles []files.File) string {
 		html.WriteString(fmt.Sprintf(`<a href="/media/%s" class="btn btn-sm btn-primary" target="_blank">
 			<i class="fas fa-eye"></i> %s
 		</a>`, relativePath, translation.SprintfForRequest(configmanager.GetLanguage(), "view")))
-		html.WriteString(fmt.Sprintf(`<a href="/static/media/%s" download class="btn btn-sm btn-secondary">
+		html.WriteString(fmt.Sprintf(`<a href="/media/%s" download class="btn btn-sm btn-secondary">
 			<i class="fas fa-download"></i> %s
 		</a>`, relativePath, translation.SprintfForRequest(configmanager.GetLanguage(), "download")))
 		html.WriteString(fmt.Sprintf(`<button type="button" class="btn btn-sm btn-danger"
@@ -169,16 +169,16 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	// media preview section
 	html.WriteString(`<div class="media-preview-large">`)
 	if files.IsImageFile(fileExt) {
-		html.WriteString(fmt.Sprintf(`<img src="/static/media/%s" alt="%s" class="media-preview-image">`,
+		html.WriteString(fmt.Sprintf(`<img src="/media/%s" alt="%s" class="media-preview-image">`,
 			relativePath, filename))
 	} else if files.IsVideoFile(fileExt) {
 		html.WriteString(fmt.Sprintf(`<video controls class="media-preview-video">
-			<source src="/static/media/%s" type="video/%s">
+			<source src="/media/%s" type="video/%s">
 			`+translation.SprintfForRequest(configmanager.GetLanguage(), "your browser does not support video playback")+`
 		</video>`, relativePath, strings.TrimPrefix(fileExt, ".")))
 	} else if files.IsAudioFile(fileExt) {
 		html.WriteString(fmt.Sprintf(`<audio controls class="media-preview-audio">
-			<source src="/static/media/%s" type="audio/%s">
+			<source src="/media/%s" type="audio/%s">
 			`+translation.SprintfForRequest(configmanager.GetLanguage(), "your browser does not support audio playback")+`
 		</audio>`, relativePath, strings.TrimPrefix(fileExt, ".")))
 	} else {
@@ -221,7 +221,7 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 
 	// actions
 	html.WriteString(`<div class="media-actions">`)
-	html.WriteString(fmt.Sprintf(`<a href="/static/media/%s" download class="btn btn-primary">
+	html.WriteString(fmt.Sprintf(`<a href="/media/%s" download class="btn btn-primary">
 		<i class="fas fa-download"></i> %s
 	</a>`, relativePath, translation.SprintfForRequest(configmanager.GetLanguage(), "download")))
 	html.WriteString(fmt.Sprintf(`<button type="button" class="btn btn-danger"

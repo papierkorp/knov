@@ -79,12 +79,12 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 				return ast.GoToNext, true
 			}
 
-			// Handle media images - convert media/ paths to /static/media/
+			// Handle media images - convert media/ paths to /media/
 			if img, ok := node.(*ast.Image); ok && entering {
 				dest := string(img.Destination)
 				if strings.HasPrefix(dest, "media/") {
-					// Convert media/ to /static/media/ for proper serving
-					img.Destination = []byte("/static/" + dest)
+					// Convert media/ to /media/ for proper serving
+					img.Destination = []byte("/" + dest)
 				}
 			}
 
@@ -230,7 +230,7 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 
 		// if it starts with media/, it's a media file
 		if strings.HasPrefix(link, "media/") {
-			return fmt.Sprintf(`<a href="/static/%s">%s</a>`, link, filepath.Base(link))
+			return fmt.Sprintf(`<a href="/%s">%s</a>`, link, filepath.Base(link))
 		}
 
 		// otherwise treat as file link
@@ -260,7 +260,7 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 
 		// if it's a media link, convert to media route
 		if strings.HasPrefix(url, "media/") {
-			return `<a href="/static/` + url + `">` + text + `</a>`
+			return `<a href="/` + url + `">` + text + `</a>`
 		}
 
 		if !strings.Contains(url, "://") && !strings.HasPrefix(url, "#") {

@@ -373,12 +373,13 @@ func metaDataSaveRaw(m *Metadata) error {
 
 // MetaDataGet retrieves metadata for a file path
 func MetaDataGet(filepath string) (*Metadata, error) {
-	// if the path already has docs/ or media/ prefix, use it as-is for metadata lookup
+	// normalize path for metadata lookup - add docs/ prefix if not present and not media
 	var normalizedPath string
 	if strings.HasPrefix(filepath, "docs/") || strings.HasPrefix(filepath, "media/") {
 		normalizedPath = filepath
 	} else {
-		normalizedPath = contentStorage.ToRelativePath(filepath)
+		// for files without prefix, assume they are docs files and add docs/ prefix
+		normalizedPath = "docs/" + contentStorage.ToRelativePath(filepath)
 	}
 
 	logging.LogDebug("MetaDataGet: filepath='%s' -> normalizedPath='%s'", filepath, normalizedPath)

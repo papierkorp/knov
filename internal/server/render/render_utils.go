@@ -3,6 +3,7 @@ package render
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -340,7 +341,7 @@ func RenderBrowseHTML(items map[string]int, urlPrefix string) string {
 	for item, count := range items {
 		html.WriteString(fmt.Sprintf(`
 			<li><a href="%s/%s">%s (%d)</a></li>`,
-			urlPrefix, item, item, count))
+			urlPrefix, url.QueryEscape(item), item, count))
 	}
 
 	html.WriteString(`</ul>`)

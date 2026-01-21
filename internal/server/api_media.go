@@ -120,53 +120,6 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, mediaFiles, fmt.Sprintf("found %d media files", len(mediaFiles)))
 }
 
-// @Summary Get media file details
-// @Description Get detailed information about a specific media file
-// @Tags media
-// @Param mediapath path string true "Media file path"
-// @Produce json,html
-// @Success 200 {object} map[string]interface{} "Media file details"
-// @Failure 404 {string} string "media file not found"
-// @Failure 500 {string} string "internal error"
-// @Router /api/media/detail/{mediapath} [get]
-func handleAPIGetMediaDetail(w http.ResponseWriter, r *http.Request) {
-	mediaPath := chi.URLParam(r, "*")
-	if mediaPath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing media path"), http.StatusBadRequest)
-		return
-	}
-
-	// add media prefix if not present
-	if !strings.HasPrefix(mediaPath, "media/") {
-		mediaPath = "media/" + mediaPath
-	}
-
-	metadata, err := files.MetaDataGet(mediaPath)
-	if err != nil {
-		logging.LogError("failed to get metadata for %s: %v", mediaPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "media file not found"), http.StatusNotFound)
-		return
-	}
-
-	if metadata == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "media file not found"), http.StatusNotFound)
-		return
-	}
-
-	// determine response format
-	acceptHeader := r.Header.Get("Accept")
-	if strings.Contains(acceptHeader, "text/html") {
-		// render HTML response
-		html := render.RenderMediaDetail(metadata)
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
-		return
-	}
-
-	// return JSON response
-	writeResponse(w, r, metadata, fmt.Sprintf("media details for %s", mediaPath))
-}
-
 // @Summary Delete media file
 // @Description Deletes a media file and its metadata
 // @Tags media

@@ -591,6 +591,10 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 	// Map URL-friendly field names to actual filter field names
 	actualMetadata := metadata
 	switch metadata {
+	case "tag":
+		actualMetadata = "tags"
+	case "folder":
+		actualMetadata = "folders"
 	case "projects":
 		actualMetadata = "para_projects"
 	case "areas":
@@ -603,7 +607,8 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 	// Set operator based on field type - arrays use "contains", simple fields use "equals"
 	operator := "equals"
-	if metadata == "tags" || metadata == "folders" ||
+	if metadata == "tag" || metadata == "tags" ||
+		metadata == "folder" || metadata == "folders" ||
 		metadata == "projects" || metadata == "areas" ||
 		metadata == "resources" || metadata == "archive" {
 		operator = "contains"

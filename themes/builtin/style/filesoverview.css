@@ -1,54 +1,54 @@
-#page-overview .overview-sections {
+#page-files-overview .overview-sections {
     display: flex;
     flex-direction: column;
     gap: 30px;
 }
 
-#page-overview .overview-files h2 {
+#page-files-overview .overview-files h2 {
     font-size: 18px;
     margin-bottom: 15px;
 }
 
-#page-overview .files-list-container ul {
+#page-files-overview .overview-list ul {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 
-#page-overview .overview-browse {
+#page-files-overview .overview-browse {
     background: var(--bg-secondary);
     padding: 20px;
     border-radius: 8px;
     border: 1px solid var(--border);
 }
 
-#page-overview .overview-browse h2 {
+#page-files-overview .overview-browse h2 {
     margin: 0 0 20px 0;
     font-size: 18px;
 }
 
-#page-overview .overview-browse h2 a {
+#page-files-overview .overview-browse h2 a {
     color: var(--text);
     text-decoration: none;
 }
 
-#page-overview .overview-browse h2 a:hover {
+#page-files-overview .overview-browse h2 a:hover {
     color: var(--primary);
 }
 
-#page-overview .browse-grid {
+#page-files-overview .browse-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
 }
 
-#page-overview .browse-section {
+#page-files-overview .browse-section {
     background: var(--bg);
     padding: 15px;
     border-radius: 6px;
     border: 1px solid var(--border);
 }
 
-#page-overview .browse-section h3 {
+#page-files-overview .browse-section h3 {
     margin: 0 0 10px 0;
     color: var(--primary);
     font-size: 14px;
@@ -56,21 +56,21 @@
     letter-spacing: 0.5px;
 }
 
-#page-overview .browse-section h3 a {
+#page-files-overview .browse-section h3 a {
     color: var(--primary);
     text-decoration: none;
 }
 
-#page-overview .browse-section h3 a:hover {
+#page-files-overview .browse-section h3 a:hover {
     text-decoration: underline;
 }
 
 @media (max-width: 768px) {
-    #page-overview .browse-grid {
+    #page-files-overview .browse-grid {
         grid-template-columns: 1fr;
     }
 
-    #page-overview .files-list-container ul {
+    #page-files-overview .overview-list ul {
         grid-template-columns: 1fr;
     }
 }

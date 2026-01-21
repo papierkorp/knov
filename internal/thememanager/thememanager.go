@@ -63,16 +63,16 @@ type ThemeTemplates struct {
 	filedittable   *template.Template
 	filenew        *template.Template
 	fileview       *template.Template
+	filesoverview  *template.Template
 	help           *template.Template
 	history        *template.Template
 	home           *template.Template
 	latestchanges  *template.Template
-	overview       *template.Template
 	playground     *template.Template
 	search         *template.Template
 	settings       *template.Template
+	mediaview      *template.Template
 	mediaoverview  *template.Template
-	mediadetail    *template.Template
 }
 
 func InitThemeManager() {
@@ -211,8 +211,6 @@ func LoadSingleTheme(themeName, themesDir string) error {
 			templates.home = tmpl
 		case "latestchanges":
 			templates.latestchanges = tmpl
-		case "overview":
-			templates.overview = tmpl
 		case "playground":
 			templates.playground = tmpl
 		case "search":
@@ -221,8 +219,10 @@ func LoadSingleTheme(themeName, themesDir string) error {
 			templates.settings = tmpl
 		case "mediaoverview":
 			templates.mediaoverview = tmpl
-		case "mediadetail":
-			templates.mediadetail = tmpl
+		case "mediaview":
+			templates.mediaview = tmpl
+		case "filesoverview":
+			templates.filesoverview = tmpl
 		default:
 			logging.LogWarning("unknown template file '%s' -> ignoring", filePath)
 		}
@@ -483,12 +483,12 @@ func (t *Theme) TemplateMap() map[string]*template.Template {
 		"history":        t.Templates.history,
 		"home":           t.Templates.home,
 		"latestchanges":  t.Templates.latestchanges,
-		"overview":       t.Templates.overview,
 		"playground":     t.Templates.playground,
 		"search":         t.Templates.search,
 		"settings":       t.Templates.settings,
 		"mediaoverview":  t.Templates.mediaoverview,
-		"mediadetail":    t.Templates.mediadetail,
+		"mediaview":      t.Templates.mediaview,
+		"filesoverview":  t.Templates.filesoverview,
 	}
 }
 

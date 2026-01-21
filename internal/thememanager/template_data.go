@@ -372,19 +372,19 @@ func NewMediaOverviewTemplateData() MediaOverviewTemplateData {
 }
 
 // -----------------------------------------------
-// --------- Media Detail TemplateData ----------
+// --------- Media View TemplateData ------------
 // -----------------------------------------------
 
-// MediaDetailTemplateData extends base with media detail data
-type MediaDetailTemplateData struct {
+// MediaViewTemplateData extends base with media view data
+type MediaViewTemplateData struct {
 	BaseTemplateData
 	MediaPath string
 }
 
-// NewMediaDetailTemplateData creates media detail specific data
-func NewMediaDetailTemplateData(mediaPath string) MediaDetailTemplateData {
-	title := "media: " + mediaPath
-	return MediaDetailTemplateData{
+// NewMediaViewTemplateData creates media view specific data
+func NewMediaViewTemplateData(mediaPath string) MediaViewTemplateData {
+	title := "Media: " + mediaPath
+	return MediaViewTemplateData{
 		BaseTemplateData: NewBaseTemplateData(title),
 		MediaPath:        mediaPath,
 	}
