@@ -13,6 +13,7 @@ import (
 	"knov/internal/cronjob"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
+	"knov/internal/parser"
 	"knov/internal/search"
 	"knov/internal/searchStorage"
 	"knov/internal/server"
@@ -52,6 +53,9 @@ func main() {
 
 	// initialize content handlers
 	contentHandler.Init()
+
+	// initialize parsers
+	parser.Init()
 
 	// initialize storage backends
 	appConfig := configmanager.GetAppConfig()

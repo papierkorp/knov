@@ -2,6 +2,10 @@
 
 # todo
 
+- sqlite metadata db - collection is a path should be a folder
+- PARA Metadata - should create a folder and if one is selected the other cant be selected
+- if a files edited/saved - the links for this file should rebuild
+- if a file is moved (git..) look at linksto and in the target file  change the link
 - make certain settings required in thememanager
 - rework docs folder manually without ai
   - first set the files to be created (install.md, dev-guide.md, ai.md, features/concept.md,example_workflows.md)
@@ -11,9 +15,6 @@
     - https://fortelabs.com/blog/para/
   - combine with help.gohtml of builtin theme
   - use the docs folder as testdata and remove the internal/testdata/testfiles
-- sqlite metadata db - collection is a path should be a folder
-- PARA Metadata - should create a folder and if one is selected the other cant be selected
-- if a file is moved (git..) look at linksto and in the target file  change the link
 - Dashboard
   - make the positions work with a custom layout work
   - Add widget drag & drop reordering
@@ -27,16 +28,16 @@
   - get metadata for postgres
   - get metadata for yaml header
   - change linkRegex config to names, e.g. obsidian, notion, dokuwiki... instead of a regex? or add one regex string + confignames
-- search
-  - optimise with sqlite.. (same as metadata)
 - performance updates
-  - add caching/indexing
   - use Query() instead of a loop through files.GetAllFiles()
   - use Query in filter.go
-Then: Consider adding Query() back
-Finally: Refactor filter.go to use it
+  - Refactor filter.go to use query
 
 # done
+- performance updates
+  - add caching/indexing
+- search
+  - optimise with sqlite.. (same as metadata)
 - display the content of multiple files (filter) in the dashboard (maybe use display content in filterview)
 - edit just a header section instead of the whole file
 - mkdir/copy on windows not working

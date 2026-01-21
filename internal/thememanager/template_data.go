@@ -11,6 +11,7 @@ import (
 	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/git"
+	"knov/internal/parser"
 	"knov/internal/translation"
 )
 
@@ -145,7 +146,7 @@ func NewFileViewTemplateData(title, filePath string, fileContent *files.FileCont
 	// detect file type using parser registry
 	if filePath != "" {
 		fullPath := contentStorage.ToDocsPath(filePath)
-		handler := files.GetParserRegistry().GetHandler(fullPath)
+		handler := parser.GetParserRegistry().GetHandler(fullPath)
 		if handler != nil {
 			baseData.FileType = handler.Name()
 		}

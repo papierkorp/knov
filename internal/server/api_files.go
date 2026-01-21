@@ -353,7 +353,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 	fullPath := contentStorage.ToDocsPath(filePath)
 
 	// get parser handler
-	handler := files.GetParserRegistry().GetHandler(fullPath)
+	handler := parser.GetParserRegistry().GetHandler(fullPath)
 	if handler == nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unsupported file type"), http.StatusBadRequest)
 		return
@@ -516,7 +516,7 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 		}
 
 		// check if file is dokuwiki and convert to markdown
-		handler := files.GetParserRegistry().GetHandler(path)
+		handler := parser.GetParserRegistry().GetHandler(path)
 		if handler != nil && handler.Name() == "dokuwiki" {
 			dokuwikiHandler, ok := handler.(*parser.DokuwikiHandler)
 			if ok {

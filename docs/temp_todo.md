@@ -275,26 +275,12 @@ build the links for media files after uploading them
 **media**
 - getMediaPreview route?
 - markdown.go - processMarkdownLinks - media
+- remove handleAPIGetMediaDetails - use handleAPIGetMetadata instead (since we use the same metadata for media as for files - maybe we need to adjust the function a little)
+
 - remove /static/media/* route and function and use /media/* instead for this
 - remove/move the /overview route to a new /browse/files route (also in the thememanager)
 - remove/move the /media route to a new /browse/media route (also in the thememanager)
 - rename /media/* function from handleMediaDetail to handleMedia
-- remove handleAPIGetMediaDetails - use handleAPIGetMetadata instead (since we use the same metadata for media as for files - maybe we need to adjust the function a little)
 - use contentStorage.DeleteFile in handleAPIDeleteMedia
 - use contentStorage.WriteFile in UploadMedia
 - move media_utils.go from utils to media.go
-**storage/files**
-now i want to work on the parser package as well as ExtractSectionContent and SaveSectionContent from files.go
-- no need for backwards compatibility
-- to prepare for this create a new types package for the table types and use this instead
-- create a new contenthandler package interface like this: extractsection, savesection, extracttable, savetable, supportssection, supportstable
-  - then create a markdown implementation for this handler
-- refactor/move old functions from the parser to the new contenthandler
-- move ExtractSectionContent/SaveSectionContent and its utils to the new contenthandler and remove them from the files package
-- update all references of the old parser to use the new contenthandler instead
-
-i think the best way to go is to create a contenthandler package and move most of the non reading part of the parser and part of the files.go file into this new package
-im not satisfied with the current setup i dont think ExtractSectionContent/SaveSectionContent belong to either parser nor files..
-what do you suggest? what is the best practice for this? dont give me any code or implementation yet just your ideas
-
-

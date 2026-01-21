@@ -10,20 +10,6 @@ import (
 	"knov/internal/parser"
 )
 
-var parserRegistry *parser.Registry
-
-func init() {
-	parserRegistry = parser.NewRegistry()
-	parserRegistry.Register(parser.NewMarkdownHandler())
-	parserRegistry.Register(parser.NewDokuwikiHandler())
-	parserRegistry.Register(parser.NewPlaintextHandler())
-}
-
-// GetParserRegistry returns the global file type registry
-func GetParserRegistry() *parser.Registry {
-	return parserRegistry
-}
-
 // File represents a file in the system
 type File struct {
 	Name     string    `json:"name"`
@@ -86,7 +72,7 @@ func GetAllMediaFiles() ([]File, error) {
 
 // GetFileContent converts file content to html based on detected type
 func GetFileContent(filePath string) (*FileContent, error) {
-	handler := parserRegistry.GetHandler(filePath)
+	handler := parser.GetParserRegistry().GetHandler(filePath)
 	if handler == nil {
 		return nil, fmt.Errorf("no handler found for file: %s", filePath)
 	}

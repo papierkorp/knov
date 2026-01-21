@@ -9,6 +9,7 @@ import (
 
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/utils"
 )
 
@@ -45,7 +46,7 @@ func MetaDataLinksRebuild() error {
 		fullPath := contentStorage.ToDocsPath(metadata.Path)
 		contentData, err := os.ReadFile(fullPath)
 		if err == nil {
-			handler := parserRegistry.GetHandler(fullPath)
+			handler := parser.GetParserRegistry().GetHandler(fullPath)
 			if handler != nil {
 				links := handler.ExtractLinks(contentData)
 				for _, link := range links {
@@ -142,7 +143,7 @@ func updateUsedLinks(metadata *Metadata) {
 		return
 	}
 
-	handler := parserRegistry.GetHandler(fullPath)
+	handler := parser.GetParserRegistry().GetHandler(fullPath)
 	if handler == nil {
 		logging.LogWarning("no handler found for file %s", fullPath)
 		return
@@ -312,7 +313,7 @@ func updateLinksInFile(filePath, oldPath, newPath string) error {
 	originalContent := content
 
 	// get file handler for link format detection
-	handler := parserRegistry.GetHandler(fullPath)
+	handler := parser.GetParserRegistry().GetHandler(fullPath)
 	if handler == nil {
 		logging.LogWarning("no handler found for file %s, skipping link update", filePath)
 		return nil

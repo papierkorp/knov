@@ -7,7 +7,6 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
-	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/server/render"
@@ -72,7 +71,7 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler := files.GetParserRegistry().GetHandler(fullPath)
+	handler := parser.GetParserRegistry().GetHandler(fullPath)
 	if handler == nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unsupported file type"), http.StatusBadRequest)
 		return

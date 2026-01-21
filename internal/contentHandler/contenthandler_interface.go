@@ -24,22 +24,58 @@ type ContentHandler interface {
 	Name() string
 }
 
-// handlers maps handler names to their implementations
-var handlers map[string]ContentHandler
+// Registry manages content handlers by name
+type Registry struct {
+	handlers map[string]ContentHandler
+}
+
+// NewRegistry creates a new content handler registry
+func NewRegistry() *Registry {
+	return &Registry{
+		handlers: make(map[string]ContentHandler),
+	}
+}
+
+// Register adds a content handler to the registry
+func (r *Registry) Register(handler ContentHandler) {
+	r.handlers[handler.Name()] = handler
+}
+
+// GetHandler returns a content handler by name
+func (r *Registry) GetHandler(name string) ContentHandler {
+	return r.handlers[name]
+}
+
+// GetAllHandlers returns all available handlers
+func (r *Registry) GetAllHandlers() map[string]ContentHandler {
+	result := make(map[string]ContentHandler)
+	for name, handler := range r.handlers {
+		result[name] = handler
+	}
+	return result
+}
+
+// Global registry instance
+var contentHandlerRegistry *Registry
 
 // Init initializes content handlers
 func Init() {
-	handlers = make(map[string]ContentHandler)
-	handlers["markdown"] = NewMarkdownContentHandler()
-	// Future: handlers["dokuwiki"] = NewDokuwikiContentHandler()
+	contentHandlerRegistry = NewRegistry()
+	contentHandlerRegistry.Register(NewMarkdownContentHandler())
+	// Future: contentHandlerRegistry.Register(NewDokuwikiContentHandler())
 }
 
 // GetHandler returns a content handler by name
 func GetHandler(handlerType string) ContentHandler {
-	return handlers[handlerType]
+	return contentHandlerRegistry.GetHandler(handlerType)
 }
 
 // GetAllHandlers returns all available handlers
 func GetAllHandlers() map[string]ContentHandler {
-	return handlers
+	return contentHandlerRegistry.GetAllHandlers()
+}
+
+// GetContentHandlerRegistry returns the global registry for direct access if needed
+func GetContentHandlerRegistry() *Registry {
+	return contentHandlerRegistry
 }

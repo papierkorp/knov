@@ -1,7 +1,7 @@
 package parser
 
-// Handler manages all operations for a specific file type
-type Handler interface {
+// Parser manages all operations for a specific file type
+type Parser interface {
 	// CanHandle returns true if this handler supports the file
 	CanHandle(filename string) bool
 
@@ -20,22 +20,38 @@ type Handler interface {
 
 // Registry manages file type handlers
 type Registry struct {
-	handlers []Handler
+	handlers []Parser
 }
 
 func NewRegistry() *Registry {
-	return &Registry{handlers: make([]Handler, 0)}
+	return &Registry{handlers: make([]Parser, 0)}
 }
 
-func (r *Registry) Register(h Handler) {
+func (r *Registry) Register(h Parser) {
 	r.handlers = append(r.handlers, h)
 }
 
-func (r *Registry) GetHandler(filename string) Handler {
+func (r *Registry) GetHandler(filename string) Parser {
 	for _, h := range r.handlers {
 		if h.CanHandle(filename) {
 			return h
 		}
 	}
 	return nil
+}
+
+// Global registry instance
+var parserRegistry *Registry
+
+// Init initializes parsers
+func Init() {
+	parserRegistry = NewRegistry()
+	parserRegistry.Register(NewMarkdownHandler())
+	parserRegistry.Register(NewDokuwikiHandler())
+	parserRegistry.Register(NewPlaintextHandler())
+}
+
+// GetParserRegistry returns the global parser registry
+func GetParserRegistry() *Registry {
+	return parserRegistry
 }

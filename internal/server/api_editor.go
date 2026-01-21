@@ -14,6 +14,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -34,7 +35,7 @@ func GetEditor(filepath string) (editorType, error) {
 	metadata, err := files.MetaDataGet(filepath)
 
 	// always detect syntax from file type handler
-	handler := files.GetParserRegistry().GetHandler(filepath)
+	handler := parser.GetParserRegistry().GetHandler(filepath)
 	var handlerName string
 	if handler != nil {
 		handlerName = handler.Name()
