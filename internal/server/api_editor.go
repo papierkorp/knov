@@ -10,10 +10,10 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
-	"knov/internal/parser"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -505,21 +505,10 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// get original content
-	fullPath := contentStorage.ToDocsPath(filePath)
-	originalContent, err := contentStorage.ReadFile(fullPath)
-	if err != nil {
-		logging.LogError("failed to read original file %s: %v", filePath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read original file"), http.StatusInternalServerError)
-		return
-	}
-
-	// replace table in original markdown
-	updatedContent := render.ReplaceTableInMarkdown(string(originalContent), headers, rows, tableIndex)
-
-	// save updated content
-	if err := contentStorage.WriteFile(fullPath, []byte(updatedContent), 0644); err != nil {
-		logging.LogError("failed to save file %s: %v", filePath, err)
+	// save table using contenthandler
+	handler := contentHandler.GetHandler("markdown")
+	if err := handler.SaveTable(filePath, tableIndex, headers, rows); err != nil {
+		logging.LogError("failed to save table in file %s: %v", filePath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
 		return
 	}
@@ -537,6 +526,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 // @Description Returns table editor component with Handsontable
 // @Tags editor
 // @Param filepath query string true "file path"
+// @Param tableIndex query string false "table index (default 0)"
 // @Produce html
 // @Router /api/editor/tableeditor [get]
 func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
@@ -546,7 +536,14 @@ func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderTableEditorForm(filePath)
+	tableIndex := 0
+	if tableIndexStr := r.URL.Query().Get("tableIndex"); tableIndexStr != "" {
+		if idx, err := strconv.Atoi(tableIndexStr); err == nil {
+			tableIndex = idx
+		}
+	}
+
+	html := render.RenderTableEditorForm(filePath, tableIndex)
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
@@ -581,8 +578,9 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// save section content using the parser package
-	if err := parser.SaveSectionContent(filePath, sectionID, content); err != nil {
+	// save section content using contenthandler
+	handler := contentHandler.GetHandler("markdown")
+	if err := handler.SaveSection(filePath, sectionID, content); err != nil {
 		logging.LogError("failed to save section %s in file %s: %v", sectionID, filePath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
 		return

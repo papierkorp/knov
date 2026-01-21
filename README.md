@@ -5,6 +5,10 @@
 - make certain settings required in thememanager
 - rework docs folder manually without ai
   - first set the files to be created (install.md, dev-guide.md, ai.md, features/concept.md,example_workflows.md)
+    - https://www.reddit.com/r/ObsidianMD/comments/1qcrxkt/what_finally_made_it_click_for_me/?share_id=2yabUV6pStXbw0RDirP_a&utm_medium=android_app&utm_name=androidcss&utm_source=share&utm_term=3
+    - https://stephango.com/vault
+    - https://gettingthingsdone.com/what-is-gtd/
+    - https://fortelabs.com/blog/para/
   - combine with help.gohtml of builtin theme
   - use the docs folder as testdata and remove the internal/testdata/testfiles
 - sqlite metadata db - collection is a path should be a folder

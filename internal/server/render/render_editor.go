@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
 	"knov/internal/filter"
 	"knov/internal/logging"
-	"knov/internal/parser"
 	"knov/internal/translation"
 )
 
@@ -220,9 +220,10 @@ func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
 func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 	content := ""
 
-	// get section content
+	// get section content using contenthandler
 	if filePath != "" && sectionID != "" {
-		sectionContent, err := parser.ExtractSectionContent(filePath, sectionID)
+		handler := contentHandler.GetHandler("markdown")
+		sectionContent, err := handler.ExtractSection(filePath, sectionID)
 		if err == nil {
 			content = sectionContent
 		}

@@ -7,6 +7,14 @@ type TableData struct {
 	Total   int
 }
 
+// SimpleTableData represents basic table structure for content operations
+type SimpleTableData struct {
+	Headers    []string   `json:"headers"`
+	Rows       [][]string `json:"rows"`
+	Total      int        `json:"total"`
+	TableIndex int        `json:"tableIndex"` // for UI operations
+}
+
 // TableHeader represents a column header with metadata
 type TableHeader struct {
 	Content   string

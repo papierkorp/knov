@@ -980,6 +980,12 @@ const docTemplate = `{
                         "name": "filepath",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "table index (default 0)",
+                        "name": "tableIndex",
+                        "in": "query"
                     }
                 ],
                 "responses": {}

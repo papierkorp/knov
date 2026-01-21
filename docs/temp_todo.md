@@ -291,7 +291,7 @@ now i want to work on the parser package as well as ExtractSectionContent and Sa
   - then create a markdown implementation for this handler
 - refactor/move old functions from the parser to the new contenthandler
 - move ExtractSectionContent/SaveSectionContent and its utils to the new contenthandler and remove them from the files package
-- update all references of the old parder to use the new contenthandler instead
+- update all references of the old parser to use the new contenthandler instead
 
 i think the best way to go is to create a contenthandler package and move most of the non reading part of the parser and part of the files.go file into this new package
 im not satisfied with the current setup i dont think ExtractSectionContent/SaveSectionContent belong to either parser nor files..
