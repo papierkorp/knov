@@ -625,6 +625,23 @@ paths:
       summary: Update git repository URL
       tags:
       - config
+  /api/config/section-edit-subheaders:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether section editing should include subheaders
+        in: formData
+        name: sectionEditIncludeSubheaders
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update section edit include subheaders setting
+      tags:
+      - config
   /api/cronjob:
     post:
       consumes:

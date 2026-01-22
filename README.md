@@ -13,6 +13,14 @@
     - https://stephango.com/vault
     - https://gettingthingsdone.com/what-is-gtd/
     - https://fortelabs.com/blog/para/
+    - stream of consciousness - https://ploum.net/2026-01-19-exam-with-chatbots.html
+        0. In this file, please write all your questions and all your answers as a "stream of consciousness." This means the following rules:
+        1. Don’t delete anything.
+        2. Don’t correct anything.
+        3. Never go backward to retouch anything.
+        4. Write as thoughts come.
+        5. No copy/pasting allowed (only exception: URLs)
+        6. Rule 5. implies no chatbot for this exercice. This is your own stream of consciousness.
   - combine with help.gohtml of builtin theme
   - use the docs folder as testdata and remove the internal/testdata/testfiles
 - Dashboard

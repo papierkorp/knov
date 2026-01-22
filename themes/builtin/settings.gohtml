@@ -4,6 +4,7 @@
     <div class="settings-sections">
         {{ template "general-section" . }}
         {{ template "theme-section" . }}
+        {{ template "editor-section" . }}
         {{ template "media-section" . }}
     </div>
 </div>
@@ -60,6 +61,29 @@
         hx-swap="innerHTML"
     >
         <p>{{T "Loading theme settings..."}}</p>
+    </div>
+</section>
+{{ end }}
+
+{{ define "editor-section" }}
+<section class="settings-section">
+    <h2>{{T "Editor Settings"}}</h2>
+    <div class="setting-item">
+        <form hx-post="/api/config/section-edit-subheaders" hx-trigger="change">
+            <label class="checkbox-label">
+                <input
+                    type="checkbox"
+                    name="sectionEditIncludeSubheaders"
+                    value="true"
+                    {{ if .UserSettings.SectionEditIncludeSubheaders }}checked{{ end }}
+                    class="form-checkbox"
+                />
+                <span class="checkmark"></span>
+                {{T "Include sub-headers when editing sections"}}
+                <small>{{T "When enabled, editing a section includes all sub-level headers"}}</small>
+            </label>
+            <div class="help-text">{{T "control whether section editing includes content from sub-headers"}}</div>
+        </form>
     </div>
 </section>
 {{ end }}

@@ -224,7 +224,8 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 	// get section content using contenthandler
 	if filePath != "" && sectionID != "" {
 		handler := contentHandler.GetHandler("markdown")
-		sectionContent, err := handler.ExtractSection(filePath, sectionID)
+		includeSubheaders := configmanager.GetSectionEditIncludeSubheaders()
+		sectionContent, err := handler.ExtractSection(filePath, sectionID, includeSubheaders)
 		if err == nil {
 			content = sectionContent
 		}

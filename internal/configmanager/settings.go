@@ -16,10 +16,11 @@ var userSettings UserSettings
 
 // UserSettings contains user-specific settings stored in JSON
 type UserSettings struct {
-	Theme         string           `json:"theme"`
-	Language      string           `json:"language"`
-	ThemeSettings AllThemeSettings `json:"themeSettings,omitempty"`
-	MediaSettings MediaSettings    `json:"mediaSettings,omitempty"`
+	Theme                        string           `json:"theme"`
+	Language                     string           `json:"language"`
+	ThemeSettings                AllThemeSettings `json:"themeSettings,omitempty"`
+	MediaSettings                MediaSettings    `json:"mediaSettings,omitempty"`
+	SectionEditIncludeSubheaders bool             `json:"sectionEditIncludeSubheaders"`
 }
 
 // MediaSettings contains media upload and management settings
@@ -33,9 +34,10 @@ type MediaSettings struct {
 // InitUserSettings initializes user settings from storage
 func InitUserSettings() {
 	userSettings = UserSettings{
-		Theme:         "builtin",
-		Language:      "en",
-		ThemeSettings: make(AllThemeSettings),
+		Theme:                        "builtin",
+		Language:                     "en",
+		ThemeSettings:                make(AllThemeSettings),
+		SectionEditIncludeSubheaders: false,
 		MediaSettings: MediaSettings{
 			MaxUploadSizeMB: 10,
 			AllowedMimeTypes: []string{
@@ -124,4 +126,9 @@ func GetMaxUploadSize() int64 {
 		maxUploadSizeMB = 10 // 10MB default
 	}
 	return int64(maxUploadSizeMB) * 1024 * 1024
+}
+
+// GetSectionEditIncludeSubheaders returns whether section editing should include subheaders
+func GetSectionEditIncludeSubheaders() bool {
+	return userSettings.SectionEditIncludeSubheaders
 }

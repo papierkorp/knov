@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
@@ -35,14 +36,14 @@ func (h *MarkdownContentHandler) SupportsTable() bool {
 }
 
 // ExtractSection extracts content of a specific section by ID
-func (h *MarkdownContentHandler) ExtractSection(filePath, sectionID string) (string, error) {
+func (h *MarkdownContentHandler) ExtractSection(filePath, sectionID string, includeSubheaders bool) (string, error) {
 	fullPath := pathutils.ToDocsPath(filePath)
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to read file: %w", err)
 	}
 
-	return h.extractSectionFromMarkdown(string(content), sectionID)
+	return h.extractSectionFromMarkdown(string(content), sectionID, includeSubheaders)
 }
 
 // SaveSection saves content to a specific section by ID
@@ -53,7 +54,9 @@ func (h *MarkdownContentHandler) SaveSection(filePath, sectionID, sectionContent
 		return fmt.Errorf("failed to read file: %w", err)
 	}
 
-	updatedContent, err := h.replaceSectionInMarkdown(string(originalContent), sectionID, sectionContent)
+	// use the setting to determine replacement scope
+	includeSubheaders := configmanager.GetSectionEditIncludeSubheaders()
+	updatedContent, err := h.replaceSectionInMarkdown(string(originalContent), sectionID, sectionContent, includeSubheaders)
 	if err != nil {
 		return fmt.Errorf("failed to replace section: %w", err)
 	}
@@ -98,9 +101,9 @@ func (h *MarkdownContentHandler) SaveTable(filePath string, tableIndex int, head
 	return nil
 }
 
-// extractSectionFromMarkdown extracts content between headers including the header itself
-func (h *MarkdownContentHandler) extractSectionFromMarkdown(content, sectionID string) (string, error) {
-	logging.LogDebug("extractSectionFromMarkdown: looking for section '%s'", sectionID)
+// extractSectionFromMarkdown extracts content between headers with options for subheader inclusion
+func (h *MarkdownContentHandler) extractSectionFromMarkdown(content, sectionID string, includeSubheaders bool) (string, error) {
+	logging.LogDebug("extractSectionFromMarkdown: looking for section '%s', includeSubheaders=%t", sectionID, includeSubheaders)
 	lines := strings.Split(content, "\n")
 
 	var sectionStart, sectionEnd int
@@ -133,11 +136,22 @@ func (h *MarkdownContentHandler) extractSectionFromMarkdown(content, sectionID s
 				continue
 			}
 
-			// stop at header of same or higher level (fewer # = higher level)
-			if inSection && level <= sectionHeaderLevel && headerID != sectionID {
-				sectionEnd = i
-				logging.LogDebug("section ended at line %d due to header level %d (section level %d)", i, level, sectionHeaderLevel)
-				break
+			// determine when to stop extraction based on includeSubheaders setting
+			if inSection && headerID != sectionID {
+				shouldStop := false
+				if includeSubheaders {
+					// original behavior: stop at header of same or higher level (fewer # = higher level)
+					shouldStop = level <= sectionHeaderLevel
+				} else {
+					// new behavior: stop at any header (same, higher, or lower level)
+					shouldStop = true
+				}
+
+				if shouldStop {
+					sectionEnd = i
+					logging.LogDebug("section ended at line %d due to header level %d (section level %d, includeSubheaders=%t)", i, level, sectionHeaderLevel, includeSubheaders)
+					break
+				}
 			}
 		}
 	}
@@ -157,9 +171,9 @@ func (h *MarkdownContentHandler) extractSectionFromMarkdown(content, sectionID s
 	return strings.Join(sectionLines, "\n"), nil
 }
 
-// replaceSectionInMarkdown replaces content of a specific section including the header
-func (h *MarkdownContentHandler) replaceSectionInMarkdown(content, sectionID, newContent string) (string, error) {
-	logging.LogDebug("replaceSectionInMarkdown: replacing section '%s' with %d bytes of content", sectionID, len(newContent))
+// replaceSectionInMarkdown replaces content of a specific section with options for subheader handling
+func (h *MarkdownContentHandler) replaceSectionInMarkdown(content, sectionID, newContent string, includeSubheaders bool) (string, error) {
+	logging.LogDebug("replaceSectionInMarkdown: replacing section '%s' with %d bytes of content, includeSubheaders=%t", sectionID, len(newContent), includeSubheaders)
 	lines := strings.Split(content, "\n")
 
 	var result []string
@@ -191,12 +205,24 @@ func (h *MarkdownContentHandler) replaceSectionInMarkdown(content, sectionID, ne
 					result = append(result, strings.Split(newContent, "\n")...)
 				}
 				continue
-			} else if inTargetSection && level <= headerLevel {
-				// reached next section of same or higher level
-				inTargetSection = false
-				logging.LogDebug("section replacement ended at line %d due to header level %d (section level %d)", i, level, headerLevel)
-				result = append(result, line)
-				continue
+			} else if inTargetSection && headerID != sectionID {
+				// determine when to stop replacement based on includeSubheaders setting
+				shouldStop := false
+				if includeSubheaders {
+					// original behavior: stop at header of same or higher level (fewer # = higher level)
+					shouldStop = level <= headerLevel
+				} else {
+					// new behavior: stop at any header (same, higher, or lower level)
+					shouldStop = true
+				}
+
+				if shouldStop {
+					// reached next section - end replacement
+					inTargetSection = false
+					logging.LogDebug("section replacement ended at line %d due to header level %d (section level %d, includeSubheaders=%t)", i, level, headerLevel, includeSubheaders)
+					result = append(result, line)
+					continue
+				}
 			}
 		}
 

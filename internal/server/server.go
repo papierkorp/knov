@@ -183,6 +183,9 @@ func StartServerChi() {
 			r.Post("/media/mime-types", handleAPIUpdateMediaMimeTypes)
 			r.Post("/media/orphaned-behavior", handleAPIUpdateOrphanedBehavior)
 			r.Post("/media/orphaned-age", handleAPIUpdateOrphanedAge)
+
+			// Editor settings endpoints
+			r.Post("/section-edit-subheaders", handleAPIUpdateSectionEditSubheaders)
 		})
 
 		// ----------------------------------------------------------------------------------------

@@ -320,6 +320,31 @@
                 }
             }
         },
+        "/api/config/section-edit-subheaders": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update section edit include subheaders setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether section editing should include subheaders",
+                        "name": "sectionEditIncludeSubheaders",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/cronjob": {
             "post": {
                 "description": "Manually triggers the cronjob execution (file processing and search indexing)",

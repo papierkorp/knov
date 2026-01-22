@@ -244,9 +244,6 @@ dont give me any code or implementation just your ideas/suggestions on how to fi
   - LinksToHere is set with every file for every link (i dont know if file/image links are included?) and could be set with the rebuild metadata
 - admin dashboard
   - Storage stats
-- metadata
-  - in handleAPIGetMetadata - do we really need filepath query and filepath string? => is there maybe a better solution? i dont like having 2 options for the same thing
-  - can you replace the `if !strings.HasPrefix(filePath, "media/") && !strings.HasPrefix(filePath, "docs/") && chi.URLParam(r, "*") != "" {` logic with pathutils which was just recently added?
 
 
 **mapping**
@@ -265,7 +262,7 @@ dont give me any code or implementation just your ideas/suggestions on how to fi
 - Simplify complex path conversion logic throughout the codebase
 - Remove remaining duplicate path handling code
 **optimize**
-- section edit
-  - add a setting to settings.json => sectionEditAllSubLevels = default false
-  - if true load all sublevel e.g. you press edit on a level 2 header with `##` -> you get the content with all level 3 `###` headers into the editor
-  - if false only load the content of this header without the subheaders
+- i have a "problem" with the section edit - at the moment i if edit a section i get all the subheaders as well into the editor - but i just want to edit the content of the one in selected
+  - add a setting to settings.json => sectionEditAllSubLevels = default false (or a better name if you have one)
+  - if true load all sublevel e.g. you press edit on a level 2 header with `##` -> you get the content with all level 3 `###` headers into the editor => like its now
+  - if false only load the content of this header without the subheaders => make sure to only save this part we had a problem where i edited this part and overwrote all subheaders

@@ -307,3 +307,29 @@ func handleAPIUpdateOrphanedAge(w http.ResponseWriter, r *http.Request) {
 	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "orphaned media age updated"))
 	writeResponse(w, r, "saved", html)
 }
+
+// @Summary Update section edit include subheaders setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param sectionEditIncludeSubheaders formData bool true "Whether section editing should include subheaders"
+// @Produce json,html
+// @Router /api/config/section-edit-subheaders [post]
+func handleAPIUpdateSectionEditSubheaders(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	includeSubheaders := r.FormValue("sectionEditIncludeSubheaders") == "true"
+
+	// update settings
+	userSettings := configmanager.GetUserSettings()
+	userSettings.SectionEditIncludeSubheaders = includeSubheaders
+
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("updated section edit include subheaders to: %t", includeSubheaders)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "section edit setting updated"))
+	writeResponse(w, r, "saved", html)
+}

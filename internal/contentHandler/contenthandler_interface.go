@@ -3,7 +3,7 @@ package contentHandler
 // ContentHandler provides advanced content manipulation capabilities for different file types
 type ContentHandler interface {
 	// ExtractSection extracts content of a specific section by ID
-	ExtractSection(filePath, sectionID string) (string, error)
+	ExtractSection(filePath, sectionID string, includeSubheaders bool) (string, error)
 
 	// SaveSection saves content to a specific section by ID
 	SaveSection(filePath, sectionID, content string) error
