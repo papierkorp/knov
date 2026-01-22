@@ -227,6 +227,7 @@ additional neccessary changes
 
 i just implemented the whole media stuff so we can upload images/files now i still have a few problems left:
 
+**media**
 - in the fileview (e.g.: http://localhost:1324/files/example_markdown.md)
   - it should just be preview and not the whole file which breaks the layout
   - getMediaPreview route?
@@ -243,7 +244,6 @@ i just implemented the whole media stuff so we can upload images/files now i sti
   - Storage stats
 - metadata
   - do we really need filepath query and filepath string?
-- example weekly meeting notes / meeting-notes.md => if a section edit edits a second level header ## => all 3 level headers are overwritten with the change and therefore removed
 
 
 **mapping**
@@ -261,3 +261,8 @@ i just implemented the whole media stuff so we can upload images/files now i sti
 - Replace remaining contentStorage path functions with pathutils equivalents
 - Simplify complex path conversion logic throughout the codebase
 - Remove remaining duplicate path handling code
+**optimize**
+- section edit
+  - add a setting to settings.json => sectionEditAllSubLevels = default false
+  - if true load all sublevel e.g. you press edit on a level 2 header with `##` -> you get the content with all level 3 `###` headers into the editor
+  - if false only load the content of this header without the subheaders

@@ -24,13 +24,13 @@ docker-run:
 	docker run --rm -it --name knov-dev -p 1324:1324 -v /home/markus/develop/gitlab/gollum/tempwiki2:/data knov-dev
 
 # ------------- helper -------------
-clean:
-	rm -f ./themes/*.so && rm -rf ./bin
-
 translation:
 	cd internal/translation && go generate
 
 swaggo-api-init:
 	swag init -g main.go -d . -o internal/server/swagger
 
-.PHONY: dev dev-fast swaggo-api-init rmt translation prod docker docker-build docker-run clean
+tree:
+	tree -I 'bin|data|storage'
+
+.PHONY: dev dev-fast swaggo-api-init translation prod docker docker-build docker-run tree
