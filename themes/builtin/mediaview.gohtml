@@ -8,7 +8,7 @@
         </div>
     </div>
     <div class="media-view-content">
-        <div hx-get="/api/media/detail/{{.MediaPath}}" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+        <div hx-get="/api/metadata?filepath=media/{{.MediaPath}}" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
             {{T "loading media details..."}}
         </div>
     </div>

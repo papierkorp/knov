@@ -227,6 +227,8 @@ additional neccessary changes
 
 i just implemented the whole media stuff so we can upload images/files now i still have a few problems left:
 
+dont give me any code or implementation just your ideas/suggestions on how to fix this using best practices
+
 **media**
 - in the fileview (e.g.: http://localhost:1324/files/example_markdown.md)
   - it should just be preview and not the whole file which breaks the layout
@@ -243,7 +245,8 @@ i just implemented the whole media stuff so we can upload images/files now i sti
 - admin dashboard
   - Storage stats
 - metadata
-  - do we really need filepath query and filepath string?
+  - in handleAPIGetMetadata - do we really need filepath query and filepath string? => is there maybe a better solution? i dont like having 2 options for the same thing
+  - can you replace the `if !strings.HasPrefix(filePath, "media/") && !strings.HasPrefix(filePath, "docs/") && chi.URLParam(r, "*") != "" {` logic with pathutils which was just recently added?
 
 
 **mapping**

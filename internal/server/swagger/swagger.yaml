@@ -1898,16 +1898,13 @@ paths:
       - media
   /api/metadata:
     get:
-      description: Get metadata for a file by providing filepath as query parameter
-        or path parameter
+      description: Get metadata for a file using filepath query parameter. Supports
+        both media/ and docs/ paths.
       parameters:
-      - description: File path (query parameter)
+      - description: File path (with or without media/docs prefix)
         in: query
         name: filepath
-        type: string
-      - description: File path (path parameter)
-        in: path
-        name: filepath
+        required: true
         type: string
       produces:
       - application/json

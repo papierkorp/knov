@@ -222,7 +222,6 @@ func StartServerChi() {
 		r.Route("/media", func(r chi.Router) {
 			r.Post("/upload", handleAPIMediaUpload)
 			r.Get("/list", handleAPIGetAllMedia)
-			r.Get("/detail/*", handleAPIGetMetadata)
 			r.Delete("/*", handleAPIDeleteMedia)
 		})
 

@@ -18,8 +18,6 @@ import (
 	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
-
-	"github.com/go-chi/chi/v5"
 )
 
 // ----------------------------------------------------------------------------------------
@@ -27,33 +25,22 @@ import (
 // ----------------------------------------------------------------------------------------
 
 // @Summary Get metadata for a single file
-// @Description Get metadata for a file by providing filepath as query parameter or path parameter
+// @Description Get metadata for a file using filepath query parameter. Supports both media/ and docs/ paths.
 // @Tags metadata
 // @Produce json,html
-// @Param filepath query string false "File path (query parameter)"
-// @Param filepath path string false "File path (path parameter)"
+// @Param filepath query string true "File path (with or without media/docs prefix)"
 // @Success 200 {object} files.Metadata
 // @Failure 400 {string} string "missing filepath parameter"
 // @Failure 404 {string} string "metadata not found"
 // @Failure 500 {string} string "failed to get metadata"
 // @Router /api/metadata [get]
 func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
-	// try to get filepath from query parameter first
+	// get filepath from query parameter only
 	filePath := r.URL.Query().Get("filepath")
-
-	// if no query parameter, try to get from path parameter (for media detail compatibility)
-	if filePath == "" {
-		filePath = chi.URLParam(r, "*")
-	}
 
 	if filePath == "" {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
 		return
-	}
-
-	// add media prefix if not present and looks like media path
-	if !strings.HasPrefix(filePath, "media/") && !strings.HasPrefix(filePath, "docs/") && chi.URLParam(r, "*") != "" {
-		filePath = "media/" + filePath
 	}
 
 	// normalize path to ensure correct prefix for metadata lookup

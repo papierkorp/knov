@@ -2221,7 +2221,7 @@ const docTemplate = `{
         },
         "/api/metadata": {
             "get": {
-                "description": "Get metadata for a file by providing filepath as query parameter or path parameter",
+                "description": "Get metadata for a file using filepath query parameter. Supports both media/ and docs/ paths.",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -2233,15 +2233,10 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "File path (query parameter)",
+                        "description": "File path (with or without media/docs prefix)",
                         "name": "filepath",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "File path (path parameter)",
-                        "name": "filepath",
-                        "in": "path"
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
