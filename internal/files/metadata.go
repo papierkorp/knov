@@ -10,23 +10,11 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
-	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
+	"knov/internal/pathutils"
 	"knov/internal/utils"
 )
-
-// getFilePathForMetadata returns the correct file system path for a metadata path
-func getFilePathForMetadata(metadataPath string) string {
-	if strings.HasPrefix(metadataPath, "media/") {
-		normalizedPath := contentStorage.ToRelativePath(metadataPath)
-		return contentStorage.ToMediaPath(normalizedPath)
-	}
-
-	// default to docs path (handles both docs/ prefixed and non-prefixed paths)
-	normalizedPath := contentStorage.ToRelativePath(metadataPath)
-	return contentStorage.ToDocsPath(normalizedPath)
-}
 
 type Filetype string
 type Status string
@@ -175,13 +163,13 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 
 	if isMediaFile {
 		// for media files, keep the media/ prefix in metadata but get actual file path
-		normalizedPath := contentStorage.ToRelativePath(filePath)
-		fullPath = contentStorage.ToMediaPath(normalizedPath)
+		normalizedPath := pathutils.ToRelative(filePath)
+		fullPath = pathutils.ToMediaPath(normalizedPath)
 		metadataPath = filePath // keep original path with media/ prefix
 	} else {
 		// for docs files, keep the docs/ prefix in metadata but get actual file path
-		normalizedPath := contentStorage.ToRelativePath(filePath)
-		fullPath = contentStorage.ToDocsPath(normalizedPath)
+		normalizedPath := pathutils.ToRelative(filePath)
+		fullPath = pathutils.ToDocsPath(normalizedPath)
 		metadataPath = filePath // keep original path with docs/ prefix
 	}
 
@@ -207,7 +195,7 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	currentMetadata.Size = newMetadata.Size
 
 	// update collection and folder based on folder structure (use path without docs/media prefix)
-	normalizedPath := contentStorage.ToRelativePath(filePath)
+	normalizedPath := pathutils.ToRelative(filePath)
 
 	if newMetadata.Collection == "" {
 		folderPath := filepath.Dir(normalizedPath)
@@ -379,7 +367,7 @@ func MetaDataGet(filepath string) (*Metadata, error) {
 		normalizedPath = filepath
 	} else {
 		// for files without prefix, assume they are docs files and add docs/ prefix
-		normalizedPath = "docs/" + contentStorage.ToRelativePath(filepath)
+		normalizedPath = "docs/" + pathutils.ToRelative(filepath)
 	}
 
 	logging.LogDebug("MetaDataGet: filepath='%s' -> normalizedPath='%s'", filepath, normalizedPath)
@@ -412,7 +400,7 @@ func MetaDataInitializeAll() error {
 
 	for _, file := range allFiles {
 		// normalize path to ensure correct prefix for metadata storage
-		normalizedPath := contentStorage.EnsurePrefix(file.Path)
+		normalizedPath := pathutils.ToWithPrefix(file.Path)
 
 		// check if metadata already exists
 		metadata, err := MetaDataGet(normalizedPath)
@@ -441,7 +429,7 @@ func MetaDataInitializeAll() error {
 
 // MetaDataDelete removes metadata for a file path
 func MetaDataDelete(filepath string) error {
-	normalizedPath := contentStorage.ToRelativePath(filepath)
+	normalizedPath := pathutils.ToRelative(filepath)
 	return metadataStorage.Delete(normalizedPath)
 }
 

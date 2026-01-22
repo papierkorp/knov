@@ -8,6 +8,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/parser"
+	"knov/internal/pathutils"
 )
 
 // File represents a file in the system
@@ -88,12 +89,12 @@ func GetFileContent(filePath string) (*FileContent, error) {
 		return nil, err
 	}
 
-	html, err := handler.Render(parsed, contentStorage.ToRelativePath(filePath))
+	html, err := handler.Render(parsed, pathutils.ToRelative(filePath))
 	if err != nil {
 		return nil, err
 	}
 
-	relativePath := contentStorage.ToRelativePath(filePath)
+	relativePath := pathutils.ToRelative(filePath)
 	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", relativePath)
 
 	processedContent = InjectHeaderIDs(processedContent)

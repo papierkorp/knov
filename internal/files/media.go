@@ -12,6 +12,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/utils"
 )
 
@@ -61,7 +62,7 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	if contextDir == "docs" {
 		contextDir = ""
 	} else {
-		contextDir = contentStorage.StripDocsPrefix(contextDir)
+		contextDir = pathutils.ToRelative(contextDir)
 	}
 
 	// sanitize filename
@@ -76,10 +77,10 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	}
 
 	// resolve filename conflicts
-	finalMediaPath := utils.ResolveFilenameConflicts(contentStorage.ToMediaPath(mediaPath), mediaPath)
+	finalMediaPath := utils.ResolveFilenameConflicts(pathutils.ToMediaPath(mediaPath), mediaPath)
 
 	// get full file system path using contentStorage
-	fullMediaPath := contentStorage.ToMediaPath(finalMediaPath)
+	fullMediaPath := pathutils.ToMediaPath(finalMediaPath)
 
 	// write file to disk using contentStorage
 	if err := contentStorage.WriteFile(fullMediaPath, fileBytes, 0644); err != nil {

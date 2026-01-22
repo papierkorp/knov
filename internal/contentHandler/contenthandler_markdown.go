@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"knov/internal/contentStorage"
+	"knov/internal/pathutils"
 	"knov/internal/types"
 	"knov/internal/utils"
 )
@@ -34,7 +35,7 @@ func (h *MarkdownContentHandler) SupportsTable() bool {
 
 // ExtractSection extracts content of a specific section by ID
 func (h *MarkdownContentHandler) ExtractSection(filePath, sectionID string) (string, error) {
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath)
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to read file: %w", err)
@@ -45,7 +46,7 @@ func (h *MarkdownContentHandler) ExtractSection(filePath, sectionID string) (str
 
 // SaveSection saves content to a specific section by ID
 func (h *MarkdownContentHandler) SaveSection(filePath, sectionID, sectionContent string) error {
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath)
 	originalContent, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
@@ -65,7 +66,7 @@ func (h *MarkdownContentHandler) SaveSection(filePath, sectionID, sectionContent
 
 // ExtractTable extracts table data at specific index, returns headers and rows
 func (h *MarkdownContentHandler) ExtractTable(filePath string, tableIndex int) ([]string, [][]string, error) {
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath)
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to read file: %w", err)
@@ -81,7 +82,7 @@ func (h *MarkdownContentHandler) ExtractTable(filePath string, tableIndex int) (
 
 // SaveTable saves table data at specific index
 func (h *MarkdownContentHandler) SaveTable(filePath string, tableIndex int, headers []string, rows [][]string) error {
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath)
 	originalContent, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)

@@ -10,6 +10,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 
@@ -146,7 +147,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("deleting media file: %s", fullMediaPath)
 
 	// check if file exists
-	fullPath := contentStorage.ToMediaPath(strings.TrimPrefix(fullMediaPath, "media/"))
+	fullPath := pathutils.ToMediaPath(strings.TrimPrefix(fullMediaPath, "media/"))
 	exists, err := contentStorage.FileExists(fullPath)
 	if err != nil || !exists {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "media file not found"), http.StatusNotFound)

@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
-	"knov/internal/contentStorage"
 	"knov/internal/files"
+	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
 
@@ -94,7 +94,7 @@ func RenderLinksList(links []string) string {
 	var html strings.Builder
 	html.WriteString(`<ul class="component-link-list">`)
 	for _, link := range links {
-		linkPath := contentStorage.ToRelativePath(link)
+		linkPath := pathutils.ToRelative(link)
 		displayText := GetLinkDisplayText(linkPath)
 		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s" title="%s">%s</a></li>`, linkPath, linkPath, displayText))
 	}

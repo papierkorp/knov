@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	"knov/internal/configmanager"
-	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/parser"
+	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 	"knov/internal/types"
@@ -63,7 +63,7 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 
 	searchQuery := r.URL.Query().Get("search")
 
-	fullPath := contentStorage.ToDocsPath(filepath)
+	fullPath := pathutils.ToDocsPath(filepath)
 	fileContent, err := os.ReadFile(fullPath)
 	if err != nil {
 		logging.LogError("failed to read file %s: %v", fullPath, err)

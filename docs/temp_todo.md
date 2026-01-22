@@ -243,6 +243,29 @@ i just implemented the whole media stuff so we can upload images/files now i sti
   - Storage stats
 - metadata
   - do we really need filepath query and filepath string?
+- example weekly meeting notes / meeting-notes.md => if a section edit edits a second level header ## => all 3 level headers are overwritten with the change and therefore removed
+- save tableedit destroys the table
+
+example:
+
+| header1 | header2 |
+| --- | --- |
+| r1h1 | r1h2 |
+| r2h1 | r2h2 |  
+
+edit table
+
+and i add r3h1 in a new row
+
+end up with:
+
+| header1 | header2 |
+
+2026/01/22 09:41:09 debug [api_editor.go - handleAPITableEditorSave]: received filepath: 'docs/546465.md'
+2026/01/22 09:41:09 debug [api_editor.go - handleAPITableEditorSave]: received headers: 21 bytes, rows: 59 bytes, tableIndex: 0
+2026/01/22 09:41:09 info [api_editor.go - handleAPITableEditorSave]: saved table in file: docs/546465.md
+2026/01/22 09:41:09 "POST http://localhost:1324/api/editor/tableeditor HTTP/1.1" from 127.0.0.1:46576 - 200 103B in 706.323µs
+
 
 
 **mapping**
@@ -253,3 +276,12 @@ i just implemented the whole media stuff so we can upload images/files now i sti
 - create a new mapping package (e.g. tag/tags)
 **readability**
 - we have A LOT of conversions for the filepath - either to add/remove docs or media to the filepath - is there a good way to consolidate this into one package instead of doing it everywhere?
+StripPathPrefix() - utils/cleanse.go
+
+Removed from: cleanse.go
+Usages replaced in: contentStorage_interface.go (4 occurrences)
+Replaced with: Direct string manipulation (for now)
+
+Replace remaining contentStorage path functions with pathutils equivalents
+Simplify complex path conversion logic throughout the codebase
+Remove remaining duplicate path handling code

@@ -13,27 +13,14 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
-	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 
 	"github.com/go-chi/chi/v5"
 )
-
-// normalizeFilePathForMetadata ensures the filepath has the correct prefix for metadata lookup
-func normalizeFilePathForMetadata(filePath string) string {
-	// if path already has docs/ or media/ prefix, return as-is
-	if strings.HasPrefix(filePath, "docs/") || strings.HasPrefix(filePath, "media/") {
-		return filePath
-	}
-
-	// for files without prefix, assume they are docs files and add docs/ prefix
-	normalized := filepath.Join("docs", filePath)
-	logging.LogDebug("normalizeFilePathForMetadata: '%s' -> '%s'", filePath, normalized)
-	return normalized
-}
 
 // ----------------------------------------------------------------------------------------
 // ----------------------------------- BULK OPERATIONS -----------------------------------
@@ -70,7 +57,7 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// normalize path to ensure correct prefix for metadata lookup
-	normalizedPath := normalizeFilePathForMetadata(filePath)
+	normalizedPath := pathutils.ToWithPrefix(filePath)
 	metadata, err := files.MetaDataGet(normalizedPath)
 	if err != nil {
 		logging.LogError("failed to get metadata for %s: %v", normalizedPath, err)
@@ -234,7 +221,7 @@ func handleAPIGetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
@@ -262,7 +249,7 @@ func handleAPIGetMetadataFileType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
@@ -290,7 +277,7 @@ func handleAPIGetMetadataPath(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
@@ -318,7 +305,7 @@ func handleAPIGetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
@@ -347,7 +334,7 @@ func handleAPIGetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
@@ -382,7 +369,7 @@ func handleAPISetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path:       normalizeFilePathForMetadata(filePath),
+		Path:       pathutils.ToWithPrefix(filePath),
 		Collection: collection,
 	}
 
@@ -414,7 +401,7 @@ func handleAPISetMetadataFileType(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path:     normalizeFilePathForMetadata(filePath),
+		Path:     pathutils.ToWithPrefix(filePath),
 		FileType: files.Filetype(filetype),
 	}
 
@@ -446,7 +433,7 @@ func handleAPISetMetadataStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path:   normalizeFilePathForMetadata(filePath),
+		Path:   pathutils.ToWithPrefix(filePath),
 		Status: files.Status(status),
 	}
 
@@ -478,7 +465,7 @@ func handleAPISetMetadataPriority(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path:     normalizeFilePathForMetadata(filePath),
+		Path:     pathutils.ToWithPrefix(filePath),
 		Priority: files.Priority(priority),
 	}
 
@@ -528,15 +515,15 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	// determine correct path functions based on file type
 	var currentFullPath, newFullPath string
 	if strings.HasPrefix(filePath, "media/") {
-		currentNormalized := contentStorage.ToRelativePath(filePath)
-		currentFullPath = contentStorage.ToMediaPath(currentNormalized)
-		newNormalized := contentStorage.ToRelativePath(newpath)
-		newFullPath = contentStorage.ToMediaPath(newNormalized)
+		currentNormalized := pathutils.ToRelative(filePath)
+		currentFullPath = pathutils.ToMediaPath(currentNormalized)
+		newNormalized := pathutils.ToRelative(newpath)
+		newFullPath = pathutils.ToMediaPath(newNormalized)
 	} else {
-		currentNormalized := contentStorage.ToRelativePath(filePath)
-		currentFullPath = contentStorage.ToDocsPath(currentNormalized)
-		newNormalized := contentStorage.ToRelativePath(newpath)
-		newFullPath = contentStorage.ToDocsPath(newNormalized)
+		currentNormalized := pathutils.ToRelative(filePath)
+		currentFullPath = pathutils.ToDocsPath(currentNormalized)
+		newNormalized := pathutils.ToRelative(newpath)
+		newFullPath = pathutils.ToDocsPath(newNormalized)
 	}
 
 	// check if current file exists
@@ -621,7 +608,7 @@ func handleAPISetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path:      normalizeFilePathForMetadata(filePath),
+		Path:      pathutils.ToWithPrefix(filePath),
 		CreatedAt: createdAt,
 	}
 
@@ -659,7 +646,7 @@ func handleAPISetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path:       normalizeFilePathForMetadata(filePath),
+		Path:       pathutils.ToWithPrefix(filePath),
 		LastEdited: lastEdited,
 	}
 
@@ -699,7 +686,7 @@ func handleAPISetMetadataFolders(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path:    normalizeFilePathForMetadata(filePath),
+		Path:    pathutils.ToWithPrefix(filePath),
 		Folders: folders,
 	}
 
@@ -995,7 +982,7 @@ func handleAPIGetFileMetadataTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
@@ -1023,7 +1010,7 @@ func handleAPIGetFileMetadataFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
@@ -1051,7 +1038,7 @@ func handleAPIGetFileMetadataCollection(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
@@ -1096,7 +1083,7 @@ func handleAPISetMetadataPARAProjects(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path: normalizeFilePathForMetadata(filePath),
+		Path: pathutils.ToWithPrefix(filePath),
 		PARA: files.PARA{
 			Projects: projects,
 		},
@@ -1141,7 +1128,7 @@ func handleAPISetMetadataPARAreas(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path: normalizeFilePathForMetadata(filePath),
+		Path: pathutils.ToWithPrefix(filePath),
 		PARA: files.PARA{
 			Areas: areas,
 		},
@@ -1186,7 +1173,7 @@ func handleAPISetMetadataPARAResources(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path: normalizeFilePathForMetadata(filePath),
+		Path: pathutils.ToWithPrefix(filePath),
 		PARA: files.PARA{
 			Resources: resources,
 		},
@@ -1231,7 +1218,7 @@ func handleAPISetMetadataPARAArchive(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path: normalizeFilePathForMetadata(filePath),
+		Path: pathutils.ToWithPrefix(filePath),
 		PARA: files.PARA{
 			Archive: archive,
 		},
@@ -1284,7 +1271,7 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path: normalizeFilePathForMetadata(filePath),
+		Path: pathutils.ToWithPrefix(filePath),
 		Tags: tags,
 	}
 
@@ -1327,7 +1314,7 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path:    normalizeFilePathForMetadata(filePath),
+		Path:    pathutils.ToWithPrefix(filePath),
 		Parents: parents,
 	}
 
@@ -1352,7 +1339,7 @@ func handleAPIGetMetadataPriority(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil || metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -1375,7 +1362,7 @@ func handleAPIGetMetadataStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil || metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -1393,7 +1380,7 @@ func handleAPIGetMetadataPARAProjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil || metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -1423,7 +1410,7 @@ func handleAPIGetMetadataPARAreas(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil || metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -1453,7 +1440,7 @@ func handleAPIGetMetadataPARAResources(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil || metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -1483,7 +1470,7 @@ func handleAPIGetMetadataPARAArchive(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil || metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -1790,7 +1777,7 @@ func handleAPIGetMetadataTargetDate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := files.MetaDataGet(normalizeFilePathForMetadata(filePath))
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	if err != nil || metadata == nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
 		return
@@ -1826,7 +1813,7 @@ func handleAPISetMetadataTargetDate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metadata := &files.Metadata{
-		Path: normalizeFilePathForMetadata(filePath),
+		Path: pathutils.ToWithPrefix(filePath),
 	}
 
 	if targetDateStr != "" {

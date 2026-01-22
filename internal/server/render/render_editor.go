@@ -11,6 +11,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
 
@@ -20,7 +21,7 @@ func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
 	isEdit := filePath != ""
 
 	if isEdit {
-		fullPath := contentStorage.ToDocsPath(filePath)
+		fullPath := pathutils.ToDocsPath(filePath)
 		rawContent, err := contentStorage.ReadFile(fullPath)
 		if err == nil {
 			content = string(rawContent)
@@ -424,7 +425,7 @@ func RenderFilterEditor(filePath string) (string, error) {
 	var config *filter.Config
 	if filePath != "" {
 		// for existing filter files, try to load the saved JSON
-		fullPath := contentStorage.ToDocsPath(filePath)
+		fullPath := pathutils.ToDocsPath(filePath)
 		if content, err := contentStorage.ReadFile(fullPath); err == nil {
 			if len(content) == 0 {
 				// use default configuration for empty files
@@ -558,7 +559,7 @@ func RenderIndexEditor(filePath string) (string, error) {
 	// load existing config if editing
 	var config *IndexConfig
 	if filePath != "" {
-		fullPath := contentStorage.ToDocsPath(filePath)
+		fullPath := pathutils.ToDocsPath(filePath)
 		if content, err := contentStorage.ReadFile(fullPath); err == nil {
 			if len(content) > 0 {
 				// parse markdown to extract entries

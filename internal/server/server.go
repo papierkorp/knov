@@ -11,12 +11,12 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
-	"knov/internal/contentStorage"
 	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/git"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
@@ -667,7 +667,7 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get full media file path
-	fullPath := contentStorage.ToMediaPath(mediaPath)
+	fullPath := pathutils.ToMediaPath(mediaPath)
 
 	// check if file exists
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
@@ -783,7 +783,7 @@ func handleDashboardView(w http.ResponseWriter, r *http.Request) {
 
 func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/files/")
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath)
 	ext := strings.ToLower(filepath.Ext(fullPath))
 
 	if ext == ".pdf" {

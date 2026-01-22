@@ -14,6 +14,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -243,7 +244,7 @@ func simulateFileChange() error {
 	logging.LogInfo("simulating file changes for version history")
 
 	// simulate file change for git history on getting-started.md
-	gettingStartedPath := contentStorage.ToDocsPath("getting-started.md")
+	gettingStartedPath := pathutils.ToDocsPath("getting-started.md")
 	if content, err := os.ReadFile(gettingStartedPath); err == nil {
 		updatedContent := string(content) + "\n\n## Recent Updates\n- Added troubleshooting section\n- Improved navigation"
 		os.WriteFile(gettingStartedPath, []byte(updatedContent), 0644)
@@ -263,7 +264,7 @@ func simulateFileChange() error {
 	}
 
 	for _, file := range testFiles {
-		fullPath := contentStorage.ToDocsPath(file)
+		fullPath := pathutils.ToDocsPath(file)
 		if content, err := os.ReadFile(fullPath); err == nil {
 			updatedContent := string(content) + "\n\n## Version Update\n- Added documentation section\n- Enhanced content structure"
 			if err := os.WriteFile(fullPath, []byte(updatedContent), 0644); err != nil {
@@ -320,7 +321,7 @@ func createTestMetadata() error {
 
 	for i, file := range testFiles {
 		filename := filepath.Base(file)
-		relPath := contentStorage.ToRelativePath(file)
+		relPath := pathutils.ToRelative(file)
 		// ensure relPath doesn't already have docs/ prefix to avoid double prefix
 		relPath = strings.TrimPrefix(relPath, "docs/")
 		// add docs/ prefix for metadata path
@@ -363,7 +364,7 @@ func createTestMetadata() error {
 			for j := 0; j < parentCount && j < i; j++ {
 				parentIdx := i - 1 - (j * 2)
 				if parentIdx >= 0 && parentIdx < i {
-					parentPath := contentStorage.ToRelativePath(testFiles[parentIdx])
+					parentPath := pathutils.ToRelative(testFiles[parentIdx])
 					parentMetadataPath := filepath.Join("docs", parentPath)
 					if parentMetadataPath != metadataPath && !contains(parents, parentMetadataPath) {
 						parents = append(parents, parentMetadataPath)

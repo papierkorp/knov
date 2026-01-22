@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strings"
 
-	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/parser"
+	"knov/internal/pathutils"
 	"knov/internal/utils"
 )
 
@@ -24,7 +24,7 @@ func MetaDataLinksRebuild() error {
 	// first pass: clear old data and update ancestors and usedlinks
 	for _, file := range files {
 		// normalize path to ensure correct prefix for metadata lookup
-		normalizedPath := contentStorage.EnsurePrefix(file.Path)
+		normalizedPath := pathutils.ToWithPrefix(file.Path)
 
 		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil {
@@ -43,7 +43,7 @@ func MetaDataLinksRebuild() error {
 		updateAncestors(metadata)
 
 		// extract used links without updating linkstohere yet
-		fullPath := contentStorage.ToDocsPath(metadata.Path)
+		fullPath := pathutils.ToDocsPath(metadata.Path)
 		contentData, err := os.ReadFile(fullPath)
 		if err == nil {
 			handler := parser.GetParserRegistry().GetHandler(fullPath)
@@ -66,7 +66,7 @@ func MetaDataLinksRebuild() error {
 	// second pass: update kids and linkstohere for all files
 	for _, file := range files {
 		// normalize path to ensure correct prefix for metadata lookup
-		normalizedPath := contentStorage.EnsurePrefix(file.Path)
+		normalizedPath := pathutils.ToWithPrefix(file.Path)
 
 		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil || metadata == nil {
@@ -133,7 +133,7 @@ func updateUsedLinks(metadata *Metadata) {
 		return
 	}
 
-	fullPath := getFilePathForMetadata(metadata.Path)
+	fullPath := pathutils.ToFullPath(metadata.Path)
 
 	logging.LogInfo("processing file for links: %s", fullPath)
 
@@ -301,7 +301,7 @@ func UpdateLinksForMovedFile(oldPath, newPath string) error {
 
 // updateLinksInFile updates links within a single file
 func updateLinksInFile(filePath, oldPath, newPath string) error {
-	fullPath := getFilePathForMetadata(filePath)
+	fullPath := pathutils.ToFullPath(filePath)
 
 	// read file content
 	contentData, err := os.ReadFile(fullPath)
@@ -434,7 +434,7 @@ func updateTitle(metadata *Metadata) {
 		return
 	}
 
-	fullPath := getFilePathForMetadata(metadata.Path)
+	fullPath := pathutils.ToFullPath(metadata.Path)
 
 	logging.LogDebug("extracting title for %s", metadata.Path)
 

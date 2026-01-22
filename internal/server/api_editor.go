@@ -15,6 +15,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/parser"
+	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -125,7 +126,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	// get file content if editing existing file
 	var content string
 	if filepath != "" {
-		fullPath := contentStorage.ToDocsPath(filepath)
+		fullPath := pathutils.ToDocsPath(filepath)
 		if rawContent, err := contentStorage.ReadFile(fullPath); err == nil {
 			content = string(rawContent)
 		}
@@ -188,7 +189,7 @@ func handleAPIGetTextareaEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := contentStorage.ToDocsPath(filepath)
+	fullPath := pathutils.ToDocsPath(filepath)
 	content, err := contentStorage.ReadFile(fullPath)
 	var contentStr string
 	if err != nil {
@@ -231,7 +232,7 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// convert to full path
-	fullPath := contentStorage.ToDocsPath(filezpath)
+	fullPath := pathutils.ToDocsPath(filezpath)
 
 	// parse entries
 	var config render.IndexConfig
@@ -394,7 +395,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	markdown := render.ConvertListItemsToMarkdown(listItems, 0)
 
 	// convert to full path
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath)
 
 	// create directory if it doesn't exist
 	dir := filepath.Dir(fullPath)

@@ -17,6 +17,7 @@ import (
 	"knov/internal/filter"
 	"knov/internal/logging"
 	"knov/internal/parser"
+	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 	"knov/internal/utils"
@@ -149,7 +150,7 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/content/{filepath} [get]
 func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/content/")
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath)
 
 	content, err := files.GetFileContent(fullPath)
 	if err != nil {
@@ -196,7 +197,7 @@ func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := contentStorage.ToDocsPath(filepath)
+	fullPath := pathutils.ToDocsPath(filepath)
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
 		logging.LogError("failed to get raw content: %v", err)
@@ -253,7 +254,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath)
 
 	// check if file exists (to determine if this is creation or update)
 	_, statErr := os.Stat(fullPath)
@@ -350,7 +351,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath)
 
 	// get parser handler
 	handler := parser.GetParserRegistry().GetHandler(fullPath)
@@ -734,7 +735,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("renaming file: %s -> %s", currentPath, newPath)
 
 	// check if current file exists
-	currentFullPath := contentStorage.ToDocsPath(currentPath)
+	currentFullPath := pathutils.ToDocsPath(currentPath)
 	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
 		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist"))
 		w.Header().Set("Content-Type", "text/html")
@@ -744,7 +745,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if new path already exists
-	newFullPath := contentStorage.ToDocsPath(newPath)
+	newFullPath := pathutils.ToDocsPath(newPath)
 	if _, err := os.Stat(newFullPath); err == nil {
 		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new name already exists"))
 		w.Header().Set("Content-Type", "text/html")
@@ -809,7 +810,7 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("deleting file: %s", filePath)
 
 	// check if file exists
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath)
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist") + `</div>`
 		w.Header().Set("Content-Type", "text/html")
@@ -851,7 +852,7 @@ func generateUniqueFleetingFilename(content string) string {
 	// check if file exists and increment counter until we find a unique name
 	for {
 		testPath := fmt.Sprintf("fleeting/%s.md", filename)
-		fullTestPath := contentStorage.ToDocsPath(testPath)
+		fullTestPath := pathutils.ToDocsPath(testPath)
 
 		// check if file exists
 		if _, err := os.Stat(fullTestPath); os.IsNotExist(err) {

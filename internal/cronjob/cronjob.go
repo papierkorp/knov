@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
-	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/search"
 )
 
@@ -176,8 +176,8 @@ func runFileJobs() {
 				// process each file move
 				for _, move := range movedFiles {
 					// normalize paths for metadata operations
-					oldNormalized := contentStorage.EnsurePrefix(move.OldPath)
-					newNormalized := contentStorage.EnsurePrefix(move.NewPath)
+					oldNormalized := pathutils.ToWithPrefix(move.OldPath)
+					newNormalized := pathutils.ToWithPrefix(move.NewPath)
 
 					logging.LogInfo("processing file move: %s -> %s", oldNormalized, newNormalized)
 
@@ -221,7 +221,7 @@ func runFileJobs() {
 		logging.LogInfo("deleting metadata for %d files", len(filesToDelete))
 		for _, filePath := range filesToDelete {
 			// normalize path to ensure correct prefix for metadata lookup
-			normalizedPath := contentStorage.EnsurePrefix(filePath)
+			normalizedPath := pathutils.ToWithPrefix(filePath)
 			if err := files.MetaDataDelete(normalizedPath); err != nil {
 				logging.LogError("cronjob: failed to delete metadata for %s: %v", normalizedPath, err)
 				continue
@@ -239,7 +239,7 @@ func runFileJobs() {
 		// process each file
 		for _, filePath := range filesToProcess {
 			// normalize path to ensure correct prefix for metadata lookup
-			normalizedPath := contentStorage.EnsurePrefix(filePath)
+			normalizedPath := pathutils.ToWithPrefix(filePath)
 			metadata := &files.Metadata{Path: normalizedPath}
 			if err := files.MetaDataSave(metadata); err != nil {
 				logging.LogError("cronjob: failed to save metadata for %s: %v", normalizedPath, err)

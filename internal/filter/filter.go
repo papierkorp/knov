@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 )
 
 // Criteria represents a single filter condition
@@ -353,7 +353,7 @@ func SaveFilterConfig(config *Config, filePath string) error {
 		return fmt.Errorf("failed to marshal filter config: %w", err)
 	}
 
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath)
 
 	// create directory if needed
 	dir := filepath.Dir(fullPath)

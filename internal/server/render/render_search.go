@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
-	"knov/internal/contentStorage"
 	"knov/internal/files"
+	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
 
@@ -98,7 +98,7 @@ func extractSearchContext(filePath, query string) string {
 	}
 
 	// try to get file content
-	fullPath := contentStorage.ToDocsPath(filePath)
+	fullPath := pathutils.ToDocsPath(filePath)
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
 		return ""
