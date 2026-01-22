@@ -507,6 +507,12 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// debug log the parsed data
+	logging.LogDebug("parsed data - tableIndex: %d, headers: %v, rows count: %d", tableIndex, headers, len(rows))
+	for i, row := range rows {
+		logging.LogDebug("row %d: %v", i, row)
+	}
+
 	// save table using contenthandler
 	handler := contentHandler.GetHandler("markdown")
 	if err := handler.SaveTable(filePath, tableIndex, headers, rows); err != nil {

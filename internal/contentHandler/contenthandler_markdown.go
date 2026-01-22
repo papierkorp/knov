@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"knov/internal/contentStorage"
+	"knov/internal/logging"
 	"knov/internal/pathutils"
 	"knov/internal/types"
 	"knov/internal/utils"
@@ -99,11 +100,13 @@ func (h *MarkdownContentHandler) SaveTable(filePath string, tableIndex int, head
 
 // extractSectionFromMarkdown extracts content between headers including the header itself
 func (h *MarkdownContentHandler) extractSectionFromMarkdown(content, sectionID string) (string, error) {
+	logging.LogDebug("extractSectionFromMarkdown: looking for section '%s'", sectionID)
 	lines := strings.Split(content, "\n")
 
 	var sectionStart, sectionEnd int
 	var inSection bool
 	var inCodeBlock bool
+	var sectionHeaderLevel int
 	usedIDs := make(map[string]int)
 
 	for i, line := range lines {
@@ -116,36 +119,47 @@ func (h *MarkdownContentHandler) extractSectionFromMarkdown(content, sectionID s
 
 		// only process headers outside of code blocks
 		if !inCodeBlock && strings.HasPrefix(trimmed, "#") {
+			level := len(trimmed) - len(strings.TrimLeft(trimmed, "#"))
 			headerText := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
 			headerID := utils.GenerateID(headerText, usedIDs)
 
+			logging.LogDebug("found header at line %d: level=%d, id='%s', text='%s'", i, level, headerID, headerText)
+
 			if headerID == sectionID && !inSection {
 				sectionStart = i
+				sectionHeaderLevel = level
 				inSection = true
+				logging.LogDebug("found target section '%s' at line %d (level %d)", sectionID, i, level)
 				continue
 			}
 
-			if inSection && headerID != sectionID {
+			// stop at header of same or higher level (fewer # = higher level)
+			if inSection && level <= sectionHeaderLevel && headerID != sectionID {
 				sectionEnd = i
+				logging.LogDebug("section ended at line %d due to header level %d (section level %d)", i, level, sectionHeaderLevel)
 				break
 			}
 		}
 	}
 
 	if !inSection {
+		logging.LogDebug("section '%s' not found", sectionID)
 		return "", fmt.Errorf("section not found: %s", sectionID)
 	}
 
 	if sectionEnd == 0 {
 		sectionEnd = len(lines)
+		logging.LogDebug("section extends to end of file (line %d)", sectionEnd)
 	}
 
 	sectionLines := lines[sectionStart:sectionEnd]
+	logging.LogDebug("extracted section '%s': lines %d-%d (%d lines total)", sectionID, sectionStart, sectionEnd-1, len(sectionLines))
 	return strings.Join(sectionLines, "\n"), nil
 }
 
 // replaceSectionInMarkdown replaces content of a specific section including the header
 func (h *MarkdownContentHandler) replaceSectionInMarkdown(content, sectionID, newContent string) (string, error) {
+	logging.LogDebug("replaceSectionInMarkdown: replacing section '%s' with %d bytes of content", sectionID, len(newContent))
 	lines := strings.Split(content, "\n")
 
 	var result []string
@@ -154,7 +168,7 @@ func (h *MarkdownContentHandler) replaceSectionInMarkdown(content, sectionID, ne
 	var headerLevel int
 	usedIDs := make(map[string]int)
 
-	for _, line := range lines {
+	for i, line := range lines {
 		trimmed := strings.TrimSpace(line)
 
 		// check for code block fences
@@ -172,6 +186,7 @@ func (h *MarkdownContentHandler) replaceSectionInMarkdown(content, sectionID, ne
 				// start of target section - replace with new content
 				inTargetSection = true
 				headerLevel = level
+				logging.LogDebug("found target section '%s' at line %d (level %d), replacing content", sectionID, i, level)
 				if strings.TrimSpace(newContent) != "" {
 					result = append(result, strings.Split(newContent, "\n")...)
 				}
@@ -179,6 +194,7 @@ func (h *MarkdownContentHandler) replaceSectionInMarkdown(content, sectionID, ne
 			} else if inTargetSection && level <= headerLevel {
 				// reached next section of same or higher level
 				inTargetSection = false
+				logging.LogDebug("section replacement ended at line %d due to header level %d (section level %d)", i, level, headerLevel)
 				result = append(result, line)
 				continue
 			}
@@ -189,6 +205,7 @@ func (h *MarkdownContentHandler) replaceSectionInMarkdown(content, sectionID, ne
 		}
 	}
 
+	logging.LogDebug("replaceSectionInMarkdown complete: original %d lines, result %d lines", len(lines), len(result))
 	return strings.Join(result, "\n"), nil
 }
 
@@ -301,31 +318,50 @@ func (h *MarkdownContentHandler) parseTableRow(line string) []string {
 
 // replaceTableInMarkdown replaces a table in markdown content
 func (h *MarkdownContentHandler) replaceTableInMarkdown(content string, headers []string, rows [][]string, tableIndex int) string {
+	logging.LogDebug("replaceTableInMarkdown: looking for table %d, headers=%v, rows count=%d", tableIndex, headers, len(rows))
+
 	lines := strings.Split(content, "\n")
 	var result []string
 	var inTable bool
 	var currentTable int = -1
 	var tableStartIdx int
+	var tableEndIdx int
 
 	for i, line := range lines {
 		trimmed := strings.TrimSpace(line)
 
-		// detect table
-		if strings.HasPrefix(trimmed, "|") && strings.Contains(trimmed, "-") && !inTable {
-			currentTable++
-			if currentTable == tableIndex {
-				inTable = true
-				tableStartIdx = i - 1 // include header
-				continue
+		// detect table header (starts with | but is not separator line)
+		if strings.HasPrefix(trimmed, "|") && !inTable {
+			// check if next line exists and is separator
+			if i+1 < len(lines) {
+				nextLine := strings.TrimSpace(lines[i+1])
+				if strings.HasPrefix(nextLine, "|") && strings.Contains(nextLine, "-") {
+					// this is a table header
+					currentTable++
+					logging.LogDebug("found table %d at line %d: %s", currentTable, i, trimmed)
+					if currentTable == tableIndex {
+						inTable = true
+						tableStartIdx = i
+						logging.LogDebug("starting replacement of table %d at line %d", tableIndex, i)
+						continue
+					}
+				}
 			}
 		}
 
 		if inTable {
 			if strings.HasPrefix(trimmed, "|") {
-				continue // skip table rows
+				// still in table, continue skipping
+				logging.LogDebug("skipping table line %d: %s", i, trimmed)
+				continue
 			} else {
 				// table ended, insert new table
+				tableEndIdx = i
+				logging.LogDebug("table %d ended at line %d, generating replacement", tableIndex, i)
 				newTable := h.generateMarkdownTable(headers, rows)
+
+				logging.LogDebug("replacing table from line %d to %d with %d new lines", tableStartIdx, tableEndIdx, len(newTable))
+				// replace the old table with new table
 				result = append(result[:tableStartIdx], newTable...)
 				result = append(result, line)
 				inTable = false
@@ -336,12 +372,22 @@ func (h *MarkdownContentHandler) replaceTableInMarkdown(content string, headers 
 		result = append(result, line)
 	}
 
+	// handle case where table is at end of file
+	if inTable {
+		logging.LogDebug("table %d at end of file, generating replacement", tableIndex)
+		newTable := h.generateMarkdownTable(headers, rows)
+		result = append(result[:tableStartIdx], newTable...)
+	}
+
+	logging.LogDebug("replaceTableInMarkdown complete: original %d lines, result %d lines", len(lines), len(result))
 	return strings.Join(result, "\n")
 }
 
 // generateMarkdownTable creates markdown table from data
 func (h *MarkdownContentHandler) generateMarkdownTable(headers []string, rows [][]string) []string {
 	var lines []string
+
+	logging.LogDebug("generateMarkdownTable: headers=%v, rows count=%d", headers, len(rows))
 
 	// header row
 	headerRow := "| " + strings.Join(headers, " | ") + " |"
@@ -356,7 +402,9 @@ func (h *MarkdownContentHandler) generateMarkdownTable(headers []string, rows []
 	lines = append(lines, sepRow)
 
 	// data rows
-	for _, row := range rows {
+	for i, row := range rows {
+		logging.LogDebug("processing row %d: %v", i, row)
+
 		// ensure row matches header length
 		for len(row) < len(headers) {
 			row = append(row, "")
@@ -365,7 +413,7 @@ func (h *MarkdownContentHandler) generateMarkdownTable(headers []string, rows []
 			row = row[:len(headers)]
 		}
 
-		// skip empty rows
+		// skip completely empty rows (all cells empty or nil)
 		allEmpty := true
 		for _, cell := range row {
 			if strings.TrimSpace(cell) != "" {
@@ -373,13 +421,18 @@ func (h *MarkdownContentHandler) generateMarkdownTable(headers []string, rows []
 				break
 			}
 		}
+
+		// only skip if ALL cells are truly empty - be more lenient
 		if allEmpty {
+			logging.LogDebug("skipping empty row %d: %v", i, row)
 			continue
 		}
 
 		dataRow := "| " + strings.Join(row, " | ") + " |"
 		lines = append(lines, dataRow)
+		logging.LogDebug("added row %d: %s", i, dataRow)
 	}
 
+	logging.LogDebug("generated table with %d lines (including header and separator)", len(lines))
 	return lines
 }
