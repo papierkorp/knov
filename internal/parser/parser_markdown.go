@@ -105,16 +105,19 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 						if configmanager.GetPreviewsEnabled() {
 							// Get default preview size from settings
 							size := configmanager.GetDefaultPreviewSize()
+							displayMode := configmanager.GetDisplayMode()
 
-							// Add inline-container class for inline display mode
+							// Use span for inline mode to keep text flow, div for other modes
+							containerTag := "div"
 							containerClass := "media-preview-container"
-							if configmanager.GetDisplayMode() == "inline" {
+							if displayMode == "inline" {
+								containerTag = "span"
 								containerClass += " inline-container"
 							}
 
 							// Create HTMX preview element instead of regular image
-							previewHTML := fmt.Sprintf(`<div class="%s" hx-get="/api/media/preview?path=%s&size=%d" hx-trigger="load" hx-swap="innerHTML">%s...</div>`,
-								containerClass, mediaPath, size, translation.SprintfForRequest(configmanager.GetLanguage(), "loading media"))
+							previewHTML := fmt.Sprintf(`<%s class="%s" hx-get="/api/media/preview?path=%s&size=%d" hx-trigger="load" hx-swap="innerHTML">%s...</%s>`,
+								containerTag, containerClass, mediaPath, size, translation.SprintfForRequest(configmanager.GetLanguage(), "loading media"), containerTag)
 
 							w.Write([]byte(previewHTML))
 						} else {

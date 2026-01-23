@@ -66,10 +66,14 @@
 
 .media-preview.display-inline {
     display: inline-block !important;
-    margin: 2px 6px !important;
-    vertical-align: baseline;
-    max-width: 200px; /* prevent oversized inline images */
+    margin: 0 4px !important;
+    vertical-align: middle;
     clear: none !important;
+}
+
+.media-preview.display-inline img,
+.media-preview.display-inline video {
+    vertical-align: middle;
 }
 
 /* file content headers styling - detailed view */
