@@ -51,7 +51,7 @@ func (r *customRenderer) RenderNode(w io.Writer, node ast.Node, entering bool) a
 
 // update the Render function to use custom renderer:
 func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error) {
-	extensions := gomarkdown_parser.CommonExtensions | gomarkdown_parser.AutoHeadingIDs
+	extensions := gomarkdown_parser.CommonExtensions | gomarkdown_parser.AutoHeadingIDs | gomarkdown_parser.HardLineBreak
 	p := gomarkdown_parser.NewWithExtensions(extensions)
 
 	htmlFlags := html.CommonFlags | html.HrefTargetBlank
@@ -79,12 +79,51 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 				return ast.GoToNext, true
 			}
 
-			// Handle media images - convert media/ paths to /media/
-			if img, ok := node.(*ast.Image); ok && entering {
+			// Handle media images - convert to preview API calls
+			if img, ok := node.(*ast.Image); ok {
 				dest := string(img.Destination)
+				var mediaPath string
+
+				// Determine if this is a media reference and extract the path
 				if strings.HasPrefix(dest, "media/") {
-					// Convert media/ to /media/ for proper serving
-					img.Destination = []byte("/" + dest)
+					mediaPath = dest[6:] // remove "media/" prefix
+				} else if strings.HasPrefix(dest, "/media/") {
+					mediaPath = dest[7:] // remove "/media/" prefix
+				} else {
+					// Check if it's a common image extension that should be treated as media
+					ext := strings.ToLower(filepath.Ext(dest))
+					if ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".webp" {
+						// Assume it's a media file if it's an image extension
+						mediaPath = dest
+					}
+				}
+
+				// If we identified it as a media file, handle it
+				if mediaPath != "" {
+					if entering {
+						// Check if previews are enabled
+						if configmanager.GetPreviewsEnabled() {
+							// Get default preview size from settings
+							size := configmanager.GetDefaultPreviewSize()
+
+							// Add inline-container class for inline display mode
+							containerClass := "media-preview-container"
+							if configmanager.GetDisplayMode() == "inline" {
+								containerClass += " inline-container"
+							}
+
+							// Create HTMX preview element instead of regular image
+							previewHTML := fmt.Sprintf(`<div class="%s" hx-get="/api/media/preview?path=%s&size=%d" hx-trigger="load" hx-swap="innerHTML">%s...</div>`,
+								containerClass, mediaPath, size, translation.SprintfForRequest(configmanager.GetLanguage(), "loading media"))
+
+							w.Write([]byte(previewHTML))
+						} else {
+							// Previews disabled, render direct image link
+							fmt.Fprintf(w, `<img src="/media/%s" alt="%s" />`, mediaPath, filepath.Base(mediaPath))
+						}
+					}
+					// Skip children to prevent alt text from being rendered separately
+					return ast.SkipChildren, true
 				}
 			}
 

@@ -523,6 +523,91 @@ paths:
       summary: Get available languages
       tags:
       - config
+  /api/config/media/border-style:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: 'Border style: none, simple, rounded, shadow'
+        in: formData
+        name: borderStyle
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update preview border style
+      tags:
+      - config
+  /api/config/media/click-to-enlarge:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether previews are clickable
+        in: formData
+        name: clickToEnlarge
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update click to enlarge setting
+      tags:
+      - config
+  /api/config/media/default-preview-size:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Default preview size in pixels
+        in: formData
+        name: defaultPreviewSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update default preview size
+      tags:
+      - config
+  /api/config/media/display-mode:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: 'Display mode: left, center, right, inline'
+        in: formData
+        name: displayMode
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update preview display mode
+      tags:
+      - config
+  /api/config/media/enable-previews:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether previews are enabled
+        in: formData
+        name: enablePreviews
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update preview enabled setting
+      tags:
+      - config
   /api/config/media/mime-types:
     post:
       consumes:
@@ -572,6 +657,23 @@ paths:
       - text/html
       responses: {}
       summary: Update orphaned media behavior
+      tags:
+      - config
+  /api/config/media/show-caption:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to show captions
+        in: formData
+        name: showCaption
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update show caption setting
       tags:
       - config
   /api/config/media/upload-size:
@@ -1866,6 +1968,37 @@ paths:
           schema:
             type: string
       summary: Get all media files
+      tags:
+      - media
+  /api/media/preview:
+    get:
+      description: Returns HTML for a media preview image
+      parameters:
+      - description: media file path
+        in: query
+        name: path
+        required: true
+        type: string
+      - description: preview size in pixels (default from settings)
+        in: query
+        name: size
+        type: integer
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML preview element
+          schema:
+            type: string
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "404":
+          description: media file not found
+          schema:
+            type: string
+      summary: Get media preview HTML
       tags:
       - media
   /api/media/upload:

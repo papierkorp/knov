@@ -9,9 +9,70 @@
 
 #view-fileview-detailed .file-content {
     min-width: 0;
+    overflow: hidden; /* contains floated elements */
+    contain: layout; /* ensure floated media elements don't break layout */
 }
 
-/* file content headers styling */
+/* responsive layout */
+@media (max-width: 1024px) {
+    #view-fileview-detailed .fileview-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+/* media preview containers - minimal styling */
+.media-preview-container {
+    display: block;
+    margin: 10px 0;
+    text-align: center;
+}
+
+/* Clear floats after media containers */
+.media-preview-container::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Media preview elements with display modes */
+.media-preview {
+    display: block;
+    margin: 10px 0;
+    max-width: 100%;
+}
+
+/* Display modes */
+.media-preview.display-left {
+    text-align: left;
+    float: left;
+    margin: 0 20px 15px 0;
+    clear: left;
+}
+
+.media-preview.display-center {
+    text-align: center;
+    margin: 20px auto;
+    display: block;
+    clear: both;
+}
+
+.media-preview.display-right {
+    text-align: right;
+    float: right;
+    margin: 0 0 15px 20px;
+    clear: right;
+}
+
+.media-preview.display-inline {
+    display: inline-block !important;
+    margin: 2px 6px !important;
+    vertical-align: baseline;
+    max-width: 200px; /* prevent oversized inline images */
+    clear: none !important;
+}
+
+/* file content headers styling - detailed view */
 #view-fileview-detailed .file-content h1 {
     font-size: 1.5em;
     font-style: italic;
@@ -22,6 +83,10 @@
     background-color: var(--bg-secondary);
     overflow-wrap: break-word;
     color: var(--text);
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    clear: both;
 }
 
 #view-fileview-detailed .file-content h2 {
@@ -33,6 +98,10 @@
     padding-left: 0;
     color: var(--text);
     overflow-wrap: break-word;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    clear: both;
 }
 
 #view-fileview-detailed .file-content h3 {
@@ -43,6 +112,10 @@
     padding-left: 0;
     color: var(--text);
     overflow-wrap: break-word;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    clear: both;
 }
 
 #view-fileview-detailed .file-content h4 {
@@ -53,6 +126,10 @@
     padding-left: 2em;
     color: var(--text);
     overflow-wrap: break-word;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    clear: both;
 }
 
 #view-fileview-detailed .file-content h5 {
@@ -63,6 +140,10 @@
     padding-left: 4em;
     color: var(--text);
     overflow-wrap: break-word;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    clear: both;
 }
 
 #view-fileview-detailed .file-content h6 {
@@ -73,6 +154,14 @@
     padding-left: 6em;
     color: var(--text);
     overflow-wrap: break-word;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    clear: both;
+}
+
+#view-fileview-detailed .file-content h1:first-child {
+    margin-top: 0em;
 }
 
 /* compact view headers */
@@ -86,6 +175,14 @@
     background-color: var(--bg-secondary);
     overflow-wrap: break-word;
     color: var(--text);
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    clear: both;
+}
+
+#view-fileview-compact .file-content h1:first-child {
+    margin-top: 0em;
 }
 
 #view-fileview-compact .file-content h2 {
@@ -97,6 +194,10 @@
     padding-left: 0;
     color: var(--text);
     overflow-wrap: break-word;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    clear: both;
 }
 
 #view-fileview-compact .file-content h3,
@@ -110,6 +211,10 @@
     padding-left: 0;
     color: var(--text);
     overflow-wrap: break-word;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    clear: both;
 }
 
 /* reader view headers */
@@ -123,11 +228,13 @@
     background-color: var(--bg-secondary);
     overflow-wrap: break-word;
     color: var(--text);
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    clear: both;
 }
 
-#view-fileview-reader .file-content h1:first-child,
-#view-fileview-compact .file-content h1:first-child,
-#view-fileview-detailed .file-content h1:first-child {
+#view-fileview-reader .file-content h1:first-child {
     margin-top: 0em;
 }
 
@@ -140,6 +247,10 @@
     padding-left: 0;
     color: var(--text);
     overflow-wrap: break-word;
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    clear: both;
 }
 
 #view-fileview-reader .file-content h3,
@@ -153,230 +264,65 @@
     padding-left: 0;
     color: var(--text);
     overflow-wrap: break-word;
-}
-
-#view-fileview-detailed .file-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-#view-fileview-detailed .sidebar-section {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 15px;
-}
-
-#view-fileview-detailed .sidebar-section h3 {
-    margin: 0 0 12px 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--primary);
-    text-transform: lowercase;
-    letter-spacing: normal;
-    border: none;
-    padding: 0;
-    background: none;
-}
-
-#view-fileview-detailed .metadata-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-#view-fileview-detailed .metadata-row {
-    display: flex;
-    gap: 8px;
-    font-size: 14px;
-}
-
-#view-fileview-detailed .metadata-label {
-    color: var(--text-secondary);
-    min-width: 80px;
-}
-
-#view-fileview-detailed .links-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-#view-fileview-detailed .links-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-#view-fileview-detailed .links-label {
-    font-size: 13px;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-#view-fileview-detailed .sidebar-toc {
-    position: sticky;
-    top: 80px;
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
-}
-
-#view-fileview-detailed .component-link-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-#view-fileview-detailed .component-link-list li {
-    margin: 4px 0;
-    font-size: 14px;
-}
-
-#view-fileview-detailed .component-no-links {
-    font-size: 13px;
-    color: var(--text-secondary);
-    font-style: italic;
-}
-
-#view-fileview-detailed .toc-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-#view-fileview-detailed .toc-nav a {
-    font-size: 13px;
-    line-height: 1.4;
-    color: var(--text);
-    text-decoration: none;
-    padding: 4px 0;
-    transition: color 0.2s;
-}
-
-#view-fileview-detailed .toc-nav a:hover {
-    color: var(--primary);
-}
-
-#view-fileview-detailed .toc-empty {
-    font-size: 13px;
-    color: var(--text-secondary);
-    font-style: italic;
-}
-
-/* compact view */
-#view-fileview-compact .compact-header {
-    padding: 12px 0;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-}
-
-#view-fileview-compact .compact-metadata {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
-#view-fileview-compact .separator {
-    color: var(--border);
-}
-
-/* reader view */
-#view-fileview-reader {
     position: relative;
+    display: inline-block;
+    width: 100%;
+    clear: both;
 }
 
-#view-fileview-reader .reader-controls {
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: flex;
-    gap: 8px;
-    z-index: 10;
-}
-
-#view-fileview-reader .font-size-btn {
+/* header edit buttons and anchor links in file content - inline after text */
+#view-fileview-detailed .file-content .header-edit-btn,
+#view-fileview-compact .file-content .header-edit-btn,
+#view-fileview-reader .file-content .header-edit-btn {
+    opacity: 0;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.7em;
+    line-height: 1;
+    padding: 0.2em 0.4em;
+    margin-left: 0.5em;
+    transition: opacity 0.2s ease-in-out;
+    border-radius: 3px;
     background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.2s;
+    border: 1px solid transparent;
 }
 
-#view-fileview-reader .font-size-btn:hover {
-    background: var(--primary);
-    color: var(--bg);
-    border-color: var(--primary);
-}
-
-#view-fileview-reader .file-content {
-    max-width: 800px;
-    margin: 0 auto;
-    padding-top: 40px;
-    font-size: 18px;
-    line-height: 1.7;
-}
-
-/* responsive */
-@media (max-width: 1024px) {
-    #view-fileview-detailed .fileview-layout {
-        grid-template-columns: 1fr;
-    }
-
-    #view-fileview-detailed .file-sidebar {
-        order: -1;
-    }
-
-    #view-fileview-detailed .sidebar-toc {
-        position: static;
-        max-height: none;
-    }
-}
-
-/* filter file view */
-#page-fileview .filter-file-view h2 {
-    color: var(--primary);
-    margin-bottom: 16px;
-    border-bottom: 2px solid var(--primary);
-    padding-bottom: 8px;
-    letter-spacing: normal;
-}
-
-#page-fileview .filter-info {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 20px;
-}
-
-#page-fileview .filter-info p {
-    margin: 4px 0;
-    color: var(--text);
-}
-
-#page-fileview .filter-info strong {
-    color: var(--primary);
-    font-weight: 600;
-}
-
-/* header anchor links */
 #view-fileview-detailed .file-content .header-anchor,
 #view-fileview-compact .file-content .header-anchor,
 #view-fileview-reader .file-content .header-anchor {
     opacity: 0;
-    margin-left: 8px;
     color: var(--text-secondary);
-    font-size: 0.8em;
-    font-weight: normal;
     text-decoration: none;
-    transition: opacity 0.2s ease;
+    font-size: 0.7em;
+    line-height: 1;
+    padding: 0.2em 0.4em;
+    margin-left: 0.3em;
+    transition: opacity 0.2s ease-in-out;
+    border-radius: 3px;
+    background: var(--bg-secondary);
+    border: 1px solid transparent;
+}
+
+/* show buttons on header hover - edit button first, then anchor */
+#view-fileview-detailed .file-content h1:hover .header-edit-btn,
+#view-fileview-detailed .file-content h2:hover .header-edit-btn,
+#view-fileview-detailed .file-content h3:hover .header-edit-btn,
+#view-fileview-detailed .file-content h4:hover .header-edit-btn,
+#view-fileview-detailed .file-content h5:hover .header-edit-btn,
+#view-fileview-detailed .file-content h6:hover .header-edit-btn,
+#view-fileview-compact .file-content h1:hover .header-edit-btn,
+#view-fileview-compact .file-content h2:hover .header-edit-btn,
+#view-fileview-compact .file-content h3:hover .header-edit-btn,
+#view-fileview-compact .file-content h4:hover .header-edit-btn,
+#view-fileview-compact .file-content h5:hover .header-edit-btn,
+#view-fileview-compact .file-content h6:hover .header-edit-btn,
+#view-fileview-reader .file-content h1:hover .header-edit-btn,
+#view-fileview-reader .file-content h2:hover .header-edit-btn,
+#view-fileview-reader .file-content h3:hover .header-edit-btn,
+#view-fileview-reader .file-content h4:hover .header-edit-btn,
+#view-fileview-reader .file-content h5:hover .header-edit-btn,
+#view-fileview-reader .file-content h6:hover .header-edit-btn {
+    opacity: 1;
 }
 
 #view-fileview-detailed .file-content h1:hover .header-anchor,
@@ -400,46 +346,155 @@
     opacity: 1;
 }
 
+/* hover effects for individual buttons */
+#view-fileview-detailed .file-content .header-edit-btn:hover,
+#view-fileview-compact .file-content .header-edit-btn:hover,
+#view-fileview-reader .file-content .header-edit-btn:hover {
+    color: var(--primary);
+    background: var(--bg);
+    border-color: var(--border);
+    text-decoration: none;
+}
+
 #view-fileview-detailed .file-content .header-anchor:hover,
 #view-fileview-compact .file-content .header-anchor:hover,
 #view-fileview-reader .file-content .header-anchor:hover {
     color: var(--primary);
-}
-
-/* Header edit buttons - styled like header anchors */
-.header-edit-btn {
-    opacity: 0;
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-size: 0.7em;
-    line-height: 1;
-    padding: 0.1em 0.15em;
-    margin-left: 0.5em;
-    transition: opacity 0.2s ease-in-out;
-}
-
-h1:hover .header-edit-btn,
-h2:hover .header-edit-btn,
-h3:hover .header-edit-btn,
-h4:hover .header-edit-btn,
-h5:hover .header-edit-btn,
-h6:hover .header-edit-btn {
-    opacity: 1;
-}
-
-.header-edit-btn:hover {
-    color: var(--primary);
+    background: var(--bg);
+    border-color: var(--border);
     text-decoration: none;
 }
 
-/* Ensure proper spacing in headers */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    position: relative;
+/* fallback icons */
+#view-fileview-detailed .file-content .header-edit-btn:not(:has(i))::before,
+#view-fileview-compact .file-content .header-edit-btn:not(:has(i))::before,
+#view-fileview-reader .file-content .header-edit-btn:not(:has(i))::before {
+    content: "✎";
+    font-size: 1em;
+}
+
+#view-fileview-detailed .file-content .header-anchor:empty::before,
+#view-fileview-compact .file-content .header-anchor:empty::before,
+#view-fileview-reader .file-content .header-anchor:empty::before {
+    content: "#";
+}
+
+/* Border styles - applied to actual media elements */
+.media-preview.border-none img,
+.media-preview.border-none video,
+.media-preview.border-none iframe {
+    border: none;
+    box-shadow: none;
+}
+
+.media-preview.border-simple img,
+.media-preview.border-simple video,
+.media-preview.border-simple iframe {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: none;
+}
+
+.media-preview.border-rounded img,
+.media-preview.border-rounded video,
+.media-preview.border-rounded iframe {
+    border: 2px solid #ccc;
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+.media-preview.border-shadow img,
+.media-preview.border-shadow video,
+.media-preview.border-shadow iframe {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Preview content and captions */
+.preview-content {
     display: inline-block;
-    width: 100%;
+    text-align: center;
+}
+
+.preview-caption {
+    margin-top: 8px;
+    font-size: 0.85em;
+    color: #666;
+    font-style: italic;
+}
+
+/* Preview links - removed scaling hover effect to preserve borders */
+.preview-link {
+    text-decoration: none;
+    display: inline-block;
+}
+
+.preview-link:hover {
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+}
+
+/* File icons for non-images */
+.file-link,
+.file-icon {
+    display: inline-block;
+    padding: 20px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    background-color: #f8f8f8;
+    text-decoration: none;
+    color: #333;
+}
+
+.file-link:hover {
+    background-color: #e8e8e8;
+    border-color: #999;
+}
+
+.file-link i,
+.file-icon i {
+    font-size: 2em;
+    margin-bottom: 10px;
+    color: #666;
+    display: block;
+}
+
+.file-link span,
+.file-icon span {
+    display: block;
+    font-weight: 500;
+}
+
+/* Clear floats after floated elements */
+.media-preview.display-left + *,
+.media-preview.display-right + * {
+    clear: none;
+}
+
+/* Add clearfix to parent containers */
+.file-content::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .media-preview.display-left,
+    .media-preview.display-right {
+        float: none;
+        text-align: center;
+        margin: 10px auto;
+        display: block;
+        clear: both;
+    }
+}
+
+.media-preview-container:has(.media-preview.display-inline),
+.media-preview-container.inline-container {
+    display: inline-block;
+    margin: 0;
+    text-align: inherit;
+    vertical-align: baseline;
 }

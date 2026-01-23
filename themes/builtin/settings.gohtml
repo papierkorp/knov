@@ -138,5 +138,103 @@
             <div class="help-text">{{T "number of days before orphaned files can be cleaned up"}}</div>
         </form>
     </div>
+
+    <h3>{{T "Preview Settings"}}</h3>
+
+    <div class="setting-item">
+        <form hx-post="/api/config/media/enable-previews" hx-trigger="change">
+            <label class="checkbox-label">
+                <input
+                    type="checkbox"
+                    name="enablePreviews"
+                    value="true"
+                    {{ if .UserSettings.MediaSettings.EnablePreviews }}checked{{ end }}
+                    class="form-checkbox"
+                />
+                <span class="checkmark"></span>
+                {{T "Enable Media Previews"}}
+                <small>{{T "Show images and media with CSS sizing in file view"}}</small>
+            </label>
+            <div class="help-text">{{T "enable or disable media preview generation"}}</div>
+        </form>
+    </div>
+
+    <div class="setting-item">
+        <form hx-post="/api/config/media/default-preview-size" hx-trigger="change delay:500ms">
+            <label for="defaultPreviewSize">
+                {{T "Default Preview Size (px)"}}
+                <input type="number" name="defaultPreviewSize" id="defaultPreviewSize"
+                       value="{{ .UserSettings.MediaSettings.DefaultPreviewSize }}"
+                       min="50" max="1000" class="form-input">
+            </label>
+            <div class="help-text">{{T "default max-width and max-height for media previews in pixels"}}</div>
+        </form>
+    </div>
+
+    <div class="setting-item">
+        <form hx-post="/api/config/media/display-mode" hx-trigger="change">
+            <label for="displayMode">
+                {{T "Display Mode"}}
+                <select name="displayMode" id="displayMode" class="form-select">
+                    <option value="left" {{ if eq .UserSettings.MediaSettings.DisplayMode "left" }}selected{{ end }}>{{T "Left aligned"}}</option>
+                    <option value="center" {{ if eq .UserSettings.MediaSettings.DisplayMode "center" }}selected{{ end }}>{{T "Center aligned"}}</option>
+                    <option value="right" {{ if eq .UserSettings.MediaSettings.DisplayMode "right" }}selected{{ end }}>{{T "Right aligned"}}</option>
+                    <option value="inline" {{ if eq .UserSettings.MediaSettings.DisplayMode "inline" }}selected{{ end }}>{{T "Inline with text"}}</option>
+                </select>
+            </label>
+            <div class="help-text">{{T "how media previews are positioned in the document"}}</div>
+        </form>
+    </div>
+
+    <div class="setting-item">
+        <form hx-post="/api/config/media/border-style" hx-trigger="change">
+            <label for="borderStyle">
+                {{T "Border Style"}}
+                <select name="borderStyle" id="borderStyle" class="form-select">
+                    <option value="none" {{ if eq .UserSettings.MediaSettings.BorderStyle "none" }}selected{{ end }}>{{T "No border"}}</option>
+                    <option value="simple" {{ if eq .UserSettings.MediaSettings.BorderStyle "simple" }}selected{{ end }}>{{T "Simple border"}}</option>
+                    <option value="rounded" {{ if eq .UserSettings.MediaSettings.BorderStyle "rounded" }}selected{{ end }}>{{T "Rounded border"}}</option>
+                    <option value="shadow" {{ if eq .UserSettings.MediaSettings.BorderStyle "shadow" }}selected{{ end }}>{{T "Shadow border"}}</option>
+                </select>
+            </label>
+            <div class="help-text">{{T "visual style of preview borders"}}</div>
+        </form>
+    </div>
+
+    <div class="setting-item">
+        <form hx-post="/api/config/media/show-caption" hx-trigger="change">
+            <label class="checkbox-label">
+                <input
+                    type="checkbox"
+                    name="showCaption"
+                    value="true"
+                    {{ if .UserSettings.MediaSettings.ShowCaption }}checked{{ end }}
+                    class="form-checkbox"
+                />
+                <span class="checkmark"></span>
+                {{T "Show Captions"}}
+                <small>{{T "Display filename below media previews"}}</small>
+            </label>
+            <div class="help-text">{{T "show filename as caption under previews"}}</div>
+        </form>
+    </div>
+
+    <div class="setting-item">
+        <form hx-post="/api/config/media/click-to-enlarge" hx-trigger="change">
+            <label class="checkbox-label">
+                <input
+                    type="checkbox"
+                    name="clickToEnlarge"
+                    value="true"
+                    {{ if .UserSettings.MediaSettings.ClickToEnlarge }}checked{{ end }}
+                    class="form-checkbox"
+                />
+                <span class="checkmark"></span>
+                {{T "Click to Enlarge"}}
+                <small>{{T "Make previews clickable to view full-size"}}</small>
+            </label>
+            <div class="help-text">{{T "enable clicking previews to open full-size version"}}</div>
+        </form>
+    </div>
 </section>
 {{ end }}

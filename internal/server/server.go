@@ -183,6 +183,12 @@ func StartServerChi() {
 			r.Post("/media/mime-types", handleAPIUpdateMediaMimeTypes)
 			r.Post("/media/orphaned-behavior", handleAPIUpdateOrphanedBehavior)
 			r.Post("/media/orphaned-age", handleAPIUpdateOrphanedAge)
+			r.Post("/media/default-preview-size", handleAPIUpdateDefaultPreviewSize)
+			r.Post("/media/enable-previews", handleAPIUpdateEnablePreviews)
+			r.Post("/media/display-mode", handleAPIUpdateDisplayMode)
+			r.Post("/media/border-style", handleAPIUpdateBorderStyle)
+			r.Post("/media/show-caption", handleAPIUpdateShowCaption)
+			r.Post("/media/click-to-enlarge", handleAPIUpdateClickToEnlarge)
 
 			// Editor settings endpoints
 			r.Post("/section-edit-subheaders", handleAPIUpdateSectionEditSubheaders)
@@ -225,6 +231,7 @@ func StartServerChi() {
 		r.Route("/media", func(r chi.Router) {
 			r.Post("/upload", handleAPIMediaUpload)
 			r.Get("/list", handleAPIGetAllMedia)
+			r.Get("/preview", handleAPIMediaPreview)
 			r.Delete("/*", handleAPIDeleteMedia)
 		})
 

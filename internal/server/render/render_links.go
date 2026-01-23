@@ -82,7 +82,7 @@ func GetLinkDisplayText(filePath string) string {
 
 // RenderNoLinksMessage renders a "no links" message with appropriate class
 func RenderNoLinksMessage(message string) string {
-	return fmt.Sprintf(`<div class="component-no-links">%s</div>`, message)
+	return fmt.Sprintf(`<div class="connection-empty">%s</div>`, message)
 }
 
 // RenderLinksList renders a list of file links as HTML with configurable display text
@@ -92,13 +92,11 @@ func RenderLinksList(links []string) string {
 	}
 
 	var html strings.Builder
-	html.WriteString(`<ul class="component-link-list">`)
 	for _, link := range links {
 		linkPath := pathutils.ToRelative(link)
 		displayText := GetLinkDisplayText(linkPath)
-		html.WriteString(fmt.Sprintf(`<li><a href="/files/%s" title="%s">%s</a></li>`, linkPath, linkPath, displayText))
+		html.WriteString(fmt.Sprintf(`<a href="/files/%s" title="%s" class="connection-link">%s</a>`, linkPath, linkPath, displayText))
 	}
-	html.WriteString(`</ul>`)
 	return html.String()
 }
 

@@ -1,0 +1,274 @@
+/* sidebar container */
+#view-fileview-detailed .file-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: sticky;
+    top: 20px;
+    padding: 0; /* remove padding, let individual cards handle it */
+}
+
+/* sidebar section cards */
+#view-fileview-detailed .sidebar-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s ease;
+}
+
+#view-fileview-detailed .sidebar-section:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* section headers */
+#view-fileview-detailed .sidebar-section h3 {
+    margin: 0 0 12px 0;
+    color: var(--primary);
+    font-size: 1em;
+    text-transform: lowercase;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+/* metadata section styling */
+#component-sidebar-metadata .metadata-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#component-sidebar-metadata .metadata-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+    min-height: 20px;
+}
+
+#component-sidebar-metadata .metadata-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+#component-sidebar-metadata .metadata-label {
+    font-size: 0.75em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    min-width: 60px;
+    margin: auto;
+}
+
+#component-sidebar-metadata .metadata-row span:not(.metadata-label) {
+    color: var(--text);
+    font-size: 0.85em;
+    word-break: break-word;
+    text-align: right;
+    flex: 1;
+}
+
+#component-sidebar-metadata .metadata-row a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+#component-sidebar-metadata .metadata-row a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+/* para section styling */
+#component-sidebar-para .para-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#component-sidebar-para .para-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+    min-height: 20px;
+}
+
+#component-sidebar-para .para-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+#component-sidebar-para .para-label {
+    font-size: 0.75em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    min-width: 60px;
+    margin: auto;
+}
+
+#component-sidebar-para .para-row span:not(.para-label) {
+    color: var(--text);
+    font-size: 0.85em;
+    word-break: break-word;
+    text-align: right;
+    flex: 1;
+}
+
+/* connections section styling */
+#component-sidebar-connections .connections-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#component-sidebar-connections .connection-group {
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+    padding-bottom: 8px;
+}
+
+#component-sidebar-connections .connection-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+#component-sidebar-connections .connection-label {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    display: block;
+    padding: 2px 0;
+}
+
+#component-sidebar-connections .connection-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 0.85em;
+    transition: color 0.2s;
+    display: block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin: 1px 0;
+}
+
+#component-sidebar-connections .connection-link:hover {
+    color: var(--accent);
+    background: var(--bg);
+    text-decoration: underline;
+}
+
+#component-sidebar-connections .connection-empty {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.8em;
+    padding: 4px 8px;
+    text-align: center;
+}
+
+/* no links styling */
+#component-sidebar-connections .links-empty {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.8em;
+    padding: 4px 8px;
+    text-align: center;
+    opacity: 0.7;
+}
+
+/* toc section styling */
+#component-sidebar-toc .toc-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#component-sidebar-toc .toc-nav a {
+    display: block;
+    padding: 6px 8px;
+    border-radius: 4px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.85em;
+    transition: background-color 0.2s;
+    border-left: 2px solid transparent;
+}
+
+#component-sidebar-toc .toc-nav a:hover {
+    background: var(--bg);
+    color: var(--primary);
+    border-left-color: var(--primary);
+}
+
+#component-sidebar-toc .toc-empty {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.9em;
+    text-align: center;
+    padding: 16px 0;
+}
+
+/* version history section styling */
+#component-sidebar-versions .versions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#component-sidebar-versions .version-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 0.85em;
+    margin-bottom: 1em;
+}
+
+#component-sidebar-versions .file-versions-list ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+#component-sidebar-versions .version-date {
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+#component-sidebar-versions .version-message {
+    color: var(--text);
+    font-size: 0.8em;
+    line-height: 1.3;
+}
+
+#component-sidebar-versions .version-loading {
+    color: var(--text-secondary);
+    font-style: italic;
+    text-align: center;
+    padding: 16px 0;
+}
+
+/* responsive adjustments */
+@media (max-width: 1024px) {
+    #view-fileview-detailed .file-sidebar {
+        position: static;
+        gap: 12px;
+    }
+
+    #view-fileview-detailed .sidebar-section {
+        padding: 12px;
+    }
+
+    #view-fileview-detailed .sidebar-section h3 {
+        font-size: 0.95em;
+        margin-bottom: 8px;
+    }
+}

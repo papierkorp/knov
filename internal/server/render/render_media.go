@@ -253,3 +253,124 @@ func formatFileSize(bytes int64) string {
 		return fmt.Sprintf("%.1f GB", float64(bytes)/(1024*1024*1024))
 	}
 }
+
+// RenderMediaPreviewWithSize renders a CSS-constrained preview of a media file with custom size
+func RenderMediaPreviewWithSize(mediaPath string, size int) string {
+	if !configmanager.GetPreviewsEnabled() {
+		return fmt.Sprintf(`<span>%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "previews disabled"))
+	}
+
+	// validate size
+	if size <= 0 {
+		size = configmanager.GetDefaultPreviewSize()
+	}
+
+	// ensure media path is relative (remove media/ prefix if present)
+	relativePath := strings.TrimPrefix(mediaPath, "media/")
+
+	// get display settings
+	displayMode := configmanager.GetDisplayMode()
+	borderStyle := configmanager.GetBorderStyle()
+	showCaption := configmanager.GetShowCaption()
+	clickToEnlarge := configmanager.GetClickToEnlarge()
+
+	// determine file type from extension
+	ext := strings.ToLower(filepath.Ext(relativePath))
+
+	// build CSS classes for styling
+	var containerClasses []string
+	containerClasses = append(containerClasses, "media-preview")
+	containerClasses = append(containerClasses, "display-"+displayMode)
+	containerClasses = append(containerClasses, "border-"+borderStyle)
+
+	containerClass := strings.Join(containerClasses, " ")
+
+	var content string
+	filename := filepath.Base(relativePath)
+
+	switch ext {
+	case ".png", ".jpg", ".jpeg", ".gif", ".webp":
+		// for images, use CSS to constrain size
+		var imgElement string
+		if clickToEnlarge {
+			imgElement = fmt.Sprintf(`
+				<a href="/media/%s" target="_blank" class="preview-link">
+					<img src="/media/%s"
+					     alt="%s"
+					     class="media-preview-image"
+					     style="max-width: %dpx; max-height: %dpx; width: auto; height: auto;"
+					     loading="lazy" />
+				</a>`, relativePath, relativePath, filename, size, size)
+		} else {
+			imgElement = fmt.Sprintf(`
+				<img src="/media/%s"
+				     alt="%s"
+				     class="media-preview-image"
+				     style="max-width: %dpx; max-height: %dpx; width: auto; height: auto;"
+				     loading="lazy" />`, relativePath, filename, size, size)
+		}
+
+		if showCaption {
+			content = fmt.Sprintf(`
+				<div class="preview-content">
+					%s
+					<div class="preview-caption">%s</div>
+				</div>`, imgElement, filename)
+		} else {
+			content = imgElement
+		}
+
+	case ".mp4", ".webm", ".ogg":
+		// for videos, use CSS to constrain size
+		videoElement := fmt.Sprintf(`
+			<video controls style="max-width: %dpx; max-height: %dpx;">
+				<source src="/media/%s" type="video/%s">
+			</video>`, size, size, relativePath, strings.TrimPrefix(ext, "."))
+
+		if showCaption {
+			content = fmt.Sprintf(`
+				<div class="preview-content">
+					%s
+					<div class="preview-caption">%s</div>
+				</div>`, videoElement, filename)
+		} else {
+			content = videoElement
+		}
+
+	case ".pdf":
+		// for PDFs, use fixed iframe size
+		pdfElement := fmt.Sprintf(`
+			<iframe src="/media/%s" style="width: %dpx; height: %dpx;"></iframe>`,
+			relativePath, size, int(float64(size)*1.4)) // taller aspect ratio for PDFs
+
+		if showCaption {
+			content = fmt.Sprintf(`
+				<div class="preview-content">
+					%s
+					<div class="preview-caption">%s</div>
+				</div>`, pdfElement, filename)
+		} else {
+			content = pdfElement
+		}
+
+	default:
+		// for other files, show file icon with link
+		var linkElement string
+		if clickToEnlarge {
+			linkElement = fmt.Sprintf(`
+				<a href="/media/%s" target="_blank" class="file-link">
+					<i class="fa fa-file"></i>
+					<span>%s</span>
+				</a>`, relativePath, filename)
+		} else {
+			linkElement = fmt.Sprintf(`
+				<div class="file-icon">
+					<i class="fa fa-file"></i>
+					<span>%s</span>
+				</div>`, filename)
+		}
+		content = linkElement
+	}
+
+	return fmt.Sprintf(`<div class="%s">%s</div>`, containerClass, content)
+}

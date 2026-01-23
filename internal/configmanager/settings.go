@@ -29,6 +29,12 @@ type MediaSettings struct {
 	AllowedMimeTypes      []string `json:"allowedMimeTypes"`
 	OrphanedMediaBehavior string   `json:"orphanedMediaBehavior"` // "keep" or "manual"
 	OrphanedMediaAgeDays  int      `json:"orphanedMediaAgeDays"`
+	DefaultPreviewSize    int      `json:"defaultPreviewSize"`
+	EnablePreviews        bool     `json:"enablePreviews"`
+	DisplayMode           string   `json:"displayMode"`    // "left", "center", "right", "inline"
+	BorderStyle           string   `json:"borderStyle"`    // "none", "simple", "rounded", "shadow"
+	ShowCaption           bool     `json:"showCaption"`    // show filename as caption
+	ClickToEnlarge        bool     `json:"clickToEnlarge"` // make previews clickable
 }
 
 // InitUserSettings initializes user settings from storage
@@ -68,6 +74,12 @@ func InitUserSettings() {
 			},
 			OrphanedMediaBehavior: "manual",
 			OrphanedMediaAgeDays:  7,
+			DefaultPreviewSize:    300,
+			EnablePreviews:        true,
+			DisplayMode:           "center",
+			BorderStyle:           "simple",
+			ShowCaption:           false,
+			ClickToEnlarge:        true,
 		},
 	}
 
@@ -131,4 +143,45 @@ func GetMaxUploadSize() int64 {
 // GetSectionEditIncludeSubheaders returns whether section editing should include subheaders
 func GetSectionEditIncludeSubheaders() bool {
 	return userSettings.SectionEditIncludeSubheaders
+}
+
+// GetDefaultPreviewSize returns the default preview size for media
+func GetDefaultPreviewSize() int {
+	if userSettings.MediaSettings.DefaultPreviewSize <= 0 {
+		return 300
+	}
+	return userSettings.MediaSettings.DefaultPreviewSize
+}
+
+// GetPreviewsEnabled returns whether media previews are enabled
+func GetPreviewsEnabled() bool {
+	return userSettings.MediaSettings.EnablePreviews
+}
+
+// GetDisplayMode returns the preview display mode
+func GetDisplayMode() string {
+	mode := userSettings.MediaSettings.DisplayMode
+	if mode == "" {
+		return "center"
+	}
+	return mode
+}
+
+// GetBorderStyle returns the preview border style
+func GetBorderStyle() string {
+	style := userSettings.MediaSettings.BorderStyle
+	if style == "" {
+		return "simple"
+	}
+	return style
+}
+
+// GetShowCaption returns whether to show captions
+func GetShowCaption() bool {
+	return userSettings.MediaSettings.ShowCaption
+}
+
+// GetClickToEnlarge returns whether previews are clickable
+func GetClickToEnlarge() bool {
+	return userSettings.MediaSettings.ClickToEnlarge
 }

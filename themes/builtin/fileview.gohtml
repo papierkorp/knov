@@ -16,7 +16,7 @@
         </article>
         <aside class="file-sidebar">
             {{if index .ThemeSettings "sidebarMetadata"}}
-            <section class="sidebar-section">
+            <section class="sidebar-section" id="component-sidebar-metadata">
                 <h3>metadata</h3>
                 <div class="metadata-grid">
                     <div class="metadata-row">
@@ -64,59 +64,59 @@
             {{end}}
 
             {{if index .ThemeSettings "sidebarPara"}}
-            <section class="sidebar-section">
+            <section class="sidebar-section" id="component-sidebar-para">
                 <h3>PARA organization</h3>
-                <div class="metadata-grid">
-                    <div class="metadata-row">
-                        <span class="metadata-label">projects:</span>
+                <div class="para-grid">
+                    <div class="para-row">
+                        <span class="para-label">projects:</span>
                         <span hx-get="/api/metadata/para/projects?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">areas:</span>
+                    <div class="para-row">
+                        <span class="para-label">areas:</span>
                         <span hx-get="/api/metadata/para/areas?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">resources:</span>
+                    <div class="para-row">
+                        <span class="para-label">resources:</span>
                         <span hx-get="/api/metadata/para/resources?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">archive:</span>
+                    <div class="para-row">
+                        <span class="para-label">archive:</span>
                         <span hx-get="/api/metadata/para/archive?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
                 </div>
             </section>
             {{end}}
             {{if index .ThemeSettings "sidebarConnections"}}
-            <section class="sidebar-section">
+            <section class="sidebar-section" id="component-sidebar-connections">
                 <h3>connections</h3>
-                <div class="links-container">
-                    <div class="links-group">
-                        <div class="links-label">ancestor</div>
+                <div class="connections-list">
+                    <div class="connection-group">
+                        <div class="connection-label">ancestors</div>
                         <div hx-get="/api/links/ancestors?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
-                    <div class="links-group">
-                        <div class="links-label">parents</div>
+                    <div class="connection-group">
+                        <div class="connection-label">parents</div>
                         <div hx-get="/api/links/parents?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
-                    <div class="links-group">
-                        <div class="links-label">children</div>
+                    <div class="connection-group">
+                        <div class="connection-label">children</div>
                         <div hx-get="/api/links/kids?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
-                    <div class="links-group">
-                        <div class="links-label">links to</div>
+                    <div class="connection-group">
+                        <div class="connection-label">links to</div>
                         <div hx-get="/api/links/used?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
-                    <div class="links-group">
-                        <div class="links-label">links from</div>
+                    <div class="connection-group">
+                        <div class="connection-label">links from</div>
                         <div hx-get="/api/links/linkstohere?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
                 </div>
             </section>
             {{end}}
             {{if index .ThemeSettings "sidebarVersionHistory"}}
-            <section class="sidebar-section sidebar-versions">
+            <section class="sidebar-section" id="component-sidebar-versions">
                 <h3><a href="/files/history/{{urlQuery .FilePath}}">{{T "version history"}}</a></h3>
-                <div id="version-sidebar-content"
+                <div class="version-loading"
                      hx-get="/api/files/versions/{{urlQuery .FilePath}}?sidebar=true"
                      hx-trigger="load"
                      hx-swap="innerHTML">
@@ -125,7 +125,7 @@
             </section>
             {{end}}
             {{if index .ThemeSettings "sidebarToc"}}
-            <section class="sidebar-section sidebar-toc">
+            <section class="sidebar-section" id="component-sidebar-toc">
                 <h3>table of contents</h3>
                 {{ if .FileContent.TOC }}
                     <nav class="toc-nav">

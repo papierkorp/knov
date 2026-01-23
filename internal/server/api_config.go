@@ -333,3 +333,197 @@ func handleAPIUpdateSectionEditSubheaders(w http.ResponseWriter, r *http.Request
 	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "section edit setting updated"))
 	writeResponse(w, r, "saved", html)
 }
+
+// @Summary Update default preview size
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param defaultPreviewSize formData int true "Default preview size in pixels"
+// @Produce json,html
+// @Router /api/config/media/default-preview-size [post]
+func handleAPIUpdateDefaultPreviewSize(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	sizeStr := r.FormValue("defaultPreviewSize")
+	if sizeStr == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing preview size"), http.StatusBadRequest)
+		return
+	}
+
+	size, err := strconv.Atoi(sizeStr)
+	if err != nil || size < 50 || size > 1000 {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid preview size"), http.StatusBadRequest)
+		return
+	}
+
+	// update settings
+	userSettings := configmanager.GetUserSettings()
+	userSettings.MediaSettings.DefaultPreviewSize = size
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("updated default preview size to %d pixels", size)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "preview size updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update preview display mode
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param displayMode formData string true "Display mode: left, center, right, inline"
+// @Produce json,html
+// @Router /api/config/media/display-mode [post]
+func handleAPIUpdateDisplayMode(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	displayMode := r.FormValue("displayMode")
+	if displayMode == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing display mode"), http.StatusBadRequest)
+		return
+	}
+
+	validModes := []string{"left", "center", "right", "inline"}
+	isValid := false
+	for _, mode := range validModes {
+		if displayMode == mode {
+			isValid = true
+			break
+		}
+	}
+	if !isValid {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid display mode"), http.StatusBadRequest)
+		return
+	}
+
+	// update settings
+	userSettings := configmanager.GetUserSettings()
+	userSettings.MediaSettings.DisplayMode = displayMode
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("updated display mode to: %s", displayMode)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "display mode updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update preview border style
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param borderStyle formData string true "Border style: none, simple, rounded, shadow"
+// @Produce json,html
+// @Router /api/config/media/border-style [post]
+func handleAPIUpdateBorderStyle(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	borderStyle := r.FormValue("borderStyle")
+	if borderStyle == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing border style"), http.StatusBadRequest)
+		return
+	}
+
+	validStyles := []string{"none", "simple", "rounded", "shadow"}
+	isValid := false
+	for _, style := range validStyles {
+		if borderStyle == style {
+			isValid = true
+			break
+		}
+	}
+	if !isValid {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid border style"), http.StatusBadRequest)
+		return
+	}
+
+	// update settings
+	userSettings := configmanager.GetUserSettings()
+	userSettings.MediaSettings.BorderStyle = borderStyle
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("updated border style to: %s", borderStyle)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "border style updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update show caption setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param showCaption formData bool true "Whether to show captions"
+// @Produce json,html
+// @Router /api/config/media/show-caption [post]
+func handleAPIUpdateShowCaption(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	showCaption := r.FormValue("showCaption") == "true"
+
+	// update settings
+	userSettings := configmanager.GetUserSettings()
+	userSettings.MediaSettings.ShowCaption = showCaption
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("updated show caption to: %t", showCaption)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "caption setting updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update click to enlarge setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param clickToEnlarge formData bool true "Whether previews are clickable"
+// @Produce json,html
+// @Router /api/config/media/click-to-enlarge [post]
+func handleAPIUpdateClickToEnlarge(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	clickToEnlarge := r.FormValue("clickToEnlarge") == "true"
+
+	// update settings
+	userSettings := configmanager.GetUserSettings()
+	userSettings.MediaSettings.ClickToEnlarge = clickToEnlarge
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("updated click to enlarge to: %t", clickToEnlarge)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "click setting updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update preview enabled setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param enablePreviews formData bool true "Whether previews are enabled"
+// @Produce json,html
+// @Router /api/config/media/enable-previews [post]
+func handleAPIUpdateEnablePreviews(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	enablePreviews := r.FormValue("enablePreviews") == "true"
+
+	// update settings
+	userSettings := configmanager.GetUserSettings()
+	userSettings.MediaSettings.EnablePreviews = enablePreviews
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("updated enable previews to: %t", enablePreviews)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "preview setting updated"))
+	writeResponse(w, r, "saved", html)
+}

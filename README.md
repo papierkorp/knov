@@ -23,6 +23,12 @@
         6. Rule 5. implies no chatbot for this exercice. This is your own stream of consciousness.
   - combine with help.gohtml of builtin theme
   - use the docs folder as testdata and remove the internal/testdata/testfiles
+- Link Resources to certain files e.g. i have postgres file and i want to link a Page about Optimization
+- Relationship Tracker
+  - create a Person
+  - last contact
+  - ...
+- display breaks from markdown files (add a <br /> to line breaks to the html output)
 - Dashboard
   - make the positions work with a custom layout work
   - Add widget drag & drop reordering

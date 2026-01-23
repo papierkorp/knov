@@ -4,6 +4,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -181,5 +182,42 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	html := render.RenderMediaList(mediaFiles)
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(html))
+}
+
+// @Summary Get media preview HTML
+// @Description Returns HTML for a media preview image
+// @Tags media
+// @Param path query string true "media file path"
+// @Param size query int false "preview size in pixels (default from settings)"
+// @Produce html
+// @Success 200 {string} string "HTML preview element"
+// @Failure 400 {string} string "invalid request"
+// @Failure 404 {string} string "media file not found"
+// @Router /api/media/preview [get]
+func handleAPIMediaPreview(w http.ResponseWriter, r *http.Request) {
+	if !configmanager.GetPreviewsEnabled() {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "previews are disabled"), http.StatusNotImplemented)
+		return
+	}
+
+	mediaPath := r.URL.Query().Get("path")
+	if mediaPath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing path parameter"), http.StatusBadRequest)
+		return
+	}
+
+	// parse size parameter (optional)
+	size := configmanager.GetDefaultPreviewSize()
+	if sizeStr := r.URL.Query().Get("size"); sizeStr != "" {
+		if parsedSize, err := strconv.Atoi(sizeStr); err == nil && parsedSize > 0 {
+			size = parsedSize
+		}
+	}
+
+	// render preview HTML using simple CSS approach
+	html := render.RenderMediaPreviewWithSize(mediaPath, size)
+
+	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
