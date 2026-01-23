@@ -7,6 +7,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/filter"
+	"knov/internal/mapping"
 	"knov/internal/translation"
 	"knov/internal/utils"
 )
@@ -210,10 +211,7 @@ func RenderMetadataFieldOptions(selectedValue string) string {
 		if field == selectedValue {
 			selected = "selected"
 		}
-		displayText := field
-		if strings.HasPrefix(field, "para_") {
-			displayText = translation.SprintfForRequest(configmanager.GetLanguage(), "para") + ": " + strings.TrimPrefix(field, "para_")
-		}
+		displayText := mapping.GetDisplayName(field)
 		html.WriteString(fmt.Sprintf(`<option value="%s" %s>%s</option>`, field, selected, displayText))
 	}
 

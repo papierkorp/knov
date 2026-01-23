@@ -16,6 +16,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/mapping"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server/render"
@@ -589,29 +590,12 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogDebug("browse request: %s=%s", metadata, value)
 
-	// Map URL-friendly field names to actual filter field names
-	actualMetadata := metadata
-	switch metadata {
-	case "tag":
-		actualMetadata = "tags"
-	case "folder":
-		actualMetadata = "folders"
-	case "projects":
-		actualMetadata = "para_projects"
-	case "areas":
-		actualMetadata = "para_areas"
-	case "resources":
-		actualMetadata = "para_resources"
-	case "archive":
-		actualMetadata = "para_archive"
-	}
+	// map URL-friendly field names to database field names
+	actualMetadata := mapping.URLToDatabase(metadata)
 
-	// Set operator based on field type - arrays use "contains", simple fields use "equals"
+	// set operator based on field type - arrays use "contains", simple fields use "equals"
 	operator := "equals"
-	if metadata == "tag" || metadata == "tags" ||
-		metadata == "folder" || metadata == "folders" ||
-		metadata == "projects" || metadata == "areas" ||
-		metadata == "resources" || metadata == "archive" {
+	if mapping.IsArrayField(metadata) {
 		operator = "contains"
 	}
 

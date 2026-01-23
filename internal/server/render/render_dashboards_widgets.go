@@ -11,6 +11,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/mapping"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
 	"knov/internal/utils"
@@ -94,7 +95,7 @@ func renderTagsWidget() (string, error) {
 		return "", err
 	}
 
-	return RenderBrowseHTML(tagCount, "/browse/tags"), nil
+	return RenderBrowseHTML(tagCount, "/browse/"+mapping.DatabaseToURL("tags")), nil
 }
 
 func renderCollectionsWidget() (string, error) {
@@ -112,7 +113,7 @@ func renderFoldersWidget() (string, error) {
 		return "", err
 	}
 
-	return RenderBrowseHTML(folderCount, "/browse/folders"), nil
+	return RenderBrowseHTML(folderCount, "/browse/"+mapping.DatabaseToURL("folders")), nil
 }
 
 func renderParaProjectsWidget() (string, error) {
@@ -121,7 +122,7 @@ func renderParaProjectsWidget() (string, error) {
 		return "", err
 	}
 
-	return RenderBrowseHTML(projectCount, "/browse/para_projects"), nil
+	return RenderBrowseHTML(projectCount, "/browse/"+mapping.DatabaseToURL("para_projects")), nil
 }
 
 func renderParaAreasWidget() (string, error) {
@@ -130,7 +131,7 @@ func renderParaAreasWidget() (string, error) {
 		return "", err
 	}
 
-	return RenderBrowseHTML(areaCount, "/browse/para_areas"), nil
+	return RenderBrowseHTML(areaCount, "/browse/"+mapping.DatabaseToURL("para_areas")), nil
 }
 
 func renderParaResourcesWidget() (string, error) {
@@ -139,7 +140,7 @@ func renderParaResourcesWidget() (string, error) {
 		return "", err
 	}
 
-	return RenderBrowseHTML(resourceCount, "/browse/para_resources"), nil
+	return RenderBrowseHTML(resourceCount, "/browse/"+mapping.DatabaseToURL("para_resources")), nil
 }
 
 func renderParaArchiveWidget() (string, error) {
@@ -148,7 +149,7 @@ func renderParaArchiveWidget() (string, error) {
 		return "", err
 	}
 
-	return RenderBrowseHTML(archiveCount, "/browse/para_archive"), nil
+	return RenderBrowseHTML(archiveCount, "/browse/"+mapping.DatabaseToURL("para_archive")), nil
 }
 
 // renderFilterWidget renders a filter widget for dashboards
