@@ -230,27 +230,16 @@ i just implemented the whole media stuff so we can upload images/files now i sti
 dont give me any code or implementation just your ideas/suggestions on how to fix this using best practices
 
 **media**
-- in the fileview (e.g.: http://localhost:1324/files/example_markdown.md)
-  - it should just be preview and not the whole file which breaks the layout
-  - getMediaPreview route?
-  - but make it a link to /media/xxx.png
 - in detailview (http://localhost:1324/browse/media/leasone-logo-512x512-1.png)
   - add a view in fullscreen button (e.g. http://localhost:1324/media/Screenshot-from-2026-01-05-10-04-16.png)
   - add a used In so we can see where this file is used with links to the file in question
 - in mediaoverview
   - add a filter 
-  - Add "Orphaned Media" section showing unused uploads
+  - Add "Orphaned Media" section showing unused uploads /  or should we use the filter for this?
   - use the LinksToHere metadata to check if its still referenced - if there is no more link its orphaned (can be added to the cronjob)
   - LinksToHere is set with every file for every link (i dont know if file/image links are included?) and could be set with the rebuild metadata
 - admin dashboard
   - Storage stats
 
-
-**mapping**
-- problem
-  - database = singular
-  - api endpoints/url = plural
-  - and the mapping is done where needed =>
-- create a new mapping package (e.g. tag/tags)
 
 **optimize**
