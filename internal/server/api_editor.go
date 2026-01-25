@@ -300,6 +300,13 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 		logging.LogInfo("saved metadata for index file: %s (collection: %s)", filezpath, collectionName)
 	}
 
+	// update links for this file
+	normalizedPath := filepath.Join("docs", filezpath)
+	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
+		logging.LogWarning("failed to update links for file %s: %v", filezpath, err)
+		// don't fail the request, just log the error
+	}
+
 	logging.LogInfo("saved index file: %s", filezpath)
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "index saved successfully"),
@@ -431,6 +438,13 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 		logging.LogInfo("saved metadata for list file: %s (filetype: %s)", filePath, filetype)
 	}
 
+	// update links for this file
+	normalizedPath := filepath.Join("docs", filePath)
+	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
+		logging.LogWarning("failed to update links for file %s: %v", filePath, err)
+		// don't fail the request, just log the error
+	}
+
 	logging.LogInfo("saved list file: %s", filePath)
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"),
@@ -522,6 +536,14 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo("saved table in file: %s", filePath)
+
+	// update links for this file
+	normalizedPath := pathutils.ToWithPrefix(filePath)
+	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
+		logging.LogWarning("failed to update links for file %s: %v", filePath, err)
+		// don't fail the request, just log the error
+	}
+
 	successMsg := fmt.Sprintf(`<div class="status-success">%s <a href="/files/%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"),
 		filePath,
@@ -595,6 +617,14 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo("saved section %s in file: %s", sectionID, filePath)
+
+	// update links for this file
+	normalizedPath := pathutils.ToWithPrefix(filePath)
+	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
+		logging.LogWarning("failed to update links for file %s: %v", filePath, err)
+		// don't fail the request, just log the error
+	}
+
 	successMsg := fmt.Sprintf(`<div class="status-success">%s <a href="/files/%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"),
 		filePath,

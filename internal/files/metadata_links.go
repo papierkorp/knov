@@ -531,3 +531,31 @@ func updateParentChildRelationships(metadata *Metadata, oldParents []string) {
 		}
 	}
 }
+
+// UpdateLinksForSingleFile updates link metadata for a single file without scanning all other files
+// This extracts links from the file content and updates LinksToHere in files that this file references
+// Does NOT scan all files - links are maintained incrementally as files are saved
+func UpdateLinksForSingleFile(filePath string) error {
+	logging.LogInfo("updating links for file: %s", filePath)
+
+	// get metadata for the file
+	metadata, err := MetaDataGet(filePath)
+	if err != nil || metadata == nil {
+		logging.LogWarning("failed to get metadata for file %s: %v", filePath, err)
+		return err
+	}
+
+	// update outbound links by parsing file content
+	// this also updates LinksToHere in the files that this file links to
+	// automatically skips media files (no content to parse)
+	updateUsedLinks(metadata)
+
+	// save updated metadata
+	if err := metaDataSaveRaw(metadata); err != nil {
+		logging.LogError("failed to save updated metadata for file %s: %v", filePath, err)
+		return err
+	}
+
+	logging.LogInfo("updated links for file %s: %d outbound links", filePath, len(metadata.UsedLinks))
+	return nil
+}

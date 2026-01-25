@@ -88,6 +88,13 @@
       "default": "cards",
       "label": "Search Results Display",
       "description": "choose how search results are displayed - list shows compact links, cards show detailed previews"
+    },
+    "mediaLinkMode": {
+      "type": "select",
+      "options": ["direct", "detail"],
+      "default": "direct",
+      "label": "Media Link Mode",
+      "description": "direct opens raw media file, detail shows metadata and usage information"
     }
   }
 }

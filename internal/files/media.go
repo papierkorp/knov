@@ -113,6 +113,12 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 		// don't fail the whole request, just log the error
 	} else {
 		logging.LogInfo("created metadata for media file: %s (filetype: %s)", metadataPath, fileType)
+
+		// update links for this media file (scan all files to find references)
+		if err := UpdateLinksForSingleFile(metadataPath); err != nil {
+			logging.LogWarning("failed to update links for media file %s: %v", metadataPath, err)
+			// don't fail the request, just log the error
+		}
 	}
 
 	logging.LogInfo("uploaded media file: %s (%s, %d bytes)", fullMediaPath, contentType, len(fileBytes))

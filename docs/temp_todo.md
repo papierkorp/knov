@@ -243,3 +243,20 @@ dont give me any code or implementation just your ideas/suggestions on how to fi
 
 
 **optimize**
+
+**stream of consciousnes**
+1. new filetype soc
+2. can be attached to other files => then filename = otherfilename_soc.md
+3. input directly under <main> with a expand button included in the inpu -> if expanded 2 theme stylings:
+  4. hover like a terminal
+  5. display it directly under <main>
+6. Rules for the file (write all your questions and all your answers as a "stream of consciousness.")
+  7. save each input in the markdown file with dd.mm.yyyy - hh:mm: <input>
+  8. for each input save it as a new line
+  9. after it was inputed - deleting anything is not allowed its read only
+  10. after it was inputed - changing/correcting anything is not allowed its ready only
+  11. no copy/pasting allowed (except urls)
+
+  **flexibility**
+  - add a new setting for each filetype called hide<FileType> which false by default
+  - implement a system to hide this file in listings e.g. /api/files/list, /api/files/browse? based on this setting

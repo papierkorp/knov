@@ -239,3 +239,34 @@ func escapeCSV(s string) string {
 	}
 	return s
 }
+
+// RenderFileMetadataSimple renders a simple metadata display for regular files
+func RenderFileMetadataSimple(metadata *files.Metadata) string {
+	if metadata == nil {
+		return `<div class="component-error">` +
+			translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found") +
+			`</div>`
+	}
+
+	var html strings.Builder
+	html.WriteString(`<div class="component-metadata">`)
+	fmt.Fprintf(&html, `<p>%s: %s</p>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "path"), metadata.Path)
+	fmt.Fprintf(&html, `<p>%s: %s</p>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "collection"), metadata.Collection)
+	fmt.Fprintf(&html, `<p>%s: %s</p>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "type"), metadata.FileType)
+	fmt.Fprintf(&html, `<p>%s: %s</p>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "status"), metadata.Status)
+	fmt.Fprintf(&html, `<p>%s: %s</p>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "priority"), metadata.Priority)
+
+	if len(metadata.Tags) > 0 {
+		fmt.Fprintf(&html, `<p>%s: %s</p>`,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "tags"),
+			strings.Join(metadata.Tags, ", "))
+	}
+	html.WriteString(`</div>`)
+
+	return html.String()
+}

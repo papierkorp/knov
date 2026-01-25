@@ -68,21 +68,10 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// for regular files, use simple HTML format
-		var html strings.Builder
-		html.WriteString("<div class='component-metadata'>")
-		html.WriteString(fmt.Sprintf("<p>Path: %s</p>", metadata.Path))
-		html.WriteString(fmt.Sprintf("<p>Collection: %s</p>", metadata.Collection))
-		html.WriteString(fmt.Sprintf("<p>Type: %s</p>", metadata.FileType))
-		html.WriteString(fmt.Sprintf("<p>Status: %s</p>", metadata.Status))
-		html.WriteString(fmt.Sprintf("<p>Priority: %s</p>", metadata.Priority))
-		if len(metadata.Tags) > 0 {
-			html.WriteString(fmt.Sprintf("<p>Tags: %s</p>", strings.Join(metadata.Tags, ", ")))
-		}
-		html.WriteString("</div>")
-
+		// for regular files, use simple metadata rendering
+		html := render.RenderFileMetadataSimple(metadata)
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
+		w.Write([]byte(html))
 		return
 	}
 

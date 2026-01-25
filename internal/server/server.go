@@ -685,6 +685,19 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check for detail view mode
+	if r.URL.Query().Get("mode") == "detail" {
+		tm := thememanager.GetThemeManager()
+		data := thememanager.NewMediaViewTemplateData(mediaPath)
+
+		err := tm.Render(w, "mediaview", data)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+
 	// set appropriate content type based on file extension
 	ext := strings.ToLower(filepath.Ext(mediaPath))
 	switch ext {
