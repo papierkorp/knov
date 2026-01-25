@@ -230,26 +230,38 @@ i just implemented the whole media stuff so we can upload images/files now i sti
 dont give me any code or implementation just your ideas/suggestions on how to fix this using best practices
 
 **media**
-- in detailview (http://localhost:1324/browse/media/leasone-logo-512x512-1.png)
-  - add a view in fullscreen button (e.g. http://localhost:1324/media/Screenshot-from-2026-01-05-10-04-16.png)
-  - add a used In so we can see where this file is used with links to the file in question
 - in mediaoverview
   - add a filter 
   - Add "Orphaned Media" section showing unused uploads /  or should we use the filter for this?
   - use the LinksToHere metadata to check if its still referenced - if there is no more link its orphaned (can be added to the cronjob)
   - LinksToHere is set with every file for every link (i dont know if file/image links are included?) and could be set with the rebuild metadata
+  - Show: All | Used | Orphaned
+  - Visual indicator on tiles: Small badge/icon for orphaned
+  - Bulk actions: Select multiple → Delete
+  - Orphaned criteria: LinksToHere.length == 0
 - admin dashboard
   - Storage stats
+  - e.g. "15 orphaned files (45 MB)"
+  - cleanup button
+- show references in editor for all files for easy add of other files
 
 
 **optimize**
+- file deleted
+  - remove all links to this file..
 
 **stream of consciousnes**
 1. new filetype soc
 2. can be attached to other files => then filename = otherfilename_soc.md
-3. input directly under <main> with a expand button included in the inpu -> if expanded 2 theme stylings:
-  4. hover like a terminal
-  5. display it directly under <main>
+3. input directly under <main> with 2 buttons on the right end side of the input:
+  4. a expand button (per default only the input field is shown) if expanded show the last x entries depending on the styl
+  5. a menu button which shows a pop up with 
+    6. all available socs for this file with a ok icon to which file is currently selected
+    7. a attach to this file add icon/button
+    8. a info icon button which show the rules from below
+4. 2 different styles (shown afte expand) with a new theme setting (no thememanger neede for this!)
+  4. hover above everything (look like a terminal)
+  5. display the output under the input so both the file and the soc is shown at the same time with the soc on top
 6. Rules for the file (write all your questions and all your answers as a "stream of consciousness.")
   7. save each input in the markdown file with dd.mm.yyyy - hh:mm: <input>
   8. for each input save it as a new line
