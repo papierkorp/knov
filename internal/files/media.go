@@ -190,3 +190,29 @@ func GetFileTypeIcon(ext string) string {
 		return "fa-file"
 	}
 }
+
+// FilterMediaFiles filters media files based on orphaned status
+func FilterMediaFiles(mediaFiles []File, orphanedMedia []string, filter string) []File {
+	if filter == "all" {
+		return mediaFiles
+	}
+
+	var filtered []File
+	for _, media := range mediaFiles {
+		isOrphaned := false
+		for _, orphaned := range orphanedMedia {
+			if orphaned == media.Path {
+				isOrphaned = true
+				break
+			}
+		}
+
+		if filter == "orphaned" && isOrphaned {
+			filtered = append(filtered, media)
+		} else if filter == "used" && !isOrphaned {
+			filtered = append(filtered, media)
+		}
+	}
+
+	return filtered
+}

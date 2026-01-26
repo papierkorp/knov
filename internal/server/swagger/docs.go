@@ -2254,7 +2254,7 @@ const docTemplate = `{
         },
         "/api/media/list": {
             "get": {
-                "description": "Get list of all media files with metadata",
+                "description": "Get list of all media files with metadata, optionally filtered",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -2263,6 +2263,15 @@ const docTemplate = `{
                     "media"
                 ],
                 "summary": "Get all media files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "all",
+                        "description": "Filter: all, used, orphaned",
+                        "name": "filter",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "List of media files",
@@ -2428,6 +2437,12 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "media file not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "media file still referenced",
                         "schema": {
                             "type": "string"
                         }

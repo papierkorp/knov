@@ -4,6 +4,7 @@ package render
 import (
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -73,82 +74,140 @@ func RenderMediaPreview(mediaPath, contentType string) string {
 	}
 }
 
-// RenderMediaList renders a grid of media files with previews
-func RenderMediaList(mediaFiles []files.File) string {
+// RenderMediaList renders a grid of media files with previews and filter controls
+func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphanedCount int) string {
+	var html strings.Builder
+
+	// wrapper for htmx target
+	html.WriteString(`<div id="component-media-content">`)
+
+	// filter controls
+	html.WriteString(`<div id="component-media-filter" class="media-filter">`)
+	fmt.Fprintf(&html, `<div class="filter-label">%s:</div>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "show"))
+	html.WriteString(`<div class="filter-buttons">`)
+
+	// all button
+	activeAll := ""
+	if filter == "all" {
+		activeAll = " active"
+	}
+	fmt.Fprintf(&html, `<button class="filter-btn%s" hx-get="/api/media/list?filter=all" hx-target="#component-media-content" hx-swap="innerHTML">%s (%d)</button>`,
+		activeAll,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "all"),
+		totalCount)
+
+	// used button
+	activeUsed := ""
+	if filter == "used" {
+		activeUsed = " active"
+	}
+	usedCount := totalCount - orphanedCount
+	fmt.Fprintf(&html, `<button class="filter-btn%s" hx-get="/api/media/list?filter=used" hx-target="#component-media-content" hx-swap="innerHTML">%s (%d)</button>`,
+		activeUsed,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "used"),
+		usedCount)
+
+	// orphaned button
+	activeOrphaned := ""
+	if filter == "orphaned" {
+		activeOrphaned = " active"
+	}
+	fmt.Fprintf(&html, `<button class="filter-btn%s" hx-get="/api/media/list?filter=orphaned" hx-target="#component-media-content" hx-swap="innerHTML">%s (%d)</button>`,
+		activeOrphaned,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "orphaned"),
+		orphanedCount)
+
+	html.WriteString(`</div>`) // close filter-buttons
+	html.WriteString(`</div>`) // close media-filter
+
+	// empty state
 	if len(mediaFiles) == 0 {
-		return `<div id="component-no-media" class="component-no-media">` +
-			translation.SprintfForRequest(configmanager.GetLanguage(), "no media files found") +
-			`</div>`
+		var emptyMsg string
+		switch filter {
+		case "orphaned":
+			emptyMsg = translation.SprintfForRequest(configmanager.GetLanguage(), "no orphaned media files")
+		case "used":
+			emptyMsg = translation.SprintfForRequest(configmanager.GetLanguage(), "no used media files")
+		default:
+			emptyMsg = translation.SprintfForRequest(configmanager.GetLanguage(), "no media files found")
+		}
+		fmt.Fprintf(&html, `<div id="component-no-media" class="component-no-media">%s</div>`, emptyMsg)
+		html.WriteString(`</div>`) // close component-media-content
+		return html.String()
 	}
 
-	var html strings.Builder
+	// media grid
 	html.WriteString(`<div id="component-media-grid" class="media-grid">`)
 
+	// get orphaned media for badge display
+	orphanedMedia, _ := files.GetOrphanedMediaFromCache()
+
 	for _, file := range mediaFiles {
+		// check if this media is orphaned
+		isOrphaned := slices.Contains(orphanedMedia, file.Path)
+
 		// ensure media path is relative (remove media/ prefix)
 		relativePath := strings.TrimPrefix(file.Path, "media/")
 		fileExt := strings.ToLower(filepath.Ext(relativePath))
 		filename := filepath.Base(relativePath)
 
-		html.WriteString(`<div class="media-item">`)
+		orphanedClass := ""
+		if isOrphaned {
+			orphanedClass = " media-orphaned"
+		}
+
+		fmt.Fprintf(&html, `<div class="media-item%s">`, orphanedClass)
+
+		// orphaned badge
+		if isOrphaned {
+			fmt.Fprintf(&html, `<div class="media-badge orphaned-badge" title="%s"><i class="fas fa-unlink"></i> %s</div>`,
+				translation.SprintfForRequest(configmanager.GetLanguage(), "not used in any files"),
+				translation.SprintfForRequest(configmanager.GetLanguage(), "unused"))
+		}
 
 		// media preview/thumbnail
 		html.WriteString(`<div class="media-preview">`)
 		if files.IsImageFile(fileExt) {
-			html.WriteString(fmt.Sprintf(`<a href="/media/%s" target="_blank">
-				<img src="/media/%s" alt="%s" loading="lazy" class="media-thumbnail">
-			</a>`, relativePath, relativePath, filename))
+			fmt.Fprintf(&html, `<a href="/media/%s" target="_blank"><img src="/media/%s" alt="%s" loading="lazy" class="media-thumbnail"></a>`,
+				relativePath, relativePath, filename)
 		} else if files.IsVideoFile(fileExt) {
-			html.WriteString(fmt.Sprintf(`<div class="media-video-preview">
-				<video preload="none" class="media-thumbnail" poster="">
-					<source src="/media/%s" type="video/%s">
-				</video>
-				<div class="video-overlay">
-					<i class="fas fa-play"></i>
-				</div>
-			</div>`, relativePath, strings.TrimPrefix(fileExt, ".")))
+			fmt.Fprintf(&html, `<div class="media-video-preview"><video preload="none" class="media-thumbnail" poster=""><source src="/media/%s" type="video/%s"></video><div class="video-overlay"><i class="fas fa-play"></i></div></div>`,
+				relativePath, strings.TrimPrefix(fileExt, "."))
 		} else {
 			icon := files.GetFileTypeIcon(fileExt)
-			html.WriteString(fmt.Sprintf(`<div class="media-icon">
-				<i class="fas %s"></i>
-			</div>`, icon))
+			fmt.Fprintf(&html, `<div class="media-icon"><i class="fas %s"></i></div>`, icon)
 		}
 		html.WriteString(`</div>`)
 
 		// media info
 		html.WriteString(`<div class="media-info">`)
-		html.WriteString(fmt.Sprintf(`<div class="media-filename" title="%s">%s</div>`, filename, filename))
+		fmt.Fprintf(&html, `<div class="media-filename" title="%s">%s</div>`, filename, filename)
 
 		// show file size if available in metadata
 		if file.Metadata != nil && file.Metadata.Size > 0 {
 			sizeStr := formatFileSize(file.Metadata.Size)
-			html.WriteString(fmt.Sprintf(`<div class="media-filesize">%s</div>`, sizeStr))
+			fmt.Fprintf(&html, `<div class="media-filesize">%s</div>`, sizeStr)
 		}
 		html.WriteString(`</div>`)
 
 		// media actions
 		html.WriteString(`<div class="media-actions">`)
-		html.WriteString(fmt.Sprintf(`<a href="/media/%s?mode=detail" class="btn btn-sm btn-primary">
-			<i class="fas fa-info-circle"></i> %s
-		</a>`, relativePath, translation.SprintfForRequest(configmanager.GetLanguage(), "details")))
-		html.WriteString(fmt.Sprintf(`<a href="/media/%s" download class="btn btn-sm btn-secondary">
-			<i class="fas fa-download"></i> %s
-		</a>`, relativePath, translation.SprintfForRequest(configmanager.GetLanguage(), "download")))
-		html.WriteString(fmt.Sprintf(`<button type="button" class="btn btn-sm btn-danger"
-			hx-delete="/api/media/%s"
-			hx-confirm="%s"
-			hx-target="#component-media-grid"
-			hx-trigger="click">
-			<i class="fas fa-trash"></i> %s
-		</button>`, relativePath,
+		fmt.Fprintf(&html, `<a href="/media/%s?mode=detail" class="btn btn-sm btn-primary"><i class="fas fa-info-circle"></i> %s</a>`,
+			relativePath, translation.SprintfForRequest(configmanager.GetLanguage(), "details"))
+		fmt.Fprintf(&html, `<a href="/media/%s" download class="btn btn-sm btn-secondary"><i class="fas fa-download"></i> %s</a>`,
+			relativePath, translation.SprintfForRequest(configmanager.GetLanguage(), "download"))
+		fmt.Fprintf(&html, `<button type="button" class="btn btn-sm btn-danger" hx-delete="/api/media/%s" hx-confirm="%s" hx-target="#component-media-content" hx-trigger="click"><i class="fas fa-trash"></i> %s</button>`,
+			relativePath,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "are you sure you want to delete this file?"),
-			translation.SprintfForRequest(configmanager.GetLanguage(), "delete")))
+			translation.SprintfForRequest(configmanager.GetLanguage(), "delete"))
 		html.WriteString(`</div>`)
 
 		html.WriteString(`</div>`) // close media-item
 	}
 
 	html.WriteString(`</div>`) // close media-grid
+	html.WriteString(`</div>`) // close component-media-content
 	return html.String()
 }
 

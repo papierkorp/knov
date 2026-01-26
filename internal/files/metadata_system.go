@@ -9,6 +9,7 @@ import (
 
 	"knov/internal/cacheStorage"
 	"knov/internal/logging"
+	"knov/internal/utils"
 )
 
 // CacheKey represents system cache keys
@@ -24,6 +25,7 @@ const (
 	CacheKeyPARAResources CacheKey = "all_para_resources"
 	CacheKeyPARAArchive   CacheKey = "all_para_archive"
 	CacheKeyFilePaths     CacheKey = "all_file_paths"
+	CacheKeyOrphanedMedia CacheKey = "orphaned_media"
 )
 
 // saveStringListToCache saves a sorted string list to cache storage
@@ -455,6 +457,7 @@ type MetadataCollector struct {
 	PARAResources map[string]bool
 	PARAArchive   map[string]bool
 	FilePaths     []string
+	OrphanedMedia []string
 }
 
 // NewMetadataCollector creates a new metadata collector
@@ -469,6 +472,7 @@ func NewMetadataCollector() *MetadataCollector {
 		PARAResources: make(map[string]bool),
 		PARAArchive:   make(map[string]bool),
 		FilePaths:     []string{},
+		OrphanedMedia: []string{},
 	}
 }
 
@@ -526,35 +530,43 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 			mc.PARAArchive[archive] = true
 		}
 	}
+
+	// collect orphaned media
+	if strings.HasPrefix(filePath, "media/") && len(metadata.LinksToHere) == 0 {
+		mc.OrphanedMedia = append(mc.OrphanedMedia, filePath)
+	}
 }
 
 // SaveAllToCache saves all collected metadata to system cache
 func (mc *MetadataCollector) SaveAllToCache() error {
-	if err := saveStringListToCache(CacheKeyTags, setToSortedSlice(mc.Tags)); err != nil {
+	if err := saveStringListToCache(CacheKeyTags, utils.SetToSortedSlice(mc.Tags)); err != nil {
 		return err
 	}
-	if err := saveStringListToCache(CacheKeyCollections, setToSortedSlice(mc.Collections)); err != nil {
+	if err := saveStringListToCache(CacheKeyCollections, utils.SetToSortedSlice(mc.Collections)); err != nil {
 		return err
 	}
-	if err := saveStringListToCache(CacheKeyFolders, setToSortedSlice(mc.Folders)); err != nil {
+	if err := saveStringListToCache(CacheKeyFolders, utils.SetToSortedSlice(mc.Folders)); err != nil {
 		return err
 	}
-	if err := saveStringListToCache(CacheKeyFolderPaths, setToSortedSlice(mc.FolderPaths)); err != nil {
+	if err := saveStringListToCache(CacheKeyFolderPaths, utils.SetToSortedSlice(mc.FolderPaths)); err != nil {
 		return err
 	}
-	if err := saveStringListToCache(CacheKeyPARAProjects, setToSortedSlice(mc.PARAProjects)); err != nil {
+	if err := saveStringListToCache(CacheKeyPARAProjects, utils.SetToSortedSlice(mc.PARAProjects)); err != nil {
 		return err
 	}
-	if err := saveStringListToCache(CacheKeyPARAreas, setToSortedSlice(mc.PARAreas)); err != nil {
+	if err := saveStringListToCache(CacheKeyPARAreas, utils.SetToSortedSlice(mc.PARAreas)); err != nil {
 		return err
 	}
-	if err := saveStringListToCache(CacheKeyPARAResources, setToSortedSlice(mc.PARAResources)); err != nil {
+	if err := saveStringListToCache(CacheKeyPARAResources, utils.SetToSortedSlice(mc.PARAResources)); err != nil {
 		return err
 	}
-	if err := saveStringListToCache(CacheKeyPARAArchive, setToSortedSlice(mc.PARAArchive)); err != nil {
+	if err := saveStringListToCache(CacheKeyPARAArchive, utils.SetToSortedSlice(mc.PARAArchive)); err != nil {
 		return err
 	}
 	if err := saveStringListToCache(CacheKeyFilePaths, mc.FilePaths); err != nil {
+		return err
+	}
+	if err := saveStringListToCache(CacheKeyOrphanedMedia, mc.OrphanedMedia); err != nil {
 		return err
 	}
 	return nil
@@ -566,6 +578,7 @@ func SaveAllSystemDataToCache() error {
 
 	collector := NewMetadataCollector()
 
+	// collect from document files
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return err
@@ -577,6 +590,20 @@ func SaveAllSystemDataToCache() error {
 			continue
 		}
 		collector.CollectFromMetadata(file.Path, metadata)
+	}
+
+	// collect from media files (needed for orphaned media detection)
+	mediaFiles, err := GetAllMediaFiles()
+	if err != nil {
+		logging.LogWarning("failed to get media files for cache update: %v", err)
+	} else {
+		for _, file := range mediaFiles {
+			metadata, err := MetaDataGet(file.Path)
+			if err != nil || metadata == nil {
+				continue
+			}
+			collector.CollectFromMetadata(file.Path, metadata)
+		}
 	}
 
 	if err := collector.SaveAllToCache(); err != nil {
@@ -636,12 +663,113 @@ func SaveAllFolderPathsToSystemData() error {
 	return saveStringListToCache(CacheKeyFolderPaths, folderPaths)
 }
 
-// setToSortedSlice converts a map[string]bool to a sorted slice
-func setToSortedSlice(set map[string]bool) []string {
-	var slice []string
-	for key := range set {
-		slice = append(slice, key)
+// GetOrphanedMediaFromCache retrieves cached orphaned media list from system storage
+func GetOrphanedMediaFromCache() ([]string, error) {
+	return getStringListFromCache(CacheKeyOrphanedMedia)
+}
+
+// UpdateOrphanedMediaCache efficiently updates only the orphaned media cache
+// by checking media files instead of all files
+func UpdateOrphanedMediaCache() error {
+	logging.LogDebug("updating orphaned media cache")
+
+	mediaFiles, err := GetAllMediaFiles()
+	if err != nil {
+		return err
 	}
-	slices.Sort(slice)
-	return slice
+
+	var orphanedMedia []string
+	for _, mediaFile := range mediaFiles {
+		metadata, err := MetaDataGet(mediaFile.Path)
+		if err != nil || metadata == nil {
+			continue
+		}
+
+		// media is orphaned if it has no links to it
+		if len(metadata.LinksToHere) == 0 {
+			orphanedMedia = append(orphanedMedia, mediaFile.Path)
+		}
+	}
+
+	if err := saveStringListToCache(CacheKeyOrphanedMedia, orphanedMedia); err != nil {
+		return err
+	}
+
+	logging.LogDebug("orphaned media cache updated: %d orphaned files", len(orphanedMedia))
+	return nil
+}
+
+// UpdateOrphanedMediaCacheForFile incrementally updates orphaned media cache
+// for media files affected by changes to a specific file
+func UpdateOrphanedMediaCacheForFile(filePath string) error {
+	logging.LogDebug("incrementally updating orphaned media cache for file: %s", filePath)
+
+	// get file metadata to find affected media files
+	metadata, err := MetaDataGet(filePath)
+	if err != nil || metadata == nil {
+		logging.LogDebug("no metadata found for %s, skipping cache update", filePath)
+		return nil
+	}
+
+	// collect media files that might be affected (from UsedLinks)
+	var affectedMediaFiles []string
+	for _, link := range metadata.UsedLinks {
+		if strings.HasPrefix(link, "media/") {
+			affectedMediaFiles = append(affectedMediaFiles, link)
+		}
+	}
+
+	// if no media files are affected, nothing to do
+	if len(affectedMediaFiles) == 0 {
+		logging.LogDebug("no media files affected by changes to %s", filePath)
+		return nil
+	}
+
+	// get current orphaned media cache
+	orphanedMedia, err := GetOrphanedMediaFromCache()
+	if err != nil {
+		logging.LogWarning("failed to get orphaned media cache, will rebuild: %v", err)
+		return UpdateOrphanedMediaCache() // fallback to full rebuild
+	}
+
+	// if cache is empty, rebuild it instead of trying to update incrementally
+	if len(orphanedMedia) == 0 {
+		logging.LogDebug("orphaned media cache is empty, rebuilding instead of incremental update")
+		return UpdateOrphanedMediaCache()
+	}
+
+	// create a set for efficient lookups and updates
+	orphanedSet := make(map[string]bool)
+	for _, media := range orphanedMedia {
+		orphanedSet[media] = true
+	}
+
+	// check each affected media file and update orphaned status
+	for _, mediaPath := range affectedMediaFiles {
+		mediaMetadata, err := MetaDataGet(mediaPath)
+		if err != nil || mediaMetadata == nil {
+			continue
+		}
+
+		isOrphaned := len(mediaMetadata.LinksToHere) == 0
+
+		if isOrphaned {
+			orphanedSet[mediaPath] = true
+		} else {
+			delete(orphanedSet, mediaPath)
+		}
+	}
+
+	// convert back to sorted slice
+	updatedOrphanedMedia := make([]string, 0, len(orphanedSet))
+	for media := range orphanedSet {
+		updatedOrphanedMedia = append(updatedOrphanedMedia, media)
+	}
+
+	if err := saveStringListToCache(CacheKeyOrphanedMedia, updatedOrphanedMedia); err != nil {
+		return err
+	}
+
+	logging.LogDebug("incrementally updated orphaned media cache: checked %d affected files", len(affectedMediaFiles))
+	return nil
 }

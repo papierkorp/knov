@@ -231,11 +231,11 @@ dont give me any code or implementation just your ideas/suggestions on how to fi
 
 **media**
 - in mediaoverview
-  - add a filter 
   - Add "Orphaned Media" section showing unused uploads /  or should we use the filter for this?
   - use the LinksToHere metadata to check if its still referenced - if there is no more link its orphaned (can be added to the cronjob)
   - LinksToHere is set with every file for every link (i dont know if file/image links are included?) and could be set with the rebuild metadata
-  - Show: All | Used | Orphaned
+  - add a filter 
+    - Show: All | Used | Orphaned
   - Visual indicator on tiles: Small badge/icon for orphaned
   - Bulk actions: Select multiple → Delete
   - Orphaned criteria: LinksToHere.length == 0

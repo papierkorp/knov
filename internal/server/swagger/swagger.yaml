@@ -1944,6 +1944,10 @@ paths:
           description: media file not found
           schema:
             type: string
+        "409":
+          description: media file still referenced
+          schema:
+            type: string
         "500":
           description: internal error
           schema:
@@ -1953,7 +1957,13 @@ paths:
       - media
   /api/media/list:
     get:
-      description: Get list of all media files with metadata
+      description: Get list of all media files with metadata, optionally filtered
+      parameters:
+      - default: all
+        description: 'Filter: all, used, orphaned'
+        in: query
+        name: filter
+        type: string
       produces:
       - application/json
       - text/html

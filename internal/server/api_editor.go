@@ -307,6 +307,11 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 		// don't fail the request, just log the error
 	}
 
+	// update orphaned media cache
+	if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
+		logging.LogWarning("failed to update orphaned media cache: %v", err)
+	}
+
 	logging.LogInfo("saved index file: %s", filezpath)
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "index saved successfully"),
@@ -445,6 +450,11 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 		// don't fail the request, just log the error
 	}
 
+	// update orphaned media cache
+	if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
+		logging.LogWarning("failed to update orphaned media cache: %v", err)
+	}
+
 	logging.LogInfo("saved list file: %s", filePath)
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"),
@@ -544,6 +554,11 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		// don't fail the request, just log the error
 	}
 
+	// update orphaned media cache
+	if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
+		logging.LogWarning("failed to update orphaned media cache: %v", err)
+	}
+
 	successMsg := fmt.Sprintf(`<div class="status-success">%s <a href="/files/%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"),
 		filePath,
@@ -623,6 +638,11 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
 		logging.LogWarning("failed to update links for file %s: %v", filePath, err)
 		// don't fail the request, just log the error
+	}
+
+	// update orphaned media cache
+	if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
+		logging.LogWarning("failed to update orphaned media cache: %v", err)
 	}
 
 	successMsg := fmt.Sprintf(`<div class="status-success">%s <a href="/files/%s">%s</a></div>`,

@@ -308,7 +308,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		}
 
 		metadata := &files.Metadata{
-			Path:     filepath.Join("docs", filePath), // Add docs/ prefix to distinguish from media
+			Path:     pathutils.ToWithPrefix(filePath),
 			FileType: filetype,
 		}
 
@@ -317,6 +317,17 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 			// don't fail the whole request, just log the error
 		} else {
 			logging.LogInfo("created metadata for new file: %s (filetype: %s)", filePath, filetype)
+		}
+	} else {
+		// update links for existing files
+		normalizedPath := pathutils.ToWithPrefix(filePath)
+		if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
+			logging.LogWarning("failed to update links for file %s: %v", filePath, err)
+		}
+
+		// update orphaned media cache for affected media files
+		if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
+			logging.LogWarning("failed to update orphaned media cache: %v", err)
 		}
 	}
 
