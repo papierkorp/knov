@@ -1,0 +1,443 @@
+/* Component: Filter Test Results */
+#component-filter-test-results {
+    margin: 20px 0;
+}
+
+#component-filter-test-results .test-summary {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#component-filter-test-results .test-summary h4 {
+    margin: 0 0 15px 0;
+    color: var(--text);
+    font-size: 1.5em;
+}
+
+#component-filter-test-results .summary-stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#component-filter-test-results .stat {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+#component-filter-test-results .stat.total {
+    color: var(--text-secondary);
+}
+
+#component-filter-test-results .stat.passed {
+    color: var(--success);
+}
+
+#component-filter-test-results .stat.failed {
+    color: var(--danger);
+}
+
+#component-filter-test-results .overall-status {
+    margin-left: auto;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 1.2em;
+}
+
+#component-filter-test-results .overall-status.status-success {
+    color: var(--success);
+    background: var(--success-bg);
+}
+
+#component-filter-test-results .overall-status.status-failure {
+    color: var(--danger);
+    background: var(--danger-bg);
+}
+
+/* Individual Test Results */
+#component-filter-test-results .test-result {
+    margin: 20px 0;
+    background: var(--bg);
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+#component-filter-test-results .test-result.test-passed {
+    border-left: 5px solid var(--success);
+}
+
+#component-filter-test-results .test-result.test-failed {
+    border-left: 5px solid var(--danger);
+}
+
+#component-filter-test-results .test-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+#component-filter-test-results .test-passed .test-header {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+#component-filter-test-results .test-failed .test-header {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+#component-filter-test-results .test-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+#component-filter-test-results .test-title h5 {
+    margin: 0;
+    font-size: 1.3em;
+}
+
+#component-filter-test-results .status-icon {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+#component-filter-test-results .test-description {
+    margin: 10px 0 0 0;
+    font-size: 1.05em;
+}
+
+#component-filter-test-results .test-counts {
+    margin: 10px 0 0 0;
+    font-size: 1.05em;
+}
+
+#component-filter-test-results .count-expected {
+    margin-right: 20px;
+}
+
+#component-filter-test-results .test-error {
+    margin: 5px 0 0 0;
+    color: var(--danger);
+    font-weight: bold;
+}
+
+/* Configuration Details */
+#component-filter-test-results .test-config {
+    margin: 0;
+    background: var(--bg);
+    overflow: hidden;
+}
+
+#component-filter-test-results .test-config summary {
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+#component-filter-test-results .config-content {
+    background: var(--bg);
+    color: var(--text);
+    padding: 15px;
+    border-left: 4px solid var(--primary);
+}
+
+#component-filter-test-results .config-logic {
+    margin: 0 0 10px 0;
+    color: var(--text);
+}
+
+#component-filter-test-results .config-criteria-title {
+    margin: 0 0 10px 0;
+    color: var(--text);
+}
+
+#component-filter-test-results .config-criteria {
+    margin-left: 20px;
+    color: var(--text);
+}
+
+#component-filter-test-results .config-criteria li {
+    margin: 5px 0;
+    color: var(--text);
+}
+
+#component-filter-test-results .config-criteria code {
+    background: var(--bg-secondary);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--text-secondary);
+}
+
+#component-filter-test-results .action-badge {
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 0.85em;
+}
+
+#component-filter-test-results .action-badge.action-include {
+    color: var(--success);
+    background: var(--success-bg);
+}
+
+#component-filter-test-results .action-badge.action-exclude {
+    color: var(--danger);
+    background: var(--danger-bg);
+}
+
+/* Files Comparison */
+#component-filter-test-results .test-files {
+    margin: 15px 0;
+    background: var(--bg);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+#component-filter-test-results .test-files summary {
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+#component-filter-test-results .files-content {
+    background: var(--bg);
+    color: var(--text);
+    padding: 15px;
+    border-left: 4px solid var(--success);
+}
+
+#component-filter-test-results .files-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+#component-filter-test-results .files-header {
+    margin: 0 0 10px 0;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 1.05em;
+}
+
+#component-filter-test-results .files-header.expected {
+    color: var(--success);
+    background: var(--success-bg);
+}
+
+#component-filter-test-results .files-header.actual {
+    color: var(--danger);
+    background: var(--danger-bg);
+}
+
+#component-filter-test-results .files-list {
+    margin: 0;
+    padding-left: 20px;
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    font-size: 0.9em;
+    color: var(--text);
+}
+
+#component-filter-test-results .files-list li {
+    margin: 3px 0;
+    padding: 2px 0;
+    color: var(--text);
+}
+
+#component-filter-test-results .unexpected-file {
+    margin: 3px 0;
+    padding: 2px 6px;
+    color: var(--danger);
+    font-weight: bold;
+    background: var(--danger-bg);
+    border-radius: 3px;
+}
+
+#component-filter-test-results .no-files {
+    color: var(--text-muted);
+    font-size: 0.95em;
+}
+
+/* Component: Filter Test Metadata Table */
+#component-filter-test-metadata-table {
+    margin: 20px 0;
+}
+
+#component-filter-test-metadata-table h3 {
+    margin: 0 0 20px 0;
+    color: var(--text);
+}
+
+#component-filter-test-metadata-table .table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#component-filter-test-metadata-table .metadata-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+    min-width: 1200px;
+}
+
+#component-filter-test-metadata-table .metadata-table thead {
+    background: var(--bg-secondary);
+    border-bottom: 2px solid var(--border);
+}
+
+#component-filter-test-metadata-table .metadata-table th {
+    padding: 15px 10px;
+    text-align: left;
+    font-weight: bold;
+    color: var(--text-secondary);
+    border-right: 1px solid var(--border);
+}
+
+#component-filter-test-metadata-table .metadata-table .col-width-10 {
+    width: 10%;
+}
+
+#component-filter-test-metadata-table .metadata-table .col-width-15 {
+    width: 15%;
+}
+
+#component-filter-test-metadata-table .metadata-table .col-width-12 {
+    width: 12%;
+}
+
+#component-filter-test-metadata-table .metadata-table .col-width-20 {
+    width: 20%;
+}
+
+#component-filter-test-metadata-table .metadata-table .col-width-8 {
+    width: 8%;
+}
+
+#component-filter-test-metadata-table .metadata-table .col-width-7 {
+    width: 7%;
+}
+
+#component-filter-test-metadata-table .metadata-table .col-width-21 {
+    width: 21%;
+}
+
+#component-filter-test-metadata-table .metadata-table td {
+    padding: 12px 10px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+#component-filter-test-metadata-table .metadata-table .alt-row {
+    background: var(--bg-secondary);
+}
+
+#component-filter-test-metadata-table .cell-name {
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    color: var(--text);
+    font-weight: bold;
+}
+
+#component-filter-test-metadata-table .cell-path {
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    color: var(--text-muted);
+    font-size: 0.85em;
+}
+
+#component-filter-test-metadata-table .cell-collection {
+    color: var(--text-secondary);
+}
+
+#component-filter-test-metadata-table .cell-tags {
+    color: var(--primary);
+    font-size: 0.85em;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+#component-filter-test-metadata-table .cell-projects {
+    color: var(--text-secondary);
+    font-size: 0.85em;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+#component-filter-test-metadata-table .badge {
+    color: var(--bg);
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+/* File Type Badges */
+#component-filter-test-metadata-table .badge.type-fleeting {
+    background: var(--warning);
+}
+
+#component-filter-test-metadata-table .badge.type-literature {
+    background: var(--info);
+}
+
+#component-filter-test-metadata-table .badge.type-permanent {
+    background: var(--success);
+}
+
+#component-filter-test-metadata-table .badge.type-journaling {
+    background: var(--secondary);
+}
+
+#component-filter-test-metadata-table .badge.type-moc {
+    background: var(--accent);
+}
+
+/* Status Badges */
+#component-filter-test-metadata-table .badge.status-draft {
+    background: var(--warning);
+}
+
+#component-filter-test-metadata-table .badge.status-published {
+    background: var(--success);
+}
+
+#component-filter-test-metadata-table .badge.status-archived {
+    background: var(--text-muted);
+}
+
+/* Priority Badges */
+#component-filter-test-metadata-table .badge.priority-high {
+    background: var(--danger);
+}
+
+#component-filter-test-metadata-table .badge.priority-medium {
+    background: var(--warning);
+}
+
+#component-filter-test-metadata-table .badge.priority-low {
+    background: var(--success);
+}
+
+/* Table Summary */
+#component-filter-test-metadata-table .table-summary {
+    margin-top: 15px;
+    padding: 10px;
+    background: var(--bg-secondary);
+    border-radius: 5px;
+    font-size: 0.9em;
+    color: var(--text-secondary);
+}

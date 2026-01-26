@@ -37,9 +37,7 @@ type FilterTestResults struct {
 
 // CreateFilterTestMetadata creates 12 test metadata objects
 func CreateFilterTestMetadata() error {
-	logging.LogInfo("creating filter test metadata")
 	debugLogger := logging.LogBuilder("filter-debug")
-	debugLogger.Printf("creating filter test metadata and cache updates")
 
 	// first, create the actual test files on disk (clears existing filter-tests folder)
 	if err := createFilterTestFiles(); err != nil {
@@ -57,11 +55,9 @@ func CreateFilterTestMetadata() error {
 			debugLogger.Printf("error saving metadata for %s: %v", metadata.Path, err)
 			return fmt.Errorf("failed to save metadata for %s: %v", metadata.Path, err)
 		}
-		logging.LogDebug("saved metadata for %s", metadata.Path)
 	}
 
 	// update all metadata caches
-	logging.LogInfo("updating metadata caches")
 	if err := files.SaveAllCollectionsToSystemData(); err != nil {
 		logging.LogWarning("failed to update collections cache: %v", err)
 	}
@@ -84,8 +80,6 @@ func CreateFilterTestMetadata() error {
 		logging.LogWarning("failed to update para archive cache: %v", err)
 	}
 
-	logging.LogInfo("filter test metadata created successfully")
-	debugLogger.Printf("filter test metadata creation completed")
 	return nil
 }
 
@@ -96,7 +90,6 @@ func GetFilterTestMetadata() []*files.Metadata {
 
 // RunFilterTests executes various filter test scenarios
 func RunFilterTests() (*FilterTestResults, error) {
-	logging.LogInfo("running filter tests")
 	debugLogger := logging.LogBuilder("filter-debug")
 
 	// ensure test data exists
@@ -122,6 +115,12 @@ func RunFilterTests() (*FilterTestResults, error) {
 			config: filter.Config{
 				Criteria: []filter.Criteria{
 					{
+						Metadata: "folders",
+						Operator: "contains",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
 						Metadata: "tags",
 						Operator: "contains",
 						Value:    "unique-experimental",
@@ -139,6 +138,12 @@ func RunFilterTests() (*FilterTestResults, error) {
 			name: "two_tags_and_advanced_stable",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
+					{
+						Metadata: "folders",
+						Operator: "contains",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
 					{
 						Metadata: "tags",
 						Operator: "contains",
@@ -164,6 +169,12 @@ func RunFilterTests() (*FilterTestResults, error) {
 			config: filter.Config{
 				Criteria: []filter.Criteria{
 					{
+						Metadata: "folders",
+						Operator: "contains",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
 						Metadata: "tags",
 						Operator: "contains",
 						Value:    "unique-basic",
@@ -188,6 +199,12 @@ func RunFilterTests() (*FilterTestResults, error) {
 			config: filter.Config{
 				Criteria: []filter.Criteria{
 					{
+						Metadata: "folders",
+						Operator: "contains",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
 						Metadata: "collection",
 						Operator: "equals",
 						Value:    "filter-testing-unique",
@@ -205,6 +222,12 @@ func RunFilterTests() (*FilterTestResults, error) {
 			name: "collection_contains_filter_testing",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
+					{
+						Metadata: "folders",
+						Operator: "contains",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
 					{
 						Metadata: "collection",
 						Operator: "contains",
@@ -233,6 +256,12 @@ func RunFilterTests() (*FilterTestResults, error) {
 					{
 						Metadata: "folders",
 						Operator: "contains",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
+						Metadata: "folders",
+						Operator: "contains",
 						Value:    "advanced",
 						Action:   "include",
 					},
@@ -248,6 +277,12 @@ func RunFilterTests() (*FilterTestResults, error) {
 			name: "para_projects_contains_unique_filter_system",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
+					{
+						Metadata: "folders",
+						Operator: "contains",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
 					{
 						Metadata: "para_projects",
 						Operator: "contains",
@@ -266,6 +301,12 @@ func RunFilterTests() (*FilterTestResults, error) {
 			name: "para_areas_contains_filter_development",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
+					{
+						Metadata: "folders",
+						Operator: "contains",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
 					{
 						Metadata: "para_areas",
 						Operator: "contains",
@@ -1126,14 +1167,10 @@ func RunFilterTests() (*FilterTestResults, error) {
 	}
 
 	// run each test
-	for i, test := range testConfigs {
-		logging.LogDebug("running filter test: %s", test.name)
-
-		debugLogger.Printf("--- test %d/%d: %s ---", i+1, len(testConfigs), test.name)
-		debugLogger.Printf("description: %s", test.description)
-
+	for _, test := range testConfigs {
 		result, err := filter.FilterFilesWithConfig(&test.config)
 		if err != nil {
+			debugLogger.Printf("test %s failed: %v", test.name, err)
 			testResult := FilterTestResult{
 				ConfigName:    test.name,
 				Success:       false,
@@ -1147,8 +1184,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			}
 			results.Results = append(results.Results, testResult)
 			results.FailedTests++
-			debugLogger.Printf("expected: %v", test.expectedFiles)
-			debugLogger.Printf("found: []")
 			continue
 		}
 
@@ -1160,9 +1195,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 		for i, file := range result.Files {
 			actualFiles[i] = file.Path
 		}
-
-		debugLogger.Printf("expected: %v", test.expectedFiles)
-		debugLogger.Printf("found: %v", actualFiles)
 
 		testResult := FilterTestResult{
 			ConfigName:    test.name,
@@ -1178,6 +1210,9 @@ func RunFilterTests() (*FilterTestResults, error) {
 		if !success {
 			testResult.Error = fmt.Sprintf("expected %d files, got %d", test.expectedCount, actualCount)
 			results.FailedTests++
+			debugLogger.Printf("test %s failed: expected %d files, got %d", test.name, test.expectedCount, actualCount)
+			debugLogger.Printf("expected: %v", test.expectedFiles)
+			debugLogger.Printf("found: %v", actualFiles)
 		} else {
 			results.PassedTests++
 		}
@@ -1201,7 +1236,8 @@ func RunFilterTests() (*FilterTestResults, error) {
 	logFile := filepath.Join(baseDir, "logs", "filter-debug.log")
 	results.LogFile = logFile
 
-	logging.LogInfo("filter tests completed: %d passed, %d failed", results.PassedTests, results.FailedTests)
-	debugLogger.Printf("tests completed: %d passed, %d failed", results.PassedTests, results.FailedTests)
+	if results.FailedTests > 0 {
+		debugLogger.Printf("filter tests completed with failures: %d passed, %d failed", results.PassedTests, results.FailedTests)
+	}
 	return results, nil
 }

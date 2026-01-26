@@ -55,9 +55,11 @@ func FilterFiles(criteria []Criteria, logic string) ([]files.File, error) {
 	var filteredFiles []files.File
 
 	for _, file := range allFiles {
-		fileMetadata, err := files.MetaDataGet(file.Path)
+		// normalize path for metadata lookup using pathutils
+		normalizedPath := pathutils.ToWithPrefix(file.Path)
+		fileMetadata, err := files.MetaDataGet(normalizedPath)
 		if err != nil {
-			logging.LogWarning("failed to get metadata for %s: %v", file.Path, err)
+			logging.LogWarning("failed to get metadata for %s: %v", normalizedPath, err)
 			continue
 		}
 
