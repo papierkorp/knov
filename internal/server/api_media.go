@@ -316,3 +316,122 @@ func handleAPIMediaPreview(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
+
+// @Summary Get media storage statistics
+// @Description Returns statistics about media file storage (total, used, orphaned)
+// @Tags media
+// @Produce json,html
+// @Success 200 {object} map[string]interface{} "storage statistics"
+// @Failure 500 {string} string "internal error"
+// @Router /api/media/stats [get]
+func handleAPIMediaStats(w http.ResponseWriter, r *http.Request) {
+	stats, err := files.GetMediaStorageStats()
+	if err != nil {
+		logging.LogError("failed to get media storage stats: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get storage stats"), http.StatusInternalServerError)
+		return
+	}
+
+	// check if this is an HTMX request or if Accept header prefers HTML
+	acceptHeader := r.Header.Get("Accept")
+	isHTMX := r.Header.Get("HX-Request") == "true"
+
+	if isHTMX || strings.Contains(acceptHeader, "text/html") {
+		html := render.RenderMediaStorageStats(stats)
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html))
+		return
+	}
+
+	// return JSON response
+	writeResponse(w, r, stats, "storage stats retrieved")
+}
+
+// @Summary Cleanup orphaned media files
+// @Description Deletes all orphaned media files (files not referenced by any documents)
+// @Tags media
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Success 200 {object} map[string]interface{} "cleanup result"
+// @Failure 500 {string} string "internal error"
+// @Router /api/media/cleanup-orphaned [post]
+func handleAPICleanupOrphanedMedia(w http.ResponseWriter, r *http.Request) {
+	logging.LogInfo("cleaning up orphaned media files")
+
+	// get orphaned media from cache
+	orphanedMedia, err := files.GetOrphanedMediaFromCache()
+	if err != nil {
+		logging.LogError("failed to get orphaned media: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get orphaned media"), http.StatusInternalServerError)
+		return
+	}
+
+	if len(orphanedMedia) == 0 {
+		msg := translation.SprintfForRequest(configmanager.GetLanguage(), "no orphaned media files to clean up")
+		html := render.RenderStatusMessage(render.StatusInfo, msg)
+		writeResponse(w, r, map[string]interface{}{"deleted": 0, "message": msg}, html)
+		return
+	}
+
+	var deletedCount int
+	var deletedSize int64
+	var failedFiles []string
+
+	for _, mediaPath := range orphanedMedia {
+		// double-check that file is still orphaned (in case cache is stale)
+		metadata, err := files.MetaDataGet(mediaPath)
+		if err == nil && metadata != nil && len(metadata.LinksToHere) > 0 {
+			logging.LogWarning("skipping %s: no longer orphaned (referenced by %d files)", mediaPath, len(metadata.LinksToHere))
+			continue
+		}
+
+		// get file size before deletion
+		fullPath := pathutils.ToMediaPath(strings.TrimPrefix(mediaPath, "media/"))
+		fileInfo, err := contentStorage.GetFileInfo(fullPath)
+		if err == nil && fileInfo != nil {
+			deletedSize += fileInfo.Size()
+		}
+
+		// delete file
+		if err := contentStorage.DeleteFile(fullPath); err != nil {
+			logging.LogError("failed to delete orphaned media %s: %v", mediaPath, err)
+			failedFiles = append(failedFiles, mediaPath)
+			continue
+		}
+
+		// delete metadata
+		if err := files.MetaDataDelete(mediaPath); err != nil {
+			logging.LogWarning("failed to delete metadata for %s: %v", mediaPath, err)
+		}
+
+		deletedCount++
+		logging.LogInfo("deleted orphaned media: %s", mediaPath)
+	}
+
+	// refresh orphaned media cache
+	if err := files.UpdateOrphanedMediaCache(); err != nil {
+		logging.LogWarning("failed to refresh orphaned media cache: %v", err)
+	}
+
+	// build result message
+	sizeStr := fmt.Sprintf("%.2f MB", float64(deletedSize)/(1024*1024))
+	msg := fmt.Sprintf("%s %d %s (%s)",
+		translation.SprintfForRequest(configmanager.GetLanguage(), "deleted"),
+		deletedCount,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "orphaned media files"),
+		sizeStr)
+
+	if len(failedFiles) > 0 {
+		msg += fmt.Sprintf(". %s: %d",
+			translation.SprintfForRequest(configmanager.GetLanguage(), "failed"),
+			len(failedFiles))
+	}
+
+	html := render.RenderStatusMessage(render.StatusOK, msg)
+	writeResponse(w, r, map[string]interface{}{
+		"deleted": deletedCount,
+		"size":    deletedSize,
+		"failed":  len(failedFiles),
+		"message": msg,
+	}, html)
+}

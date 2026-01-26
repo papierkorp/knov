@@ -11,6 +11,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
+	"knov/internal/utils"
 )
 
 // RenderMediaUploadComponent renders a media upload component
@@ -186,7 +187,7 @@ func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphane
 
 		// show file size if available in metadata
 		if file.Metadata != nil && file.Metadata.Size > 0 {
-			sizeStr := formatFileSize(file.Metadata.Size)
+			sizeStr := utils.FormatFileSize(file.Metadata.Size)
 			fmt.Fprintf(&html, `<div class="media-filesize">%s</div>`, sizeStr)
 		}
 		html.WriteString(`</div>`)
@@ -264,7 +265,7 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 
 	if metadata.Size > 0 {
 		fmt.Fprintf(&html, `<dt>%s</dt><dd>%s</dd>`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "size"), formatFileSize(metadata.Size))
+			translation.SprintfForRequest(configmanager.GetLanguage(), "size"), utils.FormatFileSize(metadata.Size))
 	}
 
 	if !metadata.CreatedAt.IsZero() {
@@ -323,19 +324,6 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	html.WriteString(`</div>`) // close media-detail
 
 	return html.String()
-}
-
-// formatFileSize formats file size in human readable format
-func formatFileSize(bytes int64) string {
-	if bytes < 1024 {
-		return fmt.Sprintf("%d B", bytes)
-	} else if bytes < 1024*1024 {
-		return fmt.Sprintf("%.1f KB", float64(bytes)/1024)
-	} else if bytes < 1024*1024*1024 {
-		return fmt.Sprintf("%.1f MB", float64(bytes)/(1024*1024))
-	} else {
-		return fmt.Sprintf("%.1f GB", float64(bytes)/(1024*1024*1024))
-	}
 }
 
 // RenderMediaPreviewWithSize renders a CSS-constrained preview of a media file with custom size
@@ -467,4 +455,55 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 	}
 
 	return fmt.Sprintf(`<div class="%s">%s</div>`, containerClass, content)
+}
+
+// RenderMediaStorageStats renders storage statistics for the admin dashboard
+func RenderMediaStorageStats(stats *files.MediaStorageStats) string {
+	// format sizes
+	totalSizeStr := utils.FormatFileSize(stats.TotalSize)
+	usedSizeStr := utils.FormatFileSize(stats.UsedSize)
+	orphanedSizeStr := utils.FormatFileSize(stats.OrphanedSize)
+
+	return fmt.Sprintf(`
+		<div id="storage-stats" class="storage-stats-table">
+			<table>
+				<thead>
+					<tr>
+						<th>%s</th>
+						<th>%s</th>
+						<th>%s</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>%s</td>
+						<td>%d</td>
+						<td>%s</td>
+					</tr>
+					<tr>
+						<td>%s</td>
+						<td>%d</td>
+						<td>%s</td>
+					</tr>
+					<tr class="orphaned-row">
+						<td>%s</td>
+						<td>%d</td>
+						<td>%s</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "type"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "files"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "size"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "total media files"),
+		stats.TotalFiles,
+		totalSizeStr,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "used media files"),
+		stats.UsedFiles,
+		usedSizeStr,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "orphaned media files"),
+		stats.OrphanedFiles,
+		orphanedSizeStr)
 }

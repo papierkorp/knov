@@ -57,6 +57,20 @@
                 </div>
 
                 <div class="admin-card">
+                    <h3>{{T "Storage Statistics"}}</h3>
+                    <div class="help-text">{{T "media file storage usage and cleanup"}}</div>
+                    <div hx-get="/api/media/stats" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
+                        {{T "loading..."}}
+                    </div>
+                    <form style="margin-top: 1rem;">
+                        <button type="button" class="btn-danger" hx-post="/api/media/cleanup-orphaned" hx-target="#cleanup-result" hx-confirm="{{T "Delete all orphaned media files? This cannot be undone."}}">
+                            <i class="fas fa-trash"></i> {{T "Cleanup Orphaned Files"}}
+                        </button>
+                    </form>
+                    <div id="cleanup-result"></div>
+                </div>
+
+                <div class="admin-card">
                     <h3>{{T "Data Export"}}</h3>
                     <div class="help-text">{{T "export your data and files in various formats for backup or migration"}}</div>
                     <form action="/api/metadata/export" method="post">

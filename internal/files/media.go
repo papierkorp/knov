@@ -216,3 +216,61 @@ func FilterMediaFiles(mediaFiles []File, orphanedMedia []string, filter string) 
 
 	return filtered
 }
+
+// MediaStorageStats contains statistics about media file storage
+type MediaStorageStats struct {
+	TotalFiles    int
+	TotalSize     int64
+	UsedFiles     int
+	UsedSize      int64
+	OrphanedFiles int
+	OrphanedSize  int64
+}
+
+// GetMediaStorageStats returns statistics about media file storage
+func GetMediaStorageStats() (*MediaStorageStats, error) {
+	stats := &MediaStorageStats{}
+
+	// get all media files
+	mediaFiles, err := GetAllMediaFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	// get orphaned media from cache
+	orphanedMedia, err := GetOrphanedMediaFromCache()
+	if err != nil {
+		orphanedMedia = []string{}
+	}
+
+	// calculate stats
+	for _, file := range mediaFiles {
+		stats.TotalFiles++
+
+		// get file size from filesystem
+		fullPath := pathutils.ToMediaPath(strings.TrimPrefix(file.Path, "media/"))
+		fileInfo, err := contentStorage.GetFileInfo(fullPath)
+		if err == nil && fileInfo != nil {
+			fileSize := fileInfo.Size()
+			stats.TotalSize += fileSize
+
+			isOrphaned := false
+			for _, orphaned := range orphanedMedia {
+				if orphaned == file.Path {
+					isOrphaned = true
+					break
+				}
+			}
+
+			if isOrphaned {
+				stats.OrphanedFiles++
+				stats.OrphanedSize += fileSize
+			} else {
+				stats.UsedFiles++
+				stats.UsedSize += fileSize
+			}
+		}
+	}
+
+	return stats, nil
+}

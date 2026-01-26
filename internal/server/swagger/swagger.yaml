@@ -1955,6 +1955,27 @@ paths:
       summary: Delete media file
       tags:
       - media
+  /api/media/cleanup-orphaned:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Deletes all orphaned media files (files not referenced by any documents)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: cleanup result
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: Cleanup orphaned media files
+      tags:
+      - media
   /api/media/list:
     get:
       description: Get list of all media files with metadata, optionally filtered
@@ -2009,6 +2030,25 @@ paths:
           schema:
             type: string
       summary: Get media preview HTML
+      tags:
+      - media
+  /api/media/stats:
+    get:
+      description: Returns statistics about media file storage (total, used, orphaned)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: storage statistics
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: Get media storage statistics
       tags:
       - media
   /api/media/upload:

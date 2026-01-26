@@ -233,6 +233,8 @@ func StartServerChi() {
 			r.Get("/list", handleAPIGetAllMedia)
 			r.Get("/preview", handleAPIMediaPreview)
 			r.Delete("/*", handleAPIDeleteMedia)
+			r.Get("/stats", handleAPIMediaStats)
+			r.Post("/cleanup-orphaned", handleAPICleanupOrphanedMedia)
 		})
 
 		// ----------------------------------------------------------------------------------------

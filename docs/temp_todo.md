@@ -230,21 +230,12 @@ i just implemented the whole media stuff so we can upload images/files now i sti
 dont give me any code or implementation just your ideas/suggestions on how to fix this using best practices
 
 **media**
-- in mediaoverview
-  - Add "Orphaned Media" section showing unused uploads /  or should we use the filter for this?
-  - use the LinksToHere metadata to check if its still referenced - if there is no more link its orphaned (can be added to the cronjob)
-  - LinksToHere is set with every file for every link (i dont know if file/image links are included?) and could be set with the rebuild metadata
-  - add a filter 
-    - Show: All | Used | Orphaned
-  - Visual indicator on tiles: Small badge/icon for orphaned
-  - Bulk actions: Select multiple → Delete
-  - Orphaned criteria: LinksToHere.length == 0
 - admin dashboard
   - Storage stats
   - e.g. "15 orphaned files (45 MB)"
   - cleanup button
 - show references in editor for all files for easy add of other files
-
+- add GetMediaStorageStats to Cache?
 
 **optimize**
 - file deleted

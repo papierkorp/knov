@@ -309,3 +309,47 @@
         align-items: center;
     }
 }
+
+/* Storage Statistics Table */
+#storage-stats.storage-stats-table {
+    margin: 1rem 0;
+}
+
+#storage-stats.storage-stats-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#storage-stats.storage-stats-table thead {
+    background: var(--bg-primary, #e9ecef);
+}
+
+#storage-stats.storage-stats-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary, #212529);
+    border-bottom: 2px solid var(--border-color, #dee2e6);
+}
+
+#storage-stats.storage-stats-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color, #dee2e6);
+    color: var(--text-primary, #495057);
+}
+
+#storage-stats.storage-stats-table tbody tr:hover {
+    background: var(--bg-hover, #f1f3f5);
+}
+
+#storage-stats.storage-stats-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+#storage-stats.storage-stats-table tbody tr td:nth-child(2),
+#storage-stats.storage-stats-table tbody tr td:nth-child(3) {
+    font-weight: 600;
+}

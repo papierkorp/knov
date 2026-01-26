@@ -2252,6 +2252,37 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/media/cleanup-orphaned": {
+            "post": {
+                "description": "Deletes all orphaned media files (files not referenced by any documents)",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Cleanup orphaned media files",
+                "responses": {
+                    "200": {
+                        "description": "cleanup result",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/media/list": {
             "get": {
                 "description": "Get list of all media files with metadata, optionally filtered",
@@ -2329,6 +2360,34 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "media file not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/media/stats": {
+            "get": {
+                "description": "Returns statistics about media file storage (total, used, orphaned)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Get media storage statistics",
+                "responses": {
+                    "200": {
+                        "description": "storage statistics",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
                         "schema": {
                             "type": "string"
                         }
