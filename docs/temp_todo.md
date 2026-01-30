@@ -225,7 +225,8 @@ additional neccessary changes
 
 # current
 
-
+**filter**
+- in the filter filetype (http://localhost:1324/files/new/filter) i want to be able to add multiple filters but each with its own output - so in the file i can see the output of each filter individually
 **stream of consciousnes**
 1. new filetype soc
 2. can be attached to other files => then filename = otherfilename_soc.md
@@ -245,6 +246,3 @@ additional neccessary changes
   10. after it was inputed - changing/correcting anything is not allowed its ready only
   11. no copy/pasting allowed (except urls)
 
-**flexibility**
-- add a new env for each filetype called hide<FileType> which false by default
-- implement a system to hide this file in listings e.g. in /api/files/list, /api/files/browse? based on this setting

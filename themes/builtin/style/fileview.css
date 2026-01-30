@@ -483,6 +483,12 @@
     clear: both;
 }
 
+.filter-content-item {
+    margin-bottom: 4em;
+    border-bottom: 1em double var(--primary);
+    padding-bottom: 4em;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .media-preview.display-left,

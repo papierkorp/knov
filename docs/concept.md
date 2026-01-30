@@ -5,15 +5,17 @@ KNOV (knowledge vault) is a flexible knowledge management system.
 # Core Features
 
 - **Offline Available for all OS**
-  - One Executable which can be carried on a USB Stick
+  - One Executable/Binary which can be carried on a USB Stick
   - Docker Version available
-- **Theme System**: 
+- **flexible Theme System**: 
   - Static assets and builtin theme assets are embedded in the binary for portable deployment.
   - builtin theme is unpacked on startup into the `KNOV_THEMES_PATH`
   - theme overwrite of specific templates
 - **Search**
   - Strong Filter to display certain Files based on metadata
-  - Multiple search backends (memory, grep, SQLite)
+  - Multiple possible search backends (memory, grep, SQLite)
+- **Strong Defaults**
+  - allows for extensive customization but not neccessary
 
 ![image](filter_example.png)
 
@@ -30,13 +32,17 @@ KNOV (knowledge vault) is a flexible knowledge management system.
   - currently English and German translations
 - **Organization with Metadata**: each file can get a lot of metadata for searching/filtering (but its not forced) - each method can be used independently and together
   - **Tags**: fully customizable tags
-  - **PARA**: implemented [PARA](https://fortelabs.com/blog/para/) Method - you can attach each File with its corresponding PARA with multiple PARAS possible
+  - **PARA**: implemented [PARA](https://fortelabs.com/blog/para/) Method - you can attach each File with its corresponding PARA
   - **ZK**: Different Filetypes accordingly to the [Zettelkasten](https://zettelkasten.de/overview/) Method
   - **collection**: organizational field to group related files - defaults to the first folder in filepath or "default" - can be changed manually
-  - **connections**: 
+  - **connections**
     - give a file a parent - the sytem automatically creates a connection system with a `Ancestor`, `Parents` and `Childs`
     - use markdown links in the content and you get `links to - inbound links` and `links from - outbound links`
   - **folders**: use a default Folder structure to get the filepath as well as see all folders clickable in the metadata
+  - **filetypes**: every file is saved as a markdown file
+    - MOC filetype:
+    - Filter filetype:
+    - todo filetype:
 
 ![image](metadata_example.png)
 
