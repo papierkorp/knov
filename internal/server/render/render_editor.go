@@ -15,356 +15,9 @@ import (
 	"knov/internal/translation"
 )
 
-// RenderMarkdownEditorForm renders a markdown editor form for file creation/editing
-func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
-	content := ""
-	isEdit := filePath != ""
-
-	if isEdit {
-		fullPath := pathutils.ToDocsPath(filePath)
-		rawContent, err := contentStorage.ReadFile(fullPath)
-		if err == nil {
-			content = string(rawContent)
-		}
-	}
-
-	// use same endpoint for both create and edit
-	action := "/api/files/save"
-
-	cancelURL := "/"
-	if isEdit {
-		cancelURL = fmt.Sprintf("/files/%s", filePath)
-	}
-
-	// determine filetype for new files
-	var currentFiletype string
-	if len(filetype) > 0 {
-		currentFiletype = filetype[0]
-	}
-
-	// add filepath input for new files (except fleeting)
-	filepathInput := ""
-	if !isEdit {
-		if currentFiletype == "fleeting" {
-			// for fleeting files, auto-generate filename and hide from user
-			filepathInput = fmt.Sprintf(`<input type="hidden" name="filetype" value="%s" />`, currentFiletype)
-		} else {
-			filepathInput = fmt.Sprintf(`
-				<div class="form-group">
-					<label for="filepath-input">%s</label>
-					<input type="text" id="filepath-input" name="filepath" required placeholder="%s" class="form-input" list="folder-suggestions" />
-					<datalist id="folder-suggestions" hx-get="/api/files/folder-suggestions" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></datalist>
-				</div>`,
-				translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
-				translation.SprintfForRequest(configmanager.GetLanguage(), "my-file.md"))
-
-			// add hidden filetype input for new files
-			if currentFiletype != "" {
-				filepathInput += fmt.Sprintf(`<input type="hidden" name="filetype" value="%s" />`, currentFiletype)
-			}
-		}
-	} else {
-		filepathInput = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filePath)
-	}
-
-	formTemplate := `
-		<form hx-post="%s" hx-target="#editor-status" class="file-form">
-			%s
-			<div class="form-group">
-				<div id="markdown-editor"></div>
-				<input type="hidden" name="content" id="editor-content" />
-			</div>
-			<div class="form-actions">
-				<button type="submit" class="btn-primary">%s</button>
-				<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
-			</div>
-			<div id="editor-status"></div>
-		</form>
-		<script>
-			(function() {
-				const editor = new toastui.Editor({
-					el: document.querySelector('#markdown-editor'),
-					height: '500px',
-					initialEditType: 'markdown',
-					previewStyle: 'tab',
-					initialValue: %s,
-					theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default',
-					language: 'en-US',
-					toolbarItems: [
-						['heading', 'bold', 'italic', 'strike'],
-						['hr', 'quote'],
-						['ul', 'ol', 'task', 'indent', 'outdent'],
-						['table', 'image', {
-							name: 'selectMedia',
-							tooltip: 'Select Media',
-							el: (() => {
-								const button = document.createElement('button');
-								button.className = 'toastui-editor-toolbar-icons'; button.style.backgroundImage = 'none'; button.style.margin = '0';
-								button.innerHTML = '<i class="fa-solid fa-file-arrow-up"></i>';
-								button.addEventListener('click', () => showMediaSelector(editor));
-								return button;
-							})()
-						}, 'link'],
-						['code', 'codeblock']
-					],
-					i18n: {
-						// Main popup texts
-						'File': 'File',
-						'URL': 'URL',
-						'Select image': 'Select file',
-						'Select Image': 'Select File',
-						'File URL': 'File URL',
-						'Image URL': 'File URL',
-						'Description': 'Description',
-						'OK': 'OK',
-						'Cancel': 'Cancel',
-						// Toolbar tooltips
-						'Insert Image': 'Insert File',
-						'Insert image': 'Insert file',
-						'image': 'file',
-						'Image': 'File',
-						// File dialog
-						'Choose a file': 'Choose a file',
-						'No file selected': 'No file selected'
-					},
-					hooks: {
-						addImageBlobHook: function(blob, callback, source) {
-							// Prevent default ToastUI behavior by immediately calling callback
-							// This stops ToastUI from inserting base64 data URLs as fallback
-
-							// Get current file path from URL
-							const currentPath = window.location.pathname;
-							let contextPath = null;
-
-							// Extract filepath from URLs like /files/path/to/file.md or /files/edit/path/to/file.md
-							if (currentPath.startsWith('/files/edit/')) {
-								contextPath = currentPath.substring('/files/edit/'.length);
-							} else if (currentPath.startsWith('/files/')) {
-								contextPath = currentPath.substring('/files/'.length);
-							}
-
-							if (!contextPath) {
-								alert('please save the document first to enable file uploads.');
-								// Prevent insertion by calling callback with empty values
-								callback('', '');
-								return false;
-							}
-
-							// Create form data for upload
-							const formData = new FormData();
-							formData.append('file', blob);
-							formData.append('context_path', contextPath);
-
-							// Show upload progress with proper dark mode styling
-							const uploadMessage = document.createElement('div');
-							const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
-							uploadMessage.className = 'upload-notification';
-							uploadMessage.style.cssText = 'position: fixed; top: 10px; right: 10px; padding: 12px 16px; border-radius: 6px; z-index: 9999; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-							uploadMessage.style.backgroundColor = isDarkMode ? '#374151' : '#0ea5e9';
-							uploadMessage.style.color = isDarkMode ? '#f9fafb' : '#ffffff';
-							uploadMessage.textContent = 'Uploading image...';
-							document.body.appendChild(uploadMessage);
-
-							// Upload to media API
-							fetch('/api/media/upload', {
-								method: 'POST',
-								body: formData,
-								headers: {
-									'Accept': 'application/json'
-								}
-							})
-							.then(response => {
-								if (!response.ok) {
-									// try to get the error message from response text
-									return response.text().then(errorText => {
-										throw new Error(errorText || 'upload failed: ' + response.statusText);
-									});
-								}
-								return response.json();
-							})
-							.then(data => {
-								// Remove upload message
-								if (document.body.contains(uploadMessage)) {
-									document.body.removeChild(uploadMessage);
-								}
-
-								// Insert the uploaded file with relative path
-								const filePath = 'media/' + data.path;
-								callback(filePath, data.filename || 'uploaded file');
-
-								console.log('file uploaded successfully:', data);
-							})
-							.catch(error => {
-								// Remove upload message
-								if (document.body.contains(uploadMessage)) {
-									document.body.removeChild(uploadMessage);
-								}
-
-								console.error('file upload failed:', error);
-								alert('failed to upload file: ' + error.message);
-
-								// Prevent insertion by calling callback with empty values
-								callback('', '');
-							});
-
-							// Return false to prevent ToastUI from using default blob behavior
-							return false;
-						}
-					}
-				});
-
-				// Media selector functions
-				window.showMediaSelector = function(editor) {
-					const modal = document.createElement('div');
-					modal.className = 'media-selector-modal';
-					modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
-
-					const popup = document.createElement('div');
-					popup.className = 'media-selector-popup';
-					popup.style.cssText = 'background: white; border-radius: 8px; width: 600px; max-height: 500px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
-
-					const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
-					if (isDarkMode) {
-						popup.style.backgroundColor = '#374151';
-						popup.style.color = '#f9fafb';
-					}
-
-					const header = document.createElement('div');
-					header.style.cssText = 'padding: 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;';
-					if (isDarkMode) {
-						header.style.borderBottomColor = '#4b5563';
-					}
-					header.innerHTML = '<h3 style="margin: 0;">Select Media File</h3><button onclick="closeMediaSelector()" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>';
-
-					const content = document.createElement('div');
-					content.style.cssText = 'padding: 16px; max-height: 400px; overflow-y: auto;';
-					content.innerHTML = 'loading media files...';
-
-					popup.appendChild(header);
-					popup.appendChild(content);
-					modal.appendChild(popup);
-					document.body.appendChild(modal);
-
-					// Fetch media files
-					fetch('/api/media/list?mode=select', {
-						headers: { 'Accept': 'text/html' }
-					})
-					.then(response => response.text())
-					.then(html => {
-						content.innerHTML = html;
-					})
-					.catch(error => {
-						content.innerHTML = 'error loading media files';
-					});
-				};
-
-				window.insertMediaLink = function(mediaURL, filename) {
-					const editor = window.currentEditor;
-					if (editor) {
-						const markdownLink = '![' + filename + '](' + mediaURL + ')';
-						editor.insertText(markdownLink);
-						const hiddenField = document.getElementById('editor-content');
-						if (hiddenField) {
-						    hiddenField.value = editor.getMarkdown();
-						}
-						// auto-save after inserting media
-						const form = document.querySelector('.file-form');
-						if (form) {
-							htmx.trigger(form, 'submit');
-						}
-					}
-					closeMediaSelector();
-				};
-
-				window.insertMediaIntoEditor = function(element) {
-					const mediaPath = element.querySelector('.media-path').value;
-					const filename = element.querySelector('.media-filename').value;
-					const mediaURL = 'media/' + mediaPath;
-
-					const editor = window.currentEditor;
-					if (editor) {
-						const markdownLink = '![' + filename + '](' + mediaURL + ')';
-						editor.insertText(markdownLink);
-						const hiddenField = document.getElementById('editor-content');
-						if (hiddenField) {
-						    hiddenField.value = editor.getMarkdown();
-						}
-						// auto-save after inserting media
-						const form = document.querySelector('.file-form');
-						if (form) {
-							htmx.trigger(form, 'submit');
-						}
-					}
-					closeMediaSelector();
-				};
-
-				window.closeMediaSelector = function() {
-					const modal = document.querySelector('.media-selector-modal');
-					if (modal) {
-						modal.remove();
-					}
-				};
-
-				// Store editor reference
-				window.currentEditor = editor;
-
-				document.querySelector('.file-form').addEventListener('submit', function(e) {
-					document.getElementById('editor-content').value = editor.getMarkdown();
-				});
-			})();
-		</script>
-	`
-
-	// determine save button text based on filetype
-	saveButtonText := translation.SprintfForRequest(configmanager.GetLanguage(), "save file")
-	if currentFiletype == "fleeting" && !isEdit {
-		saveButtonText = translation.SprintfForRequest(configmanager.GetLanguage(), "save note")
-	}
-
-	return fmt.Sprintf(formTemplate, action,
-		filepathInput,
-		saveButtonText,
-		cancelURL,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
-		jsEscapeString(content))
-}
-
-// RenderMarkdownSectionEditorForm renders a markdown editor form for editing a specific section
-func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
-	content := ""
-
-	// get section content using contenthandler
-	if filePath != "" && sectionID != "" {
-		handler := contentHandler.GetHandler("markdown")
-		includeSubheaders := configmanager.GetSectionEditIncludeSubheaders()
-		sectionContent, err := handler.ExtractSection(filePath, sectionID, includeSubheaders)
-		if err == nil {
-			content = sectionContent
-		}
-	}
-
-	// use section save endpoint
-	action := "/api/files/section/save"
-
-	cancelURL := fmt.Sprintf("/files/%s", filePath)
-
+// getToastUIEditorScript returns the common ToastUI editor JavaScript initialization
+func getToastUIEditorScript(content string) string {
 	return fmt.Sprintf(`
-		<form hx-post="%s" hx-target="#editor-status" class="file-form">
-			<div class="form-group">
-				<label>%s:</label>
-				<input type="text" name="sectionid" value="%s" readonly />
-			</div>
-			<div class="form-group">
-				<div id="markdown-editor"></div>
-				<input type="hidden" name="content" id="editor-content" />
-				<input type="hidden" name="filepath" value="%s" />
-			</div>
-			<div class="form-actions">
-				<button type="submit" class="btn-primary">%s</button>
-				<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
-			</div>
-			<div id="editor-status"></div>
-		</form>
 		<script>
 			(function() {
 				const editor = new toastui.Editor({
@@ -385,7 +38,9 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 							tooltip: 'Select Media',
 							el: (() => {
 								const button = document.createElement('button');
-								button.className = 'toastui-editor-toolbar-icons'; button.style.backgroundImage = 'none'; button.style.margin = '0';
+								button.className = 'toastui-editor-toolbar-icons';
+								button.style.backgroundImage = 'none';
+								button.style.margin = '0';
 								button.innerHTML = '<i class="fa-solid fa-file-arrow-up"></i>';
 								button.addEventListener('click', () => showMediaSelector(editor));
 								return button;
@@ -394,7 +49,6 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 						['code', 'codeblock']
 					],
 					i18n: {
-						// Main popup texts
 						'File': 'File',
 						'URL': 'URL',
 						'Select image': 'Select file',
@@ -404,22 +58,18 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 						'Description': 'Description',
 						'OK': 'OK',
 						'Cancel': 'Cancel',
-						// Toolbar tooltips
 						'Insert Image': 'Insert File',
 						'Insert image': 'Insert file',
 						'image': 'file',
 						'Image': 'File',
-						// File dialog
 						'Choose a file': 'Choose a file',
 						'No file selected': 'No file selected'
 					},
 					hooks: {
 						addImageBlobHook: function(blob, callback, source) {
-							// Get current file path from URL
 							const currentPath = window.location.pathname;
 							let contextPath = null;
 
-							// Extract filepath from URLs like /files/path/to/file.md or /files/edit/path/to/file.md
 							if (currentPath.startsWith('/files/edit/')) {
 								contextPath = currentPath.substring('/files/edit/'.length);
 							} else if (currentPath.startsWith('/files/')) {
@@ -428,33 +78,30 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 
 							if (!contextPath) {
 								alert('please save the document first to enable file uploads.');
-								// Prevent insertion by calling callback with empty values
 								callback('', '');
 								return false;
 							}
 
-							// Create form data for upload
 							const formData = new FormData();
 							formData.append('file', blob);
 							formData.append('context_path', contextPath);
 
-							// Show upload progress using custom notification class
 							const uploadMessage = document.createElement('div');
-							uploadMessage.className = 'file-upload-notification';
-							uploadMessage.textContent = 'uploading file...';
+							const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
+							uploadMessage.className = 'upload-notification';
+							uploadMessage.style.cssText = 'position: fixed; top: 10px; right: 10px; padding: 12px 16px; border-radius: 6px; z-index: 9999; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+							uploadMessage.style.backgroundColor = isDarkMode ? '#374151' : '#0ea5e9';
+							uploadMessage.style.color = isDarkMode ? '#f9fafb' : '#ffffff';
+							uploadMessage.textContent = 'uploading image...';
 							document.body.appendChild(uploadMessage);
 
-							// Upload to media API
 							fetch('/api/media/upload', {
 								method: 'POST',
 								body: formData,
-								headers: {
-									'Accept': 'application/json'
-								}
+								headers: { 'Accept': 'application/json' }
 							})
 							.then(response => {
 								if (!response.ok) {
-									// try to get the error message from response text
 									return response.text().then(errorText => {
 										throw new Error(errorText || 'upload failed: ' + response.statusText);
 									});
@@ -462,41 +109,29 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 								return response.json();
 							})
 							.then(data => {
-								// Remove upload message
 								if (document.body.contains(uploadMessage)) {
 									document.body.removeChild(uploadMessage);
 								}
-
-								// Insert the uploaded file with relative path
 								const filePath = 'media/' + data.path;
 								callback(filePath, data.filename || 'uploaded file');
-
-								console.log('file uploaded successfully:', data);
 							})
 							.catch(error => {
-								// Remove upload message
 								if (document.body.contains(uploadMessage)) {
 									document.body.removeChild(uploadMessage);
 								}
-
-								console.error('file upload failed:', error);
 								alert('failed to upload file: ' + error.message);
-
-								// Prevent insertion by calling callback with empty values
 								callback('', '');
 							});
 
-							// Return false to prevent ToastUI from using default blob behavior
 							return false;
 						}
 					}
 				});
 
-				// Media selector functions
 				window.showMediaSelector = function(editor) {
 					const modal = document.createElement('div');
 					modal.className = 'media-selector-modal';
-					modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+					modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%%; height: 100%%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
 
 					const popup = document.createElement('div');
 					popup.className = 'media-selector-popup';
@@ -513,7 +148,7 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 					if (isDarkMode) {
 						header.style.borderBottomColor = '#4b5563';
 					}
-					header.innerHTML = '<h3 style="margin: 0;">Select Media File</h3><button onclick="closeMediaSelector()" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>';
+					header.innerHTML = '<h3 style="margin: 0;">select media file</h3><button onclick="closeMediaSelector()" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>';
 
 					const content = document.createElement('div');
 					content.style.cssText = 'padding: 16px; max-height: 400px; overflow-y: auto;';
@@ -524,7 +159,6 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 					modal.appendChild(popup);
 					document.body.appendChild(modal);
 
-					// Fetch media files
 					fetch('/api/media/list?mode=select', {
 						headers: { 'Accept': 'text/html' }
 					})
@@ -546,7 +180,6 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 						if (hiddenField) {
 						    hiddenField.value = editor.getMarkdown();
 						}
-						// auto-save after inserting media
 						const form = document.querySelector('.file-form');
 						if (form) {
 							htmx.trigger(form, 'submit');
@@ -568,13 +201,11 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 						if (hiddenField) {
 						    hiddenField.value = editor.getMarkdown();
 						}
-						// auto-save after inserting media
 						const form = document.querySelector('.file-form');
 						if (form) {
 							htmx.trigger(form, 'submit');
 						}
 					}
-
 					closeMediaSelector();
 				};
 
@@ -585,22 +216,125 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 					}
 				};
 
-				// Store editor reference
 				window.currentEditor = editor;
 
 				document.querySelector('.file-form').addEventListener('submit', function(e) {
 					document.getElementById('editor-content').value = editor.getMarkdown();
 				});
 			})();
-		</script>
-	`, action,
+		</script>`, jsEscapeString(content))
+}
+
+// RenderMarkdownEditorForm renders a markdown editor form for file creation/editing
+func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
+	content := ""
+	isEdit := filePath != ""
+
+	if isEdit {
+		fullPath := pathutils.ToDocsPath(filePath)
+		rawContent, err := contentStorage.ReadFile(fullPath)
+		if err == nil {
+			content = string(rawContent)
+		}
+	}
+
+	action := "/api/files/save"
+	cancelURL := "/"
+	if isEdit {
+		cancelURL = fmt.Sprintf("/files/%s", filePath)
+	}
+
+	var currentFiletype string
+	if len(filetype) > 0 {
+		currentFiletype = filetype[0]
+	}
+
+	filepathInput := ""
+	if !isEdit {
+		if currentFiletype == "fleeting" {
+			filepathInput = fmt.Sprintf(`<input type="hidden" name="filetype" value="%s" />`, currentFiletype)
+		} else {
+			filepathInput = fmt.Sprintf(`
+				<div class="form-group">
+					<label for="filepath-input">%s</label>
+					<input type="text" id="filepath-input" name="filepath" required placeholder="%s" class="form-input" list="folder-suggestions" />
+					<datalist id="folder-suggestions" hx-get="/api/files/folder-suggestions" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></datalist>
+				</div>`,
+				translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
+				translation.SprintfForRequest(configmanager.GetLanguage(), "my-file.md"))
+
+			if currentFiletype != "" {
+				filepathInput += fmt.Sprintf(`<input type="hidden" name="filetype" value="%s" />`, currentFiletype)
+			}
+		}
+	} else {
+		filepathInput = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filePath)
+	}
+
+	saveButtonText := translation.SprintfForRequest(configmanager.GetLanguage(), "save file")
+	if currentFiletype == "fleeting" && !isEdit {
+		saveButtonText = translation.SprintfForRequest(configmanager.GetLanguage(), "save note")
+	}
+
+	return fmt.Sprintf(`
+		<form hx-post="%s" hx-target="#editor-status" class="file-form">
+			%s
+			<div class="form-group">
+				<div id="markdown-editor"></div>
+				<input type="hidden" name="content" id="editor-content" />
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="btn-primary">%s</button>
+				<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
+			</div>
+			<div id="editor-status"></div>
+		</form>
+		%s`, action, filepathInput, saveButtonText, cancelURL,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
+		getToastUIEditorScript(content))
+}
+
+// RenderMarkdownSectionEditorForm renders a markdown editor form for editing a specific section
+func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
+	content := ""
+
+	if filePath != "" && sectionID != "" {
+		handler := contentHandler.GetHandler("markdown")
+		includeSubheaders := configmanager.GetSectionEditIncludeSubheaders()
+		sectionContent, err := handler.ExtractSection(filePath, sectionID, includeSubheaders)
+		if err == nil {
+			content = sectionContent
+		}
+	}
+
+	action := "/api/files/section/save"
+	cancelURL := fmt.Sprintf("/files/%s", filePath)
+
+	return fmt.Sprintf(`
+		<form hx-post="%s" hx-target="#editor-status" class="file-form">
+			<div class="form-group">
+				<label>%s:</label>
+				<input type="text" name="sectionid" value="%s" readonly />
+			</div>
+			<div class="form-group">
+				<div id="markdown-editor"></div>
+				<input type="hidden" name="content" id="editor-content" />
+				<input type="hidden" name="filepath" value="%s" />
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="btn-primary">%s</button>
+				<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
+			</div>
+			<div id="editor-status"></div>
+		</form>
+		%s`, action,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section"),
 		sectionID,
 		filePath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save section"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
-		jsEscapeString(content))
+		getToastUIEditorScript(content))
 }
 
 // RenderTextareaEditorComponent renders a textarea editor component with save/cancel buttons
