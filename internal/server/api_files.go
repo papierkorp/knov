@@ -90,6 +90,11 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 		if entry.IsDir() {
 			folders = append(folders, item)
 		} else {
+			// check if file type should be hidden
+			metadata, _ := files.MetaDataGet(entryPath)
+			if metadata != nil && configmanager.IsFileTypeHidden(string(metadata.FileType)) {
+				continue // skip this file if its type is hidden
+			}
 			filesInDir = append(filesInDir, item)
 		}
 	}
@@ -113,6 +118,9 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
 		return
 	}
+
+	// filter out hidden file types
+	allFiles = files.FilterFilesByHiddenTypes(allFiles)
 
 	format := r.URL.Query().Get("format")
 

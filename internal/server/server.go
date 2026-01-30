@@ -192,6 +192,19 @@ func StartServerChi() {
 
 			// Editor settings endpoints
 			r.Post("/section-edit-subheaders", handleAPIUpdateSectionEditSubheaders)
+
+			// File type visibility endpoints
+			r.Post("/file-types/hide-todo", handleAPIUpdateHideTodo)
+			r.Post("/file-types/hide-fleeting", handleAPIUpdateHideFleeting)
+			r.Post("/file-types/hide-literature", handleAPIUpdateHideLiterature)
+			r.Post("/file-types/hide-moc", handleAPIUpdateHideMOC)
+			r.Post("/file-types/hide-permanent", handleAPIUpdateHidePermanent)
+			r.Post("/file-types/hide-filter", handleAPIUpdateHideFilter)
+			r.Post("/file-types/hide-journaling", handleAPIUpdateHideJournaling)
+			r.Post("/file-types/hide-image", handleAPIUpdateHideImage)
+			r.Post("/file-types/hide-video", handleAPIUpdateHideVideo)
+			r.Post("/file-types/hide-pdf", handleAPIUpdateHidePDF)
+			r.Post("/file-types/hide-text", handleAPIUpdateHideText)
 		})
 
 		// ----------------------------------------------------------------------------------------

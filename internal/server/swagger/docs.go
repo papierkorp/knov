@@ -146,6 +146,281 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/config/file-types/hide-filter": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide filter files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide filter files",
+                        "name": "hideFilter",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/file-types/hide-fleeting": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide fleeting files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide fleeting files",
+                        "name": "hideFleeting",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/file-types/hide-image": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide image files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide image files",
+                        "name": "hideImage",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/file-types/hide-journaling": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide journaling files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide journaling files",
+                        "name": "hideJournaling",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/file-types/hide-literature": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide literature files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide literature files",
+                        "name": "hideLiterature",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/file-types/hide-moc": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide moc files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide moc files",
+                        "name": "hideMOC",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/file-types/hide-pdf": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide pdf files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide pdf files",
+                        "name": "hidePDF",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/file-types/hide-permanent": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide permanent files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide permanent files",
+                        "name": "hidePermanent",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/file-types/hide-text": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide text files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide text files",
+                        "name": "hideText",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/file-types/hide-todo": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide todo files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide todo files",
+                        "name": "hideTodo",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/file-types/hide-video": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide video files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide video files",
+                        "name": "hideVideo",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/config/language": {
             "post": {
                 "consumes": [

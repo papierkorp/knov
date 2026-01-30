@@ -48,6 +48,9 @@ func FilterFiles(criteria []Criteria, logic string) ([]files.File, error) {
 		return nil, err
 	}
 
+	// apply file type hiding before filtering
+	allFiles = files.FilterFilesByHiddenTypes(allFiles)
+
 	if len(criteria) == 0 {
 		return allFiles, nil
 	}

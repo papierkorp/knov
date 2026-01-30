@@ -225,16 +225,7 @@ additional neccessary changes
 
 # current
 
-i just implemented the whole media stuff so we can upload images/files now i still have a few problems left:
 
-dont give me any code or implementation just your ideas/suggestions on how to fix this using best practices
-
-**media**
-- add GetMediaStorageStats to Cache?
-
-**optimize**
-- file deleted
-  - remove all links to this file..
 **stream of consciousnes**
 1. new filetype soc
 2. can be attached to other files => then filename = otherfilename_soc.md
@@ -254,6 +245,6 @@ dont give me any code or implementation just your ideas/suggestions on how to fi
   10. after it was inputed - changing/correcting anything is not allowed its ready only
   11. no copy/pasting allowed (except urls)
 
-  **flexibility**
-  - add a new setting for each filetype called hide<FileType> which false by default
-  - implement a system to hide this file in listings e.g. /api/files/list, /api/files/browse? based on this setting
+**flexibility**
+- add a new env for each filetype called hide<FileType> which false by default
+- implement a system to hide this file in listings e.g. in /api/files/list, /api/files/browse? based on this setting

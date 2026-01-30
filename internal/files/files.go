@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/parser"
@@ -104,4 +105,25 @@ func GetFileContent(filePath string) (*FileContent, error) {
 		HTML: processedContent,
 		TOC:  toc,
 	}, nil
+}
+
+// FilterFilesByHiddenTypes filters out files based on hidden file type configuration
+func FilterFilesByHiddenTypes(files []File) []File {
+	// Import the configmanager package that contains IsFileTypeHidden
+	var filtered []File
+	for _, file := range files {
+		// get metadata to check file type
+		metadata := file.Metadata
+		if metadata == nil {
+			// if no metadata, include the file
+			filtered = append(filtered, file)
+			continue
+		}
+
+		// check if this file type should be hidden
+		if !configmanager.IsFileTypeHidden(string(metadata.FileType)) {
+			filtered = append(filtered, file)
+		}
+	}
+	return filtered
 }

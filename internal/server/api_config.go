@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -525,5 +526,302 @@ func handleAPIUpdateEnablePreviews(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo("updated enable previews to: %t", enablePreviews)
 	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "preview setting updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide todo files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideTodo formData bool true "Whether to hide todo files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-todo [post]
+func handleAPIUpdateHideTodo(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	hideTodo := r.FormValue("hideTodo") == "true"
+
+	err = configmanager.UpdateEnvFile("KNOV_HIDE_TODO", fmt.Sprintf("%t", hideTodo))
+	if err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("updated hide todo to: %t", hideTodo)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "todo file visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide fleeting files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideFleeting formData bool true "Whether to hide fleeting files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-fleeting [post]
+func handleAPIUpdateHideFleeting(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	hideFleeting := r.FormValue("hideFleeting") == "true"
+
+	err = configmanager.UpdateEnvFile("KNOV_HIDE_FLEETING", fmt.Sprintf("%t", hideFleeting))
+	if err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("updated hide fleeting to: %t", hideFleeting)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "fleeting file visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide literature files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideLiterature formData bool true "Whether to hide literature files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-literature [post]
+func handleAPIUpdateHideLiterature(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	hideLiterature := r.FormValue("hideLiterature") == "true"
+
+	err = configmanager.UpdateEnvFile("KNOV_HIDE_LITERATURE", fmt.Sprintf("%t", hideLiterature))
+	if err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("updated hide literature to: %t", hideLiterature)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "literature file visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide moc files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideMOC formData bool true "Whether to hide moc files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-moc [post]
+func handleAPIUpdateHideMOC(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	hideMOC := r.FormValue("hideMOC") == "true"
+
+	err = configmanager.UpdateEnvFile("KNOV_HIDE_MOC", fmt.Sprintf("%t", hideMOC))
+	if err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("updated hide moc to: %t", hideMOC)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "moc file visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide permanent files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hidePermanent formData bool true "Whether to hide permanent files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-permanent [post]
+func handleAPIUpdateHidePermanent(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	hidePermanent := r.FormValue("hidePermanent") == "true"
+
+	err = configmanager.UpdateEnvFile("KNOV_HIDE_PERMANENT", fmt.Sprintf("%t", hidePermanent))
+	if err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("updated hide permanent to: %t", hidePermanent)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "permanent file visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide filter files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideFilter formData bool true "Whether to hide filter files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-filter [post]
+func handleAPIUpdateHideFilter(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	hideFilter := r.FormValue("hideFilter") == "true"
+
+	err = configmanager.UpdateEnvFile("KNOV_HIDE_FILTER", fmt.Sprintf("%t", hideFilter))
+	if err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("updated hide filter to: %t", hideFilter)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "filter file visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide journaling files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideJournaling formData bool true "Whether to hide journaling files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-journaling [post]
+func handleAPIUpdateHideJournaling(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	hideJournaling := r.FormValue("hideJournaling") == "true"
+
+	err = configmanager.UpdateEnvFile("KNOV_HIDE_JOURNALING", fmt.Sprintf("%t", hideJournaling))
+	if err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("updated hide journaling to: %t", hideJournaling)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "journaling file visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide image files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideImage formData bool true "Whether to hide image files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-image [post]
+func handleAPIUpdateHideImage(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	hideImage := r.FormValue("hideImage") == "true"
+
+	err = configmanager.UpdateEnvFile("KNOV_HIDE_IMAGE", fmt.Sprintf("%t", hideImage))
+	if err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("updated hide image to: %t", hideImage)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "image file visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide video files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideVideo formData bool true "Whether to hide video files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-video [post]
+func handleAPIUpdateHideVideo(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	hideVideo := r.FormValue("hideVideo") == "true"
+
+	err = configmanager.UpdateEnvFile("KNOV_HIDE_VIDEO", fmt.Sprintf("%t", hideVideo))
+	if err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("updated hide video to: %t", hideVideo)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "video file visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide pdf files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hidePDF formData bool true "Whether to hide pdf files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-pdf [post]
+func handleAPIUpdateHidePDF(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	hidePDF := r.FormValue("hidePDF") == "true"
+
+	err = configmanager.UpdateEnvFile("KNOV_HIDE_PDF", fmt.Sprintf("%t", hidePDF))
+	if err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("updated hide pdf to: %t", hidePDF)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "pdf file visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide text files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideText formData bool true "Whether to hide text files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-text [post]
+func handleAPIUpdateHideText(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	hideText := r.FormValue("hideText") == "true"
+
+	err = configmanager.UpdateEnvFile("KNOV_HIDE_TEXT", fmt.Sprintf("%t", hideText))
+	if err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("updated hide text to: %t", hideText)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "text file visibility updated"))
 	writeResponse(w, r, "saved", html)
 }

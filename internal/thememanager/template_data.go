@@ -114,6 +114,7 @@ type SettingsTemplateData struct {
 	CurrentThemeSettings map[string]interface{}
 	ThemeSettingsSchema  map[string]ThemeSetting
 	UserSettings         configmanager.UserSettings
+	AppConfig            configmanager.AppConfig
 }
 
 // NewSettingsTemplateData creates settings-specific data
@@ -125,6 +126,7 @@ func NewSettingsTemplateData() SettingsTemplateData {
 		CurrentThemeSettings: getMergedThemeSettings(),
 		ThemeSettingsSchema:  themeManager.GetCurrentThemeSettingsSchema(),
 		UserSettings:         configmanager.GetUserSettings(),
+		AppConfig:            configmanager.GetAppConfig(),
 	}
 }
 

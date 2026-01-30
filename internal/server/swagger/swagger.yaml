@@ -503,6 +503,193 @@ paths:
       summary: Update data path
       tags:
       - config
+  /api/config/file-types/hide-filter:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide filter files
+        in: formData
+        name: hideFilter
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide filter files setting
+      tags:
+      - config
+  /api/config/file-types/hide-fleeting:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide fleeting files
+        in: formData
+        name: hideFleeting
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide fleeting files setting
+      tags:
+      - config
+  /api/config/file-types/hide-image:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide image files
+        in: formData
+        name: hideImage
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide image files setting
+      tags:
+      - config
+  /api/config/file-types/hide-journaling:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide journaling files
+        in: formData
+        name: hideJournaling
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide journaling files setting
+      tags:
+      - config
+  /api/config/file-types/hide-literature:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide literature files
+        in: formData
+        name: hideLiterature
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide literature files setting
+      tags:
+      - config
+  /api/config/file-types/hide-moc:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide moc files
+        in: formData
+        name: hideMOC
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide moc files setting
+      tags:
+      - config
+  /api/config/file-types/hide-pdf:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide pdf files
+        in: formData
+        name: hidePDF
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide pdf files setting
+      tags:
+      - config
+  /api/config/file-types/hide-permanent:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide permanent files
+        in: formData
+        name: hidePermanent
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide permanent files setting
+      tags:
+      - config
+  /api/config/file-types/hide-text:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide text files
+        in: formData
+        name: hideText
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide text files setting
+      tags:
+      - config
+  /api/config/file-types/hide-todo:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide todo files
+        in: formData
+        name: hideTodo
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide todo files setting
+      tags:
+      - config
+  /api/config/file-types/hide-video:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide video files
+        in: formData
+        name: hideVideo
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide video files setting
+      tags:
+      - config
   /api/config/language:
     post:
       consumes:

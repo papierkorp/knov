@@ -35,6 +35,17 @@ type AppConfig struct {
 	LinkRegex               []string
 	CronjobInterval         string
 	SearchIndexInterval     string
+	HideTodo                bool
+	HideFleeting            bool
+	HideLiterature          bool
+	HideMOC                 bool
+	HidePermanent           bool
+	HideFilter              bool
+	HideJournaling          bool
+	HideImage               bool
+	HideVideo               bool
+	HidePDF                 bool
+	HideText                bool
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -71,6 +82,17 @@ func InitAppConfig() {
 		},
 		CronjobInterval:     getEnv("KNOV_CRONJOB_INTERVAL", "5m"),
 		SearchIndexInterval: getEnv("KNOV_SEARCH_INDEX_INTERVAL", "15m"),
+		HideTodo:            getBoolEnv("KNOV_HIDE_TODO", false),
+		HideFleeting:        getBoolEnv("KNOV_HIDE_FLEETING", false),
+		HideLiterature:      getBoolEnv("KNOV_HIDE_LITERATURE", false),
+		HideMOC:             getBoolEnv("KNOV_HIDE_MOC", false),
+		HidePermanent:       getBoolEnv("KNOV_HIDE_PERMANENT", false),
+		HideFilter:          getBoolEnv("KNOV_HIDE_FILTER", false),
+		HideJournaling:      getBoolEnv("KNOV_HIDE_JOURNALING", false),
+		HideImage:           getBoolEnv("KNOV_HIDE_IMAGE", false),
+		HideVideo:           getBoolEnv("KNOV_HIDE_VIDEO", false),
+		HidePDF:             getBoolEnv("KNOV_HIDE_PDF", false),
+		HideText:            getBoolEnv("KNOV_HIDE_TEXT", false),
 	}
 
 	initLogLevel()
@@ -90,6 +112,13 @@ func GetAppConfig() AppConfig {
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
+	}
+	return defaultValue
+}
+
+func getBoolEnv(key string, defaultValue bool) bool {
+	if value := os.Getenv(key); value != "" {
+		return strings.ToLower(value) == "true"
 	}
 	return defaultValue
 }
@@ -240,4 +269,34 @@ func loadEnvFile() {
 	}
 
 	logging.LogInfo(".env file loaded")
+}
+
+// IsFileTypeHidden checks if a specific file type should be hidden
+func IsFileTypeHidden(fileType string) bool {
+	switch strings.ToLower(fileType) {
+	case "todo":
+		return appConfig.HideTodo
+	case "fleeting":
+		return appConfig.HideFleeting
+	case "literature":
+		return appConfig.HideLiterature
+	case "moc":
+		return appConfig.HideMOC
+	case "permanent":
+		return appConfig.HidePermanent
+	case "filter":
+		return appConfig.HideFilter
+	case "journaling":
+		return appConfig.HideJournaling
+	case "image":
+		return appConfig.HideImage
+	case "video":
+		return appConfig.HideVideo
+	case "pdf":
+		return appConfig.HidePDF
+	case "text":
+		return appConfig.HideText
+	default:
+		return false
+	}
 }
