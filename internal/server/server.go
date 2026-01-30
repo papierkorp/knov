@@ -677,6 +677,12 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check if this is an external URL and redirect
+	if strings.HasPrefix(mediaPath, "http://") || strings.HasPrefix(mediaPath, "https://") {
+		http.Redirect(w, r, mediaPath, http.StatusPermanentRedirect)
+		return
+	}
+
 	// get full media file path
 	fullPath := pathutils.ToMediaPath(mediaPath)
 

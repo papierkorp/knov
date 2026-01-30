@@ -89,8 +89,8 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 					mediaPath = dest[6:] // remove "media/" prefix
 				} else if strings.HasPrefix(dest, "/media/") {
 					mediaPath = dest[7:] // remove "/media/" prefix
-				} else {
-					// Check if it's a common image extension that should be treated as media
+				} else if !strings.HasPrefix(dest, "http://") && !strings.HasPrefix(dest, "https://") {
+					// Check if it's a common image extension that should be treated as media (only for local files)
 					ext := strings.ToLower(filepath.Ext(dest))
 					if ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".webp" {
 						// Assume it's a media file if it's an image extension
