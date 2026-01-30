@@ -2301,6 +2301,13 @@ const docTemplate = `{
                         "description": "Filter: all, used, orphaned",
                         "name": "filter",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "default",
+                        "description": "Mode: default, select",
+                        "name": "mode",
+                        "in": "query"
                     }
                 ],
                 "responses": {

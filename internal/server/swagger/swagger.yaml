@@ -1985,6 +1985,11 @@ paths:
         in: query
         name: filter
         type: string
+      - default: default
+        description: 'Mode: default, select'
+        in: query
+        name: mode
+        type: string
       produces:
       - application/json
       - text/html

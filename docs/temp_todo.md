@@ -230,17 +230,23 @@ i just implemented the whole media stuff so we can upload images/files now i sti
 dont give me any code or implementation just your ideas/suggestions on how to fix this using best practices
 
 **media**
-- admin dashboard
-  - Storage stats
-  - e.g. "15 orphaned files (45 MB)"
-  - cleanup button
 - show references in editor for all files for easy add of other files
+  - add a custom toolbar button to the toastui editor to the right side of insert image
+  - add a mode=select to the /api/media/list route
+  - create a new RenderMediaListSelect which is used for the mode=select
+  - use /api/media/list?mode=select for this button
+  - in this button show a list of my media files (per pop over? i dont know) which are clickable, and when clicked insert a markdown link of this file in the editor on the current position
 - add GetMediaStorageStats to Cache?
+- other images links are now loaded wrong:
+  - 2026/01/29 15:28:47 warning [server.go - handleMedia]: media file not found: data/media/https:/octodex.github.com/images/dojocat.jpg
+  - 2026/01/29 15:28:47 "GET http://localhost:1324/media/https://octodex.github.com/images/dojocat.jpg HTTP/1.1" from 127.0.0.1:34034 - 404 19B in 53.932µs
 
 **optimize**
 - file deleted
   - remove all links to this file..
-
+- duplicate code in render_editor.go for:
+  - RenderMarkdownEditorForm
+  - RenderMarkdownSectionEditorForm
 **stream of consciousnes**
 1. new filetype soc
 2. can be attached to other files => then filename = otherfilename_soc.md

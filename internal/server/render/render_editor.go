@@ -90,6 +90,23 @@ func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
 					initialValue: %s,
 					theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default',
 					language: 'en-US',
+					toolbarItems: [
+						['heading', 'bold', 'italic', 'strike'],
+						['hr', 'quote'],
+						['ul', 'ol', 'task', 'indent', 'outdent'],
+						['table', 'image', {
+							name: 'selectMedia',
+							tooltip: 'Select Media',
+							el: (() => {
+								const button = document.createElement('button');
+								button.className = 'toastui-editor-toolbar-icons'; button.style.backgroundImage = 'none'; button.style.margin = '0';
+								button.innerHTML = '<i class="fa-solid fa-file-arrow-up"></i>';
+								button.addEventListener('click', () => showMediaSelector(editor));
+								return button;
+							})()
+						}, 'link'],
+						['code', 'codeblock']
+					],
 					i18n: {
 						// Main popup texts
 						'File': 'File',
@@ -196,6 +213,101 @@ func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
 					}
 				});
 
+				// Media selector functions
+				window.showMediaSelector = function(editor) {
+					const modal = document.createElement('div');
+					modal.className = 'media-selector-modal';
+					modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+
+					const popup = document.createElement('div');
+					popup.className = 'media-selector-popup';
+					popup.style.cssText = 'background: white; border-radius: 8px; width: 600px; max-height: 500px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+
+					const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
+					if (isDarkMode) {
+						popup.style.backgroundColor = '#374151';
+						popup.style.color = '#f9fafb';
+					}
+
+					const header = document.createElement('div');
+					header.style.cssText = 'padding: 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;';
+					if (isDarkMode) {
+						header.style.borderBottomColor = '#4b5563';
+					}
+					header.innerHTML = '<h3 style="margin: 0;">Select Media File</h3><button onclick="closeMediaSelector()" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>';
+
+					const content = document.createElement('div');
+					content.style.cssText = 'padding: 16px; max-height: 400px; overflow-y: auto;';
+					content.innerHTML = 'loading media files...';
+
+					popup.appendChild(header);
+					popup.appendChild(content);
+					modal.appendChild(popup);
+					document.body.appendChild(modal);
+
+					// Fetch media files
+					fetch('/api/media/list?mode=select', {
+						headers: { 'Accept': 'text/html' }
+					})
+					.then(response => response.text())
+					.then(html => {
+						content.innerHTML = html;
+					})
+					.catch(error => {
+						content.innerHTML = 'error loading media files';
+					});
+				};
+
+				window.insertMediaLink = function(mediaURL, filename) {
+					const editor = window.currentEditor;
+					if (editor) {
+						const markdownLink = '![' + filename + '](' + mediaURL + ')';
+						editor.insertText(markdownLink);
+						const hiddenField = document.getElementById('editor-content');
+						if (hiddenField) {
+						    hiddenField.value = editor.getMarkdown();
+						}
+						// auto-save after inserting media
+						const form = document.querySelector('.file-form');
+						if (form) {
+							htmx.trigger(form, 'submit');
+						}
+					}
+					closeMediaSelector();
+				};
+
+				window.insertMediaIntoEditor = function(element) {
+					const mediaPath = element.querySelector('.media-path').value;
+					const filename = element.querySelector('.media-filename').value;
+					const mediaURL = 'media/' + mediaPath;
+
+					const editor = window.currentEditor;
+					if (editor) {
+						const markdownLink = '![' + filename + '](' + mediaURL + ')';
+						editor.insertText(markdownLink);
+						const hiddenField = document.getElementById('editor-content');
+						if (hiddenField) {
+						    hiddenField.value = editor.getMarkdown();
+						}
+						// auto-save after inserting media
+						const form = document.querySelector('.file-form');
+						if (form) {
+							htmx.trigger(form, 'submit');
+						}
+					}
+					closeMediaSelector();
+				};
+
+				window.closeMediaSelector = function() {
+					const modal = document.querySelector('.media-selector-modal');
+					if (modal) {
+						modal.remove();
+					}
+				};
+
+				// Store editor reference
+				window.currentEditor = editor;
+
 				document.querySelector('.file-form').addEventListener('submit', function(e) {
 					document.getElementById('editor-content').value = editor.getMarkdown();
 				});
@@ -263,6 +375,24 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 					initialValue: %s,
 					theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default',
 					language: 'en-US',
+					toolbarItems: [
+						['heading', 'bold', 'italic', 'strike'],
+						['hr', 'quote'],
+						['ul', 'ol', 'task', 'indent', 'outdent'],
+						['table', 'image', 'link'],
+						[{
+							name: 'selectMedia',
+							tooltip: 'Select Media',
+							el: (() => {
+								const button = document.createElement('button');
+								button.className = 'toastui-editor-toolbar-icons'; button.style.backgroundImage = 'none'; button.style.margin = '0';
+								button.innerHTML = '<i class="fa-solid fa-file-arrow-up"></i>';
+								button.addEventListener('click', () => showMediaSelector(editor));
+								return button;
+							})()
+						}],
+						['code', 'codeblock']
+					],
 					i18n: {
 						// Main popup texts
 						'File': 'File',
@@ -361,6 +491,102 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 						}
 					}
 				});
+
+				// Media selector functions
+				window.showMediaSelector = function(editor) {
+					const modal = document.createElement('div');
+					modal.className = 'media-selector-modal';
+					modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+
+					const popup = document.createElement('div');
+					popup.className = 'media-selector-popup';
+					popup.style.cssText = 'background: white; border-radius: 8px; width: 600px; max-height: 500px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+
+					const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
+					if (isDarkMode) {
+						popup.style.backgroundColor = '#374151';
+						popup.style.color = '#f9fafb';
+					}
+
+					const header = document.createElement('div');
+					header.style.cssText = 'padding: 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;';
+					if (isDarkMode) {
+						header.style.borderBottomColor = '#4b5563';
+					}
+					header.innerHTML = '<h3 style="margin: 0;">Select Media File</h3><button onclick="closeMediaSelector()" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>';
+
+					const content = document.createElement('div');
+					content.style.cssText = 'padding: 16px; max-height: 400px; overflow-y: auto;';
+					content.innerHTML = 'loading media files...';
+
+					popup.appendChild(header);
+					popup.appendChild(content);
+					modal.appendChild(popup);
+					document.body.appendChild(modal);
+
+					// Fetch media files
+					fetch('/api/media/list?mode=select', {
+						headers: { 'Accept': 'text/html' }
+					})
+					.then(response => response.text())
+					.then(html => {
+						content.innerHTML = html;
+					})
+					.catch(error => {
+						content.innerHTML = 'error loading media files';
+					});
+				};
+
+				window.insertMediaLink = function(mediaURL, filename) {
+					const editor = window.currentEditor;
+					if (editor) {
+						const markdownLink = '![' + filename + '](' + mediaURL + ')';
+						editor.insertText(markdownLink);
+						const hiddenField = document.getElementById('editor-content');
+						if (hiddenField) {
+						    hiddenField.value = editor.getMarkdown();
+						}
+						// auto-save after inserting media
+						const form = document.querySelector('.file-form');
+						if (form) {
+							htmx.trigger(form, 'submit');
+						}
+					}
+					closeMediaSelector();
+				};
+
+				window.insertMediaIntoEditor = function(element) {
+					const mediaPath = element.querySelector('.media-path').value;
+					const filename = element.querySelector('.media-filename').value;
+					const mediaURL = 'media/' + mediaPath;
+
+					const editor = window.currentEditor;
+					if (editor) {
+						const markdownLink = '![' + filename + '](' + mediaURL + ')';
+						editor.insertText(markdownLink);
+						const hiddenField = document.getElementById('editor-content');
+						if (hiddenField) {
+						    hiddenField.value = editor.getMarkdown();
+						}
+						// auto-save after inserting media
+						const form = document.querySelector('.file-form');
+						if (form) {
+							htmx.trigger(form, 'submit');
+						}
+					}
+
+					closeMediaSelector();
+				};
+
+				window.closeMediaSelector = function() {
+					const modal = document.querySelector('.media-selector-modal');
+					if (modal) {
+						modal.remove();
+					}
+				};
+
+				// Store editor reference
+				window.currentEditor = editor;
 
 				document.querySelector('.file-form').addEventListener('submit', function(e) {
 					document.getElementById('editor-content').value = editor.getMarkdown();

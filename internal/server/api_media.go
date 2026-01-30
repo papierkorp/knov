@@ -98,6 +98,7 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 // @Tags media
 // @Produce json,html
 // @Param filter query string false "Filter: all, used, orphaned" default(all)
+// @Param mode query string false "Mode: default, select" default(default)
 // @Success 200 {object} map[string]interface{} "List of media files"
 // @Failure 500 {string} string "internal error"
 // @Router /api/media/list [get]
@@ -107,6 +108,9 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 	if filter == "" {
 		filter = "all" // default
 	}
+
+	// get mode parameter (default, select)
+	mode := r.URL.Query().Get("mode")
 
 	mediaFiles, err := files.GetAllMediaFiles()
 	if err != nil {
@@ -128,10 +132,16 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 	// determine response format
 	acceptHeader := r.Header.Get("Accept")
 	if strings.Contains(acceptHeader, "text/html") {
-		// render HTML response with filter
-		html := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), len(orphanedMedia))
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
+		// render HTML response with filter and mode
+		if mode == "select" {
+			html := render.RenderMediaListSelect(filteredMedia)
+			w.Header().Set("Content-Type", "text/html")
+			w.Write([]byte(html))
+		} else {
+			html := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), len(orphanedMedia))
+			w.Header().Set("Content-Type", "text/html")
+			w.Write([]byte(html))
+		}
 		return
 	}
 

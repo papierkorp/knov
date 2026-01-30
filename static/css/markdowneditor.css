@@ -100,19 +100,6 @@ body[data-dark-mode="true"]
     background: var(--border) !important;
 }
 
-body[data-dark-mode="true"]
-    #page-fileedit
-    .toastui-editor-dark
-    .toastui-editor-toolbar
-    button,
-body[data-dark-mode="true"]
-    #page-filenew
-    .toastui-editor-dark
-    .toastui-editor-toolbar
-    button {
-    color: var(--text) !important;
-}
-
 /* code blocks in markdown mode */
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-code-block,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-md-code-block {
@@ -246,6 +233,93 @@ body[data-dark-mode="true"] .file-upload-notification {
     border: 1px solid var(--border);
 }
 
+/* ==================== Media Selector Modal ==================== */
+
+/* Media selector components for ToastUI editor */
+.media-select {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.media-select .no-media {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.media-select-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.media-select-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg);
+}
+
+.media-select-item:hover {
+    background: var(--bg-secondary);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.media-select-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    font-size: 20px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.media-select-thumbnail {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.media-select-name {
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.media-select-size {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* Dark mode adjustments */
+body[data-dark-mode="true"] .media-select-item {
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+
+body[data-dark-mode="true"] .media-select-item:hover {
+    background: var(--bg);
+    border-color: var(--primary);
+}
+
 /* ==================== Toast UI Popup Dark Mode Fixes ==================== */
 
 /* Ensure Toast UI popups keep their original positioning */
@@ -355,4 +429,120 @@ body[data-dark-mode="true"]
 .toastui-editor-popup-add-heading ul li:hover {
     background-color: var(--primary);
     color: var(--bg);
+}
+
+/* ==================== Media Selector Styles ==================== */
+
+/* Custom icon styling for media selector button */
+
+.media-selector-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.media-selector-popup {
+    background: var(--bg);
+    border-radius: 8px;
+    width: 600px;
+    max-height: 500px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+}
+
+.media-selector-popup h3 {
+    margin: 0;
+    color: var(--text);
+}
+
+.media-selector-popup button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text);
+}
+
+.media-selector-popup button:hover {
+    color: var(--primary);
+}
+
+/* Media select list */
+.media-select {
+    padding: 0;
+}
+
+.media-select-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.media-select-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border: 1px solid var(--border);
+}
+
+.media-select-item:hover {
+    background-color: var(--bg-secondary);
+}
+
+.media-select-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: var(--bg-secondary);
+}
+
+.media-select-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.media-select-icon i {
+    font-size: 18px;
+    color: var(--text-secondary);
+}
+
+.media-select-name {
+    flex-grow: 1;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.media-select-size {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.no-media {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 2rem;
+    font-style: italic;
 }
