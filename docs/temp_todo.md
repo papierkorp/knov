@@ -223,11 +223,14 @@ additional neccessary changes
 - in server.go in /files/new/todo add parameter for quick adds for daily/calendar/kanban which automatically adds a targetDate of today and a status
 - syncViews(fileID, changeType) function which is called in handleAPIxxxSave for all 3 new saves
 
-# current
+# Relationship Tracker
 
-**filter**
-- in the filter filetype (http://localhost:1324/files/new/filter) i want to be able to add multiple filters but each with its own output - so in the file i can see the output of each filter individually
-**stream of consciousnes**
+- create a Person
+- last contact
+- ...
+
+# stream of consciousnes
+
 1. new filetype soc
 2. can be attached to other files => then filename = otherfilename_soc.md
 3. input directly under <main> with 2 buttons on the right end side of the input:
@@ -246,3 +249,26 @@ additional neccessary changes
   10. after it was inputed - changing/correcting anything is not allowed its ready only
   11. no copy/pasting allowed (except urls)
 
+
+# small stuff
+
+- sqlite metadata db - collection is a path should be a folder
+- PARA Metadata - should create a folder and if one is selected the others cant be selected
+- if a files edited/saved - the links for this file should rebuild
+- if a file is moved (git..) look at linksto and in the target file  change the link
+- make certain settings required in thememanager
+- rework docs folder manually without ai
+  - use the docs folder as testdata and remove the internal/testdata/testfiles
+- new references filetype: Link Resources to certain files e.g. i have postgres file and i want to link a Page about Optimization
+- Dashboard
+  - make the positions work with a custom layout work
+  - Add widget drag & drop reordering
+  - Implement widget resizing
+  - Add dashboard export/import
+- metadata
+  - save in yaml header in markdown files
+  - change linkRegex config to names, e.g. obsidian, notion, dokuwiki... instead of a regex? or add one regex string + confignames
+- performance updates
+  - use Query() instead of a loop through files.GetAllFiles()
+  - use Query in filter.go
+  - Refactor filter.go to use query
