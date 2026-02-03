@@ -252,10 +252,10 @@ additional neccessary changes
 
 # small stuff
 
+- git diff no longer working
 - sqlite metadata db - collection is a path should be a folder
 - PARA Metadata - should create a folder and if one is selected the others cant be selected
-- if a files edited/saved - the links for this file should rebuild
-- if a file is moved (git..) look at linksto and in the target file  change the link
+- if a file is moved (git..) look at linksto and rebuild links for this files after the link is changed (so i get a linksfrom in the source file)
 - make certain settings required in thememanager
 - rework docs folder manually without ai
   - use the docs folder as testdata and remove the internal/testdata/testfiles

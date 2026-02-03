@@ -200,7 +200,8 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	if newMetadata.Collection == "" {
 		folderPath := filepath.Dir(normalizedPath)
 		if folderPath != "." && folderPath != "" {
-			currentMetadata.Collection = folderPath
+			parts := strings.Split(folderPath, "/")
+			currentMetadata.Collection = parts[0]
 		}
 	} else {
 		currentMetadata.Collection = newMetadata.Collection
