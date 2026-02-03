@@ -97,7 +97,7 @@ func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
 				Name:    filepath.Base(relPath),
 				Path:    relPath,
 				Commit:  c.Hash.String()[:7],
-				Date:    c.Author.When.Format("2006-01-02"),
+				Date:    c.Author.When.Format("02-01-2006 - 15:04"),
 				Message: c.Message,
 			})
 		}
@@ -299,7 +299,7 @@ func GetFileHistory(filePath string) ([]FileVersion, error) {
 	err = iter.ForEach(func(c *object.Commit) error {
 		versions = append(versions, FileVersion{
 			Commit:    c.Hash.String()[:7],
-			Date:      c.Author.When.Format("2006-01-02"),
+			Date:      c.Author.When.Format("02-01-2006 - 15:04"),
 			Message:   c.Message,
 			Author:    c.Author.Name,
 			IsCurrent: false,
@@ -645,7 +645,7 @@ func GetCommitDetails(commit string) (string, string, error) {
 		return "", "", err
 	}
 
-	date := commitObj.Author.When.Format("2006-01-02")
+	date := commitObj.Author.When.Format("02-01-2006 - 15:04")
 	message := strings.TrimSpace(commitObj.Message)
 
 	return date, message, nil

@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/git"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -31,7 +31,7 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := filepath.Join(configmanager.GetAppConfig().DataPath, filePath)
+	fullPath := pathutils.ToFullPath(filePath)
 	commit := r.URL.Query().Get("commit")
 	output := r.URL.Query().Get("output")
 	if output == "" {
@@ -127,7 +127,7 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := filepath.Join(configmanager.GetAppConfig().DataPath, filePath)
+	fullPath := pathutils.ToFullPath(filePath)
 
 	// handle special commit values
 	if fromCommit == "current" {
@@ -212,7 +212,7 @@ func handleAPIRestoreFileVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := filepath.Join(configmanager.GetAppConfig().DataPath, filePath)
+	fullPath := pathutils.ToFullPath(filePath)
 
 	err := git.RestoreFileToCommit(fullPath, commit)
 	if err != nil {

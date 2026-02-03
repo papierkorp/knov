@@ -568,7 +568,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// get full file path
-		fullPath := filepath.Join(configmanager.GetAppConfig().DataPath, filePath)
+		fullPath := pathutils.ToFullPath(filePath)
 
 		// get selected commit from query param
 		selectedCommit := r.URL.Query().Get("commit")

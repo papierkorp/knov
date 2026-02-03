@@ -252,8 +252,6 @@ additional neccessary changes
 
 # small stuff
 
-- git diff no longer working
-- sqlite metadata db - collection is a path should be a folder
 - PARA Metadata - should create a folder and if one is selected the others cant be selected
 - if a file is moved (git..) look at linksto and rebuild links for this files after the link is changed (so i get a linksfrom in the source file)
 - make certain settings required in thememanager
