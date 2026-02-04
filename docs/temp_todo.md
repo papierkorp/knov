@@ -253,6 +253,16 @@ additional neccessary changes
 # small stuff
 
 - PARA Metadata - should create a folder and if one is selected the others cant be selected
+- rebuild links on file move/rename e.g. file testA.md has a linkTo testB.md and a linkFrom testC.md and is renamed to testAnew.md
+  - in sourcefile (testA.md/testAnew.md):
+    - go through all linksFrom
+    - rebuild links
+  - in linkTo (testB.md):
+    - remove the old linksFrom (testA.md)
+    - add the new linksFrom (testAnew.md)
+  - in linkFrom (testC.md):
+    - update the link in the FileContent to the moved file
+    - rebuild the links (should update the linksFrom in testAnew.md)
 - if a file is moved (git..) look at linksto and rebuild links for this files after the link is changed (so i get a linksfrom in the source file)
 - make certain settings required in thememanager
 - rework docs folder manually without ai
