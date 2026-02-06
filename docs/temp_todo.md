@@ -250,14 +250,57 @@ additional neccessary changes
   11. no copy/pasting allowed (except urls)
 
 
+
+
+# PARA
+
+dont give me any code yet just your ideas on how to best implement PARA (p = short term efforts in your work or life that you are working on now, a = long term responisibilites you want to manage over time, r = topic or interessets that may be useful in the future, a = inactive items from the other 3 categories) into my app
+
+this is what i wrote down:
+
+- PARA Metadata - the current "implementation" does not work as is and was just a placeholder now i want to rework it 
+  - if one para is selected the others cant be selected (only one can be selected)
+  - for each para metadata create one folder in the data/docs folder: PARA_PROJECTS, PARA_ARCHIVE, PARA_RESOURCE, PARA_AREA 
+  - if no para metadata is set dont use the PARA folders
+  - no need for backwards compatibility or a database migration since the app is still in development and not released yet
+  - Implementation Ideas
+    - we need to account for:
+        - para metadata added: move the file to its corresponding para folder
+        - para metadata removed/set to none: move the file to its corresponding folder without para
+        - which is basically the same as we do in the handleAPIRenameFile function - which i think makes sense to reuse
+        - correctly set para in the testdata.go file to test everything out (dont add para to all files tough)
+    - change metadata to: PARA_CATEGORY: <PROJECTS|ARCHIVE|RESOURCES|AREAS> with a new enum
+        - remove the existing routes for all Paras (/metadata/para/projects, /metadata//para/areas, /metadata//para/resources, /metadata//para/archive)
+        - create a new route (/metadata/para)
+            - in this route check if para was added/removed and first call a check - if added we need to add PARA_xx to the new filepath, if removed we need to remove PARA_xx from the new filepath and then the handleAPIRenameFile with the new filepaths
+    - in pathutils add a GetParaPath() in which a para PATH e.g. (projects/area/archive/resources) is passed and the correct path is returned => reuse existing functions in pathutils and should handle both directions
+    - in render_metadata: display the para as radio buttons with a additional NONE (default) value if PARA_ENABLED
+        - as a style: i want it as its own row in the metadata section but still in the form-group as a row (so it takes as little space as possible)
+    - /browse/<para_xxx> wont work anymore => create independet routes e.g. /browse/projects, /browse/areas...
+    - WidgetTypes: WidgetTypeParaProjects, WidgetTypeParaAreas, WidgetTypeParaResources, WidgetTypeParaArchive will break => update filter with folder matching
+    - update sqlite schema and drop the 4 para columns and add a para_category (just like the metadata..)
+    - update mapping.go for new para fields
+
+**done**
+
+    - add a new env: PARA_ENABLED
+    - contentStorage: add a CreateParaDirectories() to the interface which adds PARA_PROJECTS, PARA_AREAS, PARA_RESOURCES and PARA_ARCHIVE if para_enabled is true
+    - update collection logic to skip para folders when determining collection
+      - e.g. PARA_PROJECTS/work/meeting-notes.md = collection work
+      - e.g. PARA_PROJECTS/standalone.md = collection default
+
 # small stuff
 
-- PARA Metadata - should create a folder and if one is selected the others cant be selected
-- if a file is moved (git..) look at linksto and rebuild links for this files after the link is changed (so i get a linksfrom in the source file)
 - make certain settings required in thememanager
 - rework docs folder manually without ai
   - use the docs folder as testdata and remove the internal/testdata/testfiles
 - new references filetype: Link Resources to certain files e.g. i have postgres file and i want to link a Page about Optimization
+    - new editor with 3 inputs
+      - reference (input for link)
+      - referencedescription (textbox) (why did you add this reference)
+      - referencedTo (datalist with GetAllFilePathsFromSystemData) - if one file is added add another input (so it can be referenced to multiple files)
+    - new metadata: references
+    - save references in database or as file?
 - Dashboard
   - make the positions work with a custom layout work
   - Add widget drag & drop reordering
@@ -270,3 +313,4 @@ additional neccessary changes
   - use Query() instead of a loop through files.GetAllFiles()
   - use Query in filter.go
   - Refactor filter.go to use query
+- move toc to contentHandler?

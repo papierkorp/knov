@@ -70,3 +70,7 @@ Settings are stored as .json files in the `KNOV_CONFIG_PATH` for each user indiv
 
 zk/zettelkasten = stage of development
 para = purpose/context
+p = short term efforts in your work or life that you are working on now
+a = long term responisibilites you want to manage over time
+r = topic or interessets that may be useful in the future
+a = inactive items from the other 3 categories
