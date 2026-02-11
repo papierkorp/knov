@@ -254,6 +254,31 @@ additional neccessary changes
 
 # PARA
 
+this is just for your information:
+- PARA Metadata - the current "implementation" does not work as is and was just a placeholder now i want to rework it 
+  - if one para is selected the others cant be selected (only one can be selected)
+  - for each para metadata create one folder in the data/docs folder: PARA_PROJECTS, PARA_ARCHIVE, PARA_RESOURCE, PARA_AREA 
+  - if no para metadata is set dont use the PARA folders
+  - no need for backwards compatibility or a database migration since the app is still in development and not released yet
+
+
+now i want you to help me with the following starting implementation:
+
+    - add a new env: PARA_ENABLED
+    - contentStorage: add a CreateParaDirectories() to the interface which adds PARA_PROJECTS, PARA_AREAS, PARA_RESOURCES and PARA_ARCHIVE if para_enabled is true
+    - change metadata to: PARA_CATEGORY: <PROJECTS|ARCHIVE|RESOURCES|AREAS> with a new enum
+        - remove the existing routes for all Paras (/metadata/para/projects, /metadata//para/areas, /metadata//para/resources, /metadata//para/archive)
+        - create a new route (/metadata/para) (placeholder for now)
+    - in pathutils add a GetParaPath() in which a para PATH e.g. (projects/area/archive/resources) is passed and the correct path is returned => reuse existing functions in pathutils and should handle both directions
+    - update collection logic to skip para folders when determining collection
+      - e.g. PARA_PROJECTS/work/meeting-notes.md = collection work
+      - e.g. PARA_PROJECTS/standalone.md = collection default
+
+dont do anything more just the few things i asked you to do above - we will fix this step by step
+
+
+
+
 dont give me any code yet just your ideas on how to best implement PARA (p = short term efforts in your work or life that you are working on now, a = long term responisibilites you want to manage over time, r = topic or interessets that may be useful in the future, a = inactive items from the other 3 categories) into my app
 
 this is what i wrote down:
@@ -292,8 +317,6 @@ this is what i wrote down:
 # small stuff
 
 - make certain settings required in thememanager
-- rework docs folder manually without ai
-  - use the docs folder as testdata and remove the internal/testdata/testfiles
 - new references filetype: Link Resources to certain files e.g. i have postgres file and i want to link a Page about Optimization
     - new editor with 3 inputs
       - reference (input for link)
@@ -314,3 +337,139 @@ this is what i wrote down:
   - use Query in filter.go
   - Refactor filter.go to use query
 - move toc to contentHandler?
+- dokuwiki to knov move
+  - add export file to files
+  - <sxh> not handled
+  - <catlist> not handled
+  - ++ not handled
+  - convert links content to markdown links
+  - export dokuwiki files to markdown
+    - parser not working - example: http://localhost:1325/files/sirconic/softwareengineer/git/gitlab.md
+      - linksto:
+        - sirconic:softwareengineer:git:gitlab.md (sirconic:softwareengineer:git:gitlab.md)
+        - sirconic:systemadmin:kubernetes:kubernetesfaq.md (sirconic:systemadmin:kubernetes:kubernetesfaq.md)
+        - index.html?tab=Helm+chart+%28Kubernetes%29 (https:*docs.gitlab.com/ee/update/index.html?tab=Helm+chart+%28Kubernetes%29)
+        - .md (https:*gitlab-com.gitlab.io/support/toolbox/upgrade-path/.md)
+        - sirconic:systemadmin:automatisierung:gitlab.md (sirconic:systemadmin:automatisierung:gitlab.md)
+        - velero-minio-lab.sirconic-k8s.de (velero-minio-lab.sirconic-k8s.de)
+        - gitlab-minio-lab.sirconic-k8s.de (gitlab-minio-lab.sirconic-k8s.de)
+        - "project_id", "creator_id", "registry_size_bytes", "project path".md ("project_id", "creator_id", "registry_size_bytes", "project path".md)
+        - "$.md ("$.md)
+        - sirconic:softwareengineer:git:gitlab:fehlermeldungen.md (sirconic:softwareengineer:git:gitlab:fehlermeldungen.md)
+      - linksfrom:
+        - empty
+      - toc
+        - uses `#` from a codeblock
+      - remove ++
+      - lists not working
+      - media?
+
+```
+====== Gitlab ======
+
+<catlist sirconic:softwareengineer:git:gitlab -nohead -noNsinbold -noAddPageButton> 
+
+====== Installation ======
+
+===== Gitlab =====
+
+https://wiki.leasone.de/de/devops/kubernetes/kubernetes_installationen#gitlab-installation
+
+
+**[[https://docs.gitlab.com/charts/installation/tools.html|Vorraussetzungen]]**
+
+  * kubectl
+  * helm (v3.10.3+)
+  * postgresSQL (13)
+  * Redis
+
+  * Vorbereitung
+    * postgresSQL
+      * https://docs.gitlab.com/charts/advanced/external-db/index.html
+      * https://docs.gitlab.com/charts/installation/secrets.html#postgresql-password
+      * Postgres installieren
+        * ++ postgres_values.yaml |
+<sxh yaml>
+auth:
+  database: gitlabhq_production
+  username: gitlabPSQL
+  password: xxx
+  postgresPassword: xxx
+primary:
+  containerSecurityContext:
+    enabled: false
+  extendedConfiguration: |
+    shared_preload_libraries = 'pg_trgm,btree_gist,plpgsql'
+    shared_buffers = '1024MB'
+    max_connections = 300
+  resources:
+    requests:
+      memory: 8Gi
+</sxh>
+++
+        * ''helm repo add bitnami https://charts.bitnami.com/bitnami && helm install gitlab-postgresql bitnami/postgresql -n gitlab -f postgres_values.yaml --version 11.9.13''
+        * 
+      * Extensions manuell installieren fals nötig (passiert schon in postgres_values.yaml)
+        * ''kubectl exec -it gitlab-postgresql-0 -n gitlab -- /opt/bitnami/scripts/postgresql/entrypoint.sh /bin/bash''
+        * ''PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -d $POSTGRESQL_DATABASE''
+        * ''CREATE EXTENSION IF NOT EXISTS btree_gist;''
+        * ''CREATE EXTENSION IF NOT EXISTS pg_trgm;''
+        * ''\dx''
+      * Secret erstellen
+        * ''kubectl delete secret gitlab-postgresql-password -n gitlab''
+```
+
+became
+
+```
+# Gitlab
+
+<catlist sirconic:softwareengineer:git:gitlab -nohead -noNsinbold -noAddPageButton>
+# Installation
+
+## Gitlab
+
+https://wiki.leasone.de/de/devops/kubernetes/kubernetes_installationen#gitlab-installation
+
+
+**[Vorraussetzungen](https://docs.gitlab.com/charts/installation/tools.html)**
+
+- kubectl
+- helm (v3.10.3+)
+- postgresSQL (13)
+- Redis
+
+- Vorbereitung
+- postgresSQL
+- https://docs.gitlab.com/charts/advanced/external-db/index.html
+- https://docs.gitlab.com/charts/installation/secrets.html#postgresql-password
+- Postgres installieren
+- ++ postgres_values.yaml |
+<sxh yaml>
+auth:
+database: gitlabhq_production
+username: gitlabPSQL
+password: xxx
+postgresPassword: xxx
+primary:
+containerSecurityContext:
+enabled: false
+extendedConfiguration: |
+shared_preload_libraries = 'pg_trgm,btree_gist,plpgsql'
+shared_buffers = '1024MB'
+max_connections = 300
+resources:
+requests:
+memory: 8Gi
+</sxh>
+++
+- `helm repo add bitnami https://charts.bitnami.com/bitnami && helm install gitlab-postgresql bitnami/postgresql -n gitlab -f postgres_values.yaml --version 11.9.13`
+*
+- Extensions manuell installieren fals nötig (passiert schon in postgres_values.yaml)
+- `kubectl exec -it gitlab-postgresql-0 -n gitlab -- /opt/bitnami/scripts/postgresql/entrypoint.sh /bin/bash`
+- `PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -d $POSTGRESQL_DATABASE`
+- `CREATE EXTENSION IF NOT EXISTS btree_gist;`
+- `CREATE EXTENSION IF NOT EXISTS pg_trgm;`
+- `\dx`
+- Secret erstellen
+```

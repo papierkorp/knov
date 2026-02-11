@@ -9,7 +9,7 @@ dev: swaggo-api-init
 dev-fast: swaggo-api-init
 	KNOV_LOG_LEVEL=debug go run ./
 
-prod: clean swaggo-api-init translation
+prod: swaggo-api-init translation
 	go build -tags "$(BUILD_TAGS)" -o bin/$(APP_NAME) ./
 	CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH=amd64 go build -tags "$(BUILD_TAGS)" -o bin/$(APP_NAME).exe ./
 

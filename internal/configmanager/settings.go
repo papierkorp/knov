@@ -43,7 +43,7 @@ func InitUserSettings() {
 		Theme:                        "builtin",
 		Language:                     "en",
 		ThemeSettings:                make(AllThemeSettings),
-		SectionEditIncludeSubheaders: true,
+		SectionEditIncludeSubheaders: false,
 		MediaSettings: MediaSettings{
 			MaxUploadSizeMB: 10,
 			AllowedMimeTypes: []string{
