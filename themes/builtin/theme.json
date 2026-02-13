@@ -92,7 +92,7 @@
     "mediaLinkMode": {
       "type": "select",
       "options": ["direct", "detail"],
-      "default": "direct",
+      "default": "detail",
       "label": "Media Link Mode",
       "description": "direct opens raw media file, detail shows metadata and usage information"
     }

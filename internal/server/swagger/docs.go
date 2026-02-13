@@ -1586,6 +1586,50 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/files/convert-to-markdown": {
+            "post": {
+                "description": "Convert a single DokuWiki file to Markdown format and save as new file",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Convert single file from DokuWiki to Markdown",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "conversion success message",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "conversion failed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/delete/{filepath}": {
             "delete": {
                 "description": "Deletes a file and its metadata",

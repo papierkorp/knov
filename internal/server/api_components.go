@@ -79,10 +79,15 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 
 	var tableData *types.TableData
 	if dokuwikiHandler, ok := handler.(*parser.DokuwikiHandler); ok {
-		tableData, err = dokuwikiHandler.ParseDokuWikiTable(string(fileContent))
+		tableData, err = dokuwikiHandler.GetFirstTable(string(fileContent))
 		if err != nil {
 			logging.LogError("failed to parse dokuwiki table: %v", err)
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse table"), http.StatusInternalServerError)
+			return
+		}
+
+		if tableData.Total == 0 {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"), http.StatusBadRequest)
 			return
 		}
 	} else {

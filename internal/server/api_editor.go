@@ -652,3 +652,74 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(successMsg))
 }
+
+// @Summary Convert single file from DokuWiki to Markdown
+// @Description Convert a single DokuWiki file to Markdown format and save as new file
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Produce text/html
+// @Param filepath formData string true "File path"
+// @Success 200 {string} string "conversion success message"
+// @Failure 400 {string} string "invalid request"
+// @Failure 500 {string} string "conversion failed"
+// @Router /api/files/convert-to-markdown [post]
+func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+
+	filePath := r.FormValue("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+
+	fullPath := pathutils.ToDocsPath(filePath)
+
+	// get parser handler
+	handler := parser.GetParserRegistry().GetHandler(fullPath)
+	if handler == nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unsupported file type"), http.StatusBadRequest)
+		return
+	}
+
+	// check if it's a dokuwiki handler
+	dokuwikiHandler, ok := handler.(*parser.DokuwikiHandler)
+	if !ok {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "markdown conversion only supported for dokuwiki files"), http.StatusBadRequest)
+		return
+	}
+
+	// read file content
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		logging.LogError("failed to read file %s: %v", fullPath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
+		return
+	}
+
+	// convert to markdown
+	markdown := dokuwikiHandler.ConvertToMarkdown(string(content))
+
+	// determine new filename
+	markdownFileName := strings.TrimSuffix(filePath, filepath.Ext(filePath)) + ".md"
+	markdownFullPath := pathutils.ToDocsPath(markdownFileName)
+
+	// save markdown file
+	if err := os.WriteFile(markdownFullPath, []byte(markdown), 0644); err != nil {
+		logging.LogError("failed to write markdown file %s: %v", markdownFullPath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save converted file"), http.StatusInternalServerError)
+		return
+	}
+
+	logging.LogInfo("converted dokuwiki file to markdown: %s -> %s", filePath, markdownFileName)
+
+	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "file converted to markdown successfully"),
+		markdownFileName,
+		markdownFileName)
+
+	w.Header().Set("Content-Type", "text/html")
+	fmt.Fprintf(w, `<div class="status-success">%s</div>`, successMsg)
+}

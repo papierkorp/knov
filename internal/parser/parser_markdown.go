@@ -29,6 +29,7 @@ func (h *MarkdownHandler) CanHandle(filename string) bool {
 
 func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 	processed := h.processMarkdownLinks(string(content))
+	processed = h.fixDeeplyIndentedLists(processed)
 	return []byte(processed), nil
 }
 
@@ -140,6 +141,9 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	// Post-process to add header edit buttons outside the header tags
 	processedHTML := h.addHeaderButtons(string(htmlOutput), filePath)
 
+	// Wrap content between headers in sections
+	processedHTML = h.wrapHeaderSections(processedHTML)
+
 	return []byte(processedHTML), nil
 }
 
@@ -165,6 +169,52 @@ func (h *MarkdownHandler) addHeaderButtons(htmlContent, filePath string) string 
 		// return header with edit button on the right
 		return fmt.Sprintf(`<h%s id="%s">%s%s</h%s>`, level, headerID, content, editButton, level)
 	})
+}
+
+// wrapHeaderSections wraps content between headers in div elements
+func (h *MarkdownHandler) wrapHeaderSections(htmlContent string) string {
+	// find all headers and their positions
+	headerRegex := regexp.MustCompile(`<h([1-6])[^>]*>.*?</h[1-6]>`)
+	headerMatches := headerRegex.FindAllStringIndex(htmlContent, -1)
+
+	if len(headerMatches) == 0 {
+		// no headers found, wrap entire content
+		return fmt.Sprintf(`<div class="content-section">%s</div>`, htmlContent)
+	}
+
+	var result strings.Builder
+
+	// add content before first header if any
+	if headerMatches[0][0] > 0 {
+		beforeFirstHeader := strings.TrimSpace(htmlContent[0:headerMatches[0][0]])
+		if beforeFirstHeader != "" {
+			result.WriteString(fmt.Sprintf(`<div class="content-section">%s</div>`, beforeFirstHeader))
+		}
+	}
+
+	// process each header and its content
+	for i, match := range headerMatches {
+		// add the header itself
+		header := htmlContent[match[0]:match[1]]
+		result.WriteString(header)
+
+		// find content after this header (until next header or end)
+		contentStart := match[1]
+		var contentEnd int
+		if i+1 < len(headerMatches) {
+			contentEnd = headerMatches[i+1][0] // until next header
+		} else {
+			contentEnd = len(htmlContent) // until end of content
+		}
+
+		// extract and wrap the content section
+		sectionContent := strings.TrimSpace(htmlContent[contentStart:contentEnd])
+		if sectionContent != "" {
+			result.WriteString(fmt.Sprintf(`<div class="content-section">%s</div>`, sectionContent))
+		}
+	}
+
+	return result.String()
 }
 
 func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
@@ -226,6 +276,94 @@ func removeCodeBlocks(text string) string {
 	text = inlineCodeRegex.ReplaceAllString(text, "")
 
 	return text
+}
+
+// fixDeeplyIndentedLists converts lines with 4+ spaces + - to proper markdown list format
+// and ensures code blocks are properly indented within lists
+func (h *MarkdownHandler) fixDeeplyIndentedLists(content string) string {
+	lines := strings.Split(content, "\n")
+	var result []string
+	var inCodeBlock bool
+	var codeBlockIndent string
+
+	for _, line := range lines {
+		// check if we're dealing with a code block fence
+		if strings.HasPrefix(strings.TrimSpace(line), "```") {
+			if !inCodeBlock {
+				// entering code block - check previous lines for list context
+				inCodeBlock = true
+				for j := len(result) - 1; j >= 0; j-- {
+					prevLine := result[j]
+					if strings.TrimSpace(prevLine) == "" {
+						continue // skip empty lines
+					}
+					// find the last list item to determine indentation
+					if match := regexp.MustCompile(`^( *)- (.+)$`).FindStringSubmatch(prevLine); match != nil {
+						// for a list item like "    - content", content underneath should be indented "      " (list indent + 2)
+						listIndent := match[1]
+						codeBlockIndent = listIndent + "  "
+						break
+					}
+					break // stop if we hit non-list content
+				}
+
+				if codeBlockIndent != "" {
+					result = append(result, codeBlockIndent+strings.TrimSpace(line))
+				} else {
+					result = append(result, line)
+				}
+			} else {
+				// exiting code block
+				if codeBlockIndent != "" {
+					result = append(result, codeBlockIndent+strings.TrimSpace(line))
+				} else {
+					result = append(result, line)
+				}
+				inCodeBlock = false
+				codeBlockIndent = ""
+			}
+			continue
+		}
+
+		// if we're in a code block, maintain the indentation
+		if inCodeBlock && codeBlockIndent != "" {
+			if strings.TrimSpace(line) == "" {
+				result = append(result, "")
+			} else {
+				result = append(result, codeBlockIndent+strings.TrimSpace(line))
+			}
+			continue
+		}
+
+		// check if line has spaces followed by - (list item)
+		if match := regexp.MustCompile(`^( {2,})- (.+)$`).FindStringSubmatch(line); match != nil {
+			spaces := match[1]
+			listContent := match[2]
+			spaceCount := len(spaces)
+
+			// convert DokuWiki indentation to proper markdown indentation
+			// 8 spaces → 6 spaces (level 4)
+			// 6 spaces → 4 spaces (level 3)
+			// 4 spaces → 2 spaces (level 2)
+			// 2 spaces → 0 spaces (level 1)
+			var newIndent string
+			if spaceCount >= 8 {
+				newIndent = "      " // 6 spaces for level 4
+			} else if spaceCount >= 6 {
+				newIndent = "    " // 4 spaces for level 3
+			} else if spaceCount >= 4 {
+				newIndent = "  " // 2 spaces for level 2
+			} else if spaceCount >= 2 {
+				newIndent = "" // 0 spaces for level 1
+			}
+
+			result = append(result, fmt.Sprintf("%s- %s", newIndent, listContent))
+		} else {
+			result = append(result, line)
+		}
+	}
+
+	return strings.Join(result, "\n")
 }
 
 func (h *MarkdownHandler) Name() string {
@@ -306,6 +444,10 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 		}
 
 		if !strings.Contains(url, "://") && !strings.HasPrefix(url, "#") {
+			// check if URL already has /files/ prefix to avoid duplicates
+			if strings.HasPrefix(url, "/files/") {
+				return `<a href="` + url + `">` + text + `</a>`
+			}
 			if !strings.HasSuffix(url, ".md") {
 				url += ".md"
 			}

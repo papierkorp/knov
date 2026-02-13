@@ -9,6 +9,7 @@ import (
 	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
@@ -342,6 +343,25 @@ func RenderTextareaEditorComponent(filepath, content string) string {
 		cancelURL = fmt.Sprintf("/files/%s", filepath)
 	}
 
+	// check if file is DokuWiki to show convert button
+	var convertButton string
+	if filepath != "" {
+		fullPath := pathutils.ToDocsPath(filepath)
+		handler := parser.GetParserRegistry().GetHandler(fullPath)
+		if handler != nil && handler.Name() == "dokuwiki" {
+			convertButton = fmt.Sprintf(`
+				<button type="button"
+						hx-post="/api/files/convert-to-markdown"
+						hx-vals='{"filepath": "%s"}'
+						hx-target="#editor-status"
+						class="btn-secondary">
+					%s
+				</button>`,
+				filepath,
+				translation.SprintfForRequest(configmanager.GetLanguage(), "convert to markdown"))
+		}
+	}
+
 	return fmt.Sprintf(`
 		<div id="component-textarea-editor">
 			<form hx-post="/api/files/save" hx-target="#editor-status">
@@ -350,6 +370,7 @@ func RenderTextareaEditorComponent(filepath, content string) string {
 				<div style="margin-top: 12px;">
 					<button type="submit" class="btn-primary">%s</button>
 					<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
+					%s
 				</div>
 			</form>
 			<div id="editor-status"></div>
@@ -357,7 +378,8 @@ func RenderTextareaEditorComponent(filepath, content string) string {
 	`, filepath, content,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save"),
 		cancelURL,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"))
+		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
+		convertButton)
 }
 
 // jsEscapeString escapes a string for safe use in JavaScript

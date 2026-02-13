@@ -1477,6 +1477,36 @@ paths:
       summary: Get file content as html
       tags:
       - files
+  /api/files/convert-to-markdown:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Convert a single DokuWiki file to Markdown format and save as new
+        file
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: conversion success message
+          schema:
+            type: string
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "500":
+          description: conversion failed
+          schema:
+            type: string
+      summary: Convert single file from DokuWiki to Markdown
+      tags:
+      - files
   /api/files/delete/{filepath}:
     delete:
       consumes:

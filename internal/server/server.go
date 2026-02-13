@@ -219,6 +219,7 @@ func StartServerChi() {
 			r.Post("/save", handleAPIFileSave)
 			r.Post("/save/", handleAPIFileSave)
 			r.Post("/section/save", handleAPISaveSectionEditor)
+			r.Post("/convert-to-markdown", handleAPIConvertFileToMarkdown)
 			r.Get("/browse", handleAPIBrowseFiles)
 			r.Get("/form", handleAPIFileForm)
 			r.Get("/metadata-form", handleAPIMetadataForm)
