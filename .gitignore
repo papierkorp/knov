@@ -198,8 +198,8 @@ dist
 
 # ------------------- app specific
 
-data/
-data/*
+data*/
+data*/*
 bin/
 config/
 .storage

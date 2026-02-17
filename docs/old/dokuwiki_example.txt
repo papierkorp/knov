@@ -1,0 +1,123 @@
+====== Testdokuwiki ======
+
+<catlist p:it -nohead -noNsinbold -noAddPageButton>
+
+====== Installation ======
+
+===== Gitlab =====
+
+https://wiki.leasone.de/de/devops/kubernetes/kubernetes_installationen#gitlab-installation
+
+**[[https://docs.gitlab.com/charts/installation/tools.html|Vorraussetzungen]]**
+
+  * first
+  * small
+    * a=mc2
+  * list
+  * example
+
+  * Anotherlist
+    * with a secondlevel
+      * and a third level
+      * https://docs.gitlab.com/charts/installation/secrets.html#postgresql-password
+      * a link above
+        * a forth level header
+        * ++ folded plugin in a list |
+<sxh yaml>
+# comment
+yamltest:
+  nothing_important: true
+</sxh>
+++
+        * another 4th level after folded
+        * ''code line in 4th level''
+        * ''# comment in single code line''
+      * another 3rd level
+        * ''singel codeline 1''
+        * ''single codelin2''
+        * ''\dx''
+      * Secret erstellen
+        * ''kubectl delete secret xxx -n yyy''
+        * ''kubectl create secret generic xxx -n yyy --from-literal=password="zzz"''
+
+====== more tests ======
+
+  * Internal Link1: [[p:it:ai#ollama_open-webui]]
+  * Internal Link2: [[p:it:ai#ollama_open-webui|ollama]]
+  * Internal Link3: [[#link_anchor]]
+  * Internal Link3: [[#link_anchor|test]]
+
+====== link anchor ======
+
+++++ folded with 4 |
+<codify bash>
+# comment
+name=test
+echo $name
+</codify>
+
+<codify go>
+package main
+
+import (
+  "fmt"
+  "net/http"
+)
+
+func start_server_native() {
+  fmt.Println("Starting native HTTP server on http://localhost:1322")
+
+  http.HandleFunc("/", native_template)
+  http.HandleFunc("/templ", native_templ)
+
+  err := http.ListenAndServe(":1322", nil)
+  if err != nil {
+    fmt.Printf("Error starting native server: %v\n", err)
+    return
+  }
+}
+</codify>
+++++
+
+-----
+
+splitline with a table
+
+
+<datatables searching="true" paging-type="full_numbers" buttons='[ "copy", "csv" ]'>
+^ Name                                                                                                |                                                      ^ Art          ^ Kapitel  ^ Status         ^ Wertung  ^
+| Abyss Rage                                                                                          |                                                      | Manga        | 64       | Laufend        | 09       |
+| Aphorism                                                                                            |                                                      | Manga        | 14       | Laufend        | 07       |
+| God of Highschool                                                                                   |                                                      | Manga        | 176      | Laufend        | 08       |
+| Hardcore Leveling Warrior                                                                           |                                                      | Manga        | 174      | Laufend        | 10       |
+| Kuang Shen                                                                                          |                                                      | Manga        | 46       | Laufend        | 09       |
+| Land Lock                                                                                           |                                                      | Manga        | 34       | Abgeschlossen  | 08       |
+| Maze Age Z                                                                                          |                                                      | Manga        | 26       | Abgesetzt      | 08       |
+| Solo Leveling                                                                                       |                                                      | Manga        | 128      | Laufend        | 10       |
+| Unkown Code                                                                                         |                                                      | Manga        | 82       | Abgeschlossen  | 08       |
+| Nano Hazard                                                                                         |                                                      | Manga        | 25       | Abgeschlossen  | 08       |
+</datatables>
+
+
+===== link anchor subheader 1 =====
+
+Image Example:
+
+{{:p:it:pasted:20211204-020045.png}}
+
+
+==== link anchor subheader 2 ====
+
+=== link anchor subheader 3 ===
+
+== link anchor subheader 4 ==
+
+= link anchor subheader 5 =
+
+====== another main header ======
+
+some text
+
+**Included Text via [[https://www.dokuwiki.org/plugin:include|Include Plugin]]**
+
+{{section>p:it:linux:server:debugging#festplattenspeicher_anzeigen}}
