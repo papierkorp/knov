@@ -316,6 +316,7 @@ this is what i wrote down:
 
 # small stuff
 
+- .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
 - make certain settings required in thememanager
 - new references filetype: Link Resources to certain files e.g. i have postgres file and i want to link a Page about Optimization
     - new editor with 3 inputs

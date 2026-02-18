@@ -122,11 +122,9 @@
 .media-preview {
     margin-bottom: 10px;
     text-align: center;
-    height: 200px; /* Fixed height to prevent layout breaking */
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
     background: var(--bg);
     border-radius: 4px;
 }

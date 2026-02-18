@@ -371,7 +371,7 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 	filename := filepath.Base(relativePath)
 
 	switch ext {
-	case ".png", ".jpg", ".jpeg", ".gif", ".webp":
+	case ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg":
 		// for images, use CSS to constrain size
 		var imgElement string
 		if clickToEnlarge {

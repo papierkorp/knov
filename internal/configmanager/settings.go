@@ -2,6 +2,8 @@ package configmanager
 
 import (
 	"encoding/json"
+	"mime"
+	"strings"
 
 	"knov/internal/configStorage"
 	"knov/internal/logging"
@@ -184,4 +186,27 @@ func GetShowCaption() bool {
 // GetClickToEnlarge returns whether previews are clickable
 func GetClickToEnlarge() bool {
 	return userSettings.MediaSettings.ClickToEnlarge
+}
+
+// GetAllowedMimeTypes returns the list of allowed mime types
+func GetAllowedMimeTypes() []string {
+	return userSettings.MediaSettings.AllowedMimeTypes
+}
+
+// IsImageExtension returns true if the file extension maps to an allowed image/* mime type
+func IsImageExtension(ext string) bool {
+	mimeType := mime.TypeByExtension(ext)
+	// strip parameters (e.g. "image/svg+xml; charset=utf-8")
+	if i := strings.Index(mimeType, ";"); i >= 0 {
+		mimeType = strings.TrimSpace(mimeType[:i])
+	}
+	if !strings.HasPrefix(mimeType, "image/") {
+		return false
+	}
+	for _, allowed := range GetAllowedMimeTypes() {
+		if allowed == mimeType {
+			return true
+		}
+	}
+	return false
 }

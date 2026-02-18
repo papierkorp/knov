@@ -86,15 +86,15 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 				var mediaPath string
 
 				// Determine if this is a media reference and extract the path
-				if strings.HasPrefix(dest, "media/") {
+				if strings.HasPrefix(dest, "/files/media/") {
+					mediaPath = dest[len("/files/media/"):] // remove "/files/media/" prefix
+				} else if strings.HasPrefix(dest, "media/") {
 					mediaPath = dest[6:] // remove "media/" prefix
 				} else if strings.HasPrefix(dest, "/media/") {
 					mediaPath = dest[7:] // remove "/media/" prefix
 				} else if !strings.HasPrefix(dest, "http://") && !strings.HasPrefix(dest, "https://") {
-					// Check if it's a common image extension that should be treated as media (only for local files)
 					ext := strings.ToLower(filepath.Ext(dest))
-					if ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".webp" {
-						// Assume it's a media file if it's an image extension
+					if configmanager.IsImageExtension(ext) {
 						mediaPath = dest
 					}
 				}
@@ -102,7 +102,6 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 				// If we identified it as a media file, handle it
 				if mediaPath != "" {
 					if entering {
-						// Check if previews are enabled
 						if configmanager.GetPreviewsEnabled() {
 							// Get default preview size from settings
 							size := configmanager.GetDefaultPreviewSize()
@@ -470,6 +469,10 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 		}
 
 		if !strings.Contains(url, "://") && !strings.HasPrefix(url, "#") {
+			// convert /files/media/ links to /media/
+			if strings.HasPrefix(url, "/files/media/") {
+				return `<a href="/media/` + url[len("/files/media/"):] + `">` + text + `</a>`
+			}
 			// check if URL already has /files/ prefix to avoid duplicates
 			if strings.HasPrefix(url, "/files/") {
 				return `<a href="` + url + `">` + text + `</a>`
