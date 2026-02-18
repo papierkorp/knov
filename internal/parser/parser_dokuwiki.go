@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -56,33 +57,59 @@ func (h *DokuwikiHandler) Name() string {
 
 // ConvertToMarkdown converts DokuWiki syntax to Markdown using unified processing
 func (h *DokuwikiHandler) ConvertToMarkdown(content string) string {
-	// Handle special DokuWiki plugins and complex structures first
-	content = h.handleComplexStructures(content)
+	// Extract %% escapes first so nothing else touches them
+	content, escapes := h.extractEscapes(content)
 
-	// Use unified syntax processing
+	content = h.handleComplexStructures(content)
 	content = h.processDokuWikiSyntax(content, "markdown")
+	content = h.restoreEscapes(content, escapes)
 
 	return content
 }
 
 // ConvertToHTML converts DokuWiki syntax to HTML using unified processing
 func (h *DokuwikiHandler) ConvertToHTML(content string) string {
-	// Handle special DokuWiki plugins and complex structures first
+	// Extract %% escapes first so nothing else touches them
+	content, escapes := h.extractEscapes(content)
+
 	content = h.handleComplexStructures(content)
-
-	// Use unified syntax processing
 	content = h.processDokuWikiSyntax(content, "html")
-
-	// Add paragraph tags for HTML
 	content = h.addParagraphTags(content)
+	content = h.restoreEscapes(content, escapes)
 
 	return content
 }
 
-// handleComplexStructures processes complex DokuWiki syntax that needs special handling
+// extractEscapes replaces %%...%% spans with unique placeholders before any other processing
+func (h *DokuwikiHandler) extractEscapes(content string) (string, []string) {
+	var escapes []string
+	result := regexp.MustCompile(`%%(.*?)%%`).ReplaceAllStringFunc(content, func(match string) string {
+		inner := match[2 : len(match)-2]
+		placeholder := fmt.Sprintf("\x00ESC%d\x00", len(escapes))
+		escapes = append(escapes, inner)
+		return placeholder
+	})
+	return result, escapes
+}
+
+// restoreEscapes replaces placeholders back with their inner content, wrapping in backticks if markdown-sensitive
+func (h *DokuwikiHandler) restoreEscapes(content string, escapes []string) string {
+	doubleUnder := regexp.MustCompile(`__.*__`)
+	for i, inner := range escapes {
+		restored := inner
+		if doubleUnder.MatchString(inner) {
+			restored = "`" + inner + "`"
+		}
+		content = strings.ReplaceAll(content, fmt.Sprintf("\x00ESC%d\x00", i), restored)
+	}
+	return content
+}
 func (h *DokuwikiHandler) handleComplexStructures(content string) string {
 	// Remove catlist tags completely
 	content = h.removeCatlistTags(content)
+
+	// Remove tablelayout plugin syntax
+	content = regexp.MustCompile(`\{\{[^}]*tablelayout[^}]*\}\}`).ReplaceAllString(content, "")
 
 	// Handle folded sections (++ title | content ++)
 	content = h.convertFoldedSections(content)

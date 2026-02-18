@@ -47,6 +47,8 @@ yamltest:
   * Internal Link3: [[#link_anchor]]
   * Internal Link3: [[#link_anchor|test]]
 
+
+
 ====== link anchor ======
 
 ++++ folded with 4 |
@@ -105,10 +107,51 @@ Image Example:
 
 {{:p:it:pasted:20211204-020045.png}}
 
+{{ :p:it:hardware:2x3trrs.svg |}}
+
+{{ :p:it:hardware:macropad6keys.svg | SVG}}
+
+{{ :p:it:electronics:mysterium_flashing_guide.pdf | QMK Toolbox Flashing Guide}}
+
 
 ==== link anchor subheader 2 ====
 
+{{..:hardware:tablelayout?rowsHeaderSource=1&rowsVisible=auto&colwidth="300px,100px,600px"}}
+^ Part                          ^ Amount  ^ Note                                                              ^
+| PCB                           | 2       | Left & Right                                                      |
+| 0.91 OLED Display             | 2       | 128x32                                                            |
+| Pro Micro Controller          | 2       | May use any other compatible controller.                          |
+
+<col2>
+{{tablelayout?rowsHeaderSource=Auto}}
+^ Language                 ^ Available language mode(s)                      ^
+| ASP.NET                  | asp, aspx                                       |
+| C                        | c                                               |
+| C%%++%%, cpp, cplusplus  |                                                 |
+| C#                       | cs, csharp                                      |
+| JSX                      | jsx                                             |
+| JSON                     | json                                            |
+| Julia                    | jl, julia                                       |
+<sep2>
+^ Language       ^ Available language mode(s)                                          ^
+| Kotlin         | kotlin, kt                                                          |
+| SQL            | cql, mssql, mysql, plsql, postgres, postgresql, pgsql, sql, sqlite  |
+| Swift          | swift                                                               |
+| TypeScript     | ts, typescript                                                      |
+| YAML           | yaml, yml                                                           |
+</col>
+
 === link anchor subheader 3 ===
+
+Escape 1: ''smb:%%//%%nas/transfer/''
+Escape 2: command1 %%||%% command2
+Escape 3: %%//%% CHANGE THIS
+Escape 4: "%%{{!!first}}%%"
+Escape 5: %%open N++%%
+Escape 6: ''%%baseURL = https://google.de%%''
+Escape 7: https:%%//%%github.com/bitst0rm-pub/Formatter/issues/62
+Escape 8: %%----%% (hr)
+Escape 9: python name: %%__name__%%
 
 == link anchor subheader 4 ==
 

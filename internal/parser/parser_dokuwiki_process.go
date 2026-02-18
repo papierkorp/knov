@@ -40,27 +40,37 @@ func (h *DokuwikiHandler) processDokuWikiSyntax(content string, outputFormat str
 
 // processMediaLinks handles media link conversion for both HTML and Markdown
 func (h *DokuwikiHandler) processMediaLinks(content string, outputFormat string) string {
-	mediaRegex := regexp.MustCompile(`\{\{:([^}]+)\}\}`)
+	// matches {{ :path/to/file | optional alt }} with optional spaces
+	mediaRegex := regexp.MustCompile(`\{\{\s*:([^|}]+)(?:\|([^}]*))?\}\}`)
 	content = mediaRegex.ReplaceAllStringFunc(content, func(match string) string {
 		matches := mediaRegex.FindStringSubmatch(match)
-		if len(matches) >= 2 {
-			mediaPath := strings.TrimSpace(matches[1])
-
-			// convert dokuwiki namespace (colons) to filesystem path (slashes)
-			mediaPath = strings.ReplaceAll(mediaPath, ":", "/")
-
-			// create media URL
-			mediaURL := fmt.Sprintf("/files/media/%s", mediaPath)
-
-			if outputFormat == "html" {
-				// for HTML: create img tag
-				return fmt.Sprintf(`<img src="%s" alt="%s" />`, mediaURL, filepath.Base(mediaPath))
-			} else {
-				// for Markdown: create image syntax
-				return fmt.Sprintf(`![%s](%s)`, filepath.Base(mediaPath), mediaURL)
-			}
+		if len(matches) < 2 {
+			return match
 		}
-		return match
+
+		// convert dokuwiki namespace (colons) to filesystem path (slashes)
+		mediaPath := strings.TrimSpace(matches[1])
+		mediaPath = strings.ReplaceAll(mediaPath, ":", "/")
+
+		altText := strings.TrimSpace(matches[2])
+		if altText == "" {
+			altText = filepath.Base(mediaPath)
+		}
+
+		mediaURL := fmt.Sprintf("/files/media/%s", mediaPath)
+
+		// PDFs render as links, everything else as images
+		if strings.ToLower(filepath.Ext(mediaPath)) == ".pdf" {
+			if outputFormat == "html" {
+				return fmt.Sprintf(`<a href="%s">%s</a>`, mediaURL, altText)
+			}
+			return fmt.Sprintf("[%s](%s)", altText, mediaURL)
+		}
+
+		if outputFormat == "html" {
+			return fmt.Sprintf(`<img src="%s" alt="%s" />`, mediaURL, altText)
+		}
+		return fmt.Sprintf("![%s](%s)", altText, mediaURL)
 	})
 
 	return content
