@@ -151,7 +151,7 @@
 #component-header .dropdown-navbar-content[popover] a:hover,
 #component-header .dropdown-navbar-content[popover] button:hover {
     background: var(--accent);
-    color: var(--bg);
+    color: var(--bg-secondary);
 }
 
 /* Search */

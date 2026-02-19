@@ -138,3 +138,10 @@ h1:first-child {
 .btn:hover {
     background: var(--accent);
 }
+
+code {
+    background-color: var(--bg-secondary);
+    color: var(--text);
+    padding: 0 5px;
+    font-style: italic;
+}

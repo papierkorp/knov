@@ -29,7 +29,7 @@ func (h *MarkdownHandler) CanHandle(filename string) bool {
 
 func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 	processed := h.processMarkdownLinks(string(content))
-	processed = h.fixDeeplyIndentedLists(processed)
+	processed = h.fixIndentedListsInCodeBlocks(processed)
 	return []byte(processed), nil
 }
 
@@ -53,6 +53,7 @@ func (r *customRenderer) RenderNode(w io.Writer, node ast.Node, entering bool) a
 // update the Render function to use custom renderer:
 func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error) {
 	extensions := gomarkdown_parser.CommonExtensions | gomarkdown_parser.AutoHeadingIDs | gomarkdown_parser.HardLineBreak
+	extensions &^= gomarkdown_parser.MathJax // prevent $ signs from being treated as math delimiters
 	p := gomarkdown_parser.NewWithExtensions(extensions)
 
 	htmlFlags := html.CommonFlags | html.HrefTargetBlank
@@ -135,8 +136,8 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	}
 	renderer := html.NewRenderer(opts)
 
-	// Pre-process content to handle lists with DokuWiki-style behavior (blank lines break lists)
-	content = h.preprocessListsForDokuWikiStyle(content)
+	// gomarkdown merges lists separated by blank lines - inject comment separators to prevent this
+	content = h.preprocessBlankLineLists(content)
 
 	htmlOutput := markdown.ToHTML(content, p, renderer)
 
@@ -303,42 +304,38 @@ func removeCodeBlocks(text string) string {
 	return text
 }
 
-// fixDeeplyIndentedLists converts lines with 4+ spaces + - to proper markdown list format
-// and ensures code blocks are properly indented within lists
-func (h *MarkdownHandler) fixDeeplyIndentedLists(content string) string {
+func (h *MarkdownHandler) Name() string {
+	return "markdown"
+}
+
+// fixIndentedListsInCodeBlocks ensures code blocks nested inside lists maintain correct indentation,
+// working around gomarkdown's behaviour of losing list context after a fenced code block
+func (h *MarkdownHandler) fixIndentedListsInCodeBlocks(content string) string {
 	lines := strings.Split(content, "\n")
 	var result []string
 	var inCodeBlock bool
 	var codeBlockIndent string
 
 	for _, line := range lines {
-		// check if we're dealing with a code block fence
 		if strings.HasPrefix(strings.TrimSpace(line), "```") {
 			if !inCodeBlock {
-				// entering code block - check previous lines for list context
 				inCodeBlock = true
 				for j := len(result) - 1; j >= 0; j-- {
-					prevLine := result[j]
-					if strings.TrimSpace(prevLine) == "" {
-						continue // skip empty lines
+					prev := result[j]
+					if strings.TrimSpace(prev) == "" {
+						continue
 					}
-					// find the last list item to determine indentation
-					if match := regexp.MustCompile(`^( *)- (.+)$`).FindStringSubmatch(prevLine); match != nil {
-						// for a list item like "    - content", content underneath should be indented "      " (list indent + 2)
-						listIndent := match[1]
-						codeBlockIndent = listIndent + "  "
-						break
+					if match := regexp.MustCompile(`^( *)- (.+)$`).FindStringSubmatch(prev); match != nil {
+						codeBlockIndent = match[1] + "  "
 					}
-					break // stop if we hit non-list content
+					break
 				}
-
 				if codeBlockIndent != "" {
 					result = append(result, codeBlockIndent+strings.TrimSpace(line))
 				} else {
 					result = append(result, line)
 				}
 			} else {
-				// exiting code block
 				if codeBlockIndent != "" {
 					result = append(result, codeBlockIndent+strings.TrimSpace(line))
 				} else {
@@ -349,8 +346,6 @@ func (h *MarkdownHandler) fixDeeplyIndentedLists(content string) string {
 			}
 			continue
 		}
-
-		// if we're in a code block, maintain the indentation
 		if inCodeBlock && codeBlockIndent != "" {
 			if strings.TrimSpace(line) == "" {
 				result = append(result, "")
@@ -359,95 +354,32 @@ func (h *MarkdownHandler) fixDeeplyIndentedLists(content string) string {
 			}
 			continue
 		}
-
-		// check if line has spaces followed by - (list item)
-		if match := regexp.MustCompile(`^( *)- (.+)$`).FindStringSubmatch(line); match != nil {
-			spaces := match[1]
-			listContent := match[2]
-			spaceCount := len(spaces)
-
-			// convert DokuWiki indentation to proper markdown indentation
-			// 8 spaces → 6 spaces (level 4)
-			// 6 spaces → 4 spaces (level 3)
-			// 4 spaces → 2 spaces (level 2)
-			// 2 spaces → 0 spaces (level 1)
-			var newIndent string
-			if spaceCount >= 8 {
-				newIndent = "      " // 6 spaces for level 3
-			} else if spaceCount >= 6 {
-				newIndent = "    " // 4 spaces for level 2
-			} else if spaceCount >= 4 {
-				newIndent = "  " // 2 spaces for level 1
-			} else if spaceCount >= 2 {
-				newIndent = "  " // keep 2 spaces for level 1 (don't convert to 0)
-			}
-
-			result = append(result, fmt.Sprintf("%s- %s", newIndent, listContent))
-		} else {
-			result = append(result, line)
-		}
+		result = append(result, line)
 	}
 
 	return strings.Join(result, "\n")
 }
 
-func (h *MarkdownHandler) Name() string {
-	return "markdown"
+// preprocessBlankLineLists injects HTML comment separators between lists divided by blank lines,
+// working around gomarkdown merging them into a single list
+func (h *MarkdownHandler) preprocessBlankLineLists(content []byte) []byte {
+	lines := strings.Split(string(content), "\n")
+	var result []string
+	listItemRe := regexp.MustCompile(`^( *)- (.+)$`)
+
+	for i, line := range lines {
+		result = append(result, line)
+		if listItemRe.MatchString(line) && i+1 < len(lines) && strings.TrimSpace(lines[i+1]) == "" {
+			result = append(result, "", "<!-- -->", "")
+		}
+	}
+
+	return []byte(strings.Join(result, "\n"))
 }
 
-// processMarkdownLinks converts markdown-style links to HTML anchors
+// processMarkdownLinks converts markdown [text](url) links to HTML anchors
 func (h *MarkdownHandler) processMarkdownLinks(content string) string {
-	// first, convert wiki-style links [[link|text]] and [[link]] to markdown format
-	wikiLinkRegex := regexp.MustCompile(`\[\[([^\]|]+)(?:\|([^\]]+))?\]\]`)
-	content = wikiLinkRegex.ReplaceAllStringFunc(content, func(match string) string {
-		matches := wikiLinkRegex.FindStringSubmatch(match)
-		if len(matches) < 2 {
-			return match
-		}
-
-		link := strings.TrimSpace(matches[1])
-		text := link
-		if len(matches) > 2 && matches[2] != "" {
-			text = strings.TrimSpace(matches[2])
-		}
-
-		// external links
-		if strings.HasPrefix(link, "http://") || strings.HasPrefix(link, "https://") || strings.Contains(link, "://") {
-			return fmt.Sprintf(`<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>`, link, text)
-		}
-
-		// internal links
-		if !strings.HasSuffix(link, ".md") && !strings.HasSuffix(link, ".txt") {
-			link += ".md"
-		}
-		return fmt.Sprintf(`<a href="/files/%s">%s</a>`, link, text)
-	})
-
-	// convert media links {{link}} to markdown image syntax
-	mediaLinkRegex := regexp.MustCompile(`\{\{([^\}]+)\}\}`)
-	content = mediaLinkRegex.ReplaceAllStringFunc(content, func(match string) string {
-		matches := mediaLinkRegex.FindStringSubmatch(match)
-		if len(matches) < 2 {
-			return match
-		}
-
-		link := strings.TrimSpace(matches[1])
-
-		// if it starts with media/, it's a media file
-		if strings.HasPrefix(link, "media/") {
-			return fmt.Sprintf(`<a href="/%s">%s</a>`, link, filepath.Base(link))
-		}
-
-		// otherwise treat as file link
-		if !strings.HasSuffix(link, ".md") && !strings.HasSuffix(link, ".txt") {
-			link += ".md"
-		}
-		return fmt.Sprintf(`<a href="/files/%s">%s</a>`, link, filepath.Base(link))
-	})
-
-	// process regular markdown links [text](url)
 	re := regexp.MustCompile(`(!)?\[([^\]]+)\]\(([^)]+)\)`)
-
 	content = re.ReplaceAllStringFunc(content, func(match string) string {
 		matches := re.FindStringSubmatch(match)
 		if len(matches) < 4 {
@@ -458,14 +390,9 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 		text := strings.TrimSpace(matches[2])
 		url := strings.TrimSpace(matches[3])
 
-		// if it's an image link, don't process it - return as-is
+		// images are handled by the render hook - return as-is
 		if isImage {
 			return match
-		}
-
-		// if it's a media link, convert to media route
-		if strings.HasPrefix(url, "media/") {
-			return `<a href="/` + url + `">` + text + `</a>`
 		}
 
 		if !strings.Contains(url, "://") && !strings.HasPrefix(url, "#") {
@@ -473,7 +400,7 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 			if strings.HasPrefix(url, "/files/media/") {
 				return `<a href="/media/` + url[len("/files/media/"):] + `">` + text + `</a>`
 			}
-			// check if URL already has /files/ prefix to avoid duplicates
+			// already has /files/ prefix
 			if strings.HasPrefix(url, "/files/") {
 				return `<a href="` + url + `">` + text + `</a>`
 			}
@@ -487,35 +414,4 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 	})
 
 	return content
-}
-
-// preprocessListsForDokuWikiStyle modifies markdown to force list separation on blank lines
-// This uses the DokuWiki logic: any blank line should break lists
-func (h *MarkdownHandler) preprocessListsForDokuWikiStyle(content []byte) []byte {
-	lines := strings.Split(string(content), "\n")
-	var result []string
-
-	for i, line := range lines {
-		result = append(result, line)
-
-		// Check if current line is a list item at any level
-		if match := regexp.MustCompile(`^( *)- (.+)$`).FindStringSubmatch(line); match != nil {
-			// Look ahead: current list item -> blank line -> next line
-			if i+2 < len(lines) {
-				nextLine := lines[i+1]
-				// lineAfterNext := lines[i+2]
-
-				// If next line is blank, and line after that is also a list item or any content
-				if strings.TrimSpace(nextLine) == "" {
-					// Insert an HTML comment to force separation
-					// This will cause gomarkdown to end the current list
-					result = append(result, "")
-					result = append(result, "<!-- -->")
-					result = append(result, "")
-				}
-			}
-		}
-	}
-
-	return []byte(strings.Join(result, "\n"))
 }
