@@ -2566,6 +2566,12 @@ const docTemplate = `{
                         "name": "filepath",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Include media file links",
+                        "name": "showMedia",
+                        "in": "query"
                     }
                 ],
                 "responses": {}

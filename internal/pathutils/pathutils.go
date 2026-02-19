@@ -43,6 +43,11 @@ func parsePath(inputPath string) *PathInfo {
 	var relativePath string
 	var withPrefix string
 
+	// strip leading "files/" prefix used in stored metadata links
+	if strings.HasPrefix(normalizedPath, "files/") {
+		normalizedPath = strings.TrimPrefix(normalizedPath, "files/")
+	}
+
 	// determine type based on prefix
 	if strings.HasPrefix(normalizedPath, "media/") {
 		pathType = TypeMedia

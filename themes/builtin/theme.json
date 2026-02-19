@@ -95,6 +95,12 @@
       "default": "detail",
       "label": "Media Link Mode",
       "description": "direct opens raw media file, detail shows metadata and usage information"
+    },
+    "showMediaLinks": {
+      "type": "boolean",
+      "default": false,
+      "label": "Show Media in Links To",
+      "description": "include media files (images, pdfs) in the outbound links list"
     }
   }
 }

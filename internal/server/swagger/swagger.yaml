@@ -2130,6 +2130,10 @@ paths:
         name: filepath
         required: true
         type: string
+      - description: Include media file links
+        in: query
+        name: showMedia
+        type: boolean
       produces:
       - application/json
       - text/html

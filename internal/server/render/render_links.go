@@ -86,16 +86,26 @@ func RenderNoLinksMessage(message string) string {
 }
 
 // RenderLinksList renders a list of file links as HTML with configurable display text
-func RenderLinksList(links []string) string {
+func RenderLinksList(links []string, showMedia bool) string {
 	if len(links) == 0 {
 		return ""
 	}
 
 	var html strings.Builder
 	for _, link := range links {
-		linkPath := pathutils.ToRelative(link)
-		displayText := GetLinkDisplayText(linkPath)
-		html.WriteString(fmt.Sprintf(`<a href="/files/%s" title="%s" class="connection-link">%s</a>`, linkPath, linkPath, displayText))
+		if pathutils.IsMedia(link) {
+			if !showMedia {
+				continue
+			}
+			rel := pathutils.ToRelative(link)
+			url := "/media/" + rel
+			html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, filepath.Base(rel)))
+		} else {
+			rel := pathutils.ToRelative(link)
+			url := "/files/" + rel
+			displayText := GetLinkDisplayText(rel)
+			html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, displayText))
+		}
 	}
 	return html.String()
 }
@@ -105,7 +115,7 @@ func RenderParentLinks(parents []string) string {
 	if len(parents) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no parents"))
 	}
-	return RenderLinksList(parents)
+	return RenderLinksList(parents, false)
 }
 
 // RenderAncestorLinks renders ancestor links or no ancestors message
@@ -113,7 +123,7 @@ func RenderAncestorLinks(ancestors []string) string {
 	if len(ancestors) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no ancestors"))
 	}
-	return RenderLinksList(ancestors)
+	return RenderLinksList(ancestors, false)
 }
 
 // RenderKidsLinks renders children links or no children message
@@ -121,15 +131,15 @@ func RenderKidsLinks(kids []string) string {
 	if len(kids) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no children"))
 	}
-	return RenderLinksList(kids)
+	return RenderLinksList(kids, false)
 }
 
 // RenderUsedLinks renders used/outbound links or no outbound links message
-func RenderUsedLinks(usedLinks []string) string {
+func RenderUsedLinks(usedLinks []string, showMedia bool) string {
 	if len(usedLinks) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no outbound links"))
 	}
-	return RenderLinksList(usedLinks)
+	return RenderLinksList(usedLinks, showMedia)
 }
 
 // RenderLinksToHere renders inbound links or no inbound links message
@@ -137,5 +147,5 @@ func RenderLinksToHere(linksToHere []string) string {
 	if len(linksToHere) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no inbound links"))
 	}
-	return RenderLinksList(linksToHere)
+	return RenderLinksList(linksToHere, false)
 }

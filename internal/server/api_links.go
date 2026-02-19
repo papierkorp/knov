@@ -34,7 +34,7 @@ func handleAPIGetParents(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, r, data, html)
 		return
 	}
-	html := render.RenderLinksList(metadata.Parents)
+	html := render.RenderLinksList(metadata.Parents, false)
 	writeResponse(w, r, metadata.Parents, html)
 }
 
@@ -62,7 +62,7 @@ func handleAPIGetAncestors(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, r, data, html)
 		return
 	}
-	html := render.RenderLinksList(metadata.Ancestor)
+	html := render.RenderLinksList(metadata.Ancestor, false)
 	writeResponse(w, r, metadata.Ancestor, html)
 }
 
@@ -90,13 +90,14 @@ func handleAPIGetKids(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, r, data, html)
 		return
 	}
-	html := render.RenderLinksList(metadata.Kids)
+	html := render.RenderLinksList(metadata.Kids, false)
 	writeResponse(w, r, metadata.Kids, html)
 }
 
 // @Summary Get used links for a file
 // @Tags links
 // @Param filepath query string true "File path"
+// @Param showMedia query bool false "Include media file links"
 // @Produce json,html
 // @Router /api/links/used [get]
 func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
@@ -105,6 +106,7 @@ func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
 		return
 	}
+	showMedia := r.URL.Query().Get("showMedia") == "true"
 	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
@@ -118,7 +120,7 @@ func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, r, data, html)
 		return
 	}
-	html := render.RenderLinksList(metadata.UsedLinks)
+	html := render.RenderUsedLinks(metadata.UsedLinks, showMedia)
 	writeResponse(w, r, metadata.UsedLinks, html)
 }
 
@@ -146,6 +148,5 @@ func handleAPIGetLinksToHere(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, r, data, html)
 		return
 	}
-	html := render.RenderLinksList(metadata.LinksToHere)
-	writeResponse(w, r, metadata.LinksToHere, html)
+	writeResponse(w, r, metadata.LinksToHere, render.RenderLinksList(metadata.LinksToHere, false))
 }

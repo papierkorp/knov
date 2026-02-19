@@ -104,7 +104,7 @@
                     </div>
                     <div class="connection-group">
                         <div class="connection-label">links to</div>
-                        <div hx-get="/api/links/used?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                        <div hx-get="/api/links/used?filepath={{urlQuery .FilePath}}&showMedia={{index .ThemeSettings "showMediaLinks"}}" hx-trigger="load">...</div>
                     </div>
                     <div class="connection-group">
                         <div class="connection-label">links from</div>
