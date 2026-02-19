@@ -26,11 +26,13 @@ func (h *DokuwikiHandler) processDokuWikiSyntax(content string, outputFormat str
 	// 4. Headers
 	content = h.processHeaders(content, outputFormat)
 
-	// 5. Text formatting
-	content = h.processTextFormatting(content, outputFormat)
-
-	// 6. Links
+	// 5. Links (before text formatting to protect :// in URLs)
 	content = h.processLinks(content, outputFormat)
+
+	// 6. Text formatting - protect URLs first so // italic regex doesn't mangle them
+	content, urls := h.extractURLs(content)
+	content = h.processTextFormatting(content, outputFormat)
+	content = h.restoreURLs(content, urls)
 
 	// 7. Lists (last, so other formatting inside lists works)
 	content = h.processLists(content, outputFormat)
@@ -213,9 +215,8 @@ func (h *DokuwikiHandler) processLinks(content string, outputFormat string) stri
 
 				// for internal links, create web path
 				if url != "" { // not just an anchor
-					// don't add extension when anchor is present
-					if !hasAnchor && !strings.HasSuffix(url, ".md") && !strings.HasSuffix(url, ".txt") {
-						url += ".txt"
+					if !strings.HasSuffix(url, ".md") {
+						url += ".md"
 					}
 					// use /files/docs/ prefix consistently
 					convertedURL = fmt.Sprintf("/files/docs/%s%s", url, anchor)
@@ -381,8 +382,8 @@ func (h *DokuwikiHandler) convertIncludeSections(content string, outputFormat st
 		url = strings.ReplaceAll(url, ":", "/")
 
 		// don't add extension when anchor is present
-		if !hasAnchor && !strings.HasSuffix(url, ".md") && !strings.HasSuffix(url, ".txt") {
-			url += ".txt"
+		if !strings.HasSuffix(url, ".md") {
+			url += ".md"
 		}
 
 		// use /files/docs/ prefix consistently

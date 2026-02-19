@@ -104,6 +104,25 @@ func (h *DokuwikiHandler) restoreEscapes(content string, escapes []string) strin
 	}
 	return content
 }
+
+// extractURLs replaces URLs (http/https) with placeholders to protect them from text formatting
+func (h *DokuwikiHandler) extractURLs(content string) (string, []string) {
+	var urls []string
+	result := regexp.MustCompile(`https?://[^\s)\]"<]+`).ReplaceAllStringFunc(content, func(match string) string {
+		placeholder := fmt.Sprintf("\x00URL%d\x00", len(urls))
+		urls = append(urls, match)
+		return placeholder
+	})
+	return result, urls
+}
+
+// restoreURLs replaces URL placeholders back with the original URLs
+func (h *DokuwikiHandler) restoreURLs(content string, urls []string) string {
+	for i, url := range urls {
+		content = strings.ReplaceAll(content, fmt.Sprintf("\x00URL%d\x00", i), url)
+	}
+	return content
+}
 func (h *DokuwikiHandler) handleComplexStructures(content string) string {
 	// Remove catlist tags completely
 	content = h.removeCatlistTags(content)
