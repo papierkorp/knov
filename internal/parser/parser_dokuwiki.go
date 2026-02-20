@@ -105,6 +105,25 @@ func (h *DokuwikiHandler) restoreEscapes(content string, escapes []string) strin
 	return content
 }
 
+// extractCodeBlocks replaces fenced code blocks with placeholders to protect their content from further processing
+func (h *DokuwikiHandler) extractCodeBlocks(content string) (string, []string) {
+	var blocks []string
+	result := regexp.MustCompile("(?s)```[^\n]*\n.*?```").ReplaceAllStringFunc(content, func(match string) string {
+		placeholder := fmt.Sprintf("\x00CODE%d\x00", len(blocks))
+		blocks = append(blocks, match)
+		return placeholder
+	})
+	return result, blocks
+}
+
+// restoreCodeBlocks replaces code block placeholders back with their original content
+func (h *DokuwikiHandler) restoreCodeBlocks(content string, blocks []string) string {
+	for i, block := range blocks {
+		content = strings.ReplaceAll(content, fmt.Sprintf("\x00CODE%d\x00", i), block)
+	}
+	return content
+}
+
 // extractURLs replaces URLs (http/https) with placeholders to protect them from text formatting
 func (h *DokuwikiHandler) extractURLs(content string) (string, []string) {
 	var urls []string

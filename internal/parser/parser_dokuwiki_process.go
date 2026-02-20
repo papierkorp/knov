@@ -20,8 +20,9 @@ func (h *DokuwikiHandler) processDokuWikiSyntax(content string, outputFormat str
 	// 2. Tables first (so they don't get processed as other syntax)
 	content = h.ProcessTables(content, outputFormat)
 
-	// 3. Code blocks (so they don't get processed as other syntax)
+	// 3. Code blocks (convert tags, then protect content from further processing)
 	content = h.processCodeBlocks(content, outputFormat)
+	content, codeBlocks := h.extractCodeBlocks(content)
 
 	// 4. Headers
 	content = h.processHeaders(content, outputFormat)
@@ -36,6 +37,9 @@ func (h *DokuwikiHandler) processDokuWikiSyntax(content string, outputFormat str
 
 	// 7. Lists (last, so other formatting inside lists works)
 	content = h.processLists(content, outputFormat)
+
+	// 8. Restore protected code block content
+	content = h.restoreCodeBlocks(content, codeBlocks)
 
 	return content
 }
@@ -84,10 +88,10 @@ func (h *DokuwikiHandler) processCodeBlocks(content string, outputFormat string)
 		regex string
 		tag   string
 	}{
-		{`(?s)<sxh\s+([a-zA-Z0-9_-]+)>(.*?)</sxh>`, "sxh"},
-		{`(?s)<codify\s+([a-zA-Z0-9_-]+)>(.*?)</codify>`, "codify"},
-		{`(?s)<code\s+([a-zA-Z0-9_-]+)>(.*?)</code>`, "code"},
-		{`(?s)<file\s+([a-zA-Z0-9_-]+)>(.*?)</file>`, "file"},
+		{`(?s)<sxh\s+([a-zA-Z0-9_-]+)(?:\s+[^\s>]+)?\s*>(.*?)</sxh>`, "sxh"},
+		{`(?s)<codify\s+([a-zA-Z0-9_-]+)(?:\s+[^\s>]+)?\s*>(.*?)</codify>`, "codify"},
+		{`(?s)<code\s+([a-zA-Z0-9_-]+)(?:\s+[^\s>]+)?\s*>(.*?)</code>`, "code"},
+		{`(?s)<file\s+([a-zA-Z0-9_-]+)(?:\s+[^\s>]+)?\s*>(.*?)</file>`, "file"},
 		{`(?s)<code>(.*?)</code>`, "simple-code"}, // no language
 	}
 
@@ -429,10 +433,27 @@ func (h *DokuwikiHandler) convertFoldedSections(content string) string {
 			if len(parts) >= 2 {
 				inFoldedSection = true
 				foldedContent = []string{}
-				// Check if there's content after the | on the same line
-				afterPipe := strings.SplitN(line, "|", 2)
-				if len(afterPipe) > 1 && strings.TrimSpace(afterPipe[1]) != "" {
-					foldedContent = append(foldedContent, strings.TrimSpace(afterPipe[1]))
+
+				// extract only the leading whitespace (not the list marker * or -)
+				listPrefix := parts[0]
+				indent := listPrefix
+				if trimmed := strings.TrimLeft(listPrefix, " \t"); len(trimmed) > 0 {
+					indent = listPrefix[:len(listPrefix)-len(trimmed)]
+				}
+
+				// extract title (between ++ and |)
+				afterOpen := strings.Join(parts[1:], "++")
+				titleAndRest := strings.SplitN(afterOpen, "|", 2)
+				title := strings.TrimSpace(titleAndRest[0])
+
+				// emit title as a list item at the same indent level
+				if title != "" {
+					result = append(result, indent+"* "+title)
+				}
+
+				// check if there's inline content after the |
+				if len(titleAndRest) > 1 && strings.TrimSpace(titleAndRest[1]) != "" {
+					foldedContent = append(foldedContent, strings.TrimSpace(titleAndRest[1]))
 				}
 				continue
 			}
@@ -441,22 +462,13 @@ func (h *DokuwikiHandler) convertFoldedSections(content string) string {
 		// Check if we're in a folded section
 		if inFoldedSection {
 			// Check if line ends the folded section
-			if strings.Contains(line, "++") {
-				// Add any content before ++ on this line
-				parts := strings.Split(line, "++")
-				if strings.TrimSpace(parts[0]) != "" {
-					foldedContent = append(foldedContent, strings.TrimSpace(parts[0]))
-				}
-
-				// Process the folded content
+			if strings.TrimSpace(line) == "++" {
+				// restore content indented to match the list level
 				innerContent := strings.Join(foldedContent, "\n")
 				innerContent = strings.TrimSpace(innerContent)
-
-				// Just add the content directly - let markdown renderer handle it
 				if innerContent != "" {
 					result = append(result, innerContent)
 				}
-
 				inFoldedSection = false
 				foldedContent = []string{}
 				continue

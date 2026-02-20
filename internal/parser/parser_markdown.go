@@ -302,28 +302,35 @@ func (h *MarkdownHandler) fixIndentedListsInCodeBlocks(content string) string {
 	var inCodeBlock bool
 	var codeBlockIndent string
 
-	for _, line := range lines {
+	for i, line := range lines {
 		if strings.HasPrefix(strings.TrimSpace(line), "```") {
 			if !inCodeBlock {
 				inCodeBlock = true
+
+				// find preceding list item indent
 				for j := len(result) - 1; j >= 0; j-- {
 					prev := result[j]
 					if strings.TrimSpace(prev) == "" {
 						continue
 					}
 					if match := regexp.MustCompile(`^( *)- (.+)$`).FindStringSubmatch(prev); match != nil {
-						codeBlockIndent = match[1] + "  "
+						// only indent if the code block has no blank lines - gomarkdown
+						// terminates list context on blank lines inside indented code blocks
+						if !codeBlockHasBlankLines(lines, i) {
+							codeBlockIndent = match[1] + "  "
+						}
 					}
 					break
 				}
+
 				if codeBlockIndent != "" {
-					result = append(result, codeBlockIndent+strings.TrimSpace(line))
+					result = append(result, codeBlockIndent+strings.TrimSpace(line)) // fence line, trim ok
 				} else {
 					result = append(result, line)
 				}
 			} else {
 				if codeBlockIndent != "" {
-					result = append(result, codeBlockIndent+strings.TrimSpace(line))
+					result = append(result, codeBlockIndent+strings.TrimSpace(line)) // closing fence, trim ok
 				} else {
 					result = append(result, line)
 				}
@@ -336,7 +343,8 @@ func (h *MarkdownHandler) fixIndentedListsInCodeBlocks(content string) string {
 			if strings.TrimSpace(line) == "" {
 				result = append(result, "")
 			} else {
-				result = append(result, codeBlockIndent+strings.TrimSpace(line))
+				// preserve original line content, only prepend the list indent
+				result = append(result, codeBlockIndent+line)
 			}
 			continue
 		}
@@ -346,16 +354,33 @@ func (h *MarkdownHandler) fixIndentedListsInCodeBlocks(content string) string {
 	return strings.Join(result, "\n")
 }
 
+// codeBlockHasBlankLines scans forward from the opening fence to check if the block contains blank lines
+func codeBlockHasBlankLines(lines []string, openIdx int) bool {
+	for i := openIdx + 1; i < len(lines); i++ {
+		if strings.HasPrefix(strings.TrimSpace(lines[i]), "```") {
+			return false // reached closing fence, no blank lines found
+		}
+		if strings.TrimSpace(lines[i]) == "" {
+			return true
+		}
+	}
+	return false
+}
+
 // preprocessBlankLineLists injects HTML comment separators between lists divided by blank lines,
 // working around gomarkdown merging them into a single list
 func (h *MarkdownHandler) preprocessBlankLineLists(content []byte) []byte {
 	lines := strings.Split(string(content), "\n")
 	var result []string
 	listItemRe := regexp.MustCompile(`^( *)- (.+)$`)
+	var inCodeBlock bool
 
 	for i, line := range lines {
+		if strings.HasPrefix(strings.TrimSpace(line), "```") {
+			inCodeBlock = !inCodeBlock
+		}
 		result = append(result, line)
-		if listItemRe.MatchString(line) && i+1 < len(lines) && strings.TrimSpace(lines[i+1]) == "" {
+		if !inCodeBlock && listItemRe.MatchString(line) && i+1 < len(lines) && strings.TrimSpace(lines[i+1]) == "" {
 			result = append(result, "", "<!-- -->", "")
 		}
 	}
