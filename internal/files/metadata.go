@@ -197,18 +197,23 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	// update collection and folder based on folder structure (use path without docs/media prefix)
 	normalizedPath := pathutils.ToRelative(filePath)
 
-	if newMetadata.Collection == "" {
-		folderPath := filepath.Dir(normalizedPath)
-		if folderPath != "." && folderPath != "" {
-			parts := strings.Split(folderPath, "/")
+	folderPath := filepath.Dir(normalizedPath)
+	if folderPath != "." && folderPath != "" {
+		parts := strings.Split(folderPath, "/")
+		currentMetadata.Folders = parts
+		if newMetadata.Collection == "" {
 			currentMetadata.Collection = parts[0]
+		} else {
+			currentMetadata.Collection = newMetadata.Collection
 		}
 	} else {
-		currentMetadata.Collection = newMetadata.Collection
+		currentMetadata.Folders = []string{}
+		if newMetadata.Collection != "" {
+			currentMetadata.Collection = newMetadata.Collection
+		}
 	}
 
 	// update folder field
-	folderPath := filepath.Dir(normalizedPath)
 	if folderPath == "." {
 		currentMetadata.Folder = ""
 	} else {

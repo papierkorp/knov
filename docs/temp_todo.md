@@ -314,6 +314,10 @@ this is what i wrote down:
       - e.g. PARA_PROJECTS/work/meeting-notes.md = collection work
       - e.g. PARA_PROJECTS/standalone.md = collection default
 
+# dokuwiki parser
+
+http://localhost:1324/files/p/wiki/chronik.md
+
 # small stuff
 
 - add a button to base.gohtml in the edit toolbar: rebuild metadata for this file
