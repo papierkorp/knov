@@ -89,10 +89,13 @@ func (h *DokuwikiHandler) processCodeBlocks(content string, outputFormat string)
 		tag   string
 	}{
 		{`(?s)<sxh\s+([a-zA-Z0-9_-]+)(?:\s+[^\s>]+)?\s*>(.*?)</sxh>`, "sxh"},
+		{`(?s)<sxh>(.*?)</sxh>`, "simple-code"},
 		{`(?s)<codify\s+([a-zA-Z0-9_-]+)(?:\s+[^\s>]+)?\s*>(.*?)</codify>`, "codify"},
+		{`(?s)<codify>(.*?)</codify>`, "simple-code"},
 		{`(?s)<code\s+([a-zA-Z0-9_-]+)(?:\s+[^\s>]+)?\s*>(.*?)</code>`, "code"},
 		{`(?s)<file\s+([a-zA-Z0-9_-]+)(?:\s+[^\s>]+)?\s*>(.*?)</file>`, "file"},
-		{`(?s)<code>(.*?)</code>`, "simple-code"}, // no language
+		{`(?s)<file>(.*?)</file>`, "simple-code"},
+		{`(?s)<code>(.*?)</code>`, "simple-code"},
 	}
 
 	for _, pattern := range patterns {
