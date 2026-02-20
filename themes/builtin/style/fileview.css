@@ -508,3 +508,26 @@
     text-align: inherit;
     vertical-align: baseline;
 }
+
+#view-fileview-detailed blockquote,
+#view-fileview-compact blockquote,
+#view-fileview-reader blockquote {
+    border-left: 10px solid var(--neutral);
+    padding: 0.5em 10px;
+}
+
+#view-fileview-detailed blockquote:before,
+#view-fileview-compact blockquote:before,
+#view-fileview-reader blockquote:before {
+    color: var(--neutral);
+    content: open-quote;
+    font-size: 4em;
+    line-height: 0.1em;
+    margin-right: 0.25em;
+    vertical-align: -0.4em;
+}
+#view-fileview-detailed blockquote p,
+#view-fileview-compact blockquote p,
+#view-fileview-reader blockquote p {
+    display: inline;
+}

@@ -461,11 +461,17 @@ func (h *DokuwikiHandler) convertFoldedSections(content string) string {
 
 		// Check if we're in a folded section
 		if inFoldedSection {
-			// Check if line ends the folded section
-			if strings.TrimSpace(line) == "++" {
-				// restore content indented to match the list level
-				innerContent := strings.Join(foldedContent, "\n")
-				innerContent = strings.TrimSpace(innerContent)
+			// closing ++ can be standalone or at the end of a line (e.g. </code>++)
+			trimmed := strings.TrimSpace(line)
+			isClosing := trimmed == "++" || strings.HasSuffix(trimmed, "++")
+			if isClosing {
+				// add any content before the closing ++
+				beforeClose := strings.TrimSpace(strings.TrimSuffix(trimmed, "++"))
+				if beforeClose != "" {
+					foldedContent = append(foldedContent, beforeClose)
+				}
+
+				innerContent := strings.TrimSpace(strings.Join(foldedContent, "\n"))
 				if innerContent != "" {
 					result = append(result, innerContent)
 				}
@@ -473,7 +479,6 @@ func (h *DokuwikiHandler) convertFoldedSections(content string) string {
 				foldedContent = []string{}
 				continue
 			} else {
-				// Add line to folded content
 				foldedContent = append(foldedContent, line)
 				continue
 			}
