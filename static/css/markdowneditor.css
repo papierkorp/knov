@@ -123,7 +123,8 @@ body[data-dark-mode="true"] #page-filenew .toastui-editor-md-meta {
 
 body[data-dark-mode="true"] #page-fileedit .toastui-editor-md-delimiter,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-md-delimiter {
-    color: var(--text-secondary) !important;
+    color: var(--text-secondary);
+    background-color: var(--bg);
 }
 
 /* fix table text color in markdown editing mode */
@@ -206,6 +207,13 @@ body[data-dark-mode="true"] #page-filenew .toastui-editor-contents li,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-contents td,
 body[data-dark-mode="true"] #page-filenew .toastui-editor-contents th {
     color: var(--text) !important;
+}
+
+body[data-dark-mode="true"]
+    #page-fileedit
+    .toastui-editor-md-code.toastui-editor-md-marked-text {
+    color: var(--text);
+    background-color: var(--bg);
 }
 
 /* ==================== File Upload Notification ==================== */
