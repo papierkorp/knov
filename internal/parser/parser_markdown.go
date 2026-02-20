@@ -250,39 +250,25 @@ func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
 	// remove code blocks to avoid extracting links from code
 	text = removeCodeBlocks(text)
 
-	// extract wiki-style links [[path|text]] or [[path]]
-	wikiLinkRegex := regexp.MustCompile(`\[\[([^\]|]+)(?:\|[^\]]+)?\]\]`)
-	wikiMatches := wikiLinkRegex.FindAllStringSubmatch(text, -1)
-	for _, match := range wikiMatches {
-		if len(match) > 1 {
-			link := strings.TrimSpace(match[1])
-			// skip external urls
-			if link != "" && !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") && !strings.Contains(link, "://") {
-				links = append(links, link)
-			}
-		}
-	}
-
-	// extract media links {{path}}
-	mediaLinkRegex := regexp.MustCompile(`\{\{([^\}]+)\}\}`)
-	mediaMatches := mediaLinkRegex.FindAllStringSubmatch(text, -1)
-	for _, match := range mediaMatches {
-		if len(match) > 1 {
-			link := strings.TrimSpace(match[1])
-			if link != "" && !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") {
-				links = append(links, link)
-			}
-		}
-	}
-
-	// extract standard markdown links [text](url)
-	mdLinkRegex := regexp.MustCompile(`\[([^\]]+)\]\(([^\)]+)\)`)
+	// extract standard markdown links [text](url) - skip images (handled separately)
+	mdLinkRegex := regexp.MustCompile(`[^!]\[([^\]]+)\]\(([^\)]+)\)`)
 	mdMatches := mdLinkRegex.FindAllStringSubmatch(text, -1)
 	for _, match := range mdMatches {
 		if len(match) > 2 {
 			link := strings.TrimSpace(match[2])
-			// skip external urls and anchors
 			if link != "" && !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") && !strings.HasPrefix(link, "#") {
+				links = append(links, link)
+			}
+		}
+	}
+
+	// extract image links ![alt](url)
+	imgLinkRegex := regexp.MustCompile(`!\[([^\]]*)\]\(([^\)]+)\)`)
+	imgMatches := imgLinkRegex.FindAllStringSubmatch(text, -1)
+	for _, match := range imgMatches {
+		if len(match) > 2 {
+			link := strings.TrimSpace(match[2])
+			if link != "" && !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") {
 				links = append(links, link)
 			}
 		}

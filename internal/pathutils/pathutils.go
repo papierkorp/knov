@@ -43,7 +43,10 @@ func parsePath(inputPath string) *PathInfo {
 	var relativePath string
 	var withPrefix string
 
-	// strip leading "files/" prefix used in stored metadata links
+	// strip leading slash and "files/" prefix used in stored metadata links
+	if strings.HasPrefix(normalizedPath, "/") {
+		normalizedPath = strings.TrimPrefix(normalizedPath, "/")
+	}
 	if strings.HasPrefix(normalizedPath, "files/") {
 		normalizedPath = strings.TrimPrefix(normalizedPath, "files/")
 	}
