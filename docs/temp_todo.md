@@ -317,9 +317,21 @@ this is what i wrote down:
 # dokuwiki parser
 
 http://localhost:1324/files/p/wiki/chronik.md
+replace <catlist> with HERE WAS A CATLIST (<> cant be seen)
+remove ?direct from media file links
+detail links are not working
 
 # small stuff
 
+- remove orphaned media behaviour + orphaned media age
+- fix compact and reader view
+- table paginate/search/filter is not working (handleAPIGetTable is not used??)
+- load all files from cache?
+  - http://localhost:1324/browse/folders/systemadmin is running through all files?
+- dont runt the search indexing at startup
+- version history - show max amount of 5
+- codeblocks - copy button
+- codeblocks setting - wrap content
 - add a button to base.gohtml in the edit toolbar: rebuild metadata for this file
 - .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
 - make certain settings required in thememanager

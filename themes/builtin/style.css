@@ -145,3 +145,7 @@ code {
     padding: 0 5px;
     font-style: italic;
 }
+
+pre code {
+    font-style: normal;
+}

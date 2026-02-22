@@ -29,8 +29,65 @@ func (h *MarkdownHandler) CanHandle(filename string) bool {
 
 func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 	processed := h.processMarkdownLinks(string(content))
-	processed = h.fixIndentedListsInCodeBlocks(processed)
 	return []byte(processed), nil
+}
+
+// convertMisrenderedListsInCode detects <pre><code class="language-text"> blocks whose content
+// consists entirely of list items and converts them to proper nested HTML lists.
+func convertMisrenderedListsInCode(htmlContent string) string {
+	re := regexp.MustCompile(`(?s)<pre[^>]*><code[^>]*class="language-text"[^>]*>(.*?)</code></pre>`)
+	listLineRe := regexp.MustCompile(`^( *)([-*]) (.*)$`)
+	inlineCodeRe := regexp.MustCompile("`([^`]+)`")
+
+	return re.ReplaceAllStringFunc(htmlContent, func(match string) string {
+		m := re.FindStringSubmatch(match)
+		if len(m) < 2 {
+			return match
+		}
+		lines := strings.Split(strings.TrimRight(m[1], "\n"), "\n")
+
+		// check all non-empty lines are list items
+		for _, line := range lines {
+			if strings.TrimSpace(line) == "" {
+				continue
+			}
+			if !listLineRe.MatchString(line) {
+				return match
+			}
+		}
+
+		var buf strings.Builder
+		depth := 0 // current open <ul> count
+
+		for _, line := range lines {
+			if strings.TrimSpace(line) == "" {
+				continue
+			}
+			lm := listLineRe.FindStringSubmatch(line)
+			if lm == nil {
+				continue
+			}
+			indent := len(lm[1])
+			level := indent/2 + 1 // 1-based nesting level
+
+			for depth < level {
+				buf.WriteString("<ul>\n")
+				depth++
+			}
+			for depth > level {
+				buf.WriteString("</ul>\n")
+				depth--
+			}
+
+			content := inlineCodeRe.ReplaceAllString(lm[3], "<code>$1</code>")
+			fmt.Fprintf(&buf, "<li>%s</li>\n", content)
+		}
+		for depth > 0 {
+			buf.WriteString("</ul>\n")
+			depth--
+		}
+		return buf.String()
+	})
 }
 
 type customRenderer struct {
@@ -136,13 +193,42 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	}
 	renderer := html.NewRenderer(opts)
 
+	// extract fenced code blocks before gomarkdown so it never sees their content
+	// (avoids # comments becoming headers, list items in code becoming lists, etc.)
+	type codeBlock struct{ lang, content string }
+	var codeBlocks []codeBlock
+	fenceRe := regexp.MustCompile("(?s)```([^\n]*)\n(.*?)```")
+	content = []byte(fenceRe.ReplaceAllStringFunc(string(content), func(match string) string {
+		m := fenceRe.FindStringSubmatch(match)
+		lang := strings.TrimSpace(m[1])
+		if lang == "" {
+			lang = "text"
+		}
+		placeholder := fmt.Sprintf("KNOVCODEBLOCK%d", len(codeBlocks))
+		codeBlocks = append(codeBlocks, codeBlock{lang, m[2]})
+		return "\n" + placeholder + "\n"
+	}))
+
 	// gomarkdown merges lists separated by blank lines - inject comment separators to prevent this
 	content = h.preprocessBlankLineLists(content)
 
 	htmlOutput := markdown.ToHTML(content, p, renderer)
 
+	// restore code blocks in reverse order to avoid substring collisions
+	// (e.g. KNOVCODEBLOCK1 matching inside KNOVCODEBLOCK10)
+	result := string(htmlOutput)
+	for i := len(codeBlocks) - 1; i >= 0; i-- {
+		placeholder := fmt.Sprintf("KNOVCODEBLOCK%d", i)
+		highlighted := HighlightCodeBlock(codeBlocks[i].content, codeBlocks[i].lang)
+		result = strings.ReplaceAll(result, "<p>"+placeholder+"</p>", highlighted)
+		result = strings.ReplaceAll(result, placeholder, highlighted)
+	}
+
 	// Post-process to add header edit buttons outside the header tags
-	processedHTML := h.addHeaderButtons(string(htmlOutput), filePath)
+	processedHTML := h.addHeaderButtons(result, filePath)
+
+	// Convert any indented code blocks that are actually lists (gomarkdown misparses 4+ space list items)
+	processedHTML = convertMisrenderedListsInCode(processedHTML)
 
 	// Remove unnecessary p tags from list items
 	processedHTML = h.cleanupListParagraphs(processedHTML)
@@ -294,85 +380,14 @@ func (h *MarkdownHandler) Name() string {
 	return "markdown"
 }
 
-// fixIndentedListsInCodeBlocks ensures code blocks nested inside lists maintain correct indentation,
-// working around gomarkdown's behaviour of losing list context after a fenced code block
-func (h *MarkdownHandler) fixIndentedListsInCodeBlocks(content string) string {
-	lines := strings.Split(content, "\n")
-	var result []string
-	var inCodeBlock bool
-	var codeBlockIndent string
-
-	for i, line := range lines {
-		if strings.HasPrefix(strings.TrimSpace(line), "```") {
-			if !inCodeBlock {
-				inCodeBlock = true
-
-				// find preceding list item indent
-				for j := len(result) - 1; j >= 0; j-- {
-					prev := result[j]
-					if strings.TrimSpace(prev) == "" {
-						continue
-					}
-					if match := regexp.MustCompile(`^( *)- (.+)$`).FindStringSubmatch(prev); match != nil {
-						// only indent if the code block has no blank lines - gomarkdown
-						// terminates list context on blank lines inside indented code blocks
-						if !codeBlockHasBlankLines(lines, i) {
-							codeBlockIndent = match[1] + "  "
-						}
-					}
-					break
-				}
-
-				if codeBlockIndent != "" {
-					result = append(result, codeBlockIndent+strings.TrimSpace(line)) // fence line, trim ok
-				} else {
-					result = append(result, line)
-				}
-			} else {
-				if codeBlockIndent != "" {
-					result = append(result, codeBlockIndent+strings.TrimSpace(line)) // closing fence, trim ok
-				} else {
-					result = append(result, line)
-				}
-				inCodeBlock = false
-				codeBlockIndent = ""
-			}
-			continue
-		}
-		if inCodeBlock && codeBlockIndent != "" {
-			if strings.TrimSpace(line) == "" {
-				result = append(result, "")
-			} else {
-				// preserve original line content, only prepend the list indent
-				result = append(result, codeBlockIndent+line)
-			}
-			continue
-		}
-		result = append(result, line)
-	}
-
-	return strings.Join(result, "\n")
-}
-
-// codeBlockHasBlankLines scans forward from the opening fence to check if the block contains blank lines
-func codeBlockHasBlankLines(lines []string, openIdx int) bool {
-	for i := openIdx + 1; i < len(lines); i++ {
-		if strings.HasPrefix(strings.TrimSpace(lines[i]), "```") {
-			return false // reached closing fence, no blank lines found
-		}
-		if strings.TrimSpace(lines[i]) == "" {
-			return true
-		}
-	}
-	return false
-}
-
-// preprocessBlankLineLists injects HTML comment separators between lists divided by blank lines,
-// working around gomarkdown merging them into a single list
+// preprocessBlankLineLists injects HTML comment separators between top-level lists divided by blank lines,
+// working around gomarkdown merging them into a single list.
+// Only top-level items (no leading spaces) get separators — nested items at 4+ spaces must
+// never have their context reset or gomarkdown interprets them as indented code blocks.
 func (h *MarkdownHandler) preprocessBlankLineLists(content []byte) []byte {
 	lines := strings.Split(string(content), "\n")
 	var result []string
-	listItemRe := regexp.MustCompile(`^( *)- (.+)$`)
+	topLevelItemRe := regexp.MustCompile(`^[-*] `)
 	var inCodeBlock bool
 
 	for i, line := range lines {
@@ -380,7 +395,7 @@ func (h *MarkdownHandler) preprocessBlankLineLists(content []byte) []byte {
 			inCodeBlock = !inCodeBlock
 		}
 		result = append(result, line)
-		if !inCodeBlock && listItemRe.MatchString(line) && i+1 < len(lines) && strings.TrimSpace(lines[i+1]) == "" {
+		if !inCodeBlock && topLevelItemRe.MatchString(line) && i+1 < len(lines) && strings.TrimSpace(lines[i+1]) == "" {
 			result = append(result, "", "<!-- -->", "")
 		}
 	}

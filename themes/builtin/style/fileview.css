@@ -307,7 +307,7 @@
     border: 1px solid transparent;
 }
 
-/* show buttons on header hover - edit button first, then anchor */
+/* show buttons on header hover */
 #view-fileview-detailed .file-content h1:hover .header-edit-btn,
 #view-fileview-detailed .file-content h2:hover .header-edit-btn,
 #view-fileview-detailed .file-content h3:hover .header-edit-btn,
@@ -530,4 +530,49 @@
 #view-fileview-compact blockquote p,
 #view-fileview-reader blockquote p {
     display: inline;
+}
+
+/* sticky toc in sidebar */
+#component-sidebar-toc {
+    position: sticky;
+    top: 70px; /* offset for sticky header */
+}
+
+#component-sidebar-toc .toc-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    scrollbar-width: none; /* firefox */
+}
+
+#component-sidebar-toc .toc-nav::-webkit-scrollbar {
+    display: none; /* chrome/safari */
+}
+
+#component-sidebar-toc .toc-nav:hover {
+    scrollbar-width: thin; /* firefox */
+}
+
+#component-sidebar-toc .toc-nav:hover::-webkit-scrollbar {
+    display: block;
+    width: 6px;
+}
+
+#component-sidebar-toc .toc-nav:hover::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+#component-sidebar-toc .toc-nav a {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    overflow-wrap: break-word;
+}
+
+#component-sidebar-toc .toc-nav a:hover {
+    color: var(--primary);
 }
