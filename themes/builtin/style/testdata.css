@@ -386,50 +386,9 @@
 }
 
 /* File Type Badges */
-#component-filter-test-metadata-table .badge.type-fleeting {
-    background: var(--warning);
-}
 
-#component-filter-test-metadata-table .badge.type-literature {
-    background: var(--info);
-}
-
-#component-filter-test-metadata-table .badge.type-permanent {
-    background: var(--success);
-}
-
-#component-filter-test-metadata-table .badge.type-journaling {
-    background: var(--secondary);
-}
-
-#component-filter-test-metadata-table .badge.type-moc {
+#component-filter-test-metadata-table .badge {
     background: var(--accent);
-}
-
-/* Status Badges */
-#component-filter-test-metadata-table .badge.status-draft {
-    background: var(--warning);
-}
-
-#component-filter-test-metadata-table .badge.status-published {
-    background: var(--success);
-}
-
-#component-filter-test-metadata-table .badge.status-archived {
-    background: var(--text-muted);
-}
-
-/* Priority Badges */
-#component-filter-test-metadata-table .badge.priority-high {
-    background: var(--danger);
-}
-
-#component-filter-test-metadata-table .badge.priority-medium {
-    background: var(--warning);
-}
-
-#component-filter-test-metadata-table .badge.priority-low {
-    background: var(--success);
 }
 
 /* Table Summary */

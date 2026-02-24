@@ -24,10 +24,13 @@ func (h *DokuwikiHandler) processDokuWikiSyntax(content string, outputFormat str
 	content = h.processCodeBlocks(content, outputFormat)
 	content, codeBlocks := h.extractCodeBlocks(content)
 
-	// 4. Headers
+	// 4. Replace catlist (after code blocks are extracted so codeblocks are protected)
+	content = h.replaceCatlistTags(content)
+
+	// 5. Headers
 	content = h.processHeaders(content, outputFormat)
 
-	// 5. Links (before text formatting to protect :// in URLs)
+	// 6. Links (before text formatting to protect :// in URLs)
 	content = h.processLinks(content, outputFormat)
 
 	// 6. Text formatting - protect URLs first so // italic regex doesn't mangle them
@@ -57,6 +60,10 @@ func (h *DokuwikiHandler) processMediaLinks(content string, outputFormat string)
 		// convert dokuwiki namespace (colons) to filesystem path (slashes)
 		mediaPath := strings.TrimSpace(matches[1])
 		mediaPath = strings.ReplaceAll(mediaPath, ":", "/")
+		// strip query params (e.g. ?direct)
+		if i := strings.Index(mediaPath, "?"); i != -1 {
+			mediaPath = mediaPath[:i]
+		}
 
 		altText := strings.TrimSpace(matches[2])
 		if altText == "" {
@@ -358,9 +365,9 @@ func (h *DokuwikiHandler) processListsHTML(content string) string {
 
 // Helper functions for complex structures
 
-// removeCatlistTags removes catlist tags completely
-func (h *DokuwikiHandler) removeCatlistTags(content string) string {
-	return regexp.MustCompile(`<catlist[^>]*>\s*`).ReplaceAllString(content, "")
+// replaceCatlistTags replaces catlist tags with a placeholder
+func (h *DokuwikiHandler) replaceCatlistTags(content string) string {
+	return regexp.MustCompile(`<catlist[^>]*>\s*`).ReplaceAllString(content, "HERE WAS A CATLIST")
 }
 
 // convertIncludeSections converts {{section> include plugin syntax

@@ -317,12 +317,12 @@ this is what i wrote down:
 # dokuwiki parser
 
 http://localhost:1324/files/p/wiki/chronik.md
-replace <catlist> with HERE WAS A CATLIST (<> cant be seen)
-remove ?direct from media file links
+dont replace <catlist> in codeblocks
 detail links are not working
 
 # small stuff
 
+- edit mode - cancel jump to correct header
 - remove orphaned media behaviour + orphaned media age
 - fix compact and reader view
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)

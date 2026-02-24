@@ -143,9 +143,6 @@ func (h *DokuwikiHandler) restoreURLs(content string, urls []string) string {
 	return content
 }
 func (h *DokuwikiHandler) handleComplexStructures(content string) string {
-	// Leave catlist tags as-is (no equivalent in markdown)
-	// content = h.removeCatlistTags(content)
-
 	// Remove tablelayout plugin syntax
 	content = regexp.MustCompile(`\{\{[^}]*tablelayout[^}]*\}\}`).ReplaceAllString(content, "")
 
