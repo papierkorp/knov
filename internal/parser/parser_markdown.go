@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/pathutils"
 	"knov/internal/translation"
 
 	"github.com/gomarkdown/markdown"
@@ -90,153 +91,120 @@ func convertMisrenderedListsInCode(htmlContent string) string {
 	})
 }
 
-type customRenderer struct {
-	*html.Renderer
-}
+type codeBlock struct{ lang, content string }
 
-func (r *customRenderer) RenderNode(w io.Writer, node ast.Node, entering bool) ast.WalkStatus {
-	if code, ok := node.(*ast.CodeBlock); ok && entering {
-		lang := string(code.Info)
+// extractCodeBlocks replaces fenced code blocks with placeholders before markdown parsing
+// to prevent misinterpretation (e.g. # comments becoming headers, list items becoming lists).
+// Call restoreCodeBlocks with the returned blocks after rendering.
+func (h *MarkdownHandler) extractCodeBlocks(content []byte) ([]byte, []codeBlock) {
+	var blocks []codeBlock
+	fenceRe := regexp.MustCompile("(?s)```([^\n]*)\n(.*?)```")
+	result := fenceRe.ReplaceAllStringFunc(string(content), func(match string) string {
+		m := fenceRe.FindStringSubmatch(match)
+		lang := strings.TrimSpace(m[1])
 		if lang == "" {
 			lang = "text"
 		}
-		highlighted := HighlightCodeBlock(string(code.Literal), lang)
-		w.Write([]byte(highlighted))
-		return ast.GoToNext
-	}
-	return r.Renderer.RenderNode(w, node, entering)
+		placeholder := fmt.Sprintf("KNOVCODEBLOCK%d", len(blocks))
+		blocks = append(blocks, codeBlock{lang, m[2]})
+		return "\n" + placeholder + "\n"
+	})
+	return []byte(result), blocks
 }
 
-// update the Render function to use custom renderer:
-func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error) {
-	extensions := gomarkdown_parser.CommonExtensions | gomarkdown_parser.AutoHeadingIDs | gomarkdown_parser.HardLineBreak
-	extensions &^= gomarkdown_parser.MathJax // prevent $ signs from being treated as math delimiters
-	p := gomarkdown_parser.NewWithExtensions(extensions)
+// restoreCodeBlocks replaces placeholders with syntax-highlighted code blocks.
+// Iterates in reverse to avoid substring collisions (e.g. KNOVCODEBLOCK1 inside KNOVCODEBLOCK10).
+func (h *MarkdownHandler) restoreCodeBlocks(html string, blocks []codeBlock) string {
+	for i := len(blocks) - 1; i >= 0; i-- {
+		placeholder := fmt.Sprintf("KNOVCODEBLOCK%d", i)
+		highlighted := HighlightCodeBlock(blocks[i].content, blocks[i].lang)
+		html = strings.ReplaceAll(html, "<p>"+placeholder+"</p>", highlighted)
+		html = strings.ReplaceAll(html, placeholder, highlighted)
+	}
+	return html
+}
 
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank
+// resolveMediaPath returns a clean relative media path from a markdown image destination.
+// Falls back to bare filename if it has a known image extension (e.g. "photo.png" without prefix).
+func resolveMediaPath(dest string) string {
+	if pathutils.IsMedia(dest) {
+		return pathutils.ToRelative(dest)
+	}
+	// fallback: bare image filename with no media/ prefix
+	if configmanager.IsImageExtension(strings.ToLower(filepath.Ext(dest))) {
+		return dest
+	}
+	return ""
+}
+
+// buildRenderer creates the HTML renderer with hooks for code highlighting,
+// table edit buttons, and media image previews.
+func (h *MarkdownHandler) buildRenderer(filePath string) *html.Renderer {
 	opts := html.RendererOptions{
-		Flags: htmlFlags,
+		Flags: html.CommonFlags | html.HrefTargetBlank,
 		RenderNodeHook: func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
 			if code, ok := node.(*ast.CodeBlock); ok && entering {
 				lang := string(code.Info)
 				if lang == "" {
 					lang = "text"
 				}
-				highlighted := HighlightCodeBlock(string(code.Literal), lang)
-				w.Write([]byte(highlighted))
+				fmt.Fprintf(w, "%s", HighlightCodeBlock(string(code.Literal), lang))
 				return ast.GoToNext, true
 			}
 
-			// Add edit button after table closing tag
 			if _, ok := node.(*ast.Table); ok && !entering {
-				w.Write([]byte("</table>"))
-				w.Write([]byte(`<div class="table-edit-wrapper">
-					<a href="/files/edittable/` + filePath + `" class="btn-table-edit">
-						<i class="fa fa-edit"></i> ` + translation.SprintfForRequest(configmanager.GetLanguage(), "edit table") + `
-					</a>
-				</div>`))
+				fmt.Fprintf(w, `</table><div class="table-edit-wrapper"><a href="/files/edittable/%s" class="btn-table-edit"><i class="fa fa-edit"></i> %s</a></div>`,
+					filePath, translation.SprintfForRequest(configmanager.GetLanguage(), "edit table"))
 				return ast.GoToNext, true
 			}
 
-			// Handle media images - convert to preview API calls
-			if img, ok := node.(*ast.Image); ok {
-				dest := string(img.Destination)
-				var mediaPath string
-
-				// Determine if this is a media reference and extract the path
-				if strings.HasPrefix(dest, "/files/media/") {
-					mediaPath = dest[len("/files/media/"):] // remove "/files/media/" prefix
-				} else if strings.HasPrefix(dest, "media/") {
-					mediaPath = dest[6:] // remove "media/" prefix
-				} else if strings.HasPrefix(dest, "/media/") {
-					mediaPath = dest[7:] // remove "/media/" prefix
-				} else if !strings.HasPrefix(dest, "http://") && !strings.HasPrefix(dest, "https://") {
-					ext := strings.ToLower(filepath.Ext(dest))
-					if configmanager.IsImageExtension(ext) {
-						mediaPath = dest
-					}
+			if img, ok := node.(*ast.Image); ok && entering {
+				mediaPath := resolveMediaPath(string(img.Destination))
+				if mediaPath == "" {
+					return ast.GoToNext, false
 				}
-
-				// If we identified it as a media file, handle it
-				if mediaPath != "" {
-					if entering {
-						if configmanager.GetPreviewsEnabled() {
-							// Get default preview size from settings
-							size := configmanager.GetDefaultPreviewSize()
-							displayMode := configmanager.GetDisplayMode()
-
-							// Use span for inline mode to keep text flow, div for other modes
-							containerTag := "div"
-							containerClass := "media-preview-container"
-							if displayMode == "inline" {
-								containerTag = "span"
-								containerClass += " inline-container"
-							}
-
-							// Create HTMX preview element instead of regular image
-							previewHTML := fmt.Sprintf(`<%s class="%s" hx-get="/api/media/preview?path=%s&size=%d" hx-trigger="load" hx-swap="innerHTML">%s...</%s>`,
-								containerTag, containerClass, mediaPath, size, translation.SprintfForRequest(configmanager.GetLanguage(), "loading media"), containerTag)
-
-							w.Write([]byte(previewHTML))
-						} else {
-							// Previews disabled, render direct image link
-							fmt.Fprintf(w, `<img src="/media/%s" alt="%s" />`, mediaPath, filepath.Base(mediaPath))
-						}
+				if configmanager.GetPreviewsEnabled() {
+					size := configmanager.GetDefaultPreviewSize()
+					containerTag, containerClass := "div", "media-preview-container"
+					if configmanager.GetDisplayMode() == "inline" {
+						containerTag, containerClass = "span", containerClass+" inline-container"
 					}
-					// Skip children to prevent alt text from being rendered separately
-					return ast.SkipChildren, true
+					fmt.Fprintf(w, `<%s class="%s" hx-get="/api/media/preview?path=%s&size=%d" hx-trigger="load" hx-swap="innerHTML">%s...</%s>`,
+						containerTag, containerClass, mediaPath, size,
+						translation.SprintfForRequest(configmanager.GetLanguage(), "loading media"), containerTag)
+				} else {
+					fmt.Fprintf(w, `<img src="/media/%s" alt="%s" />`, mediaPath, filepath.Base(mediaPath))
 				}
+				return ast.SkipChildren, true
 			}
 
 			return ast.GoToNext, false
 		},
 	}
-	renderer := html.NewRenderer(opts)
+	return html.NewRenderer(opts)
+}
 
-	// extract fenced code blocks before gomarkdown so it never sees their content
-	// (avoids # comments becoming headers, list items in code becoming lists, etc.)
-	type codeBlock struct{ lang, content string }
-	var codeBlocks []codeBlock
-	fenceRe := regexp.MustCompile("(?s)```([^\n]*)\n(.*?)```")
-	content = []byte(fenceRe.ReplaceAllStringFunc(string(content), func(match string) string {
-		m := fenceRe.FindStringSubmatch(match)
-		lang := strings.TrimSpace(m[1])
-		if lang == "" {
-			lang = "text"
-		}
-		placeholder := fmt.Sprintf("KNOVCODEBLOCK%d", len(codeBlocks))
-		codeBlocks = append(codeBlocks, codeBlock{lang, m[2]})
-		return "\n" + placeholder + "\n"
-	}))
+// postProcessHTML applies all HTML transformations after markdown rendering:
+// header edit buttons, misrendered list fixes, list paragraph cleanup, and section wrapping.
+func (h *MarkdownHandler) postProcessHTML(html, filePath string) string {
+	html = h.addHeaderButtons(html, filePath)
+	html = convertMisrenderedListsInCode(html)
+	html = h.cleanupListParagraphs(html)
+	html = h.wrapHeaderSections(html)
+	return html
+}
 
-	// gomarkdown merges lists separated by blank lines - inject comment separators to prevent this
+func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error) {
+	extensions := gomarkdown_parser.CommonExtensions | gomarkdown_parser.AutoHeadingIDs | gomarkdown_parser.HardLineBreak
+	extensions &^= gomarkdown_parser.MathJax // prevent $ from being treated as math delimiters
+	p := gomarkdown_parser.NewWithExtensions(extensions)
+
+	content, blocks := h.extractCodeBlocks(content)
 	content = h.preprocessBlankLineLists(content)
 
-	htmlOutput := markdown.ToHTML(content, p, renderer)
+	result := h.restoreCodeBlocks(string(markdown.ToHTML(content, p, h.buildRenderer(filePath))), blocks)
 
-	// restore code blocks in reverse order to avoid substring collisions
-	// (e.g. KNOVCODEBLOCK1 matching inside KNOVCODEBLOCK10)
-	result := string(htmlOutput)
-	for i := len(codeBlocks) - 1; i >= 0; i-- {
-		placeholder := fmt.Sprintf("KNOVCODEBLOCK%d", i)
-		highlighted := HighlightCodeBlock(codeBlocks[i].content, codeBlocks[i].lang)
-		result = strings.ReplaceAll(result, "<p>"+placeholder+"</p>", highlighted)
-		result = strings.ReplaceAll(result, placeholder, highlighted)
-	}
-
-	// Post-process to add header edit buttons outside the header tags
-	processedHTML := h.addHeaderButtons(result, filePath)
-
-	// Convert any indented code blocks that are actually lists (gomarkdown misparses 4+ space list items)
-	processedHTML = convertMisrenderedListsInCode(processedHTML)
-
-	// Remove unnecessary p tags from list items
-	processedHTML = h.cleanupListParagraphs(processedHTML)
-
-	// Wrap content between headers in sections
-	processedHTML = h.wrapHeaderSections(processedHTML)
-
-	return []byte(processedHTML), nil
+	return []byte(h.postProcessHTML(result, filePath)), nil
 }
 
 // addHeaderButtons adds edit buttons after header tags using post-processing

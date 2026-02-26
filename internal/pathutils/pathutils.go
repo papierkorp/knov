@@ -27,9 +27,15 @@ type PathInfo struct {
 	IsAbsolute bool     // Whether the original path was absolute
 }
 
-// parsePath analyzes any path and returns comprehensive path information
+// parsePath analyzes any path and returns comprehensive path information.
+// Returns empty PathInfo for external URLs (http:// / https://).
 func parsePath(inputPath string) *PathInfo {
 	if inputPath == "" {
+		return &PathInfo{}
+	}
+
+	// external URLs are not managed paths
+	if strings.HasPrefix(inputPath, "http://") || strings.HasPrefix(inputPath, "https://") {
 		return &PathInfo{}
 	}
 
@@ -44,12 +50,8 @@ func parsePath(inputPath string) *PathInfo {
 	var withPrefix string
 
 	// strip leading slash and "files/" prefix used in stored metadata links
-	if strings.HasPrefix(normalizedPath, "/") {
-		normalizedPath = strings.TrimPrefix(normalizedPath, "/")
-	}
-	if strings.HasPrefix(normalizedPath, "files/") {
-		normalizedPath = strings.TrimPrefix(normalizedPath, "files/")
-	}
+	normalizedPath = strings.TrimPrefix(normalizedPath, "/")
+	normalizedPath = strings.TrimPrefix(normalizedPath, "files/")
 
 	// determine type based on prefix
 	if strings.HasPrefix(normalizedPath, "media/") {
@@ -156,14 +158,12 @@ func stripDataPathPrefix(path string) string {
 	dataPath := configmanager.GetAppConfig().DataPath
 	dataPathName := filepath.Base(filepath.Clean(dataPath))
 
-	// handle relative paths with data prefix
-	if strings.HasPrefix(path, dataPathName+"/") {
-		return strings.TrimPrefix(path, dataPathName+"/")
+	if p, ok := strings.CutPrefix(path, dataPathName+"/"); ok {
+		return p
 	}
-	if strings.HasPrefix(path, dataPathName+"\\") {
-		return strings.TrimPrefix(path, dataPathName+"\\")
+	if p, ok := strings.CutPrefix(path, dataPathName+"\\"); ok {
+		return p
 	}
-
 	return path
 }
 
