@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"io"
+	"log"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -31,6 +32,31 @@ func (h *MarkdownHandler) CanHandle(filename string) bool {
 func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 	processed := h.processMarkdownLinks(string(content))
 	return []byte(processed), nil
+}
+
+func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error) {
+	extensions := gomarkdown_parser.CommonExtensions | gomarkdown_parser.AutoHeadingIDs | gomarkdown_parser.HardLineBreak
+	extensions &^= gomarkdown_parser.MathJax
+	p := gomarkdown_parser.NewWithExtensions(extensions)
+
+	content, blocks := h.extractCodeBlocks(content)
+	content = h.preprocessBlankLineLists(content)
+
+	raw := string(markdown.ToHTML(content, p, h.buildRenderer(filePath)))
+	log.Printf("=== after gomarkdown ===\n%s", raw) // does <ul> exist here?
+
+	result := h.restoreCodeBlocks(raw, blocks)
+	log.Printf("=== after restoreCodeBlocks ===\n%s", result)
+
+	result = h.addHeaderButtons(result, filePath)
+	log.Printf("=== after addHeaderButtons ===\n%s", result)
+
+	result = convertMisrenderedListsInCode(result)
+	result = h.cleanupListParagraphs(result)
+	log.Printf("=== after cleanupListParagraphs ===\n%s", result)
+
+	result = h.wrapHeaderSections(result)
+	return []byte(result), nil
 }
 
 // convertMisrenderedListsInCode detects <pre><code class="language-text"> blocks whose content
@@ -192,19 +218,6 @@ func (h *MarkdownHandler) postProcessHTML(html, filePath string) string {
 	html = h.cleanupListParagraphs(html)
 	html = h.wrapHeaderSections(html)
 	return html
-}
-
-func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error) {
-	extensions := gomarkdown_parser.CommonExtensions | gomarkdown_parser.AutoHeadingIDs | gomarkdown_parser.HardLineBreak
-	extensions &^= gomarkdown_parser.MathJax // prevent $ from being treated as math delimiters
-	p := gomarkdown_parser.NewWithExtensions(extensions)
-
-	content, blocks := h.extractCodeBlocks(content)
-	content = h.preprocessBlankLineLists(content)
-
-	result := h.restoreCodeBlocks(string(markdown.ToHTML(content, p, h.buildRenderer(filePath))), blocks)
-
-	return []byte(h.postProcessHTML(result, filePath)), nil
 }
 
 // addHeaderButtons adds edit buttons after header tags using post-processing
