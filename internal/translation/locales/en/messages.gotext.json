@@ -337,6 +337,11 @@
       "translation": ""
     },
     {
+      "id": "convert to markdown",
+      "message": "convert to markdown",
+      "translation": ""
+    },
+    {
       "id": "Create a New",
       "message": "Create a New",
       "translation": ""
@@ -882,6 +887,11 @@
       "translation": ""
     },
     {
+      "id": "failed to save converted file",
+      "message": "failed to save converted file",
+      "translation": ""
+    },
+    {
       "id": "failed to save file",
       "message": "failed to save file",
       "translation": ""
@@ -929,6 +939,11 @@
     {
       "id": "file content here...",
       "message": "file content here...",
+      "translation": ""
+    },
+    {
+      "id": "file converted to markdown successfully",
+      "message": "file converted to markdown successfully",
       "translation": ""
     },
     {
@@ -1609,6 +1624,11 @@
     {
       "id": "Manual Cleanup",
       "message": "Manual Cleanup",
+      "translation": ""
+    },
+    {
+      "id": "markdown conversion only supported for dokuwiki files",
+      "message": "markdown conversion only supported for dokuwiki files",
       "translation": ""
     },
     {
