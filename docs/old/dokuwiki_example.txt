@@ -4,6 +4,14 @@
 
 ====== Installation ======
 
+```
+asdf
+ddd eee
+```
+
+=> ''about:config'' - ''security.tls.insecure_fallback_hosts'' - ''ops-pipeline-testfaelle-test.sirconic-k8s.de''
+=> remove cookies in url bar
+
 ===== Gitlab =====
 
 https://wiki.leasone.de/de/devops/kubernetes/kubernetes_installationen#gitlab-installation
@@ -23,7 +31,7 @@ https://wiki.leasone.de/de/devops/kubernetes/kubernetes_installationen#gitlab-in
       * a link above
         * a forth level header
         * ++ folded plugin in a list |
-<sxh yaml>
+<sxh>
 # comment
 yamltest:
   nothing_important: true
@@ -34,16 +42,77 @@ yamltest:
         * ''# comment in single code line''
       * another 3rd level
         * ''singel codeline 1''
-        * ''single codelin2''
+        * aaaaaaabbbbbbbccccccccccccc
         * ''\dx''
       * Secret erstellen
         * ''kubectl delete secret xxx -n yyy''
         * ''kubectl create secret generic xxx -n yyy --from-literal=password="zzz"''
+      * ''helm upgrade --install gitlab gitlab/gitlab -f values.yaml --namespace="gitlab" --create-namespace --timeout 600s --version "8.0.1"''
+      * ++ Output |
+<code bash>
+Release "gitlab" has been upgraded. Happy Helming!
+NAME: gitlab
+LAST DEPLOYED: Thu Jun  6 10:41:16 2024
+NAMESPACE: gitlab
+STATUS: deployed
+REVISION: 3
+NOTES:
+=== CRITICAL
+The following charts are included for evaluation purposes only. They will not be supported by GitLab Support
+for production workloads. Use Cloud Native Hybrid deployments for production. For more information visit
+https://docs.gitlab.com/charts/installation/index.html#use-the-reference-architectures.
+- Redis
+- Gitaly
+- Praefect
+
+=== NOTICE
+The minimum required version of PostgreSQL is now 13. See https://gitlab.com/gitlab-org/charts/gitlab/-/blob/master/doc/installation/upgrade.md for more details.
+
+## NOTICE
+You've installed GitLab Runner without the ability to use 'docker in docker'.
+The GitLab Runner chart (gitlab/gitlab-runner) is deployed without the `privileged` flag by default for security purposes. This can be changed by setting `gitlab-runner.runners.privileged` to `true`. Before doing so, please read the GitLab Runner chart's documentation on why we
+chose not to enable this by default. See https://docs.gitlab.com/runner/install/kubernetes.html#running-docker-in-docker-containers-with-gitlab-runners
+</code>
+++
+    * Settings
+      * Admins Passwort: "zzz" - ''kubectl get secret gitlab-gitlab-initial-root-password -n gitlab -ojsonpath='{.data.password}' | base64 --decode ; echo''
+
+
+===== GitLab Update/Upgrades =====
+
+<code sh update_gitlab.sh>
+#!/bin/bash
+
+VERSION="xtest10"
+</code>
+
+===== vial =====
+
+https://www.reddit.com/r/glorious/comments/rxj1h8/getting_started_with_vial_and_why_you_might_use/
+https://www.youtube.com/watch?v=POi9ttF2dsk
+
+
+**How does vial work**
+
+In general, everything is stored on the keyboard. Nothing is stored on the computer.
+
+The [[https://get.vial.today/|Vial]] configuration is stored in (emulated) [[https://en.wikipedia.org/wiki/EEPROM|EEPROM]] memory on the microcontroller (in some cases, on an external IC connected to the microcontroller). The Vial keymap overrides the keymap in the firmware ([[https://docs.keeb.io/via|Via]] does the same). Thus the keymap in the firmware only has an effect when the EEPROM memory is reset. After a reset, Vial copies the keymap stored inside the firmware to the EEPROM memory; in other words, it starts out with an exact copy of the firmware's keymap.
+
+  * You can export the Vial configuration to a file, manipulate this file, and import it back in. For instance, tedious changes could be automated by some script this way. Exporting the Via configuration is also a good idea for backing up the Vial configuration, as it is easily wiped out (much more easily than the firmware itself)
+  * Source code files for the Vial firmware itself, for example, containing the default key map. These are only required if you build the Vial firmware from source (not if getting the .bin or .hex file from somewhere)
+  * Some settings for the Vial client is stored on the computer, but this isn't the keyboard configuration (though it may affect how the keyboard configuration is changed).
+
+
+__Bug in Via's import function__
+
+Note that there is a [[https://www.reddit.com/r/Keychron/comments/1aozam7/comment/kqew1ms/|fault in Via's import function]], and thus not all configuration survives the export/import cycle. I don't know if Vial has the same bug. Due to this, manual changes may have to be performed after every import...
+
+
 
 ====== more tests ======
 
-  * Internal Link1: [[p:it:ai#ollama_open-webui]]
-  * Internal Link2: [[p:it:ai#ollama_open-webui|ollama]]
+  * Internal Link1: [[ai#ollama_open-webui]]
+  * Internal Link2: [[test:testA:testAB:testABA|ollama]]
   * Internal Link3: [[#link_anchor]]
   * Internal Link3: [[#link_anchor|test]]
 
@@ -163,4 +232,121 @@ some text
 
 **Included Text via [[https://www.dokuwiki.org/plugin:include|Include Plugin]]**
 
-{{section>p:it:linux:server:debugging#festplattenspeicher_anzeigen}}
+{{section>test:testA:testAB:testABA#another_anchor_test}}
+
+
+==== Iris ====
+
+FLAHNS - 5mm Hotswap PCB Silicone Bumpers (1$)
+Cherry MX Stabilizer 2u - PCB Mount (2-pack) (4$)
+Coiled USB-C to USB-C Cable (4$)
+Iris PE (Phoenix Edition) Black Aluminum Plates (20$)
+Iris PE (Phoenix Edition) Acrylic Middle Layer - Frosted (28$)
+SKUF Silicone Rubber Keyboard Feet (5$)
+Durock Shrimp (Silent Tactile T1) Switches (40$)
+Iris Rev. 8 Keyboard - Hotswap PCBs (80$)
+
+
+===== prom =====
+
+
+  * [[https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack|Prometheus-Community Stack]]
+    * ''helm repo add prometheus-community https://prometheus-community.github.io/helm-charts''
+    * ''helm repo update''
+    * ''helm install prometheus prometheus-community/kube-prometheus-stack --namespace prom --create-namespace -f prometheus_values.yaml''
+    * ++ prometheus_valus.yaml |
+<sxh yaml>
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: 'nfs-client'
+          accessModes: ['ReadWriteOnce']
+          resources:
+            requests:
+              storage: 50Gi
+        selector: {}
+grafana:
+  defaultDashboardsTimezone: Europe/Berlin
+  persistence:
+    enabled: true
+    type: sts # statefulset
+    storageClassName: 'nfs-client'
+    accessModes:
+      - ReadWriteOnce
+    size: 20Gi
+  adminPassword: xxx
+</sxh>
+++
+    * ++ Ausgabe | <code>
+NAME: prometheus
+LAST DEPLOYED: Wed Jan 11 14:02:40 2023
+NAMESPACE: prom
+STATUS: deployed
+REVISION: 1
+NOTES:
+kube-prometheus-stack has been installed. Check its status by running:
+  kubectl --namespace prom get pods -l "release=prometheus"
+
+Visit https://github.com/prometheus-operator/kube-prometheus for instructions on how to create & configure Alertmanager and Prometheus instances using the Operator.
+</code>++
+  * Installation prüfen
+    * ''k get pods -n prom''
+  * Konfigurationen
+    * DNS für Prometheus und Grafana anlegen
+      * Schlundtech: prometheus.sirconic-group.de
+      * Schlundtech: grafana.sirconic-group.de
+    * Grafana Admin Daten rausfinden
+      * ''k get secret --namespace prom prometheus-grafana -o yaml''
+      * admin-user Code: ''k get secret --namespace prom prometheus-grafana -o=jsonpath='{.data.admin-user}' | base64 -d''
+      * admin-password Code: ''k get secret --namespace prom prometheus-grafana -o=jsonpath='{.data.admin-password}' | base64 -d''
+    * Error: ''connect: connection refused'' bei Kubernetes Parts verhindern [[sirconic:systemadmin:kubernetes:kubernetesfehlermeldungen#prometheusconnectconnection_refused|siehe hier]]
+      * controller-manager
+        * auf jedem Master: ''sudo vi /etc/kubernetes/manifests/kube-controller-manager.yaml'' und ''--bind-adress'' von ''127.0.0.1'' auf ''0.0.0.0'' ändern
+        * ++ kube-controller-manager.yaml |
+<sxh yaml>
+apiVersion: v1
+kind: Pod
+metadata:
+  ...
+spec:
+  containers:
+  - command:
+    - kube-controller-manager
+    ...
+    - --bind-address=0.0.0.0
+    ...
+</sxh>++
+      * kube-scheduler
+        * auf jedem Master: ''sudo vi /etc/kubernetes/manifests/kube-scheduler.yaml'' und ''--bind-adress'' von ''127.0.0.1'' auf ''0.0.0.0'' ändern
+        * ++ kube-scheduler.yaml |
+<sxh yaml>
+apiVersion: v1
+kind: Pod
+metadata:
+  ...
+spec:
+  containers:
+  - command:
+    - kube-controller-manager
+    ...
+    - --bind-address=0.0.0.0
+    ...
+</sxh>++
+      * kube-proxy
+        * Per ''kubectl edit cm/kube-proxy -n kube-system'' die ''metricsBindAddress'' von ''""'' auf ''0.0.0.0:10249'' ändern
+
+====== Quotes ======
+
+> single quote
+
+> another single
+>> with an anwser
+>>> and a thir person?
+>> second person again
+> finish
+
+====== Drucker reparieren ======
+
+Folgende Datei lokal öffnen: {{ :sh:doku:drucker:haufig_probleme_beim_drucken.chm | Häufige Probleme beim Drucken}}
