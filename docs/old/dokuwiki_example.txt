@@ -1,7 +1,6 @@
 ====== Testdokuwiki ======
 
 <catlist p:it -nohead -noNsinbold -noAddPageButton>
-
 ====== Installation ======
 
 ```
@@ -12,6 +11,12 @@ ddd eee
 => ''about:config'' - ''security.tls.insecure_fallback_hosts'' - ''ops-pipeline-testfaelle-test.sirconic-k8s.de''
 => remove cookies in url bar
 
+===== Gitlab =====
+
+https://wiki.leasone.de/de/devops/kubernetes/kubernetes_installationen#gitlab-installation
+
+
+**[[https://docs.gitlab.com/charts/installation/tools.html|Vorraussetzungen]]**
 ===== Gitlab =====
 
 https://wiki.leasone.de/de/devops/kubernetes/kubernetes_installationen#gitlab-installation
