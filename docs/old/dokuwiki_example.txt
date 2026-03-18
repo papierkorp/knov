@@ -355,3 +355,11 @@ spec:
 ====== Drucker reparieren ======
 
 Folgende Datei lokal öffnen: {{ :sh:doku:drucker:haufig_probleme_beim_drucken.chm | Häufige Probleme beim Drucken}}
+
+====== Theory ======
+
+<col2>
+![20221026-092942.png](/files/media/p/programmieren/pasted/20221026-092942.png)
+<sep2>
+![20221026-085146.png](/files/media/p/programmieren/pasted/20221026-085146.png)
+</col>
