@@ -307,7 +307,7 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 	}
 
 	action := "/api/files/section/save"
-	cancelURL := fmt.Sprintf("/files/%s", filePath)
+	cancelURL := fmt.Sprintf("/files/%s#%s", filePath, sectionID)
 
 	return fmt.Sprintf(`
 		<form hx-post="%s" hx-target="#editor-status" class="file-form">

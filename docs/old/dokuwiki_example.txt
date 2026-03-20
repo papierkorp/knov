@@ -11,6 +11,8 @@ ddd eee
 => ''about:config'' - ''security.tls.insecure_fallback_hosts'' - ''ops-pipeline-testfaelle-test.sirconic-k8s.de''
 => remove cookies in url bar
 
+__italic__ => should use ''_italic_'' instead of ''<ul>italic</ul'' in markdown
+
 ===== Gitlab =====
 
 https://wiki.leasone.de/de/devops/kubernetes/kubernetes_installationen#gitlab-installation

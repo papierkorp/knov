@@ -316,9 +316,11 @@ this is what i wrote down:
 
 # dokuwiki parser
 
+use _italic_   instead of <u>italic</u> 
 http://localhost:1324/files/p/wiki/chronik.md
 dont replace <catlist> in codeblocks
 detail links are not working
+set metadata type to permanent
 
 # small stuff
 
