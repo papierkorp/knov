@@ -324,7 +324,8 @@ set metadata type to permanent
 
 # small stuff
 
-- edit mode - cancel jump to correct header
+
+- ignore external links: [text](google.de) in rebuild links
 - remove orphaned media behaviour + orphaned media age
 - fix compact and reader view
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)
