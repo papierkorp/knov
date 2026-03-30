@@ -322,20 +322,27 @@ dont replace <catlist> in codeblocks
 detail links are not working
 set metadata type to permanent
 
+# before productive use
+
+- new filter file => no metadata (also no filetype)
+- type filter content - no toc
+- dashboard filter content css broken
+- dashboard only one filter allowed - the second filter uses the same config as the first one
+- ignore external links: [text](google.de) in rebuild links
+- version history - show max amount of last 5
+- add a button to base.gohtml in the edit toolbar: rebuild metadata for this file
+
 # small stuff
 
-
-- ignore external links: [text](google.de) in rebuild links
+- rebuild metadata doesnt look at file ending to automatically set filetype
 - remove orphaned media behaviour + orphaned media age
 - fix compact and reader view
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)
 - load all files from cache?
   - http://localhost:1324/browse/folders/systemadmin is running through all files?
-- dont runt the search indexing at startup
-- version history - show max amount of 5
+- dont run the search indexing at startup
 - codeblocks - copy button
 - codeblocks setting - wrap content
-- add a button to base.gohtml in the edit toolbar: rebuild metadata for this file
 - .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
 - make certain settings required in thememanager
 - new references filetype: Link Resources to certain files e.g. i have postgres file and i want to link a Page about Optimization
