@@ -55,6 +55,7 @@ result
 # Editors
 ## nvim
 .null-ls*
+.zed
 
 # Go workspace.
 go.work
