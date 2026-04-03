@@ -399,3 +399,5 @@ set metadata type to permanent
 			} else if spaceCount >= 2 {
 				newIndent = "  " // keep 2 spaces for level 1 (don't convert to 0)
 			}
+
+
