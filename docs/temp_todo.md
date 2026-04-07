@@ -316,7 +316,6 @@ this is what i wrote down:
 
 # dokuwiki parser
 
-use _italic_   instead of <u>italic</u> 
 http://localhost:1324/files/p/wiki/chronik.md
 dont replace <catlist> in codeblocks
 detail links are not working
@@ -399,5 +398,3 @@ set metadata type to permanent
 			} else if spaceCount >= 2 {
 				newIndent = "  " // keep 2 spaces for level 1 (don't convert to 0)
 			}
-
-

@@ -218,7 +218,7 @@ func (h *DokuwikiHandler) renderAsMarkdown(element DokuWikiElement) string {
 	case "italic":
 		return fmt.Sprintf("*%s*", element.Content)
 	case "underline":
-		return fmt.Sprintf("<u>%s</u>", element.Content) // no markdown equivalent
+		return fmt.Sprintf("_%s_", element.Content)
 	case "code":
 		return fmt.Sprintf("`%s`", element.Content)
 	case "link":

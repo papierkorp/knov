@@ -31,6 +31,6 @@ swaggo-api-init:
 	swag init -g main.go -d . -o internal/server/swagger
 
 tree:
-	tree -I 'bin|data|storage'
+	tree -I 'bin|data|data2|data3|storage'
 
 .PHONY: dev dev-fast swaggo-api-init translation prod docker docker-build docker-run tree
