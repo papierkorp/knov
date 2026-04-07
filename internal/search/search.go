@@ -49,6 +49,9 @@ func IndexAllFiles() error {
 		if err := searchStorage.IndexFile(file.Path, content); err != nil {
 			logging.LogWarning("failed to index file %s: %v", file.Path, err)
 		}
+
+		// index file in trigram index for fuzzy fallback search
+		trigramIdx.add(file.Path, content)
 	}
 
 	logging.LogInfo("finished indexing files")
@@ -115,6 +118,12 @@ func searchFilesRepository(query string, limit int) ([]files.File, error) {
 				break
 			}
 		}
+	}
+
+	// fall back to trigram fuzzy search if FTS returned nothing
+	if len(results) == 0 {
+		logging.LogDebug("fts returned no results for '%s', trying trigram fallback", query)
+		return searchFilesTrigram(query, limit)
 	}
 
 	logging.LogDebug("found %d results for query: %s", len(results), query)
