@@ -2549,6 +2549,29 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/links/related": {
+            "get": {
+                "description": "Returns files that share link neighbors with the given file",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Get related files by co-occurrence",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/links/used": {
             "get": {
                 "produces": [

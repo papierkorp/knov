@@ -149,3 +149,11 @@ func RenderLinksToHere(linksToHere []string) string {
 	}
 	return RenderLinksList(linksToHere, false)
 }
+
+// RenderRelatedFiles renders related files links or a fallback message
+func RenderRelatedFiles(paths []string) string {
+	if len(paths) == 0 {
+		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no related files found"))
+	}
+	return RenderLinksList(paths, false)
+}

@@ -2122,6 +2122,22 @@ paths:
       summary: Get parent links for a file
       tags:
       - links
+  /api/links/related:
+    get:
+      description: Returns files that share link neighbors with the given file
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get related files by co-occurrence
+      tags:
+      - links
   /api/links/used:
     get:
       parameters:

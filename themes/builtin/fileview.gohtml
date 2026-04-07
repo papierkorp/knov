@@ -110,6 +110,10 @@
                         <div class="connection-label">links from</div>
                         <div hx-get="/api/links/linkstohere?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
+                    <div class="connection-group">
+                        <div class="connection-label">related</div>
+                        <div hx-get="/api/links/related?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                    </div>
                 </div>
             </section>
             {{end}}

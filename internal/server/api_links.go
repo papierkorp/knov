@@ -6,6 +6,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/search"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -149,4 +150,24 @@ func handleAPIGetLinksToHere(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeResponse(w, r, metadata.LinksToHere, render.RenderLinksList(metadata.LinksToHere, false))
+}
+
+// @Summary Get related files by co-occurrence
+// @Description Returns files that share link neighbors with the given file
+// @Tags links
+// @Param filepath query string true "File path"
+// @Produce json,html
+// @Router /api/links/related [get]
+func handleAPIGetRelatedFiles(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+	paths, err := search.GetRelatedFiles(filePath, 5)
+	if err != nil || len(paths) == 0 {
+		writeResponse(w, r, []string{}, render.RenderRelatedFiles(nil))
+		return
+	}
+	writeResponse(w, r, paths, render.RenderRelatedFiles(paths))
 }
