@@ -1917,6 +1917,11 @@
       "translation": ""
     },
     {
+      "id": "no related files found",
+      "message": "no related files found",
+      "translation": ""
+    },
+    {
       "id": "no resources found",
       "message": "no resources found",
       "translation": ""
@@ -2329,6 +2334,11 @@
     {
       "id": "scanning .gohtml template files...",
       "message": "scanning .gohtml template files...",
+      "translation": ""
+    },
+    {
+      "id": "Search",
+      "message": "Search",
       "translation": ""
     },
     {

@@ -207,84 +207,71 @@ func RenderFilterWidgetConfig(index int, config *dashboard.WidgetConfig) string 
 	html.WriteString(`<div class="config-form">`)
 	html.WriteString(`<h5>` + translation.SprintfForRequest(configmanager.GetLanguage(), "filter configuration") + `</h5>`)
 
-	// filter criteria section
 	html.WriteString(`<div class="config-section">`)
 	html.WriteString(`<h6>` + translation.SprintfForRequest(configmanager.GetLanguage(), "filter criteria") + `</h6>`)
 
-	// logic selection
 	html.WriteString(`<div class="config-row">`)
 	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "logic") + `:</label>`)
-	html.WriteString(`<select name="logic" class="form-select">`)
-
+	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][logic]" class="form-select">`, index))
 	selectedLogic := "and"
 	if config != nil && config.Filter != nil {
 		selectedLogic = config.Filter.Logic
 	}
-
 	html.WriteString(fmt.Sprintf(`<option value="and" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "and")+`</option>`, utils.Ternary(selectedLogic == "and", "selected", "")))
 	html.WriteString(fmt.Sprintf(`<option value="or" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "or")+`</option>`, utils.Ternary(selectedLogic == "or", "selected", "")))
 	html.WriteString(`</select>`)
-	html.WriteString(fmt.Sprintf(`<button type="button" hx-post="/api/filter/add-criteria" hx-target="#filter-criteria-container-%d" hx-swap="beforeend" class="btn-secondary btn-small">%s</button>`, index, translation.SprintfForRequest(configmanager.GetLanguage(), "add criteria")))
+	html.WriteString(fmt.Sprintf(`<button type="button" hx-post="/api/filter/add-criteria" hx-target="#filter-criteria-container-%d" hx-swap="beforeend" hx-vals='{"widget_index": "%d"}' class="btn-secondary btn-small">%s</button>`,
+		index, index, translation.SprintfForRequest(configmanager.GetLanguage(), "add criteria")))
 	html.WriteString(`</div>`)
 
 	html.WriteString(fmt.Sprintf(`<div id="filter-criteria-container-%d" class="filter-criteria-container">`, index))
-
-	// render existing criteria or default first criteria
 	if config != nil && config.Filter != nil && len(config.Filter.Criteria) > 0 {
-		for i, criteria := range config.Filter.Criteria {
-			html.WriteString(RenderFilterCriteriaRow(i, &criteria))
+		for i, c := range config.Filter.Criteria {
+			html.WriteString(RenderFilterCriteriaRowForWidget(index, i, &c))
 		}
 	} else {
-		html.WriteString(RenderFilterCriteriaRow(0, nil))
+		html.WriteString(RenderFilterCriteriaRowForWidget(index, 0, nil))
 	}
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
 
-	// preview section
 	html.WriteString(`<div class="config-section">`)
 	html.WriteString(`<h6>` + translation.SprintfForRequest(configmanager.GetLanguage(), "preview") + `</h6>`)
 	html.WriteString(`<div class="config-row">`)
-	html.WriteString(fmt.Sprintf(`<button type="button" hx-post="/api/filter" hx-include="#filter-criteria-container-%d" hx-target="#filter-preview-results-%d" hx-swap="innerHTML" class="btn-secondary">%s</button>`, index, index, translation.SprintfForRequest(configmanager.GetLanguage(), "view results")))
+	html.WriteString(fmt.Sprintf(`<button type="button" hx-post="/api/filter" hx-include="#widget-config-%d" hx-vals='{"widget_index": "%d"}' hx-target="#filter-preview-results-%d" hx-swap="innerHTML" class="btn-secondary">%s</button>`,
+		index, index, index, translation.SprintfForRequest(configmanager.GetLanguage(), "view results")))
 	html.WriteString(`</div>`)
-
 	html.WriteString(fmt.Sprintf(`<div id="filter-preview-results-%d" class="filter-results">`, index))
 	html.WriteString(`<p class="filter-no-results">` + translation.SprintfForRequest(configmanager.GetLanguage(), "configure filter above and click view results to preview") + `</p>`)
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
 
-	// display & limits section
 	html.WriteString(`<div class="config-section">`)
 	html.WriteString(`<h6>` + translation.SprintfForRequest(configmanager.GetLanguage(), "display & limits") + `</h6>`)
 
-	// display type
 	html.WriteString(`<div class="config-row">`)
 	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "display") + `:</label>`)
-	html.WriteString(`<select name="display" class="form-select">`)
-
+	html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][display]" class="form-select">`, index))
 	selectedDisplay := "list"
 	if config != nil && config.Filter != nil {
 		selectedDisplay = config.Filter.Display
 	}
-
 	html.WriteString(fmt.Sprintf(`<option value="list" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "list")+`</option>`, utils.Ternary(selectedDisplay == "list", "selected", "")))
 	html.WriteString(fmt.Sprintf(`<option value="cards" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "cards")+`</option>`, utils.Ternary(selectedDisplay == "cards", "selected", "")))
 	html.WriteString(fmt.Sprintf(`<option value="dropdown" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "dropdown")+`</option>`, utils.Ternary(selectedDisplay == "dropdown", "selected", "")))
 	html.WriteString(fmt.Sprintf(`<option value="content" %s>`+translation.SprintfForRequest(configmanager.GetLanguage(), "content")+`</option>`, utils.Ternary(selectedDisplay == "content", "selected", "")))
-	html.WriteString(`</select>`)
-	html.WriteString(`</div>`)
+	html.WriteString(`</select></div>`)
 
-	// limit
 	html.WriteString(`<div class="config-row">`)
 	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "limit") + `:</label>`)
 	limitValue := "10"
 	if config != nil && config.Filter != nil && config.Filter.Limit > 0 {
 		limitValue = fmt.Sprintf("%d", config.Filter.Limit)
 	}
-	html.WriteString(fmt.Sprintf(`<input type="number" name="limit" value="%s" min="1" class="form-input"/>`, limitValue))
-	html.WriteString(`</div>`)
-
+	html.WriteString(fmt.Sprintf(`<input type="number" name="widgets[%d][config][limit]" value="%s" min="1" class="form-input"/>`, index, limitValue))
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
 
+	html.WriteString(`</div>`)
 	return html.String()
 }

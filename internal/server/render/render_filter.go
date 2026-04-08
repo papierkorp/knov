@@ -201,6 +201,74 @@ func RenderFilterCriteriaRow(index int, criteria *filter.Criteria) string {
 	return html.String()
 }
 
+// RenderFilterCriteriaRowForWidget renders a filter criteria row with widget-namespaced field names
+func RenderFilterCriteriaRowForWidget(widgetIndex, rowIndex int, criteria *filter.Criteria) string {
+	var html strings.Builder
+
+	namePrefix := fmt.Sprintf("widgets[%d][config][criteria][%d]", widgetIndex, rowIndex)
+	valueContainerID := fmt.Sprintf("filter-value-container-%d-%d", widgetIndex, rowIndex)
+
+	html.WriteString(fmt.Sprintf(`<div class="filter-criteria-row" data-index="%d">`, rowIndex))
+
+	html.WriteString(`<div class="filter-field">`)
+	if rowIndex > 0 {
+		html.WriteString(`<hr />`)
+	}
+	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "field") + `</label>`)
+	html.WriteString(fmt.Sprintf(`<select name="%s[metadata]" class="form-select" hx-get="/api/filter/value-input" hx-target="#%s" hx-swap="innerHTML" hx-vals='{"row_index": "%d", "widget_index": "%d"}' hx-include="this">`,
+		namePrefix, valueContainerID, rowIndex, widgetIndex))
+	html.WriteString(`<option value="">` + translation.SprintfForRequest(configmanager.GetLanguage(), "select field") + `</option>`)
+	selectedMetadata := ""
+	if criteria != nil {
+		selectedMetadata = criteria.Metadata
+	}
+	html.WriteString(RenderMetadataFieldOptions(selectedMetadata))
+	html.WriteString(`</select></div>`)
+
+	html.WriteString(`<div class="filter-field">`)
+	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "operator") + `</label>`)
+	html.WriteString(fmt.Sprintf(`<select name="%s[operator]" class="form-select">`, namePrefix))
+	selectedOperator := "equals"
+	if criteria != nil {
+		selectedOperator = criteria.Operator
+	}
+	html.WriteString(RenderOperatorOptions(selectedOperator))
+	html.WriteString(`</select></div>`)
+
+	html.WriteString(`<div class="filter-field">`)
+	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "value") + `</label>`)
+	html.WriteString(fmt.Sprintf(`<div id="%s">`, valueContainerID))
+	value, metadataField := "", ""
+	if criteria != nil {
+		value = criteria.Value
+		metadataField = criteria.Metadata
+	}
+	html.WriteString(RenderFilterValueInput(
+		fmt.Sprintf("filter-value-%d-%d", widgetIndex, rowIndex),
+		fmt.Sprintf("%s[value]", namePrefix),
+		value, metadataField))
+	html.WriteString(`</div></div>`)
+
+	html.WriteString(`<div class="filter-field">`)
+	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "action") + `</label>`)
+	html.WriteString(fmt.Sprintf(`<select name="%s[action]" class="form-select">`, namePrefix))
+	selectedAction := "include"
+	if criteria != nil {
+		selectedAction = criteria.Action
+	}
+	html.WriteString(RenderActionOptions(selectedAction))
+	html.WriteString(`</select></div>`)
+
+	if rowIndex > 0 {
+		html.WriteString(`<div class="filter-field">`)
+		html.WriteString(`<button type="button" onclick="this.closest('.filter-criteria-row').remove()" class="btn-danger btn-small">` + translation.SprintfForRequest(configmanager.GetLanguage(), "remove") + `</button>`)
+		html.WriteString(`</div>`)
+	}
+
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
 // RenderMetadataFieldOptions returns HTML options for metadata field selectors
 func RenderMetadataFieldOptions(selectedValue string) string {
 	var html strings.Builder

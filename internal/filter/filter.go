@@ -526,3 +526,73 @@ func ParseFilterConfigFromForm(r *http.Request) *Config {
 		Limit:    limit,
 	}
 }
+
+// ParseFilterConfigFromFormForWidget parses filter config from form fields namespaced to a specific widget index
+func ParseFilterConfigFromFormForWidget(r *http.Request, widgetIndex int) *Config {
+	prefix := fmt.Sprintf("widgets[%d][config]", widgetIndex)
+
+	logic := r.FormValue(prefix + "[logic]")
+	if logic == "" {
+		logic = "and"
+	}
+	display := r.FormValue(prefix + "[display]")
+	if display == "" {
+		display = "list"
+	}
+	limitStr := r.FormValue(prefix + "[limit]")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 50
+	}
+
+	formData := make(map[int]map[string]string)
+	criteriaPrefix := prefix + "[criteria]"
+
+	for key, values := range r.Form {
+		if !strings.HasPrefix(key, criteriaPrefix) || len(values) == 0 {
+			continue
+		}
+		rest := key[len(criteriaPrefix):]
+		if !strings.HasPrefix(rest, "[") {
+			continue
+		}
+		rest = rest[1:]
+		end := strings.Index(rest, "]")
+		if end < 0 {
+			continue
+		}
+		rowIdx, err := strconv.Atoi(rest[:end])
+		if err != nil {
+			continue
+		}
+		fieldPart := rest[end+1:]
+		if !strings.HasPrefix(fieldPart, "[") || !strings.HasSuffix(fieldPart, "]") {
+			continue
+		}
+		field := fieldPart[1 : len(fieldPart)-1]
+		if formData[rowIdx] == nil {
+			formData[rowIdx] = make(map[string]string)
+		}
+		formData[rowIdx][field] = values[0]
+	}
+
+	maxRow := -1
+	for idx := range formData {
+		if idx > maxRow {
+			maxRow = idx
+		}
+	}
+	var criteria []Criteria
+	for i := 0; i <= maxRow; i++ {
+		if row, ok := formData[i]; ok && row["metadata"] != "" {
+			criteria = append(criteria, Criteria{
+				Metadata: row["metadata"],
+				Operator: row["operator"],
+				Value:    row["value"],
+				Action:   row["action"],
+			})
+		}
+	}
+
+	return &Config{Criteria: criteria, Logic: logic, Display: display, Limit: limit}
+}

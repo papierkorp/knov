@@ -38,7 +38,16 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	config := filter.ParseFilterConfigFromForm(r)
+	var config *filter.Config
+	if widgetIndexStr := r.FormValue("widget_index"); widgetIndexStr != "" {
+		if widgetIndex, err := strconv.Atoi(widgetIndexStr); err == nil {
+			config = filter.ParseFilterConfigFromFormForWidget(r, widgetIndex)
+		}
+	}
+	if config == nil {
+		config = filter.ParseFilterConfigFromForm(r)
+	}
+
 	if err := filter.ValidateConfig(config); err != nil {
 		logging.LogError("invalid filter config: %v", err)
 		http.Error(w, fmt.Sprintf(translation.SprintfForRequest(configmanager.GetLanguage(), "invalid filter config: %v"), err), http.StatusBadRequest)
@@ -195,14 +204,20 @@ func handleAPIGetFilterValueInput(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get metadata from indexed field name
-	metadataFieldName := fmt.Sprintf("metadata[%d]", rowIndex)
-	metadata := r.FormValue(metadataFieldName)
 	value := r.FormValue("value")
 
-	logging.LogDebug("filter value input: rowIndex=%d, metadata=%s", rowIndex, metadata)
-
-	inputId := fmt.Sprintf("filter-value-%d", rowIndex)
-	inputName := fmt.Sprintf("value[%d]", rowIndex)
+	widgetIndexStr := r.FormValue("widget_index")
+	var metadata string
+	var inputId, inputName string
+	if widgetIndexStr != "" {
+		metadata = r.FormValue(fmt.Sprintf("widgets[%s][config][criteria][%d][metadata]", widgetIndexStr, rowIndex))
+		inputId = fmt.Sprintf("filter-value-%s-%d", widgetIndexStr, rowIndex)
+		inputName = fmt.Sprintf("widgets[%s][config][criteria][%d][value]", widgetIndexStr, rowIndex)
+	} else {
+		metadata = r.FormValue(fmt.Sprintf("metadata[%d]", rowIndex))
+		inputId = fmt.Sprintf("filter-value-%d", rowIndex)
+		inputName = fmt.Sprintf("value[%d]", rowIndex)
+	}
 
 	html := render.RenderFilterValueInput(inputId, inputName, value, metadata)
 	w.Header().Set("Content-Type", "text/html")
@@ -225,7 +240,18 @@ func handleAPIAddFilterCriteria(w http.ResponseWriter, r *http.Request) {
 	// generate unique criteria index based on timestamp
 	criteriaIndex := int(time.Now().Unix()) % 1000
 
-	html := render.RenderFilterCriteriaRow(criteriaIndex, nil)
+	widgetIndexStr := r.FormValue("widget_index")
+	var html string
+	if widgetIndexStr != "" {
+		widgetIndex, err := strconv.Atoi(widgetIndexStr)
+		if err == nil {
+			html = render.RenderFilterCriteriaRowForWidget(widgetIndex, criteriaIndex, nil)
+		}
+	}
+	if html == "" {
+		html = render.RenderFilterCriteriaRow(criteriaIndex, nil)
+	}
+
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
