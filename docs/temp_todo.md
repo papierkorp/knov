@@ -320,13 +320,13 @@ http://localhost:1324/files/p/wiki/chronik.md
 dont replace <catlist> in codeblocks
 detail links are not working
 set metadata type to permanent
+http://localhost:1324/files/docs/wiki/dokuwiki/syntax.md#rss-atom-feed-aggregation
+http://localhost:8080/doku.php?id=wiki:dokuwiki:syntax#rss_atom_feed_aggregation
 
 # before productive use
 
 - new filter file => no metadata (also no filetype)
 - type filter content - no toc
-- dashboard filter content css broken
-- dashboard only one filter allowed - the second filter uses the same config as the first one
 - ignore external links: [text](google.de) in rebuild links
 - version history - show max amount of last 5
 - add a button to base.gohtml in the edit toolbar: rebuild metadata for this file
