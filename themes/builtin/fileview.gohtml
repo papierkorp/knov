@@ -121,7 +121,7 @@
             <section class="sidebar-section" id="component-sidebar-versions">
                 <h3><a href="/files/history/{{urlQuery .FilePath}}">{{T "version history"}}</a></h3>
                 <div class="version-loading"
-                     hx-get="/api/files/versions/{{urlQuery .FilePath}}?sidebar=true"
+                     hx-get="/api/files/versions/{{urlQuery .FilePath}}?output=sidebar"
                      hx-trigger="load"
                      hx-swap="innerHTML">
                     {{T "loading versions..."}}

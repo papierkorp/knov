@@ -326,8 +326,6 @@ http://localhost:8080/doku.php?id=wiki:dokuwiki:syntax#rss_atom_feed_aggregation
 
 - new filter file => no metadata (also no filetype)
 - type filter content - no toc
-- ignore external links: [text](google.de) in rebuild links
-- version history - show max amount of last 5
 - add a button to base.gohtml in the edit toolbar: rebuild metadata for this file
 
 # small stuff
