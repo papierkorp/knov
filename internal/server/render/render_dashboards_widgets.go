@@ -186,7 +186,7 @@ func renderFilterFormWidget() (string, error) {
 
 	// criteria container
 	html.WriteString(`<div id="filter-criteria-container" class="filter-criteria-container">`)
-	html.WriteString(RenderFilterCriteriaRow(0, nil))
+	html.WriteString(RenderFilterCriteriaRow(-1, 0, nil))
 	html.WriteString(`</div>`)
 
 	// results container
@@ -227,10 +227,10 @@ func RenderFilterWidgetConfig(index int, config *dashboard.WidgetConfig) string 
 	html.WriteString(fmt.Sprintf(`<div id="filter-criteria-container-%d" class="filter-criteria-container">`, index))
 	if config != nil && config.Filter != nil && len(config.Filter.Criteria) > 0 {
 		for i, c := range config.Filter.Criteria {
-			html.WriteString(RenderFilterCriteriaRowForWidget(index, i, &c))
+			html.WriteString(RenderFilterCriteriaRow(index, i, &c))
 		}
 	} else {
-		html.WriteString(RenderFilterCriteriaRowForWidget(index, 0, nil))
+		html.WriteString(RenderFilterCriteriaRow(index, 0, nil))
 	}
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)

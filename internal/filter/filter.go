@@ -387,212 +387,147 @@ func SaveFilterConfig(config *Config, filePath string) error {
 	return nil
 }
 
-func ParseFilterConfigFromForm(r *http.Request) *Config {
-	logic := r.FormValue("logic")
+// filterFieldName returns the form field name scoped to a widget, or standalone if widgetIndex < 0.
+func filterFieldName(widgetIndex int, name string) string {
+	if widgetIndex < 0 {
+		return name
+	}
+	return fmt.Sprintf("widgets[%d][config][%s]", widgetIndex, name)
+}
+
+// ParseFilterConfigFromForm parses filter configuration from form data.
+// Pass widgetIndex >= 0 to parse widget-namespaced fields, or -1 for standalone filter forms.
+func ParseFilterConfigFromForm(r *http.Request, widgetIndex int) *Config {
+	logic := r.FormValue(filterFieldName(widgetIndex, "logic"))
 	if logic == "" {
 		logic = "and"
 	}
-
-	display := r.FormValue("display")
+	display := r.FormValue(filterFieldName(widgetIndex, "display"))
 	if display == "" {
 		display = "list"
 	}
-
-	limitStr := r.FormValue("limit")
+	limitStr := r.FormValue(filterFieldName(widgetIndex, "limit"))
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
 		limit = 50
 	}
 
-	var criteria []Criteria
-
-	// Extract all indexed form values
 	formData := make(map[int]map[string]string)
 
-	for key, values := range r.Form {
-		if len(values) == 0 {
-			continue
+	if widgetIndex >= 0 {
+		criteriaPrefix := fmt.Sprintf("widgets[%d][config][criteria]", widgetIndex)
+		for key, values := range r.Form {
+			if !strings.HasPrefix(key, criteriaPrefix) || len(values) == 0 {
+				continue
+			}
+			rest := key[len(criteriaPrefix):]
+			if !strings.HasPrefix(rest, "[") {
+				continue
+			}
+			rest = rest[1:]
+			end := strings.Index(rest, "]")
+			if end < 0 {
+				continue
+			}
+			rowIdx, err := strconv.Atoi(rest[:end])
+			if err != nil {
+				continue
+			}
+			fieldPart := rest[end+1:]
+			if !strings.HasPrefix(fieldPart, "[") || !strings.HasSuffix(fieldPart, "]") {
+				continue
+			}
+			field := fieldPart[1 : len(fieldPart)-1]
+			if formData[rowIdx] == nil {
+				formData[rowIdx] = make(map[string]string)
+			}
+			formData[rowIdx][field] = values[0]
+		}
+	} else {
+		for key, values := range r.Form {
+			if len(values) == 0 {
+				continue
+			}
+			var field string
+			var index int
+			var err error
+			if strings.HasPrefix(key, "metadata[") && strings.HasSuffix(key, "]") {
+				field = "metadata"
+				index, err = strconv.Atoi(key[9 : len(key)-1])
+			} else if strings.HasPrefix(key, "operator[") && strings.HasSuffix(key, "]") {
+				field = "operator"
+				index, err = strconv.Atoi(key[9 : len(key)-1])
+			} else if strings.HasPrefix(key, "value[") && strings.HasSuffix(key, "]") {
+				field = "value"
+				index, err = strconv.Atoi(key[6 : len(key)-1])
+			} else if strings.HasPrefix(key, "action[") && strings.HasSuffix(key, "]") {
+				field = "action"
+				index, err = strconv.Atoi(key[7 : len(key)-1])
+			} else {
+				continue
+			}
+			if err != nil {
+				continue
+			}
+			if formData[index] == nil {
+				formData[index] = make(map[string]string)
+			}
+			formData[index][field] = values[0]
 		}
 
-		var field string
-		var index int
-		var err error
-
-		if strings.HasPrefix(key, "metadata[") && strings.HasSuffix(key, "]") {
-			field = "metadata"
-			indexStr := key[9 : len(key)-1] // extract index from metadata[index]
-			index, err = strconv.Atoi(indexStr)
-		} else if strings.HasPrefix(key, "operator[") && strings.HasSuffix(key, "]") {
-			field = "operator"
-			indexStr := key[9 : len(key)-1] // extract index from operator[index]
-			index, err = strconv.Atoi(indexStr)
-		} else if strings.HasPrefix(key, "value[") && strings.HasSuffix(key, "]") {
-			field = "value"
-			indexStr := key[6 : len(key)-1] // extract index from value[index]
-			index, err = strconv.Atoi(indexStr)
-		} else if strings.HasPrefix(key, "action[") && strings.HasSuffix(key, "]") {
-			field = "action"
-			indexStr := key[7 : len(key)-1] // extract index from action[index]
-			index, err = strconv.Atoi(indexStr)
-		} else {
-			continue
+		// fallback to array form
+		if len(formData) == 0 {
+			metadata := r.Form["metadata[]"]
+			operators := r.Form["operator[]"]
+			values := r.Form["value[]"]
+			actions := r.Form["action[]"]
+			maxLen := len(metadata)
+			for _, l := range []int{len(operators), len(values), len(actions)} {
+				if l > maxLen {
+					maxLen = l
+				}
+			}
+			for i := 0; i < maxLen; i++ {
+				if formData[i] == nil {
+					formData[i] = make(map[string]string)
+				}
+				if i < len(metadata) {
+					formData[i]["metadata"] = metadata[i]
+				}
+				if i < len(operators) {
+					formData[i]["operator"] = operators[i]
+				} else {
+					formData[i]["operator"] = "equals"
+				}
+				if i < len(values) {
+					formData[i]["value"] = values[i]
+				}
+				if i < len(actions) {
+					formData[i]["action"] = actions[i]
+				} else {
+					formData[i]["action"] = "include"
+				}
+			}
 		}
-
-		if err != nil {
-			continue
-		}
-
-		if formData[index] == nil {
-			formData[index] = make(map[string]string)
-		}
-		formData[index][field] = values[0]
 	}
 
-	// fallback to array form if no indexed data found
-	if len(formData) == 0 {
-		metadata := r.Form["metadata[]"]
-		operators := r.Form["operator[]"]
-		values := r.Form["value[]"]
-		actions := r.Form["action[]"]
-
-		maxLen := len(metadata)
-		if len(operators) > maxLen {
-			maxLen = len(operators)
-		}
-		if len(values) > maxLen {
-			maxLen = len(values)
-		}
-		if len(actions) > maxLen {
-			maxLen = len(actions)
-		}
-
-		for i := 0; i < maxLen; i++ {
-			if formData[i] == nil {
-				formData[i] = make(map[string]string)
-			}
-
-			if i < len(metadata) {
-				formData[i]["metadata"] = metadata[i]
-			}
-			if i < len(operators) {
-				formData[i]["operator"] = operators[i]
-			} else {
-				formData[i]["operator"] = "equals"
-			}
-			if i < len(values) {
-				formData[i]["value"] = values[i]
-			}
-			if i < len(actions) {
-				formData[i]["action"] = actions[i]
-			} else {
-				formData[i]["action"] = "include"
-			}
-		}
-	}
-
-	// build criteria from grouped form data
+	var criteria []Criteria
 	for _, data := range formData {
-		metadata := data["metadata"]
-		operator := data["operator"]
-		value := data["value"]
-		action := data["action"]
-
-		if metadata != "" && operator != "" && value != "" {
-			if operator == "" {
-				operator = "equals"
-			}
-			if action == "" {
-				action = "include"
-			}
-
-			criteria = append(criteria, Criteria{
-				Metadata: metadata,
-				Operator: operator,
-				Value:    value,
-				Action:   action,
-			})
+		if data["metadata"] == "" || data["operator"] == "" || data["value"] == "" {
+			continue
 		}
+		action := data["action"]
+		if action == "" {
+			action = "include"
+		}
+		criteria = append(criteria, Criteria{
+			Metadata: data["metadata"],
+			Operator: data["operator"],
+			Value:    data["value"],
+			Action:   action,
+		})
 	}
 
 	logging.LogDebug("parsed %d filter criteria", len(criteria))
-	for i, c := range criteria {
-		logging.LogDebug("criteria %d: %s %s %s (%s)", i, c.Metadata, c.Operator, c.Value, c.Action)
-	}
-
-	return &Config{
-		Criteria: criteria,
-		Logic:    logic,
-		Display:  display,
-		Limit:    limit,
-	}
-}
-
-// ParseFilterConfigFromFormForWidget parses filter config from form fields namespaced to a specific widget index
-func ParseFilterConfigFromFormForWidget(r *http.Request, widgetIndex int) *Config {
-	prefix := fmt.Sprintf("widgets[%d][config]", widgetIndex)
-
-	logic := r.FormValue(prefix + "[logic]")
-	if logic == "" {
-		logic = "and"
-	}
-	display := r.FormValue(prefix + "[display]")
-	if display == "" {
-		display = "list"
-	}
-	limitStr := r.FormValue(prefix + "[limit]")
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit <= 0 {
-		limit = 50
-	}
-
-	formData := make(map[int]map[string]string)
-	criteriaPrefix := prefix + "[criteria]"
-
-	for key, values := range r.Form {
-		if !strings.HasPrefix(key, criteriaPrefix) || len(values) == 0 {
-			continue
-		}
-		rest := key[len(criteriaPrefix):]
-		if !strings.HasPrefix(rest, "[") {
-			continue
-		}
-		rest = rest[1:]
-		end := strings.Index(rest, "]")
-		if end < 0 {
-			continue
-		}
-		rowIdx, err := strconv.Atoi(rest[:end])
-		if err != nil {
-			continue
-		}
-		fieldPart := rest[end+1:]
-		if !strings.HasPrefix(fieldPart, "[") || !strings.HasSuffix(fieldPart, "]") {
-			continue
-		}
-		field := fieldPart[1 : len(fieldPart)-1]
-		if formData[rowIdx] == nil {
-			formData[rowIdx] = make(map[string]string)
-		}
-		formData[rowIdx][field] = values[0]
-	}
-
-	maxRow := -1
-	for idx := range formData {
-		if idx > maxRow {
-			maxRow = idx
-		}
-	}
-	var criteria []Criteria
-	for i := 0; i <= maxRow; i++ {
-		if row, ok := formData[i]; ok && row["metadata"] != "" {
-			criteria = append(criteria, Criteria{
-				Metadata: row["metadata"],
-				Operator: row["operator"],
-				Value:    row["value"],
-				Action:   row["action"],
-			})
-		}
-	}
-
 	return &Config{Criteria: criteria, Logic: logic, Display: display, Limit: limit}
 }

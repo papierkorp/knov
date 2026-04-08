@@ -38,15 +38,13 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var config *filter.Config
-	if widgetIndexStr := r.FormValue("widget_index"); widgetIndexStr != "" {
-		if widgetIndex, err := strconv.Atoi(widgetIndexStr); err == nil {
-			config = filter.ParseFilterConfigFromFormForWidget(r, widgetIndex)
+	widgetIndex := -1
+	if s := r.FormValue("widget_index"); s != "" {
+		if idx, err := strconv.Atoi(s); err == nil {
+			widgetIndex = idx
 		}
 	}
-	if config == nil {
-		config = filter.ParseFilterConfigFromForm(r)
-	}
+	config := filter.ParseFilterConfigFromForm(r, widgetIndex)
 
 	if err := filter.ValidateConfig(config); err != nil {
 		logging.LogError("invalid filter config: %v", err)
@@ -88,7 +86,7 @@ func handleAPIGetFilterCriteriaRow(w http.ResponseWriter, r *http.Request) {
 		index = 0
 	}
 
-	html := render.RenderFilterCriteriaRow(index, nil)
+	html := render.RenderFilterCriteriaRow(-1, index, nil)
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
@@ -126,7 +124,13 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// parse filter config from form using existing function
-	config := filter.ParseFilterConfigFromForm(r)
+	widgetIndex := -1
+	if s := r.FormValue("widget_index"); s != "" {
+		if idx, err := strconv.Atoi(s); err == nil {
+			widgetIndex = idx
+		}
+	}
+	config := filter.ParseFilterConfigFromForm(r, widgetIndex)
 
 	// save using the new filter package function
 	if err := filter.SaveFilterConfig(config, filePath); err != nil {
@@ -206,13 +210,17 @@ func handleAPIGetFilterValueInput(w http.ResponseWriter, r *http.Request) {
 	// get metadata from indexed field name
 	value := r.FormValue("value")
 
-	widgetIndexStr := r.FormValue("widget_index")
-	var metadata string
-	var inputId, inputName string
-	if widgetIndexStr != "" {
-		metadata = r.FormValue(fmt.Sprintf("widgets[%s][config][criteria][%d][metadata]", widgetIndexStr, rowIndex))
-		inputId = fmt.Sprintf("filter-value-%s-%d", widgetIndexStr, rowIndex)
-		inputName = fmt.Sprintf("widgets[%s][config][criteria][%d][value]", widgetIndexStr, rowIndex)
+	widgetIndex := -1
+	if s := r.FormValue("widget_index"); s != "" {
+		if idx, err := strconv.Atoi(s); err == nil {
+			widgetIndex = idx
+		}
+	}
+	var metadata, inputId, inputName string
+	if widgetIndex >= 0 {
+		metadata = r.FormValue(fmt.Sprintf("widgets[%d][config][criteria][%d][metadata]", widgetIndex, rowIndex))
+		inputId = fmt.Sprintf("filter-value-%d-%d", widgetIndex, rowIndex)
+		inputName = fmt.Sprintf("widgets[%d][config][criteria][%d][value]", widgetIndex, rowIndex)
 	} else {
 		metadata = r.FormValue(fmt.Sprintf("metadata[%d]", rowIndex))
 		inputId = fmt.Sprintf("filter-value-%d", rowIndex)
@@ -240,17 +248,13 @@ func handleAPIAddFilterCriteria(w http.ResponseWriter, r *http.Request) {
 	// generate unique criteria index based on timestamp
 	criteriaIndex := int(time.Now().Unix()) % 1000
 
-	widgetIndexStr := r.FormValue("widget_index")
-	var html string
-	if widgetIndexStr != "" {
-		widgetIndex, err := strconv.Atoi(widgetIndexStr)
-		if err == nil {
-			html = render.RenderFilterCriteriaRowForWidget(widgetIndex, criteriaIndex, nil)
+	widgetIndex := -1
+	if s := r.FormValue("widget_index"); s != "" {
+		if idx, err := strconv.Atoi(s); err == nil {
+			widgetIndex = idx
 		}
 	}
-	if html == "" {
-		html = render.RenderFilterCriteriaRow(criteriaIndex, nil)
-	}
+	html := render.RenderFilterCriteriaRow(widgetIndex, criteriaIndex, nil)
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))

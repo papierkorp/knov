@@ -69,7 +69,7 @@ func parseWidgetsFromForm(r *http.Request) ([]dashboard.Widget, error) {
 		var config dashboard.WidgetConfig
 		switch widgetType {
 		case dashboard.WidgetTypeFilter:
-			filterConfig := filter.ParseFilterConfigFromFormForWidget(r, i)
+			filterConfig := filter.ParseFilterConfigFromForm(r, i)
 			config.Filter = &dashboard.FilterConfig{
 				Criteria: filterConfig.Criteria,
 				Logic:    filterConfig.Logic,
