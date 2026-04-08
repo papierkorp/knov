@@ -645,10 +645,12 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 		logging.LogWarning("failed to update orphaned media cache: %v", err)
 	}
 
-	successMsg := fmt.Sprintf(`<div class="status-success">%s <a href="/files/%s">%s</a></div>`,
+	successMsg := fmt.Sprintf(`<div class="status-success">%s <a href="/files/%s#%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"),
 		filePath,
+		sectionID,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
+
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(successMsg))
 }

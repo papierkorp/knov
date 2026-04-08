@@ -317,7 +317,6 @@ this is what i wrote down:
 # dokuwiki parser
 
 http://localhost:1324/files/p/wiki/chronik.md
-dont replace <catlist> in codeblocks
 detail links are not working
 set metadata type to permanent
 http://localhost:1324/files/docs/wiki/dokuwiki/syntax.md#rss-atom-feed-aggregation
