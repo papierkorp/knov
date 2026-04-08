@@ -84,6 +84,41 @@ func MetaDataLinksRebuild() error {
 	return nil
 }
 
+// MetaDataLinksRebuildForFile rebuilds metadata links for a single file
+func MetaDataLinksRebuildForFile(filePath string) error {
+	normalizedPath := pathutils.ToWithPrefix(filePath)
+	logging.LogInfo("rebuilding metadata links for file: %s", normalizedPath)
+
+	metadata, err := MetaDataGet(normalizedPath)
+	if err != nil {
+		return err
+	}
+	if metadata == nil {
+		return fmt.Errorf("metadata not found for %s", normalizedPath)
+	}
+
+	metadata.Ancestor = []string{}
+	metadata.Kids = []string{}
+	metadata.UsedLinks = []string{}
+	metadata.LinksToHere = []string{}
+
+	updateAncestors(metadata)
+	updateUsedLinks(metadata)
+
+	if err := MetaDataSave(metadata); err != nil {
+		return err
+	}
+
+	updateKidsAndLinksToHere(metadata)
+
+	if err := MetaDataSave(metadata); err != nil {
+		return err
+	}
+
+	logging.LogInfo("metadata links rebuild completed for file: %s", normalizedPath)
+	return nil
+}
+
 func updateAncestors(metadata *Metadata) {
 	visited := make(map[string]bool)
 	var ancestors []string

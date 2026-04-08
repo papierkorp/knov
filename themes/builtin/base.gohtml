@@ -82,6 +82,11 @@
             {{ if eq .FileType "dokuwiki" }}
             <a href="#" id="export-markdown-link">{{T "Export to Markdown"}}</a>
             {{ end }}
+            <button type="button" id="rebuild-metadata"
+                hx-on::after-request="document.getElementById('rebuild-metadata-result').showPopover()">
+                {{T "Rebuild Metadata"}}
+            </button>
+            <div id="rebuild-metadata-result" popover></div>
             <button type="button" popovertarget="rename-modal">
                 {{T "Rename"}}
             </button>
@@ -156,6 +161,11 @@ if (fileMatch && !path.includes('/edit/')) {
     document.getElementById('rename-form').setAttribute('hx-post', `/api/files/rename/${filepath}`);
     document.getElementById('delete-form').setAttribute('hx-delete', `/api/files/delete/${filepath}`);
     document.getElementById('rename-input').value = filepath; // populate with full filepath for directory moves
+
+    const rebuildBtn = document.getElementById('rebuild-metadata');
+    rebuildBtn.setAttribute('hx-post', `/api/metadata/rebuild/${filepath}`);
+    rebuildBtn.setAttribute('hx-target', '#rebuild-metadata-result');
+
 
     {{ if eq .FileType "dokuwiki" }}
     // set export to markdown link for dokuwiki files

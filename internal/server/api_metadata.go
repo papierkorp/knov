@@ -18,6 +18,8 @@ import (
 	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // ----------------------------------------------------------------------------------------
@@ -134,6 +136,34 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 
 	data := map[string]string{"status": "metadata initialized"}
 	html := `<span class="status-ok">metadata initialized and rebuilt successfully</span>`
+	writeResponse(w, r, data, html)
+}
+
+// @Summary Rebuild metadata links for a single file
+// @Description Rebuilds metadata links (ancestors, kids, usedLinks, linksToHere) for one file
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath path string true "File path"
+// @Success 200 {string} string "metadata links rebuilt"
+// @Failure 400 {string} string "missing filepath"
+// @Failure 500 {string} string "failed to rebuild metadata links"
+// @Router /api/metadata/rebuild/{filepath} [post]
+func handleAPIRebuildFileMetadata(w http.ResponseWriter, r *http.Request) {
+	filePath := chi.URLParam(r, "*")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
+		return
+	}
+
+	if err := files.MetaDataLinksRebuildForFile(filePath); err != nil {
+		logging.LogError("failed to rebuild metadata links for %s: %v", filePath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rebuild metadata links"), http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]string{"status": "metadata links rebuilt"}
+	html := `<span class="status-ok">` + translation.SprintfForRequest(configmanager.GetLanguage(), "metadata links rebuilt") + `</span>`
 	writeResponse(w, r, data, html)
 }
 

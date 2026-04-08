@@ -3112,6 +3112,37 @@ paths:
       summary: Initialize/Rebuild metadata for all files
       tags:
       - metadata
+  /api/metadata/rebuild/{filepath}:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Rebuilds metadata links (ancestors, kids, usedLinks, linksToHere)
+        for one file
+      parameters:
+      - description: File path
+        in: path
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: metadata links rebuilt
+          schema:
+            type: string
+        "400":
+          description: missing filepath
+          schema:
+            type: string
+        "500":
+          description: failed to rebuild metadata links
+          schema:
+            type: string
+      summary: Rebuild metadata links for a single file
+      tags:
+      - metadata
   /api/metadata/status:
     get:
       parameters:
