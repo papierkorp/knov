@@ -25,7 +25,7 @@ func (h *DokuwikiHandler) processDokuWikiSyntax(content string, outputFormat str
 	content, codeBlocks := h.extractCodeBlocks(content)
 
 	// 4. Replace catlist (after code blocks are extracted so codeblocks are protected)
-	content = h.replaceCatlistTags(content)
+	content = h.replaceCatlistTags(content, outputFormat)
 
 	// 5. Headers
 	content = h.processHeaders(content, outputFormat)
@@ -365,9 +365,25 @@ func (h *DokuwikiHandler) processListsHTML(content string) string {
 
 // Helper functions for complex structures
 
-// replaceCatlistTags replaces catlist tags with a placeholder
-func (h *DokuwikiHandler) replaceCatlistTags(content string) string {
-	return regexp.MustCompile(`<catlist[^>]*>\s*`).ReplaceAllString(content, "HERE WAS A CATLIST")
+// replaceCatlistTags replaces catlist tags with a link to the browse/folders page.
+// It extracts the p:namespace argument (e.g. "p:it" → "/browse/folders/it").
+func (h *DokuwikiHandler) replaceCatlistTags(content string, outputFormat string) string {
+	return regexp.MustCompile(`<catlist([^>]*)>\s*`).ReplaceAllStringFunc(content, func(match string) string {
+		args := regexp.MustCompile(`<catlist([^>]*)>`).FindStringSubmatch(match)
+		path := ""
+		if len(args) > 1 {
+			// extract p:namespace argument
+			if m := regexp.MustCompile(`p:([^\s>]+)`).FindStringSubmatch(args[1]); len(m) > 1 {
+				// convert dokuwiki colons to path separators
+				path = "/" + strings.ReplaceAll(m[1], ":", "/")
+			}
+		}
+		url := "/browse/folders" + path
+		if outputFormat == "html" {
+			return fmt.Sprintf("<a href=\"%s\">%s</a>\n", url, url)
+		}
+		return fmt.Sprintf("[%s](%s)\n", url, url)
+	})
 }
 
 // convertIncludeSections converts {{section> include plugin syntax

@@ -1,6 +1,6 @@
 ====== Testdokuwiki ======
 
-<catlist p:it -nohead -noNsinbold -noAddPageButton>
+<catlist p:projects -nohead -noNsinbold -noAddPageButton>
 ====== Installation ======
 
 **Upgrade 10/2023**

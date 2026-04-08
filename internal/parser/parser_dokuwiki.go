@@ -105,10 +105,12 @@ func (h *DokuwikiHandler) restoreEscapes(content string, escapes []string) strin
 	return content
 }
 
-// extractCodeBlocks replaces fenced code blocks with placeholders to protect their content from further processing
+// extractCodeBlocks replaces fenced code blocks and HTML pre/code blocks with placeholders
+// to protect their content from further processing (e.g. catlist replacement)
 func (h *DokuwikiHandler) extractCodeBlocks(content string) (string, []string) {
 	var blocks []string
-	result := regexp.MustCompile("(?s)```[^\n]*\n.*?```").ReplaceAllStringFunc(content, func(match string) string {
+	re := regexp.MustCompile("(?s)```[^\n]*\n.*?```|<pre><code>.*?</code></pre>")
+	result := re.ReplaceAllStringFunc(content, func(match string) string {
 		placeholder := fmt.Sprintf("\x00CODE%d\x00", len(blocks))
 		blocks = append(blocks, match)
 		return placeholder
