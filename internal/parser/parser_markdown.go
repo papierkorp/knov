@@ -146,10 +146,6 @@ func (h *MarkdownHandler) restoreCodeBlocks(html string, blocks []codeBlock) str
 // resolveMediaPath returns a clean relative media path from a markdown image destination.
 // Falls back to bare filename if it has a known image extension (e.g. "photo.png" without prefix).
 func resolveMediaPath(dest string) string {
-	// remove external urls
-	if strings.HasPrefix(dest, "http://") || strings.HasPrefix(dest, "https://") {
-		return ""
-	}
 	if pathutils.IsMedia(dest) {
 		return pathutils.ToRelative(dest)
 	}
@@ -182,10 +178,17 @@ func (h *MarkdownHandler) buildRenderer(filePath string) *html.Renderer {
 			}
 
 			if img, ok := node.(*ast.Image); ok {
-				mediaPath := resolveMediaPath(string(img.Destination))
-				if mediaPath == "" {
-					return ast.GoToNext, false
+				dest := string(img.Destination)
+				isExternal := strings.HasPrefix(dest, "http://") || strings.HasPrefix(dest, "https://")
+
+				previewPath := dest
+				if !isExternal {
+					previewPath = resolveMediaPath(dest)
+					if previewPath == "" {
+						return ast.GoToNext, false
+					}
 				}
+
 				if entering {
 					if configmanager.GetPreviewsEnabled() {
 						size := configmanager.GetDefaultPreviewSize()
@@ -194,10 +197,14 @@ func (h *MarkdownHandler) buildRenderer(filePath string) *html.Renderer {
 							containerTag, containerClass = "span", containerClass+" inline-container"
 						}
 						fmt.Fprintf(w, `<%s class="%s" hx-get="/api/media/preview?path=%s&size=%d" hx-trigger="load" hx-swap="innerHTML">%s...</%s>`,
-							containerTag, containerClass, mediaPath, size,
+							containerTag, containerClass, previewPath, size,
 							translation.SprintfForRequest(configmanager.GetLanguage(), "loading media"), containerTag)
 					} else {
-						fmt.Fprintf(w, `<img src="/media/%s" alt="%s" />`, mediaPath, filepath.Base(mediaPath))
+						if isExternal {
+							fmt.Fprintf(w, `<img src="%s" alt="%s" />`, dest, filepath.Base(dest))
+						} else {
+							fmt.Fprintf(w, `<img src="/media/%s" alt="%s" />`, previewPath, filepath.Base(previewPath))
+						}
 					}
 					return ast.SkipChildren, true
 				}
