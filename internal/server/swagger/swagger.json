@@ -594,56 +594,6 @@
                 "responses": {}
             }
         },
-        "/api/config/media/orphaned-age": {
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Update orphaned media age",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Number of days before orphaned files can be cleaned up",
-                        "name": "orphanedMediaAgeDays",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/api/config/media/orphaned-behavior": {
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Update orphaned media behavior",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Orphaned media behavior (keep or manual)",
-                        "name": "orphanedMediaBehavior",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        },
         "/api/config/media/show-caption": {
             "post": {
                 "consumes": [

@@ -115,31 +115,6 @@
         </form>
     </div>
 
-    <div class="setting-item">
-        <form hx-post="/api/config/media/orphaned-behavior" hx-trigger="change">
-            <label for="orphanedMediaBehavior">
-                {{T "Orphaned Media Behavior"}}
-                <select name="orphanedMediaBehavior" id="orphanedMediaBehavior" class="form-select">
-                    <option value="keep" {{ if eq .UserSettings.MediaSettings.OrphanedMediaBehavior "keep" }}selected{{ end }}>{{T "Keep Files"}}</option>
-                    <option value="manual" {{ if eq .UserSettings.MediaSettings.OrphanedMediaBehavior "manual" }}selected{{ end }}>{{T "Manual Cleanup"}}</option>
-                </select>
-            </label>
-            <div class="help-text">{{T "how to handle media files no longer referenced in documents"}}</div>
-        </form>
-    </div>
-
-    <div class="setting-item">
-        <form hx-post="/api/config/media/orphaned-age" hx-trigger="change delay:500ms">
-            <label for="orphanedMediaAgeDays">
-                {{T "Orphaned Media Age (Days)"}}
-                <input type="number" name="orphanedMediaAgeDays" id="orphanedMediaAgeDays"
-                       value="{{ .UserSettings.MediaSettings.OrphanedMediaAgeDays }}"
-                       min="1" max="365" class="form-input">
-            </label>
-            <div class="help-text">{{T "number of days before orphaned files can be cleaned up"}}</div>
-        </form>
-    </div>
-
     <h3>{{T "Preview Settings"}}</h3>
 
     <div class="setting-item">

@@ -11,7 +11,6 @@ http://localhost:8080/doku.php?id=wiki:dokuwiki:syntax#rss_atom_feed_aggregation
 # small stuff
 
 - rebuild metadata doesnt look at file ending to automatically set filetype
-- remove orphaned media behaviour + orphaned media age
 - fix compact and reader view
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)
 - load all files from cache?

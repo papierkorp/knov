@@ -825,40 +825,6 @@ paths:
       summary: Update allowed MIME types
       tags:
       - config
-  /api/config/media/orphaned-age:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Number of days before orphaned files can be cleaned up
-        in: formData
-        name: orphanedMediaAgeDays
-        required: true
-        type: integer
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update orphaned media age
-      tags:
-      - config
-  /api/config/media/orphaned-behavior:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Orphaned media behavior (keep or manual)
-        in: formData
-        name: orphanedMediaBehavior
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update orphaned media behavior
-      tags:
-      - config
   /api/config/media/show-caption:
     post:
       consumes:

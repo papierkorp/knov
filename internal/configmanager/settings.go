@@ -27,16 +27,14 @@ type UserSettings struct {
 
 // MediaSettings contains media upload and management settings
 type MediaSettings struct {
-	MaxUploadSizeMB       int      `json:"maxUploadSizeMB"`
-	AllowedMimeTypes      []string `json:"allowedMimeTypes"`
-	OrphanedMediaBehavior string   `json:"orphanedMediaBehavior"` // "keep" or "manual"
-	OrphanedMediaAgeDays  int      `json:"orphanedMediaAgeDays"`
-	DefaultPreviewSize    int      `json:"defaultPreviewSize"`
-	EnablePreviews        bool     `json:"enablePreviews"`
-	DisplayMode           string   `json:"displayMode"`    // "left", "center", "right", "inline"
-	BorderStyle           string   `json:"borderStyle"`    // "none", "simple", "rounded", "shadow"
-	ShowCaption           bool     `json:"showCaption"`    // show filename as caption
-	ClickToEnlarge        bool     `json:"clickToEnlarge"` // make previews clickable
+	MaxUploadSizeMB    int      `json:"maxUploadSizeMB"`
+	AllowedMimeTypes   []string `json:"allowedMimeTypes"`
+	DefaultPreviewSize int      `json:"defaultPreviewSize"`
+	EnablePreviews     bool     `json:"enablePreviews"`
+	DisplayMode        string   `json:"displayMode"`    // "left", "center", "right", "inline"
+	BorderStyle        string   `json:"borderStyle"`    // "none", "simple", "rounded", "shadow"
+	ShowCaption        bool     `json:"showCaption"`    // show filename as caption
+	ClickToEnlarge     bool     `json:"clickToEnlarge"` // make previews clickable
 }
 
 // InitUserSettings initializes user settings from storage
@@ -74,14 +72,12 @@ func InitUserSettings() {
 				// "text/xml",     // Potential security risk
 				// "text/csv",     // Data extraction risk
 			},
-			OrphanedMediaBehavior: "manual",
-			OrphanedMediaAgeDays:  7,
-			DefaultPreviewSize:    300,
-			EnablePreviews:        true,
-			DisplayMode:           "center",
-			BorderStyle:           "simple",
-			ShowCaption:           false,
-			ClickToEnlarge:        true,
+			DefaultPreviewSize: 300,
+			EnablePreviews:     true,
+			DisplayMode:        "center",
+			BorderStyle:        "simple",
+			ShowCaption:        false,
+			ClickToEnlarge:     true,
 		},
 	}
 

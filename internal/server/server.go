@@ -181,8 +181,6 @@ func StartServerChi() {
 			// Media settings endpoints
 			r.Post("/media/upload-size", handleAPIUpdateMediaUploadSize)
 			r.Post("/media/mime-types", handleAPIUpdateMediaMimeTypes)
-			r.Post("/media/orphaned-behavior", handleAPIUpdateOrphanedBehavior)
-			r.Post("/media/orphaned-age", handleAPIUpdateOrphanedAge)
 			r.Post("/media/default-preview-size", handleAPIUpdateDefaultPreviewSize)
 			r.Post("/media/enable-previews", handleAPIUpdateEnablePreviews)
 			r.Post("/media/display-mode", handleAPIUpdateDisplayMode)
@@ -285,10 +283,6 @@ func StartServerChi() {
 			r.Post("/para/areas", handleAPISetMetadataPARAreas)
 			r.Post("/para/resources", handleAPISetMetadataPARAResources)
 			r.Post("/para/archive", handleAPISetMetadataPARAArchive)
-
-			r.Get("/references", handleAPIGetMetadataReferences)
-			r.Post("/references", handleAPIAddMetadataReference)
-			r.Delete("/references", handleAPIDeleteMetadataReference)
 
 			r.Get("/tags", handleAPIGetAllTags)
 			r.Get("/collections", handleAPIGetAllCollections)
@@ -714,8 +708,7 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check for detail view mode
-	mode := r.URL.Query().Get("mode")
-	if mode == "detail" || (mode == "" && strings.Contains(r.Header.Get("Accept"), "text/html")) {
+	if r.URL.Query().Get("mode") == "detail" {
 		tm := thememanager.GetThemeManager()
 		data := thememanager.NewMediaViewTemplateData(mediaPath)
 
@@ -929,11 +922,15 @@ func handleFilterFileContent(w http.ResponseWriter, r *http.Request, filePath, f
 	resultsHTML := render.RenderFilterResult(result, config.Display)
 	filterTitle := fmt.Sprintf("Filter: %s", filepath.Base(filePath))
 
-	contentHTML := fmt.Sprintf(`<div class="filter-file-view"><h2>%s</h2>%s</div>`, filterTitle, resultsHTML)
-
+	// create a synthetic file content structure
 	fileContent := &files.FileContent{
-		HTML: files.InjectHeaderIDs(contentHTML),
-		TOC:  files.GenerateTOC(contentHTML),
+		HTML: fmt.Sprintf(`<div class="filter-file-view">
+			<h2>%s</h2>
+			%s
+		</div>`,
+			filterTitle,
+			resultsHTML),
+		TOC: []files.TOCItem{},
 	}
 
 	// render through template system
