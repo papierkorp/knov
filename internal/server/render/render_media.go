@@ -347,12 +347,14 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 	clickToEnlarge := configmanager.GetClickToEnlarge()
 
 	// get media link mode from theme settings (direct or detail)
-	mediaLinkMode := configmanager.GetThemeSetting(configmanager.GetTheme(), "mediaLinkMode")
+	mediaLinkMode, _ := configmanager.GetThemeSetting(configmanager.GetTheme(), "mediaLinkMode").(string)
+	if mediaLinkMode == "" {
+		mediaLinkMode = "detail" // default from theme.json
+	}
 	var mediaURL string
 	if mediaLinkMode == "detail" {
 		mediaURL = fmt.Sprintf("/media/%s?mode=detail", relativePath)
 	} else {
-		// default to direct mode
 		mediaURL = fmt.Sprintf("/media/%s", relativePath)
 	}
 

@@ -3,7 +3,6 @@ package parser
 import (
 	"fmt"
 	"io"
-	"log"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -43,17 +42,11 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	content = h.preprocessBlankLineLists(content)
 
 	raw := string(markdown.ToHTML(content, p, h.buildRenderer(filePath)))
-	log.Printf("=== after gomarkdown ===\n%s", raw) // does <ul> exist here?
 
 	result := h.restoreCodeBlocks(raw, blocks)
-	log.Printf("=== after restoreCodeBlocks ===\n%s", result)
-
 	result = h.addHeaderButtons(result, filePath)
-	log.Printf("=== after addHeaderButtons ===\n%s", result)
-
 	result = convertMisrenderedListsInCode(result)
 	result = h.cleanupListParagraphs(result)
-	log.Printf("=== after cleanupListParagraphs ===\n%s", result)
 
 	result = h.wrapHeaderSections(result)
 	return []byte(result), nil
@@ -153,6 +146,10 @@ func (h *MarkdownHandler) restoreCodeBlocks(html string, blocks []codeBlock) str
 // resolveMediaPath returns a clean relative media path from a markdown image destination.
 // Falls back to bare filename if it has a known image extension (e.g. "photo.png" without prefix).
 func resolveMediaPath(dest string) string {
+	// remove external urls
+	if strings.HasPrefix(dest, "http://") || strings.HasPrefix(dest, "https://") {
+		return ""
+	}
 	if pathutils.IsMedia(dest) {
 		return pathutils.ToRelative(dest)
 	}
@@ -184,24 +181,28 @@ func (h *MarkdownHandler) buildRenderer(filePath string) *html.Renderer {
 				return ast.GoToNext, true
 			}
 
-			if img, ok := node.(*ast.Image); ok && entering {
+			if img, ok := node.(*ast.Image); ok {
 				mediaPath := resolveMediaPath(string(img.Destination))
 				if mediaPath == "" {
 					return ast.GoToNext, false
 				}
-				if configmanager.GetPreviewsEnabled() {
-					size := configmanager.GetDefaultPreviewSize()
-					containerTag, containerClass := "div", "media-preview-container"
-					if configmanager.GetDisplayMode() == "inline" {
-						containerTag, containerClass = "span", containerClass+" inline-container"
+				if entering {
+					if configmanager.GetPreviewsEnabled() {
+						size := configmanager.GetDefaultPreviewSize()
+						containerTag, containerClass := "div", "media-preview-container"
+						if configmanager.GetDisplayMode() == "inline" {
+							containerTag, containerClass = "span", containerClass+" inline-container"
+						}
+						fmt.Fprintf(w, `<%s class="%s" hx-get="/api/media/preview?path=%s&size=%d" hx-trigger="load" hx-swap="innerHTML">%s...</%s>`,
+							containerTag, containerClass, mediaPath, size,
+							translation.SprintfForRequest(configmanager.GetLanguage(), "loading media"), containerTag)
+					} else {
+						fmt.Fprintf(w, `<img src="/media/%s" alt="%s" />`, mediaPath, filepath.Base(mediaPath))
 					}
-					fmt.Fprintf(w, `<%s class="%s" hx-get="/api/media/preview?path=%s&size=%d" hx-trigger="load" hx-swap="innerHTML">%s...</%s>`,
-						containerTag, containerClass, mediaPath, size,
-						translation.SprintfForRequest(configmanager.GetLanguage(), "loading media"), containerTag)
-				} else {
-					fmt.Fprintf(w, `<img src="/media/%s" alt="%s" />`, mediaPath, filepath.Base(mediaPath))
+					return ast.SkipChildren, true
 				}
-				return ast.SkipChildren, true
+				// handle exit to suppress gomarkdown's default closing " />"
+				return ast.GoToNext, true
 			}
 
 			return ast.GoToNext, false

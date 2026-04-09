@@ -714,7 +714,8 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check for detail view mode
-	if r.URL.Query().Get("mode") == "detail" {
+	mode := r.URL.Query().Get("mode")
+	if mode == "detail" || (mode == "" && strings.Contains(r.Header.Get("Accept"), "text/html")) {
 		tm := thememanager.GetThemeManager()
 		data := thememanager.NewMediaViewTemplateData(mediaPath)
 
