@@ -55,6 +55,12 @@
       "label": "Show Connections",
       "description": "display linked files and connections in the sidebar"
     },
+    "sidebarReferences": {
+      "type": "boolean",
+      "default": true,
+      "label": "Show References",
+      "description": "display external references and resource links in the sidebar"
+    },
     "sidebarToc": {
       "type": "boolean",
       "default": true,

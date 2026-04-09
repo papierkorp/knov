@@ -286,6 +286,10 @@ func StartServerChi() {
 			r.Post("/para/resources", handleAPISetMetadataPARAResources)
 			r.Post("/para/archive", handleAPISetMetadataPARAArchive)
 
+			r.Get("/references", handleAPIGetMetadataReferences)
+			r.Post("/references", handleAPIAddMetadataReference)
+			r.Delete("/references", handleAPIDeleteMetadataReference)
+
 			r.Get("/tags", handleAPIGetAllTags)
 			r.Get("/collections", handleAPIGetAllCollections)
 			r.Get("/folders", handleAPIGetAllFolders)

@@ -117,6 +117,14 @@
                 </div>
             </section>
             {{end}}
+            {{if index .ThemeSettings "sidebarReferences"}}
+            <section class="sidebar-section" id="component-sidebar-references">
+                <h3>{{T "references"}}</h3>
+                <div hx-get="/api/metadata/references?filepath={{urlQuery .FilePath}}&sidebar=true"
+                     hx-trigger="load"
+                     hx-swap="innerHTML">...</div>
+            </section>
+            {{end}}
             {{if index .ThemeSettings "sidebarVersionHistory"}}
             <section class="sidebar-section" id="component-sidebar-versions">
                 <h3><a href="/files/history/{{urlQuery .FilePath}}">{{T "version history"}}</a></h3>

@@ -121,27 +121,34 @@ func IsValidStatus(s Status) bool {
 
 // Metadata represents file metadata
 type Metadata struct {
-	Name        string    `json:"name"`        // manual filename
-	Path        string    `json:"path"`        // auto
-	Title       string    `json:"title"`       // auto
-	CreatedAt   time.Time `json:"createdAt"`   // auto
-	LastEdited  time.Time `json:"lastEdited"`  // auto
-	TargetDate  time.Time `json:"targetDate"`  // manual
-	Collection  string    `json:"collection"`  // auto / manual possible
-	Folders     []string  `json:"folders"`     // auto
-	Tags        []string  `json:"tags"`        // manual
-	Boards      []string  `json:"boards"`      // auto
-	Ancestor    []string  `json:"ancestor"`    // auto
-	Parents     []string  `json:"parents"`     // manual
-	Kids        []string  `json:"kids"`        // auto
-	UsedLinks   []string  `json:"usedLinks"`   // auto
-	LinksToHere []string  `json:"linksToHere"` // auto
-	FileType    Filetype  `json:"type"`        // manual - with add new
-	PARA        PARA      `json:"para"`        // manual
-	Status      Status    `json:"status"`      // manual
-	Priority    Priority  `json:"priority"`    // manual
-	Size        int64     `json:"size"`        // auto
-	Folder      string    `json:"folder"`      // auto
+	Name        string      `json:"name"`                 // manual filename
+	Path        string      `json:"path"`                 // auto
+	Title       string      `json:"title"`                // auto
+	CreatedAt   time.Time   `json:"createdAt"`            // auto
+	LastEdited  time.Time   `json:"lastEdited"`           // auto
+	TargetDate  time.Time   `json:"targetDate"`           // manual
+	Collection  string      `json:"collection"`           // auto / manual possible
+	Folders     []string    `json:"folders"`              // auto
+	Tags        []string    `json:"tags"`                 // manual
+	Boards      []string    `json:"boards"`               // auto
+	Ancestor    []string    `json:"ancestor"`             // auto
+	Parents     []string    `json:"parents"`              // manual
+	Kids        []string    `json:"kids"`                 // auto
+	UsedLinks   []string    `json:"usedLinks"`            // auto
+	LinksToHere []string    `json:"linksToHere"`          // auto
+	FileType    Filetype    `json:"type"`                 // manual - with add new
+	PARA        PARA        `json:"para"`                 // manual
+	Status      Status      `json:"status"`               // manual
+	Priority    Priority    `json:"priority"`             // manual
+	Size        int64       `json:"size"`                 // auto
+	Folder      string      `json:"folder"`               // auto
+	References  []Reference `json:"references,omitempty"` // manual
+}
+
+// Reference represents an external resource linked to a file
+type Reference struct {
+	URL         string `json:"url"`
+	Description string `json:"description"` // why this link was added
 }
 
 // PARA represents PARA organization
@@ -272,6 +279,9 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	}
 	if newMetadata.PARA.Archive != nil {
 		currentMetadata.PARA.Archive = newMetadata.PARA.Archive
+	}
+	if newMetadata.References != nil {
+		currentMetadata.References = newMetadata.References
 	}
 
 	// update name with filename if not set

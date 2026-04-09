@@ -195,6 +195,46 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 	return html.String(), nil
 }
 
+// RenderReferencesSidebarHTML renders a read-only references list for the sidebar
+func RenderReferencesSidebarHTML(refs []files.Reference) string {
+	var html strings.Builder
+	html.WriteString(`<div class="references-list">`)
+	if len(refs) == 0 {
+		fmt.Fprintf(&html, `<span class="no-items">%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no references"))
+	}
+	for _, ref := range refs {
+		html.WriteString(`<div class="reference-item">`)
+		fmt.Fprintf(&html, `<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>`, ref.URL, ref.URL)
+		if ref.Description != "" {
+			fmt.Fprintf(&html, `<span class="reference-description">%s</span>`, ref.Description)
+		}
+		html.WriteString(`</div>`)
+	}
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
+// RenderReferencesHTML renders the references list with a delete button per entry
+func RenderReferencesHTML(refs []files.Reference) string {
+	var html strings.Builder
+	html.WriteString(`<div id="component-references-list">`)
+	if len(refs) == 0 {
+		fmt.Fprintf(&html, `<p class="no-items">%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no references"))
+	}
+	for _, ref := range refs {
+		fmt.Fprintf(&html, `<div class="reference-item"><a href="%s" target="_blank" rel="noopener noreferrer">%s</a>`,
+			ref.URL, ref.URL)
+		if ref.Description != "" {
+			fmt.Fprintf(&html, `<span class="reference-description">%s</span>`, ref.Description)
+		}
+		fmt.Fprintf(&html, `<button hx-delete="/api/metadata/references" hx-vals='{"url":"%s"}' hx-include="#reference-filepath" hx-target="#component-references-list" hx-swap="outerHTML" class="btn-danger btn-sm">%s</button>`,
+			ref.URL, translation.SprintfForRequest(configmanager.GetLanguage(), "remove"))
+		html.WriteString(`</div>`)
+	}
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
 // RenderMetadataCSV generates CSV content for metadata export
 func RenderMetadataCSV(metadata []*files.Metadata) string {
 	var csv strings.Builder

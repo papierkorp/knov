@@ -84,7 +84,8 @@ func (ss *sqliteStorage) initialize() error {
 		para_archive TEXT,
 		status TEXT,
 		priority TEXT,
-		size INTEGER
+		size INTEGER,
+		references TEXT
 	);
 	CREATE INDEX IF NOT EXISTS idx_collection ON metadata(collection);
 	CREATE INDEX IF NOT EXISTS idx_file_type ON metadata(file_type);
@@ -96,6 +97,12 @@ func (ss *sqliteStorage) initialize() error {
 	if err != nil {
 		logging.LogError("failed to initialize metadata tables: %v", err)
 		return fmt.Errorf("failed to initialize metadata tables: %w", err)
+	}
+
+	// migrate: add references column if missing
+	if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err != nil {
+		// column likely already exists, ignore
+		logging.LogDebug("references column already exists or migration skipped: %v", err)
 	}
 
 	logging.LogDebug("metadata sqlite tables initialized")
@@ -111,7 +118,7 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	SELECT name, title, created_at, last_edited, target_date, collection,
 	       folders, tags, boards, ancestor, parents, kids, used_links, links_to_here,
 	       file_type, para_projects, para_areas, para_resources, para_archive,
-	       status, priority, size
+	       status, priority, size, COALESCE(references, '') as references
 	FROM metadata WHERE path = ?
 	`
 
@@ -138,6 +145,7 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		Status        string
 		Priority      string
 		Size          int64
+		References    string
 	}
 
 	err := ss.db.QueryRow(query, key).Scan(
@@ -145,7 +153,7 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		&meta.Collection, &meta.Folders, &meta.Tags, &meta.Boards, &meta.Ancestor,
 		&meta.Parents, &meta.Kids, &meta.UsedLinks, &meta.LinksToHere, &meta.FileType,
 		&meta.PARAProjects, &meta.PARAreas, &meta.PARAResources, &meta.PARAArchive,
-		&meta.Status, &meta.Priority, &meta.Size,
+		&meta.Status, &meta.Priority, &meta.Size, &meta.References,
 	)
 
 	if err == sql.ErrNoRows {
@@ -258,6 +266,13 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		result["para"] = para
 	}
 
+	if meta.References != "" {
+		var refs []interface{}
+		if err := json.Unmarshal([]byte(meta.References), &refs); err == nil {
+			result["references"] = refs
+		}
+	}
+
 	data, err := json.Marshal(result)
 	if err != nil {
 		logging.LogError("failed to marshal metadata for key %s: %v", key, err)
@@ -348,13 +363,21 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 		}
 	}
 
+	// handle references
+	var referencesJSON string
+	if refs, ok := metadata["references"].([]interface{}); ok && len(refs) > 0 {
+		if data, err := json.Marshal(refs); err == nil {
+			referencesJSON = string(data)
+		}
+	}
+
 	query := `
 	INSERT OR REPLACE INTO metadata (
 		path, name, title, created_at, last_edited, target_date, collection,
 		folders, tags, boards, ancestor, parents, kids, used_links, links_to_here,
 		file_type, para_projects, para_areas, para_resources, para_archive,
-		status, priority, size
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		status, priority, size, references
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	_, err := ss.db.Exec(query,
@@ -381,6 +404,7 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 		getString("status"),
 		getString("priority"),
 		size,
+		referencesJSON,
 	)
 
 	if err != nil {

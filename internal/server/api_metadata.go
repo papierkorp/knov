@@ -1840,3 +1840,122 @@ func handleAPISetMetadataTargetDate(w http.ResponseWriter, r *http.Request) {
 	html := fmt.Sprintf(`<span class="targetdate">%s</span>`, targetDateStr)
 	writeResponse(w, r, "target date updated", html)
 }
+
+// @Summary Get references for a file
+// @Tags metadata
+// @Param filepath query string true "File path"
+// @Produce json,html
+// @Success 200 {array} files.Reference
+// @Router /api/metadata/references [get]
+func handleAPIGetMetadataReferences(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
+	if err != nil || metadata == nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		return
+	}
+
+	html := render.RenderReferencesHTML(metadata.References)
+	if r.URL.Query().Get("sidebar") == "true" {
+		html = render.RenderReferencesSidebarHTML(metadata.References)
+	}
+	writeResponse(w, r, metadata.References, html)
+}
+
+// @Summary Add a reference to a file
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param url formData string true "Reference URL"
+// @Param description formData string false "Why this link was added"
+// @Success 200 {array} files.Reference
+// @Router /api/metadata/references [post]
+func handleAPIAddMetadataReference(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+
+	filePath := r.FormValue("filepath")
+	refURL := r.FormValue("url")
+	description := r.FormValue("description")
+
+	if filePath == "" || refURL == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath and url are required"), http.StatusBadRequest)
+		return
+	}
+
+	normalizedPath := pathutils.ToWithPrefix(filePath)
+	metadata, err := files.MetaDataGet(normalizedPath)
+	if err != nil || metadata == nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		return
+	}
+
+	metadata.References = append(metadata.References, files.Reference{
+		URL:         refURL,
+		Description: description,
+	})
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		logging.LogError("failed to save references for %s: %v", normalizedPath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+		return
+	}
+
+	html := render.RenderReferencesHTML(metadata.References)
+	writeResponse(w, r, metadata.References, html)
+}
+
+// @Summary Delete a reference from a file
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param url formData string true "Reference URL to remove"
+// @Success 200 {array} files.Reference
+// @Router /api/metadata/references [delete]
+func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+
+	filePath := r.FormValue("filepath")
+	refURL := r.FormValue("url")
+
+	if filePath == "" || refURL == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath and url are required"), http.StatusBadRequest)
+		return
+	}
+
+	normalizedPath := pathutils.ToWithPrefix(filePath)
+	metadata, err := files.MetaDataGet(normalizedPath)
+	if err != nil || metadata == nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+		return
+	}
+
+	filtered := metadata.References[:0]
+	for _, ref := range metadata.References {
+		if ref.URL != refURL {
+			filtered = append(filtered, ref)
+		}
+	}
+	metadata.References = filtered
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		logging.LogError("failed to save references for %s: %v", normalizedPath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+		return
+	}
+
+	html := render.RenderReferencesHTML(metadata.References)
+	writeResponse(w, r, metadata.References, html)
+}

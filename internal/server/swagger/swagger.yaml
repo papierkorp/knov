@@ -228,6 +228,11 @@ definitions:
         allOf:
         - $ref: '#/definitions/files.Priority'
         description: manual
+      references:
+        description: manual
+        items:
+          $ref: '#/definitions/files.Reference'
+        type: array
       size:
         description: auto
         type: integer
@@ -308,6 +313,14 @@ definitions:
   files.PriorityCount:
     additionalProperties:
       type: integer
+    type: object
+  files.Reference:
+    properties:
+      description:
+        description: why this link was added
+        type: string
+      url:
+        type: string
     type: object
   files.Status:
     enum:
@@ -3142,6 +3155,85 @@ paths:
           schema:
             type: string
       summary: Rebuild metadata links for a single file
+      tags:
+      - metadata
+  /api/metadata/references:
+    delete:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Reference URL to remove
+        in: formData
+        name: url
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/files.Reference'
+            type: array
+      summary: Delete a reference from a file
+      tags:
+      - metadata
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/files.Reference'
+            type: array
+      summary: Get references for a file
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Reference URL
+        in: formData
+        name: url
+        required: true
+        type: string
+      - description: Why this link was added
+        in: formData
+        name: description
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/files.Reference'
+            type: array
+      summary: Add a reference to a file
       tags:
       - metadata
   /api/metadata/status:

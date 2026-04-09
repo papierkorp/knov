@@ -46,7 +46,12 @@ new references filetype: Link Resources to certain files e.g. i have postgres fi
   - use Query in filter.go
   - Refactor filter.go to use query
 - move toc to contentHandler?
-
+- metadataStorage_sqlite - migration
+// migrate: add references column if missing
+if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err != nil {
+	// column likely already exists, ignore
+	logging.LogDebug("references column already exists or migration skipped: %v", err)
+})
 
 # daily
 

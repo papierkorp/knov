@@ -4062,6 +4062,124 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/references": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get references for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/files.Reference"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Add a reference to a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Reference URL",
+                        "name": "url",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Why this link was added",
+                        "name": "description",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/files.Reference"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Delete a reference from a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Reference URL to remove",
+                        "name": "url",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/files.Reference"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/status": {
             "get": {
                 "produces": [
@@ -4955,6 +5073,13 @@ const docTemplate = `{
                         }
                     ]
                 },
+                "references": {
+                    "description": "manual",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/files.Reference"
+                    }
+                },
                 "size": {
                     "description": "auto",
                     "type": "integer"
@@ -5073,6 +5198,18 @@ const docTemplate = `{
             "type": "object",
             "additionalProperties": {
                 "type": "integer"
+            }
+        },
+        "files.Reference": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "why this link was added",
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
             }
         },
         "files.Status": {
