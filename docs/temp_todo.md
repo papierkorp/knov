@@ -1,3 +1,53 @@
+# dokuwiki parser
+
+http://localhost:1324/files/p/wiki/chronik.md
+detail links are not working
+set metadata type to permanent
+http://localhost:1324/files/docs/wiki/dokuwiki/syntax.md#rss-atom-feed-aggregation
+http://localhost:8080/doku.php?id=wiki:dokuwiki:syntax#rss_atom_feed_aggregation
+
+# before productive use
+
+- new filter file => no metadata (also no filetype)
+- type filter content - no toc
+
+# reference
+
+new references filetype: Link Resources to certain files e.g. i have postgres file and i want to link a Page about Optimization
+
+- new editor with 3 inputs
+  - reference (input for link)
+  - referencedescription (textbox) (why did you add this reference)
+  - referencedTo (datalist with GetAllFilePathsFromSystemData) - if one file is added add another input (so it can be referenced to multiple files)
+- new metadata: references
+- save references in database or as file?
+
+# small stuff
+
+- rebuild metadata doesnt look at file ending to automatically set filetype
+- remove orphaned media behaviour + orphaned media age
+- fix compact and reader view
+- table paginate/search/filter is not working (handleAPIGetTable is not used??)
+- load all files from cache?
+  - http://localhost:1324/browse/folders/systemadmin is running through all files?
+- dont run the search indexing at startup
+- codeblocks - copy button
+- codeblocks setting - wrap content
+- .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
+- make certain settings required in thememanager
+- Dashboard
+  - make the positions work with a custom layout work
+  - Add widget drag & drop reordering
+  - Implement widget resizing
+  - Add dashboard export/import
+- export metadata to yaml header in markdown files
+- performance updates
+  - use Query() instead of a loop through files.GetAllFiles()
+  - use Query in filter.go
+  - Refactor filter.go to use query
+- move toc to contentHandler?
+
+
 # daily
 
 single source of truth is the metadata - we just display it differently
@@ -313,85 +363,3 @@ this is what i wrote down:
     - update collection logic to skip para folders when determining collection
       - e.g. PARA_PROJECTS/work/meeting-notes.md = collection work
       - e.g. PARA_PROJECTS/standalone.md = collection default
-
-# dokuwiki parser
-
-http://localhost:1324/files/p/wiki/chronik.md
-detail links are not working
-set metadata type to permanent
-http://localhost:1324/files/docs/wiki/dokuwiki/syntax.md#rss-atom-feed-aggregation
-http://localhost:8080/doku.php?id=wiki:dokuwiki:syntax#rss_atom_feed_aggregation
-
-# before productive use
-
-- new filter file => no metadata (also no filetype)
-- type filter content - no toc
-
-
-# small stuff
-
-- rebuild metadata doesnt look at file ending to automatically set filetype
-- remove orphaned media behaviour + orphaned media age
-- fix compact and reader view
-- table paginate/search/filter is not working (handleAPIGetTable is not used??)
-- load all files from cache?
-  - http://localhost:1324/browse/folders/systemadmin is running through all files?
-- dont run the search indexing at startup
-- codeblocks - copy button
-- codeblocks setting - wrap content
-- .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
-- make certain settings required in thememanager
-- new references filetype: Link Resources to certain files e.g. i have postgres file and i want to link a Page about Optimization
-    - new editor with 3 inputs
-      - reference (input for link)
-      - referencedescription (textbox) (why did you add this reference)
-      - referencedTo (datalist with GetAllFilePathsFromSystemData) - if one file is added add another input (so it can be referenced to multiple files)
-    - new metadata: references
-    - save references in database or as file?
-- Dashboard
-  - make the positions work with a custom layout work
-  - Add widget drag & drop reordering
-  - Implement widget resizing
-  - Add dashboard export/import
-- metadata
-  - save in yaml header in markdown files
-  - change linkRegex config to names, e.g. obsidian, notion, dokuwiki... instead of a regex? or add one regex string + confignames
-- performance updates
-  - use Query() instead of a loop through files.GetAllFiles()
-  - use Query in filter.go
-  - Refactor filter.go to use query
-- move toc to contentHandler?
-- dokuwiki to knov move
-  - ++ not handled
-  - convert links content to markdown links
-  - export dokuwiki files to markdown
-    - parser not working - example: http://localhost:1325/files/sirconic/softwareengineer/git/gitlab.md
-      - linksto:
-        - sirconic:softwareengineer:git:gitlab.md (sirconic:softwareengineer:git:gitlab.md)
-        - sirconic:systemadmin:kubernetes:kubernetesfaq.md (sirconic:systemadmin:kubernetes:kubernetesfaq.md)
-        - index.html?tab=Helm+chart+%28Kubernetes%29 (https:*docs.gitlab.com/ee/update/index.html?tab=Helm+chart+%28Kubernetes%29)
-        - .md (https:*gitlab-com.gitlab.io/support/toolbox/upgrade-path/.md)
-        - sirconic:systemadmin:automatisierung:gitlab.md (sirconic:systemadmin:automatisierung:gitlab.md)
-        - velero-minio-lab.sirconic-k8s.de (velero-minio-lab.sirconic-k8s.de)
-        - gitlab-minio-lab.sirconic-k8s.de (gitlab-minio-lab.sirconic-k8s.de)
-        - "project_id", "creator_id", "registry_size_bytes", "project path".md ("project_id", "creator_id", "registry_size_bytes", "project path".md)
-        - "$.md ("$.md)
-        - sirconic:softwareengineer:git:gitlab:fehlermeldungen.md (sirconic:softwareengineer:git:gitlab:fehlermeldungen.md)
-      - linksfrom:
-        - empty
-      - toc
-        - uses `#` from a codeblock
-      - remove ++
-      - lists not working
-      - media?
-
-			var newIndent string
-			if spaceCount >= 8 {
-				newIndent = "      " // 6 spaces for level 3
-			} else if spaceCount >= 6 {
-				newIndent = "    " // 4 spaces for level 2
-			} else if spaceCount >= 4 {
-				newIndent = "  " // 2 spaces for level 1
-			} else if spaceCount >= 2 {
-				newIndent = "  " // keep 2 spaces for level 1 (don't convert to 0)
-			}

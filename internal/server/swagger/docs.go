@@ -2344,9 +2344,10 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Filter file path (without extension, optional for new files)",
+                        "description": "Filter file path (without extension)",
                         "name": "filepath",
-                        "in": "formData"
+                        "in": "formData",
+                        "required": true
                     },
                     {
                         "type": "array",

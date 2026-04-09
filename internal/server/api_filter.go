@@ -5,13 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -95,7 +98,7 @@ func handleAPIGetFilterCriteriaRow(w http.ResponseWriter, r *http.Request) {
 // @Description Save filter configuration as JSON file with .filter extension
 // @Tags filter
 // @Accept application/x-www-form-urlencoded
-// @Param filepath formData string false "Filter file path (without extension, optional for new files)"
+// @Param filepath formData string true "Filter file path (without extension)"
 // @Param metadata[] formData array false "Metadata field names"
 // @Param operator[] formData array false "Filter operators (equals, contains, greater, less, in)"
 // @Param value[] formData array false "Filter values"
@@ -113,7 +116,6 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// get file path
 	filePath := r.FormValue("filepath")
 	if filePath == "" {
 		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file path is required. please enter a file path.") + `</div>`
@@ -123,7 +125,15 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// parse filter config from form using existing function
+	// normalize extension before checking existence
+	if !strings.HasSuffix(filePath, ".filter") {
+		filePath = filePath + ".filter"
+	}
+
+	// check if new file before saving
+	_, statErr := os.Stat(pathutils.ToDocsPath(filePath))
+	isNewFile := os.IsNotExist(statErr)
+
 	widgetIndex := -1
 	if s := r.FormValue("widget_index"); s != "" {
 		if idx, err := strconv.Atoi(s); err == nil {
@@ -132,7 +142,6 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	}
 	config := filter.ParseFilterConfigFromForm(r, widgetIndex)
 
-	// save using the new filter package function
 	if err := filter.SaveFilterConfig(config, filePath); err != nil {
 		logging.LogError("failed to save filter config: %v", err)
 		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save filter. please check the logs for details.") + `</div>`
@@ -142,12 +151,19 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ensure proper file extension for redirect
-	if !strings.HasSuffix(filePath, ".filter") {
-		filePath = filePath + ".filter"
+	// create metadata for new filter files
+	if isNewFile {
+		metadata := &files.Metadata{
+			Path:     pathutils.ToWithPrefix(filePath),
+			FileType: files.FileTypeFilter,
+		}
+		if err := files.MetaDataSave(metadata); err != nil {
+			logging.LogError("failed to save metadata for new filter file %s: %v", filePath, err)
+		} else {
+			logging.LogInfo("created metadata for new filter file: %s", filePath)
+		}
 	}
 
-	// create success response
 	successData := map[string]interface{}{
 		"status":   "success",
 		"message":  "filter saved successfully",
@@ -207,7 +223,6 @@ func handleAPIGetFilterValueInput(w http.ResponseWriter, r *http.Request) {
 		rowIndex = 0
 	}
 
-	// get metadata from indexed field name
 	value := r.FormValue("value")
 
 	widgetIndex := -1
@@ -245,7 +260,6 @@ func handleAPIAddFilterCriteria(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// generate unique criteria index based on timestamp
 	criteriaIndex := int(time.Now().Unix()) % 1000
 
 	widgetIndex := -1

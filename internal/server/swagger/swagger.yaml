@@ -1979,9 +1979,10 @@ paths:
       - application/x-www-form-urlencoded
       description: Save filter configuration as JSON file with .filter extension
       parameters:
-      - description: Filter file path (without extension, optional for new files)
+      - description: Filter file path (without extension)
         in: formData
         name: filepath
+        required: true
         type: string
       - description: Metadata field names
         in: formData
