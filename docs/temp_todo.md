@@ -8,19 +8,7 @@ http://localhost:8080/doku.php?id=wiki:dokuwiki:syntax#rss_atom_feed_aggregation
 
 # before productive use
 
-- new filter file => no metadata (also no filetype)
 - type filter content - no toc
-
-# reference
-
-new references filetype: Link Resources to certain files e.g. i have postgres file and i want to link a Page about Optimization
-
-- new editor with 3 inputs
-  - reference (input for link)
-  - referencedescription (textbox) (why did you add this reference)
-  - referencedTo (datalist with GetAllFilePathsFromSystemData) - if one file is added add another input (so it can be referenced to multiple files)
-- new metadata: references
-- save references in database or as file?
 
 # small stuff
 

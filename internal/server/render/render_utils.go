@@ -158,19 +158,26 @@ func RenderFileContent(filez []files.File) string {
 	for _, file := range filez {
 		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`<div class="filter-content-item">
-			<h4><a href="/files/%s">%s</a></h4>
-			<div class="filter-content-body">`, file.Path, displayText))
+			<h4><a href="/files/%s">%s</a></h4>`, file.Path, displayText))
 
-		// get file content
 		fullPath := pathutils.ToDocsPath(file.Path)
 		content, err := files.GetFileContent(fullPath)
 		if err != nil {
 			html.WriteString(`<p class="filter-content-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "error loading content: %s", err.Error()) + `</p>`)
 		} else {
-			html.WriteString(content.HTML)
+			injected := files.InjectHeaderIDs(content.HTML)
+			toc := files.GenerateTOC(injected)
+			if len(toc) > 0 {
+				html.WriteString(`<nav class="filter-content-toc toc-nav">`)
+				for _, item := range toc {
+					html.WriteString(fmt.Sprintf(`<a href="%s" style="padding-left:%dpx">%s</a>`, item.Link, item.Level*16, item.Text))
+				}
+				html.WriteString(`</nav>`)
+			}
+			html.WriteString(fmt.Sprintf(`<div class="filter-content-body">%s</div>`, injected))
 		}
 
-		html.WriteString(`</div></div>`)
+		html.WriteString(`</div>`)
 	}
 
 	if len(filez) == 0 {

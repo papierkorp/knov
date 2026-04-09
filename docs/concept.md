@@ -46,6 +46,9 @@ KNOV (knowledge vault) is a flexible knowledge management system.
 
 ![image](metadata_example.png)
 
+- **Add References without clustering the content**
+  - Edit - References allows you to add URL References + Description to the metadata
+
 # Configuration
 
 Configuration of the APP via ENV Variables.

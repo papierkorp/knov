@@ -928,15 +928,11 @@ func handleFilterFileContent(w http.ResponseWriter, r *http.Request, filePath, f
 	resultsHTML := render.RenderFilterResult(result, config.Display)
 	filterTitle := fmt.Sprintf("Filter: %s", filepath.Base(filePath))
 
-	// create a synthetic file content structure
+	contentHTML := fmt.Sprintf(`<div class="filter-file-view"><h2>%s</h2>%s</div>`, filterTitle, resultsHTML)
+
 	fileContent := &files.FileContent{
-		HTML: fmt.Sprintf(`<div class="filter-file-view">
-			<h2>%s</h2>
-			%s
-		</div>`,
-			filterTitle,
-			resultsHTML),
-		TOC: []files.TOCItem{},
+		HTML: files.InjectHeaderIDs(contentHTML),
+		TOC:  files.GenerateTOC(contentHTML),
 	}
 
 	// render through template system
