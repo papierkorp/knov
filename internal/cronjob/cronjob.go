@@ -240,7 +240,10 @@ func runFileJobs() {
 		for _, filePath := range filesToProcess {
 			// normalize path to ensure correct prefix for metadata lookup
 			normalizedPath := pathutils.ToWithPrefix(filePath)
-			metadata := &files.Metadata{Path: normalizedPath}
+			metadata := &files.Metadata{
+				Path:     normalizedPath,
+				FileType: files.Filetype(configmanager.GetDefaultFiletype()),
+			}
 			if err := files.MetaDataSave(metadata); err != nil {
 				logging.LogError("cronjob: failed to save metadata for %s: %v", normalizedPath, err)
 				continue

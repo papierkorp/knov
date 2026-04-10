@@ -46,6 +46,7 @@ type AppConfig struct {
 	HideVideo               bool
 	HidePDF                 bool
 	HideText                bool
+	DefaultFiletype         string
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -93,6 +94,7 @@ func InitAppConfig() {
 		HideVideo:           getBoolEnv("KNOV_HIDE_VIDEO", false),
 		HidePDF:             getBoolEnv("KNOV_HIDE_PDF", false),
 		HideText:            getBoolEnv("KNOV_HIDE_TEXT", false),
+		DefaultFiletype:     getEnv("KNOV_DEFAULT_FILETYPE", "permanent"),
 	}
 
 	initLogLevel()
@@ -176,6 +178,11 @@ func GetCacheStorageProvider() string {
 // GetMetadataLinkRegex returns link regex patterns
 func GetMetadataLinkRegex() []string {
 	return appConfig.LinkRegex
+}
+
+// GetDefaultFiletype returns the default filetype for externally added files
+func GetDefaultFiletype() string {
+	return appConfig.DefaultFiletype
 }
 
 // InitGitRepository initializes git repository based on configuration
