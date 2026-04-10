@@ -1,310 +1,396 @@
 /* detailed view with sidebar */
 #view-fileview-detailed .fileview-layout {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 30px;
-    max-width: 1400px;
-    margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 #view-fileview-detailed .file-content {
-    min-width: 0;
-    overflow: hidden; /* contains floated elements */
-    contain: layout; /* ensure floated media elements don't break layout */
+  min-width: 0;
+  overflow: hidden; /* contains floated elements */
+  contain: layout; /* ensure floated media elements don't break layout */
 }
 
 /* responsive layout */
 @media (max-width: 1024px) {
-    #view-fileview-detailed .fileview-layout {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
+  #view-fileview-detailed .fileview-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
 }
 
 /* media preview containers - minimal styling */
 .media-preview-container {
-    display: block;
-    margin: 10px 0;
-    text-align: center;
+  display: block;
+  margin: 10px 0;
+  text-align: center;
 }
 
 /* Clear floats after media containers */
 .media-preview-container::after {
-    content: "";
-    display: table;
-    clear: both;
+  content: "";
+  display: table;
+  clear: both;
 }
 
 /* Media preview elements with display modes */
 .media-preview {
-    display: block;
-    margin: 10px 0;
-    max-width: 100%;
+  display: block;
+  margin: 10px 0;
+  max-width: 100%;
 }
 
 /* Display modes */
 .media-preview.display-left {
-    text-align: left;
-    float: left;
-    margin: 0 20px 15px 0;
-    clear: left;
+  text-align: left;
+  float: left;
+  margin: 0 20px 15px 0;
+  clear: left;
 }
 
 .media-preview.display-center {
-    text-align: center;
-    margin: 20px auto;
-    display: block;
-    clear: both;
+  text-align: center;
+  margin: 20px auto;
+  display: block;
+  clear: both;
 }
 
 .media-preview.display-right {
-    text-align: right;
-    float: right;
-    margin: 0 0 15px 20px;
-    clear: right;
+  text-align: right;
+  float: right;
+  margin: 0 0 15px 20px;
+  clear: right;
 }
 
 .media-preview.display-inline {
-    display: inline-block !important;
-    margin: 0 4px !important;
-    vertical-align: middle;
-    clear: none !important;
+  display: inline-block !important;
+  margin: 0 4px !important;
+  vertical-align: middle;
+  clear: none !important;
 }
 
 .media-preview.display-inline img,
 .media-preview.display-inline video {
-    vertical-align: middle;
+  vertical-align: middle;
 }
 
 /* file content headers styling - detailed view */
 #view-fileview-detailed .file-content h1 {
-    font-size: 1.5em;
-    font-style: italic;
-    letter-spacing: 5px;
-    border-left: 5px solid var(--primary);
-    padding: 0.5em;
-    margin-top: 3em;
-    background-color: var(--bg-secondary);
-    overflow-wrap: break-word;
-    color: var(--text);
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    clear: both;
+  font-size: 1.5em;
+  font-style: italic;
+  letter-spacing: 5px;
+  border-left: 5px solid var(--primary);
+  padding: 0.5em;
+  margin-top: 3em;
+  background-color: var(--bg-secondary);
+  overflow-wrap: break-word;
+  color: var(--text);
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
 }
 
 #view-fileview-detailed .file-content h2 {
-    font-size: 1.25em;
-    letter-spacing: 5px;
-    border-bottom: 1px solid var(--primary);
-    margin-top: 2.5em;
-    padding-bottom: 0.5em;
-    padding-left: 0;
-    color: var(--text);
-    overflow-wrap: break-word;
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    clear: both;
+  font-size: 1.25em;
+  letter-spacing: 5px;
+  border-bottom: 1px solid var(--primary);
+  margin-top: 2.5em;
+  padding-bottom: 0.5em;
+  padding-left: 0;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
 }
 
 #view-fileview-detailed .file-content h3 {
-    font-size: 1.12em;
-    border-bottom: 1px dotted var(--text-secondary);
-    margin-top: 2em;
-    padding-bottom: 0.5em;
-    padding-left: 0;
-    color: var(--text);
-    overflow-wrap: break-word;
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    clear: both;
+  font-size: 1.12em;
+  border-bottom: 1px dotted var(--text-secondary);
+  margin-top: 2em;
+  padding-bottom: 0.5em;
+  padding-left: 0;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
 }
 
 #view-fileview-detailed .file-content h4 {
-    font-size: 1.12em;
-    border-bottom: 1px dotted var(--text-secondary);
-    margin-top: 2em;
-    padding-bottom: 0.5em;
-    padding-left: 2em;
-    color: var(--text);
-    overflow-wrap: break-word;
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    clear: both;
+  font-size: 1.12em;
+  border-bottom: 1px dotted var(--text-secondary);
+  margin-top: 2em;
+  padding-bottom: 0.5em;
+  padding-left: 2em;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
 }
 
 #view-fileview-detailed .file-content h5 {
-    font-size: 1.12em;
-    border-bottom: 1px dotted var(--text-secondary);
-    margin-top: 2em;
-    padding-bottom: 0.5em;
-    padding-left: 4em;
-    color: var(--text);
-    overflow-wrap: break-word;
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    clear: both;
+  font-size: 1.12em;
+  border-bottom: 1px dotted var(--text-secondary);
+  margin-top: 2em;
+  padding-bottom: 0.5em;
+  padding-left: 4em;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
 }
 
 #view-fileview-detailed .file-content h6 {
-    font-size: 1.12em;
-    border-bottom: 1px dotted var(--text-secondary);
-    margin-top: 2em;
-    padding-bottom: 0.5em;
-    padding-left: 6em;
-    color: var(--text);
-    overflow-wrap: break-word;
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    clear: both;
+  font-size: 1.12em;
+  border-bottom: 1px dotted var(--text-secondary);
+  margin-top: 2em;
+  padding-bottom: 0.5em;
+  padding-left: 6em;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
 }
 
 #view-fileview-detailed .file-content h1:first-child {
-    margin-top: 0em;
+  margin-top: 0em;
 }
 
 /* compact view headers */
 #view-fileview-compact .file-content h1 {
-    font-size: 1.5em;
-    font-style: italic;
-    letter-spacing: 5px;
-    border-left: 5px solid var(--primary);
-    padding: 0.5em;
-    margin-top: 3em;
-    background-color: var(--bg-secondary);
-    overflow-wrap: break-word;
-    color: var(--text);
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    clear: both;
+  font-size: 1.5em;
+  font-style: italic;
+  letter-spacing: 5px;
+  border-left: 5px solid var(--primary);
+  padding: 0.5em;
+  margin-top: 3em;
+  background-color: var(--bg-secondary);
+  overflow-wrap: break-word;
+  color: var(--text);
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
 }
 
 #view-fileview-compact .file-content h1:first-child {
-    margin-top: 0em;
+  margin-top: 0em;
 }
 
 #view-fileview-compact .file-content h2 {
-    font-size: 1.25em;
-    letter-spacing: 5px;
-    border-bottom: 1px solid var(--primary);
-    margin-top: 2.5em;
-    padding-bottom: 0.5em;
-    padding-left: 0;
-    color: var(--text);
-    overflow-wrap: break-word;
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    clear: both;
+  font-size: 1.25em;
+  letter-spacing: 5px;
+  border-bottom: 1px solid var(--primary);
+  margin-top: 2.5em;
+  padding-bottom: 0.5em;
+  padding-left: 0;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
 }
 
 #view-fileview-compact .file-content h3,
 #view-fileview-compact .file-content h4,
 #view-fileview-compact .file-content h5,
 #view-fileview-compact .file-content h6 {
-    font-size: 1.12em;
-    border-bottom: 1px dotted var(--text-secondary);
-    margin-top: 2em;
-    padding-bottom: 0.5em;
-    padding-left: 0;
-    color: var(--text);
-    overflow-wrap: break-word;
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    clear: both;
+  font-size: 1.12em;
+  border-bottom: 1px dotted var(--text-secondary);
+  margin-top: 2em;
+  padding-bottom: 0.5em;
+  padding-left: 0;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
 }
 
 /* reader view headers */
 #view-fileview-reader .file-content h1 {
-    font-size: 1.5em;
-    font-style: italic;
-    letter-spacing: 5px;
-    border-left: 5px solid var(--primary);
-    padding: 0.5em;
-    margin-top: 3em;
-    background-color: var(--bg-secondary);
-    overflow-wrap: break-word;
-    color: var(--text);
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    clear: both;
+  font-size: 1.5em;
+  font-style: italic;
+  letter-spacing: 5px;
+  border-left: 5px solid var(--primary);
+  padding: 0.5em;
+  margin-top: 3em;
+  background-color: var(--bg-secondary);
+  overflow-wrap: break-word;
+  color: var(--text);
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
 }
 
 #view-fileview-reader .file-content h1:first-child {
-    margin-top: 0em;
+  margin-top: 0em;
 }
 
 #view-fileview-reader .file-content h2 {
-    font-size: 1.25em;
-    letter-spacing: 5px;
-    border-bottom: 1px solid var(--primary);
-    margin-top: 2.5em;
-    padding-bottom: 0.5em;
-    padding-left: 0;
-    color: var(--text);
-    overflow-wrap: break-word;
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    clear: both;
+  font-size: 1.25em;
+  letter-spacing: 5px;
+  border-bottom: 1px solid var(--primary);
+  margin-top: 2.5em;
+  padding-bottom: 0.5em;
+  padding-left: 0;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
 }
 
 #view-fileview-reader .file-content h3,
 #view-fileview-reader .file-content h4,
 #view-fileview-reader .file-content h5,
 #view-fileview-reader .file-content h6 {
-    font-size: 1.12em;
-    border-bottom: 1px dotted var(--text-secondary);
-    margin-top: 2em;
-    padding-bottom: 0.5em;
-    padding-left: 0;
-    color: var(--text);
-    overflow-wrap: break-word;
-    position: relative;
-    display: inline-block;
-    width: 100%;
-    clear: both;
+  font-size: 1.12em;
+  border-bottom: 1px dotted var(--text-secondary);
+  margin-top: 2em;
+  padding-bottom: 0.5em;
+  padding-left: 0;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
+}
+
+#view-fileview-reader .reader-controls {
+  position: fixed;
+  top: 5rem;
+  right: 3rem;
+  z-index: 100;
+  display: flex;
+  gap: 0.25rem;
+}
+
+#view-fileview-reader .font-size-btn {
+  padding: 0.25em 0.6em;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  width: 2.5em;
+  text-align: center;
+  font-family: monospace;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1em;
+  line-height: 1.4;
+}
+
+#view-fileview-reader .font-size-btn:hover {
+  background: var(--bg-hover);
+  color: var(--primary);
+}
+#view-fileview-compact .compact-header {
+  padding: 0.6em 0;
+  margin-bottom: 1.2em;
+  border-bottom: 1px solid var(--border);
+}
+
+#view-fileview-compact .compact-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  align-items: center;
+}
+
+#view-fileview-compact .meta-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2em 0.6em;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+#view-fileview-compact .meta-pill a,
+#view-fileview-compact .meta-pill .meta-link {
+  color: var(--text);
+  text-decoration: none;
+}
+
+#view-fileview-compact .meta-pill a:hover,
+#view-fileview-compact .meta-pill .meta-link:hover {
+  color: var(--primary);
+}
+
+#view-fileview-compact .meta-pill.meta-path {
+  font-family: monospace;
+  font-size: 0.78em;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+  padding-left: 0;
+}
+
+#view-fileview-compact .meta-pill .meta-empty {
+  opacity: 0.4;
+}
+
+#view-fileview-compact .meta-pill:has(> .meta-empty) {
+  display: none;
+}
+
+#view-fileview-compact .meta-label {
+  color: var(--text-muted);
+  margin-right: 0.3em;
+  font-size: 0.9em;
 }
 
 /* header edit buttons and anchor links in file content - inline after text */
 #view-fileview-detailed .file-content .header-edit-btn,
 #view-fileview-compact .file-content .header-edit-btn,
 #view-fileview-reader .file-content .header-edit-btn {
-    opacity: 0;
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-size: 0.7em;
-    line-height: 1;
-    padding: 0.2em 0.4em;
-    margin-left: 0.5em;
-    transition: opacity 0.2s ease-in-out;
-    border-radius: 3px;
-    background: var(--bg-secondary);
-    border: 1px solid transparent;
+  opacity: 0;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.7em;
+  line-height: 1;
+  padding: 0.2em 0.4em;
+  margin-left: 0.5em;
+  transition: opacity 0.2s ease-in-out;
+  border-radius: 3px;
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
 }
 
 #view-fileview-detailed .file-content .header-anchor,
 #view-fileview-compact .file-content .header-anchor,
 #view-fileview-reader .file-content .header-anchor {
-    opacity: 0;
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-size: 0.7em;
-    line-height: 1;
-    padding: 0.2em 0.4em;
-    margin-left: 0.3em;
-    transition: opacity 0.2s ease-in-out;
-    border-radius: 3px;
-    background: var(--bg-secondary);
-    border: 1px solid transparent;
+  opacity: 0;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.7em;
+  line-height: 1;
+  padding: 0.2em 0.4em;
+  margin-left: 0.3em;
+  transition: opacity 0.2s ease-in-out;
+  border-radius: 3px;
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
 }
 
 /* show buttons on header hover */
@@ -326,7 +412,7 @@
 #view-fileview-reader .file-content h4:hover .header-edit-btn,
 #view-fileview-reader .file-content h5:hover .header-edit-btn,
 #view-fileview-reader .file-content h6:hover .header-edit-btn {
-    opacity: 1;
+  opacity: 1;
 }
 
 #view-fileview-detailed .file-content h1:hover .header-anchor,
@@ -347,232 +433,232 @@
 #view-fileview-reader .file-content h4:hover .header-anchor,
 #view-fileview-reader .file-content h5:hover .header-anchor,
 #view-fileview-reader .file-content h6:hover .header-anchor {
-    opacity: 1;
+  opacity: 1;
 }
 
 /* hover effects for individual buttons */
 #view-fileview-detailed .file-content .header-edit-btn:hover,
 #view-fileview-compact .file-content .header-edit-btn:hover,
 #view-fileview-reader .file-content .header-edit-btn:hover {
-    color: var(--primary);
-    background: var(--bg);
-    border-color: var(--border);
-    text-decoration: none;
+  color: var(--primary);
+  background: var(--bg);
+  border-color: var(--border);
+  text-decoration: none;
 }
 
 #view-fileview-detailed .file-content .header-anchor:hover,
 #view-fileview-compact .file-content .header-anchor:hover,
 #view-fileview-reader .file-content .header-anchor:hover {
-    color: var(--primary);
-    background: var(--bg);
-    border-color: var(--border);
-    text-decoration: none;
+  color: var(--primary);
+  background: var(--bg);
+  border-color: var(--border);
+  text-decoration: none;
 }
 
 /* fallback icons */
 #view-fileview-detailed .file-content .header-edit-btn:not(:has(i))::before,
 #view-fileview-compact .file-content .header-edit-btn:not(:has(i))::before,
 #view-fileview-reader .file-content .header-edit-btn:not(:has(i))::before {
-    content: "✎";
-    font-size: 1em;
+  content: "✎";
+  font-size: 1em;
 }
 
 #view-fileview-detailed .file-content .header-anchor:empty::before,
 #view-fileview-compact .file-content .header-anchor:empty::before,
 #view-fileview-reader .file-content .header-anchor:empty::before {
-    content: "#";
+  content: "#";
 }
 
 /* Border styles - applied to actual media elements */
 .media-preview.border-none img,
 .media-preview.border-none video,
 .media-preview.border-none iframe {
-    border: none;
-    box-shadow: none;
+  border: none;
+  box-shadow: none;
 }
 
 .media-preview.border-simple img,
 .media-preview.border-simple video,
 .media-preview.border-simple iframe {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: none;
 }
 
 .media-preview.border-rounded img,
 .media-preview.border-rounded video,
 .media-preview.border-rounded iframe {
-    border: 2px solid #ccc;
-    border-radius: 12px;
-    box-shadow: none;
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  box-shadow: none;
 }
 
 .media-preview.border-shadow img,
 .media-preview.border-shadow video,
 .media-preview.border-shadow iframe {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Preview content and captions */
 .preview-content {
-    display: inline-block;
-    text-align: center;
+  display: inline-block;
+  text-align: center;
 }
 
 .preview-caption {
-    margin-top: 8px;
-    font-size: 0.85em;
-    color: #666;
-    font-style: italic;
+  margin-top: 8px;
+  font-size: 0.85em;
+  color: #666;
+  font-style: italic;
 }
 
 /* Preview links - removed scaling hover effect to preserve borders */
 .preview-link {
-    text-decoration: none;
-    display: inline-block;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .preview-link:hover {
-    opacity: 0.4;
-    transition: opacity 0.2s ease;
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
 }
 
 /* File icons for non-images */
 .file-link,
 .file-icon {
-    display: inline-block;
-    padding: 20px;
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    background-color: #f8f8f8;
-    text-decoration: none;
-    color: #333;
+  display: inline-block;
+  padding: 20px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background-color: #f8f8f8;
+  text-decoration: none;
+  color: #333;
 }
 
 .file-link:hover {
-    background-color: #e8e8e8;
-    border-color: #999;
+  background-color: #e8e8e8;
+  border-color: #999;
 }
 
 .file-link i,
 .file-icon i {
-    font-size: 2em;
-    margin-bottom: 10px;
-    color: #666;
-    display: block;
+  font-size: 2em;
+  margin-bottom: 10px;
+  color: #666;
+  display: block;
 }
 
 .file-link span,
 .file-icon span {
-    display: block;
-    font-weight: 500;
+  display: block;
+  font-weight: 500;
 }
 
 /* Clear floats after floated elements */
 .media-preview.display-left + *,
 .media-preview.display-right + * {
-    clear: none;
+  clear: none;
 }
 
 /* Add clearfix to parent containers */
 .file-content::after {
-    content: "";
-    display: table;
-    clear: both;
+  content: "";
+  display: table;
+  clear: both;
 }
 
 .filter-content-item {
-    margin-bottom: 4em;
-    border-bottom: 1em double var(--primary);
-    padding-bottom: 4em;
+  margin-bottom: 4em;
+  border-bottom: 1em double var(--primary);
+  padding-bottom: 4em;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .media-preview.display-left,
-    .media-preview.display-right {
-        float: none;
-        text-align: center;
-        margin: 10px auto;
-        display: block;
-        clear: both;
-    }
+  .media-preview.display-left,
+  .media-preview.display-right {
+    float: none;
+    text-align: center;
+    margin: 10px auto;
+    display: block;
+    clear: both;
+  }
 }
 
 .media-preview-container:has(.media-preview.display-inline),
 .media-preview-container.inline-container {
-    display: inline-block;
-    margin: 0;
-    text-align: inherit;
-    vertical-align: baseline;
+  display: inline-block;
+  margin: 0;
+  text-align: inherit;
+  vertical-align: baseline;
 }
 
 #view-fileview-detailed blockquote,
 #view-fileview-compact blockquote,
 #view-fileview-reader blockquote {
-    border-left: 10px solid var(--neutral);
-    padding: 0.5em 10px;
+  border-left: 10px solid var(--neutral);
+  padding: 0.5em 10px;
 }
 
 #view-fileview-detailed blockquote:before,
 #view-fileview-compact blockquote:before,
 #view-fileview-reader blockquote:before {
-    color: var(--neutral);
-    content: open-quote;
-    font-size: 4em;
-    line-height: 0.1em;
-    margin-right: 0.25em;
-    vertical-align: -0.4em;
+  color: var(--neutral);
+  content: open-quote;
+  font-size: 4em;
+  line-height: 0.1em;
+  margin-right: 0.25em;
+  vertical-align: -0.4em;
 }
 #view-fileview-detailed blockquote p,
 #view-fileview-compact blockquote p,
 #view-fileview-reader blockquote p {
-    display: inline;
+  display: inline;
 }
 
 /* sticky toc in sidebar */
 #component-sidebar-toc {
-    position: sticky;
-    top: 70px; /* offset for sticky header */
+  position: sticky;
+  top: 70px; /* offset for sticky header */
 }
 
 #component-sidebar-toc .toc-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    max-height: calc(100vh - 140px);
-    overflow-y: auto;
-    scrollbar-width: none; /* firefox */
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  scrollbar-width: none; /* firefox */
 }
 
 #component-sidebar-toc .toc-nav::-webkit-scrollbar {
-    display: none; /* chrome/safari */
+  display: none; /* chrome/safari */
 }
 
 #component-sidebar-toc .toc-nav:hover {
-    scrollbar-width: thin; /* firefox */
+  scrollbar-width: thin; /* firefox */
 }
 
 #component-sidebar-toc .toc-nav:hover::-webkit-scrollbar {
-    display: block;
-    width: 6px;
+  display: block;
+  width: 6px;
 }
 
 #component-sidebar-toc .toc-nav:hover::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 3px;
+  background: var(--border);
+  border-radius: 3px;
 }
 
 #component-sidebar-toc .toc-nav a {
-    display: block;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    text-decoration: none;
-    overflow-wrap: break-word;
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  overflow-wrap: break-word;
 }
 
 #component-sidebar-toc .toc-nav a:hover {
-    color: var(--primary);
+  color: var(--primary);
 }

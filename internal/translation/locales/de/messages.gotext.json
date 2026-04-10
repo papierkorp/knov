@@ -12,6 +12,11 @@
       "translation": ""
     },
     {
+      "id": "Add",
+      "message": "Add",
+      "translation": ""
+    },
+    {
       "id": "add archived items",
       "message": "add archived items",
       "translation": ""
@@ -287,6 +292,11 @@
       "translation": ""
     },
     {
+      "id": "Close",
+      "message": "Close",
+      "translation": ""
+    },
+    {
       "id": "collection",
       "message": "collection",
       "translation": ""
@@ -484,6 +494,11 @@
     {
       "id": "delete this item and all its nested items?",
       "message": "delete this item and all its nested items?",
+      "translation": ""
+    },
+    {
+      "id": "Description",
+      "message": "Description",
       "translation": ""
     },
     {
@@ -862,6 +877,11 @@
       "translation": ""
     },
     {
+      "id": "failed to rebuild metadata links",
+      "message": "failed to rebuild metadata links",
+      "translation": ""
+    },
+    {
       "id": "failed to refresh media list",
       "message": "failed to refresh media list",
       "translation": ""
@@ -960,6 +980,11 @@
       "id": "file path",
       "message": "file path",
       "translation": "Dateipfad"
+    },
+    {
+      "id": "filepath and url are required",
+      "message": "filepath and url are required",
+      "translation": ""
     },
     {
       "id": "file path is required",
@@ -1282,11 +1307,6 @@
       "translation": ""
     },
     {
-      "id": "how to handle media files no longer referenced in documents",
-      "message": "how to handle media files no longer referenced in documents",
-      "translation": ""
-    },
-    {
       "id": "https://github.com/user/repo.git",
       "message": "https://github.com/user/repo.git",
       "translation": ""
@@ -1329,16 +1349,6 @@
     {
       "id": "Inline with text",
       "message": "Inline with text",
-      "translation": ""
-    },
-    {
-      "id": "invalid age value",
-      "message": "invalid age value",
-      "translation": ""
-    },
-    {
-      "id": "invalid behavior option",
-      "message": "invalid behavior option",
       "translation": ""
     },
     {
@@ -1394,11 +1404,6 @@
     {
       "id": "journaling file visibility updated",
       "message": "journaling file visibility updated",
-      "translation": ""
-    },
-    {
-      "id": "Keep Files",
-      "message": "Keep Files",
       "translation": ""
     },
     {
@@ -1622,11 +1627,6 @@
       "translation": ""
     },
     {
-      "id": "Manual Cleanup",
-      "message": "Manual Cleanup",
-      "translation": ""
-    },
-    {
       "id": "markdown conversion only supported for dokuwiki files",
       "message": "markdown conversion only supported for dokuwiki files",
       "translation": ""
@@ -1682,6 +1682,11 @@
       "translation": ""
     },
     {
+      "id": "metadata links rebuilt",
+      "message": "metadata links rebuilt",
+      "translation": ""
+    },
+    {
       "id": "metadata not found",
       "message": "metadata not found",
       "translation": ""
@@ -1689,11 +1694,6 @@
     {
       "id": "mime types updated",
       "message": "mime types updated",
-      "translation": ""
-    },
-    {
-      "id": "missing age value",
-      "message": "missing age value",
       "translation": ""
     },
     {
@@ -1917,6 +1917,11 @@
       "translation": ""
     },
     {
+      "id": "no references",
+      "message": "no references",
+      "translation": ""
+    },
+    {
       "id": "no related files found",
       "message": "no related files found",
       "translation": ""
@@ -1957,11 +1962,6 @@
       "translation": ""
     },
     {
-      "id": "number of days before orphaned files can be cleaned up",
-      "message": "number of days before orphaned files can be cleaned up",
-      "translation": ""
-    },
-    {
       "id": "OK",
       "message": "OK",
       "translation": ""
@@ -1994,26 +1994,6 @@
     {
       "id": "orphaned",
       "message": "orphaned",
-      "translation": ""
-    },
-    {
-      "id": "Orphaned Media Age (Days)",
-      "message": "Orphaned Media Age (Days)",
-      "translation": ""
-    },
-    {
-      "id": "orphaned media age updated",
-      "message": "orphaned media age updated",
-      "translation": ""
-    },
-    {
-      "id": "Orphaned Media Behavior",
-      "message": "Orphaned Media Behavior",
-      "translation": ""
-    },
-    {
-      "id": "orphaned media behavior updated",
-      "message": "orphaned media behavior updated",
       "translation": ""
     },
     {
@@ -2209,6 +2189,16 @@
     {
       "id": "Recent File History",
       "message": "Recent File History",
+      "translation": ""
+    },
+    {
+      "id": "references",
+      "message": "references",
+      "translation": ""
+    },
+    {
+      "id": "References",
+      "message": "References",
       "translation": ""
     },
     {
@@ -2732,6 +2722,11 @@
       "translation": ""
     },
     {
+      "id": "URL",
+      "message": "URL",
+      "translation": ""
+    },
+    {
       "id": "used",
       "message": "used",
       "translation": ""
@@ -2854,6 +2849,11 @@
     {
       "id": "When enabled, editing a section includes all sub-level headers",
       "message": "When enabled, editing a section includes all sub-level headers",
+      "translation": ""
+    },
+    {
+      "id": "Why did you add this reference?",
+      "message": "Why did you add this reference?",
       "translation": ""
     },
     {

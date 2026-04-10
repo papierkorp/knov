@@ -159,9 +159,14 @@
 <div id="view-fileview-compact">
     <div class="compact-header">
         <div class="compact-metadata">
-            <span>{{.FilePath}}</span>
-            <span class="separator">|</span>
-            <span hx-get="/api/metadata/lastedited?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+            <span class="meta-pill meta-path"><a href="/files/{{urlQuery .FilePath}}">{{.FilePath}}</a></span>
+            <span class="meta-pill">
+                <span class="meta-label">{{T "lastEdit"}}:</span>
+                <span hx-get="/api/metadata/lastedited?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+            </span>
+            <span class="meta-pill" hx-get="/api/metadata/filetype?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+            <span class="meta-pill" hx-get="/api/metadata/status?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+            <span class="meta-pill" hx-get="/api/metadata/tags?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
         </div>
     </div>
     <article class="file-content">
