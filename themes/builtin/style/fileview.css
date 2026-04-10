@@ -360,6 +360,10 @@
   font-size: 0.9em;
 }
 
+#view-fileview-compact .meta-pill .connection-link + .connection-link::before {
+  content: ", ";
+}
+
 /* header edit buttons and anchor links in file content - inline after text */
 #view-fileview-detailed .file-content .header-edit-btn,
 #view-fileview-compact .file-content .header-edit-btn,

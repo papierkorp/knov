@@ -107,6 +107,106 @@
       "default": false,
       "label": "Show Media in Links To",
       "description": "include media files (images, pdfs) in the outbound links list"
+    },
+    "compactMetadataPath": {
+      "type": "boolean",
+      "default": true,
+      "label": "Compact: Path"
+    },
+    "compactMetadataEdited": {
+      "type": "boolean",
+      "default": true,
+      "label": "Compact: Last Edited"
+    },
+    "compactMetadataCreated": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: Created"
+    },
+    "compactMetadataCollection": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: Collection"
+    },
+    "compactMetadataType": {
+      "type": "boolean",
+      "default": true,
+      "label": "Compact: Type"
+    },
+    "compactMetadataStatus": {
+      "type": "boolean",
+      "default": true,
+      "label": "Compact: Status"
+    },
+    "compactMetadataPriority": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: Priority"
+    },
+    "compactMetadataTargetDate": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: Target Date"
+    },
+    "compactMetadataTags": {
+      "type": "boolean",
+      "default": true,
+      "label": "Compact: Tags"
+    },
+    "compactMetadataFolders": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: Folders"
+    },
+    "compactMetadataParaProjects": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: PARA Projects"
+    },
+    "compactMetadataParaAreas": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: PARA Areas"
+    },
+    "compactMetadataParaResources": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: PARA Resources"
+    },
+    "compactMetadataParaArchive": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: PARA Archive"
+    },
+    "compactMetadataAncestors": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: Ancestors"
+    },
+    "compactMetadataParents": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: Parents"
+    },
+    "compactMetadataChildren": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: Children"
+    },
+    "compactMetadataLinksTo": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: Links To"
+    },
+    "compactMetadataLinksFrom": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: Links From"
+    },
+    "compactMetadataRelated": {
+      "type": "boolean",
+      "default": false,
+      "label": "Compact: Related"
     }
   }
 }

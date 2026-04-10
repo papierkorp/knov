@@ -107,6 +107,11 @@
       "translation": ""
     },
     {
+      "id": "ancestors",
+      "message": "ancestors",
+      "translation": ""
+    },
+    {
       "id": "and",
       "message": "and",
       "translation": ""
@@ -117,6 +122,11 @@
       "translation": ""
     },
     {
+      "id": "archive",
+      "message": "archive",
+      "translation": ""
+    },
+    {
       "id": "Archive",
       "message": "Archive",
       "translation": ""
@@ -124,6 +134,11 @@
     {
       "id": "archive updated",
       "message": "archive updated",
+      "translation": ""
+    },
+    {
+      "id": "areas",
+      "message": "areas",
       "translation": ""
     },
     {
@@ -262,6 +277,11 @@
       "translation": ""
     },
     {
+      "id": "children",
+      "message": "children",
+      "translation": ""
+    },
+    {
       "id": "choose the visual appearance of the interface",
       "message": "choose the visual appearance of the interface",
       "translation": ""
@@ -319,6 +339,11 @@
     {
       "id": "configure filter above and click view results to preview",
       "message": "configure filter above and click view results to preview",
+      "translation": ""
+    },
+    {
+      "id": "connections",
+      "message": "connections",
       "translation": ""
     },
     {
@@ -552,6 +577,11 @@
       "translation": ""
     },
     {
+      "id": "due",
+      "message": "due",
+      "translation": ""
+    },
+    {
       "id": "Edit",
       "message": "Edit",
       "translation": "Bearbeiten"
@@ -560,6 +590,11 @@
       "id": "Edit Dashboard",
       "message": "Edit Dashboard",
       "translation": "Dashboard bearbeiten"
+    },
+    {
+      "id": "edited",
+      "message": "edited",
+      "translation": ""
     },
     {
       "id": "Editor Settings",
@@ -1447,6 +1482,16 @@
       "translation": ""
     },
     {
+      "id": "links from",
+      "message": "links from",
+      "translation": ""
+    },
+    {
+      "id": "links to",
+      "message": "links to",
+      "translation": ""
+    },
+    {
       "id": "list",
       "message": "list",
       "translation": ""
@@ -1867,6 +1912,11 @@
       "translation": ""
     },
     {
+      "id": "no headings found",
+      "message": "no headings found",
+      "translation": ""
+    },
+    {
       "id": "no inbound links",
       "message": "no inbound links",
       "translation": ""
@@ -2027,6 +2077,11 @@
       "translation": ""
     },
     {
+      "id": "PARA organization",
+      "message": "PARA organization",
+      "translation": ""
+    },
+    {
       "id": "para-projects",
       "message": "para-projects",
       "translation": ""
@@ -2039,7 +2094,7 @@
     {
       "id": "parents",
       "message": "parents",
-      "translation": ""
+      "translation": "Eltern"
     },
     {
       "id": "parents updated",
@@ -2162,6 +2217,11 @@
       "translation": ""
     },
     {
+      "id": "projects",
+      "message": "projects",
+      "translation": ""
+    },
+    {
       "id": "Projects",
       "message": "Projects",
       "translation": ""
@@ -2207,6 +2267,11 @@
       "translation": ""
     },
     {
+      "id": "related",
+      "message": "related",
+      "translation": ""
+    },
+    {
       "id": "Remote Repository URL",
       "message": "Remote Repository URL",
       "translation": ""
@@ -2220,6 +2285,11 @@
       "id": "Rename",
       "message": "Rename",
       "translation": "Umbenennen"
+    },
+    {
+      "id": "resources",
+      "message": "resources",
+      "translation": ""
     },
     {
       "id": "Resources",
@@ -2564,6 +2634,11 @@
     {
       "id": "table editor",
       "message": "table editor",
+      "translation": ""
+    },
+    {
+      "id": "table of contents",
+      "message": "table of contents",
       "translation": ""
     },
     {
