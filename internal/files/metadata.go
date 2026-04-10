@@ -71,6 +71,29 @@ func AllFiletypes() []Filetype {
 	}
 }
 
+// FileTypeFromExtension infers a filetype from a file extension.
+// Returns empty string for generic/ambiguous extensions (e.g. .md).
+func FileTypeFromExtension(path string) Filetype {
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".filter":
+		return FileTypeFilter
+	case ".list":
+		return FileTypeJournaling
+	case ".index", ".moc":
+		return FileTypeMOC
+	case ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".bmp", ".ico":
+		return FileTypeImage
+	case ".mp4", ".mov", ".avi", ".mkv", ".webm":
+		return FileTypeVideo
+	case ".pdf":
+		return FileTypePDF
+	case ".txt":
+		return FileTypeText
+	default:
+		return ""
+	}
+}
+
 // AllPriorities returns all available priorities
 func AllPriorities() []Priority {
 	return []Priority{
@@ -254,6 +277,15 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	if newMetadata.FileType != "" {
 		currentMetadata.FileType = newMetadata.FileType
 	}
+
+	if currentMetadata.FileType == "" {
+		if ft := FileTypeFromExtension(metadataPath); ft != "" {
+			currentMetadata.FileType = ft
+		} else {
+			currentMetadata.FileType = Filetype(configmanager.GetDefaultFiletype())
+		}
+	}
+
 	if newMetadata.Collection != "" {
 		currentMetadata.Collection = newMetadata.Collection
 	}

@@ -1,18 +1,11 @@
-# dokuwiki parser
-
-
-# before productive use
-
-
-
 # small stuff
 
-- rebuild metadata doesnt look at file ending to automatically set filetype
+- why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)
 - fix compact and reader view
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)
 - load all files from cache?
   - http://localhost:1324/browse/folders/systemadmin is running through all files?
-- dont run the search indexing at startup
+- dont run the search indexing at startup or slightly delayed so the app starts
 - codeblocks - copy button
 - codeblocks setting - wrap content
 - .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
