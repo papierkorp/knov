@@ -38,12 +38,24 @@ func (h *DokuwikiHandler) CanHandle(filename string) bool {
 }
 
 func (h *DokuwikiHandler) Parse(content []byte) ([]byte, error) {
-	parsed := h.ConvertToHTML(string(content))
-	return []byte(parsed), nil
+	// return as html, also change Render function
+	// parsed := h.ConvertToHTML(string(content))
+	// return []byte(parsed), nil
+	// return as txt, also change Render function
+	s := string(content)
+	s = strings.ReplaceAll(s, "&", "&amp;")
+	s = strings.ReplaceAll(s, "<", "&lt;")
+	s = strings.ReplaceAll(s, ">", "&gt;")
+	return []byte(s), nil
 }
 
 func (h *DokuwikiHandler) Render(content []byte, filePath string) ([]byte, error) {
-	return content, nil
+	// return as html, based on Parse function
+	// return content, nil
+
+	// return as text, based on Parse function
+	html := "<pre>" + string(content) + "</pre>"
+	return []byte(html), nil
 }
 
 func (h *DokuwikiHandler) ExtractLinks(content []byte) []string {
@@ -57,27 +69,32 @@ func (h *DokuwikiHandler) Name() string {
 
 // ConvertToMarkdown converts DokuWiki syntax to Markdown using unified processing
 func (h *DokuwikiHandler) ConvertToMarkdown(content string) string {
-	// Extract %% escapes first so nothing else touches them
 	content, escapes := h.extractEscapes(content)
-
+	content = h.stripLeadingSpaces(content)
 	content = h.handleComplexStructures(content)
 	content = h.processDokuWikiSyntax(content, "markdown")
-	content = h.restoreEscapes(content, escapes)
-
+	content = h.restoreEscapes(content, escapes, "markdown")
 	return content
 }
 
 // ConvertToHTML converts DokuWiki syntax to HTML using unified processing
 func (h *DokuwikiHandler) ConvertToHTML(content string) string {
-	// Extract %% escapes first so nothing else touches them
 	content, escapes := h.extractEscapes(content)
-
+	content = h.stripLeadingSpaces(content)
 	content = h.handleComplexStructures(content)
 	content = h.processDokuWikiSyntax(content, "html")
 	content = h.addParagraphTags(content)
-	content = h.restoreEscapes(content, escapes)
-
+	content = h.restoreEscapes(content, escapes, "html")
 	return content
+}
+
+// stripLeadingSpaces removes leading whitespace from lines that are not inside code blocks
+func (h *DokuwikiHandler) stripLeadingSpaces(content string) string {
+	lines := strings.Split(content, "\n")
+	for i, line := range lines {
+		lines[i] = strings.TrimLeft(line, " \t")
+	}
+	return strings.Join(lines, "\n")
 }
 
 // extractEscapes replaces %%...%% spans with unique placeholders before any other processing
@@ -92,12 +109,16 @@ func (h *DokuwikiHandler) extractEscapes(content string) (string, []string) {
 	return result, escapes
 }
 
-// restoreEscapes replaces placeholders back with their inner content, wrapping in backticks if markdown-sensitive
-func (h *DokuwikiHandler) restoreEscapes(content string, escapes []string) string {
-	doubleUnder := regexp.MustCompile(`__.*__`)
+// restoreEscapes replaces placeholders back with their inner content as inline code
+func (h *DokuwikiHandler) restoreEscapes(content string, escapes []string, outputFormat string) string {
 	for i, inner := range escapes {
-		restored := inner
-		if doubleUnder.MatchString(inner) {
+		var restored string
+		if outputFormat == "html" {
+			escaped := strings.ReplaceAll(inner, "&", "&amp;")
+			escaped = strings.ReplaceAll(escaped, "<", "&lt;")
+			escaped = strings.ReplaceAll(escaped, ">", "&gt;")
+			restored = "<code>" + escaped + "</code>"
+		} else {
 			restored = "`" + inner + "`"
 		}
 		content = strings.ReplaceAll(content, fmt.Sprintf("\x00ESC%d\x00", i), restored)

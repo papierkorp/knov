@@ -1,8 +1,5 @@
 # dokuwiki parser
 
-set metadata type to permanent
-http://localhost:1324/files/docs/wiki/dokuwiki/syntax.md#rss-atom-feed-aggregation
-http://localhost:8080/doku.php?id=wiki:dokuwiki:syntax#rss_atom_feed_aggregation
 
 # before productive use
 

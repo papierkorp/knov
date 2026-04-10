@@ -11,39 +11,75 @@ import (
 func (h *DokuwikiHandler) processDokuWikiSyntax(content string, outputFormat string) string {
 	// Process in order of complexity to avoid conflicts
 
-	// 0. Handle include sections first (needs outputFormat)
+	// 0. Strip <nowiki> tags — keep their content but prevent further processing
+	content = regexp.MustCompile(`(?s)<nowiki>(.*?)</nowiki>`).ReplaceAllString(content, "$1")
+
+	// 0b. Extract inline code ''..'' before anything else so their content is never processed
+	content, inlineCodes := h.extractInlineCodes(content)
+
+	// 1. Handle include sections first (needs outputFormat)
 	content = h.convertIncludeSections(content, outputFormat)
 
-	// 1. Handle media links (needs outputFormat)
+	// 2. Handle media links (needs outputFormat)
 	content = h.processMediaLinks(content, outputFormat)
 
-	// 2. Tables first (so they don't get processed as other syntax)
+	// 3. Tables first (so they don't get processed as other syntax)
 	content = h.ProcessTables(content, outputFormat)
 
-	// 3. Code blocks (convert tags, then protect content from further processing)
+	// 4. Code blocks (convert tags, then protect content from further processing)
 	content = h.processCodeBlocks(content, outputFormat)
 	content, codeBlocks := h.extractCodeBlocks(content)
 
 	// 4. Replace catlist (after code blocks are extracted so codeblocks are protected)
 	content = h.replaceCatlistTags(content, outputFormat)
 
-	// 5. Headers
+	// 6. Headers
 	content = h.processHeaders(content, outputFormat)
 
-	// 6. Links (before text formatting to protect :// in URLs)
+	// 7. Links (before text formatting to protect :// in URLs)
 	content = h.processLinks(content, outputFormat)
 
-	// 6. Text formatting - protect URLs first so // italic regex doesn't mangle them
+	// 8. Text formatting - protect URLs first so // italic regex doesn't mangle them
 	content, urls := h.extractURLs(content)
 	content = h.processTextFormatting(content, outputFormat)
 	content = h.restoreURLs(content, urls)
 
-	// 7. Lists (last, so other formatting inside lists works)
+	// 9. Lists (last, so other formatting inside lists works)
 	content = h.processLists(content, outputFormat)
 
-	// 8. Restore protected code block content
+	// 10. Restore protected code block content
 	content = h.restoreCodeBlocks(content, codeBlocks)
 
+	// 11. Restore inline codes (rendered, content untouched)
+	content = h.restoreInlineCodes(content, inlineCodes, outputFormat)
+
+	return content
+}
+
+// extractInlineCodes extracts ”..” inline code spans before any other processing
+func (h *DokuwikiHandler) extractInlineCodes(content string) (string, []string) {
+	var codes []string
+	re := regexp.MustCompile(`''(.+?)''`)
+	result := re.ReplaceAllStringFunc(content, func(match string) string {
+		m := re.FindStringSubmatch(match)
+		placeholder := fmt.Sprintf("\x00INLINE%d\x00", len(codes))
+		codes = append(codes, m[1])
+		return placeholder
+	})
+	return result, codes
+}
+
+// restoreInlineCodes renders and restores extracted inline code placeholders
+func (h *DokuwikiHandler) restoreInlineCodes(content string, codes []string, outputFormat string) string {
+	for i, code := range codes {
+		var rendered string
+		if outputFormat == "html" {
+			rendered = fmt.Sprintf("<code>%s</code>", code)
+		} else {
+			rendered = fmt.Sprintf("`%s`", code)
+		}
+		content = strings.ReplaceAll(content, fmt.Sprintf("\x00INLINE%d\x00", i), rendered)
+	}
 	return content
 }
 
@@ -177,7 +213,6 @@ func (h *DokuwikiHandler) processTextFormatting(content string, outputFormat str
 		{`\*\*(.+?)\*\*`, "bold"},
 		{`//(.+?)//`, "italic"},
 		{`__(.+?)__`, "underline"},
-		{`''(.+?)''`, "code"},
 	}
 
 	for _, pattern := range patterns {
@@ -210,9 +245,15 @@ func (h *DokuwikiHandler) processLinks(content string, outputFormat string) stri
 				text = strings.TrimSpace(matches[2])
 			}
 
-			// convert URL for internal links (not external http/https links)
+			// convert URL for internal links (not external http/https/www links)
 			convertedURL := originalURL
-			if !strings.HasPrefix(originalURL, "http://") && !strings.HasPrefix(originalURL, "https://") {
+			if strings.HasPrefix(originalURL, "www.") {
+				convertedURL = "https://" + originalURL
+			}
+			isExternal := strings.HasPrefix(originalURL, "http://") ||
+				strings.HasPrefix(originalURL, "https://") ||
+				strings.HasPrefix(originalURL, "www.")
+			if !isExternal {
 				// handle dokuwiki namespaces and anchors
 				url := originalURL
 				var anchor string
@@ -224,8 +265,9 @@ func (h *DokuwikiHandler) processLinks(content string, outputFormat string) stri
 					anchor = "#" + strings.ReplaceAll(parts[1], "_", "-")
 				}
 
-				// convert dokuwiki namespace (colons) to filesystem path (slashes)
+				// convert dokuwiki namespace separators (colons and >) to filesystem path (slashes)
 				url = strings.ReplaceAll(url, ":", "/")
+				url = strings.ReplaceAll(url, ">", "/")
 
 				// for internal links, create web path
 				if url != "" { // not just an anchor

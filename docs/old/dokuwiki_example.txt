@@ -19,9 +19,10 @@ __italic__ => should use ''_italic_'' instead of ''<ul>italic</ul'' in markdown
 
 https://wiki.leasone.de/de/devops/kubernetes/kubernetes_installationen#gitlab-installation
 
+[[wiki:DokuWiki]] can highlight sourcecode, which makes it easier to read. It uses the [[http://qbnz.com/highlighter/|GeSHi]] Generic Syntax Highlighter -- so any language supported by GeSHi is supported. The syntax uses the same code and file blocks described in the previous section, but this time the name of the language syntax to be highlighted is included inside the tag, e.g. ''<nowiki><code java></nowiki>'' or ''<nowiki><file java></nowiki>''.
 
 **[[https://docs.gitlab.com/charts/installation/tools.html|Vorraussetzungen]]**
-===== Gitlab =====
+===== Gitlab installation =====
 
 https://wiki.leasone.de/de/devops/kubernetes/kubernetes_installationen#gitlab-installation
 
@@ -124,6 +125,11 @@ Note that there is a [[https://www.reddit.com/r/Keychron/comments/1aozam7/commen
   * Internal Link2: [[test:testA:testAB:testABA|ollama]]
   * Internal Link3: [[#link_anchor]]
   * Internal Link4: [[#link_anchor|test]]
+  * Internal Link5: [[doku>config:htmlok|HTML]]
+  * External Link1: [[www.google.de]]
+  * External Link2: [[https://google.de]]
+  * External Link3: [[google|www.google.de]]
+  * External Link4: [[google|https://google.de]]
 
 
 
@@ -367,3 +373,24 @@ Folgende Datei lokal öffnen: {{ :sh:doku:drucker:haufig_probleme_beim_drucken.c
 <sep2>
 ![20221026-085146.png](/files/media/p/programmieren/pasted/20221026-085146.png)
 </col>
+
+
+===== 1.1 Formatierungen =====
+
+DokuWiki unterstützt **fetten**, //kursiven//, __unterstrichenen__ und ''dicktengleichen'' ([[wpde>Dickte|Dickte]]) Text. Natürlich kann auch alles **__//''kombiniert''//__** werden.
+
+  DokuWiki unterstützt **fetten**, //kursiven//, __unterstrichenen__ und ''dicktengleichen'' Text.
+  Natürlich kann auch alles **__//''kombiniert''//__** werden.
+
+Ebenso gibt es <sub>tiefgestellten</sub> und <sup>hochgestellten</sup> Text.
+
+  Ebenso gibt es <sub>tiefgestellten</sub> und <sup>hochgestellten</sup> Text.
+
+Text kann als <del>gelöscht</del>((wer das Tag "eingefügt" (%%<ins>%%) benötigt. kann dies über Plugins realisieren. Siehe ganz unten!)) markiert werden.
+
+  Text kann als <del>gelöscht</del> markiert werden.
+
+2 Leerzeichen (  ) am Anfang eines Satzes bzw. 1 Tab (	) führt dazu dass der Satz als %%<code>%% formatiert wird.
+Beispiel:
+%%  Beispielcode%%
+  Beispielcode
