@@ -21,7 +21,8 @@
   - use Query in filter.go
   - Refactor filter.go to use query
 - move toc to contentHandler?
-- metadataStorage_sqlite - migration
+- migration solution
+metadataStorage_sqlite - migration
 // migrate: add references column if missing
 if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err != nil {
 	// column likely already exists, ignore

@@ -85,7 +85,7 @@ func (ss *sqliteStorage) initialize() error {
 		status TEXT,
 		priority TEXT,
 		size INTEGER,
-		references TEXT
+		refs TEXT
 	);
 	CREATE INDEX IF NOT EXISTS idx_collection ON metadata(collection);
 	CREATE INDEX IF NOT EXISTS idx_file_type ON metadata(file_type);
@@ -97,12 +97,6 @@ func (ss *sqliteStorage) initialize() error {
 	if err != nil {
 		logging.LogError("failed to initialize metadata tables: %v", err)
 		return fmt.Errorf("failed to initialize metadata tables: %w", err)
-	}
-
-	// migrate: add references column if missing
-	if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err != nil {
-		// column likely already exists, ignore
-		logging.LogDebug("references column already exists or migration skipped: %v", err)
 	}
 
 	logging.LogDebug("metadata sqlite tables initialized")
@@ -118,7 +112,7 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	SELECT name, title, created_at, last_edited, target_date, collection,
 	       folders, tags, boards, ancestor, parents, kids, used_links, links_to_here,
 	       file_type, para_projects, para_areas, para_resources, para_archive,
-	       status, priority, size, COALESCE(references, '') as references
+	       status, priority, size, COALESCE(refs, '') as refs
 	FROM metadata WHERE path = ?
 	`
 
@@ -376,7 +370,7 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 		path, name, title, created_at, last_edited, target_date, collection,
 		folders, tags, boards, ancestor, parents, kids, used_links, links_to_here,
 		file_type, para_projects, para_areas, para_resources, para_archive,
-		status, priority, size, references
+		status, priority, size, refs
 	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
