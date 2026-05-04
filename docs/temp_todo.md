@@ -29,6 +29,15 @@ if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err 
 	logging.LogDebug("references column already exists or migration skipped: %v", err)
 })
 
+
+# todo
+
+- new filetype: todo
+- based on the existing list editor
+- 4 different status:
+  - 
+
+
 # daily
 
 single source of truth is the metadata - we just display it differently
