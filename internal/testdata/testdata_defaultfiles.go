@@ -22,12 +22,6 @@ func getDefaultFiles() []*files.Metadata {
 			FileType:   files.FileTypeLiterature,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityHigh,
-			PARA: files.PARA{
-				Projects:  []string{"onboarding_system"},
-				Areas:     []string{"documentation", "user_experience"},
-				Resources: []string{"tutorials", "guides"},
-				Archive:   []string{},
-			},
 		},
 		{
 			Name:       "project-overview.md",
@@ -41,12 +35,6 @@ func getDefaultFiles() []*files.Metadata {
 			FileType:   files.FileTypePermanent,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityHigh,
-			PARA: files.PARA{
-				Projects:  []string{"knowledge_system", "documentation_update"},
-				Areas:     []string{"project_management", "strategic_planning"},
-				Resources: []string{"project_templates"},
-				Archive:   []string{},
-			},
 		},
 		{
 			Name:       "meeting-notes.md",
@@ -61,12 +49,6 @@ func getDefaultFiles() []*files.Metadata {
 			FileType:   files.FileTypeFleeting,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityMedium,
-			PARA: files.PARA{
-				Projects:  []string{"sprint_planning"},
-				Areas:     []string{"team_coordination", "project_management"},
-				Resources: []string{"meeting_templates"},
-				Archive:   []string{},
-			},
 		},
 		{
 			Name:       "technical-documentation.md",
@@ -81,12 +63,6 @@ func getDefaultFiles() []*files.Metadata {
 			FileType:   files.FileTypePermanent,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityMedium,
-			PARA: files.PARA{
-				Projects:  []string{"api_documentation"},
-				Areas:     []string{"technical_writing", "development"},
-				Resources: []string{"api_specs", "technical_standards"},
-				Archive:   []string{},
-			},
 		},
 		{
 			Name:       "troubleshooting.md",
@@ -100,12 +76,6 @@ func getDefaultFiles() []*files.Metadata {
 			FileType:   files.FileTypePermanent,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityHigh,
-			PARA: files.PARA{
-				Projects:  []string{},
-				Areas:     []string{"customer_support", "maintenance"},
-				Resources: []string{"debugging_guides", "faq"},
-				Archive:   []string{},
-			},
 		},
 		{
 			Name:       "developer-setup.md",
@@ -119,12 +89,6 @@ func getDefaultFiles() []*files.Metadata {
 			FileType:   files.FileTypeLiterature,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityMedium,
-			PARA: files.PARA{
-				Projects:  []string{"developer_onboarding"},
-				Areas:     []string{"development", "tooling"},
-				Resources: []string{"setup_guides", "development_tools"},
-				Archive:   []string{},
-			},
 		},
 		{
 			Name:       "user-manual.md",
@@ -138,12 +102,6 @@ func getDefaultFiles() []*files.Metadata {
 			FileType:   files.FileTypeLiterature,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityMedium,
-			PARA: files.PARA{
-				Projects:  []string{"user_documentation"},
-				Areas:     []string{"user_experience", "documentation"},
-				Resources: []string{"user_guides", "tutorials"},
-				Archive:   []string{},
-			},
 		},
 		{
 			Name:       "backend-api.md",
@@ -157,12 +115,6 @@ func getDefaultFiles() []*files.Metadata {
 			FileType:   files.FileTypeTodo,
 			Status:     files.StatusDraft,
 			Priority:   files.PriorityHigh,
-			PARA: files.PARA{
-				Projects:  []string{"backend_development", "api_redesign"},
-				Areas:     []string{"development", "architecture"},
-				Resources: []string{"api_patterns", "backend_frameworks"},
-				Archive:   []string{},
-			},
 		},
 		{
 			Name:       "database-migration.md",
@@ -176,12 +128,6 @@ func getDefaultFiles() []*files.Metadata {
 			FileType:   files.FileTypePermanent,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityHigh,
-			PARA: files.PARA{
-				Projects:  []string{},
-				Areas:     []string{"infrastructure", "data_management"},
-				Resources: []string{"migration_scripts", "database_docs"},
-				Archive:   []string{"legacy_database_project"},
-			},
 		},
 		{
 			Name:       "frontend-redesign.md",
@@ -195,12 +141,6 @@ func getDefaultFiles() []*files.Metadata {
 			FileType:   files.FileTypeFleeting,
 			Status:     files.StatusDraft,
 			Priority:   files.PriorityMedium,
-			PARA: files.PARA{
-				Projects:  []string{"ui_redesign", "user_interface"},
-				Areas:     []string{"design", "user_experience"},
-				Resources: []string{"design_systems", "ui_patterns"},
-				Archive:   []string{},
-			},
 		},
 	}
 }

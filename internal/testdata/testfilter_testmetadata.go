@@ -23,12 +23,6 @@ func getFilterTestMetadata() []*files.Metadata {
 			FileType:   files.FileTypeFleeting,
 			Status:     files.StatusDraft,
 			Priority:   files.PriorityHigh,
-			PARA: files.PARA{
-				Projects:  []string{"unique_filter_system", "filter_testing_project"},
-				Areas:     []string{"filter_development", "unique_quality_assurance"},
-				Resources: []string{"filter_test_data", "unique_documentation"},
-				Archive:   []string{},
-			},
 		},
 		// filterTestB
 		{
@@ -43,12 +37,6 @@ func getFilterTestMetadata() []*files.Metadata {
 			FileType:   files.FileTypeLiterature,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityMedium,
-			PARA: files.PARA{
-				Projects:  []string{"unique_filter_system"},
-				Areas:     []string{"filter_development"},
-				Resources: []string{"filter_test_data"},
-				Archive:   []string{},
-			},
 		},
 		// filterTestC
 		{
@@ -63,12 +51,6 @@ func getFilterTestMetadata() []*files.Metadata {
 			FileType:   files.FileTypePermanent,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityLow,
-			PARA: files.PARA{
-				Projects:  []string{"unique_performance_testing"},
-				Areas:     []string{"unique_optimization", "unique_quality_assurance"},
-				Resources: []string{"unique_benchmarks", "unique_metrics"},
-				Archive:   []string{},
-			},
 		},
 		// filterTestD
 		{
@@ -83,12 +65,6 @@ func getFilterTestMetadata() []*files.Metadata {
 			FileType:   files.FileTypeFleeting,
 			Status:     files.StatusDraft,
 			Priority:   files.PriorityHigh,
-			PARA: files.PARA{
-				Projects:  []string{"unique_advanced_features", "unique_filter_system"},
-				Areas:     []string{"unique_research", "filter_development"},
-				Resources: []string{"unique_advanced_docs", "unique_prototypes"},
-				Archive:   []string{},
-			},
 		},
 		// filterTestE
 		{
@@ -103,12 +79,6 @@ func getFilterTestMetadata() []*files.Metadata {
 			FileType:   files.FileTypeLiterature,
 			Status:     files.StatusArchived,
 			Priority:   files.PriorityMedium,
-			PARA: files.PARA{
-				Projects:  []string{"unique_advanced_features"},
-				Areas:     []string{"unique_research"},
-				Resources: []string{"unique_advanced_docs"},
-				Archive:   []string{"unique_old_prototypes", "unique_deprecated_features"},
-			},
 		},
 		// filterTestF
 		{
@@ -123,12 +93,6 @@ func getFilterTestMetadata() []*files.Metadata {
 			FileType:   files.FileTypeJournaling,
 			Status:     files.StatusDraft,
 			Priority:   files.PriorityHigh,
-			PARA: files.PARA{
-				Projects:  []string{"unique_basic_functionality", "filter_testing_project"},
-				Areas:     []string{"unique_fundamentals", "unique_quality_assurance"},
-				Resources: []string{"unique_basic_docs", "unique_tutorials"},
-				Archive:   []string{},
-			},
 		},
 		// filterTestG
 		{
@@ -143,12 +107,6 @@ func getFilterTestMetadata() []*files.Metadata {
 			FileType:   files.FileTypeMOC,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityMedium,
-			PARA: files.PARA{
-				Projects:  []string{"unique_basic_functionality"},
-				Areas:     []string{"unique_fundamentals"},
-				Resources: []string{"unique_basic_docs"},
-				Archive:   []string{},
-			},
 		},
 		// filterTestH
 		{
@@ -163,12 +121,6 @@ func getFilterTestMetadata() []*files.Metadata {
 			FileType:   files.FileTypeFleeting,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityLow,
-			PARA: files.PARA{
-				Projects:  []string{"unique_integration_testing", "unique_system_validation"},
-				Areas:     []string{"unique_integration", "unique_testing"},
-				Resources: []string{"unique_integration_docs", "unique_test_suites"},
-				Archive:   []string{},
-			},
 		},
 		// filterTestI
 		{
@@ -183,12 +135,6 @@ func getFilterTestMetadata() []*files.Metadata {
 			FileType:   files.FileTypePermanent,
 			Status:     files.StatusDraft,
 			Priority:   files.PriorityHigh,
-			PARA: files.PARA{
-				Projects:  []string{"unique_integration_testing", "unique_complex_scenarios"},
-				Areas:     []string{"unique_integration", "unique_complexity_management"},
-				Resources: []string{"unique_integration_docs", "unique_complex_test_cases"},
-				Archive:   []string{},
-			},
 		},
 		// filterTestJ
 		{
@@ -203,12 +149,6 @@ func getFilterTestMetadata() []*files.Metadata {
 			FileType:   files.FileTypeLiterature,
 			Status:     files.StatusArchived,
 			Priority:   files.PriorityMedium,
-			PARA: files.PARA{
-				Projects:  []string{"unique_performance_testing", "unique_benchmark_suite"},
-				Areas:     []string{"unique_performance", "unique_optimization"},
-				Resources: []string{"unique_benchmarks", "unique_performance_docs"},
-				Archive:   []string{"unique_old_benchmarks"},
-			},
 		},
 		// filterTestK
 		{
@@ -223,12 +163,6 @@ func getFilterTestMetadata() []*files.Metadata {
 			FileType:   files.FileTypeJournaling,
 			Status:     files.StatusPublished,
 			Priority:   files.PriorityLow,
-			PARA: files.PARA{
-				Projects:  []string{"unique_scalability_testing"},
-				Areas:     []string{"unique_performance", "unique_scalability"},
-				Resources: []string{"unique_scalability_docs", "unique_load_tests"},
-				Archive:   []string{},
-			},
 		},
 		// filterTestL
 		{
@@ -243,12 +177,6 @@ func getFilterTestMetadata() []*files.Metadata {
 			FileType:   files.FileTypeMOC,
 			Status:     files.StatusDraft,
 			Priority:   files.PriorityHigh,
-			PARA: files.PARA{
-				Projects:  []string{"unique_edge_case_testing", "unique_special_scenarios"},
-				Areas:     []string{"unique_edge_cases", "unique_special_testing"},
-				Resources: []string{"unique_edge_case_docs", "unique_special_test_data"},
-				Archive:   []string{},
-			},
 		},
 	}
 }

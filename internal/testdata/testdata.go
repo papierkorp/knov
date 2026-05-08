@@ -348,12 +348,6 @@ func createTestMetadata() error {
 
 		tags := extractFilenameTags(filename)
 
-		// Generate PARA data based on filename patterns and position
-		paraProjects := generatePARAProjects(filename, i)
-		paraAreas := generatePARAareas(filename, collection, i)
-		paraResources := generatePARAResources(filename, tags, i)
-		paraArchive := generatePARAArchive(filename, i)
-
 		var parents []string
 		if i > 0 {
 			parentCount := (i % 3)
@@ -386,12 +380,6 @@ func createTestMetadata() error {
 			FileType:   fileType,
 			Status:     status,
 			Priority:   priority,
-			PARA: files.PARA{
-				Projects:  paraProjects,
-				Areas:     paraAreas,
-				Resources: paraResources,
-				Archive:   paraArchive,
-			},
 		}
 
 		if err := files.MetaDataSave(metadata); err != nil {
@@ -400,98 +388,6 @@ func createTestMetadata() error {
 	}
 
 	return nil
-}
-
-func generatePARAProjects(filename string, index int) []string {
-	var projects []string
-
-	// Pattern-based assignment
-	if strings.Contains(filename, "testA") {
-		projects = append(projects, "knowledge_system")
-		if index%3 == 0 {
-			projects = append(projects, "documentation_update")
-		}
-	}
-	if strings.Contains(filename, "testB") {
-		projects = append(projects, "search_improvement")
-		if index%4 == 0 {
-			projects = append(projects, "user_interface")
-		}
-	}
-	if strings.Contains(filename, "testC") {
-		projects = append(projects, "performance_optimization")
-	}
-
-	return projects
-}
-
-func generatePARAareas(filename, collection string, index int) []string {
-	var areas []string
-
-	// Collection-based areas
-	if collection == "test" {
-		areas = append(areas, "testing")
-	}
-
-	// Pattern-based areas
-	if strings.Contains(filename, "AA") {
-		areas = append(areas, "documentation")
-	}
-	if strings.Contains(filename, "AB") {
-		areas = append(areas, "development")
-	}
-	if strings.Contains(filename, "AC") {
-		areas = append(areas, "research")
-	}
-
-	// Index-based assignment for variety
-	switch index % 5 {
-	case 0:
-		areas = append(areas, "knowledge_management")
-	case 1:
-		areas = append(areas, "process_improvement")
-	case 2:
-		areas = append(areas, "team_coordination")
-	}
-
-	return areas
-}
-
-func generatePARAResources(filename string, tags []string, index int) []string {
-	var resources []string
-
-	// Tag-based resources
-	for _, tag := range tags {
-		switch tag {
-		case "testA":
-			resources = append(resources, "methodology_references")
-		case "testB":
-			resources = append(resources, "technical_specs")
-		case "testC":
-			resources = append(resources, "best_practices")
-		}
-	}
-
-	// Pattern-based resources
-	if strings.Contains(filename, "B") && index%3 == 0 {
-		resources = append(resources, "templates_and_examples")
-	}
-
-	return resources
-}
-
-func generatePARAArchive(filename string, index int) []string {
-	var archive []string
-
-	// Occasionally add to archive (simulate old projects)
-	if index%7 == 0 {
-		archive = append(archive, "old_system_migration")
-	}
-	if index%11 == 0 {
-		archive = append(archive, "deprecated_processes")
-	}
-
-	return archive
 }
 
 func contains(slice []string, item string) bool {

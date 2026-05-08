@@ -67,18 +67,6 @@ func CreateFilterTestMetadata() error {
 	if err := files.SaveAllTagsToSystemData(); err != nil {
 		logging.LogWarning("failed to update tags cache: %v", err)
 	}
-	if err := files.SaveAllPARAProjectsToSystemData(); err != nil {
-		logging.LogWarning("failed to update para projects cache: %v", err)
-	}
-	if err := files.SaveAllPARAAreasToSystemData(); err != nil {
-		logging.LogWarning("failed to update para areas cache: %v", err)
-	}
-	if err := files.SaveAllPARAResourcesToSystemData(); err != nil {
-		logging.LogWarning("failed to update para resources cache: %v", err)
-	}
-	if err := files.SaveAllPARAArchiveToSystemData(); err != nil {
-		logging.LogWarning("failed to update para archive cache: %v", err)
-	}
 
 	return nil
 }
@@ -274,54 +262,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			description:   "filter by folder containing 'advanced'",
 		},
 		{
-			name: "para_projects_contains_unique_filter_system",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "folders",
-						Operator: "contains",
-						Value:    "filter-tests",
-						Action:   "include",
-					},
-					{
-						Metadata: "para_projects",
-						Operator: "contains",
-						Value:    "unique_filter_system",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 3,
-			expectedFiles: []string{"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/advanced/filterTestD.md"},
-			description:   "filter by PARA projects containing 'unique_filter_system'",
-		},
-		{
-			name: "para_areas_contains_filter_development",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "folders",
-						Operator: "contains",
-						Value:    "filter-tests",
-						Action:   "include",
-					},
-					{
-						Metadata: "para_areas",
-						Operator: "contains",
-						Value:    "filter_development",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 3,
-			expectedFiles: []string{"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/advanced/filterTestD.md"},
-			description:   "filter by PARA areas containing 'filter_development'",
-		},
-		{
 			name: "exclude_archived_status",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
@@ -501,24 +441,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			description:   "filter by multiple file types using 'in' array: fleeting, literature",
 		},
 		{
-			name: "para_projects_array_filtering",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "para_projects",
-						Operator: "contains",
-						Value:    "unique_filter_system",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 3,
-			expectedFiles: []string{"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/advanced/filterTestD.md"},
-			description:   "filter by PARA projects containing 'unique_filter_system'",
-		},
-		{
 			name: "exclude_multiple_collections",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
@@ -639,30 +561,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			description:   "exclude multiple file types AND exclude high priority (only journaling/MOC with medium/low priority)",
 		},
 		{
-			name: "para_areas_and_resources_filtering",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "para_areas",
-						Operator: "contains",
-						Value:    "unique_quality_assurance",
-						Action:   "include",
-					},
-					{
-						Metadata: "para_resources",
-						Operator: "contains",
-						Value:    "docs",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 1,
-			expectedFiles: []string{"filter-tests/basic/filterTestF.md"},
-			description:   "filter by PARA areas containing 'unique_quality_assurance' AND resources containing 'docs'",
-		},
-		{
 			name: "name_regex_markdown_files",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
@@ -742,42 +640,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			description:   "filter by name using regex pattern (filterTestA-C.md) AND status equals published",
 		},
 		{
-			name: "para_archive_contains_old",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "para_archive",
-						Operator: "contains",
-						Value:    "old",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 2,
-			expectedFiles: []string{"filter-tests/advanced/filterTestE.md", "filter-tests/performance/filterTestJ.md"},
-			description:   "filter by PARA archive field containing 'old'",
-		},
-		{
-			name: "para_archive_in_multiple_values",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "para_archive",
-						Operator: "in",
-						Value:    "unique_old_prototypes,unique_old_benchmarks",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 2,
-			expectedFiles: []string{"filter-tests/advanced/filterTestE.md", "filter-tests/performance/filterTestJ.md"},
-			description:   "filter by PARA archive using 'in' operator with multiple values",
-		},
-		{
 			name: "boards_contains_filter_board",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
@@ -830,7 +692,7 @@ func RunFilterTests() (*FilterTestResults, error) {
 			config: filter.Config{
 				Criteria: []filter.Criteria{
 					{
-						Metadata: "para_archive",
+						Metadata: "collection",
 						Operator: "equals",
 						Value:    "unique_nonexistent_value",
 						Action:   "include",
@@ -841,7 +703,7 @@ func RunFilterTests() (*FilterTestResults, error) {
 			},
 			expectedCount: 0,
 			expectedFiles: []string{},
-			description:   "query that should return no results (nonexistent PARA archive value)",
+			description:   "query that should return no results (nonexistent value)",
 		},
 		{
 			name: "priority_in_high_or_low",
@@ -913,36 +775,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			description: "filter by boards using 'in' operator with multiple board names",
 		},
 		{
-			name: "complex_para_and_tags",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "para_areas",
-						Operator: "contains",
-						Value:    "unique",
-						Action:   "include",
-					},
-					{
-						Metadata: "tags",
-						Operator: "contains",
-						Value:    "specific",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 9,
-			expectedFiles: []string{
-				"filter-tests/filterTestA.md", "filter-tests/filterTestC.md",
-				"filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md",
-				"filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md",
-				"filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md",
-				"filter-tests/special/filterTestL.md",
-			},
-			description: "complex filter combining PARA areas and tags",
-		},
-		{
 			name: "case_sensitivity_test",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
@@ -1001,28 +833,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 				"filter-tests/performance/filterTestJ.md",
 			},
 			description: "multiple exclude criteria - exclude both draft status AND low priority",
-		},
-		{
-			name: "para_projects_in_operator",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "para_projects",
-						Operator: "in",
-						Value:    "unique_filter_system,unique_basic_functionality",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 5,
-			expectedFiles: []string{
-				"filter-tests/filterTestA.md", "filter-tests/filterTestB.md",
-				"filter-tests/advanced/filterTestD.md",
-				"filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md",
-			},
-			description: "filter PARA projects using 'in' operator - matches multiple project values",
 		},
 		{
 			name: "or_include_multiple_statuses",
