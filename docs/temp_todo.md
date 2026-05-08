@@ -279,7 +279,12 @@ additional neccessary changes
 - last contact
 - ...
 
-# stream of consciousnes
+# Canceled Ideas
+
+## stream of consciousnes
+
+i think i will cancel this since i dont intend to use it..
+
 
 1. new filetype soc
 2. can be attached to other files => then filename = otherfilename_soc.md
@@ -299,68 +304,24 @@ additional neccessary changes
   10. after it was inputed - changing/correcting anything is not allowed its ready only
   11. no copy/pasting allowed (except urls)
 
+## PARA
 
+i think i will cancel this since i dont intend to use it..
 
+PARA (p = short term efforts in your work or life that you are working on now, a = long term responisibilites you want to manage over time, r = topic or interessets that may be useful in the future, a = inactive items from the other 3 categories)
 
-# PARA
-
-this is just for your information:
-- PARA Metadata - the current "implementation" does not work as is and was just a placeholder now i want to rework it 
+- theory
   - if one para is selected the others cant be selected (only one can be selected)
   - for each para metadata create one folder in the data/docs folder: PARA_PROJECTS, PARA_ARCHIVE, PARA_RESOURCE, PARA_AREA 
   - use the new folder as the root folder for new files (if a a PARA is selected)
   - if no para metadata is set dont use the PARA folders
   - no need for backwards compatibility or a database migration since the app is still in development and not released yet
-
-
-now i want you to help me with the following starting implementation:
-
-- add a new env: PARA_ENABLED
-- contentStorage: add a CreateParaDirectories() to the interface which adds PARA_PROJECTS, PARA_AREAS, PARA_RESOURCES and PARA_ARCHIVE if para_enabled is true
-- change metadata to: PARA_CATEGORY: <PROJECTS|ARCHIVE|RESOURCES|AREAS> with a new enum
-    - remove the existing routes for all Paras (/metadata/para/projects, /metadata//para/areas, /metadata//para/resources, /metadata//para/archive)
-    - create a new route (/metadata/para) (placeholder for now)
-- in pathutils add a GetParaPath() in which a para PATH e.g. (projects/area/archive/resources) is passed and the correct path is returned => reuse existing functions in pathutils and should handle both directions
-- update collection logic to skip para folders when determining collection
-  - e.g. PARA_PROJECTS/work/meeting-notes.md = collection work
-  - e.g. PARA_PROJECTS/standalone.md = collection default
-
-dont do anything more just the few things i asked you to do above - we will fix this step by step
-
-
-
-
-dont give me any code yet just your ideas on how to best implement PARA (p = short term efforts in your work or life that you are working on now, a = long term responisibilites you want to manage over time, r = topic or interessets that may be useful in the future, a = inactive items from the other 3 categories) into my app
-
-this is what i wrote down:
-
-- PARA Metadata - the current "implementation" does not work as is and was just a placeholder now i want to rework it 
-  - if one para is selected the others cant be selected (only one can be selected)
-  - for each para metadata create one folder in the data/docs folder: PARA_PROJECTS, PARA_ARCHIVE, PARA_RESOURCE, PARA_AREA 
-  - if no para metadata is set dont use the PARA folders
-  - no need for backwards compatibility or a database migration since the app is still in development and not released yet
-  - Implementation Ideas
-    - we need to account for:
-        - para metadata added: move the file to its corresponding para folder
-        - para metadata removed/set to none: move the file to its corresponding folder without para
-        - which is basically the same as we do in the handleAPIRenameFile function - which i think makes sense to reuse
-        - correctly set para in the testdata.go file to test everything out (dont add para to all files tough)
-    - change metadata to: PARA_CATEGORY: <PROJECTS|ARCHIVE|RESOURCES|AREAS> with a new enum
-        - remove the existing routes for all Paras (/metadata/para/projects, /metadata//para/areas, /metadata//para/resources, /metadata//para/archive)
-        - create a new route (/metadata/para)
-            - in this route check if para was added/removed and first call a check - if added we need to add PARA_xx to the new filepath, if removed we need to remove PARA_xx from the new filepath and then the handleAPIRenameFile with the new filepaths
-    - in pathutils add a GetParaPath() in which a para PATH e.g. (projects/area/archive/resources) is passed and the correct path is returned => reuse existing functions in pathutils and should handle both directions
-    - in render_metadata: display the para as radio buttons with a additional NONE (default) value if PARA_ENABLED
-        - as a style: i want it as its own row in the metadata section but still in the form-group as a row (so it takes as little space as possible)
-    - /browse/<para_xxx> wont work anymore => create independet routes e.g. /browse/projects, /browse/areas...
-    - WidgetTypes: WidgetTypeParaProjects, WidgetTypeParaAreas, WidgetTypeParaResources, WidgetTypeParaArchive will break => update filter with folder matching
-    - update sqlite schema and drop the 4 para columns and add a para_category (just like the metadata..)
-    - update mapping.go for new para fields
-
-**done**
-
-- add a new env: PARA_ENABLED
-- contentStorage: add a CreateParaDirectories() to the interface which adds PARA_PROJECTS, PARA_AREAS, PARA_RESOURCES and PARA_ARCHIVE if para_enabled is true
-- update collection logic to skip para folders when determining collection
-  - e.g. PARA_PROJECTS/work/meeting-notes.md = collection work
-  - e.g. PARA_PROJECTS/standalone.md = collection default
+- todos
+  - add a new env: PARA_ENABLED
+  - contentStorage: add a CreateParaDirectories() to the interface which adds PARA_PROJECTS, PARA_AREAS, PARA_RESOURCES and PARA_ARCHIVE if para_enabled is true
+  - metadata: PARA_CATEGORY: <PROJECTS|ARCHIVE|RESOURCES|AREAS> with a new enum
+      - create a new route (/metadata/para) (placeholder for now)
+  - in pathutils add a GetParaPath() in which a para PATH e.g. (projects/area/archive/resources) is passed and the correct path is returned => reuse existing functions in pathutils and should handle both directions
+  - update collection logic to skip para folders when determining collection
+    - e.g. PARA_PROJECTS/work/meeting-notes.md = collection work
+    - e.g. PARA_PROJECTS/standalone.md = collection default
