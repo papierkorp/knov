@@ -1,5 +1,6 @@
 # small stuff
 
+- in references sidebar add - add button, remove button and edit button to header?
 - why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)
 - fix compact and reader view
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)

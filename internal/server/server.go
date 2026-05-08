@@ -266,6 +266,10 @@ func StartServerChi() {
 			r.Get("/lastedited", handleAPIGetMetadataLastEdited)
 			r.Get("/priority", handleAPIGetMetadataPriority)
 			r.Get("/status", handleAPIGetMetadataStatus)
+			r.Get("/references", handleAPIGetMetadataReferences)
+			r.Post("/references", handleAPIAddMetadataReference)
+			r.Delete("/references", handleAPIDeleteMetadataReference)
+
 			r.Get("/targetdate", handleAPIGetMetadataTargetDate)
 
 			r.Post("/collection", handleAPISetMetadataCollection)
