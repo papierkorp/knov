@@ -24,17 +24,13 @@ type Widget struct {
 type WidgetType string
 
 const (
-	WidgetTypeFilter        WidgetType = "filter"
-	WidgetTypeFilterForm    WidgetType = "filterForm"
-	WidgetTypeFileContent   WidgetType = "fileContent"
-	WidgetTypeStatic        WidgetType = "static"
-	WidgetTypeTags          WidgetType = "tags"
-	WidgetTypeCollections   WidgetType = "collections"
-	WidgetTypeFolders       WidgetType = "folders"
-	WidgetTypeParaProjects  WidgetType = "para_projects"
-	WidgetTypeParaAreas     WidgetType = "para_areas"
-	WidgetTypeParaResources WidgetType = "para_resources"
-	WidgetTypeParaArchive   WidgetType = "para_archive"
+	WidgetTypeFilter      WidgetType = "filter"
+	WidgetTypeFilterForm  WidgetType = "filterForm"
+	WidgetTypeFileContent WidgetType = "fileContent"
+	WidgetTypeStatic      WidgetType = "static"
+	WidgetTypeTags        WidgetType = "tags"
+	WidgetTypeCollections WidgetType = "collections"
+	WidgetTypeFolders     WidgetType = "folders"
 )
 
 // FilterConfig represents filter configuration for widgets

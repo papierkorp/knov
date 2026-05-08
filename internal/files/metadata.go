@@ -49,10 +49,6 @@ type FolderCount map[string]int
 type FiletypeCount map[string]int
 type PriorityCount map[string]int
 type StatusCount map[string]int
-type PARAProjectCount map[string]int
-type PARAAreaCount map[string]int
-type PARAResourceCount map[string]int
-type PARAArchiveCount map[string]int
 
 // AllFiletypes returns all available file types
 func AllFiletypes() []Filetype {
@@ -160,7 +156,6 @@ type Metadata struct {
 	UsedLinks   []string    `json:"usedLinks"`            // auto
 	LinksToHere []string    `json:"linksToHere"`          // auto
 	FileType    Filetype    `json:"type"`                 // manual - with add new
-	PARA        PARA        `json:"para"`                 // manual
 	Status      Status      `json:"status"`               // manual
 	Priority    Priority    `json:"priority"`             // manual
 	Size        int64       `json:"size"`                 // auto
@@ -172,14 +167,6 @@ type Metadata struct {
 type Reference struct {
 	URL         string `json:"url"`
 	Description string `json:"description"` // why this link was added
-}
-
-// PARA represents PARA organization
-type PARA struct {
-	Projects  []string `json:"projects,omitempty"`  // Active projects with deadlines
-	Areas     []string `json:"areas,omitempty"`     // Ongoing responsibilities
-	Resources []string `json:"resources,omitempty"` // Future reference materials
-	Archive   []string `json:"archive,omitempty"`   // Inactive items
 }
 
 func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
@@ -300,18 +287,6 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	}
 	// handle target date - allow both setting and clearing (zero time)
 	currentMetadata.TargetDate = newMetadata.TargetDate
-	if newMetadata.PARA.Projects != nil {
-		currentMetadata.PARA.Projects = newMetadata.PARA.Projects
-	}
-	if newMetadata.PARA.Areas != nil {
-		currentMetadata.PARA.Areas = newMetadata.PARA.Areas
-	}
-	if newMetadata.PARA.Resources != nil {
-		currentMetadata.PARA.Resources = newMetadata.PARA.Resources
-	}
-	if newMetadata.PARA.Archive != nil {
-		currentMetadata.PARA.Archive = newMetadata.PARA.Archive
-	}
 	if newMetadata.References != nil {
 		currentMetadata.References = newMetadata.References
 	}
@@ -346,18 +321,6 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	}
 	if currentMetadata.Folders == nil {
 		currentMetadata.Folders = []string{}
-	}
-	if currentMetadata.PARA.Projects == nil {
-		currentMetadata.PARA.Projects = []string{}
-	}
-	if currentMetadata.PARA.Areas == nil {
-		currentMetadata.PARA.Areas = []string{}
-	}
-	if currentMetadata.PARA.Resources == nil {
-		currentMetadata.PARA.Resources = []string{}
-	}
-	if currentMetadata.PARA.Archive == nil {
-		currentMetadata.PARA.Archive = []string{}
 	}
 
 	updateAncestors(currentMetadata)

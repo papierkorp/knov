@@ -194,7 +194,6 @@ func RenderFilterTestMetadataTable(metadataList []*files.Metadata) string {
 		{"FileType", "8%"},
 		{"Status", "7%"},
 		{"Priority", "7%"},
-		{"PARA Projects", "21%"},
 	}
 
 	for _, col := range columns {
@@ -266,10 +265,6 @@ func RenderFilterTestMetadataTable(metadataList []*files.Metadata) string {
 			priorityClass = "priority-low"
 		}
 		html.WriteString(fmt.Sprintf(`<td class="cell-priority"><span class="badge %s">%s</span></td>`, priorityClass, string(metadata.Priority)))
-
-		// para projects
-		projectsStr := strings.Join(metadata.PARA.Projects, ", ")
-		html.WriteString(fmt.Sprintf(`<td class="cell-projects">%s</td>`, projectsStr))
 
 		html.WriteString(`</tr>`)
 	}

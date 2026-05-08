@@ -83,46 +83,6 @@
   text-decoration: underline;
 }
 
-/* para section styling */
-#component-sidebar-para .para-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-#component-sidebar-para .para-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 4px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
-  min-height: 20px;
-}
-
-#component-sidebar-para .para-row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-#component-sidebar-para .para-label {
-  font-size: 0.75em;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  flex-shrink: 0;
-  min-width: 60px;
-  margin: auto;
-}
-
-#component-sidebar-para .para-row span:not(.para-label) {
-  color: var(--text);
-  font-size: 0.85em;
-  word-break: break-word;
-  text-align: right;
-  flex: 1;
-}
-
 /* connections section styling */
 #component-sidebar-connections .connections-list {
   display: flex;

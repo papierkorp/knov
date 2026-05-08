@@ -78,14 +78,10 @@ func (ss *sqliteStorage) initialize() error {
 		used_links TEXT,
 		links_to_here TEXT,
 		file_type TEXT,
-		para_projects TEXT,
-		para_areas TEXT,
-		para_resources TEXT,
-		para_archive TEXT,
 		status TEXT,
 		priority TEXT,
 		size INTEGER,
-		refs TEXT
+		references TEXT
 	);
 	CREATE INDEX IF NOT EXISTS idx_collection ON metadata(collection);
 	CREATE INDEX IF NOT EXISTS idx_file_type ON metadata(file_type);
@@ -97,6 +93,12 @@ func (ss *sqliteStorage) initialize() error {
 	if err != nil {
 		logging.LogError("failed to initialize metadata tables: %v", err)
 		return fmt.Errorf("failed to initialize metadata tables: %w", err)
+	}
+
+	// migrate: add references column if missing
+	if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err != nil {
+		// column likely already exists, ignore
+		logging.LogDebug("references column already exists or migration skipped: %v", err)
 	}
 
 	logging.LogDebug("metadata sqlite tables initialized")
@@ -111,42 +113,36 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	query := `
 	SELECT name, title, created_at, last_edited, target_date, collection,
 	       folders, tags, boards, ancestor, parents, kids, used_links, links_to_here,
-	       file_type, para_projects, para_areas, para_resources, para_archive,
-	       status, priority, size, COALESCE(refs, '') as refs
+	       file_type, status, priority, size, COALESCE(references, '') as references
 	FROM metadata WHERE path = ?
 	`
 
 	var meta struct {
-		Name          string
-		Title         string
-		CreatedAt     *time.Time
-		LastEdited    *time.Time
-		TargetDate    *time.Time
-		Collection    string
-		Folders       string
-		Tags          string
-		Boards        string
-		Ancestor      string
-		Parents       string
-		Kids          string
-		UsedLinks     string
-		LinksToHere   string
-		FileType      string
-		PARAProjects  string
-		PARAreas      string
-		PARAResources string
-		PARAArchive   string
-		Status        string
-		Priority      string
-		Size          int64
-		References    string
+		Name        string
+		Title       string
+		CreatedAt   *time.Time
+		LastEdited  *time.Time
+		TargetDate  *time.Time
+		Collection  string
+		Folders     string
+		Tags        string
+		Boards      string
+		Ancestor    string
+		Parents     string
+		Kids        string
+		UsedLinks   string
+		LinksToHere string
+		FileType    string
+		Status      string
+		Priority    string
+		Size        int64
+		References  string
 	}
 
 	err := ss.db.QueryRow(query, key).Scan(
 		&meta.Name, &meta.Title, &meta.CreatedAt, &meta.LastEdited, &meta.TargetDate,
 		&meta.Collection, &meta.Folders, &meta.Tags, &meta.Boards, &meta.Ancestor,
 		&meta.Parents, &meta.Kids, &meta.UsedLinks, &meta.LinksToHere, &meta.FileType,
-		&meta.PARAProjects, &meta.PARAreas, &meta.PARAResources, &meta.PARAArchive,
 		&meta.Status, &meta.Priority, &meta.Size, &meta.References,
 	)
 
@@ -230,36 +226,6 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		}
 	}
 
-	// parse PARA
-	para := make(map[string]interface{})
-	if meta.PARAProjects != "" {
-		var projects []string
-		if err := json.Unmarshal([]byte(meta.PARAProjects), &projects); err == nil {
-			para["projects"] = projects
-		}
-	}
-	if meta.PARAreas != "" {
-		var areas []string
-		if err := json.Unmarshal([]byte(meta.PARAreas), &areas); err == nil {
-			para["areas"] = areas
-		}
-	}
-	if meta.PARAResources != "" {
-		var resources []string
-		if err := json.Unmarshal([]byte(meta.PARAResources), &resources); err == nil {
-			para["resources"] = resources
-		}
-	}
-	if meta.PARAArchive != "" {
-		var archive []string
-		if err := json.Unmarshal([]byte(meta.PARAArchive), &archive); err == nil {
-			para["archive"] = archive
-		}
-	}
-	if len(para) > 0 {
-		result["para"] = para
-	}
-
 	if meta.References != "" {
 		var refs []interface{}
 		if err := json.Unmarshal([]byte(meta.References), &refs); err == nil {
@@ -324,31 +290,6 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 		return ""
 	}
 
-	// handle PARA
-	var paraProjects, paraAreas, paraResources, paraArchive string
-	if para, ok := metadata["para"].(map[string]interface{}); ok {
-		if projects, ok := para["projects"].([]interface{}); ok && len(projects) > 0 {
-			if data, err := json.Marshal(projects); err == nil {
-				paraProjects = string(data)
-			}
-		}
-		if areas, ok := para["areas"].([]interface{}); ok && len(areas) > 0 {
-			if data, err := json.Marshal(areas); err == nil {
-				paraAreas = string(data)
-			}
-		}
-		if resources, ok := para["resources"].([]interface{}); ok && len(resources) > 0 {
-			if data, err := json.Marshal(resources); err == nil {
-				paraResources = string(data)
-			}
-		}
-		if archive, ok := para["archive"].([]interface{}); ok && len(archive) > 0 {
-			if data, err := json.Marshal(archive); err == nil {
-				paraArchive = string(data)
-			}
-		}
-	}
-
 	// handle size
 	var size int64
 	if val, ok := metadata["size"]; ok {
@@ -369,9 +310,8 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 	INSERT OR REPLACE INTO metadata (
 		path, name, title, created_at, last_edited, target_date, collection,
 		folders, tags, boards, ancestor, parents, kids, used_links, links_to_here,
-		file_type, para_projects, para_areas, para_resources, para_archive,
-		status, priority, size, refs
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		file_type, status, priority, size, references
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	_, err := ss.db.Exec(query,
@@ -391,10 +331,6 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 		marshalArray("usedLinks"),
 		marshalArray("linksToHere"),
 		getString("type"),
-		paraProjects,
-		paraAreas,
-		paraResources,
-		paraArchive,
 		getString("status"),
 		getString("priority"),
 		size,

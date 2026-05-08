@@ -43,12 +43,6 @@
       "label": "Show Metadata",
       "description": "display file metadata information in the sidebar"
     },
-    "sidebarPara": {
-      "type": "boolean",
-      "default": true,
-      "label": "Show PARA Organization",
-      "description": "show para method organization structure in the sidebar"
-    },
     "sidebarConnections": {
       "type": "boolean",
       "default": true,
@@ -157,26 +151,6 @@
       "type": "boolean",
       "default": false,
       "label": "Compact: Folders"
-    },
-    "compactMetadataParaProjects": {
-      "type": "boolean",
-      "default": false,
-      "label": "Compact: PARA Projects"
-    },
-    "compactMetadataParaAreas": {
-      "type": "boolean",
-      "default": false,
-      "label": "Compact: PARA Areas"
-    },
-    "compactMetadataParaResources": {
-      "type": "boolean",
-      "default": false,
-      "label": "Compact: PARA Resources"
-    },
-    "compactMetadataParaArchive": {
-      "type": "boolean",
-      "default": false,
-      "label": "Compact: PARA Archive"
     },
     "compactMetadataAncestors": {
       "type": "boolean",

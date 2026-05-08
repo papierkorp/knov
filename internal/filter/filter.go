@@ -189,34 +189,6 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 			}
 		}
 		return false
-	case "para_projects":
-		for _, project := range metadata.PARA.Projects {
-			if matchesOperator(project, criterion.Operator, criterion.Value) {
-				return true
-			}
-		}
-		return false
-	case "para_areas":
-		for _, area := range metadata.PARA.Areas {
-			if matchesOperator(area, criterion.Operator, criterion.Value) {
-				return true
-			}
-		}
-		return false
-	case "para_resources":
-		for _, resource := range metadata.PARA.Resources {
-			if matchesOperator(resource, criterion.Operator, criterion.Value) {
-				return true
-			}
-		}
-		return false
-	case "para_archive":
-		for _, archive := range metadata.PARA.Archive {
-			if matchesOperator(archive, criterion.Operator, criterion.Value) {
-				return true
-			}
-		}
-		return false
 	default:
 		return false
 	}
@@ -285,10 +257,6 @@ func GetMetadataFields() []string {
 		"createdAt",
 		"lastEdited",
 		"folders",
-		"para_projects",
-		"para_areas",
-		"para_resources",
-		"para_archive",
 	}
 }
 

@@ -136,59 +136,6 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 		"/api/metadata/folders?format=options", filePath, "/api/metadata/folders"))
 	html.WriteString(`</div>`)
 
-	// PARA fields in a compact row layout
-	html.WriteString(`<div class="form-field-row">`)
-
-	// projects field
-	projectsStr := ""
-	if metadata != nil && len(metadata.PARA.Projects) > 0 {
-		projectsStr = strings.Join(metadata.PARA.Projects, ", ")
-	}
-	html.WriteString(`<div class="form-field-quarter">`)
-	html.WriteString(`<label for="meta-projects">` + translation.SprintfForRequest(configmanager.GetLanguage(), "para-projects") + `</label>`)
-	html.WriteString(GenerateTagChipsInputWithSave("meta-projects", "projects", projectsStr,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "add projects"),
-		"/api/metadata/para/projects?format=options", filePath, "/api/metadata/para/projects"))
-	html.WriteString(`</div>`)
-
-	// areas field
-	areasStr := ""
-	if metadata != nil && len(metadata.PARA.Areas) > 0 {
-		areasStr = strings.Join(metadata.PARA.Areas, ", ")
-	}
-	html.WriteString(`<div class="form-field-quarter">`)
-	html.WriteString(`<label for="meta-areas">` + translation.SprintfForRequest(configmanager.GetLanguage(), "para-areas") + `</label>`)
-	html.WriteString(GenerateTagChipsInputWithSave("meta-areas", "areas", areasStr,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "add areas of responsibility"),
-		"/api/metadata/para/areas?format=options", filePath, "/api/metadata/para/areas"))
-	html.WriteString(`</div>`)
-
-	// resources field
-	resourcesStr := ""
-	if metadata != nil && len(metadata.PARA.Resources) > 0 {
-		resourcesStr = strings.Join(metadata.PARA.Resources, ", ")
-	}
-	html.WriteString(`<div class="form-field-quarter">`)
-	html.WriteString(`<label for="meta-resources">` + translation.SprintfForRequest(configmanager.GetLanguage(), "para-resources") + `</label>`)
-	html.WriteString(GenerateTagChipsInputWithSave("meta-resources", "resources", resourcesStr,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "add resources"),
-		"/api/metadata/para/resources?format=options", filePath, "/api/metadata/para/resources"))
-	html.WriteString(`</div>`)
-
-	// archive field
-	archiveStr := ""
-	if metadata != nil && len(metadata.PARA.Archive) > 0 {
-		archiveStr = strings.Join(metadata.PARA.Archive, ", ")
-	}
-	html.WriteString(`<div class="form-field-quarter">`)
-	html.WriteString(`<label for="meta-archive">` + translation.SprintfForRequest(configmanager.GetLanguage(), "para-archive") + `</label>`)
-	html.WriteString(GenerateTagChipsInputWithSave("meta-archive", "archive", archiveStr,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "add archived items"),
-		"/api/metadata/para/archive?format=options", filePath, "/api/metadata/para/archive"))
-	html.WriteString(`</div>`)
-
-	html.WriteString(`</div>`) // close form-field-row
-
 	html.WriteString(`</div>`)  // close basic form group
 	html.WriteString(`</form>`) // close metadata form
 
@@ -240,7 +187,7 @@ func RenderMetadataCSV(metadata []*files.Metadata) string {
 	var csv strings.Builder
 
 	// header
-	csv.WriteString("path,name,collection,filetype,status,priority,createdat,lastedited,tags,folders,para_projects,para_areas,para_resources,para_archive\n")
+	csv.WriteString("path,name,collection,filetype,status,priority,createdat,lastedited,tags,folders\n")
 
 	for _, m := range metadata {
 		if m == nil {
@@ -258,14 +205,10 @@ func RenderMetadataCSV(metadata []*files.Metadata) string {
 		lastedited := m.LastEdited.Format("2006-01-02 15:04:05")
 		tags := escapeCSV(strings.Join(m.Tags, ";"))
 		folders := escapeCSV(strings.Join(m.Folders, ";"))
-		projects := escapeCSV(strings.Join(m.PARA.Projects, ";"))
-		areas := escapeCSV(strings.Join(m.PARA.Areas, ";"))
-		resources := escapeCSV(strings.Join(m.PARA.Resources, ";"))
-		archive := escapeCSV(strings.Join(m.PARA.Archive, ";"))
 
-		csv.WriteString(fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+		csv.WriteString(fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
 			path, name, collection, filetype, status, priority, createdat, lastedited,
-			tags, folders, projects, areas, resources, archive))
+			tags, folders))
 	}
 
 	return csv.String()

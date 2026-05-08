@@ -20,10 +20,6 @@ const (
 	CacheKeyCollections   CacheKey = "all_collections"
 	CacheKeyFolders       CacheKey = "all_folders"
 	CacheKeyFolderPaths   CacheKey = "all_folder_paths"
-	CacheKeyPARAProjects  CacheKey = "all_para_projects"
-	CacheKeyPARAreas      CacheKey = "all_para_areas"
-	CacheKeyPARAResources CacheKey = "all_para_resources"
-	CacheKeyPARAArchive   CacheKey = "all_para_archive"
 	CacheKeyFilePaths     CacheKey = "all_file_paths"
 	CacheKeyOrphanedMedia CacheKey = "orphaned_media"
 )
@@ -194,98 +190,6 @@ func GetAllStatuses() (StatusCount, error) {
 	return statusCount, nil
 }
 
-// GetAllPARAProjects returns all unique PARA projects with their counts
-func GetAllPARAProjects() (PARAProjectCount, error) {
-	allFiles, err := GetAllFiles()
-	if err != nil {
-		return nil, err
-	}
-
-	projectCount := make(PARAProjectCount)
-	for _, file := range allFiles {
-		metadata, err := MetaDataGet(file.Path)
-		if err != nil || metadata == nil {
-			continue
-		}
-		for _, project := range metadata.PARA.Projects {
-			if project != "" {
-				projectCount[project]++
-			}
-		}
-	}
-
-	return projectCount, nil
-}
-
-// GetAllPARAreas returns all unique PARA areas with their counts
-func GetAllPARAreas() (PARAAreaCount, error) {
-	allFiles, err := GetAllFiles()
-	if err != nil {
-		return nil, err
-	}
-
-	areaCount := make(PARAAreaCount)
-	for _, file := range allFiles {
-		metadata, err := MetaDataGet(file.Path)
-		if err != nil || metadata == nil {
-			continue
-		}
-		for _, area := range metadata.PARA.Areas {
-			if area != "" {
-				areaCount[area]++
-			}
-		}
-	}
-
-	return areaCount, nil
-}
-
-// GetAllPARAResources returns all unique PARA resources with their counts
-func GetAllPARAResources() (PARAResourceCount, error) {
-	allFiles, err := GetAllFiles()
-	if err != nil {
-		return nil, err
-	}
-
-	resourceCount := make(PARAResourceCount)
-	for _, file := range allFiles {
-		metadata, err := MetaDataGet(file.Path)
-		if err != nil || metadata == nil {
-			continue
-		}
-		for _, resource := range metadata.PARA.Resources {
-			if resource != "" {
-				resourceCount[resource]++
-			}
-		}
-	}
-
-	return resourceCount, nil
-}
-
-// GetAllPARAArchive returns all unique PARA archive with their counts
-func GetAllPARAArchive() (PARAArchiveCount, error) {
-	allFiles, err := GetAllFiles()
-	if err != nil {
-		return nil, err
-	}
-
-	archiveCount := make(PARAArchiveCount)
-	for _, file := range allFiles {
-		metadata, err := MetaDataGet(file.Path)
-		if err != nil || metadata == nil {
-			continue
-		}
-		for _, archive := range metadata.PARA.Archive {
-			if archive != "" {
-				archiveCount[archive]++
-			}
-		}
-	}
-
-	return archiveCount, nil
-}
-
 // SaveAllTagsToSystemData saves all unique tags to system storage
 func SaveAllTagsToSystemData() error {
 	allTags, err := GetAllTags()
@@ -346,86 +250,6 @@ func GetAllFoldersFromSystemData() ([]string, error) {
 	return getStringListFromCache(CacheKeyFolders)
 }
 
-// SaveAllPARAProjectsToSystemData saves all PARA projects to system storage
-func SaveAllPARAProjectsToSystemData() error {
-	allProjects, err := GetAllPARAProjects()
-	if err != nil {
-		return err
-	}
-
-	var projectList []string
-	for project := range allProjects {
-		projectList = append(projectList, project)
-	}
-
-	return saveStringListToCache(CacheKeyPARAProjects, projectList)
-}
-
-// GetAllPARAProjectsFromSystemData retrieves cached PARA projects from system storage
-func GetAllPARAProjectsFromSystemData() ([]string, error) {
-	return getStringListFromCache(CacheKeyPARAProjects)
-}
-
-// SaveAllPARAAreasToSystemData saves all PARA areas to system storage
-func SaveAllPARAAreasToSystemData() error {
-	allAreas, err := GetAllPARAreas()
-	if err != nil {
-		return err
-	}
-
-	var areaList []string
-	for area := range allAreas {
-		areaList = append(areaList, area)
-	}
-
-	return saveStringListToCache(CacheKeyPARAreas, areaList)
-}
-
-// GetAllPARAAreasFromSystemData retrieves cached PARA areas from system storage
-func GetAllPARAAreasFromSystemData() ([]string, error) {
-	return getStringListFromCache(CacheKeyPARAreas)
-}
-
-// SaveAllPARAResourcesToSystemData saves all PARA resources to system storage
-func SaveAllPARAResourcesToSystemData() error {
-	allResources, err := GetAllPARAResources()
-	if err != nil {
-		return err
-	}
-
-	var resourceList []string
-	for resource := range allResources {
-		resourceList = append(resourceList, resource)
-	}
-
-	return saveStringListToCache(CacheKeyPARAResources, resourceList)
-}
-
-// GetAllPARAResourcesFromSystemData retrieves cached PARA resources from system storage
-func GetAllPARAResourcesFromSystemData() ([]string, error) {
-	return getStringListFromCache(CacheKeyPARAResources)
-}
-
-// SaveAllPARAArchiveToSystemData saves all PARA archive items to system storage
-func SaveAllPARAArchiveToSystemData() error {
-	allArchive, err := GetAllPARAArchive()
-	if err != nil {
-		return err
-	}
-
-	var archiveList []string
-	for archive := range allArchive {
-		archiveList = append(archiveList, archive)
-	}
-
-	return saveStringListToCache(CacheKeyPARAArchive, archiveList)
-}
-
-// GetAllPARAArchiveFromSystemData retrieves cached PARA archive from system storage
-func GetAllPARAArchiveFromSystemData() ([]string, error) {
-	return getStringListFromCache(CacheKeyPARAArchive)
-}
-
 // SaveAllFilePathsToSystemData saves all file paths to system storage
 func SaveAllFilePathsToSystemData() error {
 	allFiles, err := GetAllFiles()
@@ -452,10 +276,6 @@ type MetadataCollector struct {
 	Collections   map[string]bool
 	Folders       map[string]bool
 	FolderPaths   map[string]bool
-	PARAProjects  map[string]bool
-	PARAreas      map[string]bool
-	PARAResources map[string]bool
-	PARAArchive   map[string]bool
 	FilePaths     []string
 	OrphanedMedia []string
 }
@@ -467,10 +287,6 @@ func NewMetadataCollector() *MetadataCollector {
 		Collections:   make(map[string]bool),
 		Folders:       make(map[string]bool),
 		FolderPaths:   make(map[string]bool),
-		PARAProjects:  make(map[string]bool),
-		PARAreas:      make(map[string]bool),
-		PARAResources: make(map[string]bool),
-		PARAArchive:   make(map[string]bool),
 		FilePaths:     []string{},
 		OrphanedMedia: []string{},
 	}
@@ -509,28 +325,6 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 		}
 	}
 
-	// collect PARA data
-	for _, project := range metadata.PARA.Projects {
-		if project != "" {
-			mc.PARAProjects[project] = true
-		}
-	}
-	for _, area := range metadata.PARA.Areas {
-		if area != "" {
-			mc.PARAreas[area] = true
-		}
-	}
-	for _, resource := range metadata.PARA.Resources {
-		if resource != "" {
-			mc.PARAResources[resource] = true
-		}
-	}
-	for _, archive := range metadata.PARA.Archive {
-		if archive != "" {
-			mc.PARAArchive[archive] = true
-		}
-	}
-
 	// collect orphaned media
 	if strings.HasPrefix(filePath, "media/") && len(metadata.LinksToHere) == 0 {
 		mc.OrphanedMedia = append(mc.OrphanedMedia, filePath)
@@ -549,18 +343,6 @@ func (mc *MetadataCollector) SaveAllToCache() error {
 		return err
 	}
 	if err := saveStringListToCache(CacheKeyFolderPaths, utils.SetToSortedSlice(mc.FolderPaths)); err != nil {
-		return err
-	}
-	if err := saveStringListToCache(CacheKeyPARAProjects, utils.SetToSortedSlice(mc.PARAProjects)); err != nil {
-		return err
-	}
-	if err := saveStringListToCache(CacheKeyPARAreas, utils.SetToSortedSlice(mc.PARAreas)); err != nil {
-		return err
-	}
-	if err := saveStringListToCache(CacheKeyPARAResources, utils.SetToSortedSlice(mc.PARAResources)); err != nil {
-		return err
-	}
-	if err := saveStringListToCache(CacheKeyPARAArchive, utils.SetToSortedSlice(mc.PARAArchive)); err != nil {
 		return err
 	}
 	if err := saveStringListToCache(CacheKeyFilePaths, mc.FilePaths); err != nil {

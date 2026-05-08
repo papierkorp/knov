@@ -34,22 +34,6 @@
             <div hx-get="/api/metadata/statuses" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                 {{T "loading statuses..."}}
             </div>
-        {{ else if eq .MetadataType "projects" }}
-            <div hx-get="/api/metadata/para/projects" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
-                {{T "loading projects..."}}
-            </div>
-        {{ else if eq .MetadataType "areas" }}
-            <div hx-get="/api/metadata/para/areas" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
-                {{T "loading areas..."}}
-            </div>
-        {{ else if eq .MetadataType "resources" }}
-            <div hx-get="/api/metadata/para/resources" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
-                {{T "loading resources..."}}
-            </div>
-        {{ else if eq .MetadataType "archive" }}
-            <div hx-get="/api/metadata/para/archive" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
-                {{T "loading archive..."}}
-            </div>
         {{ else }}
             <p>{{T "Unknown metadata type"}}: {{ .MetadataType }}</p>
         {{ end }}

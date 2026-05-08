@@ -279,10 +279,6 @@ func StartServerChi() {
 			r.Post("/folders", handleAPISetMetadataFolders)
 			r.Post("/tags", handleAPISetMetadataTags)
 			r.Post("/parents", handleAPISetMetadataParents)
-			r.Post("/para/projects", handleAPISetMetadataPARAProjects)
-			r.Post("/para/areas", handleAPISetMetadataPARAreas)
-			r.Post("/para/resources", handleAPISetMetadataPARAResources)
-			r.Post("/para/archive", handleAPISetMetadataPARAArchive)
 
 			r.Get("/tags", handleAPIGetAllTags)
 			r.Get("/collections", handleAPIGetAllCollections)
@@ -293,11 +289,6 @@ func StartServerChi() {
 			r.Get("/tags/{fileId}", handleAPIGetFileMetadataTags)
 			r.Get("/folders/{fileId}", handleAPIGetFileMetadataFolders)
 			r.Get("/collection/{fileId}", handleAPIGetFileMetadataCollection)
-
-			r.Get("/para/projects", handleAPIGetAllPARAProjects)
-			r.Get("/para/areas", handleAPIGetAllPARAreas)
-			r.Get("/para/resources", handleAPIGetAllPARAResources)
-			r.Get("/para/archive", handleAPIGetAllPARAArchive)
 		})
 
 		// ----------------------------------------------------------------------------------------

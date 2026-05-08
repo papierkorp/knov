@@ -63,29 +63,6 @@
             </section>
             {{end}}
 
-            {{if index .ThemeSettings "sidebarPara"}}
-            <section class="sidebar-section" id="component-sidebar-para">
-                <h3>{{T "PARA organization"}}</h3>
-                <div class="para-grid">
-                    <div class="para-row">
-                        <span class="para-label">{{T "projects"}}:</span>
-                        <span hx-get="/api/metadata/para/projects?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-                    </div>
-                    <div class="para-row">
-                        <span class="para-label">{{T "areas"}}:</span>
-                        <span hx-get="/api/metadata/para/areas?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-                    </div>
-                    <div class="para-row">
-                        <span class="para-label">{{T "resources"}}:</span>
-                        <span hx-get="/api/metadata/para/resources?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-                    </div>
-                    <div class="para-row">
-                        <span class="para-label">{{T "archive"}}:</span>
-                        <span hx-get="/api/metadata/para/archive?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-                    </div>
-                </div>
-            </section>
-            {{end}}
             {{if index .ThemeSettings "sidebarConnections"}}
             <section class="sidebar-section" id="component-sidebar-connections">
                 <h3>{{T "connections"}}</h3>
@@ -197,30 +174,6 @@
             {{end}}
             {{if index .ThemeSettings "compactMetadataFolders"}}
             <span class="meta-pill" hx-get="/api/metadata/folders?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataParaProjects"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "projects"}}:</span>
-                <span hx-get="/api/metadata/para/projects?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            </span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataParaAreas"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "areas"}}:</span>
-                <span hx-get="/api/metadata/para/areas?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            </span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataParaResources"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "resources"}}:</span>
-                <span hx-get="/api/metadata/para/resources?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            </span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataParaArchive"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "archive"}}:</span>
-                <span hx-get="/api/metadata/para/archive?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            </span>
             {{end}}
             {{if index .ThemeSettings "compactMetadataAncestors"}}
             <span class="meta-pill">

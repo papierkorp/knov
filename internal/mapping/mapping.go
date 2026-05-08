@@ -7,14 +7,6 @@ func URLToDatabase(urlField string) string {
 		return "tags"
 	case "folder":
 		return "folders"
-	case "projects":
-		return "para_projects"
-	case "areas":
-		return "para_areas"
-	case "resources":
-		return "para_resources"
-	case "archive":
-		return "para_archive"
 	default:
 		return urlField
 	}
@@ -27,14 +19,6 @@ func DatabaseToURL(dbField string) string {
 		return "tag"
 	case "folders":
 		return "folder"
-	case "para_projects":
-		return "projects"
-	case "para_areas":
-		return "areas"
-	case "para_resources":
-		return "resources"
-	case "para_archive":
-		return "archive"
 	default:
 		return dbField
 	}
@@ -47,14 +31,6 @@ func GetDisplayName(dbField string) string {
 		return "tags"
 	case "folders":
 		return "folders"
-	case "para_projects":
-		return "projects"
-	case "para_areas":
-		return "areas"
-	case "para_resources":
-		return "resources"
-	case "para_archive":
-		return "archive"
 	default:
 		return dbField
 	}
@@ -66,14 +42,6 @@ func IsArrayField(field string) bool {
 	case "tag", "tags":
 		return true
 	case "folder", "folders":
-		return true
-	case "projects", "para_projects":
-		return true
-	case "areas", "para_areas":
-		return true
-	case "resources", "para_resources":
-		return true
-	case "archive", "para_archive":
 		return true
 	default:
 		return false
