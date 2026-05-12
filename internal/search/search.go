@@ -58,7 +58,6 @@ func IndexAllFiles() error {
 	return nil
 }
 
-// SearchFiles performs text search in indexed files
 func SearchFiles(query string, limit int) ([]files.File, error) {
 	if query == "" {
 		return []files.File{}, nil
@@ -66,13 +65,39 @@ func SearchFiles(query string, limit int) ([]files.File, error) {
 
 	engineType := configmanager.GetSearchEngine()
 
-	// Use grep search if configured
+	var results []files.File
+	var err error
 	if engineType == "grep" {
-		return searchFilesGrep(query, limit)
+		results, err = searchFilesGrep(query, limit)
+	} else {
+		results, err = searchFilesRepository(query, limit)
+	}
+	if err != nil {
+		return nil, err
 	}
 
-	// Default: repository-based search
-	return searchFilesRepository(query, limit)
+	// merge filename matches not already in results
+	seenPaths := make(map[string]bool, len(results))
+	for _, f := range results {
+		seenPaths[f.Path] = true
+	}
+
+	filenameMatches, err := searchFilesFilename(query)
+	if err != nil {
+		logging.LogWarning("filename search failed: %v", err)
+	}
+	for _, f := range filenameMatches {
+		if !seenPaths[f.Path] {
+			results = append(results, f)
+			seenPaths[f.Path] = true
+		}
+	}
+
+	if limit > 0 && len(results) > limit {
+		results = results[:limit]
+	}
+
+	return results, nil
 }
 
 // searchFilesRepository performs repository-based search using FTS
@@ -170,6 +195,23 @@ func searchFilesRepositoryFallback(query string, limit int) ([]files.File, error
 		}
 	}
 
+	return results, nil
+}
+
+// searchFilesFilename returns files whose name contains the query (case-insensitive)
+func searchFilesFilename(query string) ([]files.File, error) {
+	allFiles, err := files.GetAllFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	queryLower := strings.ToLower(query)
+	var results []files.File
+	for _, file := range allFiles {
+		if strings.Contains(strings.ToLower(file.Name), queryLower) {
+			results = append(results, file)
+		}
+	}
 	return results, nil
 }
 
