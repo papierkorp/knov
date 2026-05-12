@@ -1,6 +1,7 @@
 package files
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -8,6 +9,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
+	"knov/internal/metadataStorage"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 )
@@ -49,14 +51,76 @@ func pathsToFiles(paths []string, prefix string) []File {
 	return files
 }
 
-// GetAllFiles returns list of all files using contentStorage
-func GetAllFiles() ([]File, error) {
+// ViewURL returns the correct browser URL for viewing this file
+func (f File) ViewURL() string {
+	if f.Metadata != nil && f.Metadata.FileType == FileTypeFilter {
+		id := strings.TrimSuffix(pathutils.ToRelative(f.Path), ".filter")
+		return "/filters/" + id
+	}
+	return "/files/" + pathutils.ToRelative(f.Path)
+}
+
+// GetAllPhysicalFiles returns only files that exist on the filesystem
+func GetAllPhysicalFiles() ([]File, error) {
 	paths, err := contentStorage.ListFiles()
 	if err != nil {
 		logging.LogError("failed to list files: %v", err)
 		return nil, err
 	}
 	return pathsToFiles(paths, ""), nil
+}
+
+// GetAllVirtualFiles returns files that exist only in metadata (e.g. filters stored in configStorage)
+func GetAllVirtualFiles() ([]File, error) {
+	all, err := metadataStorage.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	// get physical paths to exclude them
+	physical, err := contentStorage.ListFiles()
+	if err != nil {
+		return nil, err
+	}
+	existing := make(map[string]struct{}, len(physical))
+	for _, p := range physical {
+		existing[p] = struct{}{}
+	}
+
+	var result []File
+	for key, data := range all {
+		if _, ok := existing[key]; ok {
+			continue
+		}
+		var m Metadata
+		if err := json.Unmarshal(data, &m); err != nil {
+			continue
+		}
+		if m.FileType == "" {
+			continue
+		}
+		cleanPath := pathutils.ToRelative(key)
+		result = append(result, File{
+			Name:     filepath.Base(cleanPath),
+			Path:     cleanPath,
+			Metadata: &m,
+		})
+	}
+	return result, nil
+}
+
+// GetAllFiles returns all files including virtual entries (e.g. filters)
+func GetAllFiles() ([]File, error) {
+	physical, err := GetAllPhysicalFiles()
+	if err != nil {
+		return nil, err
+	}
+	virtual, err := GetAllVirtualFiles()
+	if err != nil {
+		logging.LogWarning("failed to get virtual files: %v", err)
+		return physical, nil
+	}
+	return append(physical, virtual...), nil
 }
 
 // GetAllMediaFiles returns list of all media files using contentStorage

@@ -353,8 +353,8 @@ func MetaDataSave(m *Metadata) error {
 	return nil
 }
 
-// metaDataSaveRaw saves metadata without processing
-func metaDataSaveRaw(m *Metadata) error {
+// MetaDataSaveRaw saves metadata without processing
+func MetaDataSaveRaw(m *Metadata) error {
 	data, err := json.Marshal(m)
 	if err != nil {
 		logging.LogError("failed to marshal metadata: %v", err)
@@ -404,7 +404,7 @@ func MetaDataGet(filepath string) (*Metadata, error) {
 func MetaDataInitializeAll() error {
 	logging.LogInfo("initializing metadata for all files")
 
-	allFiles, err := GetAllFiles()
+	allFiles, err := GetAllPhysicalFiles()
 	if err != nil {
 		return err
 	}
@@ -446,7 +446,7 @@ func MetaDataDelete(filepath string) error {
 
 // MetaDataExportAll returns all metadata entries
 func MetaDataExportAll() ([]*Metadata, error) {
-	allFiles, err := GetAllFiles()
+	allFiles, err := GetAllPhysicalFiles()
 	if err != nil {
 		return nil, err
 	}
@@ -464,6 +464,47 @@ func MetaDataExportAll() ([]*Metadata, error) {
 	}
 
 	return allMetadata, nil
+}
+
+// MetaDataPurgeStale removes metadata entries for files that no longer exist
+func MetaDataPurgeStale() error {
+	all, err := metadataStorage.GetAll()
+	if err != nil {
+		return fmt.Errorf("failed to list metadata: %w", err)
+	}
+
+	// build set of all valid paths (physical + virtual)
+	physical, err := GetAllPhysicalFiles()
+	if err != nil {
+		return fmt.Errorf("failed to get physical files: %w", err)
+	}
+	virtual, err := GetAllVirtualFiles()
+	if err != nil {
+		return fmt.Errorf("failed to get virtual files: %w", err)
+	}
+
+	valid := make(map[string]struct{}, len(physical)+len(virtual))
+	for _, f := range physical {
+		valid[pathutils.ToWithPrefix(f.Path)] = struct{}{}
+	}
+	for _, f := range virtual {
+		valid[pathutils.ToWithPrefix(f.Path)] = struct{}{}
+	}
+
+	var purged int
+	for key := range all {
+		if _, ok := valid[key]; !ok {
+			if err := metadataStorage.Delete(key); err != nil {
+				logging.LogWarning("failed to delete stale metadata for %s: %v", key, err)
+				continue
+			}
+			logging.LogInfo("purged stale metadata: %s", key)
+			purged++
+		}
+	}
+
+	logging.LogInfo("metadata purge complete: removed %d stale entries", purged)
+	return nil
 }
 
 // ValidateMediaMimeType checks if a MIME type is allowed for media uploads

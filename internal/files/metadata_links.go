@@ -16,7 +16,7 @@ import (
 // MetaDataLinksRebuild ..
 func MetaDataLinksRebuild() error {
 	logging.LogInfo("rebuilding all metadata links")
-	files, err := GetAllFiles()
+	files, err := GetAllPhysicalFiles()
 	if err != nil {
 		return err
 	}
@@ -226,7 +226,7 @@ func updateLinksToHere(metadata *Metadata, oldUsedLinks []string) {
 		if !slices.Contains(linkedMetadata.LinksToHere, metadata.Path) {
 			linkedMetadata.LinksToHere = append(linkedMetadata.LinksToHere, metadata.Path)
 
-			if err := metaDataSaveRaw(linkedMetadata); err != nil {
+			if err := MetaDataSaveRaw(linkedMetadata); err != nil {
 				logging.LogWarning("failed to save linkstohere for %s: %v", usedLink, err)
 			} else {
 				logging.LogInfo("added %s to linkstohere of %s", metadata.Path, usedLink)
@@ -246,7 +246,7 @@ func updateLinksToHere(metadata *Metadata, oldUsedLinks []string) {
 			if idx := slices.Index(linkedMetadata.LinksToHere, metadata.Path); idx != -1 {
 				linkedMetadata.LinksToHere = slices.Delete(linkedMetadata.LinksToHere, idx, idx+1)
 
-				if err := metaDataSaveRaw(linkedMetadata); err != nil {
+				if err := MetaDataSaveRaw(linkedMetadata); err != nil {
 					logging.LogWarning("failed to save linkstohere for %s: %v", oldLink, err)
 				} else {
 					logging.LogInfo("removed %s from linkstohere of %s", metadata.Path, oldLink)
@@ -257,7 +257,7 @@ func updateLinksToHere(metadata *Metadata, oldUsedLinks []string) {
 }
 
 func updateKidsAndLinksToHere(metadata *Metadata) {
-	files, err := GetAllFiles()
+	files, err := GetAllPhysicalFiles()
 	if err != nil {
 		logging.LogWarning("failed to get all files for updating kids and links: %v", err)
 		return
@@ -332,7 +332,7 @@ func UpdateLinksForMovedFile(oldPath, newPath string) error {
 	if movedMetadata != nil {
 		logging.LogInfo("rebuilding outbound links for moved file %s", normalizedNewPath)
 		updateUsedLinks(movedMetadata)
-		if err := metaDataSaveRaw(movedMetadata); err != nil {
+		if err := MetaDataSaveRaw(movedMetadata); err != nil {
 			logging.LogWarning("failed to save rebuilt links for moved file %s: %v", normalizedNewPath, err)
 		}
 	}
@@ -377,7 +377,7 @@ func UpdateLinksForMovedFile(oldPath, newPath string) error {
 			}
 
 			// save updated metadata
-			if err := metaDataSaveRaw(linkedMetadata); err != nil {
+			if err := MetaDataSaveRaw(linkedMetadata); err != nil {
 				logging.LogWarning("failed to save LinksToHere updates for %s: %v", linkedPath, err)
 			}
 		}
@@ -590,7 +590,7 @@ func updateParentChildRelationships(metadata *Metadata, oldParents []string) {
 			if idx := slices.Index(parentMetadata.Kids, metadata.Path); idx != -1 {
 				parentMetadata.Kids = slices.Delete(parentMetadata.Kids, idx, idx+1)
 
-				if err := metaDataSaveRaw(parentMetadata); err != nil {
+				if err := MetaDataSaveRaw(parentMetadata); err != nil {
 					logging.LogWarning("failed to update kids list for %s: %v", oldParent, err)
 				} else {
 					logging.LogInfo("removed %s from kids list of %s", metadata.Path, oldParent)
@@ -613,7 +613,7 @@ func updateParentChildRelationships(metadata *Metadata, oldParents []string) {
 			if !slices.Contains(parentMetadata.Kids, metadata.Path) {
 				parentMetadata.Kids = append(parentMetadata.Kids, metadata.Path)
 
-				if err := metaDataSaveRaw(parentMetadata); err != nil {
+				if err := MetaDataSaveRaw(parentMetadata); err != nil {
 					logging.LogWarning("failed to update kids list for %s: %v", newParent, err)
 				} else {
 					logging.LogInfo("added %s to kids list of %s", metadata.Path, newParent)
@@ -642,7 +642,7 @@ func UpdateLinksForSingleFile(filePath string) error {
 	updateUsedLinks(metadata)
 
 	// save updated metadata
-	if err := metaDataSaveRaw(metadata); err != nil {
+	if err := MetaDataSaveRaw(metadata); err != nil {
 		logging.LogError("failed to save updated metadata for file %s: %v", filePath, err)
 		return err
 	}

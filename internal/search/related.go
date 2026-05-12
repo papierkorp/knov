@@ -33,7 +33,7 @@ func GetRelatedFiles(filePath string, limit int) ([]string, error) {
 		return nil, nil
 	}
 
-	allFiles, err := files.GetAllFiles()
+	allFiles, err := files.GetAllPhysicalFiles()
 	if err != nil {
 		return nil, err
 	}

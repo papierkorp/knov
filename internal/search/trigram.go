@@ -124,7 +124,7 @@ func searchFilesTrigram(query string, limit int) ([]files.File, error) {
 		return nil, nil
 	}
 
-	allFiles, err := files.GetAllFiles()
+	allFiles, err := files.GetAllPhysicalFiles()
 	if err != nil {
 		return nil, err
 	}
