@@ -391,3 +391,40 @@ func NewMediaViewTemplateData(mediaPath string) MediaViewTemplateData {
 		MediaPath:        mediaPath,
 	}
 }
+
+// -----------------------------------------------
+// --------- Filter ------------
+// -----------------------------------------------
+
+// FilterViewTemplateData extends base with filter view data
+type FilterViewTemplateData struct {
+	BaseTemplateData
+	FilterID    string
+	ResultsHTML string
+}
+
+// in NewFilterViewTemplateData, set FileType:
+func NewFilterViewTemplateData(filterID, resultsHTML string) FilterViewTemplateData {
+	base := NewBaseTemplateData("filter: " + filterID)
+	base.FileType = "filter"
+	return FilterViewTemplateData{
+		BaseTemplateData: base,
+		FilterID:         filterID,
+		ResultsHTML:      resultsHTML,
+	}
+}
+
+// FilterEditTemplateData extends base with filter edit data
+type FilterEditTemplateData struct {
+	BaseTemplateData
+	FilterID string
+	FilePath string // id + ".filter" for the editor API
+}
+
+func NewFilterEditTemplateData(filterID string) FilterEditTemplateData {
+	return FilterEditTemplateData{
+		BaseTemplateData: NewBaseTemplateData("edit filter: " + filterID),
+		FilterID:         filterID,
+		FilePath:         filterID + ".filter",
+	}
+}

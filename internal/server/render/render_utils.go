@@ -95,9 +95,9 @@ func RenderFileCards(files []files.File) string {
 		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`
 			<div class="search-result-card">
-				<h4><a href="/files/%s">%s</a></h4>
+			<h4><a href="%s">%s</a></h4>
 			</div>`,
-			file.Path, displayText))
+			file.ViewURL(), displayText))
 	}
 
 	html.WriteString(`</div>`)
@@ -112,8 +112,8 @@ func RenderFileList(files []files.File) string {
 	for _, file := range files {
 		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`
-			<li><a href="/files/%s">%s</a></li>`,
-			file.Path, displayText))
+			<li><a href="%s">%s</a></li>`,
+			file.ViewURL(), displayText))
 	}
 
 	html.WriteString(`</ul>`)
@@ -158,7 +158,7 @@ func RenderFileContent(filez []files.File) string {
 	for _, file := range filez {
 		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`<div class="filter-content-item">
-			<h4><a href="/files/%s">%s</a></h4>`, file.Path, displayText))
+		  <h4><a href="%s">%s</a></h4>`, file.ViewURL(), displayText))
 
 		fullPath := pathutils.ToDocsPath(file.Path)
 		content, err := files.GetFileContent(fullPath)

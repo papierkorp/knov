@@ -3,6 +3,7 @@ package render
 
 import (
 	"fmt"
+	"html"
 	"net/url"
 	"os"
 	"strings"
@@ -30,8 +31,7 @@ func RenderSearchDropdown(results []files.File, query string) string {
 		}
 		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`
-			<li><a href="/files/%s">%s</a></li>`,
-			file.Path, displayText))
+		<li><a href="%s">%s</a></li>`, file.ViewURL(), displayText))
 	}
 
 	if len(results) > 0 {
@@ -81,112 +81,84 @@ func RenderSearchResultsCards(files []files.File, query string) string {
 
 		html.WriteString(fmt.Sprintf(`
 			<div class="search-result-card">
-				<h4 class="search-result-title"><a href="/files/%s">%s</a></h4>
+			<h4 class="search-result-title"><a href="%s">%s</a></h4>
 				<div class="search-result-context">%s</div>
 			</div>`,
-			file.Path, displayText, context))
+			file.ViewURL(), displayText, context))
 	}
 
 	html.WriteString(`</div>`)
 	return html.String()
 }
 
-// extractSearchContext extracts 5 words before and after the search hit
 func extractSearchContext(filePath, query string) string {
 	if query == "" {
 		return ""
 	}
 
-	// try to get file content
 	fullPath := pathutils.ToDocsPath(filePath)
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
-		return ""
+		// file not on disk (e.g. virtual/filename match) - show label instead
+		return fmt.Sprintf(`<span class="search-match-filename">%s</span>`,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "filename match"))
 	}
 
 	originalContent := string(content)
 	queryLower := strings.ToLower(query)
-
-	// split into words
 	words := strings.Fields(originalContent)
 
-	// find word containing the search term (case insensitive)
 	hitWordIndex := -1
 	for i, word := range words {
-		wordLower := strings.ToLower(word)
-		if strings.Contains(wordLower, queryLower) {
+		if strings.Contains(strings.ToLower(word), queryLower) {
 			hitWordIndex = i
 			break
 		}
 	}
 
 	if hitWordIndex == -1 {
-		return ""
+		// query not in content but file matched by filename
+		return fmt.Sprintf(`<span class="search-match-filename">%s</span>`,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "filename match"))
 	}
 
-	// extract 5 words before and after
 	start := hitWordIndex - 5
 	if start < 0 {
 		start = 0
 	}
-
-	end := hitWordIndex + 6 // +1 because end is exclusive, +5 for the 5 words after
+	end := hitWordIndex + 6
 	if end > len(words) {
 		end = len(words)
 	}
 
-	if start >= end {
-		return ""
-	}
-
-	// build context with highlighting
 	var contextParts []string
 
-	// before words
 	if start < hitWordIndex {
-		beforeWords := strings.Join(words[start:hitWordIndex], " ")
-		if beforeWords != "" {
-			contextParts = append(contextParts, beforeWords)
-		}
+		contextParts = append(contextParts, html.EscapeString(strings.Join(words[start:hitWordIndex], " ")))
 	}
 
-	// hit word with proper highlighting
-	if hitWordIndex < len(words) {
-		hitWord := words[hitWordIndex]
-		// highlight the actual search term within the word (case insensitive)
-		hitWordLower := strings.ToLower(hitWord)
-		queryPos := strings.Index(hitWordLower, queryLower)
-
-		if queryPos >= 0 {
-			before := hitWord[:queryPos]
-			match := hitWord[queryPos : queryPos+len(query)]
-			after := hitWord[queryPos+len(query):]
-			highlightedWord := fmt.Sprintf(`%s<mark>%s</mark>%s`, before, match, after)
-			contextParts = append(contextParts, highlightedWord)
-		} else {
-			// fallback: highlight whole word
-			highlightedWord := fmt.Sprintf(`<mark>%s</mark>`, hitWord)
-			contextParts = append(contextParts, highlightedWord)
-		}
+	hitWord := words[hitWordIndex]
+	hitWordLower := strings.ToLower(hitWord)
+	queryPos := strings.Index(hitWordLower, queryLower)
+	if queryPos >= 0 {
+		before := html.EscapeString(hitWord[:queryPos])
+		match := html.EscapeString(hitWord[queryPos : queryPos+len(query)])
+		after := html.EscapeString(hitWord[queryPos+len(query):])
+		contextParts = append(contextParts, fmt.Sprintf(`%s<mark>%s</mark>%s`, before, match, after))
+	} else {
+		contextParts = append(contextParts, fmt.Sprintf(`<mark>%s</mark>`, html.EscapeString(hitWord)))
 	}
 
-	// after words
 	if hitWordIndex+1 < end {
-		afterWords := strings.Join(words[hitWordIndex+1:end], " ")
-		if afterWords != "" {
-			contextParts = append(contextParts, afterWords)
-		}
+		contextParts = append(contextParts, html.EscapeString(strings.Join(words[hitWordIndex+1:end], " ")))
 	}
 
 	context := strings.Join(contextParts, " ")
-
-	// add ellipsis if we're not at the beginning/end
 	if start > 0 {
 		context = "..." + context
 	}
 	if end < len(words) {
 		context = context + "..."
 	}
-
 	return context
 }

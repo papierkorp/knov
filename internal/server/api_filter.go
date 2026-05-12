@@ -5,16 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"knov/internal/configmanager"
-	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/logging"
-	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -95,10 +91,10 @@ func handleAPIGetFilterCriteriaRow(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Save filter configuration
-// @Description Save filter configuration as JSON file with .filter extension
+// @Description Save filter configuration to config storage
 // @Tags filter
 // @Accept application/x-www-form-urlencoded
-// @Param filepath formData string true "Filter file path (without extension)"
+// @Param filterid formData string true "Filter identifier (name)"
 // @Param metadata[] formData array false "Metadata field names"
 // @Param operator[] formData array false "Filter operators (equals, contains, greater, less, in)"
 // @Param value[] formData array false "Filter values"
@@ -106,33 +102,22 @@ func handleAPIGetFilterCriteriaRow(w http.ResponseWriter, r *http.Request) {
 // @Param logic formData string false "Logic operator (and/or)" default(and)
 // @Produce html
 // @Success 200 {string} string "success message"
-// @Router /api/filter/save [post]
+// @Router /api/filter [post]
 func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data. please check your input.") + `</div>`
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(errorHTML))
+		fmt.Fprintf(w, `<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data. please check your input."))
 		return
 	}
 
-	filePath := r.FormValue("filepath")
-	if filePath == "" {
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file path is required. please enter a file path.") + `</div>`
+	filterID := r.FormValue("filterid")
+	if filterID == "" {
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(errorHTML))
+		fmt.Fprintf(w, `<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "filter name is required."))
 		return
 	}
-
-	// normalize extension before checking existence
-	if !strings.HasSuffix(filePath, ".filter") {
-		filePath = filePath + ".filter"
-	}
-
-	// check if new file before saving
-	_, statErr := os.Stat(pathutils.ToDocsPath(filePath))
-	isNewFile := os.IsNotExist(statErr)
 
 	widgetIndex := -1
 	if s := r.FormValue("widget_index"); s != "" {
@@ -142,39 +127,16 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	}
 	config := filter.ParseFilterConfigFromForm(r, widgetIndex)
 
-	if err := filter.SaveFilterConfig(config, filePath); err != nil {
+	if err := filter.SaveFilterConfig(config, filterID); err != nil {
 		logging.LogError("failed to save filter config: %v", err)
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save filter. please check the logs for details.") + `</div>`
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(errorHTML))
+		fmt.Fprintf(w, `<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save filter. please check the logs for details."))
 		return
 	}
 
-	// create metadata for new filter files
-	if isNewFile {
-		metadata := &files.Metadata{
-			Path:     pathutils.ToWithPrefix(filePath),
-			FileType: files.FileTypeFilter,
-		}
-		if err := files.MetaDataSave(metadata); err != nil {
-			logging.LogError("failed to save metadata for new filter file %s: %v", filePath, err)
-		} else {
-			logging.LogInfo("created metadata for new filter file: %s", filePath)
-		}
-	}
-
-	successData := map[string]interface{}{
-		"status":   "success",
-		"message":  "filter saved successfully",
-		"filePath": filePath,
-	}
-
-	successHTML := fmt.Sprintf(`<div class="status-ok">%s</div>
-		<script>setTimeout(() => window.location.href = '/files/%s', 1000);</script>`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "filter saved successfully!"), filePath)
-
-	writeResponse(w, r, successData, successHTML)
+	fmt.Fprintf(w, `<div class="status-ok">%s</div><script>setTimeout(() => window.location.href = '/filters/%s', 1000);</script>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "filter saved successfully!"), filterID)
 }
 
 // @Summary Get filter form
@@ -196,7 +158,10 @@ func handleAPIGetFilterForm(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	html := render.RenderFilterForm(config)
+	html := render.RenderFilterForm(render.FilterFormOpts{
+		Context: render.FilterFormContextApply,
+		Config:  config,
+	})
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }

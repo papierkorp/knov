@@ -5,13 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"knov/internal/configStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
@@ -308,51 +307,72 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
-// SaveFilterConfig validates and saves a filter configuration to file
-func SaveFilterConfig(config *Config, filePath string) error {
-	// validate the configuration first
+// filterKey returns the configStorage key for a filter ID
+func filterKey(id string) string {
+	return "filter/" + strings.TrimSuffix(id, ".filter")
+}
+
+// SaveFilterConfig validates and saves a filter configuration to configStorage
+func SaveFilterConfig(config *Config, filterID string) error {
 	if err := ValidateConfig(config); err != nil {
 		return fmt.Errorf("invalid filter config: %w", err)
 	}
 
-	// ensure filepath has .filter extension
-	if !strings.HasSuffix(filePath, ".filter") {
-		filePath = filePath + ".filter"
-	}
-
-	// convert config to JSON
-	jsonData, err := json.MarshalIndent(config, "", "  ")
+	data, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal filter config: %w", err)
 	}
 
-	fullPath := pathutils.ToDocsPath(filePath)
-
-	// create directory if needed
-	dir := filepath.Dir(fullPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		logging.LogError("failed to create directory %s: %v", dir, err)
-		return fmt.Errorf("failed to create directory: %w", err)
+	if err := configStorage.Set(filterKey(filterID), data); err != nil {
+		return fmt.Errorf("failed to save filter config: %w", err)
 	}
 
-	// save JSON to file
-	if err := os.WriteFile(fullPath, jsonData, 0644); err != nil {
-		logging.LogError("failed to save filter file %s: %v", fullPath, err)
-		return fmt.Errorf("failed to save filter file: %w", err)
-	}
-
-	// create metadata for the filter file
+	// keep a metadata record so the filter appears as file type "filter"
+	virtualPath := strings.TrimSuffix(filterID, ".filter") + ".filter"
 	metadata := &files.Metadata{
-		Path:     filePath,
+		Path:     pathutils.ToWithPrefix(virtualPath),
 		FileType: files.FileTypeFilter,
 	}
-	if err := files.MetaDataSave(metadata); err != nil {
+	if err := files.MetaDataSaveRaw(metadata); err != nil {
 		logging.LogError("failed to save filter metadata: %v", err)
-		// don't fail the request, just log the error since file was saved successfully
 	}
 
-	logging.LogInfo("saved filter file: %s", filePath)
+	logging.LogInfo("saved filter: %s", filterID)
 	return nil
+}
+
+// GetFilterConfig loads a filter configuration from configStorage
+func GetFilterConfig(filterID string) (*Config, error) {
+	data, err := configStorage.Get(filterKey(filterID))
+	if err != nil {
+		return nil, err
+	}
+	if data == nil {
+		return nil, nil
+	}
+	var config Config
+	if err := json.Unmarshal(data, &config); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal filter config: %w", err)
+	}
+	return &config, nil
+}
+
+// GetAllFilters returns all filter IDs from configStorage
+func GetAllFilters() ([]string, error) {
+	keys, err := configStorage.List("filter/")
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]string, len(keys))
+	for i, k := range keys {
+		ids[i] = strings.TrimPrefix(k, "filter/")
+	}
+	return ids, nil
+}
+
+// DeleteFilterConfig removes a filter from configStorage
+func DeleteFilterConfig(filterID string) error {
+	return configStorage.Delete(filterKey(filterID))
 }
 
 // filterFieldName returns the form field name scoped to a widget, or standalone if widgetIndex < 0.

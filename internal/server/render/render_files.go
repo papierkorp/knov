@@ -51,9 +51,9 @@ func RenderFilesList(allFiles []files.File) string {
 		displayText := GetLinkDisplayText(file.Path)
 		html.WriteString(fmt.Sprintf(`
 			<li>
-				<a href="/files/%s">%s</a>
+			  <a href="%s">%s</a>
 			</li>`,
-			file.Path,
+			file.ViewURL(),
 			displayText))
 	}
 	html.WriteString("</ul>")

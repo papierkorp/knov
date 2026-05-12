@@ -70,7 +70,7 @@
             <a href="/files/new/literature">{{T "Literature"}}</a>
             <a href="/files/new/permanent">{{T "Permanent"}}</a>
             <a href="/files/new/moc">{{T "MOC"}}</a>
-            <a href="/files/new/filter">{{T "Filter"}}</a>
+            <a href="/filters/new">{{T "Filter"}}</a>
             <a href="/files/new/journaling">{{T "Journaling"}}</a>
         </div>
         <button class="btn-edit" popovertarget="edit-dropdown-content">
@@ -215,6 +215,14 @@ if (fileMatch && !path.includes('/edit/')) {
     // set export to markdown link for dokuwiki files
     document.getElementById('export-markdown-link').href = `/api/files/export/markdown?filepath=${encodeURIComponent(filepath)}`;
     {{ end }}
+
+}
+
+const filterMatch = path.match(/^\/filters\/(?!new$)(.+)/);
+if (filterMatch && !path.includes('/edit/')) {
+    const filterId = filterMatch[1];
+    document.getElementById('edit-link').href = `/filters/edit/${filterId}`;
+    document.getElementById('history-link').removeAttribute('href');
 }
 
 // Position popovers relative to their trigger buttons

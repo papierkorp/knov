@@ -1,5 +1,6 @@
 # small stuff
 
+- make rebuild metadata concurrent e.g. each letter?
 - in references sidebar add - add button, remove button and edit button to header?
 - why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)
 - fix compact and reader view
@@ -31,6 +32,11 @@ if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err 
 })
 
 
+# save filter files in storage instead of data
+
+i want to save the filter files alongside dashboard in the configStorage now instead of saving it as a file
+i want it to still pop as a file type in the filter itself
+what are the steps i would have to take to make this possible?
 
 
 # daily

@@ -2124,19 +2124,25 @@ const docTemplate = `{
         },
         "/api/filter": {
             "post": {
-                "description": "Filter files based on metadata criteria with configurable logic and display",
+                "description": "Save filter configuration to config storage",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
-                    "application/json",
                     "text/html"
                 ],
                 "tags": [
                     "filter"
                 ],
-                "summary": "Filter files by metadata",
+                "summary": "Save filter configuration",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter identifier (name)",
+                        "name": "filterid",
+                        "in": "formData",
+                        "required": true
+                    },
                     {
                         "type": "array",
                         "description": "Metadata field names",
@@ -2167,27 +2173,13 @@ const docTemplate = `{
                         "description": "Logic operator (and/or)",
                         "name": "logic",
                         "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "default": "list",
-                        "description": "Display type (list, cards, dropdown, table)",
-                        "name": "display",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 50,
-                        "description": "Maximum number of results",
-                        "name": "limit",
-                        "in": "formData"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success message",
                         "schema": {
-                            "$ref": "#/definitions/filter.Result"
+                            "type": "string"
                         }
                     }
                 }
@@ -2271,69 +2263,6 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "filter form html",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/filter/save": {
-            "post": {
-                "description": "Save filter configuration as JSON file with .filter extension",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "filter"
-                ],
-                "summary": "Save filter configuration",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Filter file path (without extension)",
-                        "name": "filepath",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "array",
-                        "description": "Metadata field names",
-                        "name": "metadata[]",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "array",
-                        "description": "Filter operators (equals, contains, greater, less, in)",
-                        "name": "operator[]",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "array",
-                        "description": "Filter values",
-                        "name": "value[]",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "array",
-                        "description": "Filter actions (include, exclude)",
-                        "name": "action[]",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "default": "and",
-                        "description": "Logic operator (and/or)",
-                        "name": "logic",
-                        "in": "formData"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success message",
                         "schema": {
                             "type": "string"
                         }

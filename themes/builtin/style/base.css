@@ -1,231 +1,231 @@
 /* Header */
 #component-header {
-    background-color: var(--bg-secondary);
-    color: var(--text);
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    border-bottom: 2px solid var(--primary);
-    flex-wrap: wrap;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+  background-color: var(--bg-secondary);
+  color: var(--text);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 2px solid var(--primary);
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 #component-header .header-left,
 #component-header .header-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 /* Common button/input styles */
 #component-header button,
 #component-header input,
 #component-header a:not(.logo) {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    padding: 8px 12px;
-    color: var(--text);
-    font-size: 16px;
-    transition: background 0.2s;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 16px;
+  transition: background 0.2s;
 }
 
 #component-header button:hover,
 #component-header a:not(.logo):hover {
-    background: var(--accent);
-    color: var(--bg);
+  background: var(--accent);
+  color: var(--bg);
 }
 
 /* Logo */
 #component-header .logo {
-    background: var(--primary);
-    color: var(--text);
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-weight: bold;
+  background: var(--primary);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-weight: bold;
 }
 
 /* Board buttons */
 #component-header .header-mid {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 #component-header .header-mid a {
-    border-radius: 50%;
-    margin: 0 4px;
-    width: 2.5em;
-    height: 2.5em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    text-overflow: clip;
-    white-space: nowrap;
-    padding: 0;
-    font-size: 1em;
-    font-weight: 600;
-    text-transform: uppercase;
+  border-radius: 50%;
+  margin: 0 4px;
+  width: 2.5em;
+  height: 2.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+  padding: 0;
+  font-size: 1em;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 /* Git operations */
 #component-header .span-header-git-operations {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    display: flex;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  display: flex;
 }
 
 #component-header .span-header-git-operations a {
-    border: none;
-    text-transform: uppercase;
-    letter-spacing: -1px;
-    padding: 8px 12px;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  padding: 8px 12px;
 }
 
 /* Dropdown buttons - standardized styling */
 #component-header .btn-add,
 #component-header .btn-edit,
 #component-header .btn-menu-dropdown {
-    position: relative;
-    font-size: 1.5em;
-    color: var(--text);
-    background: inherit;
-    border: none;
-    padding: 4px 6px;
-    border-radius: 4px;
-    transition: background 0.2s;
-    cursor: pointer;
+  position: relative;
+  font-size: 1.5em;
+  color: var(--text);
+  background: inherit;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  cursor: pointer;
 }
 
 #component-header .btn-add:hover,
 #component-header .btn-edit:hover,
 #component-header .btn-menu-dropdown:hover {
-    background: var(--accent);
-    color: var(--bg);
+  background: var(--accent);
+  color: var(--bg);
 }
 
 /* Popover dropdown content */
 #component-header .dropdown-navbar-content[popover] {
-    position: fixed;
-    background: var(--bg);
-    min-width: 160px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 0;
-    margin: 0;
-    inset: unset;
+  position: fixed;
+  background: var(--bg);
+  min-width: 160px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0;
+  margin: 0;
+  inset: unset;
 }
 
 #component-header .dropdown-navbar-content[popover] a,
 #component-header .dropdown-navbar-content[popover] button {
-    display: block;
-    padding: 8px 12px;
-    border: none;
-    background: inherit;
-    color: var(--text);
-    text-align: left;
-    /*width: 100%;*/
-    cursor: pointer;
-    font-size: inherit;
-    text-decoration: none;
-    border-radius: 0;
+  display: block;
+  padding: 8px 12px;
+  border: none;
+  background: inherit;
+  color: var(--text);
+  text-align: left;
+  /*width: 100%;*/
+  cursor: pointer;
+  font-size: inherit;
+  text-decoration: none;
+  border-radius: 0;
 }
 
 #component-header .dropdown-navbar-content[popover] a:first-child,
 #component-header .dropdown-navbar-content[popover] button:first-child {
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
 }
 
 #component-header .dropdown-navbar-content[popover] a:last-child,
 #component-header .dropdown-navbar-content[popover] button:last-child {
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 
 #component-header .dropdown-navbar-content[popover] a:hover,
 #component-header .dropdown-navbar-content[popover] button:hover {
-    background: var(--accent);
-    color: var(--bg-secondary);
+  background: var(--accent);
+  color: var(--bg-secondary);
 }
 
 /* Search */
 #component-header .search-container {
-    position: relative;
-    flex: 1;
+  position: relative;
+  flex: 1;
 }
 
 #component-header .search-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-top: none;
-    max-height: 300px;
-    overflow-y: auto;
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.2s ease;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-top: none;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
 }
 
 #component-header .search-container:focus-within .search-dropdown {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 /* Mobile responsive */
 @media (max-width: 1024px) {
-    #component-header {
-        gap: 10px;
-    }
+  #component-header {
+    gap: 10px;
+  }
 
-    #component-header .header-left {
-        flex: 1 1 100%;
-        order: 1;
-    }
+  #component-header .header-left {
+    flex: 1 1 100%;
+    order: 1;
+  }
 
-    #component-header .header-left input {
-        width: calc(100% - 20px);
-    }
+  #component-header .header-left input {
+    width: calc(100% - 20px);
+  }
 
-    #component-header .header-right {
-        order: 2;
-    }
+  #component-header .header-right {
+    order: 2;
+  }
 
-    #component-header .header-mid {
-        /*flex: 1 1 100%;*/
-        order: 3;
-        margin: auto;
-    }
+  #component-header .header-mid {
+    /*flex: 1 1 100%;*/
+    order: 3;
+    margin: auto;
+  }
 
-    #component-header .span-header-git-operations {
-        min-width: 150px;
-    }
+  #component-header .span-header-git-operations {
+    min-width: 150px;
+  }
 
-    #component-header .span-header-git-operations a {
-        font-size: 14px;
-        padding: 2px;
-    }
+  #component-header .span-header-git-operations a {
+    font-size: 14px;
+    padding: 2px;
+  }
 
-    /* Mobile popover adjustments */
-    #component-header .dropdown-navbar-content[popover] {
-        min-width: 140px;
-        font-size: 14px;
-    }
+  /* Mobile popover adjustments */
+  #component-header .dropdown-navbar-content[popover] {
+    min-width: 140px;
+    font-size: 14px;
+  }
 
-    #component-header .dropdown-navbar-content[popover] a,
-    #component-header .dropdown-navbar-content[popover] button {
-        padding: 12px 16px;
-        font-size: 14px;
-    }
+  #component-header .dropdown-navbar-content[popover] a,
+  #component-header .dropdown-navbar-content[popover] button {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
 }

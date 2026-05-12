@@ -64,6 +64,8 @@ type ThemeTemplates struct {
 	filenew        *template.Template
 	fileview       *template.Template
 	filesoverview  *template.Template
+	filteredit     *template.Template
+	filterview     *template.Template
 	help           *template.Template
 	history        *template.Template
 	home           *template.Template
@@ -203,6 +205,10 @@ func LoadSingleTheme(themeName, themesDir string) error {
 			templates.filenew = tmpl
 		case "fileview":
 			templates.fileview = tmpl
+		case "filteredit":
+			templates.filteredit = tmpl
+		case "filterview":
+			templates.filterview = tmpl
 		case "help":
 			templates.help = tmpl
 		case "history":
@@ -479,6 +485,8 @@ func (t *Theme) TemplateMap() map[string]*template.Template {
 		"filedittable":   t.Templates.filedittable,
 		"filenew":        t.Templates.filenew,
 		"fileview":       t.Templates.fileview,
+		"filteredit":     t.Templates.filteredit,
+		"filterview":     t.Templates.filterview,
 		"help":           t.Templates.help,
 		"history":        t.Templates.history,
 		"home":           t.Templates.home,

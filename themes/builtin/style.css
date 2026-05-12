@@ -45,7 +45,6 @@ body[data-color-scheme="purple"] {
 
 html {
   scroll-padding-top: 80px;
-  overflow-x: hidden;
   overscroll-behavior-y: none;
 }
 
@@ -94,6 +93,10 @@ body[data-dark-mode="true"] {
   --bg-secondary: #111827;
   --text-secondary: #d1d5db;
   --border: #374151;
+}
+
+#wrapper {
+  overflow-x: hidden;
 }
 
 a {

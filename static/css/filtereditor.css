@@ -3,119 +3,133 @@
 /* ---------------------------------------------------------------------------------------- */
 
 #page-filenew .filter-editor,
-#page-fileedit .filter-editor {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+#page-fileedit .filter-editor,
+#page-filteredit .filter-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 #page-filenew .filter-form-container,
 #page-fileedit .filter-form-container,
+#page-filteredit .filter-form-container,
 #page-filenew .filter-results-container,
-#page-fileedit .filter-results-container {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
+#page-fileedit .filter-results-container,
+#page-filteredit .filter-results-container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
 }
 
 #page-filenew .filter-form-container h4,
 #page-fileedit .filter-form-container h4,
+#page-filteredit .filter-form-container h4,
 #page-filenew .filter-results-container h4,
-#page-fileedit .filter-results-container h4 {
-    margin: 0 0 12px 0;
-    color: var(--text);
-    font-size: 1.1rem;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 8px;
+#page-fileedit .filter-results-container h4,
+#page-filteredit .filter-results-container h4 {
+  margin: 0 0 12px 0;
+  color: var(--text);
+  font-size: 1.1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
 }
 
-/* Enhanced filter editor form styling - match new markdown file design */
 #page-filenew .filter-form-container .form-group,
-#page-fileedit .filter-form-container .form-group {
-    margin-bottom: 16px;
+#page-fileedit .filter-form-container .form-group,
+#page-filteredit .filter-form-container .form-group {
+  margin-bottom: 16px;
 }
 
 #page-filenew .filter-form-container .form-group label,
-#page-fileedit .filter-form-container .form-group label {
-    display: block;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
-    font-weight: 500;
+#page-fileedit .filter-form-container .form-group label,
+#page-filteredit .filter-form-container .form-group label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
 #page-filenew .filter-form-container input[type="text"],
-#page-fileedit .filter-form-container input[type="text"] {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: var(--bg);
-    color: var(--text);
-    font-size: 0.9rem;
-    box-sizing: border-box;
-    transition:
-        border-color 0.2s,
-        box-shadow 0.2s;
+#page-fileedit .filter-form-container input[type="text"],
+#page-filteredit .filter-form-container input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 #page-filenew .filter-form-container input[type="text"]:focus,
-#page-fileedit .filter-form-container input[type="text"]:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+#page-fileedit .filter-form-container input[type="text"]:focus,
+#page-filteredit .filter-form-container input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 #page-filenew .filter-form-container input[type="text"]::placeholder,
-#page-fileedit .filter-form-container input[type="text"]::placeholder {
-    color: var(--text-secondary);
-    font-style: italic;
+#page-fileedit .filter-form-container input[type="text"]::placeholder,
+#page-filteredit .filter-form-container input[type="text"]::placeholder {
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 #page-filenew .filter-criteria-row,
-#page-fileedit .filter-criteria-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 2fr 1fr auto;
-    gap: 12px;
-    align-items: end;
-    margin-bottom: 12px;
-    padding: 12px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
+#page-fileedit .filter-criteria-row,
+#page-filteredit .filter-criteria-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
 }
 
 #page-filenew .filter-field,
-#page-fileedit .filter-field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+#page-fileedit .filter-field,
+#page-filteredit .filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 #page-filenew .filter-field label,
-#page-fileedit .filter-field label {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text-secondary);
+#page-fileedit .filter-field label,
+#page-filteredit .filter-field label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 #page-filenew .filter-controls,
-#page-fileedit .filter-controls {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    margin-bottom: 16px;
-    padding: 12px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
+#page-fileedit .filter-controls,
+#page-filteredit .filter-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
 }
 
 #page-filenew .filter-no-results,
-#page-fileedit .filter-no-results {
-    color: var(--text-secondary);
-    font-style: italic;
-    text-align: center;
-    padding: 20px;
+#page-fileedit .filter-no-results,
+#page-filteredit .filter-no-results {
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
 }

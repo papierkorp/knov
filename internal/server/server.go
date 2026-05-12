@@ -3,7 +3,6 @@ package server
 
 import (
 	"embed"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -73,13 +72,16 @@ func StartServerChi() {
 	r.Get("/files/new/literature", handleFileNewLiterature)
 	r.Get("/files/new/moc", handleFileNewMOC)
 	r.Get("/files/new/permanent", handleFileNewPermanent)
-	r.Get("/files/new/filter", handleFileNewFilter)
 	r.Get("/files/new/journaling", handleFileNewJournaling)
 
 	r.Get("/dashboard", handleDashboardView)
 	r.Get("/dashboard/{id}", handleDashboardView)
 	r.Get("/dashboard/new", handleDashboardNew)
 	r.Get("/dashboard/edit/{id}", handleDashboardEdit)
+
+	r.Get("/filters/edit/*", handleFilterEdit)
+	r.Get("/filters/new", handleFilterNew)
+	r.Get("/filters/*", handleFilterView)
 
 	r.Get("/browse", handleBrowse)
 	r.Get("/browse/files", handleFileOverview)
@@ -831,11 +833,6 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ext == ".filter" {
-		handleFilterFileContent(w, r, filePath, fullPath)
-		return
-	}
-
 	fileContent, err := files.GetFileContent(fullPath)
 	if err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"), http.StatusInternalServerError)
@@ -860,82 +857,57 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleFilterFileContent(w http.ResponseWriter, r *http.Request, filePath, fullPath string) {
-	// read the JSON filter configuration
-	content, err := os.ReadFile(fullPath)
-	if err != nil {
-		http.Error(w, "failed to read filter file", http.StatusInternalServerError)
-		logging.LogError("failed to read filter file %s: %v", fullPath, err)
-		return
-	}
-
-	// parse the filter configuration
-	var config filter.Config
-	if len(content) == 0 {
-		// use default configuration for empty files
-		config = filter.Config{
-			Criteria: []filter.Criteria{},
-			Logic:    "and",
-			Display:  "list",
-			Limit:    50,
-		}
-		logging.LogInfo("using default configuration for empty filter file: %s", fullPath)
-	} else {
-		if err := json.Unmarshal(content, &config); err != nil {
-			http.Error(w, "invalid filter configuration", http.StatusInternalServerError)
-			logging.LogError("failed to parse filter config in %s: %v", fullPath, err)
-			return
-		}
-	}
-
-	// validate the filter configuration
-	if err := filter.ValidateConfig(&config); err != nil {
-		http.Error(w, "invalid filter configuration", http.StatusInternalServerError)
-		logging.LogError("invalid filter config in %s: %v", fullPath, err)
-		return
-	}
-
-	// execute the filter
-	result, err := filter.FilterFilesWithConfig(&config)
-	if err != nil {
-		http.Error(w, "failed to execute filter", http.StatusInternalServerError)
-		logging.LogError("failed to execute filter from %s: %v", fullPath, err)
-		return
-	}
-
-	// render the filter results
-	var html string
-	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
-		// for snippet requests, just return the filter results HTML
-		html = render.RenderFilterResult(result, config.Display)
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
-		return
-	}
-
-	// for full page requests, create a file content structure with the results
-	resultsHTML := render.RenderFilterResult(result, config.Display)
-	filterTitle := fmt.Sprintf("Filter: %s", filepath.Base(filePath))
-
-	// create a synthetic file content structure
-	fileContent := &files.FileContent{
-		HTML: fmt.Sprintf(`<div class="filter-file-view">
-			<h2>%s</h2>
-			%s
-		</div>`,
-			filterTitle,
-			resultsHTML),
-		TOC: []files.TOCItem{},
-	}
-
-	// render through template system
+func handleFilterNew(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileViewTemplateData(filterTitle, filePath, fileContent)
-
-	err = tm.Render(w, "fileview", data)
-	if err != nil {
+	data := thememanager.NewFileNewTemplateData("filter")
+	if err := tm.Render(w, "filenew", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+	}
+}
+
+func handleFilterView(w http.ResponseWriter, r *http.Request) {
+	filterID := strings.TrimPrefix(r.URL.Path, "/filters/")
+
+	config, err := filter.GetFilterConfig(filterID)
+	if err != nil || config == nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "filter not found"), http.StatusNotFound)
 		return
+	}
+
+	if err := filter.ValidateConfig(config); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid filter configuration"), http.StatusInternalServerError)
+		return
+	}
+
+	result, err := filter.FilterFilesWithConfig(config)
+	if err != nil {
+		logging.LogError("failed to execute filter %s: %v", filterID, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to execute filter"), http.StatusInternalServerError)
+		return
+	}
+
+	resultsHTML := render.RenderFilterResult(result, config.Display)
+
+	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(resultsHTML))
+		return
+	}
+
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFilterViewTemplateData(filterID, resultsHTML)
+	if err := tm.Render(w, "filterview", data); err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+	}
+}
+
+func handleFilterEdit(w http.ResponseWriter, r *http.Request) {
+	filterID := strings.TrimPrefix(r.URL.Path, "/filters/edit/")
+
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFilterEditTemplateData(filterID)
+	if err := tm.Render(w, "filteredit", data); err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}
 }
 
@@ -1004,17 +976,6 @@ func handleFileNewMOC(w http.ResponseWriter, r *http.Request) {
 func handleFileNewPermanent(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("permanent")
-
-	err := tm.Render(w, "filenew", data)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-		return
-	}
-}
-
-func handleFileNewFilter(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileNewTemplateData("filter")
 
 	err := tm.Render(w, "filenew", data)
 	if err != nil {
