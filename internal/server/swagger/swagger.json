@@ -4016,6 +4016,36 @@
                 "responses": {}
             }
         },
+        "/api/system/cache": {
+            "delete": {
+                "description": "Removes all cache entries, forcing a rebuild on next access",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Invalidate cache",
+                "responses": {
+                    "200": {
+                        "description": "cache invalidated",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to invalidate cache",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/restart": {
             "post": {
                 "description": "Restarts the application (requires process manager like systemd or docker)",

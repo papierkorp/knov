@@ -84,7 +84,7 @@ func GetAllVirtualFiles() ([]File, error) {
 	}
 	existing := make(map[string]struct{}, len(physical))
 	for _, p := range physical {
-		existing[p] = struct{}{}
+		existing[pathutils.ToWithPrefix(p)] = struct{}{}
 	}
 
 	var result []File

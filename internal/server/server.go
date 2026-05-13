@@ -140,6 +140,7 @@ func StartServerChi() {
 
 		r.Route("/system", func(r chi.Router) {
 			r.Post("/restart", handleAPIRestartApp)
+			r.Delete("/cache", handleAPIInvalidateCache)
 		})
 
 		// ----------------------------------------------------------------------------------------

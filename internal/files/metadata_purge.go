@@ -21,16 +21,9 @@ func MetaDataPurgeStale() (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("failed to get physical files: %w", err)
 	}
-	virtual, err := GetAllVirtualFiles()
-	if err != nil {
-		return 0, fmt.Errorf("failed to get virtual files: %w", err)
-	}
 
-	valid := make(map[string]struct{}, len(physical)+len(virtual))
+	valid := make(map[string]struct{}, len(physical))
 	for _, f := range physical {
-		valid[pathutils.ToWithPrefix(f.Path)] = struct{}{}
-	}
-	for _, f := range virtual {
 		valid[pathutils.ToWithPrefix(f.Path)] = struct{}{}
 	}
 

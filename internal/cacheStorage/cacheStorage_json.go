@@ -151,3 +151,23 @@ func (js *jsonStorage) pathToKey(relPath string) string {
 	key := strings.ReplaceAll(relPath, "_", "/")
 	return key
 }
+
+// Flush removes all cache entries
+func (js *jsonStorage) Flush() error {
+	js.mutex.Lock()
+	defer js.mutex.Unlock()
+
+	err := filepath.Walk(js.basePath, func(path string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return err
+		}
+		return os.Remove(path)
+	})
+	if err != nil {
+		logging.LogError("failed to flush cache: %v", err)
+		return err
+	}
+
+	logging.LogInfo("cache flushed")
+	return nil
+}

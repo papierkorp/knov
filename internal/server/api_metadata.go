@@ -130,15 +130,11 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 	stalePurged, err := files.MetaDataPurgeStale()
 	if err != nil {
 		logging.LogError("failed to purge stale metadata: %v", err)
-	} else {
-		logging.LogInfo("purged %d stale metadata entries", stalePurged)
 	}
 
 	dupPurged, err := files.MetaDataPurgeDuplicates()
 	if err != nil {
 		logging.LogError("failed to purge duplicate metadata: %v", err)
-	} else {
-		logging.LogInfo("purged %d duplicate metadata entries", dupPurged)
 	}
 
 	err = files.MetaDataLinksRebuild()
@@ -150,6 +146,9 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 	data := map[string]string{"status": "metadata initialized"}
 	html := `<span class="status-ok">metadata initialized and rebuilt successfully</span>`
 	writeResponse(w, r, data, html)
+
+	logging.LogInfo("purged %d stale metadata entries", stalePurged)
+	logging.LogInfo("purged %d duplicate metadata entries", dupPurged)
 }
 
 // @Summary Rebuild metadata links for a single file

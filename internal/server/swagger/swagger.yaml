@@ -3072,6 +3072,26 @@ paths:
       summary: Search files
       tags:
       - search
+  /api/system/cache:
+    delete:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Removes all cache entries, forcing a rebuild on next access
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: cache invalidated
+          schema:
+            type: string
+        "500":
+          description: failed to invalidate cache
+          schema:
+            type: string
+      summary: Invalidate cache
+      tags:
+      - system
   /api/system/restart:
     post:
       consumes:

@@ -3,6 +3,7 @@ package files
 
 import (
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -553,5 +554,14 @@ func UpdateOrphanedMediaCacheForFile(filePath string) error {
 	}
 
 	logging.LogDebug("incrementally updated orphaned media cache: checked %d affected files", len(affectedMediaFiles))
+	return nil
+}
+
+// CacheInvalidate removes all cache entries, forcing a rebuild on next access
+func CacheInvalidate() error {
+	if err := cacheStorage.Flush(); err != nil {
+		return fmt.Errorf("failed to invalidate cache: %w", err)
+	}
+	logging.LogInfo("cache invalidated")
 	return nil
 }

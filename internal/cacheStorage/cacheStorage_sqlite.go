@@ -162,3 +162,18 @@ func (ss *sqliteStorage) Exists(key string) bool {
 func (ss *sqliteStorage) GetBackendType() string {
 	return "sqlite"
 }
+
+// Flush removes all cache entries
+func (ss *sqliteStorage) Flush() error {
+	ss.mutex.Lock()
+	defer ss.mutex.Unlock()
+
+	_, err := ss.db.Exec("DELETE FROM cache")
+	if err != nil {
+		logging.LogError("failed to flush cache: %v", err)
+		return err
+	}
+
+	logging.LogInfo("cache flushed")
+	return nil
+}

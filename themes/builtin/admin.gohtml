@@ -47,6 +47,9 @@
                         <button type="button" hx-post="/api/cronjob" hx-target="#cronjob-result">
                             {{T "Run Cronjob"}}
                         </button>
+                        <button type="button" hx-delete="/api/system/cache" hx-target="#cache-result" hx-confirm="{{T "Invalidate the cache? It will be rebuilt automatically."}}">
+                            {{T "Invalidate Cache"}}
+                        </button>
                         <button type="button" hx-post="/api/system/restart" hx-target="#restart-result" hx-confirm="{{T "Restart the system? This will disconnect all users."}}">
                             {{T "Restart System"}}
                         </button>
@@ -54,6 +57,7 @@
                     <div id="rebuild-result"></div>
                     <div id="cronjob-result"></div>
                     <div id="restart-result"></div>
+                    <div id="cache-result"></div>
                 </div>
 
                 <div class="admin-card">

@@ -15,6 +15,7 @@ type CacheStorage interface {
 	List(prefix string) ([]string, error)
 	Exists(key string) bool
 	GetBackendType() string
+	Flush() error
 }
 
 var storage CacheStorage
@@ -69,4 +70,9 @@ func Exists(key string) bool {
 // GetBackendType returns the backend type
 func GetBackendType() string {
 	return storage.GetBackendType()
+}
+
+// Flush removes all cache entries
+func Flush() error {
+	return storage.Flush()
 }
