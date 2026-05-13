@@ -63,7 +63,6 @@ func (ss *sqliteStorage) initialize() error {
 	query := `
 	CREATE TABLE IF NOT EXISTS metadata (
 		path TEXT PRIMARY KEY,
-		name TEXT,
 		title TEXT,
 		created_at DATETIME,
 		last_edited DATETIME,
@@ -71,7 +70,6 @@ func (ss *sqliteStorage) initialize() error {
 		collection TEXT,
 		folders TEXT,
 		tags TEXT,
-		boards TEXT,
 		ancestor TEXT,
 		parents TEXT,
 		kids TEXT,
@@ -111,14 +109,13 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	defer ss.mutex.RUnlock()
 
 	query := `
-	SELECT name, title, created_at, last_edited, target_date, collection,
-	       folders, tags, boards, ancestor, parents, kids, used_links, links_to_here,
+	SELECT title, created_at, last_edited, target_date, collection,
+	       folders, tags, ancestor, parents, kids, used_links, links_to_here,
 	       file_type, status, priority, size, COALESCE(references, '') as references
 	FROM metadata WHERE path = ?
 	`
 
 	var meta struct {
-		Name        string
 		Title       string
 		CreatedAt   *time.Time
 		LastEdited  *time.Time
@@ -126,7 +123,6 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		Collection  string
 		Folders     string
 		Tags        string
-		Boards      string
 		Ancestor    string
 		Parents     string
 		Kids        string
@@ -140,8 +136,8 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	}
 
 	err := ss.db.QueryRow(query, key).Scan(
-		&meta.Name, &meta.Title, &meta.CreatedAt, &meta.LastEdited, &meta.TargetDate,
-		&meta.Collection, &meta.Folders, &meta.Tags, &meta.Boards, &meta.Ancestor,
+		&meta.Title, &meta.CreatedAt, &meta.LastEdited, &meta.TargetDate,
+		&meta.Collection, &meta.Folders, &meta.Tags, &meta.Ancestor,
 		&meta.Parents, &meta.Kids, &meta.UsedLinks, &meta.LinksToHere, &meta.FileType,
 		&meta.Status, &meta.Priority, &meta.Size, &meta.References,
 	)
@@ -157,7 +153,6 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	// convert to metadata JSON format
 	result := map[string]interface{}{
 		"path":       key,
-		"name":       meta.Name,
 		"title":      meta.Title,
 		"collection": meta.Collection,
 		"type":       meta.FileType,
@@ -187,12 +182,6 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		var tags []string
 		if err := json.Unmarshal([]byte(meta.Tags), &tags); err == nil {
 			result["tags"] = tags
-		}
-	}
-	if meta.Boards != "" {
-		var boards []string
-		if err := json.Unmarshal([]byte(meta.Boards), &boards); err == nil {
-			result["boards"] = boards
 		}
 	}
 	if meta.Ancestor != "" {
@@ -308,15 +297,14 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 
 	query := `
 	INSERT OR REPLACE INTO metadata (
-		path, name, title, created_at, last_edited, target_date, collection,
-		folders, tags, boards, ancestor, parents, kids, used_links, links_to_here,
+		path, title, created_at, last_edited, target_date, collection,
+		folders, tags, ancestor, parents, kids, used_links, links_to_here,
 		file_type, status, priority, size, references
 	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	_, err := ss.db.Exec(query,
 		key,
-		getString("name"),
 		getString("title"),
 		getTime("createdAt"),
 		getTime("lastEdited"),
@@ -324,7 +312,6 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 		getString("collection"),
 		marshalArray("folders"),
 		marshalArray("tags"),
-		marshalArray("boards"),
 		marshalArray("ancestor"),
 		marshalArray("parents"),
 		marshalArray("kids"),

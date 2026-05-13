@@ -140,7 +140,6 @@ func IsValidStatus(s Status) bool {
 
 // Metadata represents file metadata
 type Metadata struct {
-	Name        string      `json:"name"`                 // manual filename
 	Path        string      `json:"path"`                 // auto
 	Title       string      `json:"title"`                // auto
 	CreatedAt   time.Time   `json:"createdAt"`            // auto
@@ -149,7 +148,6 @@ type Metadata struct {
 	Collection  string      `json:"collection"`           // auto / manual possible
 	Folders     []string    `json:"folders"`              // auto
 	Tags        []string    `json:"tags"`                 // manual
-	Boards      []string    `json:"boards"`               // auto
 	Ancestor    []string    `json:"ancestor"`             // auto
 	Parents     []string    `json:"parents"`              // manual
 	Kids        []string    `json:"kids"`                 // auto
@@ -159,7 +157,6 @@ type Metadata struct {
 	Status      Status      `json:"status"`               // manual
 	Priority    Priority    `json:"priority"`             // manual
 	Size        int64       `json:"size"`                 // auto
-	Folder      string      `json:"folder"`               // auto
 	References  []Reference `json:"references,omitempty"` // manual
 }
 
@@ -230,20 +227,11 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		}
 	}
 
-	// update folder field
-	if folderPath == "." {
-		currentMetadata.Folder = ""
-	} else {
-		currentMetadata.Folder = folderPath
-	}
-
 	// handle optional fields from newMetadata - only update if provided
 	if len(newMetadata.Tags) > 0 {
 		currentMetadata.Tags = newMetadata.Tags
 	}
-	if len(newMetadata.Boards) > 0 {
-		currentMetadata.Boards = newMetadata.Boards
-	}
+
 	if len(newMetadata.Parents) > 0 {
 		// store old parents for cleanup
 		var oldParents []string
@@ -291,18 +279,9 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		currentMetadata.References = newMetadata.References
 	}
 
-	// update name with filename if not set
-	if currentMetadata.Name == "" {
-		filename := filepath.Base(currentMetadata.Path)
-		currentMetadata.Name = strings.TrimSuffix(filename, filepath.Ext(filename))
-	}
-
 	// make sure required fields are initialized
 	if currentMetadata.Tags == nil {
 		currentMetadata.Tags = []string{}
-	}
-	if currentMetadata.Boards == nil {
-		currentMetadata.Boards = []string{}
 	}
 	if currentMetadata.Parents == nil {
 		currentMetadata.Parents = []string{}

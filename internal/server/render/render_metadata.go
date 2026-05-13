@@ -187,7 +187,7 @@ func RenderMetadataCSV(metadata []*files.Metadata) string {
 	var csv strings.Builder
 
 	// header
-	csv.WriteString("path,name,collection,filetype,status,priority,createdat,lastedited,tags,folders\n")
+	csv.WriteString("path,title,collection,filetype,status,priority,createdat,lastedited,tags,folders\n")
 
 	for _, m := range metadata {
 		if m == nil {
@@ -196,7 +196,7 @@ func RenderMetadataCSV(metadata []*files.Metadata) string {
 
 		// escape csv values
 		path := escapeCSV(m.Path)
-		name := escapeCSV(m.Name)
+		name := escapeCSV(m.Title)
 		collection := escapeCSV(m.Collection)
 		filetype := escapeCSV(string(m.FileType))
 		status := escapeCSV(string(m.Status))

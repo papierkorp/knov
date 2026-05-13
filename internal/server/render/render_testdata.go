@@ -214,7 +214,7 @@ func RenderFilterTestMetadataTable(metadataList []*files.Metadata) string {
 		html.WriteString(fmt.Sprintf(`<tr%s>`, rowClass))
 
 		// name
-		html.WriteString(fmt.Sprintf(`<td class="cell-name">%s</td>`, metadata.Name))
+		html.WriteString(fmt.Sprintf(`<td class="cell-name">%s</td>`, metadata.Title))
 
 		// path
 		html.WriteString(fmt.Sprintf(`<td class="cell-path">%s</td>`, metadata.Path))

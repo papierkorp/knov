@@ -153,20 +153,13 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 	var metadataValue string
 
 	switch criterion.Metadata {
-	case "name":
-		metadataValue = metadata.Name
+	case "title":
+		metadataValue = metadata.Title
 	case "collection":
 		metadataValue = metadata.Collection
 	case "tags":
 		for _, tag := range metadata.Tags {
 			if matchesOperator(tag, criterion.Operator, criterion.Value) {
-				return true
-			}
-		}
-		return false
-	case "boards":
-		for _, board := range metadata.Boards {
-			if matchesOperator(board, criterion.Operator, criterion.Value) {
 				return true
 			}
 		}
@@ -246,10 +239,9 @@ func matchesOperator(metadataValue, operator, criteriaValue string) bool {
 // GetMetadataFields returns available metadata fields for filtering
 func GetMetadataFields() []string {
 	return []string{
-		"name",
+		"title",
 		"collection",
 		"tags",
-		"boards",
 		"type",
 		"status",
 		"priority",

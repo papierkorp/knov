@@ -368,14 +368,12 @@ func createTestMetadata() error {
 		}
 
 		metadata := &files.Metadata{
-			Name:       filename,
 			Path:       metadataPath,
 			CreatedAt:  time.Date(2025, 9, createDay, 8+(i%8), (i*7)%60, 0, 0, time.UTC),
 			LastEdited: time.Date(2025, 9, editDay, 10+(i%6), (i*13)%60, 0, 0, time.UTC),
 			Collection: collection,
 			Folders:    validFolders,
 			Tags:       tags,
-			Boards:     []string{},
 			Parents:    parents,
 			FileType:   fileType,
 			Status:     status,

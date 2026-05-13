@@ -120,8 +120,10 @@ func GetAllFolders() (FolderCount, error) {
 		if err != nil || metadata == nil {
 			continue
 		}
-		if metadata.Folder != "" {
-			folderCount[metadata.Folder]++
+		for _, f := range metadata.Folders {
+			if f != "" {
+				folderCount[f]++
+			}
 		}
 	}
 
@@ -308,11 +310,6 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 	// collect collections
 	if metadata.Collection != "" {
 		mc.Collections[metadata.Collection] = true
-	}
-
-	// collect folders
-	if metadata.Folder != "" {
-		mc.Folders[metadata.Folder] = true
 	}
 
 	// collect folder paths from file path

@@ -4597,22 +4597,11 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "boards": {
-                    "description": "auto",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "collection": {
                     "description": "auto / manual possible",
                     "type": "string"
                 },
                 "createdAt": {
-                    "description": "auto",
-                    "type": "string"
-                },
-                "folder": {
                     "description": "auto",
                     "type": "string"
                 },
@@ -4640,10 +4629,6 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
-                },
-                "name": {
-                    "description": "manual filename",
-                    "type": "string"
                 },
                 "parents": {
                     "description": "manual",

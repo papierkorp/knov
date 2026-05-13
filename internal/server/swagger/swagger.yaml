@@ -169,18 +169,10 @@ definitions:
         items:
           type: string
         type: array
-      boards:
-        description: auto
-        items:
-          type: string
-        type: array
       collection:
         description: auto / manual possible
         type: string
       createdAt:
-        description: auto
-        type: string
-      folder:
         description: auto
         type: string
       folders:
@@ -201,9 +193,6 @@ definitions:
         items:
           type: string
         type: array
-      name:
-        description: manual filename
-        type: string
       parents:
         description: manual
         items:
