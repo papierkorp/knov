@@ -2122,7 +2122,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/filter": {
+        "/api/filters": {
             "post": {
                 "description": "Save filter configuration to config storage",
                 "consumes": [
@@ -2185,7 +2185,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/filter/add-criteria": {
+        "/api/filters/add-criteria": {
             "post": {
                 "description": "Add new filter criteria row for filter forms",
                 "consumes": [
@@ -2208,7 +2208,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/filter/criteria-row": {
+        "/api/filters/criteria-row": {
             "get": {
                 "description": "Get HTML for a new filter criteria row",
                 "consumes": [
@@ -2239,38 +2239,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/filter/form": {
-            "get": {
-                "description": "Get HTML for complete filter form",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "filter"
-                ],
-                "summary": "Get filter form",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Filter configuration JSON",
-                        "name": "config",
-                        "in": "formData"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "filter form html",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/filter/value-input": {
+        "/api/filters/value-input": {
             "get": {
                 "description": "Get HTML for filter value input based on metadata field type",
                 "consumes": [
@@ -2308,6 +2277,35 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "filter value input html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/filters/{id}": {
+            "delete": {
+                "description": "Delete a filter from config storage and its metadata",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "filter"
+                ],
+                "summary": "Delete filter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "filter id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "deleted",
                         "schema": {
                             "type": "string"
                         }

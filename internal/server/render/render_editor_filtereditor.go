@@ -32,7 +32,7 @@ func RenderFilterEditor(filterID string) (string, error) {
 	html.WriteString(`</div>`)
 	html.WriteString(`<div class="filter-results-container">`)
 	html.WriteString(`<h4>` + translation.SprintfForRequest(configmanager.GetLanguage(), "filter preview") + `</h4>`)
-	html.WriteString(`<button type="button" hx-post="/api/filter" hx-include="#filter-form" hx-target="#filter-results" class="btn-secondary">` + translation.SprintfForRequest(configmanager.GetLanguage(), "preview results") + `</button>`)
+	html.WriteString(`<button type="button" hx-post="/api/filters" hx-include="#filter-form" hx-target="#filter-results" class="btn-secondary">` + translation.SprintfForRequest(configmanager.GetLanguage(), "preview results") + `</button>`)
 	html.WriteString(`<div id="filter-results" class="filter-results">`)
 	html.WriteString(`<p class="filter-no-results">` + translation.SprintfForRequest(configmanager.GetLanguage(), "configure filter above and click preview to see results") + `</p>`)
 	html.WriteString(`</div></div></div>`)

@@ -1797,7 +1797,7 @@ paths:
       summary: Restore file version
       tags:
       - files
-  /api/filter:
+  /api/filters:
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -1839,7 +1839,26 @@ paths:
       summary: Save filter configuration
       tags:
       - filter
-  /api/filter/add-criteria:
+  /api/filters/{id}:
+    delete:
+      description: Delete a filter from config storage and its metadata
+      parameters:
+      - description: filter id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: deleted
+          schema:
+            type: string
+      summary: Delete filter
+      tags:
+      - filter
+  /api/filters/add-criteria:
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -1854,7 +1873,7 @@ paths:
       summary: Add filter criteria
       tags:
       - filter
-  /api/filter/criteria-row:
+  /api/filters/criteria-row:
     get:
       consumes:
       - application/x-www-form-urlencoded
@@ -1874,27 +1893,7 @@ paths:
       summary: Get filter criteria row
       tags:
       - filter
-  /api/filter/form:
-    get:
-      consumes:
-      - application/x-www-form-urlencoded
-      description: Get HTML for complete filter form
-      parameters:
-      - description: Filter configuration JSON
-        in: formData
-        name: config
-        type: string
-      produces:
-      - text/html
-      responses:
-        "200":
-          description: filter form html
-          schema:
-            type: string
-      summary: Get filter form
-      tags:
-      - filter
-  /api/filter/value-input:
+  /api/filters/value-input:
     get:
       consumes:
       - application/x-www-form-urlencoded

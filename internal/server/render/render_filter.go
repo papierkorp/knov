@@ -42,10 +42,13 @@ type FilterFormOpts struct {
 func RenderFilterForm(opts FilterFormOpts) string {
 	var html strings.Builder
 
-	action, submitLabel, submitTarget, criteriaTarget := resolveFilterFormContext(opts)
+	submitLabel, criteriaTarget := resolveFilterFormContext(opts)
 
-	html.WriteString(fmt.Sprintf(`<form id="%s" hx-post="%s" hx-target="%s">`,
-		filterFormID(opts), action, submitTarget))
+	if opts.Context != FilterFormContextDashboard {
+		action, submitTarget := resolveFilterFormActionTarget(opts)
+		html.WriteString(fmt.Sprintf(`<form id="%s" hx-post="%s" hx-target="%s">`,
+			filterFormID(opts), action, submitTarget))
+	}
 
 	// id field (save context only)
 	if opts.Context == FilterFormContextSave {
@@ -67,7 +70,7 @@ func RenderFilterForm(opts FilterFormOpts) string {
 	html.WriteString(fmt.Sprintf(`<button type="submit" class="btn-primary">%s</button>`, submitLabel))
 	html.WriteString(renderLogicSelect(opts))
 	html.WriteString(fmt.Sprintf(
-		`<button type="button" hx-post="/api/filter/add-criteria" hx-target="#%s" hx-swap="beforeend"%s class="btn-secondary">%s</button>`,
+		`<button type="button" hx-post="/api/filters/add-criteria" hx-target="#%s" hx-swap="beforeend"%s class="btn-secondary">%s</button>`,
 		criteriaTarget,
 		widgetIndexVals(opts),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add filter")))
@@ -93,7 +96,9 @@ func RenderFilterForm(opts FilterFormOpts) string {
 	}
 	html.WriteString(`</div>`)
 
-	html.WriteString(`</form>`)
+	if opts.Context != FilterFormContextDashboard {
+		html.WriteString(`</form>`)
+	}
 	return html.String()
 }
 
@@ -129,25 +134,27 @@ func filterFieldName(opts FilterFormOpts, field string) string {
 	return field
 }
 
-func resolveFilterFormContext(opts FilterFormOpts) (action, submitLabel, submitTarget, criteriaTarget string) {
+func resolveFilterFormContext(opts FilterFormOpts) (submitLabel, criteriaTarget string) {
 	switch opts.Context {
 	case FilterFormContextSave:
-		action = "/api/filter/save"
-		submitLabel = translation.SprintfForRequest(configmanager.GetLanguage(), "save filter")
-		submitTarget = "#editor-status"
-		criteriaTarget = "filter-criteria-container"
+		return translation.SprintfForRequest(configmanager.GetLanguage(), "save filter"),
+			"filter-criteria-container"
 	case FilterFormContextDashboard:
-		action = fmt.Sprintf("/api/dashboards/widget/widget-%d", opts.WidgetIndex)
-		submitLabel = translation.SprintfForRequest(configmanager.GetLanguage(), "apply filter")
-		submitTarget = fmt.Sprintf("#filter-preview-results-%d", opts.WidgetIndex)
-		criteriaTarget = fmt.Sprintf("filter-criteria-container-%d", opts.WidgetIndex)
+		return translation.SprintfForRequest(configmanager.GetLanguage(), "apply filter"),
+			fmt.Sprintf("filter-criteria-container-%d", opts.WidgetIndex)
 	default: // FilterFormContextApply
-		action = "/api/filter"
-		submitLabel = translation.SprintfForRequest(configmanager.GetLanguage(), "apply filter")
-		submitTarget = "#filter-results"
-		criteriaTarget = "filter-criteria-container"
+		return translation.SprintfForRequest(configmanager.GetLanguage(), "apply filter"),
+			"filter-criteria-container"
 	}
-	return
+}
+
+func resolveFilterFormActionTarget(opts FilterFormOpts) (action, submitTarget string) {
+	switch opts.Context {
+	case FilterFormContextSave:
+		return "/api/filters/save", "#editor-status"
+	default: // FilterFormContextApply
+		return "/api/filters", "#filter-results"
+	}
 }
 
 func renderLogicSelect(opts FilterFormOpts) string {
@@ -255,7 +262,7 @@ func RenderFilterCriteriaRow(widgetIndex, rowIndex int, criteria *filter.Criteri
 	if widgetIndex >= 0 {
 		hxVals = fmt.Sprintf(`{"row_index": "%d", "widget_index": "%d"}`, rowIndex, widgetIndex)
 	}
-	html.WriteString(fmt.Sprintf(`<select name="%s" class="form-select" hx-get="/api/filter/value-input" hx-target="#%s" hx-swap="innerHTML" hx-vals='%s' hx-include="this">`,
+	html.WriteString(fmt.Sprintf(`<select name="%s" class="form-select" hx-get="/api/filters/value-input" hx-target="#%s" hx-swap="innerHTML" hx-vals='%s' hx-include="this">`,
 		criteriaFieldName(widgetIndex, rowIndex, "metadata"), containerID, hxVals))
 	html.WriteString(`<option value="">` + translation.SprintfForRequest(configmanager.GetLanguage(), "select field") + `</option>`)
 	selectedMetadata := ""

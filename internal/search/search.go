@@ -30,7 +30,7 @@ func InitSearch() error {
 
 // IndexAllFiles indexes all files for search
 func IndexAllFiles() error {
-	allFiles, err := files.GetAllFiles()
+	allFiles, err := files.GetAllPhysicalFiles()
 	if err != nil {
 		return fmt.Errorf("failed to get all files: %w", err)
 	}

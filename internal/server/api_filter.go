@@ -2,15 +2,17 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -28,7 +30,7 @@ import (
 // @Param limit formData int false "Maximum number of results" default(50)
 // @Produce json,html
 // @Success 200 {object} filter.Result
-// @Router /api/filter [post]
+// @Router /api/filters [post]
 func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 	logging.LogDebug("filter request received")
 
@@ -73,7 +75,7 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 // @Param row_index formData int false "Row index"
 // @Produce text/html
 // @Success 200 {string} string "filter criteria row html"
-// @Router /api/filter/criteria-row [get]
+// @Router /api/filters/criteria-row [get]
 func handleAPIGetFilterCriteriaRow(w http.ResponseWriter, r *http.Request) {
 	indexStr := r.URL.Query().Get("row_index")
 	if indexStr == "" {
@@ -102,7 +104,7 @@ func handleAPIGetFilterCriteriaRow(w http.ResponseWriter, r *http.Request) {
 // @Param logic formData string false "Logic operator (and/or)" default(and)
 // @Produce html
 // @Success 200 {string} string "success message"
-// @Router /api/filter [post]
+// @Router /api/filters [post]
 func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		w.Header().Set("Content-Type", "text/html")
@@ -139,33 +141,6 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "filter saved successfully!"), filterID)
 }
 
-// @Summary Get filter form
-// @Description Get HTML for complete filter form
-// @Tags filter
-// @Accept application/x-www-form-urlencoded
-// @Param config formData string false "Filter configuration JSON"
-// @Produce text/html
-// @Success 200 {string} string "filter form html"
-// @Router /api/filter/form [get]
-func handleAPIGetFilterForm(w http.ResponseWriter, r *http.Request) {
-	configStr := r.URL.Query().Get("config")
-	var config *filter.Config
-
-	if configStr != "" {
-		config = &filter.Config{}
-		if err := json.Unmarshal([]byte(configStr), config); err != nil {
-			logging.LogError("failed to parse filter config: %v", err)
-		}
-	}
-
-	html := render.RenderFilterForm(render.FilterFormOpts{
-		Context: render.FilterFormContextApply,
-		Config:  config,
-	})
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
-}
-
 // @Summary Get filter value input
 // @Description Get HTML for filter value input based on metadata field type
 // @Tags filter
@@ -175,7 +150,7 @@ func handleAPIGetFilterForm(w http.ResponseWriter, r *http.Request) {
 // @Param value formData string false "Current value"
 // @Produce text/html
 // @Success 200 {string} string "filter value input html"
-// @Router /api/filter/value-input [get]
+// @Router /api/filters/value-input [get]
 func handleAPIGetFilterValueInput(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
@@ -218,7 +193,7 @@ func handleAPIGetFilterValueInput(w http.ResponseWriter, r *http.Request) {
 // @Accept application/x-www-form-urlencoded
 // @Produce text/html
 // @Success 200 {string} string "filter criteria row html"
-// @Router /api/filter/add-criteria [post]
+// @Router /api/filters/add-criteria [post]
 func handleAPIAddFilterCriteria(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
@@ -237,4 +212,31 @@ func handleAPIAddFilterCriteria(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
+}
+
+// @Summary Delete filter
+// @Description Delete a filter from config storage and its metadata
+// @Tags filter
+// @Param id path string true "filter id"
+// @Produce html
+// @Success 200 {string} string "deleted"
+// @Router /api/filters/{id} [delete]
+func handleAPIFilterDelete(w http.ResponseWriter, r *http.Request) {
+	filterID := strings.TrimPrefix(r.URL.Path, "/api/filters/")
+
+	if err := filter.DeleteFilterConfig(filterID); err != nil {
+		logging.LogError("failed to delete filter config %s: %v", filterID, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete filter"), http.StatusInternalServerError)
+		return
+	}
+
+	virtualPath := pathutils.ToWithPrefix(filterID + ".filter")
+	if err := files.MetaDataDelete(virtualPath); err != nil {
+		logging.LogWarning("failed to delete filter metadata %s: %v", virtualPath, err)
+	}
+
+	logging.LogInfo("deleted filter: %s", filterID)
+	w.Header().Set("Content-Type", "text/html")
+	fmt.Fprintf(w, `<div class="status-ok">%s</div><script>setTimeout(() => window.location.href = '/', 1000);</script>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "filter deleted"))
 }

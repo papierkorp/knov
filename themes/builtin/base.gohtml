@@ -218,11 +218,14 @@ if (fileMatch && !path.includes('/edit/')) {
 
 }
 
-const filterMatch = path.match(/^\/filters\/(?!new$)(.+)/);
-if (filterMatch && !path.includes('/edit/')) {
+// Handle filter view/edit
+const filterMatch = path.match(/^\/filters\/(?!new$|edit\/)(.+)/);
+if (filterMatch) {
     const filterId = filterMatch[1];
     document.getElementById('edit-link').href = `/filters/edit/${filterId}`;
     document.getElementById('history-link').removeAttribute('href');
+    document.getElementById('delete-form').setAttribute('hx-delete', `/api/filters/${filterId}`);
+    document.getElementById('delete-form').setAttribute('hx-target', '#delete-result');
 }
 
 // Position popovers relative to their trigger buttons
