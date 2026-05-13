@@ -32,12 +32,9 @@ if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err 
 })
 
 
-# save filter files in storage instead of data
+# filter
 
-i want to save the filter files alongside dashboard in the configStorage now instead of saving it as a file
-i want it to still pop as a file type in the filter itself
-what are the steps i would have to take to make this possible?
-
+create filter manually not per ai..
 
 # daily
 
