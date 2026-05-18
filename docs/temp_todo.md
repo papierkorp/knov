@@ -1,5 +1,7 @@
 # small stuff
 
+- overview - browsefiles doesnt work anymore
+- overview: show folder tree instead of everything in a single level
 - make rebuild metadata concurrent e.g. each letter?
 - in references sidebar add - add button, remove button and edit button to header?
 - why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)
