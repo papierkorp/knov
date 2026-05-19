@@ -104,7 +104,7 @@ func handleAPIGetFilterCriteriaRow(w http.ResponseWriter, r *http.Request) {
 // @Param logic formData string false "Logic operator (and/or)" default(and)
 // @Produce html
 // @Success 200 {string} string "success message"
-// @Router /api/filters [post]
+// @Router /api/filters/save [post]
 func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		w.Header().Set("Content-Type", "text/html")
