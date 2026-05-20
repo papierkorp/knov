@@ -1,0 +1,212 @@
+/* Todo Editor Styles - extends listeditor base styles */
+
+#component-todo-editor * {
+  box-sizing: border-box;
+}
+
+#component-todo-editor ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#component-todo-editor .form-group {
+  margin-bottom: 16px;
+}
+
+#component-todo-editor .form-group label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+#component-todo-editor input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+#component-todo-editor input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+#component-todo-editor .item-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  position: relative;
+}
+
+#component-todo-editor .drag-handle {
+  cursor: move;
+  padding: 4px 8px;
+  margin-right: 6px;
+  color: var(--text-secondary, #6c757d);
+  font-size: 18px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+#component-todo-editor .drag-handle:hover {
+  color: var(--text);
+}
+
+#component-todo-editor .nested-list {
+  margin-left: 40px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+#component-todo-editor .sortable-ghost {
+  opacity: 0.4;
+  background: var(--primary, #007bff);
+}
+
+#component-todo-editor .list-item {
+  position: relative;
+}
+
+#component-todo-editor .list-item.selected > .item-row {
+  background: var(--item-selected-bg, rgba(0, 123, 255, 0.07));
+  border-radius: 4px;
+}
+
+#component-todo-editor .list-item.drop-as-child > .item-row {
+  outline: 2px dashed var(--primary, #007bff);
+  border-radius: 4px;
+  background: var(--primary-bg, rgba(0, 123, 255, 0.07));
+}
+
+/* state badge */
+#component-todo-editor .state-btn {
+  flex-shrink: 0;
+  margin-right: 8px;
+  padding: 2px 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 0.9rem;
+  border-radius: 3px;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+#component-todo-editor .state-btn:hover {
+  opacity: 0.7;
+}
+
+#component-todo-editor .state-open {
+  color: var(--text-secondary);
+}
+
+#component-todo-editor .state-done {
+  color: var(--success, #28a745);
+}
+
+#component-todo-editor .state-cancelled {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+#component-todo-editor .state-waiting {
+  color: var(--warning, #ffc107);
+}
+
+/* strikethrough for done/cancelled items */
+#component-todo-editor .item-input.item-struck {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+#component-todo-editor .item-input.item-waiting {
+  font-style: italic;
+}
+
+#component-todo-editor .item-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.95rem;
+  height: 36px;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+#component-todo-editor .item-input:hover {
+  border-color: var(--border);
+  background: var(--bg);
+}
+
+#component-todo-editor .item-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--bg);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+#component-todo-editor .controls {
+  margin-bottom: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#component-todo-editor .controls button {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+#component-todo-editor .controls button:hover {
+  background: var(--bg-secondary, #f0f0f0);
+}
+
+#component-todo-editor .controls .separator {
+  margin: 0 4px;
+  color: var(--border);
+  align-self: center;
+}
+
+#component-todo-editor .controls .danger {
+  background: var(--danger, #dc3545);
+  color: white;
+  border-color: var(--danger, #dc3545);
+}
+
+#component-todo-editor .controls .danger:hover {
+  opacity: 0.85;
+}
+
+#component-todo-editor .form-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+#component-todo-editor .editor-container {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 0;
+  min-height: 400px;
+}

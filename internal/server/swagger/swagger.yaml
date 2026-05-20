@@ -1354,6 +1354,29 @@ paths:
       summary: Get textarea editor component
       tags:
       - editor
+  /api/editor/todoeditor:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Saves a todo file using GFM checkbox syntax (- [ ] / - [X] / -
+        [-] / - [O])
+      parameters:
+      - description: file path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: todo content as json
+        in: formData
+        name: content
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Save todo editor
+      tags:
+      - editor
   /api/files/browse:
     get:
       parameters:

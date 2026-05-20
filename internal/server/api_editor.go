@@ -28,6 +28,7 @@ const (
 	editorTypeTextarea editorType = "textarea-editor"
 	editorTypeFilter   editorType = "filter-editor"
 	editorTypeList     editorType = "list-editor"
+	editorTypeTodo     editorType = "todo-editor"
 	editorTypeIndex    editorType = "index-editor"
 )
 
@@ -47,7 +48,9 @@ func GetEditor(filepath string) (editorType, error) {
 	// if metadata exists, use FileType to determine editor
 	if err == nil && metadata != nil {
 		switch metadata.FileType {
-		case files.FileTypeTodo, files.FileTypeJournaling:
+		case files.FileTypeTodo:
+			return editorTypeTodo, nil
+		case files.FileTypeJournaling:
 			return editorTypeList, nil
 		case files.FileTypeFilter:
 			return editorTypeFilter, nil
@@ -97,7 +100,9 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	// if filetype parameter is provided (for new files), use that to determine editor
 	if filetype != "" {
 		switch files.Filetype(filetype) {
-		case files.FileTypeTodo, files.FileTypeJournaling:
+		case files.FileTypeTodo:
+			editorType = editorTypeTodo
+		case files.FileTypeJournaling:
 			editorType = editorTypeList
 		case files.FileTypeFilter:
 			editorType = editorTypeFilter
@@ -143,6 +148,12 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 			html = render.RenderListEditor(filepath, "")
 		} else {
 			html = render.RenderListEditor(filepath)
+		}
+	case editorTypeTodo:
+		if filepath == "" {
+			html = render.RenderTodoEditor(filepath, "")
+		} else {
+			html = render.RenderTodoEditor(filepath)
 		}
 	case editorTypeFilter:
 		var renderErr error
@@ -462,6 +473,92 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("saved list file: %s", filePath)
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"),
+		filePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(render.RenderStatusMessage(render.StatusOK, successMsg)))
+}
+
+// @Summary Save todo editor
+// @Description Saves a todo file using GFM checkbox syntax (- [ ] / - [X] / - [-] / - [O])
+// @Tags editor
+// @Accept x-www-form-urlencoded
+// @Param filepath formData string true "file path"
+// @Param content formData string true "todo content as json"
+// @Produce html
+// @Router /api/editor/todoeditor [post]
+func handleAPISaveTodoEditor(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+
+	filePath := r.FormValue("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
+		return
+	}
+
+	content := r.FormValue("content")
+
+	// ensure .todo extension
+	if !strings.HasSuffix(filePath, ".todo") && !strings.HasSuffix(filePath, ".list") {
+		filePath = filePath + ".todo"
+	}
+
+	// parse JSON content from frontend
+	var listItems []render.ListItem
+	if err := json.Unmarshal([]byte(content), &listItems); err != nil {
+		logging.LogError("failed to parse todo items: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse todo content"), http.StatusBadRequest)
+		return
+	}
+
+	// convert to GFM checkbox markdown
+	markdown := render.ConvertTodoItemsToMarkdown(listItems, 0)
+
+	fullPath := pathutils.ToDocsPath(filePath)
+
+	dir := filepath.Dir(fullPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		logging.LogError("failed to create directory %s: %v", dir, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
+		return
+	}
+
+	if err := contentStorage.WriteFile(fullPath, []byte(markdown), 0644); err != nil {
+		logging.LogError("failed to write todo file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save todo"), http.StatusInternalServerError)
+		return
+	}
+
+	filetype := files.FileTypeTodo
+	if strings.Contains(strings.ToLower(filePath), "journal") {
+		filetype = files.FileTypeJournaling
+	}
+
+	metadata := &files.Metadata{
+		Path:     filepath.Join("docs", filePath),
+		FileType: filetype,
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		logging.LogError("failed to save metadata for todo file %s: %v", filePath, err)
+	} else {
+		logging.LogInfo("saved metadata for todo file: %s (filetype: %s)", filePath, filetype)
+	}
+
+	normalizedPath := filepath.Join("docs", filePath)
+	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
+		logging.LogWarning("failed to update links for file %s: %v", filePath, err)
+	}
+	if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
+		logging.LogWarning("failed to update orphaned media cache: %v", err)
+	}
+
+	logging.LogInfo("saved todo file: %s", filePath)
+	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "todo saved successfully"),
 		filePath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 	w.Header().Set("Content-Type", "text/html")
