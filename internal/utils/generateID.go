@@ -11,7 +11,7 @@ import (
 // GenerateID generates a unique ID from header text with collision handling
 func GenerateID(text string, usedIDs map[string]int) string {
 	id := strings.ToLower(text)
-	id = regexp.MustCompile(`[^a-z0-9]+`).ReplaceAllString(id, "-")
+	id = regexp.MustCompile(`[^\p{L}\p{N}]+`).ReplaceAllString(id, "-")
 	id = strings.Trim(id, "-")
 
 	if id == "" {
