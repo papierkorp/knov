@@ -1,188 +1,202 @@
 /* List Editor Styles */
 
 #component-list-editor * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 #component-list-editor ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-/* Enhanced form styling for list editor - match new markdown file design */
 #component-list-editor .form-group {
-    margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 
 #component-list-editor .form-group label {
-    display: block;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
-    font-weight: 500;
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
 #component-list-editor input[type="text"] {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: var(--bg);
-    color: var(--text);
-    font-size: 0.9rem;
-    box-sizing: border-box;
-    transition:
-        border-color 0.2s,
-        box-shadow 0.2s;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 #component-list-editor input[type="text"]:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 #component-list-editor input[type="text"]::placeholder {
-    color: var(--text-secondary);
-    font-style: italic;
+  color: var(--text-secondary);
+  font-style: italic;
 }
 
 #component-list-editor .item-row {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    position: relative;
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  position: relative;
 }
 
 #component-list-editor .drag-handle {
-    cursor: move;
-    padding: 4px 8px;
-    margin-right: 10px;
-    color: var(--text-secondary, #6c757d);
-    font-size: 18px;
-    user-select: none;
+  cursor: move;
+  padding: 4px 8px;
+  margin-right: 10px;
+  color: var(--text-secondary, #6c757d);
+  font-size: 18px;
+  user-select: none;
+  flex-shrink: 0;
 }
 
 #component-list-editor .drag-handle:hover {
-    color: var(--text-primary, #495057);
+  color: var(--text-primary, #495057);
 }
 
 #component-list-editor .nested-list {
-    margin-left: 40px;
-    margin-top: 8px;
-    margin-bottom: 0;
+  margin-left: 40px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 #component-list-editor .sortable-ghost {
-    opacity: 0.4;
-    background: var(--accent-color, #007bff);
+  opacity: 0.4;
+  background: var(--primary, #007bff);
 }
 
-#component-list-editor .sortable-drag {
-    opacity: 0.8;
+#component-list-editor .list-item.drop-as-child > .item-row {
+  outline: 2px dashed var(--primary, #007bff);
+  border-radius: 4px;
+  background: var(--primary-bg, rgba(0, 123, 255, 0.07));
+  position: relative;
 }
 
-#component-list-editor .drop-indicator.drop-before .item-row::before {
-    content: "";
-    position: absolute;
-    top: -2px;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--success-color, #28a745);
-    border-radius: 2px;
-    z-index: 1000;
+#component-list-editor .list-item.selected > .item-row {
+  background: var(--item-selected-bg, rgba(0, 123, 255, 0.07));
+  border-radius: 4px;
 }
 
-#component-list-editor .drop-indicator.drop-after .item-row::after {
-    content: "";
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--success-color, #28a745);
-    border-radius: 2px;
-    z-index: 1000;
+#component-list-editor .item-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.95rem;
+  height: 36px;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
-#component-list-editor .drop-indicator.drop-as-child .item-row {
-    background: var(--success-bg, #d4edda) !important;
-    border: 2px dashed var(--success-color, #28a745) !important;
+#component-list-editor .item-input:hover {
+  border-color: var(--border);
+  background: var(--bg);
 }
 
-#component-list-editor .list-item {
-    position: relative;
+#component-list-editor .item-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--bg);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
-#component-list-editor .list-item.selected .item-row {
-    background: var(--item-selected-bg, rgba(0, 123, 255, 0.1));
+/* undo bar */
+#undo-bar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  margin-bottom: 10px;
+  background: var(--bg-secondary, #f8f9fa);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
 }
 
-#component-list-editor .item-content {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid var(--border-color, #ddd);
-    border-radius: 4px;
-    min-height: 40px;
-    background: var(--input-bg, white);
-    color: var(--text-primary, black);
+#undo-bar.visible {
+  display: flex;
 }
 
-#component-list-editor .item-content:focus {
-    outline: 2px solid var(--accent-color, #007bff);
-    border-color: var(--accent-color, #007bff);
+#undo-bar button {
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.875rem;
 }
 
-#component-list-editor .item-content[contenteditable]:empty::before {
-    content: attr(data-placeholder);
-    color: var(--text-secondary, #999);
+#undo-bar button:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
 }
 
 #component-list-editor .controls {
-    margin-bottom: 16px;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 #component-list-editor .controls button {
-    padding: 8px 16px;
-    border: 1px solid var(--border-color, #ccc);
-    border-radius: 4px;
-    background: var(--button-bg, white);
-    color: var(--text-primary, black);
-    cursor: pointer;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.875rem;
 }
 
 #component-list-editor .controls button:hover {
-    background: var(--button-hover-bg, #f0f0f0);
+  background: var(--bg-secondary, #f0f0f0);
 }
 
 #component-list-editor .controls .separator {
-    margin: 0 4px;
-    color: var(--border-color, #ccc);
+  margin: 0 4px;
+  color: var(--border);
+  align-self: center;
 }
 
 #component-list-editor .controls .danger {
-    background: var(--danger-color, #dc3545);
-    color: white;
+  background: var(--danger, #dc3545);
+  color: white;
+  border-color: var(--danger, #dc3545);
 }
 
 #component-list-editor .controls .danger:hover {
-    background: var(--danger-hover, #c82333);
+  opacity: 0.85;
 }
 
 #component-list-editor .form-actions {
-    margin-top: 16px;
-    display: flex;
-    gap: 8px;
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
 }
 
 #component-list-editor .editor-container {
-    border: 1px solid var(--border-color, #ddd);
-    border-radius: 4px;
-    padding: 16px;
-    min-height: 400px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 0;
+  min-height: 400px;
 }

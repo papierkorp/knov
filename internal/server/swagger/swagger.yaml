@@ -1790,13 +1790,9 @@ paths:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Save filter configuration to config storage
+      description: Filter files based on metadata criteria with configurable logic
+        and display
       parameters:
-      - description: Filter identifier (name)
-        in: formData
-        name: filterid
-        required: true
-        type: string
       - description: Metadata field names
         in: formData
         name: metadata[]
@@ -1818,14 +1814,25 @@ paths:
         in: formData
         name: logic
         type: string
+      - default: list
+        description: Display type (list, cards, dropdown, table)
+        in: formData
+        name: display
+        type: string
+      - default: 50
+        description: Maximum number of results
+        in: formData
+        name: limit
+        type: integer
       produces:
+      - application/json
       - text/html
       responses:
         "200":
-          description: success message
+          description: OK
           schema:
-            type: string
-      summary: Save filter configuration
+            $ref: '#/definitions/filter.Result'
+      summary: Filter files by metadata
       tags:
       - filter
   /api/filters/{id}:
@@ -1880,6 +1887,48 @@ paths:
           schema:
             type: string
       summary: Get filter criteria row
+      tags:
+      - filter
+  /api/filters/save:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Save filter configuration to config storage
+      parameters:
+      - description: Filter identifier (name)
+        in: formData
+        name: filterid
+        required: true
+        type: string
+      - description: Metadata field names
+        in: formData
+        name: metadata[]
+        type: array
+      - description: Filter operators (equals, contains, greater, less, in)
+        in: formData
+        name: operator[]
+        type: array
+      - description: Filter values
+        in: formData
+        name: value[]
+        type: array
+      - description: Filter actions (include, exclude)
+        in: formData
+        name: action[]
+        type: array
+      - default: and
+        description: Logic operator (and/or)
+        in: formData
+        name: logic
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: success message
+          schema:
+            type: string
+      summary: Save filter configuration
       tags:
       - filter
   /api/filters/value-input:

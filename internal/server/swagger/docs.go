@@ -2124,6 +2124,131 @@ const docTemplate = `{
         },
         "/api/filters": {
             "post": {
+                "description": "Filter files based on metadata criteria with configurable logic and display",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "filter"
+                ],
+                "summary": "Filter files by metadata",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "description": "Metadata field names",
+                        "name": "metadata[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Filter operators (equals, contains, greater, less, in)",
+                        "name": "operator[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Filter values",
+                        "name": "value[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "description": "Filter actions (include, exclude)",
+                        "name": "action[]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "default": "and",
+                        "description": "Logic operator (and/or)",
+                        "name": "logic",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "default": "list",
+                        "description": "Display type (list, cards, dropdown, table)",
+                        "name": "display",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 50,
+                        "description": "Maximum number of results",
+                        "name": "limit",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/filter.Result"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/filters/add-criteria": {
+            "post": {
+                "description": "Add new filter criteria row for filter forms",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "filter"
+                ],
+                "summary": "Add filter criteria",
+                "responses": {
+                    "200": {
+                        "description": "filter criteria row html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/filters/criteria-row": {
+            "get": {
+                "description": "Get HTML for a new filter criteria row",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "filter"
+                ],
+                "summary": "Get filter criteria row",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Row index",
+                        "name": "row_index",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "filter criteria row html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/filters/save": {
+            "post": {
                 "description": "Save filter configuration to config storage",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -2178,60 +2303,6 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "success message",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/filters/add-criteria": {
-            "post": {
-                "description": "Add new filter criteria row for filter forms",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "filter"
-                ],
-                "summary": "Add filter criteria",
-                "responses": {
-                    "200": {
-                        "description": "filter criteria row html",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/filters/criteria-row": {
-            "get": {
-                "description": "Get HTML for a new filter criteria row",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "filter"
-                ],
-                "summary": "Get filter criteria row",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Row index",
-                        "name": "row_index",
-                        "in": "formData"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "filter criteria row html",
                         "schema": {
                             "type": "string"
                         }

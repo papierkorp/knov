@@ -12,6 +12,14 @@ import (
 	"knov/internal/translation"
 )
 
+// Usage
+// no initial item (editing existing file)
+//render.RenderListEditor("path/to/file.list")
+// one empty item ready to type
+// render.RenderListEditor("", "")
+// pre-filled first item
+// render.RenderListEditor("", "Buy milk")
+
 // ListItem represents a single item in the list editor
 type ListItem struct {
 	ID       string     `json:"id"`
@@ -107,8 +115,10 @@ func ConvertListItemsToMarkdown(items []ListItem, indent int) string {
 	return md.String()
 }
 
-// RenderListEditor renders a nested list editor with drag-and-drop support
-func RenderListEditor(filepath string) string {
+// RenderListEditor renders a nested list editor with drag-and-drop support.
+// initialItem is optional: omit for no starting item, pass "" for one empty item,
+// pass a string to pre-fill the first item.
+func RenderListEditor(filepath string, initialItem ...string) string {
 	content := ""
 	isEdit := filepath != ""
 
@@ -143,6 +153,14 @@ func RenderListEditor(filepath string) string {
 		}
 	}
 
+	// encode optional initial item as JS value: null = no item, "..." = item text
+	startItemJS := "null"
+	if len(initialItem) > 0 {
+		if jsonBytes, err := json.Marshal(initialItem[0]); err == nil {
+			startItemJS = string(jsonBytes)
+		}
+	}
+
 	// generate filepath input - use datalist for new files, simple input for editing
 	var filepathInputHTML string
 	if isEdit {
@@ -166,17 +184,14 @@ func RenderListEditor(filepath string) string {
 			<button type="button" onclick="listEditor.addItem()">+ %s</button>
 			<button type="button" onclick="listEditor.addNestedItem()">+ %s</button>
 			<span class="separator">|</span>
-			<button type="button" onclick="listEditor.globalBold()" title="%s">
-				<strong>B</strong>
-			</button>
-			<button type="button" onclick="listEditor.globalStrike()"><s>S</s></button>
-			<span class="separator">|</span>
 			<button type="button" onclick="listEditor.globalIndent()" title="%s">→ %s</button>
 			<button type="button" onclick="listEditor.globalOutdent()" title="%s">← %s</button>
 			<span class="separator">|</span>
-			<button type="button" onclick="listEditor.globalDelete()" class="danger" title="%s">
-				🗑 %s
-			</button>
+			<button type="button" onclick="listEditor.globalDelete()" class="danger">🗑 %s</button>
+		</div>
+
+		<div id="undo-bar">
+			%s <button type="button" onclick="listEditor.undoDelete()">%s</button>
 		</div>
 
 		<div class="editor-container">
@@ -195,82 +210,70 @@ func RenderListEditor(filepath string) string {
 	<script>
 		window.listEditor = (function() {
 			let itemCounter = 0;
-			let dropZoneType = null;
-			let dropTarget = null;
+			let lastDeleted = null;
+			let undoTimer = null;
+			let dropAsChild = null;
 
 			function initSortable(element) {
 				return new Sortable(element, {
 					animation: 150,
 					handle: ".drag-handle",
 					ghostClass: "sortable-ghost",
-					dragClass: "sortable-drag",
 					group: "nested",
-					fallbackOnBody: true,
 					swapThreshold: 0.65,
 
-					onMove: function(evt) {
-						const draggedItem = evt.dragged;
-						const relatedItem = evt.related;
-
-						document.querySelectorAll(".drop-indicator").forEach((el) => {
-							el.classList.remove("drop-indicator", "drop-as-child", "drop-before", "drop-after");
+					// sync input value -> attribute so the drag ghost shows correct text
+					// (cloneNode copies attributes, not DOM properties like .value)
+					onStart: function(evt) {
+						evt.item.querySelectorAll(".item-input").forEach(function(inp) {
+							inp.setAttribute("value", inp.value);
 						});
+					},
 
-						dropZoneType = null;
-						dropTarget = null;
+					// hovering over another item's drag-handle = drop as child
+					onMove: function(evt) {
+						document.querySelectorAll(".drop-as-child").forEach(function(el) {
+							el.classList.remove("drop-as-child");
+						});
+						dropAsChild = null;
 
-						if (draggedItem === relatedItem || draggedItem.contains(relatedItem)) {
-							return false;
-						}
+						const related = evt.related;
+						if (!related || !related.classList.contains("list-item")) return true;
+						if (related === evt.dragged) return true;
 
-						if (relatedItem.classList.contains("list-item")) {
-							const rect = relatedItem.getBoundingClientRect();
-							const mouseY = evt.originalEvent.clientY;
-							const itemTop = rect.top;
-							const itemBottom = rect.bottom;
-							const itemHeight = rect.bottom - rect.top;
-
-							const topZone = itemTop + itemHeight * 0.25;
-							const bottomZone = itemBottom - itemHeight * 0.25;
-
-							if (mouseY < topZone) {
-								relatedItem.classList.add("drop-indicator", "drop-before");
-								dropZoneType = "before";
-								dropTarget = relatedItem;
-							} else if (mouseY > bottomZone) {
-								relatedItem.classList.add("drop-indicator", "drop-after");
-								dropZoneType = "after";
-								dropTarget = relatedItem;
-							} else {
-								relatedItem.classList.add("drop-indicator", "drop-as-child");
-								dropZoneType = "child";
-								dropTarget = relatedItem;
-							}
+						const target = evt.originalEvent.target;
+						if (target && target.closest(".drag-handle")) {
+							related.classList.add("drop-as-child");
+							dropAsChild = related;
 						}
 
 						return true;
 					},
 
+					// after drop: nest if drop-as-child, restore values, clean empty lists
 					onEnd: function(evt) {
-						const item = evt.item;
+						document.querySelectorAll(".drop-as-child").forEach(function(el) {
+							el.classList.remove("drop-as-child");
+						});
 
-						if (dropZoneType === "child" && dropTarget) {
-							let nestedList = dropTarget.querySelector(".nested-list");
+						if (dropAsChild && dropAsChild !== evt.item) {
+							let nestedList = dropAsChild.querySelector(".nested-list");
 							if (!nestedList) {
 								nestedList = document.createElement("ul");
 								nestedList.className = "sortable-list nested-list";
-								dropTarget.appendChild(nestedList);
+								dropAsChild.appendChild(nestedList);
 								initSortable(nestedList);
 							}
-							nestedList.appendChild(item);
+							nestedList.appendChild(evt.item);
 						}
+						dropAsChild = null;
 
-						document.querySelectorAll(".drop-indicator").forEach((el) => {
-							el.classList.remove("drop-indicator", "drop-as-child", "drop-before", "drop-after");
+						evt.item.querySelectorAll(".item-input").forEach(function(inp) {
+							inp.value = inp.getAttribute("value") || "";
 						});
-
-						dropZoneType = null;
-						dropTarget = null;
+						document.querySelectorAll(".nested-list").forEach(function(ul) {
+							if (ul.children.length === 0) ul.remove();
+						});
 					}
 				});
 			}
@@ -280,51 +283,94 @@ func RenderListEditor(filepath string) string {
 				li.className = "list-item";
 				li.dataset.id = itemCounter++;
 
-				li.innerHTML = '<div class="item-row">' +
-					'<span class="drag-handle">⋮⋮</span>' +
-					'<div class="item-content" contenteditable="true" data-placeholder="%s">' + text + '</div>' +
-					'</div>';
+				const input = document.createElement("input");
+				input.type = "text";
+				input.className = "item-input";
+				input.value = text;
+				input.placeholder = "%s";
+
+				input.addEventListener("focus", function() {
+					document.querySelectorAll(".list-item.selected").forEach(i => i.classList.remove("selected"));
+					li.classList.add("selected");
+				});
+
+				input.addEventListener("keydown", function(e) {
+					if (e.key === "Enter" && !e.shiftKey) {
+						e.preventDefault();
+						const parentUl = li.parentElement;
+						const newItem = createListItem();
+						if (li.nextSibling) {
+							parentUl.insertBefore(newItem, li.nextSibling);
+						} else {
+							parentUl.appendChild(newItem);
+						}
+						document.querySelectorAll(".list-item.selected").forEach(i => i.classList.remove("selected"));
+						newItem.classList.add("selected");
+						newItem.querySelector(".item-input").focus();
+					}
+					if (e.key === "Tab" && !e.shiftKey) {
+						e.preventDefault();
+						indentItem(li);
+					}
+					if (e.key === "Tab" && e.shiftKey) {
+						e.preventDefault();
+						outdentItem(li);
+					}
+					if (e.key === "Delete" && e.ctrlKey) {
+						e.preventDefault();
+						deleteItem(li);
+					}
+					if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+						e.preventDefault();
+						const inputs = Array.from(document.querySelectorAll(".item-input"));
+						const idx = inputs.indexOf(e.target);
+						const next = e.key === "ArrowUp" ? inputs[idx - 1] : inputs[idx + 1];
+						if (next) next.focus();
+					}
+				});
+
+				const row = document.createElement("div");
+				row.className = "item-row";
+				const handle = document.createElement("span");
+				handle.className = "drag-handle";
+				handle.textContent = "⋮⋮";
+				row.appendChild(handle);
+				row.appendChild(input);
+				li.appendChild(row);
 
 				return li;
 			}
 
 			function addItem() {
+				const selected = document.querySelector(".list-item.selected");
 				const mainList = document.getElementById("main-list");
 				const newItem = createListItem();
-				mainList.appendChild(newItem);
 
-				document.querySelectorAll(".list-item.selected").forEach((item) => {
-					item.classList.remove("selected");
-				});
+				if (selected) {
+					const parentUl = selected.parentElement;
+					if (selected.nextSibling) {
+						parentUl.insertBefore(newItem, selected.nextSibling);
+					} else {
+						parentUl.appendChild(newItem);
+					}
+				} else {
+					mainList.appendChild(newItem);
+				}
 
+				document.querySelectorAll(".list-item.selected").forEach(i => i.classList.remove("selected"));
 				newItem.classList.add("selected");
-				const content = newItem.querySelector(".item-content");
-				content.focus();
+				newItem.querySelector(".item-input").focus();
 			}
 
 			function addNestedItem() {
 				let parentLi = document.querySelector(".list-item.selected");
-
-				if (!parentLi) {
-					const selected = document.querySelector(".item-content:focus");
-					if (selected) {
-						parentLi = selected.closest(".list-item");
-					}
-				}
-
 				if (!parentLi) {
 					const allItems = document.querySelectorAll(".list-item");
-					if (allItems.length > 0) {
-						parentLi = allItems[allItems.length - 1];
-						parentLi.classList.add("selected");
-					} else {
-						alert("%s");
-						return;
-					}
+					if (allItems.length === 0) return;
+					parentLi = allItems[allItems.length - 1];
 				}
 
 				let nestedList = parentLi.querySelector(".nested-list");
-
 				if (!nestedList) {
 					nestedList = document.createElement("ul");
 					nestedList.className = "sortable-list nested-list";
@@ -335,74 +381,16 @@ func RenderListEditor(filepath string) string {
 				const newItem = createListItem();
 				nestedList.appendChild(newItem);
 
-				const content = newItem.querySelector(".item-content");
-				content.focus();
-
-				document.querySelectorAll(".list-item.selected").forEach((item) => {
-					item.classList.remove("selected");
-				});
+				document.querySelectorAll(".list-item.selected").forEach(i => i.classList.remove("selected"));
 				newItem.classList.add("selected");
+				newItem.querySelector(".item-input").focus();
 			}
 
-			function globalBold() {
-				const selectedItem = document.querySelector(".list-item.selected");
-				if (!selectedItem) {
-					alert("%s");
-					return;
-				}
-				const content = selectedItem.querySelector(".item-content");
-				content.focus();
-				document.execCommand("bold", false, null);
-			}
-
-			function globalStrike() {
-				const selectedItem = document.querySelector(".list-item.selected");
-				if (!selectedItem) {
-					alert("%s");
-					return;
-				}
-				const content = selectedItem.querySelector(".item-content");
-				content.focus();
-				document.execCommand("strikeThrough", false, null);
-			}
-
-			function globalIndent() {
-				const selectedItem = document.querySelector(".list-item.selected");
-				if (!selectedItem) {
-					alert("%s");
-					return;
-				}
-				indentItem(selectedItem);
-			}
-
-			function globalOutdent() {
-				const selectedItem = document.querySelector(".list-item.selected");
-				if (!selectedItem) {
-					alert("%s");
-					return;
-				}
-				outdentItem(selectedItem);
-			}
-
-			function globalDelete() {
-				const selectedItem = document.querySelector(".list-item.selected");
-				if (!selectedItem) {
-					alert("%s");
-					return;
-				}
-				deleteItem(selectedItem);
-			}
-
-			function indentItem(listItem) {
-				const currentLi = listItem.classList.contains("list-item") ? listItem : listItem.closest(".list-item");
-				const previousLi = currentLi.previousElementSibling;
-
-				if (!previousLi) {
-					return;
-				}
+			function indentItem(li) {
+				const previousLi = li.previousElementSibling;
+				if (!previousLi) return;
 
 				let nestedList = previousLi.querySelector(".nested-list");
-
 				if (!nestedList) {
 					nestedList = document.createElement("ul");
 					nestedList.className = "sortable-list nested-list";
@@ -410,84 +398,104 @@ func RenderListEditor(filepath string) string {
 					initSortable(nestedList);
 				}
 
-				nestedList.appendChild(currentLi);
-				currentLi.querySelector(".item-content").focus();
+				nestedList.appendChild(li);
+				li.querySelector(".item-input").focus();
 			}
 
-			function outdentItem(listItem) {
-				const currentLi = listItem.classList.contains("list-item") ? listItem : listItem.closest(".list-item");
-				const parentUl = currentLi.parentElement;
+			function outdentItem(li) {
+				const parentUl = li.parentElement;
 				const grandparentLi = parentUl.closest(".list-item");
-
-				if (!grandparentLi) {
-					return;
-				}
+				if (!grandparentLi) return;
 
 				const grandparentUl = grandparentLi.parentElement;
-
 				if (grandparentLi.nextSibling) {
-					grandparentUl.insertBefore(currentLi, grandparentLi.nextSibling);
+					grandparentUl.insertBefore(li, grandparentLi.nextSibling);
 				} else {
-					grandparentUl.appendChild(currentLi);
+					grandparentUl.appendChild(li);
 				}
 
-				if (parentUl.children.length === 0) {
+				if (parentUl.children.length === 0) parentUl.remove();
+				li.querySelector(".item-input").focus();
+			}
+
+			function deleteItem(li) {
+				const parentUl = li.parentElement;
+				const nextFocus = li.nextElementSibling || li.previousElementSibling;
+
+				lastDeleted = { item: li, parent: parentUl, nextSibling: li.nextSibling };
+				li.remove();
+
+				if (parentUl.classList.contains("nested-list") && parentUl.children.length === 0) {
 					parentUl.remove();
 				}
 
-				currentLi.querySelector(".item-content").focus();
+				if (nextFocus) {
+					document.querySelectorAll(".list-item.selected").forEach(i => i.classList.remove("selected"));
+					nextFocus.classList.add("selected");
+					nextFocus.querySelector(".item-input").focus();
+				}
+
+				const bar = document.getElementById("undo-bar");
+				bar.classList.add("visible");
+				if (undoTimer) clearTimeout(undoTimer);
+				undoTimer = setTimeout(function() {
+					bar.classList.remove("visible");
+					lastDeleted = null;
+				}, 5000);
 			}
 
-			function deleteItem(listItem) {
-				const currentLi = listItem.classList.contains("list-item") ? listItem : listItem.closest(".list-item");
-				const parentUl = currentLi.parentElement;
+			function undoDelete() {
+				if (!lastDeleted) return;
+				const { item, parent, nextSibling } = lastDeleted;
 
-				if (confirm("%s")) {
-					let nextSelection = currentLi.nextElementSibling || currentLi.previousElementSibling;
-
-					if (!nextSelection && parentUl.closest(".list-item")) {
-						nextSelection = parentUl.closest(".list-item");
-					}
-
-					currentLi.remove();
-
-					if (parentUl.classList.contains("nested-list") && parentUl.children.length === 0) {
-						parentUl.remove();
-					}
-
-					if (nextSelection) {
-						document.querySelectorAll(".list-item.selected").forEach((item) => {
-							item.classList.remove("selected");
-						});
-						nextSelection.classList.add("selected");
-						nextSelection.querySelector(".item-content").focus();
-					}
+				if (!parent.isConnected) {
+					document.getElementById("main-list").appendChild(item);
+				} else if (nextSibling) {
+					parent.insertBefore(item, nextSibling);
+				} else {
+					parent.appendChild(item);
 				}
+
+				document.querySelectorAll(".list-item.selected").forEach(i => i.classList.remove("selected"));
+				item.classList.add("selected");
+				item.querySelector(".item-input").focus();
+
+				document.getElementById("undo-bar").classList.remove("visible");
+				if (undoTimer) clearTimeout(undoTimer);
+				lastDeleted = null;
+			}
+
+			function globalIndent() {
+				const selected = document.querySelector(".list-item.selected");
+				if (selected) indentItem(selected);
+			}
+
+			function globalOutdent() {
+				const selected = document.querySelector(".list-item.selected");
+				if (selected) outdentItem(selected);
+			}
+
+			function globalDelete() {
+				const selected = document.querySelector(".list-item.selected");
+				if (selected) deleteItem(selected);
 			}
 
 			function serializeList(ul) {
 				const items = [];
-				const children = ul.children;
-
-				for (let i = 0; i < children.length; i++) {
-					const li = children[i];
-					const content = li.querySelector(".item-content");
+				for (const li of ul.children) {
+					const input = li.querySelector(".item-input");
 					const nestedList = li.querySelector(".nested-list");
-
-					const item = {
+					items.push({
 						id: li.dataset.id,
-						content: content.innerHTML,
+						content: input ? input.value : "",
 						children: nestedList ? serializeList(nestedList) : []
-					};
-
-					items.push(item);
+					});
 				}
-
 				return items;
 			}
 
 			function deserializeList(items, parentUl) {
-				items.forEach(item => {
+				items.forEach(function(item) {
 					const li = createListItem(item.content);
 					li.dataset.id = item.id;
 					itemCounter = Math.max(itemCounter, parseInt(item.id) + 1);
@@ -507,101 +515,34 @@ func RenderListEditor(filepath string) string {
 				const mainList = document.getElementById("main-list");
 				initSortable(mainList);
 
-				// load existing content
 				const initialContent = %s;
+				const startItem = %s;
 				if (initialContent && initialContent.length > 0) {
 					try {
 						deserializeList(initialContent, mainList);
 					} catch (e) {
 						console.error("failed to parse initial content:", e);
 					}
+				} else if (startItem !== null) {
+					const item = createListItem(startItem);
+					mainList.appendChild(item);
+					item.querySelector(".item-input").focus();
 				}
 
-				// keyboard shortcuts
-				document.addEventListener("keydown", function(e) {
-					const target = e.target;
-
-					if (target.classList.contains("item-content")) {
-						if (e.ctrlKey && e.key === "b") {
-							e.preventDefault();
-							globalBold();
-						}
-
-						if (e.key === "Enter" && !e.shiftKey) {
-							e.preventDefault();
-							const currentLi = target.closest(".list-item");
-							const parentUl = currentLi.parentElement;
-							const newItem = createListItem();
-
-							if (currentLi.nextSibling) {
-								parentUl.insertBefore(newItem, currentLi.nextSibling);
-							} else {
-								parentUl.appendChild(newItem);
-							}
-
-							document.querySelectorAll(".list-item.selected").forEach((item) => {
-								item.classList.remove("selected");
-							});
-							newItem.classList.add("selected");
-							newItem.querySelector(".item-content").focus();
-						}
-
-						if (e.key === "Tab" && !e.shiftKey) {
-							e.preventDefault();
-							globalIndent();
-						}
-
-						if (e.key === "Tab" && e.shiftKey) {
-							e.preventDefault();
-							globalOutdent();
-						}
-
-						if (e.key === "Delete" && e.ctrlKey) {
-							e.preventDefault();
-							globalDelete();
-						}
-					}
-				});
-
-				// track selection
-				document.addEventListener("click", function(e) {
-					const content = e.target.closest(".item-content");
-					if (content) {
-						document.querySelectorAll(".list-item.selected").forEach((item) => {
-							item.classList.remove("selected");
-						});
-
-						const listItem = content.closest(".list-item");
-						listItem.classList.add("selected");
-					}
-				});
-
-				// serialize on submit
-				document.getElementById("list-editor-form").addEventListener("submit", function(e) {
-					const mainList = document.getElementById("main-list");
-					const serialized = serializeList(mainList);
-					document.getElementById("list-content").value = JSON.stringify(serialized);
+				document.getElementById("list-editor-form").addEventListener("submit", function() {
+					document.getElementById("list-content").value = JSON.stringify(serializeList(document.getElementById("main-list")));
 				});
 			}
 
-			// initialize when DOM is ready
 			if (document.readyState === "loading") {
 				document.addEventListener("DOMContentLoaded", init);
 			} else {
 				init();
 			}
 
-			return {
-				addItem,
-				addNestedItem,
-				globalBold,
-				globalStrike,
-				globalIndent,
-				globalOutdent,
-				globalDelete
-			};
+			return { addItem, addNestedItem, globalIndent, globalOutdent, globalDelete, undoDelete };
 		})();
-</script>
+	</script>
 </div>
 	`,
 		action,
@@ -609,23 +550,17 @@ func RenderListEditor(filepath string) string {
 		filepathInputHTML,
 		translation.SprintfForRequest(lang, "add item"),
 		translation.SprintfForRequest(lang, "add nested item"),
-		translation.SprintfForRequest(lang, "bold"),
 		translation.SprintfForRequest(lang, "tab"),
 		translation.SprintfForRequest(lang, "indent"),
 		translation.SprintfForRequest(lang, "shift+tab"),
 		translation.SprintfForRequest(lang, "outdent"),
 		translation.SprintfForRequest(lang, "delete"),
-		translation.SprintfForRequest(lang, "delete"),
+		translation.SprintfForRequest(lang, "item deleted"),
+		translation.SprintfForRequest(lang, "undo"),
 		translation.SprintfForRequest(lang, "save file"),
 		cancelURL,
 		translation.SprintfForRequest(lang, "cancel"),
 		translation.SprintfForRequest(lang, "type here..."),
-		translation.SprintfForRequest(lang, "please add a regular item first, then click on it to add a nested item under it"),
-		translation.SprintfForRequest(lang, "please select an item first"),
-		translation.SprintfForRequest(lang, "please select an item first"),
-		translation.SprintfForRequest(lang, "please select an item first"),
-		translation.SprintfForRequest(lang, "please select an item first"),
-		translation.SprintfForRequest(lang, "please select an item first"),
-		translation.SprintfForRequest(lang, "delete this item and all its nested items?"),
-		listItemsJSON)
+		listItemsJSON,
+		startItemJS)
 }

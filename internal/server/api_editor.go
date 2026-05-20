@@ -139,7 +139,11 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	case editorTypeTextarea:
 		html = render.RenderTextareaEditorComponent(filepath, content)
 	case editorTypeList:
-		html = render.RenderListEditor(filepath)
+		if filepath == "" {
+			html = render.RenderListEditor(filepath, "")
+		} else {
+			html = render.RenderListEditor(filepath)
+		}
 	case editorTypeFilter:
 		var renderErr error
 		html, renderErr = render.RenderFilterEditor(filepath)
