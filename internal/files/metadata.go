@@ -16,126 +16,52 @@ import (
 	"knov/internal/utils"
 )
 
-type Filetype string
-type Status string
-type Priority string
+type EditorType string
 
 const (
-	FileTypeTodo       Filetype = "todo"
-	FileTypeFleeting   Filetype = "fleeting"
-	FileTypeLiterature Filetype = "literature"
-	FileTypeMOC        Filetype = "moc" // maps of content - indexes to link related notes
-	FileTypePermanent  Filetype = "permanent"
-	FileTypeFilter     Filetype = "filter"
-	FileTypeJournaling Filetype = "journaling"
-	FileTypeImage      Filetype = "image"
-	FileTypeVideo      Filetype = "video"
-	FileTypePDF        Filetype = "pdf"
-	FileTypeText       Filetype = "text"
-
-	StatusDraft     Status = "draft"
-	StatusPublished Status = "published"
-	StatusArchived  Status = "archived"
-
-	PriorityLow    Priority = "low"
-	PriorityMedium Priority = "medium"
-	PriorityHigh   Priority = "high"
+	EditorTypeMarkdown EditorType = "markdown-editor"
+	EditorTypeTextarea EditorType = "textarea-editor"
+	EditorTypeFilter   EditorType = "filter-editor"
+	EditorTypeList     EditorType = "list-editor"
+	EditorTypeTodo     EditorType = "todo-editor"
+	EditorTypeIndex    EditorType = "index-editor"
 )
 
 // typed count maps for metadata aggregations
 type TagCount map[string]int
 type CollectionCount map[string]int
 type FolderCount map[string]int
-type FiletypeCount map[string]int
-type PriorityCount map[string]int
-type StatusCount map[string]int
+type EditorTypeCount map[string]int
 
-// AllFiletypes returns all available file types
-func AllFiletypes() []Filetype {
-	return []Filetype{
-		FileTypeTodo,
-		FileTypeFleeting,
-		FileTypeLiterature,
-		FileTypeMOC,
-		FileTypePermanent,
-		FileTypeFilter,
-		FileTypeJournaling,
-		FileTypeImage,
-		FileTypeVideo,
-		FileTypePDF,
-		FileTypeText,
+// AllEditorTypes returns all available editor types
+func AllEditorTypes() []EditorType {
+	return []EditorType{
+		EditorTypeMarkdown,
+		EditorTypeTextarea,
+		EditorTypeFilter,
+		EditorTypeList,
+		EditorTypeTodo,
+		EditorTypeIndex,
 	}
 }
 
-// FileTypeFromExtension infers a filetype from a file extension.
+// EditorFromExtension infers an editor type from a file extension.
 // Returns empty string for generic/ambiguous extensions (e.g. .md).
-func FileTypeFromExtension(path string) Filetype {
+func EditorFromExtension(path string) EditorType {
 	switch strings.ToLower(filepath.Ext(path)) {
 	case ".filter":
-		return FileTypeFilter
+		return EditorTypeFilter
 	case ".list":
-		return FileTypeJournaling
+		return EditorTypeList
+	case ".todo":
+		return EditorTypeTodo
 	case ".index", ".moc":
-		return FileTypeMOC
-	case ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".bmp", ".ico":
-		return FileTypeImage
-	case ".mp4", ".mov", ".avi", ".mkv", ".webm":
-		return FileTypeVideo
-	case ".pdf":
-		return FileTypePDF
+		return EditorTypeIndex
 	case ".txt":
-		return FileTypeText
+		return EditorTypeTextarea
 	default:
 		return ""
 	}
-}
-
-// AllPriorities returns all available priorities
-func AllPriorities() []Priority {
-	return []Priority{
-		PriorityLow,
-		PriorityMedium,
-		PriorityHigh,
-	}
-}
-
-// AllStatuses returns all available statuses
-func AllStatuses() []Status {
-	return []Status{
-		StatusDraft,
-		StatusPublished,
-		StatusArchived,
-	}
-}
-
-// IsValidFiletype checks if a filetype is valid
-func IsValidFiletype(ft Filetype) bool {
-	for _, valid := range AllFiletypes() {
-		if ft == valid {
-			return true
-		}
-	}
-	return false
-}
-
-// IsValidPriority checks if a priority is valid
-func IsValidPriority(p Priority) bool {
-	for _, valid := range AllPriorities() {
-		if p == valid {
-			return true
-		}
-	}
-	return false
-}
-
-// IsValidStatus checks if a status is valid
-func IsValidStatus(s Status) bool {
-	for _, valid := range AllStatuses() {
-		if s == valid {
-			return true
-		}
-	}
-	return false
 }
 
 // Metadata represents file metadata
@@ -144,7 +70,6 @@ type Metadata struct {
 	Title       string      `json:"title"`                // auto
 	CreatedAt   time.Time   `json:"createdAt"`            // auto
 	LastEdited  time.Time   `json:"lastEdited"`           // auto
-	TargetDate  time.Time   `json:"targetDate"`           // manual
 	Collection  string      `json:"collection"`           // auto / manual possible
 	Folders     []string    `json:"folders"`              // auto
 	Tags        []string    `json:"tags"`                 // manual
@@ -153,9 +78,7 @@ type Metadata struct {
 	Kids        []string    `json:"kids"`                 // auto
 	UsedLinks   []string    `json:"usedLinks"`            // auto
 	LinksToHere []string    `json:"linksToHere"`          // auto
-	FileType    Filetype    `json:"type"`                 // manual - with add new
-	Status      Status      `json:"status"`               // manual
-	Priority    Priority    `json:"priority"`             // manual
+	Editor      EditorType  `json:"editor"`               // manual - with add new
 	Size        int64       `json:"size"`                 // auto
 	References  []Reference `json:"references,omitempty"` // manual
 }
@@ -249,32 +172,24 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		// update parent-child relationships when parents change
 		updateParentChildRelationships(currentMetadata, oldParents)
 	}
-	if newMetadata.FileType != "" {
-		currentMetadata.FileType = newMetadata.FileType
+	if newMetadata.Editor != "" {
+		currentMetadata.Editor = newMetadata.Editor
 	}
 
-	if currentMetadata.FileType == "" {
-		if ft := FileTypeFromExtension(metadataPath); ft != "" {
-			currentMetadata.FileType = ft
+	if currentMetadata.Editor == "" {
+		if et := EditorFromExtension(metadataPath); et != "" {
+			currentMetadata.Editor = et
 		} else {
-			currentMetadata.FileType = Filetype(configmanager.GetDefaultFiletype())
+			currentMetadata.Editor = EditorTypeMarkdown
 		}
 	}
 
 	if newMetadata.Collection != "" {
 		currentMetadata.Collection = newMetadata.Collection
 	}
-	if newMetadata.Status != "" {
-		currentMetadata.Status = newMetadata.Status
-	}
 	if !newMetadata.CreatedAt.IsZero() {
 		currentMetadata.CreatedAt = newMetadata.CreatedAt
 	}
-	if newMetadata.Priority != "" {
-		currentMetadata.Priority = newMetadata.Priority
-	}
-	// handle target date - allow both setting and clearing (zero time)
-	currentMetadata.TargetDate = newMetadata.TargetDate
 	if newMetadata.References != nil {
 		currentMetadata.References = newMetadata.References
 	}

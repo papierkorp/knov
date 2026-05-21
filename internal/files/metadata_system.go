@@ -130,67 +130,25 @@ func GetAllFolders() (FolderCount, error) {
 	return folderCount, nil
 }
 
-// GetAllFiletypes returns all unique filetypes with their counts
-func GetAllFiletypes() (FiletypeCount, error) {
+// GetAllEditors returns all unique filetypes with their counts
+func GetAllEditors() (EditorTypeCount, error) {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return nil, err
 	}
 
-	filetypeCount := make(FiletypeCount)
+	editorTypeCount := make(EditorTypeCount)
 	for _, file := range allFiles {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil || metadata == nil {
 			continue
 		}
-		if metadata.FileType != "" {
-			filetypeCount[string(metadata.FileType)]++
+		if metadata.Editor != "" {
+			editorTypeCount[string(metadata.Editor)]++
 		}
 	}
 
-	return filetypeCount, nil
-}
-
-// GetAllPriorities returns all unique priorities with their counts
-func GetAllPriorities() (PriorityCount, error) {
-	allFiles, err := GetAllFiles()
-	if err != nil {
-		return nil, err
-	}
-
-	priorityCount := make(PriorityCount)
-	for _, file := range allFiles {
-		metadata, err := MetaDataGet(file.Path)
-		if err != nil || metadata == nil {
-			continue
-		}
-		if metadata.Priority != "" {
-			priorityCount[string(metadata.Priority)]++
-		}
-	}
-
-	return priorityCount, nil
-}
-
-// GetAllStatuses returns all unique statuses with their counts
-func GetAllStatuses() (StatusCount, error) {
-	allFiles, err := GetAllFiles()
-	if err != nil {
-		return nil, err
-	}
-
-	statusCount := make(StatusCount)
-	for _, file := range allFiles {
-		metadata, err := MetaDataGet(file.Path)
-		if err != nil || metadata == nil {
-			continue
-		}
-		if metadata.Status != "" {
-			statusCount[string(metadata.Status)]++
-		}
-	}
-
-	return statusCount, nil
+	return editorTypeCount, nil
 }
 
 // SaveAllTagsToSystemData saves all unique tags to system storage

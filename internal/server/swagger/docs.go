@@ -171,31 +171,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/file-types/hide-fleeting": {
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Update hide fleeting files setting",
-                "parameters": [
-                    {
-                        "type": "boolean",
-                        "description": "Whether to hide fleeting files",
-                        "name": "hideFleeting",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        },
         "/api/config/file-types/hide-image": {
             "post": {
                 "consumes": [
@@ -221,7 +196,7 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/file-types/hide-journaling": {
+        "/api/config/file-types/hide-index": {
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -233,12 +208,12 @@ const docTemplate = `{
                 "tags": [
                     "config"
                 ],
-                "summary": "Update hide journaling files setting",
+                "summary": "Update hide index files setting",
                 "parameters": [
                     {
                         "type": "boolean",
-                        "description": "Whether to hide journaling files",
-                        "name": "hideJournaling",
+                        "description": "Whether to hide index files",
+                        "name": "hideIndex",
                         "in": "formData",
                         "required": true
                     }
@@ -246,7 +221,7 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/file-types/hide-literature": {
+        "/api/config/file-types/hide-list": {
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -258,12 +233,12 @@ const docTemplate = `{
                 "tags": [
                     "config"
                 ],
-                "summary": "Update hide literature files setting",
+                "summary": "Update hide list files setting",
                 "parameters": [
                     {
                         "type": "boolean",
-                        "description": "Whether to hide literature files",
-                        "name": "hideLiterature",
+                        "description": "Whether to hide list files",
+                        "name": "hideList",
                         "in": "formData",
                         "required": true
                     }
@@ -271,7 +246,7 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/file-types/hide-moc": {
+        "/api/config/file-types/hide-markdown": {
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -283,12 +258,12 @@ const docTemplate = `{
                 "tags": [
                     "config"
                 ],
-                "summary": "Update hide moc files setting",
+                "summary": "Update hide markdown files setting",
                 "parameters": [
                     {
                         "type": "boolean",
-                        "description": "Whether to hide moc files",
-                        "name": "hideMOC",
+                        "description": "Whether to hide markdown files",
+                        "name": "hideMarkdown",
                         "in": "formData",
                         "required": true
                     }
@@ -314,31 +289,6 @@ const docTemplate = `{
                         "type": "boolean",
                         "description": "Whether to hide pdf files",
                         "name": "hidePDF",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/api/config/file-types/hide-permanent": {
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Update hide permanent files setting",
-                "parameters": [
-                    {
-                        "type": "boolean",
-                        "description": "Whether to hide permanent files",
-                        "name": "hidePermanent",
                         "in": "formData",
                         "required": true
                     }
@@ -1207,7 +1157,7 @@ const docTemplate = `{
         },
         "/api/editor": {
             "get": {
-                "description": "Returns the appropriate editor based on file metadata or filetype parameter",
+                "description": "Returns the appropriate editor based on file metadata or editor query param",
                 "produces": [
                     "text/html"
                 ],
@@ -1224,8 +1174,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "file type (optional for new files)",
-                        "name": "filetype",
+                        "description": "editor type (optional for new files)",
+                        "name": "editor",
                         "in": "query"
                     }
                 ],
@@ -3111,6 +3061,100 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/editor": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get editor type for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Set editor type for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Editor type",
+                        "name": "editor",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/editors": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all available editor types",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Response format (options for HTML select options)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/files.EditorTypeCount"
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/export": {
             "post": {
                 "description": "Export all metadata as JSON or CSV file",
@@ -3238,100 +3282,6 @@ const docTemplate = `{
                             "items": {
                                 "type": "string"
                             }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/filetype": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get file type",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Set file type",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "File type (fleeting, literature, permanent, moc, todo)",
-                        "name": "filetype",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/filetypes": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get all available filetypes",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Response format (options for HTML select options)",
-                        "name": "format",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/files.FiletypeCount"
                         }
                     }
                 }
@@ -3580,96 +3530,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/metadata/priorities": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get all available priorities",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Response format (options for HTML select options)",
-                        "name": "format",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/files.PriorityCount"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/priority": {
-            "get": {
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get file priority",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Set file priority",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Priority (low, medium, high)",
-                        "name": "priority",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/metadata/rebuild": {
             "post": {
                 "description": "Creates metadata for all files that don't have metadata yet",
@@ -3860,100 +3720,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/metadata/status": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get file status",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Set file status",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Status (draft, published, archived)",
-                        "name": "status",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/statuses": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get all available statuses",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Response format (options for HTML select options)",
-                        "name": "format",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/files.StatusCount"
-                        }
-                    }
-                }
-            }
-        },
         "/api/metadata/tags": {
             "get": {
                 "description": "Get all tags with counts, or tags for a specific file if filepath is provided",
@@ -4014,71 +3780,6 @@ const docTemplate = `{
                         "name": "tags",
                         "in": "formData",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/targetdate": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Get file target date",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Set file target date",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path",
-                        "name": "filepath",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Target date (YYYY-MM-DD, empty to clear)",
-                        "name": "targetdate",
-                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -4619,6 +4320,31 @@ const docTemplate = `{
                 "type": "integer"
             }
         },
+        "files.EditorType": {
+            "type": "string",
+            "enum": [
+                "markdown-editor",
+                "textarea-editor",
+                "filter-editor",
+                "list-editor",
+                "todo-editor",
+                "index-editor"
+            ],
+            "x-enum-varnames": [
+                "EditorTypeMarkdown",
+                "EditorTypeTextarea",
+                "EditorTypeFilter",
+                "EditorTypeList",
+                "EditorTypeTodo",
+                "EditorTypeIndex"
+            ]
+        },
+        "files.EditorTypeCount": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
+        },
         "files.File": {
             "type": "object",
             "properties": {
@@ -4631,57 +4357,6 @@ const docTemplate = `{
                 "path": {
                     "type": "string"
                 }
-            }
-        },
-        "files.Filetype": {
-            "type": "string",
-            "enum": [
-                "todo",
-                "fleeting",
-                "literature",
-                "moc",
-                "permanent",
-                "filter",
-                "journaling",
-                "image",
-                "video",
-                "pdf",
-                "text"
-            ],
-            "x-enum-comments": {
-                "FileTypeMOC": "maps of content - indexes to link related notes"
-            },
-            "x-enum-descriptions": [
-                "",
-                "",
-                "",
-                "maps of content - indexes to link related notes",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
-            ],
-            "x-enum-varnames": [
-                "FileTypeTodo",
-                "FileTypeFleeting",
-                "FileTypeLiterature",
-                "FileTypeMOC",
-                "FileTypePermanent",
-                "FileTypeFilter",
-                "FileTypeJournaling",
-                "FileTypeImage",
-                "FileTypeVideo",
-                "FileTypePDF",
-                "FileTypeText"
-            ]
-        },
-        "files.FiletypeCount": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "integer"
             }
         },
         "files.FolderCount": {
@@ -4707,6 +4382,14 @@ const docTemplate = `{
                 "createdAt": {
                     "description": "auto",
                     "type": "string"
+                },
+                "editor": {
+                    "description": "manual - with add new",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/files.EditorType"
+                        }
+                    ]
                 },
                 "folders": {
                     "description": "auto",
@@ -4744,14 +4427,6 @@ const docTemplate = `{
                     "description": "auto",
                     "type": "string"
                 },
-                "priority": {
-                    "description": "manual",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/files.Priority"
-                        }
-                    ]
-                },
                 "references": {
                     "description": "manual",
                     "type": "array",
@@ -4763,14 +4438,6 @@ const docTemplate = `{
                     "description": "auto",
                     "type": "integer"
                 },
-                "status": {
-                    "description": "manual",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/files.Status"
-                        }
-                    ]
-                },
                 "tags": {
                     "description": "manual",
                     "type": "array",
@@ -4778,21 +4445,9 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "targetDate": {
-                    "description": "manual",
-                    "type": "string"
-                },
                 "title": {
                     "description": "auto",
                     "type": "string"
-                },
-                "type": {
-                    "description": "manual - with add new",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/files.Filetype"
-                        }
-                    ]
                 },
                 "usedLinks": {
                     "description": "auto",
@@ -4801,25 +4456,6 @@ const docTemplate = `{
                         "type": "string"
                     }
                 }
-            }
-        },
-        "files.Priority": {
-            "type": "string",
-            "enum": [
-                "low",
-                "medium",
-                "high"
-            ],
-            "x-enum-varnames": [
-                "PriorityLow",
-                "PriorityMedium",
-                "PriorityHigh"
-            ]
-        },
-        "files.PriorityCount": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "integer"
             }
         },
         "files.Reference": {
@@ -4832,25 +4468,6 @@ const docTemplate = `{
                 "url": {
                     "type": "string"
                 }
-            }
-        },
-        "files.Status": {
-            "type": "string",
-            "enum": [
-                "draft",
-                "published",
-                "archived"
-            ],
-            "x-enum-varnames": [
-                "StatusDraft",
-                "StatusPublished",
-                "StatusArchived"
-            ]
-        },
-        "files.StatusCount": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "integer"
             }
         },
         "files.TagCount": {

@@ -165,11 +165,7 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 		}
 		return false
 	case "type":
-		metadataValue = string(metadata.FileType) // convert Filetype to string
-	case "status":
-		metadataValue = string(metadata.Status) // convert Status to string
-	case "priority":
-		metadataValue = string(metadata.Priority) // convert Priority to string
+		metadataValue = string(metadata.Editor)
 	case "createdAt":
 		metadataValue = metadata.CreatedAt.Format("2006-01-02")
 	case "lastEdited":
@@ -243,8 +239,6 @@ func GetMetadataFields() []string {
 		"collection",
 		"tags",
 		"type",
-		"status",
-		"priority",
 		"createdAt",
 		"lastEdited",
 		"folders",
@@ -322,8 +316,8 @@ func SaveFilterConfig(config *Config, filterID string) error {
 	// keep a metadata record so the filter appears as file type "filter"
 	virtualPath := strings.TrimSuffix(filterID, ".filter") + ".filter"
 	metadata := &files.Metadata{
-		Path:     pathutils.ToWithPrefix(virtualPath),
-		FileType: files.FileTypeFilter,
+		Path:   pathutils.ToWithPrefix(virtualPath),
+		Editor: files.EditorTypeFilter,
 	}
 	if err := files.MetaDataSaveRaw(metadata); err != nil {
 		logging.LogError("failed to save filter metadata: %v", err)

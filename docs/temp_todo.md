@@ -1,5 +1,6 @@
 # small stuff
 
+- media.go - determine filetype for metadata
 - play around with contenteditable instead of the markdown editor
 - new theme like files.md with a sidebar on the right side which shows the file like a file browser and on top of the sidebar the action icons: settings, admin...
 - overview - browsefiles doesnt work anymore

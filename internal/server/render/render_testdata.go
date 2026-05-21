@@ -191,9 +191,7 @@ func RenderFilterTestMetadataTable(metadataList []*files.Metadata) string {
 		{"Path", "15%"},
 		{"Collection", "12%"},
 		{"Tags", "20%"},
-		{"FileType", "8%"},
-		{"Status", "7%"},
-		{"Priority", "7%"},
+		{"Editor", "8%"},
 	}
 
 	for _, col := range columns {
@@ -226,45 +224,23 @@ func RenderFilterTestMetadataTable(metadataList []*files.Metadata) string {
 		tagsStr := strings.Join(metadata.Tags, ", ")
 		html.WriteString(fmt.Sprintf(`<td class="cell-tags">%s</td>`, tagsStr))
 
-		// file type with color coding
-		fileTypeClass := "type-permanent"
-		switch string(metadata.FileType) {
-		case "fleeting":
-			fileTypeClass = "type-fleeting"
-		case "literature":
-			fileTypeClass = "type-literature"
-		case "permanent":
-			fileTypeClass = "type-permanent"
-		case "journaling":
-			fileTypeClass = "type-journaling"
-		case "moc":
-			fileTypeClass = "type-moc"
+		// editor type with color coding
+		editorClass := "type-markdown"
+		switch string(metadata.Editor) {
+		case "markdown-editor":
+			editorClass = "type-markdown"
+		case "textarea-editor":
+			editorClass = "type-text"
+		case "list-editor":
+			editorClass = "type-list"
+		case "todo-editor":
+			editorClass = "type-todo"
+		case "filter-editor":
+			editorClass = "type-filter"
+		case "index-editor":
+			editorClass = "type-index"
 		}
-		html.WriteString(fmt.Sprintf(`<td class="cell-filetype"><span class="badge %s">%s</span></td>`, fileTypeClass, string(metadata.FileType)))
-
-		// status with color coding
-		statusClass := "status-published"
-		switch string(metadata.Status) {
-		case "draft":
-			statusClass = "status-draft"
-		case "published":
-			statusClass = "status-published"
-		case "archived":
-			statusClass = "status-archived"
-		}
-		html.WriteString(fmt.Sprintf(`<td class="cell-status"><span class="badge %s">%s</span></td>`, statusClass, string(metadata.Status)))
-
-		// priority with color coding
-		priorityClass := "priority-medium"
-		switch string(metadata.Priority) {
-		case "high":
-			priorityClass = "priority-high"
-		case "medium":
-			priorityClass = "priority-medium"
-		case "low":
-			priorityClass = "priority-low"
-		}
-		html.WriteString(fmt.Sprintf(`<td class="cell-priority"><span class="badge %s">%s</span></td>`, priorityClass, string(metadata.Priority)))
+		html.WriteString(fmt.Sprintf(`<td class="cell-filetype"><span class="badge %s">%s</span></td>`, editorClass, string(metadata.Editor)))
 
 		html.WriteString(`</tr>`)
 	}
@@ -274,17 +250,7 @@ func RenderFilterTestMetadataTable(metadataList []*files.Metadata) string {
 
 	// summary stats
 	html.WriteString(`<div class="table-summary">`)
-	html.WriteString(fmt.Sprintf(`<strong>Total Files:</strong> %d | `, len(metadataList)))
-
-	// count by status
-	statusCounts := make(map[string]int)
-	for _, meta := range metadataList {
-		statusCounts[string(meta.Status)]++
-	}
-	html.WriteString(`<strong>Status:</strong> `)
-	for status, count := range statusCounts {
-		html.WriteString(fmt.Sprintf(`%s: %d | `, status, count))
-	}
+	html.WriteString(fmt.Sprintf(`<strong>Total Files:</strong> %d`, len(metadataList)))
 	html.WriteString(`</div>`)
 
 	html.WriteString(`</div>`)

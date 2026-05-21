@@ -105,6 +105,26 @@ definitions:
     additionalProperties:
       type: integer
     type: object
+  files.EditorType:
+    enum:
+    - markdown-editor
+    - textarea-editor
+    - filter-editor
+    - list-editor
+    - todo-editor
+    - index-editor
+    type: string
+    x-enum-varnames:
+    - EditorTypeMarkdown
+    - EditorTypeTextarea
+    - EditorTypeFilter
+    - EditorTypeList
+    - EditorTypeTodo
+    - EditorTypeIndex
+  files.EditorTypeCount:
+    additionalProperties:
+      type: integer
+    type: object
   files.File:
     properties:
       metadata:
@@ -113,50 +133,6 @@ definitions:
         type: string
       path:
         type: string
-    type: object
-  files.Filetype:
-    enum:
-    - todo
-    - fleeting
-    - literature
-    - moc
-    - permanent
-    - filter
-    - journaling
-    - image
-    - video
-    - pdf
-    - text
-    type: string
-    x-enum-comments:
-      FileTypeMOC: maps of content - indexes to link related notes
-    x-enum-descriptions:
-    - ""
-    - ""
-    - ""
-    - maps of content - indexes to link related notes
-    - ""
-    - ""
-    - ""
-    - ""
-    - ""
-    - ""
-    - ""
-    x-enum-varnames:
-    - FileTypeTodo
-    - FileTypeFleeting
-    - FileTypeLiterature
-    - FileTypeMOC
-    - FileTypePermanent
-    - FileTypeFilter
-    - FileTypeJournaling
-    - FileTypeImage
-    - FileTypeVideo
-    - FileTypePDF
-    - FileTypeText
-  files.FiletypeCount:
-    additionalProperties:
-      type: integer
     type: object
   files.FolderCount:
     additionalProperties:
@@ -175,6 +151,10 @@ definitions:
       createdAt:
         description: auto
         type: string
+      editor:
+        allOf:
+        - $ref: '#/definitions/files.EditorType'
+        description: manual - with add new
       folders:
         description: auto
         items:
@@ -201,10 +181,6 @@ definitions:
       path:
         description: auto
         type: string
-      priority:
-        allOf:
-        - $ref: '#/definitions/files.Priority'
-        description: manual
       references:
         description: manual
         items:
@@ -213,44 +189,19 @@ definitions:
       size:
         description: auto
         type: integer
-      status:
-        allOf:
-        - $ref: '#/definitions/files.Status'
-        description: manual
       tags:
         description: manual
         items:
           type: string
         type: array
-      targetDate:
-        description: manual
-        type: string
       title:
         description: auto
         type: string
-      type:
-        allOf:
-        - $ref: '#/definitions/files.Filetype'
-        description: manual - with add new
       usedLinks:
         description: auto
         items:
           type: string
         type: array
-    type: object
-  files.Priority:
-    enum:
-    - low
-    - medium
-    - high
-    type: string
-    x-enum-varnames:
-    - PriorityLow
-    - PriorityMedium
-    - PriorityHigh
-  files.PriorityCount:
-    additionalProperties:
-      type: integer
     type: object
   files.Reference:
     properties:
@@ -259,20 +210,6 @@ definitions:
         type: string
       url:
         type: string
-    type: object
-  files.Status:
-    enum:
-    - draft
-    - published
-    - archived
-    type: string
-    x-enum-varnames:
-    - StatusDraft
-    - StatusPublished
-    - StatusArchived
-  files.StatusCount:
-    additionalProperties:
-      type: integer
     type: object
   files.TagCount:
     additionalProperties:
@@ -471,23 +408,6 @@ paths:
       summary: Update hide filter files setting
       tags:
       - config
-  /api/config/file-types/hide-fleeting:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide fleeting files
-        in: formData
-        name: hideFleeting
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide fleeting files setting
-      tags:
-      - config
   /api/config/file-types/hide-image:
     post:
       consumes:
@@ -505,55 +425,55 @@ paths:
       summary: Update hide image files setting
       tags:
       - config
-  /api/config/file-types/hide-journaling:
+  /api/config/file-types/hide-index:
     post:
       consumes:
       - application/x-www-form-urlencoded
       parameters:
-      - description: Whether to hide journaling files
+      - description: Whether to hide index files
         in: formData
-        name: hideJournaling
+        name: hideIndex
         required: true
         type: boolean
       produces:
       - application/json
       - text/html
       responses: {}
-      summary: Update hide journaling files setting
+      summary: Update hide index files setting
       tags:
       - config
-  /api/config/file-types/hide-literature:
+  /api/config/file-types/hide-list:
     post:
       consumes:
       - application/x-www-form-urlencoded
       parameters:
-      - description: Whether to hide literature files
+      - description: Whether to hide list files
         in: formData
-        name: hideLiterature
+        name: hideList
         required: true
         type: boolean
       produces:
       - application/json
       - text/html
       responses: {}
-      summary: Update hide literature files setting
+      summary: Update hide list files setting
       tags:
       - config
-  /api/config/file-types/hide-moc:
+  /api/config/file-types/hide-markdown:
     post:
       consumes:
       - application/x-www-form-urlencoded
       parameters:
-      - description: Whether to hide moc files
+      - description: Whether to hide markdown files
         in: formData
-        name: hideMOC
+        name: hideMarkdown
         required: true
         type: boolean
       produces:
       - application/json
       - text/html
       responses: {}
-      summary: Update hide moc files setting
+      summary: Update hide markdown files setting
       tags:
       - config
   /api/config/file-types/hide-pdf:
@@ -571,23 +491,6 @@ paths:
       - text/html
       responses: {}
       summary: Update hide pdf files setting
-      tags:
-      - config
-  /api/config/file-types/hide-permanent:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide permanent files
-        in: formData
-        name: hidePermanent
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide permanent files setting
       tags:
       - config
   /api/config/file-types/hide-text:
@@ -1171,16 +1074,16 @@ paths:
       - widgets
   /api/editor:
     get:
-      description: Returns the appropriate editor based on file metadata or filetype
-        parameter
+      description: Returns the appropriate editor based on file metadata or editor
+        query param
       parameters:
       - description: file path (optional for new files)
         in: query
         name: filepath
         type: string
-      - description: file type (optional for new files)
+      - description: editor type (optional for new files)
         in: query
-        name: filetype
+        name: editor
         type: string
       produces:
       - text/html
@@ -2454,6 +2357,68 @@ paths:
       summary: Set file creation date
       tags:
       - metadata
+  /api/metadata/editor:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get editor type for a file
+      tags:
+      - metadata
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: Editor type
+        in: formData
+        name: editor
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Set editor type for a file
+      tags:
+      - metadata
+  /api/metadata/editors:
+    get:
+      parameters:
+      - description: Response format (options for HTML select options)
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/files.EditorTypeCount'
+      summary: Get all available editor types
+      tags:
+      - metadata
   /api/metadata/export:
     post:
       consumes:
@@ -2539,68 +2504,6 @@ paths:
               type: string
             type: array
       summary: Get tags for a specific file
-      tags:
-      - metadata
-  /api/metadata/filetype:
-    get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get file type
-      tags:
-      - metadata
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: File path
-        in: formData
-        name: filepath
-        required: true
-        type: string
-      - description: File type (fleeting, literature, permanent, moc, todo)
-        in: formData
-        name: filetype
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Set file type
-      tags:
-      - metadata
-  /api/metadata/filetypes:
-    get:
-      parameters:
-      - description: Response format (options for HTML select options)
-        in: query
-        name: format
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/files.FiletypeCount'
-      summary: Get all available filetypes
       tags:
       - metadata
   /api/metadata/folders:
@@ -2767,65 +2670,6 @@ paths:
       summary: Set file path
       tags:
       - metadata
-  /api/metadata/priorities:
-    get:
-      parameters:
-      - description: Response format (options for HTML select options)
-        in: query
-        name: format
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/files.PriorityCount'
-      summary: Get all available priorities
-      tags:
-      - metadata
-  /api/metadata/priority:
-    get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get file priority
-      tags:
-      - metadata
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: File path
-        in: formData
-        name: filepath
-        required: true
-        type: string
-      - description: Priority (low, medium, high)
-        in: formData
-        name: priority
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Set file priority
-      tags:
-      - metadata
   /api/metadata/rebuild:
     post:
       description: Creates metadata for all files that don't have metadata yet
@@ -2954,68 +2798,6 @@ paths:
       summary: Add a reference to a file
       tags:
       - metadata
-  /api/metadata/status:
-    get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get file status
-      tags:
-      - metadata
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: File path
-        in: formData
-        name: filepath
-        required: true
-        type: string
-      - description: Status (draft, published, archived)
-        in: formData
-        name: status
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Set file status
-      tags:
-      - metadata
-  /api/metadata/statuses:
-    get:
-      parameters:
-      - description: Response format (options for HTML select options)
-        in: query
-        name: format
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/files.StatusCount'
-      summary: Get all available statuses
-      tags:
-      - metadata
   /api/metadata/tags:
     get:
       description: Get all tags with counts, or tags for a specific file if filepath
@@ -3064,49 +2846,6 @@ paths:
           schema:
             type: string
       summary: Set file tags
-      tags:
-      - metadata
-  /api/metadata/targetdate:
-    get:
-      parameters:
-      - description: File path
-        in: query
-        name: filepath
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get file target date
-      tags:
-      - metadata
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: File path
-        in: formData
-        name: filepath
-        required: true
-        type: string
-      - description: Target date (YYYY-MM-DD, empty to clear)
-        in: formData
-        name: targetdate
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Set file target date
       tags:
       - metadata
   /api/search:

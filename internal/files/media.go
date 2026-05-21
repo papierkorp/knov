@@ -88,31 +88,17 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 		return nil, fmt.Errorf("failed to save file")
 	}
 
-	// determine file type for metadata
-	var fileType Filetype = FileTypeImage // default
-	switch {
-	case strings.HasPrefix(contentType, "image/"):
-		fileType = FileTypeImage
-	case strings.HasPrefix(contentType, "video/"):
-		fileType = FileTypeVideo
-	case strings.HasPrefix(contentType, "text/"):
-		fileType = FileTypeText
-	case contentType == "application/pdf":
-		fileType = FileTypePDF
-	}
-
 	// create metadata for the media file with proper path prefix
 	metadataPath := filepath.Join("media", finalMediaPath) // Add media/ prefix to distinguish from docs
 	metadata := &Metadata{
-		Path:     metadataPath,
-		FileType: fileType,
+		Path: metadataPath,
 	}
 
 	if err := MetaDataSave(metadata); err != nil {
 		logging.LogError("failed to save metadata for media file %s: %v", metadataPath, err)
 		// don't fail the whole request, just log the error
 	} else {
-		logging.LogInfo("created metadata for media file: %s (filetype: %s)", metadataPath, fileType)
+		logging.LogInfo("created metadata for media file: %s", metadataPath)
 
 		// update links for this media file (scan all files to find references)
 		if err := UpdateLinksForSingleFile(metadataPath); err != nil {

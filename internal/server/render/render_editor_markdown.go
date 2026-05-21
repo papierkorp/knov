@@ -225,7 +225,7 @@ func getToastUIEditorScript(content string) string {
 }
 
 // RenderMarkdownEditorForm renders a markdown editor form for file creation/editing
-func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
+func RenderMarkdownEditorForm(filePath string, editor ...string) string {
 	content := ""
 	isEdit := filePath != ""
 
@@ -243,37 +243,30 @@ func RenderMarkdownEditorForm(filePath string, filetype ...string) string {
 		cancelURL = fmt.Sprintf("/files/%s", filePath)
 	}
 
-	var currentFiletype string
-	if len(filetype) > 0 {
-		currentFiletype = filetype[0]
+	var currentEditor string
+	if len(editor) > 0 {
+		currentEditor = editor[0]
 	}
 
 	filepathInput := ""
 	if !isEdit {
-		if currentFiletype == "fleeting" {
-			filepathInput = fmt.Sprintf(`<input type="hidden" name="filetype" value="%s" />`, currentFiletype)
-		} else {
-			filepathInput = fmt.Sprintf(`
+		filepathInput = fmt.Sprintf(`
 				<div class="form-group">
 					<label for="filepath-input">%s</label>
 					<input type="text" id="filepath-input" name="filepath" required placeholder="%s" class="form-input" list="folder-suggestions" />
 					<datalist id="folder-suggestions" hx-get="/api/files/folder-suggestions" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></datalist>
 				</div>`,
-				translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
-				translation.SprintfForRequest(configmanager.GetLanguage(), "my-file.md"))
+			translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
+			translation.SprintfForRequest(configmanager.GetLanguage(), "my-file.md"))
 
-			if currentFiletype != "" {
-				filepathInput += fmt.Sprintf(`<input type="hidden" name="filetype" value="%s" />`, currentFiletype)
-			}
+		if currentEditor != "" {
+			filepathInput += fmt.Sprintf(`<input type="hidden" name="editor" value="%s" />`, currentEditor)
 		}
 	} else {
 		filepathInput = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filePath)
 	}
 
 	saveButtonText := translation.SprintfForRequest(configmanager.GetLanguage(), "save file")
-	if currentFiletype == "fleeting" && !isEdit {
-		saveButtonText = translation.SprintfForRequest(configmanager.GetLanguage(), "save note")
-	}
 
 	return fmt.Sprintf(`
 		<form hx-post="%s" hx-target="#editor-status" class="file-form">

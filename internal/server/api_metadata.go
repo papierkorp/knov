@@ -254,13 +254,13 @@ func handleAPIGetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, metadata.Collection, html)
 }
 
-// @Summary Get file type
+// @Summary Get editor type for a file
 // @Tags metadata
 // @Param filepath query string true "File path"
 // @Produce json,html
 // @Success 200 {string} string
-// @Router /api/metadata/filetype [get]
-func handleAPIGetMetadataFileType(w http.ResponseWriter, r *http.Request) {
+// @Router /api/metadata/editor [get]
+func handleAPIGetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
 		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
@@ -278,8 +278,8 @@ func handleAPIGetMetadataFileType(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderMetadataLinkHTML(string(metadata.FileType), "type")
-	writeResponse(w, r, string(metadata.FileType), html)
+	html := render.RenderMetadataLinkHTML(string(metadata.Editor), "editor")
+	writeResponse(w, r, string(metadata.Editor), html)
 }
 
 // @Summary Get file path
@@ -400,50 +400,18 @@ func handleAPISetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, "collection updated", html)
 }
 
-// @Summary Set file type
+// @Summary Set editor type for a file
 // @Tags metadata
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
 // @Param filepath formData string true "File path"
-// @Param filetype formData string true "File type (fleeting, literature, permanent, moc, todo)"
+// @Param editor formData string true "Editor type"
 // @Success 200 {string} string
-// @Router /api/metadata/filetype [post]
-func handleAPISetMetadataFileType(w http.ResponseWriter, r *http.Request) {
+// @Router /api/metadata/editor [post]
+func handleAPISetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	filePath := r.FormValue("filepath")
-	filetype := r.FormValue("filetype")
-
-	if filePath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	metadata := &files.Metadata{
-		Path:     pathutils.ToWithPrefix(filePath),
-		FileType: files.Filetype(filetype),
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
-		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
-		return
-	}
-
-	html := fmt.Sprintf(`<span class="filetype">%s</span>`, filetype)
-	writeResponse(w, r, "filetype updated", html)
-}
-
-// @Summary Set file status
-// @Tags metadata
-// @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Param filepath formData string true "File path"
-// @Param status formData string true "Status (draft, published, archived)"
-// @Success 200 {string} string
-// @Router /api/metadata/status [post]
-func handleAPISetMetadataStatus(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	filePath := r.FormValue("filepath")
-	status := r.FormValue("status")
+	editor := r.FormValue("editor")
 
 	if filePath == "" {
 		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
@@ -452,7 +420,7 @@ func handleAPISetMetadataStatus(w http.ResponseWriter, r *http.Request) {
 
 	metadata := &files.Metadata{
 		Path:   pathutils.ToWithPrefix(filePath),
-		Status: files.Status(status),
+		Editor: files.EditorType(editor),
 	}
 
 	if err := files.MetaDataSave(metadata); err != nil {
@@ -460,40 +428,8 @@ func handleAPISetMetadataStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="status">%s</span>`, status)
-	writeResponse(w, r, "status updated", html)
-}
-
-// @Summary Set file priority
-// @Tags metadata
-// @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Param filepath formData string true "File path"
-// @Param priority formData string true "Priority (low, medium, high)"
-// @Success 200 {string} string
-// @Router /api/metadata/priority [post]
-func handleAPISetMetadataPriority(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	filePath := r.FormValue("filepath")
-	priority := r.FormValue("priority")
-
-	if filePath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	metadata := &files.Metadata{
-		Path:     pathutils.ToWithPrefix(filePath),
-		Priority: files.Priority(priority),
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
-		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
-		return
-	}
-
-	html := fmt.Sprintf(`<span class="priority">%s</span>`, priority)
-	writeResponse(w, r, "priority updated", html)
+	html := fmt.Sprintf(`<span class="editor">%s</span>`, editor)
+	writeResponse(w, r, "editor updated", html)
 }
 
 // @Summary Set file path
@@ -900,76 +836,18 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, folders, html)
 }
 
-// @Summary Get all available priorities
+// @Summary Get all available editor types
 // @Tags metadata
 // @Param format query string false "Response format (options for HTML select options)"
 // @Produce json,html
-// @Success 200 {object} files.PriorityCount
-// @Router /api/metadata/priorities [get]
-func handleAPIGetAllPriorities(w http.ResponseWriter, r *http.Request) {
+// @Success 200 {object} files.EditorTypeCount
+// @Router /api/metadata/editors [get]
+func handleAPIGetAllEditors(w http.ResponseWriter, r *http.Request) {
 	format := r.URL.Query().Get("format")
 
 	if format == "options" {
 		var html strings.Builder
-		for _, p := range files.AllPriorities() {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, p, p))
-		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
-		return
-	}
-
-	priorities, err := files.GetAllPriorities()
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get priorities"), http.StatusInternalServerError)
-		return
-	}
-
-	html := render.RenderBrowseHTML(priorities, "/browse/priority")
-	writeResponse(w, r, priorities, html)
-}
-
-// @Summary Get all available statuses
-// @Tags metadata
-// @Param format query string false "Response format (options for HTML select options)"
-// @Produce json,html
-// @Success 200 {object} files.StatusCount
-// @Router /api/metadata/statuses [get]
-func handleAPIGetAllStatuses(w http.ResponseWriter, r *http.Request) {
-	format := r.URL.Query().Get("format")
-
-	if format == "options" {
-		var html strings.Builder
-		for _, s := range files.AllStatuses() {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, s, s))
-		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
-		return
-	}
-
-	statuses, err := files.GetAllStatuses()
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get statuses"), http.StatusInternalServerError)
-		return
-	}
-
-	html := render.RenderBrowseHTML(statuses, "/browse/status")
-	writeResponse(w, r, statuses, html)
-}
-
-// @Summary Get all available filetypes
-// @Tags metadata
-// @Param format query string false "Response format (options for HTML select options)"
-// @Produce json,html
-// @Success 200 {object} files.FiletypeCount
-// @Router /api/metadata/filetypes [get]
-func handleAPIGetAllFiletypes(w http.ResponseWriter, r *http.Request) {
-	format := r.URL.Query().Get("format")
-
-	if format == "options" {
-		var html strings.Builder
-		for _, ft := range files.AllFiletypes() {
+		for _, ft := range files.AllEditorTypes() {
 			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, ft, ft))
 		}
 		w.Header().Set("Content-Type", "text/html")
@@ -977,9 +855,9 @@ func handleAPIGetAllFiletypes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filetypes, err := files.GetAllFiletypes()
+	filetypes, err := files.GetAllEditors()
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get filetypes"), http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get editor types"), http.StatusInternalServerError)
 		return
 	}
 
@@ -1163,122 +1041,6 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 
 	html := fmt.Sprintf(`<span class="parents-updated">%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "parents updated"))
 	writeResponse(w, r, "parents updated", html)
-}
-
-// @Summary Get file priority
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Success 200 {string} string
-// @Router /api/metadata/priority [get]
-func handleAPIGetMetadataPriority(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
-	if filePath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
-	if err != nil || metadata == nil {
-		http.Error(w, "metadata not found", http.StatusNotFound)
-		return
-	}
-
-	html := render.RenderMetadataLinkHTML(string(metadata.Priority), "priority")
-	writeResponse(w, r, string(metadata.Priority), html)
-}
-
-// @Summary Get file status
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Produce json,html
-// @Success 200 {string} string
-// @Router /api/metadata/status [get]
-func handleAPIGetMetadataStatus(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
-	if filePath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
-	if err != nil || metadata == nil {
-		http.Error(w, "metadata not found", http.StatusNotFound)
-		return
-	}
-
-	html := render.RenderMetadataLinkHTML(string(metadata.Status), "status")
-	writeResponse(w, r, string(metadata.Status), html)
-}
-
-// @Summary Get file target date
-// @Tags metadata
-// @Param filepath query string true "File path"
-// @Produce json,html
-// @Success 200 {string} string
-// @Router /api/metadata/targetdate [get]
-func handleAPIGetMetadataTargetDate(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
-	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
-		return
-	}
-
-	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
-	if err != nil || metadata == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
-		return
-	}
-
-	if metadata.TargetDate.IsZero() {
-		html := `<span class="targetdate">-</span>`
-		writeResponse(w, r, "-", html)
-		return
-	}
-
-	targetDateStr := metadata.TargetDate.Format("2006-01-02")
-	html := fmt.Sprintf(`<span class="targetdate">%s</span>`, targetDateStr)
-	writeResponse(w, r, targetDateStr, html)
-}
-
-// @Summary Set file target date
-// @Tags metadata
-// @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Param filepath formData string true "File path"
-// @Param targetdate formData string false "Target date (YYYY-MM-DD, empty to clear)"
-// @Success 200 {string} string
-// @Router /api/metadata/targetdate [post]
-func handleAPISetMetadataTargetDate(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	filePath := r.FormValue("filepath")
-	targetDateStr := r.FormValue("targetdate")
-
-	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
-		return
-	}
-
-	metadata := &files.Metadata{
-		Path: pathutils.ToWithPrefix(filePath),
-	}
-
-	if targetDateStr != "" {
-		targetDate, err := time.Parse("2006-01-02", targetDateStr)
-		if err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid date format"), http.StatusBadRequest)
-			return
-		}
-		metadata.TargetDate = targetDate
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
-		logging.LogError("failed to save target date metadata: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
-		return
-	}
-
-	html := fmt.Sprintf(`<span class="targetdate">%s</span>`, targetDateStr)
-	writeResponse(w, r, "target date updated", html)
 }
 
 // @Summary Get references for a file

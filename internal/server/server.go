@@ -67,12 +67,12 @@ func StartServerChi() {
 	r.Get("/files/edit/*", handleFileEdit)
 	r.Get("/files/edittable/*", handleFileEditTable)
 	r.Get("/files/history/*", handleHistory)
+	r.Get("/files/new/markdown", handleFileNewMarkdown)
+	r.Get("/files/new/text", handleFileNewText)
+	r.Get("/files/new/list", handleFileNewList)
 	r.Get("/files/new/todo", handleFileNewTodo)
-	r.Get("/files/new/fleeting", handleFileNewFleeting)
-	r.Get("/files/new/literature", handleFileNewLiterature)
-	r.Get("/files/new/moc", handleFileNewMOC)
-	r.Get("/files/new/permanent", handleFileNewPermanent)
-	r.Get("/files/new/journaling", handleFileNewJournaling)
+	r.Get("/files/new/filter", handleFileNewFilter)
+	r.Get("/files/new/index", handleFileNewIndex)
 
 	r.Get("/dashboard", handleDashboardView)
 	r.Get("/dashboard/{id}", handleDashboardView)
@@ -196,17 +196,15 @@ func StartServerChi() {
 			r.Post("/section-edit-subheaders", handleAPIUpdateSectionEditSubheaders)
 
 			// File type visibility endpoints
+			r.Post("/file-types/hide-markdown", handleAPIUpdateHideMarkdown)
+			r.Post("/file-types/hide-text", handleAPIUpdateHideText)
+			r.Post("/file-types/hide-list", handleAPIUpdateHideList)
 			r.Post("/file-types/hide-todo", handleAPIUpdateHideTodo)
-			r.Post("/file-types/hide-fleeting", handleAPIUpdateHideFleeting)
-			r.Post("/file-types/hide-literature", handleAPIUpdateHideLiterature)
-			r.Post("/file-types/hide-moc", handleAPIUpdateHideMOC)
-			r.Post("/file-types/hide-permanent", handleAPIUpdateHidePermanent)
 			r.Post("/file-types/hide-filter", handleAPIUpdateHideFilter)
-			r.Post("/file-types/hide-journaling", handleAPIUpdateHideJournaling)
+			r.Post("/file-types/hide-index", handleAPIUpdateHideIndex)
 			r.Post("/file-types/hide-image", handleAPIUpdateHideImage)
 			r.Post("/file-types/hide-video", handleAPIUpdateHideVideo)
 			r.Post("/file-types/hide-pdf", handleAPIUpdateHidePDF)
-			r.Post("/file-types/hide-text", handleAPIUpdateHideText)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -264,36 +262,26 @@ func StartServerChi() {
 			r.Post("/export", handleAPIExportMetadata)
 
 			r.Get("/collection", handleAPIGetMetadataCollection)
-			r.Get("/filetype", handleAPIGetMetadataFileType)
+			r.Get("/editor", handleAPIGetMetadataEditor)
 			r.Get("/path", handleAPIGetMetadataPath)
 			r.Get("/createdat", handleAPIGetMetadataCreatedAt)
 			r.Get("/lastedited", handleAPIGetMetadataLastEdited)
-			r.Get("/priority", handleAPIGetMetadataPriority)
-			r.Get("/status", handleAPIGetMetadataStatus)
 			r.Get("/references", handleAPIGetMetadataReferences)
 			r.Post("/references", handleAPIAddMetadataReference)
 			r.Delete("/references", handleAPIDeleteMetadataReference)
 
-			r.Get("/targetdate", handleAPIGetMetadataTargetDate)
-
 			r.Post("/collection", handleAPISetMetadataCollection)
-			r.Post("/filetype", handleAPISetMetadataFileType)
-			r.Post("/status", handleAPISetMetadataStatus)
-			r.Post("/priority", handleAPISetMetadataPriority)
+			r.Post("/editor", handleAPISetMetadataEditor)
 			r.Post("/path", handleAPISetMetadataPath)
 			r.Post("/createdat", handleAPISetMetadataCreatedAt)
 			r.Post("/lastedited", handleAPISetMetadataLastEdited)
-			r.Post("/targetdate", handleAPISetMetadataTargetDate)
-			r.Post("/folders", handleAPISetMetadataFolders)
 			r.Post("/tags", handleAPISetMetadataTags)
 			r.Post("/parents", handleAPISetMetadataParents)
 
 			r.Get("/tags", handleAPIGetAllTags)
 			r.Get("/collections", handleAPIGetAllCollections)
 			r.Get("/folders", handleAPIGetAllFolders)
-			r.Get("/priorities", handleAPIGetAllPriorities)
-			r.Get("/statuses", handleAPIGetAllStatuses)
-			r.Get("/filetypes", handleAPIGetAllFiletypes)
+			r.Get("/editors", handleAPIGetAllEditors)
 			r.Get("/tags/{fileId}", handleAPIGetFileMetadataTags)
 			r.Get("/folders/{fileId}", handleAPIGetFileMetadataFolders)
 			r.Get("/collection/{fileId}", handleAPIGetFileMetadataCollection)
@@ -931,69 +919,51 @@ func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 // -------------------------------- Filetype-specific handlers ---------------------------
 // ----------------------------------------------------------------------------------------
 
+func handleFileNewMarkdown(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("markdown-editor")
+	if err := tm.Render(w, "filenew", data); err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+	}
+}
+
+func handleFileNewText(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("textarea-editor")
+	if err := tm.Render(w, "filenew", data); err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+	}
+}
+
+func handleFileNewList(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("list-editor")
+	if err := tm.Render(w, "filenew", data); err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+	}
+}
+
 func handleFileNewTodo(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileNewTemplateData("todo")
-
-	err := tm.Render(w, "filenew", data)
-	if err != nil {
+	data := thememanager.NewFileNewTemplateData("todo-editor")
+	if err := tm.Render(w, "filenew", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-		return
 	}
 }
 
-func handleFileNewFleeting(w http.ResponseWriter, r *http.Request) {
+func handleFileNewFilter(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileNewTemplateData("fleeting")
-
-	err := tm.Render(w, "filenew", data)
-	if err != nil {
+	data := thememanager.NewFileNewTemplateData("filter-editor")
+	if err := tm.Render(w, "filenew", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-		return
 	}
 }
 
-func handleFileNewLiterature(w http.ResponseWriter, r *http.Request) {
+func handleFileNewIndex(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileNewTemplateData("literature")
-
-	err := tm.Render(w, "filenew", data)
-	if err != nil {
+	data := thememanager.NewFileNewTemplateData("index-editor")
+	if err := tm.Render(w, "filenew", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-		return
-	}
-}
-
-func handleFileNewMOC(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileNewTemplateData("moc")
-
-	err := tm.Render(w, "filenew", data)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-		return
-	}
-}
-
-func handleFileNewPermanent(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileNewTemplateData("permanent")
-
-	err := tm.Render(w, "filenew", data)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-		return
-	}
-}
-
-func handleFileNewJournaling(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileNewTemplateData("journaling")
-
-	err := tm.Render(w, "filenew", data)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-		return
 	}
 }
 

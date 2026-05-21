@@ -262,35 +262,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			description:   "filter by folder containing 'advanced'",
 		},
 		{
-			name: "exclude_archived_status",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "collection",
-						Operator: "contains",
-						Value:    "filter-testing",
-						Action:   "include",
-					},
-					{
-						Metadata: "status",
-						Operator: "equals",
-						Value:    "archived",
-						Action:   "exclude",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 10,
-			expectedFiles: []string{
-				"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/filterTestC.md",
-				"filter-tests/advanced/filterTestD.md", "filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md",
-				"filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md",
-				"filter-tests/performance/filterTestK.md", "filter-tests/special/filterTestL.md",
-			},
-			description: "filter by collection containing 'filter-testing' AND exclude archived status",
-		},
-		{
 			name: "specific_tag_pattern",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
@@ -313,36 +284,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 				"filter-tests/special/filterTestL.md",
 			},
 			description: "filter by tag pattern containing '-specific'",
-		},
-		{
-			name: "complex_unique_filter",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "collection",
-						Operator: "contains",
-						Value:    "filter-testing",
-						Action:   "include",
-					},
-					{
-						Metadata: "priority",
-						Operator: "equals",
-						Value:    "medium",
-						Action:   "include",
-					},
-					{
-						Metadata: "status",
-						Operator: "equals",
-						Value:    "archived",
-						Action:   "exclude",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 2,
-			expectedFiles: []string{"filter-tests/filterTestB.md", "filter-tests/basic/filterTestG.md"},
-			description:   "complex filter: collection contains 'filter-testing' AND priority medium AND exclude archived",
 		},
 		{
 			name: "date_created_after_october_5",
@@ -417,30 +358,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			description:   "filter by tags using 'in' array: alpha-test, beta-test, gamma-test",
 		},
 		{
-			name: "multiple_filetypes_in_array",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "type",
-						Operator: "in",
-						Value:    "fleeting,literature",
-						Action:   "include",
-					},
-					{
-						Metadata: "collection",
-						Operator: "contains",
-						Value:    "filter-testing",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 6,
-			expectedFiles: []string{"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md", "filter-tests/integration/filterTestH.md", "filter-tests/performance/filterTestJ.md"},
-			description:   "filter by multiple file types using 'in' array: fleeting, literature",
-		},
-		{
 			name: "exclude_multiple_collections",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
@@ -463,102 +380,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			expectedCount: 9,
 			expectedFiles: []string{"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/filterTestC.md", "filter-tests/basic/filterTestF.md", "filter-tests/basic/filterTestG.md", "filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md", "filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md"},
 			description:   "exclude multiple collections using 'in' array",
-		},
-		{
-			name: "complex_multi_criteria_with_dates",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "createdAt",
-						Operator: "greater",
-						Value:    "2025-10-05",
-						Action:   "include",
-					},
-					{
-						Metadata: "status",
-						Operator: "equals",
-						Value:    "published",
-						Action:   "include",
-					},
-					{
-						Metadata: "priority",
-						Operator: "in",
-						Value:    "medium,low",
-						Action:   "include",
-					},
-					{
-						Metadata: "collection",
-						Operator: "contains",
-						Value:    "filter-testing",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 3,
-			expectedFiles: []string{"filter-tests/basic/filterTestG.md", "filter-tests/performance/filterTestK.md", "filter-tests/integration/filterTestH.md"},
-			description:   "complex multi-criteria: created after Oct 5 AND published status AND medium/low priority",
-		},
-		{
-			name: "or_logic_with_exclusions",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "tags",
-						Operator: "contains",
-						Value:    "unique-experimental",
-						Action:   "include",
-					},
-					{
-						Metadata: "tags",
-						Operator: "contains",
-						Value:    "unique-stable",
-						Action:   "include",
-					},
-					{
-						Metadata: "status",
-						Operator: "equals",
-						Value:    "archived",
-						Action:   "exclude",
-					},
-				},
-				Logic: "or",
-				Limit: 0,
-			},
-			expectedCount: 3,
-			expectedFiles: []string{"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/advanced/filterTestD.md"},
-			description:   "OR logic with exclusion: (experimental OR stable tags) AND NOT archived",
-		},
-		{
-			name: "complex_exclude_multiple_criteria",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "type",
-						Operator: "in",
-						Value:    "fleeting,literature,permanent",
-						Action:   "exclude",
-					},
-					{
-						Metadata: "priority",
-						Operator: "equals",
-						Value:    "high",
-						Action:   "exclude",
-					},
-					{
-						Metadata: "folders",
-						Operator: "contains",
-						Value:    "filter-tests",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 2,
-			expectedFiles: []string{"filter-tests/basic/filterTestG.md", "filter-tests/performance/filterTestK.md"},
-			description:   "exclude multiple file types AND exclude high priority (only journaling/MOC with medium/low priority)",
 		},
 		{
 			name: "name_regex_markdown_files",
@@ -616,30 +437,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			description:   "filter by name containing 'filterTest' AND folder containing 'advanced'",
 		},
 		{
-			name: "name_regex_pattern_with_status",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "name",
-						Operator: "regex",
-						Value:    `^filterTest[A-C]\.md$`,
-						Action:   "include",
-					},
-					{
-						Metadata: "status",
-						Operator: "equals",
-						Value:    "published",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 2,
-			expectedFiles: []string{"filter-tests/filterTestB.md", "filter-tests/filterTestC.md"},
-			description:   "filter by name using regex pattern (filterTestA-C.md) AND status equals published",
-		},
-		{
 			name: "boards_contains_filter_board",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
@@ -658,36 +455,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			description:   "filter by boards field containing 'filter-board'",
 		},
 		{
-			name: "exclude_status_draft",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "collection",
-						Operator: "contains",
-						Value:    "filter-testing",
-						Action:   "include",
-					},
-					{
-						Metadata: "status",
-						Operator: "equals",
-						Value:    "draft",
-						Action:   "exclude",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 7,
-			expectedFiles: []string{
-				"filter-tests/filterTestB.md", "filter-tests/filterTestC.md",
-				"filter-tests/advanced/filterTestE.md",
-				"filter-tests/basic/filterTestG.md",
-				"filter-tests/integration/filterTestH.md",
-				"filter-tests/performance/filterTestJ.md", "filter-tests/performance/filterTestK.md",
-			},
-			description: "include filter-testing collection but exclude draft status",
-		},
-		{
 			name: "empty_result_set",
 			config: filter.Config{
 				Criteria: []filter.Criteria{
@@ -704,35 +471,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 			expectedCount: 0,
 			expectedFiles: []string{},
 			description:   "query that should return no results (nonexistent value)",
-		},
-		{
-			name: "priority_in_high_or_low",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "priority",
-						Operator: "in",
-						Value:    "high,low",
-						Action:   "include",
-					},
-					{
-						Metadata: "collection",
-						Operator: "contains",
-						Value:    "filter-testing",
-						Action:   "include",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 8,
-			expectedFiles: []string{
-				"filter-tests/filterTestA.md", "filter-tests/filterTestC.md",
-				"filter-tests/advanced/filterTestD.md", "filter-tests/basic/filterTestF.md",
-				"filter-tests/integration/filterTestH.md", "filter-tests/integration/filterTestI.md",
-				"filter-tests/performance/filterTestK.md", "filter-tests/special/filterTestL.md",
-			},
-			description: "filter by priority using 'in' operator (high OR low)",
 		},
 		{
 			name: "limit_functionality",
@@ -798,146 +536,6 @@ func RunFilterTests() (*FilterTestResults, error) {
 				"filter-tests/special/filterTestL.md",
 			},
 			description: "test case insensitivity - sqlite like is case-insensitive by default",
-		},
-		{
-			name: "multiple_exclude_criteria",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "collection",
-						Operator: "contains",
-						Value:    "filter-testing",
-						Action:   "include",
-					},
-					{
-						Metadata: "status",
-						Operator: "equals",
-						Value:    "draft",
-						Action:   "exclude",
-					},
-					{
-						Metadata: "priority",
-						Operator: "equals",
-						Value:    "low",
-						Action:   "exclude",
-					},
-				},
-				Logic: "and",
-				Limit: 0,
-			},
-			expectedCount: 4,
-			expectedFiles: []string{
-				"filter-tests/filterTestB.md",
-				"filter-tests/advanced/filterTestE.md",
-				"filter-tests/basic/filterTestG.md",
-				"filter-tests/performance/filterTestJ.md",
-			},
-			description: "multiple exclude criteria - exclude both draft status AND low priority",
-		},
-		{
-			name: "or_include_multiple_statuses",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "status",
-						Operator: "equals",
-						Value:    "draft",
-						Action:   "include",
-					},
-					{
-						Metadata: "status",
-						Operator: "equals",
-						Value:    "archived",
-						Action:   "include",
-					},
-					{
-						Metadata: "collection",
-						Operator: "equals",
-						Value:    "filter-testing-unique",
-						Action:   "include",
-					},
-				},
-				Logic: "or",
-				Limit: 0,
-			},
-			expectedCount: 9,
-			expectedFiles: []string{
-				"filter-tests/filterTestA.md", "filter-tests/filterTestB.md", "filter-tests/filterTestC.md",
-				"filter-tests/advanced/filterTestD.md", "filter-tests/advanced/filterTestE.md",
-				"filter-tests/basic/filterTestF.md",
-				"filter-tests/integration/filterTestI.md",
-				"filter-tests/performance/filterTestJ.md",
-				"filter-tests/special/filterTestL.md",
-			},
-			description: "or logic with include - status draft OR archived OR collection filter-testing-unique",
-		},
-		{
-			name: "or_exclude_multiple_priorities",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "collection",
-						Operator: "contains",
-						Value:    "filter-testing",
-						Action:   "include",
-					},
-					{
-						Metadata: "priority",
-						Operator: "equals",
-						Value:    "high",
-						Action:   "exclude",
-					},
-					{
-						Metadata: "priority",
-						Operator: "equals",
-						Value:    "low",
-						Action:   "exclude",
-					},
-				},
-				Logic: "or",
-				Limit: 0,
-			},
-			expectedCount: 4,
-			expectedFiles: []string{
-				"filter-tests/filterTestB.md",
-				"filter-tests/advanced/filterTestE.md",
-				"filter-tests/basic/filterTestG.md",
-				"filter-tests/performance/filterTestJ.md",
-			},
-			description: "or logic with exclude - exclude high OR low priority (only medium remains)",
-		},
-		{
-			name: "or_mixed_tags_with_status_exclude",
-			config: filter.Config{
-				Criteria: []filter.Criteria{
-					{
-						Metadata: "tags",
-						Operator: "contains",
-						Value:    "unique-experimental",
-						Action:   "include",
-					},
-					{
-						Metadata: "tags",
-						Operator: "contains",
-						Value:    "unique-stable",
-						Action:   "include",
-					},
-					{
-						Metadata: "status",
-						Operator: "equals",
-						Value:    "archived",
-						Action:   "exclude",
-					},
-				},
-				Logic: "or",
-				Limit: 0,
-			},
-			expectedCount: 3,
-			expectedFiles: []string{
-				"filter-tests/filterTestA.md", "filter-tests/filterTestB.md",
-				"filter-tests/advanced/filterTestD.md",
-			},
-			description: "or logic mixed - include experimental OR stable tags, exclude archived",
 		},
 		{
 			name: "or_complex_multi_field",

@@ -23,16 +23,8 @@
                 {{T "loading folders..."}}
             </div>
         {{ else if eq .MetadataType "type" }}
-            <div hx-get="/api/metadata/filetypes" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
+            <div hx-get="/api/metadata/editors" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                 {{T "loading types..."}}
-            </div>
-        {{ else if eq .MetadataType "priority" }}
-            <div hx-get="/api/metadata/priorities" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
-                {{T "loading priorities..."}}
-            </div>
-        {{ else if eq .MetadataType "status" }}
-            <div hx-get="/api/metadata/statuses" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
-                {{T "loading statuses..."}}
             </div>
         {{ else }}
             <p>{{T "Unknown metadata type"}}: {{ .MetadataType }}</p>

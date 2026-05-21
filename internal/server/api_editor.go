@@ -20,157 +20,90 @@ import (
 	"knov/internal/translation"
 )
 
-// editorType defines the type of editor to be used
-type editorType string
-
-const (
-	editorTypeMarkdown editorType = "markdown-editor"
-	editorTypeTextarea editorType = "textarea-editor"
-	editorTypeFilter   editorType = "filter-editor"
-	editorTypeList     editorType = "list-editor"
-	editorTypeTodo     editorType = "todo-editor"
-	editorTypeIndex    editorType = "index-editor"
-)
-
-// GetEditor determines the appropriate editor type for a file based on its metadata
-func GetEditor(filepath string) (editorType, error) {
-	metadata, err := files.MetaDataGet(filepath)
-
-	// always detect syntax from file type handler
-	handler := parser.GetParserRegistry().GetHandler(filepath)
-	var handlerName string
-	if handler != nil {
-		handlerName = handler.Name()
-	} else {
-		handlerName = "markdown" // fallback
-	}
-
-	// if metadata exists, use FileType to determine editor
-	if err == nil && metadata != nil {
-		switch metadata.FileType {
-		case files.FileTypeTodo:
-			return editorTypeTodo, nil
-		case files.FileTypeJournaling:
-			return editorTypeList, nil
-		case files.FileTypeFilter:
-			return editorTypeFilter, nil
-		case files.FileTypeMOC:
-			return editorTypeIndex, nil
-		case files.FileTypeFleeting, files.FileTypePermanent, files.FileTypeLiterature:
-			if handlerName == "markdown" {
-				return editorTypeMarkdown, nil
-			}
-			// dokuwiki and plaintext both use textarea editor
-			return editorTypeTextarea, nil
-		}
-	}
-
-	// for new files or fallback, use handler name to determine editor
-	if handlerName == "markdown" {
-		return editorTypeMarkdown, nil
-	}
-	// dokuwiki and plaintext both use textarea editor
-	return editorTypeTextarea, nil
-}
+// editorType defines the type of editor to be used — now uses files.EditorType directly
 
 // @Summary Get appropriate editor for file
-// @Description Returns the appropriate editor based on file metadata or filetype parameter
+// @Description Returns the appropriate editor based on file metadata or editor query param
 // @Tags editor
 // @Param filepath query string false "file path (optional for new files)"
-// @Param filetype query string false "file type (optional for new files)"
+// @Param editor query string false "editor type (optional for new files)"
 // @Produce html
 // @Router /api/editor [get]
 func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	filetype := r.URL.Query().Get("filetype")
+	fp := r.URL.Query().Get("filepath")
+	editorParam := r.URL.Query().Get("editor")
 	sectionID := r.URL.Query().Get("section")
 
 	var html string
-	var err error
-	var editorType editorType
 
-	// if section is specified, use section editor regardless of file type
-	if sectionID != "" && filepath != "" {
-		html = render.RenderMarkdownSectionEditorForm(filepath, sectionID)
+	// if section is specified, use section editor regardless of editor type
+	if sectionID != "" && fp != "" {
+		html = render.RenderMarkdownSectionEditorForm(fp, sectionID)
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
 		return
 	}
 
-	// if filetype parameter is provided (for new files), use that to determine editor
-	if filetype != "" {
-		switch files.Filetype(filetype) {
-		case files.FileTypeTodo:
-			editorType = editorTypeTodo
-		case files.FileTypeJournaling:
-			editorType = editorTypeList
-		case files.FileTypeFilter:
-			editorType = editorTypeFilter
-		case files.FileTypeMOC:
-			editorType = editorTypeIndex
-		case files.FileTypeFleeting, files.FileTypePermanent, files.FileTypeLiterature:
-			editorType = editorTypeMarkdown
-		default:
-			editorType = editorTypeMarkdown
-		}
-	} else if filepath == "" {
-		// no filepath and no filetype provided, default to markdown editor for new files
+	// resolve editor type: from param (new files) or metadata (existing files)
+	var et files.EditorType
+	if editorParam != "" {
+		et = files.EditorType(editorParam)
+	} else if fp == "" {
+		// no filepath and no editor provided — default to markdown for new files
 		html = render.RenderMarkdownEditorForm("", "")
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
 		return
 	} else {
-		// use existing logic for files with path
-		editorType, err = GetEditor(filepath)
-		if err != nil {
-			logging.LogError("failed to determine editor type for %s: %v", filepath, err)
-			editorType = editorTypeMarkdown // fallback
+		// existing file: read editor from metadata, fall back to handler detection
+		metadata, _ := files.MetaDataGet(fp)
+		if metadata != nil && metadata.Editor != "" {
+			et = metadata.Editor
+		} else {
+			handler := parser.GetParserRegistry().GetHandler(fp)
+			if handler != nil && handler.Name() != "markdown" {
+				et = files.EditorTypeTextarea
+			} else {
+				et = files.EditorTypeMarkdown
+			}
 		}
 	}
 
 	// get file content if editing existing file
 	var content string
-	if filepath != "" {
-		fullPath := pathutils.ToDocsPath(filepath)
+	if fp != "" {
+		fullPath := pathutils.ToDocsPath(fp)
 		if rawContent, err := contentStorage.ReadFile(fullPath); err == nil {
 			content = string(rawContent)
 		}
 	}
 
 	// render the appropriate editor
-	switch editorType {
-	case editorTypeMarkdown:
-		html = render.RenderMarkdownEditorForm(filepath, filetype)
-	case editorTypeTextarea:
-		html = render.RenderTextareaEditorComponent(filepath, content)
-	case editorTypeList:
-		if filepath == "" {
-			html = render.RenderListEditor(filepath, "")
-		} else {
-			html = render.RenderListEditor(filepath)
-		}
-	case editorTypeTodo:
-		if filepath == "" {
-			html = render.RenderTodoEditor(filepath, "")
-		} else {
-			html = render.RenderTodoEditor(filepath)
-		}
-	case editorTypeFilter:
+	switch et {
+	case files.EditorTypeMarkdown:
+		html = render.RenderMarkdownEditorForm(fp, editorParam)
+	case files.EditorTypeTextarea:
+		html = render.RenderTextareaEditorComponent(fp, content)
+	case files.EditorTypeList:
+		html = render.RenderListEditor(fp)
+	case files.EditorTypeTodo:
+		html = render.RenderTodoEditor(fp)
+	case files.EditorTypeFilter:
 		var renderErr error
-		html, renderErr = render.RenderFilterEditor(filepath)
+		html, renderErr = render.RenderFilterEditor(fp)
 		if renderErr != nil {
 			logging.LogError("failed to render filter editor: %v", renderErr)
-			html = render.RenderTextareaEditorComponent(filepath, content)
+			html = render.RenderTextareaEditorComponent(fp, content)
 		}
-	case editorTypeIndex:
+	case files.EditorTypeIndex:
 		var renderErr error
-		html, renderErr = render.RenderIndexEditor(filepath)
+		html, renderErr = render.RenderIndexEditor(fp)
 		if renderErr != nil {
 			logging.LogError("failed to render index editor: %v", renderErr)
-			html = render.RenderTextareaEditorComponent(filepath, content)
+			html = render.RenderTextareaEditorComponent(fp, content)
 		}
 	default:
-		html = render.RenderMarkdownEditorForm(filepath, "")
+		html = render.RenderMarkdownEditorForm(fp, "")
 	}
 
 	w.Header().Set("Content-Type", "text/html")
@@ -304,7 +237,7 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 
 	metadata := &files.Metadata{
 		Path:       filepath.Join("docs", filezpath),
-		FileType:   files.FileTypeMOC,
+		Editor:     files.EditorTypeIndex,
 		Collection: collectionName,
 	}
 
@@ -440,15 +373,15 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// determine filetype from path or default to todo
-	filetype := files.FileTypeTodo
+	filetype := files.EditorTypeTodo
 	if strings.Contains(strings.ToLower(filePath), "journal") {
-		filetype = files.FileTypeJournaling
+		filetype = files.EditorTypeList
 	}
 
 	// create/update metadata
 	metadata := &files.Metadata{
-		Path:     filepath.Join("docs", filePath),
-		FileType: filetype,
+		Path:   filepath.Join("docs", filePath),
+		Editor: filetype,
 	}
 
 	if err := files.MetaDataSave(metadata); err != nil {
@@ -502,7 +435,7 @@ func handleAPISaveTodoEditor(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 
 	// ensure .todo extension
-	if !strings.HasSuffix(filePath, ".todo") && !strings.HasSuffix(filePath, ".list") {
+	if !strings.HasSuffix(filePath, ".todo") {
 		filePath = filePath + ".todo"
 	}
 
@@ -532,20 +465,15 @@ func handleAPISaveTodoEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filetype := files.FileTypeTodo
-	if strings.Contains(strings.ToLower(filePath), "journal") {
-		filetype = files.FileTypeJournaling
-	}
-
 	metadata := &files.Metadata{
-		Path:     filepath.Join("docs", filePath),
-		FileType: filetype,
+		Path:   filepath.Join("docs", filePath),
+		Editor: files.EditorTypeTodo,
 	}
 
 	if err := files.MetaDataSave(metadata); err != nil {
 		logging.LogError("failed to save metadata for todo file %s: %v", filePath, err)
 	} else {
-		logging.LogInfo("saved metadata for todo file: %s (filetype: %s)", filePath, filetype)
+		logging.LogInfo("saved metadata for todo file: %s", filePath)
 	}
 
 	normalizedPath := filepath.Join("docs", filePath)

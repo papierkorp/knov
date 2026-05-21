@@ -315,9 +315,7 @@ func createTestMetadata() error {
 		return err
 	}
 
-	statuses := []files.Status{files.StatusDraft, files.StatusPublished, files.StatusPublished, files.StatusDraft}
-	priorities := []files.Priority{files.PriorityLow, files.PriorityMedium, files.PriorityHigh}
-	fileTypes := []files.Filetype{files.FileTypeFleeting, files.FileTypeLiterature, files.FileTypePermanent, files.FileTypeJournaling}
+	fileTypes := []files.EditorType{files.EditorTypeMarkdown, files.EditorTypeMarkdown, files.EditorTypeMarkdown, files.EditorTypeList}
 
 	for i, file := range testFiles {
 		filename := filepath.Base(file)
@@ -342,8 +340,6 @@ func createTestMetadata() error {
 
 		createDay := 3 + (i % 13)
 		editDay := createDay + 3 + (i % 8)
-		status := statuses[i%len(statuses)]
-		priority := priorities[i%len(priorities)]
 		fileType := fileTypes[i%len(fileTypes)]
 
 		tags := extractFilenameTags(filename)
@@ -375,9 +371,7 @@ func createTestMetadata() error {
 			Folders:    validFolders,
 			Tags:       tags,
 			Parents:    parents,
-			FileType:   fileType,
-			Status:     status,
-			Priority:   priority,
+			Editor:     fileType,
 		}
 
 		if err := files.MetaDataSave(metadata); err != nil {

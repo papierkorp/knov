@@ -221,89 +221,48 @@
     <p class="section-description">{{T "Control which file types are visible in file listings and browsing"}}</p>
 
     <div class="setting-group">
-        <h3>{{T "Content Types"}}</h3>
+        <h3>{{T "Editor Types"}}</h3>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/file-types/hide-markdown" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="hideMarkdown" value="true" {{ if .AppConfig.HideMarkdown }}checked{{ end }} class="form-checkbox" />
+                    <span class="checkmark"></span>
+                    {{T "Hide Markdown Files"}}
+                    <small>{{T "Hide files using the markdown editor"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/file-types/hide-text" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="hideText" value="true" {{ if .AppConfig.HideText }}checked{{ end }} class="form-checkbox" />
+                    <span class="checkmark"></span>
+                    {{T "Hide Text Files"}}
+                    <small>{{T "Hide files using the text editor"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/file-types/hide-list" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="hideList" value="true" {{ if .AppConfig.HideList }}checked{{ end }} class="form-checkbox" />
+                    <span class="checkmark"></span>
+                    {{T "Hide List Files"}}
+                    <small>{{T "Hide files using the list editor"}}</small>
+                </label>
+            </form>
+        </div>
 
         <div class="setting-item">
             <form hx-post="/api/config/file-types/hide-todo" hx-trigger="change">
                 <label class="checkbox-label">
-                    <input
-                        type="checkbox"
-                        name="hideTodo"
-                        value="true"
-                        {{ if .AppConfig.HideTodo }}checked{{ end }}
-                        class="form-checkbox"
-                    />
+                    <input type="checkbox" name="hideTodo" value="true" {{ if .AppConfig.HideTodo }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
                     {{T "Hide Todo Files"}}
-                    <small>{{T "Hide files marked as todo type"}}</small>
-                </label>
-            </form>
-        </div>
-
-        <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-fleeting" hx-trigger="change">
-                <label class="checkbox-label">
-                    <input
-                        type="checkbox"
-                        name="hideFleeting"
-                        value="true"
-                        {{ if .AppConfig.HideFleeting }}checked{{ end }}
-                        class="form-checkbox"
-                    />
-                    <span class="checkmark"></span>
-                    {{T "Hide Fleeting Notes"}}
-                    <small>{{T "Hide files marked as fleeting type"}}</small>
-                </label>
-            </form>
-        </div>
-
-        <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-literature" hx-trigger="change">
-                <label class="checkbox-label">
-                    <input
-                        type="checkbox"
-                        name="hideLiterature"
-                        value="true"
-                        {{ if .AppConfig.HideLiterature }}checked{{ end }}
-                        class="form-checkbox"
-                    />
-                    <span class="checkmark"></span>
-                    {{T "Hide Literature Notes"}}
-                    <small>{{T "Hide files marked as literature type"}}</small>
-                </label>
-            </form>
-        </div>
-
-        <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-moc" hx-trigger="change">
-                <label class="checkbox-label">
-                    <input
-                        type="checkbox"
-                        name="hideMOC"
-                        value="true"
-                        {{ if .AppConfig.HideMOC }}checked{{ end }}
-                        class="form-checkbox"
-                    />
-                    <span class="checkmark"></span>
-                    {{T "Hide MOC Files"}}
-                    <small>{{T "Hide files marked as MOC (Maps of Content) type"}}</small>
-                </label>
-            </form>
-        </div>
-
-        <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-permanent" hx-trigger="change">
-                <label class="checkbox-label">
-                    <input
-                        type="checkbox"
-                        name="hidePermanent"
-                        value="true"
-                        {{ if .AppConfig.HidePermanent }}checked{{ end }}
-                        class="form-checkbox"
-                    />
-                    <span class="checkmark"></span>
-                    {{T "Hide Permanent Notes"}}
-                    <small>{{T "Hide files marked as permanent type"}}</small>
+                    <small>{{T "Hide files using the todo editor"}}</small>
                 </label>
             </form>
         </div>
@@ -311,33 +270,21 @@
         <div class="setting-item">
             <form hx-post="/api/config/file-types/hide-filter" hx-trigger="change">
                 <label class="checkbox-label">
-                    <input
-                        type="checkbox"
-                        name="hideFilter"
-                        value="true"
-                        {{ if .AppConfig.HideFilter }}checked{{ end }}
-                        class="form-checkbox"
-                    />
+                    <input type="checkbox" name="hideFilter" value="true" {{ if .AppConfig.HideFilter }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
                     {{T "Hide Filter Files"}}
-                    <small>{{T "Hide files marked as filter type"}}</small>
+                    <small>{{T "Hide files using the filter editor"}}</small>
                 </label>
             </form>
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-journaling" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-index" hx-trigger="change">
                 <label class="checkbox-label">
-                    <input
-                        type="checkbox"
-                        name="hideJournaling"
-                        value="true"
-                        {{ if .AppConfig.HideJournaling }}checked{{ end }}
-                        class="form-checkbox"
-                    />
+                    <input type="checkbox" name="hideIndex" value="true" {{ if .AppConfig.HideIndex }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
-                    {{T "Hide Journaling Files"}}
-                    <small>{{T "Hide files marked as journaling type"}}</small>
+                    {{T "Hide Index Files"}}
+                    <small>{{T "Hide files using the index editor"}}</small>
                 </label>
             </form>
         </div>

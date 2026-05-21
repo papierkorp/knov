@@ -35,18 +35,15 @@ type AppConfig struct {
 	LinkRegex               []string
 	CronjobInterval         string
 	SearchIndexInterval     string
+	HideMarkdown            bool
+	HideText                bool
+	HideList                bool
 	HideTodo                bool
-	HideFleeting            bool
-	HideLiterature          bool
-	HideMOC                 bool
-	HidePermanent           bool
 	HideFilter              bool
-	HideJournaling          bool
+	HideIndex               bool
 	HideImage               bool
 	HideVideo               bool
 	HidePDF                 bool
-	HideText                bool
-	DefaultFiletype         string
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -83,18 +80,15 @@ func InitAppConfig() {
 		},
 		CronjobInterval:     getEnv("KNOV_CRONJOB_INTERVAL", "5m"),
 		SearchIndexInterval: getEnv("KNOV_SEARCH_INDEX_INTERVAL", "15m"),
+		HideMarkdown:        getBoolEnv("KNOV_HIDE_MARKDOWN", false),
+		HideText:            getBoolEnv("KNOV_HIDE_TEXT", false),
+		HideList:            getBoolEnv("KNOV_HIDE_LIST", false),
 		HideTodo:            getBoolEnv("KNOV_HIDE_TODO", false),
-		HideFleeting:        getBoolEnv("KNOV_HIDE_FLEETING", false),
-		HideLiterature:      getBoolEnv("KNOV_HIDE_LITERATURE", false),
-		HideMOC:             getBoolEnv("KNOV_HIDE_MOC", false),
-		HidePermanent:       getBoolEnv("KNOV_HIDE_PERMANENT", false),
 		HideFilter:          getBoolEnv("KNOV_HIDE_FILTER", false),
-		HideJournaling:      getBoolEnv("KNOV_HIDE_JOURNALING", false),
+		HideIndex:           getBoolEnv("KNOV_HIDE_INDEX", false),
 		HideImage:           getBoolEnv("KNOV_HIDE_IMAGE", false),
 		HideVideo:           getBoolEnv("KNOV_HIDE_VIDEO", false),
 		HidePDF:             getBoolEnv("KNOV_HIDE_PDF", false),
-		HideText:            getBoolEnv("KNOV_HIDE_TEXT", false),
-		DefaultFiletype:     getEnv("KNOV_DEFAULT_FILETYPE", "permanent"),
 	}
 
 	initLogLevel()
@@ -180,9 +174,30 @@ func GetMetadataLinkRegex() []string {
 	return appConfig.LinkRegex
 }
 
-// GetDefaultFiletype returns the default filetype for externally added files
-func GetDefaultFiletype() string {
-	return appConfig.DefaultFiletype
+// IsFileTypeHidden checks if a specific editor type should be hidden
+func IsFileTypeHidden(editorType string) bool {
+	switch strings.ToLower(editorType) {
+	case "markdown-editor":
+		return appConfig.HideMarkdown
+	case "textarea-editor":
+		return appConfig.HideText
+	case "list-editor":
+		return appConfig.HideList
+	case "todo-editor":
+		return appConfig.HideTodo
+	case "filter-editor":
+		return appConfig.HideFilter
+	case "index-editor":
+		return appConfig.HideIndex
+	case "image":
+		return appConfig.HideImage
+	case "video":
+		return appConfig.HideVideo
+	case "pdf":
+		return appConfig.HidePDF
+	default:
+		return false
+	}
 }
 
 // InitGitRepository initializes git repository based on configuration
@@ -276,34 +291,4 @@ func loadEnvFile() {
 	}
 
 	logging.LogInfo(".env file loaded")
-}
-
-// IsFileTypeHidden checks if a specific file type should be hidden
-func IsFileTypeHidden(fileType string) bool {
-	switch strings.ToLower(fileType) {
-	case "todo":
-		return appConfig.HideTodo
-	case "fleeting":
-		return appConfig.HideFleeting
-	case "literature":
-		return appConfig.HideLiterature
-	case "moc":
-		return appConfig.HideMOC
-	case "permanent":
-		return appConfig.HidePermanent
-	case "filter":
-		return appConfig.HideFilter
-	case "journaling":
-		return appConfig.HideJournaling
-	case "image":
-		return appConfig.HideImage
-	case "video":
-		return appConfig.HideVideo
-	case "pdf":
-		return appConfig.HidePDF
-	case "text":
-		return appConfig.HideText
-	default:
-		return false
-	}
 }

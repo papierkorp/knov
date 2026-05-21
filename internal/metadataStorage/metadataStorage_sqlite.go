@@ -66,7 +66,6 @@ func (ss *sqliteStorage) initialize() error {
 		title TEXT,
 		created_at DATETIME,
 		last_edited DATETIME,
-		target_date DATETIME,
 		collection TEXT,
 		folders TEXT,
 		tags TEXT,
@@ -75,28 +74,18 @@ func (ss *sqliteStorage) initialize() error {
 		kids TEXT,
 		used_links TEXT,
 		links_to_here TEXT,
-		file_type TEXT,
-		status TEXT,
-		priority TEXT,
+		editor TEXT,
 		size INTEGER,
 		references TEXT
 	);
 	CREATE INDEX IF NOT EXISTS idx_collection ON metadata(collection);
-	CREATE INDEX IF NOT EXISTS idx_file_type ON metadata(file_type);
-	CREATE INDEX IF NOT EXISTS idx_status ON metadata(status);
-	CREATE INDEX IF NOT EXISTS idx_priority ON metadata(priority);
+	CREATE INDEX IF NOT EXISTS idx_editor ON metadata(editor);
 	`
 
 	_, err := ss.db.Exec(query)
 	if err != nil {
 		logging.LogError("failed to initialize metadata tables: %v", err)
 		return fmt.Errorf("failed to initialize metadata tables: %w", err)
-	}
-
-	// migrate: add references column if missing
-	if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err != nil {
-		// column likely already exists, ignore
-		logging.LogDebug("references column already exists or migration skipped: %v", err)
 	}
 
 	logging.LogDebug("metadata sqlite tables initialized")
@@ -109,9 +98,9 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	defer ss.mutex.RUnlock()
 
 	query := `
-	SELECT title, created_at, last_edited, target_date, collection,
+	SELECT title, created_at, last_edited, collection,
 	       folders, tags, ancestor, parents, kids, used_links, links_to_here,
-	       file_type, status, priority, size, COALESCE(references, '') as references
+	       editor, size, COALESCE(references, '') as references
 	FROM metadata WHERE path = ?
 	`
 
@@ -119,7 +108,6 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		Title       string
 		CreatedAt   *time.Time
 		LastEdited  *time.Time
-		TargetDate  *time.Time
 		Collection  string
 		Folders     string
 		Tags        string
@@ -128,18 +116,16 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		Kids        string
 		UsedLinks   string
 		LinksToHere string
-		FileType    string
-		Status      string
-		Priority    string
+		Editor      string
 		Size        int64
 		References  string
 	}
 
 	err := ss.db.QueryRow(query, key).Scan(
-		&meta.Title, &meta.CreatedAt, &meta.LastEdited, &meta.TargetDate,
+		&meta.Title, &meta.CreatedAt, &meta.LastEdited,
 		&meta.Collection, &meta.Folders, &meta.Tags, &meta.Ancestor,
-		&meta.Parents, &meta.Kids, &meta.UsedLinks, &meta.LinksToHere, &meta.FileType,
-		&meta.Status, &meta.Priority, &meta.Size, &meta.References,
+		&meta.Parents, &meta.Kids, &meta.UsedLinks, &meta.LinksToHere, &meta.Editor,
+		&meta.Size, &meta.References,
 	)
 
 	if err == sql.ErrNoRows {
@@ -155,9 +141,7 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		"path":       key,
 		"title":      meta.Title,
 		"collection": meta.Collection,
-		"type":       meta.FileType,
-		"status":     meta.Status,
-		"priority":   meta.Priority,
+		"editor":     meta.Editor,
 		"size":       meta.Size,
 	}
 
@@ -166,9 +150,6 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	}
 	if meta.LastEdited != nil {
 		result["lastEdited"] = meta.LastEdited.Format(time.RFC3339)
-	}
-	if meta.TargetDate != nil && !meta.TargetDate.IsZero() {
-		result["targetDate"] = meta.TargetDate.Format(time.RFC3339)
 	}
 
 	// parse JSON arrays
@@ -297,10 +278,10 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 
 	query := `
 	INSERT OR REPLACE INTO metadata (
-		path, title, created_at, last_edited, target_date, collection,
+		path, title, created_at, last_edited, collection,
 		folders, tags, ancestor, parents, kids, used_links, links_to_here,
-		file_type, status, priority, size, references
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		editor, size, references
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	_, err := ss.db.Exec(query,
@@ -308,7 +289,6 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 		getString("title"),
 		getTime("createdAt"),
 		getTime("lastEdited"),
-		getTime("targetDate"),
 		getString("collection"),
 		marshalArray("folders"),
 		marshalArray("tags"),
@@ -317,9 +297,7 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 		marshalArray("kids"),
 		marshalArray("usedLinks"),
 		marshalArray("linksToHere"),
-		getString("type"),
-		getString("status"),
-		getString("priority"),
+		getString("editor"),
 		size,
 		referencesJSON,
 	)

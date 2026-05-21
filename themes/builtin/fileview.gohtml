@@ -36,22 +36,6 @@
                         <span hx-get="/api/metadata/lastedited?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
                     <div class="metadata-row">
-                        <span class="metadata-label">{{T "type"}}:</span>
-                        <span hx-get="/api/metadata/filetype?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-                    </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">{{T "priority"}}:</span>
-                        <span hx-get="/api/metadata/priority?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-                    </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">{{T "status"}}:</span>
-                        <span hx-get="/api/metadata/status?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-                    </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">{{T "target date"}}:</span>
-                        <span hx-get="/api/metadata/targetdate?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-                    </div>
-                    <div class="metadata-row">
                         <span class="metadata-label">{{T "tags"}}:</span>
                         <span hx-get="/api/metadata/tags?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
@@ -153,21 +137,6 @@
             {{end}}
             {{if index .ThemeSettings "compactMetadataCollection"}}
             <span class="meta-pill" hx-get="/api/metadata/collections?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataType"}}
-            <span class="meta-pill" hx-get="/api/metadata/filetype?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataStatus"}}
-            <span class="meta-pill" hx-get="/api/metadata/status?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataPriority"}}
-            <span class="meta-pill" hx-get="/api/metadata/priority?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataTargetDate"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "due"}}:</span>
-                <span hx-get="/api/metadata/targetdate?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            </span>
             {{end}}
             {{if index .ThemeSettings "compactMetadataTags"}}
             <span class="meta-pill" hx-get="/api/metadata/tags?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>

@@ -53,7 +53,7 @@ func pathsToFiles(paths []string, prefix string) []File {
 
 // ViewURL returns the correct browser URL for viewing this file
 func (f File) ViewURL() string {
-	if f.Metadata != nil && f.Metadata.FileType == FileTypeFilter {
+	if f.Metadata != nil && f.Metadata.Editor == EditorTypeFilter {
 		id := strings.TrimSuffix(pathutils.ToRelative(f.Path), ".filter")
 		return "/filters/" + id
 	}
@@ -96,7 +96,7 @@ func GetAllVirtualFiles() ([]File, error) {
 		if err := json.Unmarshal(data, &m); err != nil {
 			continue
 		}
-		if m.FileType == "" {
+		if m.Editor == "" {
 			continue
 		}
 		cleanPath := pathutils.ToRelative(key)
@@ -185,7 +185,7 @@ func FilterFilesByHiddenTypes(files []File) []File {
 		}
 
 		// check if this file type should be hidden
-		if !configmanager.IsFileTypeHidden(string(metadata.FileType)) {
+		if !configmanager.IsFileTypeHidden(string(metadata.Editor)) {
 			filtered = append(filtered, file)
 		}
 	}

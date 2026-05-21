@@ -122,26 +122,6 @@
       "default": false,
       "label": "Compact: Collection"
     },
-    "compactMetadataType": {
-      "type": "boolean",
-      "default": true,
-      "label": "Compact: Type"
-    },
-    "compactMetadataStatus": {
-      "type": "boolean",
-      "default": true,
-      "label": "Compact: Status"
-    },
-    "compactMetadataPriority": {
-      "type": "boolean",
-      "default": false,
-      "label": "Compact: Priority"
-    },
-    "compactMetadataTargetDate": {
-      "type": "boolean",
-      "default": false,
-      "label": "Compact: Target Date"
-    },
     "compactMetadataTags": {
       "type": "boolean",
       "default": true,

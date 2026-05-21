@@ -32,9 +32,6 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 
 	// file path field (editable)
 	path := filePath
-	if path == "" {
-		path = ""
-	}
 	html.WriteString(`<div class="form-field">`)
 	html.WriteString(`<label for="meta-path">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file path") + `</label>`)
 	html.WriteString(GenerateInputWithSaveOnBlur("meta-path", "newpath", path,
@@ -42,62 +39,16 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 		filePath, "/api/metadata/path"))
 	html.WriteString(`</div>`)
 
-	// priority field
-	priority := ""
+	// editor field - use defaultFiletype if provided and no existing metadata
+	editor := defaultFiletype
 	if metadata != nil {
-		priority = string(metadata.Priority)
+		editor = string(metadata.Editor)
 	}
 	html.WriteString(`<div class="form-field">`)
-	html.WriteString(`<label for="meta-priority">` + translation.SprintfForRequest(configmanager.GetLanguage(), "priority") + `</label>`)
-	html.WriteString(GenerateDatalistInputWithSave("meta-priority", "priority", priority,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "set priority (1-5)"),
-		"/api/metadata/priorities?format=options", filePath, "/api/metadata/priority"))
-	html.WriteString(`</div>`)
-
-	// collection field
-	collection := ""
-	if metadata != nil {
-		collection = metadata.Collection
-	}
-	html.WriteString(`<div class="form-field">`)
-	html.WriteString(`<label for="meta-collection">` + translation.SprintfForRequest(configmanager.GetLanguage(), "collection") + `</label>`)
-	html.WriteString(GenerateDatalistInputWithSave("meta-collection", "collection", collection,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "assign to collection"),
-		"/api/metadata/collections?format=options", filePath, "/api/metadata/collection"))
-	html.WriteString(`</div>`)
-
-	// filetype field - use defaultFiletype if provided and no existing metadata
-	filetype := defaultFiletype
-	if metadata != nil {
-		filetype = string(metadata.FileType)
-	}
-	html.WriteString(`<div class="form-field">`)
-	html.WriteString(`<label for="meta-filetype">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file type") + `</label>`)
-	html.WriteString(GenerateDatalistInputWithSave("meta-filetype", "filetype", filetype,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "select file type"),
-		"/api/metadata/filetypes?format=options", filePath, "/api/metadata/filetype"))
-	html.WriteString(`</div>`)
-
-	// status field
-	status := ""
-	if metadata != nil {
-		status = string(metadata.Status)
-	}
-	html.WriteString(`<div class="form-field">`)
-	html.WriteString(`<label for="meta-status">` + translation.SprintfForRequest(configmanager.GetLanguage(), "status") + `</label>`)
-	html.WriteString(GenerateDatalistInputWithSave("meta-status", "status", status,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "select status"),
-		"/api/metadata/statuses?format=options", filePath, "/api/metadata/status"))
-	html.WriteString(`</div>`)
-
-	// target date field
-	targetDate := ""
-	if metadata != nil && !metadata.TargetDate.IsZero() {
-		targetDate = metadata.TargetDate.Format("2006-01-02")
-	}
-	html.WriteString(`<div class="form-field">`)
-	html.WriteString(`<label for="meta-targetdate">` + translation.SprintfForRequest(configmanager.GetLanguage(), "target date") + `</label>`)
-	html.WriteString(GenerateDateInputWithSave("meta-targetdate", "targetdate", targetDate, filePath, "/api/metadata/targetdate"))
+	html.WriteString(`<label for="meta-editor">` + translation.SprintfForRequest(configmanager.GetLanguage(), "editor") + `</label>`)
+	html.WriteString(GenerateDatalistInputWithSave("meta-editor", "editor", editor,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "select editor"),
+		"/api/metadata/editors?format=options", filePath, "/api/metadata/editor"))
 	html.WriteString(`</div>`)
 
 	// parents field
@@ -122,18 +73,6 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 	html.WriteString(GenerateTagChipsInputWithSave("meta-tags", "tags", tagsStr,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add tags"),
 		"/api/metadata/tags?format=options", filePath, "/api/metadata/tags"))
-	html.WriteString(`</div>`)
-
-	// folders field
-	foldersStr := ""
-	if metadata != nil && len(metadata.Folders) > 0 {
-		foldersStr = strings.Join(metadata.Folders, ", ")
-	}
-	html.WriteString(`<div class="form-field">`)
-	html.WriteString(`<label for="meta-folders">` + translation.SprintfForRequest(configmanager.GetLanguage(), "folders") + `</label>`)
-	html.WriteString(GenerateTagChipsInputWithSave("meta-folders", "folders", foldersStr,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "add folder categories"),
-		"/api/metadata/folders?format=options", filePath, "/api/metadata/folders"))
 	html.WriteString(`</div>`)
 
 	html.WriteString(`</div>`)  // close basic form group
@@ -187,7 +126,7 @@ func RenderMetadataCSV(metadata []*files.Metadata) string {
 	var csv strings.Builder
 
 	// header
-	csv.WriteString("path,title,collection,filetype,status,priority,createdat,lastedited,tags,folders\n")
+	csv.WriteString("path,title,collection,editor,createdat,lastedited,tags,folders\n")
 
 	for _, m := range metadata {
 		if m == nil {
@@ -198,16 +137,14 @@ func RenderMetadataCSV(metadata []*files.Metadata) string {
 		path := escapeCSV(m.Path)
 		name := escapeCSV(m.Title)
 		collection := escapeCSV(m.Collection)
-		filetype := escapeCSV(string(m.FileType))
-		status := escapeCSV(string(m.Status))
-		priority := escapeCSV(string(m.Priority))
+		editor := escapeCSV(string(m.Editor))
 		createdat := m.CreatedAt.Format("2006-01-02 15:04:05")
 		lastedited := m.LastEdited.Format("2006-01-02 15:04:05")
 		tags := escapeCSV(strings.Join(m.Tags, ";"))
 		folders := escapeCSV(strings.Join(m.Folders, ";"))
 
-		csv.WriteString(fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
-			path, name, collection, filetype, status, priority, createdat, lastedited,
+		csv.WriteString(fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%s\n",
+			path, name, collection, editor, createdat, lastedited,
 			tags, folders))
 	}
 
@@ -238,11 +175,7 @@ func RenderFileMetadataSimple(metadata *files.Metadata) string {
 	fmt.Fprintf(&html, `<p>%s: %s</p>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "collection"), metadata.Collection)
 	fmt.Fprintf(&html, `<p>%s: %s</p>`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "type"), metadata.FileType)
-	fmt.Fprintf(&html, `<p>%s: %s</p>`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "status"), metadata.Status)
-	fmt.Fprintf(&html, `<p>%s: %s</p>`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "priority"), metadata.Priority)
+		translation.SprintfForRequest(configmanager.GetLanguage(), "editor"), metadata.Editor)
 
 	if len(metadata.Tags) > 0 {
 		fmt.Fprintf(&html, `<p>%s: %s</p>`,

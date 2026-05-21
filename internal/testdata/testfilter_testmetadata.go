@@ -18,9 +18,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Collection: "filter-testing-unique",
 			Folders:    []string{"filter-tests"},
 			Tags:       []string{"unique-experimental", "filter-specific", "alpha-test"},
-			FileType:   files.FileTypeFleeting,
-			Status:     files.StatusDraft,
-			Priority:   files.PriorityHigh,
+			Editor:     files.EditorTypeMarkdown,
 		},
 		// filterTestB
 		{
@@ -30,9 +28,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Collection: "filter-testing-unique",
 			Folders:    []string{"filter-tests"},
 			Tags:       []string{"unique-stable", "filter-specific", "beta-test"},
-			FileType:   files.FileTypeLiterature,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityMedium,
+			Editor:     files.EditorTypeMarkdown,
 		},
 		// filterTestC
 		{
@@ -42,9 +38,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Collection: "filter-testing-unique",
 			Folders:    []string{"filter-tests"},
 			Tags:       []string{"unique-performance", "optimization-specific", "gamma-test"},
-			FileType:   files.FileTypePermanent,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityLow,
+			Editor:     files.EditorTypeMarkdown,
 		},
 		// filterTestD
 		{
@@ -54,9 +48,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Collection: "advanced-filter-testing",
 			Folders:    []string{"filter-tests", "advanced"},
 			Tags:       []string{"unique-advanced", "unique-experimental", "delta-test"},
-			FileType:   files.FileTypeFleeting,
-			Status:     files.StatusDraft,
-			Priority:   files.PriorityHigh,
+			Editor:     files.EditorTypeMarkdown,
 		},
 		// filterTestE
 		{
@@ -66,9 +58,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Collection: "advanced-filter-testing",
 			Folders:    []string{"filter-tests", "advanced"},
 			Tags:       []string{"unique-advanced", "unique-stable", "epsilon-test"},
-			FileType:   files.FileTypeLiterature,
-			Status:     files.StatusArchived,
-			Priority:   files.PriorityMedium,
+			Editor:     files.EditorTypeMarkdown,
 		},
 		// filterTestF
 		{
@@ -78,9 +68,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Collection: "basic-filter-testing",
 			Folders:    []string{"filter-tests", "basic"},
 			Tags:       []string{"unique-basic", "fundamental-specific", "zeta-test"},
-			FileType:   files.FileTypeJournaling,
-			Status:     files.StatusDraft,
-			Priority:   files.PriorityHigh,
+			Editor:     files.EditorTypeMarkdown,
 		},
 		// filterTestG
 		{
@@ -90,9 +78,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Collection: "basic-filter-testing",
 			Folders:    []string{"filter-tests", "basic"},
 			Tags:       []string{"unique-basic", "validation-specific", "eta-test"},
-			FileType:   files.FileTypeMOC,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityMedium,
+			Editor:     files.EditorTypeMarkdown,
 		},
 		// filterTestH
 		{
@@ -102,9 +88,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Collection: "integration-filter-testing",
 			Folders:    []string{"filter-tests", "integration"},
 			Tags:       []string{"unique-integration", "system-specific", "theta-test"},
-			FileType:   files.FileTypeFleeting,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityLow,
+			Editor:     files.EditorTypeMarkdown,
 		},
 		// filterTestI
 		{
@@ -114,9 +98,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Collection: "integration-filter-testing",
 			Folders:    []string{"filter-tests", "integration"},
 			Tags:       []string{"unique-integration", "complex-specific", "iota-test"},
-			FileType:   files.FileTypePermanent,
-			Status:     files.StatusDraft,
-			Priority:   files.PriorityHigh,
+			Editor:     files.EditorTypeMarkdown,
 		},
 		// filterTestJ
 		{
@@ -126,9 +108,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Collection: "performance-filter-testing",
 			Folders:    []string{"filter-tests", "performance"},
 			Tags:       []string{"unique-performance", "benchmark-specific", "kappa-test"},
-			FileType:   files.FileTypeLiterature,
-			Status:     files.StatusArchived,
-			Priority:   files.PriorityMedium,
+			Editor:     files.EditorTypeMarkdown,
 		},
 		// filterTestK
 		{
@@ -138,9 +118,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Collection: "performance-filter-testing",
 			Folders:    []string{"filter-tests", "performance"},
 			Tags:       []string{"unique-performance", "scalability-specific", "lambda-test"},
-			FileType:   files.FileTypeJournaling,
-			Status:     files.StatusPublished,
-			Priority:   files.PriorityLow,
+			Editor:     files.EditorTypeMarkdown,
 		},
 		// filterTestL
 		{
@@ -150,9 +128,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			Collection: "special-filter-testing",
 			Folders:    []string{"filter-tests", "special"},
 			Tags:       []string{"unique-special", "edge-case-specific", "mu-test"},
-			FileType:   files.FileTypeMOC,
-			Status:     files.StatusDraft,
-			Priority:   files.PriorityHigh,
+			Editor:     files.EditorTypeMarkdown,
 		},
 	}
 }

@@ -231,15 +231,14 @@ func NewBrowseMetadataTemplateData(metadataType string) BrowseMetadataTemplateDa
 // FileNewTemplateData extends base with file creation specific data
 type FileNewTemplateData struct {
 	BaseTemplateData
-	FileType string
+	Editor string
 }
 
 // NewFileNewTemplateData creates file creation specific data
-func NewFileNewTemplateData(fileType string) FileNewTemplateData {
-	title := "Create New " + fileType
+func NewFileNewTemplateData(editor string) FileNewTemplateData {
 	return FileNewTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title),
-		FileType:         fileType,
+		BaseTemplateData: NewBaseTemplateData("create new file"),
+		Editor:           editor,
 	}
 }
 

@@ -92,7 +92,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 		} else {
 			// check if file type should be hidden
 			metadata, _ := files.MetaDataGet(entryPath)
-			if metadata != nil && configmanager.IsFileTypeHidden(string(metadata.FileType)) {
+			if metadata != nil && configmanager.IsFileTypeHidden(string(metadata.Editor)) {
 				continue // skip this file if its type is hidden
 			}
 			filesInDir = append(filesInDir, item)
@@ -232,32 +232,25 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filePath := r.FormValue("filepath")
-	formFiletype := r.FormValue("filetype")
+	formEditor := r.FormValue("editor")
 	content := r.FormValue("content")
-
-	// auto-generate filepath for fleeting files
-	if filePath == "" && formFiletype == "fleeting" {
-		// generate unique filename from first line of content
-		filename := generateUniqueFleetingFilename(content)
-		filePath = fmt.Sprintf("fleeting/%s.md", filename)
-		logging.LogInfo("auto-generated fleeting filepath: %s", filePath)
-	}
 
 	if filePath == "" {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
 		return
 	}
 
-	// check file extension and add .md if missing for markdown files
+	// check file extension and add appropriate extension if missing
 	if !strings.Contains(filePath, ".") {
-		// no extension provided, add appropriate extension based on filetype
-		switch formFiletype {
-		case "todo", "fleeting", "literature", "permanent", "moc":
-			filePath = filePath + ".md"
-		case "filter":
+		switch files.EditorType(formEditor) {
+		case files.EditorTypeFilter:
 			filePath = filePath + ".filter"
-		case "journaling":
+		case files.EditorTypeList:
 			filePath = filePath + ".list"
+		case files.EditorTypeTodo:
+			filePath = filePath + ".todo"
+		case files.EditorTypeIndex:
+			filePath = filePath + ".index"
 		default:
 			filePath = filePath + ".md"
 		}
@@ -290,41 +283,20 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 
 	// create metadata for new files
 	if isNewFile {
-		// determine filetype based on form parameter or default to permanent
-		var filetype files.Filetype = files.FileTypePermanent // default
-
-		formFiletype := r.FormValue("filetype")
-		if formFiletype != "" {
-			switch formFiletype {
-			case "todo":
-				filetype = files.FileTypeTodo
-			case "fleeting":
-				filetype = files.FileTypeFleeting
-			case "literature":
-				filetype = files.FileTypeLiterature
-			case "permanent":
-				filetype = files.FileTypePermanent
-			case "moc":
-				filetype = files.FileTypeMOC
-			case "filter":
-				filetype = files.FileTypeFilter
-			case "journaling":
-				filetype = files.FileTypeJournaling
-			default:
-				filetype = files.FileTypePermanent
-			}
+		editor := files.EditorType(formEditor)
+		if editor == "" {
+			editor = files.EditorTypeMarkdown
 		}
 
 		metadata := &files.Metadata{
-			Path:     pathutils.ToWithPrefix(filePath),
-			FileType: filetype,
+			Path:   pathutils.ToWithPrefix(filePath),
+			Editor: editor,
 		}
 
 		if err := files.MetaDataSave(metadata); err != nil {
 			logging.LogError("failed to save metadata for new file %s: %v", filePath, err)
-			// don't fail the whole request, just log the error
 		} else {
-			logging.LogInfo("created metadata for new file: %s (filetype: %s)", filePath, filetype)
+			logging.LogInfo("created metadata for new file: %s (editor: %s)", filePath, editor)
 		}
 	} else {
 		// update links for existing files
@@ -681,7 +653,7 @@ func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/metadata-form [get]
 func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
-	defaultFiletype := r.URL.Query().Get("filetype")
+	defaultFiletype := r.URL.Query().Get("editor")
 
 	html, err := render.RenderMetadataForm(filePath, defaultFiletype)
 	if err != nil {
