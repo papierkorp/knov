@@ -394,16 +394,10 @@ func filterValueInputMeta(metadataField string) (apiEndpoint, placeholder string
 		return "/api/metadata/tags?format=options", translation.SprintfForRequest(configmanager.GetLanguage(), "type or select tag")
 	case "folders":
 		return "/api/metadata/folders?format=options", translation.SprintfForRequest(configmanager.GetLanguage(), "type or select folder")
-	case "type":
+	case "editor":
 		return "/api/metadata/editors?format=options", translation.SprintfForRequest(configmanager.GetLanguage(), "select editor type")
-	case "para_projects":
-		return "/api/metadata/para/projects?format=options", translation.SprintfForRequest(configmanager.GetLanguage(), "type or select project")
-	case "para_areas":
-		return "/api/metadata/para/areas?format=options", translation.SprintfForRequest(configmanager.GetLanguage(), "type or select area")
-	case "para_resources":
-		return "/api/metadata/para/resources?format=options", translation.SprintfForRequest(configmanager.GetLanguage(), "type or select resource")
-	case "para_archive":
-		return "/api/metadata/para/archive?format=options", translation.SprintfForRequest(configmanager.GetLanguage(), "type or select archive item")
+	case "child-of", "parent-of", "ancestor-of":
+		return "/api/files/list?format=options", translation.SprintfForRequest(configmanager.GetLanguage(), "select file")
 	default:
 		return "", translation.SprintfForRequest(configmanager.GetLanguage(), "enter value")
 	}

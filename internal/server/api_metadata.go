@@ -685,7 +685,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 	// for form options, use cached data
 	if format == "options" {
 		cachedTags, err := files.GetAllTagsFromSystemData()
-		if err != nil {
+		if err != nil || len(cachedTags) == 0 {
 			logging.LogError("failed to get cached tags, fallback to live data: %v", err)
 			// fallback to live data
 			tags, err := files.GetAllTags()
@@ -743,7 +743,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 	// for form options, use cached data
 	if format == "options" {
 		cachedCollections, err := files.GetAllCollectionsFromSystemData()
-		if err != nil {
+		if err != nil || len(cachedCollections) == 0 {
 			logging.LogError("failed to get cached collections, fallback to live data: %v", err)
 			// fallback to live data
 			collections, err := files.GetAllCollections()
@@ -801,7 +801,7 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 	// for form options, use cached data
 	if format == "options" {
 		cachedFolders, err := files.GetAllFoldersFromSystemData()
-		if err != nil {
+		if err != nil || len(cachedFolders) == 0 {
 			logging.LogError("failed to get cached folders, fallback to live data: %v", err)
 			// fallback to live data
 			folders, err := files.GetAllFolders()
@@ -861,7 +861,7 @@ func handleAPIGetAllEditors(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderBrowseHTML(filetypes, "/browse/type")
+	html := render.RenderBrowseHTML(filetypes, "/browse/editor")
 	writeResponse(w, r, filetypes, html)
 }
 

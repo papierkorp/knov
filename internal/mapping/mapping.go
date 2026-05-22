@@ -31,6 +31,12 @@ func GetDisplayName(dbField string) string {
 		return "tags"
 	case "folders":
 		return "folders"
+	case "child-of":
+		return "child of"
+	case "parent-of":
+		return "parent of"
+	case "ancestor-of":
+		return "ancestor of"
 	default:
 		return dbField
 	}

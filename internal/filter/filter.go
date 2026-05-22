@@ -164,7 +164,7 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 			}
 		}
 		return false
-	case "type":
+	case "editor":
 		metadataValue = string(metadata.Editor)
 	case "createdAt":
 		metadataValue = metadata.CreatedAt.Format("2006-01-02")
@@ -173,6 +173,27 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 	case "folders":
 		for _, folder := range metadata.Folders {
 			if matchesOperator(folder, criterion.Operator, criterion.Value) {
+				return true
+			}
+		}
+		return false
+	case "child-of":
+		for _, p := range metadata.Parents {
+			if matchesOperator(pathutils.ToRelative(p), criterion.Operator, pathutils.ToRelative(criterion.Value)) {
+				return true
+			}
+		}
+		return false
+	case "parent-of":
+		for _, k := range metadata.Kids {
+			if matchesOperator(pathutils.ToRelative(k), criterion.Operator, pathutils.ToRelative(criterion.Value)) {
+				return true
+			}
+		}
+		return false
+	case "ancestor-of":
+		for _, a := range metadata.Ancestor {
+			if matchesOperator(pathutils.ToRelative(a), criterion.Operator, pathutils.ToRelative(criterion.Value)) {
 				return true
 			}
 		}
@@ -238,10 +259,13 @@ func GetMetadataFields() []string {
 		"title",
 		"collection",
 		"tags",
-		"type",
+		"editor",
 		"createdAt",
 		"lastEdited",
 		"folders",
+		"child-of",
+		"parent-of",
+		"ancestor-of",
 	}
 }
 

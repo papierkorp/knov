@@ -22,7 +22,7 @@
             <div hx-get="/api/metadata/folders" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                 {{T "loading folders..."}}
             </div>
-        {{ else if eq .MetadataType "type" }}
+        {{ else if eq .MetadataType "editor" }}
             <div hx-get="/api/metadata/editors" hx-trigger="load" hx-headers='{"Accept": "text/html"}'>
                 {{T "loading types..."}}
             </div>

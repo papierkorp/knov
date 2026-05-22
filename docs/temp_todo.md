@@ -1,5 +1,6 @@
 # small stuff
 
+
 - media.go - determine filetype for metadata
 - new theme like files.md with a sidebar on the right side which shows the file like a file browser and on top of the sidebar the action icons: settings, admin...
 - overview - browsefiles doesnt work anymore
@@ -9,8 +10,8 @@
 - why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)
 - fix compact and reader view
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)
-- load all files from cache?
-  - http://localhost:1324/browse/folders/systemadmin is running through all files?
+- actually use the cache
+  - http://localhost:1324/browse/folders/systemadmin is running through all files
 - dont run the search indexing at startup or slightly delayed so the app starts
 - codeblocks - copy button
 - codeblocks setting - wrap content

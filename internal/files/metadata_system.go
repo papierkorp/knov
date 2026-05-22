@@ -1,4 +1,4 @@
-// Package files - System-wide metadata operations (cache, aggregation, PARA)
+// Package files - System-wide metadata operations (cache, aggregation)
 package files
 
 import (
@@ -268,6 +268,12 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 	// collect collections
 	if metadata.Collection != "" {
 		mc.Collections[metadata.Collection] = true
+	}
+
+	for _, f := range metadata.Folders {
+		if f != "" {
+			mc.Folders[f] = true
+		}
 	}
 
 	// collect folder paths from file path
