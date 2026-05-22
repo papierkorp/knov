@@ -75,6 +75,7 @@ type ThemeTemplates struct {
 	settings       *template.Template
 	mediaview      *template.Template
 	mediaoverview  *template.Template
+	chat           *template.Template
 }
 
 func InitThemeManager() {
@@ -229,6 +230,8 @@ func LoadSingleTheme(themeName, themesDir string) error {
 			templates.mediaview = tmpl
 		case "filesoverview":
 			templates.filesoverview = tmpl
+		case "chat":
+			templates.chat = tmpl
 		default:
 			logging.LogWarning("unknown template file '%s' -> ignoring", filePath)
 		}
@@ -498,6 +501,7 @@ func (t *Theme) TemplateMap() map[string]*template.Template {
 		"mediaoverview":  t.Templates.mediaoverview,
 		"mediaview":      t.Templates.mediaview,
 		"filesoverview":  t.Templates.filesoverview,
+		"chat":           t.Templates.chat,
 	}
 }
 

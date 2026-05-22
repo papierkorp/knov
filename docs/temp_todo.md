@@ -1,15 +1,24 @@
 # small stuff
 
-
+- chat: select multiple + move/delete multiple
+- add a show file in editor button
+- todoeditor - code display instead of list display
 - media.go - determine filetype for metadata
-- new theme like files.md with a sidebar on the right side which shows the file like a file browser and on top of the sidebar the action icons: settings, admin...
-- overview - browsefiles doesnt work anymore
+- new theme like files.md with 2 sidebars on the left side
+  - on the far left the site sidebar:
+    - with site actions on top e.g. a button for each kind of editor, home, help, search, settings, admin with a button for each
+    - with a search input (and a switch on the right side of the search input: search everything, search title only)
+    - with a chat input which adds directly to the chat without opening the chat path
+    - with a select field for what is displayed in the sidebar: overview, browse, media, latest changes
+  - on the right side of the site sidebar is a page/file sidebar
+    - with file actions on top e.g. edit, history, rename, references, rebuild metadata, delete as buttons
+    - with a select field for what is displayed in the sidebar: metadata, references, toc, file history
 - overview: show folder tree instead of everything in a single level
 - make rebuild metadata concurrent e.g. each letter?
 - in references sidebar add - add button, remove button and edit button to header?
 - why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)
-- fix compact and reader view
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)
+- edit table - cance/save => jump to correct position/context
 - actually use the cache
   - http://localhost:1324/browse/folders/systemadmin is running through all files
 - dont run the search indexing at startup or slightly delayed so the app starts
@@ -36,6 +45,17 @@ if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err 
 	logging.LogDebug("references column already exists or migration skipped: %v", err)
 })
 
+# chat feature
+
+i want to add a new chat feature just like [files.md](https://github.com/zakirullin/files.md/tree/main/docs)
+
+- new route /api/chat
+  - /message_new
+  - /message_delete
+  - /message_move (so the message can be move into its own file or be appended to a existing file)
+- using a textbox
+- is used a like a chat - each message has its own line
+- is saved in a sqlite database (not the docs folder!) - where exactly? do i add a contentStorage sqlite?
 
 # concurrent
 

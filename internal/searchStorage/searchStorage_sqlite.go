@@ -26,7 +26,11 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 		return nil, fmt.Errorf("failed to create storage directory: %w", err)
 	}
 
-	dbPath := filepath.Join(storagePath, "search.db")
+	searchDir := filepath.Join(storagePath, "search")
+	if err := os.MkdirAll(searchDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create search directory: %w", err)
+	}
+	dbPath := filepath.Join(searchDir, "search.db")
 
 	// fix permissions on existing database file if it exists
 	if _, err := os.Stat(dbPath); err == nil {

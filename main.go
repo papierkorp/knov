@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"knov/internal/cacheStorage"
+	"knov/internal/chatStorage"
 	"knov/internal/configStorage"
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
@@ -77,6 +78,11 @@ func main() {
 
 	if err := searchStorage.Init(appConfig.SearchStorageProvider, appConfig.StoragePath); err != nil {
 		logging.LogError("failed to initialize search storage: %v", err)
+		return
+	}
+
+	if err := chatStorage.Init(appConfig.StoragePath); err != nil {
+		logging.LogError("failed to initialize chat storage: %v", err)
 		return
 	}
 

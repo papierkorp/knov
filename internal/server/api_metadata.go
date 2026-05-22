@@ -838,7 +838,8 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Get all available editor types
 // @Tags metadata
-// @Param format query string false "Response format (options for HTML select options)"
+// @Param format query string false "Response format: options for HTML select options"
+// @Param context query string false "Context: chat excludes filter-editor from suggestions"
 // @Produce json,html
 // @Success 200 {object} files.EditorTypeCount
 // @Router /api/metadata/editors [get]
@@ -846,9 +847,13 @@ func handleAPIGetAllEditors(w http.ResponseWriter, r *http.Request) {
 	format := r.URL.Query().Get("format")
 
 	if format == "options" {
+		context := r.URL.Query().Get("context")
 		var html strings.Builder
 		for _, ft := range files.AllEditorTypes() {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, ft, ft))
+			if context == "chat" && ft == files.EditorTypeFilter {
+				continue
+			}
+			fmt.Fprintf(&html, `<option value="%s">%s</option>`, ft, ft)
 		}
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html.String()))

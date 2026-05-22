@@ -89,6 +89,8 @@ func StartServerChi() {
 	r.Get("/browse/{metadata}", handleBrowseMetadata)
 	r.Get("/browse/{metadata}/{value}", handleBrowseFiles)
 
+	r.Get("/chat", handleChat)
+
 	// ----------------------------------------------------------------------------------------
 	// ------------------------------------- static routes -------------------------------------
 	// ----------------------------------------------------------------------------------------
@@ -341,6 +343,19 @@ func StartServerChi() {
 
 		r.Route("/components", func(r chi.Router) {
 			r.Get("/table", handleAPIGetTable)
+		})
+
+		// ----------------------------------------------------------------------------------------
+		// ---------------------------------- chat routes ----------------------------------
+		// ----------------------------------------------------------------------------------------
+
+		r.Route("/chat", func(r chi.Router) {
+			r.Get("/messages", handleAPIGetChat)
+			r.Post("/messages", handleAPIPostChatMessage)
+			r.Delete("/messages/{id}", handleAPIDeleteChatMessage)
+			r.Get("/messages/{id}", handleAPIGetChatByID)
+			r.Get("/messages/{id}/move", handleAPIGetChatMoveForm)
+			r.Post("/messages/{id}/move", handleAPIMoveChatMessage)
 		})
 	})
 
@@ -977,5 +992,13 @@ func handleFileEditTable(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
+	}
+}
+
+func handleChat(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewBaseTemplateData("chat")
+	if err := tm.Render(w, "chat", data); err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}
 }

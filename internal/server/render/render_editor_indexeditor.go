@@ -74,7 +74,7 @@ type IndexConfig struct {
 }
 
 // RenderIndexEditor renders an index/MOC editor with htmx form
-func RenderIndexEditor(filePath string) (string, error) {
+func RenderIndexEditor(filePath string, initialTitle ...string) (string, error) {
 	var html strings.Builder
 
 	html.WriteString(`<div class="index-editor" id="index-editor">`)
@@ -95,6 +95,10 @@ func RenderIndexEditor(filePath string) (string, error) {
 		config = &IndexConfig{
 			Entries: []IndexEntry{},
 		}
+	}
+
+	if len(initialTitle) > 0 && initialTitle[0] != "" {
+		config.Entries = append([]IndexEntry{{Type: "title", Value: initialTitle[0]}}, config.Entries...)
 	}
 
 	// form header
