@@ -23,7 +23,7 @@ type File struct {
 
 type FileContent struct {
 	HTML string
-	TOC  []TOCItem
+	TOC  []parser.TOCItem
 }
 
 // pathsToFiles converts file paths to File structs
@@ -162,8 +162,8 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	relativePath := pathutils.ToRelative(filePath)
 	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", relativePath)
 
-	processedContent = InjectHeaderIDs(processedContent)
-	toc := GenerateTOC(processedContent)
+	processedContent = parser.InjectHeaderIDs(processedContent)
+	toc := parser.GenerateTOC(processedContent)
 
 	return &FileContent{
 		HTML: processedContent,

@@ -8,6 +8,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
@@ -165,8 +166,8 @@ func RenderFileContent(filez []files.File) string {
 		if err != nil {
 			html.WriteString(`<p class="filter-content-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "error loading content: %s", err.Error()) + `</p>`)
 		} else {
-			injected := files.InjectHeaderIDs(content.HTML)
-			toc := files.GenerateTOC(injected)
+			injected := parser.InjectHeaderIDs(content.HTML)
+			toc := parser.GenerateTOC(injected)
 			if len(toc) > 0 {
 				html.WriteString(`<nav class="filter-content-toc toc-nav">`)
 				for _, item := range toc {

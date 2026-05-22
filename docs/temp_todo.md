@@ -1,7 +1,6 @@
 # small stuff
 
 - media.go - determine filetype for metadata
-- play around with contenteditable instead of the markdown editor
 - new theme like files.md with a sidebar on the right side which shows the file like a file browser and on top of the sidebar the action icons: settings, admin...
 - overview - browsefiles doesnt work anymore
 - overview: show folder tree instead of everything in a single level
@@ -27,7 +26,7 @@
   - use Query() instead of a loop through files.GetAllFiles()
   - use Query in filter.go
   - Refactor filter.go to use query
-- move toc to contentHandler?
+- create filter manually not per ai..
 - migration solution
 metadataStorage_sqlite - migration
 // migrate: add references column if missing
@@ -36,10 +35,6 @@ if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err 
 	logging.LogDebug("references column already exists or migration skipped: %v", err)
 })
 
-
-# filter
-
-create filter manually not per ai..
 
 # concurrent
 
