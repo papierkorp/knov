@@ -76,7 +76,7 @@ func (ss *sqliteStorage) initialize() error {
 		links_to_here TEXT,
 		editor TEXT,
 		size INTEGER,
-		references TEXT
+		"references" TEXT
 	);
 	CREATE INDEX IF NOT EXISTS idx_collection ON metadata(collection);
 	CREATE INDEX IF NOT EXISTS idx_editor ON metadata(editor);
@@ -100,7 +100,7 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	query := `
 	SELECT title, created_at, last_edited, collection,
 	       folders, tags, ancestor, parents, kids, used_links, links_to_here,
-	       editor, size, COALESCE(references, '') as references
+	       editor, size, COALESCE("references", '') as "references"
 	FROM metadata WHERE path = ?
 	`
 
@@ -280,7 +280,7 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 	INSERT OR REPLACE INTO metadata (
 		path, title, created_at, last_edited, collection,
 		folders, tags, ancestor, parents, kids, used_links, links_to_here,
-		editor, size, references
+		editor, size, "references"
 	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
