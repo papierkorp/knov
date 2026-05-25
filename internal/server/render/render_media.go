@@ -75,6 +75,46 @@ func RenderMediaPreview(mediaPath, contentType string) string {
 	}
 }
 
+// RenderMediaListCompact renders a compact list of media files for narrow panels.
+// linkTarget controls where each item links: "detail" → /media/x?mode=detail, "view" → /media/x
+func RenderMediaListCompact(mediaFiles []files.File, linkTarget string) string {
+	var html strings.Builder
+	html.WriteString(`<div class="media-list-compact">`)
+
+	if len(mediaFiles) == 0 {
+		fmt.Fprintf(&html, `<div class="media-compact-empty">%s</div>`,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "no media files found"))
+		html.WriteString(`</div>`)
+		return html.String()
+	}
+
+	for _, file := range mediaFiles {
+		relativePath := strings.TrimPrefix(file.Path, "media/")
+		fileExt := strings.ToLower(filepath.Ext(relativePath))
+		filename := filepath.Base(relativePath)
+
+		href := "/media/" + relativePath
+		if linkTarget == "detail" {
+			href += "?mode=detail"
+		}
+
+		fmt.Fprintf(&html, `<a class="media-compact-item" href="%s">`, href)
+
+		if files.IsImageFile(fileExt) {
+			fmt.Fprintf(&html, `<img src="/media/%s" alt="%s" class="media-compact-thumb">`, relativePath, filename)
+		} else {
+			icon := files.GetFileTypeIcon(fileExt)
+			fmt.Fprintf(&html, `<span class="media-compact-icon"><i class="fas %s"></i></span>`, icon)
+		}
+
+		fmt.Fprintf(&html, `<span class="media-compact-name">%s</span>`, filename)
+		html.WriteString(`</a>`)
+	}
+
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
 // RenderMediaList renders a grid of media files with previews and filter controls
 func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphanedCount int) string {
 	var html strings.Builder

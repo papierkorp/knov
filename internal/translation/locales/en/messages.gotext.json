@@ -12,23 +12,13 @@
       "translation": ""
     },
     {
+      "id": "add",
+      "message": "add",
+      "translation": ""
+    },
+    {
       "id": "Add",
       "message": "Add",
-      "translation": ""
-    },
-    {
-      "id": "add archived items",
-      "message": "add archived items",
-      "translation": ""
-    },
-    {
-      "id": "add areas of responsibility",
-      "message": "add areas of responsibility",
-      "translation": ""
-    },
-    {
-      "id": "add criteria",
-      "message": "add criteria",
       "translation": ""
     },
     {
@@ -39,11 +29,6 @@
     {
       "id": "add filter",
       "message": "add filter",
-      "translation": ""
-    },
-    {
-      "id": "add folder categories",
-      "message": "add folder categories",
       "translation": ""
     },
     {
@@ -62,13 +47,8 @@
       "translation": ""
     },
     {
-      "id": "add projects",
-      "message": "add projects",
-      "translation": ""
-    },
-    {
-      "id": "add resources",
-      "message": "add resources",
+      "id": "add reference",
+      "message": "add reference",
       "translation": ""
     },
     {
@@ -84,6 +64,11 @@
     {
       "id": "add title",
       "message": "add title",
+      "translation": ""
+    },
+    {
+      "id": "admin",
+      "message": "admin",
       "translation": ""
     },
     {
@@ -117,13 +102,13 @@
       "translation": ""
     },
     {
-      "id": "apply filter",
-      "message": "apply filter",
+      "id": "append",
+      "message": "append",
       "translation": ""
     },
     {
-      "id": "archive",
-      "message": "archive",
+      "id": "apply filter",
+      "message": "apply filter",
       "translation": ""
     },
     {
@@ -132,23 +117,8 @@
       "translation": ""
     },
     {
-      "id": "archive updated",
-      "message": "archive updated",
-      "translation": ""
-    },
-    {
-      "id": "areas",
-      "message": "areas",
-      "translation": ""
-    },
-    {
       "id": "Areas",
       "message": "Areas",
-      "translation": ""
-    },
-    {
-      "id": "areas updated",
-      "message": "areas updated",
       "translation": ""
     },
     {
@@ -162,11 +132,6 @@
       "translation": ""
     },
     {
-      "id": "assign to collection",
-      "message": "assign to collection",
-      "translation": ""
-    },
-    {
       "id": "at",
       "message": "at",
       "translation": ""
@@ -177,11 +142,6 @@
       "translation": ""
     },
     {
-      "id": "bold",
-      "message": "bold",
-      "translation": ""
-    },
-    {
       "id": "Border Style",
       "message": "Border Style",
       "translation": ""
@@ -189,6 +149,11 @@
     {
       "id": "border style updated",
       "message": "border style updated",
+      "translation": ""
+    },
+    {
+      "id": "browse",
+      "message": "browse",
       "translation": ""
     },
     {
@@ -224,16 +189,6 @@
     {
       "id": "By Folders",
       "message": "By Folders",
-      "translation": ""
-    },
-    {
-      "id": "By Priority",
-      "message": "By Priority",
-      "translation": ""
-    },
-    {
-      "id": "By Status",
-      "message": "By Status",
       "translation": ""
     },
     {
@@ -277,6 +232,11 @@
       "translation": ""
     },
     {
+      "id": "chat",
+      "message": "chat",
+      "translation": ""
+    },
+    {
       "id": "children",
       "message": "children",
       "translation": ""
@@ -314,6 +274,11 @@
     {
       "id": "Close",
       "message": "Close",
+      "translation": ""
+    },
+    {
+      "id": "coll.",
+      "message": "coll.",
       "translation": ""
     },
     {
@@ -357,11 +322,6 @@
       "translation": ""
     },
     {
-      "id": "Content Types",
-      "message": "Content Types",
-      "translation": ""
-    },
-    {
       "id": "control whether section editing includes content from sub-headers",
       "message": "control whether section editing includes content from sub-headers",
       "translation": ""
@@ -377,8 +337,8 @@
       "translation": ""
     },
     {
-      "id": "Create a New",
-      "message": "Create a New",
+      "id": "create",
+      "message": "create",
       "translation": ""
     },
     {
@@ -395,6 +355,11 @@
       "id": "Create New Dashboard",
       "message": "Create New Dashboard",
       "translation": "Create New Dashboard"
+    },
+    {
+      "id": "Create New File",
+      "message": "Create New File",
+      "translation": ""
     },
     {
       "id": "current file does not exist",
@@ -444,6 +409,11 @@
     {
       "id": "dashboard renamed successfully",
       "message": "dashboard renamed successfully",
+      "translation": ""
+    },
+    {
+      "id": "dashboards",
+      "message": "dashboards",
       "translation": ""
     },
     {
@@ -517,8 +487,13 @@
       "translation": ""
     },
     {
-      "id": "delete this item and all its nested items?",
-      "message": "delete this item and all its nested items?",
+      "id": "delete this message?",
+      "message": "delete this message?",
+      "translation": ""
+    },
+    {
+      "id": "description",
+      "message": "description",
       "translation": ""
     },
     {
@@ -552,11 +527,6 @@
       "translation": ""
     },
     {
-      "id": "display & limits",
-      "message": "display & limits",
-      "translation": ""
-    },
-    {
       "id": "Display Mode",
       "message": "Display Mode",
       "translation": ""
@@ -577,8 +547,8 @@
       "translation": ""
     },
     {
-      "id": "due",
-      "message": "due",
+      "id": "edit",
+      "message": "edit",
       "translation": ""
     },
     {
@@ -597,8 +567,28 @@
       "translation": ""
     },
     {
+      "id": "Edit Filter",
+      "message": "Edit Filter",
+      "translation": ""
+    },
+    {
+      "id": "editor",
+      "message": "editor",
+      "translation": ""
+    },
+    {
       "id": "Editor Settings",
       "message": "Editor Settings",
+      "translation": ""
+    },
+    {
+      "id": "Editor-Type",
+      "message": "Editor-Type",
+      "translation": ""
+    },
+    {
+      "id": "Editor Types",
+      "message": "Editor Types",
       "translation": ""
     },
     {
@@ -722,6 +712,21 @@
       "translation": ""
     },
     {
+      "id": "failed to delete filter",
+      "message": "failed to delete filter",
+      "translation": ""
+    },
+    {
+      "id": "failed to delete message",
+      "message": "failed to delete message",
+      "translation": ""
+    },
+    {
+      "id": "failed to execute filter",
+      "message": "failed to execute filter",
+      "translation": ""
+    },
+    {
       "id": "failed to export files",
       "message": "failed to export files",
       "translation": ""
@@ -737,16 +742,6 @@
       "translation": ""
     },
     {
-      "id": "failed to get archive",
-      "message": "failed to get archive",
-      "translation": ""
-    },
-    {
-      "id": "failed to get areas",
-      "message": "failed to get areas",
-      "translation": ""
-    },
-    {
       "id": "failed to get collections",
       "message": "failed to get collections",
       "translation": ""
@@ -759,6 +754,11 @@
     {
       "id": "failed to get dashboards",
       "message": "failed to get dashboards",
+      "translation": ""
+    },
+    {
+      "id": "failed to get editor types",
+      "message": "failed to get editor types",
       "translation": ""
     },
     {
@@ -779,11 +779,6 @@
     {
       "id": "failed to get files",
       "message": "failed to get files",
-      "translation": ""
-    },
-    {
-      "id": "failed to get filetypes",
-      "message": "failed to get filetypes",
       "translation": ""
     },
     {
@@ -812,16 +807,6 @@
       "translation": ""
     },
     {
-      "id": "failed to get priorities",
-      "message": "failed to get priorities",
-      "translation": ""
-    },
-    {
-      "id": "failed to get projects",
-      "message": "failed to get projects",
-      "translation": ""
-    },
-    {
       "id": "failed to get raw content",
       "message": "failed to get raw content",
       "translation": ""
@@ -829,16 +814,6 @@
     {
       "id": "failed to get recent files",
       "message": "failed to get recent files",
-      "translation": ""
-    },
-    {
-      "id": "failed to get resources",
-      "message": "failed to get resources",
-      "translation": ""
-    },
-    {
-      "id": "failed to get statuses",
-      "message": "failed to get statuses",
       "translation": ""
     },
     {
@@ -852,6 +827,11 @@
       "translation": ""
     },
     {
+      "id": "failed to load chat",
+      "message": "failed to load chat",
+      "translation": ""
+    },
+    {
       "id": "failed to load media files",
       "message": "failed to load media files",
       "translation": ""
@@ -859,6 +839,11 @@
     {
       "id": "failed to move file",
       "message": "failed to move file",
+      "translation": ""
+    },
+    {
+      "id": "failed to move message",
+      "message": "failed to move message",
       "translation": ""
     },
     {
@@ -884,6 +869,11 @@
     {
       "id": "failed to parse table",
       "message": "failed to parse table",
+      "translation": ""
+    },
+    {
+      "id": "failed to parse todo content",
+      "message": "failed to parse todo content",
       "translation": ""
     },
     {
@@ -967,6 +957,11 @@
       "translation": ""
     },
     {
+      "id": "failed to save message",
+      "message": "failed to save message",
+      "translation": ""
+    },
+    {
       "id": "failed to save metadata",
       "message": "failed to save metadata",
       "translation": ""
@@ -974,6 +969,11 @@
     {
       "id": "failed to save setting",
       "message": "failed to save setting",
+      "translation": ""
+    },
+    {
+      "id": "failed to save todo",
+      "message": "failed to save todo",
       "translation": ""
     },
     {
@@ -1007,8 +1007,23 @@
       "translation": ""
     },
     {
+      "id": "file info",
+      "message": "file info",
+      "translation": ""
+    },
+    {
       "id": "file moved successfully",
       "message": "file moved successfully",
+      "translation": ""
+    },
+    {
+      "id": "filename",
+      "message": "filename",
+      "translation": ""
+    },
+    {
+      "id": "filename match",
+      "message": "filename match",
       "translation": ""
     },
     {
@@ -1024,11 +1039,6 @@
     {
       "id": "file path is required",
       "message": "file path is required",
-      "translation": ""
-    },
-    {
-      "id": "file path is required. please enter a file path.",
-      "message": "file path is required. please enter a file path.",
       "translation": ""
     },
     {
@@ -1072,11 +1082,6 @@
       "translation": "Files with"
     },
     {
-      "id": "file type",
-      "message": "file type",
-      "translation": ""
-    },
-    {
       "id": "File Type Visibility",
       "message": "File Type Visibility",
       "translation": ""
@@ -1089,11 +1094,6 @@
     {
       "id": "file with new path already exists",
       "message": "file with new path already exists",
-      "translation": ""
-    },
-    {
-      "id": "filter",
-      "message": "filter",
       "translation": ""
     },
     {
@@ -1117,8 +1117,8 @@
       "translation": ""
     },
     {
-      "id": "filter criteria",
-      "message": "filter criteria",
+      "id": "filter deleted",
+      "message": "filter deleted",
       "translation": ""
     },
     {
@@ -1127,8 +1127,18 @@
       "translation": ""
     },
     {
-      "id": "filter file visibility updated",
-      "message": "filter file visibility updated",
+      "id": "filter name",
+      "message": "filter name",
+      "translation": ""
+    },
+    {
+      "id": "filter name is required.",
+      "message": "filter name is required.",
+      "translation": ""
+    },
+    {
+      "id": "filter not found",
+      "message": "filter not found",
       "translation": ""
     },
     {
@@ -1142,11 +1152,6 @@
       "translation": ""
     },
     {
-      "id": "filters/my-filter",
-      "message": "filters/my-filter",
-      "translation": ""
-    },
-    {
       "id": "Filter Test Metadata",
       "message": "Filter Test Metadata",
       "translation": ""
@@ -1157,13 +1162,13 @@
       "translation": ""
     },
     {
-      "id": "Fleeting",
-      "message": "Fleeting",
+      "id": "filter visibility updated",
+      "message": "filter visibility updated",
       "translation": ""
     },
     {
-      "id": "fleeting file visibility updated",
-      "message": "fleeting file visibility updated",
+      "id": "folder",
+      "message": "folder",
       "translation": ""
     },
     {
@@ -1217,33 +1222,8 @@
       "translation": "Help"
     },
     {
-      "id": "Hide files marked as filter type",
-      "message": "Hide files marked as filter type",
-      "translation": ""
-    },
-    {
-      "id": "Hide files marked as fleeting type",
-      "message": "Hide files marked as fleeting type",
-      "translation": ""
-    },
-    {
       "id": "Hide files marked as image type",
       "message": "Hide files marked as image type",
-      "translation": ""
-    },
-    {
-      "id": "Hide files marked as journaling type",
-      "message": "Hide files marked as journaling type",
-      "translation": ""
-    },
-    {
-      "id": "Hide files marked as literature type",
-      "message": "Hide files marked as literature type",
-      "translation": ""
-    },
-    {
-      "id": "Hide files marked as MOC (Maps of Content) type",
-      "message": "Hide files marked as MOC (Maps of Content) type",
       "translation": ""
     },
     {
@@ -1252,18 +1232,8 @@
       "translation": ""
     },
     {
-      "id": "Hide files marked as permanent type",
-      "message": "Hide files marked as permanent type",
-      "translation": ""
-    },
-    {
       "id": "Hide files marked as text type",
       "message": "Hide files marked as text type",
-      "translation": ""
-    },
-    {
-      "id": "Hide files marked as todo type",
-      "message": "Hide files marked as todo type",
       "translation": ""
     },
     {
@@ -1272,13 +1242,38 @@
       "translation": ""
     },
     {
-      "id": "Hide Filter Files",
-      "message": "Hide Filter Files",
+      "id": "Hide files using the filter editor",
+      "message": "Hide files using the filter editor",
       "translation": ""
     },
     {
-      "id": "Hide Fleeting Notes",
-      "message": "Hide Fleeting Notes",
+      "id": "Hide files using the index editor",
+      "message": "Hide files using the index editor",
+      "translation": ""
+    },
+    {
+      "id": "Hide files using the list editor",
+      "message": "Hide files using the list editor",
+      "translation": ""
+    },
+    {
+      "id": "Hide files using the markdown editor",
+      "message": "Hide files using the markdown editor",
+      "translation": ""
+    },
+    {
+      "id": "Hide files using the text editor",
+      "message": "Hide files using the text editor",
+      "translation": ""
+    },
+    {
+      "id": "Hide files using the todo editor",
+      "message": "Hide files using the todo editor",
+      "translation": ""
+    },
+    {
+      "id": "Hide Filter Files",
+      "message": "Hide Filter Files",
       "translation": ""
     },
     {
@@ -1287,28 +1282,23 @@
       "translation": ""
     },
     {
-      "id": "Hide Journaling Files",
-      "message": "Hide Journaling Files",
+      "id": "Hide Index Files",
+      "message": "Hide Index Files",
       "translation": ""
     },
     {
-      "id": "Hide Literature Notes",
-      "message": "Hide Literature Notes",
+      "id": "Hide List Files",
+      "message": "Hide List Files",
       "translation": ""
     },
     {
-      "id": "Hide MOC Files",
-      "message": "Hide MOC Files",
+      "id": "Hide Markdown Files",
+      "message": "Hide Markdown Files",
       "translation": ""
     },
     {
       "id": "Hide PDF Files",
       "message": "Hide PDF Files",
-      "translation": ""
-    },
-    {
-      "id": "Hide Permanent Notes",
-      "message": "Hide Permanent Notes",
       "translation": ""
     },
     {
@@ -1327,9 +1317,19 @@
       "translation": ""
     },
     {
+      "id": "history",
+      "message": "history",
+      "translation": ""
+    },
+    {
       "id": "History",
       "message": "History",
       "translation": "History"
+    },
+    {
+      "id": "home",
+      "message": "home",
+      "translation": ""
     },
     {
       "id": "Home",
@@ -1347,8 +1347,8 @@
       "translation": ""
     },
     {
-      "id": "image file visibility updated",
-      "message": "image file visibility updated",
+      "id": "image visibility updated",
+      "message": "image visibility updated",
       "translation": ""
     },
     {
@@ -1372,6 +1372,11 @@
       "translation": ""
     },
     {
+      "id": "Index",
+      "message": "Index",
+      "translation": ""
+    },
+    {
       "id": "index configuration",
       "message": "index configuration",
       "translation": ""
@@ -1382,8 +1387,23 @@
       "translation": ""
     },
     {
+      "id": "index visibility updated",
+      "message": "index visibility updated",
+      "translation": ""
+    },
+    {
       "id": "Inline with text",
       "message": "Inline with text",
+      "translation": ""
+    },
+    {
+      "id": "Invalidate Cache",
+      "message": "Invalidate Cache",
+      "translation": ""
+    },
+    {
+      "id": "Invalidate the cache? It will be rebuilt automatically.",
+      "message": "Invalidate the cache? It will be rebuilt automatically.",
       "translation": ""
     },
     {
@@ -1397,13 +1417,13 @@
       "translation": ""
     },
     {
-      "id": "invalid date format",
-      "message": "invalid date format",
+      "id": "invalid display mode",
+      "message": "invalid display mode",
       "translation": ""
     },
     {
-      "id": "invalid display mode",
-      "message": "invalid display mode",
+      "id": "invalid filter configuration",
+      "message": "invalid filter configuration",
       "translation": ""
     },
     {
@@ -1432,13 +1452,8 @@
       "translation": ""
     },
     {
-      "id": "Journaling",
-      "message": "Journaling",
-      "translation": ""
-    },
-    {
-      "id": "journaling file visibility updated",
-      "message": "journaling file visibility updated",
+      "id": "item deleted",
+      "message": "item deleted",
       "translation": ""
     },
     {
@@ -1449,6 +1464,11 @@
     {
       "id": "last modified",
       "message": "last modified",
+      "translation": ""
+    },
+    {
+      "id": "latest changes",
+      "message": "latest changes",
       "translation": ""
     },
     {
@@ -1497,18 +1517,18 @@
       "translation": ""
     },
     {
+      "id": "List",
+      "message": "List",
+      "translation": ""
+    },
+    {
       "id": "list saved successfully",
       "message": "list saved successfully",
       "translation": ""
     },
     {
-      "id": "Literature",
-      "message": "Literature",
-      "translation": ""
-    },
-    {
-      "id": "literature file visibility updated",
-      "message": "literature file visibility updated",
+      "id": "list visibility updated",
+      "message": "list visibility updated",
       "translation": ""
     },
     {
@@ -1527,16 +1547,6 @@
       "translation": ""
     },
     {
-      "id": "loading archive...",
-      "message": "loading archive...",
-      "translation": ""
-    },
-    {
-      "id": "loading areas...",
-      "message": "loading areas...",
-      "translation": ""
-    },
-    {
       "id": "loading collections...",
       "message": "loading collections...",
       "translation": ""
@@ -1544,6 +1554,11 @@
     {
       "id": "loading diff...",
       "message": "loading diff...",
+      "translation": ""
+    },
+    {
+      "id": "loading editor...",
+      "message": "loading editor...",
       "translation": ""
     },
     {
@@ -1592,33 +1607,13 @@
       "translation": ""
     },
     {
-      "id": "loading priorities...",
-      "message": "loading priorities...",
-      "translation": ""
-    },
-    {
-      "id": "loading projects...",
-      "message": "loading projects...",
-      "translation": ""
-    },
-    {
       "id": "Loading recent changes...",
       "message": "Loading recent changes...",
       "translation": ""
     },
     {
-      "id": "loading resources...",
-      "message": "loading resources...",
-      "translation": ""
-    },
-    {
       "id": "Loading results...",
       "message": "Loading results...",
-      "translation": ""
-    },
-    {
-      "id": "loading statuses...",
-      "message": "loading statuses...",
       "translation": ""
     },
     {
@@ -1657,8 +1652,8 @@
       "translation": "loading widget..."
     },
     {
-      "id": "logic",
-      "message": "logic",
+      "id": "load older messages",
+      "message": "load older messages",
       "translation": ""
     },
     {
@@ -1672,6 +1667,11 @@
       "translation": ""
     },
     {
+      "id": "Markdown",
+      "message": "Markdown",
+      "translation": ""
+    },
+    {
       "id": "markdown conversion only supported for dokuwiki files",
       "message": "markdown conversion only supported for dokuwiki files",
       "translation": ""
@@ -1682,6 +1682,11 @@
       "translation": ""
     },
     {
+      "id": "markdown visibility updated",
+      "message": "markdown visibility updated",
+      "translation": ""
+    },
+    {
       "id": "maximum file size in megabytes for uploads",
       "message": "maximum file size in megabytes for uploads",
       "translation": ""
@@ -1689,6 +1694,11 @@
     {
       "id": "Max Upload Size (MB)",
       "message": "Max Upload Size (MB)",
+      "translation": ""
+    },
+    {
+      "id": "media",
+      "message": "media",
       "translation": ""
     },
     {
@@ -1719,6 +1729,16 @@
     {
       "id": "Media Upload Settings",
       "message": "Media Upload Settings",
+      "translation": ""
+    },
+    {
+      "id": "message cannot be empty",
+      "message": "message cannot be empty",
+      "translation": ""
+    },
+    {
+      "id": "message not found",
+      "message": "message not found",
       "translation": ""
     },
     {
@@ -1827,18 +1847,13 @@
       "translation": ""
     },
     {
-      "id": "MOC",
-      "message": "MOC",
-      "translation": ""
-    },
-    {
-      "id": "moc file visibility updated",
-      "message": "moc file visibility updated",
-      "translation": ""
-    },
-    {
       "id": "more",
       "message": "more",
+      "translation": ""
+    },
+    {
+      "id": "moved to",
+      "message": "moved to",
       "translation": ""
     },
     {
@@ -1847,8 +1862,23 @@
       "translation": ""
     },
     {
+      "id": "my-filter",
+      "message": "my-filter",
+      "translation": ""
+    },
+    {
       "id": "name is required",
       "message": "name is required",
+      "translation": ""
+    },
+    {
+      "id": "new",
+      "message": "new",
+      "translation": ""
+    },
+    {
+      "id": "new file path",
+      "message": "new file path",
       "translation": ""
     },
     {
@@ -1859,16 +1889,6 @@
     {
       "id": "no ancestors",
       "message": "no ancestors",
-      "translation": ""
-    },
-    {
-      "id": "no archive found",
-      "message": "no archive found",
-      "translation": ""
-    },
-    {
-      "id": "no areas found",
-      "message": "no areas found",
       "translation": ""
     },
     {
@@ -1889,6 +1909,11 @@
     {
       "id": "No dashboard found",
       "message": "No dashboard found",
+      "translation": ""
+    },
+    {
+      "id": "no file selected",
+      "message": "no file selected",
       "translation": ""
     },
     {
@@ -1962,11 +1987,6 @@
       "translation": ""
     },
     {
-      "id": "no projects found",
-      "message": "no projects found",
-      "translation": ""
-    },
-    {
       "id": "no references",
       "message": "no references",
       "translation": ""
@@ -1974,11 +1994,6 @@
     {
       "id": "no related files found",
       "message": "no related files found",
-      "translation": ""
-    },
-    {
-      "id": "no resources found",
-      "message": "no resources found",
       "translation": ""
     },
     {
@@ -2062,36 +2077,6 @@
       "translation": "Overview"
     },
     {
-      "id": "OVERVIEW",
-      "message": "OVERVIEW",
-      "translation": "OVERVIEW"
-    },
-    {
-      "id": "para-archive",
-      "message": "para-archive",
-      "translation": ""
-    },
-    {
-      "id": "para-areas",
-      "message": "para-areas",
-      "translation": ""
-    },
-    {
-      "id": "PARA organization",
-      "message": "PARA organization",
-      "translation": ""
-    },
-    {
-      "id": "para-projects",
-      "message": "para-projects",
-      "translation": ""
-    },
-    {
-      "id": "para-resources",
-      "message": "para-resources",
-      "translation": ""
-    },
-    {
       "id": "parents",
       "message": "parents",
       "translation": ""
@@ -2127,39 +2112,24 @@
       "translation": ""
     },
     {
+      "id": "path/to/file.todo",
+      "message": "path/to/file.todo",
+      "translation": ""
+    },
+    {
       "id": "path to your data storage relative from the executable",
       "message": "path to your data storage relative from the executable",
       "translation": ""
     },
     {
-      "id": "pdf file visibility updated",
-      "message": "pdf file visibility updated",
-      "translation": ""
-    },
-    {
-      "id": "Permanent",
-      "message": "Permanent",
-      "translation": ""
-    },
-    {
-      "id": "permanent file visibility updated",
-      "message": "permanent file visibility updated",
+      "id": "pdf visibility updated",
+      "message": "pdf visibility updated",
       "translation": ""
     },
     {
       "id": "Playground",
       "message": "Playground",
       "translation": "Playground"
-    },
-    {
-      "id": "please add a regular item first, then click on it to add a nested item under it",
-      "message": "please add a regular item first, then click on it to add a nested item under it",
-      "translation": ""
-    },
-    {
-      "id": "please select an item first",
-      "message": "please select an item first",
-      "translation": ""
     },
     {
       "id": "position x",
@@ -2169,11 +2139,6 @@
     {
       "id": "position y",
       "message": "position y",
-      "translation": ""
-    },
-    {
-      "id": "preview",
-      "message": "preview",
       "translation": ""
     },
     {
@@ -2207,33 +2172,13 @@
       "translation": ""
     },
     {
-      "id": "priority",
-      "message": "priority",
-      "translation": ""
-    },
-    {
-      "id": "Priority",
-      "message": "Priority",
-      "translation": "Priority"
-    },
-    {
-      "id": "projects",
-      "message": "projects",
-      "translation": ""
-    },
-    {
       "id": "Projects",
       "message": "Projects",
       "translation": ""
     },
     {
-      "id": "projects updated",
-      "message": "projects updated",
-      "translation": ""
-    },
-    {
-      "id": "Quick Note",
-      "message": "Quick Note",
+      "id": "rebuild",
+      "message": "rebuild",
       "translation": ""
     },
     {
@@ -2282,23 +2227,18 @@
       "translation": ""
     },
     {
+      "id": "rename",
+      "message": "rename",
+      "translation": ""
+    },
+    {
       "id": "Rename",
       "message": "Rename",
       "translation": "Rename"
     },
     {
-      "id": "resources",
-      "message": "resources",
-      "translation": ""
-    },
-    {
       "id": "Resources",
       "message": "Resources",
-      "translation": ""
-    },
-    {
-      "id": "resources updated",
-      "message": "resources updated",
       "translation": ""
     },
     {
@@ -2382,11 +2322,6 @@
       "translation": ""
     },
     {
-      "id": "save note",
-      "message": "save note",
-      "translation": ""
-    },
-    {
       "id": "save section",
       "message": "save section",
       "translation": ""
@@ -2394,6 +2329,16 @@
     {
       "id": "scanning .gohtml template files...",
       "message": "scanning .gohtml template files...",
+      "translation": ""
+    },
+    {
+      "id": "search",
+      "message": "search",
+      "translation": ""
+    },
+    {
+      "id": "search...",
+      "message": "search...",
       "translation": ""
     },
     {
@@ -2447,6 +2392,16 @@
       "translation": ""
     },
     {
+      "id": "select editor",
+      "message": "select editor",
+      "translation": ""
+    },
+    {
+      "id": "select editor type",
+      "message": "select editor type",
+      "translation": ""
+    },
+    {
       "id": "select field",
       "message": "select field",
       "translation": ""
@@ -2462,23 +2417,8 @@
       "translation": ""
     },
     {
-      "id": "select file type",
-      "message": "select file type",
-      "translation": ""
-    },
-    {
       "id": "Select Language",
       "message": "Select Language",
-      "translation": ""
-    },
-    {
-      "id": "select priority",
-      "message": "select priority",
-      "translation": ""
-    },
-    {
-      "id": "select status",
-      "message": "select status",
       "translation": ""
     },
     {
@@ -2507,13 +2447,13 @@
       "translation": ""
     },
     {
-      "id": "set priority (1-5)",
-      "message": "set priority (1-5)",
+      "id": "Set Remote Repository",
+      "message": "Set Remote Repository",
       "translation": ""
     },
     {
-      "id": "Set Remote Repository",
-      "message": "Set Remote Repository",
+      "id": "settings",
+      "message": "settings",
       "translation": ""
     },
     {
@@ -2587,16 +2527,6 @@
       "translation": ""
     },
     {
-      "id": "status",
-      "message": "status",
-      "translation": ""
-    },
-    {
-      "id": "Status",
-      "message": "Status",
-      "translation": "Status"
-    },
-    {
       "id": "still referenced by",
       "message": "still referenced by",
       "translation": ""
@@ -2662,8 +2592,8 @@
       "translation": ""
     },
     {
-      "id": "target date",
-      "message": "target date",
+      "id": "target is required",
+      "message": "target is required",
       "translation": ""
     },
     {
@@ -2672,13 +2602,18 @@
       "translation": ""
     },
     {
+      "id": "Text",
+      "message": "Text",
+      "translation": ""
+    },
+    {
       "id": "text file",
       "message": "text file",
       "translation": ""
     },
     {
-      "id": "text file visibility updated",
-      "message": "text file visibility updated",
+      "id": "text visibility updated",
+      "message": "text visibility updated",
       "translation": ""
     },
     {
@@ -2697,13 +2632,28 @@
       "translation": ""
     },
     {
+      "id": "title only",
+      "message": "title only",
+      "translation": ""
+    },
+    {
       "id": "Todo",
       "message": "Todo",
       "translation": ""
     },
     {
-      "id": "todo file visibility updated",
-      "message": "todo file visibility updated",
+      "id": "todo saved successfully",
+      "message": "todo saved successfully",
+      "translation": ""
+    },
+    {
+      "id": "todo visibility updated",
+      "message": "todo visibility updated",
+      "translation": ""
+    },
+    {
+      "id": "to new file",
+      "message": "to new file",
       "translation": ""
     },
     {
@@ -2722,18 +2672,13 @@
       "translation": "Type"
     },
     {
+      "id": "type a message, enter to send",
+      "message": "type a message, enter to send",
+      "translation": ""
+    },
+    {
       "id": "type here...",
       "message": "type here...",
-      "translation": ""
-    },
-    {
-      "id": "type or select archive item",
-      "message": "type or select archive item",
-      "translation": ""
-    },
-    {
-      "id": "type or select area",
-      "message": "type or select area",
       "translation": ""
     },
     {
@@ -2747,18 +2692,13 @@
       "translation": ""
     },
     {
-      "id": "type or select project",
-      "message": "type or select project",
-      "translation": ""
-    },
-    {
-      "id": "type or select resource",
-      "message": "type or select resource",
-      "translation": ""
-    },
-    {
       "id": "type or select tag",
       "message": "type or select tag",
+      "translation": ""
+    },
+    {
+      "id": "undo",
+      "message": "undo",
       "translation": ""
     },
     {
@@ -2832,8 +2772,8 @@
       "translation": ""
     },
     {
-      "id": "video file visibility updated",
-      "message": "video file visibility updated",
+      "id": "video visibility updated",
+      "message": "video visibility updated",
       "translation": ""
     },
     {
@@ -2857,13 +2797,13 @@
       "translation": ""
     },
     {
-      "id": "View all folders",
-      "message": "View all folders",
+      "id": "View all editor types",
+      "message": "View all editor types",
       "translation": ""
     },
     {
-      "id": "View all priorities",
-      "message": "View all priorities",
+      "id": "View all folders",
+      "message": "View all folders",
       "translation": ""
     },
     {
@@ -2874,11 +2814,6 @@
     {
       "id": "View all resources",
       "message": "View all resources",
-      "translation": ""
-    },
-    {
-      "id": "View all statuses",
-      "message": "View all statuses",
       "translation": ""
     },
     {
@@ -2904,11 +2839,6 @@
     {
       "id": "View Filter Test Metadata",
       "message": "View Filter Test Metadata",
-      "translation": ""
-    },
-    {
-      "id": "view results",
-      "message": "view results",
       "translation": ""
     },
     {

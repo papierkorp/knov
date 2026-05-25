@@ -23,11 +23,13 @@ import (
 // @Tags chat
 // @Param file query string false "File path to scope chat to (empty = global chat)"
 // @Param offset query int false "Pagination offset (default 0)"
+// @Param short query bool false "Use compact timestamp (time only, no date)"
 // @Produce json,html
 // @Router /api/chat/messages [get]
 func handleAPIGetChat(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("file")
 	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+	short := r.URL.Query().Get("short") == "true"
 
 	messages, total, err := chat.GetPage(filePath, offset)
 	if err != nil {
@@ -38,9 +40,9 @@ func handleAPIGetChat(w http.ResponseWriter, r *http.Request) {
 
 	var html string
 	if offset > 0 {
-		html = render.RenderChatLoadMore(messages, total, offset, filePath)
+		html = render.RenderChatLoadMore(messages, total, offset, filePath, short)
 	} else {
-		html = render.RenderChatComponent(messages, total, offset, filePath)
+		html = render.RenderChatComponent(messages, total, offset, filePath, short)
 	}
 
 	writeResponse(w, r, messages, html)
@@ -67,6 +69,7 @@ func handleAPIPostChatMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filePath := r.URL.Query().Get("file")
+	short := r.URL.Query().Get("short") == "true"
 
 	msg, err := chat.Add(content, filePath)
 	if err != nil {
@@ -76,7 +79,7 @@ func handleAPIPostChatMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogDebug("added chat message: %s", msg.ID)
-	writeResponse(w, r, msg, render.RenderChatMessage(*msg))
+	writeResponse(w, r, msg, render.RenderChatMessage(*msg, short))
 }
 
 // @Summary Delete a chat message
@@ -113,7 +116,7 @@ func handleAPIGetChatByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeResponse(w, r, msg, render.RenderChatMessage(*msg))
+	writeResponse(w, r, msg, render.RenderChatMessage(*msg, r.URL.Query().Get("short") == "true"))
 }
 
 // @Summary Get move form for a chat message

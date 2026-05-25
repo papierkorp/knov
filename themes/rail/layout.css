@@ -1,0 +1,128 @@
+/* theme: rail */
+
+/* =============================================
+   full-height layout
+   ============================================= */
+
+body { overflow: hidden; height: 100vh; }
+
+#wrapper { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+#layout-rail {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+#layout-rail > main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  margin: 0;
+  min-width: 0;
+}
+
+/* =============================================
+   rail
+   ============================================= */
+
+#rail-site {
+  width: 42px;
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0;
+  gap: 2px;
+  z-index: 60;
+}
+
+.rail-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.88em;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.rail-btn:hover { background: var(--bg); color: var(--primary); }
+
+.rail-btn.active {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.rail-btn.active::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 6px; bottom: 6px;
+  width: 3px;
+  background: var(--primary);
+  border-radius: 0 2px 2px 0;
+}
+
+.rail-btn.btn-danger-icon:hover {
+  background: color-mix(in srgb, #dc2626 15%, transparent);
+  color: #dc2626;
+}
+
+/* file context buttons — hidden until a file is open */
+.rail-btn-file { display: none; }
+body[data-has-file="true"] .rail-btn-file { display: flex; }
+body[data-has-file="true"] .rail-sep-file { display: block; }
+.rail-sep-file { display: none; }
+
+.rail-sep {
+  width: 26px; height: 1px;
+  background: var(--border); margin: 3px 0; flex-shrink: 0;
+}
+
+.rail-spacer { flex: 1; }
+
+/* =============================================
+   shared flyout
+   ============================================= */
+
+#flyout {
+  flex-shrink: 0;
+  width: 0;
+  overflow: hidden;
+  transition: width 0.2s ease;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+#flyout[data-active] { width: 240px; }
+
+/* =============================================
+   responsive
+   ============================================= */
+
+@media (max-width: 700px) {
+  #flyout[data-active] { width: 200px; }
+  .flyout-panel { width: 200px; }
+}
+
+/* suppress flyout transition during initial state restore */
+html.no-transition #flyout { transition: none !important; }
+
+/* pre-open flyout before JS runs if a panel was saved */
+html[data-init-panel] #flyout { width: 240px; }
+
+@media (max-width: 700px) {
+  html[data-init-panel] #flyout { width: 200px; }
+}

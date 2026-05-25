@@ -1,0 +1,21 @@
+{{/* theme: rail */}}
+{{ define "content" }}
+<div id="page-dashboard-new">
+	<h1>{{ T "Create New Dashboard" }}</h1>
+	<div class="dashboard-create-form">
+		<div class="form-header">
+			<h3>{{ T "Create New Dashboard" }}</h3>
+			<p>{{ T "Design your custom dashboard with widgets" }}</p>
+		</div>
+		<div
+			hx-get="/api/dashboards/form"
+			hx-trigger="load"
+			hx-target="this"
+			hx-swap="outerHTML"
+		>
+			loading dashboard form...
+		</div>
+		<div id="dashboard-result"></div>
+	</div>
+</div>
+{{ end }}

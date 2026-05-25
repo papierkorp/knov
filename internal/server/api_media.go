@@ -132,12 +132,16 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 	// determine response format
 	acceptHeader := r.Header.Get("Accept")
 	if strings.Contains(acceptHeader, "text/html") {
-		// render HTML response with filter and mode
-		if mode == "select" {
+		switch mode {
+		case "select":
 			html := render.RenderMediaListSelect(filteredMedia)
 			w.Header().Set("Content-Type", "text/html")
 			w.Write([]byte(html))
-		} else {
+		case "compact":
+			html := render.RenderMediaListCompact(filteredMedia, "detail")
+			w.Header().Set("Content-Type", "text/html")
+			w.Write([]byte(html))
+		default:
 			html := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), len(orphanedMedia))
 			w.Header().Set("Content-Type", "text/html")
 			w.Write([]byte(html))

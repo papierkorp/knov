@@ -71,19 +71,20 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 			if v, ok := currentValue.(bool); ok {
 				enabled = v
 			}
-
-			// render label with conditional tooltip
-			if descriptionType == DescriptionTypeTooltips && setting.Description != "" {
-				html.WriteString(fmt.Sprintf(`<label class="tooltip" data-tooltip="%s">%s`, setting.Description, setting.Label))
-			} else {
-				html.WriteString(fmt.Sprintf(`<label>%s`, setting.Label))
+			checkedAttr := ""
+			if enabled {
+				checkedAttr = "checked"
 			}
-
-			html.WriteString(RenderCheckbox(key, "/api/themes/settings", enabled,
-				fmt.Sprintf(`hx-vals='js:{"key": "%s", "value": event.target.checked}' hx-trigger="change"`, key)))
-			html.WriteString(`</label>`)
-
-			// render help text if not using tooltips
+			html.WriteString(fmt.Sprintf(
+				`<label class="checkbox-label">
+					<input type="checkbox" name="%s" class="form-checkbox" %s
+						hx-post="/api/themes/settings"
+						hx-vals='js:{"key": "%s", "value": event.target.checked}'
+						hx-trigger="change" />
+					<span class="checkmark"></span>
+					%s
+				</label>`,
+				key, checkedAttr, key, setting.Label))
 			if descriptionType == DescriptionTypeHelpText && setting.Description != "" {
 				html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, setting.Description))
 			}
@@ -98,7 +99,7 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, setting.Label))
 			}
 
-			html.WriteString(fmt.Sprintf(`<select name="value" id="%s">`, key))
+			html.WriteString(fmt.Sprintf(`<select name="value" id="%s" class="form-select">`, key))
 
 			current := ""
 			if v, ok := currentValue.(string); ok {
@@ -134,7 +135,7 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, setting.Label))
 			}
 
-			html.WriteString(fmt.Sprintf(`<input type="text" name="value" id="%s" value="%s" />`, key, current))
+			html.WriteString(fmt.Sprintf(`<input type="text" name="value" id="%s" value="%s" class="form-input" />`, key, current))
 
 			// render help text if not using tooltips
 			if descriptionType == "help-text" && setting.Description != "" {
@@ -156,7 +157,7 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, setting.Label))
 			}
 
-			html.WriteString(fmt.Sprintf(`<textarea name="value" id="%s" rows="10" style="width: 100%%; font-family: monospace;">%s</textarea>`, key, current))
+			html.WriteString(fmt.Sprintf(`<textarea name="value" id="%s" rows="10" class="form-textarea">%s</textarea>`, key, current))
 
 			// render help text if not using tooltips
 			if descriptionType == "help-text" && setting.Description != "" {
@@ -180,7 +181,7 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, setting.Label))
 			}
 
-			html.WriteString(fmt.Sprintf(`<input type="number" name="value" id="%s" value="%d" />`, key, current))
+			html.WriteString(fmt.Sprintf(`<input type="number" name="value" id="%s" value="%d" class="form-input" />`, key, current))
 
 			// render help text if not using tooltips
 			if descriptionType == "help-text" && setting.Description != "" {

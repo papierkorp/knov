@@ -1,0 +1,25 @@
+{{/* theme: rail */}}
+{{ define "content" }}
+<div id="page-search">
+    <h1>{{T "Search Results"}}</h1>
+    <div class="search-form">
+        <input
+            type="text"
+            placeholder="{{T "Search files..."}}"
+            hx-get="/api/search?format=cards"
+            hx-target="#page-search-results"
+            hx-trigger="keyup changed delay:300ms, load"
+            name="q"
+            id="search-page-input"
+            value="{{ .SearchQuery }}"
+        />
+    </div>
+    <div id="page-search-results">
+        {{ if .SearchQuery }}
+            <p>{{T "Loading results..."}}</p>
+        {{ else }}
+            <p>{{T "Enter a search term"}}</p>
+        {{ end }}
+    </div>
+</div>
+{{ end }}

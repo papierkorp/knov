@@ -1,0 +1,28 @@
+{{/* theme: rail */}}
+{{ define "content" }}
+<div id="page-dashboard-edit">
+	{{ if .Dashboard }}
+		<h1>{{ T "Edit Dashboard" }}: {{ .Dashboard.Name }}</h1>
+		<div class="dashboard-create-form">
+			<div class="form-header">
+				<h3>{{ T "Edit Dashboard" }}</h3>
+				<p>{{ T "Update your dashboard configuration" }}</p>
+			</div>
+			<div
+				hx-get="/api/dashboards/form?id={{ .Dashboard.ID }}"
+				hx-trigger="load"
+				hx-target="this"
+				hx-swap="outerHTML"
+			>
+				loading dashboard form...
+			</div>
+			<div id="dashboard-result"></div>
+		</div>
+	{{ else }}
+		<div class="dashboard-empty">
+			<h1>{{ T "Dashboard" }}</h1>
+			<p>{{ T "No dashboard found" }}</p>
+		</div>
+	{{ end }}
+</div>
+{{ end }}

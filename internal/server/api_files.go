@@ -64,6 +64,10 @@ func handleAPIGetFolderSuggestions(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/folder [get]
 func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 	folderPath := r.URL.Query().Get("path")
+	target := r.URL.Query().Get("target")
+	if target == "" {
+		target = "#folder-content"
+	}
 
 	dataPath := configmanager.GetAppConfig().DataPath
 	fullPath := filepath.Join(dataPath, folderPath)
@@ -80,6 +84,10 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 	var filesInDir []render.FolderEntry
 
 	for _, entry := range entries {
+		// skip hidden folders (dot-prefixed, e.g. .git)
+		if entry.IsDir() && strings.HasPrefix(entry.Name(), ".") {
+			continue
+		}
 		entryPath := filepath.Join(folderPath, entry.Name())
 		item := render.FolderEntry{
 			Name:  entry.Name(),
@@ -99,7 +107,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	html := render.RenderFolderContent(folderPath, folders, filesInDir)
+	html := render.RenderFolderContent(folderPath, folders, filesInDir, target)
 	writeResponse(w, r, map[string]interface{}{
 		"path":    folderPath,
 		"folders": folders,

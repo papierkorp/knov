@@ -58,6 +58,18 @@ func IndexAllFiles() error {
 	return nil
 }
 
+// SearchFilesByTitle searches only file titles/names, ignoring content
+func SearchFilesByTitle(query string, limit int) ([]files.File, error) {
+	results, err := searchFilesFilename(query)
+	if err != nil {
+		return nil, err
+	}
+	if limit > 0 && len(results) > limit {
+		results = results[:limit]
+	}
+	return results, nil
+}
+
 func SearchFiles(query string, limit int) ([]files.File, error) {
 	if query == "" {
 		return []files.File{}, nil

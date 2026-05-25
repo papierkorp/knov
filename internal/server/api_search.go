@@ -12,11 +12,13 @@ import (
 // @Tags search
 // @Param q query string true "Search query"
 // @Param format query string false "Output format: dropdown, list, cards, json" Enums(dropdown, list, cards, json)
+// @Param titleonly query bool false "Search file titles only (no content)"
 // @Produce json,html
 // @Router /api/search [get]
 func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 	format := r.URL.Query().Get("format")
+	titleOnly := r.URL.Query().Get("titleonly") == "true"
 	if format == "" {
 		format = "dropdown"
 	}
@@ -46,7 +48,13 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 		limit = 6
 	}
 
-	results, err := search.SearchFiles(query, limit)
+	var results []files.File
+	var err error
+	if titleOnly {
+		results, err = search.SearchFilesByTitle(query, limit)
+	} else {
+		results, err = search.SearchFiles(query, limit)
+	}
 	if err != nil {
 		http.Error(w, "search failed", http.StatusInternalServerError)
 		return

@@ -38,6 +38,12 @@ const docTemplate = `{
                         "description": "Pagination offset (default 0)",
                         "name": "offset",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Use compact timestamp (time only, no date)",
+                        "name": "short",
+                        "in": "query"
                     }
                 ],
                 "responses": {}
@@ -4008,6 +4014,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Output format: dropdown, list, cards, json",
                         "name": "format",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Search file titles only (no content)",
+                        "name": "titleonly",
                         "in": "query"
                     }
                 ],

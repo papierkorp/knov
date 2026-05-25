@@ -1,0 +1,42 @@
+{{/* theme: rail */}}
+{{ define "content" }}
+{{if eq (index .ThemeSettings "fileView") "reader"}}
+    {{ template "rail-reader" . }}
+{{else}}
+<div id="view-fileview-rail">
+    <article class="file-content">
+        {{.FileContent.HTML}}
+    </article>
+</div>
+{{ if .FileContent.TOC }}
+<div id="fp-toc-data" style="display:none;">
+    {{ range .FileContent.TOC }}
+        <a href="#{{ .ID }}" style="padding-left:{{ mul .Level 12 }}px">{{ .Text }}</a>
+    {{ end }}
+</div>
+{{ else }}
+<div id="fp-toc-data" style="display:none;">
+    <span class="fp-toc-empty">{{T "no headings found"}}</span>
+</div>
+{{ end }}
+{{end}}
+{{ end }}
+
+{{ define "rail-reader" }}
+<div id="view-fileview-reader">
+    <div class="reader-controls">
+        <button class="font-size-btn" onclick="adjustFontSize(-2)">A-</button>
+        <button class="font-size-btn" onclick="adjustFontSize(2)">A+</button>
+    </div>
+    <article class="file-content">
+        {{.FileContent.HTML}}
+    </article>
+</div>
+<script>
+function adjustFontSize(delta) {
+    const content = document.querySelector('#view-fileview-reader .file-content');
+    const cur = parseInt(getComputedStyle(content).fontSize);
+    content.style.fontSize = Math.max(14, Math.min(28, cur + delta)) + 'px';
+}
+</script>
+{{ end }}

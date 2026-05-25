@@ -1,0 +1,274 @@
+{{/* theme: rail */}}
+<!DOCTYPE html>
+<html class="no-transition">
+<head>
+    <title>{{ .Title }}</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <!-- restore panel state before first paint to avoid transition flash -->
+    <script>
+    (function() {
+        var p = localStorage.getItem('rail-panel');
+        if (p) document.documentElement.setAttribute('data-init-panel', p);
+    })();
+    </script>
+    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet"/>
+    <link href="/static/css/custom.css" rel="stylesheet"/>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico"/>
+    <link rel="stylesheet" href="/static/font-awesome-7.0.1-all.min.css"/>
+    <link rel="stylesheet" href="/static/toastui-editor-3.2.2.min.css"/>
+    <link rel="stylesheet" href="/static/handsontable-16.2.0.full.min.css"/>
+    <link rel="stylesheet" href="/static/handsontable-theme-main-16.2.0.min.css"/>
+</head>
+<body
+    data-theme="{{ .CurrentTheme }}"
+    data-dark-mode="{{ index .ThemeSettings "darkMode" }}"
+    data-color-scheme="{{ index .ThemeSettings "colorScheme" }}"
+    data-font-family="{{ index .ThemeSettings "fontFamily" }}"
+    data-language="{{ .Language }}">
+
+<div id="wrapper">
+<div id="layout-rail">
+
+    <!-- ================================================================
+         RAIL
+         ================================================================ -->
+    <nav id="rail-site">
+
+        <a class="rail-btn" href="/" title="{{T "home"}}" onclick="closePanel()"><i class="fa fa-house"></i></a>
+        <button class="rail-btn rail-btn-file" onclick="togglePanel('fp-file')" id="rb-file" title="{{T "file info"}}"><i class="fa fa-circle-info"></i></button>
+
+        <div class="rail-sep"></div>
+
+        <!-- site panels -->
+        <button class="rail-btn" onclick="togglePanel('fp-new')"        id="rb-new"        title="{{T "new"}}"><i class="fa fa-plus"></i></button>
+        <button class="rail-btn" onclick="togglePanel('fp-browse')"     id="rb-browse"     title="{{T "browse"}}"><i class="fa fa-folder-tree"></i></button>
+        <button class="rail-btn" onclick="togglePanel('fp-dashboards')" id="rb-dashboards" title="{{T "dashboards"}}"><i class="fa fa-table-cells-large"></i></button>
+        <button class="rail-btn" onclick="togglePanel('fp-search')"     id="rb-search"     title="{{T "search"}}"><i class="fa fa-magnifying-glass"></i></button>
+        <button class="rail-btn" onclick="togglePanel('fp-media')"      id="rb-media"      title="{{T "media"}}"><i class="fa fa-photo-film"></i></button>
+        <button class="rail-btn" onclick="togglePanel('fp-latest')"     id="rb-latest"     title="{{T "latest changes"}}"><i class="fa fa-clock-rotate-left"></i></button>
+        <button class="rail-btn" onclick="togglePanel('fp-chat')"       id="rb-chat"       title="{{T "chat"}}"><i class="fa fa-message"></i></button>
+
+        <div class="rail-spacer"></div>
+
+        <a class="rail-btn" href="/settings" title="{{T "settings"}}" onclick="closePanel()"><i class="fa fa-gear"></i></a>
+        <a class="rail-btn" href="/admin"    title="{{T "admin"}}"    onclick="closePanel()"><i class="fa fa-screwdriver-wrench"></i></a>
+
+    </nav>
+
+    <!-- ================================================================
+         SHARED FLYOUT
+         ================================================================ -->
+    <div id="flyout">
+
+        <!-- new -->
+        <div class="flyout-panel" id="fp-new">
+            <div class="flyout-header">{{T "new"}}</div>
+            <div class="flyout-content">
+                <a href="/dashboard/new">{{T "Dashboard"}}</a>
+                <a href="/files/new/markdown">{{T "Markdown"}}</a>
+                <a href="/files/new/text">{{T "Text"}}</a>
+                <a href="/files/new/list">{{T "List"}}</a>
+                <a href="/files/new/todo">{{T "Todo"}}</a>
+                <a href="/files/new/filter">{{T "Filter"}}</a>
+                <a href="/files/new/index">{{T "Index"}}</a>
+            </div>
+        </div>
+
+
+        <!-- browse -->
+        <div class="flyout-panel" id="fp-browse">
+            <div class="flyout-header">{{T "browse"}}</div>
+            <div class="flyout-content" id="fp-browse-content"
+                 data-url="/api/files/folder?path=&target=%23fp-browse-content" data-loaded="false">
+                <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
+            </div>
+        </div>
+
+        <!-- dashboards -->
+        <div class="flyout-panel" id="fp-dashboards">
+            <div class="flyout-header">{{T "dashboards"}}</div>
+            <div class="flyout-content" id="fp-dashboards-content"
+                 data-url="/api/dashboards?short=true" data-loaded="false">
+                <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
+            </div>
+        </div>
+
+        <!-- search -->
+        <div class="flyout-panel" id="fp-search">
+            <div class="flyout-header">
+                {{T "search"}}
+                <a href="/search" class="flyout-header-link" title="{{T "open search page"}}"><i class="fa fa-arrow-up-right-from-square"></i></a>
+            </div>
+            <div class="flyout-content">
+                <div class="fp-search-row">
+                    <input type="text" class="fp-search-input" id="fp-search-input" name="q"
+                           placeholder="{{T "search..."}}"
+                           hx-get="/api/search?format=list"
+                           hx-target="#fp-search-results"
+                           hx-trigger="keyup changed delay:300ms"/>
+                    <label class="fp-toggle-switch" title="{{T "title only"}}">
+                        <input type="checkbox" id="fp-search-title-only" onchange="updateSearchMode(this)"/>
+                        <span class="fp-toggle-slider"></span>
+                    </label>
+                </div>
+                <div id="fp-search-results" class="fp-search-results"></div>
+            </div>
+        </div>
+
+        <!-- media -->
+        <div class="flyout-panel" id="fp-media">
+            <div class="flyout-header">
+                {{T "media"}}
+                <a href="/media" class="flyout-header-link" title="{{T "open media page"}}"><i class="fa fa-arrow-up-right-from-square"></i></a>
+            </div>
+            <div class="flyout-content" style="display:flex;flex-direction:column;gap:6px;padding:8px;">
+                <input type="text" id="fp-media-search" placeholder="{{T "filter media..."}}"
+                       oninput="filterMediaList(this.value)"/>
+                <div id="fp-media-content"
+                     data-url="/api/media/list?mode=compact" data-loaded="false">
+                    <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- latest changes -->
+        <div class="flyout-panel" id="fp-latest">
+            <div class="flyout-header">{{T "latest changes"}}</div>
+            <div class="flyout-content" id="fp-latest-content"
+                 data-url="/api/git/latestchanges?count=100" data-loaded="false">
+                <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
+            </div>
+        </div>
+
+        <!-- chat -->
+        <div class="flyout-panel" id="fp-chat">
+            <div class="flyout-header">{{T "chat"}}</div>
+            <div class="flyout-content" id="fp-chat-content"
+                 data-url="/api/chat/messages?short=true" data-loaded="false">
+                <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
+            </div>
+        </div>
+
+        <!-- file panel: filename + actions + select + sub-panels -->
+        <div class="flyout-panel" id="fp-file">
+
+            <!-- filename header + action buttons + select -->
+            <div id="fp-file-header">
+                <div id="fp-file-title">-</div>
+                <div id="fp-file-actions">
+                    <a  class="fp-action-btn fp-btn-edit"   id="fp-edit-link"   href="#" title="{{T "edit"}}"><i class="fa fa-pen"></i></a>
+                    <button class="fp-action-btn"           id="fp-rename-btn"  popovertarget="rename-modal"  title="{{T "rename"}}"><i class="fa fa-i-cursor"></i></button>
+                    <button class="fp-action-btn"           id="fp-rebuild-btn" title="{{T "rebuild"}}"><i class="fa fa-rotate"></i></button>
+                    <button class="fp-action-btn fp-btn-delete" popovertarget="delete-modal" title="{{T "delete"}}"><i class="fa fa-trash"></i></button>
+                </div>
+                <select id="fp-file-select" onchange="switchFileSubPanel(this.value)">
+                    <option value="metadata">{{T "metadata"}}</option>
+                    <option value="toc">{{T "table of contents"}}</option>
+                    <option value="history">{{T "history"}}</option>
+                    <option value="references">{{T "references"}}</option>
+                    <option value="connections">{{T "connections"}}</option>
+                </select>
+            </div>
+
+            <!-- metadata sub-panel -->
+            <div class="flyout-content">
+                <div class="fp-no-file" id="fp-no-file">{{T "no file selected"}}</div>
+
+                <div class="fp-sub-panel active" id="fps-metadata">
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "path"}}:</span><span class="fp-meta-value" id="fp-meta-path">-</span></div>
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "created"}}:</span><span class="fp-meta-value" id="fp-meta-created">-</span></div>
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "edited"}}:</span><span class="fp-meta-value" id="fp-meta-edited">-</span></div>
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "tags"}}:</span><span class="fp-meta-value" id="fp-meta-tags">-</span></div>
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "coll."}}:</span><span class="fp-meta-value" id="fp-meta-collection">-</span></div>
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "folder"}}:</span><span class="fp-meta-value" id="fp-meta-folders">-</span></div>
+                </div>
+
+                <div class="fp-sub-panel" id="fps-toc">
+                    <nav id="fp-toc-nav" class="fp-toc-nav"></nav>
+                </div>
+
+                <div class="fp-sub-panel" id="fps-history">
+                    <div id="fp-versions"><span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span></div>
+                </div>
+
+                <div class="fp-sub-panel" id="fps-references">
+                    <div id="component-references-list"><span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span></div>
+                    <div class="fp-section-header" style="margin-top:8px">{{T "add reference"}}</div>
+                    <form id="references-form"
+                          hx-post="/api/metadata/references"
+                          hx-target="#component-references-list"
+                          hx-swap="outerHTML"
+                          hx-include="#fp-reference-filepath"
+                          style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+                        <input type="hidden" id="fp-reference-filepath" name="filepath" value=""/>
+                        <input type="url" name="url" placeholder="https://" required/>
+                        <textarea name="description" rows="2" placeholder="{{T "description"}}"></textarea>
+                        <button type="submit" class="btn-small btn-primary">{{T "add"}}</button>
+                    </form>
+                </div>
+
+                <div class="fp-sub-panel" id="fps-connections">
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "ancestors"}}</div><div id="fp-ancestors">-</div></div>
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "parents"}}</div><div id="fp-parents">-</div></div>
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "children"}}</div><div id="fp-children">-</div></div>
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "links to"}}</div><div id="fp-links-to">-</div></div>
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "links from"}}</div><div id="fp-links-from">-</div></div>
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "related"}}</div><div id="fp-related">-</div></div>
+                </div>
+
+            </div>
+        </div>
+
+    </div><!-- #flyout -->
+
+    <!-- ================================================================
+         MAIN CONTENT
+         ================================================================ -->
+    <main>
+        {{ template "content" . }}
+    </main>
+
+</div><!-- #layout-rail -->
+</div><!-- #wrapper -->
+
+{{ template "rail-modals" . }}
+
+<script src="/static/htmx.min.js"></script>
+<script src="/static/toastui-editor-3.2.2.min.js"></script>
+<script src="/static/sortable-1.15.0.min.js"></script>
+<script src="/static/handsontable-16.2.0.full.min.js"></script>
+<script src="/themes/{{.CurrentTheme}}/rail.js"></script>
+</body>
+</html>
+
+{{ define "rail-modals" }}
+<div id="rename-modal" popover>
+    <div class="modal-content">
+        <h3>{{T "Rename"}}</h3>
+        <form id="rename-form" hx-post="" hx-target="#rename-result">
+            <input type="text" name="name" id="rename-input" placeholder="{{T "new file path"}}" required/>
+            <div class="modal-actions">
+                <button type="submit" class="btn-primary">{{T "Rename"}}</button>
+                <button type="button" class="btn-secondary" popovertarget="rename-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
+            </div>
+        </form>
+        <div id="rename-result"></div>
+    </div>
+</div>
+
+<div id="delete-modal" popover>
+    <div class="modal-content">
+        <h3>{{T "Delete"}}</h3>
+        <p>{{T "Are you sure?"}}</p>
+        <form id="delete-form" hx-delete="" hx-target="#delete-result">
+            <div class="modal-actions">
+                <button type="submit" class="btn-danger">{{T "Delete"}}</button>
+                <button type="button" class="btn-secondary" popovertarget="delete-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
+            </div>
+        </form>
+        <div id="delete-result"></div>
+        <div id="fp-rebuild-result"></div>
+    </div>
+</div>
+{{ end }}

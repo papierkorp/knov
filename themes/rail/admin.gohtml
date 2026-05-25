@@ -1,0 +1,148 @@
+{{/* theme: rail */}}
+{{ define "content" }}
+<div id="page-admin">
+    <h1>{{T "Admin"}}</h1>
+    <div class="admin-links">
+        <a href="/playground">{{T "Playground"}}</a>
+        <a href="/swagger/" target="_blank" rel="noopener noreferrer">{{T "Swagger"}}</a>
+    </div>
+    <div class="settings-sections">
+
+        <section class="settings-section">
+            <h2>{{T "Git Repository"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "leave empty for local git repository only"}}</div>
+                <form hx-post="/api/config/repository" hx-target="#git-result">
+                    <label for="git-url">
+                        {{T "Remote Repository URL"}} ({{T "optional"}})
+                        <input type="url" name="repositoryURL" id="git-url"
+                               placeholder="https://github.com/user/repo.git" class="form-input"
+                               hx-get="/api/config/repository" hx-trigger="load"
+                               hx-target="this" hx-swap="outerHTML" />
+                    </label>
+                    <button type="submit" class="btn-primary" style="margin-top:8px;">{{T "Set Remote Repository"}}</button>
+                </form>
+                <div id="git-result"></div>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <h2>{{T "Data Path"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "path to your data storage relative from the executable"}}</div>
+                <form hx-post="/api/config/datapath" hx-target="#datapath-result">
+                    <label for="data-path">
+                        {{T "Data Path"}}
+                        <input type="text" name="dataPath" id="data-path"
+                               placeholder="/path/to/data" required class="form-input"
+                               hx-get="/api/config/datapath" hx-trigger="load"
+                               hx-target="this" hx-swap="outerHTML" />
+                    </label>
+                    <button type="submit" class="btn-primary" style="margin-top:8px;">{{T "Set Data Path"}}</button>
+                </form>
+                <div id="datapath-result"></div>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <h2>{{T "System Actions"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "system maintenance operations for keeping your application running smoothly"}}</div>
+                <div class="admin-action-list">
+                    <button class="btn-secondary" hx-post="/api/metadata/rebuild" hx-target="#rebuild-result"
+                            hx-confirm="{{T "Rebuild all metadata? This may take a while."}}">
+                        {{T "Rebuild Metadata"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/cronjob" hx-target="#cronjob-result">
+                        {{T "Run Cronjob"}}
+                    </button>
+                    <button class="btn-secondary" hx-delete="/api/system/cache" hx-target="#cache-result"
+                            hx-confirm="{{T "Invalidate the cache? It will be rebuilt automatically."}}">
+                        {{T "Invalidate Cache"}}
+                    </button>
+                    <button class="btn-danger" hx-post="/api/system/restart" hx-target="#restart-result"
+                            hx-confirm="{{T "Restart the system? This will disconnect all users."}}">
+                        {{T "Restart System"}}
+                    </button>
+                </div>
+                <div id="rebuild-result"></div>
+                <div id="cronjob-result"></div>
+                <div id="cache-result"></div>
+                <div id="restart-result"></div>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <h2>{{T "Storage Statistics"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "media file storage usage and cleanup"}}</div>
+                <div hx-get="/api/media/stats" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
+                    {{T "loading..."}}
+                </div>
+                <div style="margin-top:12px;">
+                    <button class="btn-danger" hx-post="/api/media/cleanup-orphaned"
+                            hx-target="#cleanup-result"
+                            hx-confirm="{{T "Delete all orphaned media files? This cannot be undone."}}">
+                        <i class="fa fa-trash"></i> {{T "Cleanup Orphaned Files"}}
+                    </button>
+                </div>
+                <div id="cleanup-result"></div>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <h2>{{T "Data Export"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "export your data and files in various formats for backup or migration"}}</div>
+                <form action="/api/metadata/export" method="post">
+                    <label for="export-format">
+                        {{T "Export format"}}
+                        <select name="format" id="export-format" class="form-select">
+                            <option value="json">JSON</option>
+                            <option value="csv">CSV</option>
+                        </select>
+                    </label>
+                    <button type="submit" class="btn-secondary" style="margin-top:8px;">{{T "Export Metadata"}}</button>
+                </form>
+                <div class="admin-action-list" style="margin-top:10px;">
+                    <button class="btn-secondary" onclick="document.getElementById('export-files-form').submit()">
+                        {{T "Export All Files"}}
+                    </button>
+                    <button class="btn-secondary" onclick="document.getElementById('export-md-form').submit()">
+                        {{T "Export All Files (DokuWiki to Markdown)"}}
+                    </button>
+                </div>
+                <form id="export-files-form" action="/api/files/export/zip" method="post" style="display:none;"></form>
+                <form id="export-md-form" action="/api/files/export/markdown-converted" method="post" style="display:none;"></form>
+                <div id="export-result"></div>
+            </div>
+        </section>
+
+        <section class="settings-section">
+            <h2>{{T "Test Data"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "manage test data for development and testing purposes"}}</div>
+                <div class="admin-action-list">
+                    <button class="btn-secondary" hx-post="/api/testdata/setup" hx-target="#testdata-result"
+                            hx-confirm="{{T "Setup test data? This will create example files."}}">
+                        {{T "Setup Test Data"}}
+                    </button>
+                    <button class="btn-danger" hx-post="/api/testdata/clean" hx-target="#testdata-result"
+                            hx-confirm="{{T "WARNING - This will remove all files in the Data Folder!!."}}">
+                        {{T "Clean Test Data"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/filtertest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run filter tests? This will create test metadata objects."}}">
+                        {{T "Run Filter Tests"}}
+                    </button>
+                    <button class="btn-secondary" hx-get="/api/testdata/filtertest/testdata" hx-target="#testdata-result">
+                        {{T "View Filter Test Metadata"}}
+                    </button>
+                </div>
+                <div id="testdata-result"></div>
+            </div>
+        </section>
+
+    </div>
+</div>
+{{ end }}

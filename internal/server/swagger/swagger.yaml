@@ -314,6 +314,10 @@ paths:
         in: query
         name: offset
         type: integer
+      - description: Use compact timestamp (time only, no date)
+        in: query
+        name: short
+        type: boolean
       produces:
       - application/json
       - text/html
@@ -2996,6 +3000,10 @@ paths:
         in: query
         name: format
         type: string
+      - description: Search file titles only (no content)
+        in: query
+        name: titleonly
+        type: boolean
       produces:
       - application/json
       - text/html

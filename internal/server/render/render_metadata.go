@@ -108,13 +108,17 @@ func RenderReferencesHTML(refs []files.Reference) string {
 		fmt.Fprintf(&html, `<p class="no-items">%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no references"))
 	}
 	for _, ref := range refs {
-		fmt.Fprintf(&html, `<div class="reference-item"><a href="%s" target="_blank" rel="noopener noreferrer">%s</a>`,
-			ref.URL, ref.URL)
+		html.WriteString(`<div class="reference-item">`)
+		html.WriteString(`<div class="reference-item-main">`)
+		fmt.Fprintf(&html, `<a href="%s" target="_blank" rel="noopener noreferrer" class="reference-url">%s</a>`, ref.URL, ref.URL)
 		if ref.Description != "" {
 			fmt.Fprintf(&html, `<span class="reference-description">%s</span>`, ref.Description)
 		}
-		fmt.Fprintf(&html, `<button hx-delete="/api/metadata/references" hx-vals='{"url":"%s"}' hx-include="#reference-filepath" hx-target="#component-references-list" hx-swap="outerHTML" class="btn-danger btn-sm">%s</button>`,
+		html.WriteString(`</div>`)
+		html.WriteString(`<div class="reference-item-actions">`)
+		fmt.Fprintf(&html, `<button hx-delete="/api/metadata/references" hx-vals='{"url":"%s"}' hx-include="#reference-filepath" hx-target="#component-references-list" hx-swap="outerHTML" class="btn-icon btn-danger-icon" title="%s"><i class="fa fa-trash"></i></button>`,
 			ref.URL, translation.SprintfForRequest(configmanager.GetLanguage(), "remove"))
+		html.WriteString(`</div>`)
 		html.WriteString(`</div>`)
 	}
 	html.WriteString(`</div>`)

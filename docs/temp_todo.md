@@ -1,5 +1,17 @@
 # small stuff
 
+- make show hidden files a env var (api_files.go)
+- add tags, parent and references to testfiles
+- fix media detailview
+- /releasenotes route with new icon on the bottom of the rails theme
+- edit mode - metadata style (2 smaller inputs, 2 larger textboxes..)
+- references - edit button?
+- file tree with all files (overview)
+- fix chat (new messages on top..) for both themes
+- filter for references and dashboards
+- include tags to search
+- media - add metadata (parent + tags)
+- edit file - run through all metadata files??
 - chat: select multiple + move/delete multiple
 - add a show file in editor button
 - todoeditor - code display instead of list display
@@ -15,7 +27,6 @@
     - with a select field for what is displayed in the sidebar: metadata, references, toc, file history
 - overview: show folder tree instead of everything in a single level
 - make rebuild metadata concurrent e.g. each letter?
-- in references sidebar add - add button, remove button and edit button to header?
 - why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)
 - edit table - cance/save => jump to correct position/context

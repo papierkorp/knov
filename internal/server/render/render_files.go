@@ -3,6 +3,7 @@ package render
 
 import (
 	"fmt"
+	"net/url"
 	"path/filepath"
 	"strings"
 
@@ -114,9 +115,11 @@ type FolderEntry struct {
 	IsDir bool
 }
 
-// RenderFolderContent renders folder structure with folders and files
-func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir []FolderEntry) string {
+// RenderFolderContent renders folder structure with folders and files.
+// target is the CSS selector HTMX should swap into when navigating sub-folders (e.g. "#folder-content").
+func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir []FolderEntry, target string) string {
 	var html strings.Builder
+	encodedTarget := url.QueryEscape(target)
 
 	html.WriteString(`<div class="folder-content">`)
 
@@ -134,21 +137,21 @@ func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir [
 			}
 			html.WriteString(fmt.Sprintf(`
 				<li class="folder-item folder-parent">
-					<a href="#" hx-get="/api/files/folder?path=%s" hx-target="#folder-content">
+					<a href="#" hx-get="/api/files/folder?path=%s&target=%s" hx-target="%s">
 						/ ..
 					</a>
 				</li>`,
-				parentPath))
+				parentPath, encodedTarget, target))
 		}
 
 		for _, folder := range folders {
 			html.WriteString(fmt.Sprintf(`
 				<li class="folder-item">
-					<a href="#" hx-get="/api/files/folder?path=%s" hx-target="#folder-content">
+					<a href="#" hx-get="/api/files/folder?path=%s&target=%s" hx-target="%s">
 						/ %s
 					</a>
 				</li>`,
-				folder.Path, folder.Name))
+				folder.Path, encodedTarget, target, folder.Name))
 		}
 		html.WriteString(`</ul></div>`)
 	}

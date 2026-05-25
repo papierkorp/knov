@@ -11,7 +11,7 @@ import (
 )
 
 // RenderChatComponent renders the full chat component (history + input)
-func RenderChatComponent(messages []chat.Message, total, offset int, filePath string) string {
+func RenderChatComponent(messages []chat.Message, total, offset int, filePath string, short bool) string {
 	var html strings.Builder
 
 	filePathAttr := ""
@@ -22,25 +22,31 @@ func RenderChatComponent(messages []chat.Message, total, offset int, filePath st
 	html.WriteString(fmt.Sprintf(`<div id="component-chat"%s>`, filePathAttr))
 
 	// history — newest on top, load-more at bottom for older messages
+	// history — oldest at top, newest at bottom
 	html.WriteString(`<div id="component-chat-history">`)
 	for _, m := range messages {
-		html.WriteString(renderMessage(m))
+		html.WriteString(renderMessage(m, short))
 	}
 	html.WriteString(renderLoadMoreButton(total, offset, len(messages), filePath))
 	html.WriteString(`</div>`)
 
 	// input
 	inputURL := "/api/chat/messages"
+	sep := "?"
 	if filePath != "" {
-		inputURL += fmt.Sprintf(`?file=%s`, filePath)
+		inputURL += sep + fmt.Sprintf(`file=%s`, filePath)
+		sep = "&"
+	}
+	if short {
+		inputURL += sep + "short=true"
 	}
 	fmt.Fprintf(&html, `<div id="component-chat-input">
 	<textarea id="chat-input" name="chat-input" class="chat-textarea" placeholder="%s"
 		hx-post="%s"
 		hx-target="#component-chat-history"
-		hx-swap="afterbegin"
+		hx-swap="beforeend"
 		hx-trigger="keydown[key=='Enter'&&!shiftKey]"
-		hx-on:htmx:after-request="this.value=''"></textarea>
+		hx-on--htmx-after-request="this.value=''"></textarea>
 </div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "type a message, enter to send"),
 		inputURL)
@@ -51,10 +57,10 @@ func RenderChatComponent(messages []chat.Message, total, offset int, filePath st
 
 // RenderChatLoadMore renders older messages + a new load-more button if needed.
 // Replaces only the load-more button element (hx-swap outerHTML on the button div).
-func RenderChatLoadMore(messages []chat.Message, total, offset int, filePath string) string {
+func RenderChatLoadMore(messages []chat.Message, total, offset int, filePath string, short bool) string {
 	var html strings.Builder
 	for _, m := range messages {
-		html.WriteString(renderMessage(m))
+		html.WriteString(renderMessage(m, short))
 	}
 	html.WriteString(renderLoadMoreButton(total, offset, len(messages), filePath))
 	return html.String()
@@ -81,15 +87,41 @@ func renderLoadMoreButton(total, offset, count int, filePath string) string {
 }
 
 // RenderChatMessage renders a single message (used after POST)
-func RenderChatMessage(m chat.Message) string {
-	return renderMessage(m)
+func RenderChatMessage(m chat.Message, short bool) string {
+	return renderMessage(m, short)
 }
 
-func renderMessage(m chat.Message) string {
+func renderMessage(m chat.Message, short bool) string {
+	msgDivID := fmt.Sprintf("chat-message-%s", m.ID)
+
+	if short {
+		newFileURL := fmt.Sprintf(`/api/chat/messages/%s/move?mode=new&short=true`, m.ID)
+		appendURL := fmt.Sprintf(`/api/chat/messages/%s/move?mode=append&short=true`, m.ID)
+		deleteURL := fmt.Sprintf(`/api/chat/messages/%s`, m.ID)
+		lang := configmanager.GetLanguage()
+		return fmt.Sprintf(`<div class="chat-message chat-message-short" id="%s">
+	<div class="chat-message-content">%s</div>
+	<div class="chat-short-actions">
+		<button class="btn-small btn-secondary"
+			hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
+		<button class="btn-small btn-secondary"
+			hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
+		<button class="btn-small btn-danger"
+			hx-delete="%s" hx-target="#%s" hx-swap="outerHTML"
+			hx-confirm="%s">%s</button>
+	</div>
+</div>`,
+			msgDivID, m.Content,
+			newFileURL, msgDivID, translation.SprintfForRequest(lang, "to new file"),
+			appendURL, msgDivID, translation.SprintfForRequest(lang, "append"),
+			deleteURL, msgDivID,
+			translation.SprintfForRequest(lang, "delete this message?"),
+			translation.SprintfForRequest(lang, "delete"))
+	}
+
 	newFileURL := fmt.Sprintf(`/api/chat/messages/%s/move?mode=new`, m.ID)
 	appendURL := fmt.Sprintf(`/api/chat/messages/%s/move?mode=append`, m.ID)
 	deleteURL := fmt.Sprintf(`/api/chat/messages/%s`, m.ID)
-	msgDivID := fmt.Sprintf("chat-message-%s", m.ID)
 	timestamp := m.CreatedAt.Format("2006-01-02 15:04")
 	lang := configmanager.GetLanguage()
 
