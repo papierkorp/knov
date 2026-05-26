@@ -201,6 +201,8 @@ dist
 
 data*/
 data*/*
+temp*/
+temp*/*
 bin/
 config/
 .storage
