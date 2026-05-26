@@ -10,6 +10,7 @@ import (
 
 	"knov/internal/cacheStorage"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/utils"
 )
 
@@ -342,11 +343,14 @@ func SaveAllSystemDataToCache() error {
 		logging.LogWarning("failed to get media files for cache update: %v", err)
 	} else {
 		for _, file := range mediaFiles {
-			metadata, err := MetaDataGet(file.Path)
+			normalizedPath := pathutils.ToWithPrefix(file.Path)
+			metadata, err := MetaDataGet(normalizedPath)
 			if err != nil || metadata == nil {
+				// no metadata → never referenced → orphaned
+				collector.OrphanedMedia = append(collector.OrphanedMedia, normalizedPath)
 				continue
 			}
-			collector.CollectFromMetadata(file.Path, metadata)
+			collector.CollectFromMetadata(normalizedPath, metadata)
 		}
 	}
 

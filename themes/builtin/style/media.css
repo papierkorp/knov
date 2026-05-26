@@ -368,3 +368,71 @@
   border: 1px solid #fcc;
   text-align: center;
 }
+
+/* tag chips inside media detail view */
+#component-media-detail .media-edit-fields {
+  margin: 16px 0;
+}
+#component-media-detail .media-edit-fields .form-field {
+  margin-bottom: 12px;
+}
+#component-media-detail .media-edit-fields label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+#component-media-detail .tag-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  min-height: 38px;
+  cursor: text;
+}
+#component-media-detail .tag-chips-container:focus-within {
+  border-color: var(--primary);
+}
+#component-media-detail .tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+#component-media-detail .tag-chip {
+  display: inline-flex;
+  align-items: center;
+  background: var(--primary);
+  color: var(--primary-text);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+#component-media-detail .tag-chip-remove {
+  background: none;
+  border: none;
+  color: var(--primary-text);
+  cursor: pointer;
+  margin-left: 4px;
+  padding: 0;
+  font-size: 1rem;
+  opacity: 0.8;
+  line-height: 1;
+}
+#component-media-detail .tag-chip-remove:hover {
+  opacity: 1;
+}
+#component-media-detail .tag-chips-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.9rem;
+  flex: 1;
+  min-width: 100px;
+}

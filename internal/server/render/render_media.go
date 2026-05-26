@@ -341,6 +341,29 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	}
 	html.WriteString(`</div>`)
 
+	// editable metadata fields
+	tagsStr := strings.Join(metadata.Tags, ", ")
+	parentsStr := strings.Join(metadata.Parents, ", ")
+
+	html.WriteString(`<div class="media-edit-fields">`)
+	fmt.Fprintf(&html, `<div id="metadata-save-status"></div>`)
+
+	html.WriteString(`<div class="form-field">`)
+	fmt.Fprintf(&html, `<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "tags"))
+	html.WriteString(GenerateTagChipsInputWithSave("media-tags", "tags", tagsStr,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "add tags"),
+		"/api/metadata/tags?format=options", metadata.Path, "/api/metadata/tags"))
+	html.WriteString(`</div>`)
+
+	html.WriteString(`<div class="form-field">`)
+	fmt.Fprintf(&html, `<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "parents"))
+	html.WriteString(GenerateTagChipsInputWithSave("media-parents", "parents", parentsStr,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "add parent files"),
+		"/api/files/list?format=options", metadata.Path, "/api/metadata/parents"))
+	html.WriteString(`</div>`)
+
+	html.WriteString(`</div>`)
+
 	// actions
 	html.WriteString(`<div class="media-actions">`)
 	fmt.Fprintf(&html, `<a href="/media/%s" download class="btn btn-primary">

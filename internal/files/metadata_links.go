@@ -15,10 +15,35 @@ import (
 
 // MetaDataLinksRebuild ..
 func MetaDataLinksRebuild() error {
-	logging.LogInfo("rebuilding all metadata links")
+	log := logging.LogBuilder("rebuild-metadata")
+	log.Printf("=== metadata links rebuild started ===")
+
 	files, err := GetAllPhysicalFiles()
 	if err != nil {
 		return err
+	}
+	log.Printf("docs files to process: %d", len(files))
+
+	// zeroth pass: clear LinksToHere on all media files so stale references don't persist
+	allMediaFiles, err := GetAllMediaFiles()
+	if err != nil {
+		logging.LogWarning("failed to get media files for link rebuild: %v", err)
+		log.Printf("warning: failed to get media files: %v", err)
+	} else {
+		log.Printf("media files found: %d", len(allMediaFiles))
+		for _, file := range allMediaFiles {
+			normalizedPath := pathutils.ToWithPrefix(file.Path)
+			metadata, err := MetaDataGet(normalizedPath)
+			if err != nil || metadata == nil {
+				log.Printf("  media %s: no metadata, skipping clear", normalizedPath)
+				continue
+			}
+			log.Printf("  clearing linkstohere for %s (had %d)", normalizedPath, len(metadata.LinksToHere))
+			metadata.LinksToHere = []string{}
+			if err := MetaDataSaveRaw(metadata); err != nil {
+				logging.LogWarning("failed to clear media linkstohere for %s: %v", normalizedPath, err)
+			}
+		}
 	}
 
 	// first pass: clear old data and update ancestors and usedlinks
@@ -80,11 +105,54 @@ func MetaDataLinksRebuild() error {
 		}
 	}
 
+	// third pass: rebuild media LinksToHere explicitly from docs UsedLinks
+	// (updateKidsAndLinksToHere only handles docs↔docs; this handles docs→media)
+	mediaRefs := make(map[string][]string) // normalizedMediaPath → []docPaths
+	for _, file := range files {
+		normalizedPath := pathutils.ToWithPrefix(file.Path)
+		docMeta, err := MetaDataGet(normalizedPath)
+		if err != nil || docMeta == nil {
+			continue
+		}
+		for _, usedLink := range docMeta.UsedLinks {
+			normalized := pathutils.ToWithPrefix(usedLink)
+			if strings.HasPrefix(normalized, "media/") {
+				logging.LogDebug("found media ref: %s → %s", normalizedPath, normalized)
+				log.Printf("  docs %s references media %s (raw usedlink: %q)", normalizedPath, normalized, usedLink)
+				mediaRefs[normalized] = append(mediaRefs[normalized], normalizedPath)
+			}
+		}
+	}
+	log.Printf("media refs found in docs usedlinks: %d media files referenced", len(mediaRefs))
+	logging.LogInfo("media refs found in docs usedlinks: %d media files referenced", len(mediaRefs))
+
+	allMediaFiles, err = GetAllMediaFiles()
+	if err != nil {
+		logging.LogWarning("failed to get media files for linkstohere rebuild: %v", err)
+	} else {
+		for _, file := range allMediaFiles {
+			normalizedPath := pathutils.ToWithPrefix(file.Path)
+			mediaMeta, err := MetaDataGet(normalizedPath)
+			if err != nil || mediaMeta == nil {
+				log.Printf("  media %s: no metadata, skipping linkstohere update", normalizedPath)
+				continue
+			}
+			refs := mediaRefs[normalizedPath]
+			if refs == nil {
+				refs = []string{}
+			}
+			log.Printf("  media %s: linkstohere = %v", normalizedPath, refs)
+			mediaMeta.LinksToHere = refs
+			if err := MetaDataSaveRaw(mediaMeta); err != nil {
+				logging.LogWarning("failed to save media linkstohere for %s: %v", normalizedPath, err)
+			}
+		}
+	}
+
+	log.Printf("=== metadata links rebuild completed ===")
 	logging.LogInfo("metadata links rebuild completed")
 	return nil
 }
-
-// MetaDataLinksRebuildForFile rebuilds metadata links for a single file
 func MetaDataLinksRebuildForFile(filePath string) error {
 	normalizedPath := pathutils.ToWithPrefix(filePath)
 	logging.LogInfo("rebuilding metadata links for file: %s", normalizedPath)

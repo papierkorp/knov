@@ -54,8 +54,13 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if metadata == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
-		return
+		// for media files, synthesize minimal metadata so the detail view still renders
+		if strings.HasPrefix(normalizedPath, "media/") {
+			metadata = &files.Metadata{Path: normalizedPath}
+		} else {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
+			return
+		}
 	}
 
 	// determine response format
