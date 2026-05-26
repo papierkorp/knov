@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -190,4 +191,55 @@ func FilterFilesByHiddenTypes(files []File) []File {
 		}
 	}
 	return filtered
+}
+
+// TreeNode represents a node in the file tree (either a directory or a file)
+type TreeNode struct {
+	Name     string
+	Path     string // relative path, only set for file nodes
+	IsDir    bool
+	Children []*TreeNode
+}
+
+// BuildFileTree constructs a sorted directory tree from a flat file list
+func BuildFileTree(allFiles []File) *TreeNode {
+	root := &TreeNode{IsDir: true}
+	for _, file := range allFiles {
+		rel := pathutils.ToRelative(file.Path)
+		parts := strings.Split(rel, "/")
+		insertTreeNode(root, parts, rel)
+	}
+	sortTreeNode(root)
+	return root
+}
+
+func insertTreeNode(parent *TreeNode, parts []string, filePath string) {
+	if len(parts) == 0 {
+		return
+	}
+	if len(parts) == 1 {
+		parent.Children = append(parent.Children, &TreeNode{Name: parts[0], Path: filePath})
+		return
+	}
+	for _, child := range parent.Children {
+		if child.IsDir && child.Name == parts[0] {
+			insertTreeNode(child, parts[1:], filePath)
+			return
+		}
+	}
+	dir := &TreeNode{Name: parts[0], IsDir: true}
+	parent.Children = append(parent.Children, dir)
+	insertTreeNode(dir, parts[1:], filePath)
+}
+
+func sortTreeNode(node *TreeNode) {
+	sort.Slice(node.Children, func(i, j int) bool {
+		if node.Children[i].IsDir != node.Children[j].IsDir {
+			return node.Children[i].IsDir
+		}
+		return node.Children[i].Name < node.Children[j].Name
+	})
+	for _, child := range node.Children {
+		sortTreeNode(child)
+	}
 }

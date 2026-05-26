@@ -1765,6 +1765,16 @@ paths:
       summary: Save section content
       tags:
       - editor
+  /api/files/tree:
+    get:
+      description: Returns all files as an indented folder tree structure
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get file tree overview
+      tags:
+      - files
   /api/files/versions/{filepath}:
     get:
       description: List all versions of a file or get specific version content

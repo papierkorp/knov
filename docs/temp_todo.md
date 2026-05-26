@@ -1,6 +1,6 @@
 # small stuff
 
-- rails theme - add a title search to tree, add a select to tree (same as metadata) with: show all tags, show all folders, show all collections, overview (list of all files plain), browse (the current version), treeoverview (tree folder of the data like with a folder and then indended the files/subfolders => i dont know if i have this feature yet)
+- rails theme - add a title search to the browse/tree slideout, add a select to browse/tree (same as metadata) with: show all tags, show all folders, show all collections, overview (list of all files plain), browse (the current version), treeoverview (tree folder of the data like with a folder and then indended the files/subfolders => i dont know if i have this feature yet) and make treeoverview the default/first selection
 - pack the rails theme into the binary for now?
 - add tags, parent and references to testfiles
 - fix media detailview

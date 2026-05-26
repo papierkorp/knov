@@ -180,3 +180,32 @@ func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir [
 	html.WriteString(`</div>`)
 	return html.String()
 }
+
+// renderTreeChildren recursively renders a TreeNode's children as nested HTML lists
+func renderTreeChildren(html *strings.Builder, node *files.TreeNode) {
+	if len(node.Children) == 0 {
+		return
+	}
+	html.WriteString(`<ul class="fp-tree-list">`)
+	for _, child := range node.Children {
+		html.WriteString(`<li>`)
+		if child.IsDir {
+			fmt.Fprintf(html, `<span class="fp-tree-dir"><i class="fa fa-folder"></i> %s</span>`, child.Name)
+			renderTreeChildren(html, child)
+		} else {
+			fmt.Fprintf(html, `<a class="fp-tree-file" href="/files/%s">%s</a>`,
+				child.Path, GetLinkDisplayText(child.Path))
+		}
+		html.WriteString(`</li>`)
+	}
+	html.WriteString(`</ul>`)
+}
+
+// RenderTreeOverview renders a pre-built file tree as indented HTML
+func RenderTreeOverview(root *files.TreeNode) string {
+	var html strings.Builder
+	html.WriteString(`<div class="fp-tree">`)
+	renderTreeChildren(&html, root)
+	html.WriteString(`</div>`)
+	return html.String()
+}

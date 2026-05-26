@@ -2176,6 +2176,20 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/files/tree": {
+            "get": {
+                "description": "Returns all files as an indented folder tree structure",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get file tree overview",
+                "responses": {}
+            }
+        },
         "/api/files/versions/diff/{filepath}": {
             "get": {
                 "description": "Compare two versions of a file",

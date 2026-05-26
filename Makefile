@@ -28,7 +28,7 @@ translation:
 	cd internal/translation && go generate
 
 swaggo-api-init:
-	swag init -g main.go -d . -o internal/server/swagger
+	swag init -g main.go -d . --exclude tempai -o internal/server/swagger
 
 tree:
 	tree -I 'bin|data|data2|data3|storage'

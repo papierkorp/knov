@@ -214,6 +214,7 @@ func StartServerChi() {
 		// ----------------------------------------------------------------------------------------
 		r.Route("/files", func(r chi.Router) {
 			r.Get("/list", handleAPIGetAllFiles)
+			r.Get("/tree", handleAPIGetFileTree)
 			r.Get("/content/*", handleAPIGetFileContent)
 			r.Post("/filter", handleAPIFilterFiles)
 			r.Get("/header", handleAPIGetFileHeader)

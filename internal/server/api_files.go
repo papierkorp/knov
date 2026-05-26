@@ -84,7 +84,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 	var filesInDir []render.FolderEntry
 
 	for _, entry := range entries {
-		// skip hidden folders (dot-prefixed, e.g. .git)
+		// skip hidden files/folders (dot-prefixed) unless configured to show them
 		if !configmanager.GetAppConfig().ShowHiddenFiles && strings.HasPrefix(entry.Name(), ".") {
 			continue
 		}
@@ -113,6 +113,23 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 		"folders": folders,
 		"files":   filesInDir,
 	}, html)
+}
+
+// @Summary Get file tree overview
+// @Description Returns all files as an indented folder tree structure
+// @Tags files
+// @Produce json,html
+// @Router /api/files/tree [get]
+func handleAPIGetFileTree(w http.ResponseWriter, r *http.Request) {
+	allFiles, err := files.GetAllFiles()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
+		return
+	}
+	allFiles = files.FilterFilesByHiddenTypes(allFiles)
+	tree := files.BuildFileTree(allFiles)
+	html := render.RenderTreeOverview(tree)
+	writeResponse(w, r, allFiles, html)
 }
 
 // @Summary Get all files
