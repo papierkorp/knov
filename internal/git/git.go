@@ -3,6 +3,7 @@ package git
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -71,28 +72,58 @@ func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
 
 	var files []GitHistoryFile
 	dataDir := configmanager.GetAppConfig().DataPath
-	commitCount := 0
 
-	err = iter.ForEach(func(c *object.Commit) error {
-		if commitCount >= count {
-			return nil
-		}
-
-		stats, err := c.Stats()
+	for i := 0; i < count; i++ {
+		c, err := iter.Next()
 		if err != nil {
-			return err
+			if err == io.EOF {
+				break
+			}
+			return nil, err
 		}
 
-		for _, stat := range stats {
-			// stat.Name is relative to repo root
-			// if repo is above data dir, paths will include data dir name
-			// strip it to get path relative to data directory
-			relPath := stat.Name
-			dataDirName := filepath.Base(dataDir)
+		currentTree, err := c.Tree()
+		if err != nil {
+			continue
+		}
+
+		var changedPaths []string
+		if c.NumParents() == 0 {
+			// initial commit — list all files in tree
+			_ = currentTree.Files().ForEach(func(f *object.File) error {
+				changedPaths = append(changedPaths, f.Name)
+				return nil
+			})
+		} else {
+			parent, err := c.Parent(0)
+			if err != nil {
+				continue
+			}
+			parentTree, err := parent.Tree()
+			if err != nil {
+				continue
+			}
+			// DiffTree is lazy — no patch computation, just file names
+			changes, err := object.DiffTree(parentTree, currentTree)
+			if err != nil {
+				continue
+			}
+			for _, change := range changes {
+				name := change.To.Name
+				if name == "" {
+					name = change.From.Name
+				}
+				if name != "" {
+					changedPaths = append(changedPaths, name)
+				}
+			}
+		}
+
+		dataDirName := filepath.Base(dataDir)
+		for _, relPath := range changedPaths {
 			if strings.HasPrefix(relPath, dataDirName+string(filepath.Separator)) {
 				relPath = strings.TrimPrefix(relPath, dataDirName+string(filepath.Separator))
 			}
-
 			files = append(files, GitHistoryFile{
 				Name:    filepath.Base(relPath),
 				Path:    relPath,
@@ -101,11 +132,9 @@ func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
 				Message: c.Message,
 			})
 		}
-		commitCount++
-		return nil
-	})
+	}
 
-	return files, err
+	return files, nil
 }
 
 // GetUntrackedFiles returns list of untracked files in git

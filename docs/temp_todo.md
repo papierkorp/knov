@@ -1,13 +1,12 @@
 # small stuff
 
-- rails theme - add a title search to the browse/tree slideout, add a select to browse/tree (same as metadata) with: show all tags, show all folders, show all collections, overview (list of all files plain), browse (the current version), treeoverview (tree folder of the data like with a folder and then indended the files/subfolders => i dont know if i have this feature yet) and make treeoverview the default/first selection
+
 - pack the rails theme into the binary for now?
 - add tags, parent and references to testfiles
 - fix media detailview
 - /releasenotes route with new icon on the bottom of the rails theme
 - edit mode - metadata style (2 smaller inputs, 2 larger textboxes..)
 - references - edit button?
-- file tree with all files (overview)
 - fix chat (new messages on top..) for both themes
 - filter for references and dashboards
 - include tags to search

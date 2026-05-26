@@ -112,16 +112,6 @@
       "translation": ""
     },
     {
-      "id": "Archive",
-      "message": "Archive",
-      "translation": ""
-    },
-    {
-      "id": "Areas",
-      "message": "Areas",
-      "translation": ""
-    },
-    {
       "id": "Are you sure?",
       "message": "Are you sure?",
       "translation": ""
@@ -284,6 +274,11 @@
     {
       "id": "collection",
       "message": "collection",
+      "translation": ""
+    },
+    {
+      "id": "collections",
+      "message": "collections",
       "translation": ""
     },
     {
@@ -1124,6 +1119,11 @@
     {
       "id": "filtered results will appear here",
       "message": "filtered results will appear here",
+      "translation": ""
+    },
+    {
+      "id": "filter media...",
+      "message": "filter media...",
       "translation": ""
     },
     {
@@ -2037,6 +2037,16 @@
       "translation": ""
     },
     {
+      "id": "open media page",
+      "message": "open media page",
+      "translation": ""
+    },
+    {
+      "id": "open search page",
+      "message": "open search page",
+      "translation": ""
+    },
+    {
       "id": "operator",
       "message": "operator",
       "translation": ""
@@ -2069,6 +2079,11 @@
     {
       "id": "outdent",
       "message": "outdent",
+      "translation": ""
+    },
+    {
+      "id": "overview",
+      "message": "overview",
       "translation": ""
     },
     {
@@ -2172,11 +2187,6 @@
       "translation": ""
     },
     {
-      "id": "Projects",
-      "message": "Projects",
-      "translation": ""
-    },
-    {
       "id": "rebuild",
       "message": "rebuild",
       "translation": ""
@@ -2235,11 +2245,6 @@
       "id": "Rename",
       "message": "Rename",
       "translation": "Umbenennen"
-    },
-    {
-      "id": "Resources",
-      "message": "Resources",
-      "translation": ""
     },
     {
       "id": "restarting application...",
@@ -2365,6 +2370,11 @@
       "id": "Search Results",
       "message": "Search Results",
       "translation": "Suchergebnisse"
+    },
+    {
+      "id": "search title...",
+      "message": "search title...",
+      "translation": ""
     },
     {
       "id": "section",
@@ -2597,6 +2607,11 @@
       "translation": ""
     },
     {
+      "id": "Test Data",
+      "message": "Test Data",
+      "translation": ""
+    },
+    {
       "id": "Test Data Management",
       "message": "Test Data Management",
       "translation": ""
@@ -2662,13 +2677,13 @@
       "translation": ""
     },
     {
-      "id": "type",
-      "message": "type",
+      "id": "tree",
+      "message": "tree",
       "translation": ""
     },
     {
-      "id": "Type",
-      "message": "Type",
+      "id": "type",
+      "message": "type",
       "translation": ""
     },
     {
@@ -2782,16 +2797,6 @@
       "translation": ""
     },
     {
-      "id": "View all archive",
-      "message": "View all archive",
-      "translation": ""
-    },
-    {
-      "id": "View all areas",
-      "message": "View all areas",
-      "translation": ""
-    },
-    {
       "id": "View all collections",
       "message": "View all collections",
       "translation": ""
@@ -2804,16 +2809,6 @@
     {
       "id": "View all folders",
       "message": "View all folders",
-      "translation": ""
-    },
-    {
-      "id": "View all projects",
-      "message": "View all projects",
-      "translation": ""
-    },
-    {
-      "id": "View all resources",
-      "message": "View all resources",
       "translation": ""
     },
     {
