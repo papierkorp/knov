@@ -101,9 +101,12 @@
 
         <!-- dashboards -->
         <div class="flyout-panel" id="fp-dashboards">
-            <div class="flyout-header">{{T "dashboards"}}</div>
+            <div class="flyout-header">
+                {{T "dashboards"}}
+                <a href="/dashboard/new" class="flyout-header-link" title="{{T "new dashboard"}}"><i class="fa fa-plus"></i></a>
+            </div>
             <div class="flyout-content" id="fp-dashboards-content"
-                 data-url="/api/dashboards?short=true" data-loaded="false">
+                 data-url="/api/dashboards" data-loaded="false">
                 <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
             </div>
         </div>

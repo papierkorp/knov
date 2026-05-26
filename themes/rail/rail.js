@@ -391,8 +391,37 @@ function initFlyoutResize() {
 }
 
 // ================================================================
-// browse panel: intercept metadata item clicks → load files inline
+// dashboards panel: inject edit buttons after content loads
 // ================================================================
+function initDashboardEditButtons() {
+  document
+    .getElementById("flyout")
+    ?.addEventListener("htmx:afterSwap", function (e) {
+      if (e.detail.target.id !== "fp-dashboards-content") return;
+      e.detail.target
+        .querySelectorAll('a[href^="/dashboard/"]')
+        .forEach((link) => {
+          const match = link
+            .getAttribute("href")
+            .match(/^\/dashboard\/([^/]+)$/);
+          if (!match || link.closest(".fp-dash-row")) return;
+          const id = match[1];
+          const row = document.createElement("div");
+          row.className = "fp-dash-row";
+          link.replaceWith(row);
+          link.className = "fp-dash-name";
+          link.title = link.textContent;
+          row.appendChild(link);
+          const edit = document.createElement("a");
+          edit.href = `/dashboard/edit/${id}`;
+          edit.className = "fp-dash-edit";
+          edit.title = "edit";
+          edit.innerHTML = '<i class="fa fa-pen"></i>';
+          row.appendChild(edit);
+        });
+    });
+}
+
 function initBrowseInterceptor() {
   const flyout = document.getElementById("flyout");
   if (!flyout) return;
@@ -444,6 +473,7 @@ function initBrowseInterceptor() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initFlyoutResize();
+  initDashboardEditButtons();
   initBrowseInterceptor();
 
   // restore saved browse mode (updates select + data-url before first lazyLoad)
