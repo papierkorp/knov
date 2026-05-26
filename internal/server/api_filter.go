@@ -200,7 +200,7 @@ func handleAPIAddFilterCriteria(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	criteriaIndex := int(time.Now().Unix()) % 1000
+	criteriaIndex := int(time.Now().UnixMilli() % 1000000)
 
 	widgetIndex := -1
 	if s := r.FormValue("widget_index"); s != "" {

@@ -45,6 +45,7 @@
         <button class="rail-btn" onclick="togglePanel('fp-browse')"     id="rb-browse"     title="{{T "browse"}}"><i class="fa fa-folder-tree"></i></button>
         <button class="rail-btn" onclick="togglePanel('fp-dashboards')" id="rb-dashboards" title="{{T "dashboards"}}"><i class="fa fa-table-cells-large"></i></button>
         <button class="rail-btn" onclick="togglePanel('fp-search')"     id="rb-search"     title="{{T "search"}}"><i class="fa fa-magnifying-glass"></i></button>
+        <button class="rail-btn" onclick="togglePanel('fp-filter')"     id="rb-filter"     title="{{T "filter"}}"><i class="fa fa-filter"></i></button>
         <button class="rail-btn" onclick="togglePanel('fp-media')"      id="rb-media"      title="{{T "media"}}"><i class="fa fa-photo-film"></i></button>
         <button class="rail-btn" onclick="togglePanel('fp-latest')"     id="rb-latest"     title="{{T "latest changes"}}"><i class="fa fa-clock-rotate-left"></i></button>
         <button class="rail-btn" onclick="togglePanel('fp-chat')"       id="rb-chat"       title="{{T "chat"}}"><i class="fa fa-message"></i></button>
@@ -155,6 +156,35 @@
             <div class="flyout-content" id="fp-latest-content"
                  data-url="/api/git/latestchanges?count=100" data-loaded="false">
                 <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
+            </div>
+        </div>
+
+        <!-- filter -->
+        <div class="flyout-panel" id="fp-filter">
+            <div class="flyout-header">
+                {{T "filter"}}
+                <div class="fp-filter-header-controls">
+                    <button type="submit" form="filter-form" class="btn-primary btn-small">{{T "apply"}}</button>
+                    <button type="button" class="fp-filter-add btn-icon" title="{{T "add filter"}}"
+                        hx-post="/api/filters/add-criteria"
+                        hx-target="#fp-filter-criteria"
+                        hx-swap="beforeend"
+                        hx-on--after-swap="saveFpFilterState()"><i class="fa fa-plus"></i></button>
+                    <label class="fp-logic-toggle" title="{{T "and / or"}}">
+                        <input type="checkbox" id="fp-logic-checkbox" onchange="saveFpFilterState()"/>
+                        <span class="fp-logic-label" data-off="{{T "and"}}" data-on="{{T "or"}}">{{T "and"}}</span>
+                    </label>
+                </div>
+            </div>
+            <div class="flyout-content" id="fp-filter-content">
+                <form id="filter-form" hx-post="/api/filters" hx-target="#fp-filter-results">
+                    <input type="hidden" name="display" value="list"/>
+                    <input type="hidden" name="limit" value="100"/>
+                    <input type="hidden" name="logic" id="fp-logic-value" value="and"/>
+                    <div id="fp-filter-criteria" class="filter-criteria-container">
+                    </div>
+                </form>
+                <div id="fp-filter-results" class="fp-filter-results"></div>
             </div>
         </div>
 

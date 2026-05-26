@@ -458,6 +458,172 @@
 }
 
 /* =============================================
+   filter flyout panel
+   ============================================= */
+
+#fp-filter .flyout-header {
+  gap: 6px;
+}
+
+.fp-filter-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.fp-filter-add {
+  width: 22px;
+  height: 22px;
+  font-size: 0.75em;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.fp-filter-add:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* and/or toggle label */
+.fp-logic-toggle {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.fp-logic-toggle input {
+  display: none;
+}
+.fp-logic-label {
+  font-size: 0.7em;
+  font-weight: 600;
+  padding: 2px 5px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-secondary);
+  background: var(--bg);
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background 0.15s;
+}
+.fp-logic-toggle input:checked + .fp-logic-label {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+#fp-filter .flyout-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px;
+  overflow-y: auto;
+}
+
+#fp-filter .filter-criteria-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#fp-filter .filter-criteria-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 5px 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+#fp-filter .filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+#fp-filter .filter-criteria-row hr {
+  display: none;
+}
+
+#fp-filter .filter-field label {
+  font-size: 0.65em;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+#fp-filter .filter-field select,
+#fp-filter .filter-field input[type="text"],
+#fp-filter .filter-field input[type="number"] {
+  padding: 2px 5px;
+  font-size: 0.78em;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+  height: 24px;
+}
+
+#fp-filter .filter-field select:focus,
+#fp-filter .filter-field input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+#fp-filter .filter-field .btn-danger.btn-small {
+  padding: 2px 6px;
+  font-size: 0.72em;
+  align-self: flex-start;
+  height: 22px;
+}
+
+#fp-filter .fp-filter-results {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+#fp-filter .fp-filter-results a {
+  display: block;
+  padding: 3px 5px;
+  border-radius: 3px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.8em;
+  border-left: 2px solid transparent;
+  transition:
+    border-color 0.12s,
+    color 0.12s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#fp-filter .fp-filter-results a:hover {
+  border-left-color: var(--primary);
+  color: var(--primary);
+}
+
+#fp-filter .filter-no-results {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.78em;
+  padding: 3px 0;
+}
+
+/* =============================================
    chat flyout panel (compact mode)
    ============================================= */
 
@@ -498,6 +664,22 @@
 /* short message hover menu */
 #fp-chat .chat-message-short {
   position: relative;
+}
+
+#fp-chat .chat-message-short::after {
+  content: attr(data-time);
+  position: absolute;
+  right: 6px;
+  top: 4px;
+  font-size: 0.65em;
+  color: var(--text-secondary);
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+#fp-chat .chat-message-short:hover::after {
+  opacity: 1;
 }
 
 #fp-chat .chat-short-menu-btn {

@@ -1881,3 +1881,270 @@ dl.media-info dd {
   flex: 1;
   min-width: 100px;
 }
+
+/* =============================================
+   filter form — filteredit + filterview pages
+   ============================================= */
+
+#page-filteredit .filter-editor,
+#page-filterview .filter-editor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  #page-filteredit .filter-editor,
+  #page-filterview .filter-editor {
+    grid-template-columns: 1fr;
+  }
+}
+
+#page-filteredit .filter-form-container,
+#page-filterview .filter-form-container,
+#page-filteredit .filter-results-container,
+#page-filterview .filter-results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#page-filteredit .filter-form-container h4,
+#page-filterview .filter-form-container h4,
+#page-filteredit .filter-results-container h4,
+#page-filterview .filter-results-container h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* controls row */
+#page-filteredit .filter-controls,
+#page-filterview .filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+#page-filteredit .filter-controls label,
+#page-filterview .filter-controls label {
+  font-size: 0.82em;
+  color: var(--text-secondary);
+}
+
+#page-filteredit .filter-controls .form-select,
+#page-filterview .filter-controls .form-select,
+#page-filteredit .filter-controls .form-input,
+#page-filterview .filter-controls .form-input {
+  padding: 5px 8px;
+  font-size: 0.82em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+}
+#page-filteredit .filter-controls .form-input,
+#page-filterview .filter-controls .form-input {
+  width: 64px;
+}
+
+/* criteria container */
+#page-filteredit .filter-criteria-container,
+#page-filterview .filter-criteria-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* single criteria row */
+#page-filteredit .filter-criteria-row,
+#page-filterview .filter-criteria-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr auto;
+  gap: 6px;
+  align-items: end;
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+#page-filteredit .filter-field,
+#page-filterview .filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+#page-filteredit .filter-field label,
+#page-filterview .filter-field label {
+  font-size: 0.72em;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+#page-filteredit .filter-field select,
+#page-filterview .filter-field select,
+#page-filteredit .filter-field input,
+#page-filterview .filter-field input {
+  padding: 4px 6px;
+  font-size: 0.82em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#page-filteredit .filter-field select:focus,
+#page-filterview .filter-field select:focus,
+#page-filteredit .filter-field input:focus,
+#page-filterview .filter-field input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+#page-filteredit .filter-field .btn-danger.btn-small,
+#page-filterview .filter-field .btn-danger.btn-small {
+  padding: 4px 8px;
+  font-size: 0.78em;
+  align-self: flex-end;
+}
+
+/* results panel */
+#page-filteredit .filter-results,
+#page-filterview .filter-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#page-filteredit .filter-no-results,
+#page-filterview .filter-no-results {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.85em;
+}
+
+/* =============================================
+   filter form — dashboard view/edit context
+   ============================================= */
+
+#page-dashboard .filter-controls,
+#page-dashboard-edit .filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+#page-dashboard .filter-controls label,
+#page-dashboard-edit .filter-controls label {
+  font-size: 0.82em;
+  color: var(--text-secondary);
+}
+
+#page-dashboard .filter-controls .form-select,
+#page-dashboard-edit .filter-controls .form-select,
+#page-dashboard .filter-controls .form-input,
+#page-dashboard-edit .filter-controls .form-input {
+  padding: 5px 8px;
+  font-size: 0.82em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+}
+#page-dashboard .filter-controls .form-input,
+#page-dashboard-edit .filter-controls .form-input {
+  width: 64px;
+}
+
+#page-dashboard .filter-criteria-container,
+#page-dashboard-edit .filter-criteria-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+#page-dashboard .filter-criteria-row,
+#page-dashboard-edit .filter-criteria-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr auto;
+  gap: 6px;
+  align-items: end;
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+#page-dashboard .filter-field,
+#page-dashboard-edit .filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+#page-dashboard .filter-field label,
+#page-dashboard-edit .filter-field label {
+  font-size: 0.72em;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+#page-dashboard .filter-field select,
+#page-dashboard-edit .filter-field select,
+#page-dashboard .filter-field input,
+#page-dashboard-edit .filter-field input {
+  padding: 4px 6px;
+  font-size: 0.82em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#page-dashboard .filter-field select:focus,
+#page-dashboard-edit .filter-field select:focus,
+#page-dashboard .filter-field input:focus,
+#page-dashboard-edit .filter-field input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+#page-dashboard .filter-field .btn-danger.btn-small,
+#page-dashboard-edit .filter-field .btn-danger.btn-small {
+  padding: 4px 8px;
+  font-size: 0.78em;
+  align-self: flex-end;
+}
+
+#page-dashboard .filter-results,
+#page-dashboard-edit .filter-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+#page-dashboard .filter-no-results,
+#page-dashboard-edit .filter-no-results {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.85em;
+}

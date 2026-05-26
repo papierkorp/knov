@@ -390,8 +390,115 @@ function initFlyoutResize() {
 }
 
 // ================================================================
-// dashboards panel: inject edit buttons after content loads
+// filter panel — persist state across page loads
 // ================================================================
+function saveFpFilterState() {
+  const criteria = document.getElementById("fp-filter-criteria");
+  const cb = document.getElementById("fp-logic-checkbox");
+  if (!criteria) return;
+  const logicVal = cb?.checked ? "or" : "and";
+  const hidden = document.getElementById("fp-logic-value");
+  if (hidden) hidden.value = logicVal;
+  const label = document.querySelector(".fp-logic-label");
+  if (label)
+    label.textContent = cb?.checked
+      ? label.dataset.on || "or"
+      : label.dataset.off || "and";
+
+  // stamp text/date input values into attributes so innerHTML captures them
+  criteria
+    .querySelectorAll('input[type="text"], input[type="date"]')
+    .forEach((inp) => {
+      inp.setAttribute("value", inp.value);
+    });
+
+  // save select name→value explicitly
+  const selectValues = {};
+  criteria.querySelectorAll("select").forEach((sel) => {
+    if (sel.name) selectValues[sel.name] = sel.value;
+  });
+
+  localStorage.setItem(
+    "fp-filter-state",
+    JSON.stringify({
+      criteria: criteria.innerHTML,
+      logic: logicVal,
+      selectValues,
+    }),
+  );
+}
+
+function restoreFpFilterState() {
+  const raw = localStorage.getItem("fp-filter-state");
+  const criteria = document.getElementById("fp-filter-criteria");
+  if (!criteria) return;
+
+  if (raw) {
+    try {
+      const state = JSON.parse(raw);
+      const cb = document.getElementById("fp-logic-checkbox");
+      const hidden = document.getElementById("fp-logic-value");
+      const label = document.querySelector(".fp-logic-label");
+      if (state.criteria) {
+        criteria.innerHTML = state.criteria;
+        // use option.selected (not sel.value) to set the dirty flag,
+        // so later DOM manipulation of defaultSelected can't reset the value
+        if (state.selectValues) {
+          criteria.querySelectorAll("select").forEach((sel) => {
+            const saved = state.selectValues[sel.name];
+            if (saved !== undefined) {
+              Array.from(sel.options).forEach((opt) => {
+                opt.selected = opt.value === saved;
+              });
+            }
+          });
+        }
+        // defer htmx.process so select values are set before hx-get fires
+        setTimeout(() => htmx.process(criteria), 0);
+      }
+      if (state.logic === "or") {
+        if (cb) cb.checked = true;
+        if (hidden) hidden.value = "or";
+        if (label) label.textContent = label.dataset.on || "or";
+      }
+      return;
+    } catch (_) {}
+  }
+
+  // nothing saved — load one default criteria row with unique index
+  const idx = Date.now() % 1000000;
+  criteria.addEventListener("htmx:afterSwap", function saveOnce() {
+    criteria.removeEventListener("htmx:afterSwap", saveOnce);
+    saveFpFilterState();
+  });
+  htmx.ajax("GET", `/api/filters/criteria-row?row_index=${idx}`, {
+    target: criteria,
+    swap: "innerHTML",
+    headers: { Accept: "text/html" },
+  });
+}
+
+// save after criteria row removal
+document.addEventListener("click", function (e) {
+  const btn = e.target.closest(".filter-criteria-row .btn-danger");
+  if (!btn) return;
+  const container = document.getElementById("fp-filter-criteria");
+  if (!container) return;
+  setTimeout(saveFpFilterState, 0);
+});
+
+// save when user changes a select or input inside criteria rows
+document.addEventListener("change", function (e) {
+  const container = document.getElementById("fp-filter-criteria");
+  if (!container || !container.contains(e.target)) return;
+  saveFpFilterState();
+});
+document.addEventListener("input", function (e) {
+  const container = document.getElementById("fp-filter-criteria");
+  if (!container || !container.contains(e.target)) return;
+  saveFpFilterState();
+});
+
 function initDashboardEditButtons() {
   document
     .getElementById("flyout")
@@ -474,6 +581,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initFlyoutResize();
   initDashboardEditButtons();
   initBrowseInterceptor();
+  restoreFpFilterState();
 
   // restore saved browse mode (updates select + data-url before first lazyLoad)
   const savedMode = localStorage.getItem("rail-browse-mode");
