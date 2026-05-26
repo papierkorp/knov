@@ -29,11 +29,13 @@ function switchBrowseMode(mode) {
     tags: "/api/metadata/tags",
     folders: "/api/metadata/folders",
     collections: "/api/metadata/collections",
+    editor: "/api/metadata/editors",
   };
   const url = urls[mode];
   if (!url) return;
   el.dataset.url = url;
   el.dataset.loaded = "true";
+  localStorage.setItem("rail-browse-mode", mode);
   const search = document.getElementById("fp-browse-search");
   if (search) search.value = "";
   htmx.ajax("GET", url, {
@@ -388,8 +390,80 @@ function initFlyoutResize() {
   });
 }
 
+// ================================================================
+// browse panel: intercept metadata item clicks → load files inline
+// ================================================================
+function initBrowseInterceptor() {
+  const flyout = document.getElementById("flyout");
+  if (!flyout) return;
+
+  flyout.addEventListener("click", function (e) {
+    const link = e.target.closest('a[href*="/browse/"]');
+    if (!link) return;
+
+    const content = document.getElementById("fp-browse-content");
+    if (!content || !content.contains(link)) return;
+
+    const match = (link.getAttribute("href") || "").match(
+      /\/browse\/([^/]+)\/(.+)/,
+    );
+    if (!match) return;
+
+    e.preventDefault();
+    const metaType = match[1];
+    const value = decodeURIComponent(match[2]);
+    const url = `/api/files/browse?metadata=${metaType}&value=${encodeURIComponent(value)}`;
+
+    htmx.ajax("GET", url, {
+      target: content,
+      swap: "innerHTML",
+      headers: { Accept: "text/html" },
+    });
+    content.dataset.loaded = "true";
+
+    content.addEventListener("htmx:afterSwap", function addBack() {
+      content.removeEventListener("htmx:afterSwap", addBack);
+      const btn = document.createElement("button");
+      btn.className = "fp-browse-back";
+      btn.textContent =
+        "← " +
+        (document.getElementById("fp-browse-select")?.options[
+          document.getElementById("fp-browse-select")?.selectedIndex
+        ]?.text || "back");
+      btn.onclick = () =>
+        switchBrowseMode(
+          document.getElementById("fp-browse-select")?.value || "tags",
+        );
+      content.insertBefore(btn, content.firstChild);
+    });
+
+    const search = document.getElementById("fp-browse-search");
+    if (search) search.value = "";
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initFlyoutResize();
+  initBrowseInterceptor();
+
+  // restore saved browse mode (updates select + data-url before first lazyLoad)
+  const savedMode = localStorage.getItem("rail-browse-mode");
+  if (savedMode) {
+    const select = document.getElementById("fp-browse-select");
+    if (select) select.value = savedMode;
+    const urls = {
+      tree: "/api/files/tree",
+      browse: "/api/files/folder?path=&target=%23fp-browse-content",
+      overview: "/api/files/list",
+      tags: "/api/metadata/tags",
+      folders: "/api/metadata/folders",
+      collections: "/api/metadata/collections",
+      editor: "/api/metadata/editors",
+    };
+    const el = document.getElementById("fp-browse-content");
+    if (el && urls[savedMode]) el.dataset.url = urls[savedMode];
+  }
+
   const isFilePage = setupFilePage();
   if (!isFilePage) {
     const saved = localStorage.getItem("rail-panel");

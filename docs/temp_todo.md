@@ -1,11 +1,6 @@
 # small stuff
 
-- in the browse - save the last used selection
-- pack the rails theme into the binary for now?
 - add tags, parent and references to testfiles
-- /releasenotes route with new icon on the bottom of the rails theme
-- edit mode - metadata style (2 smaller inputs, 2 larger textboxes..)
-- references - edit button?
 - fix chat (new messages on top..) for both themes
 - filter for references and dashboards
 - include tags to search
@@ -27,6 +22,7 @@
 - make rebuild metadata concurrent e.g. each letter?
 - why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)
+- /releasenotes route with new icon on the bottom of the rails theme
 - edit table - cance/save => jump to correct position/context
 - actually use the cache
   - http://localhost:1324/browse/folders/systemadmin is running through all files

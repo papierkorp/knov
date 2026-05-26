@@ -239,6 +239,9 @@
   flex-wrap: wrap;
   gap: 4px;
   align-items: center;
+  overflow: hidden;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 #page-fileedit .metadata-form .tag-chip,

@@ -288,6 +288,23 @@
    browse panel controls + tree overview
    ============================================= */
 
+.fp-browse-back {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--primary);
+  font-size: 0.8em;
+  padding: 4px 0 6px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+.fp-browse-back:hover {
+  opacity: 0.75;
+}
+
 .fp-browse-controls {
   display: flex;
   flex-direction: column;

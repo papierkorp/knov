@@ -416,10 +416,19 @@ body[data-dark-mode="true"] .tooltip::after {
   cursor: text;
 }
 
+#page-fileedit .metadata-form .tag-chips,
+#page-filenew .metadata-form .tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
 #page-fileedit .metadata-form .tag-chip,
 #page-filenew .metadata-form .tag-chip {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   background: var(--primary);
   color: #fff;
   padding: 2px 6px;
@@ -446,7 +455,7 @@ body[data-dark-mode="true"] .tooltip::after {
   color: var(--text);
   font-size: 0.9rem;
   flex: 1;
-  min-width: 120px;
+  min-width: 60px;
 }
 
 /* save status */
