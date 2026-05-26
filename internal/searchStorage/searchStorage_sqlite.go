@@ -10,7 +10,7 @@ import (
 
 	"knov/internal/logging"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 // sqliteStorage implements SearchStorage interface using SQLite FTS5
@@ -40,7 +40,7 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 	}
 
 	// open database with explicit read-write mode
-	db, err := sql.Open("sqlite3", dbPath+"?mode=rwc")
+	db, err := sql.Open("sqlite", dbPath+"?mode=rwc")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open search database: %w", err)
 	}
