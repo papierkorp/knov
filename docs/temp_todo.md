@@ -1,6 +1,7 @@
 # small stuff
 
-- make show hidden files a env var (api_files.go)
+- rails theme - add a title search to tree, add a select to tree (same as metadata) with: show all tags, show all folders, show all collections, overview (list of all files plain), browse (the current version), treeoverview (tree folder of the data like with a folder and then indended the files/subfolders => i dont know if i have this feature yet)
+- pack the rails theme into the binary for now?
 - add tags, parent and references to testfiles
 - fix media detailview
 - /releasenotes route with new icon on the bottom of the rails theme

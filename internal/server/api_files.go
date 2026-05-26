@@ -85,7 +85,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 
 	for _, entry := range entries {
 		// skip hidden folders (dot-prefixed, e.g. .git)
-		if entry.IsDir() && strings.HasPrefix(entry.Name(), ".") {
+		if !configmanager.GetAppConfig().ShowHiddenFiles && strings.HasPrefix(entry.Name(), ".") {
 			continue
 		}
 		entryPath := filepath.Join(folderPath, entry.Name())

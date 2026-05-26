@@ -44,6 +44,7 @@ type AppConfig struct {
 	HideImage               bool
 	HideVideo               bool
 	HidePDF                 bool
+	ShowHiddenFiles         bool
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -89,6 +90,7 @@ func InitAppConfig() {
 		HideImage:           getBoolEnv("KNOV_HIDE_IMAGE", false),
 		HideVideo:           getBoolEnv("KNOV_HIDE_VIDEO", false),
 		HidePDF:             getBoolEnv("KNOV_HIDE_PDF", false),
+		ShowHiddenFiles:     getBoolEnv("KNOV_SHOW_HIDDEN_FILES", false),
 	}
 
 	initLogLevel()
