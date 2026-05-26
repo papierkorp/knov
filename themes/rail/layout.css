@@ -4,9 +4,17 @@
    full-height layout
    ============================================= */
 
-body { overflow: hidden; height: 100vh; }
+body {
+  overflow: hidden;
+  height: 100vh;
+}
 
-#wrapper { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+#wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
 
 #layout-rail {
   display: flex;
@@ -52,12 +60,17 @@ body { overflow: hidden; height: 100vh; }
   cursor: pointer;
   font-size: 0.88em;
   text-decoration: none;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   position: relative;
   flex-shrink: 0;
 }
 
-.rail-btn:hover { background: var(--bg); color: var(--primary); }
+.rail-btn:hover {
+  background: var(--bg);
+  color: var(--primary);
+}
 
 .rail-btn.active {
   color: var(--primary);
@@ -67,7 +80,9 @@ body { overflow: hidden; height: 100vh; }
 .rail-btn.active::before {
   content: "";
   position: absolute;
-  left: 0; top: 6px; bottom: 6px;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
   width: 3px;
   background: var(--primary);
   border-radius: 0 2px 2px 0;
@@ -79,23 +94,37 @@ body { overflow: hidden; height: 100vh; }
 }
 
 /* file context buttons — hidden until a file is open */
-.rail-btn-file { display: none; }
-body[data-has-file="true"] .rail-btn-file { display: flex; }
-body[data-has-file="true"] .rail-sep-file { display: block; }
-.rail-sep-file { display: none; }
-
-.rail-sep {
-  width: 26px; height: 1px;
-  background: var(--border); margin: 3px 0; flex-shrink: 0;
+.rail-btn-file {
+  display: none;
+}
+body[data-has-file="true"] .rail-btn-file {
+  display: flex;
+}
+body[data-has-file="true"] .rail-sep-file {
+  display: block;
+}
+.rail-sep-file {
+  display: none;
 }
 
-.rail-spacer { flex: 1; }
+.rail-sep {
+  width: 26px;
+  height: 1px;
+  background: var(--border);
+  margin: 3px 0;
+  flex-shrink: 0;
+}
+
+.rail-spacer {
+  flex: 1;
+}
 
 /* =============================================
    shared flyout
    ============================================= */
 
 #flyout {
+  --fw: 240px;
   flex-shrink: 0;
   width: 0;
   overflow: hidden;
@@ -104,25 +133,58 @@ body[data-has-file="true"] .rail-sep-file { display: block; }
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
-#flyout[data-active] { width: 240px; }
+#flyout[data-active] {
+  width: var(--fw);
+}
+
+.flyout-resizer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  z-index: 10;
+  transition: background 0.15s;
+}
+
+.flyout-resizer:hover,
+.flyout-resizer.dragging {
+  background: var(--primary);
+}
+
+#flyout[data-active] {
+  width: 240px;
+}
 
 /* =============================================
    responsive
    ============================================= */
 
 @media (max-width: 700px) {
-  #flyout[data-active] { width: 200px; }
-  .flyout-panel { width: 200px; }
+  #flyout[data-active] {
+    width: 200px;
+  }
+  .flyout-panel {
+    width: 100%;
+  }
 }
 
 /* suppress flyout transition during initial state restore */
-html.no-transition #flyout { transition: none !important; }
+html.no-transition #flyout {
+  transition: none !important;
+}
 
 /* pre-open flyout before JS runs if a panel was saved */
-html[data-init-panel] #flyout { width: 240px; }
+html[data-init-panel] #flyout {
+  width: var(--fw);
+}
 
 @media (max-width: 700px) {
-  html[data-init-panel] #flyout { width: 200px; }
+  html[data-init-panel] #flyout {
+    width: 200px;
+  }
 }

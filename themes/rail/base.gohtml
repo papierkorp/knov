@@ -60,6 +60,7 @@
          SHARED FLYOUT
          ================================================================ -->
     <div id="flyout">
+        <div class="flyout-resizer" id="flyout-resizer"></div>
 
         <!-- new -->
         <div class="flyout-panel" id="fp-new">
@@ -80,10 +81,10 @@
         <div class="flyout-panel" id="fp-browse">
             <div class="flyout-header">{{T "browse"}}</div>
             <div class="fp-browse-controls">
-                <input type="text" id="fp-browse-search" placeholder="{{T "search title..."}}"
+                <input type="text" id="fp-browse-search" placeholder="{{T "filter..."}}"
                        oninput="filterBrowseContent(this.value)"/>
                 <select id="fp-browse-select" onchange="switchBrowseMode(this.value)">
-                    <option value="tree">{{T "tree"}}</option>
+                    <option value="tree">{{T "tree overview"}}</option>
                     <option value="browse">{{T "browse"}}</option>
                     <option value="overview">{{T "overview"}}</option>
                     <option value="tags">{{T "tags"}}</option>

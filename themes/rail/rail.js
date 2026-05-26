@@ -345,9 +345,51 @@ document.addEventListener("htmx:afterSwap", function (e) {
 });
 
 // ================================================================
-// init
+// flyout drag resize
 // ================================================================
+function initFlyoutResize() {
+  const MIN_WIDTH = 180;
+  const STORAGE_KEY = "rail-flyout-width";
+  const flyout = document.getElementById("flyout");
+  const resizer = document.getElementById("flyout-resizer");
+  if (!flyout || !resizer) return;
+
+  // restore saved width
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) flyout.style.setProperty("--fw", saved + "px");
+
+  resizer.addEventListener("mousedown", (e) => {
+    const startX = e.clientX;
+    const startWidth = flyout.offsetWidth;
+    resizer.classList.add("dragging");
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    // disable transition while dragging for instant feedback
+    flyout.style.transition = "none";
+
+    function onMove(e) {
+      const w = Math.max(MIN_WIDTH, startWidth + (e.clientX - startX));
+      flyout.style.setProperty("--fw", w + "px");
+    }
+
+    function onUp() {
+      resizer.classList.remove("dragging");
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      flyout.style.transition = "";
+      localStorage.setItem(STORAGE_KEY, flyout.offsetWidth);
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    }
+
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+    e.preventDefault();
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  initFlyoutResize();
   const isFilePage = setupFilePage();
   if (!isFilePage) {
     const saved = localStorage.getItem("rail-panel");
