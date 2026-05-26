@@ -1,7 +1,7 @@
 # small stuff
 
+- add a smoketest todo file to testfiles
 - add tags, parent and references to testfiles
-- fix chat (new messages on top..) for both themes
 - filter for references and dashboards
 - include tags to search
 - edit file - run through all metadata files??

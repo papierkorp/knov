@@ -22,12 +22,11 @@ func RenderChatComponent(messages []chat.Message, total, offset int, filePath st
 	html.WriteString(fmt.Sprintf(`<div id="component-chat"%s>`, filePathAttr))
 
 	// history — newest on top, load-more at bottom for older messages
-	// history — oldest at top, newest at bottom
 	html.WriteString(`<div id="component-chat-history">`)
 	for _, m := range messages {
 		html.WriteString(renderMessage(m, short))
 	}
-	html.WriteString(renderLoadMoreButton(total, offset, len(messages), filePath))
+	html.WriteString(renderLoadMoreButton(total, offset, len(messages), filePath, short))
 	html.WriteString(`</div>`)
 
 	// input
@@ -44,9 +43,10 @@ func RenderChatComponent(messages []chat.Message, total, offset int, filePath st
 	<textarea id="chat-input" name="chat-input" class="chat-textarea" placeholder="%s"
 		hx-post="%s"
 		hx-target="#component-chat-history"
-		hx-swap="beforeend"
+		hx-swap="afterbegin"
 		hx-trigger="keydown[key=='Enter'&&!shiftKey]"
-		hx-on--htmx-after-request="this.value=''"></textarea>
+		onkeydown="if(event.key==='Enter'&&!event.shiftKey)event.preventDefault()"
+		hx-on--after-request="this.value=''"></textarea>
 </div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "type a message, enter to send"),
 		inputURL)
@@ -62,11 +62,11 @@ func RenderChatLoadMore(messages []chat.Message, total, offset int, filePath str
 	for _, m := range messages {
 		html.WriteString(renderMessage(m, short))
 	}
-	html.WriteString(renderLoadMoreButton(total, offset, len(messages), filePath))
+	html.WriteString(renderLoadMoreButton(total, offset, len(messages), filePath, short))
 	return html.String()
 }
 
-func renderLoadMoreButton(total, offset, count int, filePath string) string {
+func renderLoadMoreButton(total, offset, count int, filePath string, short bool) string {
 	older := total - offset - count
 	if older <= 0 {
 		return ""
@@ -74,6 +74,9 @@ func renderLoadMoreButton(total, offset, count int, filePath string) string {
 	loadMoreURL := fmt.Sprintf(`/api/chat/messages?offset=%d`, offset+count)
 	if filePath != "" {
 		loadMoreURL += fmt.Sprintf(`&file=%s`, filePath)
+	}
+	if short {
+		loadMoreURL += "&short=true"
 	}
 	return fmt.Sprintf(`<div class="chat-load-more" id="chat-load-more">
 	<button class="btn-secondary"

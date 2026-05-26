@@ -327,22 +327,21 @@ function setupFilePage() {
 }
 
 // ================================================================
-// chat scroll — keep history pinned to bottom on load and new messages
+// chat scroll — scroll to top on load and new messages (newest on top)
 // ================================================================
-function scrollChatToBottom() {
+function scrollChatToTop() {
   var h = document.getElementById("component-chat-history");
-  if (h) h.scrollTop = h.scrollHeight;
+  if (h) h.scrollTop = 0;
 }
 
 document.addEventListener("htmx:afterSwap", function (e) {
-  // scroll after initial load or new message swap into history
   var target = e.detail.target;
   if (!target) return;
   if (
     target.id === "component-chat-history" ||
     target.id === "fp-chat-content"
   ) {
-    scrollChatToBottom();
+    scrollChatToTop();
   }
 });
 
