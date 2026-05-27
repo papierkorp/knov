@@ -3,7 +3,6 @@
 - add a smoketest todo file to testfiles
 - add tags, parent and references to testfiles
 - include tags to search
-- edit file - run through all metadata files??
 - chat: select multiple + move/delete multiple
 - add a show file in editor button
 - todoeditor - code display instead of list display
@@ -49,17 +48,6 @@ if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err 
 	logging.LogDebug("references column already exists or migration skipped: %v", err)
 })
 
-# chat feature
-
-i want to add a new chat feature just like [files.md](https://github.com/zakirullin/files.md/tree/main/docs)
-
-- new route /api/chat
-  - /message_new
-  - /message_delete
-  - /message_move (so the message can be move into its own file or be appended to a existing file)
-- using a textbox
-- is used a like a chat - each message has its own line
-- is saved in a sqlite database (not the docs folder!) - where exactly? do i add a contentStorage sqlite?
 
 # concurrent
 

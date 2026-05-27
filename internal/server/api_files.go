@@ -138,38 +138,33 @@ func handleAPIGetFileTree(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Router /api/files/list [get]
 func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+
+	if format == "options" {
+		cachedFilePaths, err := files.GetAllFilePathsFromSystemData()
+		if err != nil {
+			logging.LogError("failed to get cached file paths: %v", err)
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
+			return
+		}
+		html := render.RenderFilesOptionsFromPaths(cachedFilePaths)
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprint(w, html)
+		return
+	}
+
 	allFiles, err := files.GetAllFiles()
 	if err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
 		return
 	}
 
-	// filter out hidden file types
 	allFiles = files.FilterFilesByHiddenTypes(allFiles)
-
-	format := r.URL.Query().Get("format")
-
-	if format == "options" {
-		cachedFilePaths, err := files.GetAllFilePathsFromSystemData()
-		if err != nil {
-			logging.LogError("failed to get cached file paths, fallback to live data: %v", err)
-			// fallback to live data
-			cachedFilePaths = make([]string, len(allFiles))
-			for i, file := range allFiles {
-				cachedFilePaths[i] = file.Path
-			}
-		}
-
-		html := render.RenderFilesOptionsFromPaths(cachedFilePaths)
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
-		return
-	}
 
 	if format == "datalist" {
 		html := render.RenderFilesDatalist(allFiles)
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
+		fmt.Fprint(w, html)
 		return
 	}
 
