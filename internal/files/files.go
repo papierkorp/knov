@@ -55,8 +55,7 @@ func pathsToFiles(paths []string, prefix string) []File {
 // ViewURL returns the correct browser URL for viewing this file
 func (f File) ViewURL() string {
 	if f.Metadata != nil && f.Metadata.Editor == EditorTypeFilter {
-		id := strings.TrimSuffix(pathutils.ToRelative(f.Path), ".filter")
-		return "/filters/" + id
+		return "/filters/" + pathutils.ToRelative(f.Path)
 	}
 	return "/files/" + pathutils.ToRelative(f.Path)
 }

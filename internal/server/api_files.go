@@ -260,21 +260,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check file extension and add appropriate extension if missing
-	if !strings.Contains(filePath, ".") {
-		switch files.EditorType(formEditor) {
-		case files.EditorTypeFilter:
-			filePath = filePath + ".filter"
-		case files.EditorTypeList:
-			filePath = filePath + ".list"
-		case files.EditorTypeTodo:
-			filePath = filePath + ".todo"
-		case files.EditorTypeIndex:
-			filePath = filePath + ".index"
-		default:
-			filePath = filePath + ".md"
-		}
-	}
+	filePath = filePath + configmanager.ExtensionForEditor(formEditor)
 
 	fullPath := pathutils.ToDocsPath(filePath)
 

@@ -1279,7 +1279,7 @@ paths:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Saves a list file for todo and journaling file types
+      description: Saves a list file for todo file types
       parameters:
       - description: file path
         in: formData

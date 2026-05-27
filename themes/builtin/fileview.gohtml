@@ -44,6 +44,10 @@
                         <span class="metadata-label">{{T "folders"}}:</span>
                         <span hx-get="/api/metadata/folders?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
                     </div>
+                    <div class="metadata-row">
+                        <span class="metadata-label">{{T "editor"}}:</span>
+                        <span hx-get="/api/metadata/editor?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+                    </div>
                 </div>
             </section>
             {{end}}

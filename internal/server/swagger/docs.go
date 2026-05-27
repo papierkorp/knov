@@ -1450,7 +1450,7 @@ const docTemplate = `{
         },
         "/api/editor/listeditor": {
             "post": {
-                "description": "Saves a list file for todo and journaling file types",
+                "description": "Saves a list file for todo file types",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],

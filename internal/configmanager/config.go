@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"knov/internal/logging"
+	"knov/internal/utils"
 
 	"github.com/go-git/go-git/v5"
 )
@@ -45,6 +46,9 @@ type AppConfig struct {
 	HideVideo               bool
 	HidePDF                 bool
 	ShowHiddenFiles         bool
+	UseExtensionTodo        bool
+	UseExtensionList        bool
+	UseExtensionIndex       bool
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -91,6 +95,9 @@ func InitAppConfig() {
 		HideVideo:           getBoolEnv("KNOV_HIDE_VIDEO", false),
 		HidePDF:             getBoolEnv("KNOV_HIDE_PDF", false),
 		ShowHiddenFiles:     getBoolEnv("KNOV_SHOW_HIDDEN_FILES", false),
+		UseExtensionTodo:    getBoolEnv("KNOV_USE_EXTENSION_TODO", false),
+		UseExtensionList:    getBoolEnv("KNOV_USE_EXTENSION_LIST", false),
+		UseExtensionIndex:   getBoolEnv("KNOV_USE_EXTENSION_INDEX", false),
 	}
 
 	initLogLevel()
@@ -293,4 +300,17 @@ func loadEnvFile() {
 	}
 
 	logging.LogInfo(".env file loaded")
+}
+
+func ExtensionForEditor(editorType string) string {
+	switch editorType {
+	case "todo":
+		return utils.Ternary(appConfig.UseExtensionTodo, ".todo", ".md")
+	case "list":
+		return utils.Ternary(appConfig.UseExtensionList, ".list", ".md")
+	case "index":
+		return utils.Ternary(appConfig.UseExtensionIndex, ".index", ".md")
+	default:
+		return ".md"
+	}
 }

@@ -185,7 +185,6 @@ This file tests unique basic fundamental features.
 ## Features
 - Unique basic functionality
 - Fundamental concepts
-- Journaling type
 
 ## Tags
 - unique-basic
@@ -196,7 +195,6 @@ This file tests unique basic fundamental features.
 basic-filter-testing
 
 ## Metadata
-- Type: journaling
 - Status: draft
 - Priority: high
 - Boards: basic-board, testing-board
@@ -325,7 +323,6 @@ This file tests unique scalability features.
 ## Features
 - Unique performance testing
 - Scalability testing
-- Journaling type
 
 ## Tags
 - unique-performance
@@ -336,7 +333,6 @@ This file tests unique scalability features.
 performance-filter-testing
 
 ## Metadata
-- Type: journaling
 - Status: published
 - Priority: low
 - Boards: performance-board

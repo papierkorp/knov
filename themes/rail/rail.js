@@ -297,6 +297,7 @@ function setupFilePage() {
     "fp-links-to": "/api/links/used?filepath=" + fp,
     "fp-links-from": "/api/links/linkstohere?filepath=" + fp,
     "fp-related": "/api/links/related?filepath=" + fp,
+    "fp-meta-editor": "/api/metadata/editor?filepath=" + fp,
   };
 
   for (const [id, url] of Object.entries(htmxFields)) {

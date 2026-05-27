@@ -230,7 +230,7 @@ func handleAPIFilterDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	virtualPath := pathutils.ToWithPrefix(filterID + ".filter")
+	virtualPath := pathutils.ToWithPrefix(filterID)
 	if err := files.MetaDataDelete(virtualPath); err != nil {
 		logging.LogWarning("failed to delete filter metadata %s: %v", virtualPath, err)
 	}

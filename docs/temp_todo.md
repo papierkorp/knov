@@ -20,7 +20,6 @@
 - codeblocks - copy button
 - codeblocks setting - wrap content
 - .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
-- make certain settings required in thememanager
 - Dashboard
   - make the positions work with a custom layout work
   - Add widget drag & drop reordering

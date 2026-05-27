@@ -59,7 +59,7 @@ func RenderListEditor(filepath string, initialItem ...string) string {
 	if isEdit {
 		filepathInputHTML = fmt.Sprintf(`<input type="text" name="filepath" value="%s" readonly required class="form-input" />`, filepath)
 	} else {
-		datalistInput := GenerateDatalistInput("filepath-input", "filepath", "", translation.SprintfForRequest(lang, "path/to/file.list"), "/api/files/folder-suggestions")
+		datalistInput := GenerateDatalistInput("filepath-input", "filepath", "", translation.SprintfForRequest(lang, "path/to/file.md"), "/api/files/folder-suggestions")
 		filepathInputHTML = strings.Replace(datalistInput, `class="form-input"`, `class="form-input" required`, 1)
 	}
 

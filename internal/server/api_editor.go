@@ -175,8 +175,8 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// ensure .index or .moc extension (but not both)
-	if !strings.HasSuffix(filezpath, ".index") && !strings.HasSuffix(filezpath, ".moc") {
-		filezpath = filezpath + ".index"
+	if filepath.Ext(filezpath) == "" {
+		filezpath = filezpath + configmanager.ExtensionForEditor("index")
 	}
 
 	// convert to full path
@@ -230,10 +230,9 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// create/update metadata with filetype "moc" and collection based on filename
+	// create/update metadata with filetype ".index" and collection based on filename
 	collectionName := filezpath
-	collectionName = strings.TrimSuffix(collectionName, ".index")
-	collectionName = strings.TrimSuffix(collectionName, ".moc")
+	collectionName = strings.TrimSuffix(collectionName, filepath.Ext(collectionName))
 
 	metadata := &files.Metadata{
 		Path:       filepath.Join("docs", filezpath),
@@ -317,7 +316,7 @@ func handleAPISaveFilterEditor(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Save list editor
-// @Description Saves a list file for todo and journaling file types
+// @Description Saves a list file for todo file types
 // @Tags editor
 // @Accept x-www-form-urlencoded
 // @Param filepath formData string true "file path"
@@ -339,8 +338,8 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 
 	// ensure .list extension
-	if !strings.HasSuffix(filePath, ".list") {
-		filePath = filePath + ".list"
+	if filepath.Ext(filePath) == "" {
+		filePath = filePath + configmanager.ExtensionForEditor("list")
 	}
 
 	// parse JSON content from frontend
@@ -435,8 +434,8 @@ func handleAPISaveTodoEditor(w http.ResponseWriter, r *http.Request) {
 	content := r.FormValue("content")
 
 	// ensure .todo extension
-	if !strings.HasSuffix(filePath, ".todo") {
-		filePath = filePath + ".todo"
+	if filepath.Ext(filePath) == "" {
+		filePath = filePath + configmanager.ExtensionForEditor("todo")
 	}
 
 	// parse JSON content from frontend

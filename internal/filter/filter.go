@@ -14,6 +14,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
+	"knov/internal/utils"
 )
 
 // Criteria represents a single filter condition
@@ -302,13 +303,13 @@ func ValidateConfig(config *Config) error {
 	validActions := GetActions()
 
 	for _, criteria := range config.Criteria {
-		if !contains(validFields, criteria.Metadata) {
+		if !utils.Contains(validFields, criteria.Metadata) {
 			return fmt.Errorf("invalid metadata field: %s", criteria.Metadata)
 		}
-		if !contains(validOperators, criteria.Operator) {
+		if !utils.Contains(validOperators, criteria.Operator) {
 			return fmt.Errorf("invalid operator: %s", criteria.Operator)
 		}
-		if !contains(validActions, criteria.Action) {
+		if !utils.Contains(validActions, criteria.Action) {
 			return fmt.Errorf("invalid action: %s", criteria.Action)
 		}
 	}
@@ -316,18 +317,9 @@ func ValidateConfig(config *Config) error {
 	return nil
 }
 
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}
-
 // filterKey returns the configStorage key for a filter ID
 func filterKey(id string) string {
-	return "filter/" + strings.TrimSuffix(id, ".filter")
+	return "filter/" + id
 }
 
 // SaveFilterConfig validates and saves a filter configuration to configStorage
@@ -346,9 +338,8 @@ func SaveFilterConfig(config *Config, filterID string) error {
 	}
 
 	// keep a metadata record so the filter appears as file type "filter"
-	virtualPath := strings.TrimSuffix(filterID, ".filter") + ".filter"
 	metadata := &files.Metadata{
-		Path:   pathutils.ToWithPrefix(virtualPath),
+		Path:   pathutils.ToWithPrefix(filterID),
 		Editor: files.EditorTypeFilter,
 	}
 	if err := files.MetaDataSaveRaw(metadata); err != nil {
