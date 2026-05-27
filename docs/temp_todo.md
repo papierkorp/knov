@@ -1,23 +1,15 @@
 # small stuff
 
+**manual**
 - add a smoketest todo file to testfiles
 - add tags, parent and references to testfiles
+- create filter manually not per ai..
+
+**per ai**
 - include tags to search
 - chat: select multiple + move/delete multiple
 - add a show file in editor button
-- todoeditor - code display instead of list display
 - media.go - determine filetype for metadata
-- new theme like files.md with 2 sidebars on the left side
-  - on the far left the site sidebar:
-    - with site actions on top e.g. a button for each kind of editor, home, help, search, settings, admin with a button for each
-    - with a search input (and a switch on the right side of the search input: search everything, search title only)
-    - with a chat input which adds directly to the chat without opening the chat path
-    - with a select field for what is displayed in the sidebar: overview, browse, media, latest changes
-  - on the right side of the site sidebar is a page/file sidebar
-    - with file actions on top e.g. edit, history, rename, references, rebuild metadata, delete as buttons
-    - with a select field for what is displayed in the sidebar: metadata, references, toc, file history
-- overview: show folder tree instead of everything in a single level
-- make rebuild metadata concurrent e.g. each letter?
 - why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)
 - /releasenotes route with new icon on the bottom of the rails theme
@@ -39,7 +31,6 @@
   - use Query() instead of a loop through files.GetAllFiles()
   - use Query in filter.go
   - Refactor filter.go to use query
-- create filter manually not per ai..
 - migration solution
 metadataStorage_sqlite - migration
 // migrate: add references column if missing
@@ -50,6 +41,9 @@ if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err 
 
 
 # concurrent
+
+- make rebuild metadata concurrent e.g. each letter?
+
 
 dont give me any code yet - what options do i ave to make the rebuild metadata concurrent?
 at the moment im running through ALL files mutliple times (e.g. with MetaDataPurgeStale, MetaDataPurgeDuplicates, linksrebuild..)May 13Claude responded: Looking at the current flow, you have roughly:Weighed concurrent metadata rebuild strategies to eliminate redundant file iterationsWeighed concurrent metadata rebuild strategies to eliminate redundant file iterationsLooking at the current flow, you have roughly:

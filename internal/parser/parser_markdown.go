@@ -25,7 +25,7 @@ func NewMarkdownHandler() *MarkdownHandler {
 
 func (h *MarkdownHandler) CanHandle(filename string) bool {
 	ext := strings.ToLower(filepath.Ext(filename))
-	return ext == ".md" || ext == ".markdown" || ext == ".index" || ext == ".moc" || ext == ".list"
+	return ext == ".md" || ext == ".markdown" || ext == ".index" || ext == ".moc" || ext == ".list" || ext == ".todo"
 }
 
 func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
