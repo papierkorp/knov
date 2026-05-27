@@ -7,8 +7,6 @@
 - Make
 - Swag CLI: `go install github.com/swaggo/swag/cmd/swag@latest`
 - gotext: `go install golang.org/x/text/cmd/gotext@latest`
-- MinGW-w64 (for Windows cross-compilation): `sudo apt-get install mingw-w64` (Linux) or `brew install mingw-w64` (macOS)
-
 
 ## Quick Start
 

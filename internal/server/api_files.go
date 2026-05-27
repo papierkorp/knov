@@ -260,7 +260,9 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePath = filePath + configmanager.ExtensionForEditor(formEditor)
+	if filepath.Ext(filePath) == "" {
+		filePath = filePath + configmanager.ExtensionForEditor(formEditor)
+	}
 
 	fullPath := pathutils.ToDocsPath(filePath)
 
