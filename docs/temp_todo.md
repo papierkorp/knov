@@ -2,7 +2,6 @@
 
 - add a smoketest todo file to testfiles
 - add tags, parent and references to testfiles
-- filter for references and dashboards
 - include tags to search
 - edit file - run through all metadata files??
 - chat: select multiple + move/delete multiple

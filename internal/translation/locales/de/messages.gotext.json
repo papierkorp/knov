@@ -102,8 +102,18 @@
       "translation": ""
     },
     {
+      "id": "and / or",
+      "message": "and / or",
+      "translation": ""
+    },
+    {
       "id": "append",
       "message": "append",
+      "translation": ""
+    },
+    {
+      "id": "apply",
+      "message": "apply",
       "translation": ""
     },
     {
@@ -1092,6 +1102,16 @@
       "translation": ""
     },
     {
+      "id": "filter",
+      "message": "filter",
+      "translation": ""
+    },
+    {
+      "id": "filter...",
+      "message": "filter...",
+      "translation": ""
+    },
+    {
       "id": "Filter",
       "message": "Filter",
       "translation": ""
@@ -1877,6 +1897,11 @@
       "translation": ""
     },
     {
+      "id": "new dashboard",
+      "message": "new dashboard",
+      "translation": ""
+    },
+    {
       "id": "new file path",
       "message": "new file path",
       "translation": ""
@@ -2272,11 +2297,6 @@
       "translation": ""
     },
     {
-      "id": "root",
-      "message": "root",
-      "translation": ""
-    },
-    {
       "id": "Rounded border",
       "message": "Rounded border",
       "translation": ""
@@ -2370,11 +2390,6 @@
       "id": "Search Results",
       "message": "Search Results",
       "translation": "Suchergebnisse"
-    },
-    {
-      "id": "search title...",
-      "message": "search title...",
-      "translation": ""
     },
     {
       "id": "section",

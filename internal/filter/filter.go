@@ -198,6 +198,13 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 			}
 		}
 		return false
+	case "references":
+		for _, ref := range metadata.References {
+			if matchesOperator(ref.URL, criterion.Operator, criterion.Value) {
+				return true
+			}
+		}
+		return false
 	default:
 		return false
 	}
@@ -266,6 +273,7 @@ func GetMetadataFields() []string {
 		"child-of",
 		"parent-of",
 		"ancestor-of",
+		"references",
 	}
 }
 
