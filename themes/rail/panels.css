@@ -347,7 +347,6 @@
 }
 
 .fp-tree-dir {
-  font-size: 0.78em;
   color: var(--text-secondary);
   display: block;
   padding: 1px 0;
@@ -360,7 +359,6 @@
 }
 
 .fp-tree-file {
-  font-size: 0.8em;
   color: var(--text);
   text-decoration: none;
   display: block;

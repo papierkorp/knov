@@ -29,6 +29,7 @@ function switchBrowseMode(mode) {
     tags: "/api/metadata/tags",
     folders: "/api/metadata/folders",
     collections: "/api/metadata/collections",
+    dashboards: "/api/dashboards",
     editor: "/api/metadata/editors",
   };
   const url = urls[mode];
@@ -38,11 +39,15 @@ function switchBrowseMode(mode) {
   localStorage.setItem("rail-browse-mode", mode);
   const search = document.getElementById("fp-browse-search");
   if (search) search.value = "";
-  htmx.ajax("GET", url, {
-    target: el,
-    swap: "innerHTML",
-    headers: { Accept: "text/html" },
-  });
+  htmx
+    .ajax("GET", url, {
+      target: el,
+      swap: "innerHTML",
+      headers: { Accept: "text/html" },
+    })
+    .then(() => {
+      if (mode === "dashboards") initDashboardEditButtons(el);
+    });
 }
 
 function filterBrowseContent(query) {
@@ -211,7 +216,6 @@ function setupFilePage() {
       "fp-meta-tags": "/api/metadata/tags?filepath=" + fp,
       "fp-meta-collection": "/api/metadata/collection?filepath=" + fp,
       "fp-meta-folders": "/api/metadata/folders?filepath=" + fp,
-      "fp-meta-editor": "/api/metadata/editor?filepath=" + fp,
     };
     for (const [id, url] of Object.entries(editFields)) {
       const el = document.getElementById(id);
@@ -501,33 +505,46 @@ document.addEventListener("input", function (e) {
   saveFpFilterState();
 });
 
-function initDashboardEditButtons() {
+function initDashboardEditButtons(container) {
+  // if called with a container, decorate it immediately (e.g. from switchBrowseMode)
+  if (container) {
+    decorateDashboardLinks(container);
+    return;
+  }
+  // listen for any htmx swap inside the flyout and decorate when appropriate
   document
     .getElementById("flyout")
     ?.addEventListener("htmx:afterSwap", function (e) {
-      if (e.detail.target.id !== "fp-dashboards-content") return;
-      e.detail.target
-        .querySelectorAll('a[href^="/dashboard/"]')
-        .forEach((link) => {
-          const match = link
-            .getAttribute("href")
-            .match(/^\/dashboard\/([^/]+)$/);
-          if (!match || link.closest(".fp-dash-row")) return;
-          const id = match[1];
-          const row = document.createElement("div");
-          row.className = "fp-dash-row";
-          link.replaceWith(row);
-          link.className = "fp-dash-name";
-          link.title = link.textContent;
-          row.appendChild(link);
-          const edit = document.createElement("a");
-          edit.href = `/dashboard/edit/${id}`;
-          edit.className = "fp-dash-edit";
-          edit.title = "edit";
-          edit.innerHTML = '<i class="fa fa-pen"></i>';
-          row.appendChild(edit);
-        });
+      const id = e.detail.target.id;
+      if (id === "fp-dashboards-content") {
+        // legacy standalone panel (kept for safety)
+        decorateDashboardLinks(e.detail.target);
+      } else if (id === "fp-browse-content") {
+        // browse panel — only decorate when dashboards mode is active
+        const mode = document.getElementById("fp-browse-select")?.value;
+        if (mode === "dashboards") decorateDashboardLinks(e.detail.target);
+      }
     });
+}
+
+function decorateDashboardLinks(container) {
+  container.querySelectorAll('a[href^="/dashboard/"]').forEach((link) => {
+    const match = link.getAttribute("href").match(/^\/dashboard\/([^/]+)$/);
+    if (!match || link.closest(".fp-dash-row")) return;
+    const id = match[1];
+    const row = document.createElement("div");
+    row.className = "fp-dash-row";
+    link.replaceWith(row);
+    link.className = "fp-dash-name";
+    link.title = link.textContent;
+    row.appendChild(link);
+    const edit = document.createElement("a");
+    edit.href = `/dashboard/edit/${id}`;
+    edit.className = "fp-dash-edit";
+    edit.title = "edit";
+    edit.innerHTML = '<i class="fa fa-pen"></i>';
+    row.appendChild(edit);
+  });
 }
 
 function initBrowseInterceptor() {
@@ -597,6 +614,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tags: "/api/metadata/tags",
       folders: "/api/metadata/folders",
       collections: "/api/metadata/collections",
+      dashboards: "/api/dashboards",
       editor: "/api/metadata/editors",
     };
     const el = document.getElementById("fp-browse-content");

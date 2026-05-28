@@ -8,6 +8,7 @@
 **per ai**
 - fileview => run through getAllFiles  http://localhost:1324/files/ai.md
 - rail theme: i dont like the hover buttons for the chat
+- rail theme: style for http://localhost:1324/dashboard/edit
 - chat: select multiple + move/delete multiple
 - codeblocks - copy button
 - codeblocks setting - wrap content

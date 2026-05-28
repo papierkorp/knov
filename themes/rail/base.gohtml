@@ -43,7 +43,6 @@
         <!-- site panels -->
         <button class="rail-btn" onclick="togglePanel('fp-new')"        id="rb-new"        title="{{T "new"}}"><i class="fa fa-plus"></i></button>
         <button class="rail-btn" onclick="togglePanel('fp-browse')"     id="rb-browse"     title="{{T "browse"}}"><i class="fa fa-folder-tree"></i></button>
-        <button class="rail-btn" onclick="togglePanel('fp-dashboards')" id="rb-dashboards" title="{{T "dashboards"}}"><i class="fa fa-table-cells-large"></i></button>
         <button class="rail-btn" onclick="togglePanel('fp-search')"     id="rb-search"     title="{{T "search"}}"><i class="fa fa-magnifying-glass"></i></button>
         <button class="rail-btn" onclick="togglePanel('fp-filter')"     id="rb-filter"     title="{{T "filter"}}"><i class="fa fa-filter"></i></button>
         <button class="rail-btn" onclick="togglePanel('fp-media')"      id="rb-media"      title="{{T "media"}}"><i class="fa fa-photo-film"></i></button>
@@ -91,23 +90,12 @@
                     <option value="tags">{{T "tags"}}</option>
                     <option value="folders">{{T "folders"}}</option>
                     <option value="collections">{{T "collections"}}</option>
+                    <option value="dashboards">{{T "dashboards"}}</option>
                     <option value="editor">{{T "editor"}}</option>
                 </select>
             </div>
             <div class="flyout-content" id="fp-browse-content"
                  data-url="/api/files/tree" data-loaded="false">
-                <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
-            </div>
-        </div>
-
-        <!-- dashboards -->
-        <div class="flyout-panel" id="fp-dashboards">
-            <div class="flyout-header">
-                {{T "dashboards"}}
-                <a href="/dashboard/new" class="flyout-header-link" title="{{T "new dashboard"}}"><i class="fa fa-plus"></i></a>
-            </div>
-            <div class="flyout-content" id="fp-dashboards-content"
-                 data-url="/api/dashboards" data-loaded="false">
                 <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
             </div>
         </div>
