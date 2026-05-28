@@ -74,6 +74,7 @@ func (ss *sqliteStorage) initialize() error {
 		kids TEXT,
 		used_links TEXT,
 		links_to_here TEXT,
+		related TEXT,
 		editor TEXT,
 		size INTEGER,
 		"references" TEXT
@@ -88,6 +89,9 @@ func (ss *sqliteStorage) initialize() error {
 		return fmt.Errorf("failed to initialize metadata tables: %w", err)
 	}
 
+	// migrate existing databases: add related column if absent (error is ignored if already exists)
+	_, _ = ss.db.Exec(`ALTER TABLE metadata ADD COLUMN related TEXT`)
+
 	logging.LogDebug("metadata sqlite tables initialized")
 	return nil
 }
@@ -99,7 +103,7 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 
 	query := `
 	SELECT title, created_at, last_edited, collection,
-	       folders, tags, ancestor, parents, kids, used_links, links_to_here,
+	       folders, tags, ancestor, parents, kids, used_links, links_to_here, related,
 	       editor, size, COALESCE("references", '') as "references"
 	FROM metadata WHERE path = ?
 	`
@@ -116,6 +120,7 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		Kids        string
 		UsedLinks   string
 		LinksToHere string
+		Related     string
 		Editor      string
 		Size        int64
 		References  string
@@ -124,8 +129,8 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	err := ss.db.QueryRow(query, key).Scan(
 		&meta.Title, &meta.CreatedAt, &meta.LastEdited,
 		&meta.Collection, &meta.Folders, &meta.Tags, &meta.Ancestor,
-		&meta.Parents, &meta.Kids, &meta.UsedLinks, &meta.LinksToHere, &meta.Editor,
-		&meta.Size, &meta.References,
+		&meta.Parents, &meta.Kids, &meta.UsedLinks, &meta.LinksToHere, &meta.Related,
+		&meta.Editor, &meta.Size, &meta.References,
 	)
 
 	if err == sql.ErrNoRows {
@@ -193,6 +198,12 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		var linksToHere []string
 		if err := json.Unmarshal([]byte(meta.LinksToHere), &linksToHere); err == nil {
 			result["linksToHere"] = linksToHere
+		}
+	}
+	if meta.Related != "" {
+		var related []string
+		if err := json.Unmarshal([]byte(meta.Related), &related); err == nil {
+			result["related"] = related
 		}
 	}
 
@@ -279,9 +290,9 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 	query := `
 	INSERT OR REPLACE INTO metadata (
 		path, title, created_at, last_edited, collection,
-		folders, tags, ancestor, parents, kids, used_links, links_to_here,
+		folders, tags, ancestor, parents, kids, used_links, links_to_here, related,
 		editor, size, "references"
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	_, err := ss.db.Exec(query,
@@ -297,6 +308,7 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 		marshalArray("kids"),
 		marshalArray("usedLinks"),
 		marshalArray("linksToHere"),
+		marshalArray("related"),
 		getString("editor"),
 		size,
 		referencesJSON,

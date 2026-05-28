@@ -4755,6 +4755,13 @@ const docTemplate = `{
                         "$ref": "#/definitions/files.Reference"
                     }
                 },
+                "related": {
+                    "description": "auto - pre-computed by rebuild",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "size": {
                     "description": "auto",
                     "type": "integer"

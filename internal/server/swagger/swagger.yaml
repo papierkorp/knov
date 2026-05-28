@@ -186,6 +186,11 @@ definitions:
         items:
           $ref: '#/definitions/files.Reference'
         type: array
+      related:
+        description: auto - pre-computed by rebuild
+        items:
+          type: string
+        type: array
       size:
         description: auto
         type: integer

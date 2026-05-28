@@ -133,6 +133,19 @@ func MetaDataLinksRebuild() error {
 		}
 	}
 
+	// third pass: compute related files from cache — no I/O
+	for _, rawPath := range paths {
+		normalizedPath := pathutils.ToWithPrefix(rawPath)
+		metadata := metaCache[normalizedPath]
+		if metadata == nil {
+			continue
+		}
+		metadata.Related = computeRelated(metadata, metaCache, 5)
+		if err := MetaDataSaveRaw(metadata); err != nil {
+			logging.LogWarning("failed to save related for %s: %v", normalizedPath, err)
+		}
+	}
+
 	// apply media LinksToHere from the same reverse map
 	mediaCount := 0
 	for _, file := range allMediaFiles {
@@ -186,6 +199,7 @@ func MetaDataLinksRebuildForFile(filePath string) error {
 	}
 
 	updateKidsAndLinksToHere(metadata)
+	metadata.Related = computeRelated(metadata, nil, 5)
 
 	if err := MetaDataSaveRaw(metadata); err != nil {
 		return err
@@ -678,6 +692,91 @@ func UpdateLinksForSingleFile(filePath string) error {
 
 	logging.LogInfo("updated links for file %s: %d outbound links", filePath, len(metadata.UsedLinks))
 	return nil
+}
+
+// computeRelated scores candidate files by shared link co-occurrence with target.
+// cache may be nil, in which case it falls back to MetaDataGet for each file.
+func computeRelated(target *Metadata, cache map[string]*Metadata, limit int) []string {
+	neighbors := make(map[string]struct{}, len(target.UsedLinks)+len(target.LinksToHere))
+	for _, l := range target.UsedLinks {
+		neighbors[l] = struct{}{}
+	}
+	for _, l := range target.LinksToHere {
+		neighbors[l] = struct{}{}
+	}
+	if len(neighbors) == 0 {
+		return []string{}
+	}
+
+	scores := make(map[string]int)
+	if cache != nil {
+		for path, other := range cache {
+			if path == target.Path {
+				continue
+			}
+			score := 0
+			for _, l := range other.UsedLinks {
+				if _, ok := neighbors[l]; ok {
+					score++
+				}
+			}
+			for _, l := range other.LinksToHere {
+				if _, ok := neighbors[l]; ok {
+					score++
+				}
+			}
+			if score > 0 {
+				scores[path] = score
+			}
+		}
+	} else {
+		allFiles, err := GetAllPhysicalFiles()
+		if err != nil {
+			return []string{}
+		}
+		for _, f := range allFiles {
+			if f.Path == target.Path {
+				continue
+			}
+			other, err := MetaDataGet(f.Path)
+			if err != nil || other == nil {
+				continue
+			}
+			score := 0
+			for _, l := range other.UsedLinks {
+				if _, ok := neighbors[l]; ok {
+					score++
+				}
+			}
+			for _, l := range other.LinksToHere {
+				if _, ok := neighbors[l]; ok {
+					score++
+				}
+			}
+			if score > 0 {
+				scores[f.Path] = score
+			}
+		}
+	}
+
+	type scored struct {
+		path  string
+		score int
+	}
+	ranked := make([]scored, 0, len(scores))
+	for path, score := range scores {
+		ranked = append(ranked, scored{path, score})
+	}
+	slices.SortFunc(ranked, func(a, b scored) int { return b.score - a.score })
+
+	result := make([]string, 0, limit)
+	for i, r := range ranked {
+		if i >= limit {
+			break
+		}
+		result = append(result, r.path)
+	}
+	return result
 }
 
 // StartMetaGetCounter activates MetaDataGet call counting.

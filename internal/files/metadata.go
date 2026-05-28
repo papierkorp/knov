@@ -78,6 +78,7 @@ type Metadata struct {
 	Kids        []string    `json:"kids"`                 // auto
 	UsedLinks   []string    `json:"usedLinks"`            // auto
 	LinksToHere []string    `json:"linksToHere"`          // auto
+	Related     []string    `json:"related,omitempty"`    // auto - pre-computed by rebuild
 	Editor      EditorType  `json:"editor"`               // manual - with add new
 	Size        int64       `json:"size"`                 // auto
 	References  []Reference `json:"references,omitempty"` // manual
