@@ -211,6 +211,7 @@ function setupFilePage() {
       "fp-meta-tags": "/api/metadata/tags?filepath=" + fp,
       "fp-meta-collection": "/api/metadata/collection?filepath=" + fp,
       "fp-meta-folders": "/api/metadata/folders?filepath=" + fp,
+      "fp-meta-editor": "/api/metadata/editor?filepath=" + fp,
     };
     for (const [id, url] of Object.entries(editFields)) {
       const el = document.getElementById(id);

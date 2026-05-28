@@ -6,12 +6,12 @@
 - create filter manually not per ai..
 
 **per ai**
-- chat: select multiple + move/delete multiple
-- editor metadata is not shown in edit mode in rail theme slideout
 - why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)
 - http://localhost:1324/browse/folders/systemadmin is running through all files
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)
 - edit table - cance/save => jump to correct position/context
+- rail theme: i dont like the hover buttons
+- chat: select multiple + move/delete multiple
 - codeblocks - copy button
 - codeblocks setting - wrap content
 - .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
