@@ -152,16 +152,18 @@ func RenderTableHTML(data *types.TableData, filepath string, tableIndex, page, s
 	if sortCol >= 0 {
 		baseParams += fmt.Sprintf("&sort=%d&order=%s", sortCol, sortOrder)
 	}
-	searchInclude := fmt.Sprintf("#%s .table-search", targetID)
+	searchInclude := fmt.Sprintf("#table-search-%d", tableIndex)
 
 	ts := configmanager.GetTableSettings()
 
 	html += fmt.Sprintf(`<div id="%s" class="table-container">`, targetID)
 
 	if ts.ShowSearch {
+		searchInputID := fmt.Sprintf("table-search-%d", tableIndex)
 		html += `<div class="table-controls">`
 		html += fmt.Sprintf(`
 			<input type="text"
+			       id="%s"
 			       class="table-search"
 			       placeholder="Search table..."
 			       value="%s"
@@ -170,9 +172,11 @@ func RenderTableHTML(data *types.TableData, filepath string, tableIndex, page, s
 			       hx-target="#%s"
 			       hx-swap="outerHTML"
 			       hx-include="this"
+			       hx-preserve
 			       name="search">
-		`, searchQuery, baseParams, targetID)
+		`, searchInputID, searchQuery, baseParams, targetID)
 		// note: hx-include="this" sends name="search" — baseParams has no search param
+		// hx-preserve keeps the existing DOM node on swap so focus/cursor are not lost
 		html += `</div>`
 	}
 
