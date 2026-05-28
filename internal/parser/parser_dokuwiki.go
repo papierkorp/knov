@@ -70,7 +70,9 @@ func (h *DokuwikiHandler) Name() string {
 // ConvertToMarkdown converts DokuWiki syntax to Markdown using unified processing
 func (h *DokuwikiHandler) ConvertToMarkdown(content string) string {
 	content, escapes := h.extractEscapes(content)
+	content, rawBlocks := h.extractRawCodeBlocks(content)
 	content = h.stripLeadingSpaces(content)
+	content = h.restoreRawCodeBlocks(content, rawBlocks)
 	content = h.handleComplexStructures(content)
 	content = h.processDokuWikiSyntax(content, "markdown")
 	content = h.restoreEscapes(content, escapes, "markdown")
@@ -80,11 +82,34 @@ func (h *DokuwikiHandler) ConvertToMarkdown(content string) string {
 // ConvertToHTML converts DokuWiki syntax to HTML using unified processing
 func (h *DokuwikiHandler) ConvertToHTML(content string) string {
 	content, escapes := h.extractEscapes(content)
+	content, rawBlocks := h.extractRawCodeBlocks(content)
 	content = h.stripLeadingSpaces(content)
+	content = h.restoreRawCodeBlocks(content, rawBlocks)
 	content = h.handleComplexStructures(content)
 	content = h.processDokuWikiSyntax(content, "html")
 	content = h.addParagraphTags(content)
 	content = h.restoreEscapes(content, escapes, "html")
+	return content
+}
+
+// extractRawCodeBlocks replaces raw <code>/<file>/<sxh>/<codify> tags with placeholders
+// so their indented content is not touched by stripLeadingSpaces.
+func (h *DokuwikiHandler) extractRawCodeBlocks(content string) (string, []string) {
+	var blocks []string
+	re := regexp.MustCompile(`(?s)<(?:code|file|sxh|codify)(?:\s[^>]*)?>.*?</(?:code|file|sxh|codify)>`)
+	result := re.ReplaceAllStringFunc(content, func(match string) string {
+		placeholder := fmt.Sprintf("\x00RAW%d\x00", len(blocks))
+		blocks = append(blocks, match)
+		return placeholder
+	})
+	return result, blocks
+}
+
+// restoreRawCodeBlocks replaces placeholders back with the original tag content.
+func (h *DokuwikiHandler) restoreRawCodeBlocks(content string, blocks []string) string {
+	for i, block := range blocks {
+		content = strings.ReplaceAll(content, fmt.Sprintf("\x00RAW%d\x00", i), block)
+	}
 	return content
 }
 

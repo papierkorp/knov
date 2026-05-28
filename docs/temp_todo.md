@@ -6,14 +6,12 @@
 - create filter manually not per ai..
 
 **per ai**
-- fileview (http://localhost:1324/files/ai.md) => why do i run through getAllFiles if i open one file => propably because of GetRelatedFiles - i should pre-compute it with metadatalinksrebuild and then getrelatedfiles just reads the stored value
 - rail theme: i dont like the hover buttons for the chat
 - rail theme: style for http://localhost:1324/dashboard/edit
 - move media to browse
 - chat: select multiple + move/delete multiple
 - codeblocks - copy button
 - codeblocks setting - wrap content
-- dokuwiki to markdown export: keep indents in codeblock
 - .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
 
 **long term**

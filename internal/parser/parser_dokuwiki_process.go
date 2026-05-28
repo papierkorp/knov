@@ -154,13 +154,13 @@ func (h *DokuwikiHandler) processCodeBlocks(content string, outputFormat string)
 				element = DokuWikiElement{
 					Type:     "code-block",
 					Language: "",
-					Content:  strings.TrimSpace(matches[1]),
+					Content:  strings.Trim(matches[1], "\n\r"),
 				}
 			} else if len(matches) >= 3 {
 				element = DokuWikiElement{
 					Type:     "code-block",
 					Language: strings.TrimSpace(matches[1]),
-					Content:  strings.TrimSpace(matches[2]),
+					Content:  strings.Trim(matches[2], "\n\r"),
 				}
 			}
 
