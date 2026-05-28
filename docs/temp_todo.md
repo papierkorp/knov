@@ -7,7 +7,6 @@
 
 **per ai**
 - rail theme: i dont like the hover buttons for the chat
-- rail theme: style for http://localhost:1324/dashboard/edit
 - move media to browse
 - chat: select multiple + move/delete multiple
 - codeblocks - copy button

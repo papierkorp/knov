@@ -2292,8 +2292,248 @@ dl.media-info dd {
 }
 
 /* =============================================
-   filter form — filteredit + filterview pages
+   page: dashboard new / edit
    ============================================= */
+
+#page-dashboard-new,
+#page-dashboard-edit {
+  padding: 24px;
+}
+
+#page-dashboard-new h1,
+#page-dashboard-edit h1 {
+  margin: 0 0 20px 0;
+  font-size: 1.4rem;
+}
+
+#page-dashboard-new .dashboard-form,
+#page-dashboard-edit .dashboard-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 860px;
+}
+
+#page-dashboard-new .form-section,
+#page-dashboard-edit .form-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 20px;
+}
+
+#page-dashboard-new .form-section > h4,
+#page-dashboard-edit .form-section > h4 {
+  margin: 0 0 14px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+#page-dashboard-new .form-group,
+#page-dashboard-edit .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+#page-dashboard-new .form-group:last-child,
+#page-dashboard-edit .form-group:last-child {
+  margin-bottom: 0;
+}
+
+#page-dashboard-new .form-group label,
+#page-dashboard-edit .form-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+#page-dashboard-new .form-row,
+#page-dashboard-edit .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* section header with title + action button */
+#page-dashboard-new .section-header,
+#page-dashboard-edit .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+#page-dashboard-new .section-header h4,
+#page-dashboard-edit .section-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: none;
+  padding: 0;
+}
+
+#page-dashboard-new .btn-add-widget,
+#page-dashboard-edit .btn-add-widget {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+#page-dashboard-new .btn-add-widget:hover,
+#page-dashboard-edit .btn-add-widget:hover {
+  background: var(--accent);
+}
+
+/* widget cards */
+#page-dashboard-new .widget-form,
+#page-dashboard-edit .widget-form {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+
+#page-dashboard-new .widget-form:last-child,
+#page-dashboard-edit .widget-form:last-child {
+  margin-bottom: 0;
+}
+
+#page-dashboard-new .widget-header,
+#page-dashboard-edit .widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+#page-dashboard-new .widget-header h5,
+#page-dashboard-edit .widget-header h5 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+#page-dashboard-new .btn-remove-widget,
+#page-dashboard-edit .btn-remove-widget {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+
+#page-dashboard-new .btn-remove-widget:hover,
+#page-dashboard-edit .btn-remove-widget:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+
+/* widget config sub-section */
+#page-dashboard-new .widget-config-container,
+#page-dashboard-edit .widget-config-container {
+  margin-top: 10px;
+}
+
+#page-dashboard-new .config-form,
+#page-dashboard-edit .config-form {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+#page-dashboard-new .config-form h5,
+#page-dashboard-edit .config-form h5 {
+  margin: 0 0 10px 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+#page-dashboard-new .config-row,
+#page-dashboard-edit .config-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+#page-dashboard-new .config-row:last-child,
+#page-dashboard-edit .config-row:last-child {
+  margin-bottom: 0;
+}
+
+#page-dashboard-new .config-row label,
+#page-dashboard-edit .config-row label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+#page-dashboard-new .config-note,
+#page-dashboard-edit .config-note {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin: 4px 0 0 0;
+}
+
+/* form actions row */
+#page-dashboard-new .form-actions,
+#page-dashboard-edit .form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding-top: 4px;
+}
+
+/* result message area */
+#dashboard-result,
+#dashboard-edit-result {
+  margin-top: 12px;
+}
+
+@media (max-width: 640px) {
+  #page-dashboard-new .form-row,
+  #page-dashboard-edit .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  #page-dashboard-new .form-actions,
+  #page-dashboard-edit .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
 
 #page-filteredit .filter-editor,
 #page-filterview .filter-editor {
