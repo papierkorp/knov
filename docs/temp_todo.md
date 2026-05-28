@@ -6,7 +6,6 @@
 - create filter manually not per ai..
 
 **per ai**
-- include tags to search
 - chat: select multiple + move/delete multiple
 - editor metadata is not shown in edit mode in rail theme slideout
 - why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)

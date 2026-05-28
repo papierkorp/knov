@@ -19,12 +19,10 @@ func InitSearch() error {
 	logging.LogInfo("initializing search engine: %s", engineType)
 
 	if engineType == "grep" {
-		// Grep doesn't need indexing
 		logging.LogInfo("grep search engine initialized (no indexing needed)")
 		return nil
 	}
 
-	// Default repository search - index all files
 	return IndexAllFiles()
 }
 
@@ -45,12 +43,10 @@ func IndexAllFiles() error {
 			continue
 		}
 
-		// index file using searchStorage
 		if err := searchStorage.IndexFile(file.Path, content); err != nil {
 			logging.LogWarning("failed to index file %s: %v", file.Path, err)
 		}
 
-		// index file in trigram index for fuzzy fallback search
 		trigramIdx.add(file.Path, content)
 	}
 
@@ -58,160 +54,9 @@ func IndexAllFiles() error {
 	return nil
 }
 
-// SearchFilesByTitle searches only file titles/names, ignoring content
+// SearchFilesByTitle searches only file titles/names, ignoring content.
+// Separate entry point — loads its own file list.
 func SearchFilesByTitle(query string, limit int) ([]files.File, error) {
-	results, err := searchFilesFilename(query)
-	if err != nil {
-		return nil, err
-	}
-	if limit > 0 && len(results) > limit {
-		results = results[:limit]
-	}
-	return results, nil
-}
-
-func SearchFiles(query string, limit int) ([]files.File, error) {
-	if query == "" {
-		return []files.File{}, nil
-	}
-
-	engineType := configmanager.GetSearchEngine()
-
-	var results []files.File
-	var err error
-	if engineType == "grep" {
-		results, err = searchFilesGrep(query, limit)
-	} else {
-		results, err = searchFilesRepository(query, limit)
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	// merge filename matches not already in results
-	seenPaths := make(map[string]bool, len(results))
-	for _, f := range results {
-		seenPaths[f.Path] = true
-	}
-
-	filenameMatches, err := searchFilesFilename(query)
-	if err != nil {
-		logging.LogWarning("filename search failed: %v", err)
-	}
-	for _, f := range filenameMatches {
-		if !seenPaths[f.Path] {
-			results = append(results, f)
-			seenPaths[f.Path] = true
-		}
-	}
-
-	if limit > 0 && len(results) > limit {
-		results = results[:limit]
-	}
-
-	return results, nil
-}
-
-// searchFilesRepository performs repository-based search using FTS
-func searchFilesRepository(query string, limit int) ([]files.File, error) {
-	logging.LogDebug("searching for: %s (limit: %d)", query, limit)
-
-	// use much higher FTS limit to ensure we get all relevant files before deduplication
-	// FTS can return multiple matches per file, so we need a higher limit to find all unique files
-	ftsLimit := limit * 10 // multiply by 10 to account for multiple matches per file
-	if ftsLimit < 100 {
-		ftsLimit = 100 // minimum FTS limit to ensure we don't miss files
-	}
-
-	// use FTS search from searchStorage for better performance
-	searchResults, err := searchStorage.SearchContent(query, ftsLimit)
-	if err != nil {
-		logging.LogWarning("fts search failed, falling back to manual search: %v", err)
-		return searchFilesRepositoryFallback(query, limit)
-	}
-
-	// convert searchStorage results to files.File
-	allFiles, err := files.GetAllFiles()
-	if err != nil {
-		return nil, err
-	}
-
-	// create a map for quick lookup
-	fileMap := make(map[string]files.File)
-	for _, file := range allFiles {
-		fileMap[file.Path] = file
-	}
-
-	// deduplicate results by tracking which paths we've already added
-	var results []files.File
-	seenPaths := make(map[string]bool)
-	for _, searchResult := range searchResults {
-		if file, exists := fileMap[searchResult.Path]; exists && !seenPaths[searchResult.Path] {
-			results = append(results, file)
-			seenPaths[searchResult.Path] = true
-
-			// apply user's requested limit after deduplication
-			if limit > 0 && len(results) >= limit {
-				break
-			}
-		}
-	}
-
-	// fall back to trigram fuzzy search if FTS returned nothing
-	if len(results) == 0 {
-		logging.LogDebug("fts returned no results for '%s', trying trigram fallback", query)
-		return searchFilesTrigram(query, limit)
-	}
-
-	logging.LogDebug("found %d results for query: %s", len(results), query)
-	return results, nil
-}
-
-// searchFilesRepositoryFallback performs manual search when FTS fails
-func searchFilesRepositoryFallback(query string, limit int) ([]files.File, error) {
-	allFiles, err := files.GetAllFiles()
-	if err != nil {
-		return nil, err
-	}
-
-	queryLower := strings.ToLower(query)
-	var results []files.File
-
-	for _, file := range allFiles {
-		// check if already at limit
-		if limit > 0 && len(results) >= limit {
-			break
-		}
-
-		// get indexed content from searchStorage
-		contentData, err := searchStorage.GetIndexedContent(file.Path)
-		if err != nil || contentData == nil {
-			// try reading file directly if not indexed - use correct path
-			var fullPath string
-			if strings.HasPrefix(file.Path, "media/") {
-				normalizedPath := pathutils.ToRelative(file.Path)
-				fullPath = pathutils.ToMediaPath(normalizedPath)
-			} else {
-				fullPath = pathutils.ToDocsPath(file.Path)
-			}
-
-			contentData, err = os.ReadFile(fullPath)
-			if err != nil {
-				continue
-			}
-		}
-
-		content := strings.ToLower(string(contentData))
-		if strings.Contains(content, queryLower) {
-			results = append(results, file)
-		}
-	}
-
-	return results, nil
-}
-
-// searchFilesFilename returns files whose name contains the query (case-insensitive)
-func searchFilesFilename(query string) ([]files.File, error) {
 	allFiles, err := files.GetAllFiles()
 	if err != nil {
 		return nil, err
@@ -224,17 +69,144 @@ func searchFilesFilename(query string) ([]files.File, error) {
 			results = append(results, file)
 		}
 	}
+
+	if limit > 0 && len(results) > limit {
+		results = results[:limit]
+	}
 	return results, nil
 }
 
-// searchFilesGrep performs grep-based search
-func searchFilesGrep(query string, limit int) ([]files.File, error) {
-	logging.LogDebug("using grep search for: %s (limit: %d)", query, limit)
+// SearchFiles performs full text + filename + tag search
+func SearchFiles(query string, limit int) ([]files.File, error) {
+	if query == "" {
+		return []files.File{}, nil
+	}
 
 	allFiles, err := files.GetAllFiles()
 	if err != nil {
 		return nil, err
 	}
+
+	var results []files.File
+	if configmanager.GetSearchEngine() == "grep" {
+		results, err = searchFilesGrep(query, limit, allFiles)
+	} else {
+		results, err = searchFilesRepository(query, limit, allFiles)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	seenPaths := make(map[string]bool, len(results))
+	for _, f := range results {
+		seenPaths[f.Path] = true
+	}
+
+	queryLower := strings.ToLower(query)
+	for _, f := range allFiles {
+		if seenPaths[f.Path] {
+			continue
+		}
+		// filename match
+		if strings.Contains(strings.ToLower(f.Name), queryLower) {
+			results = append(results, f)
+			seenPaths[f.Path] = true
+			continue
+		}
+		// tag match
+		if f.Metadata != nil {
+			for _, tag := range f.Metadata.Tags {
+				if strings.Contains(strings.ToLower(tag), queryLower) {
+					results = append(results, f)
+					seenPaths[f.Path] = true
+					break
+				}
+			}
+		}
+	}
+
+	if limit > 0 && len(results) > limit {
+		results = results[:limit]
+	}
+
+	return results, nil
+}
+
+func searchFilesRepository(query string, limit int, allFiles []files.File) ([]files.File, error) {
+	logging.LogDebug("searching for: %s (limit: %d)", query, limit)
+
+	// use much higher FTS limit to ensure we get all relevant files before deduplication
+	// FTS can return multiple matches per file, so we need a higher limit to find all unique files
+	ftsLimit := limit * 10 // multiply by 10 to account for multiple matches per file
+	if ftsLimit < 100 {
+		ftsLimit = 100 // minimum FTS limit to ensure we don't miss files
+	}
+
+	searchResults, err := searchStorage.SearchContent(query, ftsLimit)
+	if err != nil {
+		logging.LogWarning("fts search failed, falling back to manual search: %v", err)
+		return searchFilesRepositoryFallback(query, limit, allFiles)
+	}
+
+	fileMap := make(map[string]files.File, len(allFiles))
+	for _, f := range allFiles {
+		fileMap[f.Path] = f
+	}
+
+	var results []files.File
+	seenPaths := make(map[string]bool)
+	for _, sr := range searchResults {
+		if f, ok := fileMap[sr.Path]; ok && !seenPaths[sr.Path] {
+			results = append(results, f)
+			seenPaths[sr.Path] = true
+			if limit > 0 && len(results) >= limit {
+				break
+			}
+		}
+	}
+
+	if len(results) == 0 {
+		logging.LogDebug("fts returned no results for '%s', trying trigram fallback", query)
+		return searchFilesTrigram(query, limit, allFiles)
+	}
+
+	logging.LogDebug("found %d results for query: %s", len(results), query)
+	return results, nil
+}
+
+func searchFilesRepositoryFallback(query string, limit int, allFiles []files.File) ([]files.File, error) {
+	queryLower := strings.ToLower(query)
+	var results []files.File
+
+	for _, file := range allFiles {
+		if limit > 0 && len(results) >= limit {
+			break
+		}
+
+		contentData, err := searchStorage.GetIndexedContent(file.Path)
+		if err != nil || contentData == nil {
+			var fullPath string
+			if pathutils.IsMedia(file.Path) {
+				fullPath = pathutils.ToMediaPath(file.Path)
+			} else {
+				fullPath = pathutils.ToDocsPath(file.Path)
+			}
+			contentData, err = os.ReadFile(fullPath)
+			if err != nil {
+				continue
+			}
+		}
+
+		if strings.Contains(strings.ToLower(string(contentData)), queryLower) {
+			results = append(results, file)
+		}
+	}
+
+	return results, nil
+}
+
+func searchFilesGrep(query string, limit int, allFiles []files.File) ([]files.File, error) {
+	logging.LogDebug("using grep search for: %s (limit: %d)", query, limit)
 
 	queryLower := strings.ToLower(query)
 	var results []files.File
@@ -244,11 +216,9 @@ func searchFilesGrep(query string, limit int) ([]files.File, error) {
 			break
 		}
 
-		// get correct path based on file type
 		var fullPath string
-		if strings.HasPrefix(file.Path, "media/") {
-			normalizedPath := pathutils.ToRelative(file.Path)
-			fullPath = pathutils.ToMediaPath(normalizedPath)
+		if pathutils.IsMedia(file.Path) {
+			fullPath = pathutils.ToMediaPath(file.Path)
 		} else {
 			fullPath = pathutils.ToDocsPath(file.Path)
 		}
@@ -258,8 +228,7 @@ func searchFilesGrep(query string, limit int) ([]files.File, error) {
 			continue
 		}
 
-		contentLower := strings.ToLower(string(content))
-		if strings.Contains(contentLower, queryLower) {
+		if strings.Contains(strings.ToLower(string(content)), queryLower) {
 			results = append(results, file)
 		}
 	}

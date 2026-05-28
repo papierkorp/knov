@@ -38,7 +38,6 @@ func (ti *trigramIndex) add(path string, content []byte) {
 	ti.mu.Lock()
 	defer ti.mu.Unlock()
 
-	// track which trigrams we've already added for this file to avoid duplicates
 	seen := make(map[string]struct{})
 	for _, word := range words {
 		word = strings.Trim(word, ".,!?;:\"'()[]{}#*_`-")
@@ -87,7 +86,6 @@ func (ti *trigramIndex) search(query string, limit int) []string {
 		}
 	}
 
-	// require at least 50% of query trigrams to match
 	threshold := len(queryTrigrams) / 2
 	if threshold < 1 {
 		threshold = 1
@@ -117,16 +115,11 @@ func (ti *trigramIndex) search(query string, limit int) []string {
 	return result
 }
 
-// searchFilesTrigram is the fallback fuzzy search using the trigram index
-func searchFilesTrigram(query string, limit int) ([]files.File, error) {
+// searchFilesTrigram resolves trigram path results to File structs using a pre-loaded file list
+func searchFilesTrigram(query string, limit int, allFiles []files.File) ([]files.File, error) {
 	paths := trigramIdx.search(query, limit)
 	if len(paths) == 0 {
 		return nil, nil
-	}
-
-	allFiles, err := files.GetAllPhysicalFiles()
-	if err != nil {
-		return nil, err
 	}
 
 	fileMap := make(map[string]files.File, len(allFiles))
