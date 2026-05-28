@@ -127,6 +127,9 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "failed to initialize metadata"
 // @Router /api/metadata/rebuild [post]
 func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
+	files.StartMetaGetCounter()
+	defer files.StopMetaGetCounter()
+
 	if err := files.MetaDataInitializeAll(); err != nil {
 		http.Error(w, "failed to initialize metadata", http.StatusInternalServerError)
 		return

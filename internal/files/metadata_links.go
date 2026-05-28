@@ -7,55 +7,68 @@ import (
 	"slices"
 	"strings"
 
+	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/utils"
 )
 
-// MetaDataLinksRebuild ..
+var rebuildMetaGetCount *int
+
+// MetaDataLinksRebuild rebuilds all link metadata from scratch.
 func MetaDataLinksRebuild() error {
 	log := logging.LogBuilder("rebuild-metadata")
 	log.Printf("=== metadata links rebuild started ===")
 
-	files, err := GetAllPhysicalFiles()
+	paths, err := contentStorage.ListFiles()
 	if err != nil {
 		return err
 	}
-	log.Printf("docs files to process: %d", len(files))
+	log.Printf("docs files to process: %d", len(paths))
 
-	// zeroth pass: clear LinksToHere on all media files so stale references don't persist
+	// load media files once — used in zeroth pass and final media pass
 	allMediaFiles, err := GetAllMediaFiles()
 	if err != nil {
 		logging.LogWarning("failed to get media files for link rebuild: %v", err)
 		log.Printf("warning: failed to get media files: %v", err)
-	} else {
-		log.Printf("media files found: %d", len(allMediaFiles))
-		for _, file := range allMediaFiles {
-			normalizedPath := pathutils.ToWithPrefix(file.Path)
-			metadata, err := MetaDataGet(normalizedPath)
-			if err != nil || metadata == nil {
-				log.Printf("  media %s: no metadata, skipping clear", normalizedPath)
-				continue
-			}
-			log.Printf("  clearing linkstohere for %s (had %d)", normalizedPath, len(metadata.LinksToHere))
-			metadata.LinksToHere = []string{}
-			if err := MetaDataSaveRaw(metadata); err != nil {
-				logging.LogWarning("failed to clear media linkstohere for %s: %v", normalizedPath, err)
-			}
+		allMediaFiles = nil
+	}
+	log.Printf("media files found: %d", len(allMediaFiles))
+
+	// zeroth pass: clear LinksToHere on all media files so stale references don't persist
+	for _, file := range allMediaFiles {
+		normalizedPath := pathutils.ToWithPrefix(file.Path)
+		metadata, err := MetaDataGet(normalizedPath)
+		if err != nil || metadata == nil {
+			continue
+		}
+		metadata.LinksToHere = []string{}
+		if err := MetaDataSaveRaw(metadata); err != nil {
+			logging.LogWarning("failed to clear media linkstohere for %s: %v", normalizedPath, err)
 		}
 	}
 
-	// first pass: clear old data and update ancestors and usedlinks
-	for _, file := range files {
-		// normalize path to ensure correct prefix for metadata lookup
-		normalizedPath := pathutils.ToWithPrefix(file.Path)
-
+	// pre-populate cache so findTopAncestor never hits storage during pass 1
+	metaCache := make(map[string]*Metadata, len(paths))
+	for _, rawPath := range paths {
+		normalizedPath := pathutils.ToWithPrefix(rawPath)
 		metadata, err := MetaDataGet(normalizedPath)
-		if err != nil {
-			logging.LogWarning("failed to load metadata for %s: %v", normalizedPath, err)
+		if err != nil || metadata == nil {
 			continue
 		}
+		metaCache[normalizedPath] = metadata
+	}
+
+	// first pass: rebuild UsedLinks + Ancestors using cache,
+	// build reverse maps in memory for pass 2
+	linksToHereMap := make(map[string][]string) // target → []sources
+	kidsMap := make(map[string][]string)        // parent → []children
+
+	for _, rawPath := range paths {
+		normalizedPath := pathutils.ToWithPrefix(rawPath)
+
+		metadata := metaCache[normalizedPath]
 		if metadata == nil {
 			continue
 		}
@@ -65,9 +78,8 @@ func MetaDataLinksRebuild() error {
 		metadata.UsedLinks = []string{}
 		metadata.LinksToHere = []string{}
 
-		updateAncestors(metadata)
+		updateAncestors(metadata, metaCache)
 
-		// extract used links without updating linkstohere yet
 		fullPath := pathutils.ToDocsPath(metadata.Path)
 		contentData, err := os.ReadFile(fullPath)
 		if err == nil {
@@ -83,76 +95,71 @@ func MetaDataLinksRebuild() error {
 			}
 		}
 
-		if err := MetaDataSave(metadata); err != nil {
+		for _, link := range metadata.UsedLinks {
+			normalized := pathutils.ToWithPrefix(link)
+			linksToHereMap[normalized] = append(linksToHereMap[normalized], normalizedPath)
+		}
+		for _, parent := range metadata.Parents {
+			kidsMap[parent] = append(kidsMap[parent], normalizedPath)
+		}
+
+		updateTitle(metadata)
+
+		if err := MetaDataSaveRaw(metadata); err != nil {
 			logging.LogWarning("failed to save metadata for %s: %v", metadata.Path, err)
 		}
 	}
 
-	// second pass: update kids and linkstohere for all files
-	for _, file := range files {
-		// normalize path to ensure correct prefix for metadata lookup
-		normalizedPath := pathutils.ToWithPrefix(file.Path)
+	// second pass: apply reverse maps from cache — no MetaDataGet
+	for _, rawPath := range paths {
+		normalizedPath := pathutils.ToWithPrefix(rawPath)
 
-		metadata, err := MetaDataGet(normalizedPath)
-		if err != nil || metadata == nil {
+		metadata := metaCache[normalizedPath]
+		if metadata == nil {
 			continue
 		}
 
-		updateKidsAndLinksToHere(metadata)
+		metadata.Kids = kidsMap[normalizedPath]
+		if metadata.Kids == nil {
+			metadata.Kids = []string{}
+		}
+		metadata.LinksToHere = linksToHereMap[normalizedPath]
+		if metadata.LinksToHere == nil {
+			metadata.LinksToHere = []string{}
+		}
 
-		if err := MetaDataSave(metadata); err != nil {
-			logging.LogWarning("failed to save metadata for %s: %v", metadata.Path, err)
+		if err := MetaDataSaveRaw(metadata); err != nil {
+			logging.LogWarning("failed to save metadata for %s: %v", normalizedPath, err)
 		}
 	}
 
-	// third pass: rebuild media LinksToHere explicitly from docs UsedLinks
-	// (updateKidsAndLinksToHere only handles docs↔docs; this handles docs→media)
-	mediaRefs := make(map[string][]string) // normalizedMediaPath → []docPaths
-	for _, file := range files {
+	// apply media LinksToHere from the same reverse map
+	mediaCount := 0
+	for _, file := range allMediaFiles {
 		normalizedPath := pathutils.ToWithPrefix(file.Path)
-		docMeta, err := MetaDataGet(normalizedPath)
-		if err != nil || docMeta == nil {
+		mediaMeta, err := MetaDataGet(normalizedPath)
+		if err != nil || mediaMeta == nil {
 			continue
 		}
-		for _, usedLink := range docMeta.UsedLinks {
-			normalized := pathutils.ToWithPrefix(usedLink)
-			if strings.HasPrefix(normalized, "media/") {
-				logging.LogDebug("found media ref: %s → %s", normalizedPath, normalized)
-				log.Printf("  docs %s references media %s (raw usedlink: %q)", normalizedPath, normalized, usedLink)
-				mediaRefs[normalized] = append(mediaRefs[normalized], normalizedPath)
-			}
+		mediaMeta.LinksToHere = linksToHereMap[normalizedPath]
+		if mediaMeta.LinksToHere == nil {
+			mediaMeta.LinksToHere = []string{}
 		}
-	}
-	log.Printf("media refs found in docs usedlinks: %d media files referenced", len(mediaRefs))
-	logging.LogInfo("media refs found in docs usedlinks: %d media files referenced", len(mediaRefs))
-
-	allMediaFiles, err = GetAllMediaFiles()
-	if err != nil {
-		logging.LogWarning("failed to get media files for linkstohere rebuild: %v", err)
-	} else {
-		for _, file := range allMediaFiles {
-			normalizedPath := pathutils.ToWithPrefix(file.Path)
-			mediaMeta, err := MetaDataGet(normalizedPath)
-			if err != nil || mediaMeta == nil {
-				log.Printf("  media %s: no metadata, skipping linkstohere update", normalizedPath)
-				continue
-			}
-			refs := mediaRefs[normalizedPath]
-			if refs == nil {
-				refs = []string{}
-			}
-			log.Printf("  media %s: linkstohere = %v", normalizedPath, refs)
-			mediaMeta.LinksToHere = refs
-			if err := MetaDataSaveRaw(mediaMeta); err != nil {
-				logging.LogWarning("failed to save media linkstohere for %s: %v", normalizedPath, err)
-			}
+		if err := MetaDataSaveRaw(mediaMeta); err != nil {
+			logging.LogWarning("failed to save media linkstohere for %s: %v", normalizedPath, err)
+			continue
 		}
+		mediaCount++
 	}
+	log.Printf("media files with linkstohere updated: %d", mediaCount)
+	logging.LogInfo("media refs found in docs usedlinks: %d media files referenced", mediaCount)
 
 	log.Printf("=== metadata links rebuild completed ===")
 	logging.LogInfo("metadata links rebuild completed")
 	return nil
 }
+
+// MetaDataLinksRebuildForFile rebuilds link metadata for a single file.
 func MetaDataLinksRebuildForFile(filePath string) error {
 	normalizedPath := pathutils.ToWithPrefix(filePath)
 	logging.LogInfo("rebuilding metadata links for file: %s", normalizedPath)
@@ -170,16 +177,17 @@ func MetaDataLinksRebuildForFile(filePath string) error {
 	metadata.UsedLinks = []string{}
 	metadata.LinksToHere = []string{}
 
-	updateAncestors(metadata)
+	updateAncestors(metadata, nil)
 	updateUsedLinks(metadata)
+	updateTitle(metadata)
 
-	if err := MetaDataSave(metadata); err != nil {
+	if err := MetaDataSaveRaw(metadata); err != nil {
 		return err
 	}
 
 	updateKidsAndLinksToHere(metadata)
 
-	if err := MetaDataSave(metadata); err != nil {
+	if err := MetaDataSaveRaw(metadata); err != nil {
 		return err
 	}
 
@@ -187,7 +195,7 @@ func MetaDataLinksRebuildForFile(filePath string) error {
 	return nil
 }
 
-func updateAncestors(metadata *Metadata) {
+func updateAncestors(metadata *Metadata, cache map[string]*Metadata) {
 	visited := make(map[string]bool)
 	var ancestors []string
 
@@ -197,7 +205,7 @@ func updateAncestors(metadata *Metadata) {
 		}
 		visited[parent] = true
 
-		ancestor := findTopAncestor(parent, make(map[string]bool))
+		ancestor := findTopAncestor(parent, make(map[string]bool), cache)
 		if ancestor != "" && ancestor != metadata.Path {
 			ancestors = append(ancestors, ancestor)
 		}
@@ -206,17 +214,27 @@ func updateAncestors(metadata *Metadata) {
 	metadata.Ancestor = ancestors
 }
 
-func findTopAncestor(filePath string, visited map[string]bool) string {
+func findTopAncestor(filePath string, visited map[string]bool, cache map[string]*Metadata) string {
 	if visited[filePath] {
 		logging.LogWarning("cycle detected in parent chain for %s", filePath)
 		return ""
 	}
 	visited[filePath] = true
 
-	metadata, err := MetaDataGet(filePath)
-	if err != nil || metadata == nil {
-		logging.LogWarning("cannot find metadata for parent %s", filePath)
-		return filePath
+	var metadata *Metadata
+	if cache != nil {
+		cacheKey := pathutils.ToWithPrefix(filePath)
+		metadata = cache[cacheKey]
+
+	}
+
+	if metadata == nil {
+		var err error
+		metadata, err = MetaDataGet(filePath)
+		if err != nil || metadata == nil {
+			logging.LogWarning("cannot find metadata for parent %s", filePath)
+			return filePath
+		}
 	}
 
 	if len(metadata.Parents) == 0 {
@@ -224,7 +242,7 @@ func findTopAncestor(filePath string, visited map[string]bool) string {
 	}
 
 	for _, parent := range metadata.Parents {
-		return findTopAncestor(parent, visited)
+		return findTopAncestor(parent, visited, cache)
 	}
 
 	return filePath
@@ -290,7 +308,6 @@ func updateLinksToHere(metadata *Metadata, oldUsedLinks []string) {
 			continue
 		}
 
-		// add current file to linkstohere if not already present
 		if !slices.Contains(linkedMetadata.LinksToHere, metadata.Path) {
 			linkedMetadata.LinksToHere = append(linkedMetadata.LinksToHere, metadata.Path)
 
@@ -310,7 +327,6 @@ func updateLinksToHere(metadata *Metadata, oldUsedLinks []string) {
 				continue
 			}
 
-			// remove current file from linkstohere
 			if idx := slices.Index(linkedMetadata.LinksToHere, metadata.Path); idx != -1 {
 				linkedMetadata.LinksToHere = slices.Delete(linkedMetadata.LinksToHere, idx, idx+1)
 
@@ -344,12 +360,10 @@ func updateKidsAndLinksToHere(metadata *Metadata) {
 			continue
 		}
 
-		// check if this file is a parent (making the other file a kid)
 		if slices.Contains(otherMetadata.Parents, metadata.Path) {
 			kids = append(kids, file.Path)
 		}
 
-		// check if this file is in usedLinks (making it a link to here)
 		if slices.Contains(otherMetadata.UsedLinks, metadata.Path) {
 			linksToHere = append(linksToHere, file.Path)
 		}
@@ -359,44 +373,30 @@ func updateKidsAndLinksToHere(metadata *Metadata) {
 	metadata.LinksToHere = linksToHere
 }
 
-// UpdateLinksForMovedFile updates all files that link to a moved file with the new path
+// UpdateLinksForMovedFile updates all files that link to a moved file with the new path.
 func UpdateLinksForMovedFile(oldPath, newPath string) error {
-	// - rebuild links on file move/rename e.g. file testA.md has a linkTo testB.md and a linkFrom testC.md and is renamed to testAnew.md
-	//   - in sourcefile (testA.md/testAnew.md):
-	//     - go through all linksFrom
-	//     - rebuild links
-	//   - in linkTo (testB.md):
-	//     - remove the old linksFrom (testA.md)
-	//     - add the new linksFrom (testAnew.md)
-	//   - in linkFrom (testC.md):
-	//     - update the link in the FileContent to the moved file
-	//     - rebuild the links (should update the linksFrom in testAnew.md)
 	logging.LogInfo("updating links for moved file: %s -> %s", oldPath, newPath)
 
-	// normalize paths for consistent metadata operations
 	normalizedOldPath := pathutils.ToWithPrefix(oldPath)
 	normalizedNewPath := pathutils.ToWithPrefix(newPath)
 
-	// get metadata for the old path to find files that link to it
 	oldMetadata, err := MetaDataGet(normalizedOldPath)
 	if err != nil {
 		logging.LogWarning("could not get metadata for moved file %s: %v", normalizedOldPath, err)
 		return err
 	}
 
-	// move metadata from old path to new path first
 	if err := moveFileMetadata(oldPath, newPath); err != nil {
 		logging.LogError("failed to move metadata for %s: %v", oldPath, err)
 		return err
 	}
 
-	// get the moved metadata to access UsedLinks
 	movedMetadata, err := MetaDataGet(normalizedNewPath)
 	if err != nil || movedMetadata == nil {
 		logging.LogWarning("could not get moved metadata for %s: %v", normalizedNewPath, err)
 	}
 
-	// step 1: in sourcefile (testAnew.md) - rebuild outbound links
+	// step 1: rebuild outbound links for the moved file
 	if movedMetadata != nil {
 		logging.LogInfo("rebuilding outbound links for moved file %s", normalizedNewPath)
 		updateUsedLinks(movedMetadata)
@@ -405,13 +405,12 @@ func UpdateLinksForMovedFile(oldPath, newPath string) error {
 		}
 	}
 
-	// step 2: in linkFrom files (testC.md) - update file content and rebuild their links
+	// step 2: update file content in files that linked to the old path
 	if oldMetadata != nil && len(oldMetadata.LinksToHere) > 0 {
 		logging.LogInfo("found %d files linking to %s, updating their content", len(oldMetadata.LinksToHere), normalizedOldPath)
 
 		updatedFiles := 0
 		for _, linkingFilePath := range oldMetadata.LinksToHere {
-			// update file content: change links from oldPath to newPath
 			if err := updateLinksInFile(linkingFilePath, oldPath, newPath); err != nil {
 				logging.LogError("failed to update links in file %s: %v", linkingFilePath, err)
 				continue
@@ -421,7 +420,7 @@ func UpdateLinksForMovedFile(oldPath, newPath string) error {
 		logging.LogInfo("updated links in %d files", updatedFiles)
 	}
 
-	// step 3: in linkTo files (testB.md) - update LinksToHere to replace oldPath with newPath
+	// step 3: update LinksToHere in files the moved file links to
 	if movedMetadata != nil && len(movedMetadata.UsedLinks) > 0 {
 		logging.LogInfo("updating LinksToHere in %d files that moved file links to", len(movedMetadata.UsedLinks))
 
@@ -432,19 +431,16 @@ func UpdateLinksForMovedFile(oldPath, newPath string) error {
 				continue
 			}
 
-			// remove old path from LinksToHere (use normalized old path)
 			if idx := slices.Index(linkedMetadata.LinksToHere, normalizedOldPath); idx != -1 {
 				linkedMetadata.LinksToHere = slices.Delete(linkedMetadata.LinksToHere, idx, idx+1)
 				logging.LogInfo("removed %s from LinksToHere of %s", normalizedOldPath, linkedPath)
 			}
 
-			// add new path to LinksToHere if not already present (use normalized new path)
 			if !slices.Contains(linkedMetadata.LinksToHere, normalizedNewPath) {
 				linkedMetadata.LinksToHere = append(linkedMetadata.LinksToHere, normalizedNewPath)
 				logging.LogInfo("added %s to LinksToHere of %s", normalizedNewPath, linkedPath)
 			}
 
-			// save updated metadata
 			if err := MetaDataSaveRaw(linkedMetadata); err != nil {
 				logging.LogWarning("failed to save LinksToHere updates for %s: %v", linkedPath, err)
 			}
@@ -455,11 +451,10 @@ func UpdateLinksForMovedFile(oldPath, newPath string) error {
 	return nil
 }
 
-// updateLinksInFile updates links within a single file
+// updateLinksInFile updates links within a single file from oldPath to newPath.
 func updateLinksInFile(filePath, oldPath, newPath string) error {
 	fullPath := pathutils.ToFullPath(filePath)
 
-	// read file content
 	contentData, err := os.ReadFile(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to read file %s: %w", filePath, err)
@@ -468,14 +463,12 @@ func updateLinksInFile(filePath, oldPath, newPath string) error {
 	content := string(contentData)
 	originalContent := content
 
-	// get file handler for link format detection
 	handler := parser.GetParserRegistry().GetHandler(fullPath)
 	if handler == nil {
 		logging.LogWarning("no handler found for file %s, skipping link update", filePath)
 		return nil
 	}
 
-	// update different link formats
 	updated := false
 
 	// markdown-style links: [text](oldPath) -> [text](newPath)
@@ -497,25 +490,21 @@ func updateLinksInFile(filePath, oldPath, newPath string) error {
 	}
 
 	// dokuwiki-style links: [[oldPath|text]] -> [[newPath|text]]
-	// this is more complex as we need to preserve the text part
 	lines := strings.Split(content, "\n")
 	for i, line := range lines {
 		if strings.Contains(line, oldPath) {
-			// look for dokuwiki link pattern
 			start := strings.Index(line, "[["+oldPath)
 			if start != -1 {
 				end := strings.Index(line[start:], "]]")
 				if end != -1 {
 					end += start
-					linkPart := line[start+2 : end] // remove [[ and ]]
+					linkPart := line[start+2 : end]
 
 					if strings.HasPrefix(linkPart, oldPath) {
 						if len(linkPart) == len(oldPath) {
-							// simple link [[oldPath]]
 							lines[i] = strings.Replace(line, "[["+oldPath+"]]", "[["+newPath+"]]", 1)
 							updated = true
 						} else if linkPart[len(oldPath)] == '|' {
-							// link with text [[oldPath|text]]
 							textPart := linkPart[len(oldPath):]
 							lines[i] = strings.Replace(line, "[["+oldPath+textPart+"]]", "[["+newPath+textPart+"]]", 1)
 							updated = true
@@ -530,7 +519,6 @@ func updateLinksInFile(filePath, oldPath, newPath string) error {
 		content = strings.Join(lines, "\n")
 	}
 
-	// write back if changed
 	if updated && content != originalContent {
 		if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
 			return fmt.Errorf("failed to write updated content to %s: %w", filePath, err)
@@ -538,7 +526,6 @@ func updateLinksInFile(filePath, oldPath, newPath string) error {
 
 		logging.LogInfo("updated links in file %s: %s -> %s", filePath, oldPath, newPath)
 
-		// trigger metadata update for the modified file to update its links
 		if err := UpdateLinksForSingleFile(filePath); err != nil {
 			logging.LogWarning("failed to rebuild links for modified file %s: %v", filePath, err)
 		}
@@ -547,48 +534,39 @@ func updateLinksInFile(filePath, oldPath, newPath string) error {
 	return nil
 }
 
-// moveFileMetadata moves metadata from old path to new path
+// moveFileMetadata moves metadata from old path to new path.
 func moveFileMetadata(oldPath, newPath string) error {
-	// normalize paths for consistent storage keys
 	normalizedOldPath := pathutils.ToWithPrefix(oldPath)
 	normalizedNewPath := pathutils.ToWithPrefix(newPath)
 
-	// get existing metadata
 	metadata, err := MetaDataGet(normalizedOldPath)
 	if err != nil {
 		logging.LogDebug("no metadata found for %s, creating new metadata for %s", normalizedOldPath, normalizedNewPath)
-		// create new metadata for new path
 		newMetadata := &Metadata{Path: normalizedNewPath}
 		return MetaDataSave(newMetadata)
 	}
 
 	if metadata == nil {
-		// create new metadata for new path
 		newMetadata := &Metadata{Path: normalizedNewPath}
 		return MetaDataSave(newMetadata)
 	}
 
-	// update path in metadata to normalized new path
 	metadata.Path = normalizedNewPath
 
-	// save metadata with new path
 	if err := MetaDataSave(metadata); err != nil {
 		return fmt.Errorf("failed to save metadata for new path %s: %w", normalizedNewPath, err)
 	}
 
-	// delete old metadata
 	if err := MetaDataDelete(normalizedOldPath); err != nil {
 		logging.LogWarning("failed to delete old metadata for %s: %v", normalizedOldPath, err)
-		// don't fail the operation for this
 	}
 
 	logging.LogInfo("moved metadata: %s -> %s", normalizedOldPath, normalizedNewPath)
 	return nil
 }
 
-// updateTitle extracts title from the first header line in the file content
+// updateTitle extracts the title from the first markdown header in the file.
 func updateTitle(metadata *Metadata) {
-	// skip title extraction for media files
 	if strings.HasPrefix(metadata.Path, "media/") {
 		return
 	}
@@ -604,7 +582,6 @@ func updateTitle(metadata *Metadata) {
 	}
 	defer file.Close()
 
-	// read only the first few lines to find the header
 	buffer := make([]byte, 1024)
 	n, err := file.Read(buffer)
 	if err != nil && n == 0 {
@@ -621,7 +598,6 @@ func updateTitle(metadata *Metadata) {
 			continue
 		}
 
-		// check for markdown header
 		if strings.HasPrefix(trimmed, "# ") {
 			title := strings.TrimSpace(trimmed[2:])
 			if title != "" {
@@ -631,30 +607,25 @@ func updateTitle(metadata *Metadata) {
 			}
 		}
 
-		// if we hit non-empty content that's not a header, stop looking
 		break
 	}
 
-	// no title found, clear any existing title
 	metadata.Title = ""
 	logging.LogDebug("no title found for %s", metadata.Path)
 }
 
-// updateParentChildRelationships updates parent-child relationships when parents change
+// updateParentChildRelationships updates parent-child relationships when parents change.
 func updateParentChildRelationships(metadata *Metadata, oldParents []string) {
 	logging.LogInfo("updating parent-child relationships for %s: old=%v, new=%v", metadata.Path, oldParents, metadata.Parents)
 
-	// remove this file from old parents' kids lists
 	for _, oldParent := range oldParents {
 		if !slices.Contains(metadata.Parents, oldParent) {
-			// this parent was removed, update its kids list
 			parentMetadata, err := MetaDataGet(oldParent)
 			if err != nil || parentMetadata == nil {
 				logging.LogWarning("failed to get metadata for former parent %s: %v", oldParent, err)
 				continue
 			}
 
-			// remove current file from parent's kids list
 			if idx := slices.Index(parentMetadata.Kids, metadata.Path); idx != -1 {
 				parentMetadata.Kids = slices.Delete(parentMetadata.Kids, idx, idx+1)
 
@@ -667,17 +638,14 @@ func updateParentChildRelationships(metadata *Metadata, oldParents []string) {
 		}
 	}
 
-	// add this file to new parents' kids lists
 	for _, newParent := range metadata.Parents {
 		if !slices.Contains(oldParents, newParent) {
-			// this parent was added, update its kids list
 			parentMetadata, err := MetaDataGet(newParent)
 			if err != nil || parentMetadata == nil {
 				logging.LogWarning("failed to get metadata for new parent %s: %v", newParent, err)
 				continue
 			}
 
-			// add current file to parent's kids list if not already there
 			if !slices.Contains(parentMetadata.Kids, metadata.Path) {
 				parentMetadata.Kids = append(parentMetadata.Kids, metadata.Path)
 
@@ -691,25 +659,18 @@ func updateParentChildRelationships(metadata *Metadata, oldParents []string) {
 	}
 }
 
-// UpdateLinksForSingleFile updates link metadata for a single file without scanning all other files
-// This extracts links from the file content and updates LinksToHere in files that this file references
-// Does NOT scan all files - links are maintained incrementally as files are saved
+// UpdateLinksForSingleFile updates link metadata for a single file incrementally.
 func UpdateLinksForSingleFile(filePath string) error {
 	logging.LogInfo("updating links for file: %s", filePath)
 
-	// get metadata for the file
 	metadata, err := MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		logging.LogWarning("failed to get metadata for file %s: %v", filePath, err)
 		return err
 	}
 
-	// update outbound links by parsing file content
-	// this also updates LinksToHere in the files that this file links to
-	// automatically skips media files (no content to parse)
 	updateUsedLinks(metadata)
 
-	// save updated metadata
 	if err := MetaDataSaveRaw(metadata); err != nil {
 		logging.LogError("failed to save updated metadata for file %s: %v", filePath, err)
 		return err
@@ -717,4 +678,20 @@ func UpdateLinksForSingleFile(filePath string) error {
 
 	logging.LogInfo("updated links for file %s: %d outbound links", filePath, len(metadata.UsedLinks))
 	return nil
+}
+
+// StartMetaGetCounter activates MetaDataGet call counting.
+func StartMetaGetCounter() {
+	count := 0
+	rebuildMetaGetCount = &count
+}
+
+// StopMetaGetCounter deactivates counting and returns the total.
+func StopMetaGetCounter() {
+	if rebuildMetaGetCount == nil {
+		return
+	}
+	count := *rebuildMetaGetCount
+	rebuildMetaGetCount = nil
+	logging.LogBuilder("rebuild-metadata").Printf("total MetaDataGet calls: %d", count)
 }

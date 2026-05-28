@@ -217,7 +217,7 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		currentMetadata.Folders = []string{}
 	}
 
-	updateAncestors(currentMetadata)
+	updateAncestors(currentMetadata, nil)
 	updateUsedLinks(currentMetadata)
 	updateTitle(currentMetadata)
 	// updateKidsAndLinksToHere(currentMetadata) // shouldnt run with every filesave since it loops through all files
@@ -266,6 +266,9 @@ func MetaDataSaveRaw(m *Metadata) error {
 
 // MetaDataGet retrieves metadata for a file path
 func MetaDataGet(filepath string) (*Metadata, error) {
+	if rebuildMetaGetCount != nil {
+		*rebuildMetaGetCount++
+	}
 	// normalize path for metadata lookup - add docs/ prefix if not present and not media
 	normalizedPath := pathutils.ToWithPrefix(filepath)
 

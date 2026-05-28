@@ -6,8 +6,6 @@
 - create filter manually not per ai..
 
 **per ai**
-- why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)
-- http://localhost:1324/browse/folders/systemadmin is running through all files
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)
 - edit table - cance/save => jump to correct position/context
 - rail theme: i dont like the hover buttons

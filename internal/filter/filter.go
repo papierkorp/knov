@@ -48,7 +48,6 @@ func FilterFiles(criteria []Criteria, logic string) ([]files.File, error) {
 		return nil, err
 	}
 
-	// apply file type hiding before filtering
 	allFiles = files.FilterFilesByHiddenTypes(allFiles)
 
 	if len(criteria) == 0 {
@@ -56,21 +55,11 @@ func FilterFiles(criteria []Criteria, logic string) ([]files.File, error) {
 	}
 
 	var filteredFiles []files.File
-
 	for _, file := range allFiles {
-		// normalize path for metadata lookup using pathutils
-		normalizedPath := pathutils.ToWithPrefix(file.Path)
-		fileMetadata, err := files.MetaDataGet(normalizedPath)
-		if err != nil {
-			logging.LogWarning("failed to get metadata for %s: %v", normalizedPath, err)
+		if file.Metadata == nil { // already loaded by GetAllFiles
 			continue
 		}
-
-		if fileMetadata == nil {
-			continue
-		}
-
-		if matchesFilter(fileMetadata, criteria, logic) {
+		if matchesFilter(file.Metadata, criteria, logic) {
 			filteredFiles = append(filteredFiles, file)
 		}
 	}

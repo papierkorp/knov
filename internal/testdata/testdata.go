@@ -355,7 +355,7 @@ func createTestMetadata() error {
 				parentIdx := i - 1 - (j * 2)
 				if parentIdx >= 0 && parentIdx < i {
 					parentPath := pathutils.ToRelative(testFiles[parentIdx])
-					parentMetadataPath := filepath.Join("docs", parentPath)
+					parentMetadataPath := pathutils.ToWithPrefix(pathutils.ToRelative(parentPath))
 					if parentMetadataPath != metadataPath && !contains(parents, parentMetadataPath) {
 						parents = append(parents, parentMetadataPath)
 					}
