@@ -435,8 +435,8 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 	var content string
 	filename := filepath.Base(relativePath)
 
-	switch ext {
-	case ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg":
+	switch {
+	case configmanager.IsImageExtension(ext):
 		// for images, use CSS to constrain size
 		var imgElement string
 		if clickToEnlarge {
@@ -467,12 +467,12 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 			content = imgElement
 		}
 
-	case ".mp4", ".webm", ".ogg":
+	case configmanager.IsVideoExtension(ext):
 		// for videos, use CSS to constrain size
 		videoElement := fmt.Sprintf(`
 			<video controls style="max-width: %dpx; max-height: %dpx;">
-				<source src="/media/%s" type="video/%s">
-			</video>`, size, size, relativePath, strings.TrimPrefix(ext, "."))
+				<source src="/media/%s" type="%s">
+			</video>`, size, size, relativePath, configmanager.MimeTypeByExtension(ext))
 
 		if showCaption {
 			content = fmt.Sprintf(`
@@ -484,7 +484,7 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 			content = videoElement
 		}
 
-	case ".pdf":
+	case configmanager.MimeTypeByExtension(ext) == "application/pdf":
 		// for PDFs, use fixed iframe size
 		pdfElement := fmt.Sprintf(`
 			<iframe src="/media/%s" style="width: %dpx; height: %dpx;"></iframe>`,

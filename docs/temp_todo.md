@@ -6,12 +6,10 @@
 - create filter manually not per ai..
 
 **per ai**
-- 
 - move media to browse
 - chat: select multiple + move/delete multiple
 - codeblocks - copy button
 - codeblocks setting - wrap content
-- .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
 
 **long term**
 - i want to get rid of the dokuwiki file support (i want to keep the dokuwiki to markdown export) but i dont want to display dokuwiki files any longer

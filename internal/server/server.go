@@ -420,30 +420,9 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 
 	ext := strings.ToLower(filepath.Ext(filePath))
 
-	// Set content type headers before serving files
-	switch ext {
-	case ".js":
-		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-	case ".css":
-		w.Header().Set("Content-Type", "text/css; charset=utf-8")
-	case ".png":
-		w.Header().Set("Content-Type", "image/png")
-	case ".jpg", ".jpeg":
-		w.Header().Set("Content-Type", "image/jpeg")
-	case ".svg":
-		w.Header().Set("Content-Type", "image/svg+xml")
-	case ".ico":
-		w.Header().Set("Content-Type", "image/x-icon")
-	case ".woff2":
-		w.Header().Set("Content-Type", "font/woff2")
-	case ".woff":
-		w.Header().Set("Content-Type", "font/woff")
-	case ".ttf":
-		w.Header().Set("Content-Type", "font/ttf")
-	case ".otf":
-		w.Header().Set("Content-Type", "font/otf")
-	case ".eot":
-		w.Header().Set("Content-Type", "application/vnd.ms-fontobject")
+	// set content type headers before serving files
+	if ct := configmanager.MimeTypeByExtension(ext); ct != "" {
+		w.Header().Set("Content-Type", ct)
 	}
 
 	if basePath == "themes" {
@@ -733,31 +712,8 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 
 	// set appropriate content type based on file extension
 	ext := strings.ToLower(filepath.Ext(mediaPath))
-	switch ext {
-	case ".png":
-		w.Header().Set("Content-Type", "image/png")
-	case ".jpg", ".jpeg":
-		w.Header().Set("Content-Type", "image/jpeg")
-	case ".gif":
-		w.Header().Set("Content-Type", "image/gif")
-	case ".webp":
-		w.Header().Set("Content-Type", "image/webp")
-	case ".svg":
-		w.Header().Set("Content-Type", "image/svg+xml")
-	case ".ico":
-		w.Header().Set("Content-Type", "image/x-icon")
-	case ".mp4":
-		w.Header().Set("Content-Type", "video/mp4")
-	case ".webm":
-		w.Header().Set("Content-Type", "video/webm")
-	case ".ogg":
-		w.Header().Set("Content-Type", "video/ogg")
-	case ".mp3":
-		w.Header().Set("Content-Type", "audio/mpeg")
-	case ".wav":
-		w.Header().Set("Content-Type", "audio/wav")
-	case ".pdf":
-		w.Header().Set("Content-Type", "application/pdf")
+	if ct := configmanager.MimeTypeByExtension(ext); ct != "" {
+		w.Header().Set("Content-Type", ct)
 	}
 
 	// set cache headers for media files

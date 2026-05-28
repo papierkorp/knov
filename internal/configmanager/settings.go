@@ -204,13 +204,18 @@ func GetAllowedMimeTypes() []string {
 	return userSettings.MediaSettings.AllowedMimeTypes
 }
 
-// IsImageExtension returns true if the file extension maps to an allowed image/* mime type
-func IsImageExtension(ext string) bool {
+// MimeTypeByExtension returns the clean mime type for an extension (no parameters).
+func MimeTypeByExtension(ext string) string {
 	mimeType := mime.TypeByExtension(ext)
-	// strip parameters (e.g. "image/svg+xml; charset=utf-8")
 	if i := strings.Index(mimeType, ";"); i >= 0 {
 		mimeType = strings.TrimSpace(mimeType[:i])
 	}
+	return mimeType
+}
+
+// IsImageExtension returns true if the file extension maps to an allowed image/* mime type
+func IsImageExtension(ext string) bool {
+	mimeType := MimeTypeByExtension(ext)
 	if !strings.HasPrefix(mimeType, "image/") {
 		return false
 	}
@@ -220,6 +225,16 @@ func IsImageExtension(ext string) bool {
 		}
 	}
 	return false
+}
+
+// IsVideoExtension returns true if the extension maps to a video/* mime type.
+func IsVideoExtension(ext string) bool {
+	return strings.HasPrefix(MimeTypeByExtension(ext), "video/")
+}
+
+// IsAudioExtension returns true if the extension maps to an audio/* mime type.
+func IsAudioExtension(ext string) bool {
+	return strings.HasPrefix(MimeTypeByExtension(ext), "audio/")
 }
 
 // GetTableSettings returns the current table display settings

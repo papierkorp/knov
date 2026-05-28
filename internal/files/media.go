@@ -119,58 +119,42 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 }
 
 // IsImageFile checks if file extension represents an image
+// IsImageFile checks if file extension represents an image
 func IsImageFile(ext string) bool {
-	imageExts := []string{".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".bmp", ".ico"}
-	for _, imageExt := range imageExts {
-		if ext == imageExt {
-			return true
-		}
-	}
-	return false
+	return configmanager.IsImageExtension(ext)
 }
 
 // IsVideoFile checks if file extension represents a video
 func IsVideoFile(ext string) bool {
-	videoExts := []string{".mp4", ".webm", ".ogg", ".avi", ".mov", ".wmv", ".flv", ".mkv"}
-	for _, videoExt := range videoExts {
-		if ext == videoExt {
-			return true
-		}
-	}
-	return false
+	return configmanager.IsVideoExtension(ext)
 }
 
 // IsAudioFile checks if file extension represents audio
 func IsAudioFile(ext string) bool {
-	audioExts := []string{".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac", ".wma"}
-	for _, audioExt := range audioExts {
-		if ext == audioExt {
-			return true
-		}
-	}
-	return false
+	return configmanager.IsAudioExtension(ext)
 }
 
 // GetFileTypeIcon returns appropriate Font Awesome icon for file type
 func GetFileTypeIcon(ext string) string {
+	mimeType := configmanager.MimeTypeByExtension(ext)
 	switch {
-	case IsImageFile(ext):
+	case strings.HasPrefix(mimeType, "image/"):
 		return "fa-image"
-	case IsVideoFile(ext):
+	case strings.HasPrefix(mimeType, "video/"):
 		return "fa-video"
-	case IsAudioFile(ext):
+	case strings.HasPrefix(mimeType, "audio/"):
 		return "fa-music"
-	case ext == ".pdf":
+	case mimeType == "application/pdf":
 		return "fa-file-pdf"
-	case ext == ".doc" || ext == ".docx":
+	case mimeType == "application/msword" || mimeType == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
 		return "fa-file-word"
-	case ext == ".xls" || ext == ".xlsx":
+	case mimeType == "application/vnd.ms-excel" || mimeType == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
 		return "fa-file-excel"
-	case ext == ".ppt" || ext == ".pptx":
+	case mimeType == "application/vnd.ms-powerpoint" || mimeType == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
 		return "fa-file-powerpoint"
-	case ext == ".txt":
+	case strings.HasPrefix(mimeType, "text/"):
 		return "fa-file-alt"
-	case ext == ".zip" || ext == ".rar" || ext == ".7z":
+	case mimeType == "application/zip" || mimeType == "application/x-rar-compressed" || mimeType == "application/x-7z-compressed":
 		return "fa-file-archive"
 	default:
 		return "fa-file"
