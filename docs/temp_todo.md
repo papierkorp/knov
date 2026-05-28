@@ -6,7 +6,7 @@
 - create filter manually not per ai..
 
 **per ai**
-- rail theme: i dont like the hover buttons for the chat
+- 
 - move media to browse
 - chat: select multiple + move/delete multiple
 - codeblocks - copy button

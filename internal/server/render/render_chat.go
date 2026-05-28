@@ -103,8 +103,7 @@ func renderMessage(m chat.Message, short bool) string {
 		deleteURL := fmt.Sprintf(`/api/chat/messages/%s`, m.ID)
 		lang := configmanager.GetLanguage()
 		return fmt.Sprintf(`<div class="chat-message chat-message-short" id="%s">
-	<div class="chat-message-content">%s</div>
-	<div class="chat-short-actions">
+	<div class="chat-message-actions">
 		<button class="btn-small btn-secondary"
 			hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
 		<button class="btn-small btn-secondary"
@@ -113,13 +112,15 @@ func renderMessage(m chat.Message, short bool) string {
 			hx-delete="%s" hx-target="#%s" hx-swap="outerHTML"
 			hx-confirm="%s">%s</button>
 	</div>
+	<div class="chat-message-content">%s</div>
 </div>`,
-			msgDivID, m.Content,
+			msgDivID,
 			newFileURL, msgDivID, translation.SprintfForRequest(lang, "to new file"),
 			appendURL, msgDivID, translation.SprintfForRequest(lang, "append"),
 			deleteURL, msgDivID,
 			translation.SprintfForRequest(lang, "delete this message?"),
-			translation.SprintfForRequest(lang, "delete"))
+			translation.SprintfForRequest(lang, "delete"),
+			m.Content)
 	}
 
 	newFileURL := fmt.Sprintf(`/api/chat/messages/%s/move?mode=new`, m.ID)
@@ -129,28 +130,25 @@ func renderMessage(m chat.Message, short bool) string {
 	lang := configmanager.GetLanguage()
 
 	return fmt.Sprintf(`<div class="chat-message" id="%s">
+	<div class="chat-message-actions">
+		<button class="btn-small btn-secondary"
+			hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
+		<button class="btn-small btn-secondary"
+			hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
+		<button class="btn-small btn-danger"
+			hx-delete="%s" hx-target="#%s" hx-swap="outerHTML"
+			hx-confirm="%s">%s</button>
+	</div>
 	<div class="chat-message-content">%s</div>
 	<div class="chat-message-meta">
 		<span class="chat-timestamp">%s</span>
-		<div class="chat-message-actions">
-			<button class="btn-small btn-secondary"
-				hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
-			<button class="btn-small btn-secondary"
-				hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
-			<button class="btn-small btn-danger"
-				hx-delete="%s" hx-target="#%s" hx-swap="outerHTML"
-				hx-confirm="%s">%s</button>
-		</div>
 	</div>
 </div>`,
-		msgDivID, m.Content, timestamp,
-		newFileURL, msgDivID,
-		translation.SprintfForRequest(lang, "to new file"),
-		appendURL, msgDivID,
-		translation.SprintfForRequest(lang, "append"),
-		deleteURL, msgDivID,
-		translation.SprintfForRequest(lang, "delete this message?"),
-		translation.SprintfForRequest(lang, "delete"))
+		msgDivID,
+		newFileURL, msgDivID, translation.SprintfForRequest(lang, "to new file"),
+		appendURL, msgDivID, translation.SprintfForRequest(lang, "append"),
+		deleteURL, msgDivID, translation.SprintfForRequest(lang, "delete this message?"), translation.SprintfForRequest(lang, "delete"),
+		m.Content, timestamp)
 }
 
 // RenderChatNewFileForm renders the new-file move form
