@@ -1161,6 +1161,227 @@ body[data-dark-mode="true"] .tooltip::after {
 }
 
 /* -----------------------------------------------------------------------
+   headers
+   ----------------------------------------------------------------------- */
+#view-fileview-rail .file-content h1,
+#view-fileview-reader .file-content h1 {
+  font-size: 1.5em;
+  font-style: italic;
+  letter-spacing: 5px;
+  border-left: 5px solid var(--primary);
+  padding: 0.5em;
+  margin-top: 3em;
+  background-color: var(--bg-secondary);
+  overflow-wrap: break-word;
+  color: var(--text);
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
+}
+
+#view-fileview-rail .file-content h1:first-child,
+#view-fileview-reader .file-content h1:first-child {
+  margin-top: 0;
+}
+
+#view-fileview-rail .file-content h2,
+#view-fileview-reader .file-content h2 {
+  font-size: 1.25em;
+  letter-spacing: 5px;
+  border-bottom: 1px solid var(--primary);
+  margin-top: 2.5em;
+  padding-bottom: 0.5em;
+  padding-left: 0;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
+}
+
+#view-fileview-rail .file-content h3,
+#view-fileview-reader .file-content h3 {
+  font-size: 1.12em;
+  border-bottom: 1px dotted var(--text-secondary);
+  margin-top: 2em;
+  padding-bottom: 0.5em;
+  padding-left: 0;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
+}
+
+#view-fileview-rail .file-content h4,
+#view-fileview-reader .file-content h4 {
+  font-size: 1.12em;
+  border-bottom: 1px dotted var(--text-secondary);
+  margin-top: 2em;
+  padding-bottom: 0.5em;
+  padding-left: 2em;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
+}
+
+#view-fileview-rail .file-content h5,
+#view-fileview-reader .file-content h5 {
+  font-size: 1.12em;
+  border-bottom: 1px dotted var(--text-secondary);
+  margin-top: 2em;
+  padding-bottom: 0.5em;
+  padding-left: 4em;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
+}
+
+#view-fileview-rail .file-content h6,
+#view-fileview-reader .file-content h6 {
+  font-size: 1.12em;
+  border-bottom: 1px dotted var(--text-secondary);
+  margin-top: 2em;
+  padding-bottom: 0.5em;
+  padding-left: 6em;
+  color: var(--text);
+  overflow-wrap: break-word;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  clear: both;
+}
+
+/* header edit buttons and anchor links — hidden, revealed on hover */
+#view-fileview-rail .file-content .header-edit-btn,
+#view-fileview-reader .file-content .header-edit-btn {
+  opacity: 0;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.7em;
+  line-height: 1;
+  padding: 0.2em 0.4em;
+  margin-left: 0.5em;
+  transition: opacity 0.2s ease-in-out;
+  border-radius: 3px;
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
+}
+
+#view-fileview-rail .file-content .header-anchor,
+#view-fileview-reader .file-content .header-anchor {
+  opacity: 0;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.7em;
+  line-height: 1;
+  padding: 0.2em 0.4em;
+  margin-left: 0.3em;
+  transition: opacity 0.2s ease-in-out;
+  border-radius: 3px;
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
+}
+
+#view-fileview-rail .file-content h1:hover .header-edit-btn,
+#view-fileview-rail .file-content h2:hover .header-edit-btn,
+#view-fileview-rail .file-content h3:hover .header-edit-btn,
+#view-fileview-rail .file-content h4:hover .header-edit-btn,
+#view-fileview-rail .file-content h5:hover .header-edit-btn,
+#view-fileview-rail .file-content h6:hover .header-edit-btn,
+#view-fileview-reader .file-content h1:hover .header-edit-btn,
+#view-fileview-reader .file-content h2:hover .header-edit-btn,
+#view-fileview-reader .file-content h3:hover .header-edit-btn,
+#view-fileview-reader .file-content h4:hover .header-edit-btn,
+#view-fileview-reader .file-content h5:hover .header-edit-btn,
+#view-fileview-reader .file-content h6:hover .header-edit-btn {
+  opacity: 1;
+}
+
+#view-fileview-rail .file-content h1:hover .header-anchor,
+#view-fileview-rail .file-content h2:hover .header-anchor,
+#view-fileview-rail .file-content h3:hover .header-anchor,
+#view-fileview-rail .file-content h4:hover .header-anchor,
+#view-fileview-rail .file-content h5:hover .header-anchor,
+#view-fileview-rail .file-content h6:hover .header-anchor,
+#view-fileview-reader .file-content h1:hover .header-anchor,
+#view-fileview-reader .file-content h2:hover .header-anchor,
+#view-fileview-reader .file-content h3:hover .header-anchor,
+#view-fileview-reader .file-content h4:hover .header-anchor,
+#view-fileview-reader .file-content h5:hover .header-anchor,
+#view-fileview-reader .file-content h6:hover .header-anchor {
+  opacity: 1;
+}
+
+#view-fileview-rail .file-content .header-edit-btn:hover,
+#view-fileview-reader .file-content .header-edit-btn:hover {
+  color: var(--primary);
+  background: var(--bg);
+  border-color: var(--border);
+  text-decoration: none;
+}
+
+#view-fileview-rail .file-content .header-anchor:hover,
+#view-fileview-reader .file-content .header-anchor:hover {
+  color: var(--primary);
+  background: var(--bg);
+  border-color: var(--border);
+  text-decoration: none;
+}
+
+#view-fileview-rail .file-content .header-edit-btn:not(:has(i))::before,
+#view-fileview-reader .file-content .header-edit-btn:not(:has(i))::before {
+  content: "✎";
+  font-size: 1em;
+}
+
+#view-fileview-rail .file-content .header-anchor:empty::before,
+#view-fileview-reader .file-content .header-anchor:empty::before {
+  content: "#";
+}
+
+/* -----------------------------------------------------------------------
+   blockquotes
+   ----------------------------------------------------------------------- */
+#view-fileview-rail blockquote,
+#view-fileview-reader blockquote {
+  border-left: 10px solid var(--neutral);
+  padding: 0.5em 10px;
+}
+
+#view-fileview-rail blockquote::before,
+#view-fileview-reader blockquote::before {
+  color: var(--neutral);
+  content: open-quote;
+  font-size: 4em;
+  line-height: 0.1em;
+  margin-right: 0.25em;
+  vertical-align: -0.4em;
+}
+
+#view-fileview-rail blockquote p,
+#view-fileview-reader blockquote p {
+  display: inline;
+}
+
+/* clearfix */
+#view-fileview-rail .file-content::after,
+#view-fileview-reader .file-content::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* -----------------------------------------------------------------------
    interactive table component (.table-container)
    ----------------------------------------------------------------------- */
 #view-fileview-rail .table-container,

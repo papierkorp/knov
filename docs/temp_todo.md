@@ -6,9 +6,8 @@
 - create filter manually not per ai..
 
 **per ai**
-- fileview - style for rail theme (just like builtin)
 - fileview => run through getAllFiles  http://localhost:1324/files/ai.md
-- rail theme: i dont like the hover buttons
+- rail theme: i dont like the hover buttons for the chat
 - chat: select multiple + move/delete multiple
 - codeblocks - copy button
 - codeblocks setting - wrap content
