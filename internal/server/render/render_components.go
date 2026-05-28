@@ -12,8 +12,8 @@ import (
 )
 
 // RenderTableComponent renders a paginated, sortable, searchable table HTML fragment
-func RenderTableComponent(tableData *types.TableData, filepath string, page, size, sortCol int, sortOrder, searchQuery string) string {
-	return parser.RenderTableHTML(tableData, filepath, page, size, sortCol, sortOrder, searchQuery)
+func RenderTableComponent(tableData *types.TableData, filepath string, tableIndex, page, size, sortCol int, sortOrder, searchQuery string) string {
+	return parser.RenderTableHTML(tableData, filepath, tableIndex, page, size, sortCol, sortOrder, searchQuery)
 }
 
 // RenderIndexEntryRowHelper generates HTML for a single index entry row

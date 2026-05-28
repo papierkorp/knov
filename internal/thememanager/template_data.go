@@ -343,16 +343,18 @@ func NewHistoryTemplateData(filePath, currentVersion, selectedVersion string, al
 // FileEditTableTemplateData extends base with table editor data
 type FileEditTableTemplateData struct {
 	BaseTemplateData
-	FilePath string
+	FilePath   string
+	TableIndex int
 }
 
 // NewFileEditTableTemplateData creates table editor template data
-func NewFileEditTableTemplateData(filePath string) FileEditTableTemplateData {
+func NewFileEditTableTemplateData(filePath string, tableIndex int) FileEditTableTemplateData {
 	title := "table editor: " + filePath
 
 	return FileEditTableTemplateData{
 		BaseTemplateData: NewBaseTemplateData(title),
 		FilePath:         filePath,
+		TableIndex:       tableIndex,
 	}
 }
 

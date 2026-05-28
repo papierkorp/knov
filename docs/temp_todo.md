@@ -6,15 +6,16 @@
 - create filter manually not per ai..
 
 **per ai**
-- table paginate/search/filter is not working (handleAPIGetTable is not used??)
-- edit table - cance/save => jump to correct position/context
+- fileview - style for rail theme (just like builtin)
+- fileview => run through getAllFiles  http://localhost:1324/files/ai.md
 - rail theme: i dont like the hover buttons
 - chat: select multiple + move/delete multiple
 - codeblocks - copy button
 - codeblocks setting - wrap content
 - .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
 
-
+**long term**
+- i want to get rid of the dokuwiki file support (i want to keep the dokuwiki to markdown export) but i dont want to display dokuwiki files any longer
 - media.go - determine filetype for metadata
 - fix windows path issues
 - /releasenotes route with new icon on the bottom of the rail theme
@@ -25,23 +26,23 @@
   - Implement widget resizing
   - Add dashboard export/import
 - export metadata to yaml header in markdown files
-- performance updates
-  - use Query() instead of a loop through files.GetAllFiles()
-  - use Query in filter.go
-  - Refactor filter.go to use query
-- migration solution
-metadataStorage_sqlite - migration
-// migrate: add references column if missing
-if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`); err != nil {
-	// column likely already exists, ignore
-	logging.LogDebug("references column already exists or migration skipped: %v", err)
-})
+
+- migration solution for sqlite
+  - e.g. new table added / old table removed
+  - what are possible solutions?
+  - manual we could: `if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`)` with `logging.LogDebug("references column already exists or migration skipped: %v", err)` but i dont like this
+  - do i use a too like liquibase?
 
 
-# concurrent
 
+# performance updates
+
+- use Query() instead of a loop through files.GetAllFiles()
+- use Query in filter.go
+- Refactor filter.go to use query
+
+**concurrent**
 - make rebuild metadata concurrent e.g. each letter?
-
 
 dont give me any code yet - what options do i ave to make the rebuild metadata concurrent?
 at the moment im running through ALL files mutliple times (e.g. with MetaDataPurgeStale, MetaDataPurgeDuplicates, linksrebuild..)May 13Claude responded: Looking at the current flow, you have roughly:Weighed concurrent metadata rebuild strategies to eliminate redundant file iterationsWeighed concurrent metadata rebuild strategies to eliminate redundant file iterationsLooking at the current flow, you have roughly:

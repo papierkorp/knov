@@ -37,6 +37,12 @@ func RenderTableEditorForm(filePath string, tableIndex int) string {
 		return fmt.Sprintf(`<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to process table"))
 	}
 
+	// build return URL including the header anchor so cancel/save land in the right spot
+	returnURL := fmt.Sprintf("/files/%s", filePath)
+	if anchor := contentHandler.FindMarkdownTableAnchor(filePath, tableIndex); anchor != "" {
+		returnURL += "#" + anchor
+	}
+
 	html := fmt.Sprintf(`
 <div class="table-editor-toolbar">
 	<button type="button" onclick="saveTable()" class="btn-primary">
@@ -54,6 +60,7 @@ func RenderTableEditorForm(filePath string, tableIndex int) string {
 <script>
 const tableData = %s;
 const filePath = '%s';
+const returnURL = '%s';
 
 const container = document.getElementById('handsontable-container');
 const hot = new Handsontable(container, {
@@ -125,9 +132,14 @@ function saveTable() {
 		method: 'POST',
 		body: formData
 	})
-	.then(response => response.text())
-	.then(html => {
-		document.getElementById('table-editor-status').innerHTML = html;
+	.then(response => {
+		if (response.ok) {
+			window.location.href = returnURL;
+		} else {
+			return response.text().then(html => {
+				document.getElementById('table-editor-status').innerHTML = html;
+			});
+		}
 	})
 	.catch(error => {
 		document.getElementById('table-editor-status').innerHTML =
@@ -136,7 +148,7 @@ function saveTable() {
 }
 
 function cancelTableEdit() {
-	window.location.href = '/files/' + filePath;
+	window.location.href = returnURL;
 }
 </script>
 `,
@@ -144,6 +156,7 @@ function cancelTableEdit() {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
 		string(tableJSON),
 		jsEscape(filePath),
+		jsEscape(returnURL),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "error saving table"),
 	)
 

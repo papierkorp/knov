@@ -205,7 +205,7 @@ const docTemplate = `{
         },
         "/api/components/table": {
             "get": {
-                "description": "Returns paginated, sortable, searchable table HTML fragment",
+                "description": "Returns paginated, sortable, searchable table HTML fragment for a markdown file",
                 "produces": [
                     "text/html"
                 ],
@@ -220,6 +220,13 @@ const docTemplate = `{
                         "name": "filepath",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Table index (0-based)",
+                        "name": "tableindex",
+                        "in": "query"
                     },
                     {
                         "type": "integer",
@@ -857,6 +864,106 @@ const docTemplate = `{
                         "type": "boolean",
                         "description": "Whether section editing should include subheaders",
                         "name": "sectionEditIncludeSubheaders",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/table/page-size": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update table page size",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Rows per page (5-200)",
+                        "name": "pageSize",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/table/show-info": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update table show info setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to show the row count info line",
+                        "name": "showInfo",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/table/show-paging": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update table show paging setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to show pagination buttons",
+                        "name": "showPaging",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/table/show-search": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update table show search setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to show the search input",
+                        "name": "showSearch",
                         "in": "formData",
                         "required": true
                     }

@@ -1160,6 +1160,194 @@ body[data-dark-mode="true"] .tooltip::after {
   background: var(--bg-secondary);
 }
 
+/* -----------------------------------------------------------------------
+   interactive table component (.table-container)
+   ----------------------------------------------------------------------- */
+#view-fileview-rail .table-container,
+#view-fileview-reader .table-container {
+  margin: 1.5em 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+#view-fileview-rail .table-controls,
+#view-fileview-reader .table-controls {
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+#view-fileview-rail .table-search,
+#view-fileview-reader .table-search {
+  width: 100%;
+  max-width: 360px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9em;
+}
+
+#view-fileview-rail .table-search:focus,
+#view-fileview-reader .table-search:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+#view-fileview-rail .table-wrapper,
+#view-fileview-reader .table-wrapper {
+  overflow-x: auto;
+}
+
+#view-fileview-rail .table-container table,
+#view-fileview-reader .table-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  border: none;
+}
+
+#view-fileview-rail .table-container thead,
+#view-fileview-reader .table-container thead {
+  background: var(--bg-secondary);
+  border-bottom: 2px solid var(--border);
+}
+
+#view-fileview-rail .table-container th,
+#view-fileview-reader .table-container th {
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text);
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+#view-fileview-rail .table-container th:last-child,
+#view-fileview-reader .table-container th:last-child {
+  border-right: none;
+}
+
+#view-fileview-rail .table-container th.sortable,
+#view-fileview-reader .table-container th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+#view-fileview-rail .table-container th.sortable:hover,
+#view-fileview-reader .table-container th.sortable:hover {
+  background: var(--bg);
+}
+
+#view-fileview-rail .table-container td,
+#view-fileview-reader .table-container td {
+  padding: 8px 14px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+#view-fileview-rail .table-container td:last-child,
+#view-fileview-reader .table-container td:last-child {
+  border-right: none;
+}
+
+#view-fileview-rail .table-container tbody tr:last-child td,
+#view-fileview-reader .table-container tbody tr:last-child td {
+  border-bottom: none;
+}
+
+#view-fileview-rail .table-container tbody tr:hover,
+#view-fileview-reader .table-container tbody tr:hover {
+  background: var(--bg-secondary);
+}
+
+/* footer bar: edit button left, info + pagination right */
+#view-fileview-rail .table-footer,
+#view-fileview-reader .table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  min-height: 40px;
+}
+
+#view-fileview-rail .table-footer-right,
+#view-fileview-reader .table-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#view-fileview-rail .btn-table-edit,
+#view-fileview-reader .btn-table-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+#view-fileview-rail .btn-table-edit:hover,
+#view-fileview-reader .btn-table-edit:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+#view-fileview-rail .table-info,
+#view-fileview-reader .table-info {
+  color: var(--text-secondary);
+  font-size: 0.8em;
+}
+
+#view-fileview-rail .pagination,
+#view-fileview-reader .pagination {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+#view-fileview-rail .page-btn,
+#view-fileview-reader .page-btn {
+  padding: 3px 9px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+#view-fileview-rail .page-btn:hover:not(:disabled),
+#view-fileview-reader .page-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+#view-fileview-rail .page-btn:disabled,
+#view-fileview-reader .page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+#view-fileview-rail .page-info,
+#view-fileview-reader .page-info {
+  color: var(--text-secondary);
+  font-size: 0.85em;
+  padding: 0 4px;
+}
+
 /* =============================================
    compact chat messages inside the flyout
    ============================================= */

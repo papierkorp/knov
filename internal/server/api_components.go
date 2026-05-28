@@ -2,22 +2,22 @@ package server
 
 import (
 	"net/http"
-	"os"
 	"strconv"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentHandler"
 	"knov/internal/logging"
 	"knov/internal/parser"
-	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 	"knov/internal/types"
 )
 
 // @Summary Get paginated table
-// @Description Returns paginated, sortable, searchable table HTML fragment
+// @Description Returns paginated, sortable, searchable table HTML fragment for a markdown file
 // @Tags components
 // @Param filepath query string true "File path"
+// @Param tableindex query int false "Table index (0-based)" default(0)
 // @Param page query int false "Page number" default(1)
 // @Param size query int false "Items per page" default(25)
 // @Param sort query int false "Column index to sort by" default(-1)
@@ -31,8 +31,15 @@ import (
 func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 	filepath := r.URL.Query().Get("filepath")
 	if filepath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath parameter required"), http.StatusBadRequest)
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath parameter required"))
 		return
+	}
+
+	tableIndex := 0
+	if idxStr := r.URL.Query().Get("tableindex"); idxStr != "" {
+		if idx, err := strconv.Atoi(idxStr); err == nil && idx >= 0 {
+			tableIndex = idx
+		}
 	}
 
 	page := 1
@@ -42,7 +49,7 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	size := 25
+	size := configmanager.GetTablePageSize()
 	if sizeStr := r.URL.Query().Get("size"); sizeStr != "" {
 		if s, err := strconv.Atoi(sizeStr); err == nil && s > 0 {
 			size = s
@@ -63,37 +70,15 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 
 	searchQuery := r.URL.Query().Get("search")
 
-	fullPath := pathutils.ToDocsPath(filepath)
-	fileContent, err := os.ReadFile(fullPath)
+	handler := contentHandler.GetHandler("markdown")
+	headers, rows, err := handler.ExtractTable(filepath, tableIndex)
 	if err != nil {
-		logging.LogError("failed to read file %s: %v", fullPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
+		logging.LogError("failed to extract table from %s: %v", filepath, err)
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"))
 		return
 	}
 
-	handler := parser.GetParserRegistry().GetHandler(fullPath)
-	if handler == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unsupported file type"), http.StatusBadRequest)
-		return
-	}
-
-	var tableData *types.TableData
-	if dokuwikiHandler, ok := handler.(*parser.DokuwikiHandler); ok {
-		tableData, err = dokuwikiHandler.GetFirstTable(string(fileContent))
-		if err != nil {
-			logging.LogError("failed to parse dokuwiki table: %v", err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse table"), http.StatusInternalServerError)
-			return
-		}
-
-		if tableData.Total == 0 {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"), http.StatusBadRequest)
-			return
-		}
-	} else {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "table parsing not supported for this file type"), http.StatusBadRequest)
-		return
-	}
+	tableData := simpleToTableData(headers, rows)
 
 	if searchQuery != "" {
 		tableData = parser.SearchTable(tableData, searchQuery)
@@ -105,8 +90,25 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 
 	paginatedData := parser.PaginateTable(tableData, page, size)
 
-	html := render.RenderTableComponent(paginatedData, filepath, page, size, sortCol, sortOrder, searchQuery)
+	html := render.RenderTableComponent(paginatedData, filepath, tableIndex, page, size, sortCol, sortOrder, searchQuery)
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, nil, html)
+}
+
+// simpleToTableData converts plain string table data into the typed TableData structure
+// used by the sort/search/paginate helpers.
+func simpleToTableData(headers []string, rows [][]string) *types.TableData {
+	tHeaders := make([]types.TableHeader, len(headers))
+	for i, h := range headers {
+		tHeaders[i] = types.TableHeader{Content: h, DataType: "text", Align: "left", Sortable: true, ColumnIdx: i}
+	}
+	tRows := make([][]types.TableCell, len(rows))
+	for i, row := range rows {
+		tRow := make([]types.TableCell, len(row))
+		for j, cell := range row {
+			tRow[j] = types.TableCell{Content: cell, DataType: "text", Align: "left", RawValue: cell}
+		}
+		tRows[i] = tRow
+	}
+	return &types.TableData{Headers: tHeaders, Rows: tRows, Total: len(rows)}
 }

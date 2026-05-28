@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -197,6 +198,12 @@ func StartServerChi() {
 
 			// Editor settings endpoints
 			r.Post("/section-edit-subheaders", handleAPIUpdateSectionEditSubheaders)
+
+			// Table display settings endpoints
+			r.Post("/table/page-size", handleAPIUpdateTablePageSize)
+			r.Post("/table/show-search", handleAPIUpdateTableShowSearch)
+			r.Post("/table/show-info", handleAPIUpdateTableShowInfo)
+			r.Post("/table/show-paging", handleAPIUpdateTableShowPaging)
 
 			// File type visibility endpoints
 			r.Post("/file-types/hide-markdown", handleAPIUpdateHideMarkdown)
@@ -987,8 +994,15 @@ func handleFileNewIndex(w http.ResponseWriter, r *http.Request) {
 func handleFileEditTable(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/files/edittable/")
 
+	tableIndex := 0
+	if idxStr := r.URL.Query().Get("tableindex"); idxStr != "" {
+		if idx, err := strconv.Atoi(idxStr); err == nil && idx >= 0 {
+			tableIndex = idx
+		}
+	}
+
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileEditTableTemplateData(filePath)
+	data := thememanager.NewFileEditTableTemplateData(filePath, tableIndex)
 
 	err := tm.Render(w, "filedittable", data)
 	if err != nil {

@@ -462,3 +462,60 @@ func (h *MarkdownContentHandler) generateMarkdownTable(headers []string, rows []
 	logging.LogDebug("generated table with %d lines (including header and separator)", len(lines))
 	return lines
 }
+
+// FindMarkdownTableAnchor returns the slugified ID of the header that precedes
+// the Nth table (0-based) in the markdown file. Returns "" if none is found.
+func FindMarkdownTableAnchor(filePath string, tableIndex int) string {
+	fullPath := pathutils.ToDocsPath(filePath)
+	content, err := contentStorage.ReadFile(fullPath)
+	if err != nil {
+		logging.LogDebug("findMarkdownTableAnchor: could not read %s: %v", filePath, err)
+		return ""
+	}
+
+	lines := strings.Split(string(content), "\n")
+	lastAnchor := ""
+	tableCount := -1
+
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+
+		// track the most recent header
+		if strings.HasPrefix(trimmed, "#") {
+			headerText := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
+			lastAnchor = slugifyAnchor(headerText)
+		}
+
+		// a table separator line (| --- |) following a row line marks a table
+		if strings.HasPrefix(trimmed, "|") && strings.Contains(trimmed, "-") {
+			if i > 0 && strings.HasPrefix(strings.TrimSpace(lines[i-1]), "|") {
+				tableCount++
+				if tableCount == tableIndex {
+					return lastAnchor
+				}
+			}
+		}
+	}
+	return lastAnchor
+}
+
+// slugifyAnchor converts header text to the same anchor ID format that
+// gomarkdown's AutoHeadingIDs produces: lowercase, spaces→hyphens,
+// non-alphanumeric chars dropped, consecutive hyphens collapsed.
+func slugifyAnchor(text string) string {
+	var b strings.Builder
+	prevHyphen := false
+	for _, r := range strings.ToLower(text) {
+		switch {
+		case r >= 'a' && r <= 'z', r >= '0' && r <= '9':
+			b.WriteRune(r)
+			prevHyphen = false
+		case r == ' ' || r == '-':
+			if !prevHyphen {
+				b.WriteRune('-')
+				prevHyphen = true
+			}
+		}
+	}
+	return strings.Trim(b.String(), "-")
+}

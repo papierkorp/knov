@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"io"
+	"net/url"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -157,8 +158,11 @@ func resolveMediaPath(dest string) string {
 }
 
 // buildRenderer creates the HTML renderer with hooks for code highlighting,
-// table edit buttons, and media image previews.
+// table HTMX loaders, and media image previews.
 func (h *MarkdownHandler) buildRenderer(filePath string) *html.Renderer {
+	tableIdx := 0
+	relPath := pathutils.ToRelative(filePath)
+
 	opts := html.RendererOptions{
 		Flags: html.CommonFlags | html.HrefTargetBlank,
 		RenderNodeHook: func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
@@ -171,9 +175,15 @@ func (h *MarkdownHandler) buildRenderer(filePath string) *html.Renderer {
 				return ast.GoToNext, true
 			}
 
-			if _, ok := node.(*ast.Table); ok && !entering {
-				fmt.Fprintf(w, `</table><div class="table-edit-wrapper"><a href="/files/edittable/%s" class="btn-table-edit"><i class="fa fa-edit"></i> %s</a></div>`,
-					filePath, translation.SprintfForRequest(configmanager.GetLanguage(), "edit table"))
+			if _, ok := node.(*ast.Table); ok {
+				if entering {
+					// replace the static table with an HTMX-powered interactive component
+					fmt.Fprintf(w, `<div id="table-component-%d" hx-get="/api/components/table?filepath=%s&tableindex=%d" hx-trigger="load" hx-swap="outerHTML"></div>`,
+						tableIdx, url.QueryEscape(relPath), tableIdx)
+					tableIdx++
+					return ast.SkipChildren, true
+				}
+				// suppress the default </table> tag since we skipped rendering
 				return ast.GoToNext, true
 			}
 

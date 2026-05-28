@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"knov/internal/configmanager"
+	"knov/internal/translation"
 	"knov/internal/types"
 )
 
@@ -131,7 +133,7 @@ func parseDate(s string) int64 {
 	return 0
 }
 
-func RenderTableHTML(data *types.TableData, filepath string, page, size int, sortCol int, sortOrder string, searchQuery string) string {
+func RenderTableHTML(data *types.TableData, filepath string, tableIndex, page, size int, sortCol int, sortOrder string, searchQuery string) string {
 	var html string
 
 	totalPages := (data.Total + size - 1) / size
@@ -142,31 +144,40 @@ func RenderTableHTML(data *types.TableData, filepath string, page, size int, sor
 	start := (page-1)*size + 1
 	end := start + len(data.Rows) - 1
 
-	baseParams := fmt.Sprintf("filepath=%s&size=%d", filepath, size)
+	targetID := fmt.Sprintf("table-component-%d", tableIndex)
+
+	// search is NOT included in baseParams — it is injected at request time
+	// via hx-include so pagination and sort always reflect the live input value
+	baseParams := fmt.Sprintf("filepath=%s&tableindex=%d&size=%d", filepath, tableIndex, size)
 	if sortCol >= 0 {
 		baseParams += fmt.Sprintf("&sort=%d&order=%s", sortCol, sortOrder)
 	}
-	if searchQuery != "" {
-		baseParams += fmt.Sprintf("&search=%s", searchQuery)
+	searchInclude := fmt.Sprintf("#%s .table-search", targetID)
+
+	ts := configmanager.GetTableSettings()
+
+	html += fmt.Sprintf(`<div id="%s" class="table-container">`, targetID)
+
+	if ts.ShowSearch {
+		html += `<div class="table-controls">`
+		html += fmt.Sprintf(`
+			<input type="text"
+			       class="table-search"
+			       placeholder="Search table..."
+			       value="%s"
+			       hx-get="/api/components/table?%s&page=1"
+			       hx-trigger="keyup changed delay:300ms"
+			       hx-target="#%s"
+			       hx-swap="outerHTML"
+			       hx-include="this"
+			       name="search">
+		`, searchQuery, baseParams, targetID)
+		// note: hx-include="this" sends name="search" — baseParams has no search param
+		html += `</div>`
 	}
 
-	html += `<div class="table-container">`
-	html += `<div class="table-controls">`
-	html += fmt.Sprintf(`
-		<input type="text"
-		       class="table-search"
-		       placeholder="Search table..."
-		       value="%s"
-		       hx-get="/api/components/table?%s&page=1"
-		       hx-trigger="keyup changed delay:300ms"
-		       hx-target="#table-wrapper"
-		       hx-include="this"
-		       name="search">
-	`, searchQuery, baseParams)
-	html += `</div>`
-
 	html += `<div class="table-wrapper">`
-	html += `<table class="dokuwiki-table" data-sortable="true" data-searchable="true">`
+	html += `<table>`
 
 	html += `<thead><tr>`
 	for _, header := range data.Headers {
@@ -175,21 +186,18 @@ func RenderTableHTML(data *types.TableData, filepath string, page, size int, sor
 		if sortCol == header.ColumnIdx {
 			if sortOrder == "asc" {
 				nextOrder = "desc"
-				sortIndicator = " â†‘"
+				sortIndicator = " ↑"
 			} else {
 				nextOrder = "asc"
-				sortIndicator = " â†“"
+				sortIndicator = " ↓"
 			}
 		}
 
-		headerParams := fmt.Sprintf("filepath=%s&size=%d&page=1&sort=%d&order=%s",
-			filepath, size, header.ColumnIdx, nextOrder)
-		if searchQuery != "" {
-			headerParams += fmt.Sprintf("&search=%s", searchQuery)
-		}
+		headerParams := fmt.Sprintf("filepath=%s&tableindex=%d&size=%d&page=1&sort=%d&order=%s",
+			filepath, tableIndex, size, header.ColumnIdx, nextOrder)
 
-		html += fmt.Sprintf(`<th data-type="%s" data-align="%s" hx-get="/api/components/table?%s" hx-target="#table-wrapper" class="sortable">%s%s</th>`,
-			header.DataType, header.Align, headerParams, header.Content, sortIndicator)
+		html += fmt.Sprintf(`<th data-type="%s" data-align="%s" hx-get="/api/components/table?%s" hx-target="#%s" hx-swap="outerHTML" hx-include="%s" class="sortable">%s%s</th>`,
+			header.DataType, header.Align, headerParams, targetID, searchInclude, header.Content, sortIndicator)
 	}
 	html += `</tr></thead>`
 
@@ -207,41 +215,55 @@ func RenderTableHTML(data *types.TableData, filepath string, page, size int, sor
 	html += `</table>`
 	html += `</div>`
 
-	html += `<div class="pagination">`
+	html += `<div class="table-footer">`
 
-	if page > 1 {
-		html += fmt.Sprintf(`<button hx-get="/api/components/table?%s&page=1" hx-target="#table-wrapper" class="page-btn">First</button>`, baseParams)
-	} else {
-		html += `<button class="page-btn" disabled>First</button>`
+	html += fmt.Sprintf(`<a href="/files/edittable/%s?tableindex=%d" class="btn-table-edit"><i class="fa fa-edit"></i> %s</a>`,
+		filepath, tableIndex, translation.SprintfForRequest(configmanager.GetLanguage(), "edit table"))
+
+	html += `<div class="table-footer-right">`
+
+	if ts.ShowInfo {
+		if data.Total > 0 {
+			html += fmt.Sprintf(`<span class="table-info">Showing %d-%d of %d rows</span>`, start, end, data.Total)
+		} else {
+			html += `<span class="table-info">No results found</span>`
+		}
 	}
 
-	if page > 1 {
-		html += fmt.Sprintf(`<button hx-get="/api/components/table?%s&page=%d" hx-target="#table-wrapper" class="page-btn">Prev</button>`, baseParams, page-1)
-	} else {
-		html += `<button class="page-btn" disabled>Prev</button>`
+	if ts.ShowPaging {
+		html += `<div class="pagination">`
+
+		if page > 1 {
+			html += fmt.Sprintf(`<button hx-get="/api/components/table?%s&page=1" hx-target="#%s" hx-swap="outerHTML" hx-include="%s" class="page-btn">First</button>`, baseParams, targetID, searchInclude)
+		} else {
+			html += `<button class="page-btn" disabled>First</button>`
+		}
+
+		if page > 1 {
+			html += fmt.Sprintf(`<button hx-get="/api/components/table?%s&page=%d" hx-target="#%s" hx-swap="outerHTML" hx-include="%s" class="page-btn">Prev</button>`, baseParams, page-1, targetID, searchInclude)
+		} else {
+			html += `<button class="page-btn" disabled>Prev</button>`
+		}
+
+		html += fmt.Sprintf(`<span class="page-info">Page %d of %d</span>`, page, totalPages)
+
+		if page < totalPages {
+			html += fmt.Sprintf(`<button hx-get="/api/components/table?%s&page=%d" hx-target="#%s" hx-swap="outerHTML" hx-include="%s" class="page-btn">Next</button>`, baseParams, page+1, targetID, searchInclude)
+		} else {
+			html += `<button class="page-btn" disabled>Next</button>`
+		}
+
+		if page < totalPages {
+			html += fmt.Sprintf(`<button hx-get="/api/components/table?%s&page=%d" hx-target="#%s" hx-swap="outerHTML" hx-include="%s" class="page-btn">Last</button>`, baseParams, totalPages, targetID, searchInclude)
+		} else {
+			html += `<button class="page-btn" disabled>Last</button>`
+		}
+
+		html += `</div>`
 	}
 
-	html += fmt.Sprintf(`<span class="page-info">Page %d of %d</span>`, page, totalPages)
-
-	if page < totalPages {
-		html += fmt.Sprintf(`<button hx-get="/api/components/table?%s&page=%d" hx-target="#table-wrapper" class="page-btn">Next</button>`, baseParams, page+1)
-	} else {
-		html += `<button class="page-btn" disabled>Next</button>`
-	}
-
-	if page < totalPages {
-		html += fmt.Sprintf(`<button hx-get="/api/components/table?%s&page=%d" hx-target="#table-wrapper" class="page-btn">Last</button>`, baseParams, totalPages)
-	} else {
-		html += `<button class="page-btn" disabled>Last</button>`
-	}
-
-	html += `</div>`
-
-	if data.Total > 0 {
-		html += fmt.Sprintf(`<div class="table-info">Showing %d-%d of %d rows</div>`, start, end, data.Total)
-	} else {
-		html += `<div class="table-info">No results found</div>`
-	}
+	html += `</div>` // table-footer-right
+	html += `</div>` // table-footer
 
 	html += `</div>`
 

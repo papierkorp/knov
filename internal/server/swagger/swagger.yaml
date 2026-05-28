@@ -435,13 +435,19 @@ paths:
       - chat
   /api/components/table:
     get:
-      description: Returns paginated, sortable, searchable table HTML fragment
+      description: Returns paginated, sortable, searchable table HTML fragment for
+        a markdown file
       parameters:
       - description: File path
         in: query
         name: filepath
         required: true
         type: string
+      - default: 0
+        description: Table index (0-based)
+        in: query
+        name: tableindex
+        type: integer
       - default: 1
         description: Page number
         in: query
@@ -880,6 +886,74 @@ paths:
       - text/html
       responses: {}
       summary: Update section edit include subheaders setting
+      tags:
+      - config
+  /api/config/table/page-size:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Rows per page (5-200)
+        in: formData
+        name: pageSize
+        required: true
+        type: integer
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update table page size
+      tags:
+      - config
+  /api/config/table/show-info:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to show the row count info line
+        in: formData
+        name: showInfo
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update table show info setting
+      tags:
+      - config
+  /api/config/table/show-paging:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to show pagination buttons
+        in: formData
+        name: showPaging
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update table show paging setting
+      tags:
+      - config
+  /api/config/table/show-search:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to show the search input
+        in: formData
+        name: showSearch
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update table show search setting
       tags:
       - config
   /api/cronjob:

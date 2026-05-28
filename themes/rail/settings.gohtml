@@ -6,6 +6,7 @@
         {{ template "general-section" . }}
         {{ template "theme-section" . }}
         {{ template "editor-section" . }}
+        {{ template "table-section" . }}
         {{ template "media-section" . }}
         {{ template "file-types-section" . }}
     </div>
@@ -85,6 +86,59 @@
                 <small>{{T "When enabled, editing a section includes all sub-level headers"}}</small>
             </label>
             <div class="help-text">{{T "control whether section editing includes content from sub-headers"}}</div>
+        </form>
+    </div>
+</section>
+{{ end }}
+
+{{ define "table-section" }}
+<section class="settings-section">
+    <h2>{{T "Table Settings"}}</h2>
+    <div class="setting-item">
+        <form hx-post="/api/config/table/page-size" hx-trigger="change delay:500ms">
+            <label for="tablePageSize">
+                {{T "Rows per page"}}
+                <input type="number" name="pageSize" id="tablePageSize"
+                       value="{{ .UserSettings.TableSettings.PageSize }}"
+                       min="5" max="200" class="form-input">
+            </label>
+            <div class="help-text">{{T "how many rows to show per page in interactive tables"}}</div>
+        </form>
+    </div>
+    <div class="setting-item">
+        <form hx-post="/api/config/table/show-search" hx-trigger="change">
+            <label class="checkbox-label">
+                <input type="checkbox" name="showSearch" value="true"
+                    {{ if .UserSettings.TableSettings.ShowSearch }}checked{{ end }}
+                    class="form-checkbox" />
+                <span class="checkmark"></span>
+                {{T "Show search input"}}
+            </label>
+            <div class="help-text">{{T "display a search box above the table"}}</div>
+        </form>
+    </div>
+    <div class="setting-item">
+        <form hx-post="/api/config/table/show-paging" hx-trigger="change">
+            <label class="checkbox-label">
+                <input type="checkbox" name="showPaging" value="true"
+                    {{ if .UserSettings.TableSettings.ShowPaging }}checked{{ end }}
+                    class="form-checkbox" />
+                <span class="checkmark"></span>
+                {{T "Show pagination buttons"}}
+            </label>
+            <div class="help-text">{{T "display first / prev / next / last buttons"}}</div>
+        </form>
+    </div>
+    <div class="setting-item">
+        <form hx-post="/api/config/table/show-info" hx-trigger="change">
+            <label class="checkbox-label">
+                <input type="checkbox" name="showInfo" value="true"
+                    {{ if .UserSettings.TableSettings.ShowInfo }}checked{{ end }}
+                    class="form-checkbox" />
+                <span class="checkmark"></span>
+                {{T "Show row count info"}}
+            </label>
+            <div class="help-text">{{T "display the \"showing X-Y of Z rows\" line"}}</div>
         </form>
     </div>
 </section>

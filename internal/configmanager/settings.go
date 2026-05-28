@@ -22,7 +22,16 @@ type UserSettings struct {
 	Language                     string           `json:"language"`
 	ThemeSettings                AllThemeSettings `json:"themeSettings,omitempty"`
 	MediaSettings                MediaSettings    `json:"mediaSettings,omitempty"`
+	TableSettings                TableSettings    `json:"tableSettings,omitempty"`
 	SectionEditIncludeSubheaders bool             `json:"sectionEditIncludeSubheaders"`
+}
+
+// TableSettings contains display preferences for interactive tables
+type TableSettings struct {
+	PageSize   int  `json:"pageSize"`   // rows per page
+	ShowSearch bool `json:"showSearch"` // show search input
+	ShowInfo   bool `json:"showInfo"`   // show "showing X-Y of Z" line
+	ShowPaging bool `json:"showPaging"` // show prev/next/first/last buttons
 }
 
 // MediaSettings contains media upload and management settings
@@ -78,6 +87,12 @@ func InitUserSettings() {
 			BorderStyle:        "simple",
 			ShowCaption:        false,
 			ClickToEnlarge:     true,
+		},
+		TableSettings: TableSettings{
+			PageSize:   25,
+			ShowSearch: true,
+			ShowInfo:   true,
+			ShowPaging: true,
 		},
 	}
 
@@ -205,4 +220,32 @@ func IsImageExtension(ext string) bool {
 		}
 	}
 	return false
+}
+
+// GetTableSettings returns the current table display settings
+func GetTableSettings() TableSettings {
+	return userSettings.TableSettings
+}
+
+// GetTablePageSize returns the configured rows-per-page, falling back to 25
+func GetTablePageSize() int {
+	if userSettings.TableSettings.PageSize <= 0 {
+		return 25
+	}
+	return userSettings.TableSettings.PageSize
+}
+
+// GetTableShowSearch returns whether the table search input should be shown
+func GetTableShowSearch() bool {
+	return userSettings.TableSettings.ShowSearch
+}
+
+// GetTableShowInfo returns whether the "showing X-Y of Z" line should be shown
+func GetTableShowInfo() bool {
+	return userSettings.TableSettings.ShowInfo
+}
+
+// GetTableShowPaging returns whether pagination buttons should be shown
+func GetTableShowPaging() bool {
+	return userSettings.TableSettings.ShowPaging
 }

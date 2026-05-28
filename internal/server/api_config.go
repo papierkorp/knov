@@ -660,3 +660,80 @@ func handleAPIUpdateHidePDF(w http.ResponseWriter, r *http.Request) {
 	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "pdf visibility updated"))
 	writeResponse(w, r, "saved", html)
 }
+
+// @Summary Update table page size
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param pageSize formData int true "Rows per page (5-200)"
+// @Produce json,html
+// @Router /api/config/table/page-size [post]
+func handleAPIUpdateTablePageSize(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	size, err := strconv.Atoi(r.FormValue("pageSize"))
+	if err != nil || size < 5 || size > 200 {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid page size"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.TableSettings.PageSize = size
+	configmanager.SetUserSettings(us)
+	logging.LogInfo("updated table page size to %d", size)
+	writeResponse(w, r, "saved", render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "table page size updated")))
+}
+
+// @Summary Update table show search setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param showSearch formData bool true "Whether to show the search input"
+// @Produce json,html
+// @Router /api/config/table/show-search [post]
+func handleAPIUpdateTableShowSearch(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.TableSettings.ShowSearch = r.FormValue("showSearch") == "true"
+	configmanager.SetUserSettings(us)
+	logging.LogInfo("updated table show search to: %t", us.TableSettings.ShowSearch)
+	writeResponse(w, r, "saved", render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "table search setting updated")))
+}
+
+// @Summary Update table show info setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param showInfo formData bool true "Whether to show the row count info line"
+// @Produce json,html
+// @Router /api/config/table/show-info [post]
+func handleAPIUpdateTableShowInfo(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.TableSettings.ShowInfo = r.FormValue("showInfo") == "true"
+	configmanager.SetUserSettings(us)
+	logging.LogInfo("updated table show info to: %t", us.TableSettings.ShowInfo)
+	writeResponse(w, r, "saved", render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "table info setting updated")))
+}
+
+// @Summary Update table show paging setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param showPaging formData bool true "Whether to show pagination buttons"
+// @Produce json,html
+// @Router /api/config/table/show-paging [post]
+func handleAPIUpdateTableShowPaging(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.TableSettings.ShowPaging = r.FormValue("showPaging") == "true"
+	configmanager.SetUserSettings(us)
+	logging.LogInfo("updated table show paging to: %t", us.TableSettings.ShowPaging)
+	writeResponse(w, r, "saved", render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "table paging setting updated")))
+}
