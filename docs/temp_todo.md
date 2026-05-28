@@ -13,6 +13,7 @@
 - chat: select multiple + move/delete multiple
 - codeblocks - copy button
 - codeblocks setting - wrap content
+- dokuwiki to markdown export: keep indents in codeblock
 - .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
 
 **long term**
