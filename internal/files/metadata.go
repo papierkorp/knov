@@ -93,7 +93,7 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	currentMetadata, _ := MetaDataGet(filePath)
 
 	// determine if this is a media file or docs file based on the original path
-	isMediaFile := strings.HasPrefix(filePath, "media/")
+	isMediaFile := pathutils.IsMedia(filePath)
 
 	var fullPath string
 	var metadataPath string
@@ -134,7 +134,7 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	// update collection and folder based on folder structure (use path without docs/media prefix)
 	normalizedPath := pathutils.ToRelative(filePath)
 
-	folderPath := filepath.Dir(normalizedPath)
+	folderPath := filepath.ToSlash(filepath.Dir(normalizedPath))
 	if folderPath != "." && folderPath != "" {
 		parts := strings.Split(folderPath, "/")
 		currentMetadata.Folders = parts
@@ -267,13 +267,7 @@ func MetaDataSaveRaw(m *Metadata) error {
 // MetaDataGet retrieves metadata for a file path
 func MetaDataGet(filepath string) (*Metadata, error) {
 	// normalize path for metadata lookup - add docs/ prefix if not present and not media
-	var normalizedPath string
-	if strings.HasPrefix(filepath, "docs/") || strings.HasPrefix(filepath, "media/") {
-		normalizedPath = filepath
-	} else {
-		// for files without prefix, assume they are docs files and add docs/ prefix
-		normalizedPath = "docs/" + pathutils.ToRelative(filepath)
-	}
+	normalizedPath := pathutils.ToWithPrefix(filepath)
 
 	logging.LogDebug("MetaDataGet: filepath='%s' -> normalizedPath='%s'", filepath, normalizedPath)
 
@@ -334,8 +328,7 @@ func MetaDataInitializeAll() error {
 
 // MetaDataDelete removes metadata for a file path
 func MetaDataDelete(filepath string) error {
-	normalizedPath := pathutils.ToRelative(filepath)
-	return metadataStorage.Delete(normalizedPath)
+	return metadataStorage.Delete(pathutils.ToWithPrefix(filepath))
 }
 
 // MetaDataExportAll returns all metadata entries

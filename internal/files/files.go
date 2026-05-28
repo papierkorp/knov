@@ -36,7 +36,7 @@ func pathsToFiles(paths []string, prefix string) []File {
 		// add prefix to distinguish media files
 		fullPath := path
 		if prefix != "" {
-			fullPath = filepath.Join(prefix, path)
+			fullPath = filepath.ToSlash(filepath.Join(prefix, path))
 		}
 
 		// get metadata if it exists

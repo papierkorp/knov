@@ -8,18 +8,20 @@
 **per ai**
 - include tags to search
 - chat: select multiple + move/delete multiple
-- add a show file in editor button
-- media.go - determine filetype for metadata
+- editor metadata is not shown in edit mode in rail theme slideout
 - why is the metadata for all files retrieved if i only want to rebuild the links for one file (MetaDataLinksRebuildForFile)
+- http://localhost:1324/browse/folders/systemadmin is running through all files
 - table paginate/search/filter is not working (handleAPIGetTable is not used??)
-- /releasenotes route with new icon on the bottom of the rails theme
 - edit table - cance/save => jump to correct position/context
-- actually use the cache
-  - http://localhost:1324/browse/folders/systemadmin is running through all files
-- dont run the search indexing at startup or slightly delayed so the app starts
 - codeblocks - copy button
 - codeblocks setting - wrap content
 - .png, .svg, .jpg ... are hardcoded (render_media.go, server.go) - refactor to use IsImageExtension/mime package in settings.go
+
+
+- media.go - determine filetype for metadata
+- fix windows path issues
+- /releasenotes route with new icon on the bottom of the rail theme
+- dont run the search indexing at startup or slightly delayed so the app starts
 - Dashboard
   - make the positions work with a custom layout work
   - Add widget drag & drop reordering
@@ -65,7 +67,12 @@ My recommendation: D. The real bottleneck is the per-file I/O in the rebuild (re
 The main thing to watch out for: metadataStorage writes need a mutex or you need to collect results and write sequentially after the workers finish.
 Want to go with D?
 
-# daily
+# kanban
 
-single source of truth is the metadata - we just display it differently
-one "chat" like files.md => each line can be added to another file
+/kanban route
+use tags as key:value pairs?
+stati:
+- inbox/backlog
+- in progress
+- archive
+- blocked

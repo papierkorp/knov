@@ -112,7 +112,7 @@ func (fs *filesystemStorage) ListFiles() ([]string, error) {
 			if err != nil {
 				return err
 			}
-			files = append(files, relPath)
+			files = append(files, filepath.ToSlash(relPath))
 		}
 		return nil
 	})
@@ -143,7 +143,7 @@ func (fs *filesystemStorage) ListMediaFiles() ([]string, error) {
 		if err != nil {
 			return err
 		}
-		files = append(files, relPath)
+		files = append(files, filepath.ToSlash(relPath))
 		return nil
 	})
 

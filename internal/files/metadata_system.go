@@ -379,13 +379,13 @@ func GetAllFolderPaths() ([]string, error) {
 
 	for _, file := range allFiles {
 		// get directory path
-		dir := filepath.Dir(file.Path)
+		dir := filepath.ToSlash(filepath.Dir(file.Path))
 		if dir == "." || dir == "" {
 			continue
 		}
 
 		// generate all parent paths
-		parts := strings.Split(dir, string(filepath.Separator))
+		parts := strings.Split(dir, "/")
 		for i := 1; i <= len(parts); i++ {
 			path := strings.Join(parts[:i], "/") + "/"
 			folderPaths[path] = true

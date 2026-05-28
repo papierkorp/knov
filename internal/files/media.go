@@ -71,7 +71,7 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	// create media path mirroring docs structure
 	var mediaPath string
 	if contextDir != "" {
-		mediaPath = filepath.Join(contextDir, sanitizedName)
+		mediaPath = filepath.ToSlash(filepath.Join(contextDir, sanitizedName))
 	} else {
 		mediaPath = sanitizedName
 	}
@@ -89,7 +89,7 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	}
 
 	// create metadata for the media file with proper path prefix
-	metadataPath := filepath.Join("media", finalMediaPath) // Add media/ prefix to distinguish from docs
+	metadataPath := "media/" + filepath.ToSlash(finalMediaPath) // Add media/ prefix to distinguish from docs
 	metadata := &Metadata{
 		Path: metadataPath,
 	}
