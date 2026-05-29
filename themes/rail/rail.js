@@ -31,6 +31,7 @@ function switchBrowseMode(mode) {
     collections: "/api/metadata/collections",
     dashboards: "/api/dashboards",
     editor: "/api/metadata/editors",
+    media: "/api/media/list?mode=compact",
   };
   const url = urls[mode];
   if (!url) return;
@@ -57,13 +58,15 @@ function filterBrowseContent(query) {
 
   if (q === "") {
     el.querySelectorAll("li").forEach((li) => (li.style.display = ""));
+    el.querySelectorAll(".media-compact-item").forEach(
+      (item) => (item.style.display = ""),
+    );
     return;
   }
 
   const isTree = el.querySelector("a.fp-tree-file") !== null;
 
   if (isTree) {
-    // first pass: show/hide file lis
     el.querySelectorAll("li").forEach((li) => {
       const fileLink = li.querySelector(":scope > a.fp-tree-file");
       if (!fileLink) return;
@@ -71,7 +74,6 @@ function filterBrowseContent(query) {
       const href = (fileLink.getAttribute("href") || "").toLowerCase();
       li.style.display = text.includes(q) || href.includes(q) ? "" : "none";
     });
-    // second pass: hide dir lis that have no visible file descendants
     el.querySelectorAll("li").forEach((li) => {
       if (li.querySelector(":scope > a.fp-tree-file")) return;
       const hasVisible = [...li.querySelectorAll("a.fp-tree-file")].some(
@@ -79,7 +81,7 @@ function filterBrowseContent(query) {
       );
       li.style.display = hasVisible ? "" : "none";
     });
-  } else {
+  } else if (el.querySelector("li")) {
     // flat list (overview, tags, folders, collections)
     el.querySelectorAll("li").forEach((li) => {
       const link = li.querySelector("a");
@@ -87,6 +89,19 @@ function filterBrowseContent(query) {
       const text = link.textContent.toLowerCase();
       const href = (link.getAttribute("href") || "").toLowerCase();
       li.style.display = text.includes(q) || href.includes(q) ? "" : "none";
+    });
+  } else {
+    // media compact items (no li present)
+    el.querySelectorAll(".media-compact-item").forEach((item) => {
+      const name =
+        item.querySelector(".media-compact-name")?.textContent.toLowerCase() ||
+        "";
+      const href = (
+        item.getAttribute("href") ||
+        item.querySelector("a")?.getAttribute("href") ||
+        ""
+      ).toLowerCase();
+      item.style.display = name.includes(q) || href.includes(q) ? "" : "none";
     });
   }
 }
@@ -616,6 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
       collections: "/api/metadata/collections",
       dashboards: "/api/dashboards",
       editor: "/api/metadata/editors",
+      media: "/api/media/list?mode=compact",
     };
     const el = document.getElementById("fp-browse-content");
     if (el && urls[savedMode]) el.dataset.url = urls[savedMode];

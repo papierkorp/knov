@@ -6,7 +6,6 @@
 - create filter manually not per ai..
 
 **per ai**
-- move media to browse
 - chat: select multiple + move/delete multiple
 
 **long term**
