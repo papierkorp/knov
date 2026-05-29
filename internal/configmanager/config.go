@@ -36,6 +36,7 @@ type AppConfig struct {
 	LinkRegex               []string
 	CronjobInterval         string
 	SearchIndexInterval     string
+	MetadataRebuildInterval string
 	HideMarkdown            bool
 	HideText                bool
 	HideList                bool
@@ -83,21 +84,22 @@ func InitAppConfig() {
 			"\\[\\[([^|]+)\\|[^\\]]+\\]\\]",
 			"\\{\\{([^}]+)\\}\\}",
 		},
-		CronjobInterval:     getEnv("KNOV_CRONJOB_INTERVAL", "5m"),
-		SearchIndexInterval: getEnv("KNOV_SEARCH_INDEX_INTERVAL", "15m"),
-		HideMarkdown:        getBoolEnv("KNOV_HIDE_MARKDOWN", false),
-		HideText:            getBoolEnv("KNOV_HIDE_TEXT", false),
-		HideList:            getBoolEnv("KNOV_HIDE_LIST", false),
-		HideTodo:            getBoolEnv("KNOV_HIDE_TODO", false),
-		HideFilter:          getBoolEnv("KNOV_HIDE_FILTER", false),
-		HideIndex:           getBoolEnv("KNOV_HIDE_INDEX", false),
-		HideImage:           getBoolEnv("KNOV_HIDE_IMAGE", false),
-		HideVideo:           getBoolEnv("KNOV_HIDE_VIDEO", false),
-		HidePDF:             getBoolEnv("KNOV_HIDE_PDF", false),
-		ShowHiddenFiles:     getBoolEnv("KNOV_SHOW_HIDDEN_FILES", false),
-		UseExtensionTodo:    getBoolEnv("KNOV_USE_EXTENSION_TODO", false),
-		UseExtensionList:    getBoolEnv("KNOV_USE_EXTENSION_LIST", false),
-		UseExtensionIndex:   getBoolEnv("KNOV_USE_EXTENSION_INDEX", false),
+		CronjobInterval:         getEnv("KNOV_CRONJOB_INTERVAL", "5m"),
+		SearchIndexInterval:     getEnv("KNOV_SEARCH_INDEX_INTERVAL", "15m"),
+		MetadataRebuildInterval: getEnv("KNOV_METADATA_REBUILD_INTERVAL", "60m"),
+		HideMarkdown:            getBoolEnv("KNOV_HIDE_MARKDOWN", false),
+		HideText:                getBoolEnv("KNOV_HIDE_TEXT", false),
+		HideList:                getBoolEnv("KNOV_HIDE_LIST", false),
+		HideTodo:                getBoolEnv("KNOV_HIDE_TODO", false),
+		HideFilter:              getBoolEnv("KNOV_HIDE_FILTER", false),
+		HideIndex:               getBoolEnv("KNOV_HIDE_INDEX", false),
+		HideImage:               getBoolEnv("KNOV_HIDE_IMAGE", false),
+		HideVideo:               getBoolEnv("KNOV_HIDE_VIDEO", false),
+		HidePDF:                 getBoolEnv("KNOV_HIDE_PDF", false),
+		ShowHiddenFiles:         getBoolEnv("KNOV_SHOW_HIDDEN_FILES", false),
+		UseExtensionTodo:        getBoolEnv("KNOV_USE_EXTENSION_TODO", false),
+		UseExtensionList:        getBoolEnv("KNOV_USE_EXTENSION_LIST", false),
+		UseExtensionIndex:       getBoolEnv("KNOV_USE_EXTENSION_INDEX", false),
 	}
 
 	initLogLevel()

@@ -14,9 +14,10 @@ import (
 )
 
 var (
-	stopChan       chan bool
-	fileInterval   time.Duration
-	searchInterval time.Duration
+	stopChan                chan bool
+	fileInterval            time.Duration
+	searchInterval          time.Duration
+	metadataRebuildInterval time.Duration
 )
 
 // Start begins the cronjob scheduler
@@ -78,7 +79,31 @@ func Start() {
 		}
 	}()
 
-	logging.LogInfo("cronjob scheduler started (file interval: %v, search interval: %v)", fileInterval, searchInterval)
+	metadataRebuildIntervalStr := configmanager.GetAppConfig().MetadataRebuildInterval
+	parsedMetadataRebuildInterval, err := time.ParseDuration(metadataRebuildIntervalStr)
+	if err != nil {
+		logging.LogWarning("invalid metadata rebuild interval '%s', using default 30m", metadataRebuildIntervalStr)
+		parsedMetadataRebuildInterval = 30 * time.Minute
+	}
+	metadataRebuildInterval = parsedMetadataRebuildInterval
+
+	// start metadata rebuild cronjob
+	go func() {
+		ticker := time.NewTicker(metadataRebuildInterval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				runMetadataRebuildJob()
+			case <-stopChan:
+				logging.LogInfo("metadata rebuild cronjob stopped")
+				return
+			}
+		}
+	}()
+
+	logging.LogInfo("cronjob scheduler started (file: %v, search: %v, metadata rebuild: %v)", fileInterval, searchInterval, metadataRebuildInterval)
 }
 
 // Stop stops the cronjob scheduler
@@ -88,11 +113,12 @@ func Stop() {
 	}
 }
 
-// Run manually triggers both file and search cronjobs
+// Run manually triggers all cronjobs
 func Run() {
 	logging.LogInfo("manually triggering cronjobs")
 	runFileJobs()
 	runSearchJob()
+	runMetadataRebuildJob()
 	logging.LogInfo("manual cronjob execution completed")
 }
 
@@ -258,6 +284,17 @@ func runFileJobs() {
 	}
 
 	logging.LogDebug("file cronjobs completed")
+}
+
+func runMetadataRebuildJob() {
+	logging.LogDebug("running metadata rebuild cronjob")
+
+	if err := files.MetaDataLinksRebuild(); err != nil {
+		logging.LogError("cronjob: metadata rebuild failed: %v", err)
+		return
+	}
+
+	logging.LogDebug("metadata rebuild cronjob completed")
 }
 
 func runSearchJob() {

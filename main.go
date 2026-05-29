@@ -12,6 +12,7 @@ import (
 	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
 	"knov/internal/cronjob"
+	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
 	"knov/internal/parser"
@@ -93,6 +94,11 @@ func main() {
 	go func() {
 		if err := search.InitSearch(); err != nil {
 			logging.LogError("failed to initialize search: %v", err)
+		}
+	}()
+	go func() {
+		if err := files.MetaDataLinksRebuild(); err != nil {
+			logging.LogError("failed to run startup metadata rebuild: %v", err)
 		}
 	}()
 

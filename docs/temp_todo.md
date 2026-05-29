@@ -6,7 +6,6 @@
 - create filter manually not per ai..
 
 **per ai**
-- rebuild metadata per cron (but not every 5min)
 
 **long term**
 - chat: select multiple + move/delete multiple
