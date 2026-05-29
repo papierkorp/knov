@@ -8,8 +8,9 @@
 **per ai**
 - add yaml header to metadata storage
 - export metadata to yaml header in markdown files
-
-**long term**
+- add a logs rotating
+- add db name to migration logs
+- add logbuilder to dokuwiki to markdown converter
 - add migration between different storages
 - i want to get rid of the dokuwiki file support (i want to keep the dokuwiki to markdown export) but i dont want to display dokuwiki files any longer
 - /releasenotes route with new icon on the bottom of the rail theme

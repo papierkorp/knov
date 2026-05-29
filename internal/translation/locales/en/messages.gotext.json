@@ -237,6 +237,11 @@
       "translation": ""
     },
     {
+      "id": "Chat",
+      "message": "Chat",
+      "translation": ""
+    },
+    {
       "id": "children",
       "message": "children",
       "translation": ""
@@ -502,6 +507,11 @@
       "translation": ""
     },
     {
+      "id": "delete selected",
+      "message": "delete selected",
+      "translation": ""
+    },
+    {
       "id": "delete this message?",
       "message": "delete this message?",
       "translation": ""
@@ -514,6 +524,11 @@
     {
       "id": "Description",
       "message": "Description",
+      "translation": ""
+    },
+    {
+      "id": "deselect all",
+      "message": "deselect all",
       "translation": ""
     },
     {
@@ -869,6 +884,11 @@
     {
       "id": "failed to move message",
       "message": "failed to move message",
+      "translation": ""
+    },
+    {
+      "id": "failed to move messages",
+      "message": "failed to move messages",
       "translation": ""
     },
     {
@@ -1379,6 +1399,16 @@
     {
       "id": "https://github.com/user/repo.git",
       "message": "https://github.com/user/repo.git",
+      "translation": ""
+    },
+    {
+      "id": "ids and target are required",
+      "message": "ids and target are required",
+      "translation": ""
+    },
+    {
+      "id": "ids are required",
+      "message": "ids are required",
       "translation": ""
     },
     {
@@ -2054,6 +2084,11 @@
     {
       "id": "no used media files",
       "message": "no used media files",
+      "translation": ""
+    },
+    {
+      "id": "no valid messages found",
+      "message": "no valid messages found",
       "translation": ""
     },
     {

@@ -31,6 +31,9 @@ var staticFS embed.FS
 //go:embed themes/builtin
 var builtinThemeFS embed.FS
 
+//go:embed themes/rail
+var railThemeFS embed.FS
+
 //go:embed internal/testdata/testfiles
 var testFilesFS embed.FS
 
@@ -42,6 +45,7 @@ var testFilesFS embed.FS
 func main() {
 	server.SetStaticFiles(staticFS)
 	thememanager.SetBuiltinFiles(builtinThemeFS)
+	thememanager.SetRailFiles(railThemeFS)
 	testdata.SetTestFiles(testFilesFS)
 
 	configmanager.InitAppConfig()
