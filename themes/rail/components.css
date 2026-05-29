@@ -1077,10 +1077,15 @@ body[data-dark-mode="true"] .tooltip::after {
 /* floating toolbar — top-right corner inside the message, no layout shift */
 .chat-message-actions {
   position: absolute;
+  top: 4px;
   right: 6px;
   display: flex;
+  gap: 2px;
   background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 5px;
+  padding: 2px 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.12s;
@@ -1644,20 +1649,29 @@ body[data-dark-mode="true"] .tooltip::after {
   margin: 0 0 16px;
 }
 
-/* two-column grid that fills available width */
+/* two-column masonry-style layout — sections stack into the shorter column */
 .settings-sections,
 .admin-sections {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  align-items: start;
+  columns: 2;
+  column-gap: 12px;
+}
+
+.settings-section,
+.admin-section {
+  break-inside: avoid;
+  margin-bottom: 12px;
 }
 
 @media (max-width: 900px) {
   .settings-sections,
   .admin-sections {
-    grid-template-columns: 1fr;
+    columns: 1;
   }
+}
+
+/* span both columns for wide sections */
+.settings-section-wide {
+  column-span: all;
 }
 
 /* section card */
