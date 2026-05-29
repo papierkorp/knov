@@ -8,6 +8,7 @@ package dbmigration
 import (
 	"database/sql"
 	"fmt"
+	"path/filepath"
 
 	"knov/internal/logging"
 )
@@ -18,6 +19,16 @@ import (
 type Migration struct {
 	Up   func(*sql.Tx) error
 	Down func(*sql.Tx) error
+}
+
+// dbName reads the filename from PRAGMA database_list and returns just the base name.
+func dbName(db *sql.DB) string {
+	var seq int
+	var name, file string
+	if err := db.QueryRow(`PRAGMA database_list`).Scan(&seq, &name, &file); err != nil || file == "" {
+		return "unknown"
+	}
+	return filepath.Base(file)
 }
 
 // Migrate moves the database to target by running the missing Up steps (when
@@ -62,9 +73,10 @@ func Migrate(db *sql.DB, target int, migrations []Migration) error {
 // runStep executes one migration and its version bump atomically.
 func runStep(db *sql.DB, from, to int, step func(*sql.Tx) error) error {
 	migrationLog := logging.LogBuilder("migration")
+	name := dbName(db)
 
-	logging.LogInfo("db migration %d→%d", from, to)
-	migrationLog.Printf("migration %d→%d starting", from, to)
+	logging.LogInfo("%s: db migration %d→%d", name, from, to)
+	migrationLog.Printf("%s: migration %d→%d starting", name, from, to)
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -73,7 +85,7 @@ func runStep(db *sql.DB, from, to int, step func(*sql.Tx) error) error {
 
 	if err := step(tx); err != nil {
 		tx.Rollback()
-		migrationLog.Printf("migration %d→%d failed: %v", from, to, err)
+		migrationLog.Printf("%s: migration %d→%d failed: %v", name, from, to, err)
 		return fmt.Errorf("migration %d→%d failed: %w", from, to, err)
 	}
 
@@ -86,8 +98,8 @@ func runStep(db *sql.DB, from, to int, step func(*sql.Tx) error) error {
 		return fmt.Errorf("failed to commit migration %d→%d: %w", from, to, err)
 	}
 
-	logging.LogInfo("db migration %d→%d done", from, to)
-	migrationLog.Printf("migration %d→%d completed successfully", from, to)
+	logging.LogInfo("%s: db migration %d→%d done", name, from, to)
+	migrationLog.Printf("%s: migration %d→%d completed successfully", name, from, to)
 	return nil
 }
 

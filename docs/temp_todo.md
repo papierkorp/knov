@@ -6,12 +6,10 @@
 - create filter manually not per ai..
 
 **per ai**
-- add yaml header to metadata storage
-- export metadata to yaml header in markdown files
-- add a logs rotating
-- add db name to migration logs
-- add logbuilder to dokuwiki to markdown converter
+- add yaml header to metadata storage (export metadata to yaml header in markdown files)
 - add migration between different storages
+- add a logs rotating
+- add logbuilder to dokuwiki to markdown converter
 - i want to get rid of the dokuwiki file support (i want to keep the dokuwiki to markdown export) but i dont want to display dokuwiki files any longer
 - /releasenotes route with new icon on the bottom of the rail theme
 - Dashboard
