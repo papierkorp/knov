@@ -2,6 +2,7 @@
 //
 // Each storage owns its own version counter and migration list; this package
 // only tracks the current version and runs the steps needed to reach a target.
+// See README.md for usage.
 package dbmigration
 
 import (
@@ -60,7 +61,10 @@ func Migrate(db *sql.DB, target int, migrations []Migration) error {
 
 // runStep executes one migration and its version bump atomically.
 func runStep(db *sql.DB, from, to int, step func(*sql.Tx) error) error {
+	migrationLog := logging.LogBuilder("migration")
+
 	logging.LogInfo("db migration %d→%d", from, to)
+	migrationLog.Printf("migration %d→%d starting", from, to)
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -69,6 +73,7 @@ func runStep(db *sql.DB, from, to int, step func(*sql.Tx) error) error {
 
 	if err := step(tx); err != nil {
 		tx.Rollback()
+		migrationLog.Printf("migration %d→%d failed: %v", from, to, err)
 		return fmt.Errorf("migration %d→%d failed: %w", from, to, err)
 	}
 
@@ -82,6 +87,7 @@ func runStep(db *sql.DB, from, to int, step func(*sql.Tx) error) error {
 	}
 
 	logging.LogInfo("db migration %d→%d done", from, to)
+	migrationLog.Printf("migration %d→%d completed successfully", from, to)
 	return nil
 }
 

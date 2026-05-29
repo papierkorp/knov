@@ -168,6 +168,123 @@ Dropping a column needs sqlite ≥ 3.35, or the create-new/copy/rename pattern.
 - Each storage owns its own version; they advance independently.
 - Bump the `schemaVersion` const whenever you append a migration.
 
+## Migration test
+
+**setup test folder**
+
+```bash
+mkdir /home/markus/develop/privat/migration-test-knov
+cd /home/markus/develop/privat/migration-test-knov
+cp /home/markus/develop/privat/knov/bin/knov .
+./knov  # start once to let it initialize all sqlite DBs, then stop it
+```
+
+**change metadataStorage_sqlite.go**
+
+Either use functions or put the migration directly in:
+
+```go
+func (ss *sqliteStorage) initialize() error {
+	const version = 1
+	steps := []dbmigration.Migration{
+  	{
+  		Up: func(tx *sql.Tx) error {
+  			_, err := tx.Exec(`
+  			CREATE TABLE IF NOT EXISTS metadata (
+  				path TEXT PRIMARY KEY,
+  				title TEXT,
+  				created_at DATETIME,
+  				last_edited DATETIME,
+  				collection TEXT,
+  				folders TEXT,
+  				tags TEXT,
+  				ancestor TEXT,
+  				parents TEXT,
+  				kids TEXT,
+  				used_links TEXT,
+  				links_to_here TEXT,
+  				related TEXT,
+  				editor TEXT,
+  				size INTEGER,
+  				"references" TEXT
+  			);
+  			CREATE INDEX IF NOT EXISTS idx_collection ON metadata(collection);
+  			CREATE INDEX IF NOT EXISTS idx_editor ON metadata(editor);
+  			`)
+  			return err
+  		},
+  		Down: func(tx *sql.Tx) error {
+  			_, err := tx.Exec(`DROP TABLE IF EXISTS metadata`)
+  			return err
+  		},
+  	},
+  	{Up: metaV1toV2, Down: metaV2toV1},
+		{
+			Up: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`UPDATE metadata SET test_col = 'migrated' WHERE test_col IS NULL`)
+				return err
+			},
+			Down: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`UPDATE metadata SET test_col = NULL`)
+				return err
+			},
+		},
+		{
+    Up: func(tx *sql.Tx) error {
+        if _, err := tx.Exec(`ALTER TABLE metadata ADD COLUMN test_col TEXT`); err != nil {
+            return err
+        }
+        return fmt.Errorf("intentional failure")
+    },
+    Down: nil,
+},
+	}
+	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
+		return fmt.Errorf("metadata storage migration failed: %w", err)
+	}
+	logging.LogDebug("metadata sqlite storage ready at version %d", version)
+	return nil
+}
+
+func metaV1toV2(tx *sql.Tx) error {
+	_, err := tx.Exec(`ALTER TABLE metadata ADD COLUMN test_col TEXT`)
+	return err
+}
+
+func metaV2toV1(tx *sql.Tx) error {
+	_, err := tx.Exec(`ALTER TABLE metadata DROP COLUMN test_col`)
+	return err
+}
+```
+
+**start application with different version**
+
+```bash
+# first check current version
+sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version"
+sqlite3 storage/metadata/metadata.db ".schema"
+
+# set const version = 2
+make dev   # stop immediately after "storage ready" log
+sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 2
+sqlite3 storage/metadata/metadata.db "PRAGMA table_info(metadata)" | grep test_col # → test_col should appear
+
+# set const version = 1
+make dev   # stop after startup
+sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 1
+sqlite3 storage/metadata/metadata.db "PRAGMA table_info(metadata)" | grep test_col # → nothing (column dropped)
+
+# set const version = 3
+# seed some rows first
+sqlite3 storage/metadata/metadata.db "INSERT OR IGNORE INTO metadata (path) VALUES ('docs/test.md')"
+make dev   # stop after startup
+sqlite3 storage/metadata/metadata.db "SELECT path, test_col FROM metadata WHERE path = 'docs/test.md'" # → docs/test.md|migrated
+
+# set const version = 4
+make dev   # should log "migration 3→4 failed" and refuse to start
+sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 3  (did not advance)
+```
+
 # Theme Creation Guide
 
 ## Quick Start
