@@ -491,6 +491,7 @@ func (h *DokuwikiHandler) convertFoldedSections(content string) string {
 	var result []string
 	var inFoldedSection bool
 	var foldedContent []string
+	var foldedIndent string // leading whitespace of the list item containing the folded section
 
 	for i := 0; i < len(lines); i++ {
 		line := lines[i]
@@ -504,9 +505,9 @@ func (h *DokuwikiHandler) convertFoldedSections(content string) string {
 
 				// extract only the leading whitespace (not the list marker * or -)
 				listPrefix := parts[0]
-				indent := listPrefix
+				foldedIndent = listPrefix
 				if trimmed := strings.TrimLeft(listPrefix, " \t"); len(trimmed) > 0 {
-					indent = listPrefix[:len(listPrefix)-len(trimmed)]
+					foldedIndent = listPrefix[:len(listPrefix)-len(trimmed)]
 				}
 
 				// extract title (between ++ and |)
@@ -516,7 +517,7 @@ func (h *DokuwikiHandler) convertFoldedSections(content string) string {
 
 				// emit title as a list item at the same indent level
 				if title != "" {
-					result = append(result, indent+"* "+title)
+					result = append(result, foldedIndent+"* "+title)
 				}
 
 				// check if there's inline content after the |
@@ -541,10 +542,19 @@ func (h *DokuwikiHandler) convertFoldedSections(content string) string {
 
 				innerContent := strings.TrimSpace(strings.Join(foldedContent, "\n"))
 				if innerContent != "" {
-					result = append(result, innerContent)
+					// indent every line of inner content so it stays nested in the list
+					childIndent := foldedIndent + "  "
+					indentedLines := strings.Split(innerContent, "\n")
+					for j, l := range indentedLines {
+						if l != "" {
+							indentedLines[j] = childIndent + l
+						}
+					}
+					result = append(result, strings.Join(indentedLines, "\n"))
 				}
 				inFoldedSection = false
 				foldedContent = []string{}
+				foldedIndent = ""
 				continue
 			} else {
 				foldedContent = append(foldedContent, line)

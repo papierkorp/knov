@@ -117,10 +117,15 @@ func (h *DokuwikiHandler) restoreRawCodeBlocks(content string, blocks []string) 
 	return content
 }
 
-// stripLeadingSpaces removes leading whitespace from lines that are not inside code blocks
+// stripLeadingSpaces removes leading whitespace from lines, but preserves
+// DokuWiki list indentation (lines starting with 2+ spaces followed by * or -).
 func (h *DokuwikiHandler) stripLeadingSpaces(content string) string {
+	listLineRe := regexp.MustCompile(`^( {2,})(\*|-) `)
 	lines := strings.Split(content, "\n")
 	for i, line := range lines {
+		if listLineRe.MatchString(line) {
+			continue
+		}
 		lines[i] = strings.TrimLeft(line, " \t")
 	}
 	return strings.Join(lines, "\n")

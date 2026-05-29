@@ -6,9 +6,13 @@
 - create filter manually not per ai..
 
 **per ai**
+- delay the rebuild metadata start after starting the app by 1min
 - add yaml header to metadata storage (export metadata to yaml header in markdown files)
+- add a upload favicon
+- hide files setting doesnt work
 - add migration between different storages
 - add a logs rotating
+- builtin header doesnt stick anymore
 - i want to get rid of the dokuwiki file support (i want to keep the dokuwiki to markdown export) but i dont want to display dokuwiki files any longer
 - /releasenotes route with new icon on the bottom of the rail theme
 - Dashboard

@@ -88,6 +88,48 @@ chose not to enable this by default. See https://docs.gitlab.com/runner/install/
       * Admins Passwort: "zzz" - ''kubectl get secret gitlab-gitlab-initial-root-password -n gitlab -ojsonpath='{.data.password}' | base64 --decode ; echo''
 
 
+**Problem**
+
+Wir wollen keine klartext Passwörter im Repo (z.B. db.yml)
+
+**Lösungsvorschläge**
+1. per externen passwort manager
+  * vorgehen
+    * im kubernetes wird ein external secrets operator installiert
+    * passwörter werden in einem passwort manager gespeichert (z.B. gitlab, hashicorp vault)
+    * im repo wird der external secrets operator referenziert
+    * im external secrets operator wird der passwort manager referenziert
+    * der external secrets operator erkennt die passwort referenz und legt ein secret im jeweiligen namespace an
+  * vorteile
+    * einfache rotation von passwörter durch zentrales management
+    * gar kein passwort im repo
+  * nachteile
+    * bissl mehr setup aufwand
+    * neues externes tool benötigt (fals wir nicht gitlab als passwort manager verwenden)
+2. per verschlüsseltem secret in git
+  * vorgehen
+    * im kubernetes ein cluster secret tool installieren
+    * per cluster secret tool ein verschlüsseltes passwort erstellen und im repo ablegen
+    * cluster secret tool erkennt das verschlüsselte passwort im kubernetes und entschlüsselt on the go
+  * vorteile
+    * secret änderungen werden im git getracked
+  * nachteile
+    * nicht so flexibel
+    * abhängig vom cluster secret zertifikat (welches ablaufen kann)
+3. per gitlab variablen + pipeline
+  * vorgehen
+    * secret variablen in gitlab speichern
+    * per gitlab ci/cd pipeline secret basierend auf diesen vars erstellen
+    * per gitlab ci/cd pipeline secret ins kubernetes pushen
+  * vorteile
+    * schnell eingerichtet
+    * keine externen tools nötig
+  * nachteile
+    * nicht so flexibel
+    * secrets laufen durch ci/cd
+    * könnte leicht kaputt gehen
+    * hart zu scalen
+
 ===== GitLab Update/Upgrades =====
 
 <code sh update_gitlab.sh>

@@ -115,21 +115,45 @@ type codeBlock struct{ lang, content string }
 
 // extractCodeBlocks replaces fenced code blocks with placeholders before markdown parsing
 // to prevent misinterpretation (e.g. # comments becoming headers, list items becoming lists).
+// Preserves leading indentation so code blocks inside lists stay nested.
 // Call restoreCodeBlocks with the returned blocks after rendering.
 func (h *MarkdownHandler) extractCodeBlocks(content []byte) ([]byte, []codeBlock) {
 	var blocks []codeBlock
-	fenceRe := regexp.MustCompile("(?s)```([^\n]*)\n(.*?)```")
-	result := fenceRe.ReplaceAllStringFunc(string(content), func(match string) string {
-		m := fenceRe.FindStringSubmatch(match)
-		lang := strings.TrimSpace(m[1])
+	// match optional leading indent + opening fence on its own line
+	fenceRe := regexp.MustCompile("(?m)^([ \t]*)```([^\n]*)\n")
+	lines := strings.Split(string(content), "\n")
+	var result []string
+	i := 0
+	for i < len(lines) {
+		m := fenceRe.FindStringSubmatch(lines[i] + "\n")
+		if m == nil {
+			result = append(result, lines[i])
+			i++
+			continue
+		}
+		indent := m[1]
+		lang := strings.TrimSpace(m[2])
 		if lang == "" {
 			lang = "text"
 		}
+		// collect content lines until closing fence
+		i++
+		var contentLines []string
+		for i < len(lines) {
+			if strings.TrimSpace(lines[i]) == "```" {
+				i++ // skip closing fence
+				break
+			}
+			contentLines = append(contentLines, lines[i])
+			i++
+		}
+		rawContent := strings.Join(contentLines, "\n") + "\n"
 		placeholder := fmt.Sprintf("KNOVCODEBLOCK%d", len(blocks))
-		blocks = append(blocks, codeBlock{lang, m[2]})
-		return "\n" + placeholder + "\n"
-	})
-	return []byte(result), blocks
+		blocks = append(blocks, codeBlock{lang, rawContent})
+		// emit placeholder with same indent so it stays inside any surrounding list item
+		result = append(result, "", indent+placeholder, "")
+	}
+	return []byte(strings.Join(result, "\n")), blocks
 }
 
 // restoreCodeBlocks replaces placeholders with syntax-highlighted code blocks.
@@ -383,15 +407,25 @@ func (h *MarkdownHandler) Name() string {
 // working around gomarkdown merging them into a single list.
 // Only top-level items (no leading spaces) get separators — nested items at 4+ spaces must
 // never have their context reset or gomarkdown interprets them as indented code blocks.
+// Also ensures a blank line before ordered list items that immediately follow a paragraph,
+// so gomarkdown starts a proper <ol> instead of treating them as paragraph text.
 func (h *MarkdownHandler) preprocessBlankLineLists(content []byte) []byte {
 	lines := strings.Split(string(content), "\n")
 	var result []string
 	topLevelItemRe := regexp.MustCompile(`^[-*] `)
+	orderedItemRe := regexp.MustCompile(`^\d+\.\s`)
 	var inCodeBlock bool
 
 	for i, line := range lines {
 		if strings.HasPrefix(strings.TrimSpace(line), "```") {
 			inCodeBlock = !inCodeBlock
+		}
+		// ensure blank line before an ordered list item that follows a non-blank non-list line
+		if !inCodeBlock && orderedItemRe.MatchString(line) && i > 0 {
+			prev := strings.TrimSpace(lines[i-1])
+			if prev != "" && !topLevelItemRe.MatchString(prev) && !orderedItemRe.MatchString(prev) {
+				result = append(result, "")
+			}
 		}
 		result = append(result, line)
 		if !inCodeBlock && topLevelItemRe.MatchString(line) && i+1 < len(lines) && strings.TrimSpace(lines[i+1]) == "" {

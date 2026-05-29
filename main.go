@@ -101,13 +101,14 @@ func main() {
 		}
 	}()
 	go func() {
+		time.Sleep(2 * time.Minute)
 		if err := files.MetaDataLinksRebuild(); err != nil {
 			logging.LogError("failed to run startup metadata rebuild: %v", err)
 		}
 	}()
 
 	go func() {
-		time.Sleep(2 * time.Minute)
+		time.Sleep(5 * time.Minute)
 		cronjob.Start()
 		defer cronjob.Stop()
 	}()
