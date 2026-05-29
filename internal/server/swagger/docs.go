@@ -2883,6 +2883,51 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/links/ancestors-in-collection": {
+            "get": {
+                "description": "Returns unique ancestor paths for all files in the given collection",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Get ancestor files within a collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection name",
+                        "name": "collection",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "missing collection parameter",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to get ancestors",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/links/kids": {
             "get": {
                 "produces": [
@@ -2959,7 +3004,6 @@ const docTemplate = `{
                 "tags": [
                     "links"
                 ],
-                "summary": "Get related files by co-occurrence",
                 "parameters": [
                     {
                         "type": "string",

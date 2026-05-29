@@ -2254,6 +2254,36 @@ paths:
       summary: Get ancestor links for a file
       tags:
       - links
+  /api/links/ancestors-in-collection:
+    get:
+      description: Returns unique ancestor paths for all files in the given collection
+      parameters:
+      - description: Collection name
+        in: query
+        name: collection
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: missing collection parameter
+          schema:
+            type: string
+        "500":
+          description: failed to get ancestors
+          schema:
+            type: string
+      summary: Get ancestor files within a collection
+      tags:
+      - links
   /api/links/kids:
     get:
       parameters:
@@ -2312,7 +2342,6 @@ paths:
       - application/json
       - text/html
       responses: {}
-      summary: Get related files by co-occurrence
       tags:
       - links
   /api/links/used:

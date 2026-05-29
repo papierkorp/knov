@@ -305,6 +305,7 @@ func StartServerChi() {
 		r.Route("/links", func(r chi.Router) {
 			r.Get("/parents", handleAPIGetParents)
 			r.Get("/ancestors", handleAPIGetAncestors)
+			r.Get("/ancestors-in-collection", handleAPIGetAncestorsInCollection)
 			r.Get("/kids", handleAPIGetKids)
 			r.Get("/used", handleAPIGetUsedLinks)
 			r.Get("/linkstohere", handleAPIGetLinksToHere)

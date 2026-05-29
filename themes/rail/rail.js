@@ -181,6 +181,10 @@ function switchFileSubPanel(view) {
     .forEach((p) => p.classList.remove("active"));
   const target = document.getElementById("fps-" + view);
   if (target) target.classList.add("active");
+  // sync select in case called programmatically
+  const sel = document.getElementById("fp-file-select");
+  if (sel) sel.value = view;
+  localStorage.setItem("rail-file-subpanel", view);
 }
 
 // ================================================================
@@ -642,6 +646,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const saved = localStorage.getItem("rail-panel");
     if (saved && document.getElementById(saved)) togglePanel(saved);
   }
+
+  // restore saved file sub-panel selection
+  const savedSubPanel = localStorage.getItem("rail-file-subpanel");
+  if (savedSubPanel) {
+    const sel = document.getElementById("fp-file-select");
+    if (sel) sel.value = savedSubPanel;
+    switchFileSubPanel(savedSubPanel);
+  }
+
   // re-enable transitions after first state restore so user interactions animate
   requestAnimationFrame(() => {
     document.documentElement.classList.remove("no-transition");

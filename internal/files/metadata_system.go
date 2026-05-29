@@ -18,12 +18,13 @@ import (
 type CacheKey string
 
 const (
-	CacheKeyTags          CacheKey = "all_tags"
-	CacheKeyCollections   CacheKey = "all_collections"
-	CacheKeyFolders       CacheKey = "all_folders"
-	CacheKeyFolderPaths   CacheKey = "all_folder_paths"
-	CacheKeyFilePaths     CacheKey = "all_file_paths"
-	CacheKeyOrphanedMedia CacheKey = "orphaned_media"
+	CacheKeyTags                  CacheKey = "all_tags"
+	CacheKeyCollections           CacheKey = "all_collections"
+	CacheKeyFolders               CacheKey = "all_folders"
+	CacheKeyFolderPaths           CacheKey = "all_folder_paths"
+	CacheKeyFilePaths             CacheKey = "all_file_paths"
+	CacheKeyOrphanedMedia         CacheKey = "orphaned_media"
+	CacheKeyAncestorsInCollection CacheKey = "ancestors_in_collection/"
 )
 
 // saveStringListToCache saves a sorted string list to cache storage
@@ -234,23 +235,25 @@ func GetAllFilePathsFromSystemData() ([]string, error) {
 
 // MetadataCollector collects metadata across multiple files efficiently
 type MetadataCollector struct {
-	Tags          map[string]bool
-	Collections   map[string]bool
-	Folders       map[string]bool
-	FolderPaths   map[string]bool
-	FilePaths     []string
-	OrphanedMedia []string
+	Tags                  map[string]bool
+	Collections           map[string]bool
+	Folders               map[string]bool
+	FolderPaths           map[string]bool
+	FilePaths             []string
+	OrphanedMedia         []string
+	AncestorsInCollection map[string]map[string]bool // collection → set of ancestor paths
 }
 
 // NewMetadataCollector creates a new metadata collector
 func NewMetadataCollector() *MetadataCollector {
 	return &MetadataCollector{
-		Tags:          make(map[string]bool),
-		Collections:   make(map[string]bool),
-		Folders:       make(map[string]bool),
-		FolderPaths:   make(map[string]bool),
-		FilePaths:     []string{},
-		OrphanedMedia: []string{},
+		Tags:                  make(map[string]bool),
+		Collections:           make(map[string]bool),
+		Folders:               make(map[string]bool),
+		FolderPaths:           make(map[string]bool),
+		FilePaths:             []string{},
+		OrphanedMedia:         []string{},
+		AncestorsInCollection: make(map[string]map[string]bool),
 	}
 }
 
@@ -292,6 +295,15 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 	if strings.HasPrefix(filePath, "media/") && len(metadata.LinksToHere) == 0 {
 		mc.OrphanedMedia = append(mc.OrphanedMedia, filePath)
 	}
+
+	// collect ancestors per collection
+	if metadata.Collection != "" && len(metadata.Ancestor) > 0 {
+		root := metadata.Ancestor[0]
+		if mc.AncestorsInCollection[metadata.Collection] == nil {
+			mc.AncestorsInCollection[metadata.Collection] = make(map[string]bool)
+		}
+		mc.AncestorsInCollection[metadata.Collection][root] = true
+	}
 }
 
 // SaveAllToCache saves all collected metadata to system cache
@@ -313,6 +325,12 @@ func (mc *MetadataCollector) SaveAllToCache() error {
 	}
 	if err := saveStringListToCache(CacheKeyOrphanedMedia, mc.OrphanedMedia); err != nil {
 		return err
+	}
+	for collection, ancestors := range mc.AncestorsInCollection {
+		key := CacheKey(string(CacheKeyAncestorsInCollection) + collection)
+		if err := saveStringListToCache(key, utils.SetToSortedSlice(ancestors)); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -529,4 +547,29 @@ func CacheInvalidate() error {
 	}
 	logging.LogInfo("cache invalidated")
 	return nil
+}
+
+// GetAncestorsInCollection returns unique ancestor paths from all files in a collection
+func GetAncestorsInCollection(collection string) ([]string, error) {
+	allFiles, err := GetAllPhysicalFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	seen := make(map[string]struct{})
+	var ancestors []string
+	for _, f := range allFiles {
+		if f.Metadata == nil || f.Metadata.Collection != collection {
+			continue
+		}
+		if len(f.Metadata.Ancestor) == 0 {
+			continue
+		}
+		root := f.Metadata.Ancestor[0]
+		if _, ok := seen[root]; !ok {
+			seen[root] = struct{}{}
+			ancestors = append(ancestors, root)
+		}
+	}
+	return ancestors, nil
 }
