@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"knov/internal/dbmigration"
 	"knov/internal/logging"
 
 	_ "modernc.org/sqlite"
@@ -65,20 +66,31 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 	return storage, nil
 }
 
-// initialize creates cache table
+// initialize runs all pending migrations for this storage.
 func (ss *sqliteStorage) initialize() error {
-	query := `
-		CREATE TABLE IF NOT EXISTS cache (
-			key TEXT PRIMARY KEY,
-			value BLOB
-		);
-		CREATE INDEX IF NOT EXISTS idx_cache_key ON cache(key);
-	`
-
-	if _, err := ss.db.Exec(query); err != nil {
-		return fmt.Errorf("failed to create cache table: %w", err)
+	const version = 1
+	steps := []dbmigration.Migration{
+		{
+			Up: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`
+				CREATE TABLE IF NOT EXISTS cache (
+					key TEXT PRIMARY KEY,
+					value BLOB
+				);
+				CREATE INDEX IF NOT EXISTS idx_cache_key ON cache(key);
+				`)
+				return err
+			},
+			Down: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`DROP TABLE IF EXISTS cache`)
+				return err
+			},
+		},
 	}
-
+	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
+		return fmt.Errorf("cache storage migration failed: %w", err)
+	}
+	logging.LogDebug("cache sqlite storage ready at version %d", version)
 	return nil
 }
 

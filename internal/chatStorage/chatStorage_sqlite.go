@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"knov/internal/dbmigration"
 	"knov/internal/logging"
 
 	_ "modernc.org/sqlite"
@@ -51,21 +52,33 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 }
 
 func (s *sqliteStorage) initialize() error {
-	query := `
-	CREATE TABLE IF NOT EXISTS messages (
-		id          TEXT PRIMARY KEY,
-		content     TEXT NOT NULL,
-		created_at  DATETIME NOT NULL,
-		updated_at  DATETIME NOT NULL,
-		file_path   TEXT
-	);
-	CREATE INDEX IF NOT EXISTS idx_messages_file_path ON messages(file_path);
-	CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
-	`
-	if _, err := s.db.Exec(query); err != nil {
-		return fmt.Errorf("failed to initialize chat tables: %w", err)
+	const version = 1
+	steps := []dbmigration.Migration{
+		{
+			Up: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`
+				CREATE TABLE IF NOT EXISTS messages (
+					id          TEXT PRIMARY KEY,
+					content     TEXT NOT NULL,
+					created_at  DATETIME NOT NULL,
+					updated_at  DATETIME NOT NULL,
+					file_path   TEXT
+				);
+				CREATE INDEX IF NOT EXISTS idx_messages_file_path ON messages(file_path);
+				CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
+				`)
+				return err
+			},
+			Down: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`DROP TABLE IF EXISTS messages`)
+				return err
+			},
+		},
 	}
-	logging.LogDebug("chat sqlite tables initialized")
+	if err := dbmigration.Migrate(s.db, version, steps); err != nil {
+		return fmt.Errorf("chat storage migration failed: %w", err)
+	}
+	logging.LogDebug("chat sqlite storage ready at version %d", version)
 	return nil
 }
 

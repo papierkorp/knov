@@ -24,14 +24,6 @@
   - Add dashboard export/import
 - export metadata to yaml header in markdown files
 
-- migration solution for sqlite
-  - e.g. new table added / old table removed
-  - what are possible solutions?
-  - manual we could: `if _, err := ss.db.Exec(`ALTER TABLE metadata ADD COLUMN references TEXT`)` with `logging.LogDebug("references column already exists or migration skipped: %v", err)` but i dont like this
-  - do i use a too like liquibase?
-
-
-
 # performance updates
 
 - use Query() instead of a loop through files.GetAllFiles()

@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"knov/internal/dbmigration"
 	"knov/internal/logging"
 
 	_ "modernc.org/sqlite"
@@ -58,41 +59,47 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 	return storage, nil
 }
 
-// initialize creates the metadata table with individual columns
+// initialize runs all pending migrations for this storage.
+// Bump version and append a step whenever the schema changes.
 func (ss *sqliteStorage) initialize() error {
-	query := `
-	CREATE TABLE IF NOT EXISTS metadata (
-		path TEXT PRIMARY KEY,
-		title TEXT,
-		created_at DATETIME,
-		last_edited DATETIME,
-		collection TEXT,
-		folders TEXT,
-		tags TEXT,
-		ancestor TEXT,
-		parents TEXT,
-		kids TEXT,
-		used_links TEXT,
-		links_to_here TEXT,
-		related TEXT,
-		editor TEXT,
-		size INTEGER,
-		"references" TEXT
-	);
-	CREATE INDEX IF NOT EXISTS idx_collection ON metadata(collection);
-	CREATE INDEX IF NOT EXISTS idx_editor ON metadata(editor);
-	`
-
-	_, err := ss.db.Exec(query)
-	if err != nil {
-		logging.LogError("failed to initialize metadata tables: %v", err)
-		return fmt.Errorf("failed to initialize metadata tables: %w", err)
+	const version = 1
+	steps := []dbmigration.Migration{
+		{
+			Up: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`
+				CREATE TABLE IF NOT EXISTS metadata (
+					path TEXT PRIMARY KEY,
+					title TEXT,
+					created_at DATETIME,
+					last_edited DATETIME,
+					collection TEXT,
+					folders TEXT,
+					tags TEXT,
+					ancestor TEXT,
+					parents TEXT,
+					kids TEXT,
+					used_links TEXT,
+					links_to_here TEXT,
+					related TEXT,
+					editor TEXT,
+					size INTEGER,
+					"references" TEXT
+				);
+				CREATE INDEX IF NOT EXISTS idx_collection ON metadata(collection);
+				CREATE INDEX IF NOT EXISTS idx_editor ON metadata(editor);
+				`)
+				return err
+			},
+			Down: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`DROP TABLE IF EXISTS metadata`)
+				return err
+			},
+		},
 	}
-
-	// migrate existing databases: add related column if absent (error is ignored if already exists)
-	_, _ = ss.db.Exec(`ALTER TABLE metadata ADD COLUMN related TEXT`)
-
-	logging.LogDebug("metadata sqlite tables initialized")
+	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
+		return fmt.Errorf("metadata storage migration failed: %w", err)
+	}
+	logging.LogDebug("metadata sqlite storage ready at version %d", version)
 	return nil
 }
 

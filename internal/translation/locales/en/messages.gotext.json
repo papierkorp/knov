@@ -527,8 +527,18 @@
       "translation": ""
     },
     {
+      "id": "display a search box above the table",
+      "message": "display a search box above the table",
+      "translation": ""
+    },
+    {
       "id": "Display filename below media previews",
       "message": "Display filename below media previews",
+      "translation": ""
+    },
+    {
+      "id": "display first / prev / next / last buttons",
+      "message": "display first / prev / next / last buttons",
       "translation": ""
     },
     {
@@ -1357,6 +1367,11 @@
       "translation": "Home"
     },
     {
+      "id": "how many rows to show per page in interactive tables",
+      "message": "how many rows to show per page in interactive tables",
+      "translation": ""
+    },
+    {
       "id": "how media previews are positioned in the document",
       "message": "how media previews are positioned in the document",
       "translation": ""
@@ -1459,6 +1474,11 @@
     {
       "id": "invalid index",
       "message": "invalid index",
+      "translation": ""
+    },
+    {
+      "id": "invalid page size",
+      "message": "invalid page size",
       "translation": ""
     },
     {
@@ -2142,18 +2162,8 @@
       "translation": ""
     },
     {
-      "id": "path/to/file.list",
-      "message": "path/to/file.list",
-      "translation": ""
-    },
-    {
       "id": "path/to/file.md",
       "message": "path/to/file.md",
-      "translation": ""
-    },
-    {
-      "id": "path/to/file.todo",
-      "message": "path/to/file.todo",
       "translation": ""
     },
     {
@@ -2297,13 +2307,13 @@
       "translation": ""
     },
     {
-      "id": "root",
-      "message": "root",
+      "id": "Rounded border",
+      "message": "Rounded border",
       "translation": ""
     },
     {
-      "id": "Rounded border",
-      "message": "Rounded border",
+      "id": "Rows per page",
+      "message": "Rows per page",
       "translation": ""
     },
     {
@@ -2532,6 +2542,21 @@
       "translation": ""
     },
     {
+      "id": "Show pagination buttons",
+      "message": "Show pagination buttons",
+      "translation": ""
+    },
+    {
+      "id": "Show row count info",
+      "message": "Show row count info",
+      "translation": ""
+    },
+    {
+      "id": "Show search input",
+      "message": "Show search input",
+      "translation": ""
+    },
+    {
       "id": "Simple border",
       "message": "Simple border",
       "translation": ""
@@ -2597,13 +2622,38 @@
       "translation": ""
     },
     {
+      "id": "table info setting updated",
+      "message": "table info setting updated",
+      "translation": ""
+    },
+    {
       "id": "table of contents",
       "message": "table of contents",
       "translation": ""
     },
     {
+      "id": "table page size updated",
+      "message": "table page size updated",
+      "translation": ""
+    },
+    {
+      "id": "table paging setting updated",
+      "message": "table paging setting updated",
+      "translation": ""
+    },
+    {
       "id": "table parsing not supported for this file type",
       "message": "table parsing not supported for this file type",
+      "translation": ""
+    },
+    {
+      "id": "table search setting updated",
+      "message": "table search setting updated",
+      "translation": ""
+    },
+    {
+      "id": "Table Settings",
+      "message": "Table Settings",
       "translation": ""
     },
     {

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"knov/internal/dbmigration"
 	"knov/internal/logging"
 
 	_ "modernc.org/sqlite"
@@ -65,29 +66,39 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 	return storage, nil
 }
 
-// initialize creates FTS5 search tables
+// initialize runs all pending migrations for this storage.
 func (ss *sqliteStorage) initialize() error {
-	// create FTS5 table for full-text search
-	query := `
-		CREATE VIRTUAL TABLE IF NOT EXISTS search_index USING fts5(
-			path UNINDEXED,
-			content,
-			tokenize='porter ascii'
-		);
-
-		-- create content table for storing raw content
-		CREATE TABLE IF NOT EXISTS search_content (
-			path TEXT PRIMARY KEY,
-			content BLOB
-		);
-
-		CREATE INDEX IF NOT EXISTS idx_search_content_path ON search_content(path);
-	`
-
-	if _, err := ss.db.Exec(query); err != nil {
-		return fmt.Errorf("failed to create search tables: %w", err)
+	const version = 1
+	steps := []dbmigration.Migration{
+		{
+			Up: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`
+				CREATE VIRTUAL TABLE IF NOT EXISTS search_index USING fts5(
+					path UNINDEXED,
+					content,
+					tokenize='porter ascii'
+				);
+				CREATE TABLE IF NOT EXISTS search_content (
+					path TEXT PRIMARY KEY,
+					content BLOB
+				);
+				CREATE INDEX IF NOT EXISTS idx_search_content_path ON search_content(path);
+				`)
+				return err
+			},
+			Down: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`
+				DROP TABLE IF EXISTS search_index;
+				DROP TABLE IF EXISTS search_content;
+				`)
+				return err
+			},
+		},
 	}
-
+	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
+		return fmt.Errorf("search storage migration failed: %w", err)
+	}
+	logging.LogDebug("search sqlite storage ready at version %d", version)
 	return nil
 }
 
