@@ -481,11 +481,14 @@ func handleAPIExportAllFiles(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "export failed"
 // @Router /api/files/export/markdown-converted [post]
 func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *http.Request) {
+	exportLog := logging.LogBuilder("dokuwiki_export")
 	dataPath := configmanager.GetAppConfig().DataPath
 
 	// create zip in memory
 	buf := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(buf)
+
+	exportLog.Printf("=== export started: %s ===", dataPath)
 
 	// walk through data directory
 	err := filepath.Walk(dataPath, func(path string, info os.FileInfo, err error) error {
@@ -513,6 +516,7 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 		content, err := os.ReadFile(path)
 		if err != nil {
 			logging.LogWarning("failed to read file %s: %v", path, err)
+			exportLog.Printf("skip (read error): %s — %v", relPath, err)
 			return nil // skip this file but continue
 		}
 
@@ -526,10 +530,12 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 				content = []byte(markdown)
 
 				// change extension to .md
+				oldRelPath := relPath
 				relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + ".md"
-
-				logging.LogDebug("converted dokuwiki file to markdown: %s", relPath)
+				exportLog.Printf("converted: %s -> %s", oldRelPath, relPath)
 			}
+		} else if strings.ToLower(filepath.Ext(path)) == ".txt" {
+			exportLog.Printf("skipped .txt (not dokuwiki): %s — first non-empty line did not match dokuwiki header", relPath)
 		}
 
 		// add file to zip

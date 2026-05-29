@@ -24,12 +24,16 @@ func (h *DokuwikiHandler) CanHandle(filename string) bool {
 	if ext == ".txt" {
 		content, err := os.ReadFile(filename)
 		if err == nil {
-			lines := strings.Split(string(content), "\n")
-			if len(lines) > 0 {
-				firstLine := strings.TrimSpace(lines[0])
-				if strings.HasPrefix(firstLine, "======") || strings.HasPrefix(firstLine, "=====") {
+			s := strings.TrimPrefix(string(content), "\xEF\xBB\xBF") // strip UTF-8 BOM
+			for _, line := range strings.Split(s, "\n") {
+				trimmed := strings.TrimSpace(line)
+				if trimmed == "" {
+					continue
+				}
+				if strings.HasPrefix(trimmed, "======") || strings.HasPrefix(trimmed, "=====") {
 					return true
 				}
+				break
 			}
 		}
 	}
@@ -190,6 +194,7 @@ func (h *DokuwikiHandler) restoreURLs(content string, urls []string) string {
 	}
 	return content
 }
+
 func (h *DokuwikiHandler) handleComplexStructures(content string) string {
 	// Remove tablelayout plugin syntax
 	content = regexp.MustCompile(`\{\{[^}]*tablelayout[^}]*\}\}`).ReplaceAllString(content, "")
