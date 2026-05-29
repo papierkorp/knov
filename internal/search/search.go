@@ -26,17 +26,33 @@ func InitSearch() error {
 	return IndexAllFiles()
 }
 
-// IndexAllFiles indexes all files for search
+// IndexAllFiles indexes all files, skipping those already indexed and unchanged.
 func IndexAllFiles() error {
 	allFiles, err := files.GetAllPhysicalFiles()
 	if err != nil {
 		return fmt.Errorf("failed to get all files: %w", err)
 	}
 
-	logging.LogInfo("indexing %d files for search", len(allFiles))
+	logging.LogInfo("checking %d files for search indexing", len(allFiles))
 
+	indexed, skipped := 0, 0
 	for _, file := range allFiles {
 		fullPath := pathutils.ToDocsPath(file.Path)
+
+		info, err := os.Stat(fullPath)
+		if err != nil {
+			logging.LogWarning("failed to stat file %s for indexing: %v", file.Path, err)
+			continue
+		}
+
+		// skip if already indexed and file hasn't changed since
+		if indexedAt, err := searchStorage.GetIndexedAt(file.Path); err == nil && !indexedAt.IsZero() {
+			if !info.ModTime().After(indexedAt) {
+				skipped++
+				continue
+			}
+		}
+
 		content, err := os.ReadFile(fullPath)
 		if err != nil {
 			logging.LogWarning("failed to read file %s for indexing: %v", file.Path, err)
@@ -45,12 +61,14 @@ func IndexAllFiles() error {
 
 		if err := searchStorage.IndexFile(file.Path, content); err != nil {
 			logging.LogWarning("failed to index file %s: %v", file.Path, err)
+			continue
 		}
 
 		trigramIdx.add(file.Path, content)
+		indexed++
 	}
 
-	logging.LogInfo("finished indexing files")
+	logging.LogInfo("search indexing complete: %d indexed, %d skipped (up to date)", indexed, skipped)
 	return nil
 }
 

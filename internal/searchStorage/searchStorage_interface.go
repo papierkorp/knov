@@ -3,6 +3,7 @@ package searchStorage
 
 import (
 	"fmt"
+	"time"
 
 	"knov/internal/logging"
 )
@@ -11,6 +12,7 @@ import (
 type SearchStorage interface {
 	IndexFile(path string, content []byte) error
 	GetIndexedContent(path string) ([]byte, error)
+	GetIndexedAt(path string) (time.Time, error)
 	DeleteIndexedContent(path string) error
 	ListAllIndexedFiles() ([]string, error)
 	SearchContent(query string, limit int) ([]SearchResult, error)
@@ -54,6 +56,11 @@ func IndexFile(path string, content []byte) error {
 // GetIndexedContent retrieves indexed content for a file
 func GetIndexedContent(path string) ([]byte, error) {
 	return storage.GetIndexedContent(path)
+}
+
+// GetIndexedAt returns the time a file was last indexed.
+func GetIndexedAt(path string) (time.Time, error) {
+	return storage.GetIndexedAt(path)
 }
 
 // DeleteIndexedContent removes indexed content for a file

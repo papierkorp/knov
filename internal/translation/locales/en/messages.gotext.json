@@ -277,6 +277,11 @@
       "translation": ""
     },
     {
+      "id": "code block wrap setting updated",
+      "message": "code block wrap setting updated",
+      "translation": ""
+    },
+    {
       "id": "coll.",
       "message": "coll.",
       "translation": ""
@@ -324,6 +329,11 @@
     {
       "id": "content",
       "message": "content",
+      "translation": ""
+    },
+    {
+      "id": "control whether code block content wraps or scrolls",
+      "message": "control whether code block content wraps or scrolls",
       "translation": ""
     },
     {
@@ -882,11 +892,6 @@
       "translation": ""
     },
     {
-      "id": "failed to parse table",
-      "message": "failed to parse table",
-      "translation": ""
-    },
-    {
       "id": "failed to parse todo content",
       "message": "failed to parse todo content",
       "translation": ""
@@ -1149,11 +1154,6 @@
     {
       "id": "filtered results will appear here",
       "message": "filtered results will appear here",
-      "translation": ""
-    },
-    {
-      "id": "filter media...",
-      "message": "filter media...",
       "translation": ""
     },
     {
@@ -1917,11 +1917,6 @@
       "translation": ""
     },
     {
-      "id": "new dashboard",
-      "message": "new dashboard",
-      "translation": ""
-    },
-    {
       "id": "new file path",
       "message": "new file path",
       "translation": ""
@@ -2079,11 +2074,6 @@
     {
       "id": "open in new tab",
       "message": "open in new tab",
-      "translation": ""
-    },
-    {
-      "id": "open media page",
-      "message": "open media page",
       "translation": ""
     },
     {
@@ -2642,11 +2632,6 @@
       "translation": ""
     },
     {
-      "id": "table parsing not supported for this file type",
-      "message": "table parsing not supported for this file type",
-      "translation": ""
-    },
-    {
       "id": "table search setting updated",
       "message": "table search setting updated",
       "translation": ""
@@ -2922,6 +2907,11 @@
       "translation": ""
     },
     {
+      "id": "When enabled, long lines in code blocks wrap instead of scrolling horizontally",
+      "message": "When enabled, long lines in code blocks wrap instead of scrolling horizontally",
+      "translation": ""
+    },
+    {
       "id": "Why did you add this reference?",
       "message": "Why did you add this reference?",
       "translation": ""
@@ -2949,6 +2939,11 @@
     {
       "id": "widget type",
       "message": "widget type",
+      "translation": ""
+    },
+    {
+      "id": "Wrap long lines in code blocks",
+      "message": "Wrap long lines in code blocks",
       "translation": ""
     },
     {

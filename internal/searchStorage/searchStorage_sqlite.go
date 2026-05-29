@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"knov/internal/dbmigration"
 	"knov/internal/logging"
@@ -68,7 +69,7 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 
 // initialize runs all pending migrations for this storage.
 func (ss *sqliteStorage) initialize() error {
-	const version = 1
+	const version = 2
 	steps := []dbmigration.Migration{
 		{
 			Up: func(tx *sql.Tx) error {
@@ -94,6 +95,17 @@ func (ss *sqliteStorage) initialize() error {
 				return err
 			},
 		},
+		{
+			Up: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`ALTER TABLE search_content ADD COLUMN indexed_at DATETIME`)
+				return err
+			},
+			Down: func(tx *sql.Tx) error {
+				// sqlite < 3.35 workaround not needed for this project; DROP COLUMN supported
+				_, err := tx.Exec(`ALTER TABLE search_content DROP COLUMN indexed_at`)
+				return err
+			},
+		},
 	}
 	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
 		return fmt.Errorf("search storage migration failed: %w", err)
@@ -107,14 +119,14 @@ func (ss *sqliteStorage) IndexFile(path string, content []byte) error {
 	ss.mutex.Lock()
 	defer ss.mutex.Unlock()
 
-	// store raw content
-	_, err := ss.db.Exec("INSERT OR REPLACE INTO search_content (path, content) VALUES (?, ?)", path, content)
+	now := time.Now().UTC()
+
+	_, err := ss.db.Exec("INSERT OR REPLACE INTO search_content (path, content, indexed_at) VALUES (?, ?, ?)", path, content, now)
 	if err != nil {
 		logging.LogError("failed to store search content for %s: %v", path, err)
 		return err
 	}
 
-	// index for FTS
 	_, err = ss.db.Exec("INSERT OR REPLACE INTO search_index (path, content) VALUES (?, ?)", path, string(content))
 	if err != nil {
 		logging.LogError("failed to index file %s: %v", path, err)
@@ -123,6 +135,19 @@ func (ss *sqliteStorage) IndexFile(path string, content []byte) error {
 
 	logging.LogDebug("indexed file: %s", path)
 	return nil
+}
+
+// GetIndexedAt returns the time a file was last indexed, or zero time if not indexed.
+func (ss *sqliteStorage) GetIndexedAt(path string) (time.Time, error) {
+	ss.mutex.RLock()
+	defer ss.mutex.RUnlock()
+
+	var t time.Time
+	err := ss.db.QueryRow("SELECT indexed_at FROM search_content WHERE path = ?", path).Scan(&t)
+	if err == sql.ErrNoRows {
+		return time.Time{}, nil
+	}
+	return t, err
 }
 
 // GetIndexedContent retrieves indexed content for a file

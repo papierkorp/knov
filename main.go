@@ -90,9 +90,11 @@ func main() {
 	translation.SetLanguage(configmanager.GetLanguage())
 
 	thememanager.InitThemeManager()
-	if err := search.InitSearch(); err != nil {
-		logging.LogError("failed to initialize search: %v", err)
-	}
+	go func() {
+		if err := search.InitSearch(); err != nil {
+			logging.LogError("failed to initialize search: %v", err)
+		}
+	}()
 
 	go func() {
 		time.Sleep(2 * time.Minute)
