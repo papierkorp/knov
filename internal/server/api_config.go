@@ -269,6 +269,29 @@ func handleAPIUpdateSectionEditSubheaders(w http.ResponseWriter, r *http.Request
 	writeResponse(w, r, "saved", html)
 }
 
+// @Summary Update code block wrap setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param codeBlockWrap formData bool true "Whether code blocks should wrap long lines"
+// @Produce json,html
+// @Router /api/config/code-block-wrap [post]
+func handleAPIUpdateCodeBlockWrap(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), "")
+		return
+	}
+
+	wrap := r.FormValue("codeBlockWrap") == "true"
+
+	userSettings := configmanager.GetUserSettings()
+	userSettings.CodeBlockWrap = wrap
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("updated code block wrap to: %t", wrap)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "code block wrap setting updated"))
+	writeResponse(w, r, "saved", html)
+}
+
 // @Summary Update default preview size
 // @Tags config
 // @Accept application/x-www-form-urlencoded

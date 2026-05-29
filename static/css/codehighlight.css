@@ -1,35 +1,73 @@
 /* syntax highlighting for code blocks */
 pre {
-    background: var(--bg-secondary);
-    color: var(--text);
-    padding: 1em 1em 1em 1em;
-    border-radius: 6px;
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    margin: 1em 0;
-    position: relative;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--bg-secondary);
+  color: var(--text);
+  padding: 1em 1em 1em 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  margin: 1em 0;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 pre code {
-    background: transparent;
-    padding: 0;
-    font-family: "Courier New", Courier, monospace;
-    font-size: 14px;
-    line-height: 1.5;
+  background: transparent;
+  padding: 0;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-/* chroma token colors - light mode (high contrast) */
+/* copy button */
+.code-copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: var(--bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+pre:hover .code-copy-btn {
+  opacity: 1;
+}
+
+.code-copy-btn:hover {
+  background: var(--primary, #4a90d9);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* wrap toggle — enabled via data-code-wrap="true" on <body> */
+body[data-code-wrap="true"] pre {
+  overflow-x: visible;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+body[data-code-wrap="true"] pre code {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
 .chroma-k,
 .chroma-kc,
 .chroma-kd,
 .chroma-kn,
 .chroma-kp,
 .chroma-kr {
-    color: #9900cc;
+  color: #9900cc;
 } /* keyword → purple */
 .chroma-kt {
-    color: #0070c1;
+  color: #0070c1;
 } /* keyword type → blue */
 .chroma-s,
 .chroma-s1,
@@ -43,7 +81,7 @@ pre code {
 .chroma-sx,
 .chroma-sr,
 .chroma-ss {
-    color: #b5420a;
+  color: #b5420a;
 } /* string → burnt orange */
 .chroma-m,
 .chroma-mb,
@@ -51,59 +89,59 @@ pre code {
 .chroma-mh,
 .chroma-mi,
 .chroma-mo {
-    color: #0070c1;
+  color: #0070c1;
 } /* number → blue */
 .chroma-c,
 .chroma-c1,
 .chroma-cm {
-    color: #5c7a3e;
-    font-style: italic;
+  color: #5c7a3e;
+  font-style: italic;
 } /* comment → green */
 .chroma-cp {
-    color: #5c7a3e;
+  color: #5c7a3e;
 } /* comment preproc */
 .chroma-n {
-    color: var(--text);
+  color: var(--text);
 } /* name */
 .chroma-na {
-    color: #006b6b;
+  color: #006b6b;
 } /* name attribute → teal */
 .chroma-nb {
-    color: #0070c1;
+  color: #0070c1;
 } /* name builtin → blue */
 .chroma-nc {
-    color: #0070c1;
+  color: #0070c1;
 } /* name class → blue */
 .chroma-nf {
-    color: #006b6b;
+  color: #006b6b;
 } /* name function → teal */
 .chroma-nt {
-    color: #9900cc;
+  color: #9900cc;
 } /* name tag → purple */
 .chroma-o {
-    color: #9900cc;
+  color: #9900cc;
 } /* operator → purple */
 .chroma-p {
-    color: #555555;
+  color: #555555;
 } /* punctuation */
 .chroma-l {
-    color: #0070c1;
+  color: #0070c1;
 } /* literal → blue */
 .chroma-gd {
-    color: #b5420a;
-    background-color: #ffeef0;
+  color: #b5420a;
+  background-color: #ffeef0;
 } /* diff del */
 .chroma-gi {
-    color: #1a6b1a;
-    background-color: #e6ffed;
+  color: #1a6b1a;
+  background-color: #e6ffed;
 } /* diff add */
 .chroma-gh {
-    color: #9900cc;
-    font-weight: bold;
+  color: #9900cc;
+  font-weight: bold;
 } /* diff heading */
 .chroma-gu {
-    color: #9900cc;
-    font-weight: bold;
+  color: #9900cc;
+  font-weight: bold;
 } /* diff subheading */
 
 /* dark mode overrides */
@@ -113,10 +151,10 @@ body[data-dark-mode="true"] .chroma-kd,
 body[data-dark-mode="true"] .chroma-kn,
 body[data-dark-mode="true"] .chroma-kp,
 body[data-dark-mode="true"] .chroma-kr {
-    color: #cf9dff;
+  color: #cf9dff;
 } /* keyword → light purple */
 body[data-dark-mode="true"] .chroma-kt {
-    color: #4fc1ff;
+  color: #4fc1ff;
 } /* keyword type → sky blue */
 body[data-dark-mode="true"] .chroma-s,
 body[data-dark-mode="true"] .chroma-s1,
@@ -130,7 +168,7 @@ body[data-dark-mode="true"] .chroma-si,
 body[data-dark-mode="true"] .chroma-sx,
 body[data-dark-mode="true"] .chroma-sr,
 body[data-dark-mode="true"] .chroma-ss {
-    color: #ffb347;
+  color: #ffb347;
 } /* string → orange */
 body[data-dark-mode="true"] .chroma-m,
 body[data-dark-mode="true"] .chroma-mb,
@@ -138,57 +176,57 @@ body[data-dark-mode="true"] .chroma-mf,
 body[data-dark-mode="true"] .chroma-mh,
 body[data-dark-mode="true"] .chroma-mi,
 body[data-dark-mode="true"] .chroma-mo {
-    color: #4fc1ff;
+  color: #4fc1ff;
 } /* number → sky blue */
 body[data-dark-mode="true"] .chroma-c,
 body[data-dark-mode="true"] .chroma-c1,
 body[data-dark-mode="true"] .chroma-cm {
-    color: #f5f5f5;
-    font-style: italic;
+  color: #f5f5f5;
+  font-style: italic;
 } /* comment → green */
 body[data-dark-mode="true"] .chroma-cp {
-    color: #7ec87e;
+  color: #7ec87e;
 }
 body[data-dark-mode="true"] .chroma-n {
-    color: var(--text);
+  color: var(--text);
 }
 body[data-dark-mode="true"] .chroma-na {
-    color: #4ddbdb;
+  color: #4ddbdb;
 } /* name attribute → teal */
 body[data-dark-mode="true"] .chroma-nb {
-    color: #4fc1ff;
+  color: #4fc1ff;
 } /* name builtin → sky blue */
 body[data-dark-mode="true"] .chroma-nc {
-    color: #4fc1ff;
+  color: #4fc1ff;
 } /* name class → sky blue */
 body[data-dark-mode="true"] .chroma-nf {
-    color: #4ddbdb;
+  color: #4ddbdb;
 } /* name function → teal */
 body[data-dark-mode="true"] .chroma-nt {
-    color: #a3e635;
+  color: #a3e635;
 } /* name tag → light purple */
 body[data-dark-mode="true"] .chroma-o {
-    color: #cf9dff;
+  color: #cf9dff;
 } /* operator → light purple */
 body[data-dark-mode="true"] .chroma-p {
-    color: #cccccc;
+  color: #cccccc;
 } /* punctuation */
 body[data-dark-mode="true"] .chroma-l {
-    color: #4fc1ff;
+  color: #4fc1ff;
 } /* literal → sky blue */
 body[data-dark-mode="true"] .chroma-gd {
-    color: #ff6b6b;
-    background-color: #3a1218;
+  color: #ff6b6b;
+  background-color: #3a1218;
 } /* diff del */
 body[data-dark-mode="true"] .chroma-gi {
-    color: #7ec87e;
-    background-color: #1a3a18;
+  color: #7ec87e;
+  background-color: #1a3a18;
 } /* diff add */
 body[data-dark-mode="true"] .chroma-gh {
-    color: #cf9dff;
-    font-weight: bold;
+  color: #cf9dff;
+  font-weight: bold;
 }
 body[data-dark-mode="true"] .chroma-gu {
-    color: #cf9dff;
-    font-weight: bold;
+  color: #cf9dff;
+  font-weight: bold;
 }

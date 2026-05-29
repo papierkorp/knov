@@ -198,6 +198,7 @@ func StartServerChi() {
 
 			// Editor settings endpoints
 			r.Post("/section-edit-subheaders", handleAPIUpdateSectionEditSubheaders)
+			r.Post("/code-block-wrap", handleAPIUpdateCodeBlockWrap)
 
 			// Table display settings endpoints
 			r.Post("/table/page-size", handleAPIUpdateTablePageSize)

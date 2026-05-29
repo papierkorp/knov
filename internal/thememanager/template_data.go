@@ -27,6 +27,7 @@ type BaseTemplateData struct {
 	Language      string
 	Themes        []Theme
 	FileType      string
+	CodeBlockWrap bool
 	T             func(string, ...any) string
 }
 
@@ -38,6 +39,7 @@ func NewBaseTemplateData(title string) BaseTemplateData {
 		ThemeSettings: getMergedThemeSettings(),
 		Language:      configmanager.GetLanguage(),
 		Themes:        themeManager.GetAvailableThemes(),
+		CodeBlockWrap: configmanager.GetUserSettings().CodeBlockWrap,
 		FileType:      "",
 		T:             translation.Sprintf,
 	}

@@ -24,6 +24,7 @@ type UserSettings struct {
 	MediaSettings                MediaSettings    `json:"mediaSettings,omitempty"`
 	TableSettings                TableSettings    `json:"tableSettings,omitempty"`
 	SectionEditIncludeSubheaders bool             `json:"sectionEditIncludeSubheaders"`
+	CodeBlockWrap                bool             `json:"codeBlockWrap"`
 }
 
 // TableSettings contains display preferences for interactive tables

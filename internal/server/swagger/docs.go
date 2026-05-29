@@ -298,6 +298,31 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/config/code-block-wrap": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update code block wrap setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether code blocks should wrap long lines",
+                        "name": "codeBlockWrap",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/config/datapath": {
             "get": {
                 "produces": [

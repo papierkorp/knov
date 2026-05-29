@@ -504,6 +504,23 @@ paths:
       summary: Get current configuration
       tags:
       - config
+  /api/config/code-block-wrap:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether code blocks should wrap long lines
+        in: formData
+        name: codeBlockWrap
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update code block wrap setting
+      tags:
+      - config
   /api/config/datapath:
     get:
       produces:

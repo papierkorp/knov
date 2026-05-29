@@ -18,6 +18,7 @@
     data-dark-mode="{{ index .ThemeSettings "darkMode" }}"
     data-color-scheme="{{ index .ThemeSettings "colorScheme" }}"
     data-font-family="{{ index .ThemeSettings "fontFamily" }}"
+    data-code-wrap="{{ .CodeBlockWrap }}"
     data-language="{{ .Language }}">
     <div id="wrapper">
         {{ template "header" . }}
@@ -29,6 +30,33 @@
     <script src="/static/toastui-editor-3.2.2.min.js"></script>
     <script src="/static/sortable-1.15.0.min.js"></script>
     <script src="/static/handsontable-16.2.0.full.min.js"></script>
+    <script>
+    // copy button for code blocks
+    (function () {
+        function addCopyButtons(root) {
+            root.querySelectorAll('pre:not([data-copy-ready])').forEach(function (pre) {
+                pre.setAttribute('data-copy-ready', '1');
+                var btn = document.createElement('button');
+                btn.className = 'code-copy-btn';
+                btn.textContent = 'copy';
+                btn.addEventListener('click', function () {
+                    var code = pre.querySelector('code');
+                    navigator.clipboard.writeText(code ? code.innerText : pre.innerText).then(function () {
+                        btn.textContent = 'copied!';
+                        setTimeout(function () { btn.textContent = 'copy'; }, 1500);
+                    });
+                });
+                pre.appendChild(btn);
+            });
+        }
+        // initial pass
+        addCopyButtons(document);
+        // re-run after htmx swaps new content in
+        document.addEventListener('htmx:afterSettle', function (e) {
+            addCopyButtons(e.target);
+        });
+    })();
+    </script>
 </body>
 </html>
 

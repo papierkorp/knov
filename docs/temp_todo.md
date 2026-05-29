@@ -8,8 +8,7 @@
 **per ai**
 - move media to browse
 - chat: select multiple + move/delete multiple
-- codeblocks - copy button
-- codeblocks setting - wrap content
+- rail theme: settings - layout - a lot of empty spaces if one section is smaller
 
 **long term**
 - i want to get rid of the dokuwiki file support (i want to keep the dokuwiki to markdown export) but i dont want to display dokuwiki files any longer

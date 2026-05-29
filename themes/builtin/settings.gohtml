@@ -88,6 +88,23 @@
             <div class="help-text">{{T "control whether section editing includes content from sub-headers"}}</div>
         </form>
     </div>
+    <div class="setting-item">
+        <form hx-post="/api/config/code-block-wrap" hx-trigger="change">
+            <label class="checkbox-label">
+                <input
+                    type="checkbox"
+                    name="codeBlockWrap"
+                    value="true"
+                    {{ if .UserSettings.CodeBlockWrap }}checked{{ end }}
+                    class="form-checkbox"
+                />
+                <span class="checkmark"></span>
+                {{T "Wrap long lines in code blocks"}}
+                <small>{{T "When enabled, long lines in code blocks wrap instead of scrolling horizontally"}}</small>
+            </label>
+            <div class="help-text">{{T "control whether code block content wraps or scrolls"}}</div>
+        </form>
+    </div>
 </section>
 {{ end }}
 
