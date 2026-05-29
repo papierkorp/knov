@@ -6,6 +6,7 @@
 - create filter manually not per ai..
 
 **per ai**
+- dokuwiki to markdown parser: indents in codeblocks (dokuwiki exmaple)
 - delay the rebuild metadata start after starting the app by 1min
 - add yaml header to metadata storage (export metadata to yaml header in markdown files)
 - add a upload favicon
