@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -230,21 +231,184 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, map[string]string{"target": target}, render.RenderChatMoveSuccess(target))
 }
 
+// @Summary Bulk move chat messages to a file
+// @Description Concatenates selected messages and moves them to a new or existing file
+// @Tags chat
+// @Accept application/x-www-form-urlencoded
+// @Param ids formData string true "Comma-separated message IDs"
+// @Param mode formData string true "Mode: new or append"
+// @Param target formData string true "Target filename (new) or existing file path (append)"
+// @Param editor formData string false "Editor type for new files"
+// @Produce json,html
+// @Router /api/chat/messages/bulk/move [post]
+// @Summary Get bulk move form HTML
+// @Tags chat
+// @Param mode query string true "Form mode: new or append"
+// @Produce html
+// @Router /api/chat/bulk-form [get]
+func handleAPIGetChatBulkForm(w http.ResponseWriter, r *http.Request) {
+	mode := r.URL.Query().Get("mode")
+	writeResponse(w, r, nil, render.RenderChatBulkMoveForm(mode))
+}
+
+func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	rawIDs := r.FormValue("ids")
+	target := strings.TrimSpace(r.FormValue("target"))
+	mode := r.FormValue("mode")
+	editor := files.EditorType(r.FormValue("editor"))
+
+	if rawIDs == "" || target == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "ids and target are required"), http.StatusBadRequest)
+		return
+	}
+
+	ids := strings.Split(rawIDs, ",")
+
+	// fetch messages in order and concatenate
+	var parts []string
+	for _, id := range ids {
+		id = strings.TrimSpace(id)
+		if id == "" {
+			continue
+		}
+		msg, err := chat.GetByID(id)
+		if err != nil || msg == nil {
+			logging.LogWarning("bulk move: message %s not found, skipping", id)
+			continue
+		}
+		parts = append(parts, msg.Content)
+	}
+
+	if len(parts) == 0 {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no valid messages found"), http.StatusBadRequest)
+		return
+	}
+
+	combined := strings.Join(parts, "\n\n")
+
+	var newContent []byte
+	var fullPath string
+
+	if mode == "append" {
+		if !strings.Contains(target, ".") {
+			target = target + ".md"
+		}
+		fullPath = pathutils.ToDocsPath(target)
+		existing, _ := contentStorage.ReadFile(fullPath)
+		if len(existing) > 0 {
+			newContent = append(existing, []byte("\n\n"+combined)...)
+		} else {
+			newContent = []byte(combined)
+		}
+	} else {
+		var resolvedEditor files.EditorType
+		target, newContent, resolvedEditor = formatForEditor(target, combined, editor)
+		fullPath = pathutils.ToDocsPath(target)
+		metadata := &files.Metadata{
+			Path:   pathutils.ToWithPrefix(target),
+			Editor: resolvedEditor,
+		}
+		if err := files.MetaDataSave(metadata); err != nil {
+			logging.LogWarning("failed to save metadata for bulk chat move: %v", err)
+		}
+	}
+
+	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
+		logging.LogError("failed to write file during bulk chat move: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move messages"), http.StatusInternalServerError)
+		return
+	}
+
+	// delete all moved messages
+	for _, id := range ids {
+		id = strings.TrimSpace(id)
+		if id == "" {
+			continue
+		}
+		if err := chat.Delete(id); err != nil {
+			logging.LogWarning("bulk move: failed to delete message %s: %v", id, err)
+		}
+	}
+
+	logging.LogInfo("bulk moved %d messages to %s (mode: %s)", len(parts), target, mode)
+	writeResponse(w, r, map[string]string{"target": target}, render.RenderChatMoveSuccess(target))
+}
+
+// @Summary Bulk delete chat messages
+// @Tags chat
+// @Accept application/x-www-form-urlencoded
+// @Param ids formData string true "Comma-separated message IDs"
+// @Produce json,html
+// @Router /api/chat/messages/bulk [delete]
+func handleAPIBulkDeleteChatMessages(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+
+	rawIDs := r.FormValue("ids")
+	if rawIDs == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "ids are required"), http.StatusBadRequest)
+		return
+	}
+
+	count := 0
+	for _, id := range strings.Split(rawIDs, ",") {
+		id = strings.TrimSpace(id)
+		if id == "" {
+			continue
+		}
+		if err := chat.Delete(id); err != nil {
+			logging.LogWarning("bulk delete: failed to delete message %s: %v", id, err)
+			continue
+		}
+		count++
+	}
+
+	logging.LogInfo("bulk deleted %d messages", count)
+	writeResponse(w, r, map[string]int{"deleted": count}, "")
+}
+
 func formatForEditor(target, content string, editor files.EditorType) (string, []byte, files.EditorType) {
+	parts := strings.Split(content, "\n\n")
+
 	switch editor {
 	case files.EditorTypeTodo:
 		target = strings.TrimSuffix(target, filepath.Ext(target)) + ".todo"
-		return target, []byte("- [ ] " + content + "\n"), files.EditorTypeTodo
+		var b strings.Builder
+		for _, p := range parts {
+			if strings.TrimSpace(p) != "" {
+				fmt.Fprintf(&b, "- [ ] %s\n", strings.TrimSpace(p))
+			}
+		}
+		return target, []byte(b.String()), files.EditorTypeTodo
 	case files.EditorTypeList:
 		target = strings.TrimSuffix(target, filepath.Ext(target)) + ".list"
-		return target, []byte("- " + content + "\n"), files.EditorTypeList
+		var b strings.Builder
+		for _, p := range parts {
+			if strings.TrimSpace(p) != "" {
+				fmt.Fprintf(&b, "- %s\n", strings.TrimSpace(p))
+			}
+		}
+		return target, []byte(b.String()), files.EditorTypeList
 	case files.EditorTypeIndex:
 		target = strings.TrimSuffix(target, filepath.Ext(target)) + ".index"
-		return target, []byte("## " + content + "\n"), files.EditorTypeIndex
+		var b strings.Builder
+		for _, p := range parts {
+			if strings.TrimSpace(p) != "" {
+				fmt.Fprintf(&b, "## %s\n", strings.TrimSpace(p))
+			}
+		}
+		return target, []byte(b.String()), files.EditorTypeIndex
 	case files.EditorTypeTextarea:
 		target = strings.TrimSuffix(target, filepath.Ext(target)) + ".txt"
 		return target, []byte(content), files.EditorTypeTextarea
-	default: // markdown-editor and anything else
+	default:
 		if !strings.Contains(target, ".") {
 			target = target + ".md"
 		}

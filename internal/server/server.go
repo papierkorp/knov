@@ -366,6 +366,9 @@ func StartServerChi() {
 			r.Get("/messages/{id}", handleAPIGetChatByID)
 			r.Get("/messages/{id}/move", handleAPIGetChatMoveForm)
 			r.Post("/messages/{id}/move", handleAPIMoveChatMessage)
+			r.Post("/messages/bulk/move", handleAPIBulkMoveChatMessages)
+			r.Delete("/messages/bulk", handleAPIBulkDeleteChatMessages)
+			r.Get("/bulk-form", handleAPIGetChatBulkForm)
 		})
 	})
 

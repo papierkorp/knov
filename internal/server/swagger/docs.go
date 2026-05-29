@@ -15,6 +15,61 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/chat/bulk-form": {
+            "get": {
+                "description": "Concatenates selected messages and moves them to a new or existing file",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html",
+                    "text/html"
+                ],
+                "tags": [
+                    "chat",
+                    "chat"
+                ],
+                "summary": "Get bulk move form HTML",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comma-separated message IDs",
+                        "name": "ids",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Mode: new or append",
+                        "name": "mode",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Target filename (new) or existing file path (append)",
+                        "name": "target",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Editor type for new files",
+                        "name": "editor",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form mode: new or append",
+                        "name": "mode",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/chat/messages": {
             "get": {
                 "description": "Returns the full chat component with message history and input",
@@ -73,6 +128,86 @@ const docTemplate = `{
                         "description": "Message content",
                         "name": "chat-input",
                         "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/chat/messages/bulk": {
+            "delete": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "chat"
+                ],
+                "summary": "Bulk delete chat messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comma-separated message IDs",
+                        "name": "ids",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/chat/messages/bulk/move": {
+            "post": {
+                "description": "Concatenates selected messages and moves them to a new or existing file",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html",
+                    "text/html"
+                ],
+                "tags": [
+                    "chat",
+                    "chat"
+                ],
+                "summary": "Get bulk move form HTML",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comma-separated message IDs",
+                        "name": "ids",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Mode: new or append",
+                        "name": "mode",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Target filename (new) or existing file path (append)",
+                        "name": "target",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Editor type for new files",
+                        "name": "editor",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form mode: new or append",
+                        "name": "mode",
+                        "in": "query",
                         "required": true
                     }
                 ],

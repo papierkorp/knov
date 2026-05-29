@@ -6,22 +6,27 @@
 - create filter manually not per ai..
 
 **per ai**
+- add yaml header to metadata storage
+- export metadata to yaml header in markdown files
 
 **long term**
-- chat: select multiple + move/delete multiple
+- add migration between different storages
 - i want to get rid of the dokuwiki file support (i want to keep the dokuwiki to markdown export) but i dont want to display dokuwiki files any longer
 - /releasenotes route with new icon on the bottom of the rail theme
 - Dashboard
   - Add dashboard export/import
   - remove positions from builtin and rail theme
   - add up/down buttons to builtin/rail theme widgets
-- export metadata to yaml header in markdown files
 
 # performance updates
 
+**read**
 - use Query() instead of a loop through files.GetAllFiles()
 - use Query in filter.go
 - Refactor filter.go to use query
+
+**write**
+- add a SetBatch for rebuild metadata
 
 **concurrent**
 - make rebuild metadata concurrent e.g. each letter?

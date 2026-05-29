@@ -1074,7 +1074,70 @@ body[data-dark-mode="true"] .tooltip::after {
   opacity: 0.5;
 }
 
-/* floating toolbar — top-right corner inside the message, no layout shift */
+/* chat bulk selection — click to toggle, outline shows selected state */
+.chat-message {
+  cursor: pointer;
+}
+
+.chat-message button,
+.chat-message a,
+.chat-message textarea,
+.chat-message input {
+  cursor: auto;
+}
+
+.chat-message.chat-selected {
+  outline: 2px solid var(--primary, #4a90d9);
+  outline-offset: -2px;
+}
+
+.chat-bulk-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  font-size: 0.82rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 8px;
+}
+
+.chat-bulk-count {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  flex: 1;
+  white-space: nowrap;
+}
+
+.chat-bulk-bar .btn-small {
+  font-size: 0.78rem;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
+.chat-bulk-separator {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  margin: 0 2px;
+}
+
+.chat-bulk-move-form {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
 .chat-message-actions {
   position: absolute;
   top: 4px;
@@ -1621,6 +1684,16 @@ body[data-dark-mode="true"] .tooltip::after {
   min-width: 0;
   word-break: break-word;
   overflow-wrap: break-word;
+}
+
+#fp-chat .chat-bulk-bar {
+  font-size: 0.75rem;
+  padding: 4px 6px;
+}
+
+#fp-chat .chat-bulk-bar .btn-small {
+  font-size: 0.7rem;
+  padding: 2px 5px;
 }
 
 #fp-chat .chat-message-content {

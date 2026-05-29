@@ -21,6 +21,9 @@ func RenderChatComponent(messages []chat.Message, total, offset int, filePath st
 
 	html.WriteString(fmt.Sprintf(`<div id="component-chat"%s>`, filePathAttr))
 
+	// bulk action bar
+	html.WriteString(RenderChatBulkBar(short))
+
 	// history — newest on top, load-more at bottom for older messages
 	html.WriteString(`<div id="component-chat-history">`)
 	for _, m := range messages {
@@ -102,7 +105,7 @@ func renderMessage(m chat.Message, short bool) string {
 		appendURL := fmt.Sprintf(`/api/chat/messages/%s/move?mode=append&short=true`, m.ID)
 		deleteURL := fmt.Sprintf(`/api/chat/messages/%s`, m.ID)
 		lang := configmanager.GetLanguage()
-		return fmt.Sprintf(`<div class="chat-message chat-message-short" id="%s">
+		return fmt.Sprintf(`<div class="chat-message chat-message-short" id="%s" data-id="%s">
 	<div class="chat-message-actions">
 		<button class="btn-small btn-secondary"
 			hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
@@ -114,7 +117,7 @@ func renderMessage(m chat.Message, short bool) string {
 	</div>
 	<div class="chat-message-content">%s</div>
 </div>`,
-			msgDivID,
+			msgDivID, m.ID,
 			newFileURL, msgDivID, translation.SprintfForRequest(lang, "to new file"),
 			appendURL, msgDivID, translation.SprintfForRequest(lang, "append"),
 			deleteURL, msgDivID,
@@ -129,7 +132,7 @@ func renderMessage(m chat.Message, short bool) string {
 	timestamp := m.CreatedAt.Format("2006-01-02 15:04")
 	lang := configmanager.GetLanguage()
 
-	return fmt.Sprintf(`<div class="chat-message" id="%s">
+	return fmt.Sprintf(`<div class="chat-message" id="%s" data-id="%s">
 	<div class="chat-message-actions">
 		<button class="btn-small btn-secondary"
 			hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
@@ -144,7 +147,7 @@ func renderMessage(m chat.Message, short bool) string {
 		<span class="chat-timestamp">%s</span>
 	</div>
 </div>`,
-		msgDivID,
+		msgDivID, m.ID,
 		newFileURL, msgDivID, translation.SprintfForRequest(lang, "to new file"),
 		appendURL, msgDivID, translation.SprintfForRequest(lang, "append"),
 		deleteURL, msgDivID, translation.SprintfForRequest(lang, "delete this message?"), translation.SprintfForRequest(lang, "delete"),
@@ -222,6 +225,65 @@ func RenderChatAppendForm(m chat.Message) string {
 		translation.SprintfForRequest(lang, "append"),
 		cancelURL, msgDivID,
 		translation.SprintfForRequest(lang, "cancel"))
+}
+
+// RenderChatBulkBar renders the floating bulk action bar (hidden by default, shown via JS)
+func RenderChatBulkBar(short bool) string {
+	lang := configmanager.GetLanguage()
+	shortParam := ""
+	if short {
+		shortParam = "&short=true"
+	}
+	_ = shortParam
+	return fmt.Sprintf(`<div id="chat-bulk-bar" class="chat-bulk-bar" style="display:none">
+	<span class="chat-bulk-count"></span>
+	<button class="btn-small btn-secondary" onclick="chatBulkToNewFile()">%s</button>
+	<button class="btn-small btn-secondary" onclick="chatBulkAppend()">%s</button>
+	<button class="btn-small btn-danger"    onclick="chatBulkDelete()">%s</button>
+	<span class="chat-bulk-separator"></span>
+	<button class="btn-small btn-secondary" onclick="chatBulkClear()">%s</button>
+</div>`,
+		translation.SprintfForRequest(lang, "to new file"),
+		translation.SprintfForRequest(lang, "append"),
+		translation.SprintfForRequest(lang, "delete selected"),
+		translation.SprintfForRequest(lang, "deselect all"),
+	)
+}
+
+// RenderChatBulkMoveForm renders the bulk move dialog injected by JS
+func RenderChatBulkMoveForm(mode string) string {
+	lang := configmanager.GetLanguage()
+	filesListID := "chat-bulk-files-list"
+	editorListID := "chat-bulk-editor-list"
+
+	if mode == "append" {
+		return fmt.Sprintf(`<div id="chat-bulk-move-form" class="chat-bulk-move-form">
+	<input type="text" id="chat-bulk-target" class="form-input" placeholder="%s" list="%s" autocomplete="off"/>
+	<datalist id="%s" hx-get="/api/files/list?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></datalist>
+	<div class="chat-move-actions">
+		<button class="btn-small btn-primary" onclick="chatBulkSubmit('append')">%s</button>
+		<button class="btn-small" onclick="chatBulkCancelForm()">%s</button>
+	</div>
+</div>`,
+			translation.SprintfForRequest(lang, "select file"), filesListID, filesListID,
+			translation.SprintfForRequest(lang, "append"),
+			translation.SprintfForRequest(lang, "cancel"),
+		)
+	}
+	return fmt.Sprintf(`<div id="chat-bulk-move-form" class="chat-bulk-move-form">
+	<input type="text" id="chat-bulk-target" class="form-input" placeholder="%s" autocomplete="off"/>
+	<input type="text" id="chat-bulk-editor" class="form-input" placeholder="%s" list="%s" autocomplete="off"/>
+	<datalist id="%s" hx-get="/api/metadata/editors?format=options&context=chat" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></datalist>
+	<div class="chat-move-actions">
+		<button class="btn-small btn-primary" onclick="chatBulkSubmit('new')">%s</button>
+		<button class="btn-small" onclick="chatBulkCancelForm()">%s</button>
+	</div>
+</div>`,
+		translation.SprintfForRequest(lang, "filename"),
+		translation.SprintfForRequest(lang, "select editor type"), editorListID, editorListID,
+		translation.SprintfForRequest(lang, "create"),
+		translation.SprintfForRequest(lang, "cancel"),
+	)
 }
 
 // RenderChatMoveSuccess renders a confirmation with a link to the target file
