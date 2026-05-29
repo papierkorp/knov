@@ -7,6 +7,9 @@
 
 **per ai**
 - dokuwiki to markdown parser: indents in codeblocks (dokuwiki exmaple)
+- rename media files
+- drag and drop media files
+- rename insert image from toastui editor to insert media - and change allowed upload files
 - delay the rebuild metadata start after starting the app by 1min
 - add yaml header to metadata storage (export metadata to yaml header in markdown files)
 - add a upload favicon
