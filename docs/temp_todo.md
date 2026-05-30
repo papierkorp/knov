@@ -8,7 +8,6 @@
 **per ai**
 - dokuwiki to markdown parser: indents in codeblocks (dokuwiki exmaple)
 - fix tempai - .env.example isnt copied
-- hide files setting doesnt work
 - add a logs rotating
 - builtin header doesnt stick anymore
 - i want to get rid of the dokuwiki file support (i want to keep the dokuwiki to markdown export) but i dont want to display dokuwiki files any longer

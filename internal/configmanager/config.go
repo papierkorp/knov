@@ -159,7 +159,6 @@ func GetThemesPath() string {
 	return appConfig.ThemesPath
 }
 
-// GetConfigPath returns the config path
 // GetStoragePath returns storage path
 func GetStoragePath() string {
 	return appConfig.StoragePath
@@ -247,7 +246,8 @@ func GetSearchEngine() string {
 	return appConfig.SearchEngine
 }
 
-// UpdateEnvFile updates .env file with new values
+// UpdateEnvFile updates the .env file and immediately applies the change to the
+// in-memory appConfig so settings take effect without a restart.
 func UpdateEnvFile(key, value string) error {
 	envPath := ".env"
 
@@ -270,8 +270,56 @@ func UpdateEnvFile(key, value string) error {
 		lines = append(lines, fmt.Sprintf("%s=%s", key, value))
 	}
 
-	newContent := strings.Join(lines, "\n")
-	return os.WriteFile(envPath, []byte(newContent), 0644)
+	if err := os.WriteFile(envPath, []byte(strings.Join(lines, "\n")), 0644); err != nil {
+		return err
+	}
+
+	// apply to live config immediately — no restart needed
+	applyEnvToAppConfig(key, value)
+	return nil
+}
+
+// applyEnvToAppConfig updates the in-memory appConfig for any writable env key.
+// Mirrors InitAppConfig so every UpdateEnvFile call is reflected instantly.
+func applyEnvToAppConfig(key, value string) {
+	b := strings.ToLower(value) == "true"
+	switch key {
+	case "KNOV_DATA_PATH":
+		appConfig.DataPath = value
+	case "KNOV_GIT_REPO_URL":
+		appConfig.GitRepoURL = value
+	case "KNOV_LOG_LEVEL":
+		appConfig.LogLevel = value
+		SetLogLevel(value)
+	case "KNOV_HIDE_MARKDOWN":
+		appConfig.HideMarkdown = b
+	case "KNOV_HIDE_TEXT":
+		appConfig.HideText = b
+	case "KNOV_HIDE_LIST":
+		appConfig.HideList = b
+	case "KNOV_HIDE_TODO":
+		appConfig.HideTodo = b
+	case "KNOV_HIDE_FILTER":
+		appConfig.HideFilter = b
+	case "KNOV_HIDE_INDEX":
+		appConfig.HideIndex = b
+	case "KNOV_HIDE_IMAGE":
+		appConfig.HideImage = b
+	case "KNOV_HIDE_VIDEO":
+		appConfig.HideVideo = b
+	case "KNOV_HIDE_PDF":
+		appConfig.HidePDF = b
+	case "KNOV_SHOW_HIDDEN_FILES":
+		appConfig.ShowHiddenFiles = b
+	case "KNOV_USE_EXTENSION_TODO":
+		appConfig.UseExtensionTodo = b
+	case "KNOV_USE_EXTENSION_LIST":
+		appConfig.UseExtensionList = b
+	case "KNOV_USE_EXTENSION_INDEX":
+		appConfig.UseExtensionIndex = b
+	}
+	// fields like ServerPort, StoragePath, providers are intentionally excluded —
+	// they require a restart to take effect safely.
 }
 
 func loadEnvFile() {

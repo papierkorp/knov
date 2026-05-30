@@ -430,6 +430,10 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 			if strings.HasPrefix(url, "/files/") {
 				return `<a href="` + url + `">` + text + `</a>`
 			}
+			// media/ relative links → /media/ route, never append .md
+			if strings.HasPrefix(url, "media/") {
+				return `<a href="/` + url + `?mode=detail">` + text + `</a>`
+			}
 			if !strings.HasSuffix(url, ".md") {
 				url += ".md"
 			}

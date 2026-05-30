@@ -171,25 +171,37 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	}, nil
 }
 
-// FilterFilesByHiddenTypes filters out files based on hidden file type configuration
+// FilterFilesByHiddenTypes filters out files based on hidden file type configuration.
+// When metadata is present it checks the Editor field; otherwise it falls back
+// to the file extension so files without metadata are also filtered correctly.
 func FilterFilesByHiddenTypes(files []File) []File {
-	// Import the configmanager package that contains IsFileTypeHidden
 	var filtered []File
 	for _, file := range files {
-		// get metadata to check file type
-		metadata := file.Metadata
-		if metadata == nil {
-			// if no metadata, include the file
-			filtered = append(filtered, file)
-			continue
-		}
-
-		// check if this file type should be hidden
-		if !configmanager.IsFileTypeHidden(string(metadata.Editor)) {
+		if !isFileHidden(file) {
 			filtered = append(filtered, file)
 		}
 	}
 	return filtered
+}
+
+// isFileHidden returns true if the file should be excluded based on its type.
+// Mime-type check runs first so binary files (images, audio, video, pdf)
+// stored in docs with a wrong editor type are still correctly hidden.
+func isFileHidden(file File) bool {
+	ext := strings.ToLower(filepath.Ext(file.Path))
+	mime := configmanager.MimeTypeByExtension(ext)
+
+	// binary file types: check by mime regardless of what editor metadata says
+	if configmanager.IsFileTypeHiddenByMime(mime) {
+		return true
+	}
+
+	// text-based files: use metadata editor type
+	if file.Metadata != nil && file.Metadata.Editor != "" {
+		return configmanager.IsFileTypeHidden(string(file.Metadata.Editor))
+	}
+
+	return false
 }
 
 // TreeNode represents a node in the file tree (either a directory or a file)

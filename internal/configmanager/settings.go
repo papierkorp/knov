@@ -125,7 +125,7 @@ func GetUserSettings() UserSettings {
 	return userSettings
 }
 
-// SetUserSettings saves new user settings for current user
+// SetUserSettings saves new user settings
 func SetUserSettings(settings UserSettings) {
 	userSettings = settings
 	saveUserSettings()
@@ -151,7 +151,7 @@ func saveUserSettings() error {
 func GetMaxUploadSize() int64 {
 	maxUploadSizeMB := userSettings.MediaSettings.MaxUploadSizeMB
 	if maxUploadSizeMB <= 0 {
-		maxUploadSizeMB = 10 // 10MB default
+		maxUploadSizeMB = 10
 	}
 	return int64(maxUploadSizeMB) * 1024 * 1024
 }
@@ -280,4 +280,31 @@ func GetTableShowInfo() bool {
 // GetTableShowPaging returns whether pagination buttons should be shown
 func GetTableShowPaging() bool {
 	return userSettings.TableSettings.ShowPaging
+}
+
+// EditorTypeFromMime maps a mime type string to the editor/file-type identifier
+// used by IsFileTypeHidden and Metadata.Editor.
+// Returns "" for types that have no specific mapping (text-based docs etc).
+func EditorTypeFromMime(mimeType string) string {
+	switch {
+	case strings.HasPrefix(mimeType, "image/"):
+		return "image"
+	case strings.HasPrefix(mimeType, "video/"):
+		return "video"
+	case strings.HasPrefix(mimeType, "audio/"):
+		return "audio"
+	case mimeType == "application/pdf":
+		return "pdf"
+	}
+	return ""
+}
+
+// IsFileTypeHiddenByMime returns true if files with the given mime type should
+// be hidden, based on the current AppConfig hide-file-type settings.
+func IsFileTypeHiddenByMime(mimeType string) bool {
+	editorType := EditorTypeFromMime(mimeType)
+	if editorType == "" {
+		return false
+	}
+	return IsFileTypeHidden(editorType)
 }

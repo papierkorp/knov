@@ -763,8 +763,6 @@ func handleAPIUpdateTableShowPaging(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, "saved", render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "table paging setting updated")))
 }
 
-// ADD to api_config.go imports: "io", "path/filepath"
-
 // @Summary Upload custom favicon
 // @Description Uploads a custom favicon (ico, png, or svg) stored in storage/favicon
 // @Tags config
@@ -776,7 +774,7 @@ func handleAPIUpdateTableShowPaging(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "upload failed"
 // @Router /api/config/favicon [post]
 func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseMultipartForm(2 << 20); err != nil { // 2 MB limit
+	if err := r.ParseMultipartForm(2 << 20); err != nil {
 		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form")))
 		return

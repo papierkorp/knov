@@ -83,7 +83,17 @@ func jsEditorInit(content string) string {
 			},
 			hooks: {
 				addImageBlobHook: function(blob, callback) {
-					uploadMediaBlob(blob, callback);
+					uploadMediaBlob(blob, function(url, alt) {
+						if (!url) { callback('', alt); return; }
+						// non-image files: insert as a plain link so ToastUI does not
+						// wrap the result in ![]() image syntax
+						if (!blob.type.startsWith('image/')) {
+							editor.insertText('[' + alt + '](' + url + ')');
+							callback('', ''); // empty → suppresses ToastUI own insertion
+						} else {
+							callback(url, alt);
+						}
+					});
 					return false;
 				}
 			}
