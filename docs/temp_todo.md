@@ -8,9 +8,6 @@
 **per ai**
 - dokuwiki to markdown parser: indents in codeblocks (dokuwiki exmaple)
 - rename media files
-- drag and drop media files
-- rename insert image from toastui editor to insert media - and change allowed upload files
-- delay the rebuild metadata start after starting the app by 1min
 - add a upload favicon
 - fix tempai - .env.example isnt copied
 - hide files setting doesnt work

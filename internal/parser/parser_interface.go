@@ -62,16 +62,23 @@ func GetParserRegistry() *Registry {
 // Returns the body without the front matter block.
 // If no front matter is present the content is returned unchanged.
 func StripFrontMatter(content []byte) []byte {
+	_, body := StripFrontMatterBytes(content)
+	return body
+}
+
+// StripFrontMatterBytes splits content into (frontmatterYAML, body).
+// frontmatterYAML is nil when no front matter is present.
+func StripFrontMatterBytes(content []byte) (frontmatter []byte, body []byte) {
 	delimiter := []byte("---\n")
 	closing := []byte("\n---\n")
 
 	if !bytes.HasPrefix(content, delimiter) {
-		return content
+		return nil, content
 	}
 	rest := content[len(delimiter):]
 	idx := bytes.Index(rest, closing)
 	if idx < 0 {
-		return content // malformed — leave untouched
+		return nil, content // malformed — leave untouched
 	}
-	return rest[idx+len(closing):]
+	return rest[:idx], rest[idx+len(closing):]
 }

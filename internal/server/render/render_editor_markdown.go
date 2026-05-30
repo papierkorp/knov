@@ -15,7 +15,7 @@ import (
 )
 
 // getToastUIEditorScript returns the common ToastUI editor JavaScript initialization
-func getToastUIEditorScript(content string) string {
+func getToastUIEditorScript(content, frontMatter string) string {
 	return fmt.Sprintf(`
 		<script>
 			(function() {
@@ -57,75 +57,140 @@ func getToastUIEditorScript(content string) string {
 						'Description': 'Description',
 						'OK': 'OK',
 						'Cancel': 'Cancel',
-						'Insert Image': 'Insert File',
-						'Insert image': 'Insert file',
-						'image': 'file',
-						'Image': 'File',
+						'Insert Image': 'Insert Media',
+						'Insert image': 'Insert media',
+						'image': 'media',
+						'Image': 'Media',
 						'Choose a file': 'Choose a file',
 						'No file selected': 'No file selected'
 					},
 					hooks: {
 						addImageBlobHook: function(blob, callback, source) {
-							const currentPath = window.location.pathname;
-							let contextPath = null;
-
-							if (currentPath.startsWith('/files/edit/')) {
-								contextPath = currentPath.substring('/files/edit/'.length);
-							} else if (currentPath.startsWith('/files/')) {
-								contextPath = currentPath.substring('/files/'.length);
-							}
-
-							if (!contextPath) {
-								alert('please save the document first to enable file uploads.');
-								callback('', '');
-								return false;
-							}
-
-							const formData = new FormData();
-							formData.append('file', blob);
-							formData.append('context_path', contextPath);
-
-							const uploadMessage = document.createElement('div');
-							const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
-							uploadMessage.className = 'upload-notification';
-							uploadMessage.style.cssText = 'position: fixed; top: 10px; right: 10px; padding: 12px 16px; border-radius: 6px; z-index: 9999; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-							uploadMessage.style.backgroundColor = isDarkMode ? '#374151' : '#0ea5e9';
-							uploadMessage.style.color = isDarkMode ? '#f9fafb' : '#ffffff';
-							uploadMessage.textContent = 'uploading image...';
-							document.body.appendChild(uploadMessage);
-
-							fetch('/api/media/upload', {
-								method: 'POST',
-								body: formData,
-								headers: { 'Accept': 'application/json' }
-							})
-							.then(response => {
-								if (!response.ok) {
-									return response.text().then(errorText => {
-										throw new Error(errorText || 'upload failed: ' + response.statusText);
-									});
-								}
-								return response.json();
-							})
-							.then(data => {
-								if (document.body.contains(uploadMessage)) {
-									document.body.removeChild(uploadMessage);
-								}
-								const filePath = 'media/' + data.path;
-								callback(filePath, data.filename || 'uploaded file');
-							})
-							.catch(error => {
-								if (document.body.contains(uploadMessage)) {
-									document.body.removeChild(uploadMessage);
-								}
-								alert('failed to upload file: ' + error.message);
-								callback('', '');
-							});
-
+							uploadMediaBlob(blob, callback);
 							return false;
 						}
 					}
 				});
+
+				// widen the built-in image dialog file input to accept all file types
+				// ToastUI sets accept="image/*" — we override it after the editor renders
+				setTimeout(function() {
+					const fileInputs = document.querySelectorAll('.toastui-editor-popup input[type="file"]');
+					fileInputs.forEach(function(input) {
+						input.setAttribute('accept', '*');
+					});
+				}, 500);
+
+				// observe for popup open (ToastUI creates the popup lazily on first click)
+				const observer = new MutationObserver(function(mutations) {
+					mutations.forEach(function(mutation) {
+						mutation.addedNodes.forEach(function(node) {
+							if (node.nodeType === 1) {
+								const fileInput = node.querySelector && node.querySelector('input[type="file"]');
+								if (fileInput) {
+									fileInput.setAttribute('accept', '*');
+								}
+							}
+						});
+					});
+				});
+				observer.observe(document.body, { childList: true, subtree: true });
+
+				// find the image toolbar button by its data-type attribute and patch its tooltip.
+				// ToastUI sets data-type="image" on the button and updates a shared
+				// .toastui-editor-tooltip span with the button's data-tooltip on mouseenter.
+				// We override data-tooltip on the button and intercept mouseenter to fix the span.
+				setTimeout(function() {
+					const imageBtn = document.querySelector('.toastui-editor-defaultUI-toolbar button[data-type="image"]');
+					if (!imageBtn) return;
+					imageBtn.setAttribute('data-tooltip', 'Insert Media');
+					imageBtn.addEventListener('mouseenter', function() {
+						const tip = document.querySelector('.toastui-editor-tooltip');
+						if (tip) tip.textContent = 'Insert Media';
+					});
+				}, 300);
+
+				// drag-and-drop for all media file types onto the editor
+				const editorEl = document.querySelector('#markdown-editor');
+				editorEl.addEventListener('dragover', function(e) {
+					e.preventDefault();
+					e.dataTransfer.dropEffect = 'copy';
+				});
+				editorEl.addEventListener('drop', function(e) {
+					e.preventDefault();
+					const files = e.dataTransfer.files;
+					if (!files || files.length === 0) return;
+
+					Array.from(files).forEach(function(file) {
+						uploadMediaBlob(file, function(url, alt) {
+							if (!url) return;
+							const isImage = file.type.startsWith('image/');
+							const markdown = isImage
+								? '![' + alt + '](' + url + ')'
+								: '[' + alt + '](' + url + ')';
+							editor.insertText(markdown);
+						});
+					});
+				});
+
+				// shared upload helper used by addImageBlobHook and drag-and-drop
+				function uploadMediaBlob(blob, callback) {
+					const currentPath = window.location.pathname;
+					let contextPath = null;
+
+					if (currentPath.startsWith('/files/edit/')) {
+						contextPath = currentPath.substring('/files/edit/'.length);
+					} else if (currentPath.startsWith('/files/')) {
+						contextPath = currentPath.substring('/files/'.length);
+					}
+
+					if (!contextPath) {
+						alert('please save the document first to enable file uploads.');
+						callback('', '');
+						return;
+					}
+
+					const formData = new FormData();
+					formData.append('file', blob);
+					formData.append('context_path', contextPath);
+
+					const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
+					const uploadMessage = document.createElement('div');
+					uploadMessage.className = 'upload-notification';
+					uploadMessage.style.cssText = 'position: fixed; top: 10px; right: 10px; padding: 12px 16px; border-radius: 6px; z-index: 9999; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+					uploadMessage.style.backgroundColor = isDarkMode ? '#374151' : '#0ea5e9';
+					uploadMessage.style.color = isDarkMode ? '#f9fafb' : '#ffffff';
+					uploadMessage.textContent = 'uploading...';
+					document.body.appendChild(uploadMessage);
+
+					fetch('/api/media/upload', {
+						method: 'POST',
+						body: formData,
+						headers: { 'Accept': 'application/json' }
+					})
+					.then(response => {
+						if (!response.ok) {
+							return response.text().then(errorText => {
+								throw new Error(errorText || 'upload failed: ' + response.statusText);
+							});
+						}
+						return response.json();
+					})
+					.then(data => {
+						if (document.body.contains(uploadMessage)) {
+							document.body.removeChild(uploadMessage);
+						}
+						const filePath = 'media/' + data.path;
+						callback(filePath, data.filename || blob.name || 'uploaded file');
+					})
+					.catch(error => {
+						if (document.body.contains(uploadMessage)) {
+							document.body.removeChild(uploadMessage);
+						}
+						alert('failed to upload file: ' + error.message);
+						callback('', '');
+					});
+				}
 
 				window.showMediaSelector = function(editor) {
 					const modal = document.createElement('div');
@@ -217,23 +282,32 @@ func getToastUIEditorScript(content string) string {
 
 				window.currentEditor = editor;
 
+				const frontMatter = %s;
 				document.querySelector('.file-form').addEventListener('submit', function(e) {
-					document.getElementById('editor-content').value = editor.getMarkdown();
+					const body = editor.getMarkdown();
+					document.getElementById('editor-content').value = frontMatter ? frontMatter + body : body;
 				});
 			})();
-		</script>`, jsEscapeString(content))
+		</script>`, jsEscapeString(content), jsEscapeString(frontMatter))
 }
 
 // RenderMarkdownEditorForm renders a markdown editor form for file creation/editing
 func RenderMarkdownEditorForm(filePath string, editor ...string) string {
 	content := ""
+	frontMatter := ""
 	isEdit := filePath != ""
 
 	if isEdit {
 		fullPath := pathutils.ToDocsPath(filePath)
 		rawContent, err := contentStorage.ReadFile(fullPath)
 		if err == nil {
-			content = string(rawContent)
+			fm, body := parser.StripFrontMatterBytes(rawContent)
+			if fm != nil {
+				frontMatter = "---\n" + string(fm) + "\n---\n"
+				content = string(body)
+			} else {
+				content = string(rawContent)
+			}
 		}
 	}
 
@@ -283,7 +357,7 @@ func RenderMarkdownEditorForm(filePath string, editor ...string) string {
 		</form>
 		%s`, action, filepathInput, saveButtonText, cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
-		getToastUIEditorScript(content))
+		getToastUIEditorScript(content, frontMatter))
 }
 
 // RenderMarkdownSectionEditorForm renders a markdown editor form for editing a specific section
@@ -326,7 +400,7 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save section"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
-		getToastUIEditorScript(content))
+		getToastUIEditorScript(content, ""))
 }
 
 // RenderTextareaEditorComponent renders a textarea editor component with save/cancel buttons

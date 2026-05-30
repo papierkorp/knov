@@ -3676,14 +3676,13 @@ const docTemplate = `{
         },
         "/api/metadata/export": {
             "post": {
-                "description": "Export all metadata as JSON, CSV, or YAML file",
+                "description": "Export all metadata as JSON or CSV file",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
                     "application/json",
-                    "text/csv",
-                    "application/x-yaml"
+                    "text/csv"
                 ],
                 "tags": [
                     "metadata"
@@ -3693,7 +3692,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "default": "json",
-                        "description": "Export format (json, csv, or yaml)",
+                        "description": "Export format (json or csv)",
                         "name": "format",
                         "in": "formData"
                     }
@@ -3707,35 +3706,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "failed to export metadata",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/metadata/export/yaml-headers": {
-            "post": {
-                "description": "Reads all markdown files, prepends their metadata as YAML front matter, and returns a zip archive",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/zip"
-                ],
-                "tags": [
-                    "metadata"
-                ],
-                "summary": "Export metadata as YAML front matter embedded in markdown files",
-                "responses": {
-                    "200": {
-                        "description": "zip archive of markdown files with YAML front matter",
-                        "schema": {
-                            "type": "file"
-                        }
-                    },
-                    "500": {
-                        "description": "failed to export",
                         "schema": {
                             "type": "string"
                         }
