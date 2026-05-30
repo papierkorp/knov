@@ -3,6 +3,7 @@ package configmanager
 import (
 	"encoding/json"
 	"mime"
+	"path/filepath"
 	"strings"
 
 	"knov/internal/configStorage"
@@ -25,6 +26,7 @@ type UserSettings struct {
 	TableSettings                TableSettings    `json:"tableSettings,omitempty"`
 	SectionEditIncludeSubheaders bool             `json:"sectionEditIncludeSubheaders"`
 	CodeBlockWrap                bool             `json:"codeBlockWrap"`
+	CustomFaviconExt             string           `json:"customFaviconExt,omitempty"` // ".ico", ".png", or ".svg"
 }
 
 // TableSettings contains display preferences for interactive tables
@@ -203,6 +205,20 @@ func GetClickToEnlarge() bool {
 // GetAllowedMimeTypes returns the list of allowed mime types
 func GetAllowedMimeTypes() []string {
 	return userSettings.MediaSettings.AllowedMimeTypes
+}
+
+// GetCustomFaviconExt returns the file extension of the uploaded custom favicon, or "".
+func GetCustomFaviconExt() string {
+	return userSettings.CustomFaviconExt
+}
+
+// GetCustomFaviconPath returns the full filesystem path of the custom favicon, or "".
+func GetCustomFaviconPath() string {
+	ext := userSettings.CustomFaviconExt
+	if ext == "" {
+		return ""
+	}
+	return filepath.Join(appConfig.StoragePath, "favicon", "favicon"+ext)
 }
 
 // MimeTypeByExtension returns the clean mime type for an extension (no parameters).

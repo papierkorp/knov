@@ -96,6 +96,9 @@ func StartServerChi() {
 	// ------------------------------------- static routes -------------------------------------
 	// ----------------------------------------------------------------------------------------
 
+	// favicon: serve custom if uploaded, otherwise fall back to embedded default
+	r.Get("/favicon.ico", handleFavicon)
+
 	r.Get("/static/*", handleStatic)
 	r.Get("/themes/*", handleStatic)
 	r.Get("/webfonts/*", handleWebfontsRedirect)
@@ -171,6 +174,7 @@ func StartServerChi() {
 				r.Put("/{settingKey}", handleAPISetThemeSetting)
 			})
 		})
+
 		// ----------------------------------------------------------------------------------------
 		// ---------------------------------------- CONFIG ----------------------------------------
 		// ----------------------------------------------------------------------------------------
@@ -264,7 +268,6 @@ func StartServerChi() {
 			r.Post("/rename/*", handleAPIMediaRename)
 			r.Get("/rename-form/*", handleAPIMediaRenameForm)
 			r.Get("/path-display/*", handleAPIMediaPathDisplay)
-
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -392,6 +395,30 @@ func StartServerChi() {
 // ---------------------------------------- helper ----------------------------------------
 // ----------------------------------------------------------------------------------------
 
+// handleFavicon serves the custom favicon if one has been uploaded,
+// otherwise falls back to the embedded static/favicon.ico.
+func handleFavicon(w http.ResponseWriter, r *http.Request) {
+	customPath := configmanager.GetCustomFaviconPath()
+	if customPath != "" {
+		if _, err := os.Stat(customPath); err == nil {
+			ext := strings.ToLower(filepath.Ext(customPath))
+			switch ext {
+			case ".svg":
+				w.Header().Set("Content-Type", "image/svg+xml")
+			case ".png":
+				w.Header().Set("Content-Type", "image/png")
+			default:
+				w.Header().Set("Content-Type", "image/x-icon")
+			}
+			http.ServeFile(w, r, customPath)
+			return
+		}
+	}
+	// fall back to embedded default favicon
+	r.URL.Path = "/static/favicon.ico"
+	handleStatic(w, r)
+}
+
 func handleStatic(w http.ResponseWriter, r *http.Request) {
 	var basePath, filePath, fullPath string
 
@@ -441,7 +468,7 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// For CSS files, read and serve manually to ensure correct MIME type
+		// for CSS files, read and serve manually to ensure correct MIME type
 		if ext == ".css" {
 			cssData, err := os.ReadFile(fullPath)
 			if err != nil {
@@ -474,7 +501,6 @@ func handleWebfontsRedirect(w http.ResponseWriter, r *http.Request) {
 	fontPath := strings.TrimPrefix(r.URL.Path, "/webfonts/")
 	newPath := "/static/webfonts/" + fontPath
 
-	// create new request for the static handler
 	newURL := *r.URL
 	newURL.Path = newPath
 
@@ -512,7 +538,6 @@ func handleSettings(w http.ResponseWriter, r *http.Request) {
 
 func handleAdmin(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	// viewName removed
 	data := thememanager.NewBaseTemplateData("Admin")
 
 	err := tm.Render(w, "admin", data)
@@ -558,7 +583,6 @@ func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
 func handleHistory(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 
-	// check if this is a file history request
 	if strings.HasPrefix(r.URL.Path, "/files/history/") {
 		filePath := strings.TrimPrefix(r.URL.Path, "/files/history/")
 
@@ -567,13 +591,9 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// get full file path
 		fullPath := pathutils.ToFullPath(filePath)
-
-		// get selected commit from query param
 		selectedCommit := r.URL.Query().Get("commit")
 
-		// get file history
 		versions, err := git.GetFileHistory(fullPath)
 		if err != nil {
 			logging.LogError("failed to get file history for %s: %v", filePath, err)
@@ -596,7 +616,6 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// general history page
 	data := thememanager.NewBaseTemplateData("history")
 
 	err := tm.Render(w, "history", data)
@@ -638,8 +657,6 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing metadata type or value", http.StatusBadRequest)
 		return
 	}
-
-	// query := fmt.Sprintf("%s:%s", metadataType, value)
 
 	tm := thememanager.GetThemeManager()
 	title := fmt.Sprintf("Browse: %s", value)
@@ -690,23 +707,19 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if this is an external URL and redirect
 	if strings.HasPrefix(mediaPath, "http://") || strings.HasPrefix(mediaPath, "https://") {
 		http.Redirect(w, r, mediaPath, http.StatusPermanentRedirect)
 		return
 	}
 
-	// get full media file path
 	fullPath := pathutils.ToMediaPath(mediaPath)
 
-	// check if file exists
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
 		logging.LogWarning("media file not found: %s", fullPath)
 		http.NotFound(w, r)
 		return
 	}
 
-	// check for detail view mode
 	if r.URL.Query().Get("mode") == "detail" {
 		tm := thememanager.GetThemeManager()
 		data := thememanager.NewMediaViewTemplateData(mediaPath)
@@ -719,14 +732,12 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// set appropriate content type based on file extension
 	ext := strings.ToLower(filepath.Ext(mediaPath))
 	if ct := configmanager.MimeTypeByExtension(ext); ct != "" {
 		w.Header().Set("Content-Type", ct)
 	}
 
-	// set cache headers for media files
-	w.Header().Set("Cache-Control", "public, max-age=31536000") // 1 year
+	w.Header().Set("Cache-Control", "public, max-age=31536000")
 
 	logging.LogDebug("serving media file: %s", fullPath)
 	http.ServeFile(w, r, fullPath)
@@ -824,11 +835,9 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// For full page requests, render through template system
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileViewTemplateData(filepath.Base(filePath), filePath, fileContent)
 
-	// Always render through base template, not individual views
 	err = tm.Render(w, "fileview", data)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)

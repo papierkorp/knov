@@ -7,8 +7,6 @@
 
 **per ai**
 - dokuwiki to markdown parser: indents in codeblocks (dokuwiki exmaple)
-- rename media files
-- add a upload favicon
 - fix tempai - .env.example isnt copied
 - hide files setting doesnt work
 - add a logs rotating

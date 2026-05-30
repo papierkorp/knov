@@ -2,8 +2,10 @@ package server
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -759,4 +761,112 @@ func handleAPIUpdateTableShowPaging(w http.ResponseWriter, r *http.Request) {
 	configmanager.SetUserSettings(us)
 	logging.LogInfo("updated table show paging to: %t", us.TableSettings.ShowPaging)
 	writeResponse(w, r, "saved", render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "table paging setting updated")))
+}
+
+// ADD to api_config.go imports: "io", "path/filepath"
+
+// @Summary Upload custom favicon
+// @Description Uploads a custom favicon (ico, png, or svg) stored in storage/favicon
+// @Tags config
+// @Accept multipart/form-data
+// @Param file formData file true "Favicon file (.ico, .png, or .svg)"
+// @Produce html
+// @Success 200 {string} string "favicon uploaded"
+// @Failure 400 {string} string "invalid file"
+// @Failure 500 {string} string "upload failed"
+// @Router /api/config/favicon [post]
+func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(2 << 20); err != nil { // 2 MB limit
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form")))
+		return
+	}
+
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "no file uploaded")))
+		return
+	}
+	defer file.Close()
+
+	ext := strings.ToLower(filepath.Ext(header.Filename))
+	if ext != ".ico" && ext != ".png" && ext != ".svg" {
+		w.WriteHeader(http.StatusBadRequest)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "only .ico, .png and .svg files are allowed")))
+		return
+	}
+
+	faviconDir := filepath.Join(configmanager.GetAppConfig().StoragePath, "favicon")
+	if err := os.MkdirAll(faviconDir, 0755); err != nil {
+		logging.LogError("favicon upload: failed to create directory: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory")))
+		return
+	}
+
+	destPath := filepath.Join(faviconDir, "favicon"+ext)
+	data, err := io.ReadAll(file)
+	if err != nil {
+		logging.LogError("favicon upload: failed to read file: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file")))
+		return
+	}
+
+	if err := os.WriteFile(destPath, data, 0644); err != nil {
+		logging.LogError("favicon upload: failed to write file: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file")))
+		return
+	}
+
+	// store the chosen extension in settings so the favicon route knows which file to serve
+	userSettings := configmanager.GetUserSettings()
+	userSettings.CustomFaviconExt = ext
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("favicon uploaded: %s", destPath)
+	w.Header().Set("HX-Trigger", "faviconChanged")
+	writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusOK,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "favicon uploaded")))
+}
+
+// @Summary Delete custom favicon
+// @Description Removes the custom favicon and reverts to the default
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Produce html
+// @Success 200 {string} string "favicon removed"
+// @Failure 500 {string} string "failed to remove"
+// @Router /api/config/favicon [delete]
+func handleAPIDeleteFavicon(w http.ResponseWriter, r *http.Request) {
+	userSettings := configmanager.GetUserSettings()
+	ext := userSettings.CustomFaviconExt
+	if ext == "" {
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusOK,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "no custom favicon set")))
+		return
+	}
+
+	destPath := filepath.Join(configmanager.GetAppConfig().StoragePath, "favicon", "favicon"+ext)
+	if err := os.Remove(destPath); err != nil && !os.IsNotExist(err) {
+		logging.LogError("favicon delete: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to remove favicon")))
+		return
+	}
+
+	userSettings.CustomFaviconExt = ""
+	configmanager.SetUserSettings(userSettings)
+
+	logging.LogInfo("custom favicon removed")
+	w.Header().Set("HX-Trigger", "faviconChanged")
+	writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusOK,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "custom favicon removed")))
 }

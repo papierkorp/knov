@@ -33,6 +33,34 @@
             <div class="help-text">{{T "choose your preferred interface language"}}</div>
         </form>
     </div>
+    <div class="setting-item">
+        <div class="help-text">{{T "upload a custom favicon (.ico, .png or .svg, max 2 MB)"}}</div>
+        {{ if .UserSettings.CustomFaviconExt }}
+        <div class="favicon-preview" style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+            <img src="/favicon.ico" alt="current favicon" style="width: 32px; height: 32px; object-fit: contain;" />
+            <span>{{T "current custom favicon"}}: {{.UserSettings.CustomFaviconExt}}</span>
+            <button class="btn-danger btn-sm"
+                hx-delete="/api/config/favicon"
+                hx-target="#favicon-status"
+                hx-confirm='{{T "remove custom favicon and revert to default?"}}'>
+                {{T "remove"}}
+            </button>
+        </div>
+        {{ end }}
+        <form hx-post="/api/config/favicon"
+              hx-encoding="multipart/form-data"
+              hx-target="#favicon-status">
+            <label for="favicon-file">
+                {{T "choose file"}}
+                <input type="file" name="file" id="favicon-file"
+                       accept=".ico,.png,.svg" required class="form-input" />
+            </label>
+            <button type="submit" class="btn-primary" style="margin-top: 8px;">
+                {{T "upload favicon"}}
+            </button>
+        </form>
+        <div id="favicon-status"></div>
+    </div>
 </section>
 {{ end }}
 

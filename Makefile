@@ -37,7 +37,7 @@ tempai:
 	@find internal -type f \( -name "*.go" -o -name "*.tmpl" -o -name "*.json" -o -name "*.yaml" -o -name "*.yml" \) -exec cp {} tempai/ \;
 	@echo "Copying root files..."
 	@cp Dockerfile go.mod go.sum main.go Makefile tempai/ 2>/dev/null || true
-	@cp .env.example tempai/ 2>/dev/null || true
+	@cp ".env.example" "tempai/" 2>/dev/null || true
 	@echo "Copying theme files with theme name prefix..."
 	@for theme_dir in themes/*/; do \
 		if [ -d "$$theme_dir" ]; then \
