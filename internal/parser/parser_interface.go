@@ -1,5 +1,7 @@
 package parser
 
+import "bytes"
+
 // Parser manages all operations for a specific file type
 type Parser interface {
 	// CanHandle returns true if this handler supports the file
@@ -54,4 +56,22 @@ func Init() {
 // GetParserRegistry returns the global parser registry
 func GetParserRegistry() *Registry {
 	return parserRegistry
+}
+
+// StripFrontMatter removes a YAML front matter block (---\n...\n---\n) from content.
+// Returns the body without the front matter block.
+// If no front matter is present the content is returned unchanged.
+func StripFrontMatter(content []byte) []byte {
+	delimiter := []byte("---\n")
+	closing := []byte("\n---\n")
+
+	if !bytes.HasPrefix(content, delimiter) {
+		return content
+	}
+	rest := content[len(delimiter):]
+	idx := bytes.Index(rest, closing)
+	if idx < 0 {
+		return content // malformed — leave untouched
+	}
+	return rest[idx+len(closing):]
 }

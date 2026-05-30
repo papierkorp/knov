@@ -72,7 +72,7 @@ func Migrate(db *sql.DB, target int, migrations []Migration) error {
 
 // runStep executes one migration and its version bump atomically.
 func runStep(db *sql.DB, from, to int, step func(*sql.Tx) error) error {
-	migrationLog := logging.LogBuilder("migration")
+	migrationLog := logging.LogBuilder("database-migration")
 	name := dbName(db)
 
 	logging.LogInfo("%s: db migration %d→%d", name, from, to)

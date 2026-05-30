@@ -30,6 +30,7 @@ func (h *MarkdownHandler) CanHandle(filename string) bool {
 }
 
 func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
+	content = StripFrontMatter(content)
 	processed := h.processMarkdownLinks(string(content))
 	return []byte(processed), nil
 }

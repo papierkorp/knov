@@ -11,10 +11,9 @@
 - drag and drop media files
 - rename insert image from toastui editor to insert media - and change allowed upload files
 - delay the rebuild metadata start after starting the app by 1min
-- add yaml header to metadata storage (export metadata to yaml header in markdown files)
 - add a upload favicon
+- fix tempai - .env.example isnt copied
 - hide files setting doesnt work
-- add migration between different storages
 - add a logs rotating
 - builtin header doesnt stick anymore
 - i want to get rid of the dokuwiki file support (i want to keep the dokuwiki to markdown export) but i dont want to display dokuwiki files any longer
@@ -23,6 +22,7 @@
   - Add dashboard export/import
   - remove positions from builtin and rail theme
   - add up/down buttons to builtin/rail theme widgets
+- add last .last_processed_commit to configstorage
 
 # performance updates
 

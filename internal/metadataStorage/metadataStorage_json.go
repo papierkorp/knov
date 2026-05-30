@@ -161,3 +161,17 @@ func (js *jsonStorage) pathToKey(relPath string) string {
 	key := strings.TrimSuffix(relPath, ".json")
 	return filepath.ToSlash(key)
 }
+
+// Cleanup removes the entire json metadata folder
+func (js *jsonStorage) Cleanup() error {
+	js.mutex.Lock()
+	defer js.mutex.Unlock()
+
+	if err := os.RemoveAll(js.basePath); err != nil {
+		logging.LogError("json metadata cleanup: failed to remove %s: %v", js.basePath, err)
+		return err
+	}
+
+	logging.LogInfo("json metadata cleanup: removed %s", js.basePath)
+	return nil
+}

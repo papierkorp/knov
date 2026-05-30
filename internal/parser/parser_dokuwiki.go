@@ -46,6 +46,7 @@ func (h *DokuwikiHandler) Parse(content []byte) ([]byte, error) {
 	// parsed := h.ConvertToHTML(string(content))
 	// return []byte(parsed), nil
 	// return as txt, also change Render function
+	content = StripFrontMatter(content)
 	s := string(content)
 	s = strings.ReplaceAll(s, "&", "&amp;")
 	s = strings.ReplaceAll(s, "<", "&lt;")

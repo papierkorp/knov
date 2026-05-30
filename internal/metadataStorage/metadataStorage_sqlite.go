@@ -399,3 +399,24 @@ func (ss *sqliteStorage) Exists(key string) bool {
 func (ss *sqliteStorage) GetBackendType() string {
 	return "sqlite"
 }
+
+// Cleanup closes the db and removes the db file
+func (ss *sqliteStorage) Cleanup() error {
+	ss.mutex.Lock()
+	defer ss.mutex.Unlock()
+
+	if err := ss.db.Close(); err != nil {
+		logging.LogWarning("sqlite metadata cleanup: failed to close db: %v", err)
+	}
+
+	dbPath := filepath.Join(ss.basePath, "metadata.db")
+	for _, f := range []string{dbPath, dbPath + "-wal", dbPath + "-shm"} {
+		if err := os.Remove(f); err != nil && !os.IsNotExist(err) {
+			logging.LogError("sqlite metadata cleanup: failed to remove %s: %v", f, err)
+			return err
+		}
+	}
+
+	logging.LogInfo("sqlite metadata cleanup: removed db at %s", ss.basePath)
+	return nil
+}

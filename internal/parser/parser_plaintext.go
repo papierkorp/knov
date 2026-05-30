@@ -15,6 +15,7 @@ func (h *PlaintextHandler) CanHandle(filename string) bool {
 }
 
 func (h *PlaintextHandler) Parse(content []byte) ([]byte, error) {
+	content = StripFrontMatter(content)
 	s := string(content)
 	s = strings.ReplaceAll(s, "&", "&amp;")
 	s = strings.ReplaceAll(s, "<", "&lt;")
