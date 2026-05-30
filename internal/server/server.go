@@ -261,6 +261,10 @@ func StartServerChi() {
 			r.Delete("/*", handleAPIDeleteMedia)
 			r.Get("/stats", handleAPIMediaStats)
 			r.Post("/cleanup-orphaned", handleAPICleanupOrphanedMedia)
+			r.Post("/rename/*", handleAPIMediaRename)
+			r.Get("/rename-form/*", handleAPIMediaRenameForm)
+			r.Get("/path-display/*", handleAPIMediaPathDisplay)
+
 		})
 
 		// ----------------------------------------------------------------------------------------

@@ -2449,6 +2449,20 @@ paths:
       summary: Get all media files
       tags:
       - media
+  /api/media/path-display/{filepath}:
+    get:
+      parameters:
+      - description: Media file path (without media/ prefix)
+        in: path
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get media path display
+      tags:
+      - media
   /api/media/preview:
     get:
       description: Returns HTML for a media preview image
@@ -2478,6 +2492,63 @@ paths:
           schema:
             type: string
       summary: Get media preview HTML
+      tags:
+      - media
+  /api/media/rename-form/{filepath}:
+    get:
+      parameters:
+      - description: Media file path (without media/ prefix)
+        in: path
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get media rename form
+      tags:
+      - media
+  /api/media/rename/{filepath}:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Renames a media file and updates all document links pointing to
+        it
+      parameters:
+      - description: Current media file path (without media/ prefix)
+        in: path
+        name: filepath
+        required: true
+        type: string
+      - description: New media file path (without media/ prefix)
+        in: formData
+        name: newpath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "404":
+          description: file not found
+          schema:
+            type: string
+        "409":
+          description: target path already exists
+          schema:
+            type: string
+        "500":
+          description: rename failed
+          schema:
+            type: string
+      summary: Rename a media file
       tags:
       - media
   /api/media/stats:

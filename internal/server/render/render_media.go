@@ -252,6 +252,53 @@ func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphane
 	return html.String()
 }
 
+// RenderMediaPathDisplay renders the read-only path row with an inline edit button.
+// Used as the hx-swap target after a successful rename or cancel.
+func RenderMediaPathDisplay(relativePath string) string {
+	return fmt.Sprintf(`<dt>%s</dt>
+<dd id="media-path-display" class="media-path-row">
+	<span>%s</span>
+	<button class="btn-icon"
+		hx-get="/api/media/rename-form/%s"
+		hx-target="#media-path-display"
+		hx-swap="outerHTML"
+		title="%s">
+		<i class="fas fa-pen"></i>
+	</button>
+</dd>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "path"),
+		relativePath,
+		relativePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "rename"))
+}
+
+// RenderMediaRenameForm renders the inline rename input form.
+// Replaces the path display row when the edit button is clicked.
+func RenderMediaRenameForm(relativePath string) string {
+	return fmt.Sprintf(`<dd id="media-path-display" class="media-path-row">
+	<form hx-post="/api/media/rename/%s"
+		hx-target="#media-path-display"
+		hx-swap="outerHTML">
+		<input type="text" name="newpath" value="%s" class="form-input" required autofocus />
+		<button type="submit" class="btn-icon" title="%s">
+			<i class="fas fa-check"></i>
+		</button>
+		<button type="button" class="btn-icon"
+			hx-get="/api/media/path-display/%s"
+			hx-target="#media-path-display"
+			hx-swap="outerHTML"
+			title="%s">
+			<i class="fas fa-times"></i>
+		</button>
+	</form>
+</dd>`,
+		relativePath,
+		relativePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "save"),
+		relativePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"))
+}
+
 // RenderMediaDetail renders detailed view of a media file with metadata
 func RenderMediaDetail(metadata *files.Metadata) string {
 	if metadata == nil {
@@ -298,8 +345,10 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	fmt.Fprintf(&html, `<h2>%s</h2>`, filename)
 
 	html.WriteString(`<dl class="media-info">`)
-	fmt.Fprintf(&html, `<dt>%s</dt><dd>%s</dd>`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "path"), relativePath)
+
+	// inline-editable path row
+	html.WriteString(RenderMediaPathDisplay(relativePath))
+
 	fmt.Fprintf(&html, `<dt>%s</dt><dd>%s</dd>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "type"), metadata.Editor)
 
@@ -429,7 +478,6 @@ func RenderMediaPreviewWithSize(mediaPath string, size int) string {
 	containerClasses = append(containerClasses, "media-preview")
 	containerClasses = append(containerClasses, "display-"+displayMode)
 	containerClasses = append(containerClasses, "border-"+borderStyle)
-
 	containerClass := strings.Join(containerClasses, " ")
 
 	var content string

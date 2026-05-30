@@ -3119,6 +3119,27 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/media/path-display/{filepath}": {
+            "get": {
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Get media path display",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Media file path (without media/ prefix)",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/media/preview": {
             "get": {
                 "description": "Returns HTML for a media preview image",
@@ -3159,6 +3180,90 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "media file not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/media/rename-form/{filepath}": {
+            "get": {
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Get media rename form",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Media file path (without media/ prefix)",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/media/rename/{filepath}": {
+            "post": {
+                "description": "Renames a media file and updates all document links pointing to it",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Rename a media file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Current media file path (without media/ prefix)",
+                        "name": "filepath",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "New media file path (without media/ prefix)",
+                        "name": "newpath",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "file not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "target path already exists",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "rename failed",
                         "schema": {
                             "type": "string"
                         }

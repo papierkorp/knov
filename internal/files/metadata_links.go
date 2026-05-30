@@ -794,3 +794,41 @@ func StopMetaGetCounter() {
 	rebuildMetaGetCount = nil
 	logging.LogBuilder("rebuild-metadata").Printf("total MetaDataGet calls: %d", count)
 }
+
+// UpdateLinksForMovedMedia updates all doc files that reference a moved media file.
+// Instead of relying on LinksToHere (which may be stale), it scans all doc files'
+// UsedLinks for the old media path — a safe reverse lookup.
+// Must be called BEFORE MoveMediaMetadata.
+func UpdateLinksForMovedMedia(oldMediaPath, newMediaPath string) error {
+	normalizedOld := pathutils.ToWithPrefix(oldMediaPath)
+
+	allFiles, err := GetAllFiles()
+	if err != nil {
+		return fmt.Errorf("failed to list files for media link update: %w", err)
+	}
+
+	var updated int
+	for _, file := range allFiles {
+		metadata, err := MetaDataGet(file.Path)
+		if err != nil || metadata == nil {
+			continue
+		}
+		if !slices.Contains(metadata.UsedLinks, normalizedOld) {
+			continue
+		}
+		if err := updateLinksInFile(file.Path, oldMediaPath, newMediaPath); err != nil {
+			logging.LogWarning("failed to update media links in %s: %v", file.Path, err)
+		} else {
+			updated++
+			logging.LogInfo("updated media link in %s: %s -> %s", file.Path, oldMediaPath, newMediaPath)
+		}
+	}
+
+	logging.LogInfo("updated media links in %d files: %s -> %s", updated, oldMediaPath, newMediaPath)
+	return nil
+}
+
+// MoveMediaMetadata moves metadata from old media path to new media path.
+func MoveMediaMetadata(oldPath, newPath string) error {
+	return moveFileMetadata(oldPath, newPath)
+}

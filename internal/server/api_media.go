@@ -4,6 +4,8 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -326,7 +328,6 @@ func handleAPIMediaPreview(w http.ResponseWriter, r *http.Request) {
 
 	// render preview HTML using simple CSS approach
 	html := render.RenderMediaPreviewWithSize(mediaPath, size)
-
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
@@ -448,4 +449,120 @@ func handleAPICleanupOrphanedMedia(w http.ResponseWriter, r *http.Request) {
 		"failed":  len(failedFiles),
 		"message": msg,
 	}, html)
+}
+
+// @Summary Rename a media file
+// @Description Renames a media file and updates all document links pointing to it
+// @Tags media
+// @Accept application/x-www-form-urlencoded
+// @Param filepath path string true "Current media file path (without media/ prefix)"
+// @Param newpath formData string true "New media file path (without media/ prefix)"
+// @Produce html
+// @Success 200 {string} string "success"
+// @Failure 400 {string} string "invalid request"
+// @Failure 404 {string} string "file not found"
+// @Failure 409 {string} string "target path already exists"
+// @Failure 500 {string} string "rename failed"
+// @Router /api/media/rename/{filepath} [post]
+func handleAPIMediaRename(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data")))
+		return
+	}
+
+	currentRel := chi.URLParam(r, "*")
+	if currentRel == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path")))
+		return
+	}
+
+	newRel := strings.TrimSpace(r.FormValue("newpath"))
+	if newRel == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "new path is required")))
+		return
+	}
+
+	newRel = strings.TrimPrefix(newRel, "media/")
+	newRel = filepath.Clean(newRel)
+
+	if currentRel == newRel {
+		writeResponse(w, r, nil, render.RenderMediaPathDisplay(newRel))
+		return
+	}
+
+	currentFull := pathutils.ToMediaPath(currentRel)
+	newFull := pathutils.ToMediaPath(newRel)
+
+	if _, err := os.Stat(currentFull); os.IsNotExist(err) {
+		w.WriteHeader(http.StatusNotFound)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist")))
+		return
+	}
+
+	if _, err := os.Stat(newFull); err == nil {
+		w.WriteHeader(http.StatusConflict)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists")))
+		return
+	}
+
+	oldMediaPath := "media/" + currentRel
+	newMediaPath := "media/" + newRel
+
+	// update links in docs BEFORE moving metadata so LinksToHere is still readable
+	if err := files.UpdateLinksForMovedMedia(oldMediaPath, newMediaPath); err != nil {
+		logging.LogWarning("media rename: failed to update links %s -> %s: %v", oldMediaPath, newMediaPath, err)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(newFull), 0755); err != nil {
+		logging.LogError("media rename: failed to create directory for %s: %v", newFull, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory")))
+		return
+	}
+
+	if err := os.Rename(currentFull, newFull); err != nil {
+		logging.LogError("media rename: failed to rename %s -> %s: %v", currentFull, newFull, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file")))
+		return
+	}
+
+	if err := files.MoveMediaMetadata(oldMediaPath, newMediaPath); err != nil {
+		logging.LogWarning("media rename: failed to move metadata %s -> %s: %v", oldMediaPath, newMediaPath, err)
+	}
+
+	logging.LogInfo("media renamed: %s -> %s", oldMediaPath, newMediaPath)
+
+	// redirect to the new media detail page
+	w.Header().Set("HX-Redirect", "/media/"+newRel+"?mode=detail")
+	writeResponse(w, r, nil, render.RenderMediaPathDisplay(newRel))
+}
+
+// @Summary Get media rename form
+// @Tags media
+// @Param filepath path string true "Media file path (without media/ prefix)"
+// @Produce html
+// @Router /api/media/rename-form/{filepath} [get]
+func handleAPIMediaRenameForm(w http.ResponseWriter, r *http.Request) {
+	relativePath := chi.URLParam(r, "*")
+	writeResponse(w, r, nil, render.RenderMediaRenameForm(relativePath))
+}
+
+// @Summary Get media path display
+// @Tags media
+// @Param filepath path string true "Media file path (without media/ prefix)"
+// @Produce html
+// @Router /api/media/path-display/{filepath} [get]
+func handleAPIMediaPathDisplay(w http.ResponseWriter, r *http.Request) {
+	relativePath := chi.URLParam(r, "*")
+	writeResponse(w, r, nil, render.RenderMediaPathDisplay(relativePath))
 }
