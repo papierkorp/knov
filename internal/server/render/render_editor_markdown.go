@@ -4,6 +4,7 @@ package render
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
@@ -14,279 +15,301 @@ import (
 	"knov/internal/translation"
 )
 
-// getToastUIEditorScript returns the common ToastUI editor JavaScript initialization
-func getToastUIEditorScript(content, frontMatter string) string {
-	return fmt.Sprintf(`
-		<script>
-			(function() {
-				const editor = new toastui.Editor({
-					el: document.querySelector('#markdown-editor'),
-					height: '500px',
-					initialEditType: 'markdown',
-					previewStyle: 'tab',
-					initialValue: %s,
-					theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default',
-					language: 'en-US',
-					toolbarItems: [
-						['heading', 'bold', 'italic', 'strike'],
-						['hr', 'quote'],
-						['ul', 'ol', 'task', 'indent', 'outdent'],
-						['table', 'link', {
-						name: 'image',
-						tooltip: 'Insert Media',
-						command: 'openPopup',
-						popupName: 'image',
-						className: 'toastui-editor-toolbar-icons image',
-						style: { backgroundImage: '' }
-					}],
-						[{
-							name: 'selectMedia',
-							tooltip: 'Select Media',
-							el: (() => {
-								const button = document.createElement('button');
-								button.className = 'toastui-editor-toolbar-icons';
-								button.style.backgroundImage = 'none';
-								button.style.margin = '0';
-								button.innerHTML = '<i class="fa-solid fa-file-arrow-up"></i>';
-								button.addEventListener('click', () => showMediaSelector(editor));
-								return button;
-							})()
-						}],
-						['code', 'codeblock']
-					],
-					i18n: {
-						'File': 'File',
-						'URL': 'URL',
-						'Select image': 'Select file',
-						'Select Image': 'Select File',
-						'File URL': 'File URL',
-						'Image URL': 'File URL',
-						'Description': 'Description',
-						'OK': 'OK',
-						'Cancel': 'Cancel',
-						'Insert Image': 'Insert Media',
-						'Insert image': 'Insert media',
-						'image': 'media',
-						'Image': 'Media',
-						'Choose a file': 'Choose a file',
-						'No file selected': 'No file selected'
-					},
-					hooks: {
-						addImageBlobHook: function(blob, callback, source) {
-							uploadMediaBlob(blob, callback);
-							return false;
-						}
-					}
-				});
-
-				// widen the built-in image dialog file input to accept all file types
-				// ToastUI sets accept="image/*" — we override it after the editor renders
-				setTimeout(function() {
-					const fileInputs = document.querySelectorAll('.toastui-editor-popup input[type="file"]');
-					fileInputs.forEach(function(input) {
-						input.setAttribute('accept', '*');
-					});
-				}, 500);
-
-				// observe for popup open (ToastUI creates the popup lazily on first click)
-				const observer = new MutationObserver(function(mutations) {
-					mutations.forEach(function(mutation) {
-						mutation.addedNodes.forEach(function(node) {
-							if (node.nodeType === 1) {
-								const fileInput = node.querySelector && node.querySelector('input[type="file"]');
-								if (fileInput) {
-									fileInput.setAttribute('accept', '*');
-								}
-							}
-						});
-					});
-				});
-				observer.observe(document.body, { childList: true, subtree: true });
-
-
-
-				// drag-and-drop for all media file types onto the editor
-				const editorEl = document.querySelector('#markdown-editor');
-				editorEl.addEventListener('dragover', function(e) {
-					e.preventDefault();
-					e.dataTransfer.dropEffect = 'copy';
-				});
-				editorEl.addEventListener('drop', function(e) {
-					e.preventDefault();
-					const files = e.dataTransfer.files;
-					if (!files || files.length === 0) return;
-
-					Array.from(files).forEach(function(file) {
-						uploadMediaBlob(file, function(url, alt) {
-							if (!url) return;
-							const isImage = file.type.startsWith('image/');
-							const markdown = isImage
-								? '![' + alt + '](' + url + ')'
-								: '[' + alt + '](' + url + ')';
-							editor.insertText(markdown);
-						});
-					});
-				});
-
-				// shared upload helper used by addImageBlobHook and drag-and-drop
-				function uploadMediaBlob(blob, callback) {
-					const currentPath = window.location.pathname;
-					let contextPath = null;
-
-					if (currentPath.startsWith('/files/edit/')) {
-						contextPath = currentPath.substring('/files/edit/'.length);
-					} else if (currentPath.startsWith('/files/')) {
-						contextPath = currentPath.substring('/files/'.length);
-					}
-
-					if (!contextPath) {
-						alert('please save the document first to enable file uploads.');
-						callback('', '');
-						return;
-					}
-
-					const formData = new FormData();
-					formData.append('file', blob);
-					formData.append('context_path', contextPath);
-
-					const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
-					const uploadMessage = document.createElement('div');
-					uploadMessage.className = 'upload-notification';
-					uploadMessage.style.cssText = 'position: fixed; top: 10px; right: 10px; padding: 12px 16px; border-radius: 6px; z-index: 9999; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-					uploadMessage.style.backgroundColor = isDarkMode ? '#374151' : '#0ea5e9';
-					uploadMessage.style.color = isDarkMode ? '#f9fafb' : '#ffffff';
-					uploadMessage.textContent = 'uploading...';
-					document.body.appendChild(uploadMessage);
-
-					fetch('/api/media/upload', {
-						method: 'POST',
-						body: formData,
-						headers: { 'Accept': 'application/json' }
-					})
-					.then(response => {
-						if (!response.ok) {
-							return response.text().then(errorText => {
-								throw new Error(errorText || 'upload failed: ' + response.statusText);
-							});
-						}
-						return response.json();
-					})
-					.then(data => {
-						if (document.body.contains(uploadMessage)) {
-							document.body.removeChild(uploadMessage);
-						}
-						const filePath = 'media/' + data.path;
-						callback(filePath, data.filename || blob.name || 'uploaded file');
-					})
-					.catch(error => {
-						if (document.body.contains(uploadMessage)) {
-							document.body.removeChild(uploadMessage);
-						}
-						alert('failed to upload file: ' + error.message);
-						callback('', '');
-					});
-				}
-
-				window.showMediaSelector = function(editor) {
-					const modal = document.createElement('div');
-					modal.className = 'media-selector-modal';
-					modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%%; height: 100%%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;';
-
-					const popup = document.createElement('div');
-					popup.className = 'media-selector-popup';
-					popup.style.cssText = 'background: white; border-radius: 8px; width: 600px; max-height: 500px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
-
-					const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
-					if (isDarkMode) {
-						popup.style.backgroundColor = '#374151';
-						popup.style.color = '#f9fafb';
-					}
-
-					const header = document.createElement('div');
-					header.style.cssText = 'padding: 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;';
-					if (isDarkMode) {
-						header.style.borderBottomColor = '#4b5563';
-					}
-					header.innerHTML = '<h3 style="margin: 0;">select media file</h3><button onclick="closeMediaSelector()" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>';
-
-					const content = document.createElement('div');
-					content.style.cssText = 'padding: 16px; max-height: 400px; overflow-y: auto;';
-					content.innerHTML = 'loading media files...';
-
-					popup.appendChild(header);
-					popup.appendChild(content);
-					modal.appendChild(popup);
-					document.body.appendChild(modal);
-
-					fetch('/api/media/list?mode=select', {
-						headers: { 'Accept': 'text/html' }
-					})
-					.then(response => response.text())
-					.then(html => {
-						content.innerHTML = html;
-					})
-					.catch(error => {
-						content.innerHTML = 'error loading media files';
-					});
-				};
-
-				window.insertMediaLink = function(mediaURL, filename) {
-					const editor = window.currentEditor;
-					if (editor) {
-						const markdownLink = '![' + filename + '](' + mediaURL + ')';
-						editor.insertText(markdownLink);
-						const hiddenField = document.getElementById('editor-content');
-						if (hiddenField) {
-						    hiddenField.value = editor.getMarkdown();
-						}
-						const form = document.querySelector('.file-form');
-						if (form) {
-							htmx.trigger(form, 'submit');
-						}
-					}
-					closeMediaSelector();
-				};
-
-				window.insertMediaIntoEditor = function(element) {
-					const mediaPath = element.querySelector('.media-path').value;
-					const filename = element.querySelector('.media-filename').value;
-					const mediaURL = 'media/' + mediaPath;
-
-					const editor = window.currentEditor;
-					if (editor) {
-						const markdownLink = '![' + filename + '](' + mediaURL + ')';
-						editor.insertText(markdownLink);
-						const hiddenField = document.getElementById('editor-content');
-						if (hiddenField) {
-						    hiddenField.value = editor.getMarkdown();
-						}
-						const form = document.querySelector('.file-form');
-						if (form) {
-							htmx.trigger(form, 'submit');
-						}
-					}
-					closeMediaSelector();
-				};
-
-				window.closeMediaSelector = function() {
-					const modal = document.querySelector('.media-selector-modal');
-					if (modal) {
-						modal.remove();
-					}
-				};
-
-				window.currentEditor = editor;
-
-				const frontMatter = %s;
-				document.querySelector('.file-form').addEventListener('submit', function(e) {
-					const body = editor.getMarkdown();
-					document.getElementById('editor-content').value = frontMatter ? frontMatter + body : body;
-				});
-			})();
-		</script>`, jsEscapeString(content), jsEscapeString(frontMatter))
+// jsEscapeString escapes a string for safe use in JavaScript
+func jsEscapeString(s string) string {
+	jsonBytes, err := json.Marshal(s)
+	if err != nil {
+		logging.LogError("failed to marshal string for javascript: %v", err)
+		return `""`
+	}
+	return string(jsonBytes)
 }
 
-// RenderMarkdownEditorForm renders a markdown editor form for file creation/editing
+// jsEditorInit returns the ToastUI editor constructor call.
+// Binds the upload hook so blob uploads go through uploadMediaBlob.
+func jsEditorInit(content string) string {
+	return fmt.Sprintf(`
+		const editor = new toastui.Editor({
+			el: document.querySelector('#markdown-editor'),
+			height: '500px',
+			initialEditType: 'markdown',
+			previewStyle: 'tab',
+			initialValue: %s,
+			theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default',
+			language: 'en-US',
+			toolbarItems: [
+				['heading', 'bold', 'italic', 'strike'],
+				['hr', 'quote'],
+				['ul', 'ol', 'task', 'indent', 'outdent'],
+				['table', 'link', {
+					name: 'image',
+					tooltip: 'Insert Media',
+					command: 'openPopup',
+					popupName: 'image',
+					className: 'toastui-editor-toolbar-icons image',
+					style: { backgroundImage: '' }
+				}],
+				[{
+					name: 'selectMedia',
+					tooltip: 'Select Media',
+					el: (() => {
+						const button = document.createElement('button');
+						button.className = 'toastui-editor-toolbar-icons';
+						button.style.backgroundImage = 'none';
+						button.style.margin = '0';
+						button.innerHTML = '<i class="fa-solid fa-file-arrow-up"></i>';
+						button.addEventListener('click', () => showMediaSelector(editor));
+						return button;
+					})()
+				}],
+				['code', 'codeblock']
+			],
+			i18n: {
+				'File': 'File',
+				'URL': 'URL',
+				'Select image': 'Select file',
+				'Select Image': 'Select File',
+				'File URL': 'File URL',
+				'Image URL': 'File URL',
+				'Description': 'Description',
+				'OK': 'OK',
+				'Cancel': 'Cancel',
+				'Insert Image': 'Insert Media',
+				'Insert image': 'Insert media',
+				'image': 'media',
+				'Image': 'Media',
+				'Choose a file': 'Choose a file',
+				'No file selected': 'No file selected'
+			},
+			hooks: {
+				addImageBlobHook: function(blob, callback) {
+					uploadMediaBlob(blob, callback);
+					return false;
+				}
+			}
+		});`, jsEscapeString(content))
+}
+
+// jsFileInputAcceptAll patches the built-in image popup file input to accept all file types.
+// ToastUI sets accept="image/*" by default. We override it on init and via MutationObserver
+// for the lazy-rendered popup.
+func jsFileInputAcceptAll() string {
+	return `
+		// patch built-in image popup file input to accept all file types
+		setTimeout(function() {
+			document.querySelectorAll('.toastui-editor-popup input[type="file"]').forEach(function(input) {
+				input.setAttribute('accept', '*');
+			});
+		}, 500);
+
+		// also patch lazily-rendered popups via MutationObserver
+		const popupObserver = new MutationObserver(function(mutations) {
+			mutations.forEach(function(mutation) {
+				mutation.addedNodes.forEach(function(node) {
+					if (node.nodeType !== 1) return;
+					const fileInput = node.querySelector && node.querySelector('input[type="file"]');
+					if (fileInput) fileInput.setAttribute('accept', '*');
+				});
+			});
+		});
+		popupObserver.observe(document.body, { childList: true, subtree: true });`
+}
+
+// jsDragAndDrop adds drag-and-drop support for all media file types onto the editor element.
+// Images are inserted as ![alt](url), other files as [alt](url).
+func jsDragAndDrop() string {
+	return `
+		// drag-and-drop: accept all file types, insert as markdown image or link
+		const editorEl = document.querySelector('#markdown-editor');
+		editorEl.addEventListener('dragover', function(e) {
+			e.preventDefault();
+			e.dataTransfer.dropEffect = 'copy';
+		});
+		editorEl.addEventListener('drop', function(e) {
+			e.preventDefault();
+			const files = e.dataTransfer.files;
+			if (!files || files.length === 0) return;
+			Array.from(files).forEach(function(file) {
+				uploadMediaBlob(file, function(url, alt) {
+					if (!url) return;
+					const isImage = file.type.startsWith('image/');
+					const markdown = isImage
+						? '![' + alt + '](' + url + ')'
+						: '[' + alt + '](' + url + ')';
+					editor.insertText(markdown);
+				});
+			});
+		});`
+}
+
+// jsUploadMediaBlob defines the shared upload helper used by the blob hook and drag-and-drop.
+// Derives the context path from the current URL, shows an upload notification, then POSTs
+// to /api/media/upload and calls callback(url, alt) on success.
+func jsUploadMediaBlob() string {
+	return `
+		// shared upload helper: derives context from URL, uploads, calls callback(url, alt)
+		function uploadMediaBlob(blob, callback) {
+			const currentPath = window.location.pathname;
+			let contextPath = null;
+
+			if (currentPath.startsWith('/files/edit/')) {
+				contextPath = currentPath.substring('/files/edit/'.length);
+			} else if (currentPath.startsWith('/files/')) {
+				contextPath = currentPath.substring('/files/'.length);
+			}
+
+			if (!contextPath) {
+				alert('please save the document first to enable file uploads.');
+				callback('', '');
+				return;
+			}
+
+			const formData = new FormData();
+			formData.append('file', blob);
+			formData.append('context_path', contextPath);
+
+			const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
+			const uploadMessage = document.createElement('div');
+			uploadMessage.className = 'upload-notification';
+			uploadMessage.style.cssText = 'position:fixed;top:10px;right:10px;padding:12px 16px;border-radius:6px;z-index:9999;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+			uploadMessage.style.backgroundColor = isDarkMode ? '#374151' : '#0ea5e9';
+			uploadMessage.style.color = isDarkMode ? '#f9fafb' : '#ffffff';
+			uploadMessage.textContent = 'uploading...';
+			document.body.appendChild(uploadMessage);
+
+			fetch('/api/media/upload', {
+				method: 'POST',
+				body: formData,
+				headers: { 'Accept': 'application/json' }
+			})
+			.then(function(response) {
+				if (!response.ok) {
+					return response.text().then(function(t) {
+						throw new Error(t || 'upload failed: ' + response.statusText);
+					});
+				}
+				return response.json();
+			})
+			.then(function(data) {
+				if (document.body.contains(uploadMessage)) document.body.removeChild(uploadMessage);
+				callback('media/' + data.path, data.filename || blob.name || 'uploaded file');
+			})
+			.catch(function(error) {
+				if (document.body.contains(uploadMessage)) document.body.removeChild(uploadMessage);
+				alert('failed to upload file: ' + error.message);
+				callback('', '');
+			});
+		}`
+}
+
+// jsMediaSelector defines the media browser modal (showMediaSelector / closeMediaSelector).
+// Opens a modal that fetches /api/media/list?mode=select as HTML.
+func jsMediaSelector() string {
+	return `
+		// media browser modal — opened by the toolbar "Select Media" button
+		window.showMediaSelector = function(editor) {
+			const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
+
+			const modal = document.createElement('div');
+			modal.className = 'media-selector-modal';
+			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+
+			const popup = document.createElement('div');
+			popup.className = 'media-selector-popup';
+			popup.style.cssText = 'background:white;border-radius:8px;width:600px;max-height:500px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+			if (isDarkMode) {
+				popup.style.backgroundColor = '#374151';
+				popup.style.color = '#f9fafb';
+			}
+
+			const header = document.createElement('div');
+			header.style.cssText = 'padding:16px;border-bottom:1px solid ' + (isDarkMode ? '#4b5563' : '#eee') + ';display:flex;justify-content:space-between;align-items:center;';
+			header.innerHTML = '<h3 style="margin:0;">select media file</h3><button onclick="closeMediaSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>';
+
+			const body = document.createElement('div');
+			body.style.cssText = 'padding:16px;max-height:400px;overflow-y:auto;';
+			body.innerHTML = 'loading media files...';
+
+			popup.appendChild(header);
+			popup.appendChild(body);
+			modal.appendChild(popup);
+			document.body.appendChild(modal);
+
+			fetch('/api/media/list?mode=select', { headers: { 'Accept': 'text/html' } })
+				.then(function(r) { return r.text(); })
+				.then(function(html) { body.innerHTML = html; })
+				.catch(function() { body.innerHTML = 'error loading media files'; });
+		};
+
+		window.closeMediaSelector = function() {
+			const modal = document.querySelector('.media-selector-modal');
+			if (modal) modal.remove();
+		};`
+}
+
+// jsInsertMedia defines insertMediaIntoEditor and insertMediaLink — called by the media
+// selector list items to insert the chosen file into the editor as a markdown link.
+func jsInsertMedia() string {
+	return `
+		// insert selected media from the browser modal into the editor
+		window.insertMediaIntoEditor = function(element) {
+			const mediaPath = element.querySelector('.media-path').value;
+			const filename  = element.querySelector('.media-filename').value;
+			const editor    = window.currentEditor;
+			if (editor) {
+				editor.insertText('![' + filename + '](media/' + mediaPath + ')');
+			}
+			closeMediaSelector();
+		};
+
+		window.insertMediaLink = function(mediaURL, filename) {
+			const editor = window.currentEditor;
+			if (editor) {
+				editor.insertText('![' + filename + '](' + mediaURL + ')');
+			}
+			closeMediaSelector();
+		};`
+}
+
+// jsFormSubmit wires up the form submit listener to prepend any stashed YAML front matter
+// before writing the editor content to the hidden field.
+func jsFormSubmit(frontMatter string) string {
+	return fmt.Sprintf(`
+		// on submit: prepend stashed YAML front matter (if any) before saving
+		const frontMatter = %s;
+		document.querySelector('.file-form').addEventListener('submit', function() {
+			const body = editor.getMarkdown();
+			document.getElementById('editor-content').value = frontMatter ? frontMatter + body : body;
+		});`, jsEscapeString(frontMatter))
+}
+
+// jsRegisterEditor stores the editor instance on window so media helpers can reach it.
+func jsRegisterEditor() string {
+	return `
+		// expose editor instance globally for media selector callbacks
+		window.currentEditor = editor;`
+}
+
+// getToastUIEditorScript assembles all JS helpers into a single <script> block.
+func getToastUIEditorScript(content, frontMatter string) string {
+	parts := []string{
+		jsEditorInit(content),
+		jsFileInputAcceptAll(),
+		jsDragAndDrop(),
+		jsUploadMediaBlob(),
+		jsMediaSelector(),
+		jsInsertMedia(),
+		jsRegisterEditor(),
+		jsFormSubmit(frontMatter),
+	}
+
+	return "<script>\n(function() {" +
+		strings.Join(parts, "\n") +
+		"\n})();\n</script>"
+}
+
+// RenderMarkdownEditorForm renders a markdown editor form for file creation/editing.
+// Strips YAML front matter before passing content to the editor and re-prepends on save.
 func RenderMarkdownEditorForm(filePath string, editor ...string) string {
 	content := ""
 	frontMatter := ""
@@ -335,8 +358,6 @@ func RenderMarkdownEditorForm(filePath string, editor ...string) string {
 		filepathInput = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filePath)
 	}
 
-	saveButtonText := translation.SprintfForRequest(configmanager.GetLanguage(), "save file")
-
 	return fmt.Sprintf(`
 		<form hx-post="%s" hx-target="#editor-status" class="file-form">
 			%s
@@ -350,12 +371,16 @@ func RenderMarkdownEditorForm(filePath string, editor ...string) string {
 			</div>
 			<div id="editor-status"></div>
 		</form>
-		%s`, action, filepathInput, saveButtonText, cancelURL,
+		%s`,
+		action,
+		filepathInput,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "save file"),
+		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
 		getToastUIEditorScript(content, frontMatter))
 }
 
-// RenderMarkdownSectionEditorForm renders a markdown editor form for editing a specific section
+// RenderMarkdownSectionEditorForm renders a markdown editor form for editing a single section.
 func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 	content := ""
 
@@ -368,11 +393,10 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 		}
 	}
 
-	action := "/api/files/section/save"
 	cancelURL := fmt.Sprintf("/files/%s#%s", filePath, sectionID)
 
 	return fmt.Sprintf(`
-		<form hx-post="%s" hx-target="#editor-status" class="file-form">
+		<form hx-post="/api/files/section/save" hx-target="#editor-status" class="file-form">
 			<div class="form-group">
 				<label>%s:</label>
 				<input type="text" name="sectionid" value="%s" readonly />
@@ -388,7 +412,7 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 			</div>
 			<div id="editor-status"></div>
 		</form>
-		%s`, action,
+		%s`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section"),
 		sectionID,
 		filePath,
@@ -398,14 +422,14 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 		getToastUIEditorScript(content, ""))
 }
 
-// RenderTextareaEditorComponent renders a textarea editor component with save/cancel buttons
+// RenderTextareaEditorComponent renders a plain textarea editor with save/cancel buttons.
+// Shows an extra "convert to markdown" button for DokuWiki files.
 func RenderTextareaEditorComponent(filepath, content string) string {
 	cancelURL := "/"
 	if filepath != "" {
 		cancelURL = fmt.Sprintf("/files/%s", filepath)
 	}
 
-	// check if file is DokuWiki to show convert button
 	var convertButton string
 	if filepath != "" {
 		fullPath := pathutils.ToDocsPath(filepath)
@@ -428,28 +452,19 @@ func RenderTextareaEditorComponent(filepath, content string) string {
 		<div id="component-textarea-editor">
 			<form hx-post="/api/files/save" hx-target="#editor-status">
 				<input type="hidden" name="filepath" value="%s">
-				<textarea name="content" rows="25" style="width: 100%%; font-family: monospace; padding: 12px;">%s</textarea>
-				<div style="margin-top: 12px;">
+				<textarea name="content" rows="25" style="width:100%%;font-family:monospace;padding:12px;">%s</textarea>
+				<div style="margin-top:12px;">
 					<button type="submit" class="btn-primary">%s</button>
 					<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
 					%s
 				</div>
 			</form>
 			<div id="editor-status"></div>
-		</div>
-	`, filepath, content,
+		</div>`,
+		filepath,
+		content,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
 		convertButton)
-}
-
-// jsEscapeString escapes a string for safe use in JavaScript
-func jsEscapeString(s string) string {
-	jsonBytes, err := json.Marshal(s)
-	if err != nil {
-		logging.LogError("failed to marshal string for javascript: %v", err)
-		return `""`
-	}
-	return string(jsonBytes)
 }
