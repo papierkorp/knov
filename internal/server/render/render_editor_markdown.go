@@ -31,7 +31,14 @@ func getToastUIEditorScript(content, frontMatter string) string {
 						['heading', 'bold', 'italic', 'strike'],
 						['hr', 'quote'],
 						['ul', 'ol', 'task', 'indent', 'outdent'],
-						['table', 'image', 'link'],
+						['table', 'link', {
+						name: 'image',
+						tooltip: 'Insert Media',
+						command: 'openPopup',
+						popupName: 'image',
+						className: 'toastui-editor-toolbar-icons image',
+						style: { backgroundImage: '' }
+					}],
 						[{
 							name: 'selectMedia',
 							tooltip: 'Select Media',
@@ -96,19 +103,7 @@ func getToastUIEditorScript(content, frontMatter string) string {
 				});
 				observer.observe(document.body, { childList: true, subtree: true });
 
-				// find the image toolbar button by its data-type attribute and patch its tooltip.
-				// ToastUI sets data-type="image" on the button and updates a shared
-				// .toastui-editor-tooltip span with the button's data-tooltip on mouseenter.
-				// We override data-tooltip on the button and intercept mouseenter to fix the span.
-				setTimeout(function() {
-					const imageBtn = document.querySelector('.toastui-editor-defaultUI-toolbar button[data-type="image"]');
-					if (!imageBtn) return;
-					imageBtn.setAttribute('data-tooltip', 'Insert Media');
-					imageBtn.addEventListener('mouseenter', function() {
-						const tip = document.querySelector('.toastui-editor-tooltip');
-						if (tip) tip.textContent = 'Insert Media';
-					});
-				}, 300);
+
 
 				// drag-and-drop for all media file types onto the editor
 				const editorEl = document.querySelector('#markdown-editor');
