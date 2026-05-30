@@ -177,17 +177,17 @@ func GetFileContent(filePath string) (*FileContent, error) {
 func FilterFilesByHiddenTypes(files []File) []File {
 	var filtered []File
 	for _, file := range files {
-		if !isFileHidden(file) {
+		if !isHiddenByType(file) {
 			filtered = append(filtered, file)
 		}
 	}
 	return filtered
 }
 
-// isFileHidden returns true if the file should be excluded based on its type.
-// Mime-type check runs first so binary files (images, audio, video, pdf)
-// stored in docs with a wrong editor type are still correctly hidden.
-func isFileHidden(file File) bool {
+// isHiddenByType returns true if the file should be excluded from listings based on its type.
+// For media paths the mime type (derived from extension) is used.
+// For docs paths the metadata Editor field is used.
+func isHiddenByType(file File) bool {
 	ext := strings.ToLower(filepath.Ext(file.Path))
 	mime := configmanager.MimeTypeByExtension(ext)
 

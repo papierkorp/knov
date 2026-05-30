@@ -177,7 +177,9 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		currentMetadata.Editor = newMetadata.Editor
 	}
 
-	if currentMetadata.Editor == "" {
+	// only infer editor type for docs files — media files are identified
+	// by path prefix + mime type in filtering, not by editor type
+	if !isMediaFile && currentMetadata.Editor == "" {
 		if et := EditorFromExtension(metadataPath); et != "" {
 			currentMetadata.Editor = et
 		} else {

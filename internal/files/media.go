@@ -91,16 +91,11 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	// create metadata for the media file with proper path prefix
 	metadataPath := "media/" + filepath.ToSlash(finalMediaPath) // Add media/ prefix to distinguish from docs
 
-	// set editor type based on content type so it is never overwritten with markdown default
-	editorStr := configmanager.EditorTypeFromMime(contentType)
-	if editorStr == "" {
-		editorStr = "image" // safe default for unrecognised media mime types
-	}
-	editorType := EditorType(editorStr)
-
 	metadata := &Metadata{
-		Path:   metadataPath,
-		Editor: editorType,
+		Path: metadataPath,
+		// Editor is intentionally not set for media files — metaDataUpdate skips
+		// the editor fallback for media/ paths, so it stays empty.
+		// Filtering uses the path prefix + mime type via isHiddenByType instead.
 	}
 
 	if err := MetaDataSave(metadata); err != nil {
