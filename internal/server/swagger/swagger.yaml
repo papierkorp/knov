@@ -647,6 +647,53 @@ paths:
       summary: Update data path
       tags:
       - config
+  /api/config/favicon:
+    delete:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Removes the custom favicon and reverts to the default
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: favicon removed
+          schema:
+            type: string
+        "500":
+          description: failed to remove
+          schema:
+            type: string
+      summary: Delete custom favicon
+      tags:
+      - config
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads a custom favicon (ico, png, or svg) stored in storage/favicon
+      parameters:
+      - description: Favicon file (.ico, .png, or .svg)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: favicon uploaded
+          schema:
+            type: string
+        "400":
+          description: invalid file
+          schema:
+            type: string
+        "500":
+          description: upload failed
+          schema:
+            type: string
+      summary: Upload custom favicon
+      tags:
+      - config
   /api/config/file-types/hide-filter:
     post:
       consumes:

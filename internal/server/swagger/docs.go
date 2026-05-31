@@ -501,6 +501,77 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/config/favicon": {
+            "post": {
+                "description": "Uploads a custom favicon (ico, png, or svg) stored in storage/favicon",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Upload custom favicon",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Favicon file (.ico, .png, or .svg)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "favicon uploaded",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid file",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "upload failed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes the custom favicon and reverts to the default",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Delete custom favicon",
+                "responses": {
+                    "200": {
+                        "description": "favicon removed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to remove",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/config/file-types/hide-filter": {
             "post": {
                 "consumes": [
