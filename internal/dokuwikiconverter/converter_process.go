@@ -542,11 +542,33 @@ func (h *Converter) convertFoldedSections(content string) string {
 
 				innerContent := strings.TrimSpace(strings.Join(foldedContent, "\n"))
 				if innerContent != "" {
-					// indent every line of inner content so it stays nested in the list
+					// indent non-code-block lines so they stay nested in the list;
+					// code block content (raw dokuwiki tags or markdown fences) must not be
+					// indented or the converter/markdown parser will break them
 					childIndent := foldedIndent + "  "
 					indentedLines := strings.Split(innerContent, "\n")
+					inCodeBlock := false
 					for j, l := range indentedLines {
-						if l != "" {
+						trimmed := strings.TrimSpace(l)
+						// detect opening/closing of code blocks (raw dokuwiki tags or markdown fences)
+						isCodeOpen := !inCodeBlock && (strings.HasPrefix(trimmed, "<sxh") ||
+							strings.HasPrefix(trimmed, "<code") ||
+							strings.HasPrefix(trimmed, "<file") ||
+							strings.HasPrefix(trimmed, "```"))
+						isCodeClose := inCodeBlock && (trimmed == "</sxh>" ||
+							trimmed == "</code>" ||
+							trimmed == "</file>" ||
+							trimmed == "```")
+						if isCodeOpen {
+							inCodeBlock = true
+							indentedLines[j] = childIndent + trimmed
+						} else if isCodeClose {
+							inCodeBlock = false
+							indentedLines[j] = childIndent + trimmed
+						} else if inCodeBlock {
+							// inside a code block: leave content untouched
+							indentedLines[j] = l
+						} else if l != "" {
 							indentedLines[j] = childIndent + l
 						}
 					}

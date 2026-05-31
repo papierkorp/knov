@@ -6,7 +6,7 @@
 - create filter manually not per ai..
 
 **per ai**
-- dokuwiki to markdown parser: indents in codeblocks (dokuwiki exmaple)
+- dokuwiki to markdown converter: indents in codeblocks (dokuwiki exmaple)
 - /releasenotes route with new icon on the bottom of the rail theme
 - Dashboard
   - Add dashboard export/import

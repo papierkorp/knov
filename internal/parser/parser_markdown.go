@@ -116,21 +116,65 @@ type codeBlock struct{ lang, content string }
 
 // extractCodeBlocks replaces fenced code blocks with placeholders before markdown parsing
 // to prevent misinterpretation (e.g. # comments becoming headers, list items becoming lists).
+//
+// Two gomarkdown quirks drive the placeholder strategy:
+//  1. A placeholder indented 4+ spaces beyond its list context triggers the indented-code-block
+//     heuristic — so we use the parent list item's indent + 2, not the fence's own indent.
+//  2. Blank lines around a placeholder inside a nested list make gomarkdown switch to
+//     "loose list" mode, breaking the nesting of following items — so nested placeholders
+//     are emitted WITHOUT surrounding blank lines.
+//
 // Call restoreCodeBlocks with the returned blocks after rendering.
 func (h *MarkdownHandler) extractCodeBlocks(content []byte) ([]byte, []codeBlock) {
 	var blocks []codeBlock
-	fenceRe := regexp.MustCompile("(?s)```([^\n]*)\n(.*?)```")
-	result := fenceRe.ReplaceAllStringFunc(string(content), func(match string) string {
-		m := fenceRe.FindStringSubmatch(match)
-		lang := strings.TrimSpace(m[1])
+	fenceRe := regexp.MustCompile("^([ \t]*)```([^\n]*)$")
+	listItemRe := regexp.MustCompile(`^(\s*)[-*] `)
+	lines := strings.Split(string(content), "\n")
+	var result []string
+	i := 0
+	for i < len(lines) {
+		m := fenceRe.FindStringSubmatch(lines[i])
+		if m == nil {
+			result = append(result, lines[i])
+			i++
+			continue
+		}
+		// find the nearest preceding list item; its indent determines the placeholder indent
+		placeholderIndent := ""
+		nested := false
+		for j := len(result) - 1; j >= 0; j-- {
+			if lm := listItemRe.FindStringSubmatch(result[j]); lm != nil {
+				placeholderIndent = lm[1] + "  "
+				nested = true
+				break
+			}
+		}
+		lang := strings.TrimSpace(m[2])
 		if lang == "" {
 			lang = "text"
 		}
+		i++
+		var contentLines []string
+		for i < len(lines) {
+			if strings.TrimSpace(lines[i]) == "```" {
+				i++ // skip closing fence
+				break
+			}
+			contentLines = append(contentLines, lines[i])
+			i++
+		}
+		rawContent := strings.Join(contentLines, "\n") + "\n"
 		placeholder := fmt.Sprintf("KNOVCODEBLOCK%d", len(blocks))
-		blocks = append(blocks, codeBlock{lang, m[2]})
-		return "\n" + placeholder + "\n"
-	})
-	return []byte(result), blocks
+		blocks = append(blocks, codeBlock{lang, rawContent})
+		if nested {
+			// no surrounding blank lines: blank lines inside a nested list trigger
+			// gomarkdown's loose-list mode which breaks nesting of following items
+			result = append(result, placeholderIndent+placeholder)
+		} else {
+			result = append(result, "", placeholder, "")
+		}
+	}
+	return []byte(strings.Join(result, "\n")), blocks
 }
 
 // restoreCodeBlocks replaces placeholders with syntax-highlighted code blocks.
@@ -380,21 +424,33 @@ func (h *MarkdownHandler) Name() string {
 	return "markdown"
 }
 
-// preprocessBlankLineLists injects HTML comment separators between top-level lists divided by blank lines,
-// working around gomarkdown merging them into a single list.
-// Only top-level items (no leading spaces) get separators — nested items at 4+ spaces must
-// never have their context reset or gomarkdown interprets them as indented code blocks.
+// preprocessBlankLineLists injects HTML comment separators between top-level unordered lists
+// divided by blank lines (working around gomarkdown merging them into one list), and ensures
+// a blank line before ordered list items that follow non-list content so gomarkdown starts a
+// proper <ol> instead of treating them as paragraph text.
+// Only top-level items are affected — nested items must never have their context reset.
 func (h *MarkdownHandler) preprocessBlankLineLists(content []byte) []byte {
 	lines := strings.Split(string(content), "\n")
 	var result []string
 	topLevelItemRe := regexp.MustCompile(`^[-*] `)
+	orderedItemRe := regexp.MustCompile(`^\d+\.\s`)
 	var inCodeBlock bool
 
 	for i, line := range lines {
 		if strings.HasPrefix(strings.TrimSpace(line), "```") {
 			inCodeBlock = !inCodeBlock
 		}
+
+		// ensure blank line before an ordered list item that follows non-list/non-blank content
+		if !inCodeBlock && orderedItemRe.MatchString(line) && i > 0 {
+			prev := strings.TrimSpace(lines[i-1])
+			if prev != "" && !topLevelItemRe.MatchString(lines[i-1]) && !orderedItemRe.MatchString(lines[i-1]) {
+				result = append(result, "")
+			}
+		}
+
 		result = append(result, line)
+
 		if !inCodeBlock && topLevelItemRe.MatchString(line) && i+1 < len(lines) && strings.TrimSpace(lines[i+1]) == "" {
 			result = append(result, "", "<!-- -->", "")
 		}
