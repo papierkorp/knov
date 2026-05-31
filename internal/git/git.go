@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"knov/internal/configStorage"
 	"knov/internal/configmanager"
 	"knov/internal/logging"
 
@@ -740,30 +741,20 @@ func expandCommitHash(repo *git.Repository, shortHash string) (plumbing.Hash, er
 	return matchedHash, nil
 }
 
+const lastCommitKey = "last-processed-commit"
+
 // GetLastProcessedCommit returns the last commit that was processed for metadata
 func GetLastProcessedCommit() (string, error) {
-	commitFile := filepath.Join(configmanager.GetAppConfig().StoragePath, ".last_processed_commit")
-
-	data, err := os.ReadFile(commitFile)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return "", nil
-		}
+	data, err := configStorage.Get(lastCommitKey)
+	if err != nil || data == nil {
 		return "", err
 	}
-
 	return strings.TrimSpace(string(data)), nil
 }
 
 // SetLastProcessedCommit saves the last processed commit hash
 func SetLastProcessedCommit(commitHash string) error {
-	storagePath := configmanager.GetAppConfig().StoragePath
-	if err := os.MkdirAll(storagePath, 0755); err != nil {
-		return err
-	}
-
-	commitFile := filepath.Join(storagePath, ".last_processed_commit")
-	return os.WriteFile(commitFile, []byte(commitHash), 0644)
+	return configStorage.Set(lastCommitKey, []byte(commitHash))
 }
 
 // GetFileAtCommit returns the content of a file at a specific commit

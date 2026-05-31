@@ -7,16 +7,13 @@
 
 **per ai**
 - dokuwiki to markdown parser: indents in codeblocks (dokuwiki exmaple)
-- fix tempai - .env.example isnt copied
 - add a logs rotating
-- builtin header doesnt stick anymore
-- i want to get rid of the dokuwiki file support (i want to keep the dokuwiki to markdown export) but i dont want to display dokuwiki files any longer
 - /releasenotes route with new icon on the bottom of the rail theme
 - Dashboard
   - Add dashboard export/import
   - remove positions from builtin and rail theme
   - add up/down buttons to builtin/rail theme widgets
-- add last .last_processed_commit to configstorage
+- i want to get rid of the dokuwiki file support (i want to keep the dokuwiki to markdown export) but i dont want to display dokuwiki files any longer
 
 # performance updates
 
