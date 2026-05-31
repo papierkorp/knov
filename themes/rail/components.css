@@ -2880,3 +2880,10 @@ dl.media-info dd {
   font-style: italic;
   font-size: 0.85em;
 }
+
+/* loose-list <p> suppression — CommonMark wraps loose list items in <p>;
+   collapse margin so lists render compactly */
+#view-fileview-rail .file-content li > p,
+#view-fileview-reader .file-content li > p {
+  margin: 0;
+}

@@ -667,3 +667,11 @@
 #component-sidebar-toc .toc-nav a:hover {
   color: var(--primary);
 }
+
+/* loose-list <p> suppression — CommonMark wraps list items separated by blank
+   lines in <p> tags; collapse the spacing so lists render compactly */
+#view-fileview-detailed .file-content li > p,
+#view-fileview-compact .file-content li > p,
+#view-fileview-reader .file-content li > p {
+  margin: 0;
+}

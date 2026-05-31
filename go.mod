@@ -7,10 +7,11 @@ require github.com/go-chi/chi/v5 v5.2.2
 require (
 	github.com/alecthomas/chroma/v2 v2.20.0
 	github.com/go-git/go-git/v5 v5.16.4
-	github.com/gomarkdown/markdown v0.0.0-20250810172220-2e2c11897d1a
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.6
+	github.com/yuin/goldmark v1.7.8
 	golang.org/x/text v0.34.0
+	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.50.1
 )
 
@@ -51,7 +52,6 @@ require (
 	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/tools v0.42.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.72.3 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect

@@ -6,14 +6,12 @@
 - create filter manually not per ai..
 
 **per ai**
-- dokuwiki to markdown converter: indents in codeblocks (dokuwiki exmaple)
 - /releasenotes route with new icon on the bottom of the rail theme
 - Dashboard
   - Add dashboard export/import
   - remove positions from builtin and rail theme
   - add up/down buttons to builtin/rail theme widgets
-- move the markdow parser to goldmark (commonmark compliant)
-- fix: Ordered list sub-items still broken — - vorgehen should be   - vorgehen under 1. per externen passwort manager
+- markdown converter: `</datatables>`
 
 # performance updates
 
