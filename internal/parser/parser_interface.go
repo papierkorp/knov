@@ -49,7 +49,6 @@ var parserRegistry *Registry
 func Init() {
 	parserRegistry = NewRegistry()
 	parserRegistry.Register(NewMarkdownHandler())
-	parserRegistry.Register(NewDokuwikiHandler())
 	parserRegistry.Register(NewPlaintextHandler())
 }
 

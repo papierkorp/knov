@@ -62,7 +62,6 @@ var contentHandlerRegistry *Registry
 func Init() {
 	contentHandlerRegistry = NewRegistry()
 	contentHandlerRegistry.Register(NewMarkdownContentHandler())
-	// Future: contentHandlerRegistry.Register(NewDokuwikiContentHandler())
 }
 
 // GetHandler returns a content handler by name

@@ -1,4 +1,4 @@
-package parser
+package dokuwikiconverter
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // processDokuWikiSyntax applies unified detection and rendering for all syntax types
-func (h *DokuwikiHandler) processDokuWikiSyntax(content string, outputFormat string) string {
+func (h *Converter) processDokuWikiSyntax(content string, outputFormat string) string {
 	// Process in order of complexity to avoid conflicts
 
 	// 0. Strip <nowiki> tags — keep their content but prevent further processing
@@ -57,7 +57,7 @@ func (h *DokuwikiHandler) processDokuWikiSyntax(content string, outputFormat str
 }
 
 // extractInlineCodes extracts ”..” inline code spans before any other processing
-func (h *DokuwikiHandler) extractInlineCodes(content string) (string, []string) {
+func (h *Converter) extractInlineCodes(content string) (string, []string) {
 	var codes []string
 	re := regexp.MustCompile(`''(.+?)''`)
 	result := re.ReplaceAllStringFunc(content, func(match string) string {
@@ -70,7 +70,7 @@ func (h *DokuwikiHandler) extractInlineCodes(content string) (string, []string) 
 }
 
 // restoreInlineCodes renders and restores extracted inline code placeholders
-func (h *DokuwikiHandler) restoreInlineCodes(content string, codes []string, outputFormat string) string {
+func (h *Converter) restoreInlineCodes(content string, codes []string, outputFormat string) string {
 	for i, code := range codes {
 		var rendered string
 		if outputFormat == "html" {
@@ -84,7 +84,7 @@ func (h *DokuwikiHandler) restoreInlineCodes(content string, codes []string, out
 }
 
 // processMediaLinks handles media link conversion for both HTML and Markdown
-func (h *DokuwikiHandler) processMediaLinks(content string, outputFormat string) string {
+func (h *Converter) processMediaLinks(content string, outputFormat string) string {
 	// matches {{ :path/to/file | optional alt }} with optional spaces
 	mediaRegex := regexp.MustCompile(`\{\{\s*:([^|}]+)(?:\|([^}]*))?\}\}`)
 	content = mediaRegex.ReplaceAllStringFunc(content, func(match string) string {
@@ -126,7 +126,7 @@ func (h *DokuwikiHandler) processMediaLinks(content string, outputFormat string)
 }
 
 // processCodeBlocks handles all code block syntaxes
-func (h *DokuwikiHandler) processCodeBlocks(content string, outputFormat string) string {
+func (h *Converter) processCodeBlocks(content string, outputFormat string) string {
 	patterns := []struct {
 		regex string
 		tag   string
@@ -172,7 +172,7 @@ func (h *DokuwikiHandler) processCodeBlocks(content string, outputFormat string)
 }
 
 // processHeaders handles header conversion for both HTML and Markdown
-func (h *DokuwikiHandler) processHeaders(content string, outputFormat string) string {
+func (h *Converter) processHeaders(content string, outputFormat string) string {
 	patterns := []struct {
 		regex string
 		level int
@@ -205,7 +205,7 @@ func (h *DokuwikiHandler) processHeaders(content string, outputFormat string) st
 }
 
 // processTextFormatting handles text formatting for both HTML and Markdown
-func (h *DokuwikiHandler) processTextFormatting(content string, outputFormat string) string {
+func (h *Converter) processTextFormatting(content string, outputFormat string) string {
 	patterns := []struct {
 		regex      string
 		formatType string
@@ -234,7 +234,7 @@ func (h *DokuwikiHandler) processTextFormatting(content string, outputFormat str
 }
 
 // processLinks handles link conversion for both HTML and Markdown
-func (h *DokuwikiHandler) processLinks(content string, outputFormat string) string {
+func (h *Converter) processLinks(content string, outputFormat string) string {
 	linkRegex := regexp.MustCompile(`\[\[([^\]|]+)(?:\|([^\]]+))?\]\]`)
 	content = linkRegex.ReplaceAllStringFunc(content, func(match string) string {
 		matches := linkRegex.FindStringSubmatch(match)
@@ -296,7 +296,7 @@ func (h *DokuwikiHandler) processLinks(content string, outputFormat string) stri
 }
 
 // processLists handles list detection for both formats
-func (h *DokuwikiHandler) processLists(content string, outputFormat string) string {
+func (h *Converter) processLists(content string, outputFormat string) string {
 	if outputFormat == "html" {
 		return h.processListsHTML(content)
 	}
@@ -305,7 +305,7 @@ func (h *DokuwikiHandler) processLists(content string, outputFormat string) stri
 }
 
 // processListsMarkdown handles markdown list conversion
-func (h *DokuwikiHandler) processListsMarkdown(content string) string {
+func (h *Converter) processListsMarkdown(content string) string {
 	lines := strings.Split(content, "\n")
 	var result []string
 
@@ -337,7 +337,7 @@ func (h *DokuwikiHandler) processListsMarkdown(content string) string {
 }
 
 // processListsHTML handles HTML list conversion with proper nesting
-func (h *DokuwikiHandler) processListsHTML(content string) string {
+func (h *Converter) processListsHTML(content string) string {
 	lines := strings.Split(content, "\n")
 	var result []string
 	var listStack []string // tracks open list tags by level
@@ -409,7 +409,7 @@ func (h *DokuwikiHandler) processListsHTML(content string) string {
 
 // replaceCatlistTags replaces catlist tags with a link to the browse/folders page.
 // It extracts the p:namespace argument (e.g. "p:it" → "/browse/folders/it").
-func (h *DokuwikiHandler) replaceCatlistTags(content string, outputFormat string) string {
+func (h *Converter) replaceCatlistTags(content string, outputFormat string) string {
 	return regexp.MustCompile(`<catlist([^>]*)>\s*`).ReplaceAllStringFunc(content, func(match string) string {
 		args := regexp.MustCompile(`<catlist([^>]*)>`).FindStringSubmatch(match)
 		path := ""
@@ -429,7 +429,7 @@ func (h *DokuwikiHandler) replaceCatlistTags(content string, outputFormat string
 }
 
 // convertIncludeSections converts {{section> include plugin syntax
-func (h *DokuwikiHandler) convertIncludeSections(content string, outputFormat string) string {
+func (h *Converter) convertIncludeSections(content string, outputFormat string) string {
 	sectionRegex := regexp.MustCompile(`\{\{section>([^&}]+)(?:[&}][^}]*)?\}\}`)
 	content = sectionRegex.ReplaceAllStringFunc(content, func(match string) string {
 		matches := sectionRegex.FindStringSubmatch(match)
@@ -473,7 +473,7 @@ func (h *DokuwikiHandler) convertIncludeSections(content string, outputFormat st
 }
 
 // convertFoldedSections converts ++ folded sections
-func (h *DokuwikiHandler) convertFoldedSections(content string) string {
+func (h *Converter) convertFoldedSections(content string) string {
 	// Handle ++++ folded sections (four plus signs) - convert to details/summary
 	quadFoldedRegex := regexp.MustCompile(`(?s)\+\+\+\+\s*([^|]+?)\s*\|\s*(.*?)\s*\+\+\+\+`)
 	content = quadFoldedRegex.ReplaceAllStringFunc(content, func(match string) string {
@@ -570,7 +570,7 @@ func (h *DokuwikiHandler) convertFoldedSections(content string) string {
 }
 
 // addParagraphTags adds paragraph tags for HTML output
-func (h *DokuwikiHandler) addParagraphTags(content string) string {
+func (h *Converter) addParagraphTags(content string) string {
 	// Handle line breaks
 	content = strings.ReplaceAll(content, "\\\\", "<br>")
 

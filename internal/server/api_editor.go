@@ -12,6 +12,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
+	"knov/internal/dokuwikiconverter"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/parser"
@@ -707,20 +708,6 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 
 	fullPath := pathutils.ToDocsPath(filePath)
 
-	// get parser handler
-	handler := parser.GetParserRegistry().GetHandler(fullPath)
-	if handler == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unsupported file type"), http.StatusBadRequest)
-		return
-	}
-
-	// check if it's a dokuwiki handler
-	dokuwikiHandler, ok := handler.(*parser.DokuwikiHandler)
-	if !ok {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "markdown conversion only supported for dokuwiki files"), http.StatusBadRequest)
-		return
-	}
-
 	// read file content
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
@@ -730,7 +717,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// convert to markdown
-	markdown := dokuwikiHandler.ConvertToMarkdown(string(content))
+	markdown := dokuwikiconverter.New().ConvertToMarkdown(string(content))
 
 	// determine new filename
 	markdownFileName := strings.TrimSuffix(filePath, filepath.Ext(filePath)) + ".md"

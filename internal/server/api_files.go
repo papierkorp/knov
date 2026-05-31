@@ -13,11 +13,11 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
+	"knov/internal/dokuwikiconverter"
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/logging"
 	"knov/internal/mapping"
-	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
@@ -353,20 +353,6 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 
 	fullPath := pathutils.ToDocsPath(filePath)
 
-	// get parser handler
-	handler := parser.GetParserRegistry().GetHandler(fullPath)
-	if handler == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unsupported file type"), http.StatusBadRequest)
-		return
-	}
-
-	// check if it's a dokuwiki handler
-	dokuwikiHandler, ok := handler.(*parser.DokuwikiHandler)
-	if !ok {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "markdown export only supported for dokuwiki files"), http.StatusBadRequest)
-		return
-	}
-
 	// read file content
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
@@ -376,7 +362,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// convert to markdown
-	markdown := dokuwikiHandler.ConvertToMarkdown(string(content))
+	markdown := dokuwikiconverter.New().ConvertToMarkdown(string(content))
 
 	// prepare download
 	filename := filepath.Base(filePath)
@@ -520,22 +506,14 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 			return nil // skip this file but continue
 		}
 
-		// check if file is dokuwiki and convert to markdown
-		handler := parser.GetParserRegistry().GetHandler(path)
-		if handler != nil && handler.Name() == "dokuwiki" {
-			dokuwikiHandler, ok := handler.(*parser.DokuwikiHandler)
-			if ok {
-				// convert to markdown
-				markdown := dokuwikiHandler.ConvertToMarkdown(string(content))
-				content = []byte(markdown)
-
-				// change extension to .md
-				oldRelPath := relPath
-				relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + ".md"
-				exportLog.Printf("converted: %s -> %s", oldRelPath, relPath)
-			}
-		} else if strings.ToLower(filepath.Ext(path)) == ".txt" {
-			exportLog.Printf("skipped .txt (not dokuwiki): %s — first non-empty line did not match dokuwiki header", relPath)
+		// convert dokuwiki files to markdown
+		ext := strings.ToLower(filepath.Ext(path))
+		if ext == ".dokuwiki" || ext == ".txt" {
+			markdown := dokuwikiconverter.New().ConvertToMarkdown(string(content))
+			content = []byte(markdown)
+			oldRelPath := relPath
+			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + ".md"
+			exportLog.Printf("converted: %s -> %s", oldRelPath, relPath)
 		}
 
 		// add file to zip

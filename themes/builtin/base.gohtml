@@ -108,9 +108,7 @@
         <div id="edit-dropdown-content" popover="auto" class="dropdown-navbar-content">
             <a href="#" id="edit-link">{{T "Edit"}}</a>
             <a href="#" id="history-link">{{T "History"}}</a>
-            {{ if eq .FileType "dokuwiki" }}
             <a href="#" id="export-markdown-link">{{T "Export to Markdown"}}</a>
-            {{ end }}
             <button type="button" popovertarget="rename-modal">
                 {{T "Rename"}}
             </button>
@@ -240,10 +238,7 @@ if (fileMatch && !path.includes('/edit/')) {
     }
 
 
-    {{ if eq .FileType "dokuwiki" }}
-    // set export to markdown link for dokuwiki files
     document.getElementById('export-markdown-link').href = `/api/files/export/markdown?filepath=${encodeURIComponent(filepath)}`;
-    {{ end }}
 
 }
 

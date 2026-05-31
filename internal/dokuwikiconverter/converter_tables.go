@@ -1,4 +1,4 @@
-package parser
+package dokuwikiconverter
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 // renderTableAsMarkdown converts table element to Markdown table
-func (h *DokuwikiHandler) renderTableAsMarkdown(element DokuWikiElement) string {
+func (h *Converter) renderTableAsMarkdown(element DokuWikiElement) string {
 	var result []string
 
 	// If we have headers, render them
@@ -56,7 +56,7 @@ func (h *DokuwikiHandler) renderTableAsMarkdown(element DokuWikiElement) string 
 }
 
 // renderTableAsHTML converts table element to HTML table
-func (h *DokuwikiHandler) renderTableAsHTML(element DokuWikiElement) string {
+func (h *Converter) renderTableAsHTML(element DokuWikiElement) string {
 	var result []string
 	result = append(result, "<table>")
 
@@ -93,7 +93,7 @@ func (h *DokuwikiHandler) renderTableAsHTML(element DokuWikiElement) string {
 // ---------------------------------------------------------------------------------------
 
 // ProcessTables handles table conversion for both HTML and Markdown
-func (h *DokuwikiHandler) ProcessTables(content string, outputFormat string) string {
+func (h *Converter) ProcessTables(content string, outputFormat string) string {
 	lines := strings.Split(content, "\n")
 	var result []string
 	var tableLines []string
@@ -130,7 +130,7 @@ func (h *DokuwikiHandler) ProcessTables(content string, outputFormat string) str
 }
 
 // parseTableLines converts table lines into a DokuWikiElement
-func (h *DokuwikiHandler) parseTableLines(lines []string) DokuWikiElement {
+func (h *Converter) parseTableLines(lines []string) DokuWikiElement {
 	var headers []string
 	var rows [][]string
 	var firstRow = true
@@ -171,7 +171,7 @@ func (h *DokuwikiHandler) parseTableLines(lines []string) DokuWikiElement {
 }
 
 // splitMixedDelimiters splits table cells by ^ or | delimiters
-func (h *DokuwikiHandler) splitMixedDelimiters(line string) []string {
+func (h *Converter) splitMixedDelimiters(line string) []string {
 	var cells []string
 	var currentCell strings.Builder
 
@@ -194,14 +194,14 @@ func (h *DokuwikiHandler) splitMixedDelimiters(line string) []string {
 }
 
 // isMajorityHeaderCells determines if a line is primarily header cells (^)
-func (h *DokuwikiHandler) isMajorityHeaderCells(line string) bool {
+func (h *Converter) isMajorityHeaderCells(line string) bool {
 	headerCount := strings.Count(line, "^")
 	normalCount := strings.Count(line, "|")
 	return headerCount > normalCount
 }
 
 // GetFirstTable extracts the first table from content as TableData
-func (h *DokuwikiHandler) GetFirstTable(content string) (*types.TableData, error) {
+func (h *Converter) GetFirstTable(content string) (*types.TableData, error) {
 	lines := strings.Split(content, "\n")
 	var tableLines []string
 

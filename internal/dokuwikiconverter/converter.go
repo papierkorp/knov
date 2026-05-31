@@ -1,79 +1,19 @@
-package parser
+package dokuwikiconverter
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 )
 
-type DokuwikiHandler struct{}
+type Converter struct{}
 
-func NewDokuwikiHandler() *DokuwikiHandler {
-	return &DokuwikiHandler{}
-}
-
-func (h *DokuwikiHandler) CanHandle(filename string) bool {
-	ext := strings.ToLower(filepath.Ext(filename))
-
-	if ext == ".dokuwiki" {
-		return true
-	}
-
-	if ext == ".txt" {
-		content, err := os.ReadFile(filename)
-		if err == nil {
-			s := strings.TrimPrefix(string(content), "\xEF\xBB\xBF") // strip UTF-8 BOM
-			for _, line := range strings.Split(s, "\n") {
-				trimmed := strings.TrimSpace(line)
-				if trimmed == "" {
-					continue
-				}
-				if strings.HasPrefix(trimmed, "======") || strings.HasPrefix(trimmed, "=====") {
-					return true
-				}
-				break
-			}
-		}
-	}
-
-	return false
-}
-
-func (h *DokuwikiHandler) Parse(content []byte) ([]byte, error) {
-	// return as html, also change Render function
-	// parsed := h.ConvertToHTML(string(content))
-	// return []byte(parsed), nil
-	// return as txt, also change Render function
-	content = StripFrontMatter(content)
-	s := string(content)
-	s = strings.ReplaceAll(s, "&", "&amp;")
-	s = strings.ReplaceAll(s, "<", "&lt;")
-	s = strings.ReplaceAll(s, ">", "&gt;")
-	return []byte(s), nil
-}
-
-func (h *DokuwikiHandler) Render(content []byte, filePath string) ([]byte, error) {
-	// return as html, based on Parse function
-	// return content, nil
-
-	// return as text, based on Parse function
-	html := "<pre>" + string(content) + "</pre>"
-	return []byte(html), nil
-}
-
-func (h *DokuwikiHandler) ExtractLinks(content []byte) []string {
-	return nil
-	// return h.extractDokuWikiLinks(string(content))
-}
-
-func (h *DokuwikiHandler) Name() string {
-	return "dokuwiki"
+func New() *Converter {
+	return &Converter{}
 }
 
 // ConvertToMarkdown converts DokuWiki syntax to Markdown using unified processing
-func (h *DokuwikiHandler) ConvertToMarkdown(content string) string {
+func (h *Converter) ConvertToMarkdown(content string) string {
 	content, escapes := h.extractEscapes(content)
 	content, rawBlocks := h.extractRawCodeBlocks(content)
 	content = h.stripLeadingSpaces(content)
@@ -85,7 +25,7 @@ func (h *DokuwikiHandler) ConvertToMarkdown(content string) string {
 }
 
 // ConvertToHTML converts DokuWiki syntax to HTML using unified processing
-func (h *DokuwikiHandler) ConvertToHTML(content string) string {
+func (h *Converter) ConvertToHTML(content string) string {
 	content, escapes := h.extractEscapes(content)
 	content, rawBlocks := h.extractRawCodeBlocks(content)
 	content = h.stripLeadingSpaces(content)
@@ -99,7 +39,7 @@ func (h *DokuwikiHandler) ConvertToHTML(content string) string {
 
 // extractRawCodeBlocks replaces raw <code>/<file>/<sxh>/<codify> tags with placeholders
 // so their indented content is not touched by stripLeadingSpaces.
-func (h *DokuwikiHandler) extractRawCodeBlocks(content string) (string, []string) {
+func (h *Converter) extractRawCodeBlocks(content string) (string, []string) {
 	var blocks []string
 	re := regexp.MustCompile(`(?s)<(?:code|file|sxh|codify)(?:\s[^>]*)?>.*?</(?:code|file|sxh|codify)>`)
 	result := re.ReplaceAllStringFunc(content, func(match string) string {
@@ -111,7 +51,7 @@ func (h *DokuwikiHandler) extractRawCodeBlocks(content string) (string, []string
 }
 
 // restoreRawCodeBlocks replaces placeholders back with the original tag content.
-func (h *DokuwikiHandler) restoreRawCodeBlocks(content string, blocks []string) string {
+func (h *Converter) restoreRawCodeBlocks(content string, blocks []string) string {
 	for i, block := range blocks {
 		content = strings.ReplaceAll(content, fmt.Sprintf("\x00RAW%d\x00", i), block)
 	}
@@ -120,7 +60,7 @@ func (h *DokuwikiHandler) restoreRawCodeBlocks(content string, blocks []string) 
 
 // stripLeadingSpaces removes leading whitespace from lines, but preserves
 // DokuWiki list indentation (lines starting with 2+ spaces followed by * or -).
-func (h *DokuwikiHandler) stripLeadingSpaces(content string) string {
+func (h *Converter) stripLeadingSpaces(content string) string {
 	listLineRe := regexp.MustCompile(`^( {2,})(\*|-) `)
 	lines := strings.Split(content, "\n")
 	for i, line := range lines {
@@ -133,7 +73,7 @@ func (h *DokuwikiHandler) stripLeadingSpaces(content string) string {
 }
 
 // extractEscapes replaces %%...%% spans with unique placeholders before any other processing
-func (h *DokuwikiHandler) extractEscapes(content string) (string, []string) {
+func (h *Converter) extractEscapes(content string) (string, []string) {
 	var escapes []string
 	result := regexp.MustCompile(`%%(.*?)%%`).ReplaceAllStringFunc(content, func(match string) string {
 		inner := match[2 : len(match)-2]
@@ -145,7 +85,7 @@ func (h *DokuwikiHandler) extractEscapes(content string) (string, []string) {
 }
 
 // restoreEscapes replaces placeholders back with their inner content as inline code
-func (h *DokuwikiHandler) restoreEscapes(content string, escapes []string, outputFormat string) string {
+func (h *Converter) restoreEscapes(content string, escapes []string, outputFormat string) string {
 	for i, inner := range escapes {
 		var restored string
 		if outputFormat == "html" {
@@ -163,7 +103,7 @@ func (h *DokuwikiHandler) restoreEscapes(content string, escapes []string, outpu
 
 // extractCodeBlocks replaces fenced code blocks and HTML pre/code blocks with placeholders
 // to protect their content from further processing (e.g. catlist replacement)
-func (h *DokuwikiHandler) extractCodeBlocks(content string) (string, []string) {
+func (h *Converter) extractCodeBlocks(content string) (string, []string) {
 	var blocks []string
 	re := regexp.MustCompile("(?s)```[^\n]*\n.*?```|<pre><code>.*?</code></pre>")
 	result := re.ReplaceAllStringFunc(content, func(match string) string {
@@ -175,7 +115,7 @@ func (h *DokuwikiHandler) extractCodeBlocks(content string) (string, []string) {
 }
 
 // restoreCodeBlocks replaces code block placeholders back with their original content
-func (h *DokuwikiHandler) restoreCodeBlocks(content string, blocks []string) string {
+func (h *Converter) restoreCodeBlocks(content string, blocks []string) string {
 	for i, block := range blocks {
 		content = strings.ReplaceAll(content, fmt.Sprintf("\x00CODE%d\x00", i), block)
 	}
@@ -183,7 +123,7 @@ func (h *DokuwikiHandler) restoreCodeBlocks(content string, blocks []string) str
 }
 
 // extractURLs replaces URLs (http/https) with placeholders to protect them from text formatting
-func (h *DokuwikiHandler) extractURLs(content string) (string, []string) {
+func (h *Converter) extractURLs(content string) (string, []string) {
 	var urls []string
 	result := regexp.MustCompile(`https?://[^\s)\]"<]+`).ReplaceAllStringFunc(content, func(match string) string {
 		placeholder := fmt.Sprintf("\x00URL%d\x00", len(urls))
@@ -194,14 +134,14 @@ func (h *DokuwikiHandler) extractURLs(content string) (string, []string) {
 }
 
 // restoreURLs replaces URL placeholders back with the original URLs
-func (h *DokuwikiHandler) restoreURLs(content string, urls []string) string {
+func (h *Converter) restoreURLs(content string, urls []string) string {
 	for i, url := range urls {
 		content = strings.ReplaceAll(content, fmt.Sprintf("\x00URL%d\x00", i), url)
 	}
 	return content
 }
 
-func (h *DokuwikiHandler) handleComplexStructures(content string) string {
+func (h *Converter) handleComplexStructures(content string) string {
 	// Remove tablelayout plugin syntax
 	content = regexp.MustCompile(`\{\{[^}]*tablelayout[^}]*\}\}`).ReplaceAllString(content, "")
 
@@ -228,7 +168,7 @@ type DokuWikiElement struct {
 }
 
 // renderElement renders a DokuWiki element in the specified format
-func (h *DokuwikiHandler) renderElement(element DokuWikiElement, outputFormat string) string {
+func (h *Converter) renderElement(element DokuWikiElement, outputFormat string) string {
 	if outputFormat == "markdown" {
 		return h.renderAsMarkdown(element)
 	}
@@ -236,7 +176,7 @@ func (h *DokuwikiHandler) renderElement(element DokuWikiElement, outputFormat st
 }
 
 // renderAsHTML renders DokuWiki elements as HTML
-func (h *DokuwikiHandler) renderAsHTML(element DokuWikiElement) string {
+func (h *Converter) renderAsHTML(element DokuWikiElement) string {
 	switch element.Type {
 	case "header":
 		return fmt.Sprintf("<h%d>%s</h%d>", element.Level, element.Content, element.Level)
@@ -267,7 +207,7 @@ func (h *DokuwikiHandler) renderAsHTML(element DokuWikiElement) string {
 }
 
 // renderAsMarkdown renders DokuWiki elements as Markdown
-func (h *DokuwikiHandler) renderAsMarkdown(element DokuWikiElement) string {
+func (h *Converter) renderAsMarkdown(element DokuWikiElement) string {
 	switch element.Type {
 	case "header":
 		prefix := strings.Repeat("#", element.Level)
