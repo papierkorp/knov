@@ -7,7 +7,6 @@
 
 **per ai**
 - dokuwiki to markdown parser: indents in codeblocks (dokuwiki exmaple)
-- add a logs rotating
 - /releasenotes route with new icon on the bottom of the rail theme
 - Dashboard
   - Add dashboard export/import

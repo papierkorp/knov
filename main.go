@@ -49,6 +49,7 @@ func main() {
 	testdata.SetTestFiles(testFilesFS)
 
 	configmanager.InitAppConfig()
+	logging.Init()
 	translation.Init()
 
 	// initialize content storage (creates data/docs and data/media directories)
