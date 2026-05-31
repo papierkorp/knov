@@ -12,6 +12,9 @@
   - Add dashboard export/import
   - remove positions from builtin and rail theme
   - add up/down buttons to builtin/rail theme widgets
+- move the markdow parser to goldmark (commonmark compliant)
+- fix: Ordered list sub-items still broken — - vorgehen should be   - vorgehen under 1. per externen passwort manager
+
 # performance updates
 
 **read**

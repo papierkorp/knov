@@ -145,9 +145,6 @@ func (h *Converter) handleComplexStructures(content string) string {
 	// Remove tablelayout plugin syntax
 	content = regexp.MustCompile(`\{\{[^}]*tablelayout[^}]*\}\}`).ReplaceAllString(content, "")
 
-	// Handle folded sections (++ title | content ++)
-	content = h.convertFoldedSections(content)
-
 	return content
 }
 

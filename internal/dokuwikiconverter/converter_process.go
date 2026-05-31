@@ -30,7 +30,13 @@ func (h *Converter) processDokuWikiSyntax(content string, outputFormat string) s
 	content = h.processCodeBlocks(content, outputFormat)
 	content, codeBlocks := h.extractCodeBlocks(content)
 
-	// 4. Replace catlist (after code blocks are extracted so codeblocks are protected)
+	// 4b. Folded sections (++ title | content ++) — must run after processCodeBlocks so
+	// fence markers (```lang) are already in place when indentation is calculated
+	if outputFormat == "markdown" {
+		content = h.convertFoldedSections(content)
+	}
+
+	// 4c. Replace catlist (after code blocks are extracted so codeblocks are protected)
 	content = h.replaceCatlistTags(content, outputFormat)
 
 	// 6. Headers
@@ -542,32 +548,20 @@ func (h *Converter) convertFoldedSections(content string) string {
 
 				innerContent := strings.TrimSpace(strings.Join(foldedContent, "\n"))
 				if innerContent != "" {
-					// indent non-code-block lines so they stay nested in the list;
-					// code block content (raw dokuwiki tags or markdown fences) must not be
-					// indented or the converter/markdown parser will break them
-					childIndent := foldedIndent + "  "
+					// indent non-fence lines so they stay nested in the list;
+					// fence markers (```lang / ```) get childIndent, content inside stays untouched.
+					// foldedIndent is raw DokuWiki whitespace (2 spaces per level); markdown renders
+					// level N as (N-1)*2 spaces, so child content sits at N*2 spaces.
+					childIndent := strings.Repeat("  ", len(foldedIndent)/2)
 					indentedLines := strings.Split(innerContent, "\n")
-					inCodeBlock := false
+					inFence := false
 					for j, l := range indentedLines {
 						trimmed := strings.TrimSpace(l)
-						// detect opening/closing of code blocks (raw dokuwiki tags or markdown fences)
-						isCodeOpen := !inCodeBlock && (strings.HasPrefix(trimmed, "<sxh") ||
-							strings.HasPrefix(trimmed, "<code") ||
-							strings.HasPrefix(trimmed, "<file") ||
-							strings.HasPrefix(trimmed, "```"))
-						isCodeClose := inCodeBlock && (trimmed == "</sxh>" ||
-							trimmed == "</code>" ||
-							trimmed == "</file>" ||
-							trimmed == "```")
-						if isCodeOpen {
-							inCodeBlock = true
+						if strings.HasPrefix(trimmed, "```") {
+							inFence = !inFence
 							indentedLines[j] = childIndent + trimmed
-						} else if isCodeClose {
-							inCodeBlock = false
-							indentedLines[j] = childIndent + trimmed
-						} else if inCodeBlock {
-							// inside a code block: leave content untouched
-							indentedLines[j] = l
+						} else if inFence {
+							indentedLines[j] = l // fence content: leave untouched
 						} else if l != "" {
 							indentedLines[j] = childIndent + l
 						}
