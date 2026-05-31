@@ -372,23 +372,17 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// determine filetype from path or default to todo
-	filetype := files.EditorTypeTodo
-	if strings.Contains(strings.ToLower(filePath), "journal") {
-		filetype = files.EditorTypeList
-	}
-
 	// create/update metadata
 	metadata := &files.Metadata{
 		Path:   filepath.Join("docs", filePath),
-		Editor: filetype,
+		Editor: files.EditorTypeTodo,
 	}
 
 	if err := files.MetaDataSave(metadata); err != nil {
 		logging.LogError("failed to save metadata for list file %s: %v", filePath, err)
 		// don't fail the whole request, just log the error
 	} else {
-		logging.LogInfo("saved metadata for list file: %s (filetype: %s)", filePath, filetype)
+		logging.LogInfo("saved metadata for list file: %s (filetype: %s)", filePath, files.EditorTypeTodo)
 	}
 
 	// update links for this file

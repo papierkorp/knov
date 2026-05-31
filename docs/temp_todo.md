@@ -12,13 +12,6 @@
   - Add dashboard export/import
   - remove positions from builtin and rail theme
   - add up/down buttons to builtin/rail theme widgets
-- i want to get rid of the dokuwiki file support (i want to keep the dokuwiki to markdown export) but i dont want to display dokuwiki files any longer and remove everything regarding this
-- remove:
-	// determine filetype from path or default to todo
-	filetype := files.EditorTypeTodo
-	if strings.Contains(strings.ToLower(filePath), "journal") {
-		filetype = files.EditorTypeList
-	}
 # performance updates
 
 **read**
