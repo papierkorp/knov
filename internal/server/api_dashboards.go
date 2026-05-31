@@ -14,6 +14,8 @@ import (
 	"knov/internal/logging"
 	"knov/internal/server/render"
 	"knov/internal/translation"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // @Summary Get all dashboards
@@ -468,5 +470,81 @@ func handleAPIRenameDashboard(w http.ResponseWriter, r *http.Request) {
 
 	data := "dashboard renamed"
 	html := render.RenderDashboardRenamed()
+	writeResponse(w, r, data, html)
+}
+
+// @Summary Export dashboard as JSON
+// @Description Export a dashboard definition as a downloadable JSON file
+// @Tags dashboards
+// @Param id path string true "Dashboard ID"
+// @Produce application/json
+// @Success 200 {object} dashboard.Dashboard
+// @Failure 404 {string} string "dashboard not found"
+// @Router /api/dashboards/{id}/export [get]
+func handleAPIExportDashboard(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	dash, err := dashboard.Get(id)
+	if err != nil {
+		logging.LogError("failed to get dashboard %s: %v", id, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard not found"), http.StatusNotFound)
+		return
+	}
+
+	data, err := json.MarshalIndent(dash, "", "  ")
+	if err != nil {
+		logging.LogError("failed to marshal dashboard %s: %v", id, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "export failed"), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s.json"`, id))
+	w.Write(data)
+}
+
+// @Summary Import dashboard from JSON
+// @Description Import a dashboard from an uploaded JSON file
+// @Tags dashboards
+// @Accept multipart/form-data
+// @Param file formData file true "Dashboard JSON file"
+// @Produce json,html
+// @Success 200 {string} string "dashboard imported"
+// @Failure 400 {string} string "invalid file"
+// @Router /api/dashboards/import [post]
+func handleAPIImportDashboard(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(1 << 20); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file"), http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	var dash dashboard.Dashboard
+	if err := json.NewDecoder(file).Decode(&dash); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid dashboard json"), http.StatusBadRequest)
+		return
+	}
+
+	// override name if provided
+	if name := r.FormValue("name"); name != "" {
+		dash.Name = name
+	}
+	// reset id so Create derives a fresh one from the (possibly new) name
+	dash.ID = ""
+	if err := dashboard.Create(&dash); err != nil {
+		logging.LogError("failed to import dashboard: %v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	logging.LogInfo("imported dashboard: %s", dash.ID)
+	data := translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard imported")
+	html := render.RenderDashboardCreated(dash.ID)
 	writeResponse(w, r, data, html)
 }

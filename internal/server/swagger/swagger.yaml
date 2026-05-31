@@ -1299,6 +1299,29 @@ paths:
       summary: Update dashboard
       tags:
       - dashboards
+  /api/dashboards/{id}/export:
+    get:
+      description: Export a dashboard definition as a downloadable JSON file
+      parameters:
+      - description: Dashboard ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dashboard.Dashboard'
+        "404":
+          description: dashboard not found
+          schema:
+            type: string
+      summary: Export dashboard as JSON
+      tags:
+      - dashboards
   /api/dashboards/{id}/rename:
     post:
       consumes:
@@ -1341,6 +1364,32 @@ paths:
           schema:
             type: string
       summary: Get dashboard form
+      tags:
+      - dashboards
+  /api/dashboards/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Import a dashboard from an uploaded JSON file
+      parameters:
+      - description: Dashboard JSON file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: dashboard imported
+          schema:
+            type: string
+        "400":
+          description: invalid file
+          schema:
+            type: string
+      summary: Import dashboard from JSON
       tags:
       - dashboards
   /api/dashboards/widget-config:

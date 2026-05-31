@@ -7,11 +7,8 @@
 
 **per ai**
 - /releasenotes route with new icon on the bottom of the rail theme
-- Dashboard
-  - Add dashboard export/import
-  - remove positions from builtin and rail theme
-  - add up/down buttons to builtin/rail theme widgets
 - markdown converter: `</datatables>`
+
 
 # performance updates
 

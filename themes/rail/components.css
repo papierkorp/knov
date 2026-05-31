@@ -2881,9 +2881,93 @@ dl.media-info dd {
   font-size: 0.85em;
 }
 
-/* loose-list <p> suppression — CommonMark wraps loose list items in <p>;
-   collapse margin so lists render compactly */
+/* loose-list <p> suppression */
 #view-fileview-rail .file-content li > p,
 #view-fileview-reader .file-content li > p {
   margin: 0;
+}
+
+/* export / import sections in dashboard form */
+#page-dashboard-new .dashboard-export-section,
+#page-dashboard-edit .dashboard-export-section,
+#page-dashboard-new .dashboard-import-section,
+#page-dashboard-edit .dashboard-import-section {
+  margin-top: 16px;
+  background: var(--bg);
+  padding: 20px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+#page-dashboard-new .dashboard-export-section h4,
+#page-dashboard-edit .dashboard-export-section h4,
+#page-dashboard-new .dashboard-import-section h4,
+#page-dashboard-edit .dashboard-import-section h4 {
+  margin: 0 0 12px 0;
+  color: var(--text);
+  font-size: 1.1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+#page-dashboard-new .import-form,
+#page-dashboard-edit .import-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* widget header actions (up/down/remove) */
+#page-dashboard-new .widget-header,
+#page-dashboard-edit .widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#page-dashboard-new .widget-header-actions,
+#page-dashboard-edit .widget-header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+#page-dashboard-new .btn-widget-move,
+#page-dashboard-edit .btn-widget-move {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.8em;
+  padding: 2px 6px;
+  line-height: 1;
+}
+
+#page-dashboard-new .btn-widget-move:hover,
+#page-dashboard-edit .btn-widget-move:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* dashboard actions row (export + delete) */
+#page-dashboard-new .dashboard-export-actions,
+#page-dashboard-edit .dashboard-export-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#page-dashboard-new .dashboard-export-actions .btn-secondary,
+#page-dashboard-edit .dashboard-export-actions .btn-secondary,
+#page-dashboard-new .dashboard-export-actions .btn-danger,
+#page-dashboard-edit .dashboard-export-actions .btn-danger {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  border: none;
 }

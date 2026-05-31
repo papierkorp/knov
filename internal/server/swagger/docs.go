@@ -1360,6 +1360,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/dashboards/import": {
+            "post": {
+                "description": "Import a dashboard from an uploaded JSON file",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Import dashboard from JSON",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Dashboard JSON file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "dashboard imported",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid file",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/dashboards/widget-config": {
             "get": {
                 "description": "Get configuration form for specific widget type",
@@ -1637,6 +1676,41 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/dashboard.Dashboard"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboards/{id}/export": {
+            "get": {
+                "description": "Export a dashboard definition as a downloadable JSON file",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dashboards"
+                ],
+                "summary": "Export dashboard as JSON",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dashboard ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dashboard.Dashboard"
+                        }
+                    },
+                    "404": {
+                        "description": "dashboard not found",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }

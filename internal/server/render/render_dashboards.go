@@ -139,8 +139,77 @@ func RenderDashboardForm(dash *dashboard.Dashboard, isEdit bool) string {
 		submitText = translation.SprintfForRequest(configmanager.GetLanguage(), "save changes")
 	}
 	html.WriteString(fmt.Sprintf(`<button type="submit" class="btn-primary"><span>%s</span></button>`, submitText))
+	if isEdit {
+		html.WriteString(fmt.Sprintf(`<a href="/dashboard/%s" class="btn-secondary">%s</a>`, dash.ID, translation.SprintfForRequest(configmanager.GetLanguage(), "cancel")))
+	} else {
+		html.WriteString(fmt.Sprintf(`<a href="/" class="btn-secondary">%s</a>`, translation.SprintfForRequest(configmanager.GetLanguage(), "cancel")))
+	}
 	html.WriteString(`</div>`)
 	html.WriteString(`</form>`)
+
+	// export + delete (edit mode only)
+	if isEdit {
+		html.WriteString(fmt.Sprintf(
+			`<div class="form-section dashboard-export-section">`+
+				`<h4>%s</h4>`+
+				`<div class="dashboard-export-actions">`+
+				`<a href="/api/dashboards/%s/export" class="btn-secondary">%s</a>`+
+				`<button type="button" class="btn-danger"`+
+				` hx-delete="/api/dashboards/%s"`+
+				` hx-confirm="%s"`+
+				` hx-target="#dashboard-result"`+
+				` hx-swap="innerHTML"`+
+				`>%s</button>`+
+				`</div>`+
+				`</div>`,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard actions"),
+			dash.ID,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "export"),
+			dash.ID,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "are you sure you want to delete this dashboard?"),
+			translation.SprintfForRequest(configmanager.GetLanguage(), "delete dashboard"),
+		))
+	}
+
+	// import form (always visible)
+	html.WriteString(fmt.Sprintf(
+		`<div class="form-section dashboard-import-section">`+
+			`<h4>%s</h4>`+
+			`<form hx-post="/api/dashboards/import" hx-target="#import-result" hx-encoding="multipart/form-data" class="import-form">`+
+			`<input type="text" name="name" placeholder="%s" class="form-input" />`+
+			`<input type="file" name="file" accept=".json" required />`+
+			`<button type="submit" class="btn-secondary">%s</button>`+
+			`</form>`+
+			`<div id="import-result"></div>`+
+			`</div>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "import dashboard"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "new name (optional)"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "import"),
+	))
+
+	// JS: swap widget DOM nodes and renumber field names
+	html.WriteString(`<script>
+function moveWidget(btn, dir) {
+	const el = btn.closest('.widget-form');
+	const container = el.parentElement;
+	const siblings = Array.from(container.querySelectorAll(':scope > .widget-form'));
+	const idx = siblings.indexOf(el);
+	const target = siblings[idx + dir];
+	if (!target) return;
+	if (dir === -1) container.insertBefore(el, target);
+	else container.insertBefore(target, el);
+	// renumber all widgets[N] field names to match new order
+	Array.from(container.querySelectorAll(':scope > .widget-form')).forEach((w, i) => {
+		w.dataset.widgetIndex = i;
+		w.querySelectorAll('[name]').forEach(f => {
+			f.name = f.name.replace(/widgets\[\d+\]/, 'widgets[' + i + ']');
+		});
+		w.querySelectorAll('[id]').forEach(f => {
+			f.id = f.id.replace(/(-\d+)$/, '-' + i);
+		});
+	});
+}
+</script>`)
 
 	return html.String()
 }
@@ -151,7 +220,11 @@ func RenderWidgetForm(index int, widget *dashboard.Widget) string {
 	html.WriteString(fmt.Sprintf(`<div class="widget-form" data-widget-index="%d">`, index))
 	html.WriteString(`<div class="widget-header">`)
 	html.WriteString(fmt.Sprintf(`<h5>%s</h5>`, translation.SprintfForRequest(configmanager.GetLanguage(), "widget")))
-	html.WriteString(`<button type="button" onclick="this.parentElement.parentElement.remove()" class="btn-remove-widget">x</button>`)
+	html.WriteString(`<div class="widget-header-actions">`)
+	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveWidget(this,-1)" class="btn-widget-move" title="%s">↑</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "move up")))
+	html.WriteString(fmt.Sprintf(`<button type="button" onclick="moveWidget(this,1)" class="btn-widget-move" title="%s">↓</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "move down")))
+	html.WriteString(fmt.Sprintf(`<button type="button" onclick="this.closest('.widget-form').remove()" class="btn-remove-widget" title="%s">✕</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "remove widget")))
+	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
 
 	// widget type selector
@@ -186,27 +259,6 @@ func RenderWidgetForm(index int, widget *dashboard.Widget) string {
 	html.WriteString(fmt.Sprintf(`<input type="text" name="widgets[%d][title]" value="%s" placeholder="%s" class="form-input"/>`, index, titleValue, translation.SprintfForRequest(configmanager.GetLanguage(), "optional title")))
 	html.WriteString(`</div>`)
 
-	// widget position
-	html.WriteString(`<div class="form-row">`)
-	html.WriteString(`<div class="form-group">`)
-	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "position x")))
-	xValue := "0"
-	if widget != nil {
-		xValue = fmt.Sprintf("%d", widget.Position.X)
-	}
-	html.WriteString(fmt.Sprintf(`<input type="number" name="widgets[%d][position][x]" value="%s" min="0" class="form-input"/>`, index, xValue))
-	html.WriteString(`</div>`)
-
-	html.WriteString(`<div class="form-group">`)
-	html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "position y")))
-	yValue := "0"
-	if widget != nil {
-		yValue = fmt.Sprintf("%d", widget.Position.Y)
-	}
-	html.WriteString(fmt.Sprintf(`<input type="number" name="widgets[%d][position][y]" value="%s" min="0" class="form-input"/>`, index, yValue))
-	html.WriteString(`</div>`)
-	html.WriteString(`</div>`)
-
 	// widget config container
 	html.WriteString(fmt.Sprintf(`<div id="widget-config-%d" class="widget-config-container">`, index))
 	if widget != nil {
@@ -230,13 +282,22 @@ func RenderWidgetConfig(index int, widgetType string, config *dashboard.WidgetCo
 		html.WriteString(`<div class="config-form">`)
 		html.WriteString(fmt.Sprintf(`<h5>%s</h5>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file content configuration")))
 		html.WriteString(`<div class="config-row">`)
-		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file")))
+		html.WriteString(fmt.Sprintf(`<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file path")))
+		filePathValue := ""
+		if config != nil && config.FileContent != nil {
+			filePathValue = config.FileContent.FilePath
+		}
 		selectID := fmt.Sprintf("file-selector-%d", index)
-		html.WriteString(fmt.Sprintf(`<select name="widgets[%d][config][filePath]" id="%s" class="form-select" hx-get="/api/files/list?format=options" hx-target="#%s" hx-trigger="load" hx-swap="innerHTML">`, index, selectID, selectID))
-		html.WriteString(fmt.Sprintf(`<option value="">%s</option>`, translation.SprintfForRequest(configmanager.GetLanguage(), "loading files...")))
-		html.WriteString(`</select>`)
+		html.WriteString(fmt.Sprintf(
+			`<input type="text" name="widgets[%d][config][filePath]" id="%s" value="%s" placeholder="docs/my-file.md" class="form-input" list="file-suggestions-%d" />`,
+			index, selectID, filePathValue, index,
+		))
+		html.WriteString(fmt.Sprintf(
+			`<datalist id="file-suggestions-%d" hx-get="/api/files/list?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></datalist>`,
+			index,
+		))
 		html.WriteString(`</div>`)
-		html.WriteString(fmt.Sprintf(`<p class="config-note">%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "select the file you want to display")))
+		html.WriteString(fmt.Sprintf(`<p class="config-note">%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "enter the path to the file you want to display")))
 		html.WriteString(`</div>`)
 
 	case "static":

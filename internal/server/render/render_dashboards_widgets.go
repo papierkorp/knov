@@ -61,7 +61,7 @@ func renderFileContentWidget(config *dashboard.FileContentConfig) (string, error
 		return "", err
 	}
 
-	return string(content.HTML), nil
+	return fmt.Sprintf(`<div id="view-fileview-detailed"><article class="file-content">%s</article></div>`, content.HTML), nil
 }
 
 func renderStaticWidget(config *dashboard.StaticConfig) (string, error) {
