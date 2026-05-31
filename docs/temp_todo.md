@@ -6,9 +6,23 @@
 - create filter manually not per ai..
 
 **per ai**
-- /releasenotes route with new icon on the bottom of the rail theme
-- markdown converter: `</datatables>`
 
+
+**maybe**
+- /releasenotes route with new icon on the bottom of the rail theme
+
+
+
+
+# kanban
+
+/kanban route
+use tags as key:value pairs?
+stati:
+- inbox/backlog
+- in progress
+- archive
+- blocked
 
 # performance updates
 
@@ -43,13 +57,3 @@ Single pass over files with a worker pool, doing metadata + link extraction per 
 My recommendation: D. The real bottleneck is the per-file I/O in the rebuild (reading file content for link/title extraction). Parallelizing that with a bounded worker pool (e.g. runtime.NumCPU() workers) gives the biggest win. The purge passes are already fast (just map lookups) so combining them into one pass is enough there — no need to parallelize.
 The main thing to watch out for: metadataStorage writes need a mutex or you need to collect results and write sequentially after the workers finish.
 Want to go with D?
-
-# kanban
-
-/kanban route
-use tags as key:value pairs?
-stati:
-- inbox/backlog
-- in progress
-- archive
-- blocked

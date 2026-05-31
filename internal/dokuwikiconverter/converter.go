@@ -145,6 +145,9 @@ func (h *Converter) handleComplexStructures(content string) string {
 	// Remove tablelayout plugin syntax
 	content = regexp.MustCompile(`\{\{[^}]*tablelayout[^}]*\}\}`).ReplaceAllString(content, "")
 
+	// Remove datatables plugin tags (keep inner content — the table itself is handled separately)
+	content = regexp.MustCompile(`(?s)<datatables[^>]*>(.*?)</datatables>`).ReplaceAllString(content, "$1")
+
 	return content
 }
 
