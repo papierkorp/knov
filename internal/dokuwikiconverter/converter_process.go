@@ -112,7 +112,7 @@ func (h *Converter) processMediaLinks(content string, outputFormat string) strin
 			altText = filepath.Base(mediaPath)
 		}
 
-		mediaURL := fmt.Sprintf("/files/media/%s", mediaPath)
+		mediaURL := fmt.Sprintf("/media/%s", mediaPath)
 
 		// PDFs render as links, everything else as images
 		if strings.ToLower(filepath.Ext(mediaPath)) == ".pdf" {
@@ -277,11 +277,17 @@ func (h *Converter) processLinks(content string, outputFormat string) string {
 
 				// for internal links, create web path
 				if url != "" { // not just an anchor
-					if !strings.HasSuffix(url, ".md") {
-						url += ".md"
+					ext := strings.ToLower(filepath.Ext(url))
+					// links pointing at binary/media files go to /media/, not /files/docs/
+					isMediaFile := ext != "" && ext != ".md" && ext != ".txt"
+					if isMediaFile {
+						convertedURL = fmt.Sprintf("/media/%s%s", url, anchor)
+					} else {
+						if !strings.HasSuffix(url, ".md") {
+							url += ".md"
+						}
+						convertedURL = fmt.Sprintf("/files/docs/%s%s", url, anchor)
 					}
-					// use /files/docs/ prefix consistently
-					convertedURL = fmt.Sprintf("/files/docs/%s%s", url, anchor)
 				} else {
 					// just an anchor link
 					convertedURL = anchor

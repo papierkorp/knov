@@ -572,6 +572,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/config/file-types/hide-archives": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide archive files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide archive files",
+                        "name": "hideArchives",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/file-types/hide-executables": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide executable files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide executable files",
+                        "name": "hideExecutables",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/config/file-types/hide-filter": {
             "post": {
                 "consumes": [
@@ -697,6 +747,31 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/config/file-types/hide-office-documents": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide office document files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide office document files",
+                        "name": "hideOfficeDocuments",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/config/file-types/hide-pdf": {
             "post": {
                 "consumes": [
@@ -715,6 +790,31 @@ const docTemplate = `{
                         "type": "boolean",
                         "description": "Whether to hide pdf files",
                         "name": "hidePDF",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/file-types/hide-scripts": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update hide script files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to hide script files",
+                        "name": "hideScripts",
                         "in": "formData",
                         "required": true
                     }

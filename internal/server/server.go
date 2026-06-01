@@ -220,6 +220,10 @@ func StartServerChi() {
 			r.Post("/file-types/hide-image", handleAPIUpdateHideImage)
 			r.Post("/file-types/hide-video", handleAPIUpdateHideVideo)
 			r.Post("/file-types/hide-pdf", handleAPIUpdateHidePDF)
+			r.Post("/file-types/hide-office-documents", handleAPIUpdateHideOfficeDocuments)
+			r.Post("/file-types/hide-archives", handleAPIUpdateHideArchives)
+			r.Post("/file-types/hide-executables", handleAPIUpdateHideExecutables)
+			r.Post("/file-types/hide-scripts", handleAPIUpdateHideScripts)
 		})
 
 		// ----------------------------------------------------------------------------------------

@@ -694,6 +694,40 @@ paths:
       summary: Upload custom favicon
       tags:
       - config
+  /api/config/file-types/hide-archives:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide archive files
+        in: formData
+        name: hideArchives
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide archive files setting
+      tags:
+      - config
+  /api/config/file-types/hide-executables:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide executable files
+        in: formData
+        name: hideExecutables
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide executable files setting
+      tags:
+      - config
   /api/config/file-types/hide-filter:
     post:
       consumes:
@@ -779,6 +813,23 @@ paths:
       summary: Update hide markdown files setting
       tags:
       - config
+  /api/config/file-types/hide-office-documents:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide office document files
+        in: formData
+        name: hideOfficeDocuments
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide office document files setting
+      tags:
+      - config
   /api/config/file-types/hide-pdf:
     post:
       consumes:
@@ -794,6 +845,23 @@ paths:
       - text/html
       responses: {}
       summary: Update hide pdf files setting
+      tags:
+      - config
+  /api/config/file-types/hide-scripts:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to hide script files
+        in: formData
+        name: hideScripts
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update hide script files setting
       tags:
       - config
   /api/config/file-types/hide-text:

@@ -46,6 +46,10 @@ type AppConfig struct {
 	HideImage               bool
 	HideVideo               bool
 	HidePDF                 bool
+	HideOfficeDocuments     bool
+	HideArchives            bool
+	HideExecutables         bool
+	HideScripts             bool
 	ShowHiddenFiles         bool
 	UseExtensionTodo        bool
 	UseExtensionList        bool
@@ -96,6 +100,10 @@ func InitAppConfig() {
 		HideImage:               getBoolEnv("KNOV_HIDE_IMAGE", false),
 		HideVideo:               getBoolEnv("KNOV_HIDE_VIDEO", false),
 		HidePDF:                 getBoolEnv("KNOV_HIDE_PDF", false),
+		HideOfficeDocuments:     getBoolEnv("KNOV_HIDE_OFFICE_DOCUMENTS", false),
+		HideArchives:            getBoolEnv("KNOV_HIDE_ARCHIVES", false),
+		HideExecutables:         getBoolEnv("KNOV_HIDE_EXECUTABLES", false),
+		HideScripts:             getBoolEnv("KNOV_HIDE_SCRIPTS", false),
 		ShowHiddenFiles:         getBoolEnv("KNOV_SHOW_HIDDEN_FILES", false),
 		UseExtensionTodo:        getBoolEnv("KNOV_USE_EXTENSION_TODO", false),
 		UseExtensionList:        getBoolEnv("KNOV_USE_EXTENSION_LIST", false),
@@ -199,12 +207,6 @@ func IsFileTypeHidden(editorType string) bool {
 		return appConfig.HideFilter
 	case "index-editor":
 		return appConfig.HideIndex
-	case "image":
-		return appConfig.HideImage
-	case "video":
-		return appConfig.HideVideo
-	case "pdf":
-		return appConfig.HidePDF
 	default:
 		return false
 	}
@@ -309,6 +311,14 @@ func applyEnvToAppConfig(key, value string) {
 		appConfig.HideVideo = b
 	case "KNOV_HIDE_PDF":
 		appConfig.HidePDF = b
+	case "KNOV_HIDE_OFFICE_DOCUMENTS":
+		appConfig.HideOfficeDocuments = b
+	case "KNOV_HIDE_ARCHIVES":
+		appConfig.HideArchives = b
+	case "KNOV_HIDE_EXECUTABLES":
+		appConfig.HideExecutables = b
+	case "KNOV_HIDE_SCRIPTS":
+		appConfig.HideScripts = b
 	case "KNOV_SHOW_HIDDEN_FILES":
 		appConfig.ShowHiddenFiles = b
 	case "KNOV_USE_EXTENSION_TODO":

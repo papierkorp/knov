@@ -868,3 +868,91 @@ func handleAPIDeleteFavicon(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusOK,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "custom favicon removed")))
 }
+
+// @Summary Update hide office document files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideOfficeDocuments formData bool true "Whether to hide office document files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-office-documents [post]
+func handleAPIUpdateHideOfficeDocuments(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+	hide := r.FormValue("hideOfficeDocuments") == "true"
+	if err := configmanager.UpdateEnvFile("KNOV_HIDE_OFFICE_DOCUMENTS", fmt.Sprintf("%t", hide)); err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+	logging.LogInfo("updated hide office documents to: %t", hide)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "office document visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide archive files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideArchives formData bool true "Whether to hide archive files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-archives [post]
+func handleAPIUpdateHideArchives(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+	hide := r.FormValue("hideArchives") == "true"
+	if err := configmanager.UpdateEnvFile("KNOV_HIDE_ARCHIVES", fmt.Sprintf("%t", hide)); err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+	logging.LogInfo("updated hide archives to: %t", hide)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "archive visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide executable files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideExecutables formData bool true "Whether to hide executable files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-executables [post]
+func handleAPIUpdateHideExecutables(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+	hide := r.FormValue("hideExecutables") == "true"
+	if err := configmanager.UpdateEnvFile("KNOV_HIDE_EXECUTABLES", fmt.Sprintf("%t", hide)); err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+	logging.LogInfo("updated hide executables to: %t", hide)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "executable visibility updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update hide script files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param hideScripts formData bool true "Whether to hide script files"
+// @Produce json,html
+// @Router /api/config/file-types/hide-scripts [post]
+func handleAPIUpdateHideScripts(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+	hide := r.FormValue("hideScripts") == "true"
+	if err := configmanager.UpdateEnvFile("KNOV_HIDE_SCRIPTS", fmt.Sprintf("%t", hide)); err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+	logging.LogInfo("updated hide scripts to: %t", hide)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "script visibility updated"))
+	writeResponse(w, r, "saved", html)
+}

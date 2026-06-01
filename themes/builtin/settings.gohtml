@@ -396,13 +396,7 @@
         <div class="setting-item">
             <form hx-post="/api/config/file-types/hide-image" hx-trigger="change">
                 <label class="checkbox-label">
-                    <input
-                        type="checkbox"
-                        name="hideImage"
-                        value="true"
-                        {{ if .AppConfig.HideImage }}checked{{ end }}
-                        class="form-checkbox"
-                    />
+                    <input type="checkbox" name="hideImage" value="true" {{ if .AppConfig.HideImage }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
                     {{T "Hide Image Files"}}
                     <small>{{T "Hide files marked as image type"}}</small>
@@ -413,13 +407,7 @@
         <div class="setting-item">
             <form hx-post="/api/config/file-types/hide-video" hx-trigger="change">
                 <label class="checkbox-label">
-                    <input
-                        type="checkbox"
-                        name="hideVideo"
-                        value="true"
-                        {{ if .AppConfig.HideVideo }}checked{{ end }}
-                        class="form-checkbox"
-                    />
+                    <input type="checkbox" name="hideVideo" value="true" {{ if .AppConfig.HideVideo }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
                     {{T "Hide Video Files"}}
                     <small>{{T "Hide files marked as video type"}}</small>
@@ -430,13 +418,7 @@
         <div class="setting-item">
             <form hx-post="/api/config/file-types/hide-pdf" hx-trigger="change">
                 <label class="checkbox-label">
-                    <input
-                        type="checkbox"
-                        name="hidePDF"
-                        value="true"
-                        {{ if .AppConfig.HidePDF }}checked{{ end }}
-                        class="form-checkbox"
-                    />
+                    <input type="checkbox" name="hidePDF" value="true" {{ if .AppConfig.HidePDF }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
                     {{T "Hide PDF Files"}}
                     <small>{{T "Hide files marked as PDF type"}}</small>
@@ -445,18 +427,45 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-text" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-office-documents" hx-trigger="change">
                 <label class="checkbox-label">
-                    <input
-                        type="checkbox"
-                        name="hideText"
-                        value="true"
-                        {{ if .AppConfig.HideText }}checked{{ end }}
-                        class="form-checkbox"
-                    />
+                    <input type="checkbox" name="hideOfficeDocuments" value="true" {{ if .AppConfig.HideOfficeDocuments }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
-                    {{T "Hide Text Files"}}
-                    <small>{{T "Hide files marked as text type"}}</small>
+                    {{T "Hide Office Documents"}}
+                    <small>{{T "Hide .docx, .xlsx, .pptx, .ods and similar files"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/file-types/hide-archives" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="hideArchives" value="true" {{ if .AppConfig.HideArchives }}checked{{ end }} class="form-checkbox" />
+                    <span class="checkmark"></span>
+                    {{T "Hide Archives"}}
+                    <small>{{T "Hide .zip, .rar, .7z and similar files"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/file-types/hide-executables" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="hideExecutables" value="true" {{ if .AppConfig.HideExecutables }}checked{{ end }} class="form-checkbox" />
+                    <span class="checkmark"></span>
+                    {{T "Hide Executables"}}
+                    <small>{{T "Hide .exe, .jar, .pfx and similar files"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/file-types/hide-scripts" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="hideScripts" value="true" {{ if .AppConfig.HideScripts }}checked{{ end }} class="form-checkbox" />
+                    <span class="checkmark"></span>
+                    {{T "Hide Scripts"}}
+                    <small>{{T "Hide .sh, .bat and similar files"}}</small>
                 </label>
             </form>
         </div>

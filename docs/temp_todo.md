@@ -8,11 +8,11 @@
 **per ai**
 - backup solution
 - show a dashboard in /home => only one dashboard possible (via env?)
-- 
-
+- remove get GetAllVirtualFiles and let the filter generate a list file with all found links which is saved as a physical file
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme
+  - use git for patchnotes?
 
 # kanban
 

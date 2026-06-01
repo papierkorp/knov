@@ -122,8 +122,18 @@
       "translation": ""
     },
     {
+      "id": "archive visibility updated",
+      "message": "archive visibility updated",
+      "translation": ""
+    },
+    {
       "id": "Are you sure?",
       "message": "Are you sure?",
+      "translation": ""
+    },
+    {
+      "id": "are you sure you want to delete this dashboard?",
+      "message": "are you sure you want to delete this dashboard?",
       "translation": ""
     },
     {
@@ -244,6 +254,11 @@
     {
       "id": "children",
       "message": "children",
+      "translation": ""
+    },
+    {
+      "id": "choose file",
+      "message": "choose file",
       "translation": ""
     },
     {
@@ -382,6 +397,11 @@
       "translation": ""
     },
     {
+      "id": "current custom favicon",
+      "message": "current custom favicon",
+      "translation": ""
+    },
+    {
       "id": "current file does not exist",
       "message": "current file does not exist",
       "translation": ""
@@ -392,8 +412,18 @@
       "translation": ""
     },
     {
+      "id": "custom favicon removed",
+      "message": "custom favicon removed",
+      "translation": ""
+    },
+    {
       "id": "Dashboard",
       "message": "Dashboard",
+      "translation": ""
+    },
+    {
+      "id": "dashboard actions",
+      "message": "dashboard actions",
       "translation": ""
     },
     {
@@ -414,6 +444,11 @@
     {
       "id": "dashboardId is required",
       "message": "dashboardId is required",
+      "translation": ""
+    },
+    {
+      "id": "dashboard imported",
+      "message": "dashboard imported",
       "translation": ""
     },
     {
@@ -504,6 +539,11 @@
     {
       "id": "deleted",
       "message": "deleted",
+      "translation": ""
+    },
+    {
+      "id": "delete dashboard",
+      "message": "delete dashboard",
       "translation": ""
     },
     {
@@ -672,6 +712,11 @@
       "translation": ""
     },
     {
+      "id": "enter the path to the file you want to display",
+      "message": "enter the path to the file you want to display",
+      "translation": ""
+    },
+    {
       "id": "enter title",
       "message": "enter title",
       "translation": ""
@@ -697,8 +742,18 @@
       "translation": ""
     },
     {
+      "id": "executable visibility updated",
+      "message": "executable visibility updated",
+      "translation": ""
+    },
+    {
       "id": "Expected Files",
       "message": "Expected Files",
+      "translation": ""
+    },
+    {
+      "id": "export",
+      "message": "export",
       "translation": ""
     },
     {
@@ -709,6 +764,11 @@
     {
       "id": "Export All Files (DokuWiki to Markdown)",
       "message": "Export All Files (DokuWiki to Markdown)",
+      "translation": ""
+    },
+    {
+      "id": "export failed",
+      "message": "export failed",
       "translation": ""
     },
     {
@@ -779,6 +839,11 @@
     {
       "id": "failed to generate metadata form",
       "message": "failed to generate metadata form",
+      "translation": ""
+    },
+    {
+      "id": "failed to get ancestors",
+      "message": "failed to get ancestors",
       "translation": ""
     },
     {
@@ -952,6 +1017,11 @@
       "translation": ""
     },
     {
+      "id": "failed to remove favicon",
+      "message": "failed to remove favicon",
+      "translation": ""
+    },
+    {
       "id": "failed to rename file",
       "message": "failed to rename file",
       "translation": ""
@@ -1014,6 +1084,11 @@
     {
       "id": "failed to save todo",
       "message": "failed to save todo",
+      "translation": ""
+    },
+    {
+      "id": "favicon uploaded",
+      "message": "favicon uploaded",
       "translation": ""
     },
     {
@@ -1272,6 +1347,26 @@
       "translation": "Hilfe"
     },
     {
+      "id": "Hide Archives",
+      "message": "Hide Archives",
+      "translation": ""
+    },
+    {
+      "id": "Hide .docx, .xlsx, .pptx, .ods and similar files",
+      "message": "Hide .docx, .xlsx, .pptx, .ods and similar files",
+      "translation": ""
+    },
+    {
+      "id": "Hide Executables",
+      "message": "Hide Executables",
+      "translation": ""
+    },
+    {
+      "id": "Hide .exe, .jar, .pfx and similar files",
+      "message": "Hide .exe, .jar, .pfx and similar files",
+      "translation": ""
+    },
+    {
       "id": "Hide files marked as image type",
       "message": "Hide files marked as image type",
       "translation": ""
@@ -1347,8 +1442,23 @@
       "translation": ""
     },
     {
+      "id": "Hide Office Documents",
+      "message": "Hide Office Documents",
+      "translation": ""
+    },
+    {
       "id": "Hide PDF Files",
       "message": "Hide PDF Files",
+      "translation": ""
+    },
+    {
+      "id": "Hide Scripts",
+      "message": "Hide Scripts",
+      "translation": ""
+    },
+    {
+      "id": "Hide .sh, .bat and similar files",
+      "message": "Hide .sh, .bat and similar files",
       "translation": ""
     },
     {
@@ -1364,6 +1474,11 @@
     {
       "id": "Hide Video Files",
       "message": "Hide Video Files",
+      "translation": ""
+    },
+    {
+      "id": "Hide .zip, .rar, .7z and similar files",
+      "message": "Hide .zip, .rar, .7z and similar files",
       "translation": ""
     },
     {
@@ -1414,6 +1529,16 @@
     {
       "id": "image visibility updated",
       "message": "image visibility updated",
+      "translation": ""
+    },
+    {
+      "id": "import",
+      "message": "import",
+      "translation": ""
+    },
+    {
+      "id": "import dashboard",
+      "message": "import dashboard",
       "translation": ""
     },
     {
@@ -1474,6 +1599,11 @@
     {
       "id": "invalid border style",
       "message": "invalid border style",
+      "translation": ""
+    },
+    {
+      "id": "invalid dashboard json",
+      "message": "invalid dashboard json",
       "translation": ""
     },
     {
@@ -1637,11 +1767,6 @@
       "translation": ""
     },
     {
-      "id": "loading files...",
-      "message": "loading files...",
-      "translation": ""
-    },
-    {
       "id": "Loading files...",
       "message": "Loading files...",
       "translation": ""
@@ -1742,16 +1867,6 @@
       "translation": ""
     },
     {
-      "id": "markdown conversion only supported for dokuwiki files",
-      "message": "markdown conversion only supported for dokuwiki files",
-      "translation": ""
-    },
-    {
-      "id": "markdown export only supported for dokuwiki files",
-      "message": "markdown export only supported for dokuwiki files",
-      "translation": ""
-    },
-    {
       "id": "markdown visibility updated",
       "message": "markdown visibility updated",
       "translation": ""
@@ -1837,6 +1952,11 @@
       "translation": ""
     },
     {
+      "id": "missing collection parameter",
+      "message": "missing collection parameter",
+      "translation": ""
+    },
+    {
       "id": "missing commit parameter",
       "message": "missing commit parameter",
       "translation": ""
@@ -1849,6 +1969,11 @@
     {
       "id": "missing display mode",
       "message": "missing display mode",
+      "translation": ""
+    },
+    {
+      "id": "missing file",
+      "message": "missing file",
       "translation": ""
     },
     {
@@ -1922,8 +2047,18 @@
       "translation": ""
     },
     {
+      "id": "move down",
+      "message": "move down",
+      "translation": ""
+    },
+    {
       "id": "moved to",
       "message": "moved to",
+      "translation": ""
+    },
+    {
+      "id": "move up",
+      "message": "move up",
       "translation": ""
     },
     {
@@ -1957,8 +2092,23 @@
       "translation": ""
     },
     {
+      "id": "new name (optional)",
+      "message": "new name (optional)",
+      "translation": ""
+    },
+    {
+      "id": "new path is required",
+      "message": "new path is required",
+      "translation": ""
+    },
+    {
       "id": "no ancestors",
       "message": "no ancestors",
+      "translation": ""
+    },
+    {
+      "id": "no ancestors found",
+      "message": "no ancestors found",
       "translation": ""
     },
     {
@@ -1974,6 +2124,11 @@
     {
       "id": "no configuration needed",
       "message": "no configuration needed",
+      "translation": ""
+    },
+    {
+      "id": "no custom favicon set",
+      "message": "no custom favicon set",
       "translation": ""
     },
     {
@@ -2102,8 +2257,18 @@
       "translation": ""
     },
     {
+      "id": "office document visibility updated",
+      "message": "office document visibility updated",
+      "translation": ""
+    },
+    {
       "id": "OK",
       "message": "OK",
+      "translation": ""
+    },
+    {
+      "id": "only .ico, .png and .svg files are allowed",
+      "message": "only .ico, .png and .svg files are allowed",
       "translation": ""
     },
     {
@@ -2207,16 +2372,6 @@
       "translation": "Spielwiese"
     },
     {
-      "id": "position x",
-      "message": "position x",
-      "translation": ""
-    },
-    {
-      "id": "position y",
-      "message": "position y",
-      "translation": ""
-    },
-    {
       "id": "preview results",
       "message": "preview results",
       "translation": ""
@@ -2294,6 +2449,16 @@
     {
       "id": "remove",
       "message": "remove",
+      "translation": ""
+    },
+    {
+      "id": "remove custom favicon and revert to default?",
+      "message": "remove custom favicon and revert to default?",
+      "translation": ""
+    },
+    {
+      "id": "remove widget",
+      "message": "remove widget",
       "translation": ""
     },
     {
@@ -2397,6 +2562,11 @@
       "translation": ""
     },
     {
+      "id": "script visibility updated",
+      "message": "script visibility updated",
+      "translation": ""
+    },
+    {
       "id": "search",
       "message": "search",
       "translation": ""
@@ -2484,11 +2654,6 @@
     {
       "id": "Select Language",
       "message": "Select Language",
-      "translation": ""
-    },
-    {
-      "id": "select the file you want to display",
-      "message": "select the file you want to display",
       "translation": ""
     },
     {
@@ -2817,11 +2982,6 @@
       "translation": ""
     },
     {
-      "id": "unsupported file type",
-      "message": "unsupported file type",
-      "translation": ""
-    },
-    {
       "id": "unused",
       "message": "unused",
       "translation": ""
@@ -2834,6 +2994,16 @@
     {
       "id": "upload",
       "message": "upload",
+      "translation": ""
+    },
+    {
+      "id": "upload a custom favicon (.ico, .png or .svg, max 2 MB)",
+      "message": "upload a custom favicon (.ico, .png or .svg, max 2 MB)",
+      "translation": ""
+    },
+    {
+      "id": "upload favicon",
+      "message": "upload favicon",
       "translation": ""
     },
     {

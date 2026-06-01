@@ -282,29 +282,40 @@ func GetTableShowPaging() bool {
 	return userSettings.TableSettings.ShowPaging
 }
 
-// EditorTypeFromMime maps a mime type string to the editor/file-type identifier
-// used by IsFileTypeHidden and Metadata.Editor.
-// Returns "" for types that have no specific mapping (text-based docs etc).
-func EditorTypeFromMime(mimeType string) string {
+// IsHiddenByMime returns true if files with the given mime type should
+// be hidden based on the current AppConfig settings.
+// Image/video/audio/pdf use mime prefix matching (reliable on all platforms).
+func IsHiddenByMime(mimeType string) bool {
 	switch {
 	case strings.HasPrefix(mimeType, "image/"):
-		return "image"
+		return appConfig.HideImage
 	case strings.HasPrefix(mimeType, "video/"):
-		return "video"
-	case strings.HasPrefix(mimeType, "audio/"):
-		return "audio"
+		return appConfig.HideVideo
 	case mimeType == "application/pdf":
-		return "pdf"
+		return appConfig.HidePDF
 	}
-	return ""
+	return false
 }
 
-// IsFileTypeHiddenByMime returns true if files with the given mime type should
-// be hidden, based on the current AppConfig hide-file-type settings.
-func IsFileTypeHiddenByMime(mimeType string) bool {
-	editorType := EditorTypeFromMime(mimeType)
-	if editorType == "" {
-		return false
+// IsHiddenByExt returns true if files with the given extension should
+// be hidden based on the current AppConfig settings.
+// Used for binary types whose mime types are unreliable on Linux.
+func IsHiddenByExt(ext string) bool {
+	switch ext {
+	// office documents
+	case ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+		".ods", ".odt", ".odp", ".odg", ".odc":
+		return appConfig.HideOfficeDocuments
+	// archives
+	case ".zip", ".rar", ".7z", ".gz", ".tar", ".bz2", ".xz", ".tgz":
+		return appConfig.HideArchives
+	// executables and binary blobs
+	case ".exe", ".jar", ".pfx", ".db", ".jd2backup",
+		".ts3_plugin", ".ppk", ".chm", ".ini":
+		return appConfig.HideExecutables
+	// scripts
+	case ".sh", ".bat", ".cmd", ".ps1", ".py", ".rb", ".pl":
+		return appConfig.HideScripts
 	}
-	return IsFileTypeHidden(editorType)
+	return false
 }

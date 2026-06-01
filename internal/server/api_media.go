@@ -121,6 +121,9 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// apply hide-type settings (image, video, pdf, office, archives, etc.)
+	mediaFiles = files.FilterByVisibility(mediaFiles)
+
 	// get orphaned media from cache
 	orphanedMedia, err := files.GetOrphanedMediaFromCache()
 	if err != nil {
@@ -130,6 +133,18 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 
 	// filter media files based on filter parameter
 	filteredMedia := files.FilterMediaFiles(mediaFiles, orphanedMedia, filter)
+
+	// count orphaned only among the visible (hide-filtered) files
+	visiblePaths := make(map[string]struct{}, len(mediaFiles))
+	for _, f := range mediaFiles {
+		visiblePaths[f.Path] = struct{}{}
+	}
+	visibleOrphanedCount := 0
+	for _, o := range orphanedMedia {
+		if _, ok := visiblePaths[o]; ok {
+			visibleOrphanedCount++
+		}
+	}
 
 	// determine response format
 	acceptHeader := r.Header.Get("Accept")
@@ -144,7 +159,7 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/html")
 			w.Write([]byte(html))
 		default:
-			html := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), len(orphanedMedia))
+			html := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), visibleOrphanedCount)
 			w.Header().Set("Content-Type", "text/html")
 			w.Write([]byte(html))
 		}

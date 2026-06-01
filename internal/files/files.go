@@ -89,6 +89,10 @@ func GetAllVirtualFiles() ([]File, error) {
 
 	var result []File
 	for key, data := range all {
+		// media files are never virtual docs — skip them entirely
+		if strings.HasPrefix(key, "media/") {
+			continue
+		}
 		if _, ok := existing[key]; ok {
 			continue
 		}
@@ -171,10 +175,9 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	}, nil
 }
 
-// FilterFilesByHiddenTypes filters out files based on hidden file type configuration.
-// When metadata is present it checks the Editor field; otherwise it falls back
-// to the file extension so files without metadata are also filtered correctly.
-func FilterFilesByHiddenTypes(files []File) []File {
+// FilterByVisibility returns only files that should be visible based on the current hide settings.
+// Checks mime type, extension, and editor type in that order.
+func FilterByVisibility(files []File) []File {
 	var filtered []File
 	for _, file := range files {
 		if !isHiddenByType(file) {
@@ -191,8 +194,13 @@ func isHiddenByType(file File) bool {
 	ext := strings.ToLower(filepath.Ext(file.Path))
 	mime := configmanager.MimeTypeByExtension(ext)
 
-	// binary file types: check by mime regardless of what editor metadata says
-	if configmanager.IsFileTypeHiddenByMime(mime) {
+	// check by mime (image, video, pdf — reliable on all platforms)
+	if configmanager.IsHiddenByMime(mime) {
+		return true
+	}
+
+	// check by extension (office, archives, executables, scripts — mime unreliable on Linux)
+	if configmanager.IsHiddenByExt(ext) {
 		return true
 	}
 
