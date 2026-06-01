@@ -3,7 +3,6 @@
 **manual**
 - add a smoketest todo file to testfiles
 - add tags, parent and references to testfiles
-- create filter manually not per ai..
 - update thememanager docs for both devs (how to create a new theme) and for user (how to use overwrite)
 
 **per ai**
@@ -33,6 +32,52 @@ every kanban tag in a collection becomes a card in the kanban board
 moving a card between columns = change the kanban_prefix tag
 
 
+# filter
+
+- create filter manually not per ai..
+
+in my application i need tests for my filter with this specs:
+
+- each field at least once:
+  - title
+  - collection
+  - tags
+  - editor
+  - createdAt
+  - lastEdited
+  - folders
+  - child of
+  - parent of
+  - ancestor of
+  - references
+- at least 2 tests with both and/or
+- at least 2 tests with both include/exclude
+- each operator at least once:
+  - equals
+  - contains
+  - regex
+  - greater than
+  - less than
+  - in array
+- at least 5 testIDs with multiple filter (see table example)
+
+give me a table which covers all of the testcases - testcases can overlap so there is no need to make too much just enough to catch all cases from above
+
+| testID |    field    |   operator   |  action |                notes (which requirement this covers)                 |
+|--------|-------------|--------------|---------|----------------------------------------------------------------------|
+| TC01   | title       | equals       | include | title field, equals operator, include action                         |
+| TC02   | collection  | contains     | exclude | collection field, contains operator, exclude action                  |
+| TC03   | tags        | regex        | include | tags field, regex operator                                           |
+| TC04   | editor      | greater_than | exclude | editor field, greater_than operator                                  |
+| TC05   | createdAt   | less_than    | include | createdAt field, less_than operator                                  |
+| TC06   | lastEdited  | in_array     | exclude | lastEdited field, in_array operator                                  |
+| TC07   | folders     | equals       | include | folders field                                                        |
+| TC08   | child_of    | contains     | exclude | child_of field                                                       |
+| TC09   | parent_of   | regex        | include | parent_of field                                                      |
+| TC10   | ancestor_of | greater_than | exclude | ancestor_of field                                                    |
+| TC11   | references  | less_than    | include | references field                                                     |
+| TC12   | title       | contains     | include | **AND/OR test #1** (combined with TC01 via OR in same filter group)  |
+| TC13   | tags        | in_array     | exclude | **AND/OR test #2** (combined with TC03 via AND in same filter group) |
 
 # performance updates
 
