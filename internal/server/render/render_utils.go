@@ -175,7 +175,7 @@ func RenderFileContent(filez []files.File) string {
 				}
 				html.WriteString(`</nav>`)
 			}
-			html.WriteString(fmt.Sprintf(`<div class="filter-content-body">%s</div>`, injected))
+			html.WriteString(fmt.Sprintf(`<div class="filter-content-body file-content">%s</div>`, injected))
 		}
 
 		html.WriteString(`</div>`)

@@ -1,6 +1,6 @@
 /* theme: builtin */
 /* detailed view with sidebar */
-#view-fileview-detailed .fileview-layout {
+.fileview-layout {
   display: grid;
   grid-template-columns: 1fr 300px;
   gap: 30px;
@@ -8,7 +8,7 @@
   margin: 0 auto;
 }
 
-#view-fileview-detailed .file-content {
+.file-content {
   min-width: 0;
   overflow: hidden; /* contains floated elements */
   contain: layout; /* ensure floated media elements don't break layout */
@@ -16,7 +16,7 @@
 
 /* responsive layout */
 @media (max-width: 1024px) {
-  #view-fileview-detailed .fileview-layout {
+  .fileview-layout {
     grid-template-columns: 1fr;
     gap: 20px;
   }
@@ -78,7 +78,7 @@
 }
 
 /* file content headers styling - detailed view */
-#view-fileview-detailed .file-content h1 {
+.file-content h1 {
   font-size: 1.5em;
   font-style: italic;
   letter-spacing: 5px;
@@ -94,7 +94,7 @@
   clear: both;
 }
 
-#view-fileview-detailed .file-content h2 {
+.file-content h2 {
   font-size: 1.25em;
   letter-spacing: 5px;
   border-bottom: 1px solid var(--primary);
@@ -109,7 +109,7 @@
   clear: both;
 }
 
-#view-fileview-detailed .file-content h3 {
+.file-content h3 {
   font-size: 1.12em;
   border-bottom: 1px dotted var(--text-secondary);
   margin-top: 2em;
@@ -123,7 +123,7 @@
   clear: both;
 }
 
-#view-fileview-detailed .file-content h4 {
+.file-content h4 {
   font-size: 1.12em;
   border-bottom: 1px dotted var(--text-secondary);
   margin-top: 2em;
@@ -137,7 +137,7 @@
   clear: both;
 }
 
-#view-fileview-detailed .file-content h5 {
+.file-content h5 {
   font-size: 1.12em;
   border-bottom: 1px dotted var(--text-secondary);
   margin-top: 2em;
@@ -151,7 +151,7 @@
   clear: both;
 }
 
-#view-fileview-detailed .file-content h6 {
+.file-content h6 {
   font-size: 1.12em;
   border-bottom: 1px dotted var(--text-secondary);
   margin-top: 2em;
@@ -165,12 +165,12 @@
   clear: both;
 }
 
-#view-fileview-detailed .file-content h1:first-child {
+.file-content h1:first-child {
   margin-top: 0em;
 }
 
 /* compact view headers */
-#view-fileview-compact .file-content h1 {
+.file-content h1 {
   font-size: 1.5em;
   font-style: italic;
   letter-spacing: 5px;
@@ -186,11 +186,11 @@
   clear: both;
 }
 
-#view-fileview-compact .file-content h1:first-child {
+.file-content h1:first-child {
   margin-top: 0em;
 }
 
-#view-fileview-compact .file-content h2 {
+.file-content h2 {
   font-size: 1.25em;
   letter-spacing: 5px;
   border-bottom: 1px solid var(--primary);
@@ -205,10 +205,10 @@
   clear: both;
 }
 
-#view-fileview-compact .file-content h3,
-#view-fileview-compact .file-content h4,
-#view-fileview-compact .file-content h5,
-#view-fileview-compact .file-content h6 {
+.file-content h3,
+.file-content h4,
+.file-content h5,
+.file-content h6 {
   font-size: 1.12em;
   border-bottom: 1px dotted var(--text-secondary);
   margin-top: 2em;
@@ -223,7 +223,7 @@
 }
 
 /* reader view headers */
-#view-fileview-reader .file-content h1 {
+.file-content h1 {
   font-size: 1.5em;
   font-style: italic;
   letter-spacing: 5px;
@@ -239,11 +239,11 @@
   clear: both;
 }
 
-#view-fileview-reader .file-content h1:first-child {
+.file-content h1:first-child {
   margin-top: 0em;
 }
 
-#view-fileview-reader .file-content h2 {
+.file-content h2 {
   font-size: 1.25em;
   letter-spacing: 5px;
   border-bottom: 1px solid var(--primary);
@@ -258,10 +258,10 @@
   clear: both;
 }
 
-#view-fileview-reader .file-content h3,
-#view-fileview-reader .file-content h4,
-#view-fileview-reader .file-content h5,
-#view-fileview-reader .file-content h6 {
+.file-content h3,
+.file-content h4,
+.file-content h5,
+.file-content h6 {
   font-size: 1.12em;
   border-bottom: 1px dotted var(--text-secondary);
   margin-top: 2em;
@@ -366,9 +366,9 @@
 }
 
 /* header edit buttons and anchor links in file content - inline after text */
-#view-fileview-detailed .file-content .header-edit-btn,
-#view-fileview-compact .file-content .header-edit-btn,
-#view-fileview-reader .file-content .header-edit-btn {
+.file-content .header-edit-btn,
+.file-content .header-edit-btn,
+.file-content .header-edit-btn {
   opacity: 0;
   color: var(--text-secondary);
   text-decoration: none;
@@ -382,9 +382,9 @@
   border: 1px solid transparent;
 }
 
-#view-fileview-detailed .file-content .header-anchor,
-#view-fileview-compact .file-content .header-anchor,
-#view-fileview-reader .file-content .header-anchor {
+.file-content .header-anchor,
+.file-content .header-anchor,
+.file-content .header-anchor {
   opacity: 0;
   color: var(--text-secondary);
   text-decoration: none;
@@ -399,61 +399,61 @@
 }
 
 /* show buttons on header hover */
-#view-fileview-detailed .file-content h1:hover .header-edit-btn,
-#view-fileview-detailed .file-content h2:hover .header-edit-btn,
-#view-fileview-detailed .file-content h3:hover .header-edit-btn,
-#view-fileview-detailed .file-content h4:hover .header-edit-btn,
-#view-fileview-detailed .file-content h5:hover .header-edit-btn,
-#view-fileview-detailed .file-content h6:hover .header-edit-btn,
-#view-fileview-compact .file-content h1:hover .header-edit-btn,
-#view-fileview-compact .file-content h2:hover .header-edit-btn,
-#view-fileview-compact .file-content h3:hover .header-edit-btn,
-#view-fileview-compact .file-content h4:hover .header-edit-btn,
-#view-fileview-compact .file-content h5:hover .header-edit-btn,
-#view-fileview-compact .file-content h6:hover .header-edit-btn,
-#view-fileview-reader .file-content h1:hover .header-edit-btn,
-#view-fileview-reader .file-content h2:hover .header-edit-btn,
-#view-fileview-reader .file-content h3:hover .header-edit-btn,
-#view-fileview-reader .file-content h4:hover .header-edit-btn,
-#view-fileview-reader .file-content h5:hover .header-edit-btn,
-#view-fileview-reader .file-content h6:hover .header-edit-btn {
+.file-content h1:hover .header-edit-btn,
+.file-content h2:hover .header-edit-btn,
+.file-content h3:hover .header-edit-btn,
+.file-content h4:hover .header-edit-btn,
+.file-content h5:hover .header-edit-btn,
+.file-content h6:hover .header-edit-btn,
+.file-content h1:hover .header-edit-btn,
+.file-content h2:hover .header-edit-btn,
+.file-content h3:hover .header-edit-btn,
+.file-content h4:hover .header-edit-btn,
+.file-content h5:hover .header-edit-btn,
+.file-content h6:hover .header-edit-btn,
+.file-content h1:hover .header-edit-btn,
+.file-content h2:hover .header-edit-btn,
+.file-content h3:hover .header-edit-btn,
+.file-content h4:hover .header-edit-btn,
+.file-content h5:hover .header-edit-btn,
+.file-content h6:hover .header-edit-btn {
   opacity: 1;
 }
 
-#view-fileview-detailed .file-content h1:hover .header-anchor,
-#view-fileview-detailed .file-content h2:hover .header-anchor,
-#view-fileview-detailed .file-content h3:hover .header-anchor,
-#view-fileview-detailed .file-content h4:hover .header-anchor,
-#view-fileview-detailed .file-content h5:hover .header-anchor,
-#view-fileview-detailed .file-content h6:hover .header-anchor,
-#view-fileview-compact .file-content h1:hover .header-anchor,
-#view-fileview-compact .file-content h2:hover .header-anchor,
-#view-fileview-compact .file-content h3:hover .header-anchor,
-#view-fileview-compact .file-content h4:hover .header-anchor,
-#view-fileview-compact .file-content h5:hover .header-anchor,
-#view-fileview-compact .file-content h6:hover .header-anchor,
-#view-fileview-reader .file-content h1:hover .header-anchor,
-#view-fileview-reader .file-content h2:hover .header-anchor,
-#view-fileview-reader .file-content h3:hover .header-anchor,
-#view-fileview-reader .file-content h4:hover .header-anchor,
-#view-fileview-reader .file-content h5:hover .header-anchor,
-#view-fileview-reader .file-content h6:hover .header-anchor {
+.file-content h1:hover .header-anchor,
+.file-content h2:hover .header-anchor,
+.file-content h3:hover .header-anchor,
+.file-content h4:hover .header-anchor,
+.file-content h5:hover .header-anchor,
+.file-content h6:hover .header-anchor,
+.file-content h1:hover .header-anchor,
+.file-content h2:hover .header-anchor,
+.file-content h3:hover .header-anchor,
+.file-content h4:hover .header-anchor,
+.file-content h5:hover .header-anchor,
+.file-content h6:hover .header-anchor,
+.file-content h1:hover .header-anchor,
+.file-content h2:hover .header-anchor,
+.file-content h3:hover .header-anchor,
+.file-content h4:hover .header-anchor,
+.file-content h5:hover .header-anchor,
+.file-content h6:hover .header-anchor {
   opacity: 1;
 }
 
 /* hover effects for individual buttons */
-#view-fileview-detailed .file-content .header-edit-btn:hover,
-#view-fileview-compact .file-content .header-edit-btn:hover,
-#view-fileview-reader .file-content .header-edit-btn:hover {
+.file-content .header-edit-btn:hover,
+.file-content .header-edit-btn:hover,
+.file-content .header-edit-btn:hover {
   color: var(--primary);
   background: var(--bg);
   border-color: var(--border);
   text-decoration: none;
 }
 
-#view-fileview-detailed .file-content .header-anchor:hover,
-#view-fileview-compact .file-content .header-anchor:hover,
-#view-fileview-reader .file-content .header-anchor:hover {
+.file-content .header-anchor:hover,
+.file-content .header-anchor:hover,
+.file-content .header-anchor:hover {
   color: var(--primary);
   background: var(--bg);
   border-color: var(--border);
@@ -461,16 +461,16 @@
 }
 
 /* fallback icons */
-#view-fileview-detailed .file-content .header-edit-btn:not(:has(i))::before,
-#view-fileview-compact .file-content .header-edit-btn:not(:has(i))::before,
-#view-fileview-reader .file-content .header-edit-btn:not(:has(i))::before {
+.file-content .header-edit-btn:not(:has(i))::before,
+.file-content .header-edit-btn:not(:has(i))::before,
+.file-content .header-edit-btn:not(:has(i))::before {
   content: "✎";
   font-size: 1em;
 }
 
-#view-fileview-detailed .file-content .header-anchor:empty::before,
-#view-fileview-compact .file-content .header-anchor:empty::before,
-#view-fileview-reader .file-content .header-anchor:empty::before {
+.file-content .header-anchor:empty::before,
+.file-content .header-anchor:empty::before,
+.file-content .header-anchor:empty::before {
   content: "#";
 }
 
@@ -600,14 +600,14 @@
   vertical-align: baseline;
 }
 
-#view-fileview-detailed blockquote,
+blockquote,
 #view-fileview-compact blockquote,
 #view-fileview-reader blockquote {
   border-left: 10px solid var(--neutral);
   padding: 0.5em 10px;
 }
 
-#view-fileview-detailed blockquote:before,
+blockquote:before,
 #view-fileview-compact blockquote:before,
 #view-fileview-reader blockquote:before {
   color: var(--neutral);
@@ -617,7 +617,7 @@
   margin-right: 0.25em;
   vertical-align: -0.4em;
 }
-#view-fileview-detailed blockquote p,
+blockquote p,
 #view-fileview-compact blockquote p,
 #view-fileview-reader blockquote p {
   display: inline;
@@ -670,8 +670,8 @@
 
 /* loose-list <p> suppression — CommonMark wraps list items separated by blank
    lines in <p> tags; collapse the spacing so lists render compactly */
-#view-fileview-detailed .file-content li > p,
-#view-fileview-compact .file-content li > p,
-#view-fileview-reader .file-content li > p {
+.file-content li > p,
+.file-content li > p,
+.file-content li > p {
   margin: 0;
 }

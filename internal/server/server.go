@@ -515,13 +515,24 @@ func handleWebfontsRedirect(w http.ResponseWriter, r *http.Request) {
 // ----------------------------------------------------------------------------------------
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
+	if id := configmanager.GetAppConfig().HomeDashboard; id != "" {
+		dash, err := dashboard.Get(id)
+		if err != nil {
+			logging.LogWarning("home dashboard %q not found, falling back to home page: %v", id, err)
+		} else {
+			tm := thememanager.GetThemeManager()
+			data := thememanager.NewDashboardTemplateData(dash)
+			if err := tm.Render(w, "dashboardview", data); err != nil {
+				http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+			}
+			return
+		}
+	}
+
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewBaseTemplateData("home")
-
-	err := tm.Render(w, "home", data)
-	if err != nil {
+	if err := tm.Render(w, "home", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-		return
 	}
 }
 

@@ -4,10 +4,10 @@
 - add a smoketest todo file to testfiles
 - add tags, parent and references to testfiles
 - create filter manually not per ai..
+- update thememanager docs for both devs (how to create a new theme) and for user (how to use overwrite)
 
 **per ai**
 - backup solution
-- show a dashboard in /home => only one dashboard possible (via env?)
 - backup git search
 - new theme setting for rail - add icon + link below the home button
 - git lfs possible?

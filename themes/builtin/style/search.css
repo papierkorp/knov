@@ -192,37 +192,37 @@
 }
 
 /* Filter results - content display */
-#component-filter .filter-content-results {
+.filter-content-results {
   display: flex;
   flex-direction: column;
   gap: 30px;
   padding: 20px 0;
 }
 
-#component-filter .filter-content-item {
+.filter-content-item {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 20px;
   background: var(--bg-secondary);
 }
 
-#component-filter .filter-content-item h4 {
+.filter-content-item h4 {
   margin: 0 0 15px 0;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
 }
 
-#component-filter .filter-content-item h4 a {
+.filter-content-item h4 a {
   color: var(--primary);
   text-decoration: none;
   font-weight: bold;
 }
 
-#component-filter .filter-content-item h4 a:hover {
+.filter-content-item h4 a:hover {
   text-decoration: underline;
 }
 
-#component-filter .filter-content-body {
+.filter-content-body {
   line-height: 1.6;
   color: var(--text);
 }
