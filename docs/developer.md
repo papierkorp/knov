@@ -119,6 +119,30 @@ var cssFiles embed.FS
 
 ## Configuration Management
 
+## Filter File - System
+
+**Storage**
+- Filter configs are stored in configStorage (JSON) under the key `filter/<filterID>`
+- The filter ID is a unique path-like string, e.g. `my/notes-filter`
+
+**Paired Index File**
+- Every filter has a paired physical index file in `data/docs/`
+- Path: `<filterID>` + extension from `KNOV_USE_EXTENSION_INDEX` (`.index` or `.md`)
+- Example: filter `my/notes-filter` → `data/docs/my/notes-filter.index`
+- Content: a markdown link list of all files matching the filter at last run, e.g. `- [path](path)`
+- Metadata is saved with `Editor: filter-editor` so the filter editor opens when viewing the file
+
+**Lifecycle**
+- Save filter → config written to configStorage + index file generated immediately
+- Delete filter → index file deleted + its metadata deleted + config removed from configStorage
+- Cronjob → regenerates all filter index files on every file job interval (keeps results fresh)
+
+**Viewing & Editing**
+- Navigate to `/files/<filterID>.index` to view/edit the filter
+- The filter editor opens (not the index editor) because metadata marks the file as `filter-editor`
+- The index file content is always overwritten on save/cronjob — manual edits are lost
+
+
 # dbmigration
 
 Tiny version-based schema migrations for sqlite. No external tools, no SQL files — migrations are plain Go functions.

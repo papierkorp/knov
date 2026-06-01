@@ -1,7 +1,6 @@
 package files
 
 import (
-	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -10,7 +9,6 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
-	"knov/internal/metadataStorage"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 )
@@ -54,9 +52,6 @@ func pathsToFiles(paths []string, prefix string) []File {
 
 // ViewURL returns the correct browser URL for viewing this file
 func (f File) ViewURL() string {
-	if f.Metadata != nil && f.Metadata.Editor == EditorTypeFilter {
-		return "/filters/" + pathutils.ToRelative(f.Path)
-	}
 	return "/files/" + pathutils.ToRelative(f.Path)
 }
 
@@ -70,61 +65,9 @@ func GetAllPhysicalFiles() ([]File, error) {
 	return pathsToFiles(paths, ""), nil
 }
 
-// GetAllVirtualFiles returns files that exist only in metadata (e.g. filters stored in configStorage)
-func GetAllVirtualFiles() ([]File, error) {
-	all, err := metadataStorage.GetAll()
-	if err != nil {
-		return nil, err
-	}
-
-	// get physical paths to exclude them
-	physical, err := contentStorage.ListFiles()
-	if err != nil {
-		return nil, err
-	}
-	existing := make(map[string]struct{}, len(physical))
-	for _, p := range physical {
-		existing[pathutils.ToWithPrefix(p)] = struct{}{}
-	}
-
-	var result []File
-	for key, data := range all {
-		// media files are never virtual docs — skip them entirely
-		if strings.HasPrefix(key, "media/") {
-			continue
-		}
-		if _, ok := existing[key]; ok {
-			continue
-		}
-		var m Metadata
-		if err := json.Unmarshal(data, &m); err != nil {
-			continue
-		}
-		if m.Editor == "" {
-			continue
-		}
-		cleanPath := pathutils.ToRelative(key)
-		result = append(result, File{
-			Name:     filepath.Base(cleanPath),
-			Path:     cleanPath,
-			Metadata: &m,
-		})
-	}
-	return result, nil
-}
-
-// GetAllFiles returns all files including virtual entries (e.g. filters)
+// GetAllFiles returns all files from the filesystem (docs only).
 func GetAllFiles() ([]File, error) {
-	physical, err := GetAllPhysicalFiles()
-	if err != nil {
-		return nil, err
-	}
-	virtual, err := GetAllVirtualFiles()
-	if err != nil {
-		logging.LogWarning("failed to get virtual files: %v", err)
-		return physical, nil
-	}
-	return append(physical, virtual...), nil
+	return GetAllPhysicalFiles()
 }
 
 // GetAllMediaFiles returns list of all media files using contentStorage

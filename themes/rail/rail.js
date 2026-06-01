@@ -32,6 +32,7 @@ function switchBrowseMode(mode) {
     dashboards: "/api/dashboards",
     editor: "/api/metadata/editors",
     media: "/api/media/list?mode=compact",
+    filters: "/api/files/browse?metadata=editor&value=filter-editor",
   };
   const url = urls[mode];
   if (!url) return;
@@ -636,6 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
       dashboards: "/api/dashboards",
       editor: "/api/metadata/editors",
       media: "/api/media/list?mode=compact",
+      filters: "/api/files/browse?metadata=editor&value=filter-editor",
     };
     const el = document.getElementById("fp-browse-content");
     if (el && urls[savedMode]) el.dataset.url = urls[savedMode];

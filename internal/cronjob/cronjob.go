@@ -7,6 +7,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/filter"
 	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
@@ -119,6 +120,7 @@ func Run() {
 	runFileJobs()
 	runSearchJob()
 	runMetadataRebuildJob()
+	runFilterIndexJob()
 	logging.LogInfo("manual cronjob execution completed")
 }
 
@@ -283,6 +285,9 @@ func runFileJobs() {
 		logging.LogError("cronjob: failed to save system data to cache: %v", err)
 	}
 
+	// regenerate filter index files for any filters whose results may have changed
+	runFilterIndexJob()
+
 	logging.LogDebug("file cronjobs completed")
 }
 
@@ -295,6 +300,29 @@ func runMetadataRebuildJob() {
 	}
 
 	logging.LogDebug("metadata rebuild cronjob completed")
+}
+
+func runFilterIndexJob() {
+	logging.LogDebug("running filter index cronjob")
+
+	ids, err := filter.GetAllFilters()
+	if err != nil {
+		logging.LogError("cronjob: failed to list filters: %v", err)
+		return
+	}
+
+	for _, id := range ids {
+		config, err := filter.GetFilterConfig(id)
+		if err != nil || config == nil {
+			logging.LogWarning("cronjob: failed to load filter config %s: %v", id, err)
+			continue
+		}
+		if err := filter.GenerateFilterIndex(id, config); err != nil {
+			logging.LogWarning("cronjob: failed to regenerate filter index %s: %v", id, err)
+		}
+	}
+
+	logging.LogDebug("filter index cronjob completed (%d filters)", len(ids))
 }
 
 func runSearchJob() {

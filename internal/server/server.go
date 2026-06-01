@@ -13,11 +13,9 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
 	"knov/internal/files"
-	"knov/internal/filter"
 	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
-	"knov/internal/server/render"
 	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/translation"
@@ -79,10 +77,6 @@ func StartServerChi() {
 	r.Get("/dashboard/{id}", handleDashboardView)
 	r.Get("/dashboard/new", handleDashboardNew)
 	r.Get("/dashboard/edit/{id}", handleDashboardEdit)
-
-	r.Get("/filters/edit/*", handleFilterEdit)
-	r.Get("/filters/new", handleFilterNew)
-	r.Get("/filters/*", handleFilterView)
 
 	r.Get("/browse", handleBrowse)
 	r.Get("/browse/files", handleFileOverview)
@@ -848,60 +842,6 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 		return
-	}
-}
-
-func handleFilterNew(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileNewTemplateData("filter")
-	if err := tm.Render(w, "filenew", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-	}
-}
-
-func handleFilterView(w http.ResponseWriter, r *http.Request) {
-	filterID := strings.TrimPrefix(r.URL.Path, "/filters/")
-
-	config, err := filter.GetFilterConfig(filterID)
-	if err != nil || config == nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "filter not found"), http.StatusNotFound)
-		return
-	}
-
-	if err := filter.ValidateConfig(config); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid filter configuration"), http.StatusInternalServerError)
-		return
-	}
-
-	result, err := filter.FilterFilesWithConfig(config)
-	if err != nil {
-		logging.LogError("failed to execute filter %s: %v", filterID, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to execute filter"), http.StatusInternalServerError)
-		return
-	}
-
-	resultsHTML := render.RenderFilterResult(result, config.Display)
-
-	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(resultsHTML))
-		return
-	}
-
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFilterViewTemplateData(filterID, resultsHTML)
-	if err := tm.Render(w, "filterview", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-	}
-}
-
-func handleFilterEdit(w http.ResponseWriter, r *http.Request) {
-	filterID := strings.TrimPrefix(r.URL.Path, "/filters/edit/")
-
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFilterEditTemplateData(filterID)
-	if err := tm.Render(w, "filteredit", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}
 }
 

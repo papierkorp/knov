@@ -9,10 +9,8 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
-	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/logging"
-	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -137,8 +135,9 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, `<div class="status-ok">%s</div><script>setTimeout(() => window.location.href = '/filters/%s', 1000);</script>`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "filter saved successfully!"), filterID)
+	indexPath := filter.FilterIndexPath(filterID)
+	fmt.Fprintf(w, `<div class="status-ok">%s</div><script>setTimeout(() => window.location.href = '/files/%s', 1000);</script>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "filter saved successfully!"), indexPath)
 }
 
 // @Summary Get filter value input
@@ -228,11 +227,6 @@ func handleAPIFilterDelete(w http.ResponseWriter, r *http.Request) {
 		logging.LogError("failed to delete filter config %s: %v", filterID, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete filter"), http.StatusInternalServerError)
 		return
-	}
-
-	virtualPath := pathutils.ToWithPrefix(filterID)
-	if err := files.MetaDataDelete(virtualPath); err != nil {
-		logging.LogWarning("failed to delete filter metadata %s: %v", virtualPath, err)
 	}
 
 	logging.LogInfo("deleted filter: %s", filterID)
