@@ -356,7 +356,7 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	html.WriteString(RenderMediaPathDisplay(relativePath))
 
 	fmt.Fprintf(&html, `<dt>%s</dt><dd>%s</dd>`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "type"), metadata.Editor)
+		translation.SprintfForRequest(configmanager.GetLanguage(), "type"), configmanager.MimeTypeByExtension(fileExt))
 
 	if metadata.Size > 0 {
 		fmt.Fprintf(&html, `<dt>%s</dt><dd>%s</dd>`,
