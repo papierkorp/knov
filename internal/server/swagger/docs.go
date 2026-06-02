@@ -5251,7 +5251,7 @@ const docTemplate = `{
                     }
                 },
                 "collection": {
-                    "description": "auto / manual possible",
+                    "description": "auto",
                     "type": "string"
                 },
                 "createdAt": {

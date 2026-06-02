@@ -146,7 +146,7 @@ definitions:
           type: string
         type: array
       collection:
-        description: auto / manual possible
+        description: auto
         type: string
       createdAt:
         description: auto

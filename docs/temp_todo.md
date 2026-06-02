@@ -10,8 +10,16 @@
 - backup git search
 - git lfs possible?
 - both themes - dashboard - widget: filter missing style
-- POST http://localhost:1325/api/config/favicon HTTP/1.1" from 127.0.0.1:52240 - 404 19B in 39.299µs
-
+- Link Display Mode in rail theme
+- media file preview (rail theme)
+- add images to connections
+- rail theme: http://localhost:1324/browse/collections/filtertestfolder
+- remove the cache in rail per cronjob (files loaded at least)
+- folder delete function
+- filter test output in rail theme
+- tree in rail theme - collaps folders
+- related in connections - include grandchildren or include grandchildren to children?
+- filterform if possible make it one line (apply + and/or + add filter + display + limit)
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme
@@ -62,7 +70,7 @@ in my application i need tests for my filter with this specs:
   - greater than
   - less than
   - in array
-- at least 5 testIDs with multiple filter (see table example)
+- at least 5 testIDs with multiple filter
 
 give me a table which covers all of the testcases - testcases can overlap so there is no need to make too much just enough to catch all cases from above
 
@@ -81,6 +89,136 @@ give me a table which covers all of the testcases - testcases can overlap so the
 | TC11   | references  | less_than    | include | references field                                                     |
 | TC12   | title       | contains     | include | **AND/OR test #1** (combined with TC01 via OR in same filter group)  |
 | TC13   | tags        | in_array     | exclude | **AND/OR test #2** (combined with TC03 via AND in same filter group) |
+
+**testfiles**
+
+collection: filter-tests
+create date: 1.10.2025 than +1 day for each file
+edit date: 1.11.2025 than +1 day for each file
+
+|              title              |                 tags                |     Parent     |           Notes            |
+|---------------------------------|-------------------------------------|----------------|----------------------------|
+| filtertestfolder/filtertestA.md | filtertest-unique                   |                | created at 1.10.20205      |
+| filtertestfolder/filtertestB.md | filtertest-group                    |                |                            |
+| filtertestC.md                  | filtertest-group, filtertest-group2 |                |                            |
+| filtertestD.md                  | filtertest-group2                   |                | ancestor of filtertestF.md |
+| filtertestE.md                  |                                     | filtertestD.md | parent of filtertestF.md   |
+| filtertestF.md                  |                                     | filtertestF.md | cre                        |
+
+
+**actual tests**
+
+_test1and_
+- collection equals filter-tests include
+- folders equals filtertestfolder include
+(AND logic - both must match)
+=> output: filtertestA.md, filtertestB.md
+
+_test2or_
+- collection equals filter-tests include
+- title contains filtertest include
+- tags equals filtertest-group include
+(OR logic - any can match)
+=> output: filtertestA.md, filtertestB.md, filtertestC.md, filtertestD.md, filtertestE.md, filtertestF.md
+
+_test3and_exclude_
+- collection equals filter-tests include
+- folders equals filtertestfolder include
+- tags equals filtertest-group exclude
+(AND logic with exclude condition)
+=> output: filtertestA.md, filtertestB.md
+
+_test4exclude_single_
+- collection equals filter-tests include
+- title equals filtertestC.md exclude
+(AND logic)
+=> output: filtertestA.md, filtertestB.md, filtertestD.md, filtertestE.md, filtertestF.md
+
+_test5exclude_folder_
+- collection equals filter-tests include
+- folders equals filtertestfolder exclude
+(AND logic)
+=> output: filtertestC.md, filtertestD.md, filtertestE.md, filtertestF.md
+
+_test6regex_
+- collection equals filter-tests include
+- title regex ^filtertest[A-C] include
+(AND logic)
+=> output: filtertestA.md, filtertestB.md, filtertestC.md
+
+_test7greaterthan_
+- collection equals filter-tests include
+- createdAt greater_than 2.10.2025 include
+(AND logic)
+=> output: filtertestB.md, filtertestC.md, filtertestD.md, filtertestE.md, filtertestF.md
+
+_test8lessthan_
+- collection equals filter-tests include
+- lastEdited less_than 5.11.2025 include
+(AND logic)
+=> output: filtertestA.md, filtertestB.md, filtertestC.md, filtertestD.md
+
+_test9inarray_tags_
+- collection equals filter-tests include
+- tags in_array [filtertest-group, filtertest-group2] include
+(AND logic)
+=> output: filtertestB.md, filtertestC.md, filtertestD.md
+
+_test10childof_
+- collection equals filter-tests include
+- child_of equals filtertestD.md include
+(AND logic)
+=> output: filtertestE.md
+
+_test11parentof_
+- collection equals filter-tests include
+- parent_of equals filtertestE.md include
+(AND logic)
+=> output: filtertestD.md
+
+_test12ancestorof_
+- collection equals filter-tests include
+- ancestor_of equals filtertestF.md include
+(AND logic)
+=> output: filtertestD.md
+
+_test13references_
+- collection equals filter-tests include
+- references contains filtertest include
+(AND logic)
+=> output: filtertestF.md
+
+_test14multiple_filters_1_
+- collection equals filter-tests include
+- tags in_array [filtertest-unique] include
+- createdAt greater_than 1.10.2025 include
+(AND logic)
+=> output: filtertestA.md
+
+_test15multiple_filters_2_
+- collection equals filter-tests include
+- title contains D exclude
+- tags contains group2 exclude
+- folders equals filtertestfolder exclude
+(AND logic - all excludes must be true)
+=> output: filtertestE.md, filtertestF.md
+
+_test16multiple_filters_3_
+- collection equals filter-tests include
+- child_of equals filtertestD.md include
+- parent_of equals filtertestE.md include
+- ancestor_of equals filtertestF.md include
+(AND logic)
+=> output: filtertestE.md
+
+_test17or_second_
+- collection equals filter-tests include
+- title equals filtertestA.md include
+- title equals filtertestC.md include
+- title equals filtertestE.md include
+(OR logic - any of these titles)
+=> output: filtertestA.md, filtertestC.md, filtertestE.md
+
 
 # performance updates
 

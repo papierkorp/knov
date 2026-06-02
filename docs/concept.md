@@ -26,28 +26,27 @@ KNOV (knowledge vault) is a flexible knowledge management system.
     - via app with a button
     - via file browser
     - via git push
+  - quickly look through the history with all the changes the file had to endure
 - **Dashboard System**: 
   - Customizable dashboards with a lot of widgets to display your data like you want
 - **Multi-language Support**:
   - currently English and German translations
-- **Organization with Metadata**: each file can get a lot of metadata for searching/filtering (but its not forced) - each method can be used independently and together
-  - **Tags**: fully customizable tags
-  - **PARA**: implemented [PARA](https://fortelabs.com/blog/para/) Method - you can attach each File with its corresponding PARA
-  - **ZK**: Different Filetypes accordingly to the [Zettelkasten](https://zettelkasten.de/overview/) Method
+- **Organization with manually created Metadata**:
+  - **Tags**: fully customizable tags for manual organization
+  - **Parent**: set a file as a parent via selection to create a connection
+- **Organization with automatically created Metadata**:
   - **collection**: organizational field to group related files - defaults to the first folder in filepath or "default" - can be changed manually
   - **connections**
-    - give a file a parent - the sytem automatically creates a connection system with a `Ancestor`, `Parents` and `Childs`
-    - use markdown links in the content and you get `links to - inbound links` and `links from - outbound links`
+    - if a file has an parent - the sytem automatically creates a connection system with a `Ancestor`, `Parents` and `Childs`
+    - use markdown links in the content and you automatically get `links to - inbound links` and `links from - outbound links`
+    - get related files per sqlite
   - **folders**: use a default Folder structure to get the filepath as well as see all folders clickable in the metadata
-  - **filetypes**: every file is saved as a markdown file
-    - MOC filetype:
-    - Filter filetype:
-    - todo filetype:
+
 
 ![image](metadata_example.png)
 
 - **Add References without clustering the content**
-  - Edit - References allows you to add URL References + Description to the metadata
+  - Edit - References allows you to add URL References + Description to the metadata of a certain file
 
 # Configuration
 
@@ -59,21 +58,14 @@ KNOV can be deployed as a single binary with configurable paths:
 - `KNOV_CONFIG_PATH`: Where configuration and user settings are stored
 - `KNOV_SERVER_PORT`: HTTP server port
 
+Take a look at the **.env.example** file for all possible configurations 
+
 # Settings
 
-Settings are stored as .json files in the `KNOV_CONFIG_PATH` for each user individually
+Settings are stored as .json files in the `KNOV_CONFIG_PATH` for each binary individually
 
 # Architecture
 
 - **Backend**: Go with Chi router
 - **Frontend**: HTMX + Go HTML templates
-- **Storage**: JSON-based configuration storage
-
-# PKMS
-
-zk/zettelkasten = stage of development
-para = purpose/context
-p = short term efforts in your work or life that you are working on now
-a = long term responisibilites you want to manage over time
-r = topic or interessets that may be useful in the future
-a = inactive items from the other 3 categories
+- **Storage**: local first storage with options for json files, sqlite or yaml headers in the documents directly

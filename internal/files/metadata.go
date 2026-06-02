@@ -70,7 +70,7 @@ type Metadata struct {
 	Title       string      `json:"title"`                // auto
 	CreatedAt   time.Time   `json:"createdAt"`            // auto
 	LastEdited  time.Time   `json:"lastEdited"`           // auto
-	Collection  string      `json:"collection"`           // auto / manual possible
+	Collection  string      `json:"collection"`           // auto
 	Folders     []string    `json:"folders"`              // auto
 	Tags        []string    `json:"tags"`                 // manual
 	Ancestor    []string    `json:"ancestor"`             // auto
@@ -139,16 +139,10 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	if folderPath != "." && folderPath != "" {
 		parts := strings.Split(folderPath, "/")
 		currentMetadata.Folders = parts
-		if newMetadata.Collection == "" {
-			currentMetadata.Collection = parts[0]
-		} else {
-			currentMetadata.Collection = newMetadata.Collection
-		}
+		currentMetadata.Collection = parts[0] // Always use first folder
 	} else {
 		currentMetadata.Folders = []string{}
-		if newMetadata.Collection != "" {
-			currentMetadata.Collection = newMetadata.Collection
-		}
+		currentMetadata.Collection = "" // Or some default value like "root"
 	}
 
 	// handle optional fields from newMetadata - only update if provided
@@ -187,9 +181,6 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		}
 	}
 
-	if newMetadata.Collection != "" {
-		currentMetadata.Collection = newMetadata.Collection
-	}
 	if !newMetadata.CreatedAt.IsZero() {
 		currentMetadata.CreatedAt = newMetadata.CreatedAt
 	}
