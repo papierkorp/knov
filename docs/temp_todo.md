@@ -10,7 +10,7 @@
 - backup git search
 - git lfs possible?
 - both themes - dashboard - widget: filter missing style
-
+- POST http://localhost:1325/api/config/favicon HTTP/1.1" from 127.0.0.1:52240 - 404 19B in 39.299µs
 
 
 **maybe**
@@ -83,6 +83,8 @@ give me a table which covers all of the testcases - testcases can overlap so the
 | TC13   | tags        | in_array     | exclude | **AND/OR test #2** (combined with TC03 via AND in same filter group) |
 
 # performance updates
+
+detect if a request is already loading and block multiple requests of the same kind
 
 **read**
 - use Query() instead of a loop through files.GetAllFiles()

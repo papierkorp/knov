@@ -204,6 +204,9 @@ func StartServerChi() {
 			r.Post("/table/show-info", handleAPIUpdateTableShowInfo)
 			r.Post("/table/show-paging", handleAPIUpdateTableShowPaging)
 
+			r.Post("/favicon", handleAPIUploadFavicon)
+			r.Delete("/favicon", handleAPIDeleteFavicon)
+
 			// File type visibility endpoints
 			r.Post("/file-types/hide-markdown", handleAPIUpdateHideMarkdown)
 			r.Post("/file-types/hide-text", handleAPIUpdateHideText)
