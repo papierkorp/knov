@@ -17,6 +17,46 @@ function filterMediaList(query) {
 }
 
 // ================================================================
+// media panel — server-side filter switch + hidden warning
+// ================================================================
+function switchMediaFilter(filter, btn) {
+  // update active button
+  document
+    .querySelectorAll(".fp-media-btn")
+    .forEach((b) => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+
+  // clear search input
+  const search = document.getElementById("fp-media-search");
+  if (search) search.value = "";
+
+  const el = document.getElementById("fp-media-content");
+  if (!el) return;
+
+  const url = "/api/media/list?mode=compact&filter=" + filter;
+  fetch(url, { headers: { Accept: "text/html" } })
+    .then((r) => {
+      const hidden = parseInt(r.headers.get("X-Hidden-Count") || "0", 10);
+      updateMediaHiddenWarning(hidden);
+      return r.text();
+    })
+    .then((html) => {
+      el.innerHTML = html;
+    });
+}
+
+function updateMediaHiddenWarning(hiddenCount) {
+  const el = document.getElementById("fp-media-warning");
+  if (!el) return;
+  if (hiddenCount > 0) {
+    el.textContent = hiddenCount + " files not shown (hidden in settings)";
+    el.style.display = "block";
+  } else {
+    el.style.display = "none";
+  }
+}
+
+// ================================================================
 // browse panel — mode switch + title filter
 // ================================================================
 function switchBrowseMode(mode) {
@@ -31,7 +71,6 @@ function switchBrowseMode(mode) {
     collections: "/api/metadata/collections",
     dashboards: "/api/dashboards",
     editor: "/api/metadata/editors",
-    media: "/api/media/list?mode=compact",
     filters: "/api/files/browse?metadata=editor&value=filter-editor",
   };
   const url = urls[mode];
@@ -155,6 +194,19 @@ function lazyLoad(panelId) {
   const url = el.dataset.url;
   if (!url) return;
   el.dataset.loaded = "true";
+  // media panel: use fetch to read X-Hidden-Count header
+  if (panelId === "fp-media") {
+    fetch(url, { headers: { Accept: "text/html" } })
+      .then((r) => {
+        const hidden = parseInt(r.headers.get("X-Hidden-Count") || "0", 10);
+        updateMediaHiddenWarning(hidden);
+        return r.text();
+      })
+      .then((html) => {
+        el.innerHTML = html;
+      });
+    return;
+  }
   htmx.ajax("GET", url, {
     target: el,
     swap: "innerHTML",
@@ -636,7 +688,6 @@ document.addEventListener("DOMContentLoaded", () => {
       collections: "/api/metadata/collections",
       dashboards: "/api/dashboards",
       editor: "/api/metadata/editors",
-      media: "/api/media/list?mode=compact",
       filters: "/api/files/browse?metadata=editor&value=filter-editor",
     };
     const el = document.getElementById("fp-browse-content");

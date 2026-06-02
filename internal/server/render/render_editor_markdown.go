@@ -29,6 +29,13 @@ func jsEscapeString(s string) string {
 // Binds the upload hook so blob uploads go through uploadMediaBlob.
 func jsEditorInit(content string) string {
 	return fmt.Sprintf(`
+		// override built-in locale to rename 'Insert Image' to 'Insert Media'
+		toastui.Editor.setLanguage('en-US', {
+			'Insert image': 'Insert Media',
+			'Insert Image': 'Insert Media',
+			'image': 'media',
+			'Image': 'Media',
+		});
 		const editor = new toastui.Editor({
 			el: document.querySelector('#markdown-editor'),
 			height: '500px',
@@ -41,14 +48,7 @@ func jsEditorInit(content string) string {
 				['heading', 'bold', 'italic', 'strike'],
 				['hr', 'quote'],
 				['ul', 'ol', 'task', 'indent', 'outdent'],
-				['table', 'link', {
-					name: 'image',
-					tooltip: 'Insert Media',
-					command: 'openPopup',
-					popupName: 'image',
-					className: 'toastui-editor-toolbar-icons image',
-					style: { backgroundImage: '' }
-				}],
+				['table', 'image', 'link'],
 				[{
 					name: 'selectMedia',
 					tooltip: 'Select Media',
@@ -106,10 +106,12 @@ func jsEditorInit(content string) string {
 func jsFileInputAcceptAll() string {
 	return `
 		// patch built-in image popup file input to accept all file types
+		// also rename the image button tooltip to "Insert Media"
 		setTimeout(function() {
 			document.querySelectorAll('.toastui-editor-popup input[type="file"]').forEach(function(input) {
 				input.setAttribute('accept', '*');
 			});
+
 		}, 500);
 
 		// also patch lazily-rendered popups via MutationObserver

@@ -13,7 +13,6 @@
 - rail theme - filter between orphaned/used files
 - section edit for ä/- not working
 - media type: markdown editor??
-- insert media button not working
 - select media (toast ui editor) button - add a search input
 
 **maybe**

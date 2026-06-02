@@ -53,7 +53,6 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 		goldmark.WithRendererOptions(
 			html.WithHardWraps(),
 			html.WithXHTML(),
-			html.WithUnsafe(),
 			renderer.WithNodeRenderers(
 				util.Prioritized(newKnovNodeRenderer(filePath, blocks), 1),
 			),
@@ -68,6 +67,7 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 
 	result := buf.String()
 	result = h.restoreOrphanCodeBlocks(result, blocks)
+	result = sanitizeHTML(result)
 	result = h.addHeaderButtons(result, filePath)
 	result = h.wrapHeaderSections(result)
 	return []byte(result), nil
@@ -418,4 +418,17 @@ func removeCodeBlocks(text string) string {
 
 func (h *MarkdownHandler) Name() string {
 	return "markdown"
+}
+
+// sanitizeHTML strips on* event attributes and javascript: hrefs from rendered HTML
+// to prevent content files from executing JavaScript in the browser.
+func sanitizeHTML(html string) string {
+	// strip on* event handlers (onclick, onload, onerror, etc.)
+	html = regexp.MustCompile(`(?i)\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)`).ReplaceAllString(html, "")
+	// strip javascript: URLs
+	html = regexp.MustCompile(`(?i)(href|src|action)\s*=\s*"javascript:[^"]*"`).ReplaceAllString(html, `$1="#"`)
+	html = regexp.MustCompile(`(?i)(href|src|action)\s*=\s*'javascript:[^']*'`).ReplaceAllString(html, `$1="#"`)
+	// strip <script> tags and their content
+	html = regexp.MustCompile(`(?is)<script[^>]*>.*?</script>`).ReplaceAllString(html, "")
+	return html
 }

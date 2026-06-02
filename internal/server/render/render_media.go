@@ -116,7 +116,7 @@ func RenderMediaListCompact(mediaFiles []files.File, linkTarget string) string {
 }
 
 // RenderMediaList renders a grid of media files with previews and filter controls
-func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphanedCount int) string {
+func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphanedCount, hiddenCount int) string {
 	var html strings.Builder
 
 	// wrapper for htmx target
@@ -161,6 +161,12 @@ func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphane
 
 	html.WriteString(`</div>`) // close filter-buttons
 	html.WriteString(`</div>`) // close media-filter
+
+	// hidden-by-settings warning
+	if hiddenCount > 0 {
+		fmt.Fprintf(&html, `<div class="media-hidden-warning"><i class="fa fa-eye-slash"></i> %s</div>`,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "%d files not shown due to hide settings", hiddenCount))
+	}
 
 	// empty state
 	if len(mediaFiles) == 0 {

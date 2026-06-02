@@ -121,8 +121,10 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	totalRawCount := len(mediaFiles)
 	// apply hide-type settings (image, video, pdf, office, archives, etc.)
 	mediaFiles = files.FilterByVisibility(mediaFiles)
+	hiddenCount := totalRawCount - len(mediaFiles)
 
 	// get orphaned media from cache
 	orphanedMedia, err := files.GetOrphanedMediaFromCache()
@@ -157,9 +159,10 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 		case "compact":
 			html := render.RenderMediaListCompact(filteredMedia, "detail")
 			w.Header().Set("Content-Type", "text/html")
+			w.Header().Set("X-Hidden-Count", fmt.Sprintf("%d", hiddenCount))
 			w.Write([]byte(html))
 		default:
-			html := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), visibleOrphanedCount)
+			html := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), visibleOrphanedCount, hiddenCount)
 			w.Header().Set("Content-Type", "text/html")
 			w.Write([]byte(html))
 		}
@@ -254,7 +257,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 			strings.Join(referencingFiles, "<br>"))
 
 		// render media list with error message at the top
-		mediaListHTML := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), len(orphanedMedia))
+		mediaListHTML := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), len(orphanedMedia), 0)
 
 		// inject error message at the beginning of the media content
 		finalHTML := strings.Replace(mediaListHTML, `<div id="component-media-content">`,
@@ -305,7 +308,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	filteredMedia := files.FilterMediaFiles(mediaFiles, orphanedMedia, filter)
 
 	// render updated media list
-	html := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), len(orphanedMedia))
+	html := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), len(orphanedMedia), 0)
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(html))

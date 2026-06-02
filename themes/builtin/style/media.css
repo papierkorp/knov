@@ -436,3 +436,17 @@
   flex: 1;
   min-width: 100px;
 }
+
+/* Hidden-by-settings warning */
+.media-hidden-warning {
+  margin-bottom: 16px;
+  padding: 8px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
