@@ -228,21 +228,26 @@ func jsMediaSelector() string {
 
 			const popup = document.createElement('div');
 			popup.className = 'media-selector-popup';
-			popup.style.cssText = 'background:white;border-radius:8px;width:600px;max-height:500px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+			popup.style.cssText = 'background:white;border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;flex-direction:column;';
 			if (isDarkMode) {
 				popup.style.backgroundColor = '#374151';
 				popup.style.color = '#f9fafb';
 			}
 
 			const header = document.createElement('div');
-			header.style.cssText = 'padding:16px;border-bottom:1px solid ' + (isDarkMode ? '#4b5563' : '#eee') + ';display:flex;justify-content:space-between;align-items:center;';
-			header.innerHTML = '<h3 style="margin:0;">select media file</h3><button onclick="closeMediaSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>';
+			header.style.cssText = 'padding:12px 16px;border-bottom:1px solid ' + (isDarkMode ? '#4b5563' : '#eee') + ';display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+			header.innerHTML = '<h3 style="margin:0;font-size:1em;">select media file</h3><button onclick="closeMediaSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>';
+
+			const search = document.createElement('div');
+			search.style.cssText = 'padding:8px 16px;border-bottom:1px solid ' + (isDarkMode ? '#4b5563' : '#eee') + ';flex-shrink:0;';
+			search.innerHTML = '<input type="text" placeholder="filter..." style="width:100%;padding:6px 10px;border:1px solid ' + (isDarkMode ? '#4b5563' : '#d1d5db') + ';border-radius:4px;background:' + (isDarkMode ? '#1f2937' : '#fff') + ';color:' + (isDarkMode ? '#f9fafb' : '#111') + ';font-size:0.9em;box-sizing:border-box;" oninput="filterMediaSelectorList(this.value)">';
 
 			const body = document.createElement('div');
-			body.style.cssText = 'padding:16px;max-height:400px;overflow-y:auto;';
+			body.style.cssText = 'padding:12px 16px;overflow-y:auto;flex:1;';
 			body.innerHTML = 'loading media files...';
 
 			popup.appendChild(header);
+			popup.appendChild(search);
 			popup.appendChild(body);
 			modal.appendChild(popup);
 			document.body.appendChild(modal);
@@ -251,11 +256,25 @@ func jsMediaSelector() string {
 				.then(function(r) { return r.text(); })
 				.then(function(html) { body.innerHTML = html; })
 				.catch(function() { body.innerHTML = 'error loading media files'; });
+
+			// focus search after items load
+			setTimeout(function() {
+				const input = modal.querySelector('input[type="text"]');
+				if (input) input.focus();
+			}, 150);
 		};
 
 		window.closeMediaSelector = function() {
 			const modal = document.querySelector('.media-selector-modal');
 			if (modal) modal.remove();
+		};
+
+		window.filterMediaSelectorList = function(query) {
+			const q = query.toLowerCase();
+			document.querySelectorAll('.media-selector-modal .media-select-item').forEach(function(item) {
+				const name = (item.querySelector('.media-select-name') || {}).textContent || '';
+				item.style.display = name.toLowerCase().includes(q) ? '' : 'none';
+			});
 		};`
 }
 

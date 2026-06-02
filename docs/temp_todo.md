@@ -10,10 +10,7 @@
 - backup git search
 - new theme setting for rail - add icon + link below the home button
 - git lfs possible?
-- rail theme - filter between orphaned/used files
 - section edit for ä/- not working
-- media type: markdown editor??
-- select media (toast ui editor) button - add a search input
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme
