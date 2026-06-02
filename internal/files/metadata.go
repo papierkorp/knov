@@ -304,27 +304,50 @@ func MetaDataInitializeAll() error {
 	}
 
 	for _, file := range allFiles {
-		// normalize path to ensure correct prefix for metadata storage
 		normalizedPath := pathutils.ToWithPrefix(file.Path)
 
-		// check if metadata already exists
 		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil {
 			logging.LogWarning("error checking metadata for %s: %v", normalizedPath, err)
 			continue
 		}
 
-		// skip if metadata exists
 		if metadata != nil {
 			continue
 		}
 
-		// create new metadata
 		newMetadata := &Metadata{Path: normalizedPath}
 		if err := MetaDataSave(newMetadata); err != nil {
 			logging.LogWarning("failed to initialize metadata for %s: %v", normalizedPath, err)
 		} else {
 			logging.LogInfo("initialized metadata for %s", normalizedPath)
+		}
+	}
+
+	// also initialize metadata for media files (e.g. imported from dokuwiki directly on disk)
+	allMediaFiles, err := GetAllMediaFiles()
+	if err != nil {
+		logging.LogWarning("failed to get media files for initialization: %v", err)
+	} else {
+		for _, file := range allMediaFiles {
+			normalizedPath := pathutils.ToWithPrefix(file.Path)
+
+			metadata, err := MetaDataGet(normalizedPath)
+			if err != nil {
+				logging.LogWarning("error checking metadata for %s: %v", normalizedPath, err)
+				continue
+			}
+
+			if metadata != nil {
+				continue
+			}
+
+			newMetadata := &Metadata{Path: normalizedPath}
+			if err := MetaDataSaveRaw(newMetadata); err != nil {
+				logging.LogWarning("failed to initialize metadata for %s: %v", normalizedPath, err)
+			} else {
+				logging.LogInfo("initialized metadata for media file %s", normalizedPath)
+			}
 		}
 	}
 

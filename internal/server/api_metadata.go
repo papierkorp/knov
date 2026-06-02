@@ -151,6 +151,10 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := files.UpdateOrphanedMediaCache(); err != nil {
+		logging.LogWarning("failed to update orphaned media cache after rebuild: %v", err)
+	}
+
 	data := map[string]string{"status": "metadata initialized"}
 	html := `<span class="status-ok">metadata initialized and rebuilt successfully</span>`
 	writeResponse(w, r, data, html)

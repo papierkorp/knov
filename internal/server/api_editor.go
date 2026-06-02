@@ -711,7 +711,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// convert to markdown
-	markdown := dokuwikiconverter.New().ConvertToMarkdown(string(content))
+	markdown := dokuwikiconverter.NewWithFilePath(filePath).ConvertToMarkdown(string(content))
 
 	// determine new filename
 	markdownFileName := strings.TrimSuffix(filePath, filepath.Ext(filePath)) + ".md"

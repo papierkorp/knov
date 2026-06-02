@@ -822,11 +822,6 @@
       "translation": ""
     },
     {
-      "id": "failed to execute filter",
-      "message": "failed to execute filter",
-      "translation": ""
-    },
-    {
       "id": "failed to export files",
       "message": "failed to export files",
       "translation": ""
@@ -1262,13 +1257,18 @@
       "translation": ""
     },
     {
-      "id": "filter not found",
-      "message": "filter not found",
+      "id": "filter preview",
+      "message": "filter preview",
       "translation": ""
     },
     {
-      "id": "filter preview",
-      "message": "filter preview",
+      "id": "filters",
+      "message": "filters",
+      "translation": ""
+    },
+    {
+      "id": "Filters",
+      "message": "Filters",
       "translation": ""
     },
     {
@@ -1374,11 +1374,6 @@
     {
       "id": "Hide files marked as PDF type",
       "message": "Hide files marked as PDF type",
-      "translation": ""
-    },
-    {
-      "id": "Hide files marked as text type",
-      "message": "Hide files marked as text type",
       "translation": ""
     },
     {
@@ -1614,11 +1609,6 @@
     {
       "id": "invalid display mode",
       "message": "invalid display mode",
-      "translation": ""
-    },
-    {
-      "id": "invalid filter configuration",
-      "message": "invalid filter configuration",
       "translation": ""
     },
     {
@@ -3064,6 +3054,11 @@
     {
       "id": "View all editor types",
       "message": "View all editor types",
+      "translation": ""
+    },
+    {
+      "id": "View all filter files",
+      "message": "View all filter files",
       "translation": ""
     },
     {

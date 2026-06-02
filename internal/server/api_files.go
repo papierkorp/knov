@@ -362,7 +362,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// convert to markdown
-	markdown := dokuwikiconverter.New().ConvertToMarkdown(string(content))
+	markdown := dokuwikiconverter.NewWithFilePath(filePath).ConvertToMarkdown(string(content))
 
 	// prepare download
 	filename := filepath.Base(filePath)
@@ -509,7 +509,7 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 		// convert dokuwiki files to markdown
 		ext := strings.ToLower(filepath.Ext(path))
 		if ext == ".dokuwiki" || ext == ".txt" {
-			markdown := dokuwikiconverter.New().ConvertToMarkdown(string(content))
+			markdown := dokuwikiconverter.NewWithFilePath(relPath).ConvertToMarkdown(string(content))
 			content = []byte(markdown)
 			oldRelPath := relPath
 			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + ".md"

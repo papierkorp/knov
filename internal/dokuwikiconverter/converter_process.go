@@ -91,8 +91,8 @@ func (h *Converter) restoreInlineCodes(content string, codes []string, outputFor
 
 // processMediaLinks handles media link conversion for both HTML and Markdown
 func (h *Converter) processMediaLinks(content string, outputFormat string) string {
-	// matches {{ :path/to/file | optional alt }} with optional spaces
-	mediaRegex := regexp.MustCompile(`\{\{\s*:([^|}]+)(?:\|([^}]*))?\}\}`)
+	// matches {{ :path/to/file | optional alt }} or {{ namespace:path | alt }} with optional spaces
+	mediaRegex := regexp.MustCompile(`\{\{\s*:?([^|}]+)(?:\|([^}]*))?\}\}`)
 	content = mediaRegex.ReplaceAllStringFunc(content, func(match string) string {
 		matches := mediaRegex.FindStringSubmatch(match)
 		if len(matches) < 2 {
@@ -102,9 +102,16 @@ func (h *Converter) processMediaLinks(content string, outputFormat string) strin
 		// convert dokuwiki namespace (colons) to filesystem path (slashes)
 		mediaPath := strings.TrimSpace(matches[1])
 		mediaPath = strings.ReplaceAll(mediaPath, ":", "/")
-		// strip query params (e.g. ?direct)
-		if i := strings.Index(mediaPath, "?"); i != -1 {
-			mediaPath = mediaPath[:i]
+		// strip query params (e.g. ?direct, ?400)
+		if qi := strings.Index(mediaPath, "?"); qi != -1 {
+			mediaPath = mediaPath[:qi]
+		}
+		// dokuwiki stores all media filenames in lowercase
+		mediaPath = strings.ToLower(mediaPath)
+
+		// if the path has no directory component it is relative to the source file's folder
+		if h.fileDir != "" && !strings.Contains(mediaPath, "/") {
+			mediaPath = h.fileDir + "/" + mediaPath
 		}
 
 		altText := strings.TrimSpace(matches[2])

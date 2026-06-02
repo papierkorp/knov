@@ -403,9 +403,17 @@ func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
 }
 
 func removeCodeBlocks(text string) string {
-	text = regexp.MustCompile("(?s)```[^`]*```").ReplaceAllString(text, "")
-	text = regexp.MustCompile("`[^`]*`").ReplaceAllString(text, "")
-	return text
+	// split on ``` fence markers so each block is removed independently (no greedy cross-block matching)
+	parts := strings.Split(text, "```")
+	var result strings.Builder
+	for i, part := range parts {
+		if i%2 == 0 {
+			// outside a code block — strip inline code then keep
+			result.WriteString(regexp.MustCompile("`[^`\n]+`").ReplaceAllString(part, ""))
+		}
+		// odd-indexed parts are inside fenced code blocks — discard
+	}
+	return result.String()
 }
 
 func (h *MarkdownHandler) Name() string {

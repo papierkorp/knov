@@ -4,12 +4,30 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"knov/internal/pathutils"
 )
 
-type Converter struct{}
+type Converter struct {
+	// fileDir is the directory of the source file being converted, used to resolve
+	// relative media paths (e.g. {{image.png}} → /media/<fileDir>/image.png)
+	fileDir string
+}
 
 func New() *Converter {
 	return &Converter{}
+}
+
+// NewWithFilePath creates a Converter that knows the source file's directory so
+// bare filenames in media links are resolved relative to it.
+func NewWithFilePath(filePath string) *Converter {
+	// use pathutils to get a clean relative path, then extract the directory
+	rel := pathutils.ToRelative(filePath)
+	dir := ""
+	if i := strings.LastIndex(rel, "/"); i >= 0 {
+		dir = rel[:i]
+	}
+	return &Converter{fileDir: dir}
 }
 
 // ConvertToMarkdown converts DokuWiki syntax to Markdown using unified processing
