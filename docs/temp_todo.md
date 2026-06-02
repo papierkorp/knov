@@ -8,7 +8,6 @@
 **per ai**
 - backup solution
 - backup git search
-- new theme setting for rail - add icon + link below the home button
 - git lfs possible?
 
 

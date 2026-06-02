@@ -29,6 +29,42 @@
       "default": "",
       "label": "Custom CSS",
       "description": "add your own css styles"
+    },
+    "quickLink1Url": {
+      "type": "text",
+      "default": "",
+      "label": "Quick Link 1 URL",
+      "description": "url for quick link 1, must start with http:// or https:// (leave empty to hide)"
+    },
+    "quickLink1Icon": {
+      "type": "text",
+      "default": "fa-link",
+      "label": "Quick Link 1 Icon",
+      "description": "font awesome icon class (e.g. fa-star, fa-bookmark)"
+    },
+    "quickLink2Url": {
+      "type": "text",
+      "default": "",
+      "label": "Quick Link 2 URL",
+      "description": "url for quick link 2, must start with http:// or https:// (leave empty to hide)"
+    },
+    "quickLink2Icon": {
+      "type": "text",
+      "default": "fa-link",
+      "label": "Quick Link 2 Icon",
+      "description": "font awesome icon class (e.g. fa-star, fa-bookmark)"
+    },
+    "quickLink3Url": {
+      "type": "text",
+      "default": "",
+      "label": "Quick Link 3 URL",
+      "description": "url for quick link 3, must start with http:// or https:// (leave empty to hide)"
+    },
+    "quickLink3Icon": {
+      "type": "text",
+      "default": "fa-link",
+      "label": "Quick Link 3 Icon",
+      "description": "font awesome icon class (e.g. fa-star, fa-bookmark)"
     }
   }
 }

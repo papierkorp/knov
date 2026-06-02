@@ -37,6 +37,9 @@
     <nav id="rail-site">
 
         <a class="rail-btn" href="/" title="{{T "home"}}" onclick="closePanel()"><i class="fa fa-house"></i></a>
+        {{ if index .ThemeSettings "quickLink1Url" }}<a class="rail-btn" href="{{ index .ThemeSettings "quickLink1Url" }}" onclick="closePanel()"><i class="fa {{ or (index .ThemeSettings "quickLink1Icon") "fa-link" }}"></i></a>{{ end }}
+        {{ if index .ThemeSettings "quickLink2Url" }}<a class="rail-btn" href="{{ index .ThemeSettings "quickLink2Url" }}" onclick="closePanel()"><i class="fa {{ or (index .ThemeSettings "quickLink2Icon") "fa-link" }}"></i></a>{{ end }}
+        {{ if index .ThemeSettings "quickLink3Url" }}<a class="rail-btn" href="{{ index .ThemeSettings "quickLink3Url" }}" onclick="closePanel()"><i class="fa {{ or (index .ThemeSettings "quickLink3Icon") "fa-link" }}"></i></a>{{ end }}
         <button class="rail-btn rail-btn-file" onclick="togglePanel('fp-file')" id="rb-file" title="{{T "file info"}}"><i class="fa fa-circle-info"></i></button>
 
         <div class="rail-sep"></div>
