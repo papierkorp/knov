@@ -16,7 +16,6 @@ import (
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
 	extast "github.com/yuin/goldmark/extension/ast"
-	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/util"
@@ -47,9 +46,7 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 			extension.GFM,
 			extension.Typographer,
 		),
-		goldmark.WithParserOptions(
-			parser.WithAutoHeadingID(),
-		),
+
 		goldmark.WithRendererOptions(
 			html.WithHardWraps(),
 			html.WithXHTML(),
@@ -68,6 +65,7 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	result := buf.String()
 	result = h.restoreOrphanCodeBlocks(result, blocks)
 	result = sanitizeHTML(result)
+	result = InjectHeaderIDs(result)
 	result = h.addHeaderButtons(result, filePath)
 	result = h.wrapHeaderSections(result)
 	return []byte(result), nil

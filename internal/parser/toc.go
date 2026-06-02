@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"knov/internal/utils"
 )
 
 type TOCItem struct {
@@ -33,7 +35,7 @@ func GenerateTOC(html string) []TOCItem {
 
 		id := existingID
 		if id == "" {
-			id = generateID(text, usedIDs)
+			id = utils.GenerateID(text, usedIDs)
 		}
 
 		toc = append(toc, TOCItem{
@@ -65,7 +67,7 @@ func InjectHeaderIDs(html string) string {
 			id = existingID
 		} else {
 			text := stripHTMLTags(content)
-			id = generateID(text, usedIDs)
+			id = utils.GenerateID(text, usedIDs)
 		}
 
 		// add anchor link to header content
@@ -74,25 +76,6 @@ func InjectHeaderIDs(html string) string {
 
 		return "<h" + level + ` id="` + id + `"` + attrs + ">" + newContent + "</h" + level + ">"
 	})
-}
-
-func generateID(text string, usedIDs map[string]int) string {
-	id := strings.ToLower(text)
-	id = regexp.MustCompile(`[^a-z0-9]+`).ReplaceAllString(id, "-")
-	id = strings.Trim(id, "-")
-
-	if id == "" {
-		id = "section"
-	}
-
-	originalID := id
-	count := usedIDs[originalID]
-	if count > 0 {
-		id = fmt.Sprintf("%s-%d", id, count)
-	}
-	usedIDs[originalID]++
-
-	return id
 }
 
 func stripHTMLTags(s string) string {

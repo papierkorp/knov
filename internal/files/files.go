@@ -109,7 +109,6 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	relativePath := pathutils.ToRelative(filePath)
 	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", relativePath)
 
-	processedContent = parser.InjectHeaderIDs(processedContent)
 	toc := parser.GenerateTOC(processedContent)
 
 	return &FileContent{

@@ -10,7 +10,7 @@
 - backup git search
 - new theme setting for rail - add icon + link below the home button
 - git lfs possible?
-- section edit for ä/- not working
+
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme
