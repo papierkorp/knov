@@ -1712,6 +1712,21 @@
       "translation": ""
     },
     {
+      "id": "list (2 col)",
+      "message": "list (2 col)",
+      "translation": ""
+    },
+    {
+      "id": "list (3 col)",
+      "message": "list (3 col)",
+      "translation": ""
+    },
+    {
+      "id": "list (4 col)",
+      "message": "list (4 col)",
+      "translation": ""
+    },
+    {
       "id": "list saved successfully",
       "message": "list saved successfully",
       "translation": ""
@@ -2264,6 +2279,11 @@
     {
       "id": "open in new tab",
       "message": "open in new tab",
+      "translation": ""
+    },
+    {
+      "id": "open media page",
+      "message": "open media page",
       "translation": ""
     },
     {

@@ -140,6 +140,13 @@ func RenderFilterWidgetConfig(index int, config *dashboard.WidgetConfig) string 
 		Config:      fc,
 		WidgetIndex: index,
 	}))
+	// preview button — posts the widget config form to the filter API
+	previewBtn := fmt.Sprintf(
+		`<button type="button" class="btn-secondary" style="margin-bottom:8px;"
+		 hx-post="/api/filters" hx-include="#widget-config-%d" hx-target="#filter-preview-results-%d">%s</button>`,
+		index, index,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "preview results"))
+	html.WriteString(previewBtn)
 	html.WriteString(fmt.Sprintf(`<div id="filter-preview-results-%d" class="filter-results">`, index))
 	html.WriteString(`<p class="filter-no-results">` + translation.SprintfForRequest(configmanager.GetLanguage(), "configure filter above and click view results to preview") + `</p>`)
 	html.WriteString(`</div>`)

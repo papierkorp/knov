@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/mapping"
 	"knov/internal/translation"
@@ -188,6 +189,9 @@ func renderDisplaySelect(opts FilterFormOpts) string {
 	name := filterFieldName(opts, "display")
 	displayOpts := []struct{ v, l string }{
 		{"list", translation.SprintfForRequest(configmanager.GetLanguage(), "list")},
+		{"list2", translation.SprintfForRequest(configmanager.GetLanguage(), "list (2 col)")},
+		{"list3", translation.SprintfForRequest(configmanager.GetLanguage(), "list (3 col)")},
+		{"list4", translation.SprintfForRequest(configmanager.GetLanguage(), "list (4 col)")},
 		{"cards", translation.SprintfForRequest(configmanager.GetLanguage(), "cards")},
 		{"dropdown", translation.SprintfForRequest(configmanager.GetLanguage(), "dropdown")},
 		{"content", translation.SprintfForRequest(configmanager.GetLanguage(), "content")},
@@ -228,9 +232,24 @@ func RenderFilterResult(result *filter.Result, display string) string {
 		return RenderFileDropdown(result.Files, result.Total)
 	case "content":
 		return RenderFileContent(result.Files)
+	case "list2":
+		return fmt.Sprintf(`<div id="filter-results" class="filter-list-grid filter-list-grid-2">%s</div>`, renderFileListItems(result.Files))
+	case "list3":
+		return fmt.Sprintf(`<div id="filter-results" class="filter-list-grid filter-list-grid-3">%s</div>`, renderFileListItems(result.Files))
+	case "list4":
+		return fmt.Sprintf(`<div id="filter-results" class="filter-list-grid filter-list-grid-4">%s</div>`, renderFileListItems(result.Files))
 	default:
 		return fmt.Sprintf(`<div id="filter-results">%s</div>`, RenderFileList(result.Files))
 	}
+}
+
+// renderFileListItems renders file list items as bare <a> tags for grid layouts
+func renderFileListItems(fileList []files.File) string {
+	var b strings.Builder
+	for _, file := range fileList {
+		b.WriteString(fmt.Sprintf(`<a class="filter-list-item" href="%s">%s</a>`, file.ViewURL(), GetLinkDisplayText(file.Path)))
+	}
+	return b.String()
 }
 
 // ----------------------------------------------------------------------------------------

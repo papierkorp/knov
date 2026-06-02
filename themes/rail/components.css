@@ -2977,3 +2977,32 @@ dl.media-info dd {
   align-items: center;
   border: none;
 }
+
+/* Filter list grid display modes */
+.filter-list-grid {
+  display: grid;
+  gap: 4px 16px;
+}
+.filter-list-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.filter-list-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.filter-list-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.filter-list-item {
+  display: block;
+  padding: 2px 0;
+  color: var(--primary);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.88em;
+}
+.filter-list-item:hover {
+  text-decoration: underline;
+}

@@ -9,6 +9,8 @@
 - backup solution
 - backup git search
 - git lfs possible?
+- both themes - dashboard - widget: filter missing style
+
 
 
 **maybe**
