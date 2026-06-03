@@ -8,7 +8,6 @@
 **per ai**
 - rail theme info slideout title - sample%20Markdown.md
 - folder delete function (removes all files) and make it accessible in both themes
-- html parser for todo files (cancelled task, waiting task)
 - media file preview (rail theme) for images
 - add all envs to the settings.gohtml files
 - related in connections - include grandchildren or include grandchildren to children?

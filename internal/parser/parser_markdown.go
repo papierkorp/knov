@@ -85,6 +85,7 @@ var htmlBlockRe = regexp.MustCompile(`(?i)^<(html|head|body|div|section|article|
 
 func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error) {
 	content, blocks := h.extractCodeBlocks(content)
+	content = h.preprocessTodoStates(content)
 
 	md := goldmark.New(
 		goldmark.WithExtensions(
@@ -109,6 +110,7 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 
 	result := buf.String()
 	result = h.restoreOrphanCodeBlocks(result, blocks)
+	result = h.postprocessTodoStates(result)
 	result = sanitizeHTML(result)
 	result = InjectHeaderIDs(result)
 	result = h.addHeaderButtons(result, filePath)
@@ -140,6 +142,7 @@ func (r *knovNodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer
 	reg.Register(ast.KindCodeBlock, r.renderCodeBlock)
 	reg.Register(extast.KindTable, r.renderTable)
 	reg.Register(ast.KindImage, r.renderImage)
+	reg.Register(extast.KindTaskCheckBox, r.renderTaskCheckBox)
 }
 
 func (r *knovNodeRenderer) renderFencedCode(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {

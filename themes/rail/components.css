@@ -3038,6 +3038,47 @@ dl.media-info dd {
     margin: 0;
 }
 
+/* todo state rendering */
+.file-content .todo-state {
+    margin-right: 6px;
+    font-size: 0.95em;
+    vertical-align: middle;
+}
+
+.file-content li.todo-open,
+.file-content li.todo-done,
+.file-content li.todo-cancelled,
+.file-content li.todo-waiting {
+    list-style: none;
+}
+
+.file-content .todo-state-open {
+    color: var(--text-secondary);
+}
+.file-content .todo-state-done {
+    color: var(--success, #28a745);
+}
+.file-content .todo-state-cancelled {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+.file-content .todo-state-waiting {
+    color: var(--warning, #ffc107);
+}
+
+.file-content li.todo-done {
+    color: var(--text-secondary);
+    text-decoration: line-through;
+}
+.file-content li.todo-cancelled {
+    color: var(--text-secondary);
+    opacity: 0.55;
+    text-decoration: line-through;
+}
+.file-content li.todo-waiting {
+    font-style: italic;
+}
+
 /* export / import sections in dashboard form */
 #page-dashboard-new .dashboard-export-section,
 #page-dashboard-edit .dashboard-export-section,
