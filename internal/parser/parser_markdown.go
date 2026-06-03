@@ -34,9 +34,54 @@ func (h *MarkdownHandler) CanHandle(filename string) bool {
 
 func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 	content = StripFrontMatter(content)
-	processed := h.processMarkdownLinks(string(content))
+	processed := h.wrapRawHTMLBlocks(string(content))
+	processed = h.processMarkdownLinks(processed)
 	return []byte(processed), nil
 }
+
+// wrapRawHTMLBlocks wraps bare HTML blocks in fenced code blocks so goldmark
+// renders them as code instead of silently omitting them.
+func (h *MarkdownHandler) wrapRawHTMLBlocks(content string) string {
+	lines := strings.Split(content, "\n")
+	var result []string
+	i := 0
+	for i < len(lines) {
+		line := lines[i]
+		trimmed := strings.TrimSpace(line)
+
+		// detect start of a bare HTML block (line starts with < and a tag name)
+		if strings.HasPrefix(trimmed, "<") && !strings.HasPrefix(trimmed, "<!--") &&
+			!strings.HasPrefix(trimmed, "<a ") && !strings.HasPrefix(trimmed, "</a") &&
+			htmlBlockRe.MatchString(trimmed) {
+
+			// collect all consecutive lines of the HTML block
+			var block []string
+			for i < len(lines) {
+				block = append(block, lines[i])
+				if strings.TrimSpace(lines[i]) == "" && len(block) > 1 {
+					break
+				}
+				i++
+			}
+			// only wrap if it looks like a multi-tag block
+			joined := strings.Join(block, "\n")
+			if strings.Count(joined, "<") > 1 {
+				result = append(result, "```html")
+				result = append(result, strings.TrimRight(joined, "\n"))
+				result = append(result, "```")
+			} else {
+				result = append(result, block...)
+			}
+			continue
+		}
+
+		result = append(result, line)
+		i++
+	}
+	return strings.Join(result, "\n")
+}
+
+var htmlBlockRe = regexp.MustCompile(`(?i)^<(html|head|body|div|section|article|header|footer|nav|main|aside|meta|script|style|link|table|form|iframe|p|ul|ol|li|h[1-6]|pre|blockquote)[\s>]`)
 
 func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error) {
 	content, blocks := h.extractCodeBlocks(content)
@@ -355,22 +400,30 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 		if isImage {
 			return matches[1] + "[" + text + "](" + strings.ReplaceAll(u, "\\", "/") + ")"
 		}
-		if !strings.Contains(u, "://") && !strings.HasPrefix(u, "#") {
-			if strings.HasPrefix(u, "/files/media/") {
-				return `<a href="/media/` + u[len("/files/media/"):] + `">` + text + `</a>`
-			}
-			if strings.HasPrefix(u, "/files/") {
-				return `<a href="` + u + `">` + text + `</a>`
-			}
-			if strings.HasPrefix(u, "media/") {
-				return `<a href="/` + u + `?mode=detail">` + text + `</a>`
-			}
-			if !strings.HasSuffix(u, ".md") {
-				u += ".md"
-			}
-			return `<a href="/files/` + u + `">` + text + `</a>`
+
+		// external links and anchors — leave as-is
+		if strings.Contains(u, "://") || strings.HasPrefix(u, "#") {
+			return match
 		}
-		return `<a href="` + u + `">` + text + `</a>`
+
+		// media links
+		if strings.HasPrefix(u, "/files/media/") {
+			return "[" + text + "](/media/" + u[len("/files/media/"):] + ")"
+		}
+		if strings.HasPrefix(u, "media/") {
+			return "[" + text + "](/" + u + "?mode=detail)"
+		}
+
+		// already routed internal links
+		if strings.HasPrefix(u, "/files/") {
+			return match
+		}
+
+		// internal doc links — route to /files/
+		if !strings.HasSuffix(u, ".md") {
+			u += ".md"
+		}
+		return "[" + text + "](/files/" + u + ")"
 	})
 }
 

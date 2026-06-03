@@ -1989,6 +1989,13 @@ main textarea {
   text-align: left;
 }
 
+#component-textarea-editor textarea {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
 #testdata-result {
   margin-top: 16px;
   width: 100%;
