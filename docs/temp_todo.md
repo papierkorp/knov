@@ -6,20 +6,18 @@
 - update thememanager docs for both devs (how to create a new theme) and for user (how to use overwrite)
 
 **per ai**
+- Link Display Mode in rail theme (like we have for builtin theme)
+- add images to connections (both themes)
+- remove the cache in rail per cronjob (files loaded at least)
+- folder delete function (removes all files) and make it accessible in both themes
+- filter test output in rail theme in admin
+- related in connections - include grandchildren or include grandchildren to children?
+- filterform if possible make it one line (apply + and/or + add filter + display + limit)
+- media file preview (rail theme) for images
+- both themes - dashboard - widget: filter missing style
 - backup solution
 - backup git search
 - git lfs possible?
-- both themes - dashboard - widget: filter missing style
-- Link Display Mode in rail theme
-- media file preview (rail theme)
-- add images to connections
-- rail theme: http://localhost:1324/browse/collections/filtertestfolder
-- remove the cache in rail per cronjob (files loaded at least)
-- folder delete function
-- filter test output in rail theme
-- tree in rail theme - collaps folders
-- related in connections - include grandchildren or include grandchildren to children?
-- filterform if possible make it one line (apply + and/or + add filter + display + limit)
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme

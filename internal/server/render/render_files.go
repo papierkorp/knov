@@ -190,7 +190,7 @@ func renderTreeChildren(html *strings.Builder, node *files.TreeNode) {
 	for _, child := range node.Children {
 		html.WriteString(`<li>`)
 		if child.IsDir {
-			fmt.Fprintf(html, `<span class="fp-tree-dir"><i class="fa fa-folder"></i> %s</span>`, child.Name)
+			fmt.Fprintf(html, `<button class="fp-tree-dir" onclick="this.closest('li').classList.toggle('fp-tree-collapsed')"><i class="fa fa-folder"></i> %s</button>`, child.Name)
 			renderTreeChildren(html, child)
 		} else {
 			fmt.Fprintf(html, `<a class="fp-tree-file" href="/files/%s">%s</a>`,

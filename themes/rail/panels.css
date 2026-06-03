@@ -384,11 +384,25 @@
   display: block;
   padding: 1px 0;
   user-select: none;
+  background: none;
+  border: none;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+}
+
+.fp-tree-dir:hover {
+  color: var(--text);
 }
 
 .fp-tree-dir .fa {
   font-size: 0.85em;
   margin-right: 3px;
+}
+
+.fp-tree-collapsed > ul {
+  display: none;
 }
 
 .fp-tree-file {
