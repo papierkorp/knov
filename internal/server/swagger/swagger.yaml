@@ -2478,6 +2478,21 @@ paths:
       summary: Get links to here for a file
       tags:
       - links
+  /api/links/media:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get outbound media links for a file
+      tags:
+      - links
   /api/links/parents:
     get:
       parameters:
@@ -2516,10 +2531,6 @@ paths:
         name: filepath
         required: true
         type: string
-      - description: Include media file links
-        in: query
-        name: showMedia
-        type: boolean
       produces:
       - application/json
       - text/html

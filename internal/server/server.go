@@ -317,6 +317,7 @@ func StartServerChi() {
 			r.Get("/kids", handleAPIGetKids)
 			r.Get("/used", handleAPIGetUsedLinks)
 			r.Get("/linkstohere", handleAPIGetLinksToHere)
+			r.Get("/media", handleAPIGetMediaLinks)
 			r.Get("/related", handleAPIGetRelatedFiles)
 		})
 

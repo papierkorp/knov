@@ -70,11 +70,15 @@
                     </div>
                     <div class="connection-group">
                         <div class="connection-label">{{T "links to"}}</div>
-                        <div hx-get="/api/links/used?filepath={{urlQuery .FilePath}}&showMedia={{index .ThemeSettings "showMediaLinks"}}" hx-trigger="load">...</div>
+                        <div hx-get="/api/links/used?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
                     <div class="connection-group">
                         <div class="connection-label">{{T "links from"}}</div>
                         <div hx-get="/api/links/linkstohere?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                    </div>
+                    <div class="connection-group">
+                        <div class="connection-label">{{T "media files"}}</div>
+                        <div hx-get="/api/links/media?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
                     <div class="connection-group">
                         <div class="connection-label">{{T "related"}}</div>

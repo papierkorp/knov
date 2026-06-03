@@ -372,6 +372,7 @@ function setupFilePage() {
     "fp-parents": "/api/links/parents?filepath=" + fp,
     "fp-children": "/api/links/kids?filepath=" + fp,
     "fp-links-to": "/api/links/used?filepath=" + fp,
+    "fp-media-links": "/api/links/media?filepath=" + fp,
     "fp-links-from": "/api/links/linkstohere?filepath=" + fp,
     "fp-related": "/api/links/related?filepath=" + fp,
     "fp-meta-editor": "/api/metadata/editor?filepath=" + fp,

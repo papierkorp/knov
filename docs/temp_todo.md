@@ -6,13 +6,14 @@
 - update thememanager docs for both devs (how to create a new theme) and for user (how to use overwrite)
 
 **per ai**
-- add images to connections (both themes)
+- filter test output in rail theme in admin is not readable - make it its own full size width div and style it
 - remove the cache in rail per cronjob (files loaded at least)
 - folder delete function (removes all files) and make it accessible in both themes
-- filter test output in rail theme in admin
 - related in connections - include grandchildren or include grandchildren to children?
 - filterform if possible make it one line (apply + and/or + add filter + display + limit)
+- change setup test data + clean test data and reduce it to one testdata folder
 - media file preview (rail theme) for images
+- in server/api/pathutils package - add a getURLPATH function which just returns e.g. /files/ - and use this in the render to centralize this
 - both themes - dashboard - widget: filter missing style
 - backup solution
 - backup git search

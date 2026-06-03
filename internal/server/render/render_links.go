@@ -85,8 +85,8 @@ func RenderNoLinksMessage(message string) string {
 	return fmt.Sprintf(`<div class="connection-empty">%s</div>`, message)
 }
 
-// RenderLinksList renders a list of file links as HTML with configurable display text
-func RenderLinksList(links []string, showMedia bool) string {
+// RenderLinksList renders a list of file links (non-media) as HTML with configurable display text
+func RenderLinksList(links []string, _ bool) string {
 	if len(links) == 0 {
 		return ""
 	}
@@ -94,18 +94,35 @@ func RenderLinksList(links []string, showMedia bool) string {
 	var html strings.Builder
 	for _, link := range links {
 		if pathutils.IsMedia(link) {
-			if !showMedia {
-				continue
-			}
-			rel := pathutils.ToRelative(link)
-			url := "/media/" + rel
-			html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, filepath.Base(rel)))
-		} else {
-			rel := pathutils.ToRelative(link)
-			url := "/files/" + rel
-			displayText := GetLinkDisplayText(rel)
-			html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, displayText))
+			continue
 		}
+		rel := pathutils.ToRelative(link)
+		url := "/files/" + rel
+		displayText := GetLinkDisplayText(rel)
+		html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, displayText))
+	}
+	return html.String()
+}
+
+// RenderMediaLinks renders outbound media links as HTML
+func RenderMediaLinks(links []string) string {
+	if len(links) == 0 {
+		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no media files"))
+	}
+
+	var html strings.Builder
+	hasMedia := false
+	for _, link := range links {
+		if !pathutils.IsMedia(link) {
+			continue
+		}
+		hasMedia = true
+		rel := pathutils.ToRelative(link)
+		url := "/media/" + rel
+		html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, filepath.Base(rel)))
+	}
+	if !hasMedia {
+		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no media files"))
 	}
 	return html.String()
 }
@@ -134,12 +151,12 @@ func RenderKidsLinks(kids []string) string {
 	return RenderLinksList(kids, false)
 }
 
-// RenderUsedLinks renders used/outbound links or no outbound links message
-func RenderUsedLinks(usedLinks []string, showMedia bool) string {
+// RenderUsedLinks renders used/outbound links (non-media) or no outbound links message
+func RenderUsedLinks(usedLinks []string) string {
 	if len(usedLinks) == 0 {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no outbound links"))
 	}
-	return RenderLinksList(usedLinks, showMedia)
+	return RenderLinksList(usedLinks, false)
 }
 
 // RenderLinksToHere renders inbound links or no inbound links message

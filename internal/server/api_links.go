@@ -98,7 +98,6 @@ func handleAPIGetKids(w http.ResponseWriter, r *http.Request) {
 // @Summary Get used links for a file
 // @Tags links
 // @Param filepath query string true "File path"
-// @Param showMedia query bool false "Include media file links"
 // @Produce json,html
 // @Router /api/links/used [get]
 func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
@@ -107,21 +106,42 @@ func handleAPIGetUsedLinks(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
 		return
 	}
-	showMedia := r.URL.Query().Get("showMedia") == "true"
 	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
-		html := render.RenderNoLinksMessage("no outbound links found")
+		html := render.RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no outbound links found"))
 		writeResponse(w, r, data, html)
 		return
 	}
 	if len(metadata.UsedLinks) == 0 {
 		data := []string{}
-		html := render.RenderNoLinksMessage("no outbound links")
+		html := render.RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no outbound links"))
 		writeResponse(w, r, data, html)
 		return
 	}
-	html := render.RenderUsedLinks(metadata.UsedLinks, showMedia)
+	html := render.RenderUsedLinks(metadata.UsedLinks)
+	writeResponse(w, r, metadata.UsedLinks, html)
+}
+
+// @Summary Get outbound media links for a file
+// @Tags links
+// @Param filepath query string true "File path"
+// @Produce json,html
+// @Router /api/links/media [get]
+func handleAPIGetMediaLinks(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+	metadata, err := files.MetaDataGet(filePath)
+	if err != nil || metadata == nil {
+		data := []string{}
+		html := render.RenderMediaLinks(data)
+		writeResponse(w, r, data, html)
+		return
+	}
+	html := render.RenderMediaLinks(metadata.UsedLinks)
 	writeResponse(w, r, metadata.UsedLinks, html)
 }
 

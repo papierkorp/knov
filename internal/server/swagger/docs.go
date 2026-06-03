@@ -3217,6 +3217,28 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/links/media": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Get outbound media links for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/links/parents": {
             "get": {
                 "produces": [
@@ -3278,12 +3300,6 @@ const docTemplate = `{
                         "name": "filepath",
                         "in": "query",
                         "required": true
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Include media file links",
-                        "name": "showMedia",
-                        "in": "query"
                     }
                 ],
                 "responses": {}
