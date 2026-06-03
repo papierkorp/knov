@@ -150,14 +150,6 @@ func createAutoMetadata() error {
 			}
 		}
 
-		collection := "default"
-		if len(validFolders) > 0 {
-			collection = validFolders[0]
-		}
-
-		createDay := 3 + (i % 13)
-		editDay := createDay + 3 + (i % 8)
-
 		var parents []string
 		if i > 0 {
 			parentCount := i % 3

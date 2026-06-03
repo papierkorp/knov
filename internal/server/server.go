@@ -861,7 +861,7 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleFileEdit(w http.ResponseWriter, r *http.Request) {
-	filePath := strings.TrimPrefix(r.URL.Path, "/files/edit/")
+	filePath := pathutils.ToRelative(strings.TrimPrefix(r.URL.Path, "/files/edit/"))
 	sectionID := r.URL.Query().Get("section")
 
 	tm := thememanager.GetThemeManager()

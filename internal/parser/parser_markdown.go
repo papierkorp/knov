@@ -289,6 +289,7 @@ func resolveMediaPath(dest string) string {
 
 // addHeaderButtons injects edit-section anchor buttons into every header tag.
 func (h *MarkdownHandler) addHeaderButtons(htmlContent, filePath string) string {
+	relPath := pathutils.ToRelative(filePath)
 	headerRe := regexp.MustCompile(`<h([1-6])\s+id="([^"]+)"[^>]*>(.*?)</h[1-6]>`)
 	return headerRe.ReplaceAllStringFunc(htmlContent, func(match string) string {
 		parts := headerRe.FindStringSubmatch(match)
@@ -297,7 +298,7 @@ func (h *MarkdownHandler) addHeaderButtons(htmlContent, filePath string) string 
 		}
 		editBtn := fmt.Sprintf(
 			`<a href="/files/edit/%s?section=%s" class="header-edit-btn" title="%s"><i class="fa fa-edit"></i></a>`,
-			filePath, parts[2],
+			relPath, parts[2],
 			translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
 		)
 		return fmt.Sprintf(`<h%s id="%s">%s%s</h%s>`, parts[1], parts[2], parts[3], editBtn, parts[1])

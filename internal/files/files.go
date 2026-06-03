@@ -3,6 +3,7 @@ package files
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -107,6 +108,13 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	}
 
 	relativePath := pathutils.ToRelative(filePath)
+
+	// strip section edit buttons for non-markdown editors
+	if meta, err := MetaDataGet(pathutils.ToWithPrefix(relativePath)); err == nil && meta != nil {
+		if meta.Editor != EditorTypeMarkdown && meta.Editor != EditorTypeTextarea && meta.Editor != "" {
+			html = regexp.MustCompile(`<a href="/files/edit/[^"]*\?section=[^"]*" class="header-edit-btn"[^>]*>.*?</a>`).ReplaceAll(html, nil)
+		}
+	}
 	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", relativePath)
 
 	toc := parser.GenerateTOC(processedContent)

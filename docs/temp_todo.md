@@ -15,7 +15,6 @@
 - add a clean test-filter data
 - html parser for todo files (cancelled task, waiting task)
 - testfiles are not displayed as links?? ([test/testC/testC.md](test/testC/testC.md) => <li><!-- raw HTML omitted -->test/testC/testC.md<!-- raw HTML omitted --></li>)
-- edit section wrong link (http://localhost:1324/files/edit/home/markus/develop/privat/test-knov/data/docs/test/testB/testBA.md?section=testba-md)
 - background color for texteditor
 - rail theme info slideout title - sample%20Markdown.md
 - media file preview (rail theme) for images

@@ -54,20 +54,22 @@ func parsePath(inputPath string) *PathInfo {
 	normalizedPath = strings.TrimPrefix(normalizedPath, "files/")
 
 	// determine type based on prefix
+	// strip absolute/data-path prefix first, then detect docs/media
+	normalizedPath = stripDataPathPrefix(normalizedPath)
+
+	prefix := "docs/"
 	if strings.HasPrefix(normalizedPath, "media/") {
 		pathType = TypeMedia
+		prefix = "media/"
 		relativePath = strings.TrimPrefix(normalizedPath, "media/")
-		withPrefix = normalizedPath
 	} else if strings.HasPrefix(normalizedPath, "docs/") {
 		pathType = TypeDocs
 		relativePath = strings.TrimPrefix(normalizedPath, "docs/")
-		withPrefix = normalizedPath
 	} else {
-		// no prefix - default to docs type
 		pathType = TypeDocs
-		relativePath = stripDataPathPrefix(normalizedPath)
-		withPrefix = "docs/" + relativePath
+		relativePath = normalizedPath
 	}
+	withPrefix = prefix + relativePath
 
 	// clean up relative path
 	relativePath = strings.Trim(relativePath, "/")
@@ -155,15 +157,20 @@ func normalizePath(path string) string {
 
 // stripDataPathPrefix removes data directory prefix if present
 func stripDataPathPrefix(path string) string {
-	dataPath := configmanager.GetAppConfig().DataPath
-	dataPathName := filepath.Base(filepath.Clean(dataPath))
+	dataPath := strings.TrimPrefix(filepath.ToSlash(filepath.Clean(configmanager.GetAppConfig().DataPath)), "/")
+	normalizedPath := strings.TrimPrefix(filepath.ToSlash(path), "/")
 
-	if p, ok := strings.CutPrefix(path, dataPathName+"/"); ok {
+	// strip full absolute data path (e.g. home/user/project/data/docs/file.md -> docs/file.md)
+	if p, ok := strings.CutPrefix(normalizedPath, dataPath+"/"); ok {
 		return p
 	}
-	if p, ok := strings.CutPrefix(path, dataPathName+"\\"); ok {
+
+	// fallback: strip just the basename of data path (e.g. data/docs/file.md -> docs/file.md)
+	dataPathName := filepath.Base(dataPath)
+	if p, ok := strings.CutPrefix(normalizedPath, dataPathName+"/"); ok {
 		return p
 	}
+
 	return path
 }
 
