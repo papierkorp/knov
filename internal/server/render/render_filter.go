@@ -78,21 +78,17 @@ func RenderFilterForm(opts FilterFormOpts) string {
 				translation.SprintfForRequest(configmanager.GetLanguage(), "cancel")))
 		}
 	}
-	html.WriteString(renderLogicSelect(opts))
 	html.WriteString(fmt.Sprintf(
 		`<button type="button" hx-post="/api/filters/add-criteria" hx-target="#%s" hx-swap="beforeend"%s class="btn-secondary">%s</button>`,
 		criteriaTarget,
 		widgetIndexVals(opts),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add filter")))
-	html.WriteString(`</div>`)
-
-	// display & limit
-	html.WriteString(`<div class="filter-controls">`)
-	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "display") + `:</label>`)
+	html.WriteString(renderLogicToggle(opts))
+	html.WriteString(`<span class="filter-controls-sep"></span>`)
 	html.WriteString(renderDisplaySelect(opts))
-	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "limit") + `:</label>`)
-	html.WriteString(fmt.Sprintf(`<input type="number" name="%s" value="%s" min="1" class="form-input"/>`,
-		filterFieldName(opts, "limit"), resolvedLimitValue(opts.Config)))
+	html.WriteString(fmt.Sprintf(`<input type="number" name="%s" value="%s" min="1" class="form-input filter-limit-input" title="%s"/>`,
+		filterFieldName(opts, "limit"), resolvedLimitValue(opts.Config),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "limit")))
 	html.WriteString(`</div>`)
 
 	// criteria
@@ -167,18 +163,21 @@ func resolveFilterFormActionTarget(opts FilterFormOpts) (action, submitTarget st
 	}
 }
 
-func renderLogicSelect(opts FilterFormOpts) string {
+func renderLogicToggle(opts FilterFormOpts) string {
 	selected := "and"
 	if opts.Config != nil {
 		selected = opts.Config.Logic
 	}
+	name := filterFieldName(opts, "logic")
+	andLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "and")
+	orLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "or")
 	return fmt.Sprintf(
-		`<select name="%s" class="form-select"><option value="and" %s>%s</option><option value="or" %s>%s</option></select>`,
-		filterFieldName(opts, "logic"),
-		utils.Ternary(selected == "and", "selected", ""),
-		translation.SprintfForRequest(configmanager.GetLanguage(), "and"),
-		utils.Ternary(selected == "or", "selected", ""),
-		translation.SprintfForRequest(configmanager.GetLanguage(), "or"))
+		`<span class="filter-logic-switch" onclick="this.querySelectorAll('.filter-logic-opt').forEach(l=>l.classList.toggle('active',l.querySelector('input').checked))">
+			<label class="filter-logic-opt%s"><input type="radio" name="%s" value="and" %s>%s</label>
+			<label class="filter-logic-opt%s"><input type="radio" name="%s" value="or" %s>%s</label>
+		</span>`,
+		utils.Ternary(selected == "and", " active", ""), name, utils.Ternary(selected == "and", "checked", ""), andLabel,
+		utils.Ternary(selected == "or", " active", ""), name, utils.Ternary(selected == "or", "checked", ""), orLabel)
 }
 
 func renderDisplaySelect(opts FilterFormOpts) string {
@@ -281,9 +280,6 @@ func RenderFilterCriteriaRow(widgetIndex, rowIndex int, criteria *filter.Criteri
 	html.WriteString(fmt.Sprintf(`<div class="filter-criteria-row" data-index="%d">`, rowIndex))
 
 	html.WriteString(`<div class="filter-field">`)
-	if rowIndex > 0 {
-		html.WriteString(`<hr />`)
-	}
 	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "field") + `</label>`)
 
 	hxVals := fmt.Sprintf(`{"row_index": "%d"}`, rowIndex)
@@ -325,7 +321,7 @@ func RenderFilterCriteriaRow(widgetIndex, rowIndex int, criteria *filter.Criteri
 	html.WriteString(RenderFilterValueInput(inputID, criteriaFieldName(widgetIndex, rowIndex, "value"), value, metadataField))
 	html.WriteString(`</div></div>`)
 
-	html.WriteString(`<div class="filter-field">`)
+	html.WriteString(`<div class="filter-field filter-field-action">`)
 	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "action") + `</label>`)
 	html.WriteString(fmt.Sprintf(`<select name="%s" class="form-select">`, criteriaFieldName(widgetIndex, rowIndex, "action")))
 	selectedAction := "include"
@@ -333,13 +329,11 @@ func RenderFilterCriteriaRow(widgetIndex, rowIndex int, criteria *filter.Criteri
 		selectedAction = criteria.Action
 	}
 	html.WriteString(RenderActionOptions(selectedAction))
-	html.WriteString(`</select></div>`)
-
+	html.WriteString(`</select>`)
 	if rowIndex > 0 {
-		html.WriteString(`<div class="filter-field">`)
-		html.WriteString(`<button type="button" onclick="this.closest('.filter-criteria-row').remove()" class="btn-danger btn-small">` + translation.SprintfForRequest(configmanager.GetLanguage(), "remove") + `</button>`)
-		html.WriteString(`</div>`)
+		html.WriteString(`<button type="button" onclick="this.closest('.filter-criteria-row').remove()" class="filter-remove-btn" title="` + translation.SprintfForRequest(configmanager.GetLanguage(), "remove") + `"><i class="fa fa-times"></i></button>`)
 	}
+	html.WriteString(`</div>`)
 
 	html.WriteString(`</div>`)
 	return html.String()

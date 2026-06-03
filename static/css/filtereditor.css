@@ -85,44 +85,146 @@
 #page-filenew .filter-criteria-row,
 #page-fileedit .filter-criteria-row,
 #page-filteredit .filter-criteria-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 2fr 1fr auto;
-  gap: 12px;
-  align-items: end;
-  margin-bottom: 12px;
-  padding: 12px;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px 12px;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
+  min-width: 0;
 }
 
-#page-filenew .filter-field,
-#page-fileedit .filter-field,
-#page-filteredit .filter-field {
-  display: flex;
-  flex-direction: column;
+#page-filenew .filter-criteria-row .filter-field,
+#page-fileedit .filter-criteria-row .filter-field,
+#page-filteredit .filter-criteria-row .filter-field {
+  flex: 1;
+  min-width: 0;
+  display: block;
+}
+
+#page-filenew .filter-criteria-row .filter-field label,
+#page-fileedit .filter-criteria-row .filter-field label,
+#page-filteredit .filter-criteria-row .filter-field label {
+  display: none;
+}
+
+#page-filenew .filter-criteria-row .filter-field select,
+#page-fileedit .filter-criteria-row .filter-field select,
+#page-filteredit .filter-criteria-row .filter-field select,
+#page-filenew .filter-criteria-row .filter-field input,
+#page-fileedit .filter-criteria-row .filter-field input,
+#page-filteredit .filter-criteria-row .filter-field input {
+  width: 100%;
+  min-width: 0;
+}
+
+.filter-field-action {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
   gap: 4px;
 }
 
-#page-filenew .filter-field label,
-#page-fileedit .filter-field label,
-#page-filteredit .filter-field label {
-  font-size: 0.85rem;
-  font-weight: 500;
+.filter-field-action select {
+  flex: 1;
+  min-width: 0;
+}
+
+#page-filenew .filter-remove-btn,
+#page-fileedit .filter-remove-btn,
+#page-filteredit .filter-remove-btn,
+.filter-remove-btn {
+  background: none;
+  border: none;
   color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px 6px;
+  font-size: 0.85em;
+  line-height: 1;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+#page-filenew .filter-remove-btn:hover,
+#page-fileedit .filter-remove-btn:hover,
+#page-filteredit .filter-remove-btn:hover,
+.filter-remove-btn:hover {
+  color: var(--danger, #dc3545);
+  background: color-mix(in srgb, var(--danger, #dc3545) 10%, transparent);
 }
 
 #page-filenew .filter-controls,
 #page-fileedit .filter-controls,
 #page-filteredit .filter-controls {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
   margin-bottom: 16px;
-  padding: 12px;
+  padding: 10px 12px;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
+  flex-wrap: wrap;
+}
+
+#page-filenew .filter-controls .filter-controls-sep,
+#page-fileedit .filter-controls .filter-controls-sep,
+#page-filteredit .filter-controls .filter-controls-sep {
+  flex: 1;
+}
+
+#page-filenew .filter-controls .filter-limit-input,
+#page-fileedit .filter-controls .filter-limit-input,
+#page-filteredit .filter-controls .filter-limit-input {
+  width: 64px;
+}
+
+#page-filenew .filter-controls .form-select,
+#page-fileedit .filter-controls .form-select,
+#page-filteredit .filter-controls .form-select {
+  width: auto;
+}
+
+#page-filenew .filter-logic-switch,
+#page-fileedit .filter-logic-switch,
+#page-filteredit .filter-logic-switch {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 0.8em;
+}
+
+#page-filenew .filter-logic-opt,
+#page-fileedit .filter-logic-opt,
+#page-filteredit .filter-logic-opt {
+  padding: 4px 10px;
+  cursor: pointer;
+  background: var(--bg);
+  color: var(--text-secondary);
+  user-select: none;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+#page-filenew .filter-logic-opt input,
+#page-fileedit .filter-logic-opt input,
+#page-filteredit .filter-logic-opt input {
+  display: none;
+}
+
+#page-filenew .filter-logic-opt.active,
+#page-fileedit .filter-logic-opt.active,
+#page-filteredit .filter-logic-opt.active,
+#page-filenew .filter-logic-opt:has(input:checked),
+#page-fileedit .filter-logic-opt:has(input:checked),
+#page-filteredit .filter-logic-opt:has(input:checked) {
+  background: var(--primary);
+  color: var(--on-primary, #fff);
 }
 
 #page-filenew .filter-no-results,
