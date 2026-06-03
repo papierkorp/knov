@@ -6,7 +6,6 @@
 - update thememanager docs for both devs (how to create a new theme) and for user (how to use overwrite)
 
 **per ai**
-- rail theme info slideout title - sample%20Markdown.md
 - folder delete function (removes all files) and make it accessible in both themes
 - media file preview (rail theme) for images
 - add all envs to the settings.gohtml files

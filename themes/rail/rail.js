@@ -320,7 +320,7 @@ function setupFilePage() {
 
   // populate filename header
   const titleEl = document.getElementById("fp-file-title");
-  if (titleEl) titleEl.textContent = filepath.split("/").pop();
+  if (titleEl) titleEl.textContent = decodeURIComponent(filepath);
 
   // wire action buttons
   const editLink = document.getElementById("fp-edit-link");
