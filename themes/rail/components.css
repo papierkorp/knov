@@ -1989,6 +1989,102 @@ main textarea {
   text-align: left;
 }
 
+#testdata-result {
+  margin-top: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  overflow-x: auto;
+  font-size: 0.88em;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+#component-filter-test-metadata-table h3 {
+  margin: 0 0 12px;
+  font-size: 0.95em;
+  color: var(--primary);
+}
+
+#component-filter-test-metadata-table .table-date-legend {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 10px;
+  font-size: 0.8em;
+  color: var(--text-secondary);
+}
+
+#component-filter-test-metadata-table .table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+#component-filter-test-metadata-table .metadata-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+}
+
+#component-filter-test-metadata-table .metadata-table thead {
+  background: var(--bg-secondary);
+}
+
+#component-filter-test-metadata-table .metadata-table th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+
+#component-filter-test-metadata-table .metadata-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  color: var(--text);
+  vertical-align: top;
+}
+
+#component-filter-test-metadata-table .metadata-table .alt-row td {
+  background: color-mix(in srgb, var(--bg-secondary) 40%, transparent);
+}
+
+#component-filter-test-metadata-table .cell-path {
+  font-family: monospace;
+  font-size: 0.9em;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+#component-filter-test-metadata-table .cell-tags,
+#component-filter-test-metadata-table .cell-parents {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+}
+
+#component-filter-test-metadata-table .badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 0.8em;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--primary) 12%, var(--bg));
+  color: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+#component-filter-test-metadata-table .table-summary {
+  margin-top: 8px;
+  font-size: 0.8em;
+  color: var(--text-secondary);
+}
+
 /* =============================================
    search cards on /search page — hover effect
    ============================================= */

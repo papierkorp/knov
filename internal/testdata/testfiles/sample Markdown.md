@@ -1,10 +1,3 @@
----
-meta:
-  author: Jon Doe
-  topic: Samples
-  tag: sample
----
-
 # A sample Markdown document
 
 This is a sample document so you can preview the color schemes.

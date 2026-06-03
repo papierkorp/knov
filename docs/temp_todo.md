@@ -6,14 +6,21 @@
 - update thememanager docs for both devs (how to create a new theme) and for user (how to use overwrite)
 
 **per ai**
-- filter test output in rail theme in admin is not readable - make it its own full size width div and style it
 - remove the cache in rail per cronjob (files loaded at least)
 - folder delete function (removes all files) and make it accessible in both themes
 - related in connections - include grandchildren or include grandchildren to children?
 - filterform if possible make it one line (apply + and/or + add filter + display + limit)
-- change setup test data + clean test data and reduce it to one testdata folder
+- builtin overview - set max chars for titles so it doesnt break the layout (or is there a better css solution)
+- builtin browse by folder structure - style broken folders is too small
+- add a clean test-filter data
+- html parser for todo files (cancelled task, waiting task)
+- testfiles are not displayed as links?? ([test/testC/testC.md](test/testC/testC.md) => <li><!-- raw HTML omitted -->test/testC/testC.md<!-- raw HTML omitted --></li>)
+- edit section wrong link (http://localhost:1324/files/edit/home/markus/develop/privat/test-knov/data/docs/test/testB/testBA.md?section=testba-md)
+- background color for texteditor
+- rail theme info slideout title - sample%20Markdown.md
 - media file preview (rail theme) for images
-- in server/api/pathutils package - add a getURLPATH function which just returns e.g. /files/ - and use this in the render to centralize this
+- add all envs to the settings.gohtml files
+- a urls.go file in the render package wich typed constants like FilesBase = "/files"
 - both themes - dashboard - widget: filter missing style
 - backup solution
 - backup git search
@@ -91,8 +98,8 @@ give me a table which covers all of the testcases - testcases can overlap so the
 **testfiles**
 
 collection: filter-tests
-create date: 1.10.2025 than +1 day for each file
-edit date: 1.11.2025 than +1 day for each file
+create date: 1.10.2025 for A than +1 day for each file
+edit date: 1.11.2025 for A than +1 day for each file
 
 |              title              |                 tags                |     Parent     |           Notes            |
 |---------------------------------|-------------------------------------|----------------|----------------------------|
@@ -101,7 +108,7 @@ edit date: 1.11.2025 than +1 day for each file
 | filtertestC.md                  | filtertest-group, filtertest-group2 |                |                            |
 | filtertestD.md                  | filtertest-group2                   |                | ancestor of filtertestF.md |
 | filtertestE.md                  |                                     | filtertestD.md | parent of filtertestF.md   |
-| filtertestF.md                  |                                     | filtertestF.md | cre                        |
+| filtertestF.md                  |                                     | filtertestF.md | child of filtertestE.md    |
 
 
 **actual tests**

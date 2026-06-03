@@ -174,6 +174,16 @@ func RenderFilterTestMetadataTable(metadataList []*files.Metadata) string {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "Filter Test Metadata"),
 		len(metadataList)))
 
+	// date legend
+	html.WriteString(`<div class="table-date-legend">`)
+	html.WriteString(fmt.Sprintf(`<span><strong>%s:</strong> %s (A) +1 day per file</span>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "created"),
+		metadataList[0].CreatedAt.Format("2.1.2006")))
+	html.WriteString(fmt.Sprintf(`<span><strong>%s:</strong> %s (A) +1 day per file</span>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "last edited"),
+		metadataList[0].LastEdited.Format("2.1.2006")))
+	html.WriteString(`</div>`)
+
 	// responsive table wrapper
 	html.WriteString(`<div class="table-wrapper">`)
 	html.WriteString(`<table class="metadata-table">`)
@@ -183,19 +193,9 @@ func RenderFilterTestMetadataTable(metadataList []*files.Metadata) string {
 	html.WriteString(`<tr>`)
 
 	// define table columns
-	columns := []struct {
-		key   string
-		width string
-	}{
-		{"Name", "10%"},
-		{"Path", "15%"},
-		{"Collection", "12%"},
-		{"Tags", "20%"},
-		{"Editor", "8%"},
-	}
-
+	columns := []string{"Path", "Tags", "Parents", "Editor"}
 	for _, col := range columns {
-		html.WriteString(fmt.Sprintf(`<th class="col-width-%s">%s</th>`, strings.ReplaceAll(col.width, "%", ""), col.key))
+		html.WriteString(fmt.Sprintf(`<th>%s</th>`, col))
 	}
 	html.WriteString(`</tr>`)
 	html.WriteString(`</thead>`)
@@ -203,7 +203,6 @@ func RenderFilterTestMetadataTable(metadataList []*files.Metadata) string {
 	// table body
 	html.WriteString(`<tbody>`)
 	for i, metadata := range metadataList {
-		// alternate row colors
 		rowClass := ""
 		if i%2 == 1 {
 			rowClass = ` class="alt-row"`
@@ -211,18 +210,16 @@ func RenderFilterTestMetadataTable(metadataList []*files.Metadata) string {
 
 		html.WriteString(fmt.Sprintf(`<tr%s>`, rowClass))
 
-		// name
-		html.WriteString(fmt.Sprintf(`<td class="cell-name">%s</td>`, metadata.Title))
-
 		// path
 		html.WriteString(fmt.Sprintf(`<td class="cell-path">%s</td>`, metadata.Path))
-
-		// collection
-		html.WriteString(fmt.Sprintf(`<td class="cell-collection">%s</td>`, metadata.Collection))
 
 		// tags
 		tagsStr := strings.Join(metadata.Tags, ", ")
 		html.WriteString(fmt.Sprintf(`<td class="cell-tags">%s</td>`, tagsStr))
+
+		// parents
+		parentsStr := strings.Join(metadata.Parents, ", ")
+		html.WriteString(fmt.Sprintf(`<td class="cell-parents">%s</td>`, parentsStr))
 
 		// editor type with color coding
 		editorClass := "type-markdown"

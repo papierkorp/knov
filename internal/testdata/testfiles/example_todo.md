@@ -1,0 +1,5 @@
+- [ ] open task
+- [X] done task
+- [-] cancelled task
+- [O] waiting task
+  - [ ] nested subtask

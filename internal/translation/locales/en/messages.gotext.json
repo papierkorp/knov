@@ -1652,6 +1652,11 @@
       "translation": ""
     },
     {
+      "id": "last edited",
+      "message": "last edited",
+      "translation": ""
+    },
+    {
       "id": "last modified",
       "message": "last modified",
       "translation": ""
@@ -1899,6 +1904,11 @@
     {
       "id": "media file not found",
       "message": "media file not found",
+      "translation": ""
+    },
+    {
+      "id": "media files",
+      "message": "media files",
       "translation": ""
     },
     {
@@ -2177,6 +2187,11 @@
       "translation": ""
     },
     {
+      "id": "no media files",
+      "message": "no media files",
+      "translation": ""
+    },
+    {
       "id": "no media files found",
       "message": "no media files found",
       "translation": ""
@@ -2194,6 +2209,11 @@
     {
       "id": "no outbound links",
       "message": "no outbound links",
+      "translation": ""
+    },
+    {
+      "id": "no outbound links found",
+      "message": "no outbound links found",
       "translation": ""
     },
     {
@@ -2712,6 +2732,11 @@
       "translation": ""
     },
     {
+      "id": "Setup test data? This will create example files in the data/test folder.",
+      "message": "Setup test data? This will create example files in the data/test folder.",
+      "translation": ""
+    },
+    {
       "id": "Shadow border",
       "message": "Shadow border",
       "translation": ""
@@ -2905,6 +2930,11 @@
       "id": "Theme Settings",
       "message": "Theme Settings",
       "translation": "Theme Settings"
+    },
+    {
+      "id": "This will remove all files in the data/test Folder.",
+      "message": "This will remove all files in the data/test Folder.",
+      "translation": ""
     },
     {
       "id": "title",
@@ -3164,11 +3194,6 @@
     {
       "id": "Wrap long lines in code blocks",
       "message": "Wrap long lines in code blocks",
-      "translation": ""
-    },
-    {
-      "id": "Yo",
-      "message": "Yo",
       "translation": ""
     },
     {

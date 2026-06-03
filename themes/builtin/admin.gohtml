@@ -101,10 +101,10 @@
                     <h3>{{T "Test Data Management"}}</h3>
                     <div class="help-text">{{T "manage test data for development and testing purposes"}}</div>
                     <form>
-                        <button type="button" hx-post="/api/testdata/setup" hx-target="#testdata-result" hx-confirm="{{T "Setup test data? This will create example files."}}">
+                        <button type="button" hx-post="/api/testdata/setup" hx-target="#testdata-result" hx-confirm="{{T "Setup test data? This will create example files in the data/test folder."}}">
                             {{T "Setup Test Data"}}
                         </button>
-                        <button type="button" hx-post="/api/testdata/clean" hx-target="#testdata-result" hx-confirm="{{T "WARNING - This will remove all files in the Data Folder!!."}}">
+                        <button type="button" hx-post="/api/testdata/clean" hx-target="#testdata-result" hx-confirm="{{T "This will remove all files in the data/test Folder."}}">
                             {{T "Clean Test Data"}}
                         </button>
                         <button type="button" hx-post="/api/testdata/filtertest" hx-target="#testdata-result" hx-confirm="{{T "Run filter tests? This will create test metadata objects."}}">

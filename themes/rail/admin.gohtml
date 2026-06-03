@@ -118,17 +118,17 @@
             </div>
         </section>
 
-        <section class="settings-section">
+        <section class="settings-section settings-section-wide">
             <h2>{{T "Test Data"}}</h2>
             <div class="setting-item">
                 <div class="help-text">{{T "manage test data for development and testing purposes"}}</div>
                 <div class="admin-action-list">
                     <button class="btn-secondary" hx-post="/api/testdata/setup" hx-target="#testdata-result"
-                            hx-confirm="{{T "Setup test data? This will create example files."}}">
+                            hx-confirm="{{T "Setup test data? This will create example files in the data/test folder."}}">
                         {{T "Setup Test Data"}}
                     </button>
                     <button class="btn-danger" hx-post="/api/testdata/clean" hx-target="#testdata-result"
-                            hx-confirm="{{T "WARNING - This will remove all files in the Data Folder!!."}}">
+                            hx-confirm="{{T "This will remove all files in the data/test Folder."}}">
                         {{T "Clean Test Data"}}
                     </button>
                     <button class="btn-secondary" hx-post="/api/testdata/filtertest" hx-target="#testdata-result"
@@ -139,8 +139,8 @@
                         {{T "View Filter Test Metadata"}}
                     </button>
                 </div>
-                <div id="testdata-result"></div>
             </div>
+            <div id="testdata-result"></div>
         </section>
 
     </div>
