@@ -8,15 +8,14 @@
 **per ai**
 - rail theme info slideout title - sample%20Markdown.md
 - folder delete function (removes all files) and make it accessible in both themes
-- builtin overview - set max chars for titles so it doesnt break the layout (or is there a better css solution)
-- builtin browse by folder structure - style broken folders is too small
 - html parser for todo files (cancelled task, waiting task)
 - media file preview (rail theme) for images
 - add all envs to the settings.gohtml files
 - related in connections - include grandchildren or include grandchildren to children?
 - a urls.go file in the render package wich typed constants like FilesBase = "/files"
 - remove the cache in rail per cronjob (files loaded at least)
-- both themes - dashboard - widget: filter missing style
+
+
 - backup solution
 - backup git search
 - git lfs possible?

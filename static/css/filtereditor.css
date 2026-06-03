@@ -5,9 +5,9 @@
 #page-filenew .filter-editor,
 #page-fileedit .filter-editor,
 #page-filteredit .filter-editor {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 #page-filenew .filter-form-container,
@@ -16,10 +16,10 @@
 #page-filenew .filter-results-container,
 #page-fileedit .filter-results-container,
 #page-filteredit .filter-results-container {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
 }
 
 #page-filenew .filter-form-container h4,
@@ -28,210 +28,244 @@
 #page-filenew .filter-results-container h4,
 #page-fileedit .filter-results-container h4,
 #page-filteredit .filter-results-container h4 {
-  margin: 0 0 12px 0;
-  color: var(--text);
-  font-size: 1.1rem;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 8px;
+    margin: 0 0 12px 0;
+    color: var(--text);
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
 }
 
 #page-filenew .filter-form-container .form-group,
 #page-fileedit .filter-form-container .form-group,
 #page-filteredit .filter-form-container .form-group {
-  margin-bottom: 16px;
+    margin-bottom: 16px;
 }
 
 #page-filenew .filter-form-container .form-group label,
 #page-fileedit .filter-form-container .form-group label,
 #page-filteredit .filter-form-container .form-group label {
-  display: block;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-  font-weight: 500;
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 500;
 }
 
 #page-filenew .filter-form-container input[type="text"],
 #page-fileedit .filter-form-container input[type="text"],
 #page-filteredit .filter-form-container input[type="text"] {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 0.9rem;
-  box-sizing: border-box;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
 }
 
 #page-filenew .filter-form-container input[type="text"]:focus,
 #page-fileedit .filter-form-container input[type="text"]:focus,
 #page-filteredit .filter-form-container input[type="text"]:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 #page-filenew .filter-form-container input[type="text"]::placeholder,
 #page-fileedit .filter-form-container input[type="text"]::placeholder,
 #page-filteredit .filter-form-container input[type="text"]::placeholder {
-  color: var(--text-secondary);
-  font-style: italic;
+    color: var(--text-secondary);
+    font-style: italic;
 }
 
 #page-filenew .filter-criteria-row,
 #page-fileedit .filter-criteria-row,
-#page-filteredit .filter-criteria-row {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
-  padding: 8px 12px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  min-width: 0;
+#page-filteredit .filter-criteria-row,
+#page-dashboard-new .filter-criteria-row,
+#page-dashboard-edit .filter-criteria-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    min-width: 0;
 }
 
 #page-filenew .filter-criteria-row .filter-field,
 #page-fileedit .filter-criteria-row .filter-field,
-#page-filteredit .filter-criteria-row .filter-field {
-  flex: 1;
-  min-width: 0;
-  display: block;
+#page-filteredit .filter-criteria-row .filter-field,
+#page-dashboard-new .filter-criteria-row .filter-field,
+#page-dashboard-edit .filter-criteria-row .filter-field {
+    flex: 1;
+    min-width: 0;
+    display: block;
 }
 
 #page-filenew .filter-criteria-row .filter-field label,
 #page-fileedit .filter-criteria-row .filter-field label,
-#page-filteredit .filter-criteria-row .filter-field label {
-  display: none;
+#page-filteredit .filter-criteria-row .filter-field label,
+#page-dashboard-new .filter-criteria-row .filter-field label,
+#page-dashboard-edit .filter-criteria-row .filter-field label {
+    display: none;
 }
 
 #page-filenew .filter-criteria-row .filter-field select,
 #page-fileedit .filter-criteria-row .filter-field select,
 #page-filteredit .filter-criteria-row .filter-field select,
+#page-dashboard-new .filter-criteria-row .filter-field select,
+#page-dashboard-edit .filter-criteria-row .filter-field select,
 #page-filenew .filter-criteria-row .filter-field input,
 #page-fileedit .filter-criteria-row .filter-field input,
-#page-filteredit .filter-criteria-row .filter-field input {
-  width: 100%;
-  min-width: 0;
+#page-filteredit .filter-criteria-row .filter-field input,
+#page-dashboard-new .filter-criteria-row .filter-field input,
+#page-dashboard-edit .filter-criteria-row .filter-field input {
+    width: 100%;
+    min-width: 0;
 }
 
 .filter-field-action {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center;
-  gap: 4px;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 4px;
 }
 
 .filter-field-action select {
-  flex: 1;
-  min-width: 0;
+    flex: 1;
+    min-width: 0;
 }
 
 #page-filenew .filter-remove-btn,
 #page-fileedit .filter-remove-btn,
 #page-filteredit .filter-remove-btn,
+#page-dashboard-new .filter-remove-btn,
+#page-dashboard-edit .filter-remove-btn,
 .filter-remove-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 4px 6px;
-  font-size: 0.85em;
-  line-height: 1;
-  border-radius: 3px;
-  flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 0.85em;
+    line-height: 1;
+    border-radius: 3px;
+    flex-shrink: 0;
 }
 
 #page-filenew .filter-remove-btn:hover,
 #page-fileedit .filter-remove-btn:hover,
 #page-filteredit .filter-remove-btn:hover,
+#page-dashboard-new .filter-remove-btn:hover,
+#page-dashboard-edit .filter-remove-btn:hover,
 .filter-remove-btn:hover {
-  color: var(--danger, #dc3545);
-  background: color-mix(in srgb, var(--danger, #dc3545) 10%, transparent);
+    color: var(--danger, #dc3545);
+    background: color-mix(in srgb, var(--danger, #dc3545) 10%, transparent);
 }
 
 #page-filenew .filter-controls,
 #page-fileedit .filter-controls,
-#page-filteredit .filter-controls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 16px;
-  padding: 10px 12px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  flex-wrap: wrap;
+#page-filteredit .filter-controls,
+#page-dashboard-new .filter-controls,
+#page-dashboard-edit .filter-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    flex-wrap: wrap;
 }
 
 #page-filenew .filter-controls .filter-controls-sep,
 #page-fileedit .filter-controls .filter-controls-sep,
-#page-filteredit .filter-controls .filter-controls-sep {
-  flex: 1;
+#page-filteredit .filter-controls .filter-controls-sep,
+#page-dashboard-new .filter-controls .filter-controls-sep,
+#page-dashboard-edit .filter-controls .filter-controls-sep {
+    flex: 1;
 }
 
 #page-filenew .filter-controls .filter-limit-input,
 #page-fileedit .filter-controls .filter-limit-input,
-#page-filteredit .filter-controls .filter-limit-input {
-  width: 64px;
+#page-filteredit .filter-controls .filter-limit-input,
+#page-dashboard-new .filter-controls .filter-limit-input,
+#page-dashboard-edit .filter-controls .filter-limit-input {
+    width: 64px;
 }
 
 #page-filenew .filter-controls .form-select,
 #page-fileedit .filter-controls .form-select,
-#page-filteredit .filter-controls .form-select {
-  width: auto;
+#page-filteredit .filter-controls .form-select,
+#page-dashboard-new .filter-controls .form-select,
+#page-dashboard-edit .filter-controls .form-select {
+    width: auto;
 }
 
 #page-filenew .filter-logic-switch,
 #page-fileedit .filter-logic-switch,
-#page-filteredit .filter-logic-switch {
-  display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-  font-size: 0.8em;
+#page-filteredit .filter-logic-switch,
+#page-dashboard-new .filter-logic-switch,
+#page-dashboard-edit .filter-logic-switch {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    font-size: 0.8em;
 }
 
 #page-filenew .filter-logic-opt,
 #page-fileedit .filter-logic-opt,
-#page-filteredit .filter-logic-opt {
-  padding: 4px 10px;
-  cursor: pointer;
-  background: var(--bg);
-  color: var(--text-secondary);
-  user-select: none;
-  transition:
-    background 0.15s,
-    color 0.15s;
+#page-filteredit .filter-logic-opt,
+#page-dashboard-new .filter-logic-opt,
+#page-dashboard-edit .filter-logic-opt {
+    padding: 4px 10px;
+    cursor: pointer;
+    background: var(--bg);
+    color: var(--text-secondary);
+    user-select: none;
+    transition:
+        background 0.15s,
+        color 0.15s;
 }
 
 #page-filenew .filter-logic-opt input,
 #page-fileedit .filter-logic-opt input,
-#page-filteredit .filter-logic-opt input {
-  display: none;
+#page-filteredit .filter-logic-opt input,
+#page-dashboard-new .filter-logic-opt input,
+#page-dashboard-edit .filter-logic-opt input {
+    display: none;
 }
 
 #page-filenew .filter-logic-opt.active,
 #page-fileedit .filter-logic-opt.active,
 #page-filteredit .filter-logic-opt.active,
+#page-dashboard-new .filter-logic-opt.active,
+#page-dashboard-edit .filter-logic-opt.active,
 #page-filenew .filter-logic-opt:has(input:checked),
 #page-fileedit .filter-logic-opt:has(input:checked),
-#page-filteredit .filter-logic-opt:has(input:checked) {
-  background: var(--primary);
-  color: var(--on-primary, #fff);
+#page-filteredit .filter-logic-opt:has(input:checked),
+#page-dashboard-new .filter-logic-opt:has(input:checked),
+#page-dashboard-edit .filter-logic-opt:has(input:checked) {
+    background: var(--primary);
+    color: var(--on-primary, #fff);
 }
 
 #page-filenew .filter-no-results,
 #page-fileedit .filter-no-results,
-#page-filteredit .filter-no-results {
-  color: var(--text-secondary);
-  font-style: italic;
-  text-align: center;
-  padding: 20px;
+#page-filteredit .filter-no-results,
+#page-dashboard-new .filter-no-results,
+#page-dashboard-edit .filter-no-results {
+    color: var(--text-secondary);
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
 }

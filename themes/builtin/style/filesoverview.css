@@ -1,77 +1,88 @@
 /* theme: builtin */
 #page-files-overview .overview-sections {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
 }
 
 #page-files-overview .overview-files h2 {
-  font-size: 18px;
-  margin-bottom: 15px;
+    font-size: 18px;
+    margin-bottom: 15px;
 }
 
 #page-files-overview .overview-list ul {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+#page-files-overview .overview-list li {
+    min-width: 0;
+}
+
+#page-files-overview .overview-list li a {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 #page-files-overview .overview-browse {
-  background: var(--bg-secondary);
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
 }
 
 #page-files-overview .overview-browse h2 {
-  margin: 0 0 20px 0;
-  font-size: 18px;
+    margin: 0 0 20px 0;
+    font-size: 18px;
 }
 
 #page-files-overview .overview-browse h2 a {
-  color: var(--text);
-  text-decoration: none;
+    color: var(--text);
+    text-decoration: none;
 }
 
 #page-files-overview .overview-browse h2 a:hover {
-  color: var(--primary);
+    color: var(--primary);
 }
 
 #page-files-overview .browse-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
 }
 
 #page-files-overview .browse-section {
-  background: var(--bg);
-  padding: 15px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
+    background: var(--bg);
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
 }
 
 #page-files-overview .browse-section h3 {
-  margin: 0 0 10px 0;
-  color: var(--primary);
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+    margin: 0 0 10px 0;
+    color: var(--primary);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 #page-files-overview .browse-section h3 a {
-  color: var(--primary);
-  text-decoration: none;
+    color: var(--primary);
+    text-decoration: none;
 }
 
 #page-files-overview .browse-section h3 a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 @media (max-width: 768px) {
-  #page-files-overview .browse-grid {
-    grid-template-columns: 1fr;
-  }
+    #page-files-overview .browse-grid {
+        grid-template-columns: 1fr;
+    }
 
-  #page-files-overview .overview-list ul {
-    grid-template-columns: 1fr;
-  }
+    #page-files-overview .overview-list ul {
+        grid-template-columns: 1fr;
+    }
 }
