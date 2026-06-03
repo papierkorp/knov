@@ -81,18 +81,49 @@ func handleAPIGetKids(w http.ResponseWriter, r *http.Request) {
 	metadata, err := files.MetaDataGet(filePath)
 	if err != nil || metadata == nil {
 		data := []string{}
-		html := render.RenderNoLinksMessage("no children found")
+		html := render.RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no children found"))
 		writeResponse(w, r, data, html)
 		return
 	}
 	if len(metadata.Kids) == 0 {
 		data := []string{}
-		html := render.RenderNoLinksMessage("no children")
+		html := render.RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no children"))
 		writeResponse(w, r, data, html)
 		return
 	}
-	html := render.RenderLinksList(metadata.Kids, false)
+	html := render.RenderKidsLinks(metadata.Kids)
 	writeResponse(w, r, metadata.Kids, html)
+}
+
+// @Summary Get grandchildren links for a file
+// @Tags links
+// @Param filepath query string true "File path"
+// @Produce json,html
+// @Router /api/links/grandchildren [get]
+func handleAPIGetGrandchildren(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+	metadata, err := files.MetaDataGet(filePath)
+	if err != nil || metadata == nil {
+		writeResponse(w, r, []string{}, render.RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no grandchildren")))
+		return
+	}
+	var grandchildren []string
+	for _, kid := range metadata.Kids {
+		kidMeta, err := files.MetaDataGet(kid)
+		if err != nil || kidMeta == nil {
+			continue
+		}
+		grandchildren = append(grandchildren, kidMeta.Kids...)
+	}
+	if len(grandchildren) == 0 {
+		writeResponse(w, r, []string{}, render.RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no grandchildren")))
+		return
+	}
+	writeResponse(w, r, grandchildren, render.RenderLinksList(grandchildren, false))
 }
 
 // @Summary Get used links for a file

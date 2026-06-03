@@ -3322,6 +3322,28 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/links/grandchildren": {
+            "get": {
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Get grandchildren links for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/links/kids": {
             "get": {
                 "produces": [

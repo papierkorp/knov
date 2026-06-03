@@ -321,6 +321,7 @@ func StartServerChi() {
 			r.Get("/ancestors", handleAPIGetAncestors)
 			r.Get("/ancestors-in-collection", handleAPIGetAncestorsInCollection)
 			r.Get("/kids", handleAPIGetKids)
+			r.Get("/grandchildren", handleAPIGetGrandchildren)
 			r.Get("/used", handleAPIGetUsedLinks)
 			r.Get("/linkstohere", handleAPIGetLinksToHere)
 			r.Get("/media", handleAPIGetMediaLinks)

@@ -2549,6 +2549,21 @@ paths:
       summary: Get ancestor files within a collection
       tags:
       - links
+  /api/links/grandchildren:
+    get:
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get grandchildren links for a file
+      tags:
+      - links
   /api/links/kids:
     get:
       parameters:

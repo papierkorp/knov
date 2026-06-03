@@ -69,6 +69,10 @@
                         <div hx-get="/api/links/kids?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>
                     <div class="connection-group">
+                        <div class="connection-label">{{T "grandchildren"}}</div>
+                        <div hx-get="/api/links/grandchildren?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                    </div>
+                    <div class="connection-group">
                         <div class="connection-label">{{T "links to"}}</div>
                         <div hx-get="/api/links/used?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
                     </div>

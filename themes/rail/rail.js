@@ -371,6 +371,7 @@ function setupFilePage() {
     "fp-ancestors": "/api/links/ancestors?filepath=" + fp,
     "fp-parents": "/api/links/parents?filepath=" + fp,
     "fp-children": "/api/links/kids?filepath=" + fp,
+    "fp-grandchildren": "/api/links/grandchildren?filepath=" + fp,
     "fp-links-to": "/api/links/used?filepath=" + fp,
     "fp-media-links": "/api/links/media?filepath=" + fp,
     "fp-links-from": "/api/links/linkstohere?filepath=" + fp,
