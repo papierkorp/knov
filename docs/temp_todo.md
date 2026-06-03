@@ -6,7 +6,6 @@
 - update thememanager docs for both devs (how to create a new theme) and for user (how to use overwrite)
 
 **per ai**
-- Link Display Mode in rail theme (like we have for builtin theme)
 - add images to connections (both themes)
 - remove the cache in rail per cronjob (files loaded at least)
 - folder delete function (removes all files) and make it accessible in both themes

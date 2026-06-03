@@ -30,6 +30,21 @@
       "label": "Custom CSS",
       "description": "add your own css styles"
     },
+    "linkDisplayMode": {
+      "type": "select",
+      "options": [
+        "filename",
+        "filepath",
+        "title",
+        "title-filepath",
+        "title-filename",
+        "filename-title",
+        "filepath-title"
+      ],
+      "default": "filename",
+      "label": "Link Display Mode",
+      "description": "show filenames, file paths, or extracted titles in links"
+    },
     "quickLink1Url": {
       "type": "text",
       "default": "",
