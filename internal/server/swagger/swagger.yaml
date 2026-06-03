@@ -647,6 +647,57 @@ paths:
       summary: Update data path
       tags:
       - config
+  /api/config/extensions/index:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to use .index extension
+        in: formData
+        name: useExtensionIndex
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update use extension for index files
+      tags:
+      - config
+  /api/config/extensions/list:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to use .list extension
+        in: formData
+        name: useExtensionList
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update use extension for list files
+      tags:
+      - config
+  /api/config/extensions/todo:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to use .todo extension
+        in: formData
+        name: useExtensionTodo
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update use extension for todo files
+      tags:
+      - config
   /api/config/favicon:
     delete:
       consumes:
@@ -915,6 +966,39 @@ paths:
       summary: Update hide video files setting
       tags:
       - config
+  /api/config/file-types/show-hidden:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to show hidden files
+        in: formData
+        name: showHiddenFiles
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update show hidden files setting
+      tags:
+      - config
+  /api/config/home-dashboard:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Dashboard ID to use as home page (empty for default)
+        in: formData
+        name: homeDashboard
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update home dashboard setting
+      tags:
+      - config
   /api/config/language:
     post:
       consumes:
@@ -933,6 +1017,23 @@ paths:
       - text/html
       responses: {}
       summary: Get available languages
+      tags:
+      - config
+  /api/config/log-level:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Log level (debug, info, warning, error)
+        in: formData
+        name: logLevel
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update log level setting
       tags:
       - config
   /api/config/media/border-style:

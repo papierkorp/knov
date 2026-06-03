@@ -221,6 +221,12 @@ func StartServerChi() {
 			r.Post("/file-types/hide-archives", handleAPIUpdateHideArchives)
 			r.Post("/file-types/hide-executables", handleAPIUpdateHideExecutables)
 			r.Post("/file-types/hide-scripts", handleAPIUpdateHideScripts)
+			r.Post("/file-types/show-hidden", handleAPIUpdateShowHiddenFiles)
+			r.Post("/home-dashboard", handleAPIUpdateHomeDashboard)
+			r.Post("/extensions/todo", handleAPIUpdateUseExtensionTodo)
+			r.Post("/extensions/list", handleAPIUpdateUseExtensionList)
+			r.Post("/extensions/index", handleAPIUpdateUseExtensionIndex)
+			r.Post("/log-level", handleAPIUpdateLogLevel)
 		})
 
 		// ----------------------------------------------------------------------------------------

@@ -956,3 +956,135 @@ func handleAPIUpdateHideScripts(w http.ResponseWriter, r *http.Request) {
 	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "script visibility updated"))
 	writeResponse(w, r, "saved", html)
 }
+
+// @Summary Update show hidden files setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param showHiddenFiles formData bool true "Whether to show hidden files"
+// @Produce json,html
+// @Router /api/config/file-types/show-hidden [post]
+func handleAPIUpdateShowHiddenFiles(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+	show := r.FormValue("showHiddenFiles") == "true"
+	if err := configmanager.UpdateEnvFile("KNOV_SHOW_HIDDEN_FILES", fmt.Sprintf("%t", show)); err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+	logging.LogInfo("updated show hidden files to: %t", show)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "hidden files setting updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update home dashboard setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param homeDashboard formData string false "Dashboard ID to use as home page (empty for default)"
+// @Produce json,html
+// @Router /api/config/home-dashboard [post]
+func handleAPIUpdateHomeDashboard(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+	id := r.FormValue("homeDashboard")
+	if err := configmanager.UpdateEnvFile("KNOV_HOME_DASHBOARD", id); err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+	logging.LogInfo("updated home dashboard to: %s", id)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "home dashboard updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update use extension for todo files
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param useExtensionTodo formData bool true "Whether to use .todo extension"
+// @Produce json,html
+// @Router /api/config/extensions/todo [post]
+func handleAPIUpdateUseExtensionTodo(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+	use := r.FormValue("useExtensionTodo") == "true"
+	if err := configmanager.UpdateEnvFile("KNOV_USE_EXTENSION_TODO", fmt.Sprintf("%t", use)); err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+	logging.LogInfo("updated use extension todo to: %t", use)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "todo extension setting updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update use extension for list files
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param useExtensionList formData bool true "Whether to use .list extension"
+// @Produce json,html
+// @Router /api/config/extensions/list [post]
+func handleAPIUpdateUseExtensionList(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+	use := r.FormValue("useExtensionList") == "true"
+	if err := configmanager.UpdateEnvFile("KNOV_USE_EXTENSION_LIST", fmt.Sprintf("%t", use)); err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+	logging.LogInfo("updated use extension list to: %t", use)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "list extension setting updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update use extension for index files
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param useExtensionIndex formData bool true "Whether to use .index extension"
+// @Produce json,html
+// @Router /api/config/extensions/index [post]
+func handleAPIUpdateUseExtensionIndex(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+	use := r.FormValue("useExtensionIndex") == "true"
+	if err := configmanager.UpdateEnvFile("KNOV_USE_EXTENSION_INDEX", fmt.Sprintf("%t", use)); err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+	logging.LogInfo("updated use extension index to: %t", use)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "index extension setting updated"))
+	writeResponse(w, r, "saved", html)
+}
+
+// @Summary Update log level setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param logLevel formData string true "Log level (debug, info, warning, error)"
+// @Produce json,html
+// @Router /api/config/log-level [post]
+func handleAPIUpdateLogLevel(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
+		return
+	}
+	level := r.FormValue("logLevel")
+	if err := configmanager.UpdateEnvFile("KNOV_LOG_LEVEL", level); err != nil {
+		logging.LogError("failed to update env file: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
+		return
+	}
+	logging.LogInfo("updated log level to: %s", level)
+	html := render.RenderStatusMessage("status-ok", translation.SprintfForRequest(configmanager.GetLanguage(), "log level updated"))
+	writeResponse(w, r, "saved", html)
+}

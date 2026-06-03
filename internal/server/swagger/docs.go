@@ -501,6 +501,81 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/config/extensions/index": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update use extension for index files",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to use .index extension",
+                        "name": "useExtensionIndex",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/extensions/list": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update use extension for list files",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to use .list extension",
+                        "name": "useExtensionList",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/extensions/todo": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update use extension for todo files",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to use .todo extension",
+                        "name": "useExtensionTodo",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/config/favicon": {
             "post": {
                 "description": "Uploads a custom favicon (ico, png, or svg) stored in storage/favicon",
@@ -897,6 +972,55 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/config/file-types/show-hidden": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update show hidden files setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to show hidden files",
+                        "name": "showHiddenFiles",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/home-dashboard": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update home dashboard setting",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Dashboard ID to use as home page (empty for default)",
+                        "name": "homeDashboard",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/config/language": {
             "post": {
                 "consumes": [
@@ -923,6 +1047,31 @@ const docTemplate = `{
                     "config"
                 ],
                 "summary": "Get available languages",
+                "responses": {}
+            }
+        },
+        "/api/config/log-level": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update log level setting",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Log level (debug, info, warning, error)",
+                        "name": "logLevel",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
                 "responses": {}
             }
         },

@@ -8,7 +8,6 @@
 **per ai**
 - folder delete function (removes all files) and make it accessible in both themes
 - media file preview (rail theme) for images
-- add all envs to the settings.gohtml files
 - related in connections - include grandchildren or include grandchildren to children?
 - a urls.go file in the render package wich typed constants like FilesBase = "/files"
 - remove the cache in rail per cronjob (files loaded at least)

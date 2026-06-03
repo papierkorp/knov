@@ -61,6 +61,64 @@
         </form>
         <div id="favicon-status"></div>
     </div>
+
+    <div class="setting-group">
+        <h3>{{T "Files"}}</h3>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/file-types/show-hidden" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="showHiddenFiles" value="true" {{ if .AppConfig.ShowHiddenFiles }}checked{{ end }} class="form-checkbox" />
+                    <span class="checkmark"></span>
+                    {{T "Show Hidden Files"}}
+                    <small>{{T "Show files and folders starting with a dot"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/home-dashboard" hx-trigger="change" hx-target="#home-dashboard-status">
+                <label for="homeDashboard">{{T "Home Dashboard"}}</label>
+                <input type="text" id="homeDashboard" name="homeDashboard" value="{{.AppConfig.HomeDashboard}}" placeholder="{{T "dashboard ID (leave empty for default)"}}" class="form-input" />
+                <div id="home-dashboard-status"></div>
+                <div class="help-text">{{T "set a dashboard ID to use as the home page"}}</div>
+            </form>
+        </div>
+    </div>
+
+    <div class="setting-group">
+        <h3>{{T "Logging"}}</h3>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/log-level" hx-trigger="change" hx-target="#log-level-status">
+                <label for="logLevel">{{T "Log Level"}}</label>
+                <select id="logLevel" name="logLevel" class="form-select">
+                    <option value="debug"   {{ if eq .AppConfig.LogLevel "debug"   }}selected{{ end }}>debug</option>
+                    <option value="info"    {{ if eq .AppConfig.LogLevel "info"    }}selected{{ end }}>info</option>
+                    <option value="warning" {{ if eq .AppConfig.LogLevel "warning" }}selected{{ end }}>warning</option>
+                    <option value="error"   {{ if eq .AppConfig.LogLevel "error"   }}selected{{ end }}>error</option>
+                </select>
+                <div id="log-level-status"></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="setting-group">
+        <h3>{{T "Environment Info"}} <small>({{T "restart required to change"}})</small></h3>
+        <div class="setting-item">
+            <div class="help-text">{{T "Server Port"}}: <code>{{.AppConfig.ServerPort}}</code></div>
+            <div class="help-text">{{T "Data Path"}}: <code>{{.AppConfig.DataPath}}</code></div>
+            <div class="help-text">{{T "Storage Path"}}: <code>{{.AppConfig.StoragePath}}</code></div>
+            <div class="help-text">{{T "Themes Path"}}: <code>{{.AppConfig.ThemesPath}}</code></div>
+            <div class="help-text">{{T "Metadata Storage"}}: <code>{{.AppConfig.MetadataStorageProvider}}</code></div>
+            <div class="help-text">{{T "Cache Storage"}}: <code>{{.AppConfig.CacheStorageProvider}}</code></div>
+            <div class="help-text">{{T "Search Storage"}}: <code>{{.AppConfig.SearchStorageProvider}}</code></div>
+            <div class="help-text">{{T "Search Engine"}}: <code>{{.AppConfig.SearchEngine}}</code></div>
+            <div class="help-text">{{T "Cronjob Interval"}}: <code>{{.AppConfig.CronjobInterval}}</code></div>
+            <div class="help-text">{{T "Search Index Interval"}}: <code>{{.AppConfig.SearchIndexInterval}}</code></div>
+            <div class="help-text">{{T "Metadata Rebuild Interval"}}: <code>{{.AppConfig.MetadataRebuildInterval}}</code></div>
+        </div>
+    </div>
 </section>
 {{ end }}
 
@@ -132,6 +190,44 @@
             </label>
             <div class="help-text">{{T "control whether code block content wraps or scrolls"}}</div>
         </form>
+    </div>
+
+    <div class="setting-group">
+        <h3>{{T "File Extensions"}}</h3>
+        <p class="section-description">{{T "Use dedicated file extensions instead of .md for these editor types"}}</p>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/extensions/todo" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="useExtensionTodo" value="true" {{ if .AppConfig.UseExtensionTodo }}checked{{ end }} class="form-checkbox" />
+                    <span class="checkmark"></span>
+                    {{T "Use .todo Extension"}}
+                    <small>{{T "Save todo files as .todo instead of .md"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/extensions/list" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="useExtensionList" value="true" {{ if .AppConfig.UseExtensionList }}checked{{ end }} class="form-checkbox" />
+                    <span class="checkmark"></span>
+                    {{T "Use .list Extension"}}
+                    <small>{{T "Save list files as .list instead of .md"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/extensions/index" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="useExtensionIndex" value="true" {{ if .AppConfig.UseExtensionIndex }}checked{{ end }} class="form-checkbox" />
+                    <span class="checkmark"></span>
+                    {{T "Use .index Extension"}}
+                    <small>{{T "Save index files as .index instead of .md"}}</small>
+                </label>
+            </form>
+        </div>
     </div>
 </section>
 {{ end }}
