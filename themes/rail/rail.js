@@ -313,7 +313,7 @@ function setupFilePage() {
   if (!fileMatch) return false;
 
   const filepath = fileMatch[1];
-  const fp = encodeURIComponent(filepath);
+  const fp = filepath; // already percent-encoded from window.location.pathname
 
   // reveal file rail button
   document.body.setAttribute("data-has-file", "true");
