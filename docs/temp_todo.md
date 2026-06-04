@@ -11,7 +11,6 @@
 - remove the cache in rail per cronjob (files loaded at least)
 - indexeditor cancel
 - link for [test/sample Markdown.md](/files/test/sample Markdown.md) => <li>[test/sample Markdown.md](/files/test/sample Markdown.md)</li>
-- simplfy css e.g. new/edit could use the same style
 
 - backup solution
 - backup git search

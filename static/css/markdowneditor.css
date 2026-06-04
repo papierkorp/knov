@@ -1,14 +1,12 @@
 /* ==================== Markdown Editor Styles ==================== */
 
 /* editor container */
-.page-file-edit #markdown-editor,
-.page-file-new #markdown-editor {
+.page-file-editor #markdown-editor {
   margin-bottom: 12px;
 }
 
 /* hide write/preview tab container */
-.page-file-edit .toastui-editor-md-tab-container,
-.page-file-new .toastui-editor-md-tab-container {
+.page-file-editor .toastui-editor-md-tab-container {
   display: none !important;
 }
 
