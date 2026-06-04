@@ -105,9 +105,13 @@ func RenderIndexEditor(filePath string, initialTitle ...string) (string, error) 
 	html.WriteString(`<div class="index-form-container">`)
 	html.WriteString(`<h4>` + translation.SprintfForRequest(configmanager.GetLanguage(), "index configuration") + `</h4>`)
 
-	// determine action
+	// determine action and cancel destination
 	isEdit := filePath != ""
 	action := "/api/editor/indexeditor"
+	cancelURL := "/"
+	if isEdit {
+		cancelURL = fmt.Sprintf("/files/%s", filePath)
+	}
 
 	fmt.Fprintf(&html, `<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" id="index-form">`, action)
 
@@ -141,10 +145,10 @@ func RenderIndexEditor(filePath string, initialTitle ...string) (string, error) 
 	fmt.Fprintf(&html, `<button type="button" hx-post="/api/editor/indexeditor/add-entry" hx-vals='{"type":"title"}' hx-target="#entries-container" hx-swap="beforeend" class="btn-secondary">%s</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "add title"))
 	html.WriteString(`</div>`)
 
-	// save button
+	// save + cancel buttons
 	html.WriteString(`<div class="form-actions">`)
-	saveText := translation.SprintfForRequest(configmanager.GetLanguage(), "save index")
-	fmt.Fprintf(&html, `<button type="submit" class="btn-primary">%s</button>`, saveText)
+	fmt.Fprintf(&html, `<button type="submit" class="btn-primary">%s</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "save index"))
+	fmt.Fprintf(&html, `<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>`, cancelURL, translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"))
 	html.WriteString(`</div>`)
 
 	html.WriteString(`</form>`)
