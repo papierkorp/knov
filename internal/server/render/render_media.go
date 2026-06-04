@@ -123,7 +123,7 @@ func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphane
 	html.WriteString(`<div id="component-media-content">`)
 
 	// filter controls
-	html.WriteString(`<div id="component-media-filter" class="media-filter">`)
+	html.WriteString(`<div id="component-media-filter" class="component-media-filter">`)
 	fmt.Fprintf(&html, `<div class="filter-label">%s:</div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "show"))
 	html.WriteString(`<div class="filter-buttons">`)
@@ -185,7 +185,7 @@ func RenderMediaList(mediaFiles []files.File, filter string, totalCount, orphane
 	}
 
 	// media grid
-	html.WriteString(`<div id="component-media-grid" class="media-grid">`)
+	html.WriteString(`<div id="component-media-grid" class="component-media-grid">`)
 
 	// get orphaned media for badge display
 	orphanedMedia, _ := files.GetOrphanedMediaFromCache()
@@ -318,7 +318,7 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	filename := filepath.Base(relativePath)
 
 	var html strings.Builder
-	html.WriteString(`<div id="component-media-detail" class="media-detail">`)
+	html.WriteString(`<div id="component-media-detail" class="component-media-detail">`)
 
 	// media preview section
 	html.WriteString(`<div class="media-preview-large">`)

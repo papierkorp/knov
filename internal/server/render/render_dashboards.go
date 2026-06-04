@@ -30,7 +30,7 @@ func RenderDashboardsList(dashboards []dashboard.Dashboard, shortNames bool) str
 
 // RenderDashboardCreated renders success message for created dashboard
 func RenderDashboardCreated(dashID string) string {
-	return fmt.Sprintf(`<div class="success-message">%s <a href="/dashboard/%s">%s</a></div>`,
+	return fmt.Sprintf(`<div class="status-ok">%s <a href="/dashboard/%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard created successfully!"),
 		dashID,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view dashboard"))
@@ -38,7 +38,7 @@ func RenderDashboardCreated(dashID string) string {
 
 // RenderDashboardUpdated renders success message for updated dashboard
 func RenderDashboardUpdated(dashID string) string {
-	return fmt.Sprintf(`<div class="success-message">%s <a href="/dashboard/%s">%s</a></div>`,
+	return fmt.Sprintf(`<div class="status-ok">%s <a href="/dashboard/%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard updated successfully!"),
 		dashID,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view dashboard"))
