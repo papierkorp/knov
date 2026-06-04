@@ -10,7 +10,7 @@
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 25px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--text) 8%, transparent);
 }
 
 #component-filter-test-results .test-summary h4 {
@@ -51,7 +51,7 @@
   font-size: 1.2em;
 }
 
-#component-filter-test-results .overall-status.status-success {
+#component-filter-test-results .overall-status.status-ok {
   color: var(--success);
   background: var(--success-bg);
 }
@@ -66,7 +66,7 @@
   margin: 20px 0;
   background: var(--bg);
   border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--text) 8%, transparent);
   overflow: hidden;
 }
 
@@ -287,7 +287,7 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--bg);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--text) 8%, transparent);
 }
 
 #component-filter-test-metadata-table .metadata-table {

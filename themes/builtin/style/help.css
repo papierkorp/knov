@@ -1,5 +1,8 @@
 /* theme: builtin */
-#page-help h1 {
+
+/* help page reuses file-content heading styles — these are overrides for the
+   help page which renders markdown without the full fileview layout */
+.page-help h1 {
   font-size: 1.5em;
   font-style: italic;
   letter-spacing: 5px;
@@ -11,11 +14,11 @@
   color: var(--text);
 }
 
-#page-help h1:first-child {
-  margin-top: 0em;
+.page-help h1:first-child {
+  margin-top: 0;
 }
 
-#page-help h2 {
+.page-help h2 {
   font-size: 1.25em;
   letter-spacing: 5px;
   border-bottom: 1px solid var(--primary);
@@ -26,10 +29,10 @@
   overflow-wrap: break-word;
 }
 
-#page-help h3,
-#page-help h4,
-#page-help h5,
-#page-help h6 {
+.page-help h3,
+.page-help h4,
+.page-help h5,
+.page-help h6 {
   font-size: 1.12em;
   border-bottom: 1px dotted var(--text-secondary);
   margin-top: 2em;

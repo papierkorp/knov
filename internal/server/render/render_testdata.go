@@ -30,7 +30,7 @@ func RenderFilterTestResults(results *testdata.FilterTestResults) string {
 
 	// overall status
 	overallStatus := "✅ ALL TESTS PASSED"
-	statusClass := "status-success"
+	statusClass := "status-ok"
 	if results.FailedTests > 0 {
 		overallStatus = fmt.Sprintf("⚠️ %d TESTS FAILED", results.FailedTests)
 		statusClass = "status-failure"

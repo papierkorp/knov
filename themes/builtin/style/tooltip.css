@@ -1,5 +1,5 @@
 /* theme: builtin */
-/* Tooltip styles */
+
 .tooltip {
   position: relative;
   cursor: help;
@@ -8,8 +8,9 @@
 .tooltip::after {
   content: attr(data-tooltip);
   position: absolute;
-  background-color: #333;
-  color: white;
+  background: var(--bg-secondary);
+  color: var(--text);
+  border: 1px solid var(--border);
   padding: 8px 12px;
   border-radius: 4px;
   font-size: 14px;
@@ -21,7 +22,7 @@
     opacity 0.3s ease,
     visibility 0.3s ease;
   z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--text) 20%, transparent);
   top: 100%;
   left: 0;
   margin-top: 4px;
@@ -31,14 +32,4 @@
 .tooltip:hover::before {
   opacity: 1;
   visibility: visible;
-}
-
-/* Dark mode support */
-body[data-dark-mode="true"] .tooltip::after {
-  background-color: #555;
-  border-color: #555;
-}
-
-body[data-dark-mode="true"] .tooltip::before {
-  border-top-color: #555;
 }
