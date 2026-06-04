@@ -64,7 +64,7 @@ func RenderListEditor(filepath string, initialItem ...string) string {
 	}
 
 	return fmt.Sprintf(`
-<div id="component-list-editor">
+<div class="component-list-editor">
 
 	<form hx-post="%s" hx-target="#editor-status" id="list-editor-form">
 		<div class="form-group">

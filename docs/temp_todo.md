@@ -9,6 +9,7 @@
 - folder delete function (removes all files) and make it accessible in both themes
 - media file preview (rail theme) for images
 - remove the cache in rail per cronjob (files loaded at least)
+- indexeditor cancel
 
 - backup solution
 - backup git search

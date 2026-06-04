@@ -1,20 +1,20 @@
 /* List Editor Styles */
 
-#component-list-editor * {
+.component-list-editor * {
   box-sizing: border-box;
 }
 
-#component-list-editor ul {
+.component-list-editor ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-#component-list-editor .form-group {
+.component-list-editor .form-group {
   margin-bottom: 16px;
 }
 
-#component-list-editor .form-group label {
+.component-list-editor .form-group label {
   display: block;
   font-size: 0.9rem;
   color: var(--text-secondary);
@@ -22,7 +22,7 @@
   font-weight: 500;
 }
 
-#component-list-editor input[type="text"] {
+.component-list-editor input[type="text"] {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border);
@@ -36,25 +36,25 @@
     box-shadow 0.2s;
 }
 
-#component-list-editor input[type="text"]:focus {
+.component-list-editor input[type="text"]:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
-#component-list-editor input[type="text"]::placeholder {
+.component-list-editor input[type="text"]::placeholder {
   color: var(--text-secondary);
   font-style: italic;
 }
 
-#component-list-editor .item-row {
+.component-list-editor .item-row {
   display: flex;
   align-items: center;
   padding: 4px 12px;
   position: relative;
 }
 
-#component-list-editor .drag-handle {
+.component-list-editor .drag-handle {
   cursor: move;
   padding: 4px 8px;
   margin-right: 10px;
@@ -64,34 +64,34 @@
   flex-shrink: 0;
 }
 
-#component-list-editor .drag-handle:hover {
+.component-list-editor .drag-handle:hover {
   color: var(--text-primary, #495057);
 }
 
-#component-list-editor .nested-list {
+.component-list-editor .nested-list {
   margin-left: 40px;
   margin-top: 0;
   margin-bottom: 0;
 }
 
-#component-list-editor .sortable-ghost {
+.component-list-editor .sortable-ghost {
   opacity: 0.4;
   background: var(--primary, #007bff);
 }
 
-#component-list-editor .list-item.drop-as-child > .item-row {
+.component-list-editor .list-item.drop-as-child > .item-row {
   outline: 2px dashed var(--primary, #007bff);
   border-radius: 4px;
   background: var(--primary-bg, rgba(0, 123, 255, 0.07));
   position: relative;
 }
 
-#component-list-editor .list-item.selected > .item-row {
+.component-list-editor .list-item.selected > .item-row {
   background: var(--item-selected-bg, rgba(0, 123, 255, 0.07));
   border-radius: 4px;
 }
 
-#component-list-editor .item-input {
+.component-list-editor .item-input {
   flex: 1;
   padding: 6px 10px;
   border: 1px solid transparent;
@@ -105,19 +105,19 @@
     background 0.15s;
 }
 
-#component-list-editor .item-input:hover {
+.component-list-editor .item-input:hover {
   border-color: var(--border);
   background: var(--bg);
 }
 
-#component-list-editor .item-input:focus {
+.component-list-editor .item-input:focus {
   outline: none;
   border-color: var(--primary);
   background: var(--bg);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
-/* undo bar */
+/* undo bar — keep ID: used as JS show/hide target */
 #undo-bar {
   display: none;
   align-items: center;
@@ -151,14 +151,14 @@
   border-color: var(--primary);
 }
 
-#component-list-editor .controls {
+.component-list-editor .controls {
   margin-bottom: 10px;
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-#component-list-editor .controls button {
+.component-list-editor .controls button {
   padding: 6px 14px;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -168,33 +168,33 @@
   font-size: 0.875rem;
 }
 
-#component-list-editor .controls button:hover {
+.component-list-editor .controls button:hover {
   background: var(--bg-secondary, #f0f0f0);
 }
 
-#component-list-editor .controls .separator {
+.component-list-editor .controls .separator {
   margin: 0 4px;
   color: var(--border);
   align-self: center;
 }
 
-#component-list-editor .controls .danger {
+.component-list-editor .controls .danger {
   background: var(--danger, #dc3545);
   color: white;
   border-color: var(--danger, #dc3545);
 }
 
-#component-list-editor .controls .danger:hover {
+.component-list-editor .controls .danger:hover {
   opacity: 0.85;
 }
 
-#component-list-editor .form-actions {
+.component-list-editor .form-actions {
   margin-top: 16px;
   display: flex;
   gap: 8px;
 }
 
-#component-list-editor .editor-container {
+.component-list-editor .editor-container {
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 8px 0;

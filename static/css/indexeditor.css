@@ -2,23 +2,20 @@
 /* --------------------------------- Index Editor ---------------------------------------- */
 /* ---------------------------------------------------------------------------------------- */
 
-#page-filenew #index-editor,
-#page-fileedit #index-editor {
+#index-editor {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-#page-filenew .index-form-container,
-#page-fileedit .index-form-container {
+.index-form-container {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 16px;
 }
 
-#page-filenew .index-form-container h4,
-#page-fileedit .index-form-container h4 {
+.index-form-container h4 {
   margin: 0 0 12px 0;
   color: var(--text);
   font-size: 1.1rem;
@@ -26,15 +23,13 @@
   padding-bottom: 8px;
 }
 
-#page-filenew .entries-container,
-#page-fileedit .entries-container {
+.entries-container {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-#page-filenew .entry-row,
-#page-fileedit .entry-row {
+.entry-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -44,22 +39,19 @@
   padding: 8px 10px;
 }
 
-#page-filenew .entry-controls,
-#page-fileedit .entry-controls {
+.entry-controls {
   display: flex;
   flex-direction: column;
   gap: 2px;
   flex-shrink: 0;
 }
 
-#page-filenew .entry-content,
-#page-fileedit .entry-content {
+.entry-content {
   flex: 1;
   min-width: 0;
 }
 
-#page-filenew .btn-move,
-#page-fileedit .btn-move {
+.btn-move {
   background: none;
   border: 1px solid var(--border);
   border-radius: 3px;
@@ -70,14 +62,12 @@
   line-height: 1;
 }
 
-#page-filenew .btn-move:hover,
-#page-fileedit .btn-move:hover {
+.btn-move:hover {
   background: var(--bg-secondary);
   color: var(--text);
 }
 
-#page-filenew .btn-remove,
-#page-fileedit .btn-remove {
+.btn-remove {
   background: none;
   border: 1px solid transparent;
   border-radius: 3px;
@@ -88,44 +78,36 @@
   margin-top: 2px;
 }
 
-#page-filenew .btn-remove:hover,
-#page-fileedit .btn-remove:hover {
+.btn-remove:hover {
   background: #fee2e2;
   color: #dc2626;
   border-color: #dc2626;
 }
 
-#page-filenew .entry-separator,
-#page-fileedit .entry-separator {
+.entry-separator {
   color: var(--text-secondary);
   font-size: 0.85rem;
   font-style: italic;
   padding: 4px 0;
 }
 
-#page-filenew .entry-file,
-#page-filenew .entry-title,
-#page-fileedit .entry-file,
-#page-fileedit .entry-title {
+.entry-file,
+.entry-title {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-#page-filenew .entry-file label,
-#page-filenew .entry-title label,
-#page-fileedit .entry-file label,
-#page-fileedit .entry-title label {
+.entry-file label,
+.entry-title label {
   font-size: 0.85rem;
   color: var(--text-secondary);
   flex-shrink: 0;
   width: 36px;
 }
 
-#page-filenew .entry-file input,
-#page-filenew .entry-title input,
-#page-fileedit .entry-file input,
-#page-fileedit .entry-title input {
+.entry-file input,
+.entry-title input {
   flex: 1;
   min-width: 0;
 }

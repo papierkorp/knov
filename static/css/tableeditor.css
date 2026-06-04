@@ -1,143 +1,140 @@
 /* Table Editor Styles */
 
 /* table edit button below tables */
-#component-table-edit .table-edit-wrapper {
-    margin-top: 8px;
-    margin-bottom: 16px;
+.component-table-edit .table-edit-wrapper {
+  margin-top: 8px;
+  margin-bottom: 16px;
 }
 
-#component-table-edit .btn-table-edit {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: background-color 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    text-decoration: none;
+.component-table-edit .btn-table-edit {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
 }
 
-#component-table-edit .btn-table-edit:hover {
-    background: var(--accent);
-    transform: translateY(-1px);
+.component-table-edit .btn-table-edit:hover {
+  background: var(--accent);
+  transform: translateY(-1px);
 }
 
-#component-table-edit .btn-table-edit:active {
-    transform: translateY(0);
+.component-table-edit .btn-table-edit:active {
+  transform: translateY(0);
 }
 
 /* table editor page layout */
-#page-filedittable {
-    padding: 20px;
-    max-width: 100%;
+.page-file-dittable {
+  padding: 20px;
+  max-width: 100%;
 }
 
-#page-filedittable .container {
-    max-width: 100%;
-    margin: 0 auto;
+.page-file-dittable .container {
+  max-width: 100%;
+  margin: 0 auto;
 }
 
-#page-filedittable h1 {
-    margin-bottom: 20px;
-    color: var(--text);
+.page-file-dittable h1 {
+  margin-bottom: 20px;
+  color: var(--text);
 }
 
-/* toolbar styling */
-#page-filedittable .table-editor-toolbar {
-    margin-bottom: 16px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    padding: 12px;
-    background: var(--bg-secondary);
-    border-radius: 6px;
-    border: 1px solid var(--border);
+.page-file-dittable .table-editor-toolbar {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--border);
 }
 
-#page-filedittable .btn-primary,
-#page-filedittable .btn-secondary {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+.page-file-dittable .btn-primary,
+.page-file-dittable .btn-secondary {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-#page-filedittable .btn-secondary {
-    background: var(--bg-tertiary, #6b7280);
+.page-file-dittable .btn-secondary {
+  background: var(--bg-tertiary, #6b7280);
 }
 
-#page-filedittable .btn-primary:hover {
-    background: var(--accent);
+.page-file-dittable .btn-primary:hover {
+  background: var(--accent);
 }
 
-#page-filedittable .btn-secondary:hover {
-    background: var(--border);
+.page-file-dittable .btn-secondary:hover {
+  background: var(--border);
 }
 
-/* handsontable container */
-#page-filedittable #table-editor-container {
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    background: var(--bg);
-    min-height: 400px;
+/* handsontable container — keep ID: referenced by JS */
+.page-file-dittable #table-editor-container {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--bg);
+  min-height: 400px;
 }
 
-#page-filedittable #handsontable-container {
-    width: 100%;
-    overflow: auto;
+.page-file-dittable #handsontable-container {
+  width: 100%;
+  overflow: auto;
 }
 
-/* status messages */
-#page-filedittable .status-success {
-    color: #065f46;
-    background: #d1fae5;
-    padding: 12px 16px;
-    border-radius: 4px;
-    margin-top: 16px;
-    border: 1px solid #10b981;
+.page-file-dittable .status-ok {
+  color: #065f46;
+  background: #d1fae5;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-top: 16px;
+  border: 1px solid #10b981;
 }
 
-#page-filedittable .status-error {
-    color: #991b1b;
-    background: #fee2e2;
-    padding: 12px 16px;
-    border-radius: 4px;
-    margin-top: 16px;
-    border: 1px solid #ef4444;
+.page-file-dittable .status-error {
+  color: #991b1b;
+  background: #fee2e2;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-top: 16px;
+  border: 1px solid #ef4444;
 }
 
-#page-filedittable .status-success a,
-#page-filedittable .status-error a {
-    color: inherit;
-    text-decoration: underline;
-    font-weight: 600;
+.page-file-dittable .status-ok a,
+.page-file-dittable .status-error a {
+  color: inherit;
+  text-decoration: underline;
+  font-weight: 600;
 }
 
-/* responsive */
 @media (max-width: 768px) {
-    #page-filedittable {
-        padding: 10px;
-    }
+  .page-file-dittable {
+    padding: 10px;
+  }
 
-    #page-filedittable .table-editor-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
+  .page-file-dittable .table-editor-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
 
-    #page-filedittable .table-editor-toolbar > * {
-        text-align: center;
-    }
+  .page-file-dittable .table-editor-toolbar > * {
+    text-align: center;
+  }
 }

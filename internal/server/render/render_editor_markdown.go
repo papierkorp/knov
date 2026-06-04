@@ -480,11 +480,11 @@ func RenderTextareaEditorComponent(filepath, content string) string {
 	}
 
 	return fmt.Sprintf(`
-		<div id="component-textarea-editor">
+		<div class="component-textarea-editor">
 			<form hx-post="/api/files/save" hx-target="#editor-status">
 				<input type="hidden" name="filepath" value="%s">
-				<textarea name="content" rows="25" style="width:100%%;font-family:monospace;padding:12px;">%s</textarea>
-				<div style="margin-top:12px;">
+				<textarea name="content" rows="25" class="textarea-editor-input">%s</textarea>
+				<div class="form-actions">
 					<button type="submit" class="btn-primary">%s</button>
 					<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
 					%s

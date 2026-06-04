@@ -206,7 +206,7 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 	}
 
 	return fmt.Sprintf(`
-<div id="component-todo-editor">
+<div class="component-todo-editor">
 
 	<form hx-post="%s" hx-target="#editor-status" id="todo-editor-form">
 		<div class="form-group">
