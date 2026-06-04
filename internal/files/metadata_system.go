@@ -23,6 +23,7 @@ const (
 	CacheKeyFolders               CacheKey = "all_folders"
 	CacheKeyFolderPaths           CacheKey = "all_folder_paths"
 	CacheKeyFilePaths             CacheKey = "all_file_paths"
+	CacheKeyTitles                CacheKey = "all_titles"
 	CacheKeyOrphanedMedia         CacheKey = "orphaned_media"
 	CacheKeyAncestorsInCollection CacheKey = "ancestors_in_collection/"
 )
@@ -233,12 +234,50 @@ func GetAllFilePathsFromSystemData() ([]string, error) {
 	return getStringListFromCache(CacheKeyFilePaths)
 }
 
+// GetAllTitlesFromSystemData retrieves cached titles from system storage
+func GetAllTitlesFromSystemData() ([]string, error) {
+	return getStringListFromCache(CacheKeyTitles)
+}
+
+// GetAllTitles returns all unique non-empty titles, reading from file content if the DB title is empty
+func GetAllTitles() ([]string, error) {
+	allFiles, err := GetAllFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	logging.LogInfo("getAllTitles: scanning %d files", len(allFiles))
+	seen := make(map[string]bool)
+	var titles []string
+	for _, file := range allFiles {
+		meta := file.Metadata
+		if meta == nil {
+			logging.LogDebug("getAllTitles: no metadata for %s", file.Path)
+			continue
+		}
+		title := meta.Title
+		if title == "" {
+			updateTitle(meta)
+			title = meta.Title
+		}
+		logging.LogDebug("getAllTitles: %s -> %q", file.Path, title)
+		if title != "" && !seen[title] {
+			seen[title] = true
+			titles = append(titles, title)
+		}
+	}
+	logging.LogInfo("getAllTitles: found %d unique titles", len(titles))
+	slices.Sort(titles)
+	return titles, nil
+}
+
 // MetadataCollector collects metadata across multiple files efficiently
 type MetadataCollector struct {
 	Tags                  map[string]bool
 	Collections           map[string]bool
 	Folders               map[string]bool
 	FolderPaths           map[string]bool
+	Titles                map[string]bool
 	FilePaths             []string
 	OrphanedMedia         []string
 	AncestorsInCollection map[string]map[string]bool // collection → set of ancestor paths
@@ -251,6 +290,7 @@ func NewMetadataCollector() *MetadataCollector {
 		Collections:           make(map[string]bool),
 		Folders:               make(map[string]bool),
 		FolderPaths:           make(map[string]bool),
+		Titles:                make(map[string]bool),
 		FilePaths:             []string{},
 		OrphanedMedia:         []string{},
 		AncestorsInCollection: make(map[string]map[string]bool),
@@ -296,7 +336,15 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 		mc.OrphanedMedia = append(mc.OrphanedMedia, filePath)
 	}
 
-	// collect ancestors per collection
+	// collect title (fall back to reading from file content if not in DB)
+	title := metadata.Title
+	if title == "" {
+		updateTitle(metadata)
+		title = metadata.Title
+	}
+	if title != "" {
+		mc.Titles[title] = true
+	}
 	if metadata.Collection != "" && len(metadata.Ancestor) > 0 {
 		root := metadata.Ancestor[0]
 		if mc.AncestorsInCollection[metadata.Collection] == nil {
@@ -321,6 +369,9 @@ func (mc *MetadataCollector) SaveAllToCache() error {
 		return err
 	}
 	if err := saveStringListToCache(CacheKeyFilePaths, mc.FilePaths); err != nil {
+		return err
+	}
+	if err := saveStringListToCache(CacheKeyTitles, utils.SetToSortedSlice(mc.Titles)); err != nil {
 		return err
 	}
 	if err := saveStringListToCache(CacheKeyOrphanedMedia, mc.OrphanedMedia); err != nil {

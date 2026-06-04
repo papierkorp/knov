@@ -9,6 +9,8 @@
 - folder delete function (removes all files) and make it accessible in both themes
 - media file preview (rail theme) for images
 - remove the cache in rail per cronjob (files loaded at least)
+- in the filter - if i select title i dont have a datalist
+- swagger e.g. api/metadata/titles - format (string) => add a possible formats helper text
 
 - backup solution
 - backup git search

@@ -212,6 +212,11 @@
       "translation": ""
     },
     {
+      "id": "Cache Storage",
+      "message": "Cache Storage",
+      "translation": ""
+    },
+    {
       "id": "cancel",
       "message": "cancel",
       "translation": ""
@@ -397,6 +402,11 @@
       "translation": ""
     },
     {
+      "id": "Cronjob Interval",
+      "message": "Cronjob Interval",
+      "translation": ""
+    },
+    {
       "id": "current custom favicon",
       "message": "current custom favicon",
       "translation": ""
@@ -444,6 +454,11 @@
     {
       "id": "dashboardId is required",
       "message": "dashboardId is required",
+      "translation": ""
+    },
+    {
+      "id": "dashboard ID (leave empty for default)",
+      "message": "dashboard ID (leave empty for default)",
       "translation": ""
     },
     {
@@ -587,11 +602,6 @@
       "translation": ""
     },
     {
-      "id": "display",
-      "message": "display",
-      "translation": ""
-    },
-    {
       "id": "display a search box above the table",
       "message": "display a search box above the table",
       "translation": ""
@@ -724,6 +734,11 @@
     {
       "id": "enter value",
       "message": "enter value",
+      "translation": ""
+    },
+    {
+      "id": "Environment Info",
+      "message": "Environment Info",
       "translation": ""
     },
     {
@@ -1117,6 +1132,11 @@
       "translation": ""
     },
     {
+      "id": "File Extensions",
+      "message": "File Extensions",
+      "translation": ""
+    },
+    {
       "id": "file info",
       "message": "file info",
       "translation": ""
@@ -1332,6 +1352,11 @@
       "translation": ""
     },
     {
+      "id": "grandchildren",
+      "message": "grandchildren",
+      "translation": ""
+    },
+    {
       "id": "greater than",
       "message": "greater than",
       "translation": ""
@@ -1345,6 +1370,11 @@
       "id": "Help",
       "message": "Help",
       "translation": "Help"
+    },
+    {
+      "id": "hidden files setting updated",
+      "message": "hidden files setting updated",
+      "translation": ""
     },
     {
       "id": "Hide Archives",
@@ -1497,6 +1527,16 @@
       "translation": "Home"
     },
     {
+      "id": "Home Dashboard",
+      "message": "Home Dashboard",
+      "translation": ""
+    },
+    {
+      "id": "home dashboard updated",
+      "message": "home dashboard updated",
+      "translation": ""
+    },
+    {
       "id": "how many rows to show per page in interactive tables",
       "message": "how many rows to show per page in interactive tables",
       "translation": ""
@@ -1564,6 +1604,11 @@
     {
       "id": "index configuration",
       "message": "index configuration",
+      "translation": ""
+    },
+    {
+      "id": "index extension setting updated",
+      "message": "index extension setting updated",
       "translation": ""
     },
     {
@@ -1732,6 +1777,11 @@
       "translation": ""
     },
     {
+      "id": "list extension setting updated",
+      "message": "list extension setting updated",
+      "translation": ""
+    },
+    {
       "id": "list saved successfully",
       "message": "list saved successfully",
       "translation": ""
@@ -1862,6 +1912,21 @@
       "translation": ""
     },
     {
+      "id": "Logging",
+      "message": "Logging",
+      "translation": ""
+    },
+    {
+      "id": "Log Level",
+      "message": "Log Level",
+      "translation": ""
+    },
+    {
+      "id": "log level updated",
+      "message": "log level updated",
+      "translation": ""
+    },
+    {
       "id": "Make previews clickable to view full-size",
       "message": "Make previews clickable to view full-size",
       "translation": ""
@@ -1954,6 +2019,16 @@
     {
       "id": "metadata not found",
       "message": "metadata not found",
+      "translation": ""
+    },
+    {
+      "id": "Metadata Rebuild Interval",
+      "message": "Metadata Rebuild Interval",
+      "translation": ""
+    },
+    {
+      "id": "Metadata Storage",
+      "message": "Metadata Storage",
       "translation": ""
     },
     {
@@ -2137,6 +2212,11 @@
       "translation": ""
     },
     {
+      "id": "no children found",
+      "message": "no children found",
+      "translation": ""
+    },
+    {
       "id": "no configuration needed",
       "message": "no configuration needed",
       "translation": ""
@@ -2174,6 +2254,11 @@
     {
       "id": "no git history available",
       "message": "no git history available",
+      "translation": ""
+    },
+    {
+      "id": "no grandchildren",
+      "message": "no grandchildren",
       "translation": ""
     },
     {
@@ -2507,6 +2592,11 @@
       "translation": ""
     },
     {
+      "id": "restart required to change",
+      "message": "restart required to change",
+      "translation": ""
+    },
+    {
       "id": "Restart System",
       "message": "Restart System",
       "translation": ""
@@ -2582,8 +2672,23 @@
       "translation": ""
     },
     {
+      "id": "Save index files as .index instead of .md",
+      "message": "Save index files as .index instead of .md",
+      "translation": ""
+    },
+    {
+      "id": "Save list files as .list instead of .md",
+      "message": "Save list files as .list instead of .md",
+      "translation": ""
+    },
+    {
       "id": "save section",
       "message": "save section",
+      "translation": ""
+    },
+    {
+      "id": "Save todo files as .todo instead of .md",
+      "message": "Save todo files as .todo instead of .md",
       "translation": ""
     },
     {
@@ -2617,6 +2722,11 @@
       "translation": "Search.."
     },
     {
+      "id": "Search Engine",
+      "message": "Search Engine",
+      "translation": ""
+    },
+    {
       "id": "search files",
       "message": "search files",
       "translation": ""
@@ -2627,9 +2737,19 @@
       "translation": "Search files..."
     },
     {
+      "id": "Search Index Interval",
+      "message": "Search Index Interval",
+      "translation": ""
+    },
+    {
       "id": "Search Results",
       "message": "Search Results",
       "translation": "Search Results"
+    },
+    {
+      "id": "Search Storage",
+      "message": "Search Storage",
+      "translation": ""
     },
     {
       "id": "section",
@@ -2702,6 +2822,16 @@
       "translation": ""
     },
     {
+      "id": "Server Port",
+      "message": "Server Port",
+      "translation": ""
+    },
+    {
+      "id": "set a dashboard ID to use as the home page",
+      "message": "set a dashboard ID to use as the home page",
+      "translation": ""
+    },
+    {
       "id": "Set Data Path",
       "message": "Set Data Path",
       "translation": ""
@@ -2724,11 +2854,6 @@
     {
       "id": "Setup Test Data",
       "message": "Setup Test Data",
-      "translation": ""
-    },
-    {
-      "id": "Setup test data? This will create example files.",
-      "message": "Setup test data? This will create example files.",
       "translation": ""
     },
     {
@@ -2759,6 +2884,16 @@
     {
       "id": "show filename as caption under previews",
       "message": "show filename as caption under previews",
+      "translation": ""
+    },
+    {
+      "id": "Show files and folders starting with a dot",
+      "message": "Show files and folders starting with a dot",
+      "translation": ""
+    },
+    {
+      "id": "Show Hidden Files",
+      "message": "Show Hidden Files",
       "translation": ""
     },
     {
@@ -2809,6 +2944,11 @@
     {
       "id": "still referenced by",
       "message": "still referenced by",
+      "translation": ""
+    },
+    {
+      "id": "Storage Path",
+      "message": "Storage Path",
       "translation": ""
     },
     {
@@ -2932,6 +3072,11 @@
       "translation": "Theme Settings"
     },
     {
+      "id": "Themes Path",
+      "message": "Themes Path",
+      "translation": ""
+    },
+    {
       "id": "This will remove all files in the data/test Folder.",
       "message": "This will remove all files in the data/test Folder.",
       "translation": ""
@@ -2949,6 +3094,11 @@
     {
       "id": "Todo",
       "message": "Todo",
+      "translation": ""
+    },
+    {
+      "id": "todo extension setting updated",
+      "message": "todo extension setting updated",
       "translation": ""
     },
     {
@@ -3062,6 +3212,11 @@
       "translation": ""
     },
     {
+      "id": "Use dedicated file extensions instead of .md for these editor types",
+      "message": "Use dedicated file extensions instead of .md for these editor types",
+      "translation": ""
+    },
+    {
       "id": "used in",
       "message": "used in",
       "translation": ""
@@ -3069,6 +3224,21 @@
     {
       "id": "used media files",
       "message": "used media files",
+      "translation": ""
+    },
+    {
+      "id": "Use .index Extension",
+      "message": "Use .index Extension",
+      "translation": ""
+    },
+    {
+      "id": "Use .list Extension",
+      "message": "Use .list Extension",
+      "translation": ""
+    },
+    {
+      "id": "Use .todo Extension",
+      "message": "Use .todo Extension",
       "translation": ""
     },
     {
@@ -3144,11 +3314,6 @@
     {
       "id": "visual style of preview borders",
       "message": "visual style of preview borders",
-      "translation": ""
-    },
-    {
-      "id": "WARNING - This will remove all files in the Data Folder!!.",
-      "message": "WARNING - This will remove all files in the Data Folder!!.",
       "translation": ""
     },
     {

@@ -307,6 +307,7 @@ func StartServerChi() {
 			r.Get("/tags", handleAPIGetAllTags)
 			r.Get("/collections", handleAPIGetAllCollections)
 			r.Get("/folders", handleAPIGetAllFolders)
+			r.Get("/titles", handleAPIGetAllTitles)
 			r.Get("/editors", handleAPIGetAllEditors)
 			r.Get("/tags/{fileId}", handleAPIGetFileMetadataTags)
 			r.Get("/folders/{fileId}", handleAPIGetFileMetadataFolders)

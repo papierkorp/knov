@@ -3577,6 +3577,28 @@ paths:
       summary: Set file tags
       tags:
       - metadata
+  /api/metadata/titles:
+    get:
+      description: Returns all non-empty titles extracted from file content, as options
+        for datalist
+      parameters:
+      - description: Response format (options for HTML datalist options)
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      summary: Get all file titles
+      tags:
+      - metadata
   /api/search:
     get:
       parameters:

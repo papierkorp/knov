@@ -4842,6 +4842,38 @@
                 }
             }
         },
+        "/api/metadata/titles": {
+            "get": {
+                "description": "Returns all non-empty titles extracted from file content, as options for datalist",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get all file titles",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Response format (options for HTML datalist options)",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/search": {
             "get": {
                 "produces": [

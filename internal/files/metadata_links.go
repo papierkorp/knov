@@ -604,7 +604,10 @@ func updateTitle(metadata *Metadata) {
 	}
 
 	content := string(buffer[:n])
-	lines := strings.Split(content, "\n")
+
+	// strip YAML front matter before scanning for the title header
+	body := parser.StripFrontMatter([]byte(content))
+	lines := strings.Split(string(body), "\n")
 
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)

@@ -418,6 +418,8 @@ func filterValueInputMeta(metadataField string) (apiEndpoint, placeholder string
 		return "/api/metadata/folders?format=options", translation.SprintfForRequest(configmanager.GetLanguage(), "type or select folder")
 	case "editor":
 		return "/api/metadata/editors?format=options", translation.SprintfForRequest(configmanager.GetLanguage(), "select editor type")
+	case "title":
+		return "/api/metadata/titles?format=options", translation.SprintfForRequest(configmanager.GetLanguage(), "type or select title")
 	case "child-of", "parent-of", "ancestor-of":
 		return "/api/files/list?format=options", translation.SprintfForRequest(configmanager.GetLanguage(), "select file")
 	default:

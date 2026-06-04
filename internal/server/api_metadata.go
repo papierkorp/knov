@@ -848,6 +848,47 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, folders, html)
 }
 
+// @Summary Get all file titles
+// @Description Returns all non-empty titles extracted from file content, as options for datalist
+// @Tags metadata
+// @Param format query string false "Response format (options for HTML datalist options)"
+// @Produce json,html
+// @Success 200 {array} string
+// @Router /api/metadata/titles [get]
+func handleAPIGetAllTitles(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+
+	if format == "options" {
+		cachedTitles, err := files.GetAllTitlesFromSystemData()
+		if err != nil || len(cachedTitles) == 0 {
+			logging.LogError("failed to get cached titles, fallback to live data: %v", err)
+			cachedTitles, err = files.GetAllTitles()
+			if err != nil {
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get titles"), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		var html strings.Builder
+		for _, title := range cachedTitles {
+			fmt.Fprintf(&html, `<option value="%s">%s</option>`, title, title)
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
+	titles, err := files.GetAllTitlesFromSystemData()
+	if err != nil || len(titles) == 0 {
+		titles, err = files.GetAllTitles()
+		if err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get titles"), http.StatusInternalServerError)
+			return
+		}
+	}
+	writeResponse(w, r, titles, "")
+}
+
 // @Summary Get all available editor types
 // @Tags metadata
 // @Param format query string false "Response format: options for HTML select options"
