@@ -1,18 +1,20 @@
 /* theme: builtin */
-/* form description styling */
-#page-filenew .form-description {
+
+/* -----------------------------------------------------------------------
+   file creation form (page-file-new only)
+   ----------------------------------------------------------------------- */
+.page-file-new .form-description {
   color: var(--text-secondary);
   font-size: 0.9rem;
   margin-bottom: 20px;
   font-style: italic;
 }
 
-/* file creation form styles */
-#page-filenew .file-form .form-group {
+.page-file-new .file-form .form-group {
   margin-bottom: 16px;
 }
 
-#page-filenew .file-form .form-group label {
+.page-file-new .file-form .form-group label {
   display: block;
   font-size: 0.9rem;
   color: var(--text-secondary);
@@ -20,7 +22,7 @@
   font-weight: 500;
 }
 
-#page-filenew .file-form .form-input {
+.page-file-new .file-form .form-input {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border);
@@ -34,17 +36,17 @@
     box-shadow 0.2s;
 }
 
-#page-filenew .file-form .form-input:focus {
+.page-file-new .file-form .form-input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
-#page-filenew .file-form .form-input[list] {
+.page-file-new .file-form .form-input[list] {
   position: relative;
 }
 
-#page-filenew .file-form datalist {
+.page-file-new .file-form datalist {
   position: absolute;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -57,12 +59,15 @@
   left: 0;
 }
 
-#page-filenew .file-form .form-actions {
+.page-file-new .file-form .form-actions {
   margin-top: 16px;
 }
-/* metadata form styling */
-#page-fileedit .metadata-form,
-#page-filenew .metadata-form {
+
+/* -----------------------------------------------------------------------
+   metadata form (shared edit + new)
+   ----------------------------------------------------------------------- */
+.page-file-edit .metadata-form,
+.page-file-new .metadata-form {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -70,85 +75,54 @@
   margin-bottom: 16px;
 }
 
-#page-fileedit .metadata-form .form-group,
-#page-filenew .metadata-form .form-group {
-  margin-bottom: 12px;
-}
-
-/* compact layout for metadata form fields */
-#page-fileedit .metadata-form .form-group,
-#page-filenew .metadata-form .form-group {
+.page-file-edit .metadata-form .form-group,
+.page-file-new .metadata-form .form-group {
   display: grid;
   gap: 12px 16px;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-bottom: 12px;
 }
 
-/* ensure h3 headers span full width */
-#page-fileedit .metadata-form .form-group h3,
-#page-filenew .metadata-form .form-group h3 {
+.page-file-edit .metadata-form .form-group h3,
+.page-file-new .metadata-form .form-group h3 {
   grid-column: 1 / -1;
   margin: 0 0 8px 0;
 }
 
-/* form field styling for grid layout */
-#page-fileedit .metadata-form .form-field,
-#page-filenew .metadata-form .form-field {
+.page-file-edit .metadata-form .form-field,
+.page-file-new .metadata-form .form-field {
   display: flex;
   flex-direction: column;
 }
 
-/* compact row layout for grouped fields */
-#page-fileedit .metadata-form .form-field-row,
-#page-filenew .metadata-form .form-field-row {
+.page-file-edit .metadata-form .form-field-row,
+.page-file-new .metadata-form .form-field-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 12px;
   margin-top: 8px;
 }
 
-#page-fileedit .metadata-form .form-field-quarter,
-#page-filenew .metadata-form .form-field-quarter {
+.page-file-edit .metadata-form .form-field-quarter,
+.page-file-new .metadata-form .form-field-quarter {
   display: flex;
   flex-direction: column;
 }
 
-#page-fileedit .metadata-form .form-field-quarter label,
-#page-filenew .metadata-form .form-field-quarter label {
+.page-file-edit .metadata-form .form-field-quarter label,
+.page-file-new .metadata-form .form-field-quarter label {
   font-size: 0.9em;
   margin-bottom: 4px;
 }
 
-/* responsive adjustments for grouped fields */
-@media (max-width: 1024px) {
-  #page-fileedit .metadata-form .form-field-row,
-  #page-filenew .metadata-form .form-field-row {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  #page-fileedit .metadata-form .form-field-row,
-  #page-filenew .metadata-form .form-field-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* responsive adjustments for smaller screens */
-@media (max-width: 768px) {
-  #page-fileedit .metadata-form .form-group,
-  #page-filenew .metadata-form .form-group {
-    grid-template-columns: 1fr;
-  }
-}
-
-#page-fileedit .metadata-form .form-subgroup,
-#page-filenew .metadata-form .form-subgroup {
+.page-file-edit .metadata-form .form-subgroup,
+.page-file-new .metadata-form .form-subgroup {
   margin-bottom: 8px;
   margin-left: 16px;
 }
 
-#page-fileedit .metadata-form label,
-#page-filenew .metadata-form label {
+.page-file-edit .metadata-form label,
+.page-file-new .metadata-form label {
   display: block;
   font-size: 0.9rem;
   color: var(--text-secondary);
@@ -156,10 +130,10 @@
   font-weight: 500;
 }
 
-#page-fileedit .metadata-form .form-input,
-#page-filenew .metadata-form .form-input,
-#page-fileedit .metadata-form .form-select,
-#page-filenew .metadata-form .form-select {
+.page-file-edit .metadata-form .form-input,
+.page-file-new .metadata-form .form-input,
+.page-file-edit .metadata-form .form-select,
+.page-file-new .metadata-form .form-select {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid var(--border);
@@ -170,17 +144,17 @@
   box-sizing: border-box;
 }
 
-#page-fileedit .metadata-form .form-input:focus,
-#page-filenew .metadata-form .form-input:focus,
-#page-fileedit .metadata-form .form-select:focus,
-#page-filenew .metadata-form .form-select:focus {
+.page-file-edit .metadata-form .form-input:focus,
+.page-file-new .metadata-form .form-input:focus,
+.page-file-edit .metadata-form .form-select:focus,
+.page-file-new .metadata-form .form-select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary-alpha);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
-#page-fileedit .metadata-form h4,
-#page-filenew .metadata-form h4 {
+.page-file-edit .metadata-form h4,
+.page-file-new .metadata-form h4 {
   color: var(--text);
   margin: 12px 0 8px 0;
   font-size: 1rem;
@@ -188,33 +162,31 @@
   padding-bottom: 4px;
 }
 
-/* datalist styling */
-#page-fileedit .metadata-form input[list],
-#page-filenew .metadata-form input[list] {
+.page-file-edit .metadata-form input[list],
+.page-file-new .metadata-form input[list] {
   position: relative;
 }
 
-#page-fileedit .metadata-form datalist,
-#page-filenew .metadata-form datalist {
+.page-file-edit .metadata-form datalist,
+.page-file-new .metadata-form datalist {
   display: none;
 }
 
-#page-fileedit .metadata-form input[list]:focus,
-#page-filenew .metadata-form input[list]:focus {
+.page-file-edit .metadata-form input[list]:focus,
+.page-file-new .metadata-form input[list]:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary-alpha);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
-/* enhanced placeholder styling for datalist inputs */
-#page-fileedit .metadata-form input[list]::placeholder,
-#page-filenew .metadata-form input[list]::placeholder {
+.page-file-edit .metadata-form input[list]::placeholder,
+.page-file-new .metadata-form input[list]::placeholder {
   color: var(--text-secondary);
   font-style: italic;
 }
 
-/* tag chips styling */
-#page-fileedit .metadata-form .tag-chips-container,
-#page-filenew .metadata-form .tag-chips-container {
+/* tag chips */
+.page-file-edit .metadata-form .tag-chips-container,
+.page-file-new .metadata-form .tag-chips-container {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -227,14 +199,14 @@
   cursor: text;
 }
 
-#page-fileedit .metadata-form .tag-chips-container:focus-within,
-#page-filenew .metadata-form .tag-chips-container:focus-within {
+.page-file-edit .metadata-form .tag-chips-container:focus-within,
+.page-file-new .metadata-form .tag-chips-container:focus-within {
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary-alpha);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
-#page-fileedit .metadata-form .tag-chips,
-#page-filenew .metadata-form .tag-chips {
+.page-file-edit .metadata-form .tag-chips,
+.page-file-new .metadata-form .tag-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -244,12 +216,12 @@
   min-width: 0;
 }
 
-#page-fileedit .metadata-form .tag-chip,
-#page-filenew .metadata-form .tag-chip {
+.page-file-edit .metadata-form .tag-chip,
+.page-file-new .metadata-form .tag-chip {
   display: inline-flex;
   align-items: center;
   background: var(--primary);
-  color: var(--primary-text);
+  color: var(--bg);
   padding: 2px 6px;
   border-radius: 12px;
   font-size: 0.85rem;
@@ -260,11 +232,11 @@
   white-space: nowrap;
 }
 
-#page-fileedit .metadata-form .tag-chip-remove,
-#page-filenew .metadata-form .tag-chip-remove {
+.page-file-edit .metadata-form .tag-chip-remove,
+.page-file-new .metadata-form .tag-chip-remove {
   background: none;
   border: none;
-  color: var(--primary-text);
+  color: var(--bg);
   cursor: pointer;
   margin-left: 4px;
   padding: 0;
@@ -279,14 +251,13 @@
   justify-content: center;
 }
 
-#page-fileedit .metadata-form .tag-chip-remove:hover,
-#page-filenew .metadata-form .tag-chip-remove:hover {
+.page-file-edit .metadata-form .tag-chip-remove:hover,
+.page-file-new .metadata-form .tag-chip-remove:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.2);
 }
 
-#page-fileedit .metadata-form .tag-chips-input,
-#page-filenew .metadata-form .tag-chips-input {
+.page-file-edit .metadata-form .tag-chips-input,
+.page-file-new .metadata-form .tag-chips-input {
   border: none;
   outline: none;
   background: transparent;
@@ -298,21 +269,20 @@
   min-width: 120px;
 }
 
-#page-fileedit .metadata-form .tag-chips-input::placeholder,
-#page-filenew .metadata-form .tag-chips-input::placeholder {
+.page-file-edit .metadata-form .tag-chips-input::placeholder,
+.page-file-new .metadata-form .tag-chips-input::placeholder {
   color: var(--text-secondary);
   font-style: italic;
 }
 
-/* empty state styling */
-#page-fileedit .metadata-form .tag-chips:empty + .tag-chips-input,
-#page-filenew .metadata-form .tag-chips:empty + .tag-chips-input {
+.page-file-edit .metadata-form .tag-chips:empty + .tag-chips-input,
+.page-file-new .metadata-form .tag-chips:empty + .tag-chips-input {
   width: 100%;
 }
 
-/* save status indicator */
-#page-fileedit .metadata-form .save-status,
-#page-filenew .metadata-form .save-status {
+/* save status */
+.page-file-edit .metadata-form .save-status,
+.page-file-new .metadata-form .save-status {
   padding: 6px 12px;
   margin-bottom: 12px;
   border-radius: 4px;
@@ -320,99 +290,71 @@
   font-weight: 500;
   text-align: center;
   min-height: 20px;
-  background: var(--success-bg, rgba(34, 197, 94, 0.1));
-  color: var(--success, #22c55e);
-  border: 1px solid var(--success, #22c55e);
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
 }
 
-#page-fileedit .metadata-form .save-status:not(:empty),
-#page-filenew .metadata-form .save-status:not(:empty) {
+.page-file-edit .metadata-form .save-status:not(:empty),
+.page-file-new .metadata-form .save-status:not(:empty) {
   opacity: 1;
 }
 
-#page-fileedit .metadata-form .save-status:empty,
-#page-filenew .metadata-form .save-status:empty {
+.page-file-edit .metadata-form .save-status:empty,
+.page-file-new .metadata-form .save-status:empty {
   display: none;
 }
 
-/* all success status classes */
-#page-fileedit .metadata-form .save-status span,
-#page-filenew .metadata-form .save-status span {
+.page-file-edit .metadata-form .save-status.status-ok,
+.page-file-new .metadata-form .save-status.status-ok,
+.page-file-edit .metadata-form .status-ok,
+.page-file-new .metadata-form .status-ok {
   color: var(--success, #22c55e);
-  font-weight: 500;
+  background: color-mix(in srgb, var(--success, #22c55e) 10%, transparent);
+  border: 1px solid var(--success, #22c55e);
 }
 
-/* specific status message styles */
-#page-fileedit .metadata-form .save-status .status-ok,
-#page-filenew .metadata-form .save-status .status-ok {
-  color: var(--success, #22c55e);
-  font-weight: 500;
+.page-file-edit .metadata-form .save-status.status-error,
+.page-file-new .metadata-form .save-status.status-error,
+.page-file-edit .metadata-form .status-error,
+.page-file-new .metadata-form .status-error {
+  color: var(--danger, #ef4444);
+  background: color-mix(in srgb, var(--danger, #ef4444) 10%, transparent);
+  border: 1px solid var(--danger, #ef4444);
 }
 
-#page-fileedit .metadata-form .save-status .status-error,
-#page-filenew .metadata-form .save-status .status-error {
-  color: var(--error, #ef4444);
-  font-weight: 500;
-  background: var(--error-bg, rgba(239, 68, 68, 0.1));
-  border-color: var(--error, #ef4444);
-}
-
-/* direct status classes (when div has the class) */
-#page-fileedit .metadata-form .save-status.status-ok,
-#page-filenew .metadata-form .save-status.status-ok,
-#page-fileedit .metadata-form .status-ok,
-#page-filenew .metadata-form .status-ok {
-  color: var(--success, #22c55e);
-  background: var(--success-bg, rgba(34, 197, 94, 0.1));
-  border-color: var(--success, #22c55e);
-}
-
-#page-fileedit .metadata-form .save-status.status-error,
-#page-filenew .metadata-form .save-status.status-error,
-#page-fileedit .metadata-form .status-error,
-#page-filenew .metadata-form .status-error {
-  color: var(--error, #ef4444);
-  background: var(--error-bg, rgba(239, 68, 68, 0.1));
-  border-color: var(--error, #ef4444);
-}
-
-/* ==================== Index Editor Styles ==================== */
-
-/* Entry row layout - controls on left, content on right */
-#page-fileedit .entry-row,
-#page-filenew .entry-row {
+/* -----------------------------------------------------------------------
+   index editor (entry rows — shared edit + new)
+   ----------------------------------------------------------------------- */
+.page-file-edit .entry-row,
+.page-file-new .entry-row {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   margin-bottom: 12px;
   padding: 12px;
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  background: var(--bg-secondary, #f9fafb);
+  background: var(--bg-secondary);
 }
 
-/* Controls column on the left */
-#page-fileedit .entry-controls,
-#page-filenew .entry-controls {
+.page-file-edit .entry-controls,
+.page-file-new .entry-controls {
   display: flex;
   gap: 4px;
   flex-shrink: 0;
 }
 
-/* Control buttons */
-#page-fileedit .entry-controls .btn-move,
-#page-filenew .entry-controls .btn-move,
-#page-fileedit .entry-controls .btn-remove,
-#page-filenew .entry-controls .btn-remove {
+.page-file-edit .entry-controls .btn-move,
+.page-file-new .entry-controls .btn-move,
+.page-file-edit .entry-controls .btn-remove,
+.page-file-new .entry-controls .btn-remove {
   width: 32px;
   height: 32px;
   padding: 0;
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid var(--border);
   border-radius: 4px;
-  background: var(--bg, #ffffff);
-  color: var(--text, #1f2937);
+  background: var(--bg);
+  color: var(--text);
   cursor: pointer;
   font-size: 16px;
   display: flex;
@@ -421,100 +363,73 @@
   transition: all 0.2s;
 }
 
-#page-fileedit .entry-controls .btn-move:hover,
-#page-filenew .entry-controls .btn-move:hover {
-  background: var(--bg-tertiary, #f3f4f6);
-  border-color: var(--text-secondary, #6b7280);
+.page-file-edit .entry-controls .btn-move:hover,
+.page-file-new .entry-controls .btn-move:hover {
+  background: var(--bg-secondary);
+  border-color: var(--text-secondary);
 }
 
-#page-fileedit .entry-controls .btn-remove,
-#page-filenew .entry-controls .btn-remove {
-  color: var(--error, #ef4444);
+.page-file-edit .entry-controls .btn-remove,
+.page-file-new .entry-controls .btn-remove {
+  color: var(--danger, #ef4444);
 }
 
-#page-fileedit .entry-controls .btn-remove:hover,
-#page-filenew .entry-controls .btn-remove:hover {
-  background: var(--error-bg, #fee2e2);
-  border-color: var(--error, #ef4444);
+.page-file-edit .entry-controls .btn-remove:hover,
+.page-file-new .entry-controls .btn-remove:hover {
+  background: color-mix(in srgb, var(--danger, #ef4444) 10%, transparent);
+  border-color: var(--danger, #ef4444);
 }
 
-/* Content column on the right */
-#page-fileedit .entry-content,
-#page-filenew .entry-content {
+.page-file-edit .entry-content,
+.page-file-new .entry-content {
   flex: 1;
   min-width: 0;
 }
 
-/* Entry types */
-#page-fileedit .entry-separator,
-#page-filenew .entry-separator,
-#page-fileedit .entry-file,
-#page-filenew .entry-file,
-#page-fileedit .entry-title,
-#page-filenew .entry-title {
+.page-file-edit .entry-separator,
+.page-file-new .entry-separator,
+.page-file-edit .entry-file,
+.page-file-new .entry-file,
+.page-file-edit .entry-title,
+.page-file-new .entry-title {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-#page-fileedit .entry-separator span,
-#page-filenew .entry-separator span {
+.page-file-edit .entry-separator span,
+.page-file-new .entry-separator span {
   font-style: italic;
-  color: var(--text-secondary, #6b7280);
+  color: var(--text-secondary);
 }
 
-#page-fileedit .entry-file label,
-#page-filenew .entry-file label,
-#page-fileedit .entry-title label,
-#page-filenew .entry-title label {
+.page-file-edit .entry-file label,
+.page-file-new .entry-file label,
+.page-file-edit .entry-title label,
+.page-file-new .entry-title label {
   font-weight: 500;
-  color: var(--text-secondary, #6b7280);
+  color: var(--text-secondary);
   min-width: 60px;
   flex-shrink: 0;
 }
 
-#page-fileedit .entry-file input,
-#page-filenew .entry-file input,
-#page-fileedit .entry-title input,
-#page-filenew .entry-title input {
+.page-file-edit .entry-file input,
+.page-file-new .entry-file input,
+.page-file-edit .entry-title input,
+.page-file-new .entry-title input {
   flex: 1;
 }
 
-/* Entries container */
-#page-fileedit .entries-container,
-#page-filenew .entries-container {
+.page-file-edit .entries-container,
+.page-file-new .entries-container {
   margin-bottom: 16px;
 }
 
-/* Dark mode */
-body[data-dark-mode="true"] #page-fileedit .entry-row,
-body[data-dark-mode="true"] #page-filenew .entry-row {
-  background: var(--bg-secondary);
-  border-color: var(--border);
-}
-
-body[data-dark-mode="true"] #page-fileedit .entry-controls .btn-move,
-body[data-dark-mode="true"] #page-filenew .entry-controls .btn-move,
-body[data-dark-mode="true"] #page-fileedit .entry-controls .btn-remove,
-body[data-dark-mode="true"] #page-filenew .entry-controls .btn-remove {
-  background: var(--bg);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-body[data-dark-mode="true"] #page-fileedit .entry-controls .btn-move:hover,
-body[data-dark-mode="true"] #page-filenew .entry-controls .btn-move:hover {
-  background: var(--bg-tertiary);
-}
-
-body[data-dark-mode="true"] #page-fileedit .entry-controls .btn-remove:hover,
-body[data-dark-mode="true"] #page-filenew .entry-controls .btn-remove:hover {
-  background: var(--error-bg);
-}
-
-/* MOC/Index Editor Styling - Enhanced buttons and file path input */
-#page-fileedit .index-form-container,
-#page-filenew .index-form-container {
+/* -----------------------------------------------------------------------
+   index form container
+   ----------------------------------------------------------------------- */
+.page-file-edit .index-form-container,
+.page-file-new .index-form-container {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -522,8 +437,8 @@ body[data-dark-mode="true"] #page-filenew .entry-controls .btn-remove:hover {
   margin: 16px 0;
 }
 
-#page-fileedit .index-form-container h4,
-#page-filenew .index-form-container h4 {
+.page-file-edit .index-form-container h4,
+.page-file-new .index-form-container h4 {
   color: var(--text);
   margin: 0 0 16px 0;
   font-size: 1.1rem;
@@ -531,14 +446,13 @@ body[data-dark-mode="true"] #page-filenew .entry-controls .btn-remove:hover {
   padding-bottom: 8px;
 }
 
-/* Enhanced file path input for MOC/journal/todo/filter - match new markdown file styling */
-#page-fileedit .index-form-container .form-group,
-#page-filenew .index-form-container .form-group {
+.page-file-edit .index-form-container .form-group,
+.page-file-new .index-form-container .form-group {
   margin-bottom: 16px;
 }
 
-#page-fileedit .index-form-container .form-group label,
-#page-filenew .index-form-container .form-group label {
+.page-file-edit .index-form-container .form-group label,
+.page-file-new .index-form-container .form-group label {
   display: block;
   font-size: 0.9rem;
   color: var(--text-secondary);
@@ -546,8 +460,8 @@ body[data-dark-mode="true"] #page-filenew .entry-controls .btn-remove:hover {
   font-weight: 500;
 }
 
-#page-fileedit .index-form-container .form-input,
-#page-filenew .index-form-container .form-input {
+.page-file-edit .index-form-container .form-input,
+.page-file-new .index-form-container .form-input {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border);
@@ -561,30 +475,29 @@ body[data-dark-mode="true"] #page-filenew .entry-controls .btn-remove:hover {
     box-shadow 0.2s;
 }
 
-#page-fileedit .index-form-container .form-input:focus,
-#page-filenew .index-form-container .form-input:focus {
+.page-file-edit .index-form-container .form-input:focus,
+.page-file-new .index-form-container .form-input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
-#page-fileedit .index-form-container .form-input::placeholder,
-#page-filenew .index-form-container .form-input::placeholder {
+.page-file-edit .index-form-container .form-input::placeholder,
+.page-file-new .index-form-container .form-input::placeholder {
   color: var(--text-secondary);
   font-style: italic;
 }
 
-/* Enhanced MOC action buttons - more appealing design */
-#page-fileedit .index-form-container .form-actions,
-#page-filenew .index-form-container .form-actions {
+.page-file-edit .index-form-container .form-actions,
+.page-file-new .index-form-container .form-actions {
   display: flex;
   gap: 12px;
   margin: 20px 0;
   flex-wrap: wrap;
 }
 
-#page-fileedit .index-form-container .btn-secondary,
-#page-filenew .index-form-container .btn-secondary {
+.page-file-edit .index-form-container .btn-secondary,
+.page-file-new .index-form-container .btn-secondary {
   background: var(--bg);
   color: var(--text);
   border: 1px solid var(--border);
@@ -598,65 +511,59 @@ body[data-dark-mode="true"] #page-filenew .entry-controls .btn-remove:hover {
   align-items: center;
   gap: 6px;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-#page-fileedit .index-form-container .btn-secondary:hover,
-#page-filenew .index-form-container .btn-secondary:hover {
+.page-file-edit .index-form-container .btn-secondary:hover,
+.page-file-new .index-form-container .btn-secondary:hover {
   background: var(--primary);
-  color: white;
+  color: var(--bg);
   border-color: var(--primary);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
-#page-fileedit .index-form-container .btn-secondary:active,
-#page-filenew .index-form-container .btn-secondary:active {
+.page-file-edit .index-form-container .btn-secondary:active,
+.page-file-new .index-form-container .btn-secondary:active {
   transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* Add icons to buttons for better visual appeal */
-#page-fileedit .index-form-container .btn-secondary:before,
-#page-filenew .index-form-container .btn-secondary:before {
+.page-file-edit .index-form-container .btn-secondary::before,
+.page-file-new .index-form-container .btn-secondary::before {
   content: "➕";
   font-size: 0.8em;
   margin-right: 2px;
 }
 
-/* Specific icons for different button types */
-#page-fileedit
+.page-file-edit
   .index-form-container
-  .btn-secondary[hx-vals*='"type":"separator"']:before,
-#page-filenew
+  .btn-secondary[hx-vals*='"type":"separator"']::before,
+.page-file-new
   .index-form-container
-  .btn-secondary[hx-vals*='"type":"separator"']:before {
+  .btn-secondary[hx-vals*='"type":"separator"']::before {
   content: "━";
 }
 
-#page-fileedit
+.page-file-edit
   .index-form-container
-  .btn-secondary[hx-vals*='"type":"file"']:before,
-#page-filenew
+  .btn-secondary[hx-vals*='"type":"file"']::before,
+.page-file-new
   .index-form-container
-  .btn-secondary[hx-vals*='"type":"file"']:before {
+  .btn-secondary[hx-vals*='"type":"file"']::before {
   content: "📄";
 }
 
-#page-fileedit
+.page-file-edit
   .index-form-container
-  .btn-secondary[hx-vals*='"type":"title"']:before,
-#page-filenew
+  .btn-secondary[hx-vals*='"type":"title"']::before,
+.page-file-new
   .index-form-container
-  .btn-secondary[hx-vals*='"type":"title"']:before {
+  .btn-secondary[hx-vals*='"type":"title"']::before {
   content: "📝";
 }
 
-/* Enhanced save button styling */
-#page-fileedit .index-form-container .btn-primary,
-#page-filenew .index-form-container .btn-primary {
+.page-file-edit .index-form-container .btn-primary,
+.page-file-new .index-form-container .btn-primary {
   background: var(--primary);
-  color: white;
+  color: var(--bg);
   border: none;
   padding: 12px 20px;
   border-radius: 6px;
@@ -667,45 +574,34 @@ body[data-dark-mode="true"] #page-filenew .entry-controls .btn-remove:hover {
   align-items: center;
   gap: 8px;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-#page-fileedit .index-form-container .btn-primary:hover,
-#page-filenew .index-form-container .btn-primary:hover {
+.page-file-edit .index-form-container .btn-primary:hover,
+.page-file-new .index-form-container .btn-primary:hover {
   background: var(--accent);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-#page-fileedit .index-form-container .btn-primary:active,
-#page-filenew .index-form-container .btn-primary:active {
+.page-file-edit .index-form-container .btn-primary:active,
+.page-file-new .index-form-container .btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Dark mode adjustments for MOC editor */
-body[data-dark-mode="true"] #page-fileedit .index-form-container,
-body[data-dark-mode="true"] #page-filenew .index-form-container {
-  background: var(--bg-secondary);
-  border-color: var(--border);
+/* -----------------------------------------------------------------------
+   responsive
+   ----------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .page-file-edit .metadata-form .form-field-row,
+  .page-file-new .metadata-form .form-field-row {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
-body[data-dark-mode="true"] #page-fileedit .index-form-container .btn-secondary,
-body[data-dark-mode="true"] #page-filenew .index-form-container .btn-secondary {
-  background: var(--bg);
-  color: var(--text);
-  border-color: var(--border);
-}
-
-body[data-dark-mode="true"]
-  #page-fileedit
-  .index-form-container
-  .btn-secondary:hover,
-body[data-dark-mode="true"]
-  #page-filenew
-  .index-form-container
-  .btn-secondary:hover {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
+@media (max-width: 768px) {
+  .page-file-edit .metadata-form .form-field-row,
+  .page-file-new .metadata-form .form-field-row,
+  .page-file-edit .metadata-form .form-group,
+  .page-file-new .metadata-form .form-group {
+    grid-template-columns: 1fr;
+  }
 }
