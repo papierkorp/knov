@@ -6,7 +6,7 @@
 
 .btn {
   background: var(--primary);
-  color: #fff;
+  color: var(--bg);
   border: none;
   padding: 8px 12px;
   border-radius: 4px;
@@ -20,7 +20,7 @@
 
 .btn-primary {
   background: var(--primary);
-  color: #fff;
+  color: var(--bg);
   border: none;
   padding: 8px 12px;
   border-radius: 4px;
@@ -47,8 +47,8 @@
 }
 
 .btn-danger {
-  background: #dc3545;
-  color: #fff;
+  background: var(--danger, #dc3545);
+  color: var(--bg);
   border: none;
   padding: 8px 12px;
   border-radius: 4px;
@@ -56,7 +56,7 @@
 }
 
 .btn-danger:hover {
-  background: #c82333;
+  background: color-mix(in srgb, var(--danger, #dc3545) 80%, black);
 }
 
 .btn-small {
@@ -71,7 +71,7 @@
 
 .btn-small:hover {
   background: var(--primary);
-  color: #fff;
+  color: var(--bg);
   border-color: var(--primary);
 }
 
@@ -80,64 +80,43 @@
    ============================================= */
 
 .status-ok {
-  color: #065f46;
-  background: #d1fae5;
+  color: var(--success, #065f46);
+  background: color-mix(in srgb, var(--success, #22c55e) 15%, var(--bg));
   padding: 12px 16px;
   border-radius: 4px;
-  border: 1px solid #10b981;
+  border: 1px solid var(--success, #10b981);
   margin: 8px 0;
   display: block;
 }
 
 .status-error {
-  color: #991b1b;
-  background: #fee2e2;
+  color: var(--danger, #991b1b);
+  background: color-mix(in srgb, var(--danger, #ef4444) 15%, var(--bg));
   padding: 12px 16px;
   border-radius: 4px;
-  border: 1px solid #ef4444;
+  border: 1px solid var(--danger, #ef4444);
   margin: 8px 0;
   display: block;
 }
 
 .status-warning {
-  color: #92400e;
-  background: #fef3c7;
+  color: var(--warning, #92400e);
+  background: color-mix(in srgb, var(--warning, #f59e0b) 15%, var(--bg));
   padding: 12px 16px;
   border-radius: 4px;
-  border: 1px solid #f59e0b;
+  border: 1px solid var(--warning, #f59e0b);
   margin: 8px 0;
   display: block;
 }
 
 .status-info {
-  color: #1e40af;
-  background: #dbeafe;
+  color: var(--info, #1e40af);
+  background: color-mix(in srgb, var(--info, #3b82f6) 15%, var(--bg));
   padding: 12px 16px;
   border-radius: 4px;
-  border: 1px solid #3b82f6;
+  border: 1px solid var(--info, #3b82f6);
   margin: 8px 0;
   display: block;
-}
-
-body[data-dark-mode="true"] .status-ok {
-  color: #a7f3d0;
-  background: #064e3b;
-  border-color: #059669;
-}
-body[data-dark-mode="true"] .status-error {
-  color: #fca5a5;
-  background: #7f1d1d;
-  border-color: #dc2626;
-}
-body[data-dark-mode="true"] .status-warning {
-  color: #fde68a;
-  background: #78350f;
-  border-color: #d97706;
-}
-body[data-dark-mode="true"] .status-info {
-  color: #93c5fd;
-  background: #1e3a8a;
-  border-color: #2563eb;
 }
 
 /* =============================================
@@ -152,7 +131,7 @@ body[data-dark-mode="true"] .status-info {
 }
 
 [popover]::backdrop {
-  background: rgba(0, 0, 0, 0.5);
+  background: color-mix(in srgb, var(--text) 50%, transparent);
 }
 
 [popover] .modal-content {
@@ -287,8 +266,8 @@ body[data-dark-mode="true"] .status-info {
 .tooltip::after {
   content: attr(data-tooltip);
   position: absolute;
-  background: #333;
-  color: #fff;
+  background: var(--bg-secondary);
+  color: var(--bg);
   padding: 8px 12px;
   border-radius: 4px;
   font-size: 14px;
@@ -309,7 +288,7 @@ body[data-dark-mode="true"] .status-info {
   visibility: visible;
 }
 body[data-dark-mode="true"] .tooltip::after {
-  background: #555;
+  background: var(--border);
 }
 
 /* =============================================
@@ -430,7 +409,7 @@ body[data-dark-mode="true"] .tooltip::after {
   align-items: center;
   flex-shrink: 0;
   background: var(--primary);
-  color: #fff;
+  color: var(--bg);
   padding: 2px 6px;
   border-radius: 12px;
   font-size: 0.85rem;
@@ -440,7 +419,7 @@ body[data-dark-mode="true"] .tooltip::after {
 .page-file-new .metadata-form .tag-chip-remove {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--bg);
   cursor: pointer;
   margin-left: 4px;
   font-size: 1rem;
@@ -545,7 +524,7 @@ body[data-dark-mode="true"] .tooltip::after {
 
 .page-file-edit .entry-controls .btn-remove,
 .page-file-new .entry-controls .btn-remove {
-  color: #ef4444;
+  color: var(--danger, #ef4444);
 }
 
 .page-file-edit .entry-content,
@@ -1104,7 +1083,7 @@ body[data-dark-mode="true"] .tooltip::after {
   gap: 5px;
   align-items: center;
   font-size: 0.82rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--text) 10%, transparent);
   margin-bottom: 8px;
 }
 
@@ -1148,7 +1127,7 @@ body[data-dark-mode="true"] .tooltip::after {
   border: 1px solid var(--border);
   border-radius: 5px;
   padding: 2px 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--text) 12%, transparent);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.12s;
@@ -1438,13 +1417,13 @@ body[data-dark-mode="true"] .tooltip::after {
    blockquotes
    ----------------------------------------------------------------------- */
 blockquote,
-#view-fileview-reader blockquote {
+.view-reader blockquote {
   border-left: 10px solid var(--neutral);
   padding: 0.5em 10px;
 }
 
 blockquote::before,
-#view-fileview-reader blockquote::before {
+.view-reader blockquote::before {
   color: var(--neutral);
   content: open-quote;
   font-size: 4em;
@@ -1454,7 +1433,7 @@ blockquote::before,
 }
 
 blockquote p blockquote p,
-#view-fileview-reader blockquote p {
+.view-reader blockquote p {
   display: inline;
 }
 
@@ -1470,7 +1449,7 @@ blockquote p blockquote p,
    interactive table component (.table-container)
    ----------------------------------------------------------------------- */
 .table-container,
-#view-fileview-reader .table-container {
+.view-reader .table-container {
   margin: 1.5em 0;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1478,14 +1457,14 @@ blockquote p blockquote p,
 }
 
 .table-controls,
-#view-fileview-reader .table-controls {
+.view-reader .table-controls {
   padding: 10px 12px;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
 }
 
 .table-search,
-#view-fileview-reader .table-search {
+.view-reader .table-search {
   width: 100%;
   max-width: 360px;
   padding: 6px 10px;
@@ -1497,18 +1476,18 @@ blockquote p blockquote p,
 }
 
 .table-search:focus,
-#view-fileview-reader .table-search:focus {
+.view-reader .table-search:focus {
   outline: none;
   border-color: var(--primary);
 }
 
 .table-wrapper,
-#view-fileview-reader .table-wrapper {
+.view-reader .table-wrapper {
   overflow-x: auto;
 }
 
 .table-container table .table-container table,
-#view-fileview-reader .table-container table {
+.view-reader .table-container table {
   width: 100%;
   border-collapse: collapse;
   margin: 0;
@@ -1516,13 +1495,13 @@ blockquote p blockquote p,
 }
 
 .table-container thead .table-container thead,
-#view-fileview-reader .table-container thead {
+.view-reader .table-container thead {
   background: var(--bg-secondary);
   border-bottom: 2px solid var(--border);
 }
 
 .table-container th .table-container th,
-#view-fileview-reader .table-container th {
+.view-reader .table-container th {
   padding: 10px 14px;
   text-align: left;
   font-weight: 600;
@@ -1532,23 +1511,23 @@ blockquote p blockquote p,
 }
 
 .table-container th:last-child .table-container th:last-child,
-#view-fileview-reader .table-container th:last-child {
+.view-reader .table-container th:last-child {
   border-right: none;
 }
 
 .table-container th.sortable .table-container th.sortable,
-#view-fileview-reader .table-container th.sortable {
+.view-reader .table-container th.sortable {
   cursor: pointer;
   user-select: none;
 }
 
 .table-container th.sortable:hover .table-container th.sortable:hover,
-#view-fileview-reader .table-container th.sortable:hover {
+.view-reader .table-container th.sortable:hover {
   background: var(--bg);
 }
 
 .table-container td .table-container td,
-#view-fileview-reader .table-container td {
+.view-reader .table-container td {
   padding: 8px 14px;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -1556,23 +1535,23 @@ blockquote p blockquote p,
 }
 
 .table-container td:last-child .table-container td:last-child,
-#view-fileview-reader .table-container td:last-child {
+.view-reader .table-container td:last-child {
   border-right: none;
 }
 
 .table-container tbody tr:last-child td .table-container tbody tr:last-child td,
-#view-fileview-reader .table-container tbody tr:last-child td {
+.view-reader .table-container tbody tr:last-child td {
   border-bottom: none;
 }
 
 .table-container tbody tr:hover .table-container tbody tr:hover,
-#view-fileview-reader .table-container tbody tr:hover {
+.view-reader .table-container tbody tr:hover {
   background: var(--bg-secondary);
 }
 
 /* footer bar: edit button left, info + pagination right */
 .table-footer,
-#view-fileview-reader .table-footer {
+.view-reader .table-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1584,14 +1563,14 @@ blockquote p blockquote p,
 }
 
 .table-footer-right,
-#view-fileview-reader .table-footer-right {
+.view-reader .table-footer-right {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .btn-table-edit,
-#view-fileview-reader .btn-table-edit {
+.view-reader .btn-table-edit {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1606,26 +1585,26 @@ blockquote p blockquote p,
 }
 
 .btn-table-edit:hover,
-#view-fileview-reader .btn-table-edit:hover {
+.view-reader .btn-table-edit:hover {
   color: var(--primary);
   border-color: var(--primary);
 }
 
 .table-info,
-#view-fileview-reader .table-info {
+.view-reader .table-info {
   color: var(--text-secondary);
   font-size: 0.8em;
 }
 
 .pagination,
-#view-fileview-reader .pagination {
+.view-reader .pagination {
   display: flex;
   gap: 4px;
   align-items: center;
 }
 
 .page-btn,
-#view-fileview-reader .page-btn {
+.view-reader .page-btn {
   padding: 3px 9px;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -1636,19 +1615,19 @@ blockquote p blockquote p,
 }
 
 .page-btn:hover:not(:disabled),
-#view-fileview-reader .page-btn:hover:not(:disabled) {
+.view-reader .page-btn:hover:not(:disabled) {
   border-color: var(--primary);
   color: var(--primary);
 }
 
 .page-btn:disabled,
-#view-fileview-reader .page-btn:disabled {
+.view-reader .page-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
 .page-info,
-#view-fileview-reader .page-info {
+.view-reader .page-info {
   color: var(--text-secondary);
   font-size: 0.85em;
   padding: 0 4px;
@@ -1946,7 +1925,7 @@ main textarea {
   top: 0px;
   width: 5px;
   height: 9px;
-  border: 2px solid #fff;
+  border: 2px solid var(--bg);
   border-top: none;
   border-left: none;
   transform: rotate(45deg);
@@ -2410,9 +2389,9 @@ dl.media-info dd {
 }
 
 .btn-icon.btn-danger-icon:hover {
-  background: #dc2626;
-  color: #fff;
-  border-color: #dc2626;
+  background: var(--danger, #dc2626);
+  color: var(--bg);
+  border-color: var(--danger, #dc2626);
 }
 
 /* tag chips inside media detail view */
@@ -2577,7 +2556,7 @@ dl.media-info dd {
 .page-dashboard-new .btn-add-widget,
 .page-dashboard-edit .btn-add-widget {
   background: var(--primary);
-  color: #fff;
+  color: var(--bg);
   border: none;
   padding: 6px 14px;
   border-radius: 4px;
@@ -2644,9 +2623,9 @@ dl.media-info dd {
 
 .page-dashboard-new .btn-remove-widget:hover,
 .page-dashboard-edit .btn-remove-widget:hover {
-  background: #dc2626;
-  border-color: #dc2626;
-  color: #fff;
+  background: var(--danger, #dc2626);
+  border-color: var(--danger, #dc2626);
+  color: var(--bg);
 }
 
 /* widget config sub-section */

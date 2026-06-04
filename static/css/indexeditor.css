@@ -79,9 +79,9 @@
 }
 
 .btn-remove:hover {
-  background: #fee2e2;
-  color: #dc2626;
-  border-color: #dc2626;
+  background: color-mix(in srgb, var(--danger, #ef4444) 15%, var(--bg));
+  color: var(--danger, #dc2626);
+  border-color: var(--danger, #dc2626);
 }
 
 .entry-separator {

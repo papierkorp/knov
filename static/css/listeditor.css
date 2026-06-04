@@ -39,7 +39,7 @@
 .component-list-editor input[type="text"]:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
 .component-list-editor input[type="text"]::placeholder {
@@ -82,12 +82,12 @@
 .component-list-editor .list-item.drop-as-child > .item-row {
   outline: 2px dashed var(--primary, #007bff);
   border-radius: 4px;
-  background: var(--primary-bg, rgba(0, 123, 255, 0.07));
+  background: color-mix(in srgb, var(--primary) 7%, transparent);
   position: relative;
 }
 
 .component-list-editor .list-item.selected > .item-row {
-  background: var(--item-selected-bg, rgba(0, 123, 255, 0.07));
+  background: color-mix(in srgb, var(--primary) 7%, transparent);
   border-radius: 4px;
 }
 
@@ -114,7 +114,7 @@
   outline: none;
   border-color: var(--primary);
   background: var(--bg);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
 /* undo bar — keep ID: used as JS show/hide target */

@@ -99,21 +99,21 @@
 }
 
 .page-file-dittable .status-ok {
-  color: #065f46;
-  background: #d1fae5;
+  color: var(--success, #065f46);
+  background: color-mix(in srgb, var(--success, #22c55e) 15%, var(--bg));
   padding: 12px 16px;
   border-radius: 4px;
   margin-top: 16px;
-  border: 1px solid #10b981;
+  border: 1px solid var(--success, #10b981);
 }
 
 .page-file-dittable .status-error {
-  color: #991b1b;
-  background: #fee2e2;
+  color: var(--danger, #991b1b);
+  background: color-mix(in srgb, var(--danger, #ef4444) 15%, var(--bg));
   padding: 12px 16px;
   border-radius: 4px;
   margin-top: 16px;
-  border: 1px solid #ef4444;
+  border: 1px solid var(--danger, #ef4444);
 }
 
 .page-file-dittable .status-ok a,
