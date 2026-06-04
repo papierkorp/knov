@@ -426,7 +426,7 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 		if !strings.HasSuffix(u, ".md") {
 			u += ".md"
 		}
-		return "[" + text + "](/files/" + u + ")"
+		return "[" + text + "](" + pathutils.ToFileURL(u) + ")"
 	})
 }
 

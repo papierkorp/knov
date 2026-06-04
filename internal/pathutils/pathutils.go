@@ -183,3 +183,36 @@ func getDocsPath() string {
 func getMediaPath() string {
 	return filepath.Join(configmanager.GetAppConfig().DataPath, "media")
 }
+
+// ToFileURL returns a browser-safe URL for viewing a file.
+// Segments are path-escaped so spaces and special characters work correctly.
+func ToFileURL(rel string) string {
+	rel = filepath.ToSlash(rel)
+	parts := strings.Split(rel, "/")
+	for i, p := range parts {
+		parts[i] = strings.NewReplacer(
+			" ", "%20",
+			"#", "%23",
+			"?", "%3F",
+			"&", "%26",
+			"+", "%2B",
+		).Replace(p)
+	}
+	return "/files/" + strings.Join(parts, "/")
+}
+
+// ToMediaURL returns a browser-safe URL for viewing a media file.
+func ToMediaURL(rel string) string {
+	rel = filepath.ToSlash(rel)
+	parts := strings.Split(rel, "/")
+	for i, p := range parts {
+		parts[i] = strings.NewReplacer(
+			" ", "%20",
+			"#", "%23",
+			"?", "%3F",
+			"&", "%26",
+			"+", "%2B",
+		).Replace(p)
+	}
+	return "/media/" + strings.Join(parts, "/")
+}

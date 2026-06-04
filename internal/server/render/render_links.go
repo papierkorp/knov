@@ -97,7 +97,7 @@ func RenderLinksList(links []string, _ bool) string {
 			continue
 		}
 		rel := pathutils.ToRelative(link)
-		url := "/files/" + rel
+		url := pathutils.ToFileURL(rel)
 		displayText := GetLinkDisplayText(rel)
 		html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, displayText))
 	}
@@ -118,7 +118,7 @@ func RenderMediaLinks(links []string) string {
 		}
 		hasMedia = true
 		rel := pathutils.ToRelative(link)
-		url := "/media/" + rel
+		url := pathutils.ToMediaURL(rel)
 		html.WriteString(fmt.Sprintf(`<a href="%s" title="%s" class="connection-link">%s</a>`, url, rel, filepath.Base(rel)))
 	}
 	if !hasMedia {

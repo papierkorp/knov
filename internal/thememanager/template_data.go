@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 	"text/template"
 
 	"knov/internal/configmanager"
@@ -80,6 +81,20 @@ func CreateFuncMap() template.FuncMap {
 		},
 		"urlQuery": func(s string) string {
 			return url.QueryEscape(s)
+		},
+		// urlPath encodes a file path for use in href attributes.
+		// Uses %20 for spaces (not + like urlQuery) so browsers resolve it correctly.
+		"urlPath": func(s string) string {
+			return pathutils.ToFileURL(s)
+		},
+		// urlPathSegment encodes a single path value for embedding in a URL path
+		// e.g. href="/files/history/{{urlPathSegment .FilePath}}"
+		"urlPathSegment": func(s string) string {
+			s = strings.ReplaceAll(s, " ", "%20")
+			s = strings.ReplaceAll(s, "#", "%23")
+			s = strings.ReplaceAll(s, "?", "%3F")
+			s = strings.ReplaceAll(s, "&", "%26")
+			return s
 		},
 		"marshalJSON": func(v interface{}) string {
 			data, err := json.MarshalIndent(v, "", "  ")

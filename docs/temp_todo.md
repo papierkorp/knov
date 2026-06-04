@@ -10,8 +10,6 @@
 - media file preview (rail theme) for images
 - remove the cache in rail per cronjob (files loaded at least)
 
-- link for [test/sample Markdown.md](/files/test/sample Markdown.md) => <li>[test/sample Markdown.md](/files/test/sample Markdown.md)</li>
-
 - backup solution
 - backup git search
 - git lfs possible?
