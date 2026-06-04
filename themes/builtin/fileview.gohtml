@@ -10,15 +10,15 @@
 {{ end }}
 
 {{define "detailed"}}
-<div id="view-fileview-detailed">
+<div class="page-fileview view-detailed">
     <div class="fileview-layout">
         <article class="file-content">
             {{.FileContent.HTML}}
         </article>
-        <aside class="file-sidebar">
+        <aside class="layout-sidebar">
             {{if index .ThemeSettings "sidebarMetadata"}}
-            <section class="sidebar-section" id="component-sidebar-metadata">
-                <h3>metadata</h3>
+            <section class="sidebar-section section-metadata">
+                <h3>{{T "metadata"}}</h3>
                 <div class="metadata-grid">
                     <div class="metadata-row">
                         <span class="metadata-label">{{T "path"}}:</span>
@@ -53,7 +53,7 @@
             {{end}}
 
             {{if index .ThemeSettings "sidebarConnections"}}
-            <section class="sidebar-section" id="component-sidebar-connections">
+            <section class="sidebar-section section-connections">
                 <h3>{{T "connections"}}</h3>
                 <div class="connections-list">
                     <div class="connection-group">
@@ -91,16 +91,18 @@
                 </div>
             </section>
             {{end}}
+
             {{if index .ThemeSettings "sidebarReferences"}}
-            <section class="sidebar-section" id="component-sidebar-references">
+            <section class="sidebar-section section-references">
                 <h3>{{T "references"}}</h3>
                 <div hx-get="/api/metadata/references?filepath={{urlQuery .FilePath}}&sidebar=true"
                      hx-trigger="load"
                      hx-swap="innerHTML">...</div>
             </section>
             {{end}}
+
             {{if index .ThemeSettings "sidebarVersionHistory"}}
-            <section class="sidebar-section" id="component-sidebar-versions">
+            <section class="sidebar-section section-versions">
                 <h3><a href="/files/history/{{urlQuery .FilePath}}">{{T "version history"}}</a></h3>
                 <div class="version-loading"
                      hx-get="/api/files/versions/{{urlQuery .FilePath}}?output=sidebar"
@@ -110,8 +112,9 @@
                 </div>
             </section>
             {{end}}
+
             {{if index .ThemeSettings "sidebarToc"}}
-            <section class="sidebar-section" id="component-sidebar-toc">
+            <section class="sidebar-section section-toc">
                 <h3>{{T "table of contents"}}</h3>
                 {{ if .FileContent.TOC }}
                     <nav class="toc-nav">
@@ -130,7 +133,7 @@
 {{end}}
 
 {{define "compact"}}
-<div id="view-fileview-compact">
+<div class="page-fileview view-compact">
     <div class="compact-header">
         <div class="compact-metadata">
             {{if index .ThemeSettings "compactMetadataPath"}}
@@ -202,7 +205,7 @@
 {{end}}
 
 {{define "reader"}}
-<div id="view-fileview-reader">
+<div class="page-fileview view-reader">
     <div class="reader-controls">
         <button class="font-size-btn" onclick="adjustFontSize(-2)">A-</button>
         <button class="font-size-btn" onclick="adjustFontSize(2)">A+</button>
@@ -214,7 +217,7 @@
 
 <script>
 function adjustFontSize(delta) {
-    const content = document.querySelector('#view-fileview-reader .file-content');
+    const content = document.querySelector('.view-reader .file-content');
     const currentSize = parseInt(getComputedStyle(content).fontSize);
     const newSize = Math.max(14, Math.min(28, currentSize + delta));
     content.style.fontSize = newSize + 'px';

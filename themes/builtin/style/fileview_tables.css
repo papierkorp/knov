@@ -1,11 +1,9 @@
 /* theme: builtin */
 
 /* -----------------------------------------------------------------------
-   static table (rendered inline, no interactive component)
+   static table (rendered inline in file content)
    ----------------------------------------------------------------------- */
-#view-fileview-detailed .file-content table,
-#view-fileview-compact .file-content table,
-#view-fileview-reader .file-content table {
+.file-content table {
   width: 100%;
   border-collapse: collapse;
   margin: 1.5em 0;
@@ -13,16 +11,12 @@
   border: 1px solid var(--border);
 }
 
-#view-fileview-detailed .file-content thead,
-#view-fileview-compact .file-content thead,
-#view-fileview-reader .file-content thead {
+.file-content thead {
   background: var(--bg-secondary);
   border-bottom: 2px solid var(--border);
 }
 
-#view-fileview-detailed .file-content th,
-#view-fileview-compact .file-content th,
-#view-fileview-reader .file-content th {
+.file-content th {
   padding: 10px 14px;
   text-align: left;
   font-weight: 600;
@@ -30,64 +24,46 @@
   border-right: 1px solid var(--border);
 }
 
-#view-fileview-detailed .file-content th:last-child,
-#view-fileview-compact .file-content th:last-child,
-#view-fileview-reader .file-content th:last-child {
+.file-content th:last-child {
   border-right: none;
 }
 
-#view-fileview-detailed .file-content td,
-#view-fileview-compact .file-content td,
-#view-fileview-reader .file-content td {
+.file-content td {
   padding: 8px 14px;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   color: var(--text);
 }
 
-#view-fileview-detailed .file-content td:last-child,
-#view-fileview-compact .file-content td:last-child,
-#view-fileview-reader .file-content td:last-child {
+.file-content td:last-child {
   border-right: none;
 }
 
-#view-fileview-detailed .file-content tbody tr:last-child td,
-#view-fileview-compact .file-content tbody tr:last-child td,
-#view-fileview-reader .file-content tbody tr:last-child td {
+.file-content tbody tr:last-child td {
   border-bottom: none;
 }
 
-#view-fileview-detailed .file-content tbody tr:hover,
-#view-fileview-compact .file-content tbody tr:hover,
-#view-fileview-reader .file-content tbody tr:hover {
+.file-content tbody tr:hover {
   background: var(--bg-secondary);
 }
 
 /* -----------------------------------------------------------------------
    interactive table component (.table-container)
-   no overflow:hidden here — parent .file-content already has it,
-   nesting overflow:hidden + border-radius causes rendering issues
    ----------------------------------------------------------------------- */
-#view-fileview-detailed .table-container,
-#view-fileview-compact .table-container,
-#view-fileview-reader .table-container {
+.file-content .table-container {
   margin: 1.5em 0;
   border: 1px solid var(--border);
   border-radius: 6px;
 }
 
-#view-fileview-detailed .table-controls,
-#view-fileview-compact .table-controls,
-#view-fileview-reader .table-controls {
+.file-content .table-controls {
   padding: 10px 12px;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
   border-radius: 6px 6px 0 0;
 }
 
-#view-fileview-detailed .table-search,
-#view-fileview-compact .table-search,
-#view-fileview-reader .table-search {
+.file-content .table-search {
   width: 100%;
   max-width: 360px;
   padding: 6px 10px;
@@ -98,38 +74,28 @@
   font-size: 0.9em;
 }
 
-#view-fileview-detailed .table-search:focus,
-#view-fileview-compact .table-search:focus,
-#view-fileview-reader .table-search:focus {
+.file-content .table-search:focus {
   outline: none;
   border-color: var(--primary);
 }
 
-#view-fileview-detailed .table-wrapper,
-#view-fileview-compact .table-wrapper,
-#view-fileview-reader .table-wrapper {
+.file-content .table-wrapper {
   overflow-x: auto;
 }
 
-#view-fileview-detailed .table-container table,
-#view-fileview-compact .table-container table,
-#view-fileview-reader .table-container table {
+.file-content .table-container table {
   width: 100%;
   border-collapse: collapse;
   margin: 0;
   border: none;
 }
 
-#view-fileview-detailed .table-container thead,
-#view-fileview-compact .table-container thead,
-#view-fileview-reader .table-container thead {
+.file-content .table-container thead {
   background: var(--bg-secondary);
   border-bottom: 2px solid var(--border);
 }
 
-#view-fileview-detailed .table-container th,
-#view-fileview-compact .table-container th,
-#view-fileview-reader .table-container th {
+.file-content .table-container th {
   padding: 10px 14px;
   text-align: left;
   font-weight: 600;
@@ -138,56 +104,40 @@
   white-space: nowrap;
 }
 
-#view-fileview-detailed .table-container th:last-child,
-#view-fileview-compact .table-container th:last-child,
-#view-fileview-reader .table-container th:last-child {
+.file-content .table-container th:last-child {
   border-right: none;
 }
 
-#view-fileview-detailed .table-container th.sortable,
-#view-fileview-compact .table-container th.sortable,
-#view-fileview-reader .table-container th.sortable {
+.file-content .table-container th.sortable {
   cursor: pointer;
   user-select: none;
 }
 
-#view-fileview-detailed .table-container th.sortable:hover,
-#view-fileview-compact .table-container th.sortable:hover,
-#view-fileview-reader .table-container th.sortable:hover {
+.file-content .table-container th.sortable:hover {
   background: var(--bg);
 }
 
-#view-fileview-detailed .table-container td,
-#view-fileview-compact .table-container td,
-#view-fileview-reader .table-container td {
+.file-content .table-container td {
   padding: 8px 14px;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   color: var(--text);
 }
 
-#view-fileview-detailed .table-container td:last-child,
-#view-fileview-compact .table-container td:last-child,
-#view-fileview-reader .table-container td:last-child {
+.file-content .table-container td:last-child {
   border-right: none;
 }
 
-#view-fileview-detailed .table-container tbody tr:last-child td,
-#view-fileview-compact .table-container tbody tr:last-child td,
-#view-fileview-reader .table-container tbody tr:last-child td {
+.file-content .table-container tbody tr:last-child td {
   border-bottom: none;
 }
 
-#view-fileview-detailed .table-container tbody tr:hover,
-#view-fileview-compact .table-container tbody tr:hover,
-#view-fileview-reader .table-container tbody tr:hover {
+.file-content .table-container tbody tr:hover {
   background: var(--bg-secondary);
 }
 
-/* footer bar: edit button left, info + pagination right */
-#view-fileview-detailed .table-footer,
-#view-fileview-compact .table-footer,
-#view-fileview-reader .table-footer {
+/* footer bar */
+.file-content .table-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -199,17 +149,13 @@
   min-height: 40px;
 }
 
-#view-fileview-detailed .table-footer-right,
-#view-fileview-compact .table-footer-right,
-#view-fileview-reader .table-footer-right {
+.file-content .table-footer-right {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-#view-fileview-detailed .btn-table-edit,
-#view-fileview-compact .btn-table-edit,
-#view-fileview-reader .btn-table-edit {
+.file-content .btn-table-edit {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -223,31 +169,23 @@
   white-space: nowrap;
 }
 
-#view-fileview-detailed .btn-table-edit:hover,
-#view-fileview-compact .btn-table-edit:hover,
-#view-fileview-reader .btn-table-edit:hover {
+.file-content .btn-table-edit:hover {
   color: var(--primary);
   border-color: var(--primary);
 }
 
-#view-fileview-detailed .table-info,
-#view-fileview-compact .table-info,
-#view-fileview-reader .table-info {
+.file-content .table-info {
   color: var(--text-secondary);
   font-size: 0.8em;
 }
 
-#view-fileview-detailed .pagination,
-#view-fileview-compact .pagination,
-#view-fileview-reader .pagination {
+.file-content .pagination {
   display: flex;
   gap: 4px;
   align-items: center;
 }
 
-#view-fileview-detailed .page-btn,
-#view-fileview-compact .page-btn,
-#view-fileview-reader .page-btn {
+.file-content .page-btn {
   padding: 3px 9px;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -257,23 +195,17 @@
   font-size: 0.85em;
 }
 
-#view-fileview-detailed .page-btn:hover:not(:disabled),
-#view-fileview-compact .page-btn:hover:not(:disabled),
-#view-fileview-reader .page-btn:hover:not(:disabled) {
+.file-content .page-btn:hover:not(:disabled) {
   border-color: var(--primary);
   color: var(--primary);
 }
 
-#view-fileview-detailed .page-btn:disabled,
-#view-fileview-compact .page-btn:disabled,
-#view-fileview-reader .page-btn:disabled {
+.file-content .page-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-#view-fileview-detailed .page-info,
-#view-fileview-compact .page-info,
-#view-fileview-reader .page-info {
+.file-content .page-info {
   color: var(--text-secondary);
   font-size: 0.85em;
   padding: 0 4px;

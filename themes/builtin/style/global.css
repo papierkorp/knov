@@ -1,5 +1,6 @@
 /* theme: builtin */
-/* Cards format */
+
+/* search result cards — used by render_search.go and render_files.go */
 .search-results-cards {
   margin-top: 20px;
   display: grid;
