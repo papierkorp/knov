@@ -108,20 +108,20 @@
 
 .fp-action-btn.fp-btn-edit:hover {
   background: var(--primary);
-  color: #fff;
+  color: var(--bg);
   border-color: var(--primary);
 }
 
 .fp-action-btn.fp-btn-delete {
   border-color: color-mix(in srgb, #dc2626 40%, var(--border));
   background: color-mix(in srgb, #dc2626 6%, var(--bg));
-  color: #dc2626;
+  color: var(--danger, #dc2626);
 }
 
 .fp-action-btn.fp-btn-delete:hover {
-  background: #dc2626;
-  color: #fff;
-  border-color: #dc2626;
+  background: var(--danger, #dc2626);
+  color: var(--bg);
+  border-color: var(--danger, #dc2626);
 }
 
 #fp-file-select {
@@ -742,7 +742,7 @@
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--text) 20%, transparent);
   padding: 4px;
   display: flex;
   flex-direction: column;
@@ -839,7 +839,7 @@
    filter form (dashboard widget context)
    ============================================= */
 
-#page-dashboardview .filter-controls {
+.page-dashboard .filter-controls {
   display: flex;
   gap: 8px;
   align-items: center;
@@ -847,8 +847,8 @@
   margin-bottom: 10px;
 }
 
-#page-dashboardview .filter-controls .btn-primary,
-#page-dashboardview .filter-controls .btn-secondary {
+.page-dashboard .filter-controls .btn-primary,
+.page-dashboard .filter-controls .btn-secondary {
   padding: 5px 12px;
   font-size: 0.85em;
   border-radius: 4px;
@@ -861,20 +861,20 @@
     color 0.15s,
     border-color 0.15s;
 }
-#page-dashboardview .filter-controls .btn-primary {
+.page-dashboard .filter-controls .btn-primary {
   background: var(--primary);
   color: var(--primary-text);
   border-color: var(--primary);
 }
-#page-dashboardview .filter-controls .btn-primary:hover {
+.page-dashboard .filter-controls .btn-primary:hover {
   opacity: 0.88;
 }
-#page-dashboardview .filter-controls .btn-secondary:hover {
+.page-dashboard .filter-controls .btn-secondary:hover {
   border-color: var(--primary);
   color: var(--primary);
 }
 
-#page-dashboardview .filter-controls .form-select {
+.page-dashboard .filter-controls .form-select {
   padding: 5px 8px;
   font-size: 0.85em;
   border: 1px solid var(--border);
@@ -883,7 +883,7 @@
   color: var(--text);
 }
 
-#page-dashboardview .filter-criteria-row {
+.page-dashboard .filter-criteria-row {
   display: grid;
   grid-template-columns: 1fr 1fr 2fr 1fr auto;
   gap: 6px;
@@ -895,20 +895,20 @@
   border-radius: 4px;
 }
 
-#page-dashboardview .filter-field {
+.page-dashboard .filter-field {
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
-#page-dashboardview .filter-field label {
+.page-dashboard .filter-field label {
   font-size: 0.75em;
   font-weight: 500;
   color: var(--text-secondary);
 }
 
-#page-dashboardview .filter-field select,
-#page-dashboardview .filter-field input {
+.page-dashboard .filter-field select,
+.page-dashboard .filter-field input {
   padding: 4px 6px;
   font-size: 0.82em;
   border: 1px solid var(--border);
@@ -918,13 +918,13 @@
   width: 100%;
 }
 
-#page-dashboardview .filter-field select:focus,
-#page-dashboardview .filter-field input:focus {
+.page-dashboard .filter-field select:focus,
+.page-dashboard .filter-field input:focus {
   outline: none;
   border-color: var(--primary);
 }
 
-#page-dashboardview .filter-remove-btn {
+.page-dashboard .filter-remove-btn {
   padding: 4px 8px;
   font-size: 0.85em;
   background: none;
@@ -934,12 +934,12 @@
   cursor: pointer;
   align-self: flex-end;
 }
-#page-dashboardview .filter-remove-btn:hover {
-  border-color: #dc2626;
-  color: #dc2626;
+.page-dashboard .filter-remove-btn:hover {
+  border-color: var(--danger, #dc2626);
+  color: var(--danger, #dc2626);
 }
 
-#page-dashboardview .filter-no-results {
+.page-dashboard .filter-no-results {
   color: var(--text-secondary);
   font-style: italic;
   font-size: 0.85em;
@@ -1001,7 +1001,7 @@
 
 .fp-media-btn.active {
   background: var(--primary);
-  color: #fff;
+  color: var(--bg);
   border-color: var(--primary);
 }
 

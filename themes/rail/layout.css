@@ -89,8 +89,8 @@ body {
 }
 
 .rail-btn.btn-danger-icon:hover {
-  background: color-mix(in srgb, #dc2626 15%, transparent);
-  color: #dc2626;
+  background: color-mix(in srgb, var(--danger, #dc2626) 15%, transparent);
+  color: var(--danger, #dc2626);
 }
 
 /* file context buttons — hidden until a file is open */
