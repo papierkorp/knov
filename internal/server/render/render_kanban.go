@@ -65,13 +65,16 @@ func RenderKanbanCard(card KanbanCard) string {
 	// dates
 	html.WriteString(`<div class="kanban-card-meta">`)
 	if card.CreatedAt != "" {
-		fmt.Fprintf(&html, `<span title="%s">%s %s</span>`,
+		fmt.Fprintf(&html, `<span title="%s">%s: %s</span>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "created at"),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "created at"),
 			card.CreatedAt)
 	}
+
+	fmt.Fprintf(&html, ` | `)
+
 	if card.LastEdited != "" {
-		fmt.Fprintf(&html, `<span title="%s">%s %s</span>`,
+		fmt.Fprintf(&html, `<span title="%s">%s: %s</span>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "last edited"),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "last edited"),
 			card.LastEdited)
