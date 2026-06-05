@@ -1032,7 +1032,6 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 		for i := range tags {
 			tags[i] = strings.TrimSpace(tags[i])
 		}
-		// remove empty strings that might result from trimming
 		var filteredTags []string
 		for _, tag := range tags {
 			if tag != "" {
@@ -1041,12 +1040,19 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 		}
 		tags = filteredTags
 	} else {
-		tags = []string{} // explicit empty slice, not nil
+		tags = []string{}
+	}
+
+	// validate kanban tags against allowlist before saving
+	sanitized, err := files.SanitizeKanbanTags(tags)
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()), http.StatusBadRequest)
+		return
 	}
 
 	metadata := &files.Metadata{
 		Path: pathutils.ToWithPrefix(filePath),
-		Tags: tags,
+		Tags: sanitized,
 	}
 
 	if err := files.MetaDataSave(metadata); err != nil {

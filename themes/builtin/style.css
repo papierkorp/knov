@@ -18,6 +18,7 @@
 @import url("style/help.css");
 @import url("style/media.css");
 @import url("style/chat.css");
+@import url("style/kanban.css");
 
 /* color schemes */
 :root,

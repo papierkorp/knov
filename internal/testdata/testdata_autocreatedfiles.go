@@ -213,5 +213,7 @@ func extractFilenameTags(filename string) []string {
 		}
 	}
 
+	tags = append(tags, "kb-status-inbox")
+
 	return tags
 }

@@ -60,37 +60,37 @@ func getCopiedFilesMetadata() []*files.Metadata {
 	return []*files.Metadata{
 		{
 			Path:   "docs/test/example_markdown.md",
-			Tags:   []string{"test-markdown", "test-files"},
+			Tags:   []string{"test-markdown", "test-files", "kb-status-inbox"},
 			Editor: files.EditorTypeMarkdown,
 		},
 		{
 			Path:   "docs/test/sample Markdown.md",
-			Tags:   []string{"test-markdown", "test-files"},
+			Tags:   []string{"test-markdown", "test-files", "kb-status-inbox"},
 			Editor: files.EditorTypeMarkdown,
 		},
 		{
 			Path:   "docs/test/example_text.md",
-			Tags:   []string{"test-text", "test-files"},
+			Tags:   []string{"test-text", "test-files", "kb-status-inbox"},
 			Editor: files.EditorTypeTextarea,
 		},
 		{
 			Path:   "docs/test/example_list.md",
-			Tags:   []string{"test-list", "test-files"},
+			Tags:   []string{"test-list", "test-files", "kb-status-inbox"},
 			Editor: files.EditorTypeList,
 		},
 		{
 			Path:   "docs/test/example_todo.md",
-			Tags:   []string{"test-todo", "test-files"},
+			Tags:   []string{"test-todo", "test-files", "kb-status-inbox"},
 			Editor: files.EditorTypeTodo,
 		},
 		{
 			Path:   "docs/test/example_filter.md",
-			Tags:   []string{"test-filter", "test-files"},
+			Tags:   []string{"test-filter", "test-files", "kb-status-inbox"},
 			Editor: files.EditorTypeFilter,
 		},
 		{
 			Path:   "docs/test/example_index.md",
-			Tags:   []string{"test-index", "test-files"},
+			Tags:   []string{"test-index", "test-files", "kb-status-inbox"},
 			Editor: files.EditorTypeIndex,
 		},
 	}

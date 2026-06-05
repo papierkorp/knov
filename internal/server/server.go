@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -85,6 +86,9 @@ func StartServerChi() {
 	r.Get("/browse/{metadata}/{value}", handleBrowseFiles)
 
 	r.Get("/chat", handleChat)
+
+	r.Get("/kanban", handleKanbanSelect)
+	r.Get("/kanban/{collection}", handleKanbanBoard)
 
 	// ----------------------------------------------------------------------------------------
 	// ------------------------------------- static routes -------------------------------------
@@ -327,6 +331,16 @@ func StartServerChi() {
 			r.Get("/linkstohere", handleAPIGetLinksToHere)
 			r.Get("/media", handleAPIGetMediaLinks)
 			r.Get("/related", handleAPIGetRelatedFiles)
+		})
+
+		// ----------------------------------------------------------------------------------------
+		// --------------------------------------- KANBAN ------------------------------------------
+		// ----------------------------------------------------------------------------------------
+		r.Route("/kanban", func(r chi.Router) {
+			r.Get("/{collection}", handleAPIGetKanbanBoard)
+			r.Get("/{collection}/tags", handleAPIGetKanbanTags)
+			r.Post("/card/move", handleAPIKanbanMoveCard)
+			r.Get("/excerpt", handleAPIGetKanbanExcerpt)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -958,6 +972,36 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewBaseTemplateData("chat")
 	if err := tm.Render(w, "chat", data); err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+	}
+}
+
+func handleKanbanSelect(w http.ResponseWriter, r *http.Request) {
+	// try cache first, fall back to live data
+	collections, err := files.GetAllCollectionsFromSystemData()
+	if err != nil || len(collections) == 0 {
+		allCols, liveErr := files.GetAllCollections()
+		if liveErr == nil {
+			collections = make([]string, 0, len(allCols))
+			for c := range allCols {
+				collections = append(collections, c)
+			}
+			slices.Sort(collections)
+		}
+	}
+
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewKanbanSelectTemplateData(collections)
+	if err := tm.Render(w, "kanban", data); err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+	}
+}
+
+func handleKanbanBoard(w http.ResponseWriter, r *http.Request) {
+	collection := chi.URLParam(r, "collection")
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewKanbanTemplateData(collection, nil)
+	if err := tm.Render(w, "kanban", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}
 }

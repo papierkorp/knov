@@ -2504,6 +2504,117 @@ paths:
       summary: Health check
       tags:
       - health
+  /api/kanban/{collection}:
+    get:
+      description: Returns all kanban cards grouped by status column for the given
+        collection
+      parameters:
+      - description: Collection name
+        in: path
+        name: collection
+        required: true
+        type: string
+      - description: Filter by ancestor (epic)
+        in: query
+        name: ancestor
+        type: string
+      - description: Filter by tag
+        in: query
+        name: tag
+        type: string
+      - description: Search query
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get kanban board for a collection
+      tags:
+      - kanban
+  /api/kanban/{collection}/tags:
+    get:
+      parameters:
+      - description: Collection name
+        in: path
+        name: collection
+        required: true
+        type: string
+      - description: format=options returns HTML option elements
+        in: query
+        name: format
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get all non-kanban tags used in a collection's kanban cards
+      tags:
+      - kanban
+  /api/kanban/card/move:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Updates the kanban status tag on a file, replacing any existing
+        kanban tag
+      parameters:
+      - description: File path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: New kanban status
+        in: formData
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: card updated
+          schema:
+            type: string
+        "400":
+          description: missing parameter
+          schema:
+            type: string
+        "404":
+          description: file not found
+          schema:
+            type: string
+        "500":
+          description: failed to update
+          schema:
+            type: string
+      summary: Move a kanban card to a new status column
+      tags:
+      - kanban
+  /api/kanban/excerpt:
+    get:
+      description: Returns the first N runes of meaningful body text, stripping front
+        matter and markdown syntax
+      parameters:
+      - description: File path (relative)
+        in: query
+        name: filepath
+        required: true
+        type: string
+      - description: Max runes to return (default 30)
+        in: query
+        name: chars
+        type: integer
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: excerpt text
+          schema:
+            type: string
+      summary: Get a short text excerpt from a file
+      tags:
+      - kanban
   /api/links/ancestors:
     get:
       parameters:

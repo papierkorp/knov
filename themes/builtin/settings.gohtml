@@ -119,6 +119,15 @@
             <div class="help-text">{{T "Metadata Rebuild Interval"}}: <code>{{.AppConfig.MetadataRebuildInterval}}</code></div>
         </div>
     </div>
+
+    <div class="setting-group">
+        <h3>{{T "Kanban"}} <small>({{T "restart required to change"}})</small></h3>
+        <div class="setting-item">
+            <div class="help-text">{{T "Kanban Prefix"}}: <code>{{.AppConfig.KanbanPrefix}}</code></div>
+            <div class="help-text">{{T "Kanban Statuses"}}: <code>{{join .AppConfig.KanbanStatuses ", "}}</code></div>
+            <div class="help-text">{{T "Kanban Columns"}}: <code>{{join .AppConfig.KanbanColumns ", "}}</code></div>
+        </div>
+    </div>
 </section>
 {{ end }}
 

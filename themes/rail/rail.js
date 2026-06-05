@@ -238,6 +238,14 @@ function switchFileSubPanel(view) {
   const sel = document.getElementById("fp-file-select");
   if (sel) sel.value = view;
   localStorage.setItem("rail-file-subpanel", view);
+  // clear toc filter when leaving toc panel
+  if (view !== "toc") {
+    const tocFilter = document.getElementById("fp-toc-filter");
+    if (tocFilter) {
+      tocFilter.value = "";
+      filterTocItems("");
+    }
+  }
 }
 
 // ================================================================
@@ -715,3 +723,16 @@ document.addEventListener("DOMContentLoaded", () => {
     document.documentElement.classList.remove("no-transition");
   });
 });
+
+// ================================================================
+// toc filter — client-side, no API call
+// ================================================================
+function filterTocItems(query) {
+  const nav = document.getElementById("fp-toc-nav");
+  if (!nav) return;
+  const q = query.toLowerCase().trim();
+  nav.querySelectorAll("a").forEach((a) => {
+    const text = a.textContent.toLowerCase();
+    a.style.display = q === "" || text.includes(q) ? "" : "none";
+  });
+}

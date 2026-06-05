@@ -82,6 +82,9 @@ func CreateFuncMap() template.FuncMap {
 		"urlQuery": func(s string) string {
 			return url.QueryEscape(s)
 		},
+		"join": func(elems []string, sep string) string {
+			return strings.Join(elems, sep)
+		},
 		// urlPath encodes a file path for use in href attributes.
 		// Uses %20 for spaces (not + like urlQuery) so browsers resolve it correctly.
 		"urlPath": func(s string) string {
@@ -444,5 +447,61 @@ func NewFilterEditTemplateData(filterID string) FilterEditTemplateData {
 		BaseTemplateData: NewBaseTemplateData("edit filter: " + filterID),
 		FilterID:         filterID,
 		FilePath:         filterID + ".filter",
+	}
+}
+
+// -----------------------------------------------
+// ------------ Kanban TemplateData --------------
+// -----------------------------------------------
+
+// KanbanCard represents a single card on the kanban board
+type KanbanCard struct {
+	FilePath   string
+	Title      string
+	Collection string
+	Status     string // the kanban status value (e.g. "inbox")
+	Tags       []string
+	CreatedAt  string
+}
+
+// KanbanColumn represents a single column on the board
+type KanbanColumn struct {
+	Status string
+	Label  string
+	Cards  []KanbanCard
+}
+
+// KanbanTemplateData extends base with kanban board data
+type KanbanTemplateData struct {
+	BaseTemplateData
+	Collection string
+	Columns    []KanbanColumn
+	Statuses   []string // all possible statuses (for move target)
+	Prefix     string   // kanban tag prefix
+}
+
+// NewKanbanTemplateData creates kanban board template data
+func NewKanbanTemplateData(collection string, columns []KanbanColumn) KanbanTemplateData {
+	return KanbanTemplateData{
+		BaseTemplateData: NewBaseTemplateData("kanban: " + collection),
+		Collection:       collection,
+		Columns:          columns,
+		Statuses:         configmanager.GetKanbanStatuses(),
+		Prefix:           configmanager.GetKanbanPrefix(),
+	}
+}
+
+// KanbanSelectTemplateData extends base with collection picker data
+type KanbanSelectTemplateData struct {
+	BaseTemplateData
+	Collection  string // always empty — signals the template to show the picker
+	Collections []string
+}
+
+// NewKanbanSelectTemplateData creates the collection picker template data
+func NewKanbanSelectTemplateData(collections []string) KanbanSelectTemplateData {
+	return KanbanSelectTemplateData{
+		BaseTemplateData: NewBaseTemplateData("kanban"),
+		Collections:      collections,
 	}
 }

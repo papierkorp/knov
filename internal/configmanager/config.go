@@ -55,6 +55,9 @@ type AppConfig struct {
 	UseExtensionTodo        bool
 	UseExtensionList        bool
 	UseExtensionIndex       bool
+	KanbanPrefix            string
+	KanbanStatuses          []string
+	KanbanColumns           []string
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -110,6 +113,9 @@ func InitAppConfig() {
 		UseExtensionTodo:        getBoolEnv("KNOV_USE_EXTENSION_TODO", false),
 		UseExtensionList:        getBoolEnv("KNOV_USE_EXTENSION_LIST", false),
 		UseExtensionIndex:       getBoolEnv("KNOV_USE_EXTENSION_INDEX", false),
+		KanbanPrefix:            getEnv("KNOV_KANBAN_PREFIX", "kb"),
+		KanbanStatuses:          getStringListEnv("KNOV_KANBAN_STATUS", []string{"inbox", "inprogress", "blocked", "archive"}),
+		KanbanColumns:           getStringListEnv("KNOV_KANBAN_COLUMNS", []string{"inbox", "inprogress", "blocked"}),
 	}
 
 	initLogLevel()
@@ -138,6 +144,45 @@ func getBoolEnv(key string, defaultValue bool) bool {
 		return strings.ToLower(value) == "true"
 	}
 	return defaultValue
+}
+
+func getStringListEnv(key string, defaultValue []string) []string {
+	if value := os.Getenv(key); value != "" {
+		parts := strings.Split(value, ",")
+		result := make([]string, 0, len(parts))
+		for _, p := range parts {
+			if t := strings.TrimSpace(p); t != "" {
+				result = append(result, t)
+			}
+		}
+		return result
+	}
+	return defaultValue
+}
+
+// GetKanbanPrefix returns the kanban tag prefix
+func GetKanbanPrefix() string {
+	return appConfig.KanbanPrefix
+}
+
+// GetKanbanStatuses returns all possible kanban statuses
+func GetKanbanStatuses() []string {
+	return appConfig.KanbanStatuses
+}
+
+// GetKanbanColumns returns the visible kanban columns
+func GetKanbanColumns() []string {
+	return appConfig.KanbanColumns
+}
+
+// KanbanStatusTag returns the full tag for a given status
+func KanbanStatusTag(status string) string {
+	return appConfig.KanbanPrefix + "-status-" + status
+}
+
+// IsKanbanTag returns true if a tag is a kanban status tag
+func IsKanbanTag(tag string) bool {
+	return strings.HasPrefix(tag, appConfig.KanbanPrefix+"-status-")
 }
 
 func initLogLevel() {

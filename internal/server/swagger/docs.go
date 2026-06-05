@@ -3255,6 +3255,167 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/kanban/card/move": {
+            "post": {
+                "description": "Updates the kanban status tag on a file, replacing any existing kanban tag",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "kanban"
+                ],
+                "summary": "Move a kanban card to a new status column",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "New kanban status",
+                        "name": "status",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "card updated",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "missing parameter",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "file not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to update",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/kanban/excerpt": {
+            "get": {
+                "description": "Returns the first N runes of meaningful body text, stripping front matter and markdown syntax",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "kanban"
+                ],
+                "summary": "Get a short text excerpt from a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path (relative)",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Max runes to return (default 30)",
+                        "name": "chars",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "excerpt text",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/kanban/{collection}": {
+            "get": {
+                "description": "Returns all kanban cards grouped by status column for the given collection",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "kanban"
+                ],
+                "summary": "Get kanban board for a collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection name",
+                        "name": "collection",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by ancestor (epic)",
+                        "name": "ancestor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by tag",
+                        "name": "tag",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/kanban/{collection}/tags": {
+            "get": {
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "kanban"
+                ],
+                "summary": "Get all non-kanban tags used in a collection's kanban cards",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection name",
+                        "name": "collection",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "format=options returns HTML option elements",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/links/ancestors": {
             "get": {
                 "produces": [

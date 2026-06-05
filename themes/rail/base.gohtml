@@ -68,7 +68,7 @@
 
         <!-- new -->
         <div class="flyout-panel" id="fp-new">
-            <div class="flyout-header">{{T "new"}}</div>
+            <div class="flyout-header">{{T "new"}}<button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button></div>
             <div class="flyout-content">
                 <a href="/dashboard/new">{{T "Dashboard"}}</a>
                 <a href="/files/new/markdown">{{T "Markdown"}}</a>
@@ -83,7 +83,7 @@
 
         <!-- browse -->
         <div class="flyout-panel" id="fp-browse">
-            <div class="flyout-header">{{T "browse"}}</div>
+            <div class="flyout-header">{{T "browse"}}<button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button></div>
             <div class="fp-browse-controls">
                 <input type="text" id="fp-browse-search" placeholder="{{T "filter..."}}"
                        oninput="filterBrowseContent(this.value)"/>
@@ -109,7 +109,10 @@
         <div class="flyout-panel" id="fp-search">
             <div class="flyout-header">
                 {{T "search"}}
-                <a href="/search" class="flyout-header-link" title="{{T "open search page"}}"><i class="fa fa-arrow-up-right-from-square"></i></a>
+                <div class="flyout-header-actions">
+                    <a href="/search" class="flyout-header-link" title="{{T "open search page"}}"><i class="fa fa-arrow-up-right-from-square"></i></a>
+                    <button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
+                </div>
             </div>
             <div class="flyout-content">
                 <div class="fp-search-row">
@@ -131,7 +134,10 @@
         <div class="flyout-panel" id="fp-media">
             <div class="flyout-header">
                 {{T "media"}}
-                <a href="/browse/media" class="flyout-header-link" title="{{T "open media page"}}"><i class="fa fa-arrow-up-right-from-square"></i></a>
+                <div class="flyout-header-actions">
+                    <a href="/browse/media" class="flyout-header-link" title="{{T "open media page"}}"><i class="fa fa-arrow-up-right-from-square"></i></a>
+                    <button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
+                </div>
             </div>
             <div class="fp-media-controls">
                 <input type="text" id="fp-media-search" placeholder="{{T "filter..."}}"
@@ -151,7 +157,7 @@
 
         <!-- latest changes -->
         <div class="flyout-panel" id="fp-latest">
-            <div class="flyout-header">{{T "latest changes"}}</div>
+            <div class="flyout-header">{{T "latest changes"}}<button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button></div>
             <div class="flyout-content" id="fp-latest-content"
                  data-url="/api/git/latestchanges?count=100" data-loaded="false">
                 <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
@@ -173,6 +179,7 @@
                         <input type="checkbox" id="fp-logic-checkbox" onchange="saveFpFilterState()"/>
                         <span class="fp-logic-label" data-off="{{T "and"}}" data-on="{{T "or"}}">{{T "and"}}</span>
                     </label>
+                    <button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
                 </div>
             </div>
             <div class="flyout-content" id="fp-filter-content">
@@ -189,7 +196,7 @@
 
         <!-- chat -->
         <div class="flyout-panel" id="fp-chat">
-            <div class="flyout-header">{{T "chat"}}</div>
+            <div class="flyout-header">{{T "chat"}}<button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button></div>
             <div class="flyout-content" id="fp-chat-content"
                  data-url="/api/chat/messages?short=true" data-loaded="false">
                 <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
@@ -201,7 +208,10 @@
 
             <!-- filename header + action buttons + select -->
             <div id="fp-file-header">
-                <div id="fp-file-title">-</div>
+                <div id="fp-file-title-row">
+                    <div id="fp-file-title">-</div>
+                    <button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
+                </div>
                 <div id="fp-file-actions">
                     <a  class="fp-action-btn fp-btn-edit"   id="fp-edit-link"   href="#" title="{{T "edit"}}"><i class="fa fa-pen"></i></a>
                     <button class="fp-action-btn"           id="fp-rename-btn"  popovertarget="rename-modal"  title="{{T "rename"}}"><i class="fa fa-i-cursor"></i></button>
@@ -232,6 +242,8 @@
                 </div>
 
                 <div class="fp-sub-panel" id="fps-toc">
+                    <input type="search" id="fp-toc-filter" placeholder="{{T "filter..."}}"
+                           oninput="filterTocItems(this.value)"/>
                     <nav id="fp-toc-nav" class="fp-toc-nav"></nav>
                 </div>
 

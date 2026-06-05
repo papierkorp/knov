@@ -1,0 +1,149 @@
+{{/* theme: rail */}}
+{{ define "content" }}
+<link rel="stylesheet" href="/static/css/kanban.css"/>
+<div id="view-kanban">
+
+    {{if .Collection}}
+
+    <div id="view-kanban-toolbar">
+        <span class="kanban-title">{{T "kanban"}}: {{.Collection}}</span>
+
+        <select id="kanban-ancestor-select" name="ancestor"
+                hx-get="/api/kanban/{{.Collection}}"
+                hx-trigger="change"
+                hx-target="#view-kanban-board-wrap"
+                hx-swap="innerHTML"
+                hx-include="#kanban-tag-select,#kanban-search"
+                hx-get-ancestors="/api/links/ancestors-in-collection?collection={{.Collection}}&format=options">
+            <option value="">{{T "all ancestors"}}</option>
+        </select>
+
+        <select id="kanban-tag-select" name="tag"
+                hx-get="/api/kanban/{{.Collection}}"
+                hx-trigger="change"
+                hx-target="#view-kanban-board-wrap"
+                hx-swap="innerHTML"
+                hx-include="#kanban-ancestor-select,#kanban-search"
+                hx-get-tags="/api/kanban/{{.Collection}}/tags">
+            <option value="">{{T "all tags"}}</option>
+        </select>
+
+        <input type="search" id="kanban-search" name="q"
+               placeholder="{{T "search..."}}"
+               hx-get="/api/kanban/{{.Collection}}"
+               hx-trigger="keyup changed delay:300ms"
+               hx-target="#view-kanban-board-wrap"
+               hx-swap="innerHTML"
+               hx-include="#kanban-ancestor-select,#kanban-tag-select"/>
+
+        <a href="/kanban" class="btn-secondary">{{T "change collection"}}</a>
+    </div>
+
+    <div id="view-kanban-board-wrap"
+         hx-get="/api/kanban/{{.Collection}}"
+         hx-trigger="load">
+        {{T "loading..."}}
+    </div>
+
+    {{else}}
+
+    <div id="page-kanban-select">
+        <h2>{{T "kanban"}}</h2>
+        <p>{{T "select a collection to open the kanban board"}}</p>
+        <div class="kanban-collection-list">
+            {{range .Collections}}
+            <a class="kanban-collection-item" href="/kanban/{{.}}">{{.}}</a>
+            {{else}}
+            <p class="kanban-empty">{{T "no collections found"}}</p>
+            {{end}}
+        </div>
+    </div>
+
+    {{end}}
+
+</div>
+
+<script>
+(function() {
+    var ancestorSel = document.getElementById('kanban-ancestor-select');
+    if (ancestorSel) {
+        var url = ancestorSel.getAttribute('hx-get-ancestors');
+        if (url) {
+            fetch(url, { headers: { Accept: 'text/html' } })
+                .then(function(r) { return r.text(); })
+                .then(function(html) { ancestorSel.insertAdjacentHTML('beforeend', html); });
+        }
+    }
+    var tagSel = document.getElementById('kanban-tag-select');
+    if (tagSel) {
+        var tagUrl = tagSel.getAttribute('hx-get-tags');
+        if (tagUrl) {
+            fetch(tagUrl, { headers: { Accept: 'text/html' } })
+                .then(function(r) { return r.text(); })
+                .then(function(html) { tagSel.insertAdjacentHTML('beforeend', html); });
+        }
+    }
+    var dragging = null;
+
+    window.kanbanSetTagFilter = function(tag) {
+        var sel = document.getElementById('kanban-tag-select');
+        if (!sel) return;
+        sel.value = tag;
+        sel.dispatchEvent(new Event('change'));
+    };
+
+    window.kanbanDragStart = function(e) {
+        dragging = e.currentTarget;
+        dragging.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', dragging.dataset.filepath);
+    };
+
+    window.kanbanDragOver = function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        e.currentTarget.classList.add('drag-over');
+    };
+
+    window.kanbanDragLeave = function(e) {
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+    };
+
+    window.kanbanDrop = function(e) {
+        e.preventDefault();
+        var col = e.currentTarget;
+        col.classList.remove('drag-over');
+        if (!dragging) return;
+        var filepath = dragging.dataset.filepath;
+        var oldStatus = dragging.dataset.status;
+        var newStatus = col.dataset.status;
+        if (oldStatus === newStatus) { dragging.classList.remove('dragging'); dragging = null; return; }
+        var cardsDiv = col.querySelector('.kanban-cards');
+        if (cardsDiv) { dragging.dataset.status = newStatus; cardsDiv.appendChild(dragging); }
+        updateColumnCount(oldStatus);
+        updateColumnCount(newStatus);
+        dragging.classList.remove('dragging');
+        dragging = null;
+        var body = new URLSearchParams();
+        body.append('filepath', filepath);
+        body.append('status', newStatus);
+        fetch('/api/kanban/card/move', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
+            .catch(function(err) { console.error('kanban move error', err); });
+    };
+
+    document.addEventListener('dragend', function() {
+        if (dragging) { dragging.classList.remove('dragging'); dragging = null; }
+        document.querySelectorAll('.kanban-column').forEach(function(c) { c.classList.remove('drag-over'); });
+    });
+
+    function updateColumnCount(status) {
+        var col = document.getElementById('kanban-col-' + status);
+        if (!col) return;
+        var badge = col.querySelector('.kanban-column-count');
+        if (badge) badge.textContent = col.querySelectorAll('.kanban-card').length;
+    }
+})();
+</script>
+{{ end }}

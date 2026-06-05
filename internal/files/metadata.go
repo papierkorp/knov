@@ -147,7 +147,11 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 
 	// handle optional fields from newMetadata - only update if provided
 	if len(newMetadata.Tags) > 0 {
-		currentMetadata.Tags = newMetadata.Tags
+		cleaned, err := sanitizeKanbanTags(newMetadata.Tags)
+		if err != nil {
+			logging.LogWarning("tag sanitization for %s: %v", filePath, err)
+		}
+		currentMetadata.Tags = cleaned
 	}
 
 	if len(newMetadata.Parents) > 0 {
@@ -217,6 +221,84 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	// updateKidsAndLinksToHere(currentMetadata) // shouldnt run with every filesave since it loops through all files
 
 	return currentMetadata
+}
+
+// SanitizeKanbanTags ensures at most one kanban status tag is present, that
+// it is in the configured allowlist, and that no unknown kanban-prefixed tags
+// (e.g. kb-anything-unknown) are accepted.
+// Returns the cleaned tag list and an error describing any removed tags.
+func SanitizeKanbanTags(tags []string) ([]string, error) {
+	return sanitizeKanbanTags(tags)
+}
+
+// sanitizeKanbanTags is the internal implementation.
+func sanitizeKanbanTags(tags []string) ([]string, error) {
+	validStatuses := configmanager.GetKanbanStatuses()
+	prefix := configmanager.GetKanbanPrefix()
+	prefixDash := prefix + "-"
+
+	// known sub-namespaces under the prefix (extend this list as new ones are added)
+	knownSubNamespaces := []string{"status"}
+
+	var kanbanTag string
+	var invalidTags []string
+	var nonKanban []string
+
+	for _, t := range tags {
+		if !strings.HasPrefix(t, prefixDash) {
+			nonKanban = append(nonKanban, t)
+			continue
+		}
+
+		// tag starts with kb- — determine sub-namespace
+		rest := strings.TrimPrefix(t, prefixDash) // e.g. "status-inbox" or "foo-bar"
+		parts := strings.SplitN(rest, "-", 2)
+		subNamespace := parts[0] // "status", "foo", etc.
+
+		// reject unknown sub-namespaces entirely
+		known := false
+		for _, ns := range knownSubNamespaces {
+			if subNamespace == ns {
+				known = true
+				break
+			}
+		}
+		if !known {
+			invalidTags = append(invalidTags, t)
+			continue
+		}
+
+		// for kb-status-* validate against the allowlist
+		if subNamespace == "status" {
+			statusValue := ""
+			if len(parts) == 2 {
+				statusValue = parts[1]
+			}
+			valid := false
+			for _, s := range validStatuses {
+				if s == statusValue {
+					valid = true
+					break
+				}
+			}
+			if valid {
+				kanbanTag = t // last valid one wins
+			} else {
+				invalidTags = append(invalidTags, t)
+			}
+		}
+	}
+
+	result := nonKanban
+	if kanbanTag != "" {
+		result = append(result, kanbanTag)
+	}
+
+	if len(invalidTags) > 0 {
+		return result, fmt.Errorf("invalid kanban tag(s) removed: %s (allowed statuses: %s)",
+			strings.Join(invalidTags, ", "), strings.Join(validStatuses, ", "))
+	}
+	return result, nil
 }
 
 // MetaDataSave saves metadata using the configured storage method

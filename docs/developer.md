@@ -306,6 +306,45 @@ make dev   # should log "migration 3→4 failed" and refuse to start
 sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 3  (did not advance)
 ```
 
+# Kanban
+
+## Architecture
+
+- Board is a **page shell + HTMX** pattern: `/kanban/{collection}` renders the template, `GET /api/kanban/{collection}` returns the column HTML on load and on filter change
+- Excerpts are **lazy-loaded** per card via `GET /api/kanban/excerpt?filepath=...&chars=30`
+- Card moves are **optimistic UI** — the card is moved in the DOM immediately, then `POST /api/kanban/card/move` persists the tag change using `MetaDataSaveRaw` (skips parent/link processing)
+
+## Tag System
+
+- Kanban state is stored as a regular metadata tag: `{prefix}-status-{status}` (e.g. `kb-status-inbox`)
+- Prefix and valid statuses come from env: `KNOV_KANBAN_PREFIX`, `KNOV_KANBAN_STATUS`
+- `sanitizeKanbanTags()` in `metadata.go` enforces: one kanban tag max, known sub-namespace only (`status` for now), status must be in allowlist — called on every `MetaDataSave`
+- Adding a new sub-namespace (e.g. `kb-priority-*`): add it to `knownSubNamespaces` in `sanitizeKanbanTags`
+
+## Collection
+
+- A file appears on a board only if `metadata.Collection == {collection}` — collection is derived from the file's first-level folder automatically
+- Root-level files (`collection: ""`) never appear on any board
+
+## Key Files
+
+| File | Role |
+|---|---|
+| `config.go` | `GetKanbanPrefix/Statuses/Columns`, `IsKanbanTag`, `KanbanStatusTag` |
+| `metadata.go` | `sanitizeKanbanTags`, `SanitizeKanbanTags` |
+| `api_kanban.go` | board handler, move handler, excerpt handler, `extractExcerpt` |
+| `render_kanban.go` | `RenderKanbanCard`, `RenderKanbanColumn` |
+| `static_kanban.css` | all kanban styles (ID + class selectors) |
+| `{theme}-kanban.gohtml` | page shell per theme |
+
+## Env Vars
+
+```
+KNOV_KANBAN_PREFIX=kb          # tag prefix
+KNOV_KANBAN_STATUS=inbox,inprogress,blocked,archive  # all valid statuses
+KNOV_KANBAN_COLUMNS=inbox,inprogress,blocked         # visible columns (subset)
+```
+
 # Theme Creation Guide
 
 ## Quick Start

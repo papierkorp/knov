@@ -2,10 +2,13 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/pathutils"
 	"knov/internal/search"
 	"knov/internal/server/render"
 	"knov/internal/translation"
@@ -223,6 +226,19 @@ func handleAPIGetAncestorsInCollection(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get ancestors"), http.StatusInternalServerError)
 		return
 	}
+
+	format := r.URL.Query().Get("format")
+	if format == "options" {
+		var html strings.Builder
+		for _, a := range ancestors {
+			rel := pathutils.ToRelative(a)
+			fmt.Fprintf(&html, `<option value="%s">%s</option>`, rel, rel)
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(html.String()))
+		return
+	}
+
 	if len(ancestors) == 0 {
 		writeResponse(w, r, []string{}, render.RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no ancestors found")))
 		return

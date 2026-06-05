@@ -82,6 +82,11 @@
       "translation": ""
     },
     {
+      "id": "all ancestors",
+      "message": "all ancestors",
+      "translation": ""
+    },
+    {
       "id": "All Files",
       "message": "All Files",
       "translation": "Alle Dateien"
@@ -89,6 +94,11 @@
     {
       "id": "Allowed MIME Types",
       "message": "Allowed MIME Types",
+      "translation": ""
+    },
+    {
+      "id": "all tags",
+      "message": "all tags",
       "translation": ""
     },
     {
@@ -247,6 +257,11 @@
       "translation": ""
     },
     {
+      "id": "change collection",
+      "message": "change collection",
+      "translation": ""
+    },
+    {
       "id": "chat",
       "message": "chat",
       "translation": ""
@@ -389,6 +404,11 @@
     {
       "id": "create dashboard",
       "message": "create dashboard",
+      "translation": ""
+    },
+    {
+      "id": "created at",
+      "message": "created at",
       "translation": ""
     },
     {
@@ -942,6 +962,11 @@
       "translation": ""
     },
     {
+      "id": "failed to get titles",
+      "message": "failed to get titles",
+      "translation": ""
+    },
+    {
       "id": "failed to load chat",
       "message": "failed to load chat",
       "translation": ""
@@ -1097,6 +1122,11 @@
       "translation": ""
     },
     {
+      "id": "failed to update card",
+      "message": "failed to update card",
+      "translation": ""
+    },
+    {
       "id": "favicon uploaded",
       "message": "favicon uploaded",
       "translation": ""
@@ -1154,6 +1184,11 @@
     {
       "id": "filename match",
       "message": "filename match",
+      "translation": ""
+    },
+    {
+      "id": "file not found",
+      "message": "file not found",
       "translation": ""
     },
     {
@@ -1672,6 +1707,11 @@
       "translation": ""
     },
     {
+      "id": "invalid kanban status",
+      "message": "invalid kanban status",
+      "translation": ""
+    },
+    {
       "id": "invalid page size",
       "message": "invalid page size",
       "translation": ""
@@ -1689,6 +1729,11 @@
     {
       "id": "item deleted",
       "message": "item deleted",
+      "translation": ""
+    },
+    {
+      "id": "kanban",
+      "message": "kanban",
       "translation": ""
     },
     {
@@ -2042,6 +2087,11 @@
       "translation": ""
     },
     {
+      "id": "missing collection",
+      "message": "missing collection",
+      "translation": ""
+    },
+    {
       "id": "missing collection parameter",
       "message": "missing collection parameter",
       "translation": ""
@@ -2079,6 +2129,11 @@
     {
       "id": "missing filepath or newpath parameter",
       "message": "missing filepath or newpath parameter",
+      "translation": ""
+    },
+    {
+      "id": "missing filepath or status",
+      "message": "missing filepath or status",
       "translation": ""
     },
     {
@@ -2214,6 +2269,11 @@
     {
       "id": "no children found",
       "message": "no children found",
+      "translation": ""
+    },
+    {
+      "id": "no collections found",
+      "message": "no collections found",
       "translation": ""
     },
     {
@@ -2767,6 +2827,11 @@
       "translation": ""
     },
     {
+      "id": "select a collection to open the kanban board",
+      "message": "select a collection to open the kanban board",
+      "translation": ""
+    },
+    {
       "id": "select a file...",
       "message": "select a file...",
       "translation": ""
@@ -3154,6 +3219,11 @@
     {
       "id": "type or select tag",
       "message": "type or select tag",
+      "translation": ""
+    },
+    {
+      "id": "type or select title",
+      "message": "type or select title",
       "translation": ""
     },
     {
