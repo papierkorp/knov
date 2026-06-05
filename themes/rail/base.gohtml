@@ -435,14 +435,13 @@ function chatBulkDelete() {
 <div id="rename-modal" popover>
     <div class="modal-content">
         <h3>{{T "Rename"}}</h3>
-        <form id="rename-form" hx-post="" hx-target="#rename-result">
+        <form id="rename-form" hx-post="" hx-swap="none">
             <input type="text" name="name" id="rename-input" placeholder="{{T "new file path"}}" required/>
             <div class="modal-actions">
                 <button type="submit" class="btn-primary">{{T "Rename"}}</button>
                 <button type="button" class="btn-secondary" popovertarget="rename-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
             </div>
         </form>
-        <div id="rename-result"></div>
     </div>
 </div>
 
@@ -450,14 +449,12 @@ function chatBulkDelete() {
     <div class="modal-content">
         <h3>{{T "Delete"}}</h3>
         <p>{{T "Are you sure?"}}</p>
-        <form id="delete-form" hx-delete="" hx-target="#delete-result">
+        <form id="delete-form" hx-delete="" hx-swap="none">
             <div class="modal-actions">
                 <button type="submit" class="btn-danger">{{T "Delete"}}</button>
                 <button type="button" class="btn-secondary" popovertarget="delete-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
             </div>
         </form>
-        <div id="delete-result"></div>
-        <div id="fp-rebuild-result"></div>
     </div>
 </div>
 {{ end }}

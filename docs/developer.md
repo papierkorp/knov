@@ -345,6 +345,31 @@ KNOV_KANBAN_STATUS=inbox,inprogress,blocked,archive  # all valid statuses
 KNOV_KANBAN_COLUMNS=inbox,inprogress,blocked         # visible columns (subset)
 ```
 
+# Notifications — Developer Guide
+
+All toast notifications go through a single track:
+
+1. Handler calls `notify.SetFlash(level, message)` — writes to cache storage under key `flash:notification`
+2. After every htmx request and on page load, the JS in every page polls `GET /api/notifications/flash`
+3. The endpoint calls `notify.ConsumeFlash()` — reads and deletes the entry, returns it as an `HX-Trigger` header
+4. The existing `notify` JS event listener receives the trigger and renders the toast
+
+This works for both in-page responses and cross-navigation responses (`HX-Redirect`, `HX-Refresh`) because the poll fires after the new page loads.
+
+**Usage**
+
+```go
+import "knov/internal/server/notify"
+
+// success
+notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(lang, "file saved"))
+
+// error (call before http.Error or writeResponse)
+notify.SetFlash(notify.LevelError, translation.SprintfForRequest(lang, "failed to save"))
+http.Error(w, "...", http.StatusInternalServerError)
+```
+
+
 # Theme Creation Guide
 
 ## Quick Start

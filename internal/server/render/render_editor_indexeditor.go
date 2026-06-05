@@ -113,7 +113,7 @@ func RenderIndexEditor(filePath string, initialTitle ...string) (string, error) 
 		cancelURL = fmt.Sprintf("/files/%s", filePath)
 	}
 
-	fmt.Fprintf(&html, `<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" id="index-form">`, action)
+	fmt.Fprintf(&html, `<form hx-post="%s" hx-swap="innerHTML" id="index-form">`, action)
 
 	// filepath input for new files
 	if !isEdit {
@@ -152,7 +152,6 @@ func RenderIndexEditor(filePath string, initialTitle ...string) (string, error) 
 	html.WriteString(`</div>`)
 
 	html.WriteString(`</form>`)
-	html.WriteString(`<div id="editor-status"></div>`)
 
 	// add JavaScript functions BEFORE closing the container - use window scope for HTMX compatibility
 	html.WriteString(`<script>

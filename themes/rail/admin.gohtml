@@ -12,7 +12,7 @@
             <h2>{{T "Git Repository"}}</h2>
             <div class="setting-item">
                 <div class="help-text">{{T "leave empty for local git repository only"}}</div>
-                <form hx-post="/api/config/repository" hx-target="#git-result">
+                <form hx-post="/api/config/repository" hx-swap="none">
                     <label for="git-url">
                         {{T "Remote Repository URL"}} ({{T "optional"}})
                         <input type="url" name="repositoryURL" id="git-url"
@@ -22,7 +22,6 @@
                     </label>
                     <button type="submit" class="btn-primary" style="margin-top:8px;">{{T "Set Remote Repository"}}</button>
                 </form>
-                <div id="git-result"></div>
             </div>
         </section>
 
@@ -30,7 +29,7 @@
             <h2>{{T "Data Path"}}</h2>
             <div class="setting-item">
                 <div class="help-text">{{T "path to your data storage relative from the executable"}}</div>
-                <form hx-post="/api/config/datapath" hx-target="#datapath-result">
+                <form hx-post="/api/config/datapath" hx-swap="none">
                     <label for="data-path">
                         {{T "Data Path"}}
                         <input type="text" name="dataPath" id="data-path"
@@ -40,7 +39,6 @@
                     </label>
                     <button type="submit" class="btn-primary" style="margin-top:8px;">{{T "Set Data Path"}}</button>
                 </form>
-                <div id="datapath-result"></div>
             </div>
         </section>
 
@@ -49,26 +47,22 @@
             <div class="setting-item">
                 <div class="help-text">{{T "system maintenance operations for keeping your application running smoothly"}}</div>
                 <div class="admin-action-list">
-                    <button class="btn-secondary" hx-post="/api/metadata/rebuild" hx-target="#rebuild-result"
+                    <button class="btn-secondary" hx-post="/api/metadata/rebuild" hx-swap="none"
                             hx-confirm="{{T "Rebuild all metadata? This may take a while."}}">
                         {{T "Rebuild Metadata"}}
                     </button>
-                    <button class="btn-secondary" hx-post="/api/cronjob" hx-target="#cronjob-result">
+                    <button class="btn-secondary" hx-post="/api/cronjob" hx-swap="none">
                         {{T "Run Cronjob"}}
                     </button>
-                    <button class="btn-secondary" hx-delete="/api/system/cache" hx-target="#cache-result"
+                    <button class="btn-secondary" hx-delete="/api/system/cache" hx-swap="none"
                             hx-confirm="{{T "Invalidate the cache? It will be rebuilt automatically."}}">
                         {{T "Invalidate Cache"}}
                     </button>
-                    <button class="btn-danger" hx-post="/api/system/restart" hx-target="#restart-result"
+                    <button class="btn-danger" hx-post="/api/system/restart" hx-swap="none"
                             hx-confirm="{{T "Restart the system? This will disconnect all users."}}">
                         {{T "Restart System"}}
                     </button>
                 </div>
-                <div id="rebuild-result"></div>
-                <div id="cronjob-result"></div>
-                <div id="cache-result"></div>
-                <div id="restart-result"></div>
             </div>
         </section>
 
@@ -80,13 +74,12 @@
                     {{T "loading..."}}
                 </div>
                 <div style="margin-top:12px;">
-                    <button class="btn-danger" hx-post="/api/media/cleanup-orphaned"
-                            hx-target="#cleanup-result"
+                    <button class="btn-danger" hx-post="/api/media/cleanup-orphaned" hx-swap="none"
+                           
                             hx-confirm="{{T "Delete all orphaned media files? This cannot be undone."}}">
                         <i class="fa fa-trash"></i> {{T "Cleanup Orphaned Files"}}
                     </button>
                 </div>
-                <div id="cleanup-result"></div>
             </div>
         </section>
 
@@ -114,7 +107,6 @@
                 </div>
                 <form id="export-files-form" action="/api/files/export/zip" method="post" style="display:none;"></form>
                 <form id="export-md-form" action="/api/files/export/markdown-converted" method="post" style="display:none;"></form>
-                <div id="export-result"></div>
             </div>
         </section>
 
@@ -123,11 +115,11 @@
             <div class="setting-item">
                 <div class="help-text">{{T "manage test data for development and testing purposes"}}</div>
                 <div class="admin-action-list">
-                    <button class="btn-secondary" hx-post="/api/testdata/setup" hx-target="#testdata-result"
+                    <button class="btn-secondary" hx-post="/api/testdata/setup" hx-swap="none"
                             hx-confirm="{{T "Setup test data? This will create example files in the data/test folder."}}">
                         {{T "Setup Test Data"}}
                     </button>
-                    <button class="btn-danger" hx-post="/api/testdata/clean" hx-target="#testdata-result"
+                    <button class="btn-danger" hx-post="/api/testdata/clean" hx-swap="none"
                             hx-confirm="{{T "This will remove all files in the data/test Folder."}}">
                         {{T "Clean Test Data"}}
                     </button>

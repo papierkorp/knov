@@ -9,14 +9,13 @@
                 <div class="version-actions">
                     {{if ne .SelectedVersion .CurrentVersion}}
                         <form hx-post="/api/files/versions/restore/{{urlQuery .FilePath}}"
-                              hx-target="#restore-result"
+                              hx-swap="none"
                               style="display: inline;">
                             <input type="hidden" name="commit" value="{{.SelectedVersion}}">
                             <button type="submit" class="action-button action-restore">{{T "restore this version"}}</button>
                         </form>
                     {{end}}
                 </div>
-                <div id="restore-result"></div>
             {{end}}
         </div>
         <hr />
@@ -47,7 +46,6 @@
                 </div>
             {{end}}
         </div>
-        <div id="restore-result"></div>
 
     {{else}}
         <!-- General history page -->

@@ -5041,6 +5041,26 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/notifications/flash": {
+            "get": {
+                "description": "Reads and deletes any pending cross-navigation flash notification",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Consume flash notification",
+                "responses": {
+                    "200": {
+                        "description": "flash notification fired via HX-Trigger"
+                    },
+                    "204": {
+                        "description": "no pending flash"
+                    }
+                }
+            }
+        },
         "/api/search": {
             "get": {
                 "produces": [

@@ -390,7 +390,7 @@ func RenderMarkdownEditorForm(filePath string, editor ...string) string {
 	}
 
 	return fmt.Sprintf(`
-		<form hx-post="%s" hx-target="#editor-status" class="file-form">
+		<form hx-post="%s" class="file-form">
 			%s
 			<div class="form-group">
 				<div id="markdown-editor"></div>
@@ -400,7 +400,6 @@ func RenderMarkdownEditorForm(filePath string, editor ...string) string {
 				<button type="submit" class="btn-primary">%s</button>
 				<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
 			</div>
-			<div id="editor-status"></div>
 		</form>
 		%s`,
 		action,
@@ -427,7 +426,7 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 	cancelURL := fmt.Sprintf("/files/%s#%s", filePath, sectionID)
 
 	return fmt.Sprintf(`
-		<form hx-post="/api/files/section/save" hx-target="#editor-status" class="file-form">
+		<form hx-post="/api/files/section/save" class="file-form">
 			<div class="form-group">
 				<label>%s:</label>
 				<input type="text" name="sectionid" value="%s" readonly />
@@ -441,7 +440,6 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 				<button type="submit" class="btn-primary">%s</button>
 				<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
 			</div>
-			<div id="editor-status"></div>
 		</form>
 		%s`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section"),
@@ -470,7 +468,7 @@ func RenderTextareaEditorComponent(filepath, content string) string {
 				<button type="button"
 						hx-post="/api/files/convert-to-markdown"
 						hx-vals='{"filepath": "%s"}'
-						hx-target="#editor-status"
+						hx-swap="none"
 						class="btn-secondary">
 					%s
 				</button>`,
@@ -481,7 +479,7 @@ func RenderTextareaEditorComponent(filepath, content string) string {
 
 	return fmt.Sprintf(`
 		<div class="component-textarea-editor">
-			<form hx-post="/api/files/save" hx-target="#editor-status">
+			<form hx-post="/api/files/save">
 				<input type="hidden" name="filepath" value="%s">
 				<textarea name="content" rows="25" class="textarea-editor-input">%s</textarea>
 				<div class="form-actions">
@@ -490,7 +488,6 @@ func RenderTextareaEditorComponent(filepath, content string) string {
 					%s
 				</div>
 			</form>
-			<div id="editor-status"></div>
 		</div>`,
 		filepath,
 		content,

@@ -4,15 +4,9 @@
 - add a smoketest todo file to testfiles
 - add tags, parent and references to testfiles
 - update thememanager docs for both devs (how to create a new theme) and for user (how to use overwrite)
+- translations
 
 **per ai**
-- add a system for error/success messages/notifys
-  - replace every htmx id replacement for this new system
-  - add messages for the kanban tags for all neccessary cases
-    - kb-* tag added
-    - kb-status-* added
-    - kb-status-* replaced
-
 - quick add/set/remove button for kanban tags
 - api_kanban handleAPIGetKanbanBoard: GetAllFiles
 - new kanban settings - autocreate file with given status tag (for a certain collection only?)
@@ -29,6 +23,10 @@
 - git version history for a collection (or all files in a collection)
 - filter/search for git version history
 - add parents - check if the file exists otherwise dont allow saving
+- do stick with RenderStatusMessage even with the notify package now?
+- make a own storage for notifications which is also cleaned up with the cronjob - keep the last 100 or the last 3 days
+
+- rail theme - dont show slideout in history
 
 - backup solution
 - backup git search

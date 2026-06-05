@@ -2,9 +2,11 @@
 package server
 
 import (
+	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/logging"
-	"knov/internal/server/render"
+	"knov/internal/server/notify"
+	"knov/internal/translation"
 	"net/http"
 )
 
@@ -19,11 +21,11 @@ import (
 func handleAPIInvalidateCache(w http.ResponseWriter, r *http.Request) {
 	if err := files.CacheInvalidate(); err != nil {
 		logging.LogError("failed to invalidate cache: %v", err)
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to invalidate cache"))
 		http.Error(w, "failed to invalidate cache", http.StatusInternalServerError)
 		return
 	}
 
-	data := map[string]string{"status": "cache invalidated"}
-	html := render.RenderStatusMessage(render.StatusOK, "cache invalidated")
-	writeResponse(w, r, data, html)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "cache invalidated"))
+	writeResponse(w, r, map[string]string{"status": "cache invalidated"}, "")
 }

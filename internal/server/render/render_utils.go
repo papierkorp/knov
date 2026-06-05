@@ -210,7 +210,7 @@ func GenerateDatalistInput(id, name, value, placeholder, apiEndpoint string) str
 func GenerateDatalistInputWithSave(id, name, value, placeholder, apiEndpoint, filePath, saveEndpoint string) string {
 	datalistId := fmt.Sprintf("%s-list", id)
 	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" autocomplete="off" list="%s" placeholder="%s"
-	hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="input delay:500ms" hx-target="#metadata-save-status" hx-swap="innerHTML"/>
+	hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="input delay:500ms" hx-swap="none"/>
 <datalist id="%s" hx-get="%s" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
 	<option value="">%s</option>
 </datalist>`, id, name, value, datalistId, placeholder, saveEndpoint, filePath, datalistId, apiEndpoint, translation.SprintfForRequest(configmanager.GetLanguage(), "loading options..."))
@@ -219,7 +219,7 @@ func GenerateDatalistInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 // GenerateDateInputWithSave creates a date input field with auto-save
 func GenerateDateInputWithSave(id, name, value, filePath, saveEndpoint string) string {
 	return fmt.Sprintf(`<input type="date" id="%s" name="%s" value="%s" class="form-input"
-	hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="change" hx-target="#metadata-save-status" hx-swap="innerHTML"/>`, id, name, value, saveEndpoint, filePath)
+	hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="change" hx-swap="none"/>`, id, name, value, saveEndpoint, filePath)
 }
 
 // GenerateTagChipsInputWithSave creates a tag chips input with autocomplete and auto-save
@@ -242,7 +242,7 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 	<div class="tag-chips" id="%s-display"></div>
 	<input type="text" id="%s" class="tag-chips-input" autocomplete="off" list="%s" placeholder="%s"/>
 	<input type="hidden" id="%s" name="%s" value="%s"
-		hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="change delay:500ms" hx-target="#metadata-save-status" hx-swap="innerHTML"/>
+		hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="change delay:500ms" hx-swap="none"/>
 	%s
 </div>
 <script>
@@ -337,7 +337,7 @@ func GenerateTagChipsInputWithSave(id, name, value, placeholder, apiEndpoint, fi
 // GenerateInputWithSaveOnBlur creates an input field that only saves when user leaves the field
 func GenerateInputWithSaveOnBlur(id, name, value, placeholder, filePath, saveEndpoint string) string {
 	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" placeholder="%s"
-	hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="blur" hx-target="#metadata-save-status" hx-swap="innerHTML"/>`,
+	hx-post="%s" hx-vals='{"filepath": "%s"}' hx-trigger="blur" hx-swap="none"/>`,
 		id, name, value, placeholder, saveEndpoint, filePath)
 }
 

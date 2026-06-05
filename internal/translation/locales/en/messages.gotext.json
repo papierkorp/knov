@@ -627,11 +627,6 @@
       "translation": ""
     },
     {
-      "id": "display",
-      "message": "display",
-      "translation": ""
-    },
-    {
       "id": "display a search box above the table",
       "message": "display a search box above the table",
       "translation": ""
@@ -2952,11 +2947,6 @@
       "translation": ""
     },
     {
-      "id": "Setup test data? This will create example files.",
-      "message": "Setup test data? This will create example files.",
-      "translation": ""
-    },
-    {
       "id": "Setup test data? This will create example files in the data/test folder.",
       "message": "Setup test data? This will create example files in the data/test folder.",
       "translation": ""
@@ -3419,11 +3409,6 @@
     {
       "id": "visual style of preview borders",
       "message": "visual style of preview borders",
-      "translation": ""
-    },
-    {
-      "id": "WARNING - This will remove all files in the Data Folder!!.",
-      "message": "WARNING - This will remove all files in the Data Folder!!.",
       "translation": ""
     },
     {

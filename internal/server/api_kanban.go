@@ -16,6 +16,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
+	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 
@@ -198,6 +199,9 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// detect whether a status tag already existed (replace vs. add)
+	oldStatus := kanbanStatusFromTags(meta.Tags, configmanager.GetKanbanPrefix())
+
 	// replace kanban tag: remove all existing kanban tags, add new one
 	newTag := configmanager.KanbanStatusTag(newStatus)
 	var filtered []string
@@ -210,12 +214,23 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 
 	if err := files.MetaDataSaveRaw(meta); err != nil {
 		logging.LogError("failed to move kanban card %s to %s: %v", filePath, newStatus, err)
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"), http.StatusInternalServerError)
 		return
 	}
 
 	logging.LogInfo("moved kanban card %s to status %s", filePath, newStatus)
-	writeResponse(w, r, map[string]string{"filepath": filePath, "status": newStatus}, "ok")
+
+	var msg string
+	if oldStatus == "" {
+		// kb-status-* added for the first time
+		msg = translation.SprintfForRequest(configmanager.GetLanguage(), "status added: %s", newStatus)
+	} else {
+		// kb-status-* replaced
+		msg = translation.SprintfForRequest(configmanager.GetLanguage(), "status changed: %s → %s", oldStatus, newStatus)
+	}
+	notify.SetFlash(notify.LevelSuccess, msg)
+	writeResponse(w, r, map[string]string{"filepath": filePath, "status": newStatus}, "")
 }
 
 // @Summary Get a short text excerpt from a file
@@ -348,4 +363,28 @@ func extractExcerpt(fullPath string, maxRunes int) string {
 		return string(runes[:maxRunes]) + "…"
 	}
 	return ""
+}
+
+// kanbanTagFromList returns the first kb-* tag found in the list, or "".
+func kanbanTagFromList(tags []string) string {
+	prefix := configmanager.GetKanbanPrefix() + "-"
+	for _, t := range tags {
+		if strings.HasPrefix(t, prefix) {
+			return t
+		}
+	}
+	return ""
+}
+
+// buildKanbanTagNotifyMsg returns a human-readable message for a kanban tag
+// change, or "" when no kanban tag was involved.
+func buildKanbanTagNotifyMsg(oldTag, newTag string) string {
+	switch {
+	case oldTag == "" && newTag != "":
+		return "kanban tag added: " + newTag
+	case oldTag != "" && newTag != "" && oldTag != newTag:
+		return "kanban status changed: " + oldTag + " → " + newTag
+	default:
+		return ""
+	}
 }

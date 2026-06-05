@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	"knov/internal/logging"
@@ -58,6 +59,7 @@ type AppConfig struct {
 	KanbanPrefix            string
 	KanbanStatuses          []string
 	KanbanColumns           []string
+	NotifyDuration          int
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -116,6 +118,7 @@ func InitAppConfig() {
 		KanbanPrefix:            getEnv("KNOV_KANBAN_PREFIX", "kb"),
 		KanbanStatuses:          getStringListEnv("KNOV_KANBAN_STATUS", []string{"inbox", "inprogress", "blocked", "archive"}),
 		KanbanColumns:           getStringListEnv("KNOV_KANBAN_COLUMNS", []string{"inbox", "inprogress", "blocked"}),
+		NotifyDuration:          getIntEnv("KNOV_NOTIFY_DURATION", 3500),
 	}
 
 	initLogLevel()
@@ -132,9 +135,23 @@ func GetAppConfig() AppConfig {
 	return appConfig
 }
 
+// GetNotifyDuration returns the notification toast display duration in milliseconds
+func GetNotifyDuration() int {
+	return appConfig.NotifyDuration
+}
+
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
+	}
+	return defaultValue
+}
+
+func getIntEnv(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		if i, err := strconv.Atoi(value); err == nil {
+			return i
+		}
 	}
 	return defaultValue
 }

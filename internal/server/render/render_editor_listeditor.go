@@ -66,7 +66,7 @@ func RenderListEditor(filepath string, initialItem ...string) string {
 	return fmt.Sprintf(`
 <div class="component-list-editor">
 
-	<form hx-post="%s" hx-target="#editor-status" id="list-editor-form">
+	<form hx-post="%s" id="list-editor-form">
 		<div class="form-group">
 			<label>%s:</label>
 			%s
@@ -96,7 +96,6 @@ func RenderListEditor(filepath string, initialItem ...string) string {
 			<button type="submit" class="btn-primary">%s</button>
 			<button type="button" onclick="window.location.href='%s'" class="btn-secondary">%s</button>
 		</div>
-		<div id="editor-status"></div>
 	</form>
 
 	<script>

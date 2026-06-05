@@ -401,8 +401,6 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	parentsStr := strings.Join(metadata.Parents, ", ")
 
 	html.WriteString(`<div class="media-edit-fields">`)
-	fmt.Fprintf(&html, `<div id="metadata-save-status"></div>`)
-
 	html.WriteString(`<div class="form-field">`)
 	fmt.Fprintf(&html, `<label>%s</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "tags"))
 	html.WriteString(GenerateTagChipsInputWithSave("media-tags", "tags", tagsStr,

@@ -15,6 +15,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
+	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 
@@ -36,7 +37,6 @@ import (
 // @Failure 500 {string} string "failed to get metadata"
 // @Router /api/metadata [get]
 func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
-	// get filepath from query parameter only
 	filePath := r.URL.Query().Get("filepath")
 
 	if filePath == "" {
@@ -44,7 +44,6 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// normalize path to ensure correct prefix for metadata lookup
 	normalizedPath := pathutils.ToWithPrefix(filePath)
 	metadata, err := files.MetaDataGet(normalizedPath)
 	if err != nil {
@@ -54,7 +53,6 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if metadata == nil {
-		// for media files, synthesize minimal metadata so the detail view still renders
 		if strings.HasPrefix(normalizedPath, "media/") {
 			metadata = &files.Metadata{Path: normalizedPath}
 		} else {
@@ -63,25 +61,20 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// determine response format
 	acceptHeader := r.Header.Get("Accept")
 	if strings.Contains(acceptHeader, "text/html") {
-		// for media files, use media detail rendering
 		if strings.HasPrefix(normalizedPath, "media/") {
 			html := render.RenderMediaDetail(metadata)
 			w.Header().Set("Content-Type", "text/html")
 			w.Write([]byte(html))
 			return
 		}
-
-		// for regular files, use simple metadata rendering
 		html := render.RenderFileMetadataSimple(metadata)
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
 		return
 	}
 
-	// return JSON response
 	writeResponse(w, r, metadata, fmt.Sprintf("metadata for %s", normalizedPath))
 }
 
@@ -108,15 +101,13 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := files.MetaDataSave(&metadata)
-	if err != nil {
+	if err := files.MetaDataSave(&metadata); err != nil {
 		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
 		return
 	}
 
-	data := "metadata saved"
-	html := `<span class="status-ok">metadata saved successfully</span>`
-	writeResponse(w, r, data, html)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata saved"))
+	writeResponse(w, r, "metadata saved", "")
 }
 
 // @Summary Initialize/Rebuild metadata for all files
@@ -145,8 +136,7 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 		logging.LogError("failed to purge duplicate metadata: %v", err)
 	}
 
-	err = files.MetaDataLinksRebuild()
-	if err != nil {
+	if err = files.MetaDataLinksRebuild(); err != nil {
 		http.Error(w, "failed to rebuild metadata links", http.StatusInternalServerError)
 		return
 	}
@@ -155,12 +145,11 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 		logging.LogWarning("failed to update orphaned media cache after rebuild: %v", err)
 	}
 
-	data := map[string]string{"status": "metadata initialized"}
-	html := `<span class="status-ok">metadata initialized and rebuilt successfully</span>`
-	writeResponse(w, r, data, html)
-
 	logging.LogInfo("purged %d stale metadata entries", stalePurged)
 	logging.LogInfo("purged %d duplicate metadata entries", dupPurged)
+
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata rebuilt successfully"))
+	writeResponse(w, r, map[string]string{"status": "metadata initialized"}, "")
 }
 
 // @Summary Rebuild metadata links for a single file
@@ -186,9 +175,8 @@ func handleAPIRebuildFileMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]string{"status": "metadata links rebuilt"}
-	html := `<span class="status-ok">` + translation.SprintfForRequest(configmanager.GetLanguage(), "metadata links rebuilt") + `</span>`
-	writeResponse(w, r, data, html)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata links rebuilt"))
+	writeResponse(w, r, map[string]string{"status": "metadata links rebuilt"}, "")
 }
 
 // @Summary Export all metadata
@@ -217,16 +205,13 @@ func handleAPIExportMetadata(w http.ResponseWriter, r *http.Request) {
 	case "csv":
 		w.Header().Set("Content-Type", "text/csv")
 		w.Header().Set("Content-Disposition", "attachment; filename=metadata_export.csv")
-
 		csvData := render.RenderMetadataCSV(allMetadata)
 		w.Write([]byte(csvData))
-
 	case "json":
 		fallthrough
 	default:
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Content-Disposition", "attachment; filename=metadata_export.json")
-
 		if err := json.NewEncoder(w).Encode(allMetadata); err != nil {
 			http.Error(w, "failed to encode json", http.StatusInternalServerError)
 			return
@@ -256,7 +241,6 @@ func handleAPIGetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
 	}
-
 	if metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -284,7 +268,6 @@ func handleAPIGetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
 	}
-
 	if metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -312,7 +295,6 @@ func handleAPIGetMetadataPath(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
 	}
-
 	if metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -340,7 +322,6 @@ func handleAPIGetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
 	}
-
 	if metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -369,7 +350,6 @@ func handleAPIGetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
 	}
-
 	if metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -379,6 +359,10 @@ func handleAPIGetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 	html := fmt.Sprintf(`<span class="lastedited">%s</span>`, lastEdited)
 	writeResponse(w, r, lastEdited, html)
 }
+
+// ----------------------------------------------------------------------------------------
+// ---------------------------------- SET INDIVIDUAL ----------------------------------
+// ----------------------------------------------------------------------------------------
 
 // @Summary Set file collection
 // @Tags metadata
@@ -408,8 +392,8 @@ func handleAPISetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="collection">%s</span>`, collection)
-	writeResponse(w, r, "collection updated", html)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "collection updated"))
+	writeResponse(w, r, "collection updated", "")
 }
 
 // @Summary Set editor type for a file
@@ -440,8 +424,8 @@ func handleAPISetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="editor">%s</span>`, editor)
-	writeResponse(w, r, "editor updated", html)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor updated"))
+	writeResponse(w, r, "editor updated", "")
 }
 
 // @Summary Set file path
@@ -458,21 +442,15 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	newpath := r.FormValue("newpath")
 
 	if filePath == "" || newpath == "" {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or newpath parameter"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(html))
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or newpath parameter"))
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or newpath parameter"), http.StatusBadRequest)
 		return
 	}
 
-	// clean the new path
 	newpath = filepath.Clean(newpath)
 
-	// if paths are the same, no change needed
 	if filePath == newpath {
-		html := render.RenderStatusMessage(render.StatusOK, newpath)
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
+		writeResponse(w, r, newpath, "")
 		return
 	}
 
@@ -492,61 +470,42 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 		newFullPath = pathutils.ToDocsPath(newNormalized)
 	}
 
-	// check if current file exists
 	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(html))
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"))
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"), http.StatusNotFound)
 		return
 	}
 
-	// check if new path already exists
 	if _, err := os.Stat(newFullPath); err == nil {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusConflict)
-		w.Write([]byte(html))
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"))
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"), http.StatusConflict)
 		return
 	}
 
-	// create directory for new path if needed
 	newDir := filepath.Dir(newFullPath)
 	if err := os.MkdirAll(newDir, 0755); err != nil {
 		logging.LogError("failed to create directory %s: %v", newDir, err)
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(html))
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
 		return
 	}
 
-	// move the physical file
 	if err := os.Rename(currentFullPath, newFullPath); err != nil {
 		logging.LogError("failed to move file %s -> %s: %v", filePath, newpath, err)
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(html))
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"))
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"), http.StatusInternalServerError)
 		return
 	}
 
-	// update links in other files that reference this file (only for docs)
 	if !strings.HasPrefix(filePath, "media/") {
 		if err := files.UpdateLinksForMovedFile(filePath, newpath); err != nil {
 			logging.LogWarning("failed to update links for moved file %s -> %s: %v", filePath, newpath, err)
-			// don't fail the operation for this, just log a warning
 		}
 	}
 
 	logging.LogInfo("successfully moved file via metadata: %s -> %s", filePath, newpath)
-
-	// show success message with link to new location
-	successMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully")
-	linkText := translation.SprintfForRequest(configmanager.GetLanguage(), "view file")
-	html := render.RenderStatusMessageWithLink(render.StatusOK, successMsg, "/files/"+newpath, linkText)
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully"))
+	writeResponse(w, r, newpath, "")
 }
 
 // @Summary Set file creation date
@@ -583,8 +542,8 @@ func handleAPISetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="createdat">%s</span>`, createdAtStr)
-	writeResponse(w, r, "createdat updated", html)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "created at updated"))
+	writeResponse(w, r, "createdat updated", "")
 }
 
 // @Summary Set file last edited date
@@ -621,8 +580,8 @@ func handleAPISetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := fmt.Sprintf(`<span class="lastedited">%s</span>`, lastEditedStr)
-	writeResponse(w, r, "lastedited updated", html)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "last edited updated"))
+	writeResponse(w, r, "lastedited updated", "")
 }
 
 // @Summary Set file folders
@@ -661,18 +620,123 @@ func handleAPISetMetadataFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var html strings.Builder
-	html.WriteString(`<span class="folders">`)
-	for i, folder := range folders {
-		if i > 0 {
-			html.WriteString(", ")
-		}
-		html.WriteString(folder)
-	}
-	html.WriteString(`</span>`)
-
-	writeResponse(w, r, "folders updated", html.String())
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "folders updated"))
+	writeResponse(w, r, "folders updated", "")
 }
+
+// @Summary Set file tags
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param tags formData string true "Comma-separated tag list"
+// @Success 200 {string} string
+// @Router /api/metadata/tags [post]
+func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filePath := r.FormValue("filepath")
+	tagsStr := r.FormValue("tags")
+
+	if filePath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	var tags []string
+	if tagsStr != "" {
+		tags = strings.Split(tagsStr, ",")
+		for i := range tags {
+			tags[i] = strings.TrimSpace(tags[i])
+		}
+		var filteredTags []string
+		for _, tag := range tags {
+			if tag != "" {
+				filteredTags = append(filteredTags, tag)
+			}
+		}
+		tags = filteredTags
+	} else {
+		tags = []string{}
+	}
+
+	sanitized, err := files.SanitizeKanbanTags(tags)
+	if err != nil {
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()), http.StatusBadRequest)
+		return
+	}
+
+	// read existing tags to detect kanban changes for notify messages
+	oldMeta, _ := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
+	var oldKbTag string
+	if oldMeta != nil {
+		oldKbTag = kanbanTagFromList(oldMeta.Tags)
+	}
+	newKbTag := kanbanTagFromList(sanitized)
+
+	metadata := &files.Metadata{
+		Path: pathutils.ToWithPrefix(filePath),
+		Tags: sanitized,
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
+		return
+	}
+
+	if msg := buildKanbanTagNotifyMsg(oldKbTag, newKbTag); msg != "" {
+		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), msg))
+	} else {
+		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "tags updated"))
+	}
+	writeResponse(w, r, "tags updated", "")
+}
+
+// @Summary Set file parents
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param filepath formData string true "File path"
+// @Param parents formData string true "Comma-separated parent file paths"
+// @Success 200 {string} string
+// @Router /api/metadata/parents [post]
+func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	filePath := r.FormValue("filepath")
+	parentsStr := r.FormValue("parents")
+
+	if filePath == "" {
+		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
+		return
+	}
+
+	var parents []string
+	if parentsStr != "" {
+		parents = strings.Split(parentsStr, ",")
+		for i := range parents {
+			parents[i] = strings.TrimSpace(parents[i])
+		}
+	} else {
+		parents = []string{}
+	}
+
+	metadata := &files.Metadata{
+		Path:    pathutils.ToWithPrefix(filePath),
+		Parents: parents,
+	}
+
+	if err := files.MetaDataSave(metadata); err != nil {
+		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
+		return
+	}
+
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "parents updated"))
+	writeResponse(w, r, "parents updated", "")
+}
+
+// ----------------------------------------------------------------------------------------
+// ---------------------------------- GET ALL ----------------------------------
+// ----------------------------------------------------------------------------------------
 
 // @Summary Get all tags or tags for a specific file
 // @Description Get all tags with counts, or tags for a specific file if filepath is provided
@@ -684,22 +748,16 @@ func handleAPISetMetadataFolders(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/tags [get]
 func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
-
-	// if filepath is provided, return tags for that specific file
 	if filePath != "" {
 		handleAPIGetFileMetadataTags(w, r)
 		return
 	}
 
-	// otherwise, return all tags
 	format := r.URL.Query().Get("format")
-
-	// for form options, use cached data
 	if format == "options" {
 		cachedTags, err := files.GetAllTagsFromSystemData()
 		if err != nil || len(cachedTags) == 0 {
 			logging.LogError("failed to get cached tags, fallback to live data: %v", err)
-			// fallback to live data
 			tags, err := files.GetAllTags()
 			if err != nil {
 				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"), http.StatusInternalServerError)
@@ -712,7 +770,6 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 			slices.Sort(tagList)
 			cachedTags = tagList
 		}
-
 		var html strings.Builder
 		for _, tag := range cachedTags {
 			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, tag, tag))
@@ -727,7 +784,6 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"), http.StatusInternalServerError)
 		return
 	}
-
 	html := render.RenderBrowseHTML(tags, "/browse/tag")
 	writeResponse(w, r, tags, html)
 }
@@ -742,22 +798,16 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/collections [get]
 func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
-
-	// if filepath is provided, return collection for that specific file
 	if filePath != "" {
 		handleAPIGetFileMetadataCollection(w, r)
 		return
 	}
 
-	// otherwise, return all collections
 	format := r.URL.Query().Get("format")
-
-	// for form options, use cached data
 	if format == "options" {
 		cachedCollections, err := files.GetAllCollectionsFromSystemData()
 		if err != nil || len(cachedCollections) == 0 {
 			logging.LogError("failed to get cached collections, fallback to live data: %v", err)
-			// fallback to live data
 			collections, err := files.GetAllCollections()
 			if err != nil {
 				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"), http.StatusInternalServerError)
@@ -770,7 +820,6 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 			slices.Sort(collectionList)
 			cachedCollections = collectionList
 		}
-
 		var html strings.Builder
 		for _, collection := range cachedCollections {
 			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, collection, collection))
@@ -785,7 +834,6 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"), http.StatusInternalServerError)
 		return
 	}
-
 	html := render.RenderBrowseHTML(collections, "/browse/collection")
 	writeResponse(w, r, collections, html)
 }
@@ -800,22 +848,16 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 // @Router /api/metadata/folders [get]
 func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
-
-	// if filepath is provided, return folders for that specific file
 	if filePath != "" {
 		handleAPIGetFileMetadataFolders(w, r)
 		return
 	}
 
-	// otherwise, return all folders
 	format := r.URL.Query().Get("format")
-
-	// for form options, use cached data
 	if format == "options" {
 		cachedFolders, err := files.GetAllFoldersFromSystemData()
 		if err != nil || len(cachedFolders) == 0 {
 			logging.LogError("failed to get cached folders, fallback to live data: %v", err)
-			// fallback to live data
 			folders, err := files.GetAllFolders()
 			if err != nil {
 				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"), http.StatusInternalServerError)
@@ -828,7 +870,6 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 			slices.Sort(folderList)
 			cachedFolders = folderList
 		}
-
 		var html strings.Builder
 		for _, folder := range cachedFolders {
 			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, folder, folder))
@@ -843,7 +884,6 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"), http.StatusInternalServerError)
 		return
 	}
-
 	html := render.RenderBrowseHTML(folders, "/browse/folder")
 	writeResponse(w, r, folders, html)
 }
@@ -868,7 +908,6 @@ func handleAPIGetAllTitles(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 		var html strings.Builder
 		for _, title := range cachedTitles {
 			fmt.Fprintf(&html, `<option value="%s">%s</option>`, title, title)
@@ -918,7 +957,6 @@ func handleAPIGetAllEditors(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get editor types"), http.StatusInternalServerError)
 		return
 	}
-
 	html := render.RenderBrowseHTML(filetypes, "/browse/editor")
 	writeResponse(w, r, filetypes, html)
 }
@@ -941,7 +979,6 @@ func handleAPIGetFileMetadataTags(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
 	}
-
 	if metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -969,7 +1006,6 @@ func handleAPIGetFileMetadataFolders(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
 	}
-
 	if metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -997,7 +1033,6 @@ func handleAPIGetFileMetadataCollection(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "failed to get metadata", http.StatusInternalServerError)
 		return
 	}
-
 	if metadata == nil {
 		http.Error(w, "metadata not found", http.StatusNotFound)
 		return
@@ -1007,105 +1042,9 @@ func handleAPIGetFileMetadataCollection(w http.ResponseWriter, r *http.Request) 
 	writeResponse(w, r, metadata.Collection, html)
 }
 
-// @Summary Set file tags
-// @Tags metadata
-// @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Param filepath formData string true "File path"
-// @Param tags formData string true "Comma-separated tag list"
-// @Success 200 {string} string
-// @Router /api/metadata/tags [post]
-func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	filePath := r.FormValue("filepath")
-	tagsStr := r.FormValue("tags")
-
-	if filePath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	// always create a slice, even if empty
-	var tags []string
-	if tagsStr != "" {
-		tags = strings.Split(tagsStr, ",")
-		for i := range tags {
-			tags[i] = strings.TrimSpace(tags[i])
-		}
-		var filteredTags []string
-		for _, tag := range tags {
-			if tag != "" {
-				filteredTags = append(filteredTags, tag)
-			}
-		}
-		tags = filteredTags
-	} else {
-		tags = []string{}
-	}
-
-	// validate kanban tags against allowlist before saving
-	sanitized, err := files.SanitizeKanbanTags(tags)
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()), http.StatusBadRequest)
-		return
-	}
-
-	metadata := &files.Metadata{
-		Path: pathutils.ToWithPrefix(filePath),
-		Tags: sanitized,
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
-		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
-		return
-	}
-
-	html := fmt.Sprintf(`<span class="tags-updated">%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "tags updated"))
-	writeResponse(w, r, "tags updated", html)
-}
-
-// @Summary Set file parents
-// @Tags metadata
-// @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Param filepath formData string true "File path"
-// @Param parents formData string true "Comma-separated parent file paths"
-// @Success 200 {string} string
-// @Router /api/metadata/parents [post]
-func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	filePath := r.FormValue("filepath")
-	parentsStr := r.FormValue("parents")
-
-	if filePath == "" {
-		http.Error(w, "missing filepath parameter", http.StatusBadRequest)
-		return
-	}
-
-	// always create a slice, even if empty
-	var parents []string
-	if parentsStr != "" {
-		parents = strings.Split(parentsStr, ",")
-		for i := range parents {
-			parents[i] = strings.TrimSpace(parents[i])
-		}
-	} else {
-		parents = []string{} // explicit empty slice, not nil
-	}
-
-	metadata := &files.Metadata{
-		Path:    pathutils.ToWithPrefix(filePath),
-		Parents: parents,
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
-		http.Error(w, "failed to save metadata", http.StatusInternalServerError)
-		return
-	}
-
-	html := fmt.Sprintf(`<span class="parents-updated">%s</span>`, translation.SprintfForRequest(configmanager.GetLanguage(), "parents updated"))
-	writeResponse(w, r, "parents updated", html)
-}
+// ----------------------------------------------------------------------------------------
+// ---------------------------------- REFERENCES ----------------------------------
+// ----------------------------------------------------------------------------------------
 
 // @Summary Get references for a file
 // @Tags metadata

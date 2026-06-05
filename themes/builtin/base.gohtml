@@ -143,7 +143,7 @@
 <div id="rename-modal" popover>
     <div class="modal-content">
         <h3>{{T "Rename"}}</h3>
-        <form id="rename-form" hx-post="" hx-target="#rename-result">
+        <form id="rename-form" hx-post="" hx-swap="none">
             <input type="text" name="name" id="rename-input" placeholder="Enter new file path (e.g., folder/newname.md)" required/>
             <div class="modal-actions">
                 <button type="submit" class="btn-primary">{{T "Rename"}}</button>
@@ -152,14 +152,13 @@
                 </button>
             </div>
         </form>
-        <div id="rename-result"></div>
     </div>
 </div>
 <div id="delete-modal" popover>
     <div class="modal-content">
         <h3>{{T "Delete"}}</h3>
         <p>{{T "Are you sure?"}}</p>
-        <form id="delete-form" hx-delete="" hx-target="#delete-result">
+        <form id="delete-form" hx-delete="" hx-swap="none">
             <div class="modal-actions">
                 <button type="submit" class="btn-danger">{{T "Delete"}}</button>
                 <button type="button" class="btn-secondary" popovertarget="delete-modal" popovertargetaction="hide">
@@ -167,7 +166,6 @@
                 </button>
             </div>
         </form>
-        <div id="delete-result"></div>
     </div>
 </div>
 <div id="references-modal" popover>
@@ -249,7 +247,6 @@ if (filterMatch) {
     document.getElementById('edit-link').href = `/filters/edit/${filterId}`;
     document.getElementById('history-link').removeAttribute('href');
     document.getElementById('delete-form').setAttribute('hx-delete', `/api/filters/${filterId}`);
-    document.getElementById('delete-form').setAttribute('hx-target', '#delete-result');
 }
 
 // Position popovers relative to their trigger buttons

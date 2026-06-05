@@ -24,8 +24,6 @@ func RenderMetadataForm(filePath string, defaultFiletype string) (string, error)
 	}
 
 	html.WriteString(`<form id="metadata-form" class="metadata-form">`)
-	html.WriteString(`<div id="metadata-save-status" class="save-status"></div>`)
-
 	// basic metadata section - all fields in one section
 	html.WriteString(`<div class="form-group">`)
 	html.WriteString(`<h3>` + translation.SprintfForRequest(configmanager.GetLanguage(), "metadata") + `</h3>`)

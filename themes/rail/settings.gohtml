@@ -90,7 +90,7 @@
         <h3>{{T "Logging"}}</h3>
 
         <div class="setting-item">
-            <form hx-post="/api/config/log-level" hx-trigger="change" hx-target="#log-level-status">
+            <form hx-post="/api/config/log-level" hx-trigger="change" hx-swap="none">
                 <label for="logLevel">{{T "Log Level"}}</label>
                 <select id="logLevel" name="logLevel" class="form-select">
                     <option value="debug"   {{ if eq .AppConfig.LogLevel "debug"   }}selected{{ end }}>debug</option>
@@ -98,7 +98,6 @@
                     <option value="warning" {{ if eq .AppConfig.LogLevel "warning" }}selected{{ end }}>warning</option>
                     <option value="error"   {{ if eq .AppConfig.LogLevel "error"   }}selected{{ end }}>error</option>
                 </select>
-                <div id="log-level-status"></div>
             </form>
         </div>
     </div>
@@ -117,17 +116,14 @@
             <div class="help-text">{{T "Cronjob Interval"}}: <code>{{.AppConfig.CronjobInterval}}</code></div>
             <div class="help-text">{{T "Search Index Interval"}}: <code>{{.AppConfig.SearchIndexInterval}}</code></div>
             <div class="help-text">{{T "Metadata Rebuild Interval"}}: <code>{{.AppConfig.MetadataRebuildInterval}}</code></div>
-        </div>
-    </div>
-
-    <div class="setting-group">
-        <h3>{{T "Kanban"}} <small>({{T "restart required to change"}})</small></h3>
-        <div class="setting-item">
+            <div class="help-text">{{T "Notify Duration"}}: <code>{{.AppConfig.NotifyDuration}}ms</code></div>
             <div class="help-text">{{T "Kanban Prefix"}}: <code>{{.AppConfig.KanbanPrefix}}</code></div>
             <div class="help-text">{{T "Kanban Statuses"}}: <code>{{join .AppConfig.KanbanStatuses ", "}}</code></div>
             <div class="help-text">{{T "Kanban Columns"}}: <code>{{join .AppConfig.KanbanColumns ", "}}</code></div>
         </div>
     </div>
+
+
 </section>
 {{ end }}
 

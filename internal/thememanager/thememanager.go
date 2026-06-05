@@ -13,6 +13,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/logging"
+	"knov/internal/server/notify"
 )
 
 // -----------------------------------------------
@@ -293,7 +294,7 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data 
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	// render template to buffer first to inject default CSS
+	// render template to buffer first to inject default CSS and JS
 	var buf strings.Builder
 	err = template.Execute(&buf, data)
 	if err != nil {
@@ -303,22 +304,23 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data 
 	// inject default CSS link into <head> section
 	html := injectDefaultCSS(buf.String())
 
+	// inject default JS before </body>
+	html = injectDefaultJS(html)
+
 	// write final HTML to response
 	_, err = w.Write([]byte(html))
 	return err
 }
 
-// injectDefaultCSS injects the default codehighlight.css link into the HTML <head>
+// injectDefaultCSS injects static CSS links that every theme requires into </head>.
 func injectDefaultCSS(html string) string {
-	// find the closing </head> tag
 	headCloseIndex := strings.Index(html, "</head>")
 	if headCloseIndex == -1 {
-		// no </head> found, return as is
 		return html
 	}
 
-	// inject default CSS links before </head>
-	defaultCSSLinks := `    <link href="/static/css/codehighlight.css" rel="stylesheet" />
+	defaultCSSLinks := `    <link href="/static/css/notify.css" rel="stylesheet" />
+    <link href="/static/css/codehighlight.css" rel="stylesheet" />
     <link href="/static/css/indexeditor.css" rel="stylesheet" />
     <link href="/static/css/listeditor.css" rel="stylesheet" />
 	  <link href="/static/css/kanban.css" rel="stylesheet" />
@@ -329,6 +331,16 @@ func injectDefaultCSS(html string) string {
 `
 
 	return html[:headCloseIndex] + defaultCSSLinks + html[headCloseIndex:]
+}
+
+// injectDefaultJS injects scripts that every theme requires before </body>.
+// Theme creators do not need to add these manually.
+func injectDefaultJS(html string) string {
+	bodyCloseIndex := strings.Index(html, "</body>")
+	if bodyCloseIndex == -1 {
+		return html
+	}
+	return html[:bodyCloseIndex] + notify.RenderJS(configmanager.GetNotifyDuration()) + html[bodyCloseIndex:]
 }
 
 // -----------------------------------------------

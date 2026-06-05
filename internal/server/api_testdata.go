@@ -5,6 +5,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/logging"
+	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/testdata"
 	"knov/internal/translation"
@@ -18,15 +19,13 @@ import (
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/setup [post]
 func handleAPISetupTestData(w http.ResponseWriter, r *http.Request) {
-	err := testdata.SetupTestData()
-	if err != nil {
+	if err := testdata.SetupTestData(); err != nil {
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to setup test data"))
 		http.Error(w, "failed to setup test data", http.StatusInternalServerError)
 		return
 	}
-
-	data := map[string]string{"status": "ok", "message": "test data setup completed"}
-	html := render.RenderStatusMessage(render.StatusOK, "test data setup completed")
-	writeResponse(w, r, data, html)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "test data setup completed"))
+	writeResponse(w, r, map[string]string{"status": "ok", "message": "test data setup completed"}, "")
 }
 
 // @Summary Clean test data
@@ -37,15 +36,13 @@ func handleAPISetupTestData(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/clean [post]
 func handleAPICleanTestData(w http.ResponseWriter, r *http.Request) {
-	err := testdata.CleanTestData()
-	if err != nil {
+	if err := testdata.CleanTestData(); err != nil {
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to clean test data"))
 		http.Error(w, "failed to clean test data", http.StatusInternalServerError)
 		return
 	}
-
-	data := map[string]string{"status": "ok", "message": "test data cleaned"}
-	html := render.RenderStatusMessage(render.StatusOK, "test data cleaned")
-	writeResponse(w, r, data, html)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "test data cleaned"))
+	writeResponse(w, r, map[string]string{"status": "ok", "message": "test data cleaned"}, "")
 }
 
 // @Summary Run filter tests
@@ -61,12 +58,12 @@ func handleAPIFilterTest(w http.ResponseWriter, r *http.Request) {
 	results, err := testdata.RunFilterTests()
 	if err != nil {
 		logging.LogError("failed to run filter tests: %v", err)
-		errMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "failed to run filter tests: %v", err)
-		html := render.RenderStatusMessage(render.StatusError, errMsg)
-		writeResponse(w, r, nil, html)
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to run filter tests: %v", err))
+		writeResponse(w, r, nil, "")
 		return
 	}
 
+	// filter test results are real content, not just a status — keep the HTML swap
 	html := render.RenderFilterTestResults(results)
 	writeResponse(w, r, results, html)
 }
@@ -83,9 +80,8 @@ func handleAPIFilterTestMetadata(w http.ResponseWriter, r *http.Request) {
 
 	metadataList := testdata.GetFilterTestMetadata()
 	if metadataList == nil {
-		errMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get filter test metadata")
-		html := render.RenderStatusMessage(render.StatusError, errMsg)
-		writeResponse(w, r, nil, html)
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get filter test metadata"))
+		writeResponse(w, r, nil, "")
 		return
 	}
 

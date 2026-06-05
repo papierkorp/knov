@@ -3710,6 +3710,19 @@ paths:
       summary: Get all file titles
       tags:
       - metadata
+  /api/notifications/flash:
+    get:
+      description: Reads and deletes any pending cross-navigation flash notification
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: flash notification fired via HX-Trigger
+        "204":
+          description: no pending flash
+      summary: Consume flash notification
+      tags:
+      - notifications
   /api/search:
     get:
       parameters:

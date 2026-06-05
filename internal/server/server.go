@@ -109,6 +109,7 @@ func StartServerChi() {
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/health", handleAPIHealth)
 		r.Get("/search", handleAPISearch)
+		r.Get("/notifications/flash", handleAPIGetNotificationFlash)
 
 		// ----------------------------------------------------------------------------------------
 		// ----------------------------------------- FILTER ----------------------------------------

@@ -2,7 +2,6 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
+	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -38,27 +38,22 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 		output = "full"
 	}
 
-	// if no commit specified, return list of all versions
 	if commit == "" {
 		versions, err := git.GetFileHistory(fullPath)
 		if err != nil {
 			logging.LogDebug("failed to get file history for %s: %v", filePath, err)
-			// return friendlier message
 			html := `<div class="no-versions">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no git history available") + `</div>`
 			w.Header().Set("Content-Type", "text/html")
 			w.Write([]byte(html))
 			return
 		}
-
 		html := render.RenderFileVersionsList(versions, filePath, output)
 		writeResponse(w, r, versions, html)
 		return
 	}
 
-	// handle special commit values
 	switch commit {
 	case "current":
-		// get current file content
 		content, err := os.ReadFile(fullPath)
 		if err != nil {
 			logging.LogError("failed to read current file %s: %v", filePath, err)
@@ -70,17 +65,15 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 		return
 
 	case "previous":
-		// get file history and get previous commit
 		versions, err := git.GetFileHistory(fullPath)
 		if err != nil || len(versions) < 2 {
 			logging.LogError("failed to get previous version for %s: %v", filePath, err)
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no previous version available"), http.StatusNotFound)
 			return
 		}
-		commit = versions[1].Commit // second item is previous
+		commit = versions[1].Commit
 	}
 
-	// get file content at specific commit
 	content, err := git.GetFileAtCommit(fullPath, commit)
 	if err != nil {
 		logging.LogDebug("failed to get file %s at commit %s: %v", filePath, commit, err)
@@ -90,10 +83,8 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// get commit details for display
 	date, message, err := git.GetCommitDetails(commit)
 	if err != nil {
-		// fallback if commit details can't be retrieved
 		date = "unknown"
 		message = "commit details unavailable"
 		logging.LogDebug("failed to get commit details for %s: %v", commit, err)
@@ -129,7 +120,6 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 
 	fullPath := pathutils.ToFullPath(filePath)
 
-	// handle special commit values
 	if fromCommit == "current" {
 		currentCommit, err := git.GetCurrentCommit()
 		if err != nil {
@@ -151,14 +141,12 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if toCommit == "previous" {
-		// get file history to find previous commit
 		versions, err := git.GetFileHistory(fullPath)
 		if err != nil || len(versions) < 2 {
 			logging.LogError("failed to get previous commit for %s: %v", filePath, err)
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get previous commit"), http.StatusInternalServerError)
 			return
 		}
-		// find the commit after fromCommit in the history
 		for i, v := range versions {
 			if v.Commit == fromCommit && i+1 < len(versions) {
 				toCommit = versions[i+1].Commit
@@ -166,7 +154,6 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if toCommit == "previous" {
-			// couldn't find previous commit, use the last one
 			if len(versions) > 1 {
 				toCommit = versions[1].Commit
 			} else {
@@ -214,19 +201,15 @@ func handleAPIRestoreFileVersion(w http.ResponseWriter, r *http.Request) {
 
 	fullPath := pathutils.ToFullPath(filePath)
 
-	err := git.RestoreFileToCommit(fullPath, commit)
-	if err != nil {
+	if err := git.RestoreFileToCommit(fullPath, commit); err != nil {
 		logging.LogError("failed to restore file %s to commit %s: %v", filePath, commit, err)
+		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to restore file"))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to restore file"), http.StatusInternalServerError)
 		return
 	}
 
 	logging.LogInfo("restored file %s to commit %s", filePath, commit)
-
-	// return success message
-	html := fmt.Sprintf(`<div class="success-message">%s</div>`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "file restored to commit %s and logged in git history", commit))
-	w.Header().Set("HX-Refresh", "true") // refresh the page to show updated content
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file restored to version %s", commit))
+	w.Header().Set("HX-Refresh", "true")
+	writeResponse(w, r, map[string]string{"status": "restored", "commit": commit}, "")
 }

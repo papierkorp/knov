@@ -19,6 +19,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/mapping"
 	"knov/internal/pathutils"
+	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 	"knov/internal/utils"
@@ -322,16 +323,14 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	// if this was a new file creation, redirect to the file view
 	if isNewFile {
 		w.Header().Set("HX-Redirect", "/files/"+filePath)
-		w.WriteHeader(http.StatusOK)
+		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file created"))
+		writeResponse(w, r, map[string]string{"filepath": filePath}, "")
 		return
 	}
 
-	// for existing file updates, show success message with link to file view
-	successMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully")
-	html := render.RenderStatusMessageWithLink(render.StatusOK, successMsg, "/files/"+filePath, filePath)
-
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	// for existing file updates, send notify toast
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved"))
+	writeResponse(w, r, map[string]string{"filepath": filePath}, "")
 }
 
 // @Summary Export file to markdown
@@ -752,7 +751,8 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 
 	// redirect to the new file location
 	w.Header().Set("HX-Redirect", "/files/"+newPath)
-	w.WriteHeader(http.StatusOK)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file renamed"))
+	writeResponse(w, r, map[string]string{"filepath": newPath}, "")
 }
 
 // @Summary Delete a file
@@ -806,7 +806,8 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 
 	// redirect to browse or home page
 	w.Header().Set("HX-Redirect", "/browse")
-	w.WriteHeader(http.StatusOK)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file deleted"))
+	writeResponse(w, r, map[string]string{"status": "deleted"}, "")
 }
 
 // generateUniqueFleetingFilename creates a unique sanitized filename, adding numbers if duplicates exist

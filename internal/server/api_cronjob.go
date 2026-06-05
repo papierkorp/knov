@@ -3,8 +3,10 @@ package server
 import (
 	"net/http"
 
+	"knov/internal/configmanager"
 	"knov/internal/cronjob"
-	"knov/internal/server/render"
+	"knov/internal/server/notify"
+	"knov/internal/translation"
 )
 
 // @Summary Run cronjob
@@ -17,8 +19,6 @@ import (
 // @Router /api/cronjob [post]
 func handleAPIRunCronjob(w http.ResponseWriter, r *http.Request) {
 	cronjob.Run()
-
-	data := map[string]string{"status": "ok", "message": "cronjob executed successfully"}
-	html := render.RenderStatusMessage(render.StatusOK, "cronjob executed successfully")
-	writeResponse(w, r, data, html)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "cronjob executed successfully"))
+	writeResponse(w, r, map[string]string{"status": "ok", "message": "cronjob executed successfully"}, "")
 }
