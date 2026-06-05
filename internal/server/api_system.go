@@ -21,11 +21,11 @@ import (
 func handleAPIInvalidateCache(w http.ResponseWriter, r *http.Request) {
 	if err := files.CacheInvalidate(); err != nil {
 		logging.LogError("failed to invalidate cache: %v", err)
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to invalidate cache"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to invalidate cache"))
 		http.Error(w, "failed to invalidate cache", http.StatusInternalServerError)
 		return
 	}
 
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "cache invalidated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "cache invalidated"))
 	writeResponse(w, r, map[string]string{"status": "cache invalidated"}, "")
 }

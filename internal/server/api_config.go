@@ -100,7 +100,7 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := "saved"
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "git url saved. restart required."))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "git url saved. restart required."))
 	writeResponse(w, r, data, "")
 }
 
@@ -115,7 +115,7 @@ func handleAPIRestartApp(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("application restart requested")
 
 	data := "restarting"
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "restarting application..."))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "restarting application..."))
 	writeResponse(w, r, data, "")
 
 	// give response time to send
@@ -149,7 +149,7 @@ func handleAPISetDataPath(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := "saved"
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "data path saved. restart required."))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "data path saved. restart required."))
 	writeResponse(w, r, data, "")
 }
 
@@ -198,7 +198,7 @@ func handleAPIUpdateMediaUploadSize(w http.ResponseWriter, r *http.Request) {
 	configmanager.SetUserSettings(userSettings)
 
 	logging.LogInfo("updated media upload size to %d MB", size)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "upload size updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "upload size updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -242,7 +242,7 @@ func handleAPIUpdateMediaMimeTypes(w http.ResponseWriter, r *http.Request) {
 	configmanager.SetUserSettings(userSettings)
 
 	logging.LogInfo("updated allowed mime types: %v", mimeTypes)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "mime types updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "mime types updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -268,7 +268,7 @@ func handleAPIUpdateSectionEditSubheaders(w http.ResponseWriter, r *http.Request
 	configmanager.SetUserSettings(userSettings)
 
 	logging.LogInfo("updated section edit include subheaders to: %t", includeSubheaders)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "section edit setting updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "section edit setting updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -291,7 +291,7 @@ func handleAPIUpdateCodeBlockWrap(w http.ResponseWriter, r *http.Request) {
 	configmanager.SetUserSettings(userSettings)
 
 	logging.LogInfo("updated code block wrap to: %t", wrap)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "code block wrap setting updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "code block wrap setting updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -326,7 +326,7 @@ func handleAPIUpdateDefaultPreviewSize(w http.ResponseWriter, r *http.Request) {
 	configmanager.SetUserSettings(userSettings)
 
 	logging.LogInfo("updated default preview size to %d pixels", size)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "preview size updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "preview size updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -368,7 +368,7 @@ func handleAPIUpdateDisplayMode(w http.ResponseWriter, r *http.Request) {
 	configmanager.SetUserSettings(userSettings)
 
 	logging.LogInfo("updated display mode to: %s", displayMode)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "display mode updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "display mode updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -410,7 +410,7 @@ func handleAPIUpdateBorderStyle(w http.ResponseWriter, r *http.Request) {
 	configmanager.SetUserSettings(userSettings)
 
 	logging.LogInfo("updated border style to: %s", borderStyle)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "border style updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "border style updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -435,7 +435,7 @@ func handleAPIUpdateShowCaption(w http.ResponseWriter, r *http.Request) {
 	configmanager.SetUserSettings(userSettings)
 
 	logging.LogInfo("updated show caption to: %t", showCaption)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "caption setting updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "caption setting updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -460,7 +460,7 @@ func handleAPIUpdateClickToEnlarge(w http.ResponseWriter, r *http.Request) {
 	configmanager.SetUserSettings(userSettings)
 
 	logging.LogInfo("updated click to enlarge to: %t", clickToEnlarge)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "click setting updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "click setting updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -485,7 +485,7 @@ func handleAPIUpdateEnablePreviews(w http.ResponseWriter, r *http.Request) {
 	configmanager.SetUserSettings(userSettings)
 
 	logging.LogInfo("updated enable previews to: %t", enablePreviews)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "preview setting updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "preview setting updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -507,7 +507,7 @@ func handleAPIUpdateHideMarkdown(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated hide markdown to: %t", hideMarkdown)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "markdown visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "markdown visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -529,7 +529,7 @@ func handleAPIUpdateHideText(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated hide text to: %t", hideText)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "text visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "text visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -551,7 +551,7 @@ func handleAPIUpdateHideList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated hide list to: %t", hideList)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "list visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "list visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -573,7 +573,7 @@ func handleAPIUpdateHideTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated hide todo to: %t", hideTodo)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "todo visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "todo visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -595,7 +595,7 @@ func handleAPIUpdateHideFilter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated hide filter to: %t", hideFilter)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "filter visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "filter visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -617,7 +617,7 @@ func handleAPIUpdateHideIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated hide index to: %t", hideIndex)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "index visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "index visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -639,7 +639,7 @@ func handleAPIUpdateHideImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated hide image to: %t", hideImage)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "image visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "image visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -661,7 +661,7 @@ func handleAPIUpdateHideVideo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated hide video to: %t", hideVideo)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "video visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "video visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -683,7 +683,7 @@ func handleAPIUpdateHidePDF(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated hide pdf to: %t", hidePDF)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "pdf visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "pdf visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -707,7 +707,7 @@ func handleAPIUpdateTablePageSize(w http.ResponseWriter, r *http.Request) {
 	us.TableSettings.PageSize = size
 	configmanager.SetUserSettings(us)
 	logging.LogInfo("updated table page size to %d", size)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "table page size updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "table page size updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -726,7 +726,7 @@ func handleAPIUpdateTableShowSearch(w http.ResponseWriter, r *http.Request) {
 	us.TableSettings.ShowSearch = r.FormValue("showSearch") == "true"
 	configmanager.SetUserSettings(us)
 	logging.LogInfo("updated table show search to: %t", us.TableSettings.ShowSearch)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "table search setting updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "table search setting updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -745,7 +745,7 @@ func handleAPIUpdateTableShowInfo(w http.ResponseWriter, r *http.Request) {
 	us.TableSettings.ShowInfo = r.FormValue("showInfo") == "true"
 	configmanager.SetUserSettings(us)
 	logging.LogInfo("updated table show info to: %t", us.TableSettings.ShowInfo)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "table info setting updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "table info setting updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -764,7 +764,7 @@ func handleAPIUpdateTableShowPaging(w http.ResponseWriter, r *http.Request) {
 	us.TableSettings.ShowPaging = r.FormValue("showPaging") == "true"
 	configmanager.SetUserSettings(us)
 	logging.LogInfo("updated table show paging to: %t", us.TableSettings.ShowPaging)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "table paging setting updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "table paging setting updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -780,14 +780,14 @@ func handleAPIUpdateTableShowPaging(w http.ResponseWriter, r *http.Request) {
 // @Router /api/config/favicon [post]
 func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(2 << 20); err != nil {
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
 		writeResponse(w, r, nil, "")
 		return
 	}
 
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "no file uploaded"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "no file uploaded"))
 		writeResponse(w, r, nil, "")
 		return
 	}
@@ -796,7 +796,7 @@ func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
 	ext := strings.ToLower(filepath.Ext(header.Filename))
 	if ext != ".ico" && ext != ".png" && ext != ".svg" {
 		w.WriteHeader(http.StatusBadRequest)
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "only .ico, .png and .svg files are allowed"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "only .ico, .png and .svg files are allowed"))
 		writeResponse(w, r, nil, "")
 		return
 	}
@@ -805,7 +805,7 @@ func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
 	if err := os.MkdirAll(faviconDir, 0755); err != nil {
 		logging.LogError("favicon upload: failed to create directory: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
 		writeResponse(w, r, nil, "")
 		return
 	}
@@ -815,7 +815,7 @@ func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logging.LogError("favicon upload: failed to read file: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
 		writeResponse(w, r, nil, "")
 		return
 	}
@@ -823,7 +823,7 @@ func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
 	if err := os.WriteFile(destPath, data, 0644); err != nil {
 		logging.LogError("favicon upload: failed to write file: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		writeResponse(w, r, nil, "")
 		return
 	}
@@ -835,7 +835,7 @@ func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo("favicon uploaded: %s", destPath)
 	w.Header().Set("HX-Trigger", "faviconChanged")
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "favicon uploaded"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "favicon uploaded"))
 	writeResponse(w, r, nil, "")
 }
 
@@ -851,7 +851,7 @@ func handleAPIDeleteFavicon(w http.ResponseWriter, r *http.Request) {
 	userSettings := configmanager.GetUserSettings()
 	ext := userSettings.CustomFaviconExt
 	if ext == "" {
-		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "no custom favicon set"))
+		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "no custom favicon set"))
 		writeResponse(w, r, nil, "")
 		return
 	}
@@ -860,7 +860,7 @@ func handleAPIDeleteFavicon(w http.ResponseWriter, r *http.Request) {
 	if err := os.Remove(destPath); err != nil && !os.IsNotExist(err) {
 		logging.LogError("favicon delete: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to remove favicon"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to remove favicon"))
 		writeResponse(w, r, nil, "")
 		return
 	}
@@ -870,7 +870,7 @@ func handleAPIDeleteFavicon(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo("custom favicon removed")
 	w.Header().Set("HX-Trigger", "faviconChanged")
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "custom favicon removed"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "custom favicon removed"))
 	writeResponse(w, r, nil, "")
 }
 
@@ -892,7 +892,7 @@ func handleAPIUpdateHideOfficeDocuments(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	logging.LogInfo("updated hide office documents to: %t", hide)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "office document visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "office document visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -914,7 +914,7 @@ func handleAPIUpdateHideArchives(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated hide archives to: %t", hide)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "archive visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "archive visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -936,7 +936,7 @@ func handleAPIUpdateHideExecutables(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated hide executables to: %t", hide)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "executable visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "executable visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -958,7 +958,7 @@ func handleAPIUpdateHideScripts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated hide scripts to: %t", hide)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "script visibility updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "script visibility updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -980,7 +980,7 @@ func handleAPIUpdateShowHiddenFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated show hidden files to: %t", show)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "hidden files setting updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "hidden files setting updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -1002,7 +1002,7 @@ func handleAPIUpdateHomeDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated home dashboard to: %s", id)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "home dashboard updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "home dashboard updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -1024,7 +1024,7 @@ func handleAPIUpdateUseExtensionTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated use extension todo to: %t", use)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "todo extension setting updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "todo extension setting updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -1046,7 +1046,7 @@ func handleAPIUpdateUseExtensionList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated use extension list to: %t", use)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "list extension setting updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "list extension setting updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -1068,7 +1068,7 @@ func handleAPIUpdateUseExtensionIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated use extension index to: %t", use)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "index extension setting updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "index extension setting updated"))
 	writeResponse(w, r, "saved", "")
 }
 
@@ -1090,6 +1090,6 @@ func handleAPIUpdateLogLevel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logging.LogInfo("updated log level to: %s", level)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "log level updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "log level updated"))
 	writeResponse(w, r, "saved", "")
 }

@@ -109,7 +109,6 @@ func StartServerChi() {
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/health", handleAPIHealth)
 		r.Get("/search", handleAPISearch)
-		r.Get("/notifications/flash", handleAPIGetNotificationFlash)
 
 		// ----------------------------------------------------------------------------------------
 		// ----------------------------------------- FILTER ----------------------------------------
@@ -405,6 +404,18 @@ func StartServerChi() {
 			r.Delete("/messages/bulk", handleAPIBulkDeleteChatMessages)
 			r.Get("/bulk-form", handleAPIGetChatBulkForm)
 		})
+
+		// ----------------------------------------------------------------------------------------
+		// ---------------------------------- notification routes ----------------------------------
+		// ----------------------------------------------------------------------------------------
+
+		r.Route("/notifications", func(r chi.Router) {
+			r.Get("/flash", handleAPIGetNotificationFlash)
+			r.Get("/", handleAPIGetNotifications)
+			r.Delete("/", handleAPIDeleteNotifications)
+			r.Delete("/{id}", handleAPIDeleteNotification)
+		})
+
 	})
 
 	// ----------------------------------------------------------------------------------------

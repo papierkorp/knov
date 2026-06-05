@@ -106,7 +106,7 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata saved"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata saved"))
 	writeResponse(w, r, "metadata saved", "")
 }
 
@@ -148,7 +148,7 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("purged %d stale metadata entries", stalePurged)
 	logging.LogInfo("purged %d duplicate metadata entries", dupPurged)
 
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata rebuilt successfully"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata rebuilt successfully"))
 	writeResponse(w, r, map[string]string{"status": "metadata initialized"}, "")
 }
 
@@ -175,7 +175,7 @@ func handleAPIRebuildFileMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata links rebuilt"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata links rebuilt"))
 	writeResponse(w, r, map[string]string{"status": "metadata links rebuilt"}, "")
 }
 
@@ -392,7 +392,7 @@ func handleAPISetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "collection updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "collection updated"))
 	writeResponse(w, r, "collection updated", "")
 }
 
@@ -424,7 +424,7 @@ func handleAPISetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor updated"))
 	writeResponse(w, r, "editor updated", "")
 }
 
@@ -442,7 +442,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	newpath := r.FormValue("newpath")
 
 	if filePath == "" || newpath == "" {
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or newpath parameter"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or newpath parameter"))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or newpath parameter"), http.StatusBadRequest)
 		return
 	}
@@ -456,28 +456,23 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo("changing file path via metadata: %s -> %s", filePath, newpath)
 
-	// determine correct path functions based on file type
 	var currentFullPath, newFullPath string
 	if strings.HasPrefix(filePath, "media/") {
-		currentNormalized := pathutils.ToRelative(filePath)
-		currentFullPath = pathutils.ToMediaPath(currentNormalized)
-		newNormalized := pathutils.ToRelative(newpath)
-		newFullPath = pathutils.ToMediaPath(newNormalized)
+		currentFullPath = pathutils.ToMediaPath(pathutils.ToRelative(filePath))
+		newFullPath = pathutils.ToMediaPath(pathutils.ToRelative(newpath))
 	} else {
-		currentNormalized := pathutils.ToRelative(filePath)
-		currentFullPath = pathutils.ToDocsPath(currentNormalized)
-		newNormalized := pathutils.ToRelative(newpath)
-		newFullPath = pathutils.ToDocsPath(newNormalized)
+		currentFullPath = pathutils.ToDocsPath(pathutils.ToRelative(filePath))
+		newFullPath = pathutils.ToDocsPath(pathutils.ToRelative(newpath))
 	}
 
 	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"), http.StatusNotFound)
 		return
 	}
 
 	if _, err := os.Stat(newFullPath); err == nil {
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"), http.StatusConflict)
 		return
 	}
@@ -485,14 +480,14 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	newDir := filepath.Dir(newFullPath)
 	if err := os.MkdirAll(newDir, 0755); err != nil {
 		logging.LogError("failed to create directory %s: %v", newDir, err)
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
 		return
 	}
 
 	if err := os.Rename(currentFullPath, newFullPath); err != nil {
 		logging.LogError("failed to move file %s -> %s: %v", filePath, newpath, err)
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"), http.StatusInternalServerError)
 		return
 	}
@@ -504,7 +499,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo("successfully moved file via metadata: %s -> %s", filePath, newpath)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully"))
 	writeResponse(w, r, newpath, "")
 }
 
@@ -542,7 +537,7 @@ func handleAPISetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "created at updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "created at updated"))
 	writeResponse(w, r, "createdat updated", "")
 }
 
@@ -580,7 +575,7 @@ func handleAPISetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "last edited updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "last edited updated"))
 	writeResponse(w, r, "lastedited updated", "")
 }
 
@@ -620,7 +615,7 @@ func handleAPISetMetadataFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "folders updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "folders updated"))
 	writeResponse(w, r, "folders updated", "")
 }
 
@@ -661,7 +656,7 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 
 	sanitized, err := files.SanitizeKanbanTags(tags)
 	if err != nil {
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()), http.StatusBadRequest)
 		return
 	}
@@ -685,9 +680,9 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if msg := buildKanbanTagNotifyMsg(oldKbTag, newKbTag); msg != "" {
-		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), msg))
+		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), msg))
 	} else {
-		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "tags updated"))
+		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "tags updated"))
 	}
 	writeResponse(w, r, "tags updated", "")
 }
@@ -730,7 +725,7 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "parents updated"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "parents updated"))
 	writeResponse(w, r, "parents updated", "")
 }
 
@@ -1164,3 +1159,7 @@ func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 	html := render.RenderReferencesHTML(metadata.References)
 	writeResponse(w, r, metadata.References, html)
 }
+
+// ----------------------------------------------------------------------------------------
+// ---------------------------------- HELPERS ----------------------------------
+// ----------------------------------------------------------------------------------------

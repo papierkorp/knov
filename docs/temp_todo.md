@@ -27,9 +27,6 @@
 - git version history for a collection (or all files in a collection)
 - filter/search for git version history
 - add parents - check if the file exists otherwise dont allow saving
-- do stick with RenderStatusMessage even with the notify package now?
-- make a own storage for notifications which is also cleaned up with the cronjob - keep the last 100 or the last 3 days
-
 - rail theme - dont show slideout in history
 
 - backup solution

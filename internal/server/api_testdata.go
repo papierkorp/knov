@@ -20,11 +20,11 @@ import (
 // @Router /api/testdata/setup [post]
 func handleAPISetupTestData(w http.ResponseWriter, r *http.Request) {
 	if err := testdata.SetupTestData(); err != nil {
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to setup test data"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to setup test data"))
 		http.Error(w, "failed to setup test data", http.StatusInternalServerError)
 		return
 	}
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "test data setup completed"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "test data setup completed"))
 	writeResponse(w, r, map[string]string{"status": "ok", "message": "test data setup completed"}, "")
 }
 
@@ -37,11 +37,11 @@ func handleAPISetupTestData(w http.ResponseWriter, r *http.Request) {
 // @Router /api/testdata/clean [post]
 func handleAPICleanTestData(w http.ResponseWriter, r *http.Request) {
 	if err := testdata.CleanTestData(); err != nil {
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to clean test data"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to clean test data"))
 		http.Error(w, "failed to clean test data", http.StatusInternalServerError)
 		return
 	}
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "test data cleaned"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "test data cleaned"))
 	writeResponse(w, r, map[string]string{"status": "ok", "message": "test data cleaned"}, "")
 }
 
@@ -58,7 +58,7 @@ func handleAPIFilterTest(w http.ResponseWriter, r *http.Request) {
 	results, err := testdata.RunFilterTests()
 	if err != nil {
 		logging.LogError("failed to run filter tests: %v", err)
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to run filter tests: %v", err))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to run filter tests: %v", err))
 		writeResponse(w, r, nil, "")
 		return
 	}
@@ -80,7 +80,7 @@ func handleAPIFilterTestMetadata(w http.ResponseWriter, r *http.Request) {
 
 	metadataList := testdata.GetFilterTestMetadata()
 	if metadataList == nil {
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get filter test metadata"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get filter test metadata"))
 		writeResponse(w, r, nil, "")
 		return
 	}

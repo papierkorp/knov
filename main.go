@@ -15,6 +15,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
+	"knov/internal/notificationStorage"
 	"knov/internal/parser"
 	"knov/internal/search"
 	"knov/internal/searchStorage"
@@ -89,6 +90,11 @@ func main() {
 
 	if err := chatStorage.Init(appConfig.StoragePath); err != nil {
 		logging.LogError("failed to initialize chat storage: %v", err)
+		return
+	}
+
+	if err := notificationStorage.Init(appConfig.StoragePath); err != nil {
+		logging.LogError("failed to initialize notification storage: %v", err)
 		return
 	}
 

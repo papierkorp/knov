@@ -5041,22 +5041,108 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/notifications/flash": {
+        "/api/notifications": {
             "get": {
-                "description": "Reads and deletes any pending cross-navigation flash notification",
+                "description": "Returns the most recent notifications from the persistent log, newest first.",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Get recent notifications",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Maximum number to return (default 50)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/notificationStorage.Notification"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes all notifications from the persistent log.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "notifications"
                 ],
-                "summary": "Consume flash notification",
+                "summary": "Clear all notifications",
                 "responses": {
                     "200": {
-                        "description": "flash notification fired via HX-Trigger"
+                        "description": "cleared",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/notifications/flash": {
+            "get": {
+                "description": "Returns the oldest pending notification and marks it as displayed.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Consume pending flash notification",
+                "responses": {
+                    "200": {
+                        "description": "pending notification",
+                        "schema": {
+                            "$ref": "#/definitions/notificationStorage.Notification"
+                        }
                     },
                     "204": {
-                        "description": "no pending flash"
+                        "description": "no pending notification"
+                    }
+                }
+            }
+        },
+        "/api/notifications/{id}": {
+            "delete": {
+                "description": "Removes one notification and returns the updated list.",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Delete a single notification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Notification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/notificationStorage.Notification"
+                            }
+                        }
                     }
                 }
             }
@@ -5813,6 +5899,26 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "notificationStorage.Notification": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "pending": {
+                    "type": "boolean"
                 }
             }
         },

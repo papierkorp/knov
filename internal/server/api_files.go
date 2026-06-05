@@ -329,7 +329,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// for existing file updates, send notify toast
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved"))
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved"))
 	writeResponse(w, r, map[string]string{"filepath": filePath}, "")
 }
 

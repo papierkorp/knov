@@ -72,6 +72,7 @@ function switchBrowseMode(mode) {
     dashboards: "/api/dashboards",
     editor: "/api/metadata/editors",
     filters: "/api/files/browse?metadata=editor&value=filter-editor",
+    notifications: "/api/notifications",
   };
   const url = urls[mode];
   if (!url) return;

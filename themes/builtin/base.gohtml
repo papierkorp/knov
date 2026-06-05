@@ -133,8 +133,28 @@
             <a href="/search">{{T "Search"}}</a>
             <a href="/settings">{{T "Settings"}}</a>
             <a href="/admin">{{T "Admin"}}</a>
+            <button onclick="openNotificationsPopover()">{{T "Notifications"}}</button>
         </div>
     </div>
+    <div id="notifications-popover" popover="auto" class="notifications-popover">
+        <div class="notifications-popover-header">
+            <span>{{T "Notifications"}}</span>
+            <button onclick="document.getElementById('notifications-popover').hidePopover()" class="btn-icon">×</button>
+        </div>
+        <div id="notifications-popover-content"><div id="notifications-list-target"></div></div>
+    </div>
+    <script>
+    function openNotificationsPopover() {
+        var pop = document.getElementById('notifications-popover');
+        var content = document.getElementById('notifications-popover-content');
+        pop.showPopover();
+        htmx.ajax('GET', '/api/notifications', {
+            target: content,
+            swap: 'innerHTML',
+            headers: { 'Accept': 'text/html' }
+        });
+    }
+    </script>
 </header>
 {{ template "edit" . }}
 {{ end }}

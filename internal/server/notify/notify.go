@@ -1,7 +1,16 @@
 // Package notify provides HTMX-compatible toast notification helpers.
-// All notifications go through SetFlash → cache storage → /api/notifications/flash poll.
-// SetHeader is kept for cases where an HX-Trigger is needed alongside a DOM swap
-// (e.g. kanban board refresh), not for plain toasts.
+//
+// Two tracks — handlers pick the right one based on whether the response navigates:
+//
+//   - SetHeader: in-page response (no navigation). Fires HX-Trigger immediately.
+//     Stores notification with pending=false (already displayed).
+//
+//   - SetFlash: navigation response (HX-Redirect / HX-Refresh). Stores with
+//     pending=true. The new page picks it up via a single DOMContentLoaded fetch
+//     to GET /api/notifications/flash.
+//
+// Both write to notificationStorage for the persistent log.
+// JS injection is handled by render.RenderNotificationJS, called by thememanager.
 package notify
 
 import (
@@ -9,8 +18,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"knov/internal/cacheStorage"
 	"knov/internal/logging"
+	"knov/internal/notificationStorage"
 )
 
 // Level represents the visual severity of a notification.
@@ -23,60 +32,34 @@ const (
 	LevelInfo    Level = "info"
 )
 
-// flashKey is the cache storage key for flash messages.
-const flashKey = "flash:notification"
-
 type payload struct {
 	Type    Level  `json:"type"`
 	Message string `json:"message"`
 }
 
-// SetFlash persists a notification in cache storage.
-// It is consumed by GET /api/notifications/flash which htmx polls after every
-// request and on page load, firing the toast via HX-Trigger.
-// Use this for all toast notifications — it works for both in-page responses
-// and cross-navigation responses (HX-Redirect / HX-Refresh).
-func SetFlash(level Level, message string) {
-	p := payload{Type: level, Message: message}
-	data, err := json.Marshal(p)
-	if err != nil {
-		logging.LogError("notify: failed to marshal flash payload: %v", err)
-		return
-	}
-	if err := cacheStorage.Set(flashKey, data); err != nil {
-		logging.LogError("notify: failed to store flash notification: %v", err)
-	}
-}
-
-// ConsumeFlash reads and deletes the pending flash notification from cache.
-// Returns nil if no flash is stored.
-func ConsumeFlash() *payload {
-	data, err := cacheStorage.Get(flashKey)
-	if err != nil || len(data) == 0 {
-		return nil
-	}
-	if err := cacheStorage.Delete(flashKey); err != nil {
-		logging.LogWarning("notify: failed to delete flash notification: %v", err)
-	}
-	var p payload
-	if err := json.Unmarshal(data, &p); err != nil {
-		logging.LogError("notify: failed to unmarshal flash payload: %v", err)
-		return nil
-	}
-	return &p
-}
-
-// SetHeader sets an HX-Trigger header directly on the response.
-// Only use this when you need to fire a non-toast htmx event alongside a DOM swap
-// in the same response (e.g. triggering a board refresh). For plain toast
-// notifications, use SetFlash instead.
+// SetHeader fires an immediate toast via HX-Trigger and persists the notification.
+// Use for in-page responses where the user stays on the same page.
 func SetHeader(w http.ResponseWriter, level Level, message string) {
 	p := payload{Type: level, Message: message}
 	data, err := json.Marshal(map[string]payload{"notify": p})
 	if err != nil {
+		logging.LogError("notify: failed to marshal header payload: %v", err)
 		return
 	}
 	w.Header().Set("HX-Trigger", string(data))
+
+	if _, err := notificationStorage.Add(string(level), message, false); err != nil {
+		logging.LogError("notify: failed to persist notification: %v", err)
+	}
+}
+
+// SetFlash persists a pending notification for display on the next page load.
+// Use for navigation responses (HX-Redirect / HX-Refresh) where HX-Trigger
+// would be lost before the browser renders the toast.
+func SetFlash(level Level, message string) {
+	if _, err := notificationStorage.Add(string(level), message, true); err != nil {
+		logging.LogError("notify: failed to store flash notification: %v", err)
+	}
 }
 
 // RenderJS returns the self-contained HTML snippet (container div + script)
@@ -105,7 +88,7 @@ func RenderJS(duration int) string {
             }, 200);
         }
 
-        // show any toast fired via HX-Trigger (e.g. direct SetHeader calls)
+        // in-page toasts fired via HX-Trigger from SetHeader
         document.body.addEventListener('notify', function (e) {
             var detail = e.detail;
             if (detail && detail.type && detail.message) {
@@ -113,20 +96,16 @@ func RenderJS(duration int) string {
             }
         });
 
-        // poll flash after every htmx request and on initial page load
-        function pollFlash() {
-            console.trace('pollFlash called from:');
-            htmx.ajax('GET', '/api/notifications/flash', {swap: 'none'});
-        }
-
-        document.addEventListener('htmx:afterSettle', function(evt) {
-            // Only poll after non-flash requests
-            if (evt.detail && evt.detail.pathInfo &&
-                evt.detail.pathInfo.requestPath !== '/api/notifications/flash') {
-                pollFlash();
-            }
-        });
-
+        // cross-navigation flash: fetch once on page load
+        // no guard needed — script tags do not re-execute on htmx swaps
+        fetch('/api/notifications/flash')
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+                if (data && data.level && data.message) {
+                    showToast(data.level, data.message);
+                }
+            })
+            .catch(function () {});
     })();
     </script>
 `, duration)

@@ -214,7 +214,7 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 
 	if err := files.MetaDataSaveRaw(meta); err != nil {
 		logging.LogError("failed to move kanban card %s to %s: %v", filePath, newStatus, err)
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"), http.StatusInternalServerError)
 		return
 	}
@@ -229,7 +229,7 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 		// kb-status-* replaced
 		msg = translation.SprintfForRequest(configmanager.GetLanguage(), "status changed: %s → %s", oldStatus, newStatus)
 	}
-	notify.SetFlash(notify.LevelSuccess, msg)
+	notify.SetHeader(w, notify.LevelSuccess, msg)
 	writeResponse(w, r, map[string]string{"filepath": filePath, "status": newStatus}, "")
 }
 

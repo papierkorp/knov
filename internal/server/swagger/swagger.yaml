@@ -258,6 +258,19 @@ definitions:
       total:
         type: integer
     type: object
+  notificationStorage.Notification:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      level:
+        type: string
+      message:
+        type: string
+      pending:
+        type: boolean
+    type: object
   testdata.FilterTestResult:
     properties:
       actual_count:
@@ -3710,17 +3723,75 @@ paths:
       summary: Get all file titles
       tags:
       - metadata
-  /api/notifications/flash:
-    get:
-      description: Reads and deletes any pending cross-navigation flash notification
+  /api/notifications:
+    delete:
+      description: Removes all notifications from the persistent log.
       produces:
       - application/json
       responses:
         "200":
-          description: flash notification fired via HX-Trigger
+          description: cleared
+          schema:
+            type: string
+      summary: Clear all notifications
+      tags:
+      - notifications
+    get:
+      description: Returns the most recent notifications from the persistent log,
+        newest first.
+      parameters:
+      - description: Maximum number to return (default 50)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/notificationStorage.Notification'
+            type: array
+      summary: Get recent notifications
+      tags:
+      - notifications
+  /api/notifications/{id}:
+    delete:
+      description: Removes one notification and returns the updated list.
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/notificationStorage.Notification'
+            type: array
+      summary: Delete a single notification
+      tags:
+      - notifications
+  /api/notifications/flash:
+    get:
+      description: Returns the oldest pending notification and marks it as displayed.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: pending notification
+          schema:
+            $ref: '#/definitions/notificationStorage.Notification'
         "204":
-          description: no pending flash
-      summary: Consume flash notification
+          description: no pending notification
+      summary: Consume pending flash notification
       tags:
       - notifications
   /api/search:

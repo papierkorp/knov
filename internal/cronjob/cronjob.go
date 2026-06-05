@@ -10,6 +10,7 @@ import (
 	"knov/internal/filter"
 	"knov/internal/git"
 	"knov/internal/logging"
+	"knov/internal/notificationStorage"
 	"knov/internal/pathutils"
 	"knov/internal/search"
 )
@@ -121,6 +122,7 @@ func Run() {
 	runSearchJob()
 	runMetadataRebuildJob()
 	runFilterIndexJob()
+	runNotificationPurgeJob()
 	logging.LogInfo("manual cronjob execution completed")
 }
 
@@ -348,4 +350,10 @@ func removeDuplicates(files []string) []string {
 	}
 
 	return result
+}
+
+func runNotificationPurgeJob() {
+	if err := notificationStorage.Purge(100, 3); err != nil {
+		logging.LogError("cronjob: failed to purge notifications: %v", err)
+	}
 }

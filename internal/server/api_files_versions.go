@@ -2,6 +2,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -124,7 +125,9 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 		currentCommit, err := git.GetCurrentCommit()
 		if err != nil {
 			logging.LogError("failed to get current commit: %v", err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get current commit"), http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "text/html")
+			fmt.Fprintf(w, `<div class="version-error">%s</div>`,
+				translation.SprintfForRequest(configmanager.GetLanguage(), "diff not available"))
 			return
 		}
 		fromCommit = currentCommit
@@ -134,7 +137,9 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 		currentCommit, err := git.GetCurrentCommit()
 		if err != nil {
 			logging.LogError("failed to get current commit: %v", err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get current commit"), http.StatusInternalServerError)
+			w.Header().Set("Content-Type", "text/html")
+			fmt.Fprintf(w, `<div class="version-error">%s</div>`,
+				translation.SprintfForRequest(configmanager.GetLanguage(), "diff not available"))
 			return
 		}
 		toCommit = currentCommit
@@ -166,7 +171,10 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 	diff, err := git.GetFileDiff(fullPath, fromCommit, toCommit)
 	if err != nil {
 		logging.LogError("failed to get diff for %s between %s and %s: %v", filePath, fromCommit, toCommit, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file diff"), http.StatusInternalServerError)
+		// return soft HTML error so htmx does not treat this as a hard failure
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprintf(w, `<div class="version-error">%s</div>`,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "diff not available"))
 		return
 	}
 
@@ -203,7 +211,7 @@ func handleAPIRestoreFileVersion(w http.ResponseWriter, r *http.Request) {
 
 	if err := git.RestoreFileToCommit(fullPath, commit); err != nil {
 		logging.LogError("failed to restore file %s to commit %s: %v", filePath, commit, err)
-		notify.SetFlash(notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to restore file"))
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to restore file"))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to restore file"), http.StatusInternalServerError)
 		return
 	}
