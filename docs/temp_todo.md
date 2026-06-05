@@ -13,6 +13,10 @@
 - new kanban setting - different colors for set tags (e.g. tag markus = color green) (key value pair: <tagname>:<validcsscolorname>)
 - add filter to kanban board
 
+- testfilter - test7greaterthan not working in auto but working for manual (logic=and&display=list&limit=50&metadata%5B0%5D=collection&operator%5B0%5D=equals&value%5B0%5D=filter-tests&action%5B0%5D=include&metadata%5B696896%5D=createdAt&operator%5B696896%5D=greater&value%5B696896%5D=2025-10-02&action%5B696896%5D=include&dashboardId=home - 2026/06/05 15:59:33 debug [api_filter.go - handleAPIFilterFiles]: built filter config: &{Criteria:[{Metadata:createdAt Operator:greater Value:2025-10-02 Action:include} {Metadata:collection Operator:equals Value:filter-tests Action:include}] Logic:and Display:list Limit:50})
+- testfilter - test9inarray_tags not working in auto but working for manual (2026/06/05 16:03:38 debug [api_filter.go - handleAPIFilterFiles]: built filter config: &{Criteria:[{Metadata:tags Operator:in Value:filtertest-group,filtertest-group2 Action:include} {Metadata:collection Operator:equals Value:filter-tests Action:include}] Logic:and Display:list Limit:50})
+- testfilter - editedat is overwritten - hard to test (test8lessthan)
+- testfilter - logbuilder
 - move select theme to general settings (theme settings - is only the settings of/for the theme)
 - add logs path env (just like for data, storage, themes)
 - folder delete function (removes all files) and make it accessible in both themes
@@ -89,6 +93,34 @@ in my application i need tests for my filter with this specs:
   - greater than
   - less than
   - in array
+- at least 5 testIDs with multiple filter
+
+
+- each field at least once:
+  - title xx
+  - collection xx
+  - tags xxx
+  - editor
+  - createdAt x
+  - lastEdited
+  - folders xx
+  - child of
+  - parent of
+  - ancestor of
+  - references
+- at least 2 tests with both
+  - and xx
+  - or xx
+- at least 2 tests with both
+  - include xxx
+  - exclude xxx
+- each operator at least once:
+  - equals xx
+  - contains xx
+  - regex xx
+  - greater than x
+  - less than
+  - in array x
 - at least 5 testIDs with multiple filter
 
 give me a table which covers all of the testcases - testcases can overlap so there is no need to make too much just enough to catch all cases from above
