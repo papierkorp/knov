@@ -101,7 +101,7 @@ func RenderMediaListCompact(mediaFiles []files.File, linkTarget string) string {
 		fmt.Fprintf(&html, `<a class="media-compact-item" href="%s">`, href)
 
 		if files.IsImageFile(fileExt) {
-			fmt.Fprintf(&html, `<img src="/media/%s" alt="%s" class="media-compact-thumb">`, relativePath, filename)
+			fmt.Fprintf(&html, `<img src="/media/%s" alt="%s" class="media-compact-thumb" loading="lazy">`, relativePath, filename)
 		} else {
 			icon := files.GetFileTypeIcon(fileExt)
 			fmt.Fprintf(&html, `<span class="media-compact-icon"><i class="fas %s"></i></span>`, icon)
