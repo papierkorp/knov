@@ -562,7 +562,7 @@
 #fp-filter .flyout-content {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   padding: 6px;
   overflow-y: auto;
 }
@@ -570,23 +570,36 @@
 #fp-filter .filter-criteria-container {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
 }
 
 #fp-filter .filter-criteria-row {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 5px 6px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 6px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+#fp-filter .filter-criteria-row:last-child {
+  border-bottom: none;
 }
 
 #fp-filter .filter-field {
   display: flex;
   flex-direction: column;
   gap: 1px;
+  min-width: 0;
+}
+
+#fp-filter .filter-field-action {
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+#fp-filter .filter-field-action label {
+  display: none;
 }
 
 #fp-filter .filter-criteria-row hr {
@@ -594,48 +607,58 @@
 }
 
 #fp-filter .filter-field label {
-  font-size: 0.65em;
+  font-size: 0.62em;
   font-weight: 500;
   color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 #fp-filter .filter-field select,
 #fp-filter .filter-field input[type="text"],
 #fp-filter .filter-field input[type="number"] {
-  padding: 2px 5px;
+  padding: 2px 4px;
   font-size: 0.78em;
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  background: var(--bg);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
   color: var(--text);
   width: 100%;
   box-sizing: border-box;
-  height: 24px;
+  height: 22px;
 }
 
 #fp-filter .filter-field select:focus,
 #fp-filter .filter-field input:focus {
   outline: none;
-  border-color: var(--primary);
+  border-bottom-color: var(--primary);
 }
 
 #fp-filter .filter-field .btn-danger.btn-small {
-  padding: 2px 6px;
-  font-size: 0.72em;
+  padding: 1px 5px;
+  font-size: 0.68em;
   align-self: flex-start;
-  height: 22px;
+  height: 18px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+}
+
+#fp-filter .filter-field .btn-danger.btn-small:hover {
+  color: var(--danger, #dc2626);
 }
 
 #fp-filter .fp-filter-results {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  margin-top: 2px;
+  gap: 1px;
+  margin-top: 4px;
 }
 
 #fp-filter .fp-filter-results a {
   display: block;
-  padding: 3px 5px;
+  padding: 3px 4px;
   border-radius: 3px;
   color: var(--text);
   text-decoration: none;
@@ -648,6 +671,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 #fp-filter .fp-filter-results a:hover {
   border-left-color: var(--primary);
   color: var(--primary);
