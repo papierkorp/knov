@@ -33,6 +33,27 @@
             <div class="help-text">{{T "choose your preferred interface language"}}</div>
         </form>
     </div>
+
+    <div class="setting-item">
+        <form hx-post="/api/themes/" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
+            <label for="theme">
+                {{T "Select Theme"}}
+                <select
+                    name="theme"
+                    id="theme"
+                    hx-get="/api/themes/"
+                    hx-target="this"
+                    hx-swap="innerHTML"
+                    hx-trigger="load"
+                >
+                    <option>{{T "Loading themes..."}}</option>
+                </select>
+            </label>
+            <div class="help-text">{{T "choose the visual appearance of the interface"}}</div>
+        </form>
+    </div>
+
+
     <div class="setting-item">
         <div class="help-text">{{T "upload a custom favicon (.ico, .png or .svg, max 2 MB)"}}</div>
         {{ if .UserSettings.CustomFaviconExt }}
@@ -130,24 +151,6 @@
 {{ define "theme-section" }}
 <section class="settings-section">
     <h2>{{T "Theme Settings"}}</h2>
-    <div class="setting-item">
-        <form hx-post="/api/themes/" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
-            <label for="theme">
-                {{T "Select Theme"}}
-                <select
-                    name="theme"
-                    id="theme"
-                    hx-get="/api/themes/"
-                    hx-target="this"
-                    hx-swap="innerHTML"
-                    hx-trigger="load"
-                >
-                    <option>{{T "Loading themes..."}}</option>
-                </select>
-            </label>
-            <div class="help-text">{{T "choose the visual appearance of the interface"}}</div>
-        </form>
-    </div>
     <div
         id="theme-settings-container"
         hx-get="/api/themes/settings"

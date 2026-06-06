@@ -18,7 +18,6 @@
 - new kanban setting - different colors for set tags (e.g. tag markus = color green) (key value pair: <tagname>:<validcsscolorname>)
 - add filter to kanban board
 
-- move select theme to general settings (theme settings - is only the settings of/for the theme)
 - add logs path env (just like for data, storage, themes)
 - folder delete function (removes all files) and make it accessible in both themes
 - media file preview (rail theme) for images
