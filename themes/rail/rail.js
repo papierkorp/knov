@@ -63,12 +63,12 @@ function switchBrowseMode(mode) {
   const el = document.getElementById("fp-browse-content");
   if (!el) return;
   const urls = {
-    tree: "/api/files/tree",
+    tree: "/api/files/tree?actions=true",
     browse: "/api/files/folder?path=&target=%23fp-browse-content",
-    overview: "/api/files/list",
-    tags: "/api/metadata/tags",
-    folders: "/api/metadata/folders",
-    collections: "/api/metadata/collections",
+    overview: "/api/files/list?actions=true",
+    tags: "/api/metadata/tags?actions=true",
+    folders: "/api/metadata/folders?actions=true",
+    collections: "/api/metadata/collections?actions=true",
     dashboards: "/api/dashboards",
     editor: "/api/metadata/editors",
     filters: "/api/files/browse?metadata=editor&value=filter-editor",
@@ -76,7 +76,6 @@ function switchBrowseMode(mode) {
   };
   const url = urls[mode];
   if (!url) return;
-  el.dataset.url = url;
   el.dataset.loaded = "true";
   localStorage.setItem("rail-browse-mode", mode);
   const search = document.getElementById("fp-browse-search");
@@ -647,7 +646,7 @@ function initBrowseInterceptor() {
     e.preventDefault();
     const metaType = match[1];
     const value = decodeURIComponent(match[2]);
-    const url = `/api/files/browse?metadata=${metaType}&value=${encodeURIComponent(value)}`;
+    const url = `/api/files/browse?metadata=${metaType}&value=${encodeURIComponent(value)}&actions=true`;
 
     htmx.ajax("GET", url, {
       target: content,
@@ -689,12 +688,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const select = document.getElementById("fp-browse-select");
     if (select) select.value = savedMode;
     const urls = {
-      tree: "/api/files/tree",
+      tree: "/api/files/tree?actions=true",
       browse: "/api/files/folder?path=&target=%23fp-browse-content",
-      overview: "/api/files/list",
-      tags: "/api/metadata/tags",
-      folders: "/api/metadata/folders",
-      collections: "/api/metadata/collections",
+      overview: "/api/files/list?actions=true",
+      tags: "/api/metadata/tags?actions=true",
+      folders: "/api/metadata/folders?actions=true",
+      collections: "/api/metadata/collections?actions=true",
       dashboards: "/api/dashboards",
       editor: "/api/metadata/editors",
       filters: "/api/files/browse?metadata=editor&value=filter-editor",

@@ -44,18 +44,39 @@ func RenderFilesDatalist(allFiles []files.File) string {
 	return html.String()
 }
 
-// RenderFilesList renders files as list with direct navigation links
-func RenderFilesList(allFiles []files.File) string {
+// RenderFilesList renders files as list with direct navigation links.
+// If deletable is true, each row includes a hover-revealed delete button.
+func RenderFilesList(allFiles []files.File, deletable bool) string {
 	var html strings.Builder
-	html.WriteString("<ul>")
+	if deletable {
+		html.WriteString(`<ul class="browse-list-deletable">`)
+	} else {
+		html.WriteString("<ul>")
+	}
+	deleteLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "delete file")
 	for _, file := range allFiles {
 		displayText := GetLinkDisplayText(file.Path)
-		html.WriteString(fmt.Sprintf(`
-			<li>
-			  <a href="%s">%s</a>
-			</li>`,
-			file.ViewURL(),
-			displayText))
+		relPath := strings.TrimPrefix(file.Path, "docs/")
+		if deletable {
+			confirmMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "delete") + " " + displayText + "?"
+			html.WriteString(fmt.Sprintf(`
+				<li class="browse-item-row">
+					<a href="%s">%s</a>
+					<button class="btn-danger-icon browse-delete-btn"
+					        hx-delete="/api/files/delete/%s"
+					        hx-confirm="%s"
+					        hx-target="closest li"
+					        hx-swap="outerHTML"
+					        title="%s"><i class="fa fa-trash"></i></button>
+				</li>`,
+				file.ViewURL(), displayText, url.PathEscape(relPath), confirmMsg, deleteLabel))
+		} else {
+			html.WriteString(fmt.Sprintf(`
+				<li>
+				  <a href="%s">%s</a>
+				</li>`,
+				file.ViewURL(), displayText))
+		}
 	}
 	html.WriteString("</ul>")
 	return html.String()
@@ -74,15 +95,16 @@ func RenderFileHeader(filepath string) string {
 	return fmt.Sprintf(`<hr/><div id="current-file-breadcrumb"><a href="/files/%s">→ %s</a></div>`, filepath, filepath)
 }
 
-// RenderBrowseFilesHTML renders browsed files as list - reuses RenderFileList
-func RenderBrowseFilesHTML(files []files.File) string {
+// RenderBrowseFilesHTML renders browsed files as list.
+// If deletable is true, each row includes a hover-revealed delete button.
+func RenderBrowseFilesHTML(files []files.File, deletable bool) string {
 	if len(files) == 0 {
 		return "<p>" + translation.SprintfForRequest(configmanager.GetLanguage(), "no files found") + "</p>"
 	}
 
 	var html strings.Builder
 	html.WriteString(fmt.Sprintf("<p>%s</p>", translation.SprintfForRequest(configmanager.GetLanguage(), "found %d files", len(files))))
-	html.WriteString(RenderFileList(files))
+	html.WriteString(RenderFilesList(files, deletable))
 	return html.String()
 }
 
@@ -182,7 +204,7 @@ func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir [
 }
 
 // renderTreeChildren recursively renders a TreeNode's children as nested HTML lists
-func renderTreeChildren(html *strings.Builder, node *files.TreeNode) {
+func renderTreeChildren(html *strings.Builder, node *files.TreeNode, deletable bool) {
 	if len(node.Children) == 0 {
 		return
 	}
@@ -191,21 +213,30 @@ func renderTreeChildren(html *strings.Builder, node *files.TreeNode) {
 		html.WriteString(`<li>`)
 		if child.IsDir {
 			fmt.Fprintf(html, `<button class="fp-tree-dir" onclick="this.closest('li').classList.toggle('fp-tree-collapsed')"><i class="fa fa-folder"></i> %s</button>`, child.Name)
-			renderTreeChildren(html, child)
+			renderTreeChildren(html, child, deletable)
 		} else {
-			fmt.Fprintf(html, `<a class="fp-tree-file" href="/files/%s">%s</a>`,
-				child.Path, GetLinkDisplayText(child.Path))
+			if deletable {
+				relPath := strings.TrimPrefix(child.Path, "docs/")
+				deleteLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "delete file")
+				confirmMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "delete") + " " + child.Name + "?"
+				fmt.Fprintf(html, `<span class="browse-item-row"><a class="fp-tree-file" href="/files/%s">%s</a><button class="btn-danger-icon browse-delete-btn" hx-delete="/api/files/delete/%s" hx-confirm="%s" hx-target="closest li" hx-swap="outerHTML" title="%s"><i class="fa fa-trash"></i></button></span>`,
+					child.Path, GetLinkDisplayText(child.Path), url.PathEscape(relPath), confirmMsg, deleteLabel)
+			} else {
+				fmt.Fprintf(html, `<a class="fp-tree-file" href="/files/%s">%s</a>`,
+					child.Path, GetLinkDisplayText(child.Path))
+			}
 		}
 		html.WriteString(`</li>`)
 	}
 	html.WriteString(`</ul>`)
 }
 
-// RenderTreeOverview renders a pre-built file tree as indented HTML
-func RenderTreeOverview(root *files.TreeNode) string {
+// RenderTreeOverview renders a pre-built file tree as indented HTML.
+// If deletable is true, file rows include a hover-revealed delete button.
+func RenderTreeOverview(root *files.TreeNode, deletable bool) string {
 	var html strings.Builder
 	html.WriteString(`<div class="fp-tree">`)
-	renderTreeChildren(&html, root)
+	renderTreeChildren(&html, root, deletable)
 	html.WriteString(`</div>`)
 	return html.String()
 }

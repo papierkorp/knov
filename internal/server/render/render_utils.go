@@ -341,15 +341,38 @@ func GenerateInputWithSaveOnBlur(id, name, value, placeholder, filePath, saveEnd
 		id, name, value, placeholder, saveEndpoint, filePath)
 }
 
-// RenderBrowseHTML renders a map of items with counts as browse links
-func RenderBrowseHTML(items map[string]int, urlPrefix string) string {
+// RenderBrowseHTML renders a map of items with counts as browse links.
+// If deletable is true and groupType is set, each row includes a hover-revealed delete button.
+func RenderBrowseHTML(items map[string]int, urlPrefix string, deletable bool, groupType string) string {
 	var html strings.Builder
-	html.WriteString(`<ul class="search-results-simple-list">`)
+	if deletable {
+		html.WriteString(`<ul class="search-results-simple-list browse-list-deletable">`)
+	} else {
+		html.WriteString(`<ul class="search-results-simple-list">`)
+	}
+
+	deleteLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "delete all files")
+	confirmMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "delete all files in this") + " " + groupType + "?"
 
 	for item, count := range items {
-		html.WriteString(fmt.Sprintf(`
-			<li><a href="%s/%s">%s (%d)</a></li>`,
-			urlPrefix, url.QueryEscape(item), item, count))
+		if deletable {
+			html.WriteString(fmt.Sprintf(`
+				<li class="browse-item-row">
+					<a href="%s/%s">%s (%d)</a>
+					<button class="btn-danger-icon browse-delete-btn"
+					        hx-delete="/api/files/bulk?type=%s&value=%s"
+					        hx-confirm="%s"
+					        hx-swap="none"
+					        title="%s"><i class="fa fa-trash"></i></button>
+				</li>`,
+				urlPrefix, url.QueryEscape(item), item, count,
+				groupType, url.QueryEscape(item),
+				confirmMsg, deleteLabel))
+		} else {
+			html.WriteString(fmt.Sprintf(`
+				<li><a href="%s/%s">%s (%d)</a></li>`,
+				urlPrefix, url.QueryEscape(item), item, count))
+		}
 	}
 
 	html.WriteString(`</ul>`)

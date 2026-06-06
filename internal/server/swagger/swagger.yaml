@@ -1908,6 +1908,41 @@ paths:
       summary: Browse files by single metadata field
       tags:
       - files
+  /api/files/bulk:
+    delete:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Deletes all files belonging to a specific collection or folder,
+        including their metadata
+      parameters:
+      - description: 'Type to delete by: collection or folder'
+        in: query
+        name: type
+        required: true
+        type: string
+      - description: Collection or folder name
+        in: query
+        name: value
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: deleted N files
+          schema:
+            type: string
+        "400":
+          description: missing parameters
+          schema:
+            type: string
+        "500":
+          description: delete failed
+          schema:
+            type: string
+      summary: Delete all files in a collection or folder
+      tags:
+      - files
   /api/files/content/{filepath}:
     get:
       parameters:

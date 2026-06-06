@@ -791,7 +791,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"), http.StatusInternalServerError)
 		return
 	}
-	html := render.RenderBrowseHTML(tags, "/browse/tag")
+	html := render.RenderBrowseHTML(tags, "/browse/tag", r.URL.Query().Get("actions") == "true", "tag")
 	writeResponse(w, r, tags, html)
 }
 
@@ -841,7 +841,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"), http.StatusInternalServerError)
 		return
 	}
-	html := render.RenderBrowseHTML(collections, "/browse/collection")
+	html := render.RenderBrowseHTML(collections, "/browse/collection", r.URL.Query().Get("actions") == "true", "collection")
 	writeResponse(w, r, collections, html)
 }
 
@@ -891,7 +891,7 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"), http.StatusInternalServerError)
 		return
 	}
-	html := render.RenderBrowseHTML(folders, "/browse/folder")
+	html := render.RenderBrowseHTML(folders, "/browse/folder", r.URL.Query().Get("actions") == "true", "folder")
 	writeResponse(w, r, folders, html)
 }
 
@@ -964,7 +964,7 @@ func handleAPIGetAllEditors(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get editor types"), http.StatusInternalServerError)
 		return
 	}
-	html := render.RenderBrowseHTML(filetypes, "/browse/editor")
+	html := render.RenderBrowseHTML(filetypes, "/browse/editor", false, "")
 	writeResponse(w, r, filetypes, html)
 }
 

@@ -1381,3 +1381,51 @@
 .fp-latest-search-wrap #fp-latest-search {
   margin-bottom: 0;
 }
+
+/* =============================================
+   browse deletable list (collections/folders)
+   ============================================= */
+
+.browse-list-deletable {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.browse-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.browse-item-row a {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browse-delete-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.75em;
+  padding: 2px 4px;
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    color 0.15s;
+}
+
+.browse-item-row:hover .browse-delete-btn {
+  opacity: 1;
+}
+
+.browse-delete-btn:hover {
+  color: var(--danger, #dc2626);
+}

@@ -8,10 +8,18 @@
             → <a href="/browse">{{T "Browse"}}</a>
             → <span>{{ .MetadataType }}: {{ .Value }}</span>
         </div>
+        {{if or (eq .MetadataType "collection") (eq .MetadataType "folder") (eq .MetadataType "tag")}}
+        <button class="btn-danger btn-small"
+                hx-delete="/api/files/bulk?type={{ .MetadataType }}&value={{ urlQuery .Value }}"
+                hx-confirm='{{T "delete all files in this"}} {{ .MetadataType }}?'
+                hx-swap="none">
+            <i class="fa fa-trash"></i> {{T "delete all files"}}
+        </button>
+        {{end}}
     </div>
     <div class="browse-content">
         <div
-            hx-get="/api/files/browse?metadata={{ .MetadataType }}&value={{ urlQuery .Value }}"
+            hx-get="/api/files/browse?metadata={{ .MetadataType }}&value={{ urlQuery .Value }}&actions=true"
             hx-trigger="load"
             hx-headers='{"Accept": "text/html"}'
             class="filter-results"

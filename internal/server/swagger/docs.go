@@ -2346,6 +2346,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/files/bulk": {
+            "delete": {
+                "description": "Deletes all files belonging to a specific collection or folder, including their metadata",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Delete all files in a collection or folder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Type to delete by: collection or folder",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Collection or folder name",
+                        "name": "value",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "deleted N files",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "missing parameters",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "delete failed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/content/{filepath}": {
             "get": {
                 "produces": [

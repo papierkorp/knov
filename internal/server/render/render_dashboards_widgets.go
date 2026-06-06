@@ -86,7 +86,7 @@ func renderTagsWidget() (string, error) {
 		return "", err
 	}
 
-	return RenderBrowseHTML(tagCount, "/browse/"+mapping.DatabaseToURL("tags")), nil
+	return RenderBrowseHTML(map[string]int(tagCount), "/browse/"+mapping.DatabaseToURL("tags"), false, ""), nil
 }
 
 func renderCollectionsWidget() (string, error) {
@@ -95,7 +95,7 @@ func renderCollectionsWidget() (string, error) {
 		return "", err
 	}
 
-	return RenderBrowseHTML(collectionCount, "/browse/collection"), nil
+	return RenderBrowseHTML(map[string]int(collectionCount), "/browse/collection", false, ""), nil
 }
 
 func renderFoldersWidget() (string, error) {
@@ -104,7 +104,7 @@ func renderFoldersWidget() (string, error) {
 		return "", err
 	}
 
-	return RenderBrowseHTML(folderCount, "/browse/"+mapping.DatabaseToURL("folders")), nil
+	return RenderBrowseHTML(map[string]int(folderCount), "/browse/"+mapping.DatabaseToURL("folders"), false, ""), nil
 }
 
 // renderFilterWidget renders a filter widget for dashboards

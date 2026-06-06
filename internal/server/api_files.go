@@ -129,7 +129,7 @@ func handleAPIGetFileTree(w http.ResponseWriter, r *http.Request) {
 	}
 	allFiles = files.FilterByVisibility(allFiles)
 	tree := files.BuildFileTree(allFiles)
-	html := render.RenderTreeOverview(tree)
+	html := render.RenderTreeOverview(tree, r.URL.Query().Get("actions") == "true")
 	writeResponse(w, r, allFiles, html)
 }
 
@@ -169,7 +169,7 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderFilesList(allFiles)
+	html := render.RenderFilesList(allFiles, r.URL.Query().Get("actions") == "true")
 	writeResponse(w, r, allFiles, html)
 }
 
@@ -601,7 +601,7 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogDebug("browsed %d files for %s=%s", len(browsedFiles), metadata, value)
 
-	html := render.RenderBrowseFilesHTML(browsedFiles)
+	html := render.RenderBrowseFilesHTML(browsedFiles, r.URL.Query().Get("actions") == "true")
 	writeResponse(w, r, browsedFiles, html)
 }
 
@@ -841,4 +841,89 @@ func generateUniqueFleetingFilename(content string) string {
 	}
 
 	return filename
+}
+
+// @Summary Delete all files in a collection or folder
+// @Description Deletes all files belonging to a specific collection or folder, including their metadata
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Param type query string true "Type to delete by: collection or folder"
+// @Param value query string true "Collection or folder name"
+// @Produce html
+// @Success 200 {string} string "deleted N files"
+// @Failure 400 {string} string "missing parameters"
+// @Failure 500 {string} string "delete failed"
+// @Router /api/files/bulk [delete]
+func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
+	groupType := r.URL.Query().Get("type")
+	value := r.URL.Query().Get("value")
+
+	if groupType == "" || value == "" {
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "missing type or value parameter")))
+		return
+	}
+
+	if groupType != "collection" && groupType != "folder" && groupType != "tag" {
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "type must be collection, folder or tag")))
+		return
+	}
+
+	allFiles, err := files.GetAllFiles()
+	if err != nil {
+		logging.LogError("failed to get all files: %v", err)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files")))
+		return
+	}
+
+	deleted := 0
+	for _, file := range allFiles {
+		meta, err := files.MetaDataGet(file.Path)
+		if err != nil || meta == nil {
+			continue
+		}
+
+		match := false
+		switch groupType {
+		case "collection":
+			match = meta.Collection == value
+		case "folder":
+			for _, f := range meta.Folders {
+				if f == value {
+					match = true
+					break
+				}
+			}
+		case "tag":
+			for _, t := range meta.Tags {
+				if t == value {
+					match = true
+					break
+				}
+			}
+		}
+
+		if !match {
+			continue
+		}
+
+		relPath := pathutils.ToRelative(file.Path)
+		fullPath := pathutils.ToDocsPath(relPath)
+
+		if err := os.Remove(fullPath); err != nil {
+			logging.LogWarning("failed to delete file %s: %v", relPath, err)
+			continue
+		}
+		if err := files.MetaDataDelete(file.Path); err != nil {
+			logging.LogWarning("failed to delete metadata for %s: %v", file.Path, err)
+		}
+		deleted++
+	}
+
+	logging.LogInfo("bulk deleted %d files from %s=%s", deleted, groupType, value)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "deleted %d files", deleted))
+	w.Header().Set("HX-Redirect", "/browse/"+groupType)
+	writeResponse(w, r, map[string]int{"deleted": deleted}, "")
 }

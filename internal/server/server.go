@@ -264,6 +264,7 @@ func StartServerChi() {
 			// file operations
 			r.Post("/rename/*", handleAPIRenameFile)
 			r.Delete("/delete/*", handleAPIDeleteFile)
+			r.Delete("/bulk", handleAPIDeleteFilesBulk)
 		})
 
 		// ----------------------------------------------------------------------------------------
