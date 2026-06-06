@@ -706,7 +706,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const isFilePage = setupFilePage();
-  if (!isFilePage) {
+  const isHistoryPage =
+    window.location.pathname.startsWith("/files/history/") ||
+    window.location.pathname === "/history";
+  if (!isFilePage && !isHistoryPage) {
     const saved = localStorage.getItem("rail-panel");
     if (saved && document.getElementById(saved)) togglePanel(saved);
   }

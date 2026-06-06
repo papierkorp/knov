@@ -6,6 +6,11 @@
 - update thememanager docs for both devs (how to create a new theme) and for user (how to use overwrite)
 - translations
 
+- testfilter - test7greaterthan not working in auto but working for manual (logic=and&display=list&limit=50&metadata%5B0%5D=collection&operator%5B0%5D=equals&value%5B0%5D=filter-tests&action%5B0%5D=include&metadata%5B696896%5D=createdAt&operator%5B696896%5D=greater&value%5B696896%5D=2025-10-02&action%5B696896%5D=include&dashboardId=home - 2026/06/05 15:59:33 debug [api_filter.go - handleAPIFilterFiles]: built filter config: &{Criteria:[{Metadata:createdAt Operator:greater Value:2025-10-02 Action:include} {Metadata:collection Operator:equals Value:filter-tests Action:include}] Logic:and Display:list Limit:50})
+- testfilter - test9inarray_tags not working in auto but working for manual (2026/06/05 16:03:38 debug [api_filter.go - handleAPIFilterFiles]: built filter config: &{Criteria:[{Metadata:tags Operator:in Value:filtertest-group,filtertest-group2 Action:include} {Metadata:collection Operator:equals Value:filter-tests Action:include}] Logic:and Display:list Limit:50})
+- testfilter - editedat is overwritten - hard to test (test8lessthan)
+- testfilter - logbuilder
+
 **per ai**
 - quick add/set/remove button for kanban tags
 - api_kanban handleAPIGetKanbanBoard: GetAllFiles
@@ -13,10 +18,6 @@
 - new kanban setting - different colors for set tags (e.g. tag markus = color green) (key value pair: <tagname>:<validcsscolorname>)
 - add filter to kanban board
 
-- testfilter - test7greaterthan not working in auto but working for manual (logic=and&display=list&limit=50&metadata%5B0%5D=collection&operator%5B0%5D=equals&value%5B0%5D=filter-tests&action%5B0%5D=include&metadata%5B696896%5D=createdAt&operator%5B696896%5D=greater&value%5B696896%5D=2025-10-02&action%5B696896%5D=include&dashboardId=home - 2026/06/05 15:59:33 debug [api_filter.go - handleAPIFilterFiles]: built filter config: &{Criteria:[{Metadata:createdAt Operator:greater Value:2025-10-02 Action:include} {Metadata:collection Operator:equals Value:filter-tests Action:include}] Logic:and Display:list Limit:50})
-- testfilter - test9inarray_tags not working in auto but working for manual (2026/06/05 16:03:38 debug [api_filter.go - handleAPIFilterFiles]: built filter config: &{Criteria:[{Metadata:tags Operator:in Value:filtertest-group,filtertest-group2 Action:include} {Metadata:collection Operator:equals Value:filter-tests Action:include}] Logic:and Display:list Limit:50})
-- testfilter - editedat is overwritten - hard to test (test8lessthan)
-- testfilter - logbuilder
 - move select theme to general settings (theme settings - is only the settings of/for the theme)
 - add logs path env (just like for data, storage, themes)
 - folder delete function (removes all files) and make it accessible in both themes
@@ -27,7 +28,6 @@
 - git version history for a collection (or all files in a collection)
 - filter/search for git version history
 - add parents - check if the file exists otherwise dont allow saving
-- rail theme - dont show slideout in history
 
 - backup solution
 - backup git search

@@ -8,6 +8,8 @@
     <!-- restore panel state before first paint to avoid transition flash -->
     <script>
     (function() {
+        var path = window.location.pathname;
+        if (path === '/history' || path.startsWith('/files/history/')) return;
         var p = localStorage.getItem('rail-panel');
         if (p) document.documentElement.setAttribute('data-init-panel', p);
     })();
