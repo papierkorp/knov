@@ -106,8 +106,7 @@ func Init() {
 		}
 	}
 
-	baseDir := resolveBaseDir()
-	logsDir := filepath.Join(baseDir, "logs")
+	logsDir := resolveLogsDir()
 	if err := os.MkdirAll(logsDir, 0755); err != nil {
 		log.Printf("logging: failed to create logs dir: %v", err)
 		return
@@ -212,7 +211,7 @@ func LogBuilder(key string) *log.Logger {
 		return logger
 	}
 
-	logsDir := filepath.Join(resolveBaseDir(), "logs")
+	logsDir := resolveLogsDir()
 	if err := os.MkdirAll(logsDir, 0755); err != nil {
 		log.Printf("failed to create logs directory %s: %v", logsDir, err)
 		return log.New(os.Stdout, "", log.LstdFlags)
@@ -250,4 +249,11 @@ func resolveBaseDir() string {
 		}
 	}
 	return baseDir
+}
+
+func resolveLogsDir() string {
+	if v := os.Getenv("KNOV_LOGS_PATH"); v != "" {
+		return v
+	}
+	return filepath.Join(resolveBaseDir(), "logs")
 }

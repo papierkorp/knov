@@ -26,6 +26,7 @@ type AppConfig struct {
 	DataPath                string
 	ThemesPath              string
 	StoragePath             string
+	LogsPath                string
 	ServerPort              string
 	LogLevel                string
 	GitRepoURL              string
@@ -80,6 +81,7 @@ func InitAppConfig() {
 		DataPath:                getEnv("KNOV_DATA_PATH", filepath.Join(baseDir, "data")),
 		ThemesPath:              getEnv("KNOV_THEMES_PATH", filepath.Join(baseDir, "themes")),
 		StoragePath:             getEnv("KNOV_STORAGE_PATH", filepath.Join(baseDir, "storage")),
+		LogsPath:                getEnv("KNOV_LOGS_PATH", filepath.Join(baseDir, "logs")),
 		ServerPort:              getEnv("KNOV_SERVER_PORT", "1324"),
 		LogLevel:                getEnv("KNOV_LOG_LEVEL", "info"),
 		GitRepoURL:              getEnv("KNOV_GIT_REPO_URL", ""),
@@ -234,6 +236,11 @@ func GetThemesPath() string {
 // GetStoragePath returns storage path
 func GetStoragePath() string {
 	return appConfig.StoragePath
+}
+
+// GetLogsPath returns the logs path
+func GetLogsPath() string {
+	return appConfig.LogsPath
 }
 
 // GetConfigStorageProvider returns config storage provider
