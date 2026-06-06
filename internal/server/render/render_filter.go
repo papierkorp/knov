@@ -306,7 +306,7 @@ func RenderFilterCriteriaRow(widgetIndex, rowIndex int, criteria *filter.Criteri
 	html.WriteString(RenderOperatorOptions(selectedOperator))
 	html.WriteString(`</select></div>`)
 
-	html.WriteString(`<div class="filter-field">`)
+	html.WriteString(`<div class="filter-field filter-field-value">`)
 	html.WriteString(`<label>` + translation.SprintfForRequest(configmanager.GetLanguage(), "value") + `</label>`)
 	html.WriteString(fmt.Sprintf(`<div id="%s">`, containerID))
 	value, metadataField := "", ""
