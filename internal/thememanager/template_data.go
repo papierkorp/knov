@@ -321,6 +321,28 @@ func NewSearchPageData(searchQuery string) SearchPageData {
 }
 
 // -----------------------------------------------
+// -------- LatestChanges TemplateData ----------
+// -----------------------------------------------
+
+// LatestChangesTemplateData extends base with optional collection filter
+type LatestChangesTemplateData struct {
+	BaseTemplateData
+	Collection string
+}
+
+// NewLatestChangesTemplateData creates latest changes page data
+func NewLatestChangesTemplateData(collection string) LatestChangesTemplateData {
+	title := "latest changes"
+	if collection != "" {
+		title = "latest changes: " + collection
+	}
+	return LatestChangesTemplateData{
+		BaseTemplateData: NewBaseTemplateData(title),
+		Collection:       collection,
+	}
+}
+
+// -----------------------------------------------
 // ------------ History TemplateData ------------
 // -----------------------------------------------
 

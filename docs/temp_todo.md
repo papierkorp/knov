@@ -18,10 +18,10 @@
 - new kanban setting - different colors for set tags (e.g. tag markus = color green) (key value pair: <tagname>:<validcsscolorname>)
 - add filter to kanban board
 
+- new file added - add git?
 - folder delete function (removes all files) and make it accessible in both themes
 - remove the cache in rail per cronjob (files loaded at least)
 - swagger e.g. api/metadata/titles - format (string) => add a possible formats helper text
-- git version history for a collection (or all files in a collection)
 
 - backup solution
 - backup git search

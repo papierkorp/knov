@@ -619,8 +619,9 @@ func handlePlayground(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
+	collection := r.URL.Query().Get("collection")
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewBaseTemplateData("latestchanges")
+	data := thememanager.NewLatestChangesTemplateData(collection)
 
 	err := tm.Render(w, "latestchanges", data)
 	if err != nil {

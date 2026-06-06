@@ -5,7 +5,9 @@ import (
 	"strconv"
 
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/git"
+	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -23,12 +25,32 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	files, err := git.GetRecentlyChangedFiles(count)
+	collection := r.URL.Query().Get("collection")
+
+	allFiles, err := git.GetRecentlyChangedFiles(count)
 	if err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get recent files"), http.StatusInternalServerError)
 		return
 	}
 
-	html := render.RenderGitHistoryFileList(files)
-	writeResponse(w, r, files, html)
+	if collection == "" {
+		html := render.RenderGitHistoryFileList(allFiles)
+		writeResponse(w, r, allFiles, html)
+		return
+	}
+
+	// filter by collection
+	var filtered []git.GitHistoryFile
+	for _, f := range allFiles {
+		meta, err := files.MetaDataGet(pathutils.ToWithPrefix(f.Path))
+		if err != nil || meta == nil {
+			continue
+		}
+		if meta.Collection == collection {
+			filtered = append(filtered, f)
+		}
+	}
+
+	html := render.RenderGitHistoryFileList(filtered)
+	writeResponse(w, r, filtered, html)
 }
