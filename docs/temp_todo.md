@@ -23,7 +23,6 @@
 - remove the cache in rail per cronjob (files loaded at least)
 - swagger e.g. api/metadata/titles - format (string) => add a possible formats helper text
 - git version history for a collection (or all files in a collection)
-- add parents - check if the file exists otherwise dont allow saving
 
 - backup solution
 - backup git search

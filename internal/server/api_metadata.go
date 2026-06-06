@@ -711,6 +711,18 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 		for i := range parents {
 			parents[i] = strings.TrimSpace(parents[i])
 		}
+		for _, parent := range parents {
+			if parent == "" {
+				continue
+			}
+			fullParentPath := pathutils.ToFullPath(parent)
+			if _, err := os.Stat(fullParentPath); os.IsNotExist(err) {
+				html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "parent file does not exist: %s", parent))
+				notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "parent file does not exist: %s", parent))
+				writeResponse(w, r, nil, html)
+				return
+			}
+		}
 	} else {
 		parents = []string{}
 	}
