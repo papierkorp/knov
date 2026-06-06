@@ -399,13 +399,11 @@ function setupFilePage() {
       .catch(() => {});
   }
 
-  htmx.ajax("GET", "/api/files/versions/" + fp + "?output=sidebar", {
+  htmx.ajax("GET", "/api/files/versions/" + fp + "?output=full", {
     target: document.getElementById("fp-versions"),
     swap: "innerHTML",
     headers: { Accept: "text/html" },
   });
-
-  // toc from hidden element rendered by fileview.gohtml
   const tocData = document.getElementById("fp-toc-data");
   const tocNav = document.getElementById("fp-toc-nav");
   if (tocData && tocNav) tocNav.innerHTML = tocData.innerHTML;
@@ -738,5 +736,31 @@ function filterTocItems(query) {
   nav.querySelectorAll("a").forEach((a) => {
     const text = a.textContent.toLowerCase();
     a.style.display = q === "" || text.includes(q) ? "" : "none";
+  });
+}
+
+// ================================================================
+// history versions filter — client-side, no API call
+// ================================================================
+function filterFpVersions(query) {
+  const container = document.getElementById("fp-versions");
+  if (!container) return;
+  const q = query.toLowerCase().trim();
+  container.querySelectorAll(".version-item").forEach((li) => {
+    li.style.display =
+      q === "" || li.textContent.toLowerCase().includes(q) ? "" : "none";
+  });
+}
+
+// ================================================================
+// latest changes filter — client-side, no API call
+// ================================================================
+function filterLatestChanges(query) {
+  const container = document.getElementById("fp-latest-content");
+  if (!container) return;
+  const q = query.toLowerCase().trim();
+  container.querySelectorAll("li").forEach((li) => {
+    li.style.display =
+      q === "" || li.textContent.toLowerCase().includes(q) ? "" : "none";
   });
 }

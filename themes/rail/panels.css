@@ -575,7 +575,7 @@
 
 #fp-filter .filter-criteria-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr auto;
   gap: 2px 6px;
   padding: 4px 0;
   border-bottom: 1px solid var(--border);
@@ -592,10 +592,17 @@
   min-width: 0;
 }
 
+#fp-filter .filter-field-value {
+  grid-column: 1 / -1;
+}
+
 #fp-filter .filter-field-action {
+  grid-column: 3;
+  grid-row: 1;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-end;
   gap: 4px;
+  padding-bottom: 1px;
 }
 
 #fp-filter .filter-field-action label {
@@ -1091,7 +1098,9 @@
    toc filter input
    ============================================= */
 
-#fp-toc-filter {
+#fp-toc-filter,
+#fp-versions-search,
+#fp-latest-search {
   display: block;
   width: 100%;
   box-sizing: border-box;
@@ -1105,7 +1114,9 @@
   outline: none;
 }
 
-#fp-toc-filter:focus {
+#fp-toc-filter:focus,
+#fp-versions-search:focus,
+#fp-latest-search:focus {
   border-color: var(--primary);
 }
 
@@ -1328,4 +1339,35 @@
   padding: 4px 4px 6px;
   display: flex;
   justify-content: flex-end;
+}
+
+/* =============================================
+   history page — version list & search
+   ============================================= */
+
+#history-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px 8px;
+  font-size: 0.85em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  margin-bottom: 8px;
+  outline: none;
+}
+
+#history-search:focus {
+  border-color: var(--primary);
+}
+
+.fp-latest-search-wrap {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.fp-latest-search-wrap #fp-latest-search {
+  margin-bottom: 0;
 }
