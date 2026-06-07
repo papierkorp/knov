@@ -215,6 +215,59 @@ function lazyLoad(panelId) {
 }
 
 // ================================================================
+// reload panel — clears cache and re-fetches content
+// ================================================================
+function reloadPanel(panelId) {
+  const el = document.getElementById(panelId + "-content");
+  if (!el) return;
+  const url = el.dataset.url;
+  if (!url) return;
+  el.dataset.loaded = "false";
+  if (panelId === "fp-media") {
+    fetch(url, { headers: { Accept: "text/html" } })
+      .then((r) => {
+        const hidden = parseInt(r.headers.get("X-Hidden-Count") || "0", 10);
+        updateMediaHiddenWarning(hidden);
+        return r.text();
+      })
+      .then((html) => {
+        el.innerHTML = html;
+        el.dataset.loaded = "true";
+      });
+    return;
+  }
+  htmx.ajax("GET", url, {
+    target: el,
+    swap: "innerHTML",
+    headers: { Accept: "text/html" },
+  });
+  el.dataset.loaded = "true";
+}
+
+// public helper called by refresh buttons in panel headers
+function refreshPanel(panelId) {
+  reloadPanel(panelId);
+}
+
+// ================================================================
+// auto-reload panels after mutating API calls
+// ================================================================
+document.body.addEventListener("htmx:afterRequest", function (e) {
+  const method = (e.detail.requestConfig?.verb || "").toUpperCase();
+  if (method === "GET") return;
+  if (!e.detail.successful) return;
+  const url = e.detail.requestConfig?.path || "";
+
+  if (/^\/api\/(files|editor|metadata)\//.test(url)) {
+    reloadPanel("fp-browse");
+    reloadPanel("fp-latest");
+  }
+  if (/^\/api\/media\//.test(url)) {
+    reloadPanel("fp-media");
+  }
+});
+
+// ================================================================
 // search title-only toggle
 // ================================================================
 function updateSearchMode(cb) {
@@ -363,31 +416,50 @@ function setupFilePage() {
     headers: { Accept: "text/html" },
   });
 
-  // hide no-file message and show metadata rows
+  // load metadata fields
   const noFile = document.getElementById("fp-no-file");
   if (noFile) noFile.style.display = "none";
-  const pathEl = document.getElementById("fp-meta-path");
-  if (pathEl)
-    pathEl.innerHTML = '<a href="/files/' + fp + '">' + filepath + "</a>";
 
-  const htmxFields = {
+  const fields = {
+    "fp-meta-path":
+      '<a href="/files/' + fp + '">' + decodeURIComponent(filepath) + "</a>",
+  };
+  for (const [id, html] of Object.entries(fields)) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  }
+
+  const metaFields = {
+    "fp-meta-editor": "/api/metadata/editor?filepath=" + fp,
     "fp-meta-created": "/api/metadata/createdat?filepath=" + fp,
     "fp-meta-edited": "/api/metadata/lastedited?filepath=" + fp,
     "fp-meta-tags": "/api/metadata/tags?filepath=" + fp,
     "fp-meta-collection": "/api/metadata/collection?filepath=" + fp,
     "fp-meta-folders": "/api/metadata/folders?filepath=" + fp,
+  };
+  for (const [id, url] of Object.entries(metaFields)) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    fetch(url, { headers: { Accept: "text/html" } })
+      .then((r) => r.text())
+      .then((html) => {
+        el.innerHTML = html;
+      })
+      .catch(() => {});
+  }
+
+  // load connections
+  const connFields = {
     "fp-ancestors": "/api/links/ancestors?filepath=" + fp,
     "fp-parents": "/api/links/parents?filepath=" + fp,
-    "fp-children": "/api/links/kids?filepath=" + fp,
+    "fp-children": "/api/links/children?filepath=" + fp,
     "fp-grandchildren": "/api/links/grandchildren?filepath=" + fp,
-    "fp-links-to": "/api/links/used?filepath=" + fp,
-    "fp-media-links": "/api/links/media?filepath=" + fp,
-    "fp-links-from": "/api/links/linkstohere?filepath=" + fp,
+    "fp-links-to": "/api/links/linksto?filepath=" + fp,
+    "fp-links-from": "/api/links/linksfrom?filepath=" + fp,
     "fp-related": "/api/links/related?filepath=" + fp,
-    "fp-meta-editor": "/api/metadata/editor?filepath=" + fp,
+    "fp-media-links": "/api/links/media?filepath=" + fp,
   };
-
-  for (const [id, url] of Object.entries(htmxFields)) {
+  for (const [id, url] of Object.entries(connFields)) {
     const el = document.getElementById(id);
     if (!el) continue;
     fetch(url, { headers: { Accept: "text/html" } })

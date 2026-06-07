@@ -82,10 +82,15 @@
             </div>
         </div>
 
-
         <!-- browse -->
         <div class="flyout-panel" id="fp-browse">
-            <div class="flyout-header">{{T "browse"}}<button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button></div>
+            <div class="flyout-header">
+                {{T "browse"}}
+                <div class="flyout-header-actions">
+                    <button class="flyout-close-btn" onclick="refreshPanel('fp-browse')" title="{{T "refresh"}}"><i class="fa fa-rotate"></i></button>
+                    <button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
+                </div>
+            </div>
             <div class="fp-browse-controls">
                 <input type="text" id="fp-browse-search" placeholder="{{T "filter..."}}"
                        oninput="filterBrowseContent(this.value)"/>
@@ -139,6 +144,7 @@
                 {{T "media"}}
                 <div class="flyout-header-actions">
                     <a href="/browse/media" class="flyout-header-link" title="{{T "open media page"}}"><i class="fa fa-arrow-up-right-from-square"></i></a>
+                    <button class="flyout-close-btn" onclick="refreshPanel('fp-media')" title="{{T "refresh"}}"><i class="fa fa-rotate"></i></button>
                     <button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
                 </div>
             </div>
@@ -160,7 +166,13 @@
 
         <!-- latest changes -->
         <div class="flyout-panel" id="fp-latest">
-            <div class="flyout-header">{{T "latest changes"}}<button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button></div>
+            <div class="flyout-header">
+                {{T "latest changes"}}
+                <div class="flyout-header-actions">
+                    <button class="flyout-close-btn" onclick="refreshPanel('fp-latest')" title="{{T "refresh"}}"><i class="fa fa-rotate"></i></button>
+                    <button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
+                </div>
+            </div>
             <div class="fp-latest-search-wrap">
                 <input type="search" id="fp-latest-search" placeholder="{{T "filter..."}}"
                        oninput="filterLatestChanges(this.value)" autocomplete="off"/>
@@ -170,7 +182,6 @@
                 <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
             </div>
         </div>
-
 
         <!-- filter -->
         <div class="flyout-panel" id="fp-filter">
@@ -221,7 +232,7 @@
                     <button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
                 </div>
                 <div id="fp-file-actions">
-                    <a  class="fp-action-btn fp-btn-edit"   id="fp-edit-link"   href="#" title="{{T "edit"}}"><i class="fa fa-pen"></i></a>
+                    <a   class="fp-action-btn fp-btn-edit"   id="fp-edit-link"   href="#" title="{{T "edit"}}"><i class="fa fa-pen"></i></a>
                     <button class="fp-action-btn"           id="fp-rename-btn"  popovertarget="rename-modal"  title="{{T "rename"}}"><i class="fa fa-i-cursor"></i></button>
                     <button class="fp-action-btn"           id="fp-rebuild-btn" title="{{T "rebuild"}}"><i class="fa fa-rotate"></i></button>
                     <button class="fp-action-btn fp-btn-delete" popovertarget="delete-modal" title="{{T "delete"}}"><i class="fa fa-trash"></i></button>
