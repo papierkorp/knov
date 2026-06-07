@@ -13,6 +13,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/cronjob"
 	"knov/internal/files"
+	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
 	"knov/internal/notificationStorage"
@@ -52,6 +53,10 @@ func main() {
 	configmanager.InitAppConfig()
 	logging.Init()
 	translation.Init()
+
+	if err := git.EnsureRemote(); err != nil {
+		logging.LogWarning("failed to configure git remote: %v", err)
+	}
 
 	// initialize content storage (creates data/docs and data/media directories)
 	if err := contentStorage.Init(); err != nil {

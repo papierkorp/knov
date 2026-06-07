@@ -3090,3 +3090,60 @@ dl.media-info dd {
 .filter-list-item:hover {
   text-decoration: underline;
 }
+
+/* -----------------------------------------------------------------------
+   conflict banner
+   ----------------------------------------------------------------------- */
+.conflict-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  background: color-mix(in srgb, var(--warning, #f59e0b) 12%, transparent);
+  border: 1px solid var(--warning, #f59e0b);
+  border-radius: 6px;
+  flex-wrap: wrap;
+}
+
+.conflict-banner-icon {
+  color: var(--warning, #f59e0b);
+  flex-shrink: 0;
+}
+.conflict-banner-text {
+  font-weight: 600;
+  color: var(--warning, #f59e0b);
+  flex-shrink: 0;
+}
+.conflict-banner-files {
+  flex: 1;
+  font-size: 0.9em;
+}
+.conflict-banner-files a {
+  color: var(--warning, #f59e0b);
+  text-decoration: underline;
+}
+
+.conflict-banner-dismiss {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--warning, #f59e0b);
+  color: var(--warning, #f59e0b);
+  border-radius: 4px;
+  padding: 0.1rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.8em;
+  flex-shrink: 0;
+}
+
+.conflict-banner-dismiss:hover {
+  background: color-mix(in srgb, var(--warning, #f59e0b) 20%, transparent);
+}
+
+.conflict-diff-container {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+.conflict-diff-container:empty {
+  display: none;
+}

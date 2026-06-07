@@ -4,6 +4,8 @@
     {{ template "rail-reader" . }}
 {{else}}
 <div id="view-fileview-rail">
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
     <article class="file-content">
         {{.FileContent.HTML}}
     </article>
@@ -24,6 +26,9 @@
 
 {{ define "rail-reader" }}
 <div id="view-fileview-reader">
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
     <div class="reader-controls">
         <button class="font-size-btn" onclick="adjustFontSize(-2)">A-</button>
         <button class="font-size-btn" onclick="adjustFontSize(2)">A+</button>

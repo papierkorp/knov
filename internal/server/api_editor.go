@@ -14,6 +14,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/dokuwikiconverter"
 	"knov/internal/files"
+	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
@@ -230,6 +231,7 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save index"), http.StatusInternalServerError)
 		return
 	}
+	go git.CommitFile(fullPath)
 
 	// create/update metadata with filetype ".index" and collection based on filename
 	collectionName := filezpath
@@ -371,6 +373,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save list"), http.StatusInternalServerError)
 		return
 	}
+	go git.CommitFile(fullPath)
 
 	// create/update metadata
 	metadata := &files.Metadata{
@@ -458,6 +461,7 @@ func handleAPISaveTodoEditor(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save todo"), http.StatusInternalServerError)
 		return
 	}
+	go git.CommitFile(fullPath)
 
 	metadata := &files.Metadata{
 		Path:   filepath.Join("docs", filePath),
@@ -567,6 +571,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
 		return
 	}
+	go git.CommitFile(pathutils.ToFullPath(filePath))
 
 	logging.LogInfo("saved table in file: %s", filePath)
 
@@ -653,6 +658,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
 		return
 	}
+	go git.CommitFile(pathutils.ToFullPath(filePath))
 
 	logging.LogInfo("saved section %s in file: %s", sectionID, filePath)
 
@@ -723,6 +729,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save converted file"), http.StatusInternalServerError)
 		return
 	}
+	go git.CommitFile(markdownFullPath)
 
 	logging.LogInfo("converted dokuwiki file to markdown: %s -> %s", filePath, markdownFileName)
 

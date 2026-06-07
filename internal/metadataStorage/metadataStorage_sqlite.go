@@ -64,43 +64,46 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 func (ss *sqliteStorage) initialize() error {
 	const version = 1
 	steps := []dbmigration.Migration{
-		{
-			Up: func(tx *sql.Tx) error {
-				_, err := tx.Exec(`
-				CREATE TABLE IF NOT EXISTS metadata (
-					path TEXT PRIMARY KEY,
-					title TEXT,
-					created_at DATETIME,
-					last_edited DATETIME,
-					collection TEXT,
-					folders TEXT,
-					tags TEXT,
-					ancestor TEXT,
-					parents TEXT,
-					kids TEXT,
-					used_links TEXT,
-					links_to_here TEXT,
-					related TEXT,
-					editor TEXT,
-					size INTEGER,
-					"references" TEXT
-				);
-				CREATE INDEX IF NOT EXISTS idx_collection ON metadata(collection);
-				CREATE INDEX IF NOT EXISTS idx_editor ON metadata(editor);
-				`)
-				return err
-			},
-			Down: func(tx *sql.Tx) error {
-				_, err := tx.Exec(`DROP TABLE IF EXISTS metadata`)
-				return err
-			},
-		},
+		{Up: migrationV1Up, Down: migrationV1Down},
 	}
 	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
 		return fmt.Errorf("metadata storage migration failed: %w", err)
 	}
 	logging.LogDebug("metadata sqlite storage ready at version %d", version)
 	return nil
+}
+
+func migrationV1Up(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+	CREATE TABLE IF NOT EXISTS metadata (
+		path TEXT PRIMARY KEY,
+		title TEXT,
+		created_at DATETIME,
+		last_edited DATETIME,
+		collection TEXT,
+		folders TEXT,
+		tags TEXT,
+		ancestor TEXT,
+		parents TEXT,
+		kids TEXT,
+		used_links TEXT,
+		links_to_here TEXT,
+		related TEXT,
+		editor TEXT,
+		size INTEGER,
+		"references" TEXT,
+		conflict_file TEXT,
+		conflict_of TEXT
+	);
+	CREATE INDEX IF NOT EXISTS idx_collection ON metadata(collection);
+	CREATE INDEX IF NOT EXISTS idx_editor ON metadata(editor);
+	`)
+	return err
+}
+
+func migrationV1Down(tx *sql.Tx) error {
+	_, err := tx.Exec(`DROP TABLE IF EXISTS metadata`)
+	return err
 }
 
 // Get retrieves metadata by key and returns as JSON
@@ -111,26 +114,29 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	query := `
 	SELECT title, created_at, last_edited, collection,
 	       folders, tags, ancestor, parents, kids, used_links, links_to_here, related,
-	       editor, size, COALESCE("references", '') as "references"
+	       editor, size, COALESCE("references", '') as "references",
+	       COALESCE(conflict_file, '') as conflict_file, COALESCE(conflict_of, '') as conflict_of
 	FROM metadata WHERE path = ?
 	`
 
 	var meta struct {
-		Title       string
-		CreatedAt   *time.Time
-		LastEdited  *time.Time
-		Collection  string
-		Folders     string
-		Tags        string
-		Ancestor    string
-		Parents     string
-		Kids        string
-		UsedLinks   string
-		LinksToHere string
-		Related     string
-		Editor      string
-		Size        int64
-		References  string
+		Title        string
+		CreatedAt    *time.Time
+		LastEdited   *time.Time
+		Collection   string
+		Folders      string
+		Tags         string
+		Ancestor     string
+		Parents      string
+		Kids         string
+		UsedLinks    string
+		LinksToHere  string
+		Related      string
+		Editor       string
+		Size         int64
+		References   string
+		ConflictFile string
+		ConflictOf   string
 	}
 
 	err := ss.db.QueryRow(query, key).Scan(
@@ -138,6 +144,7 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		&meta.Collection, &meta.Folders, &meta.Tags, &meta.Ancestor,
 		&meta.Parents, &meta.Kids, &meta.UsedLinks, &meta.LinksToHere, &meta.Related,
 		&meta.Editor, &meta.Size, &meta.References,
+		&meta.ConflictFile, &meta.ConflictOf,
 	)
 
 	if err == sql.ErrNoRows {
@@ -220,6 +227,12 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 			result["references"] = refs
 		}
 	}
+	if meta.ConflictFile != "" {
+		result["conflictFile"] = meta.ConflictFile
+	}
+	if meta.ConflictOf != "" {
+		result["conflictOf"] = meta.ConflictOf
+	}
 
 	data, err := json.Marshal(result)
 	if err != nil {
@@ -298,8 +311,8 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 	INSERT OR REPLACE INTO metadata (
 		path, title, created_at, last_edited, collection,
 		folders, tags, ancestor, parents, kids, used_links, links_to_here, related,
-		editor, size, "references"
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		editor, size, "references", conflict_file, conflict_of
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	_, err := ss.db.Exec(query,
@@ -319,6 +332,8 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 		getString("editor"),
 		size,
 		referencesJSON,
+		getString("conflictFile"),
+		getString("conflictOf"),
 	)
 
 	if err != nil {

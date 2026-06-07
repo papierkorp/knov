@@ -1284,7 +1284,7 @@ const docTemplate = `{
                 "tags": [
                     "config"
                 ],
-                "summary": "Get git repository URL",
+                "summary": "Get git remote URL",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1295,7 +1295,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "updates git repository url in .env file (requires restart)",
+                "description": "updates git remote url in .env file",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -1306,12 +1306,12 @@ const docTemplate = `{
                 "tags": [
                     "config"
                 ],
-                "summary": "Update git repository URL",
+                "summary": "Update git remote URL",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "repository url",
-                        "name": "repositoryUrl",
+                        "description": "remote repository url",
+                        "name": "repositoryURL",
                         "in": "formData",
                         "required": true
                     }
@@ -3293,6 +3293,69 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/git/pull": {
+            "post": {
+                "description": "Manually trigger a git pull --rebase from the configured remote",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "git"
+                ],
+                "summary": "Pull from remote",
+                "responses": {
+                    "200": {
+                        "description": "pull completed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/git/push": {
+            "post": {
+                "description": "Manually trigger a git push to the configured remote",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "git"
+                ],
+                "summary": "Push to remote",
+                "responses": {
+                    "200": {
+                        "description": "push triggered",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/git/test-auth": {
+            "post": {
+                "description": "Tests SSH/HTTPS authentication against the configured remote and logs the result",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "git"
+                ],
+                "summary": "Test git SSH auth (debug)",
+                "responses": {
+                    "200": {
+                        "description": "auth test result",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/health": {
             "get": {
                 "produces": [
@@ -3527,6 +3590,100 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "failed to get ancestors",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/links/conflicts/banner": {
+            "get": {
+                "description": "Returns a prominent warning banner if the file has unresolved conflicts",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Get conflict banner for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "banner HTML or empty",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/links/conflicts/diff": {
+            "get": {
+                "description": "Compares current file on disk with a .conflict.md copy using text diff",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Get live diff between a file and its conflict copy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Original file path (docs/-prefixed)",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Conflict file path (docs/-prefixed)",
+                        "name": "conflict",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "diff HTML",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/links/conflicts/of-banner": {
+            "get": {
+                "description": "Returns a banner showing this file is a conflict copy, with diff link to original",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "summary": "Get conflict-of banner for a conflict copy file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Conflict file path (docs/-prefixed)",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "banner HTML or empty",
                         "schema": {
                             "type": "string"
                         }
@@ -5789,6 +5946,14 @@ const docTemplate = `{
                 },
                 "collection": {
                     "description": "auto",
+                    "type": "string"
+                },
+                "conflictFile": {
+                    "description": "auto - path to .conflict.md if a conflict exists",
+                    "type": "string"
+                },
+                "conflictOf": {
+                    "description": "auto - path to original file if this is a .conflict.md",
                     "type": "string"
                 },
                 "createdAt": {

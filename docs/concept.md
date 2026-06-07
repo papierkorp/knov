@@ -41,7 +41,11 @@ KNOV (knowledge vault) is a flexible knowledge management system.
     - use markdown links in the content and you automatically get `links to - inbound links` and `links from - outbound links`
     - get related files per sqlite
   - **folders**: use a default Folder structure to get the filepath as well as see all folders clickable in the metadata
-
+- **Git Remote Sync**
+  - knov doesnt have a user management but allows for a git remote sync
+  - each user runs its own knov server (knov binary, knov.exe)
+  - each user has a git remote Repository in its own data path
+  - knov has a built in conflict system if 2 users edit the same file at the same time
 
 ![image](metadata_example.png)
 

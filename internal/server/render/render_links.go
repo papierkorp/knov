@@ -3,6 +3,7 @@ package render
 
 import (
 	"fmt"
+	"net/url"
 	"path/filepath"
 	"strings"
 
@@ -173,4 +174,57 @@ func RenderRelatedFiles(paths []string) string {
 		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no related files found"))
 	}
 	return RenderLinksList(paths, false)
+}
+
+// RenderConflictBanner renders a prominent warning banner above the file content,
+// or empty string if no conflict exists (outerHTML swap removes the placeholder).
+func RenderConflictBanner(originalFilePath string, conflictFile string) string {
+	if conflictFile == "" {
+		return ""
+	}
+	conflictRelPath := pathutils.ToRelative(conflictFile)
+	display := filepath.Base(conflictRelPath)
+	diffURL := "/api/links/conflicts/diff?filepath=" + url.QueryEscape(originalFilePath) + "&conflict=" + url.QueryEscape(conflictFile)
+	showText := translation.SprintfForRequest(configmanager.GetLanguage(), "diff")
+	hideText := translation.SprintfForRequest(configmanager.GetLanguage(), "hide diff")
+
+	var html strings.Builder
+	html.WriteString(`<div class="conflict-banner" id="component-conflict-banner">`)
+	fmt.Fprintf(&html, `<span class="conflict-banner-icon"><i class="fa fa-triangle-exclamation"></i></span>`)
+	fmt.Fprintf(&html, `<span class="conflict-banner-text">%s</span> `,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "this file has an unresolved conflict:"))
+	fmt.Fprintf(&html, `<a href="/files/%s" class="conflict-banner-files">%s</a>`, conflictRelPath, display)
+	fmt.Fprintf(&html, ` &mdash; <button class="conflict-diff-link" data-show="%s" data-hide="%s" onclick="toggleConflictDiff(this,'conflict-diff-banner','%s')">%s</button>`,
+		showText, hideText, diffURL, showText)
+	html.WriteString(`<div id="conflict-diff-banner" class="conflict-diff-container"></div>`)
+	fmt.Fprintf(&html, `<button class="conflict-banner-dismiss" onclick="this.closest('.conflict-banner').remove()">%s</button>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "dismiss"))
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
+// RenderConflictOfBanner renders a banner on the .conflict.md file itself,
+// showing a diff against the original file it was copied from.
+// Returns empty string if this file is not a conflict copy.
+func RenderConflictOfBanner(conflictFilePath string, originalFilePath string) string {
+	if originalFilePath == "" {
+		return ""
+	}
+	origRelPath := pathutils.ToRelative(originalFilePath)
+	origDisplay := filepath.Base(origRelPath)
+	diffURL := "/api/links/conflicts/diff?filepath=" + url.QueryEscape(originalFilePath) + "&conflict=" + url.QueryEscape(conflictFilePath)
+	showText := translation.SprintfForRequest(configmanager.GetLanguage(), "diff")
+	hideText := translation.SprintfForRequest(configmanager.GetLanguage(), "hide diff")
+
+	var html strings.Builder
+	html.WriteString(`<div class="conflict-banner" id="component-conflict-of-banner">`)
+	fmt.Fprintf(&html, `<span class="conflict-banner-icon"><i class="fa fa-triangle-exclamation"></i></span>`)
+	fmt.Fprintf(&html, `<span class="conflict-banner-text">%s</span>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "this is a conflict copy of"))
+	fmt.Fprintf(&html, ` <a href="/files/%s" class="conflict-banner-files">%s</a>`, origRelPath, origDisplay)
+	fmt.Fprintf(&html, ` &mdash; <button class="conflict-diff-link" data-show="%s" data-hide="%s" onclick="toggleConflictDiff(this,'conflict-of-diff','%s')">%s</button>`,
+		showText, hideText, diffURL, showText)
+	html.WriteString(`<div id="conflict-of-diff" class="conflict-diff-container"></div>`)
+	html.WriteString(`</div>`)
+	return html.String()
 }

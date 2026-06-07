@@ -58,6 +58,8 @@ tempai:
 	done
 	@echo "Copying static/generate-translations.sh with 'static_' prefix..."
 	@cp static/generate-translations.sh tempai/static_generate-translations.sh 2>/dev/null || true
+	@echo "Renaming .gohtml to .html..."
+	@for f in tempai/*.gohtml; do [ -f "$$f" ] && mv "$$f" "$${f%.gohtml}.html"; done
 	@echo "Cleaning up"
 	@rm -f tempai/*.exe tempai/*.log tempai/*.test
 	@rm -f tempai/test-*

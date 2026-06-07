@@ -129,6 +129,11 @@ func Run() {
 func runFileJobs() {
 	logging.LogDebug("running file cronjobs")
 
+	// pull from remote before processing to stay in sync
+	if err := git.PullRebase(); err != nil {
+		logging.LogWarning("cronjob: git pull failed: %v", err)
+	}
+
 	var filesToProcess []string
 	var filesToDelete []string
 

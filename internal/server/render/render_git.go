@@ -3,6 +3,8 @@ package render
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -10,6 +12,8 @@ import (
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
+
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 // RenderGitHistoryFileList renders a list of git history files as HTML
@@ -185,6 +189,61 @@ func RenderFileDiff(diff, filePath, fromCommit, toCommit string) string {
 	highlightedDiff := parser.HighlightCodeBlock(diff, "diff")
 	html.WriteString(highlightedDiff)
 
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
+// RenderConflictDiff renders a live text diff between the current file and a conflict copy.
+// Uses go-diff to produce a unified-style diff, then reuses the existing diff CSS.
+func RenderConflictDiff(originalPath, conflictPath string) string {
+	originalContent, err := os.ReadFile(originalPath)
+	if err != nil {
+		return `<div class="diff-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read original file") + `</div>`
+	}
+	conflictContent, err := os.ReadFile(conflictPath)
+	if err != nil {
+		return `<div class="diff-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read conflict file") + `</div>`
+	}
+
+	dmp := diffmatchpatch.New()
+	// use line-level diff for readable output
+	aChars, bChars, lines := dmp.DiffLinesToChars(string(originalContent), string(conflictContent))
+	diffs := dmp.DiffMain(aChars, bChars, false)
+	dmp.DiffCleanupSemantic(diffs)
+	diffs = dmp.DiffCharsToLines(diffs, lines)
+
+	// build unified-style diff text for syntax highlighting
+	var sb strings.Builder
+	for _, d := range diffs {
+		for _, line := range strings.Split(d.Text, "\n") {
+			if line == "" {
+				continue
+			}
+			switch d.Type {
+			case diffmatchpatch.DiffDelete:
+				fmt.Fprintf(&sb, "-%s\n", line)
+			case diffmatchpatch.DiffInsert:
+				fmt.Fprintf(&sb, "+%s\n", line)
+			case diffmatchpatch.DiffEqual:
+				fmt.Fprintf(&sb, " %s\n", line)
+			}
+		}
+	}
+
+	origName := filepath.Base(originalPath)
+	conflictName := filepath.Base(conflictPath)
+	highlighted := parser.HighlightCodeBlock(sb.String(), "diff")
+
+	var html strings.Builder
+	html.WriteString(`<div class="file-diff-content">`)
+	fmt.Fprintf(&html, `<div class="diff-header">
+		<h3>%s</h3>
+		<p>%s: %s &rarr; %s</p>
+	</div>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "conflict diff"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "comparing"),
+		origName, conflictName)
+	html.WriteString(highlighted)
 	html.WriteString(`</div>`)
 	return html.String()
 }

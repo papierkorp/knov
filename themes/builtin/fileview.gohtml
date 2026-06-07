@@ -11,6 +11,8 @@
 
 {{define "detailed"}}
 <div class="page-fileview view-detailed">
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
     <div class="fileview-layout">
         <article class="file-content">
             {{.FileContent.HTML}}
@@ -92,6 +94,8 @@
             </section>
             {{end}}
 
+            <div hx-get="/api/links/conflicts?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML" hx-target="this"></div>
+
             {{if index .ThemeSettings "sidebarReferences"}}
             <section class="sidebar-section section-references">
                 <h3>{{T "references"}}</h3>
@@ -134,6 +138,10 @@
 
 {{define "compact"}}
 <div class="page-fileview view-compact">
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+
     <div class="compact-header">
         <div class="compact-metadata">
             {{if index .ThemeSettings "compactMetadataPath"}}
@@ -206,6 +214,10 @@
 
 {{define "reader"}}
 <div class="page-fileview view-reader">
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+
     <div class="reader-controls">
         <button class="font-size-btn" onclick="adjustFontSize(-2)">A-</button>
         <button class="font-size-btn" onclick="adjustFontSize(2)">A+</button>

@@ -264,3 +264,70 @@ func handleAPIGetRelatedFiles(w http.ResponseWriter, r *http.Request) {
 	}
 	writeResponse(w, r, paths, render.RenderRelatedFiles(paths))
 }
+
+// @Summary Get live diff between a file and its conflict copy
+// @Description Compares current file on disk with a .conflict.md copy using text diff
+// @Tags links
+// @Param filepath query string true "Original file path (docs/-prefixed)"
+// @Param conflict query string true "Conflict file path (docs/-prefixed)"
+// @Produce html
+// @Success 200 {string} string "diff HTML"
+// @Router /api/links/conflicts/diff [get]
+func handleAPIGetConflictDiff(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	conflictPath := r.URL.Query().Get("conflict")
+	if filePath == "" || conflictPath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath or conflict parameter"), http.StatusBadRequest)
+		return
+	}
+
+	originalFull := pathutils.ToFullPath(pathutils.ToRelative(filePath))
+	conflictFull := pathutils.ToFullPath(pathutils.ToRelative(conflictPath))
+
+	html := render.RenderConflictDiff(originalFull, conflictFull)
+	writeResponse(w, r, nil, html)
+}
+
+// @Summary Get conflict banner for a file
+// @Description Returns a prominent warning banner if the file has unresolved conflicts
+// @Tags links
+// @Param filepath query string true "File path"
+// @Produce html
+// @Success 200 {string} string "banner HTML or empty"
+// @Router /api/links/conflicts/banner [get]
+func handleAPIGetConflictBanner(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
+		writeResponse(w, r, nil, "")
+		return
+	}
+	metadata, err := files.MetaDataGet(filePath)
+	if err != nil || metadata == nil || metadata.ConflictFile == "" {
+		writeResponse(w, r, nil, "")
+		return
+	}
+	html := render.RenderConflictBanner(filePath, metadata.ConflictFile)
+	writeResponse(w, r, nil, html)
+}
+
+// @Summary Get conflict-of banner for a conflict copy file
+// @Description Returns a banner showing this file is a conflict copy, with diff link to original
+// @Tags links
+// @Param filepath query string true "Conflict file path (docs/-prefixed)"
+// @Produce html
+// @Success 200 {string} string "banner HTML or empty"
+// @Router /api/links/conflicts/of-banner [get]
+func handleAPIGetConflictOfBanner(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
+		writeResponse(w, r, nil, "")
+		return
+	}
+	metadata, err := files.MetaDataGet(filePath)
+	if err != nil || metadata == nil || metadata.ConflictOf == "" {
+		writeResponse(w, r, nil, "")
+		return
+	}
+	html := render.RenderConflictOfBanner(filePath, metadata.ConflictOf)
+	writeResponse(w, r, nil, html)
+}

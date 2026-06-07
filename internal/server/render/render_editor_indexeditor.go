@@ -113,7 +113,7 @@ func RenderIndexEditor(filePath string, initialTitle ...string) (string, error) 
 		cancelURL = fmt.Sprintf("/files/%s", filePath)
 	}
 
-	fmt.Fprintf(&html, `<form hx-post="%s" hx-swap="innerHTML" id="index-form">`, action)
+	fmt.Fprintf(&html, `<form hx-post="%s" hx-target="#index-editor-status" hx-swap="innerHTML" id="index-form">`, action)
 
 	// filepath input for new files
 	if !isEdit {
@@ -150,6 +150,7 @@ func RenderIndexEditor(filePath string, initialTitle ...string) (string, error) 
 	fmt.Fprintf(&html, `<button type="submit" class="btn-primary">%s</button>`, translation.SprintfForRequest(configmanager.GetLanguage(), "save index"))
 	fmt.Fprintf(&html, `<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>`, cancelURL, translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"))
 	html.WriteString(`</div>`)
+	html.WriteString(`<div id="index-editor-status"></div>`)
 
 	html.WriteString(`</form>`)
 

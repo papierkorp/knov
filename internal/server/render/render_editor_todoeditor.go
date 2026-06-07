@@ -208,7 +208,7 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 	return fmt.Sprintf(`
 <div class="component-todo-editor">
 
-	<form hx-post="%s" id="todo-editor-form">
+	<form hx-post="%s" hx-target="#todo-editor-status" hx-swap="innerHTML" id="todo-editor-form">
 		<div class="form-group">
 			<label>%s:</label>
 			%s
@@ -238,6 +238,7 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 			<button type="submit" class="btn-primary">%s</button>
 			<button type="button" onclick="window.location.href='%s'" class="btn-secondary">%s</button>
 		</div>
+		<div id="todo-editor-status"></div>
 	</form>
 
 	<script>

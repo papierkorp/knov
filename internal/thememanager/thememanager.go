@@ -340,7 +340,16 @@ func injectDefaultJS(html string) string {
 	if bodyCloseIndex == -1 {
 		return html
 	}
-	return html[:bodyCloseIndex] + notify.RenderJS(configmanager.GetNotifyDuration()) + html[bodyCloseIndex:]
+	scripts := notify.RenderJS(configmanager.GetNotifyDuration())
+	scripts += `<script>
+function toggleConflictDiff(btn, id, url) {
+	var c = document.getElementById(id);
+	if (c.innerHTML !== '') { c.innerHTML = ''; btn.textContent = btn.dataset.show; return; }
+	htmx.ajax('GET', url, {target: '#' + id, swap: 'innerHTML'});
+	btn.textContent = btn.dataset.hide;
+}
+</script>`
+	return html[:bodyCloseIndex] + scripts + html[bodyCloseIndex:]
 }
 
 // -----------------------------------------------

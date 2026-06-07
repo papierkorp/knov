@@ -18,7 +18,7 @@
 - new kanban setting - different colors for set tags (e.g. tag markus = color green) (key value pair: <tagname>:<validcsscolorname>)
 - add filter to kanban board
 
-- new file added - add git?
+- save text files
 - remove the cache in rail per cronjob (files loaded at least)
 
 - backup solution

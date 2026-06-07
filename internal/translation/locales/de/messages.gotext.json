@@ -162,6 +162,16 @@
       "translation": ""
     },
     {
+      "id": "auth test failed",
+      "message": "auth test failed",
+      "translation": ""
+    },
+    {
+      "id": "auth test passed",
+      "message": "auth test passed",
+      "translation": ""
+    },
+    {
       "id": "Border Style",
       "message": "Border Style",
       "translation": ""
@@ -219,6 +229,11 @@
     {
       "id": "By Type",
       "message": "By Type",
+      "translation": ""
+    },
+    {
+      "id": "cache invalidated",
+      "message": "cache invalidated",
       "translation": ""
     },
     {
@@ -337,6 +352,11 @@
       "translation": ""
     },
     {
+      "id": "collection history",
+      "message": "collection history",
+      "translation": ""
+    },
+    {
       "id": "collections",
       "message": "collections",
       "translation": ""
@@ -347,8 +367,18 @@
       "translation": ""
     },
     {
+      "id": "collection updated",
+      "message": "collection updated",
+      "translation": ""
+    },
+    {
       "id": "comma-separated list of allowed MIME types (e.g., image/*, application/pdf)",
       "message": "comma-separated list of allowed MIME types (e.g., image/*, application/pdf)",
+      "translation": ""
+    },
+    {
+      "id": "comparing",
+      "message": "comparing",
       "translation": ""
     },
     {
@@ -359,6 +389,11 @@
     {
       "id": "configure filter above and click view results to preview",
       "message": "configure filter above and click view results to preview",
+      "translation": ""
+    },
+    {
+      "id": "conflict diff",
+      "message": "conflict diff",
       "translation": ""
     },
     {
@@ -417,6 +452,11 @@
       "translation": ""
     },
     {
+      "id": "created at updated",
+      "message": "created at updated",
+      "translation": ""
+    },
+    {
       "id": "Create New Dashboard",
       "message": "Create New Dashboard",
       "translation": "Neues Dashboard erstellen"
@@ -424,6 +464,11 @@
     {
       "id": "Create New File",
       "message": "Create New File",
+      "translation": ""
+    },
+    {
+      "id": "cronjob executed successfully",
+      "message": "cronjob executed successfully",
       "translation": ""
     },
     {
@@ -572,6 +617,16 @@
       "translation": "Löschen"
     },
     {
+      "id": "delete all files",
+      "message": "delete all files",
+      "translation": ""
+    },
+    {
+      "id": "delete all files in this",
+      "message": "delete all files in this",
+      "translation": ""
+    },
+    {
       "id": "Delete all orphaned media files? This cannot be undone.",
       "message": "Delete all orphaned media files? This cannot be undone.",
       "translation": ""
@@ -584,6 +639,11 @@
     {
       "id": "delete dashboard",
       "message": "delete dashboard",
+      "translation": ""
+    },
+    {
+      "id": "delete file",
+      "message": "delete file",
       "translation": ""
     },
     {
@@ -624,6 +684,16 @@
     {
       "id": "diff",
       "message": "diff",
+      "translation": ""
+    },
+    {
+      "id": "diff not available",
+      "message": "diff not available",
+      "translation": ""
+    },
+    {
+      "id": "dismiss",
+      "message": "dismiss",
       "translation": ""
     },
     {
@@ -704,6 +774,11 @@
     {
       "id": "Editor Types",
       "message": "Editor Types",
+      "translation": ""
+    },
+    {
+      "id": "editor updated",
+      "message": "editor updated",
       "translation": ""
     },
     {
@@ -842,6 +917,11 @@
       "translation": ""
     },
     {
+      "id": "failed to clean test data",
+      "message": "failed to clean test data",
+      "translation": ""
+    },
+    {
       "id": "failed to create directory",
       "message": "failed to create directory",
       "translation": ""
@@ -887,11 +967,6 @@
       "translation": ""
     },
     {
-      "id": "failed to get current commit",
-      "message": "failed to get current commit",
-      "translation": ""
-    },
-    {
       "id": "failed to get dashboards",
       "message": "failed to get dashboards",
       "translation": ""
@@ -904,11 +979,6 @@
     {
       "id": "failed to get file content",
       "message": "failed to get file content",
-      "translation": ""
-    },
-    {
-      "id": "failed to get file diff",
-      "message": "failed to get file diff",
       "translation": ""
     },
     {
@@ -969,6 +1039,11 @@
     {
       "id": "failed to get titles",
       "message": "failed to get titles",
+      "translation": ""
+    },
+    {
+      "id": "failed to invalidate cache",
+      "message": "failed to invalidate cache",
       "translation": ""
     },
     {
@@ -1037,6 +1112,11 @@
       "translation": ""
     },
     {
+      "id": "failed to read conflict file",
+      "message": "failed to read conflict file",
+      "translation": ""
+    },
+    {
       "id": "failed to read file",
       "message": "failed to read file",
       "translation": ""
@@ -1044,6 +1124,11 @@
     {
       "id": "failed to read folder",
       "message": "failed to read folder",
+      "translation": ""
+    },
+    {
+      "id": "failed to read original file",
+      "message": "failed to read original file",
       "translation": ""
     },
     {
@@ -1127,6 +1212,11 @@
       "translation": ""
     },
     {
+      "id": "failed to setup test data",
+      "message": "failed to setup test data",
+      "translation": ""
+    },
+    {
       "id": "failed to update card",
       "message": "failed to update card",
       "translation": ""
@@ -1159,6 +1249,16 @@
     {
       "id": "file converted to markdown successfully",
       "message": "file converted to markdown successfully",
+      "translation": ""
+    },
+    {
+      "id": "file created",
+      "message": "file created",
+      "translation": ""
+    },
+    {
+      "id": "file deleted",
+      "message": "file deleted",
       "translation": ""
     },
     {
@@ -1222,6 +1322,11 @@
       "translation": ""
     },
     {
+      "id": "file renamed",
+      "message": "file renamed",
+      "translation": ""
+    },
+    {
       "id": "files",
       "message": "files",
       "translation": ""
@@ -1229,6 +1334,11 @@
     {
       "id": "Files",
       "message": "Files",
+      "translation": ""
+    },
+    {
+      "id": "file saved",
+      "message": "file saved",
       "translation": ""
     },
     {
@@ -1372,6 +1482,11 @@
       "translation": "Ordner"
     },
     {
+      "id": "folders updated",
+      "message": "folders updated",
+      "translation": ""
+    },
+    {
       "id": "format",
       "message": "format",
       "translation": ""
@@ -1380,6 +1495,31 @@
       "id": "General Settings",
       "message": "General Settings",
       "translation": "Allgemeine Einstellungen"
+    },
+    {
+      "id": "Git Auto Push",
+      "message": "Git Auto Push",
+      "translation": ""
+    },
+    {
+      "id": "Git Branch",
+      "message": "Git Branch",
+      "translation": ""
+    },
+    {
+      "id": "Git Remote",
+      "message": "Git Remote",
+      "translation": ""
+    },
+    {
+      "id": "git remote saved",
+      "message": "git remote saved",
+      "translation": ""
+    },
+    {
+      "id": "Git Remote Sync",
+      "message": "Git Remote Sync",
+      "translation": ""
     },
     {
       "id": "Git Repository",
@@ -1419,6 +1559,11 @@
     {
       "id": "Hide Archives",
       "message": "Hide Archives",
+      "translation": ""
+    },
+    {
+      "id": "hide diff",
+      "message": "hide diff",
       "translation": ""
     },
     {
@@ -1592,6 +1737,11 @@
       "translation": ""
     },
     {
+      "id": "https://github.com/user/repo.git or git@github.com:user/repo.git",
+      "message": "https://github.com/user/repo.git or git@github.com:user/repo.git",
+      "translation": ""
+    },
+    {
       "id": "ids and target are required",
       "message": "ids and target are required",
       "translation": ""
@@ -1742,11 +1892,6 @@
       "translation": ""
     },
     {
-      "id": "Kanban",
-      "message": "Kanban",
-      "translation": ""
-    },
-    {
       "id": "Kanban Columns",
       "message": "Kanban Columns",
       "translation": ""
@@ -1769,6 +1914,11 @@
     {
       "id": "last edited",
       "message": "last edited",
+      "translation": ""
+    },
+    {
+      "id": "last edited updated",
+      "message": "last edited updated",
       "translation": ""
     },
     {
@@ -1932,6 +2082,11 @@
       "translation": ""
     },
     {
+      "id": "loading recent changes...",
+      "message": "loading recent changes...",
+      "translation": ""
+    },
+    {
       "id": "Loading recent changes...",
       "message": "Loading recent changes...",
       "translation": ""
@@ -1994,6 +2149,11 @@
     {
       "id": "log level updated",
       "message": "log level updated",
+      "translation": ""
+    },
+    {
+      "id": "Logs Path",
+      "message": "Logs Path",
       "translation": ""
     },
     {
@@ -2097,6 +2257,16 @@
       "translation": ""
     },
     {
+      "id": "metadata rebuilt successfully",
+      "message": "metadata rebuilt successfully",
+      "translation": ""
+    },
+    {
+      "id": "metadata saved",
+      "message": "metadata saved",
+      "translation": ""
+    },
+    {
       "id": "Metadata Storage",
       "message": "Metadata Storage",
       "translation": ""
@@ -2152,6 +2322,11 @@
       "translation": ""
     },
     {
+      "id": "missing filepath or conflict parameter",
+      "message": "missing filepath or conflict parameter",
+      "translation": ""
+    },
+    {
       "id": "missing filepath or newpath parameter",
       "message": "missing filepath or newpath parameter",
       "translation": ""
@@ -2204,6 +2379,11 @@
     {
       "id": "missing type",
       "message": "missing type",
+      "translation": ""
+    },
+    {
+      "id": "missing type or value parameter",
+      "message": "missing type or value parameter",
       "translation": ""
     },
     {
@@ -2417,6 +2597,11 @@
       "translation": ""
     },
     {
+      "id": "no remote configured",
+      "message": "no remote configured",
+      "translation": ""
+    },
+    {
       "id": "no results found",
       "message": "no results found",
       "translation": ""
@@ -2424,6 +2609,21 @@
     {
       "id": "no table found in file",
       "message": "no table found in file",
+      "translation": ""
+    },
+    {
+      "id": "notifications",
+      "message": "notifications",
+      "translation": ""
+    },
+    {
+      "id": "Notifications",
+      "message": "Notifications",
+      "translation": ""
+    },
+    {
+      "id": "Notify Duration",
+      "message": "Notify Duration",
       "translation": ""
     },
     {
@@ -2602,6 +2802,31 @@
       "translation": ""
     },
     {
+      "id": "Pull",
+      "message": "Pull",
+      "translation": ""
+    },
+    {
+      "id": "pull completed",
+      "message": "pull completed",
+      "translation": ""
+    },
+    {
+      "id": "pull failed",
+      "message": "pull failed",
+      "translation": ""
+    },
+    {
+      "id": "Push",
+      "message": "Push",
+      "translation": ""
+    },
+    {
+      "id": "push triggered",
+      "message": "push triggered",
+      "translation": ""
+    },
+    {
       "id": "rebuild",
       "message": "rebuild",
       "translation": ""
@@ -2614,6 +2839,11 @@
     {
       "id": "Rebuild Metadata",
       "message": "Rebuild Metadata",
+      "translation": ""
+    },
+    {
+      "id": "recent file history",
+      "message": "recent file history",
       "translation": ""
     },
     {
@@ -2639,6 +2869,11 @@
     {
       "id": "related",
       "message": "related",
+      "translation": ""
+    },
+    {
+      "id": "remote",
+      "message": "remote",
       "translation": ""
     },
     {
@@ -3127,13 +3362,28 @@
       "translation": ""
     },
     {
+      "id": "Test Auth",
+      "message": "Test Auth",
+      "translation": ""
+    },
+    {
       "id": "Test Data",
       "message": "Test Data",
       "translation": ""
     },
     {
+      "id": "test data cleaned",
+      "message": "test data cleaned",
+      "translation": ""
+    },
+    {
       "id": "Test Data Management",
       "message": "Test Data Management",
+      "translation": ""
+    },
+    {
+      "id": "test data setup completed",
+      "message": "test data setup completed",
       "translation": ""
     },
     {
@@ -3164,6 +3414,16 @@
     {
       "id": "Themes Path",
       "message": "Themes Path",
+      "translation": ""
+    },
+    {
+      "id": "this file has an unresolved conflict:",
+      "message": "this file has an unresolved conflict:",
+      "translation": ""
+    },
+    {
+      "id": "this is a conflict copy of",
+      "message": "this is a conflict copy of",
       "translation": ""
     },
     {
@@ -3229,6 +3489,11 @@
     {
       "id": "type here...",
       "message": "type here...",
+      "translation": ""
+    },
+    {
+      "id": "type must be collection, folder or tag",
+      "message": "type must be collection, folder or tag",
       "translation": ""
     },
     {

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
+	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
@@ -68,40 +69,43 @@ func handleAPISetLanguage(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// @Summary Get git repository URL
+// @Summary Get git remote URL
 // @Tags config
 // @Produce json,html
 // @Success 200 {object} string
 // @Router /api/config/repository [get]
 func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	appConfig := configmanager.GetAppConfig()
-	repositoryURL := appConfig.GitRepoURL
+	repositoryURL := appConfig.GitRemote
 
-	html := render.RenderInputField("url", "repositoryURL", "git-url", repositoryURL, translation.SprintfForRequest(configmanager.GetLanguage(), "https://github.com/user/repo.git"), false)
+	html := render.RenderInputField("text", "repositoryURL", "git-url", repositoryURL, translation.SprintfForRequest(configmanager.GetLanguage(), "https://github.com/user/repo.git or git@github.com:user/repo.git"), false)
 	writeResponse(w, r, repositoryURL, html)
 }
 
-// @Summary Update git repository URL
-// @Description updates git repository url in .env file (requires restart)
+// @Summary Update git remote URL
+// @Description updates git remote url in .env file
 // @Tags config
 // @Accept application/x-www-form-urlencoded
-// @Param repositoryUrl formData string true "repository url"
+// @Param repositoryURL formData string true "remote repository url"
 // @Produce json,html
 // @Success 200 {string} string "saved"
 // @Router /api/config/repository [post]
 func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	repositoryURL := r.FormValue("repositoryUrl")
+	repositoryURL := r.FormValue("repositoryURL")
 
-	if err := configmanager.UpdateEnvFile("KNOV_GIT_REPO_URL", repositoryURL); err != nil {
+	if err := configmanager.UpdateEnvFile("KNOV_GIT_REMOTE", repositoryURL); err != nil {
 		logging.LogError("failed to update env file: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save"), http.StatusInternalServerError)
 		return
 	}
 
-	data := "saved"
-	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "git url saved. restart required."))
-	writeResponse(w, r, data, "")
+	if err := git.EnsureRemote(); err != nil {
+		logging.LogWarning("failed to configure git remote: %v", err)
+	}
+
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "git remote saved"))
+	writeResponse(w, r, "saved", "")
 }
 
 // @Summary Restart application

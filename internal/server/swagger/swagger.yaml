@@ -148,6 +148,12 @@ definitions:
       collection:
         description: auto
         type: string
+      conflictFile:
+        description: auto - path to .conflict.md if a conflict exists
+        type: string
+      conflictOf:
+        description: auto - path to original file if this is a .conflict.md
+        type: string
       createdAt:
         description: auto
         type: string
@@ -1195,17 +1201,17 @@ paths:
           description: OK
           schema:
             type: string
-      summary: Get git repository URL
+      summary: Get git remote URL
       tags:
       - config
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: updates git repository url in .env file (requires restart)
+      description: updates git remote url in .env file
       parameters:
-      - description: repository url
+      - description: remote repository url
         in: formData
-        name: repositoryUrl
+        name: repositoryURL
         required: true
         type: string
       produces:
@@ -1216,7 +1222,7 @@ paths:
           description: saved
           schema:
             type: string
-      summary: Update git repository URL
+      summary: Update git remote URL
       tags:
       - config
   /api/config/section-edit-subheaders:
@@ -2543,6 +2549,49 @@ paths:
       summary: Get recently changed files
       tags:
       - git
+  /api/git/pull:
+    post:
+      description: Manually trigger a git pull --rebase from the configured remote
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: pull completed
+          schema:
+            type: string
+      summary: Pull from remote
+      tags:
+      - git
+  /api/git/push:
+    post:
+      description: Manually trigger a git push to the configured remote
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: push triggered
+          schema:
+            type: string
+      summary: Push to remote
+      tags:
+      - git
+  /api/git/test-auth:
+    post:
+      description: Tests SSH/HTTPS authentication against the configured remote and
+        logs the result
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: auth test result
+          schema:
+            type: string
+      summary: Test git SSH auth (debug)
+      tags:
+      - git
   /api/health:
     get:
       produces:
@@ -2706,6 +2755,70 @@ paths:
           schema:
             type: string
       summary: Get ancestor files within a collection
+      tags:
+      - links
+  /api/links/conflicts/banner:
+    get:
+      description: Returns a prominent warning banner if the file has unresolved conflicts
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: banner HTML or empty
+          schema:
+            type: string
+      summary: Get conflict banner for a file
+      tags:
+      - links
+  /api/links/conflicts/diff:
+    get:
+      description: Compares current file on disk with a .conflict.md copy using text
+        diff
+      parameters:
+      - description: Original file path (docs/-prefixed)
+        in: query
+        name: filepath
+        required: true
+        type: string
+      - description: Conflict file path (docs/-prefixed)
+        in: query
+        name: conflict
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: diff HTML
+          schema:
+            type: string
+      summary: Get live diff between a file and its conflict copy
+      tags:
+      - links
+  /api/links/conflicts/of-banner:
+    get:
+      description: Returns a banner showing this file is a conflict copy, with diff
+        link to original
+      parameters:
+      - description: Conflict file path (docs/-prefixed)
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: banner HTML or empty
+          schema:
+            type: string
+      summary: Get conflict-of banner for a conflict copy file
       tags:
       - links
   /api/links/grandchildren:

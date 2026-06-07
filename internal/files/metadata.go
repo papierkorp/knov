@@ -66,22 +66,24 @@ func EditorFromExtension(path string) EditorType {
 
 // Metadata represents file metadata
 type Metadata struct {
-	Path        string      `json:"path"`                 // auto
-	Title       string      `json:"title"`                // auto
-	CreatedAt   time.Time   `json:"createdAt"`            // auto
-	LastEdited  time.Time   `json:"lastEdited"`           // auto
-	Collection  string      `json:"collection"`           // auto
-	Folders     []string    `json:"folders"`              // auto
-	Tags        []string    `json:"tags"`                 // manual
-	Ancestor    []string    `json:"ancestor"`             // auto
-	Parents     []string    `json:"parents"`              // manual
-	Kids        []string    `json:"kids"`                 // auto
-	UsedLinks   []string    `json:"usedLinks"`            // auto
-	LinksToHere []string    `json:"linksToHere"`          // auto
-	Related     []string    `json:"related,omitempty"`    // auto - pre-computed by rebuild
-	Editor      EditorType  `json:"editor"`               // manual - with add new
-	Size        int64       `json:"size"`                 // auto
-	References  []Reference `json:"references,omitempty"` // manual
+	Path         string      `json:"path"`                   // auto
+	Title        string      `json:"title"`                  // auto
+	CreatedAt    time.Time   `json:"createdAt"`              // auto
+	LastEdited   time.Time   `json:"lastEdited"`             // auto
+	Collection   string      `json:"collection"`             // auto
+	Folders      []string    `json:"folders"`                // auto
+	Tags         []string    `json:"tags"`                   // manual
+	Ancestor     []string    `json:"ancestor"`               // auto
+	Parents      []string    `json:"parents"`                // manual
+	Kids         []string    `json:"kids"`                   // auto
+	UsedLinks    []string    `json:"usedLinks"`              // auto
+	LinksToHere  []string    `json:"linksToHere"`            // auto
+	Related      []string    `json:"related,omitempty"`      // auto
+	Editor       EditorType  `json:"editor"`                 // manual
+	Size         int64       `json:"size"`                   // auto
+	References   []Reference `json:"references,omitempty"`   // manual
+	ConflictFile string      `json:"conflictFile,omitempty"` // auto
+	ConflictOf   string      `json:"conflictOf,omitempty"`   // auto
 }
 
 // Reference represents an external resource linked to a file
@@ -299,6 +301,37 @@ func sanitizeKanbanTags(tags []string) ([]string, error) {
 			strings.Join(invalidTags, ", "), strings.Join(validStatuses, ", "))
 	}
 	return result, nil
+}
+
+// SetConflictFile sets the conflict file path on an original file's metadata.
+// Overwrites any previous conflict file reference — only one is kept at a time.
+func SetConflictFile(originalFilePath, conflictFilePath string) error {
+	metadata, err := MetaDataGet(originalFilePath)
+	if err != nil || metadata == nil {
+		metadata = &Metadata{Path: originalFilePath}
+	}
+	metadata.ConflictFile = conflictFilePath
+	return MetaDataSaveRaw(metadata)
+}
+
+// SetConflictOf marks a file as being a conflict copy of another file.
+func SetConflictOf(conflictFilePath, originalFilePath string) error {
+	metadata, err := MetaDataGet(conflictFilePath)
+	if err != nil || metadata == nil {
+		metadata = &Metadata{Path: conflictFilePath}
+	}
+	metadata.ConflictOf = originalFilePath
+	return MetaDataSaveRaw(metadata)
+}
+
+// ClearConflictFile removes the conflict file reference from the original file's metadata.
+func ClearConflictFile(originalFilePath string) error {
+	metadata, err := MetaDataGet(originalFilePath)
+	if err != nil || metadata == nil {
+		return nil
+	}
+	metadata.ConflictFile = ""
+	return MetaDataSaveRaw(metadata)
 }
 
 // MetaDataSave saves metadata using the configured storage method

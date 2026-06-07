@@ -16,6 +16,7 @@ import (
 	"knov/internal/dokuwikiconverter"
 	"knov/internal/files"
 	"knov/internal/filter"
+	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/mapping"
 	"knov/internal/pathutils"
@@ -287,6 +288,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
 		return
 	}
+	go git.CommitFile(fullPath)
 
 	logging.LogInfo("saved file: %s", filePath)
 

@@ -332,6 +332,9 @@ func StartServerChi() {
 			r.Get("/linkstohere", handleAPIGetLinksToHere)
 			r.Get("/media", handleAPIGetMediaLinks)
 			r.Get("/related", handleAPIGetRelatedFiles)
+			r.Get("/conflicts/diff", handleAPIGetConflictDiff)
+			r.Get("/conflicts/banner", handleAPIGetConflictBanner)
+			r.Get("/conflicts/of-banner", handleAPIGetConflictOfBanner)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -350,6 +353,9 @@ func StartServerChi() {
 
 		r.Route("/git", func(r chi.Router) {
 			r.Get("/latestchanges", handleAPIGetRecentlyChanged)
+			r.Post("/push", handleAPIGitPush)
+			r.Post("/pull", handleAPIGitPull)
+			r.Post("/test-auth", handleAPIGitTestAuth)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -588,7 +594,8 @@ func handleSettings(w http.ResponseWriter, r *http.Request) {
 
 func handleAdmin(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewBaseTemplateData("Admin")
+	data := thememanager.NewSettingsTemplateData()
+	data.Title = "Admin"
 
 	err := tm.Render(w, "admin", data)
 	if err != nil {
@@ -655,6 +662,13 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		currentCommit := ""
 		if len(versions) > 0 {
 			currentCommit = versions[0].Commit
+		}
+
+		// resolve "previous" to the actual second commit hash
+		if selectedCommit == "previous" && len(versions) > 1 {
+			selectedCommit = versions[1].Commit
+		} else if selectedCommit == "previous" {
+			selectedCommit = currentCommit
 		}
 
 		data := thememanager.NewHistoryTemplateData(filePath, currentCommit, selectedCommit, versions, false)

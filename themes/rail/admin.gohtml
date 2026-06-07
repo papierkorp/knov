@@ -66,6 +66,27 @@
             </div>
         </section>
 
+        {{if .AppConfig.GitRemote}}
+        <section class="settings-section">
+            <h2>{{T "Git Remote Sync"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "remote"}}: <code>{{.AppConfig.GitRemote}}</code> / <code>{{.AppConfig.GitRemoteBranch}}</code></div>
+                <div class="admin-action-list">
+                    <button class="btn-secondary" hx-post="/api/git/pull" hx-swap="none">
+                        <i class="fa fa-arrow-down"></i> {{T "Pull"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/git/push" hx-swap="none">
+                        <i class="fa fa-arrow-up"></i> {{T "Push"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/git/test-auth" hx-swap="innerHTML" hx-target="#git-test-result">
+                        <i class="fa fa-plug"></i> {{T "Test Auth"}} (debug)
+                    </button>
+                </div>
+                <div id="git-test-result" style="margin-top:8px;font-size:0.85em;"></div>
+            </div>
+        </section>
+        {{end}}
+
         <section class="settings-section">
             <h2>{{T "Storage Statistics"}}</h2>
             <div class="setting-item">
@@ -75,7 +96,7 @@
                 </div>
                 <div style="margin-top:12px;">
                     <button class="btn-danger" hx-post="/api/media/cleanup-orphaned" hx-swap="none"
-                           
+
                             hx-confirm="{{T "Delete all orphaned media files? This cannot be undone."}}">
                         <i class="fa fa-trash"></i> {{T "Cleanup Orphaned Files"}}
                     </button>

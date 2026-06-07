@@ -55,6 +55,21 @@
                     </form>
                 </div>
 
+                {{if .AppConfig.GitRemote}}
+                <div class="admin-card">
+                    <h3>{{T "Git Remote Sync"}}</h3>
+                    <div class="help-text">{{T "remote"}}: <code>{{.AppConfig.GitRemote}}</code> / <code>{{.AppConfig.GitRemoteBranch}}</code></div>
+                    <form>
+                        <button type="button" hx-post="/api/git/pull" hx-swap="none">
+                            <i class="fa fa-arrow-down"></i> {{T "Pull"}}
+                        </button>
+                        <button type="button" hx-post="/api/git/push" hx-swap="none">
+                            <i class="fa fa-arrow-up"></i> {{T "Push"}}
+                        </button>
+                    </form>
+                </div>
+                {{end}}
+
                 <div class="admin-card">
                     <h3>{{T "Storage Statistics"}}</h3>
                     <div class="help-text">{{T "media file storage usage and cleanup"}}</div>

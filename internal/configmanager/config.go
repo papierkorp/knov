@@ -13,6 +13,8 @@ import (
 	"knov/internal/utils"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
 // -----------------------------------------------------------------------------
@@ -29,7 +31,14 @@ type AppConfig struct {
 	LogsPath                string
 	ServerPort              string
 	LogLevel                string
-	GitRepoURL              string
+	GitRemote               string
+	GitRemoteBranch         string
+	GitAutoPush             bool
+	GitPushTimeout          string
+	GitUser                 string
+	GitPassword             string
+	GitToken                string
+	GitSSHKey               string
 	ConfigStorageProvider   string
 	MetadataStorageProvider string
 	CacheStorageProvider    string
@@ -84,7 +93,14 @@ func InitAppConfig() {
 		LogsPath:                getEnv("KNOV_LOGS_PATH", filepath.Join(baseDir, "logs")),
 		ServerPort:              getEnv("KNOV_SERVER_PORT", "1324"),
 		LogLevel:                getEnv("KNOV_LOG_LEVEL", "info"),
-		GitRepoURL:              getEnv("KNOV_GIT_REPO_URL", ""),
+		GitRemote:               getEnv("KNOV_GIT_REMOTE", ""),
+		GitRemoteBranch:         getEnv("KNOV_GIT_REMOTE_BRANCH", "main"),
+		GitAutoPush:             getBoolEnv("KNOV_GIT_AUTO_PUSH", true),
+		GitPushTimeout:          getEnv("KNOV_GIT_PUSH_TIMEOUT", "10s"),
+		GitUser:                 getEnv("KNOV_GIT_USER", ""),
+		GitPassword:             getEnv("KNOV_GIT_PASSWORD", ""),
+		GitToken:                getEnv("KNOV_GIT_TOKEN", ""),
+		GitSSHKey:               getEnv("KNOV_GIT_SSH_KEY", ""),
 		ConfigStorageProvider:   getEnv("KNOV_CONFIG_STORAGE_PROVIDER", "json"),
 		MetadataStorageProvider: getEnv("KNOV_METADATA_STORAGE_PROVIDER", "sqlite"),
 		CacheStorageProvider:    getEnv("KNOV_CACHE_STORAGE_PROVIDER", "sqlite"),
@@ -238,6 +254,42 @@ func GetStoragePath() string {
 	return appConfig.StoragePath
 }
 
+// GetGitRemote returns the configured git remote URL (empty = local only)
+func GetGitRemote() string {
+	return appConfig.GitRemote
+}
+
+// GetGitRemoteBranch returns the git remote branch name
+func GetGitRemoteBranch() string {
+	return appConfig.GitRemoteBranch
+}
+
+// GetGitAutoPush returns whether auto-push is enabled
+func GetGitAutoPush() bool {
+	return appConfig.GitAutoPush
+}
+
+// GetGitPushTimeout returns the push/pull timeout string
+func GetGitPushTimeout() string {
+	return appConfig.GitPushTimeout
+}
+
+// GetGitAuth returns user, password/token for HTTPS auth (token takes priority)
+func GetGitAuth() (user, password string) {
+	user = appConfig.GitUser
+	if appConfig.GitToken != "" {
+		password = appConfig.GitToken
+	} else {
+		password = appConfig.GitPassword
+	}
+	return
+}
+
+// GetGitSSHKey returns the path to the SSH private key file (empty = use agent or default)
+func GetGitSSHKey() string {
+	return appConfig.GitSSHKey
+}
+
 // GetLogsPath returns the logs path
 func GetLogsPath() string {
 	return appConfig.LogsPath
@@ -293,15 +345,25 @@ func InitGitRepository() error {
 		return nil
 	}
 
-	if appConfig.GitRepoURL != "" {
+	if appConfig.GitRemote != "" {
+		var auth transport.AuthMethod
+		if appConfig.GitSSHKey != "" {
+			var err error
+			auth, err = ssh.NewPublicKeysFromFile("git", appConfig.GitSSHKey, "")
+			if err != nil {
+				logging.LogError("failed to load ssh key for clone: %v", err)
+				return err
+			}
+		}
 		_, err := git.PlainClone(dataPath, false, &git.CloneOptions{
-			URL: appConfig.GitRepoURL,
+			URL:  appConfig.GitRemote,
+			Auth: auth,
 		})
 		if err != nil {
 			logging.LogError("failed to clone repository: %v", err)
 			return err
 		}
-		logging.LogInfo("git repository cloned from %s to %s", appConfig.GitRepoURL, dataPath)
+		logging.LogInfo("git repository cloned from %s to %s", appConfig.GitRemote, dataPath)
 	} else {
 		_, err := git.PlainInit(dataPath, false)
 		if err != nil {
@@ -359,8 +421,8 @@ func applyEnvToAppConfig(key, value string) {
 	switch key {
 	case "KNOV_DATA_PATH":
 		appConfig.DataPath = value
-	case "KNOV_GIT_REPO_URL":
-		appConfig.GitRepoURL = value
+	case "KNOV_GIT_REMOTE":
+		appConfig.GitRemote = value
 	case "KNOV_LOG_LEVEL":
 		appConfig.LogLevel = value
 		SetLogLevel(value)
