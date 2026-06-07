@@ -390,7 +390,7 @@ function setupFilePage() {
   const rebuildBtn = document.getElementById("fp-rebuild-btn");
   if (rebuildBtn) {
     rebuildBtn.setAttribute("hx-post", "/api/metadata/rebuild/" + filepath);
-    rebuildBtn.setAttribute("hx-target", "#fp-rebuild-result");
+    rebuildBtn.setAttribute("hx-swap", "none");
     htmx.process(rebuildBtn);
   }
 
@@ -452,10 +452,10 @@ function setupFilePage() {
   const connFields = {
     "fp-ancestors": "/api/links/ancestors?filepath=" + fp,
     "fp-parents": "/api/links/parents?filepath=" + fp,
-    "fp-children": "/api/links/children?filepath=" + fp,
+    "fp-children": "/api/links/kids?filepath=" + fp,
     "fp-grandchildren": "/api/links/grandchildren?filepath=" + fp,
-    "fp-links-to": "/api/links/linksto?filepath=" + fp,
-    "fp-links-from": "/api/links/linksfrom?filepath=" + fp,
+    "fp-links-to": "/api/links/used?filepath=" + fp,
+    "fp-links-from": "/api/links/linkstohere?filepath=" + fp,
     "fp-related": "/api/links/related?filepath=" + fp,
     "fp-media-links": "/api/links/media?filepath=" + fp,
   };
