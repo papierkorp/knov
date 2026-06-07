@@ -5949,11 +5949,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "conflictFile": {
-                    "description": "auto - path to .conflict.md if a conflict exists",
+                    "description": "auto",
                     "type": "string"
                 },
                 "conflictOf": {
-                    "description": "auto - path to original file if this is a .conflict.md",
+                    "description": "auto",
                     "type": "string"
                 },
                 "createdAt": {
@@ -5961,7 +5961,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "editor": {
-                    "description": "manual - with add new",
+                    "description": "manual",
                     "allOf": [
                         {
                             "$ref": "#/definitions/files.EditorType"
@@ -6012,7 +6012,7 @@ const docTemplate = `{
                     }
                 },
                 "related": {
-                    "description": "auto - pre-computed by rebuild",
+                    "description": "auto",
                     "type": "array",
                     "items": {
                         "type": "string"

@@ -85,7 +85,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	case files.EditorTypeMarkdown:
 		html = render.RenderMarkdownEditorForm(fp, editorParam)
 	case files.EditorTypeTextarea:
-		html = render.RenderTextareaEditorComponent(fp, content)
+		html = render.RenderTextareaEditorComponent(fp, content, editorParam)
 	case files.EditorTypeList:
 		html = render.RenderListEditor(fp)
 	case files.EditorTypeTodo:

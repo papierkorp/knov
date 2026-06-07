@@ -23,7 +23,6 @@ import (
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
-	"knov/internal/utils"
 )
 
 // @Summary Get folder path suggestions for datalist
@@ -810,39 +809,6 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("HX-Redirect", "/browse")
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file deleted"))
 	writeResponse(w, r, map[string]string{"status": "deleted"}, "")
-}
-
-// generateUniqueFleetingFilename creates a unique sanitized filename, adding numbers if duplicates exist
-func generateUniqueFleetingFilename(content string) string {
-	// get base filename from content
-	baseFilename := utils.SanitizeFilename(content, 20, false, true)
-	filename := baseFilename
-	counter := 2
-
-	// check if file exists and increment counter until we find a unique name
-	for {
-		testPath := fmt.Sprintf("fleeting/%s.md", filename)
-		fullTestPath := pathutils.ToDocsPath(testPath)
-
-		// check if file exists
-		if _, err := os.Stat(fullTestPath); os.IsNotExist(err) {
-			// file doesn't exist, we can use this filename
-			break
-		}
-
-		// file exists, try with counter
-		filename = fmt.Sprintf("%s-%d", baseFilename, counter)
-		counter++
-
-		// safety check to prevent infinite loop
-		if counter > 100 {
-			// fallback to timestamp if we somehow can't find a unique name
-			logging.LogWarning("could not generate unique fleeting filename after 100 attempts, falling back to timestamp")
-			return time.Now().Format("2006-01-02-150405")
-		}
-	}
-
-	return filename
 }
 
 // @Summary Delete all files in a collection or folder

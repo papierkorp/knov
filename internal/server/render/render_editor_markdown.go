@@ -455,14 +455,15 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 
 // RenderTextareaEditorComponent renders a plain textarea editor with save/cancel buttons.
 // Shows an extra "convert to markdown" button for DokuWiki files.
-func RenderTextareaEditorComponent(filepath, content string) string {
+func RenderTextareaEditorComponent(filepath, content string, editorType ...string) string {
+	isNew := filepath == ""
 	cancelURL := "/"
-	if filepath != "" {
+	if !isNew {
 		cancelURL = fmt.Sprintf("/files/%s", filepath)
 	}
 
 	var convertButton string
-	if filepath != "" {
+	if !isNew {
 		fullPath := pathutils.ToDocsPath(filepath)
 		handler := parser.GetParserRegistry().GetHandler(fullPath)
 		if handler != nil && handler.Name() == "dokuwiki" {
@@ -479,10 +480,29 @@ func RenderTextareaEditorComponent(filepath, content string) string {
 		}
 	}
 
+	var filepathField string
+	if isNew {
+		var editorHidden string
+		if len(editorType) > 0 && editorType[0] != "" {
+			editorHidden = fmt.Sprintf(`<input type="hidden" name="editor" value="%s">`, editorType[0])
+		}
+		filepathField = fmt.Sprintf(`
+			<div class="form-group">
+				<label for="filepath-input">%s</label>
+				<input type="text" id="filepath-input" name="filepath" required placeholder="%s" class="form-input" list="folder-suggestions" />
+				<datalist id="folder-suggestions" hx-get="/api/files/folder-suggestions" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></datalist>
+			</div>%s`,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
+			translation.SprintfForRequest(configmanager.GetLanguage(), "my-file.md"),
+			editorHidden)
+	} else {
+		filepathField = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s">`, filepath)
+	}
+
 	return fmt.Sprintf(`
 		<div class="component-textarea-editor">
 			<form hx-post="/api/files/save" hx-target="#editor-status" hx-swap="innerHTML">
-				<input type="hidden" name="filepath" value="%s">
+				%s
 				<textarea name="content" rows="25" class="textarea-editor-input">%s</textarea>
 				<div class="form-actions">
 					<button type="submit" class="btn-primary">%s</button>
@@ -492,7 +512,7 @@ func RenderTextareaEditorComponent(filepath, content string) string {
 				<div id="editor-status"></div>
 			</form>
 		</div>`,
-		filepath,
+		filepathField,
 		content,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save"),
 		cancelURL,

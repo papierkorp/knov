@@ -149,10 +149,10 @@ definitions:
         description: auto
         type: string
       conflictFile:
-        description: auto - path to .conflict.md if a conflict exists
+        description: auto
         type: string
       conflictOf:
-        description: auto - path to original file if this is a .conflict.md
+        description: auto
         type: string
       createdAt:
         description: auto
@@ -160,7 +160,7 @@ definitions:
       editor:
         allOf:
         - $ref: '#/definitions/files.EditorType'
-        description: manual - with add new
+        description: manual
       folders:
         description: auto
         items:
@@ -193,7 +193,7 @@ definitions:
           $ref: '#/definitions/files.Reference'
         type: array
       related:
-        description: auto - pre-computed by rebuild
+        description: auto
         items:
           type: string
         type: array

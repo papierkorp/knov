@@ -18,8 +18,10 @@
 - new kanban setting - different colors for set tags (e.g. tag markus = color green) (key value pair: <tagname>:<validcsscolorname>)
 - add filter to kanban board
 
-- save text files
-- remove the cache in rail per cronjob (files loaded at least)
+- export/import settings
+- rail theme - cache
+  - reload when the user performs a mutating action
+  - add a manual refresh button on the panel
 
 - backup solution
 - backup git search
