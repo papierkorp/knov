@@ -7,9 +7,10 @@
 - filter with references
 
 **per ai**
-- add testreference to testfiles
 - add testreference to testfilter
-- add testfilter to testfiles
+
+- include path in the title filter
+- fix all the editor warnings
 
 - backup solution
 - backup git search

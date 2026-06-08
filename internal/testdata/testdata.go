@@ -10,6 +10,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/files"
+	"knov/internal/filter"
 	"knov/internal/logging"
 
 	"github.com/go-git/go-git/v5"
@@ -59,6 +60,8 @@ func CleanTestData() error {
 		return err
 	}
 
+	setupTestFilter(true)
+
 	logging.LogInfo("test data cleaned - removed test directory: %s", testDir)
 	return nil
 }
@@ -76,7 +79,39 @@ func setupTestMetadata() error {
 		return err
 	}
 
+	setupTestFilter(false)
+
 	return files.MetaDataLinksRebuild()
+}
+
+func setupTestFilter(delete bool) {
+	if delete {
+		if err := filter.DeleteFilterConfig("test/example_filter"); err != nil {
+			logging.LogError("failed to delete test filter: %v", err)
+		}
+	} else {
+		cfg := &filter.Config{
+			Criteria: []filter.Criteria{
+				{
+					Metadata: "tags",
+					Operator: "contains",
+					Value:    "test-files",
+					Action:   "include",
+				},
+				{
+					Metadata: "title",
+					Operator: "contains",
+					Value:    "x",
+					Action:   "include",
+				}},
+			Logic: "and",
+			Limit: 50,
+		}
+		if err := filter.SaveFilterConfig(cfg, "test/example_filter"); err != nil {
+			logging.LogError("failed to create test filter: %v", err)
+		}
+	}
+
 }
 
 func createGitOperations(commitMessage string) error {
