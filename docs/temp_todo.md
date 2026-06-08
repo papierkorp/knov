@@ -7,7 +7,6 @@
 - filter with references
 
 **per ai**
-- rail theme - slideout resize no longer works
 - add testreference to testfiles
 - add testreference to testfilter
 - add testfilter to testfiles

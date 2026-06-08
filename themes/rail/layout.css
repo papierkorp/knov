@@ -156,10 +156,6 @@ body[data-has-file="true"] .rail-sep-file {
   background: var(--primary);
 }
 
-#flyout[data-active] {
-  width: 240px;
-}
-
 /* =============================================
    responsive
    ============================================= */
