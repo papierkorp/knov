@@ -97,7 +97,14 @@ function filterBrowseContent(query) {
   if (!el) return;
 
   if (q === "") {
-    el.querySelectorAll("li").forEach((li) => (li.style.display = ""));
+    el.querySelectorAll("li").forEach((li) => {
+      li.style.display = "";
+      // restore collapsed state when clearing filter
+      if (li.dataset.wasCollapsed) {
+        li.classList.add("fp-tree-collapsed");
+        delete li.dataset.wasCollapsed;
+      }
+    });
     el.querySelectorAll(".media-compact-item").forEach(
       (item) => (item.style.display = ""),
     );
@@ -107,15 +114,27 @@ function filterBrowseContent(query) {
   const isTree = el.querySelector("a.fp-tree-file") !== null;
 
   if (isTree) {
+    // expand all collapsed dirs so matches inside them are visible
+    el.querySelectorAll("li.fp-tree-collapsed").forEach((li) => {
+      li.dataset.wasCollapsed = "1";
+      li.classList.remove("fp-tree-collapsed");
+    });
+
+    // hide/show file rows
     el.querySelectorAll("li").forEach((li) => {
-      const fileLink = li.querySelector(":scope > a.fp-tree-file");
+      const fileLink =
+        li.querySelector(":scope > a.fp-tree-file") ||
+        li.querySelector(":scope > span.browse-item-row > a.fp-tree-file");
       if (!fileLink) return;
       const text = fileLink.textContent.toLowerCase();
       const href = (fileLink.getAttribute("href") || "").toLowerCase();
       li.style.display = text.includes(q) || href.includes(q) ? "" : "none";
     });
+
+    // hide/show dir rows based on whether any child file matches
     el.querySelectorAll("li").forEach((li) => {
-      if (li.querySelector(":scope > a.fp-tree-file")) return;
+      const hasDirBtn = li.querySelector(":scope > button.fp-tree-dir");
+      if (!hasDirBtn) return;
       const hasVisible = [...li.querySelectorAll("a.fp-tree-file")].some(
         (a) => a.closest("li").style.display !== "none",
       );
@@ -155,6 +174,7 @@ function closePanel() {
     .querySelectorAll("#rail-site .rail-btn")
     .forEach((b) => b.classList.remove("active"));
   flyout.removeAttribute("data-active");
+  document.documentElement.removeAttribute("data-init-panel");
   localStorage.removeItem("rail-panel");
 }
 
@@ -390,7 +410,7 @@ function setupFilePage() {
   const rebuildBtn = document.getElementById("fp-rebuild-btn");
   if (rebuildBtn) {
     rebuildBtn.setAttribute("hx-post", "/api/metadata/rebuild/" + filepath);
-    rebuildBtn.setAttribute("hx-swap", "none");
+    rebuildBtn.setAttribute("hx-target", "#fp-rebuild-result");
     htmx.process(rebuildBtn);
   }
 
@@ -416,50 +436,31 @@ function setupFilePage() {
     headers: { Accept: "text/html" },
   });
 
-  // load metadata fields
+  // hide no-file message and show metadata rows
   const noFile = document.getElementById("fp-no-file");
   if (noFile) noFile.style.display = "none";
+  const pathEl = document.getElementById("fp-meta-path");
+  if (pathEl)
+    pathEl.innerHTML = '<a href="/files/' + fp + '">' + filepath + "</a>";
 
-  const fields = {
-    "fp-meta-path":
-      '<a href="/files/' + fp + '">' + decodeURIComponent(filepath) + "</a>",
-  };
-  for (const [id, html] of Object.entries(fields)) {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = html;
-  }
-
-  const metaFields = {
-    "fp-meta-editor": "/api/metadata/editor?filepath=" + fp,
+  const htmxFields = {
     "fp-meta-created": "/api/metadata/createdat?filepath=" + fp,
     "fp-meta-edited": "/api/metadata/lastedited?filepath=" + fp,
     "fp-meta-tags": "/api/metadata/tags?filepath=" + fp,
     "fp-meta-collection": "/api/metadata/collection?filepath=" + fp,
     "fp-meta-folders": "/api/metadata/folders?filepath=" + fp,
-  };
-  for (const [id, url] of Object.entries(metaFields)) {
-    const el = document.getElementById(id);
-    if (!el) continue;
-    fetch(url, { headers: { Accept: "text/html" } })
-      .then((r) => r.text())
-      .then((html) => {
-        el.innerHTML = html;
-      })
-      .catch(() => {});
-  }
-
-  // load connections
-  const connFields = {
     "fp-ancestors": "/api/links/ancestors?filepath=" + fp,
     "fp-parents": "/api/links/parents?filepath=" + fp,
     "fp-children": "/api/links/kids?filepath=" + fp,
     "fp-grandchildren": "/api/links/grandchildren?filepath=" + fp,
     "fp-links-to": "/api/links/used?filepath=" + fp,
+    "fp-media-links": "/api/links/media?filepath=" + fp,
     "fp-links-from": "/api/links/linkstohere?filepath=" + fp,
     "fp-related": "/api/links/related?filepath=" + fp,
-    "fp-media-links": "/api/links/media?filepath=" + fp,
+    "fp-meta-editor": "/api/metadata/editor?filepath=" + fp,
   };
-  for (const [id, url] of Object.entries(connFields)) {
+
+  for (const [id, url] of Object.entries(htmxFields)) {
     const el = document.getElementById(id);
     if (!el) continue;
     fetch(url, { headers: { Accept: "text/html" } })
