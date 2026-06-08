@@ -551,30 +551,30 @@ func RunFilterTests() (*FilterTestResults, error) {
 			expectedFiles: []string{"filterTestA.md", "filterTestB.md", "filterTestC.md"},
 			description:   "",
 		},
-		// {
-		// 	name: "test18references",
-		// 	config: filter.Config{
-		// 		Criteria: []filter.Criteria{
-		// 			{
-		// 				Metadata: "collection",
-		// 				Operator: "equals",
-		// 				Value:    "filter-tests",
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "references",
-		// 				Operator: "contains",
-		// 				Value:    "filtertest",
-		// 				Action:   "include",
-		// 			},
-		// 		},
-		// 		Logic: "and",
-		// 		Limit: 0,
-		// 	},
-		// 	expectedCount: 1,
-		// 	expectedFiles: []string{"filtertestF.md"},
-		// 	description:   "",
-		// },
+		{
+			name: "test18references",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "equals",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
+						Metadata: "references",
+						Operator: "contains",
+						Value:    "example reference",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 1,
+			expectedFiles: []string{"filterTestE.md"},
+			description:   "",
+		},
 	}
 
 	// run each test

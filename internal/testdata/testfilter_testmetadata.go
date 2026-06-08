@@ -49,6 +49,7 @@ func getFilterTestMetadata() []*files.Metadata {
 			LastEdited: time.Date(2025, 11, 5, 14, 0, 0, 0, time.UTC),
 			Parents:    []string{"docs/filter-tests/filterTestD.md"},
 			Editor:     files.EditorTypeMarkdown,
+			References: []files.Reference{{URL: "https://example.com", Description: "example reference for testing"}, {URL: "https://www.google.com", Description: "another reference"}},
 		},
 		// filterTestF
 		{

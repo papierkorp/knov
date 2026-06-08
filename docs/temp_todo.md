@@ -4,10 +4,8 @@
 - add a smoketest todo file to testfiles
 - update thememanager docs for both devs (how to create a new theme) and for user (how to use overwrite)
 - translations
-- filter with references
 
 **per ai**
-- add testreference to testfilter
 - fix all the editor warnings
 
 - backup solution

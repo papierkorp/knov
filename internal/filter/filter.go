@@ -198,6 +198,9 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 			if matchesOperator(ref.URL, criterion.Operator, criterion.Value) {
 				return true
 			}
+			if matchesOperator(ref.Description, criterion.Operator, criterion.Value) {
+				return true
+			}
 		}
 		return false
 	default:

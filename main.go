@@ -12,14 +12,13 @@ import (
 	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
 	"knov/internal/cronjob"
-	"knov/internal/filter"
 	"knov/internal/files"
+	"knov/internal/filter"
 	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
 	"knov/internal/notificationStorage"
 	"knov/internal/parser"
-	"knov/internal/search"
 	"knov/internal/searchStorage"
 	"knov/internal/server"
 
@@ -111,10 +110,6 @@ func main() {
 	// register filter index regeneration to run after every metadata rebuild
 	files.OnMetadataRebuild = filter.RegenerateAllIndexes
 
-	go func() {
-			logging.LogError("failed to initialize search: %v", err)
-		}
-	}()
 	go func() {
 		time.Sleep(2 * time.Minute)
 		if err := files.MetaDataLinksRebuild(); err != nil {
