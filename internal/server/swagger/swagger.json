@@ -4778,6 +4778,62 @@
                 }
             }
         },
+        "/api/metadata/inline-display": {
+            "get": {
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get inline display for a sidebar metadata field",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Field name (tags, parents, editor, path)",
+                        "name": "field",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/metadata/inline-edit": {
+            "get": {
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Get inline editor for a sidebar metadata field",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Field name (tags, parents, editor, path)",
+                        "name": "field",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/metadata/lastedited": {
             "get": {
                 "produces": [

@@ -596,3 +596,20 @@
 }
 
 /* Dark mode adjustments for MOC editor */
+
+/* -----------------------------------------------------------------------
+   full-height editor — textarea and sortable editors fill available space
+   ----------------------------------------------------------------------- */
+
+/* toast ui height is set dynamically in JS based on available space */
+
+.page-file-editor .textarea-editor-input {
+  height: calc(100vh - var(--editor-overhead, 260px));
+  resize: none;
+  box-sizing: border-box;
+}
+
+.page-file-editor .component-sortable-editor {
+  height: calc(100vh - var(--editor-overhead, 260px));
+  overflow-y: auto;
+}

@@ -499,8 +499,10 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo("successfully moved file via metadata: %s -> %s", filePath, newpath)
-	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully"))
-	writeResponse(w, r, newpath, "")
+	newRelPath := pathutils.ToRelative(newpath)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully"))
+	w.Header().Set("HX-Redirect", "/files/"+newRelPath)
+	w.WriteHeader(http.StatusOK)
 }
 
 // @Summary Set file creation date
@@ -1175,3 +1177,41 @@ func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 // ----------------------------------------------------------------------------------------
 // ---------------------------------- HELPERS ----------------------------------
 // ----------------------------------------------------------------------------------------
+
+// @Summary Get inline display for a sidebar metadata field
+// @Tags metadata
+// @Param field query string true "Field name (tags, parents, editor, path)"
+// @Param filepath query string true "File path"
+// @Produce html
+// @Router /api/metadata/inline-display [get]
+func handleAPIMetadataInlineDisplay(w http.ResponseWriter, r *http.Request) {
+	field := r.URL.Query().Get("field")
+	filePath := r.URL.Query().Get("filepath")
+	if field == "" || filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing parameters"), http.StatusBadRequest)
+		return
+	}
+	metadata, _ := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
+	html := render.RenderSidebarFieldDisplay(field, filePath, metadata)
+	w.Header().Set("Content-Type", "text/html")
+	fmt.Fprint(w, html)
+}
+
+// @Summary Get inline editor for a sidebar metadata field
+// @Tags metadata
+// @Param field query string true "Field name (tags, parents, editor, path)"
+// @Param filepath query string true "File path"
+// @Produce html
+// @Router /api/metadata/inline-edit [get]
+func handleAPIMetadataInlineEdit(w http.ResponseWriter, r *http.Request) {
+	field := r.URL.Query().Get("field")
+	filePath := r.URL.Query().Get("filepath")
+	if field == "" || filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing parameters"), http.StatusBadRequest)
+		return
+	}
+	metadata, _ := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
+	html := render.RenderSidebarFieldEdit(field, filePath, metadata)
+	w.Header().Set("Content-Type", "text/html")
+	fmt.Fprint(w, html)
+}

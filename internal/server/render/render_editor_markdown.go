@@ -38,7 +38,14 @@ func jsEditorInit(content string) string {
 		});
 		const editor = new toastui.Editor({
 			el: document.querySelector('#markdown-editor'),
-			height: '500px',
+			height: (function() {
+				var el = document.querySelector('#markdown-editor');
+				var rect = el.getBoundingClientRect();
+				var actions = document.querySelector('.file-form .form-actions');
+				var actionsH = actions ? actions.offsetHeight + 48 : 80;
+				var available = window.innerHeight - rect.top - actionsH;
+				return Math.max(300, available) + 'px';
+			})(),
 			initialEditType: 'markdown',
 			previewStyle: 'tab',
 			initialValue: %s,

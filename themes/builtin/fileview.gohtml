@@ -24,7 +24,7 @@
                 <div class="metadata-grid">
                     <div class="metadata-row">
                         <span class="metadata-label">{{T "path"}}:</span>
-                        <span><a href="/files/{{urlQuery .FilePath}}">{{.FilePath}}</a></span>
+                        <div hx-get="/api/metadata/inline-display?field=path&filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
                     </div>
                     <div class="metadata-row">
                         <span class="metadata-label">{{T "collection"}}:</span>
@@ -40,7 +40,7 @@
                     </div>
                     <div class="metadata-row">
                         <span class="metadata-label">{{T "tags"}}:</span>
-                        <span hx-get="/api/metadata/tags?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+                        <div hx-get="/api/metadata/inline-display?field=tags&filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
                     </div>
                     <div class="metadata-row">
                         <span class="metadata-label">{{T "folders"}}:</span>
@@ -48,7 +48,7 @@
                     </div>
                     <div class="metadata-row">
                         <span class="metadata-label">{{T "editor"}}:</span>
-                        <span hx-get="/api/metadata/editor?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+                        <div hx-get="/api/metadata/inline-display?field=editor&filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
                     </div>
                 </div>
             </section>
@@ -64,7 +64,7 @@
                     </div>
                     <div class="connection-group">
                         <div class="connection-label">{{T "parents"}}</div>
-                        <div hx-get="/api/links/parents?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
+                        <div hx-get="/api/metadata/inline-display?field=parents&filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
                     </div>
                     <div class="connection-group">
                         <div class="connection-label">{{T "children"}}</div>
@@ -177,7 +177,7 @@
             {{if index .ThemeSettings "compactMetadataParents"}}
             <span class="meta-pill">
                 <span class="meta-label">{{T "parents"}}:</span>
-                <span hx-get="/api/links/parents?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
+                <div hx-get="/api/metadata/inline-display?field=parents&filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
             </span>
             {{end}}
             {{if index .ThemeSettings "compactMetadataChildren"}}

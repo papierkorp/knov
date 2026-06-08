@@ -366,7 +366,6 @@ function setupFilePage() {
     const editFields = {
       "fp-meta-created": "/api/metadata/createdat?filepath=" + fp,
       "fp-meta-edited": "/api/metadata/lastedited?filepath=" + fp,
-      "fp-meta-tags": "/api/metadata/tags?filepath=" + fp,
       "fp-meta-collection": "/api/metadata/collection?filepath=" + fp,
       "fp-meta-folders": "/api/metadata/folders?filepath=" + fp,
     };
@@ -377,6 +376,30 @@ function setupFilePage() {
         .then((r) => r.text())
         .then((html) => {
           el.innerHTML = html;
+        })
+        .catch(() => {});
+    }
+    // inline-edit fields: swap outerHTML so edit button HTMX works
+    const editInlineFields = {
+      "fp-meta-tags": "tags",
+      "fp-meta-editor": "editor",
+      "fp-meta-path": "path",
+    };
+    for (const [id, field] of Object.entries(editInlineFields)) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      fetch("/api/metadata/inline-display?field=" + field + "&filepath=" + fp, {
+        headers: { Accept: "text/html" },
+      })
+        .then((r) => r.text())
+        .then((html) => {
+          const tmp = document.createElement("div");
+          tmp.innerHTML = html;
+          const newEl = tmp.firstElementChild;
+          if (newEl) {
+            el.replaceWith(newEl);
+            htmx.process(newEl);
+          }
         })
         .catch(() => {});
     }
@@ -439,25 +462,18 @@ function setupFilePage() {
   // hide no-file message and show metadata rows
   const noFile = document.getElementById("fp-no-file");
   if (noFile) noFile.style.display = "none";
-  const pathEl = document.getElementById("fp-meta-path");
-  if (pathEl)
-    pathEl.innerHTML = '<a href="/files/' + fp + '">' + filepath + "</a>";
-
   const htmxFields = {
     "fp-meta-created": "/api/metadata/createdat?filepath=" + fp,
     "fp-meta-edited": "/api/metadata/lastedited?filepath=" + fp,
-    "fp-meta-tags": "/api/metadata/tags?filepath=" + fp,
     "fp-meta-collection": "/api/metadata/collection?filepath=" + fp,
     "fp-meta-folders": "/api/metadata/folders?filepath=" + fp,
     "fp-ancestors": "/api/links/ancestors?filepath=" + fp,
-    "fp-parents": "/api/links/parents?filepath=" + fp,
     "fp-children": "/api/links/kids?filepath=" + fp,
     "fp-grandchildren": "/api/links/grandchildren?filepath=" + fp,
     "fp-links-to": "/api/links/used?filepath=" + fp,
     "fp-media-links": "/api/links/media?filepath=" + fp,
     "fp-links-from": "/api/links/linkstohere?filepath=" + fp,
     "fp-related": "/api/links/related?filepath=" + fp,
-    "fp-meta-editor": "/api/metadata/editor?filepath=" + fp,
   };
 
   for (const [id, url] of Object.entries(htmxFields)) {
@@ -467,6 +483,32 @@ function setupFilePage() {
       .then((r) => r.text())
       .then((html) => {
         el.innerHTML = html;
+      })
+      .catch(() => {});
+  }
+
+  // inline-edit fields: swap outerHTML so edit button HTMX works
+  const inlineFields = {
+    "fp-meta-tags": "tags",
+    "fp-meta-editor": "editor",
+    "fp-meta-path": "path",
+    "fp-parents": "parents",
+  };
+  for (const [id, field] of Object.entries(inlineFields)) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    fetch("/api/metadata/inline-display?field=" + field + "&filepath=" + fp, {
+      headers: { Accept: "text/html" },
+    })
+      .then((r) => r.text())
+      .then((html) => {
+        const tmp = document.createElement("div");
+        tmp.innerHTML = html;
+        const newEl = tmp.firstElementChild;
+        if (newEl) {
+          el.replaceWith(newEl);
+          htmx.process(newEl);
+        }
       })
       .catch(() => {});
   }

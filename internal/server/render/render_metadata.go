@@ -188,3 +188,118 @@ func RenderFileMetadataSimple(metadata *files.Metadata) string {
 
 	return html.String()
 }
+
+// -----------------------------------------------------------------------------------------
+// -------------------------------- sidebar inline edit ------------------------------------
+// -----------------------------------------------------------------------------------------
+
+// renderSidebarEditBtn renders the small pencil edit button
+func renderSidebarEditBtn(filePath, field string) string {
+	return fmt.Sprintf(`<button class="meta-edit-btn" title="%s"
+		hx-get="/api/metadata/inline-edit?field=%s&filepath=%s"
+		hx-swap="outerHTML" hx-target="closest .meta-inline-wrap">
+		<i class="fa fa-pen"></i></button>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "edit"),
+		field, filePath)
+}
+
+// renderSidebarCancelBtn renders the cancel/stop button shown during editing
+func renderSidebarCancelBtn(filePath, field string) string {
+	return fmt.Sprintf(`<button class="meta-edit-btn meta-edit-btn--cancel" title="%s"
+		hx-get="/api/metadata/inline-display?field=%s&filepath=%s"
+		hx-swap="outerHTML" hx-target="closest .meta-inline-wrap">
+		<i class="fa fa-xmark"></i></button>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
+		field, filePath)
+}
+
+// RenderSidebarFieldDisplay renders the read-only display row for an editable sidebar field.
+// Returned HTML is the full .meta-inline-wrap so hx-swap="outerHTML" replaces it cleanly.
+func RenderSidebarFieldDisplay(field, filePath string, metadata *files.Metadata) string {
+	var value string
+	switch field {
+	case "tags":
+		if metadata != nil {
+			value = RenderMetadataLinksHTML(metadata.Tags, "tags")
+		} else {
+			value = `<span class="meta-empty">-</span>`
+		}
+	case "parents":
+		if metadata != nil && len(metadata.Parents) > 0 {
+			value = RenderMetadataLinksHTML(metadata.Parents, "")
+		} else {
+			value = `<span class="meta-empty">-</span>`
+		}
+	case "editor":
+		if metadata != nil {
+			value = RenderMetadataLinkHTML(string(metadata.Editor), "editor")
+		} else {
+			value = `<span class="meta-empty">-</span>`
+		}
+	case "path":
+		if metadata != nil {
+			value = fmt.Sprintf(`<span class="path">%s</span>`, metadata.Path)
+		} else {
+			value = `<span class="meta-empty">-</span>`
+		}
+	}
+	return fmt.Sprintf(`<div class="meta-inline-wrap">
+	<span class="meta-inline-display">%s</span>
+	%s
+</div>`, value, renderSidebarEditBtn(filePath, field))
+}
+
+// RenderSidebarFieldEdit renders the inline edit widget for a sidebar field.
+// Returned HTML is the full .meta-inline-wrap so hx-swap="outerHTML" replaces it cleanly.
+// After any successful save the wrap auto-swaps back to display mode.
+func RenderSidebarFieldEdit(field, filePath string, metadata *files.Metadata) string {
+	var input string
+	switch field {
+	case "tags":
+		tagsStr := ""
+		if metadata != nil {
+			tagsStr = strings.Join(metadata.Tags, ", ")
+		}
+		input = GenerateTagChipsInputWithSave("sidebar-tags", "tags", tagsStr,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "add tags"),
+			"/api/metadata/tags?format=options", filePath, "/api/metadata/tags")
+	case "parents":
+		parentsStr := ""
+		if metadata != nil {
+			parentsStr = strings.Join(metadata.Parents, ", ")
+		}
+		input = GenerateTagChipsInputWithSave("sidebar-parents", "parents", parentsStr,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "add parent files"),
+			"/api/files/list?format=options", filePath, "/api/metadata/parents")
+	case "editor":
+		editor := ""
+		if metadata != nil {
+			editor = string(metadata.Editor)
+		}
+		// use a select so only valid editor types can be chosen
+		var opts strings.Builder
+		for _, et := range files.AllEditorTypes() {
+			sel := ""
+			if string(et) == editor {
+				sel = ` selected`
+			}
+			fmt.Fprintf(&opts, `<option value="%s"%s>%s</option>`, et, sel, et)
+		}
+		input = fmt.Sprintf(`<select id="sidebar-editor" name="editor" class="form-input"
+			hx-post="/api/metadata/editor" hx-vals='{"filepath": "%s"}' hx-trigger="change" hx-swap="none">%s</select>`,
+			filePath, opts.String())
+	case "path":
+		path := filePath
+		if metadata != nil {
+			path = metadata.Path
+		}
+		input = GenerateInputWithSaveOnBlur("sidebar-path", "newpath", path,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "enter file path"),
+			filePath, "/api/metadata/path")
+	}
+	displayURL := fmt.Sprintf("/api/metadata/inline-display?field=%s&filepath=%s", field, filePath)
+	return fmt.Sprintf(`<div class="meta-inline-wrap meta-inline-wrap--editing"
+	hx-on:htmx:after-request="if(event.detail.successful && event.detail.requestConfig.verb==='post') htmx.ajax('GET','%s',{target:this,swap:'outerHTML'})">
+	<div class="meta-inline-editor">%s%s</div>
+</div>`, displayURL, renderSidebarCancelBtn(filePath, field), input)
+}

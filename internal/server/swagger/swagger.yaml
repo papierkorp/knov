@@ -3557,6 +3557,44 @@ paths:
       summary: Set file folders
       tags:
       - metadata
+  /api/metadata/inline-display:
+    get:
+      parameters:
+      - description: Field name (tags, parents, editor, path)
+        in: query
+        name: field
+        required: true
+        type: string
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get inline display for a sidebar metadata field
+      tags:
+      - metadata
+  /api/metadata/inline-edit:
+    get:
+      parameters:
+      - description: Field name (tags, parents, editor, path)
+        in: query
+        name: field
+        required: true
+        type: string
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get inline editor for a sidebar metadata field
+      tags:
+      - metadata
   /api/metadata/lastedited:
     get:
       parameters:

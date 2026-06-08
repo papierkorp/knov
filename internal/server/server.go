@@ -317,6 +317,9 @@ func StartServerChi() {
 			r.Get("/tags/{fileId}", handleAPIGetFileMetadataTags)
 			r.Get("/folders/{fileId}", handleAPIGetFileMetadataFolders)
 			r.Get("/collection/{fileId}", handleAPIGetFileMetadataCollection)
+
+			r.Get("/inline-display", handleAPIMetadataInlineDisplay)
+			r.Get("/inline-edit", handleAPIMetadataInlineEdit)
 		})
 
 		// ----------------------------------------------------------------------------------------

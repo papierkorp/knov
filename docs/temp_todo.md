@@ -17,9 +17,6 @@
 - new kanban setting - different colors for set tags (e.g. tag markus = color green) (key value pair: <tagname>:<validcsscolorname>)
 - add filter to kanban board
 
-- add quick edit for tags, parents, path in the sidebar
-  - add a edit button if pressed => replace the display chips with the input editor
-  - replace the edit button with a cancel/stop button => this replaces the input editor again with the chips
 - export/import settings
 
 - backup solution
