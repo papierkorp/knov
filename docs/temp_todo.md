@@ -8,7 +8,6 @@
 
 **per ai**
 - rail theme - slideout resize no longer works
-- rail theme - run filter tests - style for output (e.g. hr/border, display the status-icon in front of the test tile )
 - add testreference to testfiles
 - add testreference to testfilter
 - add testfilter to testfiles

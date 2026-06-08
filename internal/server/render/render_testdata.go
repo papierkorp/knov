@@ -40,7 +40,7 @@ func RenderFilterTestResults(results *testdata.FilterTestResults) string {
 	html.WriteString(`</div>`)
 
 	// detailed results
-	for i, result := range results.Results {
+	for _, result := range results.Results {
 		statusClass := "test-passed"
 		if !result.Success {
 			statusClass = "test-failed"
@@ -50,15 +50,13 @@ func RenderFilterTestResults(results *testdata.FilterTestResults) string {
 
 		// test header with status and basic info
 		html.WriteString(`<div class="test-header">`)
-		html.WriteString(fmt.Sprintf(`<div class="test-title">
-			<h5>Test %d: %s</h5>`, i+1, result.ConfigName))
 
 		statusIcon := "✅"
 		if !result.Success {
 			statusIcon = "❌"
 		}
-		html.WriteString(fmt.Sprintf(`<span class="status-icon">%s</span>`, statusIcon))
-		html.WriteString(`</div>`)
+		fmt.Fprintf(&html, `<div class="test-title"><span class="status-icon">%s</span><h5>%s</h5></div>`,
+			statusIcon, result.ConfigName)
 
 		// counts and description
 		html.WriteString(fmt.Sprintf(`<p class="test-description"><strong>%s</strong></p>`, result.Description))
