@@ -16,6 +16,10 @@ import (
 
 var rebuildMetaGetCount *int
 
+// OnMetadataRebuild is called after every full or single-file metadata rebuild.
+// Register filter.RegenerateAllIndexes here at startup to keep filter indexes in sync.
+var OnMetadataRebuild func()
+
 // MetaDataLinksRebuild rebuilds all link metadata from scratch.
 func MetaDataLinksRebuild() error {
 	log := logging.LogBuilder("rebuild-metadata")
@@ -169,6 +173,9 @@ func MetaDataLinksRebuild() error {
 
 	log.Printf("=== metadata links rebuild completed ===")
 	logging.LogInfo("metadata links rebuild completed")
+	if OnMetadataRebuild != nil {
+		OnMetadataRebuild()
+	}
 	return nil
 }
 
@@ -206,6 +213,9 @@ func MetaDataLinksRebuildForFile(filePath string) error {
 	}
 
 	logging.LogInfo("metadata links rebuild completed for file: %s", normalizedPath)
+	if OnMetadataRebuild != nil {
+		OnMetadataRebuild()
+	}
 	return nil
 }
 

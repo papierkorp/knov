@@ -8,8 +8,6 @@
 
 **per ai**
 - add testreference to testfilter
-
-- update filter file on load
 - fix all the editor warnings
 
 - backup solution

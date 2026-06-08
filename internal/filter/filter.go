@@ -397,7 +397,27 @@ func GetFilterConfig(filterID string) (*Config, error) {
 	return &config, nil
 }
 
-// GetAllFilters returns all filter IDs from configStorage
+// RegenerateAllIndexes regenerates all filter index files from stored configs.
+// Called after metadata changes so index files stay in sync.
+func RegenerateAllIndexes() {
+	ids, err := GetAllFilters()
+	if err != nil {
+		logging.LogError("failed to list filters for index regeneration: %v", err)
+		return
+	}
+	for _, id := range ids {
+		config, err := GetFilterConfig(id)
+		if err != nil || config == nil {
+			logging.LogWarning("failed to load filter config %s: %v", id, err)
+			continue
+		}
+		if err := GenerateFilterIndex(id, config); err != nil {
+			logging.LogWarning("failed to regenerate filter index %s: %v", id, err)
+		}
+	}
+	logging.LogDebug("filter indexes regenerated (%d filters)", len(ids))
+}
+
 func GetAllFilters() ([]string, error) {
 	keys, err := configStorage.List("filter/")
 	if err != nil {

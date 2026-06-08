@@ -12,6 +12,7 @@ import (
 	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
 	"knov/internal/cronjob"
+	"knov/internal/filter"
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/logging"
@@ -107,8 +108,10 @@ func main() {
 	translation.SetLanguage(configmanager.GetLanguage())
 
 	thememanager.InitThemeManager()
+	// register filter index regeneration to run after every metadata rebuild
+	files.OnMetadataRebuild = filter.RegenerateAllIndexes
+
 	go func() {
-		if err := search.InitSearch(); err != nil {
 			logging.LogError("failed to initialize search: %v", err)
 		}
 	}()
