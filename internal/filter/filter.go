@@ -147,6 +147,9 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 	switch criterion.Metadata {
 	case "title":
 		metadataValue = metadata.Title
+		if metadataValue == "" {
+			metadataValue = metadata.Path
+		}
 	case "collection":
 		metadataValue = metadata.Collection
 	case "tags":

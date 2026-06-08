@@ -9,7 +9,7 @@
 **per ai**
 - add testreference to testfilter
 
-- include path in the title filter
+- update filter file on load
 - fix all the editor warnings
 
 - backup solution
