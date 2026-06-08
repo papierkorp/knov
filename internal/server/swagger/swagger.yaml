@@ -2660,6 +2660,29 @@ paths:
       summary: Get kanban board for a collection
       tags:
       - kanban
+  /api/kanban/{collection}/filter:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Filters the kanban board using the full filter form; collection
+        is always injected as the first criterion
+      parameters:
+      - description: Collection name
+        in: path
+        name: collection
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: kanban board html
+          schema:
+            type: string
+      summary: Apply advanced filter to kanban board
+      tags:
+      - kanban
   /api/kanban/{collection}/tags:
     get:
       parameters:

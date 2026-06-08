@@ -38,6 +38,12 @@
 
         <a href="/kanban" class="btn-secondary">{{T "change collection"}}</a>
         <a href="/latest-changes?collection={{.Collection}}" class="btn-secondary" title="{{T "collection history"}}"><i class="fa fa-clock-rotate-left"></i></a>
+        <button class="btn-secondary" onclick="document.getElementById('kanban-filter-panel').toggleAttribute('hidden')" title="{{T "advanced filter"}}"><i class="fa fa-filter"></i></button>
+    </div>
+
+    {{/* ---- Advanced filter panel ---- */}}
+    <div id="kanban-filter-panel" class="kanban-filter-panel" hidden>
+        {{.FilterPanelHTML}}
     </div>
 
     <div id="view-kanban-board-wrap"

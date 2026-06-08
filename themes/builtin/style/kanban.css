@@ -101,3 +101,14 @@
   align-items: stretch;
   min-height: 0;
 }
+
+#kanban-filter-panel {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+#kanban-filter-panel[hidden] {
+  display: none;
+}

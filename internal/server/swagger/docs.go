@@ -3541,6 +3541,39 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/kanban/{collection}/filter": {
+            "post": {
+                "description": "Filters the kanban board using the full filter form; collection is always injected as the first criterion",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "kanban"
+                ],
+                "summary": "Apply advanced filter to kanban board",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection name",
+                        "name": "collection",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "kanban board html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/kanban/{collection}/tags": {
             "get": {
                 "produces": [

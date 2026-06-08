@@ -24,6 +24,7 @@ const (
 	FilterFormContextApply     FilterFormContext = iota // standalone apply (browse/filter page)
 	FilterFormContextSave                               // save as named filter (new/edit)
 	FilterFormContextDashboard                          // embedded in dashboard widget config
+	FilterFormContextKanban                             // embedded in kanban board toolbar
 )
 
 // FilterFormOpts configures the filter form rendering
@@ -33,6 +34,7 @@ type FilterFormOpts struct {
 	FilterID    string // for Save context: shown as input (new) or hidden (edit)
 	IsEdit      bool   // for Save context: true = editing existing filter
 	WidgetIndex int    // for Dashboard context
+	Collection  string // for Kanban context
 }
 
 // ----------------------------------------------------------------------------------------
@@ -84,11 +86,13 @@ func RenderFilterForm(opts FilterFormOpts) string {
 		widgetIndexVals(opts),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "add filter")))
 	html.WriteString(renderLogicToggle(opts))
-	html.WriteString(`<span class="filter-controls-sep"></span>`)
-	html.WriteString(renderDisplaySelect(opts))
-	html.WriteString(fmt.Sprintf(`<input type="number" name="%s" value="%s" min="1" class="form-input filter-limit-input" title="%s"/>`,
-		filterFieldName(opts, "limit"), resolvedLimitValue(opts.Config),
-		translation.SprintfForRequest(configmanager.GetLanguage(), "limit")))
+	if opts.Context != FilterFormContextKanban {
+		html.WriteString(`<span class="filter-controls-sep"></span>`)
+		html.WriteString(renderDisplaySelect(opts))
+		html.WriteString(fmt.Sprintf(`<input type="number" name="%s" value="%s" min="1" class="form-input filter-limit-input" title="%s"/>`,
+			filterFieldName(opts, "limit"), resolvedLimitValue(opts.Config),
+			translation.SprintfForRequest(configmanager.GetLanguage(), "limit")))
+	}
 	html.WriteString(`</div>`)
 
 	// criteria
@@ -148,6 +152,9 @@ func resolveFilterFormContext(opts FilterFormOpts) (submitLabel, criteriaTarget 
 	case FilterFormContextDashboard:
 		return translation.SprintfForRequest(configmanager.GetLanguage(), "apply filter"),
 			fmt.Sprintf("filter-criteria-container-%d", opts.WidgetIndex)
+	case FilterFormContextKanban:
+		return translation.SprintfForRequest(configmanager.GetLanguage(), "apply filter"),
+			"filter-criteria-container"
 	default: // FilterFormContextApply
 		return translation.SprintfForRequest(configmanager.GetLanguage(), "apply filter"),
 			"filter-criteria-container"
@@ -158,6 +165,8 @@ func resolveFilterFormActionTarget(opts FilterFormOpts) (action, submitTarget st
 	switch opts.Context {
 	case FilterFormContextSave:
 		return "/api/filters/save", "#editor-status"
+	case FilterFormContextKanban:
+		return fmt.Sprintf("/api/kanban/%s/filter", opts.Collection), "#view-kanban-board-wrap"
 	default: // FilterFormContextApply
 		return "/api/filters", "#filter-results"
 	}

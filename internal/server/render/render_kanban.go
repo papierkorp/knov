@@ -143,7 +143,14 @@ func RenderKanbanCollectionSelect(collections []string) string {
 	return html.String()
 }
 
-// sanitizeID makes a file path safe for use as an HTML id attribute
+// RenderKanbanFilterPanel renders the advanced filter form for the kanban toolbar panel
+func RenderKanbanFilterPanel(collection string) string {
+	return RenderFilterForm(FilterFormOpts{
+		Context:    FilterFormContextKanban,
+		Collection: collection,
+	})
+}
+
 func sanitizeID(path string) string {
 	r := strings.NewReplacer("/", "-", ".", "-", " ", "-")
 	return r.Replace(path)

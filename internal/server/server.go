@@ -17,6 +17,7 @@ import (
 	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
+	"knov/internal/server/render"
 	_ "knov/internal/server/swagger" // swaggo api docs
 	"knov/internal/thememanager"
 	"knov/internal/translation"
@@ -348,6 +349,7 @@ func StartServerChi() {
 		r.Route("/kanban", func(r chi.Router) {
 			r.Get("/{collection}", handleAPIGetKanbanBoard)
 			r.Get("/{collection}/tags", handleAPIGetKanbanTags)
+			r.Post("/{collection}/filter", handleAPIPostKanbanFilter)
 			r.Post("/card/move", handleAPIKanbanMoveCard)
 			r.Get("/excerpt", handleAPIGetKanbanExcerpt)
 		})
@@ -1033,7 +1035,8 @@ func handleKanbanSelect(w http.ResponseWriter, r *http.Request) {
 func handleKanbanBoard(w http.ResponseWriter, r *http.Request) {
 	collection := chi.URLParam(r, "collection")
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewKanbanTemplateData(collection, nil)
+	filterPanel := render.RenderKanbanFilterPanel(collection)
+	data := thememanager.NewKanbanTemplateData(collection, nil, filterPanel)
 	if err := tm.Render(w, "kanban", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}

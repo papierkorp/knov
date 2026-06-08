@@ -13,6 +13,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/filter"
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
@@ -39,78 +40,88 @@ func handleAPIGetKanbanBoard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ancestorFilter := r.URL.Query().Get("ancestor")
-	tagFilter := r.URL.Query().Get("tag")
+	cfg := &filter.Config{Logic: "and"}
+	cfg.Criteria = append(cfg.Criteria, filter.Criteria{Metadata: "collection", Operator: "equals", Value: collection, Action: "include"})
+
+	if ancestor := r.URL.Query().Get("ancestor"); ancestor != "" {
+		cfg.Criteria = append(cfg.Criteria, filter.Criteria{Metadata: "ancestor-of", Operator: "equals", Value: ancestor, Action: "include"})
+	}
+	if tag := r.URL.Query().Get("tag"); tag != "" {
+		cfg.Criteria = append(cfg.Criteria, filter.Criteria{Metadata: "tags", Operator: "equals", Value: tag, Action: "include"})
+	}
+
 	searchQuery := strings.ToLower(r.URL.Query().Get("q"))
+	html, jsonCols := buildKanbanBoard(collection, cfg, searchQuery)
+	writeResponse(w, r, jsonCols, html)
+}
 
-	prefix := configmanager.GetKanbanPrefix()
-	columns := configmanager.GetKanbanColumns()
-
-	allFiles, err := files.GetAllFiles()
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
+// @Summary Apply advanced filter to kanban board
+// @Description Filters the kanban board using the full filter form; collection is always injected as the first criterion
+// @Tags kanban
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param collection path string true "Collection name"
+// @Success 200 {string} string "kanban board html"
+// @Router /api/kanban/{collection}/filter [post]
+func handleAPIPostKanbanFilter(w http.ResponseWriter, r *http.Request) {
+	collection := chi.URLParam(r, "collection")
+	if collection == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing collection"), http.StatusBadRequest)
 		return
 	}
 
-	// bucket cards by status, collect unique non-kanban tags
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+
+	cfg := filter.ParseFilterConfigFromForm(r, -1)
+	// always scope to this collection
+	cfg.Criteria = append([]filter.Criteria{{Metadata: "collection", Operator: "equals", Value: collection, Action: "include"}}, cfg.Criteria...)
+	cfg.Logic = "and"
+
+	html, jsonCols := buildKanbanBoard(collection, cfg, "")
+	writeResponse(w, r, jsonCols, html)
+}
+
+// buildKanbanBoard runs the filter, applies optional search, and renders the board HTML.
+func buildKanbanBoard(collection string, cfg *filter.Config, searchQuery string) (string, []kanbanColData) {
+	columns := configmanager.GetKanbanColumns()
+	prefix := configmanager.GetKanbanPrefix()
+
+	result, err := filter.FilterFilesWithConfig(cfg)
+	if err != nil {
+		logging.LogError("kanban filter failed for collection %s: %v", collection, err)
+		result = &filter.Result{}
+	}
+
 	cardsByStatus := make(map[string][]render.KanbanCard)
 	for _, col := range columns {
 		cardsByStatus[col] = []render.KanbanCard{}
 	}
-	tagSet := make(map[string]struct{})
 
-	for _, file := range allFiles {
+	for _, file := range result.Files {
 		if file.Metadata == nil {
 			continue
 		}
 		meta := file.Metadata
 
-		// must be in the right collection
-		if meta.Collection != collection {
-			continue
-		}
-
-		// must have exactly one kanban tag matching a configured status
 		status := kanbanStatusFromTags(meta.Tags, prefix)
 		if status == "" {
 			continue
 		}
 
-		// ancestor (epic) filter
-		if ancestorFilter != "" {
-			found := false
-			for _, a := range meta.Ancestor {
-				if pathutils.ToRelative(a) == ancestorFilter {
-					found = true
-					break
-				}
-			}
-			if !found {
-				continue
-			}
-		}
-
-		// tag filter
-		if tagFilter != "" {
-			found := false
-			for _, t := range meta.Tags {
-				if t == tagFilter {
-					found = true
-					break
-				}
-			}
-			if !found {
-				continue
-			}
-		}
-
-		// search filter
+		// optional search post-filter (title + path)
 		if searchQuery != "" {
 			title := strings.ToLower(meta.Title)
-			path := strings.ToLower(file.Path)
-			if !strings.Contains(title, searchQuery) && !strings.Contains(path, searchQuery) {
+			fp := strings.ToLower(file.Path)
+			if !strings.Contains(title, searchQuery) && !strings.Contains(fp, searchQuery) {
 				continue
 			}
+		}
+
+		if !slices.Contains(columns, status) {
+			continue
 		}
 
 		card := render.KanbanCard{
@@ -123,41 +134,32 @@ func handleAPIGetKanbanBoard(w http.ResponseWriter, r *http.Request) {
 			LastEdited: meta.LastEdited.Format("2006-01-02"),
 		}
 		cardsByStatus[status] = append(cardsByStatus[status], card)
-
-		// collect non-kanban tags for the filter select
-		for _, t := range meta.Tags {
-			if !configmanager.IsKanbanTag(t) {
-				tagSet[t] = struct{}{}
-			}
-		}
 	}
 
-	// sort cards by createdAt within each column
 	for col := range cardsByStatus {
 		sort.Slice(cardsByStatus[col], func(i, j int) bool {
 			return cardsByStatus[col][i].CreatedAt < cardsByStatus[col][j].CreatedAt
 		})
 	}
 
-	// render columns HTML
 	var html strings.Builder
 	fmt.Fprintf(&html, `<div class="kanban-board" id="kanban-board">`)
 	for _, col := range columns {
-		label := col
-		html.WriteString(render.RenderKanbanColumn(col, label, cardsByStatus[col]))
+		html.WriteString(render.RenderKanbanColumn(col, col, cardsByStatus[col]))
 	}
 	html.WriteString(`</div>`)
 
-	type colData struct {
-		Status string
-		Cards  []render.KanbanCard
-	}
-	jsonCols := make([]colData, 0, len(columns))
+	jsonCols := make([]kanbanColData, 0, len(columns))
 	for _, col := range columns {
-		jsonCols = append(jsonCols, colData{Status: col, Cards: cardsByStatus[col]})
+		jsonCols = append(jsonCols, kanbanColData{Status: col, Cards: cardsByStatus[col]})
 	}
 
-	writeResponse(w, r, jsonCols, html.String())
+	return html.String(), jsonCols
+}
+
+type kanbanColData struct {
+	Status string
+	Cards  []render.KanbanCard
 }
 
 // @Summary Move a kanban card to a new status column

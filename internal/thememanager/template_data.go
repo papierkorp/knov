@@ -496,20 +496,22 @@ type KanbanColumn struct {
 // KanbanTemplateData extends base with kanban board data
 type KanbanTemplateData struct {
 	BaseTemplateData
-	Collection string
-	Columns    []KanbanColumn
-	Statuses   []string // all possible statuses (for move target)
-	Prefix     string   // kanban tag prefix
+	Collection      string
+	Columns         []KanbanColumn
+	Statuses        []string // all possible statuses (for move target)
+	Prefix          string   // kanban tag prefix
+	FilterPanelHTML string   // pre-rendered advanced filter panel HTML
 }
 
 // NewKanbanTemplateData creates kanban board template data
-func NewKanbanTemplateData(collection string, columns []KanbanColumn) KanbanTemplateData {
+func NewKanbanTemplateData(collection string, columns []KanbanColumn, filterPanelHTML string) KanbanTemplateData {
 	return KanbanTemplateData{
 		BaseTemplateData: NewBaseTemplateData("kanban: " + collection),
 		Collection:       collection,
 		Columns:          columns,
 		Statuses:         configmanager.GetKanbanStatuses(),
 		Prefix:           configmanager.GetKanbanPrefix(),
+		FilterPanelHTML:  filterPanelHTML,
 	}
 }
 

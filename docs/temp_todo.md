@@ -7,8 +7,6 @@
 - filter with references
 
 **per ai**
-- add filter to kanban board
-
 - save new filter doesnt work anymore (htmx:targetError)
 - todoeditor - remove filepath (we now use the inline edit in the sidebar)
 - listeditor - remove filepath (we now use the inline edit in the sidebar)
