@@ -199,20 +199,14 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 
 	var filepathInputHTML string
 	if isEdit {
-		filepathInputHTML = fmt.Sprintf(`<input type="text" name="filepath" value="%s" readonly required class="form-input" />`, filepath)
-	} else {
-		datalistInput := GenerateDatalistInput("filepath-input", "filepath", "", translation.SprintfForRequest(lang, "path/to/file.md"), "/api/files/folder-suggestions")
-		filepathInputHTML = strings.Replace(datalistInput, `class="form-input"`, `class="form-input" required`, 1)
+		filepathInputHTML = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filepath)
 	}
 
 	return fmt.Sprintf(`
 <div class="component-todo-editor">
 
 	<form hx-post="%s" hx-target="#todo-editor-status" hx-swap="innerHTML" id="todo-editor-form">
-		<div class="form-group">
-			<label>%s:</label>
-			%s
-		</div>
+		%s
 
 		<div class="controls">
 			<button type="button" onclick="todoEditor.addItem()">+ %s</button>
@@ -377,7 +371,6 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 </div>
 	`,
 		action,
-		translation.SprintfForRequest(lang, "file path"),
 		filepathInputHTML,
 		translation.SprintfForRequest(lang, "add item"),
 		translation.SprintfForRequest(lang, "add nested item"),

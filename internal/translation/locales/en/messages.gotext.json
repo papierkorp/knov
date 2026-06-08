@@ -77,6 +77,11 @@
       "translation": "Admin"
     },
     {
+      "id": "advanced filter",
+      "message": "advanced filter",
+      "translation": ""
+    },
+    {
       "id": "all",
       "message": "all",
       "translation": ""
@@ -169,6 +174,16 @@
     {
       "id": "auth test passed",
       "message": "auth test passed",
+      "translation": ""
+    },
+    {
+      "id": "Auto-create Collections",
+      "message": "Auto-create Collections",
+      "translation": ""
+    },
+    {
+      "id": "Auto-create Tags",
+      "message": "Auto-create Tags",
       "translation": ""
     },
     {
@@ -1909,6 +1924,11 @@
     {
       "id": "Kanban Statuses",
       "message": "Kanban Statuses",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Tag Colors",
+      "message": "Kanban Tag Colors",
       "translation": ""
     },
     {

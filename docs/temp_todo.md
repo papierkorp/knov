@@ -7,9 +7,6 @@
 - filter with references
 
 **per ai**
-- save new filter doesnt work anymore (htmx:targetError)
-- todoeditor - remove filepath (we now use the inline edit in the sidebar)
-- listeditor - remove filepath (we now use the inline edit in the sidebar)
 - rail theme - slideout resize no longer works
 - rail theme - run filter tests - style for output (e.g. hr/border, display the status-icon in front of the test tile )
 - add testreference to testfiles

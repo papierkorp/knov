@@ -34,6 +34,7 @@ func RenderFilterEditor(filePath string) (string, error) {
 		FilterID: filterID,
 		IsEdit:   filePath != "",
 	}))
+	html.WriteString(`<div id="editor-status"></div>`)
 	html.WriteString(`</div>`)
 	html.WriteString(`<div class="filter-results-container">`)
 	html.WriteString(`<h4>` + translation.SprintfForRequest(configmanager.GetLanguage(), "filter preview") + `</h4>`)

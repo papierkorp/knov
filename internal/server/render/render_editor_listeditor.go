@@ -4,7 +4,6 @@ package render
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
@@ -57,20 +56,14 @@ func RenderListEditor(filepath string, initialItem ...string) string {
 
 	var filepathInputHTML string
 	if isEdit {
-		filepathInputHTML = fmt.Sprintf(`<input type="text" name="filepath" value="%s" readonly required class="form-input" />`, filepath)
-	} else {
-		datalistInput := GenerateDatalistInput("filepath-input", "filepath", "", translation.SprintfForRequest(lang, "path/to/file.md"), "/api/files/folder-suggestions")
-		filepathInputHTML = strings.Replace(datalistInput, `class="form-input"`, `class="form-input" required`, 1)
+		filepathInputHTML = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filepath)
 	}
 
 	return fmt.Sprintf(`
 <div class="component-list-editor">
 
 	<form hx-post="%s" hx-target="#list-editor-status" hx-swap="innerHTML" id="list-editor-form">
-		<div class="form-group">
-			<label>%s:</label>
-			%s
-		</div>
+		%s
 
 		<div class="controls">
 			<button type="button" onclick="listEditor.addItem()">+ %s</button>
@@ -192,7 +185,6 @@ func RenderListEditor(filepath string, initialItem ...string) string {
 </div>
 	`,
 		action,
-		translation.SprintfForRequest(lang, "file path"),
 		filepathInputHTML,
 		translation.SprintfForRequest(lang, "add item"),
 		translation.SprintfForRequest(lang, "add nested item"),
