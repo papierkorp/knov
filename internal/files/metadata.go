@@ -141,10 +141,10 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	if folderPath != "." && folderPath != "" {
 		parts := strings.Split(folderPath, "/")
 		currentMetadata.Folders = parts
-		currentMetadata.Collection = parts[0] // Always use first folder
+		currentMetadata.Collection = CollectionFromPath(filePath)
 	} else {
 		currentMetadata.Folders = []string{}
-		currentMetadata.Collection = "" // Or some default value like "root"
+		currentMetadata.Collection = ""
 	}
 
 	// handle optional fields from newMetadata - only update if provided

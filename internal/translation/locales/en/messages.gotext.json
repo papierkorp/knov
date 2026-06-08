@@ -567,11 +567,6 @@
       "translation": ""
     },
     {
-      "id": "Data Export",
-      "message": "Data Export",
-      "translation": ""
-    },
-    {
       "id": "data path",
       "message": "data path",
       "translation": ""
@@ -872,13 +867,13 @@
       "translation": ""
     },
     {
-      "id": "Export All Files",
-      "message": "Export All Files",
+      "id": "export all files",
+      "message": "export all files",
       "translation": ""
     },
     {
-      "id": "Export All Files (DokuWiki to Markdown)",
-      "message": "Export All Files (DokuWiki to Markdown)",
+      "id": "export all files (DokuWiki to Markdown)",
+      "message": "export all files (DokuWiki to Markdown)",
       "translation": ""
     },
     {
@@ -887,23 +882,28 @@
       "translation": ""
     },
     {
-      "id": "Export format",
-      "message": "Export format",
+      "id": "Export / Import",
+      "message": "Export / Import",
       "translation": ""
     },
     {
-      "id": "Export Metadata",
-      "message": "Export Metadata",
+      "id": "export metadata",
+      "message": "export metadata",
+      "translation": ""
+    },
+    {
+      "id": "export settings",
+      "message": "export settings",
+      "translation": ""
+    },
+    {
+      "id": "export settings or data for backup and migration, or import a previously exported settings file",
+      "message": "export settings or data for backup and migration, or import a previously exported settings file",
       "translation": ""
     },
     {
       "id": "Export to Markdown",
       "message": "Export to Markdown",
-      "translation": ""
-    },
-    {
-      "id": "export your data and files in various formats for backup or migration",
-      "message": "export your data and files in various formats for backup or migration",
       "translation": ""
     },
     {
@@ -944,6 +944,11 @@
     {
       "id": "failed to export files",
       "message": "failed to export files",
+      "translation": ""
+    },
+    {
+      "id": "failed to export settings",
+      "message": "failed to export settings",
       "translation": ""
     },
     {
@@ -1527,11 +1532,6 @@
       "translation": ""
     },
     {
-      "id": "git url saved. restart required.",
-      "message": "git url saved. restart required.",
-      "translation": ""
-    },
-    {
       "id": "grandchildren",
       "message": "grandchildren",
       "translation": ""
@@ -1732,11 +1732,6 @@
       "translation": ""
     },
     {
-      "id": "https://github.com/user/repo.git",
-      "message": "https://github.com/user/repo.git",
-      "translation": ""
-    },
-    {
       "id": "https://github.com/user/repo.git or git@github.com:user/repo.git",
       "message": "https://github.com/user/repo.git or git@github.com:user/repo.git",
       "translation": ""
@@ -1764,6 +1759,11 @@
     {
       "id": "import dashboard",
       "message": "import dashboard",
+      "translation": ""
+    },
+    {
+      "id": "import settings",
+      "message": "import settings",
       "translation": ""
     },
     {
@@ -1874,6 +1874,11 @@
     {
       "id": "invalid preview size",
       "message": "invalid preview size",
+      "translation": ""
+    },
+    {
+      "id": "invalid settings file",
+      "message": "invalid settings file",
       "translation": ""
     },
     {
@@ -2087,11 +2092,6 @@
       "translation": ""
     },
     {
-      "id": "Loading recent changes...",
-      "message": "Loading recent changes...",
-      "translation": ""
-    },
-    {
       "id": "Loading results...",
       "message": "Loading results...",
       "translation": ""
@@ -2242,6 +2242,11 @@
       "translation": ""
     },
     {
+      "id": "Metadata",
+      "message": "Metadata",
+      "translation": ""
+    },
+    {
       "id": "metadata links rebuilt",
       "message": "metadata links rebuilt",
       "translation": ""
@@ -2359,6 +2364,11 @@
     {
       "id": "missing mime types",
       "message": "missing mime types",
+      "translation": ""
+    },
+    {
+      "id": "missing parameters",
+      "message": "missing parameters",
       "translation": ""
     },
     {
@@ -2862,6 +2872,11 @@
       "translation": ""
     },
     {
+      "id": "refresh",
+      "message": "refresh",
+      "translation": ""
+    },
+    {
       "id": "regex",
       "message": "regex",
       "translation": ""
@@ -3175,6 +3190,11 @@
       "id": "Settings",
       "message": "Settings",
       "translation": "Settings"
+    },
+    {
+      "id": "settings imported successfully",
+      "message": "settings imported successfully",
+      "translation": ""
     },
     {
       "id": "Setup Test Data",

@@ -14,6 +14,18 @@ import (
 	"knov/internal/pathutils"
 )
 
+// CollectionFromPath derives the collection name from a file path —
+// the first path segment of the relative path, matching metaDataUpdate logic.
+// Returns "" for root-level files.
+func CollectionFromPath(path string) string {
+	relPath := pathutils.ToRelative(path)
+	folderPath := filepath.ToSlash(filepath.Dir(relPath))
+	if folderPath == "." || folderPath == "" {
+		return ""
+	}
+	return strings.SplitN(folderPath, "/", 2)[0]
+}
+
 // File represents a file in the system
 type File struct {
 	Name     string    `json:"name"`

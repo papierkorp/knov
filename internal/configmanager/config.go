@@ -69,6 +69,8 @@ type AppConfig struct {
 	KanbanPrefix            string
 	KanbanStatuses          []string
 	KanbanColumns           []string
+	AutoCreateTags          []string // tags applied to every newly created file (empty = disabled)
+	AutoCreateCollections   []string // if set, auto-tags only apply to files in these collections (empty = all)
 	NotifyDuration          int
 }
 
@@ -136,6 +138,8 @@ func InitAppConfig() {
 		KanbanPrefix:            getEnv("KNOV_KANBAN_PREFIX", "kb"),
 		KanbanStatuses:          getStringListEnv("KNOV_KANBAN_STATUS", []string{"inbox", "inprogress", "blocked", "archive"}),
 		KanbanColumns:           getStringListEnv("KNOV_KANBAN_COLUMNS", []string{"inbox", "inprogress", "blocked"}),
+		AutoCreateTags:          getStringListEnv("KNOV_AUTOCREATE_TAGS", []string{}),
+		AutoCreateCollections:   getStringListEnv("KNOV_AUTOCREATE_COLLECTIONS", []string{}),
 		NotifyDuration:          getIntEnv("KNOV_NOTIFY_DURATION", 3500),
 	}
 
@@ -208,6 +212,16 @@ func GetKanbanStatuses() []string {
 // GetKanbanColumns returns the visible kanban columns
 func GetKanbanColumns() []string {
 	return appConfig.KanbanColumns
+}
+
+// GetAutoCreateTags returns tags automatically added to every newly created file
+func GetAutoCreateTags() []string {
+	return appConfig.AutoCreateTags
+}
+
+// GetAutoCreateCollections returns the collections that scope auto-tag behaviour (empty = all)
+func GetAutoCreateCollections() []string {
+	return appConfig.AutoCreateCollections
 }
 
 // KanbanStatusTag returns the full tag for a given status

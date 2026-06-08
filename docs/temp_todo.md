@@ -7,11 +7,14 @@
 - filter with references
 
 **per ai**
-- api_kanban handleAPIGetKanbanBoard: GetAllFiles
-- new kanban settings - autocreate file with given status tag (for a certain collection only?)
-- new kanban setting - different colors for certain tags (e.g. tag markus = color green) (key value pair: <tagname>:<validcsscolorname>)
+- new kanban setting - different colors for certain tags (chip displayed in the board) (e.g. tag markus = color green) (key value pair: <tagname>:<validcsscolorname>)
 - add filter to kanban board
 
+- save new filter doesnt work anymore (htmx:targetError)
+- todoeditor - remove filepath (we now use the inline edit in the sidebar)
+- listeditor - remove filepath (we now use the inline edit in the sidebar)
+- rail theme - slideout resize no longer works
+- rail theme - run filter tests - style for output (e.g. hr/border, display the status-icon in front of the test tile )
 - add testreference to testfiles
 - add testreference to testfilter
 - add testfilter to testfiles

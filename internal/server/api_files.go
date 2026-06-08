@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -301,6 +302,20 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 		metadata := &files.Metadata{
 			Path:   pathutils.ToWithPrefix(filePath),
 			Editor: editor,
+		}
+
+		// apply auto-create tags if configured
+		if autoTags := configmanager.GetAutoCreateTags(); len(autoTags) > 0 {
+			autoCollections := configmanager.GetAutoCreateCollections()
+			if len(autoCollections) == 0 {
+				metadata.Tags = append(metadata.Tags, autoTags...)
+				logging.LogInfo("applied auto-create tags %v to new file: %s", autoTags, filePath)
+			} else {
+				if slices.Contains(autoCollections, files.CollectionFromPath(filePath)) {
+					metadata.Tags = append(metadata.Tags, autoTags...)
+					logging.LogInfo("applied auto-create tags %v to new file: %s", autoTags, filePath)
+				}
+			}
 		}
 
 		if err := files.MetaDataSave(metadata); err != nil {
