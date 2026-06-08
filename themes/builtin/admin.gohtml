@@ -37,71 +37,48 @@
                 </div>
 
                 <div class="admin-card">
-                    <h3>{{T "System Actions"}}</h3>
-                    <div class="help-text">{{T "system maintenance operations for keeping your application running smoothly"}}</div>
-                    <form>
-                        <button type="button" hx-post="/api/metadata/rebuild" hx-swap="none" hx-confirm="{{T "Rebuild all metadata? This may take a while."}}">
-                            {{T "Rebuild Metadata"}}
-                        </button>
-                        <button type="button" hx-post="/api/cronjob" hx-swap="none">
-                            {{T "Run Cronjob"}}
-                        </button>
-                        <button type="button" hx-delete="/api/system/cache" hx-swap="none" hx-confirm="{{T "Invalidate the cache? It will be rebuilt automatically."}}">
-                            {{T "Invalidate Cache"}}
-                        </button>
-                        <button type="button" hx-post="/api/system/restart" hx-swap="none" hx-confirm="{{T "Restart the system? This will disconnect all users."}}">
-                            {{T "Restart System"}}
-                        </button>
-                    </form>
-                </div>
-
-                {{if .AppConfig.GitRemote}}
-                <div class="admin-card">
-                    <h3>{{T "Git Remote Sync"}}</h3>
-                    <div class="help-text">{{T "remote"}}: <code>{{.AppConfig.GitRemote}}</code> / <code>{{.AppConfig.GitRemoteBranch}}</code></div>
-                    <form>
-                        <button type="button" hx-post="/api/git/pull" hx-swap="none">
-                            <i class="fa fa-arrow-down"></i> {{T "Pull"}}
-                        </button>
-                        <button type="button" hx-post="/api/git/push" hx-swap="none">
-                            <i class="fa fa-arrow-up"></i> {{T "Push"}}
-                        </button>
-                    </form>
-                </div>
-                {{end}}
-
-                <div class="admin-card">
-                    <h3>{{T "Storage Statistics"}}</h3>
-                    <div class="help-text">{{T "media file storage usage and cleanup"}}</div>
-                    <div hx-get="/api/media/stats" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
-                        {{T "loading..."}}
+                    <h3>{{T "Export / Import"}}</h3>
+                    <div class="help-text">{{T "export settings or data for backup and migration, or import a previously exported settings file"}}</div>
+                    <div style="display:flex;flex-direction:column;gap:1rem;margin-top:1rem;">
+                        <div>
+                            <strong>{{T "Settings"}}</strong>
+                            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;">
+                                <a href="/api/config/export" download="knov-settings.json">
+                                    <button type="button"><i class="fa fa-download"></i> {{T "export settings"}}</button>
+                                </a>
+                                <form id="import-settings-form" hx-post="/api/config/import" hx-encoding="multipart/form-data" hx-swap="none">
+                                    <button type="button" class="btn-secondary" onclick="document.getElementById('import-settings-file').click()">
+                                        <i class="fa fa-upload"></i> {{T "import settings"}}
+                                    </button>
+                                    <input type="file" id="import-settings-file" name="file" accept=".json" required
+                                           style="display:none;" onchange="document.getElementById('import-settings-form').requestSubmit()"/>
+                                </form>
+                            </div>
+                        </div>
+                        <div>
+                            <strong>{{T "Metadata"}}</strong>
+                            <form action="/api/metadata/export" method="post" style="display:flex;gap:0.5rem;align-items:center;margin-top:0.5rem;">
+                                <select name="format" id="export-format" style="padding:0.4rem 0.6rem;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--text);">
+                                    <option value="json">JSON</option>
+                                    <option value="csv">CSV</option>
+                                </select>
+                                <button type="submit" class="btn-secondary">
+                                    <i class="fa fa-download"></i> {{T "export metadata"}}
+                                </button>
+                            </form>
+                        </div>
+                        <div>
+                            <strong>{{T "Files"}}</strong>
+                            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;">
+                                <form action="/api/files/export/zip" method="post">
+                                    <button type="submit" class="btn-secondary"><i class="fa fa-download"></i> {{T "export all files"}}</button>
+                                </form>
+                                <form action="/api/files/export/markdown-converted" method="post">
+                                    <button type="submit" class="btn-secondary"><i class="fa fa-download"></i> {{T "export all files (DokuWiki to Markdown)"}}</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                    <form style="margin-top: 1rem;">
-                        <button type="button" class="btn-danger" hx-post="/api/media/cleanup-orphaned" hx-swap="none" hx-confirm="{{T "Delete all orphaned media files? This cannot be undone."}}">
-                            <i class="fas fa-trash"></i> {{T "Cleanup Orphaned Files"}}
-                        </button>
-                    </form>
-                </div>
-
-                <div class="admin-card">
-                    <h3>{{T "Data Export"}}</h3>
-                    <div class="help-text">{{T "export your data and files in various formats for backup or migration"}}</div>
-                    <form action="/api/metadata/export" method="post">
-                        <label for="export-format">
-                            {{T "Export format"}}
-                            <select name="format" id="export-format">
-                                <option value="json">JSON</option>
-                                <option value="csv">CSV</option>
-                            </select>
-                        </label>
-                        <button type="submit">{{T "Export Metadata"}}</button>
-                    </form>
-                    <form action="/api/files/export/zip" method="post" style="margin-top: 1rem;">
-                        <button type="submit">{{T "Export All Files"}}</button>
-                    </form>
-                    <form action="/api/files/export/markdown-converted" method="post" style="margin-top: 1rem;">
-                        <button type="submit">{{T "Export All Files (DokuWiki to Markdown)"}}</button>
-                    </form>
                 </div>
 
                 <div class="admin-card">

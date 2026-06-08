@@ -14,10 +14,8 @@
 **per ai**
 - api_kanban handleAPIGetKanbanBoard: GetAllFiles
 - new kanban settings - autocreate file with given status tag (for a certain collection only?)
-- new kanban setting - different colors for set tags (e.g. tag markus = color green) (key value pair: <tagname>:<validcsscolorname>)
+- new kanban setting - different colors for certain tags (e.g. tag markus = color green) (key value pair: <tagname>:<validcsscolorname>)
 - add filter to kanban board
-
-- export/import settings
 
 - backup solution
 - backup git search

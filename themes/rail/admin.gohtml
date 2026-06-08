@@ -105,31 +105,52 @@
         </section>
 
         <section class="settings-section">
-            <h2>{{T "Data Export"}}</h2>
+            <h2>{{T "Export / Import"}}</h2>
             <div class="setting-item">
-                <div class="help-text">{{T "export your data and files in various formats for backup or migration"}}</div>
-                <form action="/api/metadata/export" method="post">
-                    <label for="export-format">
-                        {{T "Export format"}}
-                        <select name="format" id="export-format" class="form-select">
-                            <option value="json">JSON</option>
-                            <option value="csv">CSV</option>
-                        </select>
-                    </label>
-                    <button type="submit" class="btn-secondary" style="margin-top:8px;">{{T "Export Metadata"}}</button>
-                </form>
-                <div class="admin-action-list" style="margin-top:10px;">
-                    <button class="btn-secondary" onclick="document.getElementById('export-files-form').submit()">
-                        {{T "Export All Files"}}
-                    </button>
-                    <button class="btn-secondary" onclick="document.getElementById('export-md-form').submit()">
-                        {{T "Export All Files (DokuWiki to Markdown)"}}
-                    </button>
+                <div class="help-text">{{T "export settings or data for backup and migration, or import a previously exported settings file"}}</div>
+                <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
+                    <div>
+                        <strong>{{T "Settings"}}</strong>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+                            <a href="/api/config/export" download="knov-settings.json" class="btn-secondary">
+                                <i class="fa fa-download"></i> {{T "export settings"}}
+                            </a>
+                            <form hx-post="/api/config/import" hx-encoding="multipart/form-data" hx-swap="none" style="display:flex;">
+                                <label for="import-settings-file" class="btn-secondary" style="cursor:pointer;margin:0;">
+                                    <i class="fa fa-upload"></i> {{T "import settings"}}
+                                </label>
+                                <input type="file" id="import-settings-file" name="file" accept=".json" required
+                                       style="display:none;" onchange="this.closest('form').requestSubmit()"/>
+                            </form>
+                        </div>
+                    </div>
+                    <div>
+                        <strong>{{T "Metadata"}}</strong>
+                        <form action="/api/metadata/export" method="post" style="display:flex;gap:6px;align-items:center;margin-top:6px;">
+                            <select name="format" id="export-format" class="form-select" style="width:auto;">
+                                <option value="json">JSON</option>
+                                <option value="csv">CSV</option>
+                            </select>
+                            <button type="submit" class="btn-secondary">
+                                <i class="fa fa-download"></i> {{T "export metadata"}}
+                            </button>
+                        </form>
+                    </div>
+                    <div>
+                        <strong>{{T "Files"}}</strong>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+                            <form action="/api/files/export/zip" method="post">
+                                <button type="submit" class="btn-secondary"><i class="fa fa-download"></i> {{T "export all files"}}</button>
+                            </form>
+                            <form action="/api/files/export/markdown-converted" method="post">
+                                <button type="submit" class="btn-secondary"><i class="fa fa-download"></i> {{T "export all files (DokuWiki to Markdown)"}}</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                <form id="export-files-form" action="/api/files/export/zip" method="post" style="display:none;"></form>
-                <form id="export-md-form" action="/api/files/export/markdown-converted" method="post" style="display:none;"></form>
             </div>
         </section>
+
 
         <section class="settings-section settings-section-wide">
             <h2>{{T "Test Data"}}</h2>
@@ -155,6 +176,7 @@
             </div>
             <div id="testdata-result"></div>
         </section>
+
 
     </div>
 </div>

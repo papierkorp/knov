@@ -666,6 +666,15 @@ paths:
       summary: Update data path
       tags:
       - config
+  /api/config/export:
+    get:
+      description: Downloads the current user settings as a JSON file
+      produces:
+      - application/json
+      responses: {}
+      summary: Export user settings as JSON
+      tags:
+      - config
   /api/config/extensions/index:
     post:
       consumes:
@@ -1016,6 +1025,23 @@ paths:
       - text/html
       responses: {}
       summary: Update home dashboard setting
+      tags:
+      - config
+  /api/config/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads and applies user settings from a JSON file
+      parameters:
+      - description: Settings JSON file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - text/html
+      responses: {}
+      summary: Import user settings from JSON
       tags:
       - config
   /api/config/language:

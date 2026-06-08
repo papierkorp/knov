@@ -182,8 +182,10 @@ func StartServerChi() {
 			r.Get("/datapath", handleAPIGetCurrentDataPath)
 			r.Get("/languages", handleAPIGetLanguages)
 			r.Get("/repository", handleAPIGetGitRepositoryURL)
+			r.Get("/export", handleAPIExportSettings)
 
 			// POST
+			r.Post("/import", handleAPIImportSettings)
 			r.Post("/language", handleAPISetLanguage)
 			r.Post("/repository", handleAPISetGitRepositoryURL)
 			r.Post("/datapath", handleAPISetDataPath)

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -1096,4 +1097,60 @@ func handleAPIUpdateLogLevel(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("updated log level to: %s", level)
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "log level updated"))
 	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Export user settings as JSON
+// @Description Downloads the current user settings as a JSON file
+// @Tags config
+// @Produce application/json
+// @Router /api/config/export [get]
+func handleAPIExportSettings(w http.ResponseWriter, r *http.Request) {
+	settings := configmanager.GetUserSettings()
+	data, err := json.Marshal(settings)
+	if err != nil {
+		logging.LogError("failed to marshal settings for export: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export settings"), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"knov-settings.json\"")
+	w.Write(data)
+}
+
+// @Summary Import user settings from JSON
+// @Description Uploads and applies user settings from a JSON file
+// @Tags config
+// @Accept multipart/form-data
+// @Param file formData file true "Settings JSON file"
+// @Produce html
+// @Router /api/config/import [post]
+func handleAPIImportSettings(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(1 << 20); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file"), http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusBadRequest)
+		return
+	}
+
+	var settings configmanager.UserSettings
+	if err := json.Unmarshal(data, &settings); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid settings file"), http.StatusBadRequest)
+		return
+	}
+
+	configmanager.SetUserSettings(settings)
+	logging.LogInfo("settings imported successfully")
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "settings imported successfully"))
+	w.Header().Set("HX-Refresh", "true")
+	writeResponse(w, r, map[string]string{"status": "imported"}, "")
 }
