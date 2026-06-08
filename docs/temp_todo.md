@@ -8,6 +8,7 @@
 **per ai**
 - fix all the editor warnings
 
+
 - backup solution
 - backup git search
 - git lfs possible?

@@ -345,7 +345,7 @@ KNOV_KANBAN_STATUS=inbox,inprogress,blocked,archive  # all valid statuses
 KNOV_KANBAN_COLUMNS=inbox,inprogress,blocked         # visible columns (subset)
 ```
 
-# Notifications — Developer Guide
+# Notifications
 
 All toast notifications go through a single track:
 
@@ -369,17 +369,42 @@ notify.SetFlash(notify.LevelError, translation.SprintfForRequest(lang, "failed t
 http.Error(w, "...", http.StatusInternalServerError)
 ```
 
+# Creating a Custom Theme
 
-# Theme Creation Guide
+## Structure
 
-**Quick Start**
+A theme lives in `themes/<your-theme-name>/` and requires:
 
-1. Create a new folder in `themes/` with the required files
-2. Run the application: `make dev`
-3. Navigate to `http://localhost:1324/settings`
-4. Select your theme from the dropdown
-5. Test all pages
+- `theme.json` — metadata and settings schema
+- `style.css` — main stylesheet, loaded via `/themes/<name>/style.css`
+- One `.gohtml` file per template (see `ThemeTemplates` in `internal/thememanager/thememanager.go` for all required names)
 
+## theme.json
+
+Defined by `ThemeMetadata` in `internal/thememanager/thememanager.go`. Required fields: `name`, `version`, `author`, `description`. Optional: `themeSettings` — a map of setting keys to `ThemeSetting` objects (type, default, label). Settings are exposed in the UI automatically and available in templates via `.ThemeSettings`.
+
+Setting types supported: `boolean`, `select` (with `options`), `textarea`, `number` (with optional `min`/`max`).
+
+## Templates
+
+- Every template must define a `content` block consumed by `base.gohtml`
+- `base.gohtml` is the layout shell — it must include the theme stylesheet, HTMX, and any other global scripts your theme needs
+- Static editor assets (markdown editor, list editor, filter editor CSS/JS, etc.) are **injected automatically** before `</head>` and `</body>` — do not add them manually
+- Template data structs are defined in `internal/server/thememanager/template_data.go` — reference these to know what fields are available per page
+- Translation is available via the `T` template function
+
+## CSS Conventions
+
+- Use CSS custom properties (`--primary`, `--bg`, `--text`, `--border`, etc.) for colors so the theme responds to dark mode and color scheme settings
+- Global styles go in `style.css`; page/component-specific styles should use ID selectors (`#page-*`, `#component-*`, `#view-*`) to avoid conflicts with injected editor styles
+- Dark mode is driven by `data-dark-mode="true"` on `<body>`; color scheme by `data-color-scheme`
+
+## Loading
+
+- Themes are loaded from `themes/` at startup by `internal/thememanager/thememanager.go` => `loadAllThemes()`
+- The folder name becomes the theme identifier used in settings
+- `themes/overwrite/` is reserved and skipped during theme discovery
+- Switch themes via **Settings => Theme** — no restart required
 
 # Filter
 
