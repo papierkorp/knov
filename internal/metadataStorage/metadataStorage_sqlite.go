@@ -62,9 +62,10 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 // initialize runs all pending migrations for this storage.
 // Bump version and append a step whenever the schema changes.
 func (ss *sqliteStorage) initialize() error {
-	const version = 1
+	const version = 2
 	steps := []dbmigration.Migration{
 		{Up: migrationV1Up, Down: migrationV1Down},
+		{Up: migrationV2Up, Down: migrationV2Down},
 	}
 	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
 		return fmt.Errorf("metadata storage migration failed: %w", err)
@@ -91,9 +92,7 @@ func migrationV1Up(tx *sql.Tx) error {
 		related TEXT,
 		editor TEXT,
 		size INTEGER,
-		"references" TEXT,
-		conflict_file TEXT,
-		conflict_of TEXT
+		"references" TEXT
 	);
 	CREATE INDEX IF NOT EXISTS idx_collection ON metadata(collection);
 	CREATE INDEX IF NOT EXISTS idx_editor ON metadata(editor);
@@ -103,6 +102,22 @@ func migrationV1Up(tx *sql.Tx) error {
 
 func migrationV1Down(tx *sql.Tx) error {
 	_, err := tx.Exec(`DROP TABLE IF EXISTS metadata`)
+	return err
+}
+
+func migrationV2Up(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+        ALTER TABLE metadata ADD COLUMN conflict_file TEXT;
+        ALTER TABLE metadata ADD COLUMN conflict_of TEXT;
+    `)
+	return err
+}
+
+func migrationV2Down(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+        ALTER TABLE metadata DROP COLUMN conflict_file;
+        ALTER TABLE metadata DROP COLUMN conflict_of;
+    `)
 	return err
 }
 
