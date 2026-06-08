@@ -1,7 +1,8 @@
-// Package testdata - copied (embedded) test files and their metadata
+// Package testdata - copied (embedded) docs files and their metadata
 package testdata
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -11,18 +12,34 @@ import (
 	"knov/internal/logging"
 )
 
-// copyTestFiles copies the embedded testfiles into docs/test/
+// copyTestFiles copies the embedded docs/testfiles/ tree into the runtime docs/test/
+// and the docs root markdown files into docs/test/docs/
 func copyTestFiles() error {
 	logging.LogInfo("copying test files")
 
-	docsPath := contentStorage.GetDocsPath()
-	if err := os.MkdirAll(filepath.Join(docsPath, "test"), 0755); err != nil {
+	if err := copyEmbeddedDir("docs/testfiles", filepath.Join(contentStorage.GetDocsPath(), "test")); err != nil {
+		return fmt.Errorf("failed to copy testfiles: %w", err)
+	}
+
+	if err := copyEmbeddedDir("docs", filepath.Join(contentStorage.GetDocsPath(), "test", "docs")); err != nil {
+		return fmt.Errorf("failed to copy docs: %w", err)
+	}
+
+	return nil
+}
+
+// copyEmbeddedDir copies files from an embedded FS directory into a runtime destination.
+// Only copies files directly in srcDir (non-recursive for docs root to avoid copying testfiles again).
+func copyEmbeddedDir(srcDir, destBase string) error {
+	if _, err := docsFS.Open(srcDir); err != nil {
+		return fmt.Errorf("%s not found in embedded FS: %w", srcDir, err)
+	}
+
+	if err := os.MkdirAll(destBase, 0755); err != nil {
 		return err
 	}
 
-	srcDir := "internal/testdata/testfiles"
-
-	return fs.WalkDir(testFilesFS, srcDir, func(path string, d fs.DirEntry, err error) error {
+	return fs.WalkDir(docsFS, srcDir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -36,7 +53,12 @@ func copyTestFiles() error {
 			return err
 		}
 
-		destPath := filepath.Join(docsPath, "test", relPath)
+		// for docs root: skip subdirectories entirely (testfiles, old, temp folders)
+		if srcDir == "docs" && d.IsDir() {
+			return fs.SkipDir
+		}
+
+		destPath := filepath.Join(destBase, relPath)
 
 		if d.IsDir() {
 			return os.MkdirAll(destPath, 0755)
@@ -46,7 +68,7 @@ func copyTestFiles() error {
 			return err
 		}
 
-		data, err := testFilesFS.ReadFile(path)
+		data, err := docsFS.ReadFile(path)
 		if err != nil {
 			return err
 		}
@@ -64,10 +86,13 @@ func getCopiedFilesMetadata() []*files.Metadata {
 			Editor: files.EditorTypeMarkdown,
 		},
 		{
-			Path:       "docs/test/sample Markdown.md",
-			Tags:       []string{"test-markdown", "test-files", "kb-status-inbox"},
-			Editor:     files.EditorTypeMarkdown,
-			References: []files.Reference{{URL: "https://example.com", Description: "example reference for testing"}, {URL: "https://www.google.com", Description: "another reference"}},
+			Path:   "docs/test/sample Markdown.md",
+			Tags:   []string{"test-markdown", "test-files", "kb-status-inbox"},
+			Editor: files.EditorTypeMarkdown,
+			References: []files.Reference{
+				{URL: "https://example.com", Description: "example reference for testing"},
+				{URL: "https://www.google.com", Description: "another reference"},
+			},
 		},
 		{
 			Path:   "docs/test/example_text.md",
@@ -83,11 +108,6 @@ func getCopiedFilesMetadata() []*files.Metadata {
 			Path:   "docs/test/example_todo.md",
 			Tags:   []string{"test-todo", "test-files", "kb-status-inbox"},
 			Editor: files.EditorTypeTodo,
-		},
-		{
-			Path:   "docs/test/example_filter.md",
-			Tags:   []string{"test-filter", "test-files", "kb-status-inbox"},
-			Editor: files.EditorTypeFilter,
 		},
 		{
 			Path:   "docs/test/example_index.md",

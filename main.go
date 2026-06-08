@@ -19,6 +19,7 @@ import (
 	"knov/internal/metadataStorage"
 	"knov/internal/notificationStorage"
 	"knov/internal/parser"
+	"knov/internal/search"
 	"knov/internal/searchStorage"
 	"knov/internal/server"
 
@@ -36,8 +37,8 @@ var builtinThemeFS embed.FS
 //go:embed themes/rail
 var railThemeFS embed.FS
 
-//go:embed internal/testdata/testfiles
-var testFilesFS embed.FS
+//go:embed docs
+var docsFS embed.FS
 
 // @title Knov API
 // @version 1.0
@@ -48,7 +49,7 @@ func main() {
 	server.SetStaticFiles(staticFS)
 	thememanager.SetBuiltinFiles(builtinThemeFS)
 	thememanager.SetRailFiles(railThemeFS)
-	testdata.SetTestFiles(testFilesFS)
+	testdata.SetDocsFiles(docsFS)
 
 	configmanager.InitAppConfig()
 	logging.Init()
@@ -110,6 +111,11 @@ func main() {
 	// register filter index regeneration to run after every metadata rebuild
 	files.OnMetadataRebuild = filter.RegenerateAllIndexes
 
+	go func() {
+		if err := search.InitSearch(); err != nil {
+			logging.LogError("failed to initialize search: %v", err)
+		}
+	}()
 	go func() {
 		time.Sleep(2 * time.Minute)
 		if err := files.MetaDataLinksRebuild(); err != nil {

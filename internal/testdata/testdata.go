@@ -3,6 +3,7 @@ package testdata
 
 import (
 	"embed"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -17,52 +18,50 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-var testFilesFS embed.FS
+var docsFS embed.FS
 
-// SetTestFiles sets the embedded test files filesystem
-func SetTestFiles(filesFS embed.FS) {
-	testFilesFS = filesFS
+// SetDocsFiles sets the embedded docs filesystem
+func SetDocsFiles(fs embed.FS) {
+	docsFS = fs
 }
 
 // SetupTestData creates test files, git operations and metadata
 func SetupTestData() error {
 	testDir := filepath.Join(contentStorage.GetDocsPath(), "test")
 	if err := os.RemoveAll(testDir); err != nil {
-		logging.LogError("failed to remove test directory: %v", err)
-		return err
+		return fmt.Errorf("failed to remove test directory: %w", err)
 	}
 
 	if err := copyTestFiles(); err != nil {
-		return err
+		return fmt.Errorf("failed to copy test files: %w", err)
 	}
 
 	if err := createGitOperations("initial test documentation"); err != nil {
-		return err
+		return fmt.Errorf("failed to create git operations: %w", err)
 	}
 
 	if err := setupTestMetadata(); err != nil {
-		return err
+		return fmt.Errorf("failed to setup test metadata: %w", err)
 	}
 
 	if err := simulateFileChange(); err != nil {
-		return err
+		return fmt.Errorf("failed to simulate file changes: %w", err)
 	}
 
 	logging.LogInfo("test data setup completed")
 	return nil
 }
 
-// CleanTestData removes only the test data folder
+// CleanTestData removes the test data folder and associated config entries
 func CleanTestData() error {
 	testDir := filepath.Join(contentStorage.GetDocsPath(), "test")
 	if err := os.RemoveAll(testDir); err != nil {
-		logging.LogError("failed to remove test directory: %v", err)
-		return err
+		return fmt.Errorf("failed to remove test directory: %w", err)
 	}
 
-	setupTestFilter(true)
+	deleteTestFilter()
 
-	logging.LogInfo("test data cleaned - removed test directory: %s", testDir)
+	logging.LogInfo("test data cleaned")
 	return nil
 }
 
@@ -76,53 +75,43 @@ func setupTestMetadata() error {
 	}
 
 	if err := createAutoMetadata(); err != nil {
-		return err
+		return fmt.Errorf("failed to create auto metadata: %w", err)
 	}
 
-	setupTestFilter(false)
+	createTestFilter()
 
 	return files.MetaDataLinksRebuild()
 }
 
-func setupTestFilter(delete bool) {
-	if delete {
-		if err := filter.DeleteFilterConfig("test/example_filter"); err != nil {
-			logging.LogError("failed to delete test filter: %v", err)
-		}
-	} else {
-		cfg := &filter.Config{
-			Criteria: []filter.Criteria{
-				{
-					Metadata: "tags",
-					Operator: "contains",
-					Value:    "test-files",
-					Action:   "include",
-				},
-				{
-					Metadata: "title",
-					Operator: "contains",
-					Value:    "x",
-					Action:   "include",
-				}},
-			Logic: "and",
-			Limit: 50,
-		}
-		if err := filter.SaveFilterConfig(cfg, "test/example_filter"); err != nil {
-			logging.LogError("failed to create test filter: %v", err)
-		}
+func createTestFilter() {
+	cfg := &filter.Config{
+		Criteria: []filter.Criteria{{
+			Metadata: "tags",
+			Operator: "contains",
+			Value:    "test-files",
+			Action:   "include",
+		}},
+		Logic: "and",
+		Limit: 50,
 	}
+	if err := filter.SaveFilterConfig(cfg, "test/example_filter"); err != nil {
+		logging.LogError("failed to create test filter: %v", err)
+	}
+}
 
+func deleteTestFilter() {
+	if err := filter.DeleteFilterConfig("test/example_filter"); err != nil {
+		logging.LogError("failed to delete test filter: %v", err)
+	}
 }
 
 func createGitOperations(commitMessage string) error {
-	logging.LogInfo("creating git operations")
-
 	if err := commitGitChanges(commitMessage); err != nil {
 		return err
 	}
 
 	if err := createTestStructure(); err != nil {
-		return err
+		return fmt.Errorf("failed to create test structure: %w", err)
 	}
 
 	if err := commitGitChanges("add test structure"); err != nil {
@@ -134,22 +123,22 @@ func createGitOperations(commitMessage string) error {
 
 func commitGitChanges(commitMessage string) error {
 	if err := configmanager.InitGitRepository(); err != nil {
-		return err
+		return fmt.Errorf("failed to init git repository: %w", err)
 	}
 
 	dataDir := configmanager.GetAppConfig().DataPath
 	repo, err := git.PlainOpen(dataDir)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open git repository: %w", err)
 	}
 
 	worktree, err := repo.Worktree()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get worktree: %w", err)
 	}
 
 	if _, err = worktree.Add("."); err != nil {
-		logging.LogError("failed to add files: %v", err)
+		logging.LogError("failed to stage files for commit %q: %v", commitMessage, err)
 	}
 
 	if _, err = worktree.Commit(commitMessage, &git.CommitOptions{
@@ -160,7 +149,7 @@ func commitGitChanges(commitMessage string) error {
 		},
 		AllowEmptyCommits: true,
 	}); err != nil {
-		logging.LogError("failed to commit: %v", err)
+		logging.LogError("failed to commit %q: %v", commitMessage, err)
 	}
 
 	return nil
