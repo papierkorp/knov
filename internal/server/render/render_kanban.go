@@ -50,9 +50,14 @@ func RenderKanbanCard(card KanbanCard) string {
 	html.WriteString(`<div class="kanban-card-header">`)
 	fmt.Fprintf(&html, `<a class="kanban-card-title" href="/files/%s">%s</a>`, card.FilePath, displayTitle)
 	if len(visibleTags) > 0 {
+		tagColors := configmanager.GetKanbanTagColors()
 		html.WriteString(`<div class="kanban-card-tags">`)
 		for _, t := range visibleTags {
-			fmt.Fprintf(&html, `<span class="kanban-tag" data-tag="%s" onclick="kanbanSetTagFilter(this.dataset.tag)" title="%s">%s</span>`, t, t, t)
+			style := ""
+			if color, ok := tagColors[t]; ok {
+				style = fmt.Sprintf(` style="background-color:%s;border-color:%s;"`, color, color)
+			}
+			fmt.Fprintf(&html, `<span class="kanban-tag"%s data-tag="%s" onclick="kanbanSetTagFilter(this.dataset.tag)" title="%s">%s</span>`, style, t, t, t)
 		}
 		html.WriteString(`</div>`)
 	}

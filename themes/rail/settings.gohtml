@@ -147,6 +147,7 @@
             <div class="help-text">{{T "Kanban Columns"}}: <code>{{join .AppConfig.KanbanColumns ", "}}</code></div>
             <div class="help-text">{{T "Auto-create Tags"}}: <code>{{if .AppConfig.AutoCreateTags}}{{join .AppConfig.AutoCreateTags ", "}}{{else}}disabled{{end}}</code></div>
             <div class="help-text">{{T "Auto-create Collections"}}: <code>{{if .AppConfig.AutoCreateCollections}}{{join .AppConfig.AutoCreateCollections ", "}}{{else}}all{{end}}</code></div>
+            <div class="help-text">{{T "Kanban Tag Colors"}}: <code>{{if .AppConfig.KanbanTagColors}}{{range $k,$v := .AppConfig.KanbanTagColors}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
         </div>
     </div>
 

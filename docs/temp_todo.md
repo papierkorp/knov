@@ -7,7 +7,6 @@
 - filter with references
 
 **per ai**
-- new kanban setting - different colors for certain tags (chip displayed in the board) (e.g. tag markus = color green) (key value pair: <tagname>:<validcsscolorname>)
 - add filter to kanban board
 
 - save new filter doesnt work anymore (htmx:targetError)

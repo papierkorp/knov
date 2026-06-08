@@ -69,8 +69,9 @@ type AppConfig struct {
 	KanbanPrefix            string
 	KanbanStatuses          []string
 	KanbanColumns           []string
-	AutoCreateTags          []string // tags applied to every newly created file (empty = disabled)
-	AutoCreateCollections   []string // if set, auto-tags only apply to files in these collections (empty = all)
+	AutoCreateTags          []string
+	AutoCreateCollections   []string
+	KanbanTagColors         map[string]string
 	NotifyDuration          int
 }
 
@@ -140,6 +141,7 @@ func InitAppConfig() {
 		KanbanColumns:           getStringListEnv("KNOV_KANBAN_COLUMNS", []string{"inbox", "inprogress", "blocked"}),
 		AutoCreateTags:          getStringListEnv("KNOV_AUTOCREATE_TAGS", []string{}),
 		AutoCreateCollections:   getStringListEnv("KNOV_AUTOCREATE_COLLECTIONS", []string{}),
+		KanbanTagColors:         getStringMapEnv("KNOV_KANBAN_TAG_COLORS"),
 		NotifyDuration:          getIntEnv("KNOV_NOTIFY_DURATION", 3500),
 	}
 
@@ -160,6 +162,29 @@ func GetAppConfig() AppConfig {
 // GetNotifyDuration returns the notification toast display duration in milliseconds
 func GetNotifyDuration() int {
 	return appConfig.NotifyDuration
+}
+
+// GetKanbanTagColors returns the tag-name → CSS-color map
+func GetKanbanTagColors() map[string]string {
+	return appConfig.KanbanTagColors
+}
+
+// getStringMapEnv parses "key1:val1,key2:val2" into a map
+func getStringMapEnv(key string) map[string]string {
+	result := make(map[string]string)
+	if value := os.Getenv(key); value != "" {
+		for _, pair := range strings.Split(value, ",") {
+			parts := strings.SplitN(strings.TrimSpace(pair), ":", 2)
+			if len(parts) == 2 {
+				k := strings.TrimSpace(parts[0])
+				v := strings.TrimSpace(parts[1])
+				if k != "" && v != "" {
+					result[k] = v
+				}
+			}
+		}
+	}
+	return result
 }
 
 func getEnv(key, defaultValue string) string {
