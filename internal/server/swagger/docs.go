@@ -6273,6 +6273,12 @@ const docTemplate = `{
         "testdata.FilterTestResults": {
             "type": "object",
             "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "failed_tests": {
                     "type": "integer"
                 },

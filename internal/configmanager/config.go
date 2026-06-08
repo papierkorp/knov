@@ -129,7 +129,7 @@ func InitAppConfig() {
 		HideExecutables:         getBoolEnv("KNOV_HIDE_EXECUTABLES", false),
 		HideScripts:             getBoolEnv("KNOV_HIDE_SCRIPTS", false),
 		ShowHiddenFiles:         getBoolEnv("KNOV_SHOW_HIDDEN_FILES", false),
-		HomeDashboard:           getEnv("KNOV_HOME_DASHBOARD", ""),
+		HomeDashboard:           getEnv("KNOV_HOME_DASHBOARD", "home"),
 		UseExtensionTodo:        getBoolEnv("KNOV_USE_EXTENSION_TODO", false),
 		UseExtensionList:        getBoolEnv("KNOV_USE_EXTENSION_LIST", false),
 		UseExtensionIndex:       getBoolEnv("KNOV_USE_EXTENSION_INDEX", false),

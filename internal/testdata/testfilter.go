@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"knov/internal/files"
@@ -32,6 +33,7 @@ type FilterTestResults struct {
 	FailedTests int                `json:"failed_tests"`
 	Success     bool               `json:"success"`
 	Results     []FilterTestResult `json:"results"`
+	Errors      []string           `json:"errors,omitempty"`
 	LogFile     string             `json:"log_file,omitempty"`
 }
 
@@ -88,6 +90,7 @@ func RunFilterTests() (*FilterTestResults, error) {
 
 	results := &FilterTestResults{
 		Results: make([]FilterTestResult, 0),
+		Errors:  make([]string, 0),
 	}
 
 	// define test scenarios with unique metadata values
@@ -119,7 +122,7 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Limit: 0,
 			},
 			expectedCount: 2,
-			expectedFiles: []string{"filtertestA.md", "filtertestB.md"},
+			expectedFiles: []string{"filterTestA.md", "filterTestB.md"},
 			description:   "",
 		},
 		{
@@ -143,7 +146,7 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Limit: 0,
 			},
 			expectedCount: 3,
-			expectedFiles: []string{"filtertestA.md", "filtertestC.md", "filtertestD.md"},
+			expectedFiles: []string{"filterTestA.md", "filterTestC.md", "filterTestD.md"},
 			description:   "",
 		},
 		{
@@ -173,7 +176,7 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Limit: 0,
 			},
 			expectedCount: 2,
-			expectedFiles: []string{"filtertestA.md", "filtertestD.md"},
+			expectedFiles: []string{"filterTestA.md", "filterTestD.md"},
 			description:   "",
 		},
 		{
@@ -197,7 +200,7 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Limit: 0,
 			},
 			expectedCount: 5,
-			expectedFiles: []string{"filtertestA.md", "filtertestB.md", "filtertestD.md", "filtertestE.md", "filtertestF.md"},
+			expectedFiles: []string{"filterTestA.md", "filterTestB.md", "filterTestD.md", "filterTestE.md", "filterTestF.md"},
 			description:   "",
 		},
 		{
@@ -221,7 +224,7 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Limit: 0,
 			},
 			expectedCount: 4,
-			expectedFiles: []string{"filtertestC.md", "filtertestD.md", "filtertestE.md", "filtertestF.md"},
+			expectedFiles: []string{"filterTestC.md", "filterTestD.md", "filterTestE.md", "filterTestF.md"},
 			description:   "",
 		},
 		{
@@ -245,7 +248,7 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Limit: 0,
 			},
 			expectedCount: 3,
-			expectedFiles: []string{"filtertestA.md", "filtertestB.md", "filtertestC.md"},
+			expectedFiles: []string{"filterTestA.md", "filterTestB.md", "filterTestC.md"},
 			description:   "",
 		},
 		{
@@ -260,16 +263,16 @@ func RunFilterTests() (*FilterTestResults, error) {
 					},
 					{
 						Metadata: "createdAt",
-						Operator: "greater_than",
-						Value:    "10.02.2025",
+						Operator: "greater",
+						Value:    "2025-10-02",
 						Action:   "include",
 					},
 				},
 				Logic: "and",
 				Limit: 0,
 			},
-			expectedCount: 5,
-			expectedFiles: []string{"filtertestC.md", "filtertestD.md", "filtertestE.md", "filtertestF.md"},
+			expectedCount: 4,
+			expectedFiles: []string{"filterTestC.md", "filterTestD.md", "filterTestE.md", "filterTestF.md"},
 			description:   "",
 		},
 		{
@@ -283,9 +286,9 @@ func RunFilterTests() (*FilterTestResults, error) {
 						Action:   "include",
 					},
 					{
-						Metadata: "lastEdited",
-						Operator: "less_than",
-						Value:    "5.11.2025",
+						Metadata: "createdAt",
+						Operator: "less",
+						Value:    "2025-10-05",
 						Action:   "include",
 					},
 				},
@@ -293,7 +296,7 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Limit: 0,
 			},
 			expectedCount: 4,
-			expectedFiles: []string{"filtertestA.md", "filtertestB.md", "filtertestC.md", "filtertestD.md"},
+			expectedFiles: []string{"filterTestA.md", "filterTestB.md", "filterTestC.md", "filterTestD.md"},
 			description:   "",
 		},
 		{
@@ -308,7 +311,7 @@ func RunFilterTests() (*FilterTestResults, error) {
 					},
 					{
 						Metadata: "tags",
-						Operator: "in_array",
+						Operator: "in",
 						Value:    "filtertest-group,filtertest-group2",
 						Action:   "include",
 					},
@@ -317,83 +320,239 @@ func RunFilterTests() (*FilterTestResults, error) {
 				Limit: 0,
 			},
 			expectedCount: 3,
-			expectedFiles: []string{"filtertestB.md", "filtertestC.md", "filtertestD.md"},
+			expectedFiles: []string{"filterTestB.md", "filterTestC.md", "filterTestD.md"},
+			description:   "",
+		},
+		{
+			name: "test10childof",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "equals",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
+						Metadata: "child-of",
+						Operator: "equals",
+						Value:    "filter-tests/filterTestD.md",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 1,
+			expectedFiles: []string{"filterTestE.md"},
+			description:   "",
+		},
+		{
+			name: "test11parentof",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "equals",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
+						Metadata: "parent-of",
+						Operator: "equals",
+						Value:    "filter-tests/filterTestE.md",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 1,
+			expectedFiles: []string{"filterTestD.md"},
+			description:   "",
+		},
+		{
+			name: "test12ancestorof",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "equals",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
+						Metadata: "ancestor-of",
+						Operator: "equals",
+						Value:    "filter-tests/filterTestD.md",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 2,
+			expectedFiles: []string{"filterTestE.md", "filterTestF.md"},
+			description:   "",
+		},
+		{
+			name: "test13multiple_filters_1",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "equals",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
+						Metadata: "tags",
+						Operator: "in",
+						Value:    "filtertest-group",
+						Action:   "include",
+					},
+					{
+						Metadata: "createdAt",
+						Operator: "equals",
+						Value:    "2025-10-02",
+						Action:   "include",
+					},
+					{
+						Metadata: "editor",
+						Operator: "equals",
+						Value:    "markdown-editor",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 1,
+			expectedFiles: []string{"filterTestB.md"},
+			description:   "",
+		},
+		{
+			name: "test14multiple_filters_2",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "equals",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
+						Metadata: "title",
+						Operator: "contains",
+						Value:    "D",
+						Action:   "exclude",
+					},
+					{
+						Metadata: "tags",
+						Operator: "contains",
+						Value:    "group",
+						Action:   "exclude",
+					},
+					{
+						Metadata: "folders",
+						Operator: "equals",
+						Value:    "filtertestfolder",
+						Action:   "exclude",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 2,
+			expectedFiles: []string{"filterTestE.md", "filterTestF.md"},
+			description:   "",
+		},
+		{
+			name: "test15multiple_filters_3",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "equals",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
+						Metadata: "child-of",
+						Operator: "equals",
+						Value:    "filter-tests/filterTestD.md",
+						Action:   "include",
+					},
+					{
+						Metadata: "parent-of",
+						Operator: "equals",
+						Value:    "filter-tests/filterTestF.md",
+						Action:   "include",
+					},
+					{
+						Metadata: "ancestor-of",
+						Operator: "equals",
+						Value:    "filter-tests/filterTestD.md",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 1,
+			expectedFiles: []string{"filterTestE.md"},
+			description:   "",
+		},
+		{
+			name: "test16datecontains",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "equals",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
+						Metadata: "createdAt",
+						Operator: "contains",
+						Value:    "2025-10-03",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 1,
+			expectedFiles: []string{"filterTestC.md"},
+			description:   "",
+		},
+		{
+			name: "test17dateregex",
+			config: filter.Config{
+				Criteria: []filter.Criteria{
+					{
+						Metadata: "collection",
+						Operator: "equals",
+						Value:    "filter-tests",
+						Action:   "include",
+					},
+					{
+						Metadata: "createdAt",
+						Operator: "regex",
+						Value:    "2025-10-0[1-3]",
+						Action:   "include",
+					},
+				},
+				Logic: "and",
+				Limit: 0,
+			},
+			expectedCount: 3,
+			expectedFiles: []string{"filterTestA.md", "filterTestB.md", "filterTestC.md"},
 			description:   "",
 		},
 		// {
-		// 	name: "test10childof",
-		// 	config: filter.Config{
-		// 		Criteria: []filter.Criteria{
-		// 			{
-		// 				Metadata: "collection",
-		// 				Operator: "equals",
-		// 				Value:    "filter-tests",
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "child_of",
-		// 				Operator: "equals",
-		// 				Value:    "filtertestD.md",
-		// 				Action:   "include",
-		// 			},
-		// 		},
-		// 		Logic: "and",
-		// 		Limit: 0,
-		// 	},
-		// 	expectedCount: 1,
-		// 	expectedFiles: []string{"filtertestE.md"},
-		// 	description:   "",
-		// },
-		// {
-		// 	name: "test11parentof",
-		// 	config: filter.Config{
-		// 		Criteria: []filter.Criteria{
-		// 			{
-		// 				Metadata: "collection",
-		// 				Operator: "equals",
-		// 				Value:    "filter-tests",
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "parent_of",
-		// 				Operator: "equals",
-		// 				Value:    "filtertestE.md",
-		// 				Action:   "include",
-		// 			},
-		// 		},
-		// 		Logic: "and",
-		// 		Limit: 0,
-		// 	},
-		// 	expectedCount: 1,
-		// 	expectedFiles: []string{"filtertestD.md"},
-		// 	description:   "",
-		// },
-		// {
-		// 	name: "test12ancestorof",
-		// 	config: filter.Config{
-		// 		Criteria: []filter.Criteria{
-		// 			{
-		// 				Metadata: "collection",
-		// 				Operator: "equals",
-		// 				Value:    "filter-tests",
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "ancestor_of",
-		// 				Operator: "equals",
-		// 				Value:    "filtertestF.md",
-		// 				Action:   "include",
-		// 			},
-		// 		},
-		// 		Logic: "and",
-		// 		Limit: 0,
-		// 	},
-		// 	expectedCount: 1,
-		// 	expectedFiles: []string{"filtertestD.md"},
-		// 	description:   "",
-		// },
-		// {
-		// 	name: "test13references",
+		// 	name: "test18references",
 		// 	config: filter.Config{
 		// 		Criteria: []filter.Criteria{
 		// 			{
@@ -416,151 +575,15 @@ func RunFilterTests() (*FilterTestResults, error) {
 		// 	expectedFiles: []string{"filtertestF.md"},
 		// 	description:   "",
 		// },
-		// {
-		// 	name: "test14multiple_filters_1",
-		// 	config: filter.Config{
-		// 		Criteria: []filter.Criteria{
-		// 			{
-		// 				Metadata: "collection",
-		// 				Operator: "equals",
-		// 				Value:    "filter-tests",
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "tags",
-		// 				Operator: "in_array",
-		// 				Value:    "filtertest-unique", // Single value as string
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "createdAt",
-		// 				Operator: "greater_than",
-		// 				Value:    "1.10.2025",
-		// 				Action:   "include",
-		// 			},
-		// 		},
-		// 		Logic: "and",
-		// 		Limit: 0,
-		// 	},
-		// 	expectedCount: 1,
-		// 	expectedFiles: []string{"filtertestA.md"},
-		// 	description:   "",
-		// },
-		// {
-		// 	name: "test15multiple_filters_2",
-		// 	config: filter.Config{
-		// 		Criteria: []filter.Criteria{
-		// 			{
-		// 				Metadata: "collection",
-		// 				Operator: "equals",
-		// 				Value:    "filter-tests",
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "title",
-		// 				Operator: "contains",
-		// 				Value:    "D",
-		// 				Action:   "exclude",
-		// 			},
-		// 			{
-		// 				Metadata: "tags",
-		// 				Operator: "contains",
-		// 				Value:    "group2",
-		// 				Action:   "exclude",
-		// 			},
-		// 			{
-		// 				Metadata: "folders",
-		// 				Operator: "equals",
-		// 				Value:    "filtertestfolder",
-		// 				Action:   "exclude",
-		// 			},
-		// 		},
-		// 		Logic: "and",
-		// 		Limit: 0,
-		// 	},
-		// 	expectedCount: 2,
-		// 	expectedFiles: []string{"filtertestE.md", "filtertestF.md"},
-		// 	description:   "",
-		// },
-		// {
-		// 	name: "test16multiple_filters_3",
-		// 	config: filter.Config{
-		// 		Criteria: []filter.Criteria{
-		// 			{
-		// 				Metadata: "collection",
-		// 				Operator: "equals",
-		// 				Value:    "filter-tests",
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "child_of",
-		// 				Operator: "equals",
-		// 				Value:    "filtertestD.md",
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "parent_of",
-		// 				Operator: "equals",
-		// 				Value:    "filtertestE.md",
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "ancestor_of",
-		// 				Operator: "equals",
-		// 				Value:    "filtertestF.md",
-		// 				Action:   "include",
-		// 			},
-		// 		},
-		// 		Logic: "and",
-		// 		Limit: 0,
-		// 	},
-		// 	expectedCount: 1,
-		// 	expectedFiles: []string{"filtertestE.md"},
-		// 	description:   "",
-		// },
-		// {
-		// 	name: "test17or_second",
-		// 	config: filter.Config{
-		// 		Criteria: []filter.Criteria{
-		// 			{
-		// 				Metadata: "collection",
-		// 				Operator: "equals",
-		// 				Value:    "filter-tests",
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "title",
-		// 				Operator: "equals",
-		// 				Value:    "filtertestA.md",
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "title",
-		// 				Operator: "equals",
-		// 				Value:    "filtertestC.md",
-		// 				Action:   "include",
-		// 			},
-		// 			{
-		// 				Metadata: "title",
-		// 				Operator: "equals",
-		// 				Value:    "filtertestE.md",
-		// 				Action:   "include",
-		// 			},
-		// 		},
-		// 		Logic: "or",
-		// 		Limit: 0,
-		// },
-		// 	expectedCount: 3,
-		// 	expectedFiles: []string{"filtertestA.md", "filtertestC.md", "filtertestE.md"},
-		// 	description:   "",
-		// },
 	}
 
 	// run each test
 	for _, test := range testConfigs {
 		result, err := filter.FilterFilesWithConfig(&test.config)
 		if err != nil {
-			debugLogger.Printf("test %s failed: %v", test.name, err)
+			errMsg := fmt.Sprintf("test %s failed: %v", test.name, err)
+			debugLogger.Printf("%s", errMsg)
+			results.Errors = append(results.Errors, errMsg)
 			testResult := FilterTestResult{
 				ConfigName:    test.name,
 				Success:       false,
@@ -578,13 +601,26 @@ func RunFilterTests() (*FilterTestResults, error) {
 		}
 
 		actualCount := len(result.Files)
-		success := actualCount == test.expectedCount
 
-		// extract actual file paths
+		// extract actual file basenames for comparison
 		actualFiles := make([]string, len(result.Files))
+		actualBasenames := make([]string, len(result.Files))
 		for i, file := range result.Files {
 			actualFiles[i] = file.Path
+			actualBasenames[i] = filepath.Base(file.Path)
 		}
+
+		// compare by basename: check every expected file is present
+		filesMismatch := false
+		var missingFiles []string
+		for _, expected := range test.expectedFiles {
+			if !slices.Contains(actualBasenames, expected) {
+				filesMismatch = true
+				missingFiles = append(missingFiles, expected)
+			}
+		}
+
+		success := actualCount == test.expectedCount && !filesMismatch
 
 		testResult := FilterTestResult{
 			ConfigName:    test.name,
@@ -592,17 +628,23 @@ func RunFilterTests() (*FilterTestResults, error) {
 			ExpectedCount: test.expectedCount,
 			ActualCount:   actualCount,
 			Config:        test.config,
-			ActualFiles:   actualFiles,
+			ActualFiles:   actualBasenames,
 			ExpectedFiles: test.expectedFiles,
 			Description:   test.description,
 		}
 
 		if !success {
-			testResult.Error = fmt.Sprintf("expected %d files, got %d", test.expectedCount, actualCount)
+			if actualCount != test.expectedCount {
+				testResult.Error = fmt.Sprintf("expected %d files, got %d", test.expectedCount, actualCount)
+			} else {
+				testResult.Error = fmt.Sprintf("file mismatch — missing: %v", missingFiles)
+			}
 			results.FailedTests++
-			debugLogger.Printf("test %s failed: expected %d files, got %d", test.name, test.expectedCount, actualCount)
+			errMsg := fmt.Sprintf("test %s failed: %s", test.name, testResult.Error)
+			debugLogger.Printf("%s", errMsg)
 			debugLogger.Printf("expected: %v", test.expectedFiles)
-			debugLogger.Printf("found: %v", actualFiles)
+			debugLogger.Printf("found: %v", actualBasenames)
+			results.Errors = append(results.Errors, errMsg)
 		} else {
 			results.PassedTests++
 		}
@@ -627,7 +669,9 @@ func RunFilterTests() (*FilterTestResults, error) {
 	results.LogFile = logFile
 
 	if results.FailedTests > 0 {
-		debugLogger.Printf("filter tests completed with failures: %d passed, %d failed", results.PassedTests, results.FailedTests)
+		errMsg := fmt.Sprintf("filter tests completed with failures: %d passed, %d failed", results.PassedTests, results.FailedTests)
+		debugLogger.Printf("%s", errMsg)
+		results.Errors = append(results.Errors, errMsg)
 	}
 	return results, nil
 }

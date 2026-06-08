@@ -1,3 +1,9 @@
+# Setup
+
+## Home
+
+There is a env `KNOV_HOME_DASHBOARD` which defaults to `home` and allows you to create a dashboard which is displayed in the home root (`/`)
+
 # Metadata Browsing
 
 KNOV provides browsing capabilities for the following metadata fields on the overview page (`/browse/files`):

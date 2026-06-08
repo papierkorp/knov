@@ -304,6 +304,10 @@ definitions:
     type: object
   testdata.FilterTestResults:
     properties:
+      errors:
+        items:
+          type: string
+        type: array
       failed_tests:
         type: integer
       log_file:
