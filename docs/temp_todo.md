@@ -20,7 +20,7 @@
   - normal style
   - deleted style
 - move environment info in settings into its own panel
-- 
+- rail theme: open file in new window button to the left of the close button
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme
