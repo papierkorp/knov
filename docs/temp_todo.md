@@ -13,7 +13,6 @@
 - translations
 
 **per ai**
-- run git on save/delete instead of only using the cronjob for inapp changes
 - fix all the editor warnings
 - backup solution
 

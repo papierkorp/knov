@@ -275,10 +275,6 @@ func CommitDeletedFiles(deletedFiles []string) error {
 // This is called after every editor save to minimise the conflict window.
 // Non-blocking push happens in the background after the commit.
 func CommitFile(fullPath string) {
-	if !remoteEnabled() {
-		return
-	}
-
 	dataDir := configmanager.GetAppConfig().DataPath
 	relPath, err := filepath.Rel(dataDir, fullPath)
 	if err != nil {
@@ -286,7 +282,9 @@ func CommitFile(fullPath string) {
 		return
 	}
 
-	SyncBeforeCommit([]string{fullPath})
+	if remoteEnabled() {
+		SyncBeforeCommit([]string{fullPath})
+	}
 
 	repo, err := openRepo()
 	if err != nil {
@@ -322,6 +320,57 @@ func CommitFile(fullPath string) {
 	}
 
 	logging.LogInfo("git: committed %s", relPath)
+	Push()
+}
+
+// CommitDeletedFile stages and commits a single deleted file immediately.
+// Called after in-app file deletion so the deletion is recorded without waiting for the cronjob.
+func CommitDeletedFile(fullPath string) {
+	dataDir := configmanager.GetAppConfig().DataPath
+	relPath, err := filepath.Rel(dataDir, fullPath)
+	if err != nil {
+		logging.LogError("git: failed to get relative path for %s: %v", fullPath, err)
+		return
+	}
+
+	if remoteEnabled() {
+		SyncBeforeCommit([]string{fullPath})
+	}
+
+	repo, err := openRepo()
+	if err != nil {
+		logging.LogError("git: failed to open repo for delete commit of %s: %v", relPath, err)
+		return
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		logging.LogError("git: failed to get worktree for delete commit of %s: %v", relPath, err)
+		return
+	}
+
+	if _, err := worktree.Add(relPath); err != nil {
+		logging.LogError("git: failed to stage deleted file %s: %v", relPath, err)
+		return
+	}
+
+	_, err = worktree.Commit(fmt.Sprintf("delete: %s", relPath), &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  "knov",
+			Email: "knov@localhost",
+			When:  time.Now(),
+		},
+	})
+	if err != nil {
+		if err.Error() == "nothing to commit, working tree clean" || err.Error() == "cannot create empty commit: clean working tree" {
+			logging.LogDebug("git: nothing to commit for deleted file %s", relPath)
+			return
+		}
+		logging.LogError("git: failed to commit deleted file %s: %v", relPath, err)
+		return
+	}
+
+	logging.LogInfo("git: committed deletion of %s", relPath)
 	Push()
 }
 

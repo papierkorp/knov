@@ -2527,6 +2527,11 @@
       "translation": ""
     },
     {
+      "id": "no deleted files found",
+      "message": "no deleted files found",
+      "translation": ""
+    },
+    {
       "id": "no file selected",
       "message": "no file selected",
       "translation": ""
@@ -3090,6 +3095,11 @@
       "id": "Search files...",
       "message": "Search files...",
       "translation": "Search files..."
+    },
+    {
+      "id": "search history",
+      "message": "search history",
+      "translation": ""
     },
     {
       "id": "Search Index Interval",

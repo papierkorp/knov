@@ -815,9 +815,9 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 	// delete metadata
 	if err := files.MetaDataDelete(filePath); err != nil {
 		logging.LogWarning("failed to delete metadata for %s: %v", filePath, err)
-		// don't fail the operation for this, just log a warning
 	}
 
+	go git.CommitDeletedFile(fullPath)
 	logging.LogInfo("successfully deleted file: %s", filePath)
 
 	// redirect to browse or home page
