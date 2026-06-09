@@ -7,7 +7,7 @@
             <h1>{{T "History"}}: <a href="/files/{{.FilePath}}" class="file-link">{{.FilePath}}</a></h1>
             {{if .SelectedVersion}}
                 <div class="version-actions">
-                    {{if ne .SelectedVersion .CurrentVersion}}
+                    {{if or .FileDeleted (ne .SelectedVersion .CurrentVersion)}}
                         <form hx-post="/api/files/versions/restore/{{urlQuery .FilePath}}"
                               hx-swap="none"
                               style="display: inline;">

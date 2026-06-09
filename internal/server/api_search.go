@@ -13,12 +13,14 @@ import (
 // @Param q query string true "Search query"
 // @Param format query string false "Output format: dropdown, list, cards, json" Enums(dropdown, list, cards, json)
 // @Param titleonly query bool false "Search file titles only (no content)"
+// @Param history query bool false "Search deleted files in git history"
 // @Produce json,html
 // @Router /api/search [get]
 func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 	format := r.URL.Query().Get("format")
 	titleOnly := r.URL.Query().Get("titleonly") == "true"
+	history := r.URL.Query().Get("history") == "true"
 	if format == "" {
 		format = "dropdown"
 	}
@@ -34,7 +36,6 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	limit := 6
-
 	switch format {
 	case "dropdown":
 		limit = 6
@@ -46,6 +47,28 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 		limit = 100
 	default:
 		limit = 6
+	}
+
+	// history search — returns git.GitHistoryFile results, rendered as list
+	if history {
+		var histHTML string
+		if titleOnly {
+			results, err := search.SearchDeletedFilesByTitle(query, limit)
+			if err != nil {
+				http.Error(w, "history search failed", http.StatusInternalServerError)
+				return
+			}
+			histHTML = render.RenderSearchHistoryResults(results, query)
+		} else {
+			results, err := search.SearchDeletedFilesByContent(query, limit)
+			if err != nil {
+				http.Error(w, "history search failed", http.StatusInternalServerError)
+				return
+			}
+			histHTML = render.RenderSearchHistoryResults(results, query)
+		}
+		w.Write([]byte(histHTML))
+		return
 	}
 
 	var results []files.File

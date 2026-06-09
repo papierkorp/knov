@@ -107,6 +107,8 @@ Knov tracks metadata (tags, collection, dates, relationships, PARA fields) for e
 
 **Search** is full-text and indexed in the background after each save. It covers file content as well as metadata fields.
 
+**Search history** — the search page has a "search history" toggle that searches deleted files in git history. Useful when you want to remember content from a file you deleted. (can be slower in huge git repository)
+
 ---
 
 ## Notifications
@@ -124,3 +126,9 @@ Each theme supports a way to take a look at the last 100 notifications.
 - `KNOV_LOG_LEVEL` — controls verbosity (`debug`, `info`, `warning`, `error`)
 - Logs rotate automatically; old log files are kept in `logs/`
 - For production use `info` or `warning` — `debug` is verbose
+
+## favicon
+
+To upload/use a favicon:
+- use the settings of either the builtin or the rail theme
+- in the storage folder create a favicon folder and in there copy your favicon.ico, favicon.png or favicon.svg

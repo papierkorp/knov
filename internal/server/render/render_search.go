@@ -10,6 +10,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/git"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
@@ -161,4 +162,28 @@ func extractSearchContext(filePath, query string) string {
 		context = context + "..."
 	}
 	return context
+}
+
+// RenderSearchHistoryResults renders deleted-file history search results as HTML
+func RenderSearchHistoryResults(results []git.GitHistoryFile, query string) string {
+	var b strings.Builder
+	if query != "" {
+		fmt.Fprintf(&b, `<p>%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "found %d deleted files for \"%s\"", len(results), query))
+	}
+	if len(results) == 0 {
+		fmt.Fprintf(&b, `<div class="search-hint">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no deleted files found"))
+		return b.String()
+	}
+	b.WriteString(`<ul class="search-history-list">`)
+	for _, f := range results {
+		fmt.Fprintf(&b, `<li class="search-history-item"><a class="search-history-name" href="/files/history/%s?commit=%s">%s</a><span class="search-history-meta">%s &mdash; %s</span></li>`,
+			f.Path,
+			html.EscapeString(f.Commit),
+			html.EscapeString(f.Name),
+			html.EscapeString(f.Date),
+			html.EscapeString(strings.TrimSpace(f.Message)),
+		)
+	}
+	b.WriteString(`</ul>`)
+	return b.String()
 }

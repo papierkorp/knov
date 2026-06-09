@@ -679,6 +679,8 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		}
 
 		data := thememanager.NewHistoryTemplateData(filePath, currentCommit, selectedCommit, versions, false)
+		_, statErr := os.Stat(pathutils.ToFullPath(filePath))
+		data.FileDeleted = os.IsNotExist(statErr)
 
 		err = tm.Render(w, "history", data)
 		if err != nil {

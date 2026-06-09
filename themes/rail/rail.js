@@ -288,13 +288,17 @@ document.body.addEventListener("htmx:afterRequest", function (e) {
 });
 
 // ================================================================
-// search title-only toggle
+// search options toggles (title-only + search history)
 // ================================================================
-function updateSearchMode(cb) {
+function updateSearchMode() {
   const input = document.getElementById("fp-search-input");
   if (!input) return;
-  const base = "/api/search?format=list";
-  input.setAttribute("hx-get", cb.checked ? base + "&titleonly=true" : base);
+  const titleOnly = document.getElementById("fp-search-title-only")?.checked;
+  const history = document.getElementById("fp-search-history")?.checked;
+  let url = "/api/search?format=list";
+  if (titleOnly) url += "&titleonly=true";
+  if (history) url += "&history=true";
+  input.setAttribute("hx-get", url);
   htmx.process(input);
 }
 

@@ -8,6 +8,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
 	"knov/internal/searchStorage"
@@ -253,4 +254,14 @@ func searchFilesGrep(query string, limit int, allFiles []files.File) ([]files.Fi
 
 	logging.LogDebug("found %d results for query: %s", len(results), query)
 	return results, nil
+}
+
+// SearchDeletedFilesByTitle searches git history for deleted files matching the query by filename.
+func SearchDeletedFilesByTitle(query string, limit int) ([]git.GitHistoryFile, error) {
+	return git.SearchDeletedFilesByTitle(query, limit)
+}
+
+// SearchDeletedFilesByContent searches git history for deleted files whose content matched the query.
+func SearchDeletedFilesByContent(query string, limit int) ([]git.GitHistoryFile, error) {
+	return git.SearchDeletedFilesByContent(query, limit)
 }

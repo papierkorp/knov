@@ -685,8 +685,20 @@ func RestoreFileToCommit(filePath, commit string) error {
 
 	file, err := tree.File(relPath)
 	if err != nil {
-		logging.LogError("failed to get file %s from commit %s: %v", relPath, commit, err)
-		return err
+		// file may have been deleted in this commit — try parent commit tree
+		if len(commitObj.ParentHashes) > 0 {
+			parentObj, parentErr := repo.CommitObject(commitObj.ParentHashes[0])
+			if parentErr == nil {
+				parentTree, parentErr := parentObj.Tree()
+				if parentErr == nil {
+					file, err = parentTree.File(relPath)
+				}
+			}
+		}
+		if err != nil {
+			logging.LogError("failed to get file %s from commit %s: %v", relPath, commit, err)
+			return err
+		}
 	}
 
 	content, err := file.Contents()
@@ -694,6 +706,9 @@ func RestoreFileToCommit(filePath, commit string) error {
 		return err
 	}
 
+	if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+		return err
+	}
 	err = os.WriteFile(filePath, []byte(content), 0644)
 	if err != nil {
 		return err
@@ -861,8 +876,20 @@ func GetFileAtCommit(filePath, commit string) (string, error) {
 
 	file, err := tree.File(relPath)
 	if err != nil {
-		logging.LogError("failed to get file %s at commit %s: %v", relPath, commit, err)
-		return "", err
+		// file may have been deleted in this commit — try parent commit tree
+		if len(commitObj.ParentHashes) > 0 {
+			parentObj, parentErr := repo.CommitObject(commitObj.ParentHashes[0])
+			if parentErr == nil {
+				parentTree, parentErr := parentObj.Tree()
+				if parentErr == nil {
+					file, err = parentTree.File(relPath)
+				}
+			}
+		}
+		if err != nil {
+			logging.LogError("failed to get file %s at commit %s: %v", relPath, commit, err)
+			return "", err
+		}
 	}
 
 	content, err := file.Contents()
@@ -1628,4 +1655,167 @@ func TestAuth() (string, error) {
 	gitLog.Printf("%s", result)
 	gitLog.Printf("=== auth test end ===")
 	return result, nil
+}
+
+// -----------------------------------------------
+// ----------- History Search -------------------
+// -----------------------------------------------
+
+// SearchDeletedFilesByTitle finds deleted files whose name contains the query string.
+// It walks all commits and collects files that were removed (change.To.Name == "").
+func SearchDeletedFilesByTitle(query string, limit int) ([]GitHistoryFile, error) {
+	repo, err := openRepo()
+	if err != nil {
+		return nil, err
+	}
+
+	ref, err := repo.Head()
+	if err != nil {
+		return nil, err
+	}
+
+	iter, err := repo.Log(&git.LogOptions{From: ref.Hash()})
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	queryLower := strings.ToLower(query)
+	seen := make(map[string]bool)
+	var results []GitHistoryFile
+
+	err = iter.ForEach(func(c *object.Commit) error {
+		if limit > 0 && len(results) >= limit {
+			return nil
+		}
+		if len(c.ParentHashes) == 0 {
+			return nil
+		}
+		parent, err := c.Parents().Next()
+		if err != nil {
+			return nil
+		}
+		parentTree, err := parent.Tree()
+		if err != nil {
+			return nil
+		}
+		currentTree, err := c.Tree()
+		if err != nil {
+			return nil
+		}
+		changes, err := object.DiffTree(parentTree, currentTree)
+		if err != nil {
+			return nil
+		}
+		for _, change := range changes {
+			if change.To.Name != "" || change.From.Name == "" {
+				continue
+			}
+			// file was deleted
+			name := filepath.Base(change.From.Name)
+			if !strings.Contains(strings.ToLower(name), queryLower) {
+				continue
+			}
+			if seen[change.From.Name] {
+				continue
+			}
+			seen[change.From.Name] = true
+			results = append(results, GitHistoryFile{
+				Name:    name,
+				Path:    change.From.Name,
+				Commit:  c.Hash.String()[:7],
+				Date:    c.Author.When.Format("2006-01-02"),
+				Message: c.Message,
+			})
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	logging.LogDebug("git history title search '%s' found %d deleted files", query, len(results))
+	return results, nil
+}
+
+// SearchDeletedFilesByContent finds deleted files whose content contained the query string.
+// It walks all commits, finds deleted files, reads their blob content, and filters by query.
+func SearchDeletedFilesByContent(query string, limit int) ([]GitHistoryFile, error) {
+	repo, err := openRepo()
+	if err != nil {
+		return nil, err
+	}
+
+	ref, err := repo.Head()
+	if err != nil {
+		return nil, err
+	}
+
+	iter, err := repo.Log(&git.LogOptions{From: ref.Hash()})
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	queryLower := strings.ToLower(query)
+	seen := make(map[string]bool)
+	var results []GitHistoryFile
+
+	err = iter.ForEach(func(c *object.Commit) error {
+		if limit > 0 && len(results) >= limit {
+			return nil
+		}
+		if len(c.ParentHashes) == 0 {
+			return nil
+		}
+		parent, err := c.Parents().Next()
+		if err != nil {
+			return nil
+		}
+		parentTree, err := parent.Tree()
+		if err != nil {
+			return nil
+		}
+		currentTree, err := c.Tree()
+		if err != nil {
+			return nil
+		}
+		changes, err := object.DiffTree(parentTree, currentTree)
+		if err != nil {
+			return nil
+		}
+		for _, change := range changes {
+			if change.To.Name != "" || change.From.Name == "" {
+				continue
+			}
+			if seen[change.From.Name] {
+				continue
+			}
+			// read blob from parent tree
+			f, err := parentTree.File(change.From.Name)
+			if err != nil {
+				continue
+			}
+			content, err := f.Contents()
+			if err != nil {
+				continue
+			}
+			if !strings.Contains(strings.ToLower(content), queryLower) {
+				continue
+			}
+			seen[change.From.Name] = true
+			results = append(results, GitHistoryFile{
+				Name:    filepath.Base(change.From.Name),
+				Path:    change.From.Name,
+				Commit:  c.Hash.String()[:7],
+				Date:    c.Author.When.Format("2006-01-02"),
+				Message: c.Message,
+			})
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	logging.LogDebug("git history content search '%s' found %d deleted files", query, len(results))
+	return results, nil
 }

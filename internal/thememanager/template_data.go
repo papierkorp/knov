@@ -355,6 +355,7 @@ type HistoryTemplateData struct {
 	AllVersions     git.FileVersionList // FileVersion from git package
 	ShowDiff        bool
 	SingleVersion   bool // true if only one version exists
+	FileDeleted     bool // true if the file no longer exists on disk
 }
 
 // NewHistoryTemplateData creates file history specific data

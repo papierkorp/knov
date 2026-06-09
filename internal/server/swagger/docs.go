@@ -5517,6 +5517,12 @@ const docTemplate = `{
                         "description": "Search file titles only (no content)",
                         "name": "titleonly",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Search deleted files in git history",
+                        "name": "history",
+                        "in": "query"
                     }
                 ],
                 "responses": {}

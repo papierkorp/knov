@@ -9,10 +9,21 @@
             hx-get="/api/search?format=cards"
             hx-target="#page-search-results"
             hx-trigger="keyup changed delay:300ms, load"
+            hx-include="#search-titleonly, #search-history"
             name="q"
             id="search-page-input"
             value="{{ .SearchQuery }}"
         />
+        <div class="search-options">
+            <label class="search-option-label">
+                <input type="checkbox" id="search-titleonly" name="titleonly" value="true" onchange="updatePageSearchMode()"/>
+                <span>{{T "title only"}}</span>
+            </label>
+            <label class="search-option-label">
+                <input type="checkbox" id="search-history" name="history" value="true" onchange="updatePageSearchMode()"/>
+                <span>{{T "search history"}}</span>
+            </label>
+        </div>
     </div>
     <div id="page-search-results">
         {{ if .SearchQuery }}
@@ -22,4 +33,17 @@
         {{ end }}
     </div>
 </div>
+<script>
+function updatePageSearchMode() {
+    const input = document.getElementById("search-page-input");
+    if (!input) return;
+    const titleOnly = document.getElementById("search-titleonly")?.checked;
+    const history = document.getElementById("search-history")?.checked;
+    let url = "/api/search?format=cards";
+    if (titleOnly) url += "&titleonly=true";
+    if (history) url += "&history=true";
+    input.setAttribute("hx-get", url);
+    htmx.process(input);
+}
+</script>
 {{ end }}
