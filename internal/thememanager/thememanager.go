@@ -70,7 +70,6 @@ type ThemeTemplates struct {
 	help           *template.Template
 	history        *template.Template
 	home           *template.Template
-	latestchanges  *template.Template
 	playground     *template.Template
 	search         *template.Template
 	settings       *template.Template
@@ -219,8 +218,6 @@ func LoadSingleTheme(themeName, themesDir string) error {
 			templates.history = tmpl
 		case "home":
 			templates.home = tmpl
-		case "latestchanges":
-			templates.latestchanges = tmpl
 		case "playground":
 			templates.playground = tmpl
 		case "search":
@@ -569,7 +566,6 @@ func (t *Theme) TemplateMap() map[string]*template.Template {
 		"help":           t.Templates.help,
 		"history":        t.Templates.history,
 		"home":           t.Templates.home,
-		"latestchanges":  t.Templates.latestchanges,
 		"playground":     t.Templates.playground,
 		"search":         t.Templates.search,
 		"settings":       t.Templates.settings,

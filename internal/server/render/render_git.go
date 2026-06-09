@@ -16,20 +16,31 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-// RenderGitHistoryFileList renders a list of git history files as HTML
-func RenderGitHistoryFileList(files []git.GitHistoryFile) string {
-	var html strings.Builder
-	html.WriteString("<ul>")
+// RenderGitHistoryFileList renders a list of git history files as HTML.
+// nextOffset is the offset to use for the load more button; hasMore controls whether to show it.
+func RenderGitHistoryFileList(files []git.GitHistoryFile, collection string, nextOffset int, hasMore bool) string {
+	var b strings.Builder
+	b.WriteString("<ul>")
 	for _, file := range files {
 		linkPath := pathutils.ToRelative(file.Path)
-		html.WriteString(fmt.Sprintf(`<li>%s - <a href="/files/%s"><strong>%s</strong></a> (%s)</li>`,
+		fmt.Fprintf(&b, `<li>%s - <a href="/files/%s"><strong>%s</strong></a> (%s)</li>`,
 			file.Date,
 			linkPath,
 			file.Name,
-			file.Message))
+			strings.TrimSpace(file.Message))
 	}
-	html.WriteString("</ul>")
-	return html.String()
+	b.WriteString("</ul>")
+	if hasMore {
+		url := fmt.Sprintf("/api/git/latestchanges?count=50&offset=%d", nextOffset)
+		if collection != "" {
+			fmt.Fprintf(&b, `<button class="load-more-btn" hx-get="%s&collection=%s" hx-target="this" hx-swap="outerHTML" hx-headers='{"Accept":"text/html"}'>%s</button>`,
+				url, collection, translation.SprintfForRequest(configmanager.GetLanguage(), "load more"))
+		} else {
+			fmt.Fprintf(&b, `<button class="load-more-btn" hx-get="%s" hx-target="this" hx-swap="outerHTML" hx-headers='{"Accept":"text/html"}'>%s</button>`,
+				url, translation.SprintfForRequest(configmanager.GetLanguage(), "load more"))
+		}
+	}
+	return b.String()
 }
 
 // RenderFileVersionsList renders list of file versions as HTML

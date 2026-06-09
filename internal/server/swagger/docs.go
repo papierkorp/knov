@@ -3320,6 +3320,7 @@ const docTemplate = `{
         },
         "/api/git/latestchanges": {
             "get": {
+                "description": "Returns recently changed files. When q is set, searches git history by filename instead of returning latest.",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -3328,6 +3329,32 @@ const docTemplate = `{
                     "git"
                 ],
                 "summary": "Get recently changed files",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Number of results (default 50)",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset for pagination (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query — filters by filename in git history",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by collection",
+                        "name": "collection",
+                        "in": "query"
+                    }
+                ],
                 "responses": {}
             }
         },

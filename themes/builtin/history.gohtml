@@ -48,12 +48,34 @@
         </div>
 
     {{else}}
-        <!-- General history page -->
-        <h1>{{T "History"}}</h1>
-        <p>{{T "Recent File History"}}</p>
-        <div hx-get="/api/git/latestchanges" hx-trigger="load">
-            loading recent changes...
+        <!-- General history / latest changes -->
+        <h1>{{if .Collection}}{{T "recent file history"}}: {{.Collection}}{{else}}{{T "recent file history"}}{{end}}</h1>
+        <input type="search" id="latestchanges-search"
+               placeholder="{{T "search by filename..."}}"
+               autocomplete="off"
+               oninput="updateLatestChangesSearch(this.value)"/>
+        <div id="latestchanges-results"
+             hx-get="/api/git/latestchanges?count=50{{if .Collection}}&collection={{.Collection}}{{end}}"
+             hx-trigger="load"
+             hx-headers='{"Accept": "text/html"}'>
+            {{T "loading recent changes..."}}
         </div>
+        <script>
+        let _lcTimer = null;
+        function updateLatestChangesSearch(query) {
+            clearTimeout(_lcTimer);
+            _lcTimer = setTimeout(() => {
+                const q = query.trim();
+                const base = "/api/git/latestchanges?count=50{{if .Collection}}&collection={{.Collection}}{{end}}";
+                const url = q ? `/api/git/latestchanges?count=50&q=${encodeURIComponent(q)}{{if .Collection}}&collection={{.Collection}}{{end}}` : base;
+                htmx.ajax("GET", url, {
+                    target: "#latestchanges-results",
+                    swap: "innerHTML",
+                    headers: { Accept: "text/html" },
+                });
+            }, 300);
+        }
+        </script>
     {{end}}
 </div>
 {{ end }}

@@ -22,6 +22,7 @@ import (
 	gitcfg "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/storer"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
@@ -61,8 +62,9 @@ func openRepo() (*git.Repository, error) {
 	return git.PlainOpen(dataDir)
 }
 
-// GetRecentlyChangedFiles returns list of recently changed files
-func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
+// GetRecentlyChangedFiles returns recently changed unique files with pagination.
+// count is the number of unique files to return; offset skips that many unique files first.
+func GetRecentlyChangedFiles(count, offset int) ([]GitHistoryFile, error) {
 	repo, err := openRepo()
 	if err != nil {
 		logging.LogError("failed to open git repository: %v", err)
@@ -81,9 +83,16 @@ func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
 	defer iter.Close()
 
 	var files []GitHistoryFile
+	seen := make(map[string]bool)
+	skipped := 0
 	dataDir := configmanager.GetAppConfig().DataPath
+	dataDirName := filepath.Base(dataDir)
 
-	for i := 0; i < count; i++ {
+	for {
+		if len(files) >= count {
+			break
+		}
+
 		c, err := iter.Next()
 		if err != nil {
 			if err == io.EOF {
@@ -129,10 +138,17 @@ func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
 			}
 		}
 
-		dataDirName := filepath.Base(dataDir)
 		for _, relPath := range changedPaths {
 			if strings.HasPrefix(relPath, dataDirName+string(filepath.Separator)) {
 				relPath = strings.TrimPrefix(relPath, dataDirName+string(filepath.Separator))
+			}
+			if seen[relPath] {
+				continue
+			}
+			seen[relPath] = true
+			if skipped < offset {
+				skipped++
+				continue
 			}
 			files = append(files, GitHistoryFile{
 				Name:    filepath.Base(relPath),
@@ -141,6 +157,9 @@ func GetRecentlyChangedFiles(count int) ([]GitHistoryFile, error) {
 				Date:    c.Author.When.Format("02-01-2006 - 15:04"),
 				Message: c.Message,
 			})
+			if len(files) >= count {
+				break
+			}
 		}
 	}
 
@@ -1710,9 +1729,10 @@ func TestAuth() (string, error) {
 // ----------- History Search -------------------
 // -----------------------------------------------
 
-// SearchDeletedFilesByTitle finds deleted files whose name contains the query string.
-// It walks all commits and collects files that were removed (change.To.Name == "").
-func SearchDeletedFilesByTitle(query string, limit int) ([]GitHistoryFile, error) {
+// SearchGitByTitle searches git history for files whose filename contains the query string.
+// When deletedOnly is true only files deleted in a commit are returned (for the "search history" feature).
+// When deletedOnly is false all touched files are returned (for the latestchanges search).
+func SearchGitByTitle(query string, limit int, deletedOnly bool) ([]GitHistoryFile, error) {
 	repo, err := openRepo()
 	if err != nil {
 		return nil, err
@@ -1731,16 +1751,18 @@ func SearchDeletedFilesByTitle(query string, limit int) ([]GitHistoryFile, error
 
 	queryLower := strings.ToLower(query)
 	seen := make(map[string]bool)
+	dataDir := configmanager.GetAppConfig().DataPath
+	dataDirName := filepath.Base(dataDir)
 	var results []GitHistoryFile
 
 	err = iter.ForEach(func(c *object.Commit) error {
 		if limit > 0 && len(results) >= limit {
+			return storer.ErrStop
+		}
+		if c.NumParents() == 0 {
 			return nil
 		}
-		if len(c.ParentHashes) == 0 {
-			return nil
-		}
-		parent, err := c.Parents().Next()
+		parent, err := c.Parent(0)
 		if err != nil {
 			return nil
 		}
@@ -1757,37 +1779,42 @@ func SearchDeletedFilesByTitle(query string, limit int) ([]GitHistoryFile, error
 			return nil
 		}
 		for _, change := range changes {
-			if change.To.Name != "" || change.From.Name == "" {
+			if deletedOnly && (change.To.Name != "" || change.From.Name == "") {
 				continue
 			}
-			// file was deleted
-			name := filepath.Base(change.From.Name)
-			if !strings.Contains(strings.ToLower(name), queryLower) {
+			name := change.To.Name
+			if name == "" {
+				name = change.From.Name
+			}
+			if name == "" || seen[name] {
 				continue
 			}
-			if seen[change.From.Name] {
+			relPath := name
+			if strings.HasPrefix(relPath, dataDirName+string(filepath.Separator)) {
+				relPath = strings.TrimPrefix(relPath, dataDirName+string(filepath.Separator))
+			}
+			if !strings.Contains(strings.ToLower(filepath.Base(relPath)), queryLower) {
 				continue
 			}
-			seen[change.From.Name] = true
+			seen[name] = true
 			results = append(results, GitHistoryFile{
-				Name:    name,
-				Path:    change.From.Name,
+				Name:    filepath.Base(relPath),
+				Path:    relPath,
 				Commit:  c.Hash.String()[:7],
 				Date:    c.Author.When.Format("2006-01-02"),
-				Message: c.Message,
+				Message: strings.TrimSpace(c.Message),
 			})
 		}
 		return nil
 	})
-	if err != nil {
+	if err != nil && err != storer.ErrStop {
 		return nil, err
 	}
-	logging.LogDebug("git history title search '%s' found %d deleted files", query, len(results))
+	logging.LogDebug("git title search '%s' (deletedOnly=%v) found %d files", query, deletedOnly, len(results))
 	return results, nil
 }
 
 // SearchDeletedFilesByContent finds deleted files whose content contained the query string.
-// It walks all commits, finds deleted files, reads their blob content, and filters by query.
 func SearchDeletedFilesByContent(query string, limit int) ([]GitHistoryFile, error) {
 	repo, err := openRepo()
 	if err != nil {
@@ -1811,12 +1838,12 @@ func SearchDeletedFilesByContent(query string, limit int) ([]GitHistoryFile, err
 
 	err = iter.ForEach(func(c *object.Commit) error {
 		if limit > 0 && len(results) >= limit {
+			return storer.ErrStop
+		}
+		if c.NumParents() == 0 {
 			return nil
 		}
-		if len(c.ParentHashes) == 0 {
-			return nil
-		}
-		parent, err := c.Parents().Next()
+		parent, err := c.Parent(0)
 		if err != nil {
 			return nil
 		}
@@ -1839,7 +1866,6 @@ func SearchDeletedFilesByContent(query string, limit int) ([]GitHistoryFile, err
 			if seen[change.From.Name] {
 				continue
 			}
-			// read blob from parent tree
 			f, err := parentTree.File(change.From.Name)
 			if err != nil {
 				continue
@@ -1857,14 +1883,14 @@ func SearchDeletedFilesByContent(query string, limit int) ([]GitHistoryFile, err
 				Path:    change.From.Name,
 				Commit:  c.Hash.String()[:7],
 				Date:    c.Author.When.Format("2006-01-02"),
-				Message: c.Message,
+				Message: strings.TrimSpace(c.Message),
 			})
 		}
 		return nil
 	})
-	if err != nil {
+	if err != nil && err != storer.ErrStop {
 		return nil, err
 	}
-	logging.LogDebug("git history content search '%s' found %d deleted files", query, len(results))
+	logging.LogDebug("git content search '%s' found %d deleted files", query, len(results))
 	return results, nil
 }

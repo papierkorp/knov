@@ -2572,6 +2572,25 @@ paths:
       - filter
   /api/git/latestchanges:
     get:
+      description: Returns recently changed files. When q is set, searches git history
+        by filename instead of returning latest.
+      parameters:
+      - description: Number of results (default 50)
+        in: query
+        name: count
+        type: integer
+      - description: Offset for pagination (default 0)
+        in: query
+        name: offset
+        type: integer
+      - description: Search query — filters by filename in git history
+        in: query
+        name: q
+        type: string
+      - description: Filter by collection
+        in: query
+        name: collection
+        type: string
       produces:
       - application/json
       - text/html

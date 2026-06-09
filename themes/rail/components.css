@@ -3413,3 +3413,26 @@ dl.media-info dd {
   height: calc(100vh - var(--editor-overhead, 200px));
   overflow-y: auto;
 }
+
+#page-latestchanges #latestchanges-search {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 12px;
+}
+
+.load-more-btn {
+  display: block;
+  margin: 12px auto 0;
+  padding: 6px 18px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+.load-more-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}

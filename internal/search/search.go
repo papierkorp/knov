@@ -258,7 +258,7 @@ func searchFilesGrep(query string, limit int, allFiles []files.File) ([]files.Fi
 
 // SearchDeletedFilesByTitle searches git history for deleted files matching the query by filename.
 func SearchDeletedFilesByTitle(query string, limit int) ([]git.GitHistoryFile, error) {
-	return git.SearchDeletedFilesByTitle(query, limit)
+	return git.SearchGitByTitle(query, limit, true)
 }
 
 // SearchDeletedFilesByContent searches git history for deleted files whose content matched the query.

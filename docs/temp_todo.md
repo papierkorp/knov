@@ -15,6 +15,12 @@
 **per ai**
 - fix all the editor warnings
 - backup solution
+- kanban board different styles for different rows, new setting with a kv pair <kanban_row>:<style> if nothing is given use normal
+  - italic style
+  - normal style
+  - deleted style
+- move environment info in settings into its own panel
+- 
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme

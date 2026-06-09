@@ -324,24 +324,6 @@ func NewSearchPageData(searchQuery string) SearchPageData {
 // -------- LatestChanges TemplateData ----------
 // -----------------------------------------------
 
-// LatestChangesTemplateData extends base with optional collection filter
-type LatestChangesTemplateData struct {
-	BaseTemplateData
-	Collection string
-}
-
-// NewLatestChangesTemplateData creates latest changes page data
-func NewLatestChangesTemplateData(collection string) LatestChangesTemplateData {
-	title := "latest changes"
-	if collection != "" {
-		title = "latest changes: " + collection
-	}
-	return LatestChangesTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title),
-		Collection:       collection,
-	}
-}
-
 // -----------------------------------------------
 // ------------ History TemplateData ------------
 // -----------------------------------------------
@@ -354,8 +336,9 @@ type HistoryTemplateData struct {
 	SelectedVersion string
 	AllVersions     git.FileVersionList // FileVersion from git package
 	ShowDiff        bool
-	SingleVersion   bool // true if only one version exists
-	FileDeleted     bool // true if the file no longer exists on disk
+	SingleVersion   bool   // true if only one version exists
+	FileDeleted     bool   // true if the file no longer exists on disk
+	Collection      string // optional collection filter for the general history view
 }
 
 // NewHistoryTemplateData creates file history specific data

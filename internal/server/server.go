@@ -57,7 +57,6 @@ func StartServerChi() {
 	r.Get("/admin", handleAdmin)
 	r.Get("/playground", handlePlayground)
 	r.Get("/help", handleHelp)
-	r.Get("/latest-changes", handleLatestChanges)
 	r.Get("/history", handleHistory)
 	r.Get("/search", handleSearchPage)
 	r.Get("/media", handleRedirectToBrowseMedia)
@@ -633,18 +632,6 @@ func handlePlayground(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleLatestChanges(w http.ResponseWriter, r *http.Request) {
-	collection := r.URL.Query().Get("collection")
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewLatestChangesTemplateData(collection)
-
-	err := tm.Render(w, "latestchanges", data)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-		return
-	}
-}
-
 func handleHistory(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 
@@ -690,7 +677,8 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := thememanager.NewBaseTemplateData("history")
+	data := thememanager.NewHistoryTemplateData("", "", "", nil, false)
+	data.Collection = r.URL.Query().Get("collection")
 
 	err := tm.Render(w, "history", data)
 	if err != nil {

@@ -14,46 +14,69 @@ import (
 )
 
 // @Summary Get recently changed files
+// @Description Returns recently changed files. When q is set, searches git history by filename instead of returning latest.
 // @Tags git
+// @Param count query int false "Number of results (default 50)"
+// @Param offset query int false "Offset for pagination (default 0)"
+// @Param q query string false "Search query — filters by filename in git history"
+// @Param collection query string false "Filter by collection"
 // @Produce json,html
 // @Router /api/git/latestchanges [get]
 func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 	countStr := r.URL.Query().Get("count")
-	count := 100 // default
+	count := 50
 	if countStr != "" {
 		if c, err := strconv.Atoi(countStr); err == nil {
 			count = c
 		}
 	}
 
+	offsetStr := r.URL.Query().Get("offset")
+	offset := 0
+	if offsetStr != "" {
+		if o, err := strconv.Atoi(offsetStr); err == nil {
+			offset = o
+		}
+	}
+
+	query := r.URL.Query().Get("q")
 	collection := r.URL.Query().Get("collection")
 
-	allFiles, err := git.GetRecentlyChangedFiles(count)
+	// search mode — git title search, no pagination
+	if query != "" {
+		results, err := git.SearchGitByTitle(query, count, false)
+		if err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to search git history"), http.StatusInternalServerError)
+			return
+		}
+		html := render.RenderGitHistoryFileList(results, "", 0, false)
+		writeResponse(w, r, results, html)
+		return
+	}
+
+	allFiles, err := git.GetRecentlyChangedFiles(count, offset)
 	if err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get recent files"), http.StatusInternalServerError)
 		return
 	}
 
-	if collection == "" {
-		html := render.RenderGitHistoryFileList(allFiles)
-		writeResponse(w, r, allFiles, html)
-		return
+	if collection != "" {
+		var filtered []git.GitHistoryFile
+		for _, f := range allFiles {
+			meta, err := files.MetaDataGet(pathutils.ToWithPrefix(f.Path))
+			if err != nil || meta == nil {
+				continue
+			}
+			if meta.Collection == collection {
+				filtered = append(filtered, f)
+			}
+		}
+		allFiles = filtered
 	}
 
-	// filter by collection
-	var filtered []git.GitHistoryFile
-	for _, f := range allFiles {
-		meta, err := files.MetaDataGet(pathutils.ToWithPrefix(f.Path))
-		if err != nil || meta == nil {
-			continue
-		}
-		if meta.Collection == collection {
-			filtered = append(filtered, f)
-		}
-	}
-
-	html := render.RenderGitHistoryFileList(filtered)
-	writeResponse(w, r, filtered, html)
+	hasMore := len(allFiles) == count
+	html := render.RenderGitHistoryFileList(allFiles, collection, offset+count, hasMore)
+	writeResponse(w, r, allFiles, html)
 }
 
 // @Summary Push to remote

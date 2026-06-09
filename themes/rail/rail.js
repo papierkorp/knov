@@ -873,12 +873,21 @@ function filterFpVersions(query) {
 // ================================================================
 // latest changes filter — client-side, no API call
 // ================================================================
+let _latestSearchTimer = null;
 function filterLatestChanges(query) {
   const container = document.getElementById("fp-latest-content");
   if (!container) return;
-  const q = query.toLowerCase().trim();
-  container.querySelectorAll("li").forEach((li) => {
-    li.style.display =
-      q === "" || li.textContent.toLowerCase().includes(q) ? "" : "none";
-  });
+  clearTimeout(_latestSearchTimer);
+  _latestSearchTimer = setTimeout(() => {
+    const q = query.trim();
+    const base = container.dataset.url || "/api/git/latestchanges?count=50";
+    const url = q
+      ? `/api/git/latestchanges?count=50&q=${encodeURIComponent(q)}`
+      : base;
+    htmx.ajax("GET", url, {
+      target: container,
+      swap: "innerHTML",
+      headers: { Accept: "text/html" },
+    });
+  }, 300);
 }
