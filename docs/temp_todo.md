@@ -43,6 +43,7 @@
 - make docker build viable
   - for usage
   - for devs
+- media gitignore
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme
