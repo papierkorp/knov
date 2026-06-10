@@ -53,7 +53,6 @@ make docker
 2. Add route in `internal/server/server.go`
 3. Add Swagger documentation comments
 
-
 ## Translation
 
 Add translatable strings in templates:
@@ -88,7 +87,6 @@ make translation
 
 Translation files in `internal/translation/locales/{lang}/messages.gotext.json`
 
-
 ## Embedded Assets
 
 ### Static Files
@@ -99,7 +97,6 @@ Static files are embedded from the project root:
 //go:embed static/*
 var staticFS embed.FS
 ```
-
 
 ### Theme Assets
 
@@ -122,10 +119,12 @@ var cssFiles embed.FS
 ## Filter File - System
 
 **Storage**
+
 - Filter configs are stored in configStorage (JSON) under the key `filter/<filterID>`
 - The filter ID is a unique path-like string, e.g. `my/notes-filter`
 
 **Paired Index File**
+
 - Every filter has a paired physical index file in `data/docs/`
 - Path: `<filterID>` + extension from `KNOV_USE_EXTENSION_INDEX` (`.index` or `.md`)
 - Example: filter `my/notes-filter` → `data/docs/my/notes-filter.index`
@@ -133,15 +132,16 @@ var cssFiles embed.FS
 - Metadata is saved with `Editor: filter-editor` so the filter editor opens when viewing the file
 
 **Lifecycle**
+
 - Save filter → config written to configStorage + index file generated immediately
 - Delete filter → index file deleted + its metadata deleted + config removed from configStorage
 - Cronjob → regenerates all filter index files on every file job interval (keeps results fresh)
 
 **Viewing & Editing**
+
 - Navigate to `/files/<filterID>.index` to view/edit the filter
 - The filter editor opens (not the index editor) because metadata marks the file as `filter-editor`
 - The index file content is always overwritten on save/cronjob — manual edits are lost
-
 
 # dbmigration
 
@@ -328,14 +328,14 @@ sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 
 
 ## Key Files
 
-| File | Role |
-|---|---|
-| `config.go` | `GetKanbanPrefix/Statuses/Columns`, `IsKanbanTag`, `KanbanStatusTag` |
-| `metadata.go` | `sanitizeKanbanTags`, `SanitizeKanbanTags` |
-| `api_kanban.go` | board handler, move handler, excerpt handler, `extractExcerpt` |
-| `render_kanban.go` | `RenderKanbanCard`, `RenderKanbanColumn` |
-| `static_kanban.css` | all kanban styles (ID + class selectors) |
-| `{theme}-kanban.gohtml` | page shell per theme |
+| File                    | Role                                                                 |
+| ----------------------- | -------------------------------------------------------------------- |
+| `config.go`             | `GetKanbanPrefix/Statuses/Columns`, `IsKanbanTag`, `KanbanStatusTag` |
+| `metadata.go`           | `sanitizeKanbanTags`, `SanitizeKanbanTags`                           |
+| `api_kanban.go`         | board handler, move handler, excerpt handler, `extractExcerpt`       |
+| `render_kanban.go`      | `RenderKanbanCard`, `RenderKanbanColumn`                             |
+| `static_kanban.css`     | all kanban styles (ID + class selectors)                             |
+| `{theme}-kanban.gohtml` | page shell per theme                                                 |
 
 ## Env Vars
 
@@ -435,3 +435,31 @@ I added filter tests for these cases:
 - date equals
 - date contains
 - date regex
+
+# Changelog
+
+Changelogs are auto-generated from git commit history using [Conventional Commits](https://www.conventionalcommits.org/).
+
+Generated files live in `docs/changelogs/<year>.md` (e.g. `docs/changelogs/2026.md`), one file per year, months grouped newest-first. The `docs/` folder is embedded at build time so the `/changelog` route can serve them without any external files.
+
+**Commit Types**
+
+| Type                                                                 | Section          | Description         |
+| -------------------------------------------------------------------- | ---------------- | ------------------- |
+| `feat:`                                                              | features         | new feature         |
+| `fix:`                                                               | fixes            | bug fix             |
+| `build:` `chore:` `ci:` `docs:` `style:` `refactor:` `perf:` `test:` | other            | everything else     |
+| `feat!:` / `BREAKING CHANGE:` footer                                 | breaking changes | breaking API change |
+
+Scopes are supported: `feat(kanban): add drag drop` is treated the same as `feat: add drag drop`.
+
+Commits that don't match any type prefix are silently ignored.
+
+**Generation**
+
+```bash
+# full rebuild from entire git history
+make changelog
+```
+
+`make dev` and `make prod` both run `make changelog` automatically before building, so `docs/changelogs/` is always up to date in the embedded binary.

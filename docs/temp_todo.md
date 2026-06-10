@@ -40,6 +40,9 @@
 - new file: filepath or collection + filename
 - kanban board - set order per drag and drop?/add sort button
 - codeberg deployment pipeline?
+- make docker build viable
+  - for usage
+  - for devs
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme

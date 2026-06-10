@@ -1,11 +1,12 @@
 # Variables
 APP_NAME := knov
+BUILD_TAGS := fts5
 
 # ------------- actual usage -------------
-dev: swaggo-api-init
+dev: swaggo-api-init changelog
 	KNOV_LOG_LEVEL=debug go run ./
 
-prod: swaggo-api-init translation
+prod: swaggo-api-init translation changelog
 	go build -o bin/$(APP_NAME) ./
 	GOOS=windows GOARCH=amd64 go build -o bin/$(APP_NAME).exe ./
 
@@ -28,6 +29,11 @@ swaggo-api-init:
 
 tree:
 	tree -I 'bin|data|data2|data3|storage'
+
+changelog:
+	@chmod +x generate-changelog.sh
+	@./generate-changelog.sh
+	@git add docs/changelogs/
 
 tempai:
 	@echo "Creating tempai folder for AI context (flat structure)..."
@@ -90,4 +96,4 @@ tempai:
 # swag init -g main.go -d . --exclude tempai -o internal/server/swagger
 # KNOV_LOG_LEVEL=debug go run ./
 
-.PHONY: dev dev-fast swaggo-api-init translation prod docker docker-build docker-run tree tempai
+.PHONY: dev dev-fast swaggo-api-init translation prod docker docker-build docker-run tree changelog tempai
