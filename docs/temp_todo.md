@@ -21,6 +21,23 @@
   - deleted style
 - move environment info in settings into its own panel
 - rail theme: open file in new window button to the left of the close button
+- kanban - add + button which automatically adds the <collectioN> to the filepath
+- create new todo/list => no filepath
+- filepath with spaces/special chars?
+  - 2026/06/10 10:40:30 error [git.go - CommitFile]: git: failed to stage docs/sirconic_todo/gitlab-postgresql-password secret löschen.md: invalid checksum
+  - 2026/06/10 10:40:30 info [api_files.go - handleAPIFileSave]: created metadata for new file: sirconic_todo/gitlab-postgresql-password secret löschen.md (editor: markdown-editor)
+  - 2026/06/10 10:43:42 info [api_files.go - handleAPIFileSave]: saved file: sirconic_todo/gitlab-postgresql-password_löschen.md
+  - 2026/06/10 10:43:42 info [api_files.go - handleAPIFileSave]: applied auto-create tags [kb-status-inbox] to new file: sirconic_todo/gitlab-postgresql-password_löschen.md
+  - 2026/06/10 10:43:42 info [metadata_links.go - updateUsedLinks]: processing file for links: data/docs/sirconic_todo/gitlab-postgresql-password_löschen.md
+  - 2026/06/10 10:43:42 info [metadata_links.go - updateUsedLinks]: extracted 0 links from docs/sirconic_todo/gitlab-postgresql-password_löschen.md
+  - 2026/06/10 10:43:42 info [metadata_links.go - updateLinksToHere]: updating linkstohere for linked files from docs/sirconic_todo/gitlab-postgresql-password_löschen.md
+  - 2026/06/10 10:43:42 info [api_files.go - handleAPIFileSave]: created metadata for new file: sirconic_todo/gitlab-postgresql-password_löschen.md (editor: markdown-editor)
+  - 2026/06/10 10:43:42 error [git.go - CommitFile]: git: failed to stage docs/sirconic_todo/gitlab-postgresql-password_löschen.md: invalid checksum
+- syntax highlighting in the editor
+- editor single line code blocks not readable (background color same as color)
+- show logs in app
+- download logs
+- new file: filepath or collection + filename
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme

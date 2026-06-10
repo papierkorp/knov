@@ -30,6 +30,11 @@ func RenderKanbanCard(card KanbanCard) string {
 		displayTitle = card.FilePath
 	}
 
+	// remove collection prefix from title (e.g. "mycollection/My Title" -> "My Title")
+	if card.Collection != "" {
+		displayTitle = strings.TrimPrefix(displayTitle, card.Collection+"/")
+	}
+
 	// filter out kanban tags from visible tags
 	var visibleTags []string
 	for _, t := range card.Tags {
@@ -48,7 +53,7 @@ func RenderKanbanCard(card KanbanCard) string {
 
 	// title + tag chips on the same row
 	html.WriteString(`<div class="kanban-card-header">`)
-	fmt.Fprintf(&html, `<a class="kanban-card-title" href="/files/%s">%s</a>`, card.FilePath, displayTitle)
+	fmt.Fprintf(&html, `<a class="kanban-card-title" href="/files/%s" title="%s">%s</a>`, card.FilePath, displayTitle, displayTitle)
 	if len(visibleTags) > 0 {
 		tagColors := configmanager.GetKanbanTagColors()
 		html.WriteString(`<div class="kanban-card-tags">`)
