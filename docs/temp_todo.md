@@ -38,10 +38,14 @@
 - show logs in app
 - download logs
 - new file: filepath or collection + filename
+- kanban board - set order per drag and drop?/add sort button
+- codeberg deployment pipeline?
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme
-  - use git for patchnotes?
+  - use git for releasenotes?
+- /changelog route with new icon on the bottom of the rail theme
+  - us git for patchnotes?
 
 # performance updates
 
