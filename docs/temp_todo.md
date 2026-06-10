@@ -21,7 +21,7 @@
   - deleted style
 - move environment info in settings into its own panel
 - rail theme: open file in new window button to the left of the close button
-- kanban - add + button which automatically adds the <collectioN> to the filepath
+- kanban - add + (add new file) button which automatically adds the <collection> to the filepath
 - create new todo/list => no filepath
 - filepath with spaces/special chars?
   - 2026/06/10 10:40:30 error [git.go - CommitFile]: git: failed to stage docs/sirconic_todo/gitlab-postgresql-password secret löschen.md: invalid checksum

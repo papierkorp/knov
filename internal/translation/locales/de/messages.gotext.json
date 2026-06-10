@@ -1232,6 +1232,11 @@
       "translation": ""
     },
     {
+      "id": "failed to search git history",
+      "message": "failed to search git history",
+      "translation": ""
+    },
+    {
       "id": "failed to setup test data",
       "message": "failed to setup test data",
       "translation": ""
@@ -2152,6 +2157,11 @@
       "translation": ""
     },
     {
+      "id": "load more",
+      "message": "load more",
+      "translation": ""
+    },
+    {
       "id": "load older messages",
       "message": "load older messages",
       "translation": ""
@@ -2882,11 +2892,6 @@
       "translation": ""
     },
     {
-      "id": "Recent File History",
-      "message": "Recent File History",
-      "translation": ""
-    },
-    {
       "id": "references",
       "message": "references",
       "translation": ""
@@ -3080,6 +3085,11 @@
       "id": "Search..",
       "message": "Search..",
       "translation": "Suche.."
+    },
+    {
+      "id": "search by filename...",
+      "message": "search by filename...",
+      "translation": ""
     },
     {
       "id": "Search Engine",
