@@ -31,7 +31,6 @@
   - for usage
   - for devs
 - media gitignore
-- section edit => content above the section is removed (i thought it would be added to the header above)
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme

@@ -4,6 +4,7 @@ package render
 import (
 	"encoding/json"
 	"fmt"
+	"html"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -348,7 +349,8 @@ func getToastUIEditorScript(content, frontMatter string) string {
 
 // RenderMarkdownEditorForm renders a markdown editor form for file creation/editing.
 // Strips YAML front matter before passing content to the editor and re-prepends on save.
-func RenderMarkdownEditorForm(filePath string, editor ...string) string {
+// prefillPath pre-populates the file path input for new files (ignored when editing).
+func RenderMarkdownEditorForm(filePath, prefillPath string, editor ...string) string {
 	content := ""
 	frontMatter := ""
 	isEdit := filePath != ""
@@ -383,10 +385,11 @@ func RenderMarkdownEditorForm(filePath string, editor ...string) string {
 		filepathInput = fmt.Sprintf(`
 				<div class="form-group">
 					<label for="filepath-input">%s</label>
-					<input type="text" id="filepath-input" name="filepath" required placeholder="%s" class="form-input" list="folder-suggestions" />
+					<input type="text" id="filepath-input" name="filepath" required value="%s" placeholder="%s" class="form-input" list="folder-suggestions" />
 					<datalist id="folder-suggestions" hx-get="/api/files/folder-suggestions" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></datalist>
 				</div>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
+			html.EscapeString(prefillPath),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "my-file.md"))
 
 		if currentEditor != "" {

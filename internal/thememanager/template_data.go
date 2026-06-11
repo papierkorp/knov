@@ -251,7 +251,8 @@ func NewBrowseMetadataTemplateData(metadataType string) BrowseMetadataTemplateDa
 // FileNewTemplateData extends base with file creation specific data
 type FileNewTemplateData struct {
 	BaseTemplateData
-	Editor string
+	Editor      string
+	PrefillPath string // pre-populates the file path input (e.g. a kanban collection prefix)
 }
 
 // NewFileNewTemplateData creates file creation specific data

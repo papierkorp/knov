@@ -928,6 +928,7 @@ func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 func handleFileNewMarkdown(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("markdown-editor")
+	data.PrefillPath = r.URL.Query().Get("prefillpath")
 	if err := tm.Render(w, "filenew", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}

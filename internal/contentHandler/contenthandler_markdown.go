@@ -12,6 +12,21 @@ import (
 	"knov/internal/utils"
 )
 
+// splitPreHeader separates any leading non-header content from the section content.
+// Returns (preHeaderContent, sectionContent). If newContent starts with a header,
+// preHeaderContent is empty.
+func splitPreHeader(content string) (string, string) {
+	lines := strings.Split(content, "\n")
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "#") {
+			return strings.Join(lines[:i], "\n"), strings.Join(lines[i:], "\n")
+		}
+	}
+	// no header found, everything is pre-header
+	return content, ""
+}
+
 // MarkdownContentHandler implements ContentHandler for markdown files
 type MarkdownContentHandler struct{}
 
@@ -201,8 +216,13 @@ func (h *MarkdownContentHandler) replaceSectionInMarkdown(content, sectionID, ne
 				inTargetSection = true
 				headerLevel = level
 				logging.LogDebug("found target section '%s' at line %d (level %d), replacing content", sectionID, i, level)
-				if strings.TrimSpace(newContent) != "" {
-					result = append(result, strings.Split(newContent, "\n")...)
+				// split off any leading non-header material (to be appended to parent)
+				pre, sec := splitPreHeader(newContent)
+				if pre != "" {
+					result = append(result, strings.Split(pre, "\n")...)
+				}
+				if sec != "" {
+					result = append(result, strings.Split(sec, "\n")...)
 				}
 				continue
 			} else if inTargetSection && headerID != sectionID {
