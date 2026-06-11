@@ -32,7 +32,6 @@
   - for devs
 - media gitignore
 - section edit => content above the section is removed (i thought it would be added to the header above)
-- in rail theme - info slideout - change the select to icons (same as in the browse slideout)
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme

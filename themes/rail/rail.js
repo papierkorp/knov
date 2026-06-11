@@ -317,8 +317,8 @@ function switchFileSubPanel(view) {
     .forEach((p) => p.classList.remove("active"));
   const target = document.getElementById("fps-" + view);
   if (target) target.classList.add("active");
-  // update active icon button
-  document.querySelectorAll(".fp-file-sub-btn").forEach((btn) => {
+  // sync mode button active state
+  document.querySelectorAll(".fp-file-mode-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.mode === view);
   });
   localStorage.setItem("rail-file-subpanel", view);
