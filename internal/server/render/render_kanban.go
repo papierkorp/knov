@@ -6,22 +6,12 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/kanban"
 	"knov/internal/translation"
 )
 
-// KanbanCard holds the data for a single kanban card
-type KanbanCard struct {
-	FilePath   string
-	Title      string
-	Collection string
-	Status     string
-	Tags       []string
-	CreatedAt  string
-	LastEdited string
-}
-
 // RenderKanbanCard renders a single draggable card
-func RenderKanbanCard(card KanbanCard) string {
+func RenderKanbanCard(card kanban.Card) string {
 	var html strings.Builder
 	prefix := configmanager.GetKanbanPrefix()
 
@@ -96,7 +86,7 @@ func RenderKanbanCard(card KanbanCard) string {
 }
 
 // RenderKanbanColumn renders a single column with its cards
-func RenderKanbanColumn(status, label string, cards []KanbanCard) string {
+func RenderKanbanColumn(status, label string, cards []kanban.Card) string {
 	var html strings.Builder
 
 	fmt.Fprintf(&html, `<div class="kanban-column" id="kanban-col-%s"
@@ -118,10 +108,7 @@ func RenderKanbanColumn(status, label string, cards []KanbanCard) string {
 }
 
 // RenderKanbanBoard renders the full board (all columns)
-func RenderKanbanBoard(columns []struct {
-	Status string
-	Cards  []KanbanCard
-}) string {
+func RenderKanbanBoard(columns []kanban.Column) string {
 	var html strings.Builder
 	html.WriteString(`<div class="kanban-board" id="kanban-board">`)
 	for _, col := range columns {

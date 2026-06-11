@@ -2702,6 +2702,35 @@ paths:
       summary: Apply advanced filter to kanban board
       tags:
       - kanban
+  /api/kanban/{collection}/order:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Persists the drag-and-drop card order for all columns in a collection
+      parameters:
+      - description: Collection name
+        in: path
+        name: collection
+        required: true
+        type: string
+      - description: Column status
+        in: formData
+        name: status
+        required: true
+        type: string
+      - description: Comma-separated list of filepaths in display order
+        in: formData
+        name: order
+        required: true
+        type: string
+      responses:
+        "200":
+          description: order saved
+          schema:
+            type: string
+      summary: Save card order for a kanban column
+      tags:
+      - kanban
   /api/kanban/{collection}/tags:
     get:
       parameters:
@@ -2709,10 +2738,6 @@ paths:
         in: path
         name: collection
         required: true
-        type: string
-      - description: format=options returns HTML option elements
-        in: query
-        name: format
         type: string
       produces:
       - text/html

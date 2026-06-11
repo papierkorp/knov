@@ -13,6 +13,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/kanban"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
 	"knov/internal/server/notify"
@@ -667,9 +668,9 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 	oldMeta, _ := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
 	var oldKbTag string
 	if oldMeta != nil {
-		oldKbTag = kanbanTagFromList(oldMeta.Tags)
+		oldKbTag = kanban.TagFromList(oldMeta.Tags)
 	}
-	newKbTag := kanbanTagFromList(sanitized)
+	newKbTag := kanban.TagFromList(sanitized)
 
 	metadata := &files.Metadata{
 		Path: pathutils.ToWithPrefix(filePath),
@@ -681,7 +682,7 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if msg := buildKanbanTagNotifyMsg(oldKbTag, newKbTag); msg != "" {
+	if msg := kanban.TagNotifyMsg(oldKbTag, newKbTag); msg != "" {
 		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), msg))
 	} else {
 		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "tags updated"))

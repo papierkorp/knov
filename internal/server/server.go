@@ -349,6 +349,7 @@ func StartServerChi() {
 			r.Get("/{collection}", handleAPIGetKanbanBoard)
 			r.Get("/{collection}/tags", handleAPIGetKanbanTags)
 			r.Post("/{collection}/filter", handleAPIPostKanbanFilter)
+			r.Post("/{collection}/order", handleAPIKanbanSaveOrder)
 			r.Post("/card/move", handleAPIKanbanMoveCard)
 			r.Get("/excerpt", handleAPIGetKanbanExcerpt)
 		})

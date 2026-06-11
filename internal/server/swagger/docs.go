@@ -3601,6 +3601,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/kanban/{collection}/order": {
+            "post": {
+                "description": "Persists the drag-and-drop card order for all columns in a collection",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "tags": [
+                    "kanban"
+                ],
+                "summary": "Save card order for a kanban column",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection name",
+                        "name": "collection",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Column status",
+                        "name": "status",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated list of filepaths in display order",
+                        "name": "order",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "order saved",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/kanban/{collection}/tags": {
             "get": {
                 "produces": [
@@ -3617,12 +3660,6 @@ const docTemplate = `{
                         "name": "collection",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "format=options returns HTML option elements",
-                        "name": "format",
-                        "in": "query"
                     }
                 ],
                 "responses": {}

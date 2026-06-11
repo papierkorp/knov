@@ -11,6 +11,7 @@ import (
 	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/git"
+	"knov/internal/kanban"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
@@ -461,35 +462,18 @@ func NewFilterEditTemplateData(filterID string) FilterEditTemplateData {
 // ------------ Kanban TemplateData --------------
 // -----------------------------------------------
 
-// KanbanCard represents a single card on the kanban board
-type KanbanCard struct {
-	FilePath   string
-	Title      string
-	Collection string
-	Status     string // the kanban status value (e.g. "inbox")
-	Tags       []string
-	CreatedAt  string
-}
-
-// KanbanColumn represents a single column on the board
-type KanbanColumn struct {
-	Status string
-	Label  string
-	Cards  []KanbanCard
-}
-
 // KanbanTemplateData extends base with kanban board data
 type KanbanTemplateData struct {
 	BaseTemplateData
 	Collection      string
-	Columns         []KanbanColumn
+	Columns         []kanban.Column
 	Statuses        []string // all possible statuses (for move target)
 	Prefix          string   // kanban tag prefix
 	FilterPanelHTML string   // pre-rendered advanced filter panel HTML
 }
 
 // NewKanbanTemplateData creates kanban board template data
-func NewKanbanTemplateData(collection string, columns []KanbanColumn, filterPanelHTML string) KanbanTemplateData {
+func NewKanbanTemplateData(collection string, columns []kanban.Column, filterPanelHTML string) KanbanTemplateData {
 	return KanbanTemplateData{
 		BaseTemplateData: NewBaseTemplateData("kanban: " + collection),
 		Collection:       collection,
