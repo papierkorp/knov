@@ -22,7 +22,6 @@
 - move environment info in settings into its own panel
 - rail theme: open file in new window button to the left of the close button
 - kanban - add + (add new file) button which automatically adds the <collection> to the filepath
-- create new todo/list => no filepath
 - filepath with spaces/special chars?
   - 2026/06/10 10:40:30 error [git.go - CommitFile]: git: failed to stage docs/sirconic_todo/gitlab-postgresql-password secret löschen.md: invalid checksum
   - 2026/06/10 10:40:30 info [api_files.go - handleAPIFileSave]: created metadata for new file: sirconic_todo/gitlab-postgresql-password secret löschen.md (editor: markdown-editor)
@@ -44,7 +43,6 @@
   - for usage
   - for devs
 - media gitignore
-- rail theme - browse - change select to icons above the filter (amount of icons based on size)
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme

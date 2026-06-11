@@ -2797,8 +2797,18 @@
       "translation": ""
     },
     {
+      "id": "path/to/file.list",
+      "message": "path/to/file.list",
+      "translation": ""
+    },
+    {
       "id": "path/to/file.md",
       "message": "path/to/file.md",
+      "translation": ""
+    },
+    {
+      "id": "path/to/file.todo",
+      "message": "path/to/file.todo",
       "translation": ""
     },
     {
