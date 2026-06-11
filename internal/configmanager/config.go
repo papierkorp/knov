@@ -72,6 +72,7 @@ type AppConfig struct {
 	AutoCreateTags          []string
 	AutoCreateCollections   []string
 	KanbanTagColors         map[string]string
+	KanbanCardStyles        map[string]string // status → "normal"|"italic"|"highlighted"|"deleted"
 	NotifyDuration          int
 }
 
@@ -142,6 +143,7 @@ func InitAppConfig() {
 		AutoCreateTags:          getStringListEnv("KNOV_AUTOCREATE_TAGS", []string{}),
 		AutoCreateCollections:   getStringListEnv("KNOV_AUTOCREATE_COLLECTIONS", []string{}),
 		KanbanTagColors:         getStringMapEnv("KNOV_KANBAN_TAG_COLORS"),
+		KanbanCardStyles:        getStringMapEnv("KNOV_KANBAN_CARD_STYLES"),
 		NotifyDuration:          getIntEnv("KNOV_NOTIFY_DURATION", 3500),
 	}
 
@@ -167,6 +169,11 @@ func GetNotifyDuration() int {
 // GetKanbanTagColors returns the tag-name → CSS-color map
 func GetKanbanTagColors() map[string]string {
 	return appConfig.KanbanTagColors
+}
+
+// GetKanbanCardStyles returns the kanban-status → card-style map ("normal"|"italic"|"highlighted"|"deleted")
+func GetKanbanCardStyles() map[string]string {
+	return appConfig.KanbanCardStyles
 }
 
 // getStringMapEnv parses "key1:val1,key2:val2" into a map

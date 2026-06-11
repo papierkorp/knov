@@ -15,17 +15,11 @@
 **per ai**
 - fix all the editor warnings
 - backup solution
-- kanban board different styles for different rows, new setting with a kv pair <kanban_row>:<style> if nothing is given use normal
-  - italic style
-  - normal style
-  - deleted style
 - rail theme: open file in new window button to the left of the close button
-- kanban - add + (add new file) button which automatically adds the <collection> to the filepath
 - syntax highlighting in the editor
 - show logs in app
 - download logs
 - new file: filepath or collection + filename
-- kanban board - set order per drag and drop?/add sort button
 - codeberg deployment pipeline?
 - make docker build viable
   - for usage

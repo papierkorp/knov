@@ -156,3 +156,35 @@
   padding-top: 0.35rem;
   margin-top: 0.1rem;
 }
+
+/* ---- Card style variants (KNOV_KANBAN_CARD_STYLES) ---- */
+
+.kanban-card--italic .kanban-card-title {
+  font-style: italic;
+  color: var(--text-secondary);
+  opacity: 0.75;
+}
+
+.kanban-card--italic {
+  font-style: italic;
+  color: var(--text-secondary);
+  opacity: 0.75;
+}
+
+.kanban-card--highlighted {
+  background: color-mix(in srgb, var(--warning) 8%, transparent);
+  border-color: color-mix(in srgb, var(--warning) 40%, transparent);
+}
+
+.kanban-card--highlighted .kanban-card-title {
+  font-weight: 700;
+}
+
+.kanban-card--deleted {
+  opacity: 0.5;
+}
+
+.kanban-card--deleted .kanban-card-title {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}

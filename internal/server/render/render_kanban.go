@@ -33,13 +33,18 @@ func RenderKanbanCard(card kanban.Card) string {
 		}
 	}
 
-	fmt.Fprintf(&html, `<div class="kanban-card" id="kanban-card-%s"
+	cardClass := "kanban-card"
+	if style := configmanager.GetKanbanCardStyles()[card.Status]; style != "" && style != "normal" {
+		cardClass += " kanban-card--" + style
+	}
+
+	fmt.Fprintf(&html, `<div class="%s" id="kanban-card-%s"
 		draggable="true"
 		data-filepath="%s"
 		data-status="%s"
 		data-prefix="%s"
 		ondragstart="kanbanDragStart(event)">`,
-		sanitizeID(card.FilePath), card.FilePath, card.Status, prefix)
+		cardClass, sanitizeID(card.FilePath), card.FilePath, card.Status, prefix)
 
 	// title + tag chips on the same row
 	html.WriteString(`<div class="kanban-card-header">`)
