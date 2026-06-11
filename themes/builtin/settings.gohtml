@@ -132,6 +132,8 @@
 <section class="settings-section">
     <h2>{{T "Environment Info"}} <small>({{T "restart required to change"}})</small></h2>
     <div class="setting-item">
+        <div class="help-text">{{T "Version"}}: <code>{{.Version}}</code></div>
+        <div class="help-text">{{T "Build Time"}}: <code>{{.BuildTime}}</code></div>
         <div class="help-text">{{T "Server Port"}}: <code>{{.AppConfig.ServerPort}}</code></div>
         <div class="help-text">{{T "Data Path"}}: <code>{{.AppConfig.DataPath}}</code></div>
         <div class="help-text">{{T "Storage Path"}}: <code>{{.AppConfig.StoragePath}}</code></div>

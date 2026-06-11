@@ -15,6 +15,7 @@ import (
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
+	"knov/internal/version"
 )
 
 // -----------------------------------------------
@@ -31,6 +32,8 @@ type BaseTemplateData struct {
 	FileType      string
 	CodeBlockWrap bool
 	T             func(string, ...any) string
+	Version       string
+	BuildTime     string
 }
 
 // NewBaseTemplateData creates base data used by all templates
@@ -44,6 +47,8 @@ func NewBaseTemplateData(title string) BaseTemplateData {
 		CodeBlockWrap: configmanager.GetUserSettings().CodeBlockWrap,
 		FileType:      "",
 		T:             translation.Sprintf,
+		Version:       version.Version,
+		BuildTime:     version.BuildTime,
 	}
 }
 

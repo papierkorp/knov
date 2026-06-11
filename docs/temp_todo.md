@@ -25,12 +25,7 @@
   - for usage
   - for devs
 - media gitignore
-
-**maybe**
-- /releasenotes route with new icon on the bottom of the rail theme
-  - use git for releasenotes?
-- /changelog route with new icon on the bottom of the rail theme
-  - us git for patchnotes?
+- /changelog route with new icon on the bottom of the rail theme or some other way to display the changelog (its already as a file in the binary filesystem)
 
 # performance updates
 

@@ -227,6 +227,11 @@
       "translation": ""
     },
     {
+      "id": "Build Time",
+      "message": "Build Time",
+      "translation": ""
+    },
+    {
       "id": "by",
       "message": "by",
       "translation": ""
@@ -3694,6 +3699,11 @@
     {
       "id": "value",
       "message": "value",
+      "translation": ""
+    },
+    {
+      "id": "Version",
+      "message": "Version",
       "translation": ""
     },
     {

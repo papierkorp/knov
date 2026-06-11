@@ -1,14 +1,16 @@
 # Variables
-APP_NAME := knov
-BUILD_TAGS := fts5
+APP_NAME  := knov
+VERSION   := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+BUILD_TIME := $(shell date -u '+%Y-%m-%d %H:%M')
+LDFLAGS   := -ldflags "-X 'knov/internal/version.Version=$(VERSION)' -X 'knov/internal/version.BuildTime=$(BUILD_TIME) UTC'"
 
 # ------------- actual usage -------------
 dev: swaggo-api-init changelog
 	KNOV_LOG_LEVEL=debug go run ./
 
 prod: swaggo-api-init translation changelog
-	go build -o bin/$(APP_NAME) ./
-	GOOS=windows GOARCH=amd64 go build -o bin/$(APP_NAME).exe ./
+	go build $(LDFLAGS) -o bin/$(APP_NAME) ./
+	GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME).exe ./
 
 # ------------- docker -------------
 

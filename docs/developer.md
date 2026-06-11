@@ -436,6 +436,46 @@ I added filter tests for these cases:
 - date contains
 - date regex
 
+# Versioning
+
+Version and build time are injected at link time via `-ldflags` — no file is written, the values are burned directly into the binary.
+
+The source of truth is `internal/version/version.go`:
+
+```go
+var Version   = "dev"
+var BuildTime = "unknown"
+```
+
+These defaults are used by `make dev` (`go run`, no ldflags). `make prod` overwrites them:
+
+```makefile
+VERSION    := $(shell git describe --tags --always --dirty)
+BUILD_TIME := $(shell date -u '+%Y-%m-%d %H:%M')
+LDFLAGS    := -ldflags "-X 'knov/internal/version.Version=$(VERSION)' \
+                         -X 'knov/internal/version.BuildTime=$(BUILD_TIME) UTC'"
+```
+
+**Output depending on context**
+
+| Situation | Example value |
+|---|---|
+| `make dev` | `dev` / `unknown` |
+| `make prod`, no tags yet | `abc1234` / `2026-06-11 14:32 UTC` |
+| `make prod`, after `git tag v0.2.0` | `v0.2.0` / `2026-06-11 14:32 UTC` |
+| `make prod`, commits after last tag | `v0.2.0-3-gabc1234` / `2026-06-11 14:32 UTC` |
+| `make prod`, uncommitted changes | `v0.2.0-dirty` / `2026-06-11 14:32 UTC` |
+
+Both values are available in every template via `.Version` and `.BuildTime` (added to `BaseTemplateData`). They are displayed at the top of the Environment Info section on the settings page.
+
+**Creating a release**
+
+```bash
+git tag v0.2.0
+git push --tags
+# CI runs make prod → builds knov-v0.2.0-linux and knov-v0.2.0-windows.exe
+```
+
 # Changelog
 
 Changelogs are auto-generated from git commit history using [Conventional Commits](https://www.conventionalcommits.org/).
