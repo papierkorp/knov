@@ -107,6 +107,11 @@
       "translation": ""
     },
     {
+      "id": "alphabetical",
+      "message": "alphabetical",
+      "translation": ""
+    },
+    {
       "id": "ancestors",
       "message": "ancestors",
       "translation": ""
@@ -1377,6 +1382,11 @@
       "translation": ""
     },
     {
+      "id": "file size",
+      "message": "file size",
+      "translation": ""
+    },
+    {
       "id": "Files Overview",
       "message": "Files Overview",
       "translation": ""
@@ -1914,6 +1924,11 @@
     {
       "id": "kanban",
       "message": "kanban",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Card Styles",
+      "message": "Kanban Card Styles",
       "translation": ""
     },
     {
@@ -2469,6 +2484,11 @@
     {
       "id": "new",
       "message": "new",
+      "translation": ""
+    },
+    {
+      "id": "new file",
+      "message": "new file",
       "translation": ""
     },
     {
