@@ -317,9 +317,10 @@ function switchFileSubPanel(view) {
     .forEach((p) => p.classList.remove("active"));
   const target = document.getElementById("fps-" + view);
   if (target) target.classList.add("active");
-  // sync select in case called programmatically
-  const sel = document.getElementById("fp-file-select");
-  if (sel) sel.value = view;
+  // update active icon button
+  document.querySelectorAll(".fp-file-sub-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.mode === view);
+  });
   localStorage.setItem("rail-file-subpanel", view);
   // clear toc filter when leaving toc panel
   if (view !== "toc") {
@@ -836,8 +837,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // restore saved file sub-panel selection
   const savedSubPanel = localStorage.getItem("rail-file-subpanel");
   if (savedSubPanel) {
-    const sel = document.getElementById("fp-file-select");
-    if (sel) sel.value = savedSubPanel;
     switchFileSubPanel(savedSubPanel);
   }
 

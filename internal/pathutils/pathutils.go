@@ -2,6 +2,7 @@
 package pathutils
 
 import (
+	"net/url"
 	"path/filepath"
 	"strings"
 
@@ -185,18 +186,12 @@ func getMediaPath() string {
 }
 
 // ToFileURL returns a browser-safe URL for viewing a file.
-// Segments are path-escaped so spaces and special characters work correctly.
+// Segments are path-escaped so spaces, Unicode, and special characters work correctly.
 func ToFileURL(rel string) string {
 	rel = filepath.ToSlash(rel)
 	parts := strings.Split(rel, "/")
 	for i, p := range parts {
-		parts[i] = strings.NewReplacer(
-			" ", "%20",
-			"#", "%23",
-			"?", "%3F",
-			"&", "%26",
-			"+", "%2B",
-		).Replace(p)
+		parts[i] = url.PathEscape(p)
 	}
 	return "/files/" + strings.Join(parts, "/")
 }
@@ -206,13 +201,7 @@ func ToMediaURL(rel string) string {
 	rel = filepath.ToSlash(rel)
 	parts := strings.Split(rel, "/")
 	for i, p := range parts {
-		parts[i] = strings.NewReplacer(
-			" ", "%20",
-			"#", "%23",
-			"?", "%3F",
-			"&", "%26",
-			"+", "%2B",
-		).Replace(p)
+		parts[i] = url.PathEscape(p)
 	}
 	return "/media/" + strings.Join(parts, "/")
 }

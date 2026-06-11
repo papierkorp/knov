@@ -501,7 +501,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("successfully moved file via metadata: %s -> %s", filePath, newpath)
 	newRelPath := pathutils.ToRelative(newpath)
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully"))
-	w.Header().Set("HX-Redirect", "/files/"+newRelPath)
+	w.Header().Set("HX-Redirect", pathutils.ToFileURL(newRelPath))
 	w.WriteHeader(http.StatusOK)
 }
 

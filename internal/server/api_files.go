@@ -338,7 +338,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 
 	// if this was a new file creation, redirect to the file view
 	if isNewFile {
-		w.Header().Set("HX-Redirect", "/files/"+filePath)
+		w.Header().Set("HX-Redirect", pathutils.ToFileURL(filePath))
 		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file created"))
 		writeResponse(w, r, map[string]string{"filepath": filePath}, "")
 		return
@@ -766,7 +766,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo("successfully renamed file: %s -> %s", currentPath, newPath)
 
 	// redirect to the new file location
-	w.Header().Set("HX-Redirect", "/files/"+newPath)
+	w.Header().Set("HX-Redirect", pathutils.ToFileURL(newPath))
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file renamed"))
 	writeResponse(w, r, map[string]string{"filepath": newPath}, "")
 }

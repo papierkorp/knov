@@ -243,13 +243,13 @@
                     <button class="fp-action-btn"           id="fp-rebuild-btn" title="{{T "rebuild"}}"><i class="fa fa-rotate"></i></button>
                     <button class="fp-action-btn fp-btn-delete" popovertarget="delete-modal" title="{{T "delete"}}"><i class="fa fa-trash"></i></button>
                 </div>
-                <select id="fp-file-select" onchange="switchFileSubPanel(this.value)">
-                    <option value="metadata">{{T "metadata"}}</option>
-                    <option value="toc">{{T "table of contents"}}</option>
-                    <option value="history">{{T "history"}}</option>
-                    <option value="references">{{T "references"}}</option>
-                    <option value="connections">{{T "connections"}}</option>
-                </select>
+                <div class="fp-file-sub-modes" id="fp-file-sub-modes">
+                    <button class="fp-file-sub-btn active" data-mode="metadata"    onclick="switchFileSubPanel('metadata')"    title="{{T &quot;metadata&quot;}}"><i class="fa fa-circle-info"></i></button>
+                    <button class="fp-file-sub-btn"        data-mode="toc"         onclick="switchFileSubPanel('toc')"         title="{{T &quot;table of contents&quot;}}"><i class="fa fa-list-ul"></i></button>
+                    <button class="fp-file-sub-btn"        data-mode="history"     onclick="switchFileSubPanel('history')"     title="{{T &quot;history&quot;}}"><i class="fa fa-clock-rotate-left"></i></button>
+                    <button class="fp-file-sub-btn"        data-mode="references"  onclick="switchFileSubPanel('references')"  title="{{T &quot;references&quot;}}"><i class="fa fa-arrow-up-right-from-square"></i></button>
+                    <button class="fp-file-sub-btn"        data-mode="connections" onclick="switchFileSubPanel('connections')" title="{{T &quot;connections&quot;}}"><i class="fa fa-diagram-project"></i></button>
+                </div>
             </div>
 
             <!-- metadata sub-panel -->
