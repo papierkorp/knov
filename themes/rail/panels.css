@@ -318,7 +318,7 @@
 }
 
 /* =============================================
-   browse panel controls + tree overview
+   browse panel controls + mode buttons + tree
    ============================================= */
 
 .fp-browse-back {
@@ -347,8 +347,7 @@
   flex-shrink: 0;
 }
 
-.fp-browse-controls input,
-.fp-browse-controls select {
+.fp-browse-controls input {
   width: 100%;
   padding: 4px 6px;
   font-size: 0.8em;
@@ -359,10 +358,47 @@
   box-sizing: border-box;
 }
 
-.fp-browse-controls input:focus,
-.fp-browse-controls select:focus {
+.fp-browse-controls input:focus {
   border-color: var(--primary);
   outline: none;
+}
+
+.fp-browse-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.fp-browse-mode-btn {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  min-width: 22px;
+  padding: 0 4px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 0.8em;
+  cursor: pointer;
+  transition:
+    color 0.12s,
+    background 0.12s,
+    border-color 0.12s;
+}
+
+.fp-browse-mode-btn:hover {
+  color: var(--text);
+  background: var(--bg);
+  border-color: var(--border);
+}
+
+.fp-browse-mode-btn.active {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
 .fp-tree {
@@ -1551,6 +1587,7 @@
   display: table;
   clear: both;
 }
+
 /* tag chips inside sidebar inline editor */
 .meta-inline-editor .tag-chips-container {
   display: flex;

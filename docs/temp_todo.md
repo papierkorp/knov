@@ -44,6 +44,7 @@
   - for usage
   - for devs
 - media gitignore
+- rail theme - browse - change select to icons above the filter (amount of icons based on size)
 
 **maybe**
 - /releasenotes route with new icon on the bottom of the rail theme

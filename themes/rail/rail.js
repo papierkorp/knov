@@ -78,6 +78,12 @@ function switchBrowseMode(mode) {
   if (!url) return;
   el.dataset.loaded = "true";
   localStorage.setItem("rail-browse-mode", mode);
+
+  // update active button
+  document.querySelectorAll(".fp-browse-mode-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.mode === mode);
+  });
+
   const search = document.getElementById("fp-browse-search");
   if (search) search.value = "";
   htmx
@@ -720,7 +726,8 @@ function initDashboardEditButtons(container) {
         decorateDashboardLinks(e.detail.target);
       } else if (id === "fp-browse-content") {
         // browse panel — only decorate when dashboards mode is active
-        const mode = document.getElementById("fp-browse-select")?.value;
+        const mode = document.querySelector(".fp-browse-mode-btn.active")
+          ?.dataset.mode;
         if (mode === "dashboards") decorateDashboardLinks(e.detail.target);
       }
     });
@@ -778,15 +785,9 @@ function initBrowseInterceptor() {
       content.removeEventListener("htmx:afterSwap", addBack);
       const btn = document.createElement("button");
       btn.className = "fp-browse-back";
-      btn.textContent =
-        "← " +
-        (document.getElementById("fp-browse-select")?.options[
-          document.getElementById("fp-browse-select")?.selectedIndex
-        ]?.text || "back");
-      btn.onclick = () =>
-        switchBrowseMode(
-          document.getElementById("fp-browse-select")?.value || "tags",
-        );
+      const activeBtn = document.querySelector(".fp-browse-mode-btn.active");
+      btn.textContent = "← " + (activeBtn?.title || "back");
+      btn.onclick = () => switchBrowseMode(activeBtn?.dataset.mode || "tree");
       content.insertBefore(btn, content.firstChild);
     });
 
@@ -801,11 +802,12 @@ document.addEventListener("DOMContentLoaded", () => {
   initBrowseInterceptor();
   restoreFpFilterState();
 
-  // restore saved browse mode (updates select + data-url before first lazyLoad)
+  // restore saved browse mode — update active button + data-url before first lazyLoad
   const savedMode = localStorage.getItem("rail-browse-mode");
   if (savedMode) {
-    const select = document.getElementById("fp-browse-select");
-    if (select) select.value = savedMode;
+    document.querySelectorAll(".fp-browse-mode-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.mode === savedMode);
+    });
     const urls = {
       tree: "/api/files/tree?actions=true",
       browse: "/api/files/folder?path=&target=%23fp-browse-content",
@@ -816,6 +818,7 @@ document.addEventListener("DOMContentLoaded", () => {
       dashboards: "/api/dashboards",
       editor: "/api/metadata/editors",
       filters: "/api/files/browse?metadata=editor&value=filter-editor",
+      notifications: "/api/notifications",
     };
     const el = document.getElementById("fp-browse-content");
     if (el && urls[savedMode]) el.dataset.url = urls[savedMode];
