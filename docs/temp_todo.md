@@ -33,7 +33,6 @@
   - 2026/06/10 10:43:42 info [api_files.go - handleAPIFileSave]: created metadata for new file: sirconic_todo/gitlab-postgresql-password_löschen.md (editor: markdown-editor)
   - 2026/06/10 10:43:42 error [git.go - CommitFile]: git: failed to stage docs/sirconic_todo/gitlab-postgresql-password_löschen.md: invalid checksum
 - syntax highlighting in the editor
-- editor single line code blocks not readable (background color same as color)
 - show logs in app
 - download logs
 - new file: filepath or collection + filename

@@ -83,6 +83,11 @@
 }
 
 /* markdown syntax highlighting in editor */
+.toastui-editor-md-code {
+  background: var(--bg-secondary) !important;
+  color: var(--accent) !important;
+}
+
 .toastui-editor-md-code-block {
   background: var(--bg-secondary) !important;
   color: var(--accent) !important;
