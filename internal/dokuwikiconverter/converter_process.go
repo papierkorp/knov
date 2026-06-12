@@ -28,13 +28,15 @@ func (h *Converter) processDokuWikiSyntax(content string, outputFormat string) s
 
 	// 4. Code blocks (convert tags, then protect content from further processing)
 	content = h.processCodeBlocks(content, outputFormat)
-	content, codeBlocks := h.extractCodeBlocks(content)
 
-	// 4b. Folded sections (++ title | content ++) — must run after processCodeBlocks so
-	// fence markers (```lang) are already in place when indentation is calculated
+	// 4b. Folded sections — runs after processCodeBlocks (so fence markers are in place)
+	// but BEFORE extractCodeBlocks so closeFold sees actual fence lines and can indent
+	// every line of the code block correctly (not just the placeholder).
 	if outputFormat == "markdown" {
 		content = h.convertFoldedSections(content)
 	}
+
+	content, codeBlocks := h.extractCodeBlocks(content)
 
 	// 4c. Replace catlist (after code blocks are extracted so codeblocks are protected)
 	content = h.replaceCatlistTags(content, outputFormat)
@@ -512,6 +514,33 @@ func (h *Converter) convertFoldedSections(content string) string {
 	var foldedContent []string
 	var foldedIndent string // leading whitespace of the list item containing the folded section
 
+	// closeFold renders accumulated foldedContent under the section title and resets
+	// fold state. Fence markers are kept at column 0 (no list indent) so they render
+	// correctly in all Markdown parsers; non-fence text lines get childIndent.
+	closeFold := func() {
+		innerContent := strings.TrimSpace(strings.Join(foldedContent, "\n"))
+		if innerContent != "" {
+			childIndent := strings.Repeat("  ", len(foldedIndent)/2)
+			indentedLines := strings.Split(innerContent, "\n")
+			inFence := false
+			for j, l := range indentedLines {
+				t := strings.TrimSpace(l)
+				if strings.HasPrefix(t, "```") {
+					inFence = !inFence
+					indentedLines[j] = t // fences stay at column 0
+				} else if inFence {
+					indentedLines[j] = l // fence content: leave untouched
+				} else if l != "" {
+					indentedLines[j] = childIndent + l
+				}
+			}
+			result = append(result, strings.Join(indentedLines, "\n"))
+		}
+		inFoldedSection = false
+		foldedContent = []string{}
+		foldedIndent = ""
+	}
+
 	for i := 0; i < len(lines); i++ {
 		line := lines[i]
 
@@ -541,7 +570,17 @@ func (h *Converter) convertFoldedSections(content string) string {
 
 				// check if there's inline content after the |
 				if len(titleAndRest) > 1 && strings.TrimSpace(titleAndRest[1]) != "" {
-					foldedContent = append(foldedContent, strings.TrimSpace(titleAndRest[1]))
+					inlineContent := strings.TrimSpace(titleAndRest[1])
+					if strings.HasSuffix(inlineContent, "++") {
+						// fold opens and closes on the same line (e.g. ++ title | <sxh>...</sxh>++)
+						inner := strings.TrimSpace(strings.TrimSuffix(inlineContent, "++"))
+						if inner != "" {
+							foldedContent = append(foldedContent, inner)
+						}
+						closeFold()
+					} else {
+						foldedContent = append(foldedContent, inlineContent)
+					}
 				}
 				continue
 			}
@@ -558,32 +597,7 @@ func (h *Converter) convertFoldedSections(content string) string {
 				if beforeClose != "" {
 					foldedContent = append(foldedContent, beforeClose)
 				}
-
-				innerContent := strings.TrimSpace(strings.Join(foldedContent, "\n"))
-				if innerContent != "" {
-					// indent non-fence lines so they stay nested in the list;
-					// fence markers (```lang / ```) get childIndent, content inside stays untouched.
-					// foldedIndent is raw DokuWiki whitespace (2 spaces per level); markdown renders
-					// level N as (N-1)*2 spaces, so child content sits at N*2 spaces.
-					childIndent := strings.Repeat("  ", len(foldedIndent)/2)
-					indentedLines := strings.Split(innerContent, "\n")
-					inFence := false
-					for j, l := range indentedLines {
-						trimmed := strings.TrimSpace(l)
-						if strings.HasPrefix(trimmed, "```") {
-							inFence = !inFence
-							indentedLines[j] = childIndent + trimmed
-						} else if inFence {
-							indentedLines[j] = l // fence content: leave untouched
-						} else if l != "" {
-							indentedLines[j] = childIndent + l
-						}
-					}
-					result = append(result, strings.Join(indentedLines, "\n"))
-				}
-				inFoldedSection = false
-				foldedContent = []string{}
-				foldedIndent = ""
+				closeFold()
 				continue
 			} else {
 				foldedContent = append(foldedContent, line)
