@@ -29,10 +29,10 @@
 - kanban filter -lastEdited less than exlude doesnt work
 - kanban event log/activity history
 - kanban a small div for a not visible status (especially archive) to drag and drop into - maybe make archive a special status
+- toastui editor - new button add wiki file (use already existing datasource)
+- detect if a request is already loading and block multiple requests of the same kind
 
 # performance updates
-
-detect if a request is already loading and block multiple requests of the same kind
 
 **read**
 - use Query() instead of a loop through files.GetAllFiles()

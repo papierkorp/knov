@@ -29,8 +29,11 @@ func CleanLink(link string) string {
 	cleanLink = strings.Split(cleanLink, "#")[0]
 	cleanLink = strings.Split(cleanLink, "|")[0]
 	cleanLink = strings.TrimSpace(cleanLink)
-	// strip leading slash so /media/... and /files/... match metadata paths (media/..., docs/...)
+	// map URL path prefixes to metadata path prefixes
 	cleanLink = strings.TrimPrefix(cleanLink, "/")
+	if strings.HasPrefix(cleanLink, "files/") {
+		cleanLink = "docs/" + cleanLink[len("files/"):]
+	}
 
 	// don't add .md extension to media files or files with existing extensions
 	if strings.HasPrefix(cleanLink, "media/") ||

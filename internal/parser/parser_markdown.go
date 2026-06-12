@@ -435,8 +435,10 @@ func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
 	text := string(content)
 	text = removeCodeBlocks(text)
 
+	// match [text](url) but exclude image links ![]()
+	// prepend a space so links at position 0 (start of file/line) still have a preceding char
 	mdLinkRegex := regexp.MustCompile(`[^!]\[([^\]]+)\]\(([^\)]+)\)`)
-	for _, match := range mdLinkRegex.FindAllStringSubmatch(text, -1) {
+	for _, match := range mdLinkRegex.FindAllStringSubmatch(" "+text, -1) {
 		if len(match) > 2 {
 			link := strings.TrimSpace(match[2])
 			if link != "" && !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") && !strings.HasPrefix(link, "#") {
