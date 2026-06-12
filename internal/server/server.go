@@ -254,6 +254,7 @@ func StartServerChi() {
 			r.Get("/metadata-form", handleAPIMetadataForm)
 			r.Get("/folder", handleAPIGetFolder)
 			r.Get("/folder-suggestions", handleAPIGetFolderSuggestions)
+			r.Get("/autocomplete", handleAPIFilesAutocomplete)
 			r.Get("/export/markdown", handleAPIExportToMarkdown)
 			r.Post("/export/zip", handleAPIExportAllFiles)
 			r.Post("/export/markdown-converted", handleAPIExportAllFilesWithMarkdownConversion)

@@ -189,6 +189,7 @@ func RenderListEditor(filepath string, initialItem ...string) string {
 
 			return { addItem, addNestedItem, globalIndent, globalOutdent, globalDelete, undoDelete };
 		})();
+		initWikiAutocompleteForInputs(document.getElementById('list-editor-form'));
 	</script>
 </div>
 	`,

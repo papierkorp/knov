@@ -374,6 +374,7 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 
 			return { addItem, addNestedItem, globalIndent, globalOutdent, globalDelete, undoDelete };
 		})();
+		initWikiAutocompleteForInputs(document.getElementById('todo-editor-form'));
 	</script>
 </div>
 	`,

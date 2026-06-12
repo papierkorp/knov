@@ -338,6 +338,7 @@ func injectDefaultJS(html string) string {
 		return html
 	}
 	scripts := notify.RenderJS(configmanager.GetNotifyDuration())
+	scripts += `<script src="/static/wiki-autocomplete.js"></script>`
 	scripts += `<script>
 function toggleConflictDiff(btn, id, url) {
 	var c = document.getElementById(id);

@@ -35,8 +35,31 @@ func (h *MarkdownHandler) CanHandle(filename string) bool {
 func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 	content = StripFrontMatter(content)
 	processed := h.wrapRawHTMLBlocks(string(content))
+	processed = h.processWikiLinks(processed)
 	processed = h.processMarkdownLinks(processed)
 	return []byte(processed), nil
+}
+
+var wikiLinkRe = regexp.MustCompile(`\[\[([^\[\]]+)\]\]`)
+
+// processWikiLinks converts [[path]] and [[path|display]] to standard markdown links.
+func (h *MarkdownHandler) processWikiLinks(content string) string {
+	return wikiLinkRe.ReplaceAllStringFunc(content, func(match string) string {
+		inner := match[2 : len(match)-2]
+		parts := strings.SplitN(inner, "|", 2)
+		linkPath := strings.TrimSpace(parts[0])
+		display := strings.TrimSuffix(filepath.Base(linkPath), ".md")
+		if len(parts) == 2 {
+			display = strings.TrimSpace(parts[1])
+		}
+		if !strings.Contains(filepath.Base(linkPath), ".") {
+			linkPath += ".md"
+		}
+		if decoded, err := url.PathUnescape(linkPath); err == nil {
+			linkPath = decoded
+		}
+		return "[" + display + "](" + pathutils.ToFileURL(linkPath) + ")"
+	})
 }
 
 // wrapRawHTMLBlocks wraps bare HTML blocks in fenced code blocks so goldmark
@@ -449,10 +472,21 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 	})
 }
 
+var wikiExtractRe = regexp.MustCompile(`\[\[([^\[\]|]+)`)
+
 func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
 	var links []string
 	text := string(content)
 	text = removeCodeBlocks(text)
+
+	// extract [[wiki links]] (path before | if any)
+	for _, match := range wikiExtractRe.FindAllStringSubmatch(text, -1) {
+		if len(match) > 1 {
+			if link := strings.TrimSpace(match[1]); link != "" {
+				links = append(links, link)
+			}
+		}
+	}
 
 	// match [text](url) but exclude image links ![]()
 	// prepend a space so links at position 0 (start of file/line) still have a preceding char

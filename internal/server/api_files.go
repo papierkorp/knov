@@ -4,6 +4,7 @@ package server
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -909,4 +910,36 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "deleted %d files", deleted))
 	w.Header().Set("HX-Redirect", "/browse/"+groupType)
 	writeResponse(w, r, map[string]int{"deleted": deleted}, "")
+}
+
+func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
+	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
+
+	allFiles, err := files.GetAllPhysicalFiles()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	type result struct {
+		Path     string `json:"path"`
+		Filename string `json:"filename"`
+	}
+
+	results := make([]result, 0, 20)
+	for _, f := range allFiles {
+		rel := pathutils.ToRelative(f.Path)
+		if q == "" || strings.Contains(strings.ToLower(rel), q) {
+			results = append(results, result{
+				Path:     rel,
+				Filename: filepath.Base(rel),
+			})
+			if len(results) >= 20 {
+				break
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
 }

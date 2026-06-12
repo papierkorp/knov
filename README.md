@@ -49,6 +49,7 @@ KNOV tracks metadata automatically and lets you enrich it manually.
 **Manual:**
 - Tags, parent links, editor type
 - External references (URL + description, stored in metadata - not cluttering the file content) appended to a file
+- easy way to add internal links with a `[[<filelink>]]` syntax
 
 All metadata is browsable on the overview page (`/browse/files`) grouped by metadata
 

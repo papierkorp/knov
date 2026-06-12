@@ -339,6 +339,7 @@ func getToastUIEditorScript(content, frontMatter string) string {
 		jsMediaSelector(),
 		jsInsertMedia(),
 		jsRegisterEditor(),
+		`initWikiAutocomplete(editor);`,
 		jsFormSubmit(frontMatter),
 	}
 
