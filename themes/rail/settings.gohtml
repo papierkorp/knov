@@ -157,6 +157,7 @@
         <div class="help-text">{{T "Auto-create Collections"}}: <code>{{if .AppConfig.AutoCreateCollections}}{{join .AppConfig.AutoCreateCollections ", "}}{{else}}all{{end}}</code></div>
         <div class="help-text">{{T "Kanban Tag Colors"}}: <code>{{if .AppConfig.KanbanTagColors}}{{range $k,$v := .AppConfig.KanbanTagColors}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
         <div class="help-text">{{T "Kanban Card Styles"}}: <code>{{if .AppConfig.KanbanCardStyles}}{{range $k,$v := .AppConfig.KanbanCardStyles}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
+        <div class="help-text">{{T "Kanban Archive Status"}}: <code>{{if .AppConfig.KanbanArchiveStatus}}{{.AppConfig.KanbanArchiveStatus}}{{else}}disabled{{end}}</code></div>
     </div>
 </section>
 {{ end }}

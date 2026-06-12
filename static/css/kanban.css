@@ -157,6 +157,36 @@
   margin-top: 0.1rem;
 }
 
+/* ---- Archive drop zone ---- */
+
+#kanban-archive-zone {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 2px dashed var(--danger, #dc2626);
+  border-radius: var(--radius, 4px);
+  color: var(--danger, #dc2626);
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.6;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+  cursor: default;
+}
+
+#kanban-archive-zone.kanban-archive-zone--active {
+  display: flex;
+}
+
+#kanban-archive-zone.drag-over {
+  opacity: 1;
+  background: color-mix(in srgb, var(--danger, #dc2626) 10%, transparent);
+}
+
 /* ---- Card style variants (KNOV_KANBAN_CARD_STYLES) ---- */
 
 .kanban-card--italic .kanban-card-title {

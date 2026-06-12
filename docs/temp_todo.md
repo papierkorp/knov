@@ -28,9 +28,10 @@
 - /changelog route with new icon on the bottom of the rail theme or some other way to display the changelog (its already as a file in the binary filesystem)
 - kanban filter -lastEdited less than exlude doesnt work
 - kanban event log/activity history
-- kanban a small div for a not visible status (especially archive) to drag and drop into - maybe make archive a special status
+
 - toastui editor - new button add wiki file (use already existing datasource)
 - detect if a request is already loading and block multiple requests of the same kind
+- kanban default sort - show newest on top
 
 # performance updates
 

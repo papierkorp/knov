@@ -475,6 +475,7 @@ type KanbanTemplateData struct {
 	Statuses        []string // all possible statuses (for move target)
 	Prefix          string   // kanban tag prefix
 	FilterPanelHTML string   // pre-rendered advanced filter panel HTML
+	ArchiveStatus   string   // status that hides cards from the board
 }
 
 // NewKanbanTemplateData creates kanban board template data
@@ -486,14 +487,16 @@ func NewKanbanTemplateData(collection string, columns []kanban.Column, filterPan
 		Statuses:         configmanager.GetKanbanStatuses(),
 		Prefix:           configmanager.GetKanbanPrefix(),
 		FilterPanelHTML:  filterPanelHTML,
+		ArchiveStatus:    configmanager.GetKanbanArchiveStatus(),
 	}
 }
 
 // KanbanSelectTemplateData extends base with collection picker data
 type KanbanSelectTemplateData struct {
 	BaseTemplateData
-	Collection  string // always empty — signals the template to show the picker
-	Collections []string
+	Collection    string // always empty — signals the template to show the picker
+	Collections   []string
+	ArchiveStatus string
 }
 
 // NewKanbanSelectTemplateData creates the collection picker template data
@@ -501,5 +504,6 @@ func NewKanbanSelectTemplateData(collections []string) KanbanSelectTemplateData 
 	return KanbanSelectTemplateData{
 		BaseTemplateData: NewBaseTemplateData("kanban"),
 		Collections:      collections,
+		ArchiveStatus:    configmanager.GetKanbanArchiveStatus(),
 	}
 }

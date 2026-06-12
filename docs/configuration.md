@@ -41,6 +41,7 @@ The kanban board organises files into columns based on status tags.
 - Change them with `KNOV_KANBAN_COLUMNS` (comma-separated)
 - The tag prefix defaults to `kb-status` - change it with `KNOV_KANBAN_PREFIX`
 - Tags that start with the prefix but are not in the allowed column list are rejected
+- add a "archive" status which is not displayed as a column but activated as a separate drop zone with `KNOV_KANBAN_ARCHIVE_STATUS` - leave it empty to disable this feature
 
 **Card colours:**
 - Non-status tags appear as chips on each card
