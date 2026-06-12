@@ -3,6 +3,7 @@ package utils
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -33,6 +34,11 @@ func CleanLink(link string) string {
 	cleanLink = strings.TrimPrefix(cleanLink, "/")
 	if strings.HasPrefix(cleanLink, "files/") {
 		cleanLink = "docs/" + cleanLink[len("files/"):]
+	}
+
+	// decode percent-encoding so paths like "docs/foo%20bar.md" become "docs/foo bar.md"
+	if decoded, err := url.PathUnescape(cleanLink); err == nil {
+		cleanLink = decoded
 	}
 
 	// don't add .md extension to media files or files with existing extensions

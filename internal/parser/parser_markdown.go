@@ -400,13 +400,25 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 		text := strings.TrimSpace(matches[2])
 		u := strings.TrimSpace(matches[3])
 
+		// strip CommonMark angle-bracket link destination syntax: <url with spaces>
+		if strings.HasPrefix(u, "<") && strings.HasSuffix(u, ">") {
+			u = u[1 : len(u)-1]
+		}
+
 		if isImage {
 			return matches[1] + "[" + text + "](" + strings.ReplaceAll(u, "\\", "/") + ")"
 		}
 
-		// external links and anchors — leave as-is
+		// external links and pure anchors — leave as-is
 		if strings.Contains(u, "://") || strings.HasPrefix(u, "#") {
 			return match
+		}
+
+		// split off anchor fragment before any path processing
+		anchor := ""
+		if idx := strings.Index(u, "#"); idx != -1 {
+			anchor = u[idx:]
+			u = u[:idx]
 		}
 
 		// media links
@@ -417,16 +429,23 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 			return "[" + text + "](/" + u + "?mode=detail)"
 		}
 
-		// already routed internal links
+		// already routed /files/ links — re-encode so goldmark accepts spaces/unicode
 		if strings.HasPrefix(u, "/files/") {
-			return match
+			rel := u[len("/files/"):]
+			if decoded, err := url.PathUnescape(rel); err == nil {
+				rel = decoded
+			}
+			return "[" + text + "](" + pathutils.ToFileURL(rel) + anchor + ")"
 		}
 
 		// internal doc links — route to /files/
+		if decoded, err := url.PathUnescape(u); err == nil {
+			u = decoded
+		}
 		if !strings.HasSuffix(u, ".md") {
 			u += ".md"
 		}
-		return "[" + text + "](" + pathutils.ToFileURL(u) + ")"
+		return "[" + text + "](" + pathutils.ToFileURL(u) + anchor + ")"
 	})
 }
 

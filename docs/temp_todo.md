@@ -31,6 +31,7 @@
 - kanban a small div for a not visible status (especially archive) to drag and drop into - maybe make archive a special status
 - toastui editor - new button add wiki file (use already existing datasource)
 - detect if a request is already loading and block multiple requests of the same kind
+- trigger a autocomplete with [[ and make [[ an internal link (optional)
 
 # performance updates
 
