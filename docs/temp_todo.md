@@ -28,7 +28,8 @@
 - /changelog route with new icon on the bottom of the rail theme or some other way to display the changelog (its already as a file in the binary filesystem)
 - kanban filter -lastEdited less than exlude doesnt work
 - kanban event log/activity history
-- add `KanbanAddedAt` and `KanbanMovedAt` new metadata, dont display it anywhere but make it accessible to filters (especially the kanban board filter) but i think we can add it to the general filter as well, they only change if a kanban-status tag is changed
+- kanban a small div for a not visible status (especially archive) to drag and drop into - maybe make archive a special status
+- buitin theme - system actions missing (we have them in rail theme)
 
 # performance updates
 

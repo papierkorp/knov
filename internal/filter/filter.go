@@ -165,6 +165,14 @@ func matchesCriteria(metadata *files.Metadata, criterion Criteria) bool {
 		metadataValue = metadata.CreatedAt.Format("2006-01-02")
 	case "lastEdited":
 		metadataValue = metadata.LastEdited.Format("2006-01-02")
+	case "kanbanAddedAt":
+		if !metadata.KanbanAddedAt.IsZero() {
+			metadataValue = metadata.KanbanAddedAt.Format("2006-01-02")
+		}
+	case "kanbanMovedAt":
+		if !metadata.KanbanMovedAt.IsZero() {
+			metadataValue = metadata.KanbanMovedAt.Format("2006-01-02")
+		}
 	case "folders":
 		for _, folder := range metadata.Folders {
 			if matchesOperator(folder, criterion.Operator, criterion.Value) {
@@ -267,6 +275,8 @@ func GetMetadataFields() []string {
 		"editor",
 		"createdAt",
 		"lastEdited",
+		"kanbanAddedAt",
+		"kanbanMovedAt",
 		"folders",
 		"child-of",
 		"parent-of",

@@ -66,30 +66,57 @@ func EditorFromExtension(path string) EditorType {
 
 // Metadata represents file metadata
 type Metadata struct {
-	Path         string      `json:"path"`                   // auto
-	Title        string      `json:"title"`                  // auto
-	CreatedAt    time.Time   `json:"createdAt"`              // auto
-	LastEdited   time.Time   `json:"lastEdited"`             // auto
-	Collection   string      `json:"collection"`             // auto
-	Folders      []string    `json:"folders"`                // auto
-	Tags         []string    `json:"tags"`                   // manual
-	Ancestor     []string    `json:"ancestor"`               // auto
-	Parents      []string    `json:"parents"`                // manual
-	Kids         []string    `json:"kids"`                   // auto
-	UsedLinks    []string    `json:"usedLinks"`              // auto
-	LinksToHere  []string    `json:"linksToHere"`            // auto
-	Related      []string    `json:"related,omitempty"`      // auto
-	Editor       EditorType  `json:"editor"`                 // manual
-	Size         int64       `json:"size"`                   // auto
-	References   []Reference `json:"references,omitempty"`   // manual
-	ConflictFile string      `json:"conflictFile,omitempty"` // auto
-	ConflictOf   string      `json:"conflictOf,omitempty"`   // auto
+	Path          string      `json:"path"`                    // auto
+	Title         string      `json:"title"`                   // auto
+	CreatedAt     time.Time   `json:"createdAt"`               // auto
+	LastEdited    time.Time   `json:"lastEdited"`              // auto
+	Collection    string      `json:"collection"`              // auto
+	Folders       []string    `json:"folders"`                 // auto
+	Tags          []string    `json:"tags"`                    // manual
+	Ancestor      []string    `json:"ancestor"`                // auto
+	Parents       []string    `json:"parents"`                 // manual
+	Kids          []string    `json:"kids"`                    // auto
+	UsedLinks     []string    `json:"usedLinks"`               // auto
+	LinksToHere   []string    `json:"linksToHere"`             // auto
+	Related       []string    `json:"related,omitempty"`       // auto
+	Editor        EditorType  `json:"editor"`                  // manual
+	Size          int64       `json:"size"`                    // auto
+	References    []Reference `json:"references,omitempty"`    // manual
+	ConflictFile  string      `json:"conflictFile,omitempty"`  // auto
+	ConflictOf    string      `json:"conflictOf,omitempty"`    // auto
+	KanbanAddedAt time.Time   `json:"kanbanAddedAt,omitempty"` // auto
+	KanbanMovedAt time.Time   `json:"kanbanMovedAt,omitempty"` // auto
 }
 
 // Reference represents an external resource linked to a file
 type Reference struct {
 	URL         string `json:"url"`
 	Description string `json:"description"` // why this link was added
+}
+
+// kanbanStatusFromTags extracts the kanban status value from a tag list; returns "" if absent.
+func kanbanStatusFromTags(tags []string) string {
+	prefix := configmanager.GetKanbanPrefix() + "-status-"
+	for _, t := range tags {
+		if strings.HasPrefix(t, prefix) {
+			return strings.TrimPrefix(t, prefix)
+		}
+	}
+	return ""
+}
+
+// applyKanbanTimestamps updates KanbanAddedAt/KanbanMovedAt when the kanban
+// status tag transitions to a new (non-empty) value.
+func applyKanbanTimestamps(m *Metadata, oldStatus string) {
+	newStatus := kanbanStatusFromTags(m.Tags)
+	if newStatus == "" || newStatus == oldStatus {
+		return
+	}
+	now := time.Now()
+	if m.KanbanAddedAt.IsZero() {
+		m.KanbanAddedAt = now
+	}
+	m.KanbanMovedAt = now
 }
 
 func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
@@ -149,11 +176,13 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 
 	// handle optional fields from newMetadata - only update if provided
 	if len(newMetadata.Tags) > 0 {
+		oldKanbanStatus := kanbanStatusFromTags(currentMetadata.Tags)
 		cleaned, err := sanitizeKanbanTags(newMetadata.Tags)
 		if err != nil {
 			logging.LogWarning("tag sanitization for %s: %v", filePath, err)
 		}
 		currentMetadata.Tags = cleaned
+		applyKanbanTimestamps(currentMetadata, oldKanbanStatus)
 	}
 
 	if len(newMetadata.Parents) > 0 {

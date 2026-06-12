@@ -62,10 +62,11 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 // initialize runs all pending migrations for this storage.
 // Bump version and append a step whenever the schema changes.
 func (ss *sqliteStorage) initialize() error {
-	const version = 2
+	const version = 3
 	steps := []dbmigration.Migration{
 		{Up: migrationV1Up, Down: migrationV1Down},
 		{Up: migrationV2Up, Down: migrationV2Down},
+		{Up: migrationV3Up, Down: migrationV3Down},
 	}
 	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
 		return fmt.Errorf("metadata storage migration failed: %w", err)
@@ -121,6 +122,22 @@ func migrationV2Down(tx *sql.Tx) error {
 	return err
 }
 
+func migrationV3Up(tx *sql.Tx) error {
+	if _, err := tx.Exec(`ALTER TABLE metadata ADD COLUMN kanban_added_at DATETIME`); err != nil {
+		return err
+	}
+	_, err := tx.Exec(`ALTER TABLE metadata ADD COLUMN kanban_moved_at DATETIME`)
+	return err
+}
+
+func migrationV3Down(tx *sql.Tx) error {
+	if _, err := tx.Exec(`ALTER TABLE metadata DROP COLUMN kanban_added_at`); err != nil {
+		return err
+	}
+	_, err := tx.Exec(`ALTER TABLE metadata DROP COLUMN kanban_moved_at`)
+	return err
+}
+
 // Get retrieves metadata by key and returns as JSON
 func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	ss.mutex.RLock()
@@ -130,28 +147,31 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	SELECT title, created_at, last_edited, collection,
 	       folders, tags, ancestor, parents, kids, used_links, links_to_here, related,
 	       editor, size, COALESCE("references", '') as "references",
-	       COALESCE(conflict_file, '') as conflict_file, COALESCE(conflict_of, '') as conflict_of
+	       COALESCE(conflict_file, '') as conflict_file, COALESCE(conflict_of, '') as conflict_of,
+	       kanban_added_at, kanban_moved_at
 	FROM metadata WHERE path = ?
 	`
 
 	var meta struct {
-		Title        string
-		CreatedAt    *time.Time
-		LastEdited   *time.Time
-		Collection   string
-		Folders      string
-		Tags         string
-		Ancestor     string
-		Parents      string
-		Kids         string
-		UsedLinks    string
-		LinksToHere  string
-		Related      string
-		Editor       string
-		Size         int64
-		References   string
-		ConflictFile string
-		ConflictOf   string
+		Title         string
+		CreatedAt     *time.Time
+		LastEdited    *time.Time
+		Collection    string
+		Folders       string
+		Tags          string
+		Ancestor      string
+		Parents       string
+		Kids          string
+		UsedLinks     string
+		LinksToHere   string
+		Related       string
+		Editor        string
+		Size          int64
+		References    string
+		ConflictFile  string
+		ConflictOf    string
+		KanbanAddedAt *time.Time
+		KanbanMovedAt *time.Time
 	}
 
 	err := ss.db.QueryRow(query, key).Scan(
@@ -160,6 +180,7 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		&meta.Parents, &meta.Kids, &meta.UsedLinks, &meta.LinksToHere, &meta.Related,
 		&meta.Editor, &meta.Size, &meta.References,
 		&meta.ConflictFile, &meta.ConflictOf,
+		&meta.KanbanAddedAt, &meta.KanbanMovedAt,
 	)
 
 	if err == sql.ErrNoRows {
@@ -248,6 +269,12 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 	if meta.ConflictOf != "" {
 		result["conflictOf"] = meta.ConflictOf
 	}
+	if meta.KanbanAddedAt != nil {
+		result["kanbanAddedAt"] = meta.KanbanAddedAt.Format(time.RFC3339)
+	}
+	if meta.KanbanMovedAt != nil {
+		result["kanbanMovedAt"] = meta.KanbanMovedAt.Format(time.RFC3339)
+	}
 
 	data, err := json.Marshal(result)
 	if err != nil {
@@ -326,8 +353,9 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 	INSERT OR REPLACE INTO metadata (
 		path, title, created_at, last_edited, collection,
 		folders, tags, ancestor, parents, kids, used_links, links_to_here, related,
-		editor, size, "references", conflict_file, conflict_of
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		editor, size, "references", conflict_file, conflict_of,
+		kanban_added_at, kanban_moved_at
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	_, err := ss.db.Exec(query,
@@ -349,6 +377,8 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 		referencesJSON,
 		getString("conflictFile"),
 		getString("conflictOf"),
+		getTime("kanbanAddedAt"),
+		getTime("kanbanMovedAt"),
 	)
 
 	if err != nil {

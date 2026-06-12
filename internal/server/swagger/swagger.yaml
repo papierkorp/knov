@@ -166,6 +166,12 @@ definitions:
         items:
           type: string
         type: array
+      kanbanAddedAt:
+        description: auto
+        type: string
+      kanbanMovedAt:
+        description: auto
+        type: string
       kids:
         description: auto
         items:

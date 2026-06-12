@@ -1932,6 +1932,11 @@
       "translation": ""
     },
     {
+      "id": "kanban added at",
+      "message": "kanban added at",
+      "translation": ""
+    },
+    {
       "id": "Kanban Card Styles",
       "message": "Kanban Card Styles",
       "translation": ""
@@ -1939,6 +1944,11 @@
     {
       "id": "Kanban Columns",
       "message": "Kanban Columns",
+      "translation": ""
+    },
+    {
+      "id": "kanban moved at",
+      "message": "kanban moved at",
       "translation": ""
     },
     {

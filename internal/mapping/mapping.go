@@ -37,6 +37,10 @@ func GetDisplayName(dbField string) string {
 		return "parent of"
 	case "ancestor-of":
 		return "ancestor of"
+	case "kanbanAddedAt":
+		return "kanban added at"
+	case "kanbanMovedAt":
+		return "kanban moved at"
 	default:
 		return dbField
 	}

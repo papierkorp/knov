@@ -404,7 +404,7 @@ func RenderActionOptions(selectedValue string) string {
 // RenderFilterValueInput generates an input with datalist based on metadata field type
 func RenderFilterValueInput(id, name, value, metadataField string) string {
 	switch metadataField {
-	case "createdAt", "lastEdited":
+	case "createdAt", "lastEdited", "kanbanAddedAt", "kanbanMovedAt":
 		return fmt.Sprintf(`<input type="date" name="%s" id="%s" value="%s" placeholder="%s" class="form-input"/>`,
 			name, id, value, translation.SprintfForRequest(configmanager.GetLanguage(), "yyyy-mm-dd"))
 	}

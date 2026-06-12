@@ -6,6 +6,7 @@ import (
 	"slices"
 	"sort"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"knov/internal/configmanager"
@@ -18,13 +19,15 @@ import (
 
 // Card holds the data for a single kanban card.
 type Card struct {
-	FilePath   string
-	Title      string
-	Collection string
-	Status     string
-	Tags       []string
-	CreatedAt  string
-	LastEdited string
+	FilePath      string
+	Title         string
+	Collection    string
+	Status        string
+	Tags          []string
+	CreatedAt     string
+	LastEdited    string
+	KanbanAddedAt string
+	KanbanMovedAt string
 }
 
 // Column holds a status column and its ordered cards.
@@ -37,10 +40,12 @@ type Column struct {
 type SortBy string
 
 const (
-	SortCreatedAt    SortBy = "createdAt"   // oldest first
-	SortEditedAt     SortBy = "editedAt"    // most recently edited first
-	SortAlphabetical SortBy = "alphabetical" // by title A→Z
-	SortSize         SortBy = "size"        // smallest first
+	SortCreatedAt     SortBy = "createdAt"     // oldest first
+	SortEditedAt      SortBy = "editedAt"      // most recently edited first
+	SortAlphabetical  SortBy = "alphabetical"  // by title A→Z
+	SortSize          SortBy = "size"          // smallest first
+	SortKanbanAddedAt SortBy = "kanbanAddedAt" // most recently added to kanban first
+	SortKanbanMovedAt SortBy = "kanbanMovedAt" // most recently moved on kanban first
 )
 
 // BuildBoard runs the filter, applies optional search, sorts by sortBy, and returns columns with cards.
@@ -79,7 +84,7 @@ func BuildBoard(collection string, cfg *filter.Config, searchQuery string, sortB
 			}
 		}
 
-		cardsByStatus[status] = append(cardsByStatus[status], Card{
+		card := Card{
 			FilePath:   pathutils.ToRelative(file.Path),
 			Title:      meta.Title,
 			Collection: meta.Collection,
@@ -87,7 +92,14 @@ func BuildBoard(collection string, cfg *filter.Config, searchQuery string, sortB
 			Tags:       meta.Tags,
 			CreatedAt:  meta.CreatedAt.Format("2006-01-02"),
 			LastEdited: meta.LastEdited.Format("2006-01-02"),
-		})
+		}
+		if !meta.KanbanAddedAt.IsZero() {
+			card.KanbanAddedAt = meta.KanbanAddedAt.Format("2006-01-02T15:04:05Z07:00")
+		}
+		if !meta.KanbanMovedAt.IsZero() {
+			card.KanbanMovedAt = meta.KanbanMovedAt.Format("2006-01-02T15:04:05Z07:00")
+		}
+		cardsByStatus[status] = append(cardsByStatus[status], card)
 	}
 
 	// precompute file sizes once if needed
@@ -138,6 +150,34 @@ func BuildBoard(collection string, cfg *filter.Config, searchQuery string, sortB
 			sort.Slice(cards, func(i, j int) bool {
 				return cards[i].LastEdited > cards[j].LastEdited // most recent first
 			})
+		case SortKanbanAddedAt:
+			sort.Slice(cards, func(i, j int) bool {
+				// empty string sorts last (cards never added via kanban)
+				if cards[i].KanbanAddedAt == cards[j].KanbanAddedAt {
+					return false
+				}
+				if cards[i].KanbanAddedAt == "" {
+					return false
+				}
+				if cards[j].KanbanAddedAt == "" {
+					return true
+				}
+				return cards[i].KanbanAddedAt > cards[j].KanbanAddedAt // most recent first
+			})
+		case SortKanbanMovedAt:
+			sort.Slice(cards, func(i, j int) bool {
+				// empty string sorts last (cards never moved via kanban)
+				if cards[i].KanbanMovedAt == cards[j].KanbanMovedAt {
+					return false
+				}
+				if cards[i].KanbanMovedAt == "" {
+					return false
+				}
+				if cards[j].KanbanMovedAt == "" {
+					return true
+				}
+				return cards[i].KanbanMovedAt > cards[j].KanbanMovedAt // most recent first
+			})
 		case SortAlphabetical:
 			sort.Slice(cards, func(i, j int) bool {
 				return strings.ToLower(cards[i].Title) < strings.ToLower(cards[j].Title)
@@ -175,6 +215,12 @@ func MoveCard(filePath, newStatus string) (oldStatus string, err error) {
 		}
 	}
 	meta.Tags = append(filtered, newTag)
+
+	now := time.Now()
+	if meta.KanbanAddedAt.IsZero() {
+		meta.KanbanAddedAt = now
+	}
+	meta.KanbanMovedAt = now
 
 	if err := files.MetaDataSaveRaw(meta); err != nil {
 		return "", err

@@ -6172,6 +6172,14 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "kanbanAddedAt": {
+                    "description": "auto",
+                    "type": "string"
+                },
+                "kanbanMovedAt": {
+                    "description": "auto",
+                    "type": "string"
+                },
                 "kids": {
                     "description": "auto",
                     "type": "array",
