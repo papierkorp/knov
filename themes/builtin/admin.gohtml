@@ -82,6 +82,28 @@
                 </div>
 
                 <div class="admin-card">
+                    <h3>{{T "System Actions"}}</h3>
+                    <div class="help-text">{{T "system maintenance operations for keeping your application running smoothly"}}</div>
+                    <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:1rem;">
+                        <button class="btn-secondary" hx-post="/api/metadata/rebuild" hx-swap="none"
+                                hx-confirm="{{T "Rebuild all metadata? This may take a while."}}">
+                            {{T "Rebuild Metadata"}}
+                        </button>
+                        <button class="btn-secondary" hx-post="/api/cronjob" hx-swap="none">
+                            {{T "Run Cronjob"}}
+                        </button>
+                        <button class="btn-secondary" hx-delete="/api/system/cache" hx-swap="none"
+                                hx-confirm="{{T "Invalidate the cache? It will be rebuilt automatically."}}">
+                            {{T "Invalidate Cache"}}
+                        </button>
+                        <button class="btn-danger" hx-post="/api/system/restart" hx-swap="none"
+                                hx-confirm="{{T "Restart the system? This will disconnect all users."}}">
+                            {{T "Restart System"}}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-card">
                     <h3>{{T "Test Data Management"}}</h3>
                     <div class="help-text">{{T "manage test data for development and testing purposes"}}</div>
                     <form>

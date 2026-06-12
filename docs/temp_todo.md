@@ -29,7 +29,6 @@
 - kanban filter -lastEdited less than exlude doesnt work
 - kanban event log/activity history
 - kanban a small div for a not visible status (especially archive) to drag and drop into - maybe make archive a special status
-- buitin theme - system actions missing (we have them in rail theme)
 
 # performance updates
 
