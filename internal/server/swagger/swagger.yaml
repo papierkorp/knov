@@ -2685,6 +2685,38 @@ paths:
       summary: Get kanban board for a collection
       tags:
       - kanban
+  /api/kanban/{collection}/events:
+    get:
+      description: Returns kanban card move events, newest first. All parameters are
+        optional.
+      parameters:
+      - description: Collection name
+        in: path
+        name: collection
+        required: true
+        type: string
+      - description: Filter by file path
+        in: query
+        name: file
+        type: string
+      - description: Start of time range (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: End of time range (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Max number of events (default 100, 0 = unlimited)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Get kanban event log
+      tags:
+      - kanban
   /api/kanban/{collection}/filter:
     post:
       consumes:

@@ -51,8 +51,8 @@
         </select>
 
         <a href="/files/new/markdown?prefillpath={{.Collection}}/" class="btn-secondary" title="{{T "new file"}}"><i class="fa fa-plus"></i></a>
-        <a href="/kanban" class="btn-secondary">{{T "change collection"}}</a>
         <a href="/history?collection={{.Collection}}" class="btn-secondary" title="{{T "collection history"}}"><i class="fa fa-clock-rotate-left"></i></a>
+        <button id="kanban-events-btn" class="btn-secondary" onclick="kanbanToggleEvents()" title="{{T "show events"}}"><i class="fa fa-timeline"></i></button>
         <button class="btn-secondary" onclick="document.getElementById('kanban-filter-panel').toggleAttribute('hidden')" title="{{T "advanced filter"}}"><i class="fa fa-filter"></i></button>
     </div>
 
@@ -117,6 +117,51 @@
     }
     var dragging = null;
     var archiveStatus = '{{.ArchiveStatus}}';
+    var showingEvents = false;
+
+    window.kanbanToggleEvents = function() {
+        var wrap = document.getElementById('view-kanban-board-wrap');
+        var btn  = document.getElementById('kanban-events-btn');
+        var filterPanel = document.getElementById('kanban-filter-panel');
+        if (!wrap || !btn) return;
+
+        showingEvents = !showingEvents;
+
+        if (showingEvents) {
+            btn.title = '{{T "back to board"}}';
+            btn.querySelector('i').className = 'fa fa-table-columns';
+            btn.classList.replace('btn-secondary', 'btn-primary');
+            if (filterPanel) filterPanel.setAttribute('hidden', '');
+            wrap.innerHTML = '<p>{{T "loading..."}}</p>';
+            fetch('/api/kanban/{{.Collection}}/events?limit=200', { headers: { Accept: 'application/json' } })
+                .then(function(r) { return r.json(); })
+                .then(function(events) {
+                    if (!events || events.length === 0) {
+                        wrap.innerHTML = '<p class="kanban-empty">{{T "no events yet"}}</p>';
+                        return;
+                    }
+                    var rows = events.map(function(e) {
+                        var ts    = new Date(e.timestamp).toLocaleString();
+                        var fname = e.filePath.split('/').pop();
+                        var from  = e.fromStatus || '—';
+                        return '<tr><td>' + ts + '</td><td title="' + e.filePath + '">' + fname + '</td><td>' + from + '</td><td>' + e.toStatus + '</td></tr>';
+                    }).join('');
+                    wrap.innerHTML =
+                        '<table class="kanban-events-table">' +
+                        '<thead><tr><th>{{T "time"}}</th><th>{{T "file"}}</th><th>{{T "from"}}</th><th>{{T "to"}}</th></tr></thead>' +
+                        '<tbody>' + rows + '</tbody>' +
+                        '</table>';
+                })
+                .catch(function() {
+                    wrap.innerHTML = '<p>{{T "failed to load events"}}</p>';
+                });
+        } else {
+            btn.title = '{{T "show events"}}';
+            btn.querySelector('i').className = 'fa fa-timeline';
+            btn.classList.replace('btn-primary', 'btn-secondary');
+            htmx.ajax('GET', '/api/kanban/{{.Collection}}', { target: '#view-kanban-board-wrap', swap: 'innerHTML' });
+        }
+    };
 
     window.kanbanSetTagFilter = function(tag) {
         var sel = document.getElementById('kanban-tag-select');

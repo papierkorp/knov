@@ -43,6 +43,8 @@ type AppConfig struct {
 	MetadataStorageProvider string
 	CacheStorageProvider    string
 	SearchStorageProvider   string
+	KanbanEventsEnabled     bool
+	KanbanEventsProvider    string
 	SearchEngine            string
 	LinkRegex               []string
 	CronjobInterval         string
@@ -110,6 +112,8 @@ func InitAppConfig() {
 		MetadataStorageProvider: getEnv("KNOV_METADATA_STORAGE_PROVIDER", "sqlite"),
 		CacheStorageProvider:    getEnv("KNOV_CACHE_STORAGE_PROVIDER", "sqlite"),
 		SearchStorageProvider:   getEnv("KNOV_SEARCH_STORAGE_PROVIDER", "sqlite"),
+		KanbanEventsEnabled:     getBoolEnv("KNOV_KANBAN_EVENTS_ENABLED", true),
+		KanbanEventsProvider:    getEnv("KNOV_KANBAN_EVENTS_STORAGE_PROVIDER", "sqlite"),
 		SearchEngine:            getEnv("KNOV_SEARCH_ENGINE", "repository"),
 		LinkRegex: []string{
 			"\\[\\[([^\\]]+)\\]\\]",
@@ -356,6 +360,16 @@ func GetConfigStorageProvider() string {
 // GetMetadataStorageProvider returns metadata storage provider
 func GetMetadataStorageProvider() string {
 	return appConfig.MetadataStorageProvider
+}
+
+// GetKanbanEventsEnabled returns whether kanban event logging is enabled
+func GetKanbanEventsEnabled() bool {
+	return appConfig.KanbanEventsEnabled
+}
+
+// GetKanbanEventsProvider returns the kanban events storage provider
+func GetKanbanEventsProvider() string {
+	return appConfig.KanbanEventsProvider
 }
 
 // GetCacheStorageProvider returns cache storage provider

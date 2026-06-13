@@ -25,7 +25,6 @@
   - for usage
   - for devs
 - media gitignore
-- kanban event log/activity history
 - detect if a request is already loading and block multiple requests of the same kind
 - kanban default sort - show newest on top
 

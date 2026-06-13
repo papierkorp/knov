@@ -49,6 +49,12 @@ The kanban board organises files into columns based on status tags.
 - Give specific column cards a different style with `KNOV_KANBAN_CARD_STYLES` - e.g `archive:deleted, inprogress:highlighted, waiting:italic`
 - Any valid CSS colour name or hex value works
 
+**Event log:**
+- Every time a card moves between columns an event is recorded (file, collection, from/to status, timestamp)
+- Query events via `GET /api/kanban/{collection}/events` — supports `?file=`, `?from=`, `?to=`, `?limit=` parameters
+- `KNOV_KANBAN_EVENTS_ENABLED=true` (default) — set to `false` to disable event logging entirely
+- `KNOV_KANBAN_EVENTS_STORAGE_PROVIDER=sqlite` (default) — storage backend for events
+
 **Filtering on the board:**
 - Quick filters (ancestor, tag, search) are always visible in the toolbar
 - An advanced filter panel (same system as saved filters) can be opened with the filter button

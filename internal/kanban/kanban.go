@@ -12,6 +12,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/filter"
+	"knov/internal/kanbanStorage"
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
@@ -225,8 +226,17 @@ func MoveCard(filePath, newStatus string) (oldStatus string, err error) {
 	if err := files.MetaDataSaveRaw(meta); err != nil {
 		return "", err
 	}
+	if err := kanbanStorage.LogEvent(filePath, meta.Collection, oldStatus, newStatus); err != nil {
+		logging.LogWarning("kanban: failed to log event for %s: %v", filePath, err)
+	}
 	logging.LogInfo("kanban: moved card %s to status %s", filePath, newStatus)
 	return oldStatus, nil
+}
+
+// GetEvents returns kanban move events with optional filters, newest first.
+// Pass empty strings / nil times to skip those filters; limit=0 means no limit.
+func GetEvents(collection, filePath string, from, to *time.Time, limit int) ([]kanbanStorage.Event, error) {
+	return kanbanStorage.GetEvents(collection, filePath, from, to, limit)
 }
 
 // TagsForCollection returns all unique non-kanban tags present on kanban cards in the collection.

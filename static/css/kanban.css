@@ -161,13 +161,18 @@
 
 #kanban-archive-zone {
   display: none;
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  margin-top: 0.75rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 2rem;
   border: 2px dashed var(--danger, #dc2626);
   border-radius: var(--radius, 4px);
+  background: var(--surface, #fff);
   color: var(--danger, #dc2626);
   font-size: 0.875rem;
   font-weight: 500;
@@ -217,4 +222,34 @@
 .kanban-card--deleted .kanban-card-title {
   text-decoration: line-through;
   color: var(--text-secondary);
+}
+
+/* ---- Events table ---- */
+
+.kanban-events-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.kanban-events-table th,
+.kanban-events-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.kanban-events-table th {
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.kanban-events-table td:first-child {
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.kanban-events-table tbody tr:hover {
+  background: var(--surface-hover, color-mix(in srgb, var(--text) 4%, transparent));
 }

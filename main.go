@@ -15,6 +15,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/git"
+	"knov/internal/kanbanStorage"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
 	"knov/internal/notificationStorage"
@@ -82,6 +83,11 @@ func main() {
 
 	if err := metadataStorage.Init(appConfig.MetadataStorageProvider, appConfig.StoragePath); err != nil {
 		logging.LogError("failed to initialize metadata storage: %v", err)
+		return
+	}
+
+	if err := kanbanStorage.Init(appConfig.KanbanEventsEnabled, appConfig.KanbanEventsProvider, appConfig.StoragePath); err != nil {
+		logging.LogError("failed to initialize kanban storage: %v", err)
 		return
 	}
 

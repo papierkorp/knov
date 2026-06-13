@@ -2,11 +2,13 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/filter"
@@ -230,4 +232,53 @@ func handleAPIGetKanbanTags(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html.String()))
+}
+
+// @Summary Get kanban event log
+// @Description Returns kanban card move events, newest first. All parameters are optional.
+// @Tags kanban
+// @Param collection path string true "Collection name"
+// @Param file query string false "Filter by file path"
+// @Param from query string false "Start of time range (RFC3339)"
+// @Param to query string false "End of time range (RFC3339)"
+// @Param limit query int false "Max number of events (default 100, 0 = unlimited)"
+// @Produce json
+// @Router /api/kanban/{collection}/events [get]
+func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
+	collection := chi.URLParam(r, "collection")
+	if collection == "" {
+		http.Error(w, "missing collection", http.StatusBadRequest)
+		return
+	}
+
+	filePath := r.URL.Query().Get("file")
+
+	var from, to *time.Time
+	if s := r.URL.Query().Get("from"); s != "" {
+		if t, err := time.Parse(time.RFC3339, s); err == nil {
+			from = &t
+		}
+	}
+	if s := r.URL.Query().Get("to"); s != "" {
+		if t, err := time.Parse(time.RFC3339, s); err == nil {
+			to = &t
+		}
+	}
+
+	limit := 100
+	if l := r.URL.Query().Get("limit"); l != "" {
+		if n, err := strconv.Atoi(l); err == nil && n >= 0 {
+			limit = n
+		}
+	}
+
+	events, err := kanban.GetEvents(collection, filePath, from, to, limit)
+	if err != nil {
+		logging.LogError("failed to get kanban events for %s: %v", collection, err)
+		http.Error(w, "failed to get events", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(events)
 }

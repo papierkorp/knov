@@ -3562,6 +3562,52 @@
                 "responses": {}
             }
         },
+        "/api/kanban/{collection}/events": {
+            "get": {
+                "description": "Returns kanban card move events, newest first. All parameters are optional.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "kanban"
+                ],
+                "summary": "Get kanban event log",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection name",
+                        "name": "collection",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by file path",
+                        "name": "file",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start of time range (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End of time range (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Max number of events (default 100, 0 = unlimited)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/kanban/{collection}/filter": {
             "post": {
                 "description": "Filters the kanban board using the full filter form; collection is always injected as the first criterion",
