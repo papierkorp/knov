@@ -69,6 +69,18 @@ func jsEditorInit(content string) string {
 						button.addEventListener('click', () => showMediaSelector(editor));
 						return button;
 					})()
+				}, {
+					name: 'selectWikiFile',
+					tooltip: 'Insert Wiki File Link',
+					el: (() => {
+						const button = document.createElement('button');
+						button.className = 'toastui-editor-toolbar-icons';
+						button.style.backgroundImage = 'none';
+						button.style.margin = '0';
+						button.innerHTML = '<i class="fa-solid fa-file-lines"></i>';
+						button.addEventListener('click', () => showWikiFileSelector(editor));
+						return button;
+					})()
 				}],
 				['code', 'codeblock']
 			],
@@ -322,6 +334,86 @@ func jsFormSubmit(frontMatter string) string {
 		});`, jsEscapeString(frontMatter))
 }
 
+// jsWikiFileSelector defines a modal for browsing wiki files and inserting a full markdown link.
+// Uses the /api/files/autocomplete endpoint as datasource.
+func jsWikiFileSelector() string {
+	return `
+		window.showWikiFileSelector = function(editor) {
+			const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
+
+			const modal = document.createElement('div');
+			modal.className = 'wiki-file-selector-modal';
+			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+
+			const popup = document.createElement('div');
+			popup.style.cssText = 'background:white;border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;flex-direction:column;';
+			if (isDarkMode) {
+				popup.style.backgroundColor = '#374151';
+				popup.style.color = '#f9fafb';
+			}
+
+			const header = document.createElement('div');
+			header.style.cssText = 'padding:12px 16px;border-bottom:1px solid ' + (isDarkMode ? '#4b5563' : '#eee') + ';display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+			header.innerHTML = '<h3 style="margin:0;font-size:1em;">insert wiki file link</h3><button onclick="closeWikiFileSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>';
+
+			const search = document.createElement('div');
+			search.style.cssText = 'padding:8px 16px;border-bottom:1px solid ' + (isDarkMode ? '#4b5563' : '#eee') + ';flex-shrink:0;';
+			const searchInput = document.createElement('input');
+			searchInput.type = 'text';
+			searchInput.placeholder = 'filter...';
+			searchInput.style.cssText = 'width:100%;padding:6px 10px;border:1px solid ' + (isDarkMode ? '#4b5563' : '#d1d5db') + ';border-radius:4px;background:' + (isDarkMode ? '#1f2937' : '#fff') + ';color:' + (isDarkMode ? '#f9fafb' : '#111') + ';font-size:0.9em;box-sizing:border-box;';
+			search.appendChild(searchInput);
+
+			const body = document.createElement('div');
+			body.style.cssText = 'padding:12px 16px;overflow-y:auto;flex:1;';
+
+			popup.appendChild(header);
+			popup.appendChild(search);
+			popup.appendChild(body);
+			modal.appendChild(popup);
+			document.body.appendChild(modal);
+
+			var debounceTimer;
+			function fetchFiles(q) {
+				clearTimeout(debounceTimer);
+				debounceTimer = setTimeout(function() {
+					fetch('/api/files/autocomplete?q=' + encodeURIComponent(q))
+						.then(function(r) { return r.json(); })
+						.then(function(results) {
+							body.innerHTML = '';
+							if (!results || results.length === 0) {
+								body.innerHTML = '<span style="color:' + (isDarkMode ? '#9ca3af' : '#888') + ';font-size:0.9em;">no files found</span>';
+								return;
+							}
+							results.forEach(function(f) {
+								const item = document.createElement('div');
+								item.style.cssText = 'padding:6px 8px;cursor:pointer;border-radius:4px;font-size:0.9em;';
+								item.textContent = f.path;
+								item.addEventListener('mouseenter', function() { item.style.background = isDarkMode ? '#4b5563' : '#f3f4f6'; });
+								item.addEventListener('mouseleave', function() { item.style.background = ''; });
+								item.addEventListener('click', function() {
+									const label = f.filename.replace(/\.[^.]+$/, '');
+									editor.insertText('[' + label + '](/files/' + f.path + ')');
+									closeWikiFileSelector();
+								});
+								body.appendChild(item);
+							});
+						})
+						.catch(function() { body.innerHTML = 'error loading files'; });
+				}, 120);
+			}
+
+			searchInput.addEventListener('input', function() { fetchFiles(this.value); });
+			fetchFiles('');
+			setTimeout(function() { searchInput.focus(); }, 50);
+		};
+
+		window.closeWikiFileSelector = function() {
+			const modal = document.querySelector('.wiki-file-selector-modal');
+			if (modal) modal.remove();
+		};`
+}
+
 // jsRegisterEditor stores the editor instance on window so media helpers can reach it.
 func jsRegisterEditor() string {
 	return `
@@ -338,6 +430,7 @@ func getToastUIEditorScript(content, frontMatter string) string {
 		jsUploadMediaBlob(),
 		jsMediaSelector(),
 		jsInsertMedia(),
+		jsWikiFileSelector(),
 		jsRegisterEditor(),
 		`initWikiAutocomplete(editor);`,
 		jsFormSubmit(frontMatter),
