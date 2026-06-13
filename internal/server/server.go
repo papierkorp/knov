@@ -4,10 +4,12 @@ package server
 import (
 	"embed"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -16,6 +18,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	_ "knov/internal/server/swagger" // swaggo api docs
@@ -28,6 +31,11 @@ import (
 )
 
 var staticFiles embed.FS
+var docsFiles embed.FS
+
+func SetDocsFiles(files embed.FS) {
+	docsFiles = files
+}
 
 func SetStaticFiles(files embed.FS) {
 	staticFiles = files
@@ -53,6 +61,7 @@ func StartServerChi() {
 
 	r.Get("/", handleHome)
 	r.Get("/home", handleHome)
+	r.Get("/system/changelog", handleSystemChangelog)
 	r.Get("/settings", handleSettings)
 	r.Get("/admin", handleAdmin)
 	r.Get("/playground", handlePlayground)
@@ -1032,5 +1041,52 @@ func handleKanbanBoard(w http.ResponseWriter, r *http.Request) {
 	data := thememanager.NewKanbanTemplateData(collection, nil, filterPanel)
 	if err := tm.Render(w, "kanban", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+	}
+}
+
+func handleSystemChangelog(w http.ResponseWriter, r *http.Request) {
+	entries, err := fs.ReadDir(docsFiles, "docs/changelogs")
+	if err != nil {
+		http.Error(w, "failed to read changelogs", http.StatusInternalServerError)
+		return
+	}
+
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Name() > entries[j].Name()
+	})
+
+	mdHandler := parser.NewMarkdownHandler()
+	var combined strings.Builder
+
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") {
+			continue
+		}
+
+		data, err := docsFiles.ReadFile("docs/changelogs/" + entry.Name())
+		if err != nil {
+			logging.LogWarning("failed to read changelog %s: %v", entry.Name(), err)
+			continue
+		}
+
+		rendered, err := mdHandler.Render(data, "")
+		if err != nil {
+			logging.LogWarning("failed to render changelog %s: %v", entry.Name(), err)
+			continue
+		}
+
+		combined.Write(rendered)
+	}
+
+	html := combined.String()
+	fileContent := &files.FileContent{
+		HTML: html,
+		TOC:  parser.GenerateTOC(html),
+	}
+
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileViewTemplateData("Changelog", "system/changelog.md", fileContent)
+	if err := tm.Render(w, "fileview", data); err != nil {
+		logging.LogError("failed to render changelog page: %v", err)
 	}
 }

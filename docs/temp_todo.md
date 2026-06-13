@@ -11,6 +11,7 @@
   - browse media
   - use both builtin and rail theme
 - translations
+- add a `create_your_own_theme.md` file
 
 **per ai**
 - fix all the editor warnings
@@ -19,7 +20,6 @@
 - syntax highlighting in the editor
 - show logs in app
 - download logs
-- new file: filepath or collection + filename
 - codeberg deployment pipeline?
 - make docker build viable
   - for usage
@@ -65,3 +65,7 @@ Single pass over files with a worker pool, doing metadata + link extraction per 
 My recommendation: D. The real bottleneck is the per-file I/O in the rebuild (reading file content for link/title extraction). Parallelizing that with a bounded worker pool (e.g. runtime.NumCPU() workers) gives the biggest win. The purge passes are already fast (just map lookups) so combining them into one pass is enough there — no need to parallelize.
 The main thing to watch out for: metadataStorage writes need a mutex or you need to collect results and write sequentially after the workers finish.
 Want to go with D?
+
+# docs
+
+small, precise and concise, high level overview, no examples that are prone to change, just a few bullet points

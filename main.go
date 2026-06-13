@@ -47,6 +47,7 @@ var docsFS embed.FS
 // @BasePath /
 func main() {
 	server.SetStaticFiles(staticFS)
+	server.SetDocsFiles(docsFS)
 	thememanager.SetBuiltinFiles(builtinThemeFS)
 	thememanager.SetRailFiles(railThemeFS)
 	testdata.SetDocsFiles(docsFS)

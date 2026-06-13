@@ -529,10 +529,6 @@ function setupFilePage() {
     swap: "innerHTML",
     headers: { Accept: "text/html" },
   });
-  const tocData = document.getElementById("fp-toc-data");
-  const tocNav = document.getElementById("fp-toc-nav");
-  if (tocData && tocNav) tocNav.innerHTML = tocData.innerHTML;
-
   // auto-open file info panel
   togglePanel("fp-file");
   return true;
@@ -824,6 +820,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const el = document.getElementById("fp-browse-content");
     if (el && urls[savedMode]) el.dataset.url = urls[savedMode];
   }
+
+  const tocData = document.getElementById("fp-toc-data");
+  const tocNav = document.getElementById("fp-toc-nav");
+  if (tocData && tocNav) tocNav.innerHTML = tocData.innerHTML;
 
   const isFilePage = setupFilePage();
   const isHistoryPage =

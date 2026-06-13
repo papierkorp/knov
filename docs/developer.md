@@ -406,6 +406,31 @@ Setting types supported: `boolean`, `select` (with `options`), `textarea`, `numb
 - `themes/overwrite/` is reserved and skipped during theme discovery
 - Switch themes via **Settings => Theme** — no restart required
 
+## System Pages
+
+There are a few system pages e.g. `/system/changelogs`,`/system/health` or `/system/version` which are automatically created by the binary - they can be styled using these classes:
+
+- `.system-page` — outer wrapper
+- `.system-page-title` — the page `<h1>`
+- `.system-page-content` — content area
+- `.system-page-toc` — TOC nav (same as `.toc-nav` used elsewhere)
+
+# System Pages
+
+`/system/*` is a namespace for app-internal pages whose **content is controlled by the application**, not theme templates.
+
+**How it works**
+
+- `ThemeManager.RenderSystemPage(w, title, content)` renders a page using the current theme's `base.gohtml`
+- the content block is an inline constant in `internal/thememanager/system.go`
+- nothing theme authors can override
+
+## Adding a new system page
+
+- Add a handler in `internal/server/server.go`
+- Register a route under `/system/`
+- Call `tm.RenderSystemPage(w, title, content)` — no template file needed
+
 # Filter
 
 I added filter tests for these cases:
