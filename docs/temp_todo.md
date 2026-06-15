@@ -27,6 +27,8 @@
 - media gitignore
 - detect if a request is already loading and block multiple requests of the same kind
 - kanban default sort - show newest on top
+- rename folders
+  - rail theme in tree/browse - edit button
 
 # performance updates
 

@@ -142,6 +142,11 @@
       "translation": ""
     },
     {
+      "id": "archive",
+      "message": "archive",
+      "translation": ""
+    },
+    {
       "id": "archive visibility updated",
       "message": "archive visibility updated",
       "translation": ""
@@ -189,6 +194,11 @@
     {
       "id": "Auto-create Tags",
       "message": "Auto-create Tags",
+      "translation": ""
+    },
+    {
+      "id": "back to board",
+      "message": "back to board",
       "translation": ""
     },
     {
@@ -297,8 +307,13 @@
       "translation": ""
     },
     {
-      "id": "change collection",
-      "message": "change collection",
+      "id": "changelog",
+      "message": "changelog",
+      "translation": ""
+    },
+    {
+      "id": "Changelog",
+      "message": "Changelog",
       "translation": ""
     },
     {
@@ -1082,6 +1097,11 @@
       "translation": ""
     },
     {
+      "id": "failed to load events",
+      "message": "failed to load events",
+      "translation": ""
+    },
+    {
       "id": "failed to load media files",
       "message": "failed to load media files",
       "translation": ""
@@ -1532,6 +1552,11 @@
       "translation": ""
     },
     {
+      "id": "from",
+      "message": "from",
+      "translation": ""
+    },
+    {
       "id": "General Settings",
       "message": "General Settings",
       "translation": "General Settings"
@@ -1937,6 +1962,11 @@
       "translation": ""
     },
     {
+      "id": "Kanban Archive Status",
+      "message": "Kanban Archive Status",
+      "translation": ""
+    },
+    {
       "id": "Kanban Card Styles",
       "message": "Kanban Card Styles",
       "translation": ""
@@ -1944,6 +1974,16 @@
     {
       "id": "Kanban Columns",
       "message": "Kanban Columns",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Events Enabled",
+      "message": "Kanban Events Enabled",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Events Storage",
+      "message": "Kanban Events Storage",
       "translation": ""
     },
     {
@@ -2574,6 +2614,11 @@
     {
       "id": "no deleted files found",
       "message": "no deleted files found",
+      "translation": ""
+    },
+    {
+      "id": "no events yet",
+      "message": "no events yet",
       "translation": ""
     },
     {
@@ -3312,6 +3357,11 @@
       "translation": ""
     },
     {
+      "id": "show events",
+      "message": "show events",
+      "translation": ""
+    },
+    {
       "id": "show filename as caption under previews",
       "message": "show filename as caption under previews",
       "translation": ""
@@ -3537,6 +3587,11 @@
       "translation": ""
     },
     {
+      "id": "time",
+      "message": "time",
+      "translation": ""
+    },
+    {
       "id": "title",
       "message": "title",
       "translation": ""
@@ -3544,6 +3599,11 @@
     {
       "id": "title only",
       "message": "title only",
+      "translation": ""
+    },
+    {
+      "id": "to",
+      "message": "to",
       "translation": ""
     },
     {
