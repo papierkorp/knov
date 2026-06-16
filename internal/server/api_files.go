@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,6 +22,7 @@ import (
 	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/mapping"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
@@ -348,6 +350,71 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	// for existing file updates, send notify toast
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved"))
 	writeResponse(w, r, map[string]string{"filepath": filePath}, "")
+}
+
+// @Summary Cycle a todo checkbox's state in place from the rendered file view
+// @Description Advances open -> done -> cancelled -> waiting -> open for the checkbox on the given line and returns the re-rendered file content
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Param filepath formData string true "file path"
+// @Param line formData int true "0-indexed source line of the checkbox"
+// @Produce html
+// @Router /api/files/todo-toggle [post]
+func handleAPIToggleTodoState(w http.ResponseWriter, r *http.Request) {
+	// htmx processes HX-Trigger toasts on every response, success or error, so notify
+	// the user even though the failed request leaves the rendered view untouched.
+	fail := func(status int, message string) {
+		notify.SetHeader(w, notify.LevelError, message)
+		http.Error(w, message, status)
+	}
+
+	if err := r.ParseForm(); err != nil {
+		fail(http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"))
+		return
+	}
+
+	filePath := r.FormValue("filepath")
+	if filePath == "" {
+		fail(http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"))
+		return
+	}
+
+	line, err := strconv.Atoi(r.FormValue("line"))
+	if err != nil {
+		fail(http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid line"))
+		return
+	}
+
+	fullPath := pathutils.ToDocsPath(filePath)
+
+	content, err := contentStorage.ReadFile(fullPath)
+	if err != nil {
+		fail(http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"))
+		return
+	}
+
+	updated, err := parser.CycleTodoStateAtLine(content, line)
+	if err != nil {
+		logging.LogError("failed to cycle todo state for %s at line %d: %v", filePath, line, err)
+		fail(http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update todo state"))
+		return
+	}
+
+	if err := contentStorage.WriteFile(fullPath, updated, 0644); err != nil {
+		logging.LogError("failed to write file %s: %v", fullPath, err)
+		fail(http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
+		return
+	}
+	go git.CommitFile(fullPath)
+
+	rendered, err := files.GetFileContent(fullPath)
+	if err != nil {
+		fail(http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(rendered.HTML))
 }
 
 // @Summary Export file to markdown

@@ -26,10 +26,10 @@
 - detect if a request is already loading and block multiple requests of the same kind
 - rename folders
   - rail theme in tree/browse - edit button
-- todo html view => can we make the todo-states clickable in the view?
-- todo editor - hand down the status of the top level header to the lower levels (with a button on top on the right of outdent to disable this feature))
 - todo editor - doesnt use notfications on save
 - on save notification - add links to the file?
+- rename testdata to test and add some kind of test (playwright?)
+- move toggleConflictDiff in thememanager to a script file
 
 # performance updates
 

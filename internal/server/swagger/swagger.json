@@ -2945,6 +2945,38 @@
                 "responses": {}
             }
         },
+        "/api/files/todo-toggle": {
+            "post": {
+                "description": "Advances open -\u003e done -\u003e cancelled -\u003e waiting -\u003e open for the checkbox on the given line and returns the re-rendered file content",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Cycle a todo checkbox's state in place from the rendered file view",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "0-indexed source line of the checkbox",
+                        "name": "line",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/files/tree": {
             "get": {
                 "description": "Returns all files as an indented folder tree structure",

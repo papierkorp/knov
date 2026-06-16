@@ -257,6 +257,7 @@ func StartServerChi() {
 			r.Get("/raw", handleAPIGetRawContent)
 			r.Post("/save", handleAPIFileSave)
 			r.Post("/save/", handleAPIFileSave)
+			r.Post("/todo-toggle", handleAPIToggleTodoState)
 			r.Post("/section/save", handleAPISaveSectionEditor)
 			r.Post("/convert-to-markdown", handleAPIConvertFileToMarkdown)
 			r.Get("/browse", handleAPIBrowseFiles)

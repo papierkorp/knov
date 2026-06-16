@@ -187,6 +187,7 @@
   margin-right: 6px;
   font-size: 0.95em;
   vertical-align: middle;
+  cursor: pointer;
 }
 
 .file-content li.todo-open,
@@ -210,15 +211,21 @@
   color: var(--warning, #ffc107);
 }
 
+.file-content li.todo-open {
+  font-style: normal;
+}
+
 .file-content li.todo-done {
   color: var(--text-secondary);
   text-decoration: line-through;
+  font-style: normal;
 }
 
 .file-content li.todo-cancelled {
   color: var(--text-secondary);
   opacity: 0.55;
   text-decoration: line-through;
+  font-style: normal;
 }
 
 .file-content li.todo-waiting {

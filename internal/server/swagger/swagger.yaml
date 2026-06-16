@@ -2330,6 +2330,29 @@ paths:
       summary: Save section content
       tags:
       - editor
+  /api/files/todo-toggle:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Advances open -> done -> cancelled -> waiting -> open for the checkbox
+        on the given line and returns the re-rendered file content
+      parameters:
+      - description: file path
+        in: formData
+        name: filepath
+        required: true
+        type: string
+      - description: 0-indexed source line of the checkbox
+        in: formData
+        name: line
+        required: true
+        type: integer
+      produces:
+      - text/html
+      responses: {}
+      summary: Cycle a todo checkbox's state in place from the rendered file view
+      tags:
+      - files
   /api/files/tree:
     get:
       description: Returns all files as an indented folder tree structure

@@ -14,7 +14,7 @@
     <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
     <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
     <div class="fileview-layout">
-        <article class="file-content">
+        <article class="file-content" data-filepath="{{.FilePath}}">
             {{.FileContent.HTML}}
         </article>
         <aside class="layout-sidebar">
@@ -206,7 +206,7 @@
             {{end}}
         </div>
     </div>
-    <article class="file-content">
+    <article class="file-content" data-filepath="{{.FilePath}}">
         {{.FileContent.HTML}}
     </article>
 </div>
@@ -222,7 +222,7 @@
         <button class="font-size-btn" onclick="adjustFontSize(-2)">A-</button>
         <button class="font-size-btn" onclick="adjustFontSize(2)">A+</button>
     </div>
-    <article class="file-content">
+    <article class="file-content" data-filepath="{{.FilePath}}">
         {{.FileContent.HTML}}
     </article>
 </div>
