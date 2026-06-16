@@ -337,6 +337,11 @@
       "translation": ""
     },
     {
+      "id": "choose how dates are displayed throughout the app",
+      "message": "choose how dates are displayed throughout the app",
+      "translation": ""
+    },
+    {
       "id": "choose the visual appearance of the interface",
       "message": "choose the visual appearance of the interface",
       "translation": ""
@@ -629,6 +634,11 @@
     {
       "id": "data path saved. restart required.",
       "message": "data path saved. restart required.",
+      "translation": ""
+    },
+    {
+      "id": "Date Format",
+      "message": "Date Format",
       "translation": ""
     },
     {

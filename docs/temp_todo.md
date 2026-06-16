@@ -28,7 +28,6 @@
 - detect if a request is already loading and block multiple requests of the same kind
 - rename folders
   - rail theme in tree/browse - edit button
-- add a config that allows set the date style and make the default: DD.MM.YYYY (most important case: kanban)
 
 # performance updates
 

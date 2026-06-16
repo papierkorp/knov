@@ -328,7 +328,7 @@ func handleAPIGetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdAt := metadata.CreatedAt.Format("2006-01-02 15:04:05")
+	createdAt := configmanager.FormatDateTime(metadata.CreatedAt)
 	html := fmt.Sprintf(`<span class="createdat">%s</span>`, createdAt)
 	writeResponse(w, r, createdAt, html)
 }
@@ -356,7 +356,7 @@ func handleAPIGetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lastEdited := metadata.LastEdited.Format("2006-01-02 15:04:05")
+	lastEdited := configmanager.FormatDateTime(metadata.LastEdited)
 	html := fmt.Sprintf(`<span class="lastedited">%s</span>`, lastEdited)
 	writeResponse(w, r, lastEdited, html)
 }

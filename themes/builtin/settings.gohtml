@@ -36,6 +36,21 @@
     </div>
 
     <div class="setting-item">
+        <form hx-post="/api/config/date-format" hx-trigger="change">
+            <label for="dateFormat">
+                {{T "Date Format"}}
+                <select name="dateFormat" id="dateFormat" class="form-select">
+                    <option value="DD.MM.YYYY" {{ if eq .UserSettings.DateFormat "DD.MM.YYYY" }}selected{{ end }}>DD.MM.YYYY (31.12.2026)</option>
+                    <option value="YYYY-MM-DD" {{ if eq .UserSettings.DateFormat "YYYY-MM-DD" }}selected{{ end }}>YYYY-MM-DD (2026-12-31)</option>
+                    <option value="MM/DD/YYYY" {{ if eq .UserSettings.DateFormat "MM/DD/YYYY" }}selected{{ end }}>MM/DD/YYYY (12/31/2026)</option>
+                    <option value="DD/MM/YYYY" {{ if eq .UserSettings.DateFormat "DD/MM/YYYY" }}selected{{ end }}>DD/MM/YYYY (31/12/2026)</option>
+                </select>
+            </label>
+            <div class="help-text">{{T "choose how dates are displayed throughout the app"}}</div>
+        </form>
+    </div>
+
+    <div class="setting-item">
         <form hx-post="/api/themes/" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
             <label for="theme">
                 {{T "Select Theme"}}

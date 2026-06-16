@@ -501,6 +501,31 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/config/date-format": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update date display format",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Date format: DD.MM.YYYY, YYYY-MM-DD, MM/DD/YYYY, or DD/MM/YYYY",
+                        "name": "dateFormat",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/config/export": {
             "get": {
                 "description": "Downloads the current user settings as a JSON file",

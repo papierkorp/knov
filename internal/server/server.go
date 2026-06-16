@@ -196,6 +196,7 @@ func StartServerChi() {
 			// POST
 			r.Post("/import", handleAPIImportSettings)
 			r.Post("/language", handleAPISetLanguage)
+			r.Post("/date-format", handleAPISetDateFormat)
 			r.Post("/repository", handleAPISetGitRepositoryURL)
 			r.Post("/datapath", handleAPISetDataPath)
 

@@ -159,7 +159,8 @@
                 to: '{{T "to"}}',
                 all: '{{T "all"}}',
                 dateFrom: '{{T "from date"}}',
-                dateTo: '{{T "to date"}}'
+                dateTo: '{{T "to date"}}',
+                dateFormat: '{{.DateFormat}}'
             };
             (kanbanEventsModule ? Promise.resolve(kanbanEventsModule) : import('/themes/builtin/kanban-events.js'))
                 .then(function(mod) {

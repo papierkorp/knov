@@ -3,9 +3,27 @@
 // by users who never click the events button.
 // Theme-owned: rail. Deliberately not shared with other themes — see builtin/kanban-events.js.
 
-function renderRows(list) {
+var DATE_FORMAT_PATTERNS = {
+    'DD.MM.YYYY': function(d) { return pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + d.getFullYear(); },
+    'YYYY-MM-DD': function(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); },
+    'MM/DD/YYYY': function(d) { return pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + '/' + d.getFullYear(); },
+    'DD/MM/YYYY': function(d) { return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear(); }
+};
+
+function pad(n) {
+    return n < 10 ? '0' + n : '' + n;
+}
+
+// formats a timestamp as "<configured date style> HH:MM", matching the server-side display format
+function formatTimestamp(timestamp, dateFormat) {
+    var d = new Date(timestamp);
+    var formatDate = DATE_FORMAT_PATTERNS[dateFormat] || DATE_FORMAT_PATTERNS['DD.MM.YYYY'];
+    return formatDate(d) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+function renderRows(list, dateFormat) {
     return list.map(function(e) {
-        var ts    = new Date(e.timestamp).toLocaleString();
+        var ts    = formatTimestamp(e.timestamp, dateFormat);
         var fname = e.filePath.split('/').pop();
         var from  = e.fromStatus || '—';
         return '<tr><td>' + ts + '</td><td title="' + e.filePath + '">' + fname + '</td><td>' + from + '</td><td>' + e.toStatus + '</td></tr>';
@@ -133,7 +151,7 @@ function load(opts, dateFrom, dateTo, sortState, fileFilter) {
                     ? '<p class="kanban-empty">' + t.noEvents + '</p>'
                     : '<table class="kanban-events-table">' +
                       '<thead>' + renderHeader(t, sortState) + '</thead>' +
-                      '<tbody>' + renderRows(sortEvents(events, sortState)) + '</tbody>' +
+                      '<tbody>' + renderRows(sortEvents(events, sortState), t.dateFormat) + '</tbody>' +
                       '</table>') +
                 '</div>';
 
@@ -158,7 +176,7 @@ function load(opts, dateFrom, dateTo, sortState, fileFilter) {
                         (e.fromStatus || '').toLowerCase().includes(q) ||
                         e.toStatus.toLowerCase().includes(q);
                 });
-                tbody.innerHTML = renderRows(sortEvents(filtered, sortState));
+                tbody.innerHTML = renderRows(sortEvents(filtered, sortState), t.dateFormat);
             };
 
             var attachSortHandlers = function() {

@@ -4,6 +4,7 @@ package render
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/kanban"
@@ -73,7 +74,7 @@ func RenderKanbanCard(card kanban.Card) string {
 		fmt.Fprintf(&html, `<span title="%s">%s: %s</span>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "created at"),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "created at"),
-			card.CreatedAt)
+			formatCardDate(card.CreatedAt))
 	}
 
 	fmt.Fprintf(&html, ` | `)
@@ -82,7 +83,7 @@ func RenderKanbanCard(card kanban.Card) string {
 		fmt.Fprintf(&html, `<span title="%s">%s: %s</span>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "last edited"),
 			translation.SprintfForRequest(configmanager.GetLanguage(), "last edited"),
-			card.LastEdited)
+			formatCardDate(card.LastEdited))
 	}
 	html.WriteString(`</div>`)
 
@@ -151,4 +152,14 @@ func RenderKanbanFilterPanel(collection string) string {
 func sanitizeID(path string) string {
 	r := strings.NewReplacer("/", "-", ".", "-", " ", "-")
 	return r.Replace(path)
+}
+
+// formatCardDate reformats a card's stored ISO date (YYYY-MM-DD) for display using the
+// configured date style. Falls back to the raw value if it can't be parsed.
+func formatCardDate(isoDate string) string {
+	t, err := time.Parse("2006-01-02", isoDate)
+	if err != nil {
+		return isoDate
+	}
+	return configmanager.FormatDate(t)
 }

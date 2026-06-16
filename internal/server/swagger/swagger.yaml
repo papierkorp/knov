@@ -676,6 +676,23 @@ paths:
       summary: Update data path
       tags:
       - config
+  /api/config/date-format:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: 'Date format: DD.MM.YYYY, YYYY-MM-DD, MM/DD/YYYY, or DD/MM/YYYY'
+        in: formData
+        name: dateFormat
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update date display format
+      tags:
+      - config
   /api/config/export:
     get:
       description: Downloads the current user settings as a JSON file

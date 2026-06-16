@@ -70,6 +70,25 @@ func handleAPISetLanguage(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// @Summary Update date display format
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param dateFormat formData string true "Date format: DD.MM.YYYY, YYYY-MM-DD, MM/DD/YYYY, or DD/MM/YYYY"
+// @Produce json,html
+// @Router /api/config/date-format [post]
+func handleAPISetDateFormat(w http.ResponseWriter, r *http.Request) {
+	dateFormat := r.FormValue("dateFormat")
+
+	logging.LogDebug("date format set to: %s", dateFormat)
+
+	if dateFormat != "" {
+		configmanager.SetDateFormat(dateFormat)
+	}
+
+	w.Header().Set("HX-Refresh", "true")
+	w.WriteHeader(http.StatusOK)
+}
+
 // @Summary Get git remote URL
 // @Tags config
 // @Produce json,html

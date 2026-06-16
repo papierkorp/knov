@@ -21,6 +21,7 @@ var userSettings UserSettings
 type UserSettings struct {
 	Theme                        string           `json:"theme"`
 	Language                     string           `json:"language"`
+	DateFormat                   string           `json:"dateFormat"`
 	ThemeSettings                AllThemeSettings `json:"themeSettings,omitempty"`
 	MediaSettings                MediaSettings    `json:"mediaSettings,omitempty"`
 	TableSettings                TableSettings    `json:"tableSettings,omitempty"`
@@ -54,6 +55,7 @@ func InitUserSettings() {
 	userSettings = UserSettings{
 		Theme:                        "builtin",
 		Language:                     "en",
+		DateFormat:                   "DD.MM.YYYY",
 		ThemeSettings:                make(AllThemeSettings),
 		SectionEditIncludeSubheaders: false,
 		MediaSettings: MediaSettings{

@@ -366,13 +366,13 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	if !metadata.CreatedAt.IsZero() {
 		fmt.Fprintf(&html, `<dt>%s</dt><dd>%s</dd>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "created"),
-			metadata.CreatedAt.Format("2006-01-02 15:04"))
+			configmanager.FormatDateTime(metadata.CreatedAt))
 	}
 
 	if !metadata.LastEdited.IsZero() {
 		fmt.Fprintf(&html, `<dt>%s</dt><dd>%s</dd>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "last modified"),
-			metadata.LastEdited.Format("2006-01-02 15:04"))
+			configmanager.FormatDateTime(metadata.LastEdited))
 	}
 
 	html.WriteString(`</dl>`)

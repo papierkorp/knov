@@ -28,6 +28,7 @@ type BaseTemplateData struct {
 	CurrentTheme  string
 	ThemeSettings map[string]interface{}
 	Language      string
+	DateFormat    string
 	Themes        []Theme
 	FileType      string
 	CodeBlockWrap bool
@@ -43,6 +44,7 @@ func NewBaseTemplateData(title string) BaseTemplateData {
 		CurrentTheme:  themeManager.GetCurrentThemeName(),
 		ThemeSettings: getMergedThemeSettings(),
 		Language:      configmanager.GetLanguage(),
+		DateFormat:    configmanager.GetDateFormat(),
 		Themes:        themeManager.GetAvailableThemes(),
 		CodeBlockWrap: configmanager.GetUserSettings().CodeBlockWrap,
 		FileType:      "",
