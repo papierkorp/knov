@@ -221,6 +221,7 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 			<span class="separator">|</span>
 			<button type="button" onclick="todoEditor.globalIndent()" title="%s">→ %s</button>
 			<button type="button" onclick="todoEditor.globalOutdent()" title="%s">← %s</button>
+			<button type="button" id="cascade-status-toggle" class="toggle-btn active" onclick="todoEditor.toggleCascadeStatus()" title="%s">⤓ %s</button>
 			<span class="separator">|</span>
 			<button type="button" onclick="todoEditor.globalDelete()" class="danger">🗑 %s</button>
 		</div>
@@ -247,6 +248,7 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 			%s
 
 			const STATE_CYCLE = ["open", "done", "cancelled", "waiting"];
+			let cascadeStatus = true;
 
 			function stateToGlyph(state) {
 				switch(state) {
@@ -255,6 +257,38 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 					case "waiting":   return "[O]";
 					default:          return "[ ]";
 				}
+			}
+
+			// applies a state to a single item's badge/button/input styling
+			function applyItemState(li, state) {
+				const stateBtn = li.querySelector(".state-btn");
+				const input = li.querySelector(".item-input");
+				li.dataset.state = state;
+				stateBtn.className = "state-btn state-" + state;
+				stateBtn.textContent = stateToGlyph(state);
+				if (state === "done" || state === "cancelled") {
+					input.classList.add("item-struck");
+				} else {
+					input.classList.remove("item-struck");
+				}
+				if (state === "waiting") {
+					input.classList.add("item-waiting");
+				} else {
+					input.classList.remove("item-waiting");
+				}
+			}
+
+			// hands the given state down to all nested descendants of li
+			function cascadeStateToChildren(li, state) {
+				li.querySelectorAll(".list-item").forEach(function(child) {
+					applyItemState(child, state);
+				});
+			}
+
+			function toggleCascadeStatus() {
+				cascadeStatus = !cascadeStatus;
+				const btn = document.getElementById("cascade-status-toggle");
+				if (btn) btn.classList.toggle("active", cascadeStatus);
 			}
 
 			function createListItem(text = "", state = "") {
@@ -272,18 +306,9 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 				stateBtn.addEventListener("click", function() {
 					const current = li.dataset.state || "open";
 					const next = STATE_CYCLE[(STATE_CYCLE.indexOf(current) + 1) %% STATE_CYCLE.length];
-					li.dataset.state = next;
-					stateBtn.className = "state-btn state-" + next;
-					stateBtn.textContent = stateToGlyph(next);
-					if (next === "done" || next === "cancelled") {
-						input.classList.add("item-struck");
-					} else {
-						input.classList.remove("item-struck");
-					}
-					if (next === "waiting") {
-						input.classList.add("item-waiting");
-					} else {
-						input.classList.remove("item-waiting");
+					applyItemState(li, next);
+					if (cascadeStatus) {
+						cascadeStateToChildren(li, next);
 					}
 				});
 
@@ -372,7 +397,7 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 				init();
 			}
 
-			return { addItem, addNestedItem, globalIndent, globalOutdent, globalDelete, undoDelete };
+			return { addItem, addNestedItem, globalIndent, globalOutdent, globalDelete, undoDelete, toggleCascadeStatus };
 		})();
 		initWikiAutocompleteForInputs(document.getElementById('todo-editor-form'));
 	</script>
@@ -386,6 +411,8 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 		translation.SprintfForRequest(lang, "indent"),
 		translation.SprintfForRequest(lang, "shift+tab"),
 		translation.SprintfForRequest(lang, "outdent"),
+		translation.SprintfForRequest(lang, "hand down status to sub-items"),
+		translation.SprintfForRequest(lang, "cascade status"),
 		translation.SprintfForRequest(lang, "delete"),
 		translation.SprintfForRequest(lang, "item deleted"),
 		translation.SprintfForRequest(lang, "undo"),

@@ -16,8 +16,6 @@
 **per ai**
 - fix all the editor warnings
 - backup solution
-- rail theme: open file in new window button to the left of the close button
-- syntax highlighting in the editor
 - show logs in app
 - download logs
 - codeberg deployment pipeline?
@@ -28,6 +26,10 @@
 - detect if a request is already loading and block multiple requests of the same kind
 - rename folders
   - rail theme in tree/browse - edit button
+- todo html view => can we make the todo-states clickable in the view?
+- todo editor - hand down the status of the top level header to the lower levels (with a button on top on the right of outdent to disable this feature))
+- todo editor - doesnt use notfications on save
+- on save notification - add links to the file?
 
 # performance updates
 

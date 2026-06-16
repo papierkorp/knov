@@ -186,6 +186,12 @@
   align-self: center;
 }
 
+.component-todo-editor .controls .toggle-btn.active {
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 .component-todo-editor .controls .danger {
   background: var(--danger, #dc3545);
   color: white;
