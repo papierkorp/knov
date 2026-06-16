@@ -1477,6 +1477,11 @@
       "translation": ""
     },
     {
+      "id": "filter events...",
+      "message": "filter events...",
+      "translation": ""
+    },
+    {
       "id": "filter name",
       "message": "filter name",
       "translation": ""
@@ -1554,6 +1559,11 @@
     {
       "id": "from",
       "message": "from",
+      "translation": ""
+    },
+    {
+      "id": "from date",
+      "message": "from date",
       "translation": ""
     },
     {
@@ -3604,6 +3614,11 @@
     {
       "id": "to",
       "message": "to",
+      "translation": ""
+    },
+    {
+      "id": "to date",
+      "message": "to date",
       "translation": ""
     },
     {

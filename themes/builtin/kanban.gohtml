@@ -132,6 +132,7 @@
     var dragging = null;
     var archiveStatus = '{{.ArchiveStatus}}';
     var showingEvents = false;
+    var kanbanEventsModule = null;
 
     window.kanbanToggleEvents = function() {
         var wrap = document.getElementById('view-kanban-board-wrap');
@@ -147,24 +148,23 @@
             btn.classList.replace('btn-secondary', 'btn-primary');
             if (filterPanel) filterPanel.setAttribute('hidden', '');
             wrap.innerHTML = '<p>{{T "loading..."}}</p>';
-            fetch('/api/kanban/{{.Collection}}/events?limit=200', { headers: { Accept: 'application/json' } })
-                .then(function(r) { return r.json(); })
-                .then(function(events) {
-                    if (!events || events.length === 0) {
-                        wrap.innerHTML = '<p class="kanban-empty">{{T "no events yet"}}</p>';
-                        return;
-                    }
-                    var rows = events.map(function(e) {
-                        var ts    = new Date(e.timestamp).toLocaleString();
-                        var fname = e.filePath.split('/').pop();
-                        var from  = e.fromStatus || '—';
-                        return '<tr><td>' + ts + '</td><td title="' + e.filePath + '">' + fname + '</td><td>' + from + '</td><td>' + e.toStatus + '</td></tr>';
-                    }).join('');
-                    wrap.innerHTML =
-                        '<table class="kanban-events-table">' +
-                        '<thead><tr><th>{{T "time"}}</th><th>{{T "file"}}</th><th>{{T "from"}}</th><th>{{T "to"}}</th></tr></thead>' +
-                        '<tbody>' + rows + '</tbody>' +
-                        '</table>';
+            var t = {
+                loading: '{{T "loading..."}}',
+                noEvents: '{{T "no events yet"}}',
+                failedToLoad: '{{T "failed to load events"}}',
+                filterPlaceholder: '{{T "filter events..."}}',
+                time: '{{T "time"}}',
+                file: '{{T "file"}}',
+                from: '{{T "from"}}',
+                to: '{{T "to"}}',
+                all: '{{T "all"}}',
+                dateFrom: '{{T "from date"}}',
+                dateTo: '{{T "to date"}}'
+            };
+            (kanbanEventsModule ? Promise.resolve(kanbanEventsModule) : import('/themes/builtin/kanban-events.js'))
+                .then(function(mod) {
+                    kanbanEventsModule = mod;
+                    mod.show({ wrap: wrap, collection: '{{.Collection}}', t: t });
                 })
                 .catch(function() {
                     wrap.innerHTML = '<p>{{T "failed to load events"}}</p>';

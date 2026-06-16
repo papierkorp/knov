@@ -125,9 +125,9 @@ func BuildBoard(collection string, cfg *filter.Config, searchQuery string, sortB
 	for col, cards := range cardsByStatus {
 		switch sortBy {
 		case "":
-			// baseline: createdAt, then apply drag-drop order on top
+			// baseline: createdAt (newest first), then apply drag-drop order on top
 			sort.Slice(cards, func(i, j int) bool {
-				return cards[i].CreatedAt < cards[j].CreatedAt
+				return cards[i].CreatedAt > cards[j].CreatedAt
 			})
 			if storedPaths, ok := storedOrder[col]; ok {
 				paths := make([]string, len(cards))
@@ -268,6 +268,28 @@ func TagsForCollection(collection string) ([]string, error) {
 	}
 	slices.Sort(tags)
 	return tags, nil
+}
+
+// FilesForCollection returns the file paths of all kanban cards (files with a kanban status) in the collection, sorted.
+func FilesForCollection(collection string) ([]string, error) {
+	prefix := configmanager.GetKanbanPrefix()
+	allFiles, err := files.GetAllFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	var paths []string
+	for _, file := range allFiles {
+		if file.Metadata == nil || file.Metadata.Collection != collection {
+			continue
+		}
+		if StatusFromTags(file.Metadata.Tags, prefix) == "" {
+			continue
+		}
+		paths = append(paths, pathutils.ToRelative(file.Path))
+	}
+	slices.Sort(paths)
+	return paths, nil
 }
 
 // Excerpt returns the first maxRunes runes of meaningful body text from a file,

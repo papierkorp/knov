@@ -3614,6 +3614,28 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/kanban/{collection}/files": {
+            "get": {
+                "description": "Returns the file paths of all cards currently on the kanban board for a collection, sorted.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "kanban"
+                ],
+                "summary": "Get kanban card file paths",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Collection name",
+                        "name": "collection",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/kanban/{collection}/filter": {
             "post": {
                 "description": "Filters the kanban board using the full filter form; collection is always injected as the first criterion",

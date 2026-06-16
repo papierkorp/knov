@@ -282,3 +282,27 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(events)
 }
+
+// @Summary Get kanban card file paths
+// @Description Returns the file paths of all cards currently on the kanban board for a collection, sorted.
+// @Tags kanban
+// @Param collection path string true "Collection name"
+// @Produce json
+// @Router /api/kanban/{collection}/files [get]
+func handleAPIGetKanbanFiles(w http.ResponseWriter, r *http.Request) {
+	collection := chi.URLParam(r, "collection")
+	if collection == "" {
+		http.Error(w, "missing collection", http.StatusBadRequest)
+		return
+	}
+
+	paths, err := kanban.FilesForCollection(collection)
+	if err != nil {
+		logging.LogError("failed to get kanban files for %s: %v", collection, err)
+		http.Error(w, "failed to get files", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(paths)
+}

@@ -2717,6 +2717,22 @@ paths:
       summary: Get kanban event log
       tags:
       - kanban
+  /api/kanban/{collection}/files:
+    get:
+      description: Returns the file paths of all cards currently on the kanban board
+        for a collection, sorted.
+      parameters:
+      - description: Collection name
+        in: path
+        name: collection
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Get kanban card file paths
+      tags:
+      - kanban
   /api/kanban/{collection}/filter:
     post:
       consumes:

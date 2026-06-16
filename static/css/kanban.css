@@ -226,6 +226,47 @@
 
 /* ---- Events table ---- */
 
+.kanban-events-view {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  overflow: auto;
+}
+
+.kanban-events-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.kanban-events-search {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 20rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.kanban-events-status-filter {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.kanban-events-date {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+}
+
 .kanban-events-table {
   width: 100%;
   border-collapse: collapse;
@@ -243,6 +284,19 @@
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
+}
+
+.kanban-events-table th.kanban-events-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.kanban-events-table th.kanban-events-sortable:hover {
+  color: var(--text);
+}
+
+.kanban-events-sort-arrow {
+  font-size: 0.7em;
 }
 
 .kanban-events-table td:first-child {
