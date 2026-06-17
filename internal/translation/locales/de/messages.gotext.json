@@ -292,6 +292,11 @@
       "translation": ""
     },
     {
+      "id": "cannot move folder into itself",
+      "message": "cannot move folder into itself",
+      "translation": ""
+    },
+    {
       "id": "caption setting updated",
       "message": "caption setting updated",
       "translation": ""
@@ -459,6 +464,16 @@
     {
       "id": "content",
       "message": "content",
+      "translation": ""
+    },
+    {
+      "id": "content match",
+      "message": "content match",
+      "translation": ""
+    },
+    {
+      "id": "contents",
+      "message": "contents",
       "translation": ""
     },
     {
@@ -1127,6 +1142,11 @@
       "translation": ""
     },
     {
+      "id": "failed to move folder",
+      "message": "failed to move folder",
+      "translation": ""
+    },
+    {
       "id": "failed to move message",
       "message": "failed to move message",
       "translation": ""
@@ -1552,8 +1572,23 @@
       "translation": ""
     },
     {
+      "id": "folder does not exist",
+      "message": "folder does not exist",
+      "translation": ""
+    },
+    {
       "id": "folder is empty",
       "message": "folder is empty",
+      "translation": ""
+    },
+    {
+      "id": "folder moved",
+      "message": "folder moved",
+      "translation": ""
+    },
+    {
+      "id": "folder name must not contain path separators",
+      "message": "folder name must not contain path separators",
       "translation": ""
     },
     {
@@ -1569,6 +1604,11 @@
     {
       "id": "folders updated",
       "message": "folders updated",
+      "translation": ""
+    },
+    {
+      "id": "folder with new name already exists",
+      "message": "folder with new name already exists",
       "translation": ""
     },
     {
@@ -2292,6 +2332,11 @@
       "translation": ""
     },
     {
+      "id": "Logs",
+      "message": "Logs",
+      "translation": ""
+    },
+    {
       "id": "Logs Path",
       "message": "Logs Path",
       "translation": ""
@@ -2484,6 +2529,11 @@
     {
       "id": "missing filepath parameter",
       "message": "missing filepath parameter",
+      "translation": ""
+    },
+    {
+      "id": "missing folder path",
+      "message": "missing folder path",
       "translation": ""
     },
     {
@@ -3549,6 +3599,11 @@
     {
       "id": "tags updated",
       "message": "tags updated",
+      "translation": ""
+    },
+    {
+      "id": "target folder is required",
+      "message": "target folder is required",
       "translation": ""
     },
     {

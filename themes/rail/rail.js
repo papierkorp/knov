@@ -363,6 +363,12 @@ function setupFilePage() {
     htmx.process(document.getElementById("delete-form"));
   }
 
+  // search page — close panel
+  if (path === "/search") {
+    closePanel();
+    return true;
+  }
+
   // edit pages — show file panel with metadata
   const editMatch = path.match(/^\/files\/edit\/(.+)/);
   if (editMatch) {
