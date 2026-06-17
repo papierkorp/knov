@@ -100,68 +100,63 @@ func extractSearchContext(filePath, query string) string {
 	fullPath := pathutils.ToDocsPath(filePath)
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
-		// file not on disk (e.g. virtual/filename match) - show label instead
 		return fmt.Sprintf(`<span class="search-match-filename">%s</span>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "filename match"))
 	}
 
 	originalContent := string(content)
+	contentLower := strings.ToLower(originalContent)
 	queryLower := strings.ToLower(query)
-	words := strings.Fields(originalContent)
 
-	hitWordIndex := -1
-	for i, word := range words {
-		if strings.Contains(strings.ToLower(word), queryLower) {
-			hitWordIndex = i
-			break
-		}
-	}
-
-	if hitWordIndex == -1 {
-		// query not in content but file matched by filename
+	hitPos := strings.Index(contentLower, queryLower)
+	if hitPos == -1 {
 		return fmt.Sprintf(`<span class="search-match-filename">%s</span>`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "filename match"))
+			translation.SprintfForRequest(configmanager.GetLanguage(), "content match"))
 	}
 
-	start := hitWordIndex - 5
+	const window = 60
+	start := hitPos - window
 	if start < 0 {
 		start = 0
 	}
-	end := hitWordIndex + 6
-	if end > len(words) {
-		end = len(words)
+	end := hitPos + len(query) + window
+	if end > len(originalContent) {
+		end = len(originalContent)
 	}
 
-	var contextParts []string
-
-	if start < hitWordIndex {
-		contextParts = append(contextParts, html.EscapeString(strings.Join(words[start:hitWordIndex], " ")))
+	// trim to word boundaries to avoid cutting mid-rune or mid-word
+	for start > 0 && originalContent[start] != ' ' && originalContent[start] != '\n' {
+		start--
+	}
+	for end < len(originalContent) && originalContent[end] != ' ' && originalContent[end] != '\n' {
+		end++
 	}
 
-	hitWord := words[hitWordIndex]
-	hitWordLower := strings.ToLower(hitWord)
-	queryPos := strings.Index(hitWordLower, queryLower)
-	if queryPos >= 0 {
-		before := html.EscapeString(hitWord[:queryPos])
-		match := html.EscapeString(hitWord[queryPos : queryPos+len(query)])
-		after := html.EscapeString(hitWord[queryPos+len(query):])
-		contextParts = append(contextParts, fmt.Sprintf(`%s<mark>%s</mark>%s`, before, match, after))
-	} else {
-		contextParts = append(contextParts, fmt.Sprintf(`<mark>%s</mark>`, html.EscapeString(hitWord)))
-	}
+	prefix := strings.TrimSpace(originalContent[start:hitPos])
+	match := originalContent[hitPos : hitPos+len(query)]
+	suffix := strings.TrimSpace(originalContent[hitPos+len(query) : end])
 
-	if hitWordIndex+1 < end {
-		contextParts = append(contextParts, html.EscapeString(strings.Join(words[hitWordIndex+1:end], " ")))
-	}
+	// collapse internal newlines/extra whitespace for display
+	prefix = strings.Join(strings.Fields(prefix), " ")
+	suffix = strings.Join(strings.Fields(suffix), " ")
 
-	context := strings.Join(contextParts, " ")
+	var b strings.Builder
 	if start > 0 {
-		context = "..." + context
+		b.WriteString("...")
 	}
-	if end < len(words) {
-		context = context + "..."
+	b.WriteString(html.EscapeString(prefix))
+	if prefix != "" {
+		b.WriteString(" ")
 	}
-	return context
+	b.WriteString(fmt.Sprintf(`<mark>%s</mark>`, html.EscapeString(match)))
+	if suffix != "" {
+		b.WriteString(" ")
+	}
+	b.WriteString(html.EscapeString(suffix))
+	if end < len(originalContent) {
+		b.WriteString("...")
+	}
+	return b.String()
 }
 
 // RenderSearchHistoryResults renders deleted-file history search results as HTML
