@@ -14,21 +14,21 @@
 - add a `create_your_own_theme.md` file
 
 **per ai**
-- fix all the editor warnings
-- backup solution
-- codeberg deployment pipeline?
-- make docker build viable
-  - for usage
-  - for devs
-- media gitignore
-- detect if a request is already loading and block multiple requests of the same kind
-- rename folders
-  - rail theme in tree/browse - edit button
+- move all scripts into files (browser inspector)
 - todo editor - doesnt use notfications on save
-- on save notification - add links to the file?
-- rename testdata to test and add some kind of test (playwright?)
+- media gitignore
 - add chat to a single file?
 - references - add date
+- detect if a request is already loading and block multiple requests of the same kind
+- rename testdata to test and add some kind of test (playwright?)
+
+- deployment
+  - codeberg deployment pipeline?
+  - make docker build viable
+    - for usage
+    - for devs
+- backup solution
+- fix all the editor warnings
 
 # performance updates
 
