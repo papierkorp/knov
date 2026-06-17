@@ -31,8 +31,8 @@
 - rename testdata to test and add some kind of test (playwright?)
 - rail theme tree - drag and drop files into folder
 - add chat to a single file?
-- rail theme - system files => only who toc in info slideout (changelog)
 - references - add date
+- rail theme - close slideout on edit
 
 # performance updates
 

@@ -35,6 +35,7 @@ type BaseTemplateData struct {
 	T             func(string, ...any) string
 	Version       string
 	BuildTime     string
+	SystemPage    bool
 }
 
 // NewBaseTemplateData creates base data used by all templates

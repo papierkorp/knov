@@ -825,18 +825,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const tocNav = document.getElementById("fp-toc-nav");
   if (tocData && tocNav) tocNav.innerHTML = tocData.innerHTML;
 
+  const isSystemPage = !document.getElementById("fp-file-modes");
+  if (isSystemPage) {
+    document.body.setAttribute("data-has-file", "true");
+    togglePanel("fp-file");
+  }
+
   const isFilePage = setupFilePage();
   const isHistoryPage =
     window.location.pathname.startsWith("/files/history/") ||
     window.location.pathname === "/history";
-  if (!isFilePage && !isHistoryPage) {
+  if (!isFilePage && !isHistoryPage && !isSystemPage) {
     const saved = localStorage.getItem("rail-panel");
     if (saved && document.getElementById(saved)) togglePanel(saved);
   }
 
-  // restore saved file sub-panel selection
+  // restore saved file sub-panel selection (skip on system pages — TOC is set in HTML)
   const savedSubPanel = localStorage.getItem("rail-file-subpanel");
-  if (savedSubPanel) {
+  if (savedSubPanel && !isSystemPage) {
     switchFileSubPanel(savedSubPanel);
   }
 

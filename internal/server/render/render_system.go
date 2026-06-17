@@ -177,6 +177,7 @@ func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
 
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileViewTemplateData("Changelog", "system/changelog.md", fileContent)
+	data.SystemPage = true
 	if err := tm.Render(w, "fileview", data); err != nil {
 		logging.LogError("failed to render changelog page: %v", err)
 	}

@@ -235,9 +235,10 @@
             <!-- filename header + action buttons + select -->
             <div id="fp-file-header">
                 <div id="fp-file-title-row">
-                    <div id="fp-file-title">-</div>
+                    <div id="fp-file-title">{{if .SystemPage}}{{T "contents"}}{{else}}-{{end}}</div>
                     <button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
                 </div>
+                {{if not .SystemPage}}
                 <div id="fp-file-actions">
                     <a  class="fp-action-btn fp-btn-edit"   id="fp-edit-link"   href="#" title="{{T "edit"}}"><i class="fa fa-pen"></i></a>
                     <button class="fp-action-btn"           id="fp-rename-btn"  popovertarget="rename-modal"  title="{{T "rename"}}"><i class="fa fa-i-cursor"></i></button>
@@ -251,13 +252,14 @@
                     <button class="fp-file-mode-btn"        data-mode="references"  onclick="switchFileSubPanel('references')"  title="{{T "references"}}"><i class="fa fa-link"></i></button>
                     <button class="fp-file-mode-btn"        data-mode="connections" onclick="switchFileSubPanel('connections')" title="{{T "connections"}}"><i class="fa fa-diagram-project"></i></button>
                 </div>
+                {{end}}
             </div>
 
             <!-- metadata sub-panel -->
             <div class="flyout-content">
-                <div class="fp-no-file" id="fp-no-file">{{T "no file selected"}}</div>
+                {{if not .SystemPage}}<div class="fp-no-file" id="fp-no-file">{{T "no file selected"}}</div>{{end}}
 
-                <div class="fp-sub-panel active" id="fps-metadata">
+                <div class="fp-sub-panel{{if not .SystemPage}} active{{end}}" id="fps-metadata">
                     <div class="fp-meta-row"><span class="fp-meta-label">{{T "path"}}:</span><span class="fp-meta-value" id="fp-meta-path">-</span></div>
                     <div class="fp-meta-row"><span class="fp-meta-label">{{T "editor"}}:</span><span class="fp-meta-value" id="fp-meta-editor">-</span></div>
                     <div class="fp-meta-row"><span class="fp-meta-label">{{T "created"}}:</span><span class="fp-meta-value" id="fp-meta-created">-</span></div>
@@ -267,7 +269,7 @@
                     <div class="fp-meta-row"><span class="fp-meta-label">{{T "folder"}}:</span><span class="fp-meta-value" id="fp-meta-folders">-</span></div>
                 </div>
 
-                <div class="fp-sub-panel" id="fps-toc">
+                <div class="fp-sub-panel{{if .SystemPage}} active{{end}}" id="fps-toc">
                     <input type="search" id="fp-toc-filter" placeholder="{{T "filter..."}}"
                            oninput="filterTocItems(this.value)"/>
                     <nav id="fp-toc-nav" class="fp-toc-nav"></nav>
