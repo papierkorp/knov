@@ -139,7 +139,9 @@ function filterBrowseContent(query) {
 
     // hide/show dir rows based on whether any child file matches
     el.querySelectorAll("li").forEach((li) => {
-      const hasDirBtn = li.querySelector(":scope > button.fp-tree-dir");
+      const hasDirBtn =
+        li.querySelector(":scope > button.fp-tree-dir") ||
+        li.querySelector(":scope > span.browse-item-row > button.fp-tree-dir");
       if (!hasDirBtn) return;
       const hasVisible = [...li.querySelectorAll("a.fp-tree-file")].some(
         (a) => a.closest("li").style.display !== "none",
