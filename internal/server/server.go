@@ -4,12 +4,10 @@ package server
 import (
 	"embed"
 	"fmt"
-	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -18,7 +16,6 @@ import (
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/logging"
-	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server/render"
 	_ "knov/internal/server/swagger" // swaggo api docs
@@ -35,6 +32,7 @@ var docsFiles embed.FS
 
 func SetDocsFiles(files embed.FS) {
 	docsFiles = files
+	render.SetDocsFiles(files)
 }
 
 func SetStaticFiles(files embed.FS) {
@@ -61,7 +59,8 @@ func StartServerChi() {
 
 	r.Get("/", handleHome)
 	r.Get("/home", handleHome)
-	r.Get("/system/changelog", handleSystemChangelog)
+	r.Get("/system/changelog", render.HandleSystemChangelog)
+	r.Get("/system/logs", render.HandleSystemLogs)
 	r.Get("/settings", handleSettings)
 	r.Get("/admin", handleAdmin)
 	r.Get("/playground", handlePlayground)
@@ -156,6 +155,16 @@ func StartServerChi() {
 		r.Route("/system", func(r chi.Router) {
 			r.Post("/restart", handleAPIRestartApp)
 			r.Delete("/cache", handleAPIInvalidateCache)
+		})
+
+		// ----------------------------------------------------------------------------------------
+		// ----------------------------------------- LOGS -----------------------------------------
+		// ----------------------------------------------------------------------------------------
+
+		r.Route("/logs", func(r chi.Router) {
+			r.Get("/", handleAPIGetLogs)
+			r.Get("/file", handleAPIGetLogsFile)
+			r.Get("/download", handleAPIDownloadLogs)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -1048,49 +1057,3 @@ func handleKanbanBoard(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleSystemChangelog(w http.ResponseWriter, r *http.Request) {
-	entries, err := fs.ReadDir(docsFiles, "docs/changelogs")
-	if err != nil {
-		http.Error(w, "failed to read changelogs", http.StatusInternalServerError)
-		return
-	}
-
-	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].Name() > entries[j].Name()
-	})
-
-	mdHandler := parser.NewMarkdownHandler()
-	var combined strings.Builder
-
-	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") {
-			continue
-		}
-
-		data, err := docsFiles.ReadFile("docs/changelogs/" + entry.Name())
-		if err != nil {
-			logging.LogWarning("failed to read changelog %s: %v", entry.Name(), err)
-			continue
-		}
-
-		rendered, err := mdHandler.Render(data, "")
-		if err != nil {
-			logging.LogWarning("failed to render changelog %s: %v", entry.Name(), err)
-			continue
-		}
-
-		combined.Write(rendered)
-	}
-
-	html := combined.String()
-	fileContent := &files.FileContent{
-		HTML: html,
-		TOC:  parser.GenerateTOC(html),
-	}
-
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileViewTemplateData("Changelog", "system/changelog.md", fileContent)
-	if err := tm.Render(w, "fileview", data); err != nil {
-		logging.LogError("failed to render changelog page: %v", err)
-	}
-}

@@ -340,14 +340,7 @@ func injectDefaultJS(html string) string {
 	scripts := notify.RenderJS(configmanager.GetNotifyDuration())
 	scripts += `<script src="/static/wiki-autocomplete.js"></script>`
 	scripts += `<script src="/static/todo-state.js"></script>`
-	scripts += `<script>
-function toggleConflictDiff(btn, id, url) {
-	var c = document.getElementById(id);
-	if (c.innerHTML !== '') { c.innerHTML = ''; btn.textContent = btn.dataset.show; return; }
-	htmx.ajax('GET', url, {target: '#' + id, swap: 'innerHTML'});
-	btn.textContent = btn.dataset.hide;
-}
-</script>`
+	scripts += `<script src="/static/conflict-diff.js"></script>`
 	return html[:bodyCloseIndex] + scripts + html[bodyCloseIndex:]
 }
 

@@ -52,3 +52,8 @@ func FormatDate(t time.Time) string {
 func FormatDateTime(t time.Time) string {
 	return t.Format(dateLayouts[GetDateFormat()] + " 15:04")
 }
+
+// FormatDateTimeSeconds formats t as date + time (HH:MM:SS), using the configured display style for the date part.
+func FormatDateTimeSeconds(t time.Time) string {
+	return t.Format(dateLayouts[GetDateFormat()] + " 15:04:05")
+}

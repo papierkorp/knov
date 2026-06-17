@@ -123,6 +123,8 @@ func Init() {
 	fileWriter = rw
 	fileWriterMux.Unlock()
 
+	fmt.Fprintf(rw, "\n════════════════════════════════════════\n session started %s\n════════════════════════════════════════\n\n", time.Now().Format("2006-01-02 15:04:05"))
+
 	log.Printf("logging: file logging enabled, writing to %s (max %dMB, %d files)", logPath, maxMB, maxFiles)
 }
 
@@ -146,45 +148,53 @@ func logLine(level, caller, format string, args ...any) string {
 // LogDebug logs debug messages
 func LogDebug(format string, args ...any) {
 	caller := getCaller()
+	msg := fmt.Sprintf(format, args...)
 	if shouldLog("debug") {
-		log.Printf("debug [%s]: "+format, append([]any{caller}, args...)...)
+		log.Printf("debug [%s]: %s", caller, msg)
 	}
 	if shouldLogToFile("debug") {
 		writeToFile(logLine("debug", caller, format, args...))
 	}
+	addToRing(LogEntry{Time: time.Now(), Level: "debug", Caller: caller, Message: msg})
 }
 
 // LogInfo logs info messages
 func LogInfo(format string, args ...any) {
 	caller := getCaller()
+	msg := fmt.Sprintf(format, args...)
 	if shouldLog("info") {
-		log.Printf("info [%s]: "+format, append([]any{caller}, args...)...)
+		log.Printf("info [%s]: %s", caller, msg)
 	}
 	if shouldLogToFile("info") {
 		writeToFile(logLine("info", caller, format, args...))
 	}
+	addToRing(LogEntry{Time: time.Now(), Level: "info", Caller: caller, Message: msg})
 }
 
 // LogWarning logs warning messages
 func LogWarning(format string, args ...any) {
 	caller := getCaller()
+	msg := fmt.Sprintf(format, args...)
 	if shouldLog("warning") {
-		log.Printf("warning [%s]: "+format, append([]any{caller}, args...)...)
+		log.Printf("warning [%s]: %s", caller, msg)
 	}
 	if shouldLogToFile("warning") {
 		writeToFile(logLine("warning", caller, format, args...))
 	}
+	addToRing(LogEntry{Time: time.Now(), Level: "warning", Caller: caller, Message: msg})
 }
 
 // LogError logs error messages
 func LogError(format string, args ...any) {
 	caller := getCaller()
+	msg := fmt.Sprintf(format, args...)
 	if shouldLog("error") {
-		log.Printf("error [%s]: "+format, append([]any{caller}, args...)...)
+		log.Printf("error [%s]: %s", caller, msg)
 	}
 	if shouldLogToFile("error") {
 		writeToFile(logLine("error", caller, format, args...))
 	}
+	addToRing(LogEntry{Time: time.Now(), Level: "error", Caller: caller, Message: msg})
 }
 
 // ── log builder ───────────────────────────────────────────────────────────────

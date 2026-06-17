@@ -16,7 +16,7 @@
 **per ai**
 - fix all the editor warnings
 - backup solution
-- show logs in app
+- 
 - download logs
 - codeberg deployment pipeline?
 - make docker build viable
@@ -29,7 +29,10 @@
 - todo editor - doesnt use notfications on save
 - on save notification - add links to the file?
 - rename testdata to test and add some kind of test (playwright?)
-- move toggleConflictDiff in thememanager to a script file
+- rail theme tree - drag and drop files into folder
+- add chat to a single file?
+- rail theme - system files => only who toc in info slideout (changelog)
+- references - add date
 
 # performance updates
 

@@ -53,8 +53,9 @@ func main() {
 	thememanager.SetRailFiles(railThemeFS)
 	testdata.SetDocsFiles(docsFS)
 
-	configmanager.InitAppConfig()
 	logging.Init()
+	logging.InitInterceptor()
+	configmanager.InitAppConfig()
 	translation.Init()
 
 	if err := git.EnsureRemote(); err != nil {

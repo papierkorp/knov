@@ -1292,6 +1292,11 @@
       "translation": ""
     },
     {
+      "id": "failed to update todo state",
+      "message": "failed to update todo state",
+      "translation": ""
+    },
+    {
       "id": "favicon uploaded",
       "message": "favicon uploaded",
       "translation": ""
@@ -1954,6 +1959,11 @@
     {
       "id": "invalid kanban status",
       "message": "invalid kanban status",
+      "translation": ""
+    },
+    {
+      "id": "invalid line",
+      "message": "invalid line",
       "translation": ""
     },
     {

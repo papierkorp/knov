@@ -143,6 +143,41 @@ var cssFiles embed.FS
 - The filter editor opens (not the index editor) because metadata marks the file as `filter-editor`
 - The index file content is always overwritten on save/cronjob — manual edits are lost
 
+# Logging
+
+Centralised logging in `internal/logging`. All app code uses the four level functions (`LogDebug`, `LogInfo`, `LogWarning`, `LogError`) — never the standard `log` package directly.
+
+**Ring buffer**
+
+- Every log entry is held in a fixed-size in-memory ring buffer (last 500 entries), regardless of level.
+- Powers the in-app log viewer at `/system/logs` — live-polled via htmx, filterable, pauseable.
+
+**File output**
+
+- Opt-in via `KNOV_LOG_FILE_ENABLED` (default on). Writes to `logs/app.log` with size-based rotation.
+- Level threshold controlled by `KNOV_LOG_FILE_LEVEL` (default `info`).
+- A session separator is written to the file on every startup so restarts are immediately visible when scrolling.
+
+**Standard library interception**
+
+- `InitInterceptor()` wraps `log.SetOutput` so all third-party and framework `log.Printf` calls (e.g. chi access logs) are also captured — into the ring buffer and into the file.
+- Must be called before any other initialisation to avoid missing early entries.
+
+**Named loggers**
+
+- `LogBuilder(key)` returns a `*log.Logger` that appends to `logs/<key>.log`. Used for long-running background jobs where a dedicated file is more useful than the main log.
+
+**Env vars**
+
+```
+KNOV_LOG_LEVEL          # console threshold: debug | info | warning | error (default: info)
+KNOV_LOG_FILE_ENABLED   # set to "false" to disable file output (default: on)
+KNOV_LOG_FILE_LEVEL     # file threshold: debug | info | warning | error (default: info)
+KNOV_LOG_MAX_SIZE_MB    # max size per log file in MB before rotation (default: 10)
+KNOV_LOG_MAX_FILES      # number of rotated files to keep (default: 5)
+KNOV_LOGS_PATH          # override the logs directory (default: ./logs)
+```
+
 # dbmigration
 
 Tiny version-based schema migrations for sqlite. No external tools, no SQL files — migrations are plain Go functions.
@@ -424,6 +459,14 @@ There are a few system pages e.g. `/system/changelogs`,`/system/health` or `/sys
 - `ThemeManager.RenderSystemPage(w, title, content)` renders a page using the current theme's `base.gohtml`
 - the content block is an inline constant in `internal/thememanager/system.go`
 - nothing theme authors can override
+
+## /system/changelog
+
+Renders all changelog markdown files from `docs/changelogs/` merged and sorted newest-first, displayed in the standard file view layout.
+
+## /system/logs
+
+Live in-app log viewer. Polls the in-memory ring buffer every 5 seconds. Supports client-side text filter, pause toggle, and — when file logging is active — a full-file view and download link.
 
 ## Adding a new system page
 
