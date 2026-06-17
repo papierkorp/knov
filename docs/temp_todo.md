@@ -16,8 +16,6 @@
 **per ai**
 - fix all the editor warnings
 - backup solution
-- 
-- download logs
 - codeberg deployment pipeline?
 - make docker build viable
   - for usage
@@ -29,10 +27,8 @@
 - todo editor - doesnt use notfications on save
 - on save notification - add links to the file?
 - rename testdata to test and add some kind of test (playwright?)
-- rail theme tree - drag and drop files into folder
 - add chat to a single file?
 - references - add date
-- rail theme - close slideout on edit
 
 # performance updates
 

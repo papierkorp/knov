@@ -839,6 +839,128 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, map[string]string{"filepath": newPath}, "")
 }
 
+// @Summary Move a folder into another folder
+// @Description Moves a folder to a new parent, updating all internal links
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Param folderpath path string true "Current folder path (relative, no docs/ prefix)"
+// @Param target formData string true "Target parent folder path"
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Router /api/files/move-folder/{folderpath} [post]
+func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(html))
+		return
+	}
+
+	currentPath := strings.TrimPrefix(r.URL.Path, "/api/files/move-folder/")
+	if currentPath == "" {
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(html))
+		return
+	}
+
+	targetParent := r.FormValue("target")
+	if targetParent == "" {
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "target folder is required"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(html))
+		return
+	}
+
+	folderName := r.FormValue("name")
+	if folderName == "" {
+		folderName = filepath.Base(currentPath)
+	} else if strings.Contains(folderName, "/") || strings.Contains(folderName, "\\") {
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "folder name must not contain path separators"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(html))
+		return
+	}
+	newPath := filepath.Clean(targetParent + "/" + folderName)
+
+	if newPath == currentPath {
+		writeResponse(w, r, map[string]string{"folderpath": newPath}, "")
+		return
+	}
+
+	// prevent moving a folder into itself or a descendant
+	if strings.HasPrefix(newPath+"/", currentPath+"/") {
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "cannot move folder into itself"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(html))
+		return
+	}
+
+	currentFullPath := pathutils.ToDocsPath(currentPath)
+	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(html))
+		return
+	}
+
+	newFullPath := pathutils.ToDocsPath(newPath)
+	if _, err := os.Stat(newFullPath); err == nil {
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "folder with new name already exists"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusConflict)
+		w.Write([]byte(html))
+		return
+	}
+
+	// collect all files before the move so we can update their links
+	var filesToUpdate []struct{ oldRel, newRel string }
+	_ = filepath.Walk(currentFullPath, func(p string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return nil
+		}
+		oldRel := pathutils.ToRelative(p)
+		suffix := strings.TrimPrefix(p, currentFullPath)
+		newRel := pathutils.ToRelative(newFullPath + suffix)
+		filesToUpdate = append(filesToUpdate, struct{ oldRel, newRel string }{oldRel, newRel})
+		return nil
+	})
+
+	if err := os.MkdirAll(filepath.Dir(newFullPath), 0755); err != nil {
+		logging.LogError("failed to create parent directory for %s: %v", newFullPath, err)
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(html))
+		return
+	}
+
+	if err := os.Rename(currentFullPath, newFullPath); err != nil {
+		logging.LogError("failed to move folder %s -> %s: %v", currentPath, newPath, err)
+		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move folder"))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(html))
+		return
+	}
+
+	for _, f := range filesToUpdate {
+		if err := files.UpdateLinksForMovedFile(f.oldRel, f.newRel); err != nil {
+			logging.LogWarning("failed to update links for %s -> %s: %v", f.oldRel, f.newRel, err)
+		}
+	}
+
+	logging.LogInfo("successfully moved folder: %s -> %s (%d files updated)", currentPath, newPath, len(filesToUpdate))
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "folder moved"))
+	writeResponse(w, r, map[string]string{"folderpath": newPath}, "")
+}
+
 // @Summary Delete a file
 // @Description Deletes a file and its metadata
 // @Tags files

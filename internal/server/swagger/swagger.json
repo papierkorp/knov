@@ -2806,6 +2806,48 @@
                 "responses": {}
             }
         },
+        "/api/files/move-folder/{folderpath}": {
+            "post": {
+                "description": "Moves a folder to a new parent, updating all internal links",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Move a folder into another folder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Current folder path (relative, no docs/ prefix)",
+                        "name": "folderpath",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Target parent folder path",
+                        "name": "target",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/raw": {
             "get": {
                 "description": "Returns unprocessed file content for editing",

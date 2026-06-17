@@ -455,6 +455,12 @@
   color: var(--text);
 }
 
+.fp-tree-dir.drag-over {
+  color: var(--primary);
+  background: var(--bg);
+  border-radius: 3px;
+}
+
 .fp-tree-dir .fa {
   font-size: 0.85em;
   margin-right: 3px;
@@ -1499,7 +1505,8 @@
   white-space: nowrap;
 }
 
-.browse-delete-btn {
+.browse-delete-btn,
+.browse-rename-btn {
   flex-shrink: 0;
   background: none;
   border: none;
@@ -1513,12 +1520,38 @@
     color 0.15s;
 }
 
-.browse-item-row:hover .browse-delete-btn {
+.browse-item-row:hover .browse-delete-btn,
+.browse-item-row:hover .browse-rename-btn {
   opacity: 1;
 }
 
 .browse-delete-btn:hover {
   color: var(--danger, #dc2626);
+}
+
+.browse-rename-btn:hover {
+  color: var(--text);
+}
+
+.browse-item-row .fp-tree-dir {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fp-tree-rename-input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 0.9em;
+  background: var(--bg);
+  border: 1px solid var(--primary);
+  border-radius: 3px;
+  color: var(--text);
+  padding: 0 3px;
+  outline: none;
 }
 
 /* conflict group in connections panel */

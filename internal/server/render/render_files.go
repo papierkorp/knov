@@ -204,7 +204,7 @@ func RenderFolderContent(currentPath string, folders []FolderEntry, filesInDir [
 }
 
 // renderTreeChildren recursively renders a TreeNode's children as nested HTML lists
-func renderTreeChildren(html *strings.Builder, node *files.TreeNode, deletable bool) {
+func renderTreeChildren(html *strings.Builder, node *files.TreeNode, deletable bool, pathPrefix string) {
 	if len(node.Children) == 0 {
 		return
 	}
@@ -212,18 +212,26 @@ func renderTreeChildren(html *strings.Builder, node *files.TreeNode, deletable b
 	for _, child := range node.Children {
 		html.WriteString(`<li>`)
 		if child.IsDir {
-			fmt.Fprintf(html, `<button class="fp-tree-dir" onclick="this.closest('li').classList.toggle('fp-tree-collapsed')"><i class="fa fa-folder"></i> %s</button>`, child.Name)
-			renderTreeChildren(html, child, deletable)
+			dirPath := pathPrefix + child.Name
+			if deletable {
+				renameLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "rename")
+				fmt.Fprintf(html, `<span class="browse-item-row"><button class="fp-tree-dir" draggable="true" data-path="%s" data-type="folder" onclick="this.closest('li').classList.toggle('fp-tree-collapsed')"><i class="fa fa-folder"></i> %s</button><button class="browse-rename-btn" data-path="%s" data-type="folder" title="%s"><i class="fa fa-pen"></i></button></span>`, dirPath, child.Name, dirPath, renameLabel)
+			} else {
+				fmt.Fprintf(html, `<button class="fp-tree-dir" draggable="true" data-path="%s" data-type="folder" onclick="this.closest('li').classList.toggle('fp-tree-collapsed')"><i class="fa fa-folder"></i> %s</button>`, dirPath, child.Name)
+			}
+			renderTreeChildren(html, child, deletable, dirPath+"/")
 		} else {
 			if deletable {
 				relPath := strings.TrimPrefix(child.Path, "docs/")
+				renameLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "rename")
 				deleteLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "delete file")
 				confirmMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "delete") + " " + child.Name + "?"
-				fmt.Fprintf(html, `<span class="browse-item-row"><a class="fp-tree-file" href="/files/%s">%s</a><button class="btn-danger-icon browse-delete-btn" hx-delete="/api/files/delete/%s" hx-confirm="%s" hx-target="closest li" hx-swap="outerHTML" title="%s"><i class="fa fa-trash"></i></button></span>`,
-					child.Path, GetLinkDisplayText(child.Path), url.PathEscape(relPath), confirmMsg, deleteLabel)
+				fmt.Fprintf(html, `<span class="browse-item-row" draggable="true" data-path="%s" data-type="file"><a class="fp-tree-file" href="/files/%s">%s</a><button class="browse-rename-btn" data-path="%s" data-type="file" title="%s"><i class="fa fa-pen"></i></button><button class="btn-danger-icon browse-delete-btn" hx-delete="/api/files/delete/%s" hx-confirm="%s" hx-target="closest li" hx-swap="outerHTML" title="%s"><i class="fa fa-trash"></i></button></span>`,
+					relPath, child.Path, GetLinkDisplayText(child.Path), relPath, renameLabel, url.PathEscape(relPath), confirmMsg, deleteLabel)
 			} else {
-				fmt.Fprintf(html, `<a class="fp-tree-file" href="/files/%s">%s</a>`,
-					child.Path, GetLinkDisplayText(child.Path))
+				relPath := strings.TrimPrefix(child.Path, "docs/")
+				fmt.Fprintf(html, `<a class="fp-tree-file" draggable="true" data-path="%s" data-type="file" href="/files/%s">%s</a>`,
+					relPath, child.Path, GetLinkDisplayText(child.Path))
 			}
 		}
 		html.WriteString(`</li>`)
@@ -236,7 +244,7 @@ func renderTreeChildren(html *strings.Builder, node *files.TreeNode, deletable b
 func RenderTreeOverview(root *files.TreeNode, deletable bool) string {
 	var html strings.Builder
 	html.WriteString(`<div class="fp-tree">`)
-	renderTreeChildren(&html, root, deletable)
+	renderTreeChildren(&html, root, deletable, "")
 	html.WriteString(`</div>`)
 	return html.String()
 }
