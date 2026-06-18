@@ -107,7 +107,7 @@ definitions:
     type: object
   files.EditorType:
     enum:
-    - markdown-editor
+    - toastui-editor
     - textarea-editor
     - filter-editor
     - list-editor
@@ -115,7 +115,7 @@ definitions:
     - index-editor
     type: string
     x-enum-varnames:
-    - EditorTypeMarkdown
+    - EditorTypeToastUI
     - EditorTypeTextarea
     - EditorTypeFilter
     - EditorTypeList
@@ -496,7 +496,7 @@ paths:
         name: target
         required: true
         type: string
-      - description: Editor type for new files (e.g. markdown-editor, todo-editor)
+      - description: Editor type for new files (e.g. toastui-editor, todo-editor)
         in: formData
         name: editor
         type: string
@@ -1827,20 +1827,6 @@ paths:
       summary: Save list editor
       tags:
       - editor
-  /api/editor/markdown-form:
-    get:
-      description: Returns a markdown editor form for creating or editing files
-      parameters:
-      - description: file path (optional for new files)
-        in: query
-        name: filepath
-        type: string
-      produces:
-      - text/html
-      responses: {}
-      summary: Get markdown editor form HTML
-      tags:
-      - editor
   /api/editor/tableeditor:
     get:
       description: Returns table editor component with Handsontable
@@ -1916,6 +1902,20 @@ paths:
       - text/html
       responses: {}
       summary: Get textarea editor component
+      tags:
+      - editor
+  /api/editor/toastui-form:
+    get:
+      description: Returns a ToastUI editor form for creating or editing files
+      parameters:
+      - description: file path (optional for new files)
+        in: query
+        name: filepath
+        type: string
+      produces:
+      - text/html
+      responses: {}
+      summary: Get ToastUI editor form HTML
       tags:
       - editor
   /api/editor/todoeditor:

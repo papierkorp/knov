@@ -299,7 +299,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	if isNewFile {
 		editor := files.EditorType(formEditor)
 		if editor == "" {
-			editor = files.EditorTypeMarkdown
+			editor = files.EditorTypeToastUI
 		}
 
 		metadata := &files.Metadata{

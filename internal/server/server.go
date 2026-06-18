@@ -137,7 +137,7 @@ func StartServerChi() {
 
 		r.Route("/editor", func(r chi.Router) {
 			r.Get("/", handleAPIGetEditorHandler)
-			r.Get("/markdown-form", handleAPIMarkdownEditorForm)
+			r.Get("/toastui-form", handleAPIToastUIEditorForm)
 			r.Get("/textarea", handleAPIGetTextareaEditor)
 			r.Post("/indexeditor", handleAPISaveIndexEditor)
 			r.Post("/indexeditor/add-entry", handleAPIAddIndexEntry)
@@ -952,7 +952,7 @@ func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 
 func handleFileNewMarkdown(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileNewTemplateData("markdown-editor")
+	data := thememanager.NewFileNewTemplateData("toastui-editor")
 	data.PrefillPath = r.URL.Query().Get("prefillpath")
 	if err := tm.Render(w, "filenew", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)

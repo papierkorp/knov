@@ -147,7 +147,7 @@
     // ── ToastUI editor variant ───────────────────────────────────────────────
 
     global.initWikiAutocomplete = function(editor) {
-        var editorEl = document.getElementById('markdown-editor');
+        var editorEl = document.getElementById('toastui-editor');
         if (!editorEl) return;
 
         attachSharedKeydown(editorEl);

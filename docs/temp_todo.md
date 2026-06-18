@@ -15,12 +15,13 @@
 
 **per ai**
 - move all scripts into files (browser inspector)
-- change editors from markdown to toastui
 - media gitignore
 - add chat to a single file?
 - references - add date
 - detect if a request is already loading and block multiple requests of the same kind
 - rename testdata to test and add some kind of test (playwright?)
+- subediting for `Themes & Appearance` not working
+- add quill editor
 
 - deployment
   - codeberg deployment pipeline?

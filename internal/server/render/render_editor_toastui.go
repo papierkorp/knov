@@ -38,9 +38,9 @@ func jsEditorInit(content string) string {
 			'Image': 'Media',
 		});
 		const editor = new toastui.Editor({
-			el: document.querySelector('#markdown-editor'),
+			el: document.querySelector('#toastui-editor'),
 			height: (function() {
-				var el = document.querySelector('#markdown-editor');
+				var el = document.querySelector('#toastui-editor');
 				var rect = el.getBoundingClientRect();
 				var actions = document.querySelector('.file-form .form-actions');
 				var actionsH = actions ? actions.offsetHeight + 48 : 80;
@@ -152,7 +152,7 @@ func jsFileInputAcceptAll() string {
 func jsDragAndDrop() string {
 	return `
 		// drag-and-drop: accept all file types, insert as markdown image or link
-		const editorEl = document.querySelector('#markdown-editor');
+		const editorEl = document.querySelector('#toastui-editor');
 		editorEl.addEventListener('dragover', function(e) {
 			e.preventDefault();
 			e.dataTransfer.dropEffect = 'copy';
@@ -441,10 +441,10 @@ func getToastUIEditorScript(content, frontMatter string) string {
 		"\n})();\n</script>"
 }
 
-// RenderMarkdownEditorForm renders a markdown editor form for file creation/editing.
+// RenderToastUIEditorForm renders a ToastUI editor form for file creation/editing.
 // Strips YAML front matter before passing content to the editor and re-prepends on save.
 // prefillPath pre-populates the file path input for new files (ignored when editing).
-func RenderMarkdownEditorForm(filePath, prefillPath string, editor ...string) string {
+func RenderToastUIEditorForm(filePath, prefillPath string, editor ...string) string {
 	content := ""
 	frontMatter := ""
 	isEdit := filePath != ""
@@ -497,7 +497,7 @@ func RenderMarkdownEditorForm(filePath, prefillPath string, editor ...string) st
 		<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">
 			%s
 			<div class="form-group">
-				<div id="markdown-editor"></div>
+				<div id="toastui-editor"></div>
 				<input type="hidden" name="content" id="editor-content" />
 			</div>
 			<div class="form-actions">
@@ -515,8 +515,8 @@ func RenderMarkdownEditorForm(filePath, prefillPath string, editor ...string) st
 		getToastUIEditorScript(content, frontMatter))
 }
 
-// RenderMarkdownSectionEditorForm renders a markdown editor form for editing a single section.
-func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
+// RenderToastUISectionEditorForm renders a ToastUI editor form for editing a single section.
+func RenderToastUISectionEditorForm(filePath, sectionID string) string {
 	content := ""
 
 	if filePath != "" && sectionID != "" {
@@ -537,7 +537,7 @@ func RenderMarkdownSectionEditorForm(filePath, sectionID string) string {
 				<input type="text" name="sectionid" value="%s" readonly />
 			</div>
 			<div class="form-group">
-				<div id="markdown-editor"></div>
+				<div id="toastui-editor"></div>
 				<input type="hidden" name="content" id="editor-content" />
 				<input type="hidden" name="filepath" value="%s" />
 			</div>

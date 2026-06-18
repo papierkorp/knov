@@ -42,7 +42,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 
 	// if section is specified, use section editor regardless of editor type
 	if sectionID != "" && fp != "" {
-		html = render.RenderMarkdownSectionEditorForm(fp, sectionID)
+		html = render.RenderToastUISectionEditorForm(fp, sectionID)
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
 		return
@@ -54,7 +54,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 		et = files.EditorType(editorParam)
 	} else if fp == "" {
 		// no filepath and no editor provided — default to markdown for new files
-		html = render.RenderMarkdownEditorForm("", prefillPath, "")
+		html = render.RenderToastUIEditorForm("", prefillPath, "")
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
 		return
@@ -68,7 +68,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 			if handler != nil && handler.Name() != "markdown" {
 				et = files.EditorTypeTextarea
 			} else {
-				et = files.EditorTypeMarkdown
+				et = files.EditorTypeToastUI
 			}
 		}
 	}
@@ -84,8 +84,8 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 
 	// render the appropriate editor
 	switch et {
-	case files.EditorTypeMarkdown:
-		html = render.RenderMarkdownEditorForm(fp, prefillPath, editorParam)
+	case files.EditorTypeToastUI:
+		html = render.RenderToastUIEditorForm(fp, prefillPath, editorParam)
 	case files.EditorTypeTextarea:
 		html = render.RenderTextareaEditorComponent(fp, content, editorParam)
 	case files.EditorTypeList:
@@ -107,23 +107,23 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 			html = render.RenderTextareaEditorComponent(fp, content)
 		}
 	default:
-		html = render.RenderMarkdownEditorForm(fp, prefillPath, "")
+		html = render.RenderToastUIEditorForm(fp, prefillPath, "")
 	}
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }
 
-// @Summary Get markdown editor form HTML
-// @Description Returns a markdown editor form for creating or editing files
+// @Summary Get ToastUI editor form HTML
+// @Description Returns a ToastUI editor form for creating or editing files
 // @Tags editor
 // @Param filepath query string false "file path (optional for new files)"
 // @Produce html
-// @Router /api/editor/markdown-form [get]
-func handleAPIMarkdownEditorForm(w http.ResponseWriter, r *http.Request) {
+// @Router /api/editor/toastui-form [get]
+func handleAPIToastUIEditorForm(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 
-	html := render.RenderMarkdownEditorForm(filePath, "")
+	html := render.RenderToastUIEditorForm(filePath, "")
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
 }

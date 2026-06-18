@@ -83,12 +83,12 @@ func getCopiedFilesMetadata() []*files.Metadata {
 		{
 			Path:   "docs/test/example_markdown.md",
 			Tags:   []string{"test-markdown", "test-files", "kb-status-inbox"},
-			Editor: files.EditorTypeMarkdown,
+			Editor: files.EditorTypeToastUI,
 		},
 		{
 			Path:   "docs/test/sample Markdown.md",
 			Tags:   []string{"test-markdown", "test-files", "kb-status-inbox"},
-			Editor: files.EditorTypeMarkdown,
+			Editor: files.EditorTypeToastUI,
 			References: []files.Reference{
 				{URL: "https://example.com", Description: "example reference for testing"},
 				{URL: "https://www.google.com", Description: "another reference"},

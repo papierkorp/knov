@@ -62,11 +62,12 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 // initialize runs all pending migrations for this storage.
 // Bump version and append a step whenever the schema changes.
 func (ss *sqliteStorage) initialize() error {
-	const version = 3
+	const version = 4
 	steps := []dbmigration.Migration{
 		{Up: migrationV1Up, Down: migrationV1Down},
 		{Up: migrationV2Up, Down: migrationV2Down},
 		{Up: migrationV3Up, Down: migrationV3Down},
+		{Up: migrationV4Up, Down: migrationV4Down},
 	}
 	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
 		return fmt.Errorf("metadata storage migration failed: %w", err)
@@ -135,6 +136,16 @@ func migrationV3Down(tx *sql.Tx) error {
 		return err
 	}
 	_, err := tx.Exec(`ALTER TABLE metadata DROP COLUMN kanban_moved_at`)
+	return err
+}
+
+func migrationV4Up(tx *sql.Tx) error {
+	_, err := tx.Exec(`UPDATE metadata SET editor = 'toastui-editor' WHERE editor = 'markdown-editor'`)
+	return err
+}
+
+func migrationV4Down(tx *sql.Tx) error {
+	_, err := tx.Exec(`UPDATE metadata SET editor = 'markdown-editor' WHERE editor = 'toastui-editor'`)
 	return err
 }
 

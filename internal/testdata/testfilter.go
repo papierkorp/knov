@@ -420,7 +420,7 @@ func RunFilterTests() (*FilterTestResults, error) {
 					{
 						Metadata: "editor",
 						Operator: "equals",
-						Value:    "markdown-editor",
+						Value:    "toastui-editor",
 						Action:   "include",
 					},
 				},

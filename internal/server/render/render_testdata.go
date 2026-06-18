@@ -222,7 +222,7 @@ func RenderFilterTestMetadataTable(metadataList []*files.Metadata) string {
 		// editor type with color coding
 		editorClass := "type-markdown"
 		switch string(metadata.Editor) {
-		case "markdown-editor":
+		case "toastui-editor":
 			editorClass = "type-markdown"
 		case "textarea-editor":
 			editorClass = "type-text"

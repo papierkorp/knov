@@ -277,7 +277,7 @@ func runFileJobs() {
 			normalizedPath := pathutils.ToWithPrefix(filePath)
 			metadata := &files.Metadata{
 				Path:   normalizedPath,
-				Editor: files.EditorTypeMarkdown,
+				Editor: files.EditorTypeToastUI,
 			}
 			if err := files.MetaDataSave(metadata); err != nil {
 				logging.LogError("cronjob: failed to save metadata for %s: %v", normalizedPath, err)

@@ -330,7 +330,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Editor type for new files (e.g. markdown-editor, todo-editor)",
+                        "description": "Editor type for new files (e.g. toastui-editor, todo-editor)",
                         "name": "editor",
                         "in": "formData"
                     }
@@ -2204,27 +2204,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/editor/markdown-form": {
-            "get": {
-                "description": "Returns a markdown editor form for creating or editing files",
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "editor"
-                ],
-                "summary": "Get markdown editor form HTML",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "file path (optional for new files)",
-                        "name": "filepath",
-                        "in": "query"
-                    }
-                ],
-                "responses": {}
-            }
-        },
         "/api/editor/tableeditor": {
             "get": {
                 "description": "Returns table editor component with Handsontable",
@@ -2333,6 +2312,27 @@ const docTemplate = `{
                         "name": "filepath",
                         "in": "query",
                         "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/editor/toastui-form": {
+            "get": {
+                "description": "Returns a ToastUI editor form for creating or editing files",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Get ToastUI editor form HTML",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file path (optional for new files)",
+                        "name": "filepath",
+                        "in": "query"
                     }
                 ],
                 "responses": {}
@@ -6256,7 +6256,7 @@ const docTemplate = `{
         "files.EditorType": {
             "type": "string",
             "enum": [
-                "markdown-editor",
+                "toastui-editor",
                 "textarea-editor",
                 "filter-editor",
                 "list-editor",
@@ -6264,7 +6264,7 @@ const docTemplate = `{
                 "index-editor"
             ],
             "x-enum-varnames": [
-                "EditorTypeMarkdown",
+                "EditorTypeToastUI",
                 "EditorTypeTextarea",
                 "EditorTypeFilter",
                 "EditorTypeList",

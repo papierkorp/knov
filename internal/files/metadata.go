@@ -19,7 +19,7 @@ import (
 type EditorType string
 
 const (
-	EditorTypeMarkdown EditorType = "markdown-editor"
+	EditorTypeToastUI  EditorType = "toastui-editor"
 	EditorTypeTextarea EditorType = "textarea-editor"
 	EditorTypeFilter   EditorType = "filter-editor"
 	EditorTypeList     EditorType = "list-editor"
@@ -36,7 +36,7 @@ type EditorTypeCount map[string]int
 // AllEditorTypes returns all available editor types
 func AllEditorTypes() []EditorType {
 	return []EditorType{
-		EditorTypeMarkdown,
+		EditorTypeToastUI,
 		EditorTypeTextarea,
 		EditorTypeFilter,
 		EditorTypeList,
@@ -212,7 +212,7 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		if et := EditorFromExtension(metadataPath); et != "" {
 			currentMetadata.Editor = et
 		} else {
-			currentMetadata.Editor = EditorTypeMarkdown
+			currentMetadata.Editor = EditorTypeToastUI
 		}
 	}
 

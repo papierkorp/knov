@@ -385,7 +385,7 @@ func GetMetadataLinkRegex() []string {
 // IsFileTypeHidden checks if a specific editor type should be hidden
 func IsFileTypeHidden(editorType string) bool {
 	switch strings.ToLower(editorType) {
-	case "markdown-editor":
+	case "toastui-editor":
 		return appConfig.HideMarkdown
 	case "textarea-editor":
 		return appConfig.HideText
