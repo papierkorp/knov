@@ -15,7 +15,7 @@
 
 **per ai**
 - move all scripts into files (browser inspector)
-- todo editor - doesnt use notfications on save
+- change editors from markdown to toastui
 - media gitignore
 - add chat to a single file?
 - references - add date

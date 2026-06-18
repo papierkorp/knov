@@ -11,6 +11,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/filter"
 	"knov/internal/logging"
+	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -136,6 +137,7 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	indexPath := filter.FilterIndexPath(filterID)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "filter saved successfully!"))
 	fmt.Fprintf(w, `<div class="status-ok">%s</div><script>setTimeout(() => window.location.href = '/files/%s', 1000);</script>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "filter saved successfully!"), indexPath)
 }

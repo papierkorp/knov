@@ -349,7 +349,11 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 
 	// for existing file updates, send notify toast
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved"))
-	writeResponse(w, r, map[string]string{"filepath": filePath}, "")
+	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved"),
+		filePath,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
+	writeResponse(w, r, map[string]string{"filepath": filePath}, render.RenderStatusMessage(render.StatusOK, successMsg))
 }
 
 // @Summary Cycle a todo checkbox's state in place from the rendered file view

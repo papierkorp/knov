@@ -18,6 +18,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
+	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
 )
@@ -264,6 +265,7 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo("saved index file: %s", filezpath)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "index saved successfully"))
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "index saved successfully"),
 		filezpath,
@@ -402,6 +404,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo("saved list file: %s", filePath)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"))
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"),
 		filePath,
@@ -484,6 +487,7 @@ func handleAPISaveTodoEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logging.LogInfo("saved todo file: %s", filePath)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "todo saved successfully"))
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "todo saved successfully"),
 		filePath,
@@ -588,6 +592,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		logging.LogWarning("failed to update orphaned media cache: %v", err)
 	}
 
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"))
 	successMsg := fmt.Sprintf(`<div class="status-success">%s <a href="/files/%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"),
 		filePath,
@@ -675,6 +680,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 		logging.LogWarning("failed to update orphaned media cache: %v", err)
 	}
 
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"))
 	successMsg := fmt.Sprintf(`<div class="status-success">%s <a href="/files/%s#%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"),
 		filePath,
