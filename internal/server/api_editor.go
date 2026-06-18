@@ -106,6 +106,8 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 			logging.LogError("failed to render index editor: %v", renderErr)
 			html = render.RenderTextareaEditorComponent(fp, content)
 		}
+	case files.EditorTypeCodeMirror:
+		html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 	default:
 		html = render.RenderToastUIEditorForm(fp, prefillPath, "")
 	}

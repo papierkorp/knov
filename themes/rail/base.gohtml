@@ -327,13 +327,14 @@
 
 <script src="/static/htmx.min.js"></script>
 <script src="/static/toastui-editor-3.2.2.min.js"></script>
+<script src="/static/codemirror6-bundle.min.js"></script>
 <script src="/static/sortable-1.15.0.min.js"></script>
 <script src="/static/handsontable-16.2.0.full.min.js"></script>
 <script src="/themes/{{.CurrentTheme}}/rail.js"></script>
 <script>
 (function () {
     function addCopyButtons(root) {
-        root.querySelectorAll('pre:not([data-copy-ready])').forEach(function (pre) {
+        root.querySelectorAll('pre:not([data-copy-ready]):not(.CodeMirror-line)').forEach(function (pre) {
             pre.setAttribute('data-copy-ready', '1');
             var btn = document.createElement('button');
             btn.className = 'code-copy-btn';

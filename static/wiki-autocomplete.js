@@ -176,6 +176,57 @@
         });
     };
 
+    // ── CodeMirror 6 variant ────────────────────────────────────────────────────
+
+    global.initWikiAutocompleteForCodeMirror = function(view) {
+        view.dom.addEventListener('keydown', function(e) {
+            if (!isVisible()) return;
+            if (e.key === 'ArrowDown') {
+                e.preventDefault(); e.stopPropagation();
+                highlight(Math.min(activeIdx + 1, currentResults.length - 1));
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault(); e.stopPropagation();
+                highlight(Math.max(activeIdx - 1, 0));
+            } else if (e.key === 'Enter' || e.key === 'Tab') {
+                e.preventDefault(); e.stopPropagation();
+                doInsert(activeIdx);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                hide();
+            }
+        }, true);
+
+        view.dom.addEventListener('keyup', function(e) {
+            if (['ArrowUp','ArrowDown','Enter','Tab','Escape'].includes(e.key)) return;
+            var pos = view.state.selection.main.head;
+            var lineInfo = view.state.doc.lineAt(pos);
+            var before = lineInfo.text.substring(0, pos - lineInfo.from);
+            var m = before.match(/\[\[([^\]]*)$/);
+            if (m) {
+                onInsert = function(path) {
+                    var cur = view.state.selection.main.head;
+                    var li = view.state.doc.lineAt(cur);
+                    var b = li.text.substring(0, cur - li.from);
+                    var ws = b.lastIndexOf('[[');
+                    if (ws === -1) return;
+                    view.dispatch({ changes: { from: li.from + ws, to: cur, insert: '[[' + path + ']]' } });
+                };
+                var coords = view.coordsAtPos(pos);
+                var anchor = {
+                    getBoundingClientRect: function() {
+                        return { left: coords.left, right: coords.right || coords.left + 1,
+                                 top: coords.top, bottom: coords.bottom,
+                                 height: coords.bottom - coords.top,
+                                 width: (coords.right || coords.left + 1) - coords.left };
+                    }
+                };
+                debouncedFetch(m[1], anchor);
+            } else {
+                hide();
+            }
+        });
+    };
+
     // ── plain input/textarea variant (event-delegated) ───────────────────────
 
     global.initWikiAutocompleteForInputs = function(containerEl, selector) {

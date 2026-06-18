@@ -6261,7 +6261,8 @@ const docTemplate = `{
                 "filter-editor",
                 "list-editor",
                 "todo-editor",
-                "index-editor"
+                "index-editor",
+                "codemirror-editor"
             ],
             "x-enum-varnames": [
                 "EditorTypeToastUI",
@@ -6269,7 +6270,8 @@ const docTemplate = `{
                 "EditorTypeFilter",
                 "EditorTypeList",
                 "EditorTypeTodo",
-                "EditorTypeIndex"
+                "EditorTypeIndex",
+                "EditorTypeCodeMirror"
             ]
         },
         "files.EditorTypeCount": {

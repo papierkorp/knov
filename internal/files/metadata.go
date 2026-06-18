@@ -25,6 +25,7 @@ const (
 	EditorTypeList     EditorType = "list-editor"
 	EditorTypeTodo     EditorType = "todo-editor"
 	EditorTypeIndex    EditorType = "index-editor"
+	EditorTypeCodeMirror EditorType = "codemirror-editor"
 )
 
 // typed count maps for metadata aggregations
@@ -42,6 +43,7 @@ func AllEditorTypes() []EditorType {
 		EditorTypeList,
 		EditorTypeTodo,
 		EditorTypeIndex,
+		EditorTypeCodeMirror,
 	}
 }
 

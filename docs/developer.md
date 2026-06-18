@@ -404,6 +404,30 @@ notify.SetFlash(notify.LevelError, translation.SprintfForRequest(lang, "failed t
 http.Error(w, "...", http.StatusInternalServerError)
 ```
 
+# Editor Types
+
+Each file can have an editor type stored in its metadata (`editor` field). The type controls which editor opens when the file is edited. The editor is resolved in this order: explicit metadata → file extension → parser detection → default (toastui).
+
+| Editor type | Value | Description |
+|---|---|---|
+| ToastUI (default) | `toastui-editor` | Markdown WYSIWYG editor with toolbar, preview, media upload, wiki-link autocomplete |
+| CodeMirror | `codemirror-editor` | Plain text editor, no toolbar, vim keybindings enabled by default — distraction-free writing |
+| Textarea | `textarea-editor` | Raw textarea, minimal, used for non-markdown files (e.g. DokuWiki) |
+| List | `list-editor` | Drag-and-drop ordered list editor, saves as markdown |
+| Todo | `todo-editor` | Checkbox task list editor using GFM `- [ ]` syntax |
+| Filter | `filter-editor` | Visual query builder for filter files (`.filter`) |
+| Index / MOC | `index-editor` | Ordered link list editor for index/map-of-content files (`.index`, `.moc`) |
+
+Set via metadata:
+
+```yaml
+editor: codemirror-editor
+```
+
+Or via file extension — certain extensions map automatically: `.filter` → filter-editor, `.list` → list-editor, `.todo` → todo-editor, `.index` / `.moc` → index-editor, `.txt` → textarea-editor.
+
+The `codemirror-editor` has vim mode on by default. The editor initialization lives in `internal/server/render/render_editor_codemirror.go`.
+
 # Creating a Custom Theme
 
 ## Structure
@@ -427,6 +451,46 @@ Setting types supported: `boolean`, `select` (with `options`), `textarea`, `numb
 - Static editor assets (markdown editor, list editor, filter editor CSS/JS, etc.) are **injected automatically** before `</head>` and `</body>` — do not add them manually
 - Template data structs are defined in `internal/server/thememanager/template_data.go` — reference these to know what fields are available per page
 - Translation is available via the `T` template function
+
+## Bundled Libraries
+
+All vendor libraries are bundled into the binary and served from `/static/` — no CDN dependency, works fully offline.
+
+### Automatically injected (do not add to your theme)
+
+The thememanager injects these before `</head>` and `</body>` on every page. Theme authors must not add them manually:
+
+| Asset | Path | Purpose |
+|---|---|---|
+| notify.css | `/static/css/notify.css` | Toast notification styles |
+| codehighlight.css | `/static/css/codehighlight.css` | Syntax highlight styles for `<pre><code>` blocks |
+| cmirroreditor.css | `/static/css/cmirroreditor.css` | CodeMirror editor component styles |
+| toastuieditor.css | `/static/css/toastuieditor.css` | ToastUI editor component styles |
+| indexeditor.css | `/static/css/indexeditor.css` | Index/MOC editor styles |
+| listeditor.css | `/static/css/listeditor.css` | List editor styles |
+| todoeditor.css | `/static/css/todoeditor.css` | Todo editor styles |
+| tableeditor.css | `/static/css/tableeditor.css` | Table editor styles |
+| filtereditor.css | `/static/css/filtereditor.css` | Filter editor styles |
+| kanban.css | `/static/css/kanban.css` | Kanban board styles |
+| wiki-autocomplete.js | `/static/wiki-autocomplete.js` | Wiki link autocomplete |
+| todo-state.js | `/static/todo-state.js` | Todo checkbox state persistence |
+| conflict-diff.js | `/static/conflict-diff.js` | Conflict diff visualisation |
+
+### Available in your base.gohtml
+
+These are loaded by the built-in themes and available for use. If your theme needs any of them, include the `<link>` or `<script>` tag in your `base.gohtml`:
+
+| Library | JS | CSS | Purpose |
+|---|---|---|---|
+| htmx 2 | `/static/htmx.min.js` | — | AJAX/hypermedia — required for all dynamic content |
+| Font Awesome 7 | — | `/static/font-awesome-7.0.1-all.min.css` | Icon set (solid, regular, brands) |
+| ToastUI Editor 3.2.2 | `/static/toastui-editor-3.2.2.min.js` | `/static/toastui-editor-3.2.2.min.css` | Markdown WYSIWYG editor (used by the default markdown editor) |
+| CodeMirror 5.6.65.7 | `/static/codemirror-5.6.65.7.min.js` | `/static/codemirror-5.6.65.7.min.css` | Code/text editor (used by the codemirror editor) |
+| CodeMirror Vim keymap | `/static/codemirror-vim.5.6.65.7.min.js` | — | Vim keybindings for CodeMirror |
+| Handsontable 16.2.0 | `/static/handsontable-16.2.0.full.min.js` | `/static/handsontable-16.2.0.full.min.css` `/static/handsontable-theme-main-16.2.0.min.css` | Spreadsheet grid (used by the table editor) |
+| SortableJS 1.15.0 | `/static/sortable-1.15.0.min.js` | — | Drag-and-drop sorting (used by list/kanban editors) |
+
+htmx is effectively required. All others are only needed if your theme renders the corresponding editor or component.
 
 ## CSS Conventions
 

@@ -6255,7 +6255,8 @@
                 "filter-editor",
                 "list-editor",
                 "todo-editor",
-                "index-editor"
+                "index-editor",
+                "codemirror-editor"
             ],
             "x-enum-varnames": [
                 "EditorTypeToastUI",
@@ -6263,7 +6264,8 @@
                 "EditorTypeFilter",
                 "EditorTypeList",
                 "EditorTypeTodo",
-                "EditorTypeIndex"
+                "EditorTypeIndex",
+                "EditorTypeCodeMirror"
             ]
         },
         "files.EditorTypeCount": {

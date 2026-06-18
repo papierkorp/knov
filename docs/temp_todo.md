@@ -22,6 +22,9 @@
 - rename testdata to test and add some kind of test (playwright?)
 - subediting for `Themes & Appearance` not working
 - add quill editor
+- editor settings (e.g. quill no toolbar, default view for toastui)
+- include the editor/static javascript per thememanager?
+- wikilink feature problem: if i scroll through all available files with the arrow keys it doesnt scroll down (the marker is moving down but i stay at the same visible files at the top)
 
 - deployment
   - codeberg deployment pipeline?
