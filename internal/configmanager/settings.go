@@ -17,6 +17,23 @@ import (
 
 var userSettings UserSettings
 
+// EditorSettings contains editor behaviour preferences
+type EditorSettings struct {
+	ToastuiInitialView  string `json:"toastuiInitialView"`  // "markdown" | "wysiwyg"
+	ToastuiPreviewStyle string `json:"toastuiPreviewStyle"` // "tab" | "vertical"
+	ToastuiShowToolbar  bool   `json:"toastuiShowToolbar"`
+	ToastuiShowModeSwitch bool `json:"toastuiShowModeSwitch"`
+	CodeMirrorVimMode            bool `json:"codeMirrorVimMode"`
+	CodeMirrorLineNumbers        bool `json:"codeMirrorLineNumbers"`
+	CodeMirrorRelativeLineNumbers bool `json:"codeMirrorRelativeLineNumbers"`
+	CodeMirrorFoldGutter         bool `json:"codeMirrorFoldGutter"`
+	CodeMirrorBracketMatching    bool `json:"codeMirrorBracketMatching"`
+	CodeMirrorAutoBrackets                bool `json:"codeMirrorAutoBrackets"`
+	CodeMirrorHighlightSelection          bool `json:"codeMirrorHighlightSelection"`
+	CodeMirrorHighlightSelectionWholeWord bool `json:"codeMirrorHighlightSelectionWholeWord"`
+	SpellCheck                            bool `json:"spellCheck"`
+}
+
 // UserSettings contains user-specific settings stored in JSON
 type UserSettings struct {
 	Theme                        string           `json:"theme"`
@@ -25,6 +42,7 @@ type UserSettings struct {
 	ThemeSettings                AllThemeSettings `json:"themeSettings,omitempty"`
 	MediaSettings                MediaSettings    `json:"mediaSettings,omitempty"`
 	TableSettings                TableSettings    `json:"tableSettings,omitempty"`
+	EditorSettings               EditorSettings   `json:"editorSettings,omitempty"`
 	SectionEditIncludeSubheaders bool             `json:"sectionEditIncludeSubheaders"`
 	CodeBlockWrap                bool             `json:"codeBlockWrap"`
 	CustomFaviconExt             string           `json:"customFaviconExt,omitempty"` // ".ico", ".png", or ".svg"
@@ -98,6 +116,21 @@ func InitUserSettings() {
 			ShowSearch: true,
 			ShowInfo:   true,
 			ShowPaging: true,
+		},
+		EditorSettings: EditorSettings{
+			ToastuiInitialView:            "markdown",
+			ToastuiPreviewStyle:           "tab",
+			ToastuiShowToolbar:            true,
+			ToastuiShowModeSwitch:         true,
+			CodeMirrorVimMode:             false,
+			CodeMirrorLineNumbers:         true,
+			CodeMirrorRelativeLineNumbers: false,
+			CodeMirrorFoldGutter:          true,
+			CodeMirrorBracketMatching:     true,
+			CodeMirrorAutoBrackets:                true,
+			CodeMirrorHighlightSelection:          true,
+			CodeMirrorHighlightSelectionWholeWord: true,
+			SpellCheck:                            false,
 		},
 	}
 
@@ -254,6 +287,11 @@ func IsVideoExtension(ext string) bool {
 // IsAudioExtension returns true if the extension maps to an audio/* mime type.
 func IsAudioExtension(ext string) bool {
 	return strings.HasPrefix(MimeTypeByExtension(ext), "audio/")
+}
+
+// GetEditorSettings returns the current editor settings
+func GetEditorSettings() EditorSettings {
+	return userSettings.EditorSettings
 }
 
 // GetTableSettings returns the current table display settings

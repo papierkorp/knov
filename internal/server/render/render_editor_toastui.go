@@ -29,30 +29,25 @@ func jsEscapeString(s string) string {
 // jsEditorInit returns the ToastUI editor constructor call.
 // Binds the upload hook so blob uploads go through uploadMediaBlob.
 func jsEditorInit(content string) string {
-	return fmt.Sprintf(`
-		// override built-in locale to rename 'Insert Image' to 'Insert Media'
-		toastui.Editor.setLanguage('en-US', {
-			'Insert image': 'Insert Media',
-			'Insert Image': 'Insert Media',
-			'image': 'media',
-			'Image': 'Media',
-		});
-		const editor = new toastui.Editor({
-			el: document.querySelector('#toastui-editor'),
-			height: (function() {
-				var el = document.querySelector('#toastui-editor');
-				var rect = el.getBoundingClientRect();
-				var actions = document.querySelector('.file-form .form-actions');
-				var actionsH = actions ? actions.offsetHeight + 48 : 80;
-				var available = window.innerHeight - rect.top - actionsH;
-				return Math.max(300, available) + 'px';
-			})(),
-			initialEditType: 'markdown',
-			previewStyle: 'tab',
-			initialValue: %s,
-			theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default',
-			language: 'en-US',
-			toolbarItems: [
+	es := configmanager.GetEditorSettings()
+	initialView := es.ToastuiInitialView
+	if initialView == "" {
+		initialView = "markdown"
+	}
+	previewStyle := es.ToastuiPreviewStyle
+	if previewStyle == "" {
+		previewStyle = "tab"
+	}
+	spellcheck := "false"
+	if es.SpellCheck {
+		spellcheck = "true"
+	}
+	hideModeSwitch := "false"
+	if !es.ToastuiShowModeSwitch {
+		hideModeSwitch = "true"
+	}
+	// when toolbar is hidden pass an empty array; otherwise use the configured items
+	toolbarItemsJS := `[
 				['heading', 'bold', 'italic', 'strike'],
 				['hr', 'quote'],
 				['ul', 'ol', 'task', 'indent', 'outdent'],
@@ -83,7 +78,35 @@ func jsEditorInit(content string) string {
 					})()
 				}],
 				['code', 'codeblock']
-			],
+			]`
+	if !es.ToastuiShowToolbar {
+		toolbarItemsJS = "[]"
+	}
+	return fmt.Sprintf(`
+		// override built-in locale to rename 'Insert Image' to 'Insert Media'
+		toastui.Editor.setLanguage('en-US', {
+			'Insert image': 'Insert Media',
+			'Insert Image': 'Insert Media',
+			'image': 'media',
+			'Image': 'Media',
+		});
+		const editor = new toastui.Editor({
+			el: document.querySelector('#toastui-editor'),
+			height: (function() {
+				var el = document.querySelector('#toastui-editor');
+				var rect = el.getBoundingClientRect();
+				var actions = document.querySelector('.file-form .form-actions');
+				var actionsH = actions ? actions.offsetHeight + 48 : 80;
+				var available = window.innerHeight - rect.top - actionsH;
+				return Math.max(300, available) + 'px';
+			})(),
+			initialEditType: '%s',
+			previewStyle: '%s',
+			initialValue: %s,
+			hideModeSwitch: %s,
+			theme: document.body.getAttribute('data-dark-mode') === 'true' ? 'dark' : 'default',
+			language: 'en-US',
+			toolbarItems: %s,
 			i18n: {
 				'File': 'File',
 				'URL': 'URL',
@@ -117,7 +140,16 @@ func jsEditorInit(content string) string {
 					return false;
 				}
 			}
-		});`, jsEscapeString(content))
+		});
+		document.querySelectorAll('#toastui-editor [contenteditable]').forEach(function(el) {
+			el.setAttribute('spellcheck', '%s');
+		});
+		(document.querySelector('#toastui-editor .toastui-editor-toolbar') || {style:{}}).style.display = '%s';`, initialView, previewStyle, jsEscapeString(content), hideModeSwitch, toolbarItemsJS, spellcheck, func() string {
+		if !es.ToastuiShowToolbar {
+			return "none"
+		}
+		return ""
+	}())
 }
 
 // jsFileInputAcceptAll patches the built-in image popup file input to accept all file types.

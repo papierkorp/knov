@@ -48,12 +48,15 @@
 
     function highlight(idx) {
         if (!dropdown) return;
+        var activeEl = null;
         Array.from(dropdown.children).forEach(function(li, i) {
             var on = i === idx;
             li.style.background = on ? 'var(--accent,#0070f3)' : '';
             li.style.color = on ? '#fff' : 'inherit';
+            if (on) activeEl = li;
         });
         activeIdx = idx;
+        if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
     }
 
     function getCaretRect(el) {
@@ -209,7 +212,9 @@
                     var b = li.text.substring(0, cur - li.from);
                     var ws = b.lastIndexOf('[[');
                     if (ws === -1) return;
-                    view.dispatch({ changes: { from: li.from + ws, to: cur, insert: '[[' + path + ']]' } });
+                    var toPos = cur;
+                    if (li.text.substring(cur - li.from, cur - li.from + 2) === ']]') toPos += 2;
+                    view.dispatch({ changes: { from: li.from + ws, to: toPos, insert: '[[' + path + ']]' } });
                 };
                 var coords = view.coordsAtPos(pos);
                 var anchor = {

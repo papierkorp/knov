@@ -792,6 +792,252 @@ func handleAPIUpdateTableShowPaging(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, "saved", "")
 }
 
+// @Summary Update ToastUI initial view mode
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param toastuiInitialView formData string true "Initial edit type: markdown or wysiwyg"
+// @Produce json,html
+// @Router /api/config/editor/toastui-view [post]
+func handleAPIUpdateToastuiInitialView(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	view := r.FormValue("toastuiInitialView")
+	if view != "markdown" && view != "wysiwyg" {
+		view = "markdown"
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.ToastuiInitialView = view
+	configmanager.SetUserSettings(us)
+	logging.LogInfo("updated toastui initial view to: %s", view)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Update ToastUI preview style
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param toastuiPreviewStyle formData string true "Preview style: tab or vertical"
+// @Produce json,html
+// @Router /api/config/editor/toastui-preview [post]
+func handleAPIUpdateToastuiPreviewStyle(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	style := r.FormValue("toastuiPreviewStyle")
+	if style != "tab" && style != "vertical" {
+		style = "tab"
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.ToastuiPreviewStyle = style
+	configmanager.SetUserSettings(us)
+	logging.LogInfo("updated toastui preview style to: %s", style)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Update CodeMirror vim mode
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param codeMirrorVimMode formData bool true "Whether to enable vim keybindings"
+// @Produce json,html
+// @Router /api/config/editor/vim-mode [post]
+func handleAPIUpdateCodeMirrorVimMode(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.CodeMirrorVimMode = r.FormValue("codeMirrorVimMode") == "true"
+	configmanager.SetUserSettings(us)
+	logging.LogInfo("updated codemirror vim mode to: %t", us.EditorSettings.CodeMirrorVimMode)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Update CodeMirror line numbers
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param codeMirrorLineNumbers formData bool true "Whether to show line numbers"
+// @Produce json,html
+// @Router /api/config/editor/codemirror-line-numbers [post]
+func handleAPIUpdateCodeMirrorLineNumbers(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.CodeMirrorLineNumbers = r.FormValue("codeMirrorLineNumbers") == "true"
+	configmanager.SetUserSettings(us)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Update CodeMirror relative line numbers
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param codeMirrorRelativeLineNumbers formData bool true "Whether to show relative line numbers"
+// @Produce json,html
+// @Router /api/config/editor/codemirror-relative-line-numbers [post]
+func handleAPIUpdateCodeMirrorRelativeLineNumbers(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.CodeMirrorRelativeLineNumbers = r.FormValue("codeMirrorRelativeLineNumbers") == "true"
+	configmanager.SetUserSettings(us)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Update CodeMirror fold gutter
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param codeMirrorFoldGutter formData bool true "Whether to show the fold gutter"
+// @Produce json,html
+// @Router /api/config/editor/codemirror-fold-gutter [post]
+func handleAPIUpdateCodeMirrorFoldGutter(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.CodeMirrorFoldGutter = r.FormValue("codeMirrorFoldGutter") == "true"
+	configmanager.SetUserSettings(us)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Update CodeMirror bracket matching
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param codeMirrorBracketMatching formData bool true "Whether to highlight matching brackets"
+// @Produce json,html
+// @Router /api/config/editor/codemirror-bracket-matching [post]
+func handleAPIUpdateCodeMirrorBracketMatching(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.CodeMirrorBracketMatching = r.FormValue("codeMirrorBracketMatching") == "true"
+	configmanager.SetUserSettings(us)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Update CodeMirror auto brackets
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param codeMirrorAutoBrackets formData bool true "Whether to auto-close brackets"
+// @Produce json,html
+// @Router /api/config/editor/codemirror-auto-brackets [post]
+func handleAPIUpdateCodeMirrorAutoBrackets(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.CodeMirrorAutoBrackets = r.FormValue("codeMirrorAutoBrackets") == "true"
+	configmanager.SetUserSettings(us)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Update CodeMirror highlight selection matches
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param codeMirrorHighlightSelection formData bool true "Whether to highlight all occurrences of the selected text"
+// @Produce json,html
+// @Router /api/config/editor/codemirror-highlight-selection [post]
+func handleAPIUpdateCodeMirrorHighlightSelection(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.CodeMirrorHighlightSelection = r.FormValue("codeMirrorHighlightSelection") == "true"
+	configmanager.SetUserSettings(us)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Update CodeMirror highlight selection whole word mode
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param codeMirrorHighlightSelectionWholeWord formData bool true "Whether to only highlight whole-word matches"
+// @Produce json,html
+// @Router /api/config/editor/codemirror-highlight-selection-whole-word [post]
+func handleAPIUpdateCodeMirrorHighlightSelectionWholeWord(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.CodeMirrorHighlightSelectionWholeWord = r.FormValue("codeMirrorHighlightSelectionWholeWord") == "true"
+	configmanager.SetUserSettings(us)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Update ToastUI toolbar visibility
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param toastuiShowToolbar formData bool true "Whether to show the formatting toolbar"
+// @Produce json,html
+// @Router /api/config/editor/toastui-toolbar [post]
+func handleAPIUpdateToastuiShowToolbar(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.ToastuiShowToolbar = r.FormValue("toastuiShowToolbar") == "true"
+	configmanager.SetUserSettings(us)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Update ToastUI mode switch bar visibility
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param toastuiShowModeSwitch formData bool true "Whether to show the markdown/WYSIWYG switch tab"
+// @Produce json,html
+// @Router /api/config/editor/toastui-modeswitch [post]
+func handleAPIUpdateToastuiShowModeSwitch(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.ToastuiShowModeSwitch = r.FormValue("toastuiShowModeSwitch") == "true"
+	configmanager.SetUserSettings(us)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
+// @Summary Update spell check setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param spellCheck formData bool true "Whether to enable spell checking in editors"
+// @Produce json,html
+// @Router /api/config/editor/spell-check [post]
+func handleAPIUpdateSpellCheck(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.SpellCheck = r.FormValue("spellCheck") == "true"
+	configmanager.SetUserSettings(us)
+	logging.LogInfo("updated spell check to: %t", us.EditorSettings.SpellCheck)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
 // @Summary Upload custom favicon
 // @Description Uploads a custom favicon (ico, png, or svg) stored in storage/favicon
 // @Tags config

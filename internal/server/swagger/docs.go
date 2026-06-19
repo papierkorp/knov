@@ -526,6 +526,331 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/config/editor/codemirror-auto-brackets": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update CodeMirror auto brackets",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to auto-close brackets",
+                        "name": "codeMirrorAutoBrackets",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/editor/codemirror-bracket-matching": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update CodeMirror bracket matching",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to highlight matching brackets",
+                        "name": "codeMirrorBracketMatching",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/editor/codemirror-fold-gutter": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update CodeMirror fold gutter",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to show the fold gutter",
+                        "name": "codeMirrorFoldGutter",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/editor/codemirror-highlight-selection": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update CodeMirror highlight selection matches",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to highlight all occurrences of the selected text",
+                        "name": "codeMirrorHighlightSelection",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/editor/codemirror-highlight-selection-whole-word": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update CodeMirror highlight selection whole word mode",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to only highlight whole-word matches",
+                        "name": "codeMirrorHighlightSelectionWholeWord",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/editor/codemirror-line-numbers": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update CodeMirror line numbers",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to show line numbers",
+                        "name": "codeMirrorLineNumbers",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/editor/codemirror-relative-line-numbers": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update CodeMirror relative line numbers",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to show relative line numbers",
+                        "name": "codeMirrorRelativeLineNumbers",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/editor/spell-check": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update spell check setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to enable spell checking in editors",
+                        "name": "spellCheck",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/editor/toastui-modeswitch": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update ToastUI mode switch bar visibility",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to show the markdown/WYSIWYG switch tab",
+                        "name": "toastuiShowModeSwitch",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/editor/toastui-preview": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update ToastUI preview style",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Preview style: tab or vertical",
+                        "name": "toastuiPreviewStyle",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/editor/toastui-toolbar": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update ToastUI toolbar visibility",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to show the formatting toolbar",
+                        "name": "toastuiShowToolbar",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/editor/toastui-view": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update ToastUI initial view mode",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Initial edit type: markdown or wysiwyg",
+                        "name": "toastuiInitialView",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/config/editor/vim-mode": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update CodeMirror vim mode",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to enable vim keybindings",
+                        "name": "codeMirrorVimMode",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/config/export": {
             "get": {
                 "description": "Downloads the current user settings as a JSON file",

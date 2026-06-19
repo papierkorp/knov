@@ -75,7 +75,8 @@ func StartServerChi() {
 	r.Get("/files/edit/*", handleFileEdit)
 	r.Get("/files/edittable/*", handleFileEditTable)
 	r.Get("/files/history/*", handleHistory)
-	r.Get("/files/new/markdown", handleFileNewMarkdown)
+	r.Get("/files/new/toastui", handleFileNewToastUI)
+	r.Get("/files/new/codemirror", handleFileNewCodeMirror)
 	r.Get("/files/new/text", handleFileNewText)
 	r.Get("/files/new/list", handleFileNewList)
 	r.Get("/files/new/todo", handleFileNewTodo)
@@ -222,6 +223,19 @@ func StartServerChi() {
 			// Editor settings endpoints
 			r.Post("/section-edit-subheaders", handleAPIUpdateSectionEditSubheaders)
 			r.Post("/code-block-wrap", handleAPIUpdateCodeBlockWrap)
+			r.Post("/editor/toastui-view", handleAPIUpdateToastuiInitialView)
+			r.Post("/editor/toastui-preview", handleAPIUpdateToastuiPreviewStyle)
+			r.Post("/editor/toastui-toolbar", handleAPIUpdateToastuiShowToolbar)
+			r.Post("/editor/toastui-modeswitch", handleAPIUpdateToastuiShowModeSwitch)
+			r.Post("/editor/vim-mode", handleAPIUpdateCodeMirrorVimMode)
+			r.Post("/editor/codemirror-line-numbers", handleAPIUpdateCodeMirrorLineNumbers)
+			r.Post("/editor/codemirror-relative-line-numbers", handleAPIUpdateCodeMirrorRelativeLineNumbers)
+			r.Post("/editor/codemirror-fold-gutter", handleAPIUpdateCodeMirrorFoldGutter)
+			r.Post("/editor/codemirror-bracket-matching", handleAPIUpdateCodeMirrorBracketMatching)
+			r.Post("/editor/codemirror-auto-brackets", handleAPIUpdateCodeMirrorAutoBrackets)
+			r.Post("/editor/codemirror-highlight-selection", handleAPIUpdateCodeMirrorHighlightSelection)
+			r.Post("/editor/codemirror-highlight-selection-whole-word", handleAPIUpdateCodeMirrorHighlightSelectionWholeWord)
+			r.Post("/editor/spell-check", handleAPIUpdateSpellCheck)
 
 			// Table display settings endpoints
 			r.Post("/table/page-size", handleAPIUpdateTablePageSize)
@@ -950,7 +964,7 @@ func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 // -------------------------------- Filetype-specific handlers ---------------------------
 // ----------------------------------------------------------------------------------------
 
-func handleFileNewMarkdown(w http.ResponseWriter, r *http.Request) {
+func handleFileNewToastUI(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("toastui-editor")
 	data.PrefillPath = r.URL.Query().Get("prefillpath")
@@ -994,6 +1008,14 @@ func handleFileNewFilter(w http.ResponseWriter, r *http.Request) {
 func handleFileNewIndex(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("index-editor")
+	if err := tm.Render(w, "filenew", data); err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+	}
+}
+
+func handleFileNewCodeMirror(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("codemirror-editor")
 	if err := tm.Render(w, "filenew", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}

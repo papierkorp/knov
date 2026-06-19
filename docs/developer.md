@@ -418,15 +418,131 @@ Each file can have an editor type stored in its metadata (`editor` field). The t
 | Filter | `filter-editor` | Visual query builder for filter files (`.filter`) |
 | Index / MOC | `index-editor` | Ordered link list editor for index/map-of-content files (`.index`, `.moc`) |
 
-Set via metadata:
-
-```yaml
-editor: codemirror-editor
-```
-
 Or via file extension — certain extensions map automatically: `.filter` → filter-editor, `.list` → list-editor, `.todo` → todo-editor, `.index` / `.moc` → index-editor, `.txt` → textarea-editor.
 
-The `codemirror-editor` has vim mode on by default. The editor initialization lives in `internal/server/render/render_editor_codemirror.go`.
+## build the codemirror editor
+
+
+```bash
+mkdir ~/codemirror-bundle && cd ~/codemirror-bundle
+npm init -y
+npm install @codemirror/state @codemirror/view @codemirror/commands @codemirror/search @codemirror/language @codemirror/lang-markdown @codemirror/autocomplete @codemirror/lint @replit/codemirror-vim @uiw/codemirror-extensions-line-numbers-relative
+npm install --save-dev esbuild
+
+vi editor.js
+```
+
+```js
+import { EditorState } from "@codemirror/state";
+import {
+  EditorView,
+  keymap,
+  drawSelection,
+  highlightActiveLine,
+  placeholder,
+  lineNumbers,
+  highlightSpecialChars,
+} from "@codemirror/view";
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
+import {
+  search,
+  searchKeymap,
+  highlightSelectionMatches,
+} from "@codemirror/search";
+import { vim } from "@replit/codemirror-vim";
+import {
+  bracketMatching,
+  foldGutter,
+  syntaxHighlighting,
+  defaultHighlightStyle,
+  foldKeymap,
+  indentUnit,
+} from "@codemirror/language";
+import { markdown } from "@codemirror/lang-markdown";
+import {
+  autocompletion,
+  completionKeymap,
+  closeBrackets,
+  closeBracketsKeymap,
+} from "@codemirror/autocomplete";
+import { lintKeymap } from "@codemirror/lint";
+
+// Expose a single constructor on window so the app can call it
+window.createCodeMirror = function (element, content, options) {
+  options = options || {};
+
+  var extensions = [
+    // VIM - MUST BE FIRST for proper Vim mode behavior
+    vim(),
+
+    // Core editing features
+    history(),
+    drawSelection(),
+    EditorView.lineWrapping,
+
+    // Markdown language support with syntax highlighting
+    markdown(),
+    syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+    bracketMatching(),
+
+    // Convenience features for Markdown editing
+    closeBrackets(), // Auto-close brackets, quotes, etc.
+    autocompletion(), // Word-based autocompletion
+    indentUnit.of("  "), // Use 2 spaces for indentation
+
+    // Visual enhancements
+    highlightActiveLine(),
+    lineNumbers(),
+    lineNumbersRelative(),
+    highlightSelectionMatches(),
+    highlightSpecialChars(), // Shows invisible characters
+    foldGutter(), // Code folding in gutter
+
+    // Search functionality
+    search(),
+
+    // Keymaps (order matters for proper keybinding priority)
+    keymap.of([
+      ...defaultKeymap,
+      ...historyKeymap,
+      ...searchKeymap,
+      ...completionKeymap,
+      ...closeBracketsKeymap,
+      ...foldKeymap,
+      // ...lintKeymap, // Uncomment if you add linting later
+    ]),
+
+    // Update listener for change events
+    EditorView.updateListener.of(function (update) {
+      if (options.onChange) {
+        options.onChange(update);
+      }
+    }),
+  ];
+
+  // Add placeholder if provided
+  if (options.placeholder) {
+    extensions.push(placeholder(options.placeholder));
+  }
+
+  // Create the editor state
+  var state = EditorState.create({
+    doc: content || "",
+    extensions: extensions,
+  });
+
+  // Return the editor view instance
+  return new EditorView({
+    state: state,
+    parent: element,
+  });
+};
+```
+
+```bash
+npx esbuild editor.js --bundle --minify --outfile=codemirror6-bundle.min.js
+ls -lh codemirror6-bundle.min.js
+```
 
 # Creating a Custom Theme
 
@@ -464,7 +580,7 @@ The thememanager injects these before `</head>` and `</body>` on every page. The
 |---|---|---|
 | notify.css | `/static/css/notify.css` | Toast notification styles |
 | codehighlight.css | `/static/css/codehighlight.css` | Syntax highlight styles for `<pre><code>` blocks |
-| cmirroreditor.css | `/static/css/cmirroreditor.css` | CodeMirror editor component styles |
+| codemirroreditor.css | `/static/css/codemirroreditor.css` | CodeMirror editor component styles |
 | toastuieditor.css | `/static/css/toastuieditor.css` | ToastUI editor component styles |
 | indexeditor.css | `/static/css/indexeditor.css` | Index/MOC editor styles |
 | listeditor.css | `/static/css/listeditor.css` | List editor styles |

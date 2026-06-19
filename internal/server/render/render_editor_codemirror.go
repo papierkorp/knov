@@ -10,7 +10,7 @@ import (
 	"knov/internal/translation"
 )
 
-// RenderCodeMirrorEditorForm renders a CodeMirror 5 editor (no toolbar) for file creation/editing.
+// RenderCodeMirrorEditorForm renders a CodeMirror editor for file creation/editing.
 func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...string) string {
 	content := ""
 	isEdit := filePath != ""
@@ -52,9 +52,16 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		filepathInput = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filePath)
 	}
 
+	es := configmanager.GetEditorSettings()
+	jsBool := func(b bool) string {
+		if b {
+			return "true"
+		}
+		return "false"
+	}
+
 	script := fmt.Sprintf(`<script>
 (function() {
-	// fit editor height to available viewport before creating the view
 	var el = document.getElementById('codemirror-editor');
 	(function() {
 		var rect = el.getBoundingClientRect();
@@ -65,8 +72,16 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 	})();
 
 	var view = createCodeMirror(el, %s, {
-		placeholder: 'start typing...'
+		vimMode:                        %s,
+		lineNumbers:                    %s,
+		relativeLineNumbers:            %s,
+		foldGutter:                     %s,
+		bracketMatching:                %s,
+		autoBrackets:                   %s,
+		highlightSelection:             %s,
+		highlightSelectionWholeWord:    %s
 	});
+	view.contentDOM.setAttribute('spellcheck', '%s');
 
 	initWikiAutocompleteForCodeMirror(view);
 
@@ -75,7 +90,16 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 	});
 })();
 </script>`,
-		jsEscapeString(content))
+		jsEscapeString(content),
+		jsBool(es.CodeMirrorVimMode),
+		jsBool(es.CodeMirrorLineNumbers),
+		jsBool(es.CodeMirrorRelativeLineNumbers),
+		jsBool(es.CodeMirrorFoldGutter),
+		jsBool(es.CodeMirrorBracketMatching),
+		jsBool(es.CodeMirrorAutoBrackets),
+		jsBool(es.CodeMirrorHighlightSelection),
+		jsBool(es.CodeMirrorHighlightSelectionWholeWord),
+		jsBool(es.SpellCheck))
 
 	return fmt.Sprintf(`
 		<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">

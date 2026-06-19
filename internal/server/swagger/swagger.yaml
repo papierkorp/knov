@@ -695,6 +695,227 @@ paths:
       summary: Update date display format
       tags:
       - config
+  /api/config/editor/codemirror-auto-brackets:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to auto-close brackets
+        in: formData
+        name: codeMirrorAutoBrackets
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update CodeMirror auto brackets
+      tags:
+      - config
+  /api/config/editor/codemirror-bracket-matching:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to highlight matching brackets
+        in: formData
+        name: codeMirrorBracketMatching
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update CodeMirror bracket matching
+      tags:
+      - config
+  /api/config/editor/codemirror-fold-gutter:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to show the fold gutter
+        in: formData
+        name: codeMirrorFoldGutter
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update CodeMirror fold gutter
+      tags:
+      - config
+  /api/config/editor/codemirror-highlight-selection:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to highlight all occurrences of the selected text
+        in: formData
+        name: codeMirrorHighlightSelection
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update CodeMirror highlight selection matches
+      tags:
+      - config
+  /api/config/editor/codemirror-highlight-selection-whole-word:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to only highlight whole-word matches
+        in: formData
+        name: codeMirrorHighlightSelectionWholeWord
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update CodeMirror highlight selection whole word mode
+      tags:
+      - config
+  /api/config/editor/codemirror-line-numbers:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to show line numbers
+        in: formData
+        name: codeMirrorLineNumbers
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update CodeMirror line numbers
+      tags:
+      - config
+  /api/config/editor/codemirror-relative-line-numbers:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to show relative line numbers
+        in: formData
+        name: codeMirrorRelativeLineNumbers
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update CodeMirror relative line numbers
+      tags:
+      - config
+  /api/config/editor/spell-check:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to enable spell checking in editors
+        in: formData
+        name: spellCheck
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update spell check setting
+      tags:
+      - config
+  /api/config/editor/toastui-modeswitch:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to show the markdown/WYSIWYG switch tab
+        in: formData
+        name: toastuiShowModeSwitch
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update ToastUI mode switch bar visibility
+      tags:
+      - config
+  /api/config/editor/toastui-preview:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: 'Preview style: tab or vertical'
+        in: formData
+        name: toastuiPreviewStyle
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update ToastUI preview style
+      tags:
+      - config
+  /api/config/editor/toastui-toolbar:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to show the formatting toolbar
+        in: formData
+        name: toastuiShowToolbar
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update ToastUI toolbar visibility
+      tags:
+      - config
+  /api/config/editor/toastui-view:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: 'Initial edit type: markdown or wysiwyg'
+        in: formData
+        name: toastuiInitialView
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update ToastUI initial view mode
+      tags:
+      - config
+  /api/config/editor/vim-mode:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to enable vim keybindings
+        in: formData
+        name: codeMirrorVimMode
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Update CodeMirror vim mode
+      tags:
+      - config
   /api/config/export:
     get:
       description: Downloads the current user settings as a JSON file

@@ -196,39 +196,262 @@
 {{ define "editor-section" }}
 <section class="settings-section">
     <h2>{{T "Editor Settings"}}</h2>
-    <div class="setting-item">
-        <form hx-post="/api/config/section-edit-subheaders" hx-trigger="change">
-            <label class="checkbox-label">
-                <input
-                    type="checkbox"
-                    name="sectionEditIncludeSubheaders"
-                    value="true"
-                    {{ if .UserSettings.SectionEditIncludeSubheaders }}checked{{ end }}
-                    class="form-checkbox"
-                />
-                <span class="checkmark"></span>
-                {{T "Include sub-headers when editing sections"}}
-                <small>{{T "When enabled, editing a section includes all sub-level headers"}}</small>
-            </label>
-            <div class="help-text">{{T "control whether section editing includes content from sub-headers"}}</div>
-        </form>
+
+    <div class="setting-group">
+        <h3>{{T "Markdown Editor (ToastUI)"}}</h3>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/toastui-view" hx-trigger="change">
+                <label for="toastuiInitialView">
+                    {{T "Default view"}}
+                    <select name="toastuiInitialView" id="toastuiInitialView" class="form-select">
+                        <option value="markdown" {{ if eq .UserSettings.EditorSettings.ToastuiInitialView "markdown" }}selected{{ end }}>{{T "Markdown source"}}</option>
+                        <option value="wysiwyg"  {{ if eq .UserSettings.EditorSettings.ToastuiInitialView "wysiwyg"  }}selected{{ end }}>{{T "WYSIWYG"}}</option>
+                    </select>
+                </label>
+                <div class="help-text">{{T "which editing mode opens by default"}}</div>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/toastui-preview" hx-trigger="change">
+                <label for="toastuiPreviewStyle">
+                    {{T "Preview layout"}}
+                    <select name="toastuiPreviewStyle" id="toastuiPreviewStyle" class="form-select">
+                        <option value="tab"      {{ if eq .UserSettings.EditorSettings.ToastuiPreviewStyle "tab"      }}selected{{ end }}>{{T "Tab (switch between editor and preview)"}}</option>
+                        <option value="vertical" {{ if eq .UserSettings.EditorSettings.ToastuiPreviewStyle "vertical" }}selected{{ end }}>{{T "Vertical (side-by-side)"}}</option>
+                    </select>
+                </label>
+                <div class="help-text">{{T "how the live preview is shown in markdown mode"}}</div>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/toastui-toolbar" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="toastuiShowToolbar" value="true"
+                        {{ if .UserSettings.EditorSettings.ToastuiShowToolbar }}checked{{ end }}
+                        class="form-checkbox" />
+                    <span class="checkmark"></span>
+                    {{T "Show toolbar"}}
+                    <small>{{T "Display the formatting toolbar above the editor"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/toastui-modeswitch" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="toastuiShowModeSwitch" value="true"
+                        {{ if .UserSettings.EditorSettings.ToastuiShowModeSwitch }}checked{{ end }}
+                        class="form-checkbox" />
+                    <span class="checkmark"></span>
+                    {{T "Show mode switch bar"}}
+                    <small>{{T "Display the markdown / WYSIWYG switch tab at the bottom"}}</small>
+                </label>
+            </form>
+        </div>
     </div>
-    <div class="setting-item">
-        <form hx-post="/api/config/code-block-wrap" hx-trigger="change">
-            <label class="checkbox-label">
-                <input
-                    type="checkbox"
-                    name="codeBlockWrap"
-                    value="true"
-                    {{ if .UserSettings.CodeBlockWrap }}checked{{ end }}
-                    class="form-checkbox"
-                />
-                <span class="checkmark"></span>
-                {{T "Wrap long lines in code blocks"}}
-                <small>{{T "When enabled, long lines in code blocks wrap instead of scrolling horizontally"}}</small>
-            </label>
-            <div class="help-text">{{T "control whether code block content wraps or scrolls"}}</div>
-        </form>
+
+    <div class="setting-group">
+        <h3>{{T "Code / Text Editor (CodeMirror)"}}</h3>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/vim-mode" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="codeMirrorVimMode"
+                        value="true"
+                        {{ if .UserSettings.EditorSettings.CodeMirrorVimMode }}checked{{ end }}
+                        class="form-checkbox"
+                    />
+                    <span class="checkmark"></span>
+                    {{T "Vim keybindings"}}
+                    <small>{{T "Enable vim normal/insert/visual mode in the code editor"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/codemirror-line-numbers" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="codeMirrorLineNumbers"
+                        value="true"
+                        {{ if .UserSettings.EditorSettings.CodeMirrorLineNumbers }}checked{{ end }}
+                        class="form-checkbox"
+                    />
+                    <span class="checkmark"></span>
+                    {{T "Line numbers"}}
+                    <small>{{T "Show line numbers in the gutter"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/codemirror-relative-line-numbers" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="codeMirrorRelativeLineNumbers"
+                        value="true"
+                        {{ if .UserSettings.EditorSettings.CodeMirrorRelativeLineNumbers }}checked{{ end }}
+                        class="form-checkbox"
+                    />
+                    <span class="checkmark"></span>
+                    {{T "Relative line numbers"}}
+                    <small>{{T "Show line numbers relative to the cursor (useful with vim mode)"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/codemirror-fold-gutter" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="codeMirrorFoldGutter"
+                        value="true"
+                        {{ if .UserSettings.EditorSettings.CodeMirrorFoldGutter }}checked{{ end }}
+                        class="form-checkbox"
+                    />
+                    <span class="checkmark"></span>
+                    {{T "Code folding"}}
+                    <small>{{T "Show fold indicators in the gutter and enable folding keybindings"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/codemirror-bracket-matching" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="codeMirrorBracketMatching"
+                        value="true"
+                        {{ if .UserSettings.EditorSettings.CodeMirrorBracketMatching }}checked{{ end }}
+                        class="form-checkbox"
+                    />
+                    <span class="checkmark"></span>
+                    {{T "Bracket matching"}}
+                    <small>{{T "Highlight matching brackets, parentheses and braces"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/codemirror-auto-brackets" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="codeMirrorAutoBrackets"
+                        value="true"
+                        {{ if .UserSettings.EditorSettings.CodeMirrorAutoBrackets }}checked{{ end }}
+                        class="form-checkbox"
+                    />
+                    <span class="checkmark"></span>
+                    {{T "Auto-close brackets"}}
+                    <small>{{T "Automatically insert closing brackets, parentheses and quotes"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/codemirror-highlight-selection" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="codeMirrorHighlightSelection"
+                        value="true"
+                        {{ if .UserSettings.EditorSettings.CodeMirrorHighlightSelection }}checked{{ end }}
+                        class="form-checkbox"
+                    />
+                    <span class="checkmark"></span>
+                    {{T "Highlight selection matches"}}
+                    <small>{{T "Highlight all other occurrences of the selected text"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/codemirror-highlight-selection-whole-word" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="codeMirrorHighlightSelectionWholeWord"
+                        value="true"
+                        {{ if .UserSettings.EditorSettings.CodeMirrorHighlightSelectionWholeWord }}checked{{ end }}
+                        class="form-checkbox"
+                    />
+                    <span class="checkmark"></span>
+                    {{T "Whole-word matches only"}}
+                    <small>{{T "Only highlight when the selection matches a complete word"}}</small>
+                </label>
+            </form>
+        </div>
+
+    </div>
+
+    <div class="setting-group">
+        <h3>{{T "All Editors"}}</h3>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/editor/spell-check" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="spellCheck"
+                        value="true"
+                        {{ if .UserSettings.EditorSettings.SpellCheck }}checked{{ end }}
+                        class="form-checkbox"
+                    />
+                    <span class="checkmark"></span>
+                    {{T "Spell checking"}}
+                    <small>{{T "Let the browser underline misspelled words while editing"}}</small>
+                </label>
+            </form>
+        </div>
+    </div>
+
+    <div class="setting-group">
+        <h3>{{T "Section Editing &amp; Display"}}</h3>
+
+        <div class="setting-item">
+            <form hx-post="/api/config/section-edit-subheaders" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="sectionEditIncludeSubheaders"
+                        value="true"
+                        {{ if .UserSettings.SectionEditIncludeSubheaders }}checked{{ end }}
+                        class="form-checkbox"
+                    />
+                    <span class="checkmark"></span>
+                    {{T "Include sub-headers when editing sections"}}
+                    <small>{{T "When enabled, editing a section includes all sub-level headers"}}</small>
+                </label>
+                <div class="help-text">{{T "control whether section editing includes content from sub-headers"}}</div>
+            </form>
+        </div>
+        <div class="setting-item">
+            <form hx-post="/api/config/code-block-wrap" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="codeBlockWrap"
+                        value="true"
+                        {{ if .UserSettings.CodeBlockWrap }}checked{{ end }}
+                        class="form-checkbox"
+                    />
+                    <span class="checkmark"></span>
+                    {{T "Wrap long lines in code blocks"}}
+                    <small>{{T "When enabled, long lines in code blocks wrap instead of scrolling horizontally"}}</small>
+                </label>
+                <div class="help-text">{{T "control whether code block content wraps or scrolls"}}</div>
+            </form>
+        </div>
     </div>
 
     <div class="setting-group">
