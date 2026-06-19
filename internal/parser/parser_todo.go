@@ -38,7 +38,7 @@ func (r *knovNodeRenderer) renderTaskCheckBox(w util.BufWriter, source []byte, n
 	if n.IsChecked {
 		fmt.Fprintf(w, `<span class="todo-state todo-state-done" data-line="%d"><i class="fa-solid fa-circle-check"></i></span> `, line)
 	} else {
-		fmt.Fprintf(w, `<span class="todo-state todo-state-open" data-line="%d"><i class="fa-regular fa-circle"></i></span> `, line)
+		fmt.Fprintf(w, `<span class="todo-state todo-state-open" data-line="%d"><i class="fa-solid fa-circle"></i></span> `, line)
 	}
 	return ast.WalkContinue, nil
 }
@@ -126,9 +126,9 @@ func (h *MarkdownHandler) postprocessTodoStates(html string) string {
 	)
 	// waiting: was rendered as unchecked [ ] with KNOVTODO:waiting placeholder
 	html = regexp.MustCompile(
-		`<li><span class="todo-state todo-state-open" (data-line="\d+")><i class="fa-regular fa-circle"></i></span> KNOVTODO:waiting ([^<]*)`,
+		`<li><span class="todo-state todo-state-open" (data-line="\d+")><i class="fa-solid fa-circle"></i></span> KNOVTODO:waiting ([^<]*)`,
 	).ReplaceAllString(html,
-		`<li class="todo-waiting"><span class="todo-state todo-state-waiting" $1><i class="fa-regular fa-clock"></i></span> $2`,
+		`<li class="todo-waiting"><span class="todo-state todo-state-waiting" $1><i class="fa-solid fa-clock"></i></span> $2`,
 	)
 	// add state classes to remaining open/done items
 	html = regexp.MustCompile(

@@ -92,6 +92,11 @@
       "translation": ""
     },
     {
+      "id": "All Editors",
+      "message": "All Editors",
+      "translation": ""
+    },
+    {
       "id": "All Files",
       "message": "All Files",
       "translation": "Alle Dateien"
@@ -187,6 +192,11 @@
       "translation": ""
     },
     {
+      "id": "Auto-close brackets",
+      "message": "Auto-close brackets",
+      "translation": ""
+    },
+    {
       "id": "Auto-create Collections",
       "message": "Auto-create Collections",
       "translation": ""
@@ -194,6 +204,11 @@
     {
       "id": "Auto-create Tags",
       "message": "Auto-create Tags",
+      "translation": ""
+    },
+    {
+      "id": "Automatically insert closing brackets, parentheses and quotes",
+      "message": "Automatically insert closing brackets, parentheses and quotes",
       "translation": ""
     },
     {
@@ -209,6 +224,11 @@
     {
       "id": "border style updated",
       "message": "border style updated",
+      "translation": ""
+    },
+    {
+      "id": "Bracket matching",
+      "message": "Bracket matching",
       "translation": ""
     },
     {
@@ -394,6 +414,21 @@
     {
       "id": "code block wrap setting updated",
       "message": "code block wrap setting updated",
+      "translation": ""
+    },
+    {
+      "id": "Code folding",
+      "message": "Code folding",
+      "translation": ""
+    },
+    {
+      "id": "CodeMirror",
+      "message": "CodeMirror",
+      "translation": ""
+    },
+    {
+      "id": "Code / Text Editor (CodeMirror)",
+      "message": "Code / Text Editor (CodeMirror)",
       "translation": ""
     },
     {
@@ -672,6 +707,11 @@
       "translation": ""
     },
     {
+      "id": "Default view",
+      "message": "Default view",
+      "translation": ""
+    },
+    {
       "id": "delete",
       "message": "delete",
       "translation": ""
@@ -787,6 +827,16 @@
       "translation": ""
     },
     {
+      "id": "Display the formatting toolbar above the editor",
+      "message": "Display the formatting toolbar above the editor",
+      "translation": ""
+    },
+    {
+      "id": "Display the markdown / WYSIWYG switch tab at the bottom",
+      "message": "Display the markdown / WYSIWYG switch tab at the bottom",
+      "translation": ""
+    },
+    {
       "id": "download",
       "message": "download",
       "translation": ""
@@ -832,6 +882,11 @@
       "translation": ""
     },
     {
+      "id": "editor setting updated",
+      "message": "editor setting updated",
+      "translation": ""
+    },
+    {
       "id": "Editor-Type",
       "message": "Editor-Type",
       "translation": ""
@@ -874,6 +929,11 @@
     {
       "id": "enable or disable media preview generation",
       "message": "enable or disable media preview generation",
+      "translation": ""
+    },
+    {
+      "id": "Enable vim normal/insert/visual mode in the code editor",
+      "message": "Enable vim normal/insert/visual mode in the code editor",
       "translation": ""
     },
     {
@@ -1827,6 +1887,21 @@
       "translation": ""
     },
     {
+      "id": "Highlight all other occurrences of the selected text",
+      "message": "Highlight all other occurrences of the selected text",
+      "translation": ""
+    },
+    {
+      "id": "Highlight matching brackets, parentheses and braces",
+      "message": "Highlight matching brackets, parentheses and braces",
+      "translation": ""
+    },
+    {
+      "id": "Highlight selection matches",
+      "message": "Highlight selection matches",
+      "translation": ""
+    },
+    {
       "id": "history",
       "message": "history",
       "translation": ""
@@ -1864,6 +1939,11 @@
     {
       "id": "how media previews are positioned in the document",
       "message": "how media previews are positioned in the document",
+      "translation": ""
+    },
+    {
+      "id": "how the live preview is shown in markdown mode",
+      "message": "how the live preview is shown in markdown mode",
       "translation": ""
     },
     {
@@ -2137,8 +2217,18 @@
       "translation": ""
     },
     {
+      "id": "Let the browser underline misspelled words while editing",
+      "message": "Let the browser underline misspelled words while editing",
+      "translation": ""
+    },
+    {
       "id": "limit",
       "message": "limit",
+      "translation": ""
+    },
+    {
+      "id": "Line numbers",
+      "message": "Line numbers",
       "translation": ""
     },
     {
@@ -2352,8 +2442,13 @@
       "translation": ""
     },
     {
-      "id": "Markdown",
-      "message": "Markdown",
+      "id": "Markdown Editor (ToastUI)",
+      "message": "Markdown Editor (ToastUI)",
+      "translation": ""
+    },
+    {
+      "id": "Markdown source",
+      "message": "Markdown source",
       "translation": ""
     },
     {
@@ -2877,6 +2972,11 @@
       "translation": ""
     },
     {
+      "id": "Only highlight when the selection matches a complete word",
+      "message": "Only highlight when the selection matches a complete word",
+      "translation": ""
+    },
+    {
       "id": "only .ico, .png and .svg files are allowed",
       "message": "only .ico, .png and .svg files are allowed",
       "translation": ""
@@ -2997,6 +3097,11 @@
       "translation": "Spielwiese"
     },
     {
+      "id": "Preview layout",
+      "message": "Preview layout",
+      "translation": ""
+    },
+    {
       "id": "preview results",
       "message": "preview results",
       "translation": ""
@@ -3094,6 +3199,11 @@
     {
       "id": "related",
       "message": "related",
+      "translation": ""
+    },
+    {
+      "id": "Relative line numbers",
+      "message": "Relative line numbers",
       "translation": ""
     },
     {
@@ -3312,6 +3422,11 @@
       "translation": ""
     },
     {
+      "id": "Section Editing &amp; Display",
+      "message": "Section Editing &amp; Display",
+      "translation": ""
+    },
+    {
       "id": "section edit setting updated",
       "message": "section edit setting updated",
       "translation": ""
@@ -3462,6 +3577,11 @@
       "translation": ""
     },
     {
+      "id": "Show fold indicators in the gutter and enable folding keybindings",
+      "message": "Show fold indicators in the gutter and enable folding keybindings",
+      "translation": ""
+    },
+    {
       "id": "Show Hidden Files",
       "message": "Show Hidden Files",
       "translation": ""
@@ -3469,6 +3589,21 @@
     {
       "id": "Show images and media with CSS sizing in file view",
       "message": "Show images and media with CSS sizing in file view",
+      "translation": ""
+    },
+    {
+      "id": "Show line numbers in the gutter",
+      "message": "Show line numbers in the gutter",
+      "translation": ""
+    },
+    {
+      "id": "Show line numbers relative to the cursor (useful with vim mode)",
+      "message": "Show line numbers relative to the cursor (useful with vim mode)",
+      "translation": ""
+    },
+    {
+      "id": "Show mode switch bar",
+      "message": "Show mode switch bar",
       "translation": ""
     },
     {
@@ -3487,6 +3622,11 @@
       "translation": ""
     },
     {
+      "id": "Show toolbar",
+      "message": "Show toolbar",
+      "translation": ""
+    },
+    {
       "id": "Simple border",
       "message": "Simple border",
       "translation": ""
@@ -3494,6 +3634,11 @@
     {
       "id": "size",
       "message": "size",
+      "translation": ""
+    },
+    {
+      "id": "Spell checking",
+      "message": "Spell checking",
       "translation": ""
     },
     {
@@ -3584,6 +3729,11 @@
     {
       "id": "Table Settings",
       "message": "Table Settings",
+      "translation": ""
+    },
+    {
+      "id": "Tab (switch between editor and preview)",
+      "message": "Tab (switch between editor and preview)",
       "translation": ""
     },
     {
@@ -3699,6 +3849,11 @@
     {
       "id": "to",
       "message": "to",
+      "translation": ""
+    },
+    {
+      "id": "ToastUI",
+      "message": "ToastUI",
       "translation": ""
     },
     {
@@ -3887,6 +4042,11 @@
       "translation": ""
     },
     {
+      "id": "Vertical (side-by-side)",
+      "message": "Vertical (side-by-side)",
+      "translation": ""
+    },
+    {
       "id": "video visibility updated",
       "message": "video visibility updated",
       "translation": ""
@@ -3942,6 +4102,11 @@
       "translation": ""
     },
     {
+      "id": "Vim keybindings",
+      "message": "Vim keybindings",
+      "translation": ""
+    },
+    {
       "id": "visual style of preview borders",
       "message": "visual style of preview borders",
       "translation": ""
@@ -3954,6 +4119,16 @@
     {
       "id": "When enabled, long lines in code blocks wrap instead of scrolling horizontally",
       "message": "When enabled, long lines in code blocks wrap instead of scrolling horizontally",
+      "translation": ""
+    },
+    {
+      "id": "which editing mode opens by default",
+      "message": "which editing mode opens by default",
+      "translation": ""
+    },
+    {
+      "id": "Whole-word matches only",
+      "message": "Whole-word matches only",
       "translation": ""
     },
     {
@@ -3989,6 +4164,11 @@
     {
       "id": "Wrap long lines in code blocks",
       "message": "Wrap long lines in code blocks",
+      "translation": ""
+    },
+    {
+      "id": "WYSIWYG",
+      "message": "WYSIWYG",
       "translation": ""
     },
     {

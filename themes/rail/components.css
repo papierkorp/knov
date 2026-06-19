@@ -3215,6 +3215,7 @@ dl.media-info dd {
 
 .file-content .todo-state-open {
   color: var(--text-secondary);
+  opacity: 0.4;
 }
 .file-content .todo-state-done {
   color: var(--success, #28a745);
