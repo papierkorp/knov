@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"html"
 	"regexp"
 	"strings"
 
@@ -79,5 +80,6 @@ func InjectHeaderIDs(html string) string {
 }
 
 func stripHTMLTags(s string) string {
-	return regexp.MustCompile(`<[^>]*>`).ReplaceAllString(s, "")
+	stripped := regexp.MustCompile(`<[^>]*>`).ReplaceAllString(s, "")
+	return html.UnescapeString(stripped)
 }

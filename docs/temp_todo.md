@@ -20,7 +20,6 @@
 - references - add date
 - detect if a request is already loading and block multiple requests of the same kind
 - rename testdata to test and add some kind of test (playwright?)
-- subediting for `Themes & Appearance` not working
 - include the editor/static javascript per thememanager?
 - mass metadata change (e.g. change all toastui editors to codemirror)
 

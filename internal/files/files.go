@@ -121,9 +121,10 @@ func GetFileContent(filePath string) (*FileContent, error) {
 
 	relativePath := pathutils.ToRelative(filePath)
 
-	// strip section edit buttons for non-markdown editors
+	// strip section edit buttons for specialized editors that don't support inline section editing
 	if meta, err := MetaDataGet(pathutils.ToWithPrefix(relativePath)); err == nil && meta != nil {
-		if meta.Editor != EditorTypeToastUI && meta.Editor != EditorTypeTextarea && meta.Editor != "" {
+		if meta.Editor == EditorTypeFilter || meta.Editor == EditorTypeList ||
+			meta.Editor == EditorTypeTodo || meta.Editor == EditorTypeIndex {
 			html = regexp.MustCompile(`<a href="/files/edit/[^"]*\?section=[^"]*" class="header-edit-btn"[^>]*>.*?</a>`).ReplaceAll(html, nil)
 		}
 	}
