@@ -12,6 +12,7 @@
   - use both builtin and rail theme
 - translations
 - add a `create_your_own_theme.md` file
+- load recent changes per collection is not working
 
 **per ai**
 - move all scripts into files (browser inspector)
@@ -24,6 +25,7 @@
 - mass metadata change (e.g. change all toastui editors to codemirror)
 - codemirror editor - blinking Cursor wrong color
 - wiki link anchors - if a `#` is added after link use handleAPIFilesHeaders to display all available headers
+- kanban archive style - make it bigger (whole line on the bottom)
 
 - deployment
   - codeberg deployment pipeline?
