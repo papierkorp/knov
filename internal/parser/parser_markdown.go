@@ -48,6 +48,14 @@ func (h *MarkdownHandler) processWikiLinks(content string) string {
 		inner := match[2 : len(match)-2]
 		parts := strings.SplitN(inner, "|", 2)
 		linkPath := strings.TrimSpace(parts[0])
+
+		// split off anchor before any path manipulation
+		anchor := ""
+		if idx := strings.Index(linkPath, "#"); idx != -1 {
+			anchor = linkPath[idx:]
+			linkPath = linkPath[:idx]
+		}
+
 		display := strings.TrimSuffix(filepath.Base(linkPath), ".md")
 		if len(parts) == 2 {
 			display = strings.TrimSpace(parts[1])
@@ -58,7 +66,7 @@ func (h *MarkdownHandler) processWikiLinks(content string) string {
 		if decoded, err := url.PathUnescape(linkPath); err == nil {
 			linkPath = decoded
 		}
-		return "[" + display + "](" + pathutils.ToFileURL(linkPath) + ")"
+		return "[" + display + "](" + pathutils.ToFileURL(linkPath) + anchor + ")"
 	})
 }
 

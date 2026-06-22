@@ -1105,6 +1105,66 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, map[string]int{"deleted": deleted}, "")
 }
 
+// @Summary Get headers (TOC) for a file
+// @Description Returns all headings from a file for use in wiki link anchor autocomplete
+// @Tags files
+// @Param filepath query string true "relative file path"
+// @Produce json
+// @Success 200 {array} object "array of {id, text, level}"
+// @Failure 400 {string} string "missing filepath"
+// @Failure 404 {string} string "file not found"
+// @Router /api/files/headers [get]
+func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
+	filePath := strings.TrimSpace(r.URL.Query().Get("filepath"))
+	if filePath == "" {
+		http.Error(w, "missing filepath", http.StatusBadRequest)
+		return
+	}
+
+	fullPath := pathutils.ToDocsPath(filePath)
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	handler := parser.GetParserRegistry().GetHandler(fullPath)
+	if handler == nil {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode([]struct{}{})
+		return
+	}
+
+	rendered, err := handler.Render(content, fullPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	toc := parser.GenerateTOC(string(rendered))
+
+	type headerResult struct {
+		ID    string `json:"id"`
+		Text  string `json:"text"`
+		Level int    `json:"level"`
+	}
+
+	results := make([]headerResult, 0, len(toc))
+	for _, item := range toc {
+		results = append(results, headerResult{ID: item.ID, Text: item.Text, Level: item.Level})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
+}
+
+// @Summary Autocomplete file paths
+// @Description Returns files matching a query string for use in wiki link autocomplete
+// @Tags files
+// @Param q query string false "search query"
+// @Produce json
+// @Success 200 {array} object "array of {path, filename}"
+// @Router /api/files/autocomplete [get]
 func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
 

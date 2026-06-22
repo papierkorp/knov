@@ -2164,6 +2164,26 @@ paths:
       summary: Save todo editor
       tags:
       - editor
+  /api/files/autocomplete:
+    get:
+      description: Returns files matching a query string for use in wiki link autocomplete
+      parameters:
+      - description: search query
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: array of {path, filename}
+          schema:
+            items:
+              type: object
+            type: array
+      summary: Autocomplete file paths
+      tags:
+      - files
   /api/files/browse:
     get:
       parameters:
@@ -2413,6 +2433,35 @@ paths:
       - text/html
       responses: {}
       summary: Get file header with link and breadcrumb
+      tags:
+      - files
+  /api/files/headers:
+    get:
+      description: Returns all headings from a file for use in wiki link anchor autocomplete
+      parameters:
+      - description: relative file path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: array of {id, text, level}
+          schema:
+            items:
+              type: object
+            type: array
+        "400":
+          description: missing filepath
+          schema:
+            type: string
+        "404":
+          description: file not found
+          schema:
+            type: string
+      summary: Get headers (TOC) for a file
       tags:
       - files
   /api/files/list:

@@ -2695,6 +2695,37 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/files/autocomplete": {
+            "get": {
+                "description": "Returns files matching a query string for use in wiki link autocomplete",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Autocomplete file paths",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "search query",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "array of {path, filename}",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/browse": {
             "get": {
                 "produces": [
@@ -3068,6 +3099,50 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {}
+            }
+        },
+        "/api/files/headers": {
+            "get": {
+                "description": "Returns all headings from a file for use in wiki link anchor autocomplete",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get headers (TOC) for a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "relative file path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "array of {id, text, level}",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "missing filepath",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "file not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/api/files/list": {

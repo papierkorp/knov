@@ -22,7 +22,8 @@
 - rename testdata to test and add some kind of test (playwright?)
 - include the editor/static javascript per thememanager?
 - mass metadata change (e.g. change all toastui editors to codemirror)
-- wiki links with anchors
+- codemirror editor - blinking Cursor wrong color
+- wiki link anchors - if a `#` is added after link use handleAPIFilesHeaders to display all available headers
 
 - deployment
   - codeberg deployment pipeline?
