@@ -22,6 +22,10 @@
 - rename testdata to test and add some kind of test (playwright?)
 - include the editor/static javascript per thememanager?
 - mass metadata change (e.g. change all toastui editors to codemirror)
+- wiki links with anchors
+- section edit - change title + content - doesnt save the content
+- section edit - adding another header and saving 2 times => adds the new header 2 times instead of overwriting the second time
+- new file - in the title - if i search for a folder to prefill => if i use tab use it to complete it instead of jumping one forward
 
 - deployment
   - codeberg deployment pipeline?

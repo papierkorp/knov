@@ -38,8 +38,8 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		filepathInput = fmt.Sprintf(`
 				<div class="form-group">
 					<label for="filepath-input">%s</label>
-					<input type="text" id="filepath-input" name="filepath" required value="%s" placeholder="%s" class="form-input" list="folder-suggestions" />
-					<datalist id="folder-suggestions" hx-get="/api/files/folder-suggestions" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></datalist>
+					<input type="text" id="filepath-input" name="filepath" required value="%s" placeholder="%s" class="form-input" />
+					<script>(function(){var el=document.getElementById('filepath-input');if(el&&window.initFolderPathAutocomplete)window.initFolderPathAutocomplete(el,'/api/files/folder-suggestions');})()</script>
 				</div>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
 			html.EscapeString(prefillPath),

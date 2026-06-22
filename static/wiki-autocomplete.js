@@ -263,4 +263,44 @@
         });
     };
 
+    // ── folder path autocomplete ─────────────────────────────────────────────────
+    // Reuses the shared dropdown. Tab selects the highlighted item and stays in
+    // the input instead of moving focus (native <datalist> can't do this).
+    global.initFolderPathAutocomplete = function(inputEl, apiEndpoint) {
+        if (!inputEl) return;
+
+        var suggestions = [];
+
+        fetch(apiEndpoint)
+            .then(function(r) { return r.text(); })
+            .then(function(html) {
+                var tmp = document.createElement('datalist');
+                tmp.innerHTML = html;
+                suggestions = Array.from(tmp.options).map(function(o) { return o.value; }).filter(Boolean);
+            })
+            .catch(function() {});
+
+        attachSharedKeydown(inputEl);
+
+        function refresh() {
+            var v = inputEl.value;
+            if (!v) { hide(); return; }
+            var vl = v.toLowerCase();
+            var items = suggestions
+                .filter(function(s) { return s.toLowerCase().startsWith(vl); })
+                .map(function(s) {
+                    var parts = s.replace(/\/$/, '').split('/');
+                    return { filename: parts[parts.length - 1] + '/', path: s };
+                });
+            onInsert = function(path) { inputEl.value = path; };
+            show(items, inputEl);
+        }
+
+        inputEl.addEventListener('input', refresh);
+        inputEl.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowDown' && !isVisible()) { e.preventDefault(); refresh(); }
+        });
+        inputEl.addEventListener('blur', function() { setTimeout(hide, 150); });
+    };
+
 })(window);

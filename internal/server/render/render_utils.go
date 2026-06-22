@@ -199,11 +199,9 @@ func GetFormValue(slice []string, index int) string {
 
 // GenerateDatalistInput creates an input field with autocomplete (without save)
 func GenerateDatalistInput(id, name, value, placeholder, apiEndpoint string) string {
-	datalistId := fmt.Sprintf("%s-list", id)
-	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" autocomplete="off" list="%s" placeholder="%s"/>
-<datalist id="%s" hx-get="%s" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
-	<option value="">%s</option>
-</datalist>`, id, name, value, datalistId, placeholder, datalistId, apiEndpoint, translation.SprintfForRequest(configmanager.GetLanguage(), "loading options..."))
+	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" autocomplete="off" placeholder="%s"/>
+<script>(function(){var el=document.getElementById('%s');if(el&&window.initFolderPathAutocomplete)window.initFolderPathAutocomplete(el,'%s');})()</script>`,
+		id, name, value, placeholder, id, apiEndpoint)
 }
 
 // GenerateDatalistInputWithSave creates an input field with autocomplete and auto-save
