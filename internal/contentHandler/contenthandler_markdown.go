@@ -191,65 +191,111 @@ func (h *MarkdownContentHandler) replaceSectionInMarkdown(content, sectionID, ne
 	logging.LogDebug("replaceSectionInMarkdown: replacing section '%s' with %d bytes of content, includeSubheaders=%t", sectionID, len(newContent), includeSubheaders)
 	lines := strings.Split(content, "\n")
 
-	var result []string
-	var inTargetSection bool
+	// First pass: find the exact boundaries of the original section in the file.
+	// This must be independent of newContent so that headers in newContent cannot
+	// affect where the replacement ends (which would cause duplicate headers on
+	// repeated saves when the user keeps a subheader in the editor content).
+	sectionStart := -1
+	sectionEnd := len(lines)
+	var inSection bool
 	var inCodeBlock bool
-	var headerLevel int
+	var sectionHeaderLevel int
 	usedIDs := make(map[string]int)
 
 	for i, line := range lines {
 		trimmed := strings.TrimSpace(line)
-
-		// check for code block fences
 		if strings.HasPrefix(trimmed, "```") {
 			inCodeBlock = !inCodeBlock
 		}
-
-		// only process headers outside of code blocks
 		if !inCodeBlock && strings.HasPrefix(trimmed, "#") {
 			level := len(trimmed) - len(strings.TrimLeft(trimmed, "#"))
 			headerText := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
 			headerID := utils.GenerateID(headerText, usedIDs)
 
-			if headerID == sectionID && !inTargetSection {
-				// start of target section - replace with new content
-				inTargetSection = true
-				headerLevel = level
-				logging.LogDebug("found target section '%s' at line %d (level %d), replacing content", sectionID, i, level)
-				// split off any leading non-header material (to be appended to parent)
-				pre, sec := splitPreHeader(newContent)
-				if pre != "" {
-					result = append(result, strings.Split(pre, "\n")...)
-				}
-				if sec != "" {
-					result = append(result, strings.Split(sec, "\n")...)
-				}
+			if headerID == sectionID && !inSection {
+				sectionStart = i
+				sectionHeaderLevel = level
+				inSection = true
+				logging.LogDebug("found target section '%s' at line %d (level %d)", sectionID, i, sectionHeaderLevel)
 				continue
-			} else if inTargetSection && headerID != sectionID {
-				// determine when to stop replacement based on includeSubheaders setting
+			}
+			if inSection {
 				shouldStop := false
 				if includeSubheaders {
-					// original behavior: stop at header of same or higher level (fewer # = higher level)
-					shouldStop = level <= headerLevel
+					shouldStop = level <= sectionHeaderLevel
 				} else {
-					// new behavior: stop at any header (same, higher, or lower level)
 					shouldStop = true
 				}
-
 				if shouldStop {
-					// reached next section - end replacement
-					inTargetSection = false
-					logging.LogDebug("section replacement ended at line %d due to header level %d (section level %d, includeSubheaders=%t)", i, level, headerLevel, includeSubheaders)
-					result = append(result, line)
-					continue
+					sectionEnd = i
+					logging.LogDebug("section ends at line %d (level %d)", i, level)
+					break
 				}
 			}
 		}
+	}
 
-		if !inTargetSection {
-			result = append(result, line)
+	if sectionStart == -1 {
+		return "", fmt.Errorf("section not found: %s", sectionID)
+	}
+
+	// Adjust sectionEnd to skip over sub-headers from newContent that were written to the
+	// file in a previous save. This happens when the user saves, then edits again and saves
+	// from the same editor session (without reloading): the editor content still includes
+	// headers added in the first save, which are also now present in the file at sectionEnd.
+	// We detect this by collecting all headers from newContent that come after the section
+	// header itself, then scanning forward from sectionEnd to skip any lines in the original
+	// file that belong to those same sub-header blocks.
+	if sectionEnd < len(lines) {
+		subHeaders := make(map[string]bool)
+		pastSectionHeader := false
+		subUsedIDs := make(map[string]int)
+		for _, nl := range strings.Split(newContent, "\n") {
+			nlTrimmed := strings.TrimSpace(nl)
+			if strings.HasPrefix(nlTrimmed, "#") {
+				nlText := strings.TrimSpace(strings.TrimLeft(nlTrimmed, "#"))
+				nlID := utils.GenerateID(nlText, subUsedIDs)
+				if !pastSectionHeader && nlID == sectionID {
+					pastSectionHeader = true
+				} else if pastSectionHeader {
+					subHeaders[nlTrimmed] = true
+				}
+			}
+		}
+		if len(subHeaders) > 0 {
+			adjustedEnd := sectionEnd
+			inSubSection := false
+			for j := sectionEnd; j < len(lines); j++ {
+				jTrimmed := strings.TrimSpace(lines[j])
+				if strings.HasPrefix(jTrimmed, "#") {
+					if subHeaders[jTrimmed] {
+						adjustedEnd = j + 1
+						inSubSection = true
+					} else {
+						break
+					}
+				} else if inSubSection {
+					adjustedEnd = j + 1
+				}
+			}
+			if adjustedEnd > sectionEnd {
+				logging.LogDebug("adjusted sectionEnd from %d to %d (skipping previously-saved sub-headers from newContent)", sectionEnd, adjustedEnd)
+				sectionEnd = adjustedEnd
+			}
 		}
 	}
+
+	// Second pass: splice new content in place of lines[sectionStart:sectionEnd].
+	var result []string
+	result = append(result, lines[:sectionStart]...)
+	pre, sec := splitPreHeader(newContent)
+	if pre != "" {
+		result = append(result, strings.Split(pre, "\n")...)
+	}
+	if sec != "" {
+		result = append(result, strings.Split(sec, "\n")...)
+	}
+	result = append(result, lines[sectionEnd:]...)
 
 	logging.LogDebug("replaceSectionInMarkdown complete: original %d lines, result %d lines", len(lines), len(result))
 	return strings.Join(result, "\n"), nil
