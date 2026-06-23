@@ -45,11 +45,13 @@
 
 /* logo */
 .layout-header .logo {
-  background: var(--primary);
-  color: var(--text);
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.layout-header .logo img {
+  height: 32px;
+  width: auto;
 }
 
 /* dashboard shortcut buttons */

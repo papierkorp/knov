@@ -24,7 +24,6 @@
 - codemirror editor - blinking Cursor wrong color
 - wiki link anchors - if a `#` is added after link use handleAPIFilesHeaders to display all available headers
 - code blocks in tables are not displayed as code
-- builtin theme - icon top left - use the favicon/logo
 
 - deployment
   - codeberg deployment pipeline?
