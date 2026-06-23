@@ -37,3 +37,8 @@
 #codemirror-editor .cm-gutter {
   background: var(--bg);
 }
+
+#codemirror-editor .cm-cursor,
+#codemirror-editor .cm-dropCursor {
+  border-left-color: var(--text, #000);
+}

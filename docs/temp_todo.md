@@ -21,7 +21,6 @@
 - rename testdata to test and add some kind of test (playwright?)
 - include the editor/static javascript per thememanager?
 - mass metadata change (e.g. change all toastui editors to codemirror)
-- codemirror editor - blinking Cursor wrong color
 - wiki link anchors - if a `#` is added after link use handleAPIFilesHeaders to display all available headers
 - code blocks in tables are not displayed as code
 
