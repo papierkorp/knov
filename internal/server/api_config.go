@@ -1038,6 +1038,11 @@ func handleAPIUpdateSpellCheck(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, "saved", "")
 }
 
+// @Summary Update wiki link cursor end setting
+// @Tags config
+// @Accept application/x-www-form-urlencoded
+// @Param wikiLinkCursorEnd formData bool true "Whether to place the cursor at the end of a wiki link after insertion"
+// @Produce json,html
 // @Router /api/config/editor/wiki-link-cursor-end [post]
 func handleAPIUpdateWikiLinkCursorEnd(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {

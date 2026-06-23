@@ -853,6 +853,26 @@ const docTemplate = `{
         },
         "/api/config/editor/wiki-link-cursor-end": {
             "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update wiki link cursor end setting",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Whether to place the cursor at the end of a wiki link after insertion",
+                        "name": "wikiLinkCursorEnd",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
                 "responses": {}
             }
         },

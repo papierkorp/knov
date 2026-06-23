@@ -26,7 +26,8 @@
 .entries-container {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  margin: 12px 0;
 }
 
 .entry-row {
@@ -35,15 +36,17 @@
   gap: 8px;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 10px;
+  border-radius: 4px;
+  padding: 4px 8px;
+  min-height: 36px;
 }
 
 .entry-controls {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  gap: 1px;
   flex-shrink: 0;
+  align-items: center;
 }
 
 .entry-content {
@@ -53,42 +56,60 @@
 
 .btn-move {
   background: none;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 3px;
   color: var(--text-secondary);
   cursor: pointer;
   padding: 2px 5px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   line-height: 1;
+  opacity: 0.45;
+  transition: opacity 0.15s, background 0.15s;
 }
 
 .btn-move:hover {
+  opacity: 1;
   background: var(--bg-secondary);
   color: var(--text);
 }
 
 .btn-remove {
   background: none;
-  border: 1px solid transparent;
+  border: none;
   border-radius: 3px;
   color: var(--text-secondary);
   cursor: pointer;
   padding: 2px 5px;
-  font-size: 0.85rem;
-  margin-top: 2px;
+  font-size: 0.75rem;
+  line-height: 1;
+  opacity: 0.35;
+  margin-left: 2px;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
 }
 
 .btn-remove:hover {
-  background: color-mix(in srgb, var(--danger, #ef4444) 15%, var(--bg));
+  opacity: 1;
   color: var(--danger, #dc2626);
-  border-color: var(--danger, #dc2626);
+  background: color-mix(in srgb, var(--danger, #ef4444) 12%, var(--bg));
 }
 
 .entry-separator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-style: italic;
-  padding: 4px 0;
+  opacity: 0.65;
+  flex: 1;
+}
+
+.entry-separator::before,
+.entry-separator::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
 }
 
 .entry-file,
@@ -100,14 +121,27 @@
 
 .entry-file label,
 .entry-title label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
   flex-shrink: 0;
-  width: 36px;
+  width: 32px;
 }
 
 .entry-file input,
 .entry-title input {
   flex: 1;
   min-width: 0;
+}
+
+.index-form-container .form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.index-form-container .form-actions + .form-actions {
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
 }

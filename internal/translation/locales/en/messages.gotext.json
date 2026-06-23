@@ -1447,11 +1447,6 @@
       "translation": ""
     },
     {
-      "id": "file not found",
-      "message": "file not found",
-      "translation": ""
-    },
-    {
       "id": "file path",
       "message": "file path",
       "translation": ""
@@ -4122,6 +4117,11 @@
       "translation": ""
     },
     {
+      "id": "When off, cursor lands before ]] (between path and brackets)",
+      "message": "When off, cursor lands before ]] (between path and brackets)",
+      "translation": ""
+    },
+    {
       "id": "which editing mode opens by default",
       "message": "which editing mode opens by default",
       "translation": ""
@@ -4159,6 +4159,11 @@
     {
       "id": "widget type",
       "message": "widget type",
+      "translation": ""
+    },
+    {
+      "id": "Wiki link autocomplete: jump cursor past closing ]]",
+      "message": "Wiki link autocomplete: jump cursor past closing ]]",
       "translation": ""
     },
     {

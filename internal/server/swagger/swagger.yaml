@@ -918,7 +918,21 @@ paths:
       - config
   /api/config/editor/wiki-link-cursor-end:
     post:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - description: Whether to place the cursor at the end of a wiki link after insertion
+        in: formData
+        name: wikiLinkCursorEnd
+        required: true
+        type: boolean
+      produces:
+      - application/json
+      - text/html
       responses: {}
+      summary: Update wiki link cursor end setting
+      tags:
+      - config
   /api/config/export:
     get:
       description: Downloads the current user settings as a JSON file
