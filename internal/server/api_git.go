@@ -60,6 +60,7 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	unfilteredCount := len(allFiles)
 	if collection != "" {
 		var filtered []git.GitHistoryFile
 		for _, f := range allFiles {
@@ -74,7 +75,7 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 		allFiles = filtered
 	}
 
-	hasMore := len(allFiles) == count
+	hasMore := unfilteredCount == count
 	html := render.RenderGitHistoryFileList(allFiles, collection, offset+count, hasMore)
 	writeResponse(w, r, allFiles, html)
 }

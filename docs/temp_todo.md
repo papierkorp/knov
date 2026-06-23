@@ -12,7 +12,6 @@
   - use both builtin and rail theme
 - translations
 - add a `create_your_own_theme.md` file
-- load recent changes per collection is not working
 
 **per ai**
 - move all scripts into files (browser inspector)
