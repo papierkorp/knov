@@ -1038,6 +1038,20 @@ func handleAPIUpdateSpellCheck(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, "saved", "")
 }
 
+// @Router /api/config/editor/wiki-link-cursor-end [post]
+func handleAPIUpdateWikiLinkCursorEnd(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"))
+		return
+	}
+	us := configmanager.GetUserSettings()
+	us.EditorSettings.WikiLinkCursorEnd = r.FormValue("wikiLinkCursorEnd") == "true"
+	configmanager.SetUserSettings(us)
+	logging.LogInfo("updated wiki link cursor end to: %t", us.EditorSettings.WikiLinkCursorEnd)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "editor setting updated"))
+	writeResponse(w, r, "saved", "")
+}
+
 // @Summary Upload custom favicon
 // @Description Uploads a custom favicon (ico, png, or svg) stored in storage/favicon
 // @Tags config

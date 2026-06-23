@@ -851,6 +851,11 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/config/editor/wiki-link-cursor-end": {
+            "post": {
+                "responses": {}
+            }
+        },
         "/api/config/export": {
             "get": {
                 "description": "Downloads the current user settings as a JSON file",

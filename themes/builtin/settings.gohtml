@@ -398,6 +398,23 @@
         <h3>{{T "All Editors"}}</h3>
 
         <div class="setting-item">
+            <form hx-post="/api/config/editor/wiki-link-cursor-end" hx-trigger="change">
+                <label class="checkbox-label">
+                    <input
+                        type="checkbox"
+                        name="wikiLinkCursorEnd"
+                        value="true"
+                        {{ if .UserSettings.EditorSettings.WikiLinkCursorEnd }}checked{{ end }}
+                        class="form-checkbox"
+                    />
+                    <span class="checkmark"></span>
+                    {{T "Wiki link autocomplete: jump cursor past closing ]]"}}
+                    <small>{{T "When off, cursor lands before ]] (between path and brackets)"}}</small>
+                </label>
+            </form>
+        </div>
+
+        <div class="setting-item">
             <form hx-post="/api/config/editor/spell-check" hx-trigger="change">
                 <label class="checkbox-label">
                     <input

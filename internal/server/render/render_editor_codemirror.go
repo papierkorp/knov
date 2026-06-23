@@ -83,7 +83,7 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 	});
 	view.contentDOM.setAttribute('spellcheck', '%s');
 
-	initWikiAutocompleteForCodeMirror(view);
+	initWikiAutocompleteForCodeMirror(view, {cursorEnd: %t});
 
 	document.querySelector('.file-form').addEventListener('submit', function() {
 		document.getElementById('editor-content').value = view.state.doc.toString();
@@ -99,7 +99,8 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		jsBool(es.CodeMirrorAutoBrackets),
 		jsBool(es.CodeMirrorHighlightSelection),
 		jsBool(es.CodeMirrorHighlightSelectionWholeWord),
-		jsBool(es.SpellCheck))
+		jsBool(es.SpellCheck),
+		es.WikiLinkCursorEnd)
 
 	return fmt.Sprintf(`
 		<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">

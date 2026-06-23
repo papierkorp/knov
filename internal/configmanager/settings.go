@@ -32,6 +32,7 @@ type EditorSettings struct {
 	CodeMirrorHighlightSelection          bool `json:"codeMirrorHighlightSelection"`
 	CodeMirrorHighlightSelectionWholeWord bool `json:"codeMirrorHighlightSelectionWholeWord"`
 	SpellCheck                            bool `json:"spellCheck"`
+	WikiLinkCursorEnd                     bool `json:"wikiLinkCursorEnd"`
 }
 
 // UserSettings contains user-specific settings stored in JSON
@@ -131,6 +132,7 @@ func InitUserSettings() {
 			CodeMirrorHighlightSelection:          true,
 			CodeMirrorHighlightSelectionWholeWord: true,
 			SpellCheck:                            false,
+			WikiLinkCursorEnd:                     false,
 		},
 	}
 

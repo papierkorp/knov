@@ -464,7 +464,7 @@ func getToastUIEditorScript(content, frontMatter string) string {
 		jsInsertMedia(),
 		jsWikiFileSelector(),
 		jsRegisterEditor(),
-		`initWikiAutocomplete(editor);`,
+		fmt.Sprintf(`initWikiAutocompleteToastUI(editor, {cursorEnd: %t});`, configmanager.GetEditorSettings().WikiLinkCursorEnd),
 		jsFormSubmit(frontMatter),
 	}
 

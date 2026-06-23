@@ -236,6 +236,7 @@ func StartServerChi() {
 			r.Post("/editor/codemirror-highlight-selection", handleAPIUpdateCodeMirrorHighlightSelection)
 			r.Post("/editor/codemirror-highlight-selection-whole-word", handleAPIUpdateCodeMirrorHighlightSelectionWholeWord)
 			r.Post("/editor/spell-check", handleAPIUpdateSpellCheck)
+			r.Post("/editor/wiki-link-cursor-end", handleAPIUpdateWikiLinkCursorEnd)
 
 			// Table display settings endpoints
 			r.Post("/table/page-size", handleAPIUpdateTablePageSize)

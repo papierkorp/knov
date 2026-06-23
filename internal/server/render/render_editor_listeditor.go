@@ -189,7 +189,7 @@ func RenderListEditor(filepath string, initialItem ...string) string {
 
 			return { addItem, addNestedItem, globalIndent, globalOutdent, globalDelete, undoDelete };
 		})();
-		initWikiAutocompleteForInputs(document.getElementById('list-editor-form'));
+		initWikiAutocompleteForInputs(document.getElementById('list-editor-form'), {cursorEnd: %t});
 	</script>
 </div>
 	`,
@@ -210,5 +210,6 @@ func RenderListEditor(filepath string, initialItem ...string) string {
 		sortableBaseJS(),
 		translation.SprintfForRequest(lang, "type here..."),
 		listItemsJSON,
-		startItemJS)
+		startItemJS,
+		configmanager.GetEditorSettings().WikiLinkCursorEnd)
 }

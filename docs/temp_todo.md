@@ -19,10 +19,11 @@
 - references - add date
 - detect if a request is already loading and block multiple requests of the same kind
 - rename testdata to test and add some kind of test (playwright?)
-- include the editor/static javascript per thememanager?
 - mass metadata change (e.g. change all toastui editors to codemirror)
-- wiki link anchors - if a `#` is added after link use handleAPIFilesHeaders to display all available headers
 - code blocks in tables are not displayed as code
+- in settings - if i change something (e.g. clicking a checkbox) its replaced with nothing.. i want to replace it with the correct input instead (so i dont have to reload)
+- style for index editor
+- wiki link for text editor?
 
 - deployment
   - codeberg deployment pipeline?
