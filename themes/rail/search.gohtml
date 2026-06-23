@@ -12,6 +12,7 @@
             hx-include="#search-titleonly, #search-history"
             name="q"
             id="search-page-input"
+            data-format="cards"
             value="{{ .SearchQuery }}"
         />
         <div class="search-options">
@@ -33,17 +34,5 @@
         {{ end }}
     </div>
 </div>
-<script>
-function updatePageSearchMode() {
-    const input = document.getElementById("search-page-input");
-    if (!input) return;
-    const titleOnly = document.getElementById("search-titleonly")?.checked;
-    const history = document.getElementById("search-history")?.checked;
-    let url = "/api/search?format=cards";
-    if (titleOnly) url += "&titleonly=true";
-    if (history) url += "&history=true";
-    input.setAttribute("hx-get", url);
-    htmx.process(input);
-}
-</script>
+<script src="/themes/{{.CurrentTheme}}/js/search-mode.js"></script>
 {{ end }}

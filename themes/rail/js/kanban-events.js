@@ -1,3 +1,4 @@
+// theme: rail
 // Lazy-loaded kanban event log panel — fetched via dynamic import() only
 // when a user actually opens the events view, so the cost is never paid
 // by users who never click the events button.

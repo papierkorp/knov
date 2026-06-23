@@ -11,6 +11,7 @@
             hx-trigger="keyup changed delay:300ms, load"
             name="q"
             id="search-page-input"
+            data-format="{{ index .ThemeSettings "searchResultsDisplay" }}"
             value="{{ .SearchQuery }}"
         />
         <div class="search-options">
@@ -32,18 +33,5 @@
         {{ end }}
     </div>
 </div>
-<script>
-function updatePageSearchMode() {
-    const input = document.getElementById("search-page-input");
-    if (!input) return;
-    const titleOnly = document.getElementById("search-titleonly")?.checked;
-    const history = document.getElementById("search-history")?.checked;
-    const format = {{ index .ThemeSettings "searchResultsDisplay" | printf "%q" }};
-    let url = "/api/search?format=" + format;
-    if (titleOnly) url += "&titleonly=true";
-    if (history) url += "&history=true";
-    input.setAttribute("hx-get", url);
-    htmx.process(input);
-}
-</script>
+<script src="/themes/{{.CurrentTheme}}/js/search-mode.js"></script>
 {{ end }}

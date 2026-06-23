@@ -1,24 +1,24 @@
 /* theme: builtin */
-@import url("style/base.css");
-@import url("style/testdata.css");
-@import url("style/codehighlight.css");
-@import url("style/global.css");
-@import url("style/tooltip.css");
-@import url("style/settings-admin.css");
-@import url("style/playground.css");
-@import url("style/fileview.css");
-@import url("style/sidebar.css");
-@import url("style/fileview_tables.css");
-@import url("style/filesoverview.css");
-@import url("style/search.css");
-@import url("style/dashboard.css");
-@import url("style/browsefiles.css");
-@import url("style/fileedit.css");
-@import url("style/browse.css");
-@import url("style/help.css");
-@import url("style/media.css");
-@import url("style/chat.css");
-@import url("style/kanban.css");
+@import url("base.css");
+@import url("testdata.css");
+@import url("codehighlight.css");
+@import url("global.css");
+@import url("tooltip.css");
+@import url("settings-admin.css");
+@import url("playground.css");
+@import url("fileview.css");
+@import url("sidebar.css");
+@import url("fileview_tables.css");
+@import url("filesoverview.css");
+@import url("search.css");
+@import url("dashboard.css");
+@import url("browsefiles.css");
+@import url("fileedit.css");
+@import url("browse.css");
+@import url("help.css");
+@import url("media.css");
+@import url("chat.css");
+@import url("kanban.css");
 
 /* color schemes */
 :root,

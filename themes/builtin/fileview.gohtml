@@ -227,12 +227,5 @@
     </article>
 </div>
 
-<script>
-function adjustFontSize(delta) {
-    const content = document.querySelector('.view-reader .file-content');
-    const currentSize = parseInt(getComputedStyle(content).fontSize);
-    const newSize = Math.max(14, Math.min(28, currentSize + delta));
-    content.style.fontSize = newSize + 'px';
-}
-</script>
+<script src="/themes/{{.CurrentTheme}}/js/fileview-reader.js"></script>
 {{end}}

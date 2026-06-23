@@ -548,11 +548,19 @@ ls -lh codemirror6-bundle.min.js
 
 ## Structure
 
-A theme lives in `themes/<your-theme-name>/` and requires:
+A theme lives in `themes/<your-theme-name>/` and follows this layout:
 
-- `theme.json` — metadata and settings schema
-- `style.css` — main stylesheet, loaded via `/themes/<name>/style.css`
-- One `.gohtml` file per template (see `ThemeTemplates` in `internal/thememanager/thememanager.go` for all required names)
+```
+themes/<name>/
+├── theme.json          # metadata and settings schema
+├── css/
+│   └── style.css       # main stylesheet — loaded via /themes/<name>/css/style.css
+├── js/
+│   └── *.js            # theme-owned scripts
+└── *.gohtml            # one file per required template
+```
+
+The `css/` and `js/` subdirectories are conventions — all files anywhere under `themes/<name>/` are served automatically. There is no registration step.
 
 ## theme.json
 
@@ -567,6 +575,51 @@ Setting types supported: `boolean`, `select` (with `options`), `textarea`, `numb
 - Static editor assets (markdown editor, list editor, filter editor CSS/JS, etc.) are **injected automatically** before `</head>` and `</body>` — do not add them manually
 - Template data structs are defined in `internal/server/thememanager/template_data.go` — reference these to know what fields are available per page
 - Translation is available via the `T` template function
+
+### Loading theme scripts
+
+Use `{{.CurrentTheme}}` in `<script src>` and `<link href>` paths so the correct file is served regardless of the active theme:
+
+```html
+<link href="/themes/{{.CurrentTheme}}/css/style.css" rel="stylesheet"/>
+<script src="/themes/{{.CurrentTheme}}/js/my-script.js"></script>
+```
+
+### Passing Go template data to JS files
+
+External JS files cannot contain Go template directives. When a script needs server-side data, pass it through the HTML before loading the script.
+
+**Simple values — use `data-*` attributes:**
+
+```html
+<input id="search-page-input" data-format="{{ index .ThemeSettings "searchResultsDisplay" }}">
+<script src="/themes/{{.CurrentTheme}}/js/search-mode.js"></script>
+```
+
+```js
+// search-mode.js
+var format = document.getElementById('search-page-input').dataset.format || 'cards';
+```
+
+**Complex config — use an inline config object:**
+
+```html
+<script>
+window.MY_CONFIG = {
+    collection: '{{.Collection}}',
+    label: '{{T "some label"}}'
+};
+</script>
+<script src="/themes/{{.CurrentTheme}}/js/my-feature.js"></script>
+```
+
+```js
+// my-feature.js
+var cfg = window.MY_CONFIG || {};
+var collection = cfg.collection || '';
+```
+
+Keep the inline block to pure data — no logic. All behaviour goes in the external file.
 
 ## Bundled Libraries
 
@@ -588,7 +641,8 @@ The thememanager injects these before `</head>` and `</body>` on every page. The
 | tableeditor.css | `/static/css/tableeditor.css` | Table editor styles |
 | filtereditor.css | `/static/css/filtereditor.css` | Filter editor styles |
 | kanban.css | `/static/css/kanban.css` | Kanban board styles |
-| wiki-autocomplete.js | `/static/wiki-autocomplete.js` | Wiki link autocomplete |
+| notify-toast.js | `/static/notify-toast.js` | Toast notification display — required because the server emits `HX-Trigger: notify` headers on every action. The thememanager also injects the `#component-notify` container div with a `data-duration` attribute; do not add either manually. |
+| wiki-autocomplete.js | `/static/wiki-autocomplete.js` | Wiki link autocomplete in editors |
 | todo-state.js | `/static/todo-state.js` | Todo checkbox state persistence |
 | conflict-diff.js | `/static/conflict-diff.js` | Conflict diff visualisation |
 
@@ -607,6 +661,20 @@ These are loaded by the built-in themes and available for use. If your theme nee
 | SortableJS 1.15.0 | `/static/sortable-1.15.0.min.js` | — | Drag-and-drop sorting (used by list/kanban editors) |
 
 htmx is effectively required. All others are only needed if your theme renders the corresponding editor or component.
+
+### Theme-owned scripts
+
+Each built-in theme ships its own JS files alongside the templates. These are **not** injected automatically — each theme owns and loads them explicitly. When building a custom theme, write your own versions (or copy and adapt the built-in ones as a starting point).
+
+| Script | Purpose | Where to load | Notes |
+|---|---|---|---|
+| `copy-code.js` | Adds a "copy" button to every `<pre>` block; re-runs on `htmx:afterSettle` | `base.gohtml` | |
+| `chat-bulk.js` | Bulk select/delete/move for chat messages | `base.gohtml` if the theme has a global chat panel; `chat.gohtml` otherwise | Exposes `chatBulkSubmit`, `chatBulkDelete` etc. as globals |
+| `search-mode.js` | `updatePageSearchMode()` — rebuilds the `hx-get` URL when search options change | `search.gohtml` | Requires `data-format` attribute on `#search-page-input` |
+| `history-search.js` | `updateLatestChangesSearch(query)` — debounced search on the history/latest-changes page | `history.gohtml` | Requires `data-collection` attribute on `#latestchanges-results` |
+| `fileview-reader.js` | `adjustFontSize(delta)` — font size control in reader mode | `fileview.gohtml` reader section only | |
+| `kanban.js` | Full kanban drag-and-drop and events panel | `kanban.gohtml` | Requires `window.KANBAN_CONFIG` set inline before this script; see built-in `kanban.gohtml` for the config shape |
+| `nav-setup.js` *(builtin only)* | Wires edit/rename/delete modal actions to the current URL; positions popovers; `openNotificationsPopover()` | end of `base.gohtml` `edit` template block | Reads `window.location.pathname` — no template data needed |
 
 ## CSS Conventions
 

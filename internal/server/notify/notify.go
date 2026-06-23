@@ -62,51 +62,11 @@ func SetFlash(level Level, message string) {
 	}
 }
 
-// RenderJS returns the self-contained HTML snippet (container div + script)
+// RenderJS returns the HTML snippet (container div + script src)
 // injected into every page before </body> by thememanager.
 // duration is the toast display time in milliseconds (KNOV_NOTIFY_DURATION).
 func RenderJS(duration int) string {
-	return fmt.Sprintf(`    <div id="component-notify"></div>
-    <script>
-    (function () {
-        var container = document.getElementById('component-notify');
-        var DURATION = %d;
-
-        function showToast(type, message) {
-            var toast = document.createElement('div');
-            toast.className = 'notify-toast notify-' + type;
-            toast.textContent = message;
-            toast.addEventListener('click', function () { dismiss(toast); });
-            container.appendChild(toast);
-            setTimeout(function () { dismiss(toast); }, DURATION);
-        }
-
-        function dismiss(toast) {
-            toast.style.animation = 'notify-out 0.2s ease forwards';
-            setTimeout(function () {
-                if (toast.parentNode) { toast.parentNode.removeChild(toast); }
-            }, 200);
-        }
-
-        // in-page toasts fired via HX-Trigger from SetHeader
-        document.body.addEventListener('notify', function (e) {
-            var detail = e.detail;
-            if (detail && detail.type && detail.message) {
-                showToast(detail.type, detail.message);
-            }
-        });
-
-        // cross-navigation flash: fetch once on page load
-        // no guard needed — script tags do not re-execute on htmx swaps
-        fetch('/api/notifications/flash')
-            .then(function (r) { return r.ok ? r.json() : null; })
-            .then(function (data) {
-                if (data && data.level && data.message) {
-                    showToast(data.level, data.message);
-                }
-            })
-            .catch(function () {});
-    })();
-    </script>
+	return fmt.Sprintf(`    <div id="component-notify" data-duration="%d"></div>
+    <script src="/static/notify-toast.js"></script>
 `, duration)
 }

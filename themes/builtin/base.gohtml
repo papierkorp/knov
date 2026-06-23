@@ -5,7 +5,7 @@
     <title>{{ .Title }}</title>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link href="/themes/{{.CurrentTheme}}/style.css" rel="stylesheet" />
+    <link href="/themes/{{.CurrentTheme}}/css/style.css" rel="stylesheet" />
     <link href="/static/css/custom.css" rel="stylesheet" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
     <link rel="stylesheet" href="/static/font-awesome-7.0.1-all.min.css"/>
@@ -31,33 +31,7 @@
     <script src="/static/codemirror6-bundle.min.js"></script>
     <script src="/static/sortable-1.15.0.min.js"></script>
     <script src="/static/handsontable-16.2.0.full.min.js"></script>
-    <script>
-    // copy button for code blocks
-    (function () {
-        function addCopyButtons(root) {
-            root.querySelectorAll('pre:not([data-copy-ready]):not(.CodeMirror-line)').forEach(function (pre) {
-                pre.setAttribute('data-copy-ready', '1');
-                var btn = document.createElement('button');
-                btn.className = 'code-copy-btn';
-                btn.textContent = 'copy';
-                btn.addEventListener('click', function () {
-                    var code = pre.querySelector('code');
-                    navigator.clipboard.writeText(code ? code.innerText : pre.innerText).then(function () {
-                        btn.textContent = 'copied!';
-                        setTimeout(function () { btn.textContent = 'copy'; }, 1500);
-                    });
-                });
-                pre.appendChild(btn);
-            });
-        }
-        // initial pass
-        addCopyButtons(document);
-        // re-run after htmx swaps new content in
-        document.addEventListener('htmx:afterSettle', function (e) {
-            addCopyButtons(e.target);
-        });
-    })();
-    </script>
+    <script src="/themes/{{.CurrentTheme}}/js/copy-code.js"></script>
 </body>
 </html>
 
@@ -145,18 +119,6 @@
         </div>
         <div id="notifications-popover-content"><div id="notifications-list-target"></div></div>
     </div>
-    <script>
-    function openNotificationsPopover() {
-        var pop = document.getElementById('notifications-popover');
-        var content = document.getElementById('notifications-popover-content');
-        pop.showPopover();
-        htmx.ajax('GET', '/api/notifications', {
-            target: content,
-            swap: 'innerHTML',
-            headers: { 'Accept': 'text/html' }
-        });
-    }
-    </script>
 </header>
 {{ template "edit" . }}
 {{ end }}
@@ -218,93 +180,5 @@
         </form>
     </div>
 </div>
-<script>
-const path = window.location.pathname;
-
-// Handle dashboard edit
-const dashMatch = path.match(/\/dashboard\/([^\/]+)/);
-if (dashMatch) {
-    const id = dashMatch[1];
-    document.getElementById('edit-link').href = `/dashboard/edit/${id}`;
-    document.getElementById('rename-form').setAttribute('hx-post', `/api/dashboards/${id}/rename`);
-    document.getElementById('delete-form').setAttribute('hx-delete', `/api/dashboards/${id}`);
-}
-
-// Handle file edit
-const fileMatch = path.match(/\/files\/(.+)/);
-if (fileMatch && !path.includes('/edit/')) {
-    const filepath = fileMatch[1];
-    document.getElementById('edit-link').href = `/files/edit/${filepath}`;
-    document.getElementById('history-link').href = `/files/history/${filepath}`;
-    document.getElementById('rename-form').setAttribute('hx-post', `/api/files/rename/${filepath}`);
-    document.getElementById('delete-form').setAttribute('hx-delete', `/api/files/delete/${filepath}`);
-    document.getElementById('rename-input').value = filepath; // populate with full filepath for directory moves
-
-    const rebuildBtn = document.getElementById('rebuild-metadata');
-    rebuildBtn.setAttribute('hx-post', `/api/metadata/rebuild/${filepath}`);
-    rebuildBtn.setAttribute('hx-target', '#rebuild-metadata-result');
-
-    const refFilepath = document.getElementById('reference-filepath');
-    if (refFilepath) refFilepath.value = filepath;
-
-    // reload references list when modal is opened
-    const referencesModal = document.getElementById('references-modal');
-    if (referencesModal) {
-        referencesModal.addEventListener('beforetoggle', (e) => {
-            if (e.newState === 'open') {
-                document.body.dispatchEvent(new Event('referencesOpen'));
-            }
-        });
-    }
-
-
-    document.getElementById('export-markdown-link').href = `/api/files/export/markdown?filepath=${filepath}`;
-
-}
-
-// Handle filter view/edit
-const filterMatch = path.match(/^\/filters\/(?!new$|edit\/)(.+)/);
-if (filterMatch) {
-    const filterId = filterMatch[1];
-    document.getElementById('edit-link').href = `/filters/edit/${filterId}`;
-    document.getElementById('history-link').removeAttribute('href');
-    document.getElementById('delete-form').setAttribute('hx-delete', `/api/filters/${filterId}`);
-}
-
-// Position popovers relative to their trigger buttons
-function positionPopover(popoverId) {
-    const trigger = document.querySelector(`[popovertarget="${popoverId}"]`);
-    const popover = document.getElementById(popoverId);
-
-    if (!trigger || !popover) return;
-
-    popover.addEventListener('beforetoggle', (event) => {
-        if (event.newState === 'open') {
-            requestAnimationFrame(() => {
-                const triggerRect = trigger.getBoundingClientRect();
-                const popoverRect = popover.getBoundingClientRect();
-
-                // Position below and align to right edge of trigger
-                const left = triggerRect.right - popoverRect.width;
-                const top = triggerRect.bottom + 8;
-
-                // Keep within viewport
-                const maxLeft = window.innerWidth - popoverRect.width - 8;
-                const maxTop = window.innerHeight - popoverRect.height - 8;
-
-                popover.style.left = Math.max(8, Math.min(left, maxLeft)) + 'px';
-                popover.style.top = Math.max(8, Math.min(top, maxTop)) + 'px';
-            });
-        }
-    });
-}
-
-// Setup positioning for all dropdowns
-document.addEventListener('DOMContentLoaded', () => {
-    positionPopover('add-dropdown');
-    positionPopover('edit-dropdown-content');
-    positionPopover('menu-dropdown');
-    positionPopover('references-modal');
-});
-</script>
+<script src="/themes/{{.CurrentTheme}}/js/nav-setup.js"></script>
 {{ end }}
