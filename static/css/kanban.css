@@ -162,16 +162,16 @@
 #kanban-archive-zone {
   display: none;
   position: fixed;
-  bottom: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 2rem;
-  border: 2px dashed var(--danger, #dc2626);
-  border-radius: var(--radius, 4px);
+  padding: 1rem 2rem;
+  border-top: 2px dashed var(--danger, #dc2626);
+  border-radius: 0;
   background: var(--surface, #fff);
   color: var(--danger, #dc2626);
   font-size: 0.875rem;
