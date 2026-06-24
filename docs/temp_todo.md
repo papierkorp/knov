@@ -23,6 +23,7 @@
 - wiki link for text editor?
 - additional section edit button on the bottom right
 - add a new setting/env for the default editor
+- version build time = 2 hours wrong, e.g: Build time	2026-06-24 13:31 UTC, my local time: 15:31
 
 - deployment
   - codeberg deployment pipeline?
