@@ -454,10 +454,29 @@ func jsRegisterEditor() string {
 		window.currentEditor = editor;`
 }
 
+// jsPreventEmptyUndo blocks Ctrl+Z from undoing past the initially loaded content.
+// ToastUI 3.x calls setMarkdown(initialValue) after creating the editor with an empty CM6
+// state, so the empty document becomes the undo baseline. We intercept keydown in the
+// capture phase (before CM6 sees it) and suppress the undo when the content is already
+// at the initial loaded state.
+func jsPreventEmptyUndo() string {
+	return `
+		var initialMarkdown = editor.getMarkdown();
+		document.querySelector('#toastui-editor').addEventListener('keydown', function(e) {
+			if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+				if (editor.getMarkdown() === initialMarkdown) {
+					e.stopPropagation();
+					e.preventDefault();
+				}
+			}
+		}, true);`
+}
+
 // getToastUIEditorScript assembles all JS helpers into a single <script> block.
 func getToastUIEditorScript(content, frontMatter string) string {
 	parts := []string{
 		jsEditorInit(content),
+		jsPreventEmptyUndo(),
 		jsFileInputAcceptAll(),
 		jsDragAndDrop(),
 		jsUploadMediaBlob(),
