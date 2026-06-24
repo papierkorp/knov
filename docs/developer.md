@@ -8,6 +8,13 @@
 - Swag CLI: `go install github.com/swaggo/swag/cmd/swag@latest`
 - gotext: `go install golang.org/x/text/cmd/gotext@latest`
 
+## Updating the Go Version
+
+1. Check the official Go release notes before bumping — they list any breaking changes.
+2. Install the new Go version and set it as active.
+3. Update `go.mod`: change the `go` directive to the new version.
+4. Run `go mod tidy` — this syncs toolchain requirements and may add/update a `toolchain` line.
+
 ## Quick Start
 
 Clone and setup:
@@ -652,7 +659,7 @@ These are loaded by the built-in themes and available for use. If your theme nee
 
 | Library | JS | CSS | Purpose |
 |---|---|---|---|
-| htmx 2 | `/static/htmx.min.js` | — | AJAX/hypermedia — required for all dynamic content |
+| htmx 2.0.10 | `/static/htmx-2.0.10.min.js` | — | AJAX/hypermedia — required for all dynamic content |
 | Font Awesome 7 | — | `/static/font-awesome-7.0.1-all.min.css` | Icon set (solid, regular, brands) |
 | ToastUI Editor 3.2.2 | `/static/toastui-editor-3.2.2.min.js` | `/static/toastui-editor-3.2.2.min.css` | Markdown WYSIWYG editor (used by the default markdown editor) |
 | CodeMirror 5.6.65.7 | `/static/codemirror-5.6.65.7.min.js` | `/static/codemirror-5.6.65.7.min.css` | Code/text editor (used by the codemirror editor) |
