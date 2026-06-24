@@ -754,42 +754,39 @@ I added filter tests for these cases:
 
 # Versioning
 
-Version and build time are injected at link time via `-ldflags` — no file is written, the values are burned directly into the binary.
+Version format: `<year>-<commitcount>-<hash>` — e.g. `2026-142-a3f4b2`.
 
-The source of truth is `internal/version/version.go`:
+No version file to maintain. Everything is derived from git at build time (prod) or startup (dev).
 
-```go
-var Version   = "dev"
-var BuildTime = "unknown"
-```
-
-These defaults are used by `make dev` (`go run`, no ldflags). `make prod` overwrites them:
+**prod** (`make prod`) — injected via `-ldflags`, burned into the binary:
 
 ```makefile
-VERSION    := $(shell git describe --tags --always --dirty)
+VERSION    := $(shell date -u '+%Y')-$(shell git rev-list --count HEAD)-$(shell git rev-parse --short HEAD)
 BUILD_TIME := $(shell date -u '+%Y-%m-%d %H:%M')
 LDFLAGS    := -ldflags "-X 'knov/internal/version.Version=$(VERSION)' \
                          -X 'knov/internal/version.BuildTime=$(BUILD_TIME) UTC'"
 ```
 
-**Output depending on context**
+**dev** (`make dev`, `go run`) — computed at startup in `internal/version/version.go` via `init()`, appends `-dev`:
 
-| Situation | Example value |
-|---|---|
-| `make dev` | `dev` / `unknown` |
-| `make prod`, no tags yet | `abc1234` / `2026-06-11 14:32 UTC` |
-| `make prod`, after `git tag v0.2.0` | `v0.2.0` / `2026-06-11 14:32 UTC` |
-| `make prod`, commits after last tag | `v0.2.0-3-gabc1234` / `2026-06-11 14:32 UTC` |
-| `make prod`, uncommitted changes | `v0.2.0-dirty` / `2026-06-11 14:32 UTC` |
+```
+2026-142-a3f4b2-dev
+```
 
-Both values are available in every template via `.Version` and `.BuildTime` (added to `BaseTemplateData`). They are displayed at the top of the Environment Info section on the settings page.
+| Situation | Version | Build time |
+|---|---|---|
+| `make prod` | `2026-142-a3f4b2` | build time |
+| `make dev` / `go run` | `2026-142-a3f4b2-dev` | startup time |
+
+Both values are available at `/system/version` and in every template via `.Version` and `.BuildTime`.
 
 **Creating a release**
 
+Tag the commit you want to release, then create a release on Codeberg/GitHub from that tag:
+
 ```bash
-git tag v0.2.0
-git push --tags
-# CI runs make prod → builds knov-v0.2.0-linux and knov-v0.2.0-windows.exe
+git tag 2026-142-a3f4b2   # use the version string shown on /system/version
+git push origin 2026-142-a3f4b2
 ```
 
 # Changelog

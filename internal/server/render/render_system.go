@@ -2,8 +2,10 @@ package render
 
 import (
 	"embed"
+	"fmt"
 	"html/template"
 	"net/http"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -11,6 +13,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/thememanager"
+	"knov/internal/version"
 )
 
 var docsFiles embed.FS
@@ -180,5 +183,32 @@ func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
 	data.SystemPage = true
 	if err := tm.Render(w, "fileview", data); err != nil {
 		logging.LogError("failed to render changelog page: %v", err)
+	}
+}
+
+func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
+	row := func(label, value string) string {
+		return fmt.Sprintf(`<tr><td class="version-label">%s</td><td class="version-value">%s</td></tr>`,
+			template.HTMLEscapeString(label), template.HTMLEscapeString(value))
+	}
+
+	content := `<style>
+.version-table { border-collapse: collapse; font-size: .9rem; min-width: 320px; }
+.version-table td { padding: .45rem .75rem; border-bottom: 1px solid var(--border-color, #e5e5e5); vertical-align: top; }
+.version-label { font-weight: 600; white-space: nowrap; width: 160px; }
+.version-value { font-family: monospace; }
+.version-changelog-link { display: inline-block; margin-top: 1.25rem; font-size: .875rem; }
+</style>` +
+		`<table class="version-table"><tbody>` +
+		row("Version", version.Version) +
+		row("Build time", version.BuildTime) +
+		row("Go version", runtime.Version()) +
+		row("OS / Arch", runtime.GOOS+"/"+runtime.GOARCH) +
+		`</tbody></table>` +
+		`<a class="version-changelog-link" href="/system/changelog">Release notes / Changelog &rarr;</a>`
+
+	tm := thememanager.GetThemeManager()
+	if err := tm.RenderSystemPage(w, "Version", template.HTML(content)); err != nil {
+		logging.LogError("failed to render version page: %v", err)
 	}
 }

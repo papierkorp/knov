@@ -22,8 +22,6 @@
 - code blocks in tables are not displayed as code
 - wiki link for text editor?
 - additional section edit button on the bottom right
-- add a /system/version page - which displays all the neccessary build/version infos (with a link to the releasenotes..)
-- change version to: <year>.<major>.<mino>-<commitsnumber>-<commit_hash>
 - add a new setting/env for the default editor
 
 - deployment

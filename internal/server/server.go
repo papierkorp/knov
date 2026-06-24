@@ -61,6 +61,7 @@ func StartServerChi() {
 	r.Get("/home", handleHome)
 	r.Get("/system/changelog", render.HandleSystemChangelog)
 	r.Get("/system/logs", render.HandleSystemLogs)
+	r.Get("/system/version", render.HandleSystemVersion)
 	r.Get("/settings", handleSettings)
 	r.Get("/admin", handleAdmin)
 	r.Get("/playground", handlePlayground)

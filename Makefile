@@ -1,6 +1,6 @@
 # Variables
 APP_NAME  := knov
-VERSION   := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+VERSION   := $(shell date -u '+%Y')-$(shell git rev-list --count HEAD)-$(shell git rev-parse --short HEAD)
 BUILD_TIME := $(shell date -u '+%Y-%m-%d %H:%M')
 LDFLAGS   := -ldflags "-X 'knov/internal/version.Version=$(VERSION)' -X 'knov/internal/version.BuildTime=$(BUILD_TIME) UTC'"
 

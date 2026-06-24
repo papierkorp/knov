@@ -7,6 +7,11 @@
       "translation": ""
     },
     {
+      "id": "Action",
+      "message": "Action",
+      "translation": ""
+    },
+    {
       "id": "Actual Files",
       "message": "Actual Files",
       "translation": ""
@@ -54,6 +59,11 @@
     {
       "id": "add separator",
       "message": "add separator",
+      "translation": ""
+    },
+    {
+      "id": "add tag",
+      "message": "add tag",
       "translation": ""
     },
     {
@@ -139,6 +149,21 @@
     {
       "id": "apply",
       "message": "apply",
+      "translation": ""
+    },
+    {
+      "id": "Apply",
+      "message": "Apply",
+      "translation": ""
+    },
+    {
+      "id": "apply a metadata change to all files matching a filter",
+      "message": "apply a metadata change to all files matching a filter",
+      "translation": ""
+    },
+    {
+      "id": "Apply bulk metadata change? This cannot be undone.",
+      "message": "Apply bulk metadata change? This cannot be undone.",
       "translation": ""
     },
     {
@@ -259,6 +284,11 @@
     {
       "id": "Build Time",
       "message": "Build Time",
+      "translation": ""
+    },
+    {
+      "id": "Bulk Metadata Update",
+      "message": "Bulk Metadata Update",
       "translation": ""
     },
     {
@@ -1387,6 +1417,11 @@
       "translation": ""
     },
     {
+      "id": "Field",
+      "message": "Field",
+      "translation": ""
+    },
+    {
       "id": "file",
       "message": "file",
       "translation": ""
@@ -1512,8 +1547,18 @@
       "translation": ""
     },
     {
+      "id": "files updated",
+      "message": "files updated",
+      "translation": ""
+    },
+    {
       "id": "Files with",
       "message": "Files with",
+      "translation": ""
+    },
+    {
+      "id": "files would be updated",
+      "message": "files would be updated",
       "translation": ""
     },
     {
@@ -2997,6 +3042,11 @@
       "translation": ""
     },
     {
+      "id": "Operator",
+      "message": "Operator",
+      "translation": ""
+    },
+    {
       "id": "optional",
       "message": "optional",
       "translation": ""
@@ -3090,6 +3140,11 @@
       "id": "Playground",
       "message": "Playground",
       "translation": "Spielwiese"
+    },
+    {
+      "id": "Preview",
+      "message": "Preview",
+      "translation": ""
     },
     {
       "id": "Preview layout",
@@ -3219,6 +3274,11 @@
     {
       "id": "remove custom favicon and revert to default?",
       "message": "remove custom favicon and revert to default?",
+      "translation": ""
+    },
+    {
+      "id": "remove tag",
+      "message": "remove tag",
       "translation": ""
     },
     {
@@ -3507,6 +3567,11 @@
       "translation": ""
     },
     {
+      "id": "set editor",
+      "message": "set editor",
+      "translation": ""
+    },
+    {
       "id": "Set Remote Repository",
       "message": "Set Remote Repository",
       "translation": ""
@@ -3732,6 +3797,11 @@
       "translation": ""
     },
     {
+      "id": "tag name",
+      "message": "tag name",
+      "translation": ""
+    },
+    {
       "id": "tags",
       "message": "tags",
       "translation": ""
@@ -3952,6 +4022,11 @@
       "translation": ""
     },
     {
+      "id": "Update",
+      "message": "Update",
+      "translation": ""
+    },
+    {
       "id": "Update your dashboard configuration",
       "message": "Update your dashboard configuration",
       "translation": ""
@@ -4019,6 +4094,11 @@
     {
       "id": "value",
       "message": "value",
+      "translation": ""
+    },
+    {
+      "id": "Value",
+      "message": "Value",
       "translation": ""
     },
     {
