@@ -21,7 +21,6 @@
 - rename testdata to test and add some kind of test (playwright?)
 - mass metadata change (e.g. change all toastui editors to codemirror)
 - code blocks in tables are not displayed as code
-- in settings - if i change something (e.g. clicking a checkbox) its replaced with nothing.. i want to replace it with the correct input instead (so i dont have to reload)
 - wiki link for text editor?
 - additional section edit button on the bottom right
 - bug: if i go into section edit and press `ctrl + z` its empty

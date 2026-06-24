@@ -18,7 +18,7 @@
 <section class="settings-section">
     <h2>{{T "General Settings"}}</h2>
     <div class="setting-item">
-        <form hx-post="/api/config/language" hx-trigger="change">
+        <form hx-post="/api/config/language" hx-trigger="change" hx-swap="none">
             <label for="language">
                 {{T "Select Language"}}
                 <select
@@ -36,7 +36,7 @@
     </div>
 
     <div class="setting-item">
-        <form hx-post="/api/config/date-format" hx-trigger="change">
+        <form hx-post="/api/config/date-format" hx-trigger="change" hx-swap="none">
             <label for="dateFormat">
                 {{T "Date Format"}}
                 <select name="dateFormat" id="dateFormat" class="form-select">
@@ -103,7 +103,7 @@
         <h3>{{T "Files"}}</h3>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/show-hidden" hx-trigger="change">
+            <form hx-post="/api/config/file-types/show-hidden" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="showHiddenFiles" value="true" {{ if .AppConfig.ShowHiddenFiles }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -201,7 +201,7 @@
         <h3>{{T "Markdown Editor (ToastUI)"}}</h3>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/toastui-view" hx-trigger="change">
+            <form hx-post="/api/config/editor/toastui-view" hx-trigger="change" hx-swap="none">
                 <label for="toastuiInitialView">
                     {{T "Default view"}}
                     <select name="toastuiInitialView" id="toastuiInitialView" class="form-select">
@@ -214,7 +214,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/toastui-preview" hx-trigger="change">
+            <form hx-post="/api/config/editor/toastui-preview" hx-trigger="change" hx-swap="none">
                 <label for="toastuiPreviewStyle">
                     {{T "Preview layout"}}
                     <select name="toastuiPreviewStyle" id="toastuiPreviewStyle" class="form-select">
@@ -227,7 +227,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/toastui-toolbar" hx-trigger="change">
+            <form hx-post="/api/config/editor/toastui-toolbar" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="toastuiShowToolbar" value="true"
                         {{ if .UserSettings.EditorSettings.ToastuiShowToolbar }}checked{{ end }}
@@ -240,7 +240,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/toastui-modeswitch" hx-trigger="change">
+            <form hx-post="/api/config/editor/toastui-modeswitch" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="toastuiShowModeSwitch" value="true"
                         {{ if .UserSettings.EditorSettings.ToastuiShowModeSwitch }}checked{{ end }}
@@ -257,7 +257,7 @@
         <h3>{{T "Code / Text Editor (CodeMirror)"}}</h3>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/vim-mode" hx-trigger="change">
+            <form hx-post="/api/config/editor/vim-mode" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input
                         type="checkbox"
@@ -274,7 +274,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/codemirror-line-numbers" hx-trigger="change">
+            <form hx-post="/api/config/editor/codemirror-line-numbers" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input
                         type="checkbox"
@@ -291,7 +291,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/codemirror-relative-line-numbers" hx-trigger="change">
+            <form hx-post="/api/config/editor/codemirror-relative-line-numbers" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input
                         type="checkbox"
@@ -308,7 +308,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/codemirror-fold-gutter" hx-trigger="change">
+            <form hx-post="/api/config/editor/codemirror-fold-gutter" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input
                         type="checkbox"
@@ -325,7 +325,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/codemirror-bracket-matching" hx-trigger="change">
+            <form hx-post="/api/config/editor/codemirror-bracket-matching" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input
                         type="checkbox"
@@ -342,7 +342,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/codemirror-auto-brackets" hx-trigger="change">
+            <form hx-post="/api/config/editor/codemirror-auto-brackets" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input
                         type="checkbox"
@@ -359,7 +359,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/codemirror-highlight-selection" hx-trigger="change">
+            <form hx-post="/api/config/editor/codemirror-highlight-selection" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input
                         type="checkbox"
@@ -376,7 +376,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/codemirror-highlight-selection-whole-word" hx-trigger="change">
+            <form hx-post="/api/config/editor/codemirror-highlight-selection-whole-word" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input
                         type="checkbox"
@@ -398,7 +398,7 @@
         <h3>{{T "All Editors"}}</h3>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/wiki-link-cursor-end" hx-trigger="change">
+            <form hx-post="/api/config/editor/wiki-link-cursor-end" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input
                         type="checkbox"
@@ -415,7 +415,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/editor/spell-check" hx-trigger="change">
+            <form hx-post="/api/config/editor/spell-check" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input
                         type="checkbox"
@@ -436,7 +436,7 @@
         <h3>{{T "Section Editing &amp; Display"}}</h3>
 
         <div class="setting-item">
-            <form hx-post="/api/config/section-edit-subheaders" hx-trigger="change">
+            <form hx-post="/api/config/section-edit-subheaders" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input
                         type="checkbox"
@@ -453,7 +453,7 @@
             </form>
         </div>
         <div class="setting-item">
-            <form hx-post="/api/config/code-block-wrap" hx-trigger="change">
+            <form hx-post="/api/config/code-block-wrap" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input
                         type="checkbox"
@@ -476,7 +476,7 @@
         <p class="section-description">{{T "Use dedicated file extensions instead of .md for these editor types"}}</p>
 
         <div class="setting-item">
-            <form hx-post="/api/config/extensions/todo" hx-trigger="change">
+            <form hx-post="/api/config/extensions/todo" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="useExtensionTodo" value="true" {{ if .AppConfig.UseExtensionTodo }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -487,7 +487,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/extensions/list" hx-trigger="change">
+            <form hx-post="/api/config/extensions/list" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="useExtensionList" value="true" {{ if .AppConfig.UseExtensionList }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -498,7 +498,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/extensions/index" hx-trigger="change">
+            <form hx-post="/api/config/extensions/index" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="useExtensionIndex" value="true" {{ if .AppConfig.UseExtensionIndex }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -515,7 +515,7 @@
 <section class="settings-section">
     <h2>{{T "Table Settings"}}</h2>
     <div class="setting-item">
-        <form hx-post="/api/config/table/page-size" hx-trigger="change delay:500ms">
+        <form hx-post="/api/config/table/page-size" hx-trigger="change delay:500ms" hx-swap="none">
             <label for="tablePageSize">
                 {{T "Rows per page"}}
                 <input type="number" name="pageSize" id="tablePageSize"
@@ -526,7 +526,7 @@
         </form>
     </div>
     <div class="setting-item">
-        <form hx-post="/api/config/table/show-search" hx-trigger="change">
+        <form hx-post="/api/config/table/show-search" hx-trigger="change" hx-swap="none">
             <label class="checkbox-label">
                 <input type="checkbox" name="showSearch" value="true"
                     {{ if .UserSettings.TableSettings.ShowSearch }}checked{{ end }}
@@ -538,7 +538,7 @@
         </form>
     </div>
     <div class="setting-item">
-        <form hx-post="/api/config/table/show-paging" hx-trigger="change">
+        <form hx-post="/api/config/table/show-paging" hx-trigger="change" hx-swap="none">
             <label class="checkbox-label">
                 <input type="checkbox" name="showPaging" value="true"
                     {{ if .UserSettings.TableSettings.ShowPaging }}checked{{ end }}
@@ -550,7 +550,7 @@
         </form>
     </div>
     <div class="setting-item">
-        <form hx-post="/api/config/table/show-info" hx-trigger="change">
+        <form hx-post="/api/config/table/show-info" hx-trigger="change" hx-swap="none">
             <label class="checkbox-label">
                 <input type="checkbox" name="showInfo" value="true"
                     {{ if .UserSettings.TableSettings.ShowInfo }}checked{{ end }}
@@ -569,7 +569,7 @@
     <h2>{{T "Media Upload Settings"}}</h2>
 
     <div class="setting-item">
-        <form hx-post="/api/config/media/upload-size" hx-trigger="change delay:500ms">
+        <form hx-post="/api/config/media/upload-size" hx-trigger="change delay:500ms" hx-swap="none">
             <label for="maxUploadSizeMB">
                 {{T "Max Upload Size (MB)"}}
                 <input type="number" name="maxUploadSizeMB" id="maxUploadSizeMB"
@@ -581,7 +581,7 @@
     </div>
 
     <div class="setting-item">
-        <form hx-post="/api/config/media/mime-types" hx-trigger="change delay:1s">
+        <form hx-post="/api/config/media/mime-types" hx-trigger="change delay:1s" hx-swap="none">
             <label for="allowedMimeTypes">
                 {{T "Allowed MIME Types"}}
                 <textarea name="allowedMimeTypes" id="allowedMimeTypes" rows="3" class="form-textarea" placeholder="image/*, application/pdf, video/mp4">{{range $index, $mimeType := .UserSettings.MediaSettings.AllowedMimeTypes}}{{if $index}}, {{end}}{{$mimeType}}{{end}}</textarea>
@@ -593,7 +593,7 @@
     <h3>{{T "Preview Settings"}}</h3>
 
     <div class="setting-item">
-        <form hx-post="/api/config/media/enable-previews" hx-trigger="change">
+        <form hx-post="/api/config/media/enable-previews" hx-trigger="change" hx-swap="none">
             <label class="checkbox-label">
                 <input
                     type="checkbox"
@@ -611,7 +611,7 @@
     </div>
 
     <div class="setting-item">
-        <form hx-post="/api/config/media/default-preview-size" hx-trigger="change delay:500ms">
+        <form hx-post="/api/config/media/default-preview-size" hx-trigger="change delay:500ms" hx-swap="none">
             <label for="defaultPreviewSize">
                 {{T "Default Preview Size (px)"}}
                 <input type="number" name="defaultPreviewSize" id="defaultPreviewSize"
@@ -623,7 +623,7 @@
     </div>
 
     <div class="setting-item">
-        <form hx-post="/api/config/media/display-mode" hx-trigger="change">
+        <form hx-post="/api/config/media/display-mode" hx-trigger="change" hx-swap="none">
             <label for="displayMode">
                 {{T "Display Mode"}}
                 <select name="displayMode" id="displayMode" class="form-select">
@@ -638,7 +638,7 @@
     </div>
 
     <div class="setting-item">
-        <form hx-post="/api/config/media/border-style" hx-trigger="change">
+        <form hx-post="/api/config/media/border-style" hx-trigger="change" hx-swap="none">
             <label for="borderStyle">
                 {{T "Border Style"}}
                 <select name="borderStyle" id="borderStyle" class="form-select">
@@ -653,7 +653,7 @@
     </div>
 
     <div class="setting-item">
-        <form hx-post="/api/config/media/show-caption" hx-trigger="change">
+        <form hx-post="/api/config/media/show-caption" hx-trigger="change" hx-swap="none">
             <label class="checkbox-label">
                 <input
                     type="checkbox"
@@ -671,7 +671,7 @@
     </div>
 
     <div class="setting-item">
-        <form hx-post="/api/config/media/click-to-enlarge" hx-trigger="change">
+        <form hx-post="/api/config/media/click-to-enlarge" hx-trigger="change" hx-swap="none">
             <label class="checkbox-label">
                 <input
                     type="checkbox"
@@ -699,7 +699,7 @@
         <h3>{{T "Editor Types"}}</h3>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-markdown" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-markdown" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hideMarkdown" value="true" {{ if .AppConfig.HideMarkdown }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -710,7 +710,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-text" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-text" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hideText" value="true" {{ if .AppConfig.HideText }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -721,7 +721,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-list" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-list" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hideList" value="true" {{ if .AppConfig.HideList }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -732,7 +732,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-todo" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-todo" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hideTodo" value="true" {{ if .AppConfig.HideTodo }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -743,7 +743,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-filter" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-filter" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hideFilter" value="true" {{ if .AppConfig.HideFilter }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -754,7 +754,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-index" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-index" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hideIndex" value="true" {{ if .AppConfig.HideIndex }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -769,7 +769,7 @@
         <h3>{{T "Media Types"}}</h3>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-image" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-image" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hideImage" value="true" {{ if .AppConfig.HideImage }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -780,7 +780,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-video" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-video" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hideVideo" value="true" {{ if .AppConfig.HideVideo }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -791,7 +791,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-pdf" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-pdf" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hidePDF" value="true" {{ if .AppConfig.HidePDF }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -802,7 +802,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-office-documents" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-office-documents" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hideOfficeDocuments" value="true" {{ if .AppConfig.HideOfficeDocuments }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -813,7 +813,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-archives" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-archives" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hideArchives" value="true" {{ if .AppConfig.HideArchives }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -824,7 +824,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-executables" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-executables" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hideExecutables" value="true" {{ if .AppConfig.HideExecutables }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
@@ -835,7 +835,7 @@
         </div>
 
         <div class="setting-item">
-            <form hx-post="/api/config/file-types/hide-scripts" hx-trigger="change">
+            <form hx-post="/api/config/file-types/hide-scripts" hx-trigger="change" hx-swap="none">
                 <label class="checkbox-label">
                     <input type="checkbox" name="hideScripts" value="true" {{ if .AppConfig.HideScripts }}checked{{ end }} class="form-checkbox" />
                     <span class="checkmark"></span>
