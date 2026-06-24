@@ -13,6 +13,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/filter"
 	"knov/internal/kanban"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
@@ -26,6 +27,143 @@ import (
 // ----------------------------------------------------------------------------------------
 // ----------------------------------- BULK OPERATIONS -----------------------------------
 // ----------------------------------------------------------------------------------------
+
+type bulkUpdatePatch struct {
+	Editor     *files.EditorType `json:"editor,omitempty"`
+	TagsAdd    []string          `json:"tagsAdd,omitempty"`
+	TagsRemove []string          `json:"tagsRemove,omitempty"`
+}
+
+type bulkUpdateRequest struct {
+	Filter  filter.Config   `json:"filter"`
+	Patch   bulkUpdatePatch `json:"patch"`
+	Preview bool            `json:"preview"`
+}
+
+type bulkUpdateResult struct {
+	Updated []string `json:"updated"`
+	Count   int      `json:"count"`
+	Preview bool     `json:"preview"`
+}
+
+// @Summary Bulk update metadata for files matching a filter
+// @Description Applies a metadata patch to all files that match the given filter criteria. Pass preview:true to see which files would be affected without applying changes. Supported patch fields: editor (set), tagsAdd (append), tagsRemove (remove from list).
+// @Tags metadata
+// @Accept json
+// @Produce json,html
+// @Param body body bulkUpdateRequest true "Filter and patch"
+// @Success 200 {object} bulkUpdateResult
+// @Failure 400 {string} string "invalid json or no patch fields"
+// @Failure 500 {string} string "internal error"
+// @Router /api/metadata/bulk-update [post]
+func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
+	var req bulkUpdateRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid json", http.StatusBadRequest)
+		return
+	}
+
+	p := req.Patch
+	if p.Editor == nil && len(p.TagsAdd) == 0 && len(p.TagsRemove) == 0 {
+		http.Error(w, "no patch fields provided", http.StatusBadRequest)
+		return
+	}
+
+	if p.Editor != nil {
+		valid := false
+		for _, et := range files.AllEditorTypes() {
+			if *p.Editor == et {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			http.Error(w, "invalid editor type", http.StatusBadRequest)
+			return
+		}
+	}
+
+	matched, err := filter.FilterFiles(req.Filter.Criteria, req.Filter.Logic)
+	if err != nil {
+		logging.LogError("bulk-update: filter failed: %v", err)
+		http.Error(w, "failed to filter files", http.StatusInternalServerError)
+		return
+	}
+
+	paths := make([]string, 0, len(matched))
+	for _, f := range matched {
+		paths = append(paths, f.Metadata.Path)
+	}
+
+	if req.Preview {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(bulkUpdateResult{Updated: paths, Count: len(paths), Preview: true})
+		return
+	}
+
+	var failed []string
+	for _, f := range matched {
+		if err := applyBulkPatch(f.Metadata, p); err != nil {
+			logging.LogError("bulk-update: failed to save %s: %v", f.Metadata.Path, err)
+			failed = append(failed, f.Metadata.Path)
+		}
+	}
+
+	if len(failed) > 0 {
+		logging.LogWarning("bulk-update: %d/%d files failed to save", len(failed), len(matched))
+	}
+
+	updated := len(matched) - len(failed)
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "%d files updated", updated))
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(bulkUpdateResult{Updated: paths, Count: updated, Preview: false})
+}
+
+func applyBulkPatch(current *files.Metadata, p bulkUpdatePatch) error {
+	if p.Editor != nil {
+		return files.MetaDataSave(&files.Metadata{Path: current.Path, Editor: *p.Editor})
+	}
+
+	if len(p.TagsAdd) > 0 || len(p.TagsRemove) > 0 {
+		tags := make([]string, len(current.Tags))
+		copy(tags, current.Tags)
+
+		for _, add := range p.TagsAdd {
+			found := false
+			for _, t := range tags {
+				if t == add {
+					found = true
+					break
+				}
+			}
+			if !found {
+				tags = append(tags, add)
+			}
+		}
+
+		if len(p.TagsRemove) > 0 {
+			removeSet := make(map[string]bool, len(p.TagsRemove))
+			for _, t := range p.TagsRemove {
+				removeSet[t] = true
+			}
+			filtered := tags[:0]
+			for _, t := range tags {
+				if !removeSet[t] {
+					filtered = append(filtered, t)
+				}
+			}
+			tags = filtered
+		}
+
+		if len(tags) == 0 {
+			logging.LogWarning("bulk-update: skipping tag clear for %s (clearing all tags is not supported via bulk update)", current.Path)
+			return nil
+		}
+		return files.MetaDataSave(&files.Metadata{Path: current.Path, Tags: tags})
+	}
+
+	return nil
+}
 
 // @Summary Get metadata for a single file
 // @Description Get metadata for a file using filepath query parameter. Supports both media/ and docs/ paths.

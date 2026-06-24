@@ -285,6 +285,39 @@ definitions:
       pending:
         type: boolean
     type: object
+  server.bulkUpdatePatch:
+    properties:
+      editor:
+        $ref: '#/definitions/files.EditorType'
+      tagsAdd:
+        items:
+          type: string
+        type: array
+      tagsRemove:
+        items:
+          type: string
+        type: array
+    type: object
+  server.bulkUpdateRequest:
+    properties:
+      filter:
+        $ref: '#/definitions/filter.Config'
+      patch:
+        $ref: '#/definitions/server.bulkUpdatePatch'
+      preview:
+        type: boolean
+    type: object
+  server.bulkUpdateResult:
+    properties:
+      count:
+        type: integer
+      preview:
+        type: boolean
+      updated:
+        items:
+          type: string
+        type: array
+    type: object
   testdata.FilterTestResult:
     properties:
       actual_count:
@@ -3747,6 +3780,40 @@ paths:
           schema:
             type: string
       summary: Set metadata for a single file
+      tags:
+      - metadata
+  /api/metadata/bulk-update:
+    post:
+      consumes:
+      - application/json
+      description: 'Applies a metadata patch to all files that match the given filter
+        criteria. Pass preview:true to see which files would be affected without applying
+        changes. Supported patch fields: editor (set), tagsAdd (append), tagsRemove
+        (remove from list).'
+      parameters:
+      - description: Filter and patch
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.bulkUpdateRequest'
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.bulkUpdateResult'
+        "400":
+          description: invalid json or no patch fields
+          schema:
+            type: string
+        "500":
+          description: internal error
+          schema:
+            type: string
+      summary: Bulk update metadata for files matching a filter
       tags:
       - metadata
   /api/metadata/collection:

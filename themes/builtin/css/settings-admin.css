@@ -443,6 +443,40 @@
 }
 
 /* -----------------------------------------------------------------------
+   bulk metadata update
+   ----------------------------------------------------------------------- */
+.page-admin .admin-card-wide {
+  grid-column: 1 / -1;
+}
+
+.page-admin .bulk-update-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.page-admin .bulk-update-group-label {
+  font-size: 0.85em;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.page-admin .bulk-update-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.page-admin #bulk-update-result:not(:empty) {
+  margin-top: 0.75rem;
+  font-size: 0.9em;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+/* -----------------------------------------------------------------------
    responsive
    ----------------------------------------------------------------------- */
 @media (max-width: 768px) {
@@ -454,6 +488,10 @@
   .page-admin .admin-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
+  }
+
+  .page-admin .bulk-update-grid {
+    grid-template-columns: 1fr;
   }
 
   .page-admin .admin-card,

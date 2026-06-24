@@ -105,6 +105,106 @@
                     </div>
                 </div>
 
+                <div class="admin-card admin-card-wide">
+                    <h3>{{T "Bulk Metadata Update"}}</h3>
+                    <div class="help-text">{{T "apply a metadata change to all files matching a filter"}}</div>
+                    <div class="bulk-update-grid">
+                        <div>
+                            <p class="bulk-update-group-label">{{T "Filter"}}</p>
+                            <label for="bulk-filter-field">{{T "Field"}}</label>
+                            <select id="bulk-filter-field" onchange="bulkFilterFieldChanged()">
+                                <option value="editor">{{T "editor"}}</option>
+                                <option value="tags">{{T "tags"}}</option>
+                                <option value="collection">{{T "collection"}}</option>
+                                <option value="title">{{T "title"}}</option>
+                                <option value="folders">{{T "folders"}}</option>
+                            </select>
+                            <label for="bulk-filter-op">{{T "Operator"}}</label>
+                            <select id="bulk-filter-op">
+                                <option value="equals">{{T "equals"}}</option>
+                                <option value="contains">{{T "contains"}}</option>
+                                <option value="regex">{{T "regex"}}</option>
+                            </select>
+                            <label>{{T "Value"}}</label>
+                            <div id="bulk-filter-value-wrap">
+                                <select id="bulk-filter-value-select"
+                                        hx-get="/api/metadata/editors?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></select>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="bulk-update-group-label">{{T "Update"}}</p>
+                            <label for="bulk-action">{{T "Action"}}</label>
+                            <select id="bulk-action" onchange="bulkActionChanged()">
+                                <option value="set-editor">{{T "set editor"}}</option>
+                                <option value="add-tag">{{T "add tag"}}</option>
+                                <option value="remove-tag">{{T "remove tag"}}</option>
+                            </select>
+                            <label>{{T "Value"}}</label>
+                            <div id="bulk-patch-value-wrap">
+                                <select id="bulk-patch-value-select"
+                                        hx-get="/api/metadata/editors?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bulk-update-actions">
+                        <button type="button" class="btn-secondary" onclick="bulkMetadataPreview()">{{T "Preview"}}</button>
+                        <button type="button" class="btn-danger" onclick="bulkMetadataApply()">{{T "Apply"}}</button>
+                    </div>
+                    <div id="bulk-update-result"></div>
+                    <script>
+                    function bulkFilterFieldChanged() {
+                        const field = document.getElementById('bulk-filter-field').value;
+                        const wrap = document.getElementById('bulk-filter-value-wrap');
+                        if (field === 'editor') {
+                            wrap.innerHTML = '<select id="bulk-filter-value-select" hx-get="/api/metadata/editors?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></select>';
+                            htmx.process(wrap);
+                        } else {
+                            wrap.innerHTML = '<input id="bulk-filter-value-select" type="text" />';
+                        }
+                    }
+                    function bulkActionChanged() {
+                        const action = document.getElementById('bulk-action').value;
+                        const wrap = document.getElementById('bulk-patch-value-wrap');
+                        if (action === 'set-editor') {
+                            wrap.innerHTML = '<select id="bulk-patch-value-select" hx-get="/api/metadata/editors?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></select>';
+                            htmx.process(wrap);
+                        } else {
+                            wrap.innerHTML = '<input id="bulk-patch-value-select" type="text" placeholder="{{T "tag name"}}" />';
+                        }
+                    }
+                    function bulkBuildRequest(preview) {
+                        const filterField = document.getElementById('bulk-filter-field').value;
+                        const filterOp = document.getElementById('bulk-filter-op').value;
+                        const filterVal = document.getElementById('bulk-filter-value-select').value;
+                        const action = document.getElementById('bulk-action').value;
+                        const patchVal = document.getElementById('bulk-patch-value-select').value;
+                        const patch = {};
+                        if (action === 'set-editor') patch.editor = patchVal;
+                        else if (action === 'add-tag') patch.tagsAdd = [patchVal];
+                        else if (action === 'remove-tag') patch.tagsRemove = [patchVal];
+                        return JSON.stringify({
+                            filter: { criteria: [{ metadata: filterField, operator: filterOp, value: filterVal, action: 'include' }], logic: 'and' },
+                            patch,
+                            preview
+                        });
+                    }
+                    function bulkMetadataPreview() {
+                        fetch('/api/metadata/bulk-update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: bulkBuildRequest(true) })
+                            .then(r => r.json()).then(data => {
+                                document.getElementById('bulk-update-result').innerHTML =
+                                    data.count + ' {{T "files would be updated"}}:<br><small>' + (data.updated || []).join('<br>') + '</small>';
+                            });
+                    }
+                    function bulkMetadataApply() {
+                        if (!confirm('{{T "Apply bulk metadata change? This cannot be undone."}}')) return;
+                        fetch('/api/metadata/bulk-update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: bulkBuildRequest(false) })
+                            .then(r => r.json()).then(data => {
+                                document.getElementById('bulk-update-result').innerHTML = data.count + ' {{T "files updated"}}';
+                            });
+                    }
+                    </script>
+                </div>
+
                 <div class="admin-card">
                     <h3>{{T "Test Data Management"}}</h3>
                     <div class="help-text">{{T "manage test data for development and testing purposes"}}</div>

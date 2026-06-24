@@ -19,7 +19,6 @@
 - references - add date
 - detect if a request is already loading and block multiple requests of the same kind
 - rename testdata to test and add some kind of test (playwright?)
-- mass metadata change (e.g. change all toastui editors to codemirror)
 - code blocks in tables are not displayed as code
 - wiki link for text editor?
 - additional section edit button on the bottom right

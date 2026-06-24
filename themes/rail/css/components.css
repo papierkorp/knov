@@ -1707,6 +1707,8 @@ blockquote p blockquote p,
 /* span both columns for wide sections */
 .settings-section-wide {
   column-span: all;
+  /* margin-bottom of the preceding section is ignored before column-span:all */
+  margin-top: 12px;
 }
 
 /* section card */
@@ -3446,4 +3448,42 @@ dl.media-info dd {
 .load-more-btn:hover {
   background: var(--bg-hover);
   color: var(--text);
+}
+
+/* bulk metadata update */
+.bulk-update-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+@media (max-width: 700px) {
+  .bulk-update-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bulk-update-group-label {
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.bulk-update-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+#bulk-update-result:not(:empty) {
+  margin-top: 10px;
+  font-size: 0.88em;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 12px;
 }

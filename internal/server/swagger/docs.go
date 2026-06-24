@@ -5040,6 +5040,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/metadata/bulk-update": {
+            "post": {
+                "description": "Applies a metadata patch to all files that match the given filter criteria. Pass preview:true to see which files would be affected without applying changes. Supported patch fields: editor (set), tagsAdd (append), tagsRemove (remove from list).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Bulk update metadata for files matching a filter",
+                "parameters": [
+                    {
+                        "description": "Filter and patch",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/server.bulkUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/server.bulkUpdateResult"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid json or no patch fields",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/collection": {
             "get": {
                 "produces": [
@@ -6934,6 +6981,57 @@ const docTemplate = `{
                 },
                 "pending": {
                     "type": "boolean"
+                }
+            }
+        },
+        "server.bulkUpdatePatch": {
+            "type": "object",
+            "properties": {
+                "editor": {
+                    "$ref": "#/definitions/files.EditorType"
+                },
+                "tagsAdd": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tagsRemove": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "server.bulkUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "filter": {
+                    "$ref": "#/definitions/filter.Config"
+                },
+                "patch": {
+                    "$ref": "#/definitions/server.bulkUpdatePatch"
+                },
+                "preview": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "server.bulkUpdateResult": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "preview": {
+                    "type": "boolean"
+                },
+                "updated": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

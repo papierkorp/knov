@@ -331,6 +331,7 @@ func StartServerChi() {
 			r.Post("/rebuild", handleAPIRebuildMetadata)
 			r.Post("/rebuild/*", handleAPIRebuildFileMetadata)
 			r.Post("/export", handleAPIExportMetadata)
+			r.Post("/bulk-update", handleAPIBulkUpdateMetadata)
 
 			r.Get("/collection", handleAPIGetMetadataCollection)
 			r.Get("/editor", handleAPIGetMetadataEditor)
