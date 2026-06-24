@@ -40,9 +40,23 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 
 	var html string
 
-	// if section is specified, use section editor regardless of editor type
+	// if section is specified, use section editor with the editor type from metadata
 	if sectionID != "" && fp != "" {
-		html = render.RenderToastUISectionEditorForm(fp, sectionID)
+		metadata, _ := files.MetaDataGet(fp)
+		var sectionEditorType files.EditorType
+		if metadata != nil && metadata.Editor != "" {
+			sectionEditorType = metadata.Editor
+		} else {
+			sectionEditorType = files.EditorTypeToastUI
+		}
+		switch sectionEditorType {
+		case files.EditorTypeCodeMirror:
+			html = render.RenderCodeMirrorSectionEditorForm(fp, sectionID)
+		case files.EditorTypeTextarea:
+			html = render.RenderTextareaSectionEditorForm(fp, sectionID)
+		default:
+			html = render.RenderToastUISectionEditorForm(fp, sectionID)
+		}
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
 		return

@@ -23,7 +23,10 @@
 - code blocks in tables are not displayed as code
 - wiki link for text editor?
 - additional section edit button on the bottom right
-- bug: if i go into section edit and press `ctrl + z` its empty
+- bug: toastui editor if i press `ctrl + z` it removes everything and the input field is empty
+- add a /system/version page - which displays all the neccessary build/version infos (with a link to the releasenotes..)
+- change version to: <year>.<major>.<mino>-<commitsnumber>-<commit_hash>
+
 
 - deployment
   - codeberg deployment pipeline?

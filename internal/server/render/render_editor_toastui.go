@@ -16,6 +16,7 @@ import (
 	"knov/internal/translation"
 )
 
+
 // jsEscapeString escapes a string for safe use in JavaScript
 func jsEscapeString(s string) string {
 	jsonBytes, err := json.Marshal(s)
@@ -589,69 +590,3 @@ func RenderToastUISectionEditorForm(filePath, sectionID string) string {
 		getToastUIEditorScript(content, ""))
 }
 
-// RenderTextareaEditorComponent renders a plain textarea editor with save/cancel buttons.
-// Shows an extra "convert to markdown" button for DokuWiki files.
-func RenderTextareaEditorComponent(filepath, content string, editorType ...string) string {
-	isNew := filepath == ""
-	cancelURL := "/"
-	if !isNew {
-		cancelURL = fmt.Sprintf("/files/%s", filepath)
-	}
-
-	var convertButton string
-	if !isNew {
-		fullPath := pathutils.ToDocsPath(filepath)
-		handler := parser.GetParserRegistry().GetHandler(fullPath)
-		if handler != nil && handler.Name() == "dokuwiki" {
-			convertButton = fmt.Sprintf(`
-				<button type="button"
-						hx-post="/api/files/convert-to-markdown"
-						hx-vals='{"filepath": "%s"}'
-						hx-swap="none"
-						class="btn-secondary">
-					%s
-				</button>`,
-				filepath,
-				translation.SprintfForRequest(configmanager.GetLanguage(), "convert to markdown"))
-		}
-	}
-
-	var filepathField string
-	if isNew {
-		var editorHidden string
-		if len(editorType) > 0 && editorType[0] != "" {
-			editorHidden = fmt.Sprintf(`<input type="hidden" name="editor" value="%s">`, editorType[0])
-		}
-		filepathField = fmt.Sprintf(`
-			<div class="form-group">
-				<label for="filepath-input">%s</label>
-				<input type="text" id="filepath-input" name="filepath" required placeholder="%s" class="form-input" />
-				<script>(function(){var el=document.getElementById('filepath-input');if(el&&window.initPathAutocomplete)window.initPathAutocomplete(el,'/api/files/folder-suggestions');})()</script>
-			</div>%s`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
-			translation.SprintfForRequest(configmanager.GetLanguage(), "my-file.md"),
-			editorHidden)
-	} else {
-		filepathField = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s">`, filepath)
-	}
-
-	return fmt.Sprintf(`
-		<div class="component-textarea-editor">
-			<form hx-post="/api/files/save" hx-target="#editor-status" hx-swap="innerHTML">
-				%s
-				<textarea name="content" rows="25" class="textarea-editor-input">%s</textarea>
-				<div class="form-actions">
-					<button type="submit" class="btn-primary">%s</button>
-					<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
-					%s
-				</div>
-				<div id="editor-status"></div>
-			</form>
-		</div>`,
-		filepathField,
-		content,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "save"),
-		cancelURL,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
-		convertButton)
-}
