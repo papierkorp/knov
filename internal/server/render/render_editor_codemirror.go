@@ -39,7 +39,7 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 				<div class="form-group">
 					<label for="filepath-input">%s</label>
 					<input type="text" id="filepath-input" name="filepath" required value="%s" placeholder="%s" class="form-input" />
-					<script>(function(){var el=document.getElementById('filepath-input');if(el&&window.initFolderPathAutocomplete)window.initFolderPathAutocomplete(el,'/api/files/folder-suggestions');})()</script>
+					<script>(function(){var el=document.getElementById('filepath-input');if(el&&window.initPathAutocomplete)window.initPathAutocomplete(el,'/api/files/folder-suggestions');})()</script>
 				</div>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "file path"),
 			html.EscapeString(prefillPath),

@@ -1952,7 +1952,7 @@ main textarea {
   border-radius: 4px;
 }
 
-#testdata-result {
+#testdata-result:not(:empty) {
   margin-top: 16px;
   width: 100%;
   box-sizing: border-box;

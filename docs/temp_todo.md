@@ -22,9 +22,9 @@
 - mass metadata change (e.g. change all toastui editors to codemirror)
 - code blocks in tables are not displayed as code
 - in settings - if i change something (e.g. clicking a checkbox) its replaced with nothing.. i want to replace it with the correct input instead (so i dont have to reload)
-- index editor - add file - search doesnt work properly
 - wiki link for text editor?
-- rail theme - admin - empty testdata-result div is always visible
+- additional section edit button on the bottom right
+- bug: if i go into section edit and press `ctrl + z` its empty
 
 - deployment
   - codeberg deployment pipeline?

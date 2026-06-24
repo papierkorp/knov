@@ -352,10 +352,11 @@
     });
   };
 
-  // ── folder path autocomplete ─────────────────────────────────────────────────
-  // Reuses the shared dropdown. Tab selects the highlighted item and stays in
-  // the input instead of moving focus (native <datalist> can't do this).
-  global.initFolderPathAutocomplete = function (inputEl, apiEndpoint) {
+  // ── path autocomplete ────────────────────────────────────────────────────────
+  // Reuses the shared dropdown. Substring matching so partial folder/file names
+  // anywhere in the path are found. Tab selects the highlighted item and stays
+  // in the input instead of moving focus (native <datalist> can't do this).
+  function initPathAutocomplete(inputEl, apiEndpoint) {
     if (!inputEl) return;
 
     var suggestions = [];
@@ -386,11 +387,11 @@
       var vl = v.toLowerCase();
       var items = suggestions
         .filter(function (s) {
-          return s.toLowerCase().startsWith(vl);
+          return s.toLowerCase().includes(vl);
         })
         .map(function (s) {
           var parts = s.replace(/\/$/, "").split("/");
-          return { filename: parts[parts.length - 1] + "/", path: s };
+          return { filename: parts[parts.length - 1], path: s };
         });
       onInsert = function (path) {
         inputEl.value = path;
@@ -408,5 +409,7 @@
     inputEl.addEventListener("blur", function () {
       setTimeout(hide, 150);
     });
-  };
+  }
+
+  global.initPathAutocomplete = initPathAutocomplete;
 })(window);

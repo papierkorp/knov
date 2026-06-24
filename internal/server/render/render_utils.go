@@ -200,7 +200,7 @@ func GetFormValue(slice []string, index int) string {
 // GenerateDatalistInput creates an input field with autocomplete (without save)
 func GenerateDatalistInput(id, name, value, placeholder, apiEndpoint string) string {
 	return fmt.Sprintf(`<input type="text" id="%s" name="%s" value="%s" class="form-input" autocomplete="off" placeholder="%s"/>
-<script>(function(){var el=document.getElementById('%s');if(el&&window.initFolderPathAutocomplete)window.initFolderPathAutocomplete(el,'%s');})()</script>`,
+<script>(function(){var el=document.getElementById('%s');if(el&&window.initPathAutocomplete)window.initPathAutocomplete(el,'%s');})()</script>`,
 		id, name, value, placeholder, id, apiEndpoint)
 }
 
