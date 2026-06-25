@@ -9,7 +9,6 @@
         {{ template "table-section" . }}
         {{ template "media-section" . }}
         {{ template "file-types-section" . }}
-        {{ template "environment-section" . }}
     </div>
 </div>
 {{ end }}
@@ -143,41 +142,6 @@
 </section>
 {{ end }}
 
-{{ define "environment-section" }}
-<section class="settings-section">
-    <h2>{{T "Environment Info"}} <small>({{T "restart required to change"}})</small></h2>
-    <div class="setting-item">
-        <div class="help-text">{{T "Version"}}: <code>{{.Version}}</code></div>
-        <div class="help-text">{{T "Build Time"}}: <code>{{.BuildTime}}</code></div>
-        <div class="help-text">{{T "Server Port"}}: <code>{{.AppConfig.ServerPort}}</code></div>
-        <div class="help-text">{{T "Data Path"}}: <code>{{.AppConfig.DataPath}}</code></div>
-        <div class="help-text">{{T "Storage Path"}}: <code>{{.AppConfig.StoragePath}}</code></div>
-        <div class="help-text">{{T "Themes Path"}}: <code>{{.AppConfig.ThemesPath}}</code></div>
-        <div class="help-text">{{T "Logs Path"}}: <code>{{.AppConfig.LogsPath}}</code></div>
-        <div class="help-text">{{T "Git Remote"}}: <code>{{if .AppConfig.GitRemote}}{{.AppConfig.GitRemote}}{{else}}local only{{end}}</code></div>
-        <div class="help-text">{{T "Git Branch"}}: <code>{{.AppConfig.GitRemoteBranch}}</code></div>
-        <div class="help-text">{{T "Git Auto Push"}}: <code>{{.AppConfig.GitAutoPush}}</code></div>
-        <div class="help-text">{{T "Metadata Storage"}}: <code>{{.AppConfig.MetadataStorageProvider}}</code></div>
-        <div class="help-text">{{T "Cache Storage"}}: <code>{{.AppConfig.CacheStorageProvider}}</code></div>
-        <div class="help-text">{{T "Search Storage"}}: <code>{{.AppConfig.SearchStorageProvider}}</code></div>
-        <div class="help-text">{{T "Kanban Events Enabled"}}: <code>{{.AppConfig.KanbanEventsEnabled}}</code></div>
-        <div class="help-text">{{T "Kanban Events Storage"}}: <code>{{.AppConfig.KanbanEventsProvider}}</code></div>
-        <div class="help-text">{{T "Search Engine"}}: <code>{{.AppConfig.SearchEngine}}</code></div>
-        <div class="help-text">{{T "Cronjob Interval"}}: <code>{{.AppConfig.CronjobInterval}}</code></div>
-        <div class="help-text">{{T "Search Index Interval"}}: <code>{{.AppConfig.SearchIndexInterval}}</code></div>
-        <div class="help-text">{{T "Metadata Rebuild Interval"}}: <code>{{.AppConfig.MetadataRebuildInterval}}</code></div>
-        <div class="help-text">{{T "Notify Duration"}}: <code>{{.AppConfig.NotifyDuration}}ms</code></div>
-        <div class="help-text">{{T "Kanban Prefix"}}: <code>{{.AppConfig.KanbanPrefix}}</code></div>
-        <div class="help-text">{{T "Kanban Statuses"}}: <code>{{join .AppConfig.KanbanStatuses ", "}}</code></div>
-        <div class="help-text">{{T "Kanban Columns"}}: <code>{{join .AppConfig.KanbanColumns ", "}}</code></div>
-        <div class="help-text">{{T "Auto-create Tags"}}: <code>{{if .AppConfig.AutoCreateTags}}{{join .AppConfig.AutoCreateTags ", "}}{{else}}disabled{{end}}</code></div>
-        <div class="help-text">{{T "Auto-create Collections"}}: <code>{{if .AppConfig.AutoCreateCollections}}{{join .AppConfig.AutoCreateCollections ", "}}{{else}}all{{end}}</code></div>
-        <div class="help-text">{{T "Kanban Tag Colors"}}: <code>{{if .AppConfig.KanbanTagColors}}{{range $k,$v := .AppConfig.KanbanTagColors}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
-        <div class="help-text">{{T "Kanban Card Styles"}}: <code>{{if .AppConfig.KanbanCardStyles}}{{range $k,$v := .AppConfig.KanbanCardStyles}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
-        <div class="help-text">{{T "Kanban Archive Status"}}: <code>{{if .AppConfig.KanbanArchiveStatus}}{{.AppConfig.KanbanArchiveStatus}}{{else}}disabled{{end}}</code></div>
-    </div>
-</section>
-{{ end }}
 
 {{ define "theme-section" }}
 <section class="settings-section">
@@ -590,6 +554,7 @@
         </form>
     </div>
 
+    <div class="setting-group">
     <h3>{{T "Preview Settings"}}</h3>
 
     <div class="setting-item">
@@ -686,6 +651,7 @@
             </label>
             <div class="help-text">{{T "enable clicking previews to open full-size version"}}</div>
         </form>
+    </div>
     </div>
 </section>
 {{ end }}

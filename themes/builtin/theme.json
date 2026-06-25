@@ -99,62 +99,74 @@
     "compactMetadataPath": {
       "type": "boolean",
       "default": true,
-      "label": "Compact: Path"
+      "label": "Compact: Path",
+      "description": "show the file path in the compact file list row"
     },
     "compactMetadataEdited": {
       "type": "boolean",
       "default": true,
-      "label": "Compact: Last Edited"
+      "label": "Compact: Last Edited",
+      "description": "show the last-edited timestamp in the compact file list row"
     },
     "compactMetadataCreated": {
       "type": "boolean",
       "default": false,
-      "label": "Compact: Created"
+      "label": "Compact: Created",
+      "description": "show the creation date in the compact file list row"
     },
     "compactMetadataCollection": {
       "type": "boolean",
       "default": false,
-      "label": "Compact: Collection"
+      "label": "Compact: Collection",
+      "description": "show the collection name in the compact file list row"
     },
     "compactMetadataTags": {
       "type": "boolean",
       "default": true,
-      "label": "Compact: Tags"
+      "label": "Compact: Tags",
+      "description": "show tags in the compact file list row"
     },
     "compactMetadataFolders": {
       "type": "boolean",
       "default": false,
-      "label": "Compact: Folders"
+      "label": "Compact: Folders",
+      "description": "show the folder path in the compact file list row"
     },
     "compactMetadataAncestors": {
       "type": "boolean",
       "default": false,
-      "label": "Compact: Ancestors"
+      "label": "Compact: Ancestors",
+      "description": "show ancestor files (files this file is nested under) in the compact row"
     },
     "compactMetadataParents": {
       "type": "boolean",
       "default": false,
-      "label": "Compact: Parents"
+      "label": "Compact: Parents",
+      "description": "show direct parent files in the compact file list row"
     },
     "compactMetadataChildren": {
       "type": "boolean",
       "default": false,
-      "label": "Compact: Children"
+      "label": "Compact: Children",
+      "description": "show direct child files in the compact file list row"
     },
     "compactMetadataLinksTo": {
       "type": "boolean",
       "default": false,
-      "label": "Compact: Links To"
+      "label": "Compact: Links To",
+      "description": "show files this file links to in the compact file list row"
     },
     "compactMetadataLinksFrom": {
       "type": "boolean",
       "default": false,
-      "label": "Compact: Links From"
+      "label": "Compact: Links From",
+      "description": "show files that link to this file (backlinks) in the compact file list row"
     },
     "compactMetadataRelated": {
       "type": "boolean",
       "default": false,
-      "label": "Compact: Related"
+      "label": "Compact: Related",
+      "description": "show related files (shared tags or connections) in the compact file list row"
     },
     "headerLink1": {
       "type": "select",
