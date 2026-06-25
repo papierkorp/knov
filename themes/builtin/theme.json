@@ -155,6 +155,41 @@
       "type": "boolean",
       "default": false,
       "label": "Compact: Related"
+    },
+    "headerLink1": {
+      "type": "select",
+      "options": ["none", "home", "overview", "browse", "media", "chat", "history", "help", "search", "settings", "admin", "kanban", "playground", "logs", "changelog", "version"],
+      "default": "overview",
+      "label": "Header Link 1",
+      "description": "first link shown in the header navigation bar"
+    },
+    "headerLink2": {
+      "type": "select",
+      "options": ["none", "home", "overview", "browse", "media", "chat", "history", "help", "search", "settings", "admin", "kanban", "playground", "logs", "changelog", "version"],
+      "default": "browse",
+      "label": "Header Link 2",
+      "description": "second link shown in the header navigation bar"
+    },
+    "headerLink3": {
+      "type": "select",
+      "options": ["none", "home", "overview", "browse", "media", "chat", "history", "help", "search", "settings", "admin", "kanban", "playground", "logs", "changelog", "version"],
+      "default": "media",
+      "label": "Header Link 3",
+      "description": "third link shown in the header navigation bar"
+    },
+    "headerLink4": {
+      "type": "select",
+      "options": ["none", "home", "overview", "browse", "media", "chat", "history", "help", "search", "settings", "admin", "kanban", "playground", "logs", "changelog", "version"],
+      "default": "chat",
+      "label": "Header Link 4",
+      "description": "fourth link shown in the header navigation bar"
+    },
+    "headerLink5": {
+      "type": "select",
+      "options": ["none", "home", "overview", "browse", "media", "chat", "history", "help", "search", "settings", "admin", "kanban", "playground", "logs", "changelog", "version"],
+      "default": "history",
+      "label": "Header Link 5",
+      "description": "fifth link shown in the header navigation bar"
     }
   }
 }

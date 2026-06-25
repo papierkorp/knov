@@ -22,36 +22,110 @@ import (
 // -------------- Base TemplateData --------------
 // -----------------------------------------------
 
+// NavLink represents a single navigation link
+type NavLink struct {
+	Key   string
+	URL   string
+	Label string
+}
+
+// navLinkPool defines all available navigation links in display order.
+// "none" is a sentinel that means "leave this slot empty".
+var navLinkPool = []NavLink{
+	{Key: "none", URL: "", Label: ""},
+	{Key: "home", URL: "/", Label: "Home"},
+	{Key: "overview", URL: "/browse/files", Label: "Overview"},
+	{Key: "browse", URL: "/browse", Label: "Browse"},
+	{Key: "media", URL: "/browse/media", Label: "Media"},
+	{Key: "chat", URL: "/chat", Label: "Chat"},
+	{Key: "history", URL: "/history", Label: "Latest Changes"},
+	{Key: "help", URL: "/help", Label: "Help"},
+	{Key: "search", URL: "/search", Label: "Search"},
+	{Key: "settings", URL: "/settings", Label: "Settings"},
+	{Key: "admin", URL: "/admin", Label: "Admin"},
+	{Key: "kanban", URL: "/kanban", Label: "Kanban"},
+	{Key: "playground", URL: "/playground", Label: "Playground"},
+	{Key: "logs", URL: "/system/logs", Label: "Logs"},
+	{Key: "changelog", URL: "/system/changelog", Label: "Changelog"},
+	{Key: "version", URL: "/system/version", Label: "Version"},
+}
+
+// navLinkByKey returns a NavLink for the given key, or zero value if not found.
+func navLinkByKey(key string) (NavLink, bool) {
+	for _, l := range navLinkPool {
+		if l.Key == key {
+			return l, true
+		}
+	}
+	return NavLink{}, false
+}
+
+// computeNavLinks splits the pool into header links (per settings) and menu links (the rest).
+// Notifications is always appended to the menu by the template, so it is not in this pool.
+func computeNavLinks(settings map[string]interface{}) (header []NavLink, menu []NavLink) {
+	slotKeys := [5]string{}
+	for i := range slotKeys {
+		key := fmt.Sprintf("headerLink%d", i+1)
+		if v, ok := settings[key].(string); ok && v != "" {
+			slotKeys[i] = v
+		}
+	}
+
+	inHeader := make(map[string]bool)
+	for _, k := range slotKeys {
+		if k != "" && k != "none" {
+			inHeader[k] = true
+			if link, ok := navLinkByKey(k); ok {
+				header = append(header, link)
+			}
+		}
+	}
+
+	for _, link := range navLinkPool {
+		if link.Key == "none" || inHeader[link.Key] {
+			continue
+		}
+		menu = append(menu, link)
+	}
+	return header, menu
+}
+
 // BaseTemplateData contains data needed by all templates
 type BaseTemplateData struct {
-	Title         string
-	CurrentTheme  string
-	ThemeSettings map[string]interface{}
-	Language      string
-	DateFormat    string
-	Themes        []Theme
-	FileType      string
-	CodeBlockWrap bool
-	T             func(string, ...any) string
-	Version       string
-	BuildTime     string
-	SystemPage    bool
+	Title          string
+	CurrentTheme   string
+	ThemeSettings  map[string]interface{}
+	Language       string
+	DateFormat     string
+	Themes         []Theme
+	FileType       string
+	CodeBlockWrap  bool
+	T              func(string, ...any) string
+	Version        string
+	BuildTime      string
+	SystemPage     bool
+	HeaderNavLinks []NavLink
+	MenuNavLinks   []NavLink
 }
 
 // NewBaseTemplateData creates base data used by all templates
 func NewBaseTemplateData(title string) BaseTemplateData {
+	themeSettings := getMergedThemeSettings()
+	headerLinks, menuLinks := computeNavLinks(themeSettings)
 	return BaseTemplateData{
-		Title:         title,
-		CurrentTheme:  themeManager.GetCurrentThemeName(),
-		ThemeSettings: getMergedThemeSettings(),
-		Language:      configmanager.GetLanguage(),
-		DateFormat:    configmanager.GetDateFormat(),
-		Themes:        themeManager.GetAvailableThemes(),
-		CodeBlockWrap: configmanager.GetUserSettings().CodeBlockWrap,
-		FileType:      "",
-		T:             translation.Sprintf,
-		Version:       version.Version,
-		BuildTime:     version.BuildTime,
+		Title:          title,
+		CurrentTheme:   themeManager.GetCurrentThemeName(),
+		ThemeSettings:  themeSettings,
+		Language:       configmanager.GetLanguage(),
+		DateFormat:     configmanager.GetDateFormat(),
+		Themes:         themeManager.GetAvailableThemes(),
+		CodeBlockWrap:  configmanager.GetUserSettings().CodeBlockWrap,
+		FileType:       "",
+		T:              translation.Sprintf,
+		Version:        version.Version,
+		BuildTime:      version.BuildTime,
+		HeaderNavLinks: headerLinks,
+		MenuNavLinks:   menuLinks,
 	}
 }
 
