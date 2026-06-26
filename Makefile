@@ -89,13 +89,9 @@ tempai:
 	@echo "See tempai/FILE_LIST.txt for project structure (from 'make tree')"
 
 # windows prod
-# swag init -g main.go -d . --exclude tempai -o internal/server/swagger
-# cd internal/translation && go generate && cd ../..
-# go build -o bin/knov ./
-# GOOS=windows GOARCH=amd64 go build -o bin/knov.exe ./
+# APP_NAME=knov && VERSION=$(date -u '+%Y')-$(git rev-list --count HEAD)-$(git rev-parse --short HEAD) && BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M') && swag init -g main.go -d . --exclude tempai -o internal/server/swagger && GOOS=windows GOARCH=amd64 go build -ldflags "-X 'knov/internal/version.Version=$VERSION' -X 'knov/internal/version.BuildTime=$BUILD_TIME UTC'" -o bin/knov.exe ./
 
 # windows dev
-# swag init -g main.go -d . --exclude tempai -o internal/server/swagger
-# KNOV_LOG_LEVEL=debug go run ./
+#KNOV_LOG_LEVEL=debug go run ./
 
 .PHONY: dev dev-fast swaggo-api-init translation prod docker docker-build docker-run tree changelog tempai

@@ -1704,8 +1704,9 @@ blockquote p blockquote p,
   }
 }
 
-/* settings page: override masonry with explicit two independent flex columns */
-.page-settings .settings-sections {
+/* settings + admin pages: explicit two independent flex columns instead of masonry */
+.page-settings .settings-sections,
+.page-admin .settings-sections {
   columns: unset;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1725,7 +1726,8 @@ blockquote p blockquote p,
 }
 
 @media (max-width: 900px) {
-  .page-settings .settings-sections {
+  .page-settings .settings-sections,
+  .page-admin .settings-sections {
     grid-template-columns: 1fr;
   }
 }
@@ -1745,10 +1747,10 @@ blockquote p blockquote p,
   margin-top: 0;
 }
 
-/* wide sections in admin masonry */
+/* wide sections in admin grid */
 .page-admin .settings-section-wide {
-  column-span: all;
-  margin-top: 12px;
+  grid-column: 1 / -1;
+  margin-top: 0;
 }
 
 .settings-section h2,
