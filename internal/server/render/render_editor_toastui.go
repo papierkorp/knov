@@ -30,21 +30,20 @@ func jsEscapeString(s string) string {
 // jsEditorInit returns the ToastUI editor constructor call.
 // Binds the upload hook so blob uploads go through uploadMediaBlob.
 func jsEditorInit(content string) string {
-	es := configmanager.GetEditorSettings()
-	initialView := es.ToastuiInitialView
+	initialView := configmanager.ToastuiInitialView.Get()
 	if initialView == "" {
 		initialView = "markdown"
 	}
-	previewStyle := es.ToastuiPreviewStyle
+	previewStyle := configmanager.ToastuiPreviewStyle.Get()
 	if previewStyle == "" {
 		previewStyle = "tab"
 	}
 	spellcheck := "false"
-	if es.SpellCheck {
+	if configmanager.SpellCheck.Get() {
 		spellcheck = "true"
 	}
 	hideModeSwitch := "false"
-	if !es.ToastuiShowModeSwitch {
+	if !configmanager.ToastuiShowModeSwitch.Get() {
 		hideModeSwitch = "true"
 	}
 	// when toolbar is hidden pass an empty array; otherwise use the configured items
@@ -80,7 +79,7 @@ func jsEditorInit(content string) string {
 				}],
 				['code', 'codeblock']
 			]`
-	if !es.ToastuiShowToolbar {
+	if !configmanager.ToastuiShowToolbar.Get() {
 		toolbarItemsJS = "[]"
 	}
 	return fmt.Sprintf(`
@@ -146,7 +145,7 @@ func jsEditorInit(content string) string {
 			el.setAttribute('spellcheck', '%s');
 		});
 		(document.querySelector('#toastui-editor .toastui-editor-toolbar') || {style:{}}).style.display = '%s';`, initialView, previewStyle, jsEscapeString(content), hideModeSwitch, toolbarItemsJS, spellcheck, func() string {
-		if !es.ToastuiShowToolbar {
+		if !configmanager.ToastuiShowToolbar.Get() {
 			return "none"
 		}
 		return ""
@@ -484,7 +483,7 @@ func getToastUIEditorScript(content, frontMatter string) string {
 		jsInsertMedia(),
 		jsWikiFileSelector(),
 		jsRegisterEditor(),
-		fmt.Sprintf(`initWikiAutocompleteToastUI(editor, {cursorEnd: %t});`, configmanager.GetEditorSettings().WikiLinkCursorEnd),
+		fmt.Sprintf(`initWikiAutocompleteToastUI(editor, {cursorEnd: %t});`, configmanager.WikiLinkCursorEnd.Get()),
 		jsFormSubmit(frontMatter),
 	}
 

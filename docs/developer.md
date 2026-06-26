@@ -123,6 +123,23 @@ var cssFiles embed.FS
 
 ## Configuration Management
 
+Two layers:
+
+| Layer | Source | Requires restart |
+|---|---|---|
+| **AppConfig** | Environment variables | Yes |
+| **Settings** | `storage/config/settings.json` | No |
+
+**AppConfig** (`config.go`) — server-level options (paths, ports, intervals) loaded once at startup. Add a field to `AppConfig` and a `case` in `applyEnvToAppConfig`.
+
+**Settings** (`settings_*.go`) — user preferences editable in the UI. Each setting is a typed package-level variable declared in `settings_registry.go` and registered at init time. Adding a setting there is all that's needed — persistence, UI rendering, and `MyNewSetting.Get()` access are automatic.
+
+- Types: `*BoolSetting`, `*IntSetting`, `*StringSetting` (also renders as select or dynamic-select), `*StringSliceSetting`, `*MapSetting[T]` (structured/nested values, no UI)
+- Sections and groups are declared in `settings_definitions.go` and appear in the UI automatically
+- `OnChange` fires on API saves (`SetFromString`) but not on startup load — startup side-effects are applied explicitly in `InitSettings`
+- `IntSetting` and `StringSetting` validate against `Min`/`Max` and `Options` respectively; invalid API values return 400, invalid stored values fall back to the default with a warning
+- All values are stored in `atomic.Pointer[T]` — reads are lock-free. `MapSetting` uses copy-on-write: always build a fresh copy before calling `Set`, never mutate the map returned by `Get`
+
 ## Filter File - System
 
 **Storage**

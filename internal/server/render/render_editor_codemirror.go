@@ -26,7 +26,6 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 
 	cancelURL := fmt.Sprintf("/files/%s#%s", filePath, sectionID)
 
-	es := configmanager.GetEditorSettings()
 	jsBool := func(b bool) string {
 		if b {
 			return "true"
@@ -65,16 +64,16 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 })();
 </script>`,
 		jsEscapeString(content),
-		jsBool(es.CodeMirrorVimMode),
-		jsBool(es.CodeMirrorLineNumbers),
-		jsBool(es.CodeMirrorRelativeLineNumbers),
-		jsBool(es.CodeMirrorFoldGutter),
-		jsBool(es.CodeMirrorBracketMatching),
-		jsBool(es.CodeMirrorAutoBrackets),
-		jsBool(es.CodeMirrorHighlightSelection),
-		jsBool(es.CodeMirrorHighlightSelectionWholeWord),
-		jsBool(es.SpellCheck),
-		es.WikiLinkCursorEnd)
+		jsBool(configmanager.CodeMirrorVimMode.Get()),
+		jsBool(configmanager.CodeMirrorLineNumbers.Get()),
+		jsBool(configmanager.CodeMirrorRelativeLineNumbers.Get()),
+		jsBool(configmanager.CodeMirrorFoldGutter.Get()),
+		jsBool(configmanager.CodeMirrorBracketMatching.Get()),
+		jsBool(configmanager.CodeMirrorAutoBrackets.Get()),
+		jsBool(configmanager.CodeMirrorHighlightSelection.Get()),
+		jsBool(configmanager.CodeMirrorHighlightSelectionWholeWord.Get()),
+		jsBool(configmanager.SpellCheck.Get()),
+		configmanager.WikiLinkCursorEnd.Get())
 
 	return fmt.Sprintf(`
 		<form hx-post="/api/files/section/save" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">
@@ -145,7 +144,6 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		filepathInput = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filePath)
 	}
 
-	es := configmanager.GetEditorSettings()
 	jsBool := func(b bool) string {
 		if b {
 			return "true"
@@ -184,16 +182,16 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 })();
 </script>`,
 		jsEscapeString(content),
-		jsBool(es.CodeMirrorVimMode),
-		jsBool(es.CodeMirrorLineNumbers),
-		jsBool(es.CodeMirrorRelativeLineNumbers),
-		jsBool(es.CodeMirrorFoldGutter),
-		jsBool(es.CodeMirrorBracketMatching),
-		jsBool(es.CodeMirrorAutoBrackets),
-		jsBool(es.CodeMirrorHighlightSelection),
-		jsBool(es.CodeMirrorHighlightSelectionWholeWord),
-		jsBool(es.SpellCheck),
-		es.WikiLinkCursorEnd)
+		jsBool(configmanager.CodeMirrorVimMode.Get()),
+		jsBool(configmanager.CodeMirrorLineNumbers.Get()),
+		jsBool(configmanager.CodeMirrorRelativeLineNumbers.Get()),
+		jsBool(configmanager.CodeMirrorFoldGutter.Get()),
+		jsBool(configmanager.CodeMirrorBracketMatching.Get()),
+		jsBool(configmanager.CodeMirrorAutoBrackets.Get()),
+		jsBool(configmanager.CodeMirrorHighlightSelection.Get()),
+		jsBool(configmanager.CodeMirrorHighlightSelectionWholeWord.Get()),
+		jsBool(configmanager.SpellCheck.Get()),
+		configmanager.WikiLinkCursorEnd.Get())
 
 	return fmt.Sprintf(`
 		<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">

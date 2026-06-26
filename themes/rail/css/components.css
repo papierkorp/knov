@@ -1684,7 +1684,7 @@ blockquote p blockquote p,
   margin: 0 0 16px;
 }
 
-/* two-column masonry-style layout — sections stack into the shorter column */
+/* admin: two-column masonry */
 .settings-sections,
 .admin-sections {
   columns: 2;
@@ -1704,11 +1704,30 @@ blockquote p blockquote p,
   }
 }
 
-/* span both columns for wide sections */
-.settings-section-wide {
-  column-span: all;
-  /* margin-bottom of the preceding section is ignored before column-span:all */
-  margin-top: 12px;
+/* settings page: override masonry with explicit two independent flex columns */
+.page-settings .settings-sections {
+  columns: unset;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.settings-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* settings-section inside a col needs no margin-bottom (gap handles it) */
+.settings-col .settings-section {
+  margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .page-settings .settings-sections {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* section card */
@@ -1718,6 +1737,18 @@ blockquote p blockquote p,
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 16px 18px;
+}
+
+/* wide sections: span both columns in the settings grid */
+.page-settings .settings-section-wide {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+/* wide sections in admin masonry */
+.page-admin .settings-section-wide {
+  column-span: all;
+  margin-top: 12px;
 }
 
 .settings-section h2,
@@ -1744,33 +1775,6 @@ blockquote p blockquote p,
   color: var(--text-secondary);
   font-size: 0.88em;
   margin: -8px 0 12px;
-}
-
-/* span both columns for wide sections */
-.settings-section-wide {
-  grid-column: 1 / -1;
-}
-
-/* file-types inner checkbox grid */
-.settings-section-wide .setting-group {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0 24px;
-  border-top: none;
-  margin-top: 0;
-  padding-top: 0;
-}
-
-.settings-section-wide .setting-group h3 {
-  grid-column: 1 / -1;
-  border-top: 1px solid var(--border);
-  padding-top: 10px;
-  margin-top: 8px;
-}
-
-.settings-section-wide .setting-group:first-of-type h3 {
-  border-top: none;
-  margin-top: 0;
 }
 
 /* setting-group (sub-grouping within a section) */
@@ -1806,6 +1810,42 @@ blockquote p blockquote p,
   color: var(--text-secondary);
   margin-top: 2px;
   line-height: 1.4;
+}
+
+/* editor section (wide): spread setting groups into auto-fill columns */
+#section-editor .setting-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  column-gap: 32px;
+  row-gap: 0;
+}
+
+#section-editor .setting-group h3,
+#section-editor .setting-group .section-description {
+  grid-column: 1 / -1;
+}
+
+/* file-types section (wide): checkbox grid across both columns */
+#section-file-types .setting-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  column-gap: 24px;
+  row-gap: 0;
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+#section-file-types .setting-group h3 {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin-top: 8px;
+}
+
+#section-file-types .setting-group:first-of-type h3 {
+  border-top: none;
+  margin-top: 0;
 }
 
 /* =============================================

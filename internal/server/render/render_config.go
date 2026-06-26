@@ -9,11 +9,11 @@ import (
 )
 
 // RenderConfigDisplay renders the main configuration display with theme, language and data path
-func RenderConfigDisplay(userSettings configmanager.UserSettings, appConfig configmanager.AppConfig) string {
+func RenderConfigDisplay(appConfig configmanager.AppConfig) string {
 	var html strings.Builder
 	html.WriteString("<div class='config'>")
-	html.WriteString(fmt.Sprintf("<p>%s: %s</p>", translation.SprintfForRequest(configmanager.GetLanguage(), "theme"), userSettings.Theme))
-	html.WriteString(fmt.Sprintf("<p>%s: %s</p>", translation.SprintfForRequest(configmanager.GetLanguage(), "language"), userSettings.Language))
+	html.WriteString(fmt.Sprintf("<p>%s: %s</p>", translation.SprintfForRequest(configmanager.GetLanguage(), "theme"), configmanager.GetTheme()))
+	html.WriteString(fmt.Sprintf("<p>%s: %s</p>", translation.SprintfForRequest(configmanager.GetLanguage(), "language"), configmanager.GetLanguage()))
 	html.WriteString(fmt.Sprintf("<p>%s: %s</p>", translation.SprintfForRequest(configmanager.GetLanguage(), "data path"), appConfig.DataPath))
 	html.WriteString("</div>")
 	return html.String()

@@ -24,7 +24,18 @@
 - additional section edit button on the bottom right
 - add a new setting/env for the default editor
 - version build time = 2 hours wrong, e.g: Build time	2026-06-24 13:31 UTC, my local time: 15:31
-- search in file (new slideout)
+- search in file for rail theme (new slideout)
+- builtin theme: notification style
+- rail theme: admin - environment info style
+- show every env in envrionment info in admin with the env name
+- catch git commit with only the mod changed (e.g. from 755 to 644)
+- codemirror copy + paste with y+p does not work properly (e.g. i have something - in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
+- git cronjob doesnt run/work
+- add a log builder for manual run cronjob
+- i have logs for git remote log even though its not activated
+- basic ssl search - content found - show which content?
+- create new file - search for path - bad background color and color mix hard to read
+
 
 - deployment
   - codeberg deployment pipeline?
@@ -71,4 +82,4 @@ Want to go with D?
 
 # docs
 
-small, precise and concise, high level overview, no examples that are prone to change, just a few bullet points
+small, precise and concise, high level overview, no examples that are prone to change, just a few bullet points, as few subheaders as possible (i think it becomes more unreadable if its too segmented)

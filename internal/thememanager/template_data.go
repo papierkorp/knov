@@ -119,7 +119,7 @@ func NewBaseTemplateData(title string) BaseTemplateData {
 		Language:       configmanager.GetLanguage(),
 		DateFormat:     configmanager.GetDateFormat(),
 		Themes:         themeManager.GetAvailableThemes(),
-		CodeBlockWrap:  configmanager.GetUserSettings().CodeBlockWrap,
+		CodeBlockWrap:  configmanager.CodeBlockWrap.Get(),
 		FileType:       "",
 		T:              translation.Sprintf,
 		Version:        version.Version,
@@ -212,24 +212,22 @@ func CreateFuncMap() template.FuncMap {
 // SettingsTemplateData extends base with settings-specific data
 type SettingsTemplateData struct {
 	BaseTemplateData
-	AvailableLanguages   []configmanager.Language
 	AvailableThemes      []Theme
 	CurrentThemeSettings map[string]interface{}
 	ThemeSettingsSchema  map[string]ThemeSetting
-	UserSettings         configmanager.UserSettings
 	AppConfig            configmanager.AppConfig
+	CustomFaviconExt     string
 }
 
 // NewSettingsTemplateData creates settings-specific data
 func NewSettingsTemplateData() SettingsTemplateData {
 	return SettingsTemplateData{
 		BaseTemplateData:     NewBaseTemplateData("Settings"),
-		AvailableLanguages:   configmanager.GetAvailableLanguages(),
 		AvailableThemes:      themeManager.GetAvailableThemes(),
 		CurrentThemeSettings: getMergedThemeSettings(),
 		ThemeSettingsSchema:  themeManager.GetCurrentThemeSettingsSchema(),
-		UserSettings:         configmanager.GetUserSettings(),
 		AppConfig:            configmanager.GetAppConfig(),
+		CustomFaviconExt:     configmanager.GetCustomFaviconExt(),
 	}
 }
 

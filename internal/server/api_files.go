@@ -90,7 +90,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 
 	for _, entry := range entries {
 		// skip hidden files/folders (dot-prefixed) unless configured to show them
-		if !configmanager.GetAppConfig().ShowHiddenFiles && strings.HasPrefix(entry.Name(), ".") {
+		if !configmanager.GetShowHiddenFiles() && strings.HasPrefix(entry.Name(), ".") {
 			continue
 		}
 		entryPath := filepath.Join(folderPath, entry.Name())

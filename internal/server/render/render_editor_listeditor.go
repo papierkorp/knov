@@ -211,5 +211,5 @@ func RenderListEditor(filepath string, initialItem ...string) string {
 		translation.SprintfForRequest(lang, "type here..."),
 		listItemsJSON,
 		startItemJS,
-		configmanager.GetEditorSettings().WikiLinkCursorEnd)
+		configmanager.WikiLinkCursorEnd.Get())
 }

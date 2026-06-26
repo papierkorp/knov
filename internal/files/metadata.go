@@ -526,9 +526,8 @@ func ValidateMediaMimeType(mimeType string) bool {
 		return false
 	}
 
-	// get current media settings
-	mediaSettings := configmanager.GetUserSettings().MediaSettings
-	allowedTypes := mediaSettings.AllowedMimeTypes
+	// get current allowed mime types
+	allowedTypes := configmanager.GetAllowedMimeTypes()
 
 	// if no allowed types configured, deny by default for security
 	if len(allowedTypes) == 0 {
