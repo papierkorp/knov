@@ -61,6 +61,7 @@ func main() {
 	if err := git.EnsureRemote(); err != nil {
 		logging.LogWarning("failed to configure git remote: %v", err)
 	}
+	git.EnsureRepoConfig()
 
 	// initialize content storage (creates data/docs and data/media directories)
 	if err := contentStorage.Init(); err != nil {

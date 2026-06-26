@@ -65,6 +65,32 @@ func openRepo() (*git.Repository, error) {
 	return git.PlainOpen(dataDir)
 }
 
+// EnsureRepoConfig sets local git config options that should always be present.
+// Called once at startup. Safe to call on repos knov didn't create.
+func EnsureRepoConfig() {
+	repo, err := openRepo()
+	if err != nil {
+		return // no repo yet, nothing to configure
+	}
+
+	cfg, err := repo.Config()
+	if err != nil {
+		logging.LogWarning("git: failed to read repo config: %v", err)
+		return
+	}
+
+	// Windows filesystems don't track the executable bit; without this flag
+	// go-git treats every file as "mode changed" and produces spurious commits.
+	if cfg.Raw.Section("core").Option("filemode") != "false" {
+		cfg.Raw.Section("core").SetOption("filemode", "false")
+		if err := repo.SetConfig(cfg); err != nil {
+			logging.LogWarning("git: failed to set core.filemode=false: %v", err)
+		} else {
+			logging.LogInfo("git: set core.filemode=false in repo config")
+		}
+	}
+}
+
 // GetRecentlyChangedFiles returns recently changed unique files with pagination.
 // count is the number of unique files to return; offset skips that many unique files first.
 func GetRecentlyChangedFiles(count, offset int) ([]GitHistoryFile, error) {
@@ -439,6 +465,47 @@ func CommitModifiedFiles(modifiedFiles []string) error {
 	logging.LogInfo("auto-committed %d modified files to git", len(modifiedFiles))
 	Push()
 	return nil
+}
+
+// CommitAllPending stages every pending change (modified, deleted, untracked)
+// using the equivalent of "git add -A" and commits them.
+// Returns true when a commit was actually made, false when the tree was already clean.
+func CommitAllPending() (bool, error) {
+	repo, err := openRepo()
+	if err != nil {
+		logging.LogDebug("git: no repository found, skipping commit")
+		return false, nil
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return false, err
+	}
+
+	SyncBeforeCommit(nil)
+
+	if err := worktree.AddWithOptions(&git.AddOptions{All: true}); err != nil {
+		return false, fmt.Errorf("git add -A failed: %w", err)
+	}
+
+	_, err = worktree.Commit("auto-commit: files modified", &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  "knov",
+			Email: "knov@localhost",
+			When:  time.Now(),
+		},
+	})
+	if err != nil {
+		if strings.Contains(err.Error(), "nothing to commit") || strings.Contains(err.Error(), "clean working tree") {
+			logging.LogDebug("git: nothing to commit")
+			return false, nil
+		}
+		return false, fmt.Errorf("git commit failed: %w", err)
+	}
+
+	logging.LogInfo("git: auto-committed pending changes")
+	Push()
+	return true, nil
 }
 
 // GetFileHistory returns the git history for a specific file

@@ -28,10 +28,8 @@
 - builtin theme: notification style
 - rail theme: admin - environment info style
 - show every env in envrionment info in admin with the env name
-- catch git commit with only the mod changed (e.g. from 755 to 644)
 - codemirror copy + paste with y+p does not work properly (e.g. i have something - in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
 - add a log builder for manual run cronjob
-- i have logs for git remote log even though its not activated
 - basic ssl search - content found - show which content?
 - create new file - search for path - bad background color and color mix hard to read
 
