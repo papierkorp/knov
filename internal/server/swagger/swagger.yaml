@@ -1,5 +1,13 @@
 basePath: /
 definitions:
+  configmanager.SettingOption:
+    properties:
+      label:
+        description: display text; falls back to Value when empty
+        type: string
+      value:
+        type: string
+    type: object
   dashboard.Dashboard:
     properties:
       id:
@@ -317,6 +325,37 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  server.sectionJSON:
+    properties:
+      key:
+        type: string
+      label:
+        type: string
+      settings:
+        items:
+          $ref: '#/definitions/server.settingJSON'
+        type: array
+    type: object
+  server.settingJSON:
+    properties:
+      desc:
+        type: string
+      dynUrl:
+        type: string
+      group:
+        type: string
+      key:
+        type: string
+      label:
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/configmanager.SettingOption'
+        type: array
+      type:
+        type: string
+      value: {}
     type: object
   testdata.FilterTestResult:
     properties:
@@ -665,23 +704,6 @@ paths:
       summary: Get current configuration
       tags:
       - config
-  /api/config/code-block-wrap:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether code blocks should wrap long lines
-        in: formData
-        name: codeBlockWrap
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update code block wrap setting
-      tags:
-      - config
   /api/config/datapath:
     get:
       produces:
@@ -711,261 +733,6 @@ paths:
       summary: Update data path
       tags:
       - config
-  /api/config/date-format:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: 'Date format: DD.MM.YYYY, YYYY-MM-DD, MM/DD/YYYY, or DD/MM/YYYY'
-        in: formData
-        name: dateFormat
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update date display format
-      tags:
-      - config
-  /api/config/editor/codemirror-auto-brackets:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to auto-close brackets
-        in: formData
-        name: codeMirrorAutoBrackets
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update CodeMirror auto brackets
-      tags:
-      - config
-  /api/config/editor/codemirror-bracket-matching:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to highlight matching brackets
-        in: formData
-        name: codeMirrorBracketMatching
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update CodeMirror bracket matching
-      tags:
-      - config
-  /api/config/editor/codemirror-fold-gutter:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to show the fold gutter
-        in: formData
-        name: codeMirrorFoldGutter
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update CodeMirror fold gutter
-      tags:
-      - config
-  /api/config/editor/codemirror-highlight-selection:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to highlight all occurrences of the selected text
-        in: formData
-        name: codeMirrorHighlightSelection
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update CodeMirror highlight selection matches
-      tags:
-      - config
-  /api/config/editor/codemirror-highlight-selection-whole-word:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to only highlight whole-word matches
-        in: formData
-        name: codeMirrorHighlightSelectionWholeWord
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update CodeMirror highlight selection whole word mode
-      tags:
-      - config
-  /api/config/editor/codemirror-line-numbers:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to show line numbers
-        in: formData
-        name: codeMirrorLineNumbers
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update CodeMirror line numbers
-      tags:
-      - config
-  /api/config/editor/codemirror-relative-line-numbers:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to show relative line numbers
-        in: formData
-        name: codeMirrorRelativeLineNumbers
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update CodeMirror relative line numbers
-      tags:
-      - config
-  /api/config/editor/spell-check:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to enable spell checking in editors
-        in: formData
-        name: spellCheck
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update spell check setting
-      tags:
-      - config
-  /api/config/editor/toastui-modeswitch:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to show the markdown/WYSIWYG switch tab
-        in: formData
-        name: toastuiShowModeSwitch
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update ToastUI mode switch bar visibility
-      tags:
-      - config
-  /api/config/editor/toastui-preview:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: 'Preview style: tab or vertical'
-        in: formData
-        name: toastuiPreviewStyle
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update ToastUI preview style
-      tags:
-      - config
-  /api/config/editor/toastui-toolbar:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to show the formatting toolbar
-        in: formData
-        name: toastuiShowToolbar
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update ToastUI toolbar visibility
-      tags:
-      - config
-  /api/config/editor/toastui-view:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: 'Initial edit type: markdown or wysiwyg'
-        in: formData
-        name: toastuiInitialView
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update ToastUI initial view mode
-      tags:
-      - config
-  /api/config/editor/vim-mode:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to enable vim keybindings
-        in: formData
-        name: codeMirrorVimMode
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update CodeMirror vim mode
-      tags:
-      - config
-  /api/config/editor/wiki-link-cursor-end:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to place the cursor at the end of a wiki link after insertion
-        in: formData
-        name: wikiLinkCursorEnd
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update wiki link cursor end setting
-      tags:
-      - config
   /api/config/export:
     get:
       description: Downloads the current user settings as a JSON file
@@ -973,57 +740,6 @@ paths:
       - application/json
       responses: {}
       summary: Export user settings as JSON
-      tags:
-      - config
-  /api/config/extensions/index:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to use .index extension
-        in: formData
-        name: useExtensionIndex
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update use extension for index files
-      tags:
-      - config
-  /api/config/extensions/list:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to use .list extension
-        in: formData
-        name: useExtensionList
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update use extension for list files
-      tags:
-      - config
-  /api/config/extensions/todo:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to use .todo extension
-        in: formData
-        name: useExtensionTodo
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update use extension for todo files
       tags:
       - config
   /api/config/favicon:
@@ -1073,260 +789,6 @@ paths:
       summary: Upload custom favicon
       tags:
       - config
-  /api/config/file-types/hide-archives:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide archive files
-        in: formData
-        name: hideArchives
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide archive files setting
-      tags:
-      - config
-  /api/config/file-types/hide-executables:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide executable files
-        in: formData
-        name: hideExecutables
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide executable files setting
-      tags:
-      - config
-  /api/config/file-types/hide-filter:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide filter files
-        in: formData
-        name: hideFilter
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide filter files setting
-      tags:
-      - config
-  /api/config/file-types/hide-image:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide image files
-        in: formData
-        name: hideImage
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide image files setting
-      tags:
-      - config
-  /api/config/file-types/hide-index:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide index files
-        in: formData
-        name: hideIndex
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide index files setting
-      tags:
-      - config
-  /api/config/file-types/hide-list:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide list files
-        in: formData
-        name: hideList
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide list files setting
-      tags:
-      - config
-  /api/config/file-types/hide-markdown:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide markdown files
-        in: formData
-        name: hideMarkdown
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide markdown files setting
-      tags:
-      - config
-  /api/config/file-types/hide-office-documents:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide office document files
-        in: formData
-        name: hideOfficeDocuments
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide office document files setting
-      tags:
-      - config
-  /api/config/file-types/hide-pdf:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide pdf files
-        in: formData
-        name: hidePDF
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide pdf files setting
-      tags:
-      - config
-  /api/config/file-types/hide-scripts:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide script files
-        in: formData
-        name: hideScripts
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide script files setting
-      tags:
-      - config
-  /api/config/file-types/hide-text:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide text files
-        in: formData
-        name: hideText
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide text files setting
-      tags:
-      - config
-  /api/config/file-types/hide-todo:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide todo files
-        in: formData
-        name: hideTodo
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide todo files setting
-      tags:
-      - config
-  /api/config/file-types/hide-video:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to hide video files
-        in: formData
-        name: hideVideo
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update hide video files setting
-      tags:
-      - config
-  /api/config/file-types/show-hidden:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to show hidden files
-        in: formData
-        name: showHiddenFiles
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update show hidden files setting
-      tags:
-      - config
-  /api/config/home-dashboard:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Dashboard ID to use as home page (empty for default)
-        in: formData
-        name: homeDashboard
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update home dashboard setting
-      tags:
-      - config
   /api/config/import:
     post:
       consumes:
@@ -1344,17 +806,6 @@ paths:
       summary: Import user settings from JSON
       tags:
       - config
-  /api/config/language:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Set language
-      tags:
-      - config
   /api/config/languages:
     get:
       produces:
@@ -1362,159 +813,6 @@ paths:
       - text/html
       responses: {}
       summary: Get available languages
-      tags:
-      - config
-  /api/config/log-level:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Log level (debug, info, warning, error)
-        in: formData
-        name: logLevel
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update log level setting
-      tags:
-      - config
-  /api/config/media/border-style:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: 'Border style: none, simple, rounded, shadow'
-        in: formData
-        name: borderStyle
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update preview border style
-      tags:
-      - config
-  /api/config/media/click-to-enlarge:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether previews are clickable
-        in: formData
-        name: clickToEnlarge
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update click to enlarge setting
-      tags:
-      - config
-  /api/config/media/default-preview-size:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Default preview size in pixels
-        in: formData
-        name: defaultPreviewSize
-        required: true
-        type: integer
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update default preview size
-      tags:
-      - config
-  /api/config/media/display-mode:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: 'Display mode: left, center, right, inline'
-        in: formData
-        name: displayMode
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update preview display mode
-      tags:
-      - config
-  /api/config/media/enable-previews:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether previews are enabled
-        in: formData
-        name: enablePreviews
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update preview enabled setting
-      tags:
-      - config
-  /api/config/media/mime-types:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Comma-separated list of allowed MIME types
-        in: formData
-        name: allowedMimeTypes
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update allowed MIME types
-      tags:
-      - config
-  /api/config/media/show-caption:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to show captions
-        in: formData
-        name: showCaption
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update show caption setting
-      tags:
-      - config
-  /api/config/media/upload-size:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Maximum upload size in MB
-        in: formData
-        name: maxUploadSizeMB
-        required: true
-        type: integer
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update media upload size limit
       tags:
       - config
   /api/config/repository:
@@ -1549,91 +847,6 @@ paths:
           schema:
             type: string
       summary: Update git remote URL
-      tags:
-      - config
-  /api/config/section-edit-subheaders:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether section editing should include subheaders
-        in: formData
-        name: sectionEditIncludeSubheaders
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update section edit include subheaders setting
-      tags:
-      - config
-  /api/config/table/page-size:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Rows per page (5-200)
-        in: formData
-        name: pageSize
-        required: true
-        type: integer
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update table page size
-      tags:
-      - config
-  /api/config/table/show-info:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to show the row count info line
-        in: formData
-        name: showInfo
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update table show info setting
-      tags:
-      - config
-  /api/config/table/show-paging:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to show pagination buttons
-        in: formData
-        name: showPaging
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update table show paging setting
-      tags:
-      - config
-  /api/config/table/show-search:
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: Whether to show the search input
-        in: formData
-        name: showSearch
-        required: true
-        type: boolean
-      produces:
-      - application/json
-      - text/html
-      responses: {}
-      summary: Update table show search setting
       tags:
       - config
   /api/cronjob:
@@ -4587,6 +3800,105 @@ paths:
       summary: Search files
       tags:
       - search
+  /api/settings:
+    get:
+      description: Returns all settings sections as HTML (HTMX) or JSON
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server.sectionJSON'
+            type: array
+      summary: Get all settings
+      tags:
+      - settings
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Applies all recognised form fields as settings in one call, saving
+        once at the end
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: saved
+          schema:
+            type: string
+        "400":
+          description: one or more validation errors
+          schema:
+            type: string
+        "500":
+          description: failed to save settings
+          schema:
+            type: string
+      summary: Update multiple settings at once
+      tags:
+      - settings
+  /api/settings/{key}:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Updates a single setting value by key and persists it
+      parameters:
+      - description: Setting key (e.g. language, logLevel, showHiddenFiles)
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: New value for the setting
+        in: formData
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.settingJSON'
+        "404":
+          description: unknown setting
+          schema:
+            type: string
+        "500":
+          description: failed to save setting
+          schema:
+            type: string
+      summary: Update a setting
+      tags:
+      - settings
+  /api/settings/{section}:
+    get:
+      description: Returns settings for a single section as HTML (HTMX) or JSON
+      parameters:
+      - description: Section key (e.g. general, editor, table, media, file-types)
+        in: path
+        name: section
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.sectionJSON'
+        "404":
+          description: unknown section
+          schema:
+            type: string
+      summary: Get settings section
+      tags:
+      - settings
   /api/system/cache:
     delete:
       consumes:

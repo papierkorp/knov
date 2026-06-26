@@ -34,13 +34,13 @@ func CheckDateFormat(style string) string {
 
 // GetDateFormat returns the configured date display style (e.g. "DD.MM.YYYY").
 func GetDateFormat() string {
-	return CheckDateFormat(userSettings.DateFormat)
+	return CheckDateFormat(DateFormat.Get())
 }
 
 // SetDateFormat updates user settings with a new date display style.
 func SetDateFormat(style string) {
-	userSettings.DateFormat = CheckDateFormat(style)
-	saveUserSettings()
+	DateFormat.SetFromString(CheckDateFormat(style)) //nolint:errcheck // pre-validated by CheckDateFormat
+	SaveSettings() //nolint:errcheck
 }
 
 // FormatDate formats t as a date only, using the configured display style.

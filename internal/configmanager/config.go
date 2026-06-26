@@ -30,7 +30,6 @@ type AppConfig struct {
 	StoragePath             string
 	LogsPath                string
 	ServerPort              string
-	LogLevel                string
 	GitRemote               string
 	GitRemoteBranch         string
 	GitAutoPush             bool
@@ -50,24 +49,6 @@ type AppConfig struct {
 	CronjobInterval         string
 	SearchIndexInterval     string
 	MetadataRebuildInterval string
-	HideMarkdown            bool
-	HideText                bool
-	HideList                bool
-	HideTodo                bool
-	HideFilter              bool
-	HideIndex               bool
-	HideImage               bool
-	HideVideo               bool
-	HidePDF                 bool
-	HideOfficeDocuments     bool
-	HideArchives            bool
-	HideExecutables         bool
-	HideScripts             bool
-	ShowHiddenFiles         bool
-	HomeDashboard           string
-	UseExtensionTodo        bool
-	UseExtensionList        bool
-	UseExtensionIndex       bool
 	KanbanPrefix            string
 	KanbanStatuses          []string
 	KanbanColumns           []string
@@ -99,7 +80,6 @@ func InitAppConfig() {
 		StoragePath:             getEnv("KNOV_STORAGE_PATH", filepath.Join(baseDir, "storage")),
 		LogsPath:                getEnv("KNOV_LOGS_PATH", filepath.Join(baseDir, "logs")),
 		ServerPort:              getEnv("KNOV_SERVER_PORT", "1324"),
-		LogLevel:                getEnv("KNOV_LOG_LEVEL", "info"),
 		GitRemote:               getEnv("KNOV_GIT_REMOTE", ""),
 		GitRemoteBranch:         getEnv("KNOV_GIT_REMOTE_BRANCH", "main"),
 		GitAutoPush:             getBoolEnv("KNOV_GIT_AUTO_PUSH", true),
@@ -124,24 +104,6 @@ func InitAppConfig() {
 		CronjobInterval:         getEnv("KNOV_CRONJOB_INTERVAL", "5m"),
 		SearchIndexInterval:     getEnv("KNOV_SEARCH_INDEX_INTERVAL", "15m"),
 		MetadataRebuildInterval: getEnv("KNOV_METADATA_REBUILD_INTERVAL", "60m"),
-		HideMarkdown:            getBoolEnv("KNOV_HIDE_MARKDOWN", false),
-		HideText:                getBoolEnv("KNOV_HIDE_TEXT", false),
-		HideList:                getBoolEnv("KNOV_HIDE_LIST", false),
-		HideTodo:                getBoolEnv("KNOV_HIDE_TODO", false),
-		HideFilter:              getBoolEnv("KNOV_HIDE_FILTER", false),
-		HideIndex:               getBoolEnv("KNOV_HIDE_INDEX", false),
-		HideImage:               getBoolEnv("KNOV_HIDE_IMAGE", false),
-		HideVideo:               getBoolEnv("KNOV_HIDE_VIDEO", false),
-		HidePDF:                 getBoolEnv("KNOV_HIDE_PDF", false),
-		HideOfficeDocuments:     getBoolEnv("KNOV_HIDE_OFFICE_DOCUMENTS", false),
-		HideArchives:            getBoolEnv("KNOV_HIDE_ARCHIVES", false),
-		HideExecutables:         getBoolEnv("KNOV_HIDE_EXECUTABLES", false),
-		HideScripts:             getBoolEnv("KNOV_HIDE_SCRIPTS", false),
-		ShowHiddenFiles:         getBoolEnv("KNOV_SHOW_HIDDEN_FILES", false),
-		HomeDashboard:           getEnv("KNOV_HOME_DASHBOARD", "home"),
-		UseExtensionTodo:        getBoolEnv("KNOV_USE_EXTENSION_TODO", false),
-		UseExtensionList:        getBoolEnv("KNOV_USE_EXTENSION_LIST", false),
-		UseExtensionIndex:       getBoolEnv("KNOV_USE_EXTENSION_INDEX", false),
 		KanbanPrefix:            getEnv("KNOV_KANBAN_PREFIX", "kb"),
 		KanbanStatuses:          getStringListEnv("KNOV_KANBAN_STATUS", []string{"inbox", "inprogress", "blocked", "archive"}),
 		KanbanColumns:           getStringListEnv("KNOV_KANBAN_COLUMNS", []string{"inbox", "inprogress", "blocked"}),
@@ -278,7 +240,7 @@ func IsKanbanTag(tag string) bool {
 }
 
 func initLogLevel() {
-	logLevel := appConfig.LogLevel
+	logLevel := getEnv("KNOV_LOG_LEVEL", "info")
 	logging.LogInfo("loglevel set to: %s", logLevel)
 	os.Setenv("KNOV_LOG_LEVEL", logLevel)
 }
@@ -386,17 +348,17 @@ func GetMetadataLinkRegex() []string {
 func IsFileTypeHidden(editorType string) bool {
 	switch strings.ToLower(editorType) {
 	case "toastui-editor":
-		return appConfig.HideMarkdown
+		return HideMarkdown.Get()
 	case "textarea-editor":
-		return appConfig.HideText
+		return HideText.Get()
 	case "list-editor":
-		return appConfig.HideList
+		return HideList.Get()
 	case "todo-editor":
-		return appConfig.HideTodo
+		return HideTodo.Get()
 	case "filter-editor":
-		return appConfig.HideFilter
+		return HideFilter.Get()
 	case "index-editor":
-		return appConfig.HideIndex
+		return HideIndex.Get()
 	default:
 		return false
 	}
@@ -484,49 +446,13 @@ func UpdateEnvFile(key, value string) error {
 // applyEnvToAppConfig updates the in-memory appConfig for any writable env key.
 // Mirrors InitAppConfig so every UpdateEnvFile call is reflected instantly.
 func applyEnvToAppConfig(key, value string) {
-	b := strings.ToLower(value) == "true"
 	switch key {
 	case "KNOV_DATA_PATH":
 		appConfig.DataPath = value
 	case "KNOV_GIT_REMOTE":
 		appConfig.GitRemote = value
 	case "KNOV_LOG_LEVEL":
-		appConfig.LogLevel = value
 		SetLogLevel(value)
-	case "KNOV_HIDE_MARKDOWN":
-		appConfig.HideMarkdown = b
-	case "KNOV_HIDE_TEXT":
-		appConfig.HideText = b
-	case "KNOV_HIDE_LIST":
-		appConfig.HideList = b
-	case "KNOV_HIDE_TODO":
-		appConfig.HideTodo = b
-	case "KNOV_HIDE_FILTER":
-		appConfig.HideFilter = b
-	case "KNOV_HIDE_INDEX":
-		appConfig.HideIndex = b
-	case "KNOV_HIDE_IMAGE":
-		appConfig.HideImage = b
-	case "KNOV_HIDE_VIDEO":
-		appConfig.HideVideo = b
-	case "KNOV_HIDE_PDF":
-		appConfig.HidePDF = b
-	case "KNOV_HIDE_OFFICE_DOCUMENTS":
-		appConfig.HideOfficeDocuments = b
-	case "KNOV_HIDE_ARCHIVES":
-		appConfig.HideArchives = b
-	case "KNOV_HIDE_EXECUTABLES":
-		appConfig.HideExecutables = b
-	case "KNOV_HIDE_SCRIPTS":
-		appConfig.HideScripts = b
-	case "KNOV_SHOW_HIDDEN_FILES":
-		appConfig.ShowHiddenFiles = b
-	case "KNOV_USE_EXTENSION_TODO":
-		appConfig.UseExtensionTodo = b
-	case "KNOV_USE_EXTENSION_LIST":
-		appConfig.UseExtensionList = b
-	case "KNOV_USE_EXTENSION_INDEX":
-		appConfig.UseExtensionIndex = b
 	}
 	// fields like ServerPort, StoragePath, providers are intentionally excluded —
 	// they require a restart to take effect safely.
@@ -565,11 +491,11 @@ func loadEnvFile() {
 func ExtensionForEditor(editorType string) string {
 	switch editorType {
 	case "todo":
-		return utils.Ternary(appConfig.UseExtensionTodo, ".todo", ".md")
+		return utils.Ternary(UseExtensionTodo.Get(), ".todo", ".md")
 	case "list":
-		return utils.Ternary(appConfig.UseExtensionList, ".list", ".md")
+		return utils.Ternary(UseExtensionList.Get(), ".list", ".md")
 	case "index":
-		return utils.Ternary(appConfig.UseExtensionIndex, ".index", ".md")
+		return utils.Ternary(UseExtensionIndex.Get(), ".index", ".md")
 	default:
 		return ".md"
 	}

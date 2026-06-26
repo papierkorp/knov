@@ -176,6 +176,14 @@ func StartServerChi() {
 		r.Post("/cronjob", handleAPIRunCronjob)
 
 		// ----------------------------------------------------------------------------------------
+		// ---------------------------------------- SETTINGS ----------------------------------------
+		// ----------------------------------------------------------------------------------------
+		r.Get("/settings", handleAPIGetAllSettings)
+		r.Post("/settings", handleAPIBulkSetSettings)
+		r.Get("/settings/{section}", handleAPIGetSettingsSection)
+		r.Post("/settings/{key}", handleAPISetSetting)
+
+		// ----------------------------------------------------------------------------------------
 		// ---------------------------------------- THEMES ----------------------------------------
 		// ----------------------------------------------------------------------------------------
 		r.Route("/themes", func(r chi.Router) {
@@ -206,68 +214,11 @@ func StartServerChi() {
 
 			// POST
 			r.Post("/import", handleAPIImportSettings)
-			r.Post("/language", handleAPISetLanguage)
-			r.Post("/date-format", handleAPISetDateFormat)
 			r.Post("/repository", handleAPISetGitRepositoryURL)
 			r.Post("/datapath", handleAPISetDataPath)
 
-			// Media settings endpoints
-			r.Post("/media/upload-size", handleAPIUpdateMediaUploadSize)
-			r.Post("/media/mime-types", handleAPIUpdateMediaMimeTypes)
-			r.Post("/media/default-preview-size", handleAPIUpdateDefaultPreviewSize)
-			r.Post("/media/enable-previews", handleAPIUpdateEnablePreviews)
-			r.Post("/media/display-mode", handleAPIUpdateDisplayMode)
-			r.Post("/media/border-style", handleAPIUpdateBorderStyle)
-			r.Post("/media/show-caption", handleAPIUpdateShowCaption)
-			r.Post("/media/click-to-enlarge", handleAPIUpdateClickToEnlarge)
-
-			// Editor settings endpoints
-			r.Post("/section-edit-subheaders", handleAPIUpdateSectionEditSubheaders)
-			r.Post("/code-block-wrap", handleAPIUpdateCodeBlockWrap)
-			r.Post("/editor/toastui-view", handleAPIUpdateToastuiInitialView)
-			r.Post("/editor/toastui-preview", handleAPIUpdateToastuiPreviewStyle)
-			r.Post("/editor/toastui-toolbar", handleAPIUpdateToastuiShowToolbar)
-			r.Post("/editor/toastui-modeswitch", handleAPIUpdateToastuiShowModeSwitch)
-			r.Post("/editor/vim-mode", handleAPIUpdateCodeMirrorVimMode)
-			r.Post("/editor/codemirror-line-numbers", handleAPIUpdateCodeMirrorLineNumbers)
-			r.Post("/editor/codemirror-relative-line-numbers", handleAPIUpdateCodeMirrorRelativeLineNumbers)
-			r.Post("/editor/codemirror-fold-gutter", handleAPIUpdateCodeMirrorFoldGutter)
-			r.Post("/editor/codemirror-bracket-matching", handleAPIUpdateCodeMirrorBracketMatching)
-			r.Post("/editor/codemirror-auto-brackets", handleAPIUpdateCodeMirrorAutoBrackets)
-			r.Post("/editor/codemirror-highlight-selection", handleAPIUpdateCodeMirrorHighlightSelection)
-			r.Post("/editor/codemirror-highlight-selection-whole-word", handleAPIUpdateCodeMirrorHighlightSelectionWholeWord)
-			r.Post("/editor/spell-check", handleAPIUpdateSpellCheck)
-			r.Post("/editor/wiki-link-cursor-end", handleAPIUpdateWikiLinkCursorEnd)
-
-			// Table display settings endpoints
-			r.Post("/table/page-size", handleAPIUpdateTablePageSize)
-			r.Post("/table/show-search", handleAPIUpdateTableShowSearch)
-			r.Post("/table/show-info", handleAPIUpdateTableShowInfo)
-			r.Post("/table/show-paging", handleAPIUpdateTableShowPaging)
-
 			r.Post("/favicon", handleAPIUploadFavicon)
 			r.Delete("/favicon", handleAPIDeleteFavicon)
-
-			// File type visibility endpoints
-			r.Post("/file-types/hide-markdown", handleAPIUpdateHideMarkdown)
-			r.Post("/file-types/hide-text", handleAPIUpdateHideText)
-			r.Post("/file-types/hide-list", handleAPIUpdateHideList)
-			r.Post("/file-types/hide-todo", handleAPIUpdateHideTodo)
-			r.Post("/file-types/hide-filter", handleAPIUpdateHideFilter)
-			r.Post("/file-types/hide-index", handleAPIUpdateHideIndex)
-			r.Post("/file-types/hide-image", handleAPIUpdateHideImage)
-			r.Post("/file-types/hide-video", handleAPIUpdateHideVideo)
-			r.Post("/file-types/hide-pdf", handleAPIUpdateHidePDF)
-			r.Post("/file-types/hide-office-documents", handleAPIUpdateHideOfficeDocuments)
-			r.Post("/file-types/hide-archives", handleAPIUpdateHideArchives)
-			r.Post("/file-types/hide-executables", handleAPIUpdateHideExecutables)
-			r.Post("/file-types/hide-scripts", handleAPIUpdateHideScripts)
-			r.Post("/file-types/show-hidden", handleAPIUpdateShowHiddenFiles)
-			r.Post("/home-dashboard", handleAPIUpdateHomeDashboard)
-			r.Post("/extensions/todo", handleAPIUpdateUseExtensionTodo)
-			r.Post("/extensions/list", handleAPIUpdateUseExtensionList)
-			r.Post("/extensions/index", handleAPIUpdateUseExtensionIndex)
-			r.Post("/log-level", handleAPIUpdateLogLevel)
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -536,7 +487,7 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		cssFile := strings.TrimPrefix(filePath, "css/")
 
 		if cssFile == "custom.css" {
-			currentTheme := configmanager.GetUserSettings().Theme
+			currentTheme := configmanager.GetTheme()
 			customCSS := ""
 			if val := configmanager.GetThemeSetting(currentTheme, "customCSS"); val != nil {
 				if css, ok := val.(string); ok {
@@ -609,7 +560,7 @@ func handleWebfontsRedirect(w http.ResponseWriter, r *http.Request) {
 // ----------------------------------------------------------------------------------------
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	if id := configmanager.GetAppConfig().HomeDashboard; id != "" {
+	if id := configmanager.GetHomeDashboard(); id != "" {
 		dash, err := dashboard.Get(id)
 		if err != nil {
 			logging.LogWarning("home dashboard %q not found, falling back to home page: %v", id, err)

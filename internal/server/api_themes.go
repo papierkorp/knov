@@ -169,7 +169,7 @@ func handleAPIUpdateThemeSetting(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentTheme := configmanager.GetUserSettings().Theme
+	currentTheme := configmanager.GetTheme()
 	tm := thememanager.GetThemeManager()
 	schema := tm.GetCurrentThemeSettingsSchema()
 

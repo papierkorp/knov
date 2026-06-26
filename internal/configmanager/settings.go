@@ -2,6 +2,7 @@ package configmanager
 
 import (
 	"encoding/json"
+	"fmt"
 	"mime"
 	"path/filepath"
 	"strings"
@@ -11,251 +12,229 @@ import (
 	"knov/internal/translation"
 )
 
-// -----------------------------------------------------------------------------
-// ------------------------------- User Settings ------------------------------
-// -----------------------------------------------------------------------------
+// ── init/save ─────────────────────────────────────────────────────────────────
 
-var userSettings UserSettings
-
-// EditorSettings contains editor behaviour preferences
-type EditorSettings struct {
-	ToastuiInitialView  string `json:"toastuiInitialView"`  // "markdown" | "wysiwyg"
-	ToastuiPreviewStyle string `json:"toastuiPreviewStyle"` // "tab" | "vertical"
-	ToastuiShowToolbar  bool   `json:"toastuiShowToolbar"`
-	ToastuiShowModeSwitch bool `json:"toastuiShowModeSwitch"`
-	CodeMirrorVimMode            bool `json:"codeMirrorVimMode"`
-	CodeMirrorLineNumbers        bool `json:"codeMirrorLineNumbers"`
-	CodeMirrorRelativeLineNumbers bool `json:"codeMirrorRelativeLineNumbers"`
-	CodeMirrorFoldGutter         bool `json:"codeMirrorFoldGutter"`
-	CodeMirrorBracketMatching    bool `json:"codeMirrorBracketMatching"`
-	CodeMirrorAutoBrackets                bool `json:"codeMirrorAutoBrackets"`
-	CodeMirrorHighlightSelection          bool `json:"codeMirrorHighlightSelection"`
-	CodeMirrorHighlightSelectionWholeWord bool `json:"codeMirrorHighlightSelectionWholeWord"`
-	SpellCheck                            bool `json:"spellCheck"`
-	WikiLinkCursorEnd                     bool `json:"wikiLinkCursorEnd"`
-}
-
-// UserSettings contains user-specific settings stored in JSON
-type UserSettings struct {
-	Theme                        string           `json:"theme"`
-	Language                     string           `json:"language"`
-	DateFormat                   string           `json:"dateFormat"`
-	ThemeSettings                AllThemeSettings `json:"themeSettings,omitempty"`
-	MediaSettings                MediaSettings    `json:"mediaSettings,omitempty"`
-	TableSettings                TableSettings    `json:"tableSettings,omitempty"`
-	EditorSettings               EditorSettings   `json:"editorSettings,omitempty"`
-	SectionEditIncludeSubheaders bool             `json:"sectionEditIncludeSubheaders"`
-	CodeBlockWrap                bool             `json:"codeBlockWrap"`
-	CustomFaviconExt             string           `json:"customFaviconExt,omitempty"` // ".ico", ".png", or ".svg"
-}
-
-// TableSettings contains display preferences for interactive tables
-type TableSettings struct {
-	PageSize   int  `json:"pageSize"`   // rows per page
-	ShowSearch bool `json:"showSearch"` // show search input
-	ShowInfo   bool `json:"showInfo"`   // show "showing X-Y of Z" line
-	ShowPaging bool `json:"showPaging"` // show prev/next/first/last buttons
-}
-
-// MediaSettings contains media upload and management settings
-type MediaSettings struct {
-	MaxUploadSizeMB    int      `json:"maxUploadSizeMB"`
-	AllowedMimeTypes   []string `json:"allowedMimeTypes"`
-	DefaultPreviewSize int      `json:"defaultPreviewSize"`
-	EnablePreviews     bool     `json:"enablePreviews"`
-	DisplayMode        string   `json:"displayMode"`    // "left", "center", "right", "inline"
-	BorderStyle        string   `json:"borderStyle"`    // "none", "simple", "rounded", "shadow"
-	ShowCaption        bool     `json:"showCaption"`    // show filename as caption
-	ClickToEnlarge     bool     `json:"clickToEnlarge"` // make previews clickable
-}
-
-// InitUserSettings initializes user settings from storage
-func InitUserSettings() {
-	userSettings = UserSettings{
-		Theme:                        "builtin",
-		Language:                     "en",
-		DateFormat:                   "DD.MM.YYYY",
-		ThemeSettings:                make(AllThemeSettings),
-		SectionEditIncludeSubheaders: false,
-		MediaSettings: MediaSettings{
-			MaxUploadSizeMB: 10,
-			AllowedMimeTypes: []string{
-				// Images (safe to display)
-				"image/jpeg",
-				"image/gif",
-				"image/png",
-				"image/webp",
-				"image/vnd.microsoft.icon",
-				"image/svg+xml",
-				// Audio
-				"audio/mpeg",
-				"audio/ogg",
-				"audio/wav",
-				// Video
-				"video/webm",
-				"video/ogg",
-				"video/mp4",
-				// Documents
-				"application/pdf",
-				// Subtitles
-				"text/vtt",
-				// Uncomment these for trusted users only (security risk):
-				// "text/html",    // Cross-site scripting risk
-				// "text/plain",   // Could be used for spam
-				// "text/xml",     // Potential security risk
-				// "text/csv",     // Data extraction risk
-			},
-			DefaultPreviewSize: 300,
-			EnablePreviews:     true,
-			DisplayMode:        "center",
-			BorderStyle:        "simple",
-			ShowCaption:        false,
-			ClickToEnlarge:     true,
-		},
-		TableSettings: TableSettings{
-			PageSize:   25,
-			ShowSearch: true,
-			ShowInfo:   true,
-			ShowPaging: true,
-		},
-		EditorSettings: EditorSettings{
-			ToastuiInitialView:            "markdown",
-			ToastuiPreviewStyle:           "tab",
-			ToastuiShowToolbar:            true,
-			ToastuiShowModeSwitch:         true,
-			CodeMirrorVimMode:             false,
-			CodeMirrorLineNumbers:         true,
-			CodeMirrorRelativeLineNumbers: false,
-			CodeMirrorFoldGutter:          true,
-			CodeMirrorBracketMatching:     true,
-			CodeMirrorAutoBrackets:                true,
-			CodeMirrorHighlightSelection:          true,
-			CodeMirrorHighlightSelectionWholeWord: true,
-			SpellCheck:                            false,
-			WikiLinkCursorEnd:                     false,
-		},
-	}
-
+// InitSettings loads settings from storage, falling back to defaults if absent.
+func InitSettings() {
 	data, err := configStorage.Get("settings")
 	if err != nil {
 		logging.LogError("failed to read user settings: %v", err)
 		return
 	}
-
 	if data == nil {
 		logging.LogInfo("no user settings found, using defaults")
-		saveUserSettings()
+		if err := SaveSettings(); err != nil {
+			logging.LogError("failed to save default settings: %v", err)
+		}
 		return
 	}
 
-	if err := json.Unmarshal(data, &userSettings); err != nil {
-		logging.LogError("failed to decode user settings: %s", err)
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		logging.LogError("failed to decode user settings: %v", err)
 		return
 	}
 
-	translation.SetLanguage(userSettings.Language)
+	for _, s := range allSettings {
+		if v, ok := raw[s.Key()]; ok {
+			var val interface{}
+			if err := json.Unmarshal(v, &val); err == nil {
+				s.setFromJSON(val)
+			}
+		}
+	}
+
+	applyLanguage(Language.Get())
+
 	logging.LogInfo("user settings loaded")
 }
 
-// GetUserSettings returns current user settings
-func GetUserSettings() UserSettings {
-	return userSettings
+func applyLanguage(lang string) {
+	translation.SetLanguage(CheckLanguage(lang))
 }
 
-// SetUserSettings saves new user settings
-func SetUserSettings(settings UserSettings) {
-	userSettings = settings
-	saveUserSettings()
-}
-
-func saveUserSettings() error {
-	data, err := json.Marshal(userSettings)
+// SaveSettings persists all registry values to storage.
+func SaveSettings() error {
+	m := make(map[string]interface{})
+	for _, s := range allSettings {
+		m[s.Key()] = s.GetValue()
+	}
+	data, err := json.Marshal(m)
 	if err != nil {
-		logging.LogError("failed to marshal user settings: %v", err)
+		logging.LogError("failed to marshal settings: %v", err)
 		return err
 	}
-
 	if err := configStorage.Set("settings", data); err != nil {
-		logging.LogError("failed to save user settings: %v", err)
+		logging.LogError("failed to save settings: %v", err)
 		return err
 	}
-
 	logging.LogInfo("user settings saved")
 	return nil
 }
 
-// GetMaxUploadSize returns the maximum upload size in bytes
-func GetMaxUploadSize() int64 {
-	maxUploadSizeMB := userSettings.MediaSettings.MaxUploadSizeMB
-	if maxUploadSizeMB <= 0 {
-		maxUploadSizeMB = 10
+// BulkSetFromForm applies every key in values whose key is a known setting,
+// then calls SaveSettings exactly once. Validation errors are collected and
+// returned; a save error is appended last. Unknown keys are logged and skipped.
+func BulkSetFromForm(values map[string][]string) []error {
+	var errs []error
+	for key, vals := range values {
+		s := GetSetting(key)
+		if s == nil {
+			logging.LogDebug("BulkSetFromForm: unknown setting key %q, skipping", key)
+			continue
+		}
+		val := ""
+		if len(vals) > 0 {
+			val = vals[0]
+		}
+		if err := s.SetFromString(val); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", key, err))
+		}
 	}
-	return int64(maxUploadSizeMB) * 1024 * 1024
-}
-
-// GetSectionEditIncludeSubheaders returns whether section editing should include subheaders
-func GetSectionEditIncludeSubheaders() bool {
-	return userSettings.SectionEditIncludeSubheaders
-}
-
-// GetDefaultPreviewSize returns the default preview size for media
-func GetDefaultPreviewSize() int {
-	if userSettings.MediaSettings.DefaultPreviewSize <= 0 {
-		return 300
+	if err := SaveSettings(); err != nil {
+		errs = append(errs, err)
 	}
-	return userSettings.MediaSettings.DefaultPreviewSize
+	return errs
 }
 
-// GetPreviewsEnabled returns whether media previews are enabled
-func GetPreviewsEnabled() bool {
-	return userSettings.MediaSettings.EnablePreviews
-}
-
-// GetDisplayMode returns the preview display mode
-func GetDisplayMode() string {
-	mode := userSettings.MediaSettings.DisplayMode
-	if mode == "" {
-		return "center"
+// ExportSettingsJSON returns the current settings as a JSON blob (for export).
+// Note: customFaviconExt is intentionally excluded — the extension is meaningless
+// without the favicon file itself, which is not part of the settings export.
+func ExportSettingsJSON() ([]byte, error) {
+	m := make(map[string]interface{})
+	for _, s := range allSettings {
+		m[s.Key()] = s.GetValue()
 	}
-	return mode
+	return json.MarshalIndent(m, "", "  ")
 }
 
-// GetBorderStyle returns the preview border style
-func GetBorderStyle() string {
-	style := userSettings.MediaSettings.BorderStyle
-	if style == "" {
-		return "simple"
+// ImportSettingsJSON loads settings from a JSON blob and persists them.
+// Note: customFaviconExt is intentionally ignored on import for the same reason
+// it is excluded from export — the favicon file must be uploaded separately.
+func ImportSettingsJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
 	}
-	return style
+	for _, s := range allSettings {
+		if v, ok := raw[s.Key()]; ok {
+			var val interface{}
+			if err := json.Unmarshal(v, &val); err == nil {
+				s.setFromJSON(val)
+			}
+		}
+	}
+	applyLanguage(Language.Get())
+	return SaveSettings()
 }
 
-// GetShowCaption returns whether to show captions
-func GetShowCaption() bool {
-	return userSettings.MediaSettings.ShowCaption
-}
-
-// GetClickToEnlarge returns whether previews are clickable
-func GetClickToEnlarge() bool {
-	return userSettings.MediaSettings.ClickToEnlarge
-}
-
-// GetAllowedMimeTypes returns the list of allowed mime types
-func GetAllowedMimeTypes() []string {
-	return userSettings.MediaSettings.AllowedMimeTypes
-}
+// ── favicon accessors ─────────────────────────────────────────────────────────
+//
+// The custom favicon extension is stored separately from the settings registry.
+// It is set as a side effect of a file upload and is meaningless without the
+// accompanying file on disk, so it is excluded from settings export/import.
+// Use the /api/config/favicon endpoints to manage the favicon file.
 
 // GetCustomFaviconExt returns the file extension of the uploaded custom favicon, or "".
 func GetCustomFaviconExt() string {
-	return userSettings.CustomFaviconExt
+	data, err := configStorage.Get("customFaviconExt")
+	if err != nil || data == nil {
+		return ""
+	}
+	return string(data)
+}
+
+// SetCustomFaviconExt updates the custom favicon extension and persists.
+func SetCustomFaviconExt(ext string) {
+	if err := configStorage.Set("customFaviconExt", []byte(ext)); err != nil {
+		logging.LogError("failed to save custom favicon ext: %v", err)
+	}
 }
 
 // GetCustomFaviconPath returns the full filesystem path of the custom favicon, or "".
 func GetCustomFaviconPath() string {
-	ext := userSettings.CustomFaviconExt
+	ext := GetCustomFaviconExt()
 	if ext == "" {
 		return ""
 	}
 	return filepath.Join(appConfig.StoragePath, "favicon", "favicon"+ext)
+}
+
+// ── convenience helpers ───────────────────────────────────────────────────────
+
+func GetMaxUploadSize() int64 {
+	mb := MaxUploadSizeMB.Get()
+	if mb <= 0 {
+		mb = 10
+	}
+	return int64(mb) * 1024 * 1024
+}
+
+func GetSectionEditIncludeSubheaders() bool { return SectionEditIncludeSubheaders.Get() }
+func GetDefaultPreviewSize() int {
+	s := DefaultPreviewSize.Get()
+	if s <= 0 {
+		return 300
+	}
+	return s
+}
+func GetPreviewsEnabled() bool { return EnablePreviews.Get() }
+func GetDisplayMode() string {
+	m := DisplayMode.Get()
+	if m == "" {
+		return "center"
+	}
+	return m
+}
+func GetBorderStyle() string {
+	s := BorderStyle.Get()
+	if s == "" {
+		return "simple"
+	}
+	return s
+}
+func GetShowCaption() bool         { return ShowCaption.Get() }
+func GetClickToEnlarge() bool      { return ClickToEnlarge.Get() }
+func GetAllowedMimeTypes() []string { return AllowedMimeTypes.Get() }
+
+func GetTablePageSize() int {
+	s := PageSize.Get()
+	if s <= 0 {
+		return 25
+	}
+	return s
+}
+func GetShowHiddenFiles() bool { return ShowHiddenFiles.Get() }
+func GetHomeDashboard() string { return HomeDashboard.Get() }
+
+// ── mime / extension helpers ──────────────────────────────────────────────────
+
+func IsHiddenByMime(mimeType string) bool {
+	switch {
+	case strings.HasPrefix(mimeType, "image/"):
+		return HideImage.Get()
+	case strings.HasPrefix(mimeType, "video/"):
+		return HideVideo.Get()
+	case mimeType == "application/pdf":
+		return HidePDF.Get()
+	}
+	return false
+}
+
+func IsHiddenByExt(ext string) bool {
+	switch ext {
+	case ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+		".ods", ".odt", ".odp", ".odg", ".odc":
+		return HideOfficeDocuments.Get()
+	case ".zip", ".rar", ".7z", ".gz", ".tar", ".bz2", ".xz", ".tgz":
+		return HideArchives.Get()
+	case ".exe", ".jar", ".pfx", ".db", ".jd2backup",
+		".ts3_plugin", ".ppk", ".chm", ".ini":
+		return HideExecutables.Get()
+	case ".sh", ".bat", ".cmd", ".ps1", ".py", ".rb", ".pl":
+		return HideScripts.Get()
+	}
+	return false
 }
 
 // MimeTypeByExtension returns the clean mime type for an extension (no parameters).
@@ -289,75 +268,4 @@ func IsVideoExtension(ext string) bool {
 // IsAudioExtension returns true if the extension maps to an audio/* mime type.
 func IsAudioExtension(ext string) bool {
 	return strings.HasPrefix(MimeTypeByExtension(ext), "audio/")
-}
-
-// GetEditorSettings returns the current editor settings
-func GetEditorSettings() EditorSettings {
-	return userSettings.EditorSettings
-}
-
-// GetTableSettings returns the current table display settings
-func GetTableSettings() TableSettings {
-	return userSettings.TableSettings
-}
-
-// GetTablePageSize returns the configured rows-per-page, falling back to 25
-func GetTablePageSize() int {
-	if userSettings.TableSettings.PageSize <= 0 {
-		return 25
-	}
-	return userSettings.TableSettings.PageSize
-}
-
-// GetTableShowSearch returns whether the table search input should be shown
-func GetTableShowSearch() bool {
-	return userSettings.TableSettings.ShowSearch
-}
-
-// GetTableShowInfo returns whether the "showing X-Y of Z" line should be shown
-func GetTableShowInfo() bool {
-	return userSettings.TableSettings.ShowInfo
-}
-
-// GetTableShowPaging returns whether pagination buttons should be shown
-func GetTableShowPaging() bool {
-	return userSettings.TableSettings.ShowPaging
-}
-
-// IsHiddenByMime returns true if files with the given mime type should
-// be hidden based on the current AppConfig settings.
-// Image/video/audio/pdf use mime prefix matching (reliable on all platforms).
-func IsHiddenByMime(mimeType string) bool {
-	switch {
-	case strings.HasPrefix(mimeType, "image/"):
-		return appConfig.HideImage
-	case strings.HasPrefix(mimeType, "video/"):
-		return appConfig.HideVideo
-	case mimeType == "application/pdf":
-		return appConfig.HidePDF
-	}
-	return false
-}
-
-// IsHiddenByExt returns true if files with the given extension should
-// be hidden based on the current AppConfig settings.
-// Used for binary types whose mime types are unreliable on Linux.
-func IsHiddenByExt(ext string) bool {
-	switch ext {
-	// office documents
-	case ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
-		".ods", ".odt", ".odp", ".odg", ".odc":
-		return appConfig.HideOfficeDocuments
-	// archives
-	case ".zip", ".rar", ".7z", ".gz", ".tar", ".bz2", ".xz", ".tgz":
-		return appConfig.HideArchives
-	// executables and binary blobs
-	case ".exe", ".jar", ".pfx", ".db", ".jd2backup",
-		".ts3_plugin", ".ppk", ".chm", ".ini":
-		return appConfig.HideExecutables
-	// scripts
-	case ".sh", ".bat", ".cmd", ".ps1", ".py", ".rb", ".pl":
-		return appConfig.HideScripts
-	}
-	return false
 }

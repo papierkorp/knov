@@ -154,11 +154,9 @@ func RenderTableHTML(data *types.TableData, filepath string, tableIndex, page, s
 	}
 	searchInclude := fmt.Sprintf("#table-search-%d", tableIndex)
 
-	ts := configmanager.GetTableSettings()
-
 	html += fmt.Sprintf(`<div id="%s" class="table-container">`, targetID)
 
-	if ts.ShowSearch {
+	if configmanager.ShowSearch.Get() {
 		searchInputID := fmt.Sprintf("table-search-%d", tableIndex)
 		html += `<div class="table-controls">`
 		html += fmt.Sprintf(`
@@ -226,7 +224,7 @@ func RenderTableHTML(data *types.TableData, filepath string, tableIndex, page, s
 
 	html += `<div class="table-footer-right">`
 
-	if ts.ShowInfo {
+	if configmanager.ShowInfo.Get() {
 		if data.Total > 0 {
 			html += fmt.Sprintf(`<span class="table-info">Showing %d-%d of %d rows</span>`, start, end, data.Total)
 		} else {
@@ -234,7 +232,7 @@ func RenderTableHTML(data *types.TableData, filepath string, tableIndex, page, s
 		}
 	}
 
-	if ts.ShowPaging {
+	if configmanager.ShowPaging.Get() {
 		html += `<div class="pagination">`
 
 		if page > 1 {
