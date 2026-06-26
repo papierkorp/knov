@@ -134,7 +134,6 @@ func main() {
 	go func() {
 		time.Sleep(5 * time.Minute)
 		cronjob.Start()
-		defer cronjob.Stop()
 	}()
 
 	server.StartServerChi()

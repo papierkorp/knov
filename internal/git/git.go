@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,6 +18,8 @@ import (
 	"knov/internal/logging"
 	"knov/internal/notificationStorage"
 	"knov/internal/pathutils"
+
+	"sync"
 
 	"github.com/go-git/go-git/v5"
 	gitcfg "github.com/go-git/go-git/v5/config"
@@ -1200,7 +1203,17 @@ func detectMovesInCommit(repo *git.Repository, fromCommit, toCommit *object.Comm
 // ----------- Remote sync (optional) -----------
 // -----------------------------------------------
 
-var gitLog = logging.LogBuilder("git-remote")
+var (
+	gitLogOnce sync.Once
+	gitLogInst *log.Logger
+)
+
+func gitLog() *log.Logger {
+	gitLogOnce.Do(func() {
+		gitLogInst = logging.LogBuilder("git-remote")
+	})
+	return gitLogInst
+}
 
 // remoteEnabled returns true when a remote is configured.
 func remoteEnabled() bool {
@@ -1229,7 +1242,7 @@ func buildAuth() (transport.AuthMethod, error) {
 		auth, err := ssh.NewSSHAgentAuth("git")
 		if err != nil {
 			// SSH agent not available — fall back to default key files
-			gitLog.Printf("SSH agent not available (%v), trying default keys", err)
+			gitLog().Printf("SSH agent not available (%v), trying default keys", err)
 			home, _ := os.UserHomeDir()
 			for _, name := range []string{"id_ed25519", "id_rsa", "id_ecdsa"} {
 				keyPath := filepath.Join(home, ".ssh", name)
@@ -1240,7 +1253,7 @@ func buildAuth() (transport.AuthMethod, error) {
 					}
 				}
 			}
-			gitLog.Printf("no SSH auth available — set KNOV_GIT_SSH_KEY to your key path")
+			gitLog().Printf("no SSH auth available — set KNOV_GIT_SSH_KEY to your key path")
 			return nil, nil
 		}
 		return auth, nil
@@ -1295,7 +1308,7 @@ func PullRebase() error {
 
 	auth, err := buildAuth()
 	if err != nil {
-		gitLog.Printf("pull: failed to build auth: %v", err)
+		gitLog().Printf("pull: failed to build auth: %v", err)
 	}
 
 	err = worktree.PullContext(ctx, &git.PullOptions{
@@ -1308,11 +1321,11 @@ func PullRebase() error {
 
 	if err != nil {
 		if errors.Is(err, git.NoErrAlreadyUpToDate) {
-			gitLog.Printf("already up to date")
+			gitLog().Printf("already up to date")
 			return nil
 		}
 		if errors.Is(err, context.DeadlineExceeded) {
-			gitLog.Printf("pull timed out after %s — continuing with local commit", timeout)
+			gitLog().Printf("pull timed out after %s — continuing with local commit", timeout)
 			return nil // non-fatal: commit locally, push on next cycle
 		}
 		// check if it's a merge conflict
@@ -1322,7 +1335,7 @@ func PullRebase() error {
 		return fmt.Errorf("git pull failed: %w", err)
 	}
 
-	gitLog.Printf("pulled from %s/%s", remote, branch)
+	gitLog().Printf("pulled from %s/%s", remote, branch)
 	return nil
 }
 
@@ -1340,7 +1353,7 @@ func fetchAndReset() (map[string]struct{}, error) {
 
 	auth, err := buildAuth()
 	if err != nil {
-		gitLog.Printf("fetch: failed to build auth: %v", err)
+		gitLog().Printf("fetch: failed to build auth: %v", err)
 	}
 
 	timeout := parsePushTimeout()
@@ -1356,13 +1369,13 @@ func fetchAndReset() (map[string]struct{}, error) {
 	})
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		if errors.Is(err, context.DeadlineExceeded) {
-			gitLog.Printf("fetch timed out after %s — continuing with local commit", timeout)
+			gitLog().Printf("fetch timed out after %s — continuing with local commit", timeout)
 			return nil, nil
 		}
 		return nil, fmt.Errorf("git fetch failed: %w", err)
 	}
 	if errors.Is(err, git.NoErrAlreadyUpToDate) {
-		gitLog.Printf("fetch: already up to date")
+		gitLog().Printf("fetch: already up to date")
 		return nil, nil
 	}
 
@@ -1413,7 +1426,7 @@ func fetchAndReset() (map[string]struct{}, error) {
 		return nil, fmt.Errorf("fetch: hard reset failed: %w", err)
 	}
 
-	gitLog.Printf("fetched and reset to remote %s/%s", remote, branch)
+	gitLog().Printf("fetched and reset to remote %s/%s", remote, branch)
 	keys := make([]string, 0, len(changedFiles))
 	for k := range changedFiles {
 		keys = append(keys, k)
@@ -1600,7 +1613,7 @@ func Push() {
 	go func() {
 		repo, err := openRepo()
 		if err != nil {
-			gitLog.Printf("push: failed to open repo: %v", err)
+			gitLog().Printf("push: failed to open repo: %v", err)
 			return
 		}
 
@@ -1613,7 +1626,7 @@ func Push() {
 
 		auth, authErr := buildAuth()
 		if authErr != nil {
-			gitLog.Printf("push: failed to build auth: %v", authErr)
+			gitLog().Printf("push: failed to build auth: %v", authErr)
 		}
 
 		err = repo.PushContext(ctx, &git.PushOptions{
@@ -1625,14 +1638,14 @@ func Push() {
 
 		if err != nil {
 			if errors.Is(err, git.NoErrAlreadyUpToDate) {
-				gitLog.Printf("nothing to push")
+				gitLog().Printf("nothing to push")
 				return
 			}
-			gitLog.Printf("push failed: %v", err)
+			gitLog().Printf("push failed: %v", err)
 			return
 		}
 
-		gitLog.Printf("pushed to %s/%s", remote, branch)
+		gitLog().Printf("pushed to %s/%s", remote, branch)
 	}()
 }
 
@@ -1680,26 +1693,26 @@ func EnsureRemote() error {
 // Returns a descriptive result string and logs details to logs/git-remote.log.
 func TestAuth() (string, error) {
 	remote := configmanager.GetGitRemote()
-	gitLog.Printf("=== auth test start ===")
-	gitLog.Printf("remote: %s", remote)
-	gitLog.Printf("branch: %s", configmanager.GetGitRemoteBranch())
-	gitLog.Printf("ssh key: %q", configmanager.GetGitSSHKey())
-	gitLog.Printf("user: %q", configmanager.GetAppConfig().GitUser)
+	gitLog().Printf("=== auth test start ===")
+	gitLog().Printf("remote: %s", remote)
+	gitLog().Printf("branch: %s", configmanager.GetGitRemoteBranch())
+	gitLog().Printf("ssh key: %q", configmanager.GetGitSSHKey())
+	gitLog().Printf("user: %q", configmanager.GetAppConfig().GitUser)
 
 	auth, err := buildAuth()
 	if err != nil {
-		gitLog.Printf("auth build failed: %v", err)
+		gitLog().Printf("auth build failed: %v", err)
 		return "", fmt.Errorf("auth build failed: %w", err)
 	}
 	if auth == nil {
-		gitLog.Printf("auth: nil (no credentials configured)")
+		gitLog().Printf("auth: nil (no credentials configured)")
 	} else {
-		gitLog.Printf("auth: %T", auth)
+		gitLog().Printf("auth: %T", auth)
 	}
 
 	repo, err := openRepo()
 	if err != nil {
-		gitLog.Printf("open repo failed: %v", err)
+		gitLog().Printf("open repo failed: %v", err)
 		return "", fmt.Errorf("open repo failed: %w", err)
 	}
 
@@ -1709,19 +1722,19 @@ func TestAuth() (string, error) {
 	// ls-remote is the lightest possible check — doesn't change anything
 	rem, err := repo.Remote("origin")
 	if err != nil {
-		gitLog.Printf("no origin remote: %v", err)
+		gitLog().Printf("no origin remote: %v", err)
 		return "", fmt.Errorf("no origin remote: %w", err)
 	}
 
 	refs, err := rem.ListContext(ctx, &git.ListOptions{Auth: auth})
 	if err != nil {
-		gitLog.Printf("list remote failed: %v", err)
+		gitLog().Printf("list remote failed: %v", err)
 		return "", fmt.Errorf("remote auth failed: %w", err)
 	}
 
 	result := fmt.Sprintf("connected to %s — %d refs found", remote, len(refs))
-	gitLog.Printf("%s", result)
-	gitLog.Printf("=== auth test end ===")
+	gitLog().Printf("%s", result)
+	gitLog().Printf("=== auth test end ===")
 	return result, nil
 }
 
