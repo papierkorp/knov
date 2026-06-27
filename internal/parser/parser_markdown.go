@@ -149,6 +149,20 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	return []byte(result), nil
 }
 
+// RenderInlineMarkdown renders inline markdown (code, bold, italic, links) to HTML.
+// It strips the wrapping <p> tag goldmark adds around single-line input.
+func RenderInlineMarkdown(s string) string {
+	md := goldmark.New(goldmark.WithExtensions(extension.GFM))
+	var buf bytes.Buffer
+	if err := md.Convert([]byte(s), &buf); err != nil {
+		return s
+	}
+	result := strings.TrimSpace(buf.String())
+	result = strings.TrimPrefix(result, "<p>")
+	result = strings.TrimSuffix(result, "</p>")
+	return strings.TrimSpace(result)
+}
+
 // ---------------------------------------------------------------------------
 // Custom node renderer — handles code blocks (chroma), tables (HTMX), images
 // ---------------------------------------------------------------------------

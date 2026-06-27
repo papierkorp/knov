@@ -100,13 +100,13 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 func simpleToTableData(headers []string, rows [][]string) *types.TableData {
 	tHeaders := make([]types.TableHeader, len(headers))
 	for i, h := range headers {
-		tHeaders[i] = types.TableHeader{Content: h, DataType: "text", Align: "left", Sortable: true, ColumnIdx: i}
+		tHeaders[i] = types.TableHeader{Content: parser.RenderInlineMarkdown(h), DataType: "text", Align: "left", Sortable: true, ColumnIdx: i}
 	}
 	tRows := make([][]types.TableCell, len(rows))
 	for i, row := range rows {
 		tRow := make([]types.TableCell, len(row))
 		for j, cell := range row {
-			tRow[j] = types.TableCell{Content: cell, DataType: "text", Align: "left", RawValue: cell}
+			tRow[j] = types.TableCell{Content: parser.RenderInlineMarkdown(cell), DataType: "text", Align: "left", RawValue: cell}
 		}
 		tRows[i] = tRow
 	}

@@ -14,22 +14,22 @@
 - add a `create_your_own_theme.md` file
 
 **per ai**
-- media gitignore
+- search in file for rail theme (new slideout)
+- additional section edit button on the bottom right
+- detect if a request is already loading and block multiple requests of the same kind (e.g. to block a user starting multiple cronjobs or metadata rebuilds at the same time one after another)
+- wiki link for text editor?
+- add a new setting/env for the default editor
 - add chat to a single file?
 - references - add date
-- detect if a request is already loading and block multiple requests of the same kind
-- rename testdata to test and add some kind of test (playwright?)
-- code blocks in tables are not displayed as code
-- wiki link for text editor?
-- additional section edit button on the bottom right
-- add a new setting/env for the default editor
-- version build time = 2 hours wrong, e.g: Build time	2026-06-24 13:31 UTC, my local time: 15:31
-- search in file for rail theme (new slideout)
-- builtin theme: notification style
+- version
+  - version build time = 2 hours wrong, e.g: Build time	2026-06-24 13:31 UTC, my local time: 15:31
+  - change to a generated file?
 - codemirror copy + paste with y+p does not work properly (e.g. i have something - in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
 - add a log builder for manual run cronjob
-- basic ssl search - content found - show which content?
-- create new file - search for path - bad background color and color mix hard to read
+- rename testdata to test and add some kind of test (playwright?)
+- search
+  - basic ssl search - content found - show which content?
+  - create new file - search for path - bad background color and color mix hard to read
 
 
 - deployment
@@ -38,7 +38,6 @@
     - for usage
     - for devs
 - backup solution
-- fix all the editor warnings
 
 # performance updates
 
