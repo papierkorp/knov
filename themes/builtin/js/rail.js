@@ -332,6 +332,20 @@ function switchFileSubPanel(view) {
       filterTocItems("");
     }
   }
+  // clear find highlights when leaving find panel
+  if (view !== "find") {
+    clearFindHighlights();
+    const findInput = document.getElementById("fp-find-input");
+    if (findInput) findInput.value = "";
+    const countEl = document.getElementById("fp-find-count");
+    if (countEl) countEl.textContent = "";
+    const resultsEl = document.getElementById("fp-find-results");
+    if (resultsEl) resultsEl.innerHTML = "";
+    _findMatches = [];
+    _findIndex = -1;
+  } else {
+    setTimeout(() => document.getElementById("fp-find-input")?.focus(), 50);
+  }
 }
 
 // ================================================================
@@ -1103,4 +1117,160 @@ function filterLatestChanges(query) {
       headers: { Accept: "text/html" },
     });
   }, 300);
+}
+
+// ================================================================
+// find in file — client-side text search + highlight
+// ================================================================
+// Each entry: { el: <mark>, before: string, after: string }
+let _findMatches = [];
+let _findIndex = -1;
+
+function searchInFile(query) {
+  clearFindHighlights();
+  _findMatches = [];
+  _findIndex = -1;
+  const countEl = document.getElementById("fp-find-count");
+  const resultsEl = document.getElementById("fp-find-results");
+  if (!query.trim()) {
+    if (countEl) countEl.textContent = "";
+    if (resultsEl) resultsEl.innerHTML = "";
+    return;
+  }
+  const article = document.querySelector("article.file-content");
+  if (!article) return;
+
+  const walker = document.createTreeWalker(article, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  let node;
+  while ((node = walker.nextNode())) {
+    const tag = node.parentNode?.tagName?.toLowerCase();
+    if (tag === "script" || tag === "style") continue;
+    textNodes.push(node);
+  }
+
+  const q = query.toLowerCase();
+  textNodes.forEach((n) => _highlightInNode(n, q, _findMatches));
+
+  if (countEl)
+    countEl.textContent =
+      _findMatches.length > 0 ? `1 / ${_findMatches.length}` : "0";
+  _renderFindResults();
+  if (_findMatches.length > 0) {
+    _findIndex = 0;
+    _scrollToFindMatch();
+  }
+}
+
+function _highlightInNode(textNode, q, result) {
+  const text = textNode.textContent;
+  const lower = text.toLowerCase();
+  if (!lower.includes(q)) return;
+  const parent = textNode.parentNode;
+  const frag = document.createDocumentFragment();
+  const newMarks = [];
+  let last = 0;
+  let idx = lower.indexOf(q);
+  while (idx !== -1) {
+    if (idx > last) frag.appendChild(document.createTextNode(text.slice(last, idx)));
+    const mark = document.createElement("mark");
+    mark.className = "kfind";
+    mark.textContent = text.slice(idx, idx + q.length);
+    frag.appendChild(mark);
+    newMarks.push(mark);
+    last = idx + q.length;
+    idx = lower.indexOf(q, last);
+  }
+  if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+  parent.replaceChild(frag, textNode);
+  // Context is read from DOM siblings AFTER insertion.
+  // Staying within the same parent means no before context when at the start of a block element.
+  for (const mark of newMarks) {
+    result.push({ el: mark, before: _ctxBefore(mark, 2), after: _ctxAfter(mark, 3) });
+  }
+}
+
+function _ctxBefore(node, numWords) {
+  // No before context if the match is the first child of its parent (= start of line)
+  const prev = node.previousSibling;
+  if (!prev) return "";
+  const text = prev.textContent.replace(/\s+/g, " ").trimEnd();
+  if (!text.trim()) return "";
+  return text.split(/\s+/).filter(Boolean).slice(-numWords).join(" ");
+}
+
+function _ctxAfter(node, numWords) {
+  const next = node.nextSibling;
+  if (!next || next.nodeName === "MARK") return "";
+  const text = next.textContent.replace(/\s+/g, " ").trimStart();
+  if (!text.trim()) return "";
+  return text.split(/\s+/).filter(Boolean).slice(0, numWords).join(" ");
+}
+
+function _renderFindResults() {
+  const el = document.getElementById("fp-find-results");
+  if (!el) return;
+  el.innerHTML = "";
+  _findMatches.forEach((m, i) => {
+    const item = document.createElement("button");
+    item.className = "fp-find-item";
+    item.dataset.idx = i;
+    item.innerHTML =
+      `<span class="fp-find-ctx">${_escHtml(m.before)}</span>` +
+      `<span class="fp-find-hl">${_escHtml(m.el.textContent)}</span>` +
+      `<span class="fp-find-ctx">${_escHtml(m.after)}</span>`;
+    item.addEventListener("click", () => {
+      _findIndex = i;
+      _scrollToFindMatch();
+    });
+    el.appendChild(item);
+  });
+}
+
+function _escHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function clearFindHighlights() {
+  document.querySelectorAll("mark.kfind").forEach((m) => {
+    m.replaceWith(document.createTextNode(m.textContent));
+  });
+  document.querySelector("article.file-content")?.normalize();
+}
+
+function _scrollToFindMatch() {
+  document.querySelectorAll("mark.kfind").forEach((m) => m.classList.remove("current"));
+  document.querySelectorAll(".fp-find-item").forEach((b) => b.classList.remove("active"));
+  const match = _findMatches[_findIndex];
+  if (!match) return;
+  match.el.classList.add("current");
+  match.el.scrollIntoView({ behavior: "smooth", block: "center" });
+  const countEl = document.getElementById("fp-find-count");
+  if (countEl)
+    countEl.textContent = `${_findIndex + 1} / ${_findMatches.length}`;
+  const itemEl = document.querySelector(`.fp-find-item[data-idx="${_findIndex}"]`);
+  if (itemEl) {
+    itemEl.classList.add("active");
+    itemEl.scrollIntoView({ block: "nearest" });
+  }
+}
+
+function nextFindMatch() {
+  if (_findMatches.length === 0) return;
+  _findIndex = (_findIndex + 1) % _findMatches.length;
+  _scrollToFindMatch();
+}
+
+function prevFindMatch() {
+  if (_findMatches.length === 0) return;
+  _findIndex = (_findIndex - 1 + _findMatches.length) % _findMatches.length;
+  _scrollToFindMatch();
+}
+
+function handleFindKey(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    if (e.shiftKey) prevFindMatch();
+    else nextFindMatch();
+  }
 }

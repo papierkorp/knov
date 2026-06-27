@@ -252,6 +252,7 @@
                     <button class="fp-file-mode-btn"        data-mode="history"     onclick="switchFileSubPanel('history')"     title="{{T "history"}}"><i class="fa fa-clock-rotate-left"></i></button>
                     <button class="fp-file-mode-btn"        data-mode="references"  onclick="switchFileSubPanel('references')"  title="{{T "references"}}"><i class="fa fa-link"></i></button>
                     <button class="fp-file-mode-btn"        data-mode="connections" onclick="switchFileSubPanel('connections')" title="{{T "connections"}}"><i class="fa fa-diagram-project"></i></button>
+                    <button class="fp-file-mode-btn"        data-mode="find"        onclick="switchFileSubPanel('find')"        title="{{T "find in file"}}"><i class="fa fa-magnifying-glass"></i></button>
                 </div>
                 {{end}}
             </div>
@@ -296,6 +297,21 @@
                         <textarea name="description" rows="2" placeholder="{{T "description"}}"></textarea>
                         <button type="submit" class="btn-small btn-primary">{{T "add"}}</button>
                     </form>
+                </div>
+
+                <div class="fp-sub-panel" id="fps-find">
+                    <div class="fp-find-controls">
+                        <input type="search" id="fp-find-input" placeholder="{{T "find in file..."}}"
+                               oninput="searchInFile(this.value)"
+                               onkeydown="handleFindKey(event)"
+                               autocomplete="off"/>
+                        <div class="fp-find-nav">
+                            <span id="fp-find-count"></span>
+                            <button onclick="prevFindMatch()" title="{{T "previous"}}"><i class="fa fa-chevron-up"></i></button>
+                            <button onclick="nextFindMatch()" title="{{T "next"}}"><i class="fa fa-chevron-down"></i></button>
+                        </div>
+                    </div>
+                    <div id="fp-find-results"></div>
                 </div>
 
                 <div class="fp-sub-panel" id="fps-connections">

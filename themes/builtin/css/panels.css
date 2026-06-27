@@ -1196,7 +1196,8 @@
 
 #fp-toc-filter,
 #fp-versions-search,
-#fp-latest-search {
+#fp-latest-search,
+#fp-find-input {
   display: block;
   width: 100%;
   box-sizing: border-box;
@@ -1212,8 +1213,121 @@
 
 #fp-toc-filter:focus,
 #fp-versions-search:focus,
-#fp-latest-search:focus {
+#fp-latest-search:focus,
+#fp-find-input:focus {
   border-color: var(--primary);
+}
+
+/* =============================================
+   find in file
+   ============================================= */
+
+.fp-find-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#fp-find-input {
+  margin-bottom: 0;
+}
+
+.fp-find-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+#fp-find-count {
+  flex: 1;
+  font-size: 0.75em;
+  color: var(--text-secondary);
+}
+
+.fp-find-nav button {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 7px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 0.8em;
+}
+
+.fp-find-nav button:hover {
+  background: var(--bg-secondary);
+}
+
+#fp-find-results {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.fp-find-item {
+  display: flex;
+  align-items: baseline;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  padding: 3px 5px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-family: monospace;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.fp-find-item:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border);
+}
+
+.fp-find-item.active {
+  background: var(--bg-secondary);
+  border-color: var(--primary);
+}
+
+.fp-find-ctx {
+  color: var(--text-secondary);
+}
+
+.fp-find-hl {
+  background: #ffe066;
+  color: #000;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.fp-find-item.active .fp-find-hl {
+  background: #ff9500;
+}
+
+mark.kfind {
+  background: #ffe066;
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+mark.kfind.current {
+  background: #ff9500;
+  outline: 2px solid #e07800;
+}
+
+@media (prefers-color-scheme: dark) {
+  mark.kfind {
+    background: #7a6a00;
+    color: var(--text);
+  }
+  mark.kfind.current {
+    background: #b37200;
+    outline-color: #ffa500;
+  }
 }
 
 /* =============================================
