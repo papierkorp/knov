@@ -86,7 +86,6 @@ func InitThemeManager() {
 	exe, err := os.Executable()
 	if err == nil && !strings.Contains(exe, "go-build") {
 		initBuiltInTheme(builtinThemeFiles)
-		initRailTheme(railThemeFiles)
 	}
 
 	loadAllThemes()
@@ -343,54 +342,6 @@ func injectDefaultJS(html string) string {
 	scripts += `<script src="/static/todo-state.js"></script>`
 	scripts += `<script src="/static/conflict-diff.js"></script>`
 	return html[:bodyCloseIndex] + scripts + html[bodyCloseIndex:]
-}
-
-// -----------------------------------------------
-// ---------------- Handle Rail ------------------
-// -----------------------------------------------
-
-var railThemeFiles embed.FS
-
-func SetRailFiles(files embed.FS) {
-	railThemeFiles = files
-}
-
-func initRailTheme(railTheme embed.FS) error {
-	railDir := "themes/rail"
-
-	if err := os.MkdirAll(railDir, 0755); err != nil {
-		return fmt.Errorf("failed to create rail theme directory: %w", err)
-	}
-
-	err := fs.WalkDir(railTheme, "themes/rail", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if path == "themes/rail" {
-			return nil
-		}
-
-		relPath := strings.TrimPrefix(path, "themes/rail")
-		targetPath := filepath.Join(railDir, relPath)
-
-		if d.IsDir() {
-			return os.MkdirAll(targetPath, 0755)
-		}
-
-		data, err := railTheme.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("failed to read embedded file %s: %w", path, err)
-		}
-
-		return os.WriteFile(targetPath, data, 0644)
-	})
-
-	if err != nil {
-		return fmt.Errorf("failed to extract rail theme: %w", err)
-	}
-
-	logging.LogInfo("extracted rail theme")
-	return nil
 }
 
 // -----------------------------------------------

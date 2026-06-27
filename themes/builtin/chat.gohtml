@@ -1,9 +1,3 @@
 {{/* theme: builtin */}}
 {{ define "content" }}
-<div class="page-chat"
-    hx-get="/api/chat/messages"
-    hx-trigger="load"
-    hx-swap="innerHTML">
-</div>
-<script src="/themes/{{.CurrentTheme}}/js/chat-bulk.js"></script>
 {{ end }}

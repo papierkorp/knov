@@ -26,8 +26,6 @@
 - version build time = 2 hours wrong, e.g: Build time	2026-06-24 13:31 UTC, my local time: 15:31
 - search in file for rail theme (new slideout)
 - builtin theme: notification style
-- rail theme: admin - environment info style
-- show every env in envrionment info in admin with the env name
 - codemirror copy + paste with y+p does not work properly (e.g. i have something - in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
 - add a log builder for manual run cronjob
 - basic ssl search - content found - show which content?

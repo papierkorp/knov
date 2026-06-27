@@ -1,4 +1,4 @@
-// theme: rail
+// theme: builtin
 
 // ================================================================
 // media list filter (client-side, no extra API call)

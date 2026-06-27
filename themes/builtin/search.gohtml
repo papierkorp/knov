@@ -6,12 +6,13 @@
         <input
             type="text"
             placeholder="{{T "Search files..."}}"
-            hx-get="/api/search?format={{ index .ThemeSettings "searchResultsDisplay" }}"
+            hx-get="/api/search?format=cards"
             hx-target="#page-search-results"
             hx-trigger="keyup changed delay:300ms, load"
+            hx-include="#search-titleonly, #search-history"
             name="q"
             id="search-page-input"
-            data-format="{{ index .ThemeSettings "searchResultsDisplay" }}"
+            data-format="cards"
             value="{{ .SearchQuery }}"
         />
         <div class="search-options">

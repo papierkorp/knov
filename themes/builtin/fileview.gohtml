@@ -1,223 +1,34 @@
 {{/* theme: builtin */}}
 {{ define "content" }}
-{{if eq (index .ThemeSettings "fileView") "compact"}}
-    {{ template "compact" . }}
-{{else if eq (index .ThemeSettings "fileView") "reader"}}
-    {{ template "reader" . }}
+{{if eq (index .ThemeSettings "fileView") "reader"}}
+    {{ template "rail-reader" . }}
 {{else}}
-    {{ template "detailed" . }}
-{{end}}
-{{ end }}
-
-{{define "detailed"}}
-<div class="page-fileview view-detailed">
+<div id="view-fileview-rail">
     <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
     <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-    <div class="fileview-layout">
-        <article class="file-content" data-filepath="{{.FilePath}}">
-            {{.FileContent.HTML}}
-        </article>
-        <aside class="layout-sidebar">
-            {{if index .ThemeSettings "sidebarMetadata"}}
-            <section class="sidebar-section section-metadata">
-                <h3>{{T "metadata"}}</h3>
-                <div class="metadata-grid">
-                    <div class="metadata-row">
-                        <span class="metadata-label">{{T "path"}}:</span>
-                        <div hx-get="/api/metadata/inline-display?field=path&filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-                    </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">{{T "collection"}}:</span>
-                        <span hx-get="/api/metadata/collections?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-                    </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">{{T "created"}}:</span>
-                        <span hx-get="/api/metadata/createdat?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-                    </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">{{T "edited"}}:</span>
-                        <span hx-get="/api/metadata/lastedited?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-                    </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">{{T "tags"}}:</span>
-                        <div hx-get="/api/metadata/inline-display?field=tags&filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-                    </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">{{T "folders"}}:</span>
-                        <span hx-get="/api/metadata/folders?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-                    </div>
-                    <div class="metadata-row">
-                        <span class="metadata-label">{{T "editor"}}:</span>
-                        <div hx-get="/api/metadata/inline-display?field=editor&filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-                    </div>
-                </div>
-            </section>
-            {{end}}
-
-            {{if index .ThemeSettings "sidebarConnections"}}
-            <section class="sidebar-section section-connections">
-                <h3>{{T "connections"}}</h3>
-                <div class="connections-list">
-                    <div class="connection-group">
-                        <div class="connection-label">{{T "ancestors"}}</div>
-                        <div hx-get="/api/links/ancestors?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
-                    </div>
-                    <div class="connection-group">
-                        <div class="connection-label">{{T "parents"}}</div>
-                        <div hx-get="/api/metadata/inline-display?field=parents&filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-                    </div>
-                    <div class="connection-group">
-                        <div class="connection-label">{{T "children"}}</div>
-                        <div hx-get="/api/links/kids?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
-                    </div>
-                    <div class="connection-group">
-                        <div class="connection-label">{{T "grandchildren"}}</div>
-                        <div hx-get="/api/links/grandchildren?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
-                    </div>
-                    <div class="connection-group">
-                        <div class="connection-label">{{T "links to"}}</div>
-                        <div hx-get="/api/links/used?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
-                    </div>
-                    <div class="connection-group">
-                        <div class="connection-label">{{T "links from"}}</div>
-                        <div hx-get="/api/links/linkstohere?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
-                    </div>
-                    <div class="connection-group">
-                        <div class="connection-label">{{T "media files"}}</div>
-                        <div hx-get="/api/links/media?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
-                    </div>
-                    <div class="connection-group">
-                        <div class="connection-label">{{T "related"}}</div>
-                        <div hx-get="/api/links/related?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</div>
-                    </div>
-                </div>
-            </section>
-            {{end}}
-
-            <div hx-get="/api/links/conflicts?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML" hx-target="this"></div>
-
-            {{if index .ThemeSettings "sidebarReferences"}}
-            <section class="sidebar-section section-references">
-                <h3>{{T "references"}}</h3>
-                <div hx-get="/api/metadata/references?filepath={{urlQuery .FilePath}}&sidebar=true"
-                     hx-trigger="load"
-                     hx-swap="innerHTML">...</div>
-            </section>
-            {{end}}
-
-            {{if index .ThemeSettings "sidebarVersionHistory"}}
-            <section class="sidebar-section section-versions">
-                <h3><a href="/files/history/{{urlQuery .FilePath}}">{{T "version history"}}</a></h3>
-                <div class="version-loading"
-                     hx-get="/api/files/versions/{{urlQuery .FilePath}}?output=sidebar"
-                     hx-trigger="load"
-                     hx-swap="innerHTML">
-                    {{T "loading versions..."}}
-                </div>
-            </section>
-            {{end}}
-
-            {{if index .ThemeSettings "sidebarToc"}}
-            <section class="sidebar-section section-toc">
-                <h3>{{T "table of contents"}}</h3>
-                {{ if .FileContent.TOC }}
-                    <nav class="toc-nav">
-                        {{ range .FileContent.TOC }}
-                            <a href="#{{ .ID }}" style="padding-left: {{ mul .Level 16 }}px">{{ .Text }}</a>
-                        {{ end }}
-                    </nav>
-                {{ else }}
-                    <div class="toc-empty">{{T "no headings found"}}</div>
-                {{ end }}
-            </section>
-            {{end}}
-        </aside>
-    </div>
-</div>
-{{end}}
-
-{{define "compact"}}
-<div class="page-fileview view-compact">
-    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-
-    <div class="compact-header">
-        <div class="compact-metadata">
-            {{if index .ThemeSettings "compactMetadataPath"}}
-            <span class="meta-pill meta-path"><a href="/files/{{urlQuery .FilePath}}">{{.FilePath}}</a></span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataEdited"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "edited"}}:</span>
-                <span hx-get="/api/metadata/lastedited?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            </span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataCreated"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "created"}}:</span>
-                <span hx-get="/api/metadata/createdat?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            </span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataCollection"}}
-            <span class="meta-pill" hx-get="/api/metadata/collections?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataTags"}}
-            <span class="meta-pill" hx-get="/api/metadata/tags?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataFolders"}}
-            <span class="meta-pill" hx-get="/api/metadata/folders?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataAncestors"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "ancestors"}}:</span>
-                <span hx-get="/api/links/ancestors?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            </span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataParents"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "parents"}}:</span>
-                <div hx-get="/api/metadata/inline-display?field=parents&filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-            </span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataChildren"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "children"}}:</span>
-                <span hx-get="/api/links/kids?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            </span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataLinksTo"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "links to"}}:</span>
-                <span hx-get="/api/links/used?filepath={{urlQuery .FilePath}}&showMedia={{index .ThemeSettings "showMediaLinks"}}" hx-trigger="load">...</span>
-            </span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataLinksFrom"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "links from"}}:</span>
-                <span hx-get="/api/links/linkstohere?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            </span>
-            {{end}}
-            {{if index .ThemeSettings "compactMetadataRelated"}}
-            <span class="meta-pill">
-                <span class="meta-label">{{T "related"}}:</span>
-                <span hx-get="/api/links/related?filepath={{urlQuery .FilePath}}" hx-trigger="load">...</span>
-            </span>
-            {{end}}
-        </div>
-    </div>
     <article class="file-content" data-filepath="{{.FilePath}}">
         {{.FileContent.HTML}}
     </article>
 </div>
+{{ if .FileContent.TOC }}
+<div id="fp-toc-data" style="display:none;">
+    {{ range .FileContent.TOC }}
+        <a href="#{{ .ID }}" style="padding-left:{{ mul .Level 12 }}px">{{ .Text }}</a>
+    {{ end }}
+</div>
+{{ else }}
+<div id="fp-toc-data" style="display:none;">
+    <span class="fp-toc-empty">{{T "no headings found"}}</span>
+</div>
+{{ end }}
 {{end}}
+{{ end }}
 
-{{define "reader"}}
-<div class="page-fileview view-reader">
+{{ define "rail-reader" }}
+<div id="view-fileview-reader">
     <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
     <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
     <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-
     <div class="reader-controls">
         <button class="font-size-btn" onclick="adjustFontSize(-2)">A-</button>
         <button class="font-size-btn" onclick="adjustFontSize(2)">A+</button>
@@ -226,6 +37,5 @@
         {{.FileContent.HTML}}
     </article>
 </div>
-
 <script src="/themes/{{.CurrentTheme}}/js/fileview-reader.js"></script>
-{{end}}
+{{ end }}

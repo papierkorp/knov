@@ -1,14 +1,13 @@
 {{/* theme: builtin */}}
 {{ define "content" }}
+<link rel="stylesheet" href="/static/css/kanban.css"/>
 <div id="view-kanban">
 
     {{if .Collection}}
 
-    {{/* ---- Toolbar ---- */}}
     <div id="view-kanban-toolbar">
         <span class="kanban-title">{{T "kanban"}}: {{.Collection}}</span>
 
-        {{/* ancestor (epic) filter — options loaded on page init */}}
         <select id="kanban-ancestor-select" name="ancestor"
                 hx-get="/api/kanban/{{.Collection}}"
                 hx-trigger="change"
@@ -19,7 +18,6 @@
             <option value="">{{T "all ancestors"}}</option>
         </select>
 
-        {{/* tag filter */}}
         <select id="kanban-tag-select" name="tag"
                 hx-get="/api/kanban/{{.Collection}}"
                 hx-trigger="change"
@@ -30,7 +28,6 @@
             <option value="">{{T "all tags"}}</option>
         </select>
 
-        {{/* search */}}
         <input type="search" id="kanban-search" name="q"
                placeholder="{{T "search..."}}"
                hx-get="/api/kanban/{{.Collection}}"
@@ -39,7 +36,6 @@
                hx-swap="innerHTML"
                hx-include="#kanban-ancestor-select,#kanban-tag-select,#kanban-sort-select"/>
 
-        {{/* sort order */}}
         <select id="kanban-sort-select" name="sort"
                 hx-get="/api/kanban/{{.Collection}}"
                 hx-trigger="change"
@@ -65,7 +61,6 @@
         {{.FilterPanelHTML}}
     </div>
 
-    {{/* ---- Board ---- */}}
     <div id="view-kanban-board-wrap"
          hx-get="/api/kanban/{{.Collection}}"
          hx-trigger="load">
@@ -84,7 +79,6 @@
 
     {{else}}
 
-    {{/* ---- Collection picker ---- */}}
     <div id="page-kanban-select">
         <h2>{{T "kanban"}}</h2>
         <p>{{T "select a collection to open the kanban board"}}</p>
@@ -105,7 +99,7 @@
 window.KANBAN_CONFIG = {
     collection: '{{.Collection}}',
     archiveStatus: '{{.ArchiveStatus}}',
-    eventsModulePath: '/themes/builtin/js/kanban-events.js',
+    eventsModulePath: '/themes/{{.CurrentTheme}}/js/kanban-events.js',
     dateFormat: '{{.DateFormat}}',
     t: {
         backToBoard: '{{T "back to board"}}',

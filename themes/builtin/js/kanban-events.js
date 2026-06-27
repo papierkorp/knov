@@ -2,7 +2,7 @@
 // Lazy-loaded kanban event log panel — fetched via dynamic import() only
 // when a user actually opens the events view, so the cost is never paid
 // by users who never click the events button.
-// Theme-owned: builtin. Deliberately not shared with other themes — see rail/kanban-events.js.
+// Theme-owned: rail. Deliberately not shared with other themes — see builtin/kanban-events.js.
 
 var DATE_FORMAT_PATTERNS = {
     'DD.MM.YYYY': function(d) { return pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + d.getFullYear(); },

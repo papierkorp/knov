@@ -35,9 +35,6 @@ var staticFS embed.FS
 //go:embed themes/builtin
 var builtinThemeFS embed.FS
 
-//go:embed themes/rail
-var railThemeFS embed.FS
-
 //go:embed docs
 var docsFS embed.FS
 
@@ -50,7 +47,6 @@ func main() {
 	server.SetStaticFiles(staticFS)
 	server.SetDocsFiles(docsFS)
 	thememanager.SetBuiltinFiles(builtinThemeFS)
-	thememanager.SetRailFiles(railThemeFS)
 	testdata.SetDocsFiles(docsFS)
 
 	logging.Init()

@@ -2,92 +2,21 @@
 {{ define "content" }}
 <div class="page-admin">
     <h1>{{T "Admin"}}</h1>
-    <ul>
-        <li><a href="/playground">{{T "Playground"}}</a></li>
-        <li><a href="/swagger/">{{T "Swagger"}}</a></li>
-        <li><a href="/system/changelog">{{T "Changelog"}}</a></li>
-        <li><a href="/system/logs">{{T "Logs"}}</a></li>
-        <li><a href="/system/version">{{T "Version"}}</a></li>
-    </ul>
-    <div class="admin-sections">
-        <section class="admin-section">
-            <h2>{{T "System Administration"}}</h2>
-            <div class="admin-grid">
-                <div class="admin-card">
-                    <h3>{{T "Git Repository"}}</h3>
-                    <div class="help-text">{{T "leave empty for local git repository only"}}</div>
-                    <form hx-post="/api/config/repository" hx-swap="none">
-                        <label for="git-url">
-                            {{T "Remote Repository URL"}} ({{T "optional"}})
-                            <input type="url" name="repositoryURL" id="git-url" placeholder="https://github.com/user/repo.git"
-                                   hx-get="/api/config/repository" hx-trigger="load" hx-target="this" hx-swap="outerHTML" />
-                        </label>
-                        <button type="submit">{{T "Set Remote Repository"}}</button>
-                    </form>
-                </div>
+    <div class="admin-links">
+        <a href="/playground">{{T "Playground"}}</a>
+        <a href="/swagger/" target="_blank" rel="noopener noreferrer">{{T "Swagger"}}</a>
+        <a href="/system/changelog">{{T "Changelog"}}</a>
+        <a href="/system/logs">{{T "Logs"}}</a>
+        <a href="/system/version" onclick="closePanel()">{{T "Version"}}</a>
+    </div>
+    <div class="settings-sections">
 
-                <div class="admin-card">
-                    <h3>{{T "Data Path Configuration"}}</h3>
-                    <div class="help-text">{{T "path to your data storage relative from the executable"}}</div>
-                    <form hx-post="/api/config/datapath" hx-swap="none">
-                        <label for="data-path">
-                            {{T "Data Path"}}
-                            <input type="text" name="dataPath" id="data-path" placeholder="/path/to/data" required
-                                   hx-get="/api/config/datapath" hx-trigger="load" hx-target="this" hx-swap="outerHTML" />
-                        </label>
-                        <button type="submit">{{T "Set Data Path"}}</button>
-                    </form>
-                </div>
-
-                <div class="admin-card">
-                    <h3>{{T "Export / Import"}}</h3>
-                    <div class="help-text">{{T "export settings or data for backup and migration, or import a previously exported settings file"}}</div>
-                    <div style="display:flex;flex-direction:column;gap:1rem;margin-top:1rem;">
-                        <div>
-                            <strong>{{T "Settings"}}</strong>
-                            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;">
-                                <a href="/api/config/export" download="knov-settings.json">
-                                    <button type="button"><i class="fa fa-download"></i> {{T "export settings"}}</button>
-                                </a>
-                                <form id="import-settings-form" hx-post="/api/config/import" hx-encoding="multipart/form-data" hx-swap="none">
-                                    <button type="button" class="btn-secondary" onclick="document.getElementById('import-settings-file').click()">
-                                        <i class="fa fa-upload"></i> {{T "import settings"}}
-                                    </button>
-                                    <input type="file" id="import-settings-file" name="file" accept=".json" required
-                                           style="display:none;" onchange="document.getElementById('import-settings-form').requestSubmit()"/>
-                                </form>
-                            </div>
-                        </div>
-                        <div>
-                            <strong>{{T "Metadata"}}</strong>
-                            <form action="/api/metadata/export" method="post" style="display:flex;gap:0.5rem;align-items:center;margin-top:0.5rem;">
-                                <select name="format" id="export-format" style="padding:0.4rem 0.6rem;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--text);">
-                                    <option value="json">JSON</option>
-                                    <option value="csv">CSV</option>
-                                </select>
-                                <button type="submit" class="btn-secondary">
-                                    <i class="fa fa-download"></i> {{T "export metadata"}}
-                                </button>
-                            </form>
-                        </div>
-                        <div>
-                            <strong>{{T "Files"}}</strong>
-                            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;">
-                                <form action="/api/files/export/zip" method="post">
-                                    <button type="submit" class="btn-secondary"><i class="fa fa-download"></i> {{T "export all files"}}</button>
-                                </form>
-                                <form action="/api/files/export/markdown-converted" method="post">
-                                    <button type="submit" class="btn-secondary"><i class="fa fa-download"></i> {{T "export all files (DokuWiki to Markdown)"}}</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="admin-card">
-                    <h3>{{T "System Actions"}}</h3>
+        <div class="settings-col">
+            <section class="settings-section">
+                <h2>{{T "System Actions"}}</h2>
+                <div class="setting-item">
                     <div class="help-text">{{T "system maintenance operations for keeping your application running smoothly"}}</div>
-                    <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:1rem;">
+                    <div class="admin-action-list">
                         <button class="btn-secondary" hx-post="/api/metadata/rebuild" hx-swap="none"
                                 hx-confirm="{{T "Rebuild all metadata? This may take a while."}}">
                             {{T "Rebuild Metadata"}}
@@ -105,171 +34,305 @@
                         </button>
                     </div>
                 </div>
+            </section>
 
-                <div class="admin-card admin-card-wide">
-                    <h3>{{T "Bulk Metadata Update"}}</h3>
-                    <div class="help-text">{{T "apply a metadata change to all files matching a filter"}}</div>
-                    <div class="bulk-update-grid">
+            <section class="settings-section">
+                <h2>{{T "Git Repository"}}</h2>
+                <div class="setting-item">
+                    <div class="help-text">{{T "leave empty for local git repository only"}}</div>
+                    <form hx-post="/api/config/repository" hx-swap="none">
+                        <label for="git-url">
+                            {{T "Remote Repository URL"}} ({{T "optional"}})
+                            <input type="url" name="repositoryURL" id="git-url"
+                                   placeholder="https://github.com/user/repo.git" class="form-input"
+                                   hx-get="/api/config/repository" hx-trigger="load"
+                                   hx-target="this" hx-swap="outerHTML" />
+                        </label>
+                        <button type="submit" class="btn-primary" style="margin-top:8px;">{{T "Set Remote Repository"}}</button>
+                    </form>
+                </div>
+            </section>
+
+            {{if .AppConfig.GitRemote}}
+            <section class="settings-section">
+                <h2>{{T "Git Remote Sync"}}</h2>
+                <div class="setting-item">
+                    <div class="help-text">{{T "remote"}}: <code>{{.AppConfig.GitRemote}}</code> / <code>{{.AppConfig.GitRemoteBranch}}</code></div>
+                    <div class="admin-action-list">
+                        <button class="btn-secondary" hx-post="/api/git/pull" hx-swap="none">
+                            <i class="fa fa-arrow-down"></i> {{T "Pull"}}
+                        </button>
+                        <button class="btn-secondary" hx-post="/api/git/push" hx-swap="none">
+                            <i class="fa fa-arrow-up"></i> {{T "Push"}}
+                        </button>
+                        <button class="btn-secondary" hx-post="/api/git/test-auth" hx-swap="innerHTML" hx-target="#git-test-result">
+                            <i class="fa fa-plug"></i> {{T "Test Auth"}} (debug)
+                        </button>
+                    </div>
+                    <div id="git-test-result" style="margin-top:8px;font-size:0.85em;"></div>
+                </div>
+            </section>
+            {{end}}
+
+            <section class="settings-section">
+                <h2>{{T "Data Path"}}</h2>
+                <div class="setting-item">
+                    <div class="help-text">{{T "path to your data storage relative from the executable"}}</div>
+                    <form hx-post="/api/config/datapath" hx-swap="none">
+                        <label for="data-path">
+                            {{T "Data Path"}}
+                            <input type="text" name="dataPath" id="data-path"
+                                   placeholder="/path/to/data" required class="form-input"
+                                   hx-get="/api/config/datapath" hx-trigger="load"
+                                   hx-target="this" hx-swap="outerHTML" />
+                        </label>
+                        <button type="submit" class="btn-primary" style="margin-top:8px;">{{T "Set Data Path"}}</button>
+                    </form>
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <h2>{{T "Storage Statistics"}}</h2>
+                <div class="setting-item">
+                    <div class="help-text">{{T "media file storage usage and cleanup"}}</div>
+                    <div hx-get="/api/media/stats" hx-trigger="load" hx-target="this" hx-swap="innerHTML">
+                        {{T "loading..."}}
+                    </div>
+                    <div style="margin-top:12px;">
+                        <button class="btn-danger" hx-post="/api/media/cleanup-orphaned" hx-swap="none"
+                                hx-confirm="{{T "Delete all orphaned media files? This cannot be undone."}}">
+                            <i class="fa fa-trash"></i> {{T "Cleanup Orphaned Files"}}
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="settings-col">
+            {{ template "environment-section" . }}
+
+            <section class="settings-section">
+                <h2>{{T "Export / Import"}}</h2>
+                <div class="setting-item">
+                    <div class="help-text">{{T "export settings or data for backup and migration, or import a previously exported settings file"}}</div>
+                    <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
                         <div>
-                            <p class="bulk-update-group-label">{{T "Filter"}}</p>
-                            <label for="bulk-filter-field">{{T "Field"}}</label>
-                            <select id="bulk-filter-field" onchange="bulkFilterFieldChanged()">
+                            <strong>{{T "Settings"}}</strong>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+                                <a href="/api/config/export" download="knov-settings.json" class="btn-secondary">
+                                    <i class="fa fa-download"></i> {{T "export settings"}}
+                                </a>
+                                <form hx-post="/api/config/import" hx-encoding="multipart/form-data" hx-swap="none" style="display:flex;">
+                                    <label for="import-settings-file" class="btn-secondary" style="cursor:pointer;margin:0;">
+                                        <i class="fa fa-upload"></i> {{T "import settings"}}
+                                    </label>
+                                    <input type="file" id="import-settings-file" name="file" accept=".json" required
+                                           style="display:none;" onchange="this.closest('form').requestSubmit()"/>
+                                </form>
+                            </div>
+                        </div>
+                        <div>
+                            <strong>{{T "Metadata"}}</strong>
+                            <form action="/api/metadata/export" method="post" style="display:flex;gap:6px;align-items:center;margin-top:6px;">
+                                <select name="format" id="export-format" class="form-select" style="width:auto;">
+                                    <option value="json">JSON</option>
+                                    <option value="csv">CSV</option>
+                                </select>
+                                <button type="submit" class="btn-secondary">
+                                    <i class="fa fa-download"></i> {{T "export metadata"}}
+                                </button>
+                            </form>
+                        </div>
+                        <div>
+                            <strong>{{T "Files"}}</strong>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+                                <form action="/api/files/export/zip" method="post">
+                                    <button type="submit" class="btn-secondary"><i class="fa fa-download"></i> {{T "export all files"}}</button>
+                                </form>
+                                <form action="/api/files/export/markdown-converted" method="post">
+                                    <button type="submit" class="btn-secondary"><i class="fa fa-download"></i> {{T "export all files (DokuWiki to Markdown)"}}</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section class="settings-section settings-section-wide">
+            <h2>{{T "Bulk Metadata Update"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "apply a metadata change to all files matching a filter"}}</div>
+                <div class="bulk-update-grid">
+                    <div>
+                        <div class="bulk-update-group-label">{{T "Filter"}}</div>
+                        <label>
+                            {{T "Field"}}
+                            <select id="bulk-filter-field" class="form-select" onchange="bulkFilterFieldChanged()">
                                 <option value="editor">{{T "editor"}}</option>
                                 <option value="tags">{{T "tags"}}</option>
                                 <option value="collection">{{T "collection"}}</option>
                                 <option value="title">{{T "title"}}</option>
                                 <option value="folders">{{T "folders"}}</option>
                             </select>
-                            <label for="bulk-filter-op">{{T "Operator"}}</label>
-                            <select id="bulk-filter-op">
+                        </label>
+                        <label>
+                            {{T "Operator"}}
+                            <select id="bulk-filter-op" class="form-select">
                                 <option value="equals">{{T "equals"}}</option>
                                 <option value="contains">{{T "contains"}}</option>
                                 <option value="regex">{{T "regex"}}</option>
                             </select>
-                            <label>{{T "Value"}}</label>
+                        </label>
+                        <label>
+                            {{T "Value"}}
                             <div id="bulk-filter-value-wrap">
-                                <select id="bulk-filter-value-select"
+                                <select id="bulk-filter-value-select" class="form-select"
                                         hx-get="/api/metadata/editors?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></select>
                             </div>
-                        </div>
-                        <div>
-                            <p class="bulk-update-group-label">{{T "Update"}}</p>
-                            <label for="bulk-action">{{T "Action"}}</label>
-                            <select id="bulk-action" onchange="bulkActionChanged()">
+                        </label>
+                    </div>
+                    <div>
+                        <div class="bulk-update-group-label">{{T "Update"}}</div>
+                        <label>
+                            {{T "Action"}}
+                            <select id="bulk-action" class="form-select" onchange="bulkActionChanged()">
                                 <option value="set-editor">{{T "set editor"}}</option>
                                 <option value="add-tag">{{T "add tag"}}</option>
                                 <option value="remove-tag">{{T "remove tag"}}</option>
                             </select>
-                            <label>{{T "Value"}}</label>
+                        </label>
+                        <label>
+                            {{T "Value"}}
                             <div id="bulk-patch-value-wrap">
-                                <select id="bulk-patch-value-select"
+                                <select id="bulk-patch-value-select" class="form-select"
                                         hx-get="/api/metadata/editors?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></select>
                             </div>
-                        </div>
+                        </label>
                     </div>
-                    <div class="bulk-update-actions">
-                        <button type="button" class="btn-secondary" onclick="bulkMetadataPreview()">{{T "Preview"}}</button>
-                        <button type="button" class="btn-danger" onclick="bulkMetadataApply()">{{T "Apply"}}</button>
-                    </div>
-                    <div id="bulk-update-result"></div>
-                    <script>
-                    function bulkFilterFieldChanged() {
-                        const field = document.getElementById('bulk-filter-field').value;
-                        const wrap = document.getElementById('bulk-filter-value-wrap');
-                        if (field === 'editor') {
-                            wrap.innerHTML = '<select id="bulk-filter-value-select" hx-get="/api/metadata/editors?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></select>';
-                            htmx.process(wrap);
-                        } else {
-                            wrap.innerHTML = '<input id="bulk-filter-value-select" type="text" />';
-                        }
-                    }
-                    function bulkActionChanged() {
-                        const action = document.getElementById('bulk-action').value;
-                        const wrap = document.getElementById('bulk-patch-value-wrap');
-                        if (action === 'set-editor') {
-                            wrap.innerHTML = '<select id="bulk-patch-value-select" hx-get="/api/metadata/editors?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></select>';
-                            htmx.process(wrap);
-                        } else {
-                            wrap.innerHTML = '<input id="bulk-patch-value-select" type="text" placeholder="{{T "tag name"}}" />';
-                        }
-                    }
-                    function bulkBuildRequest(preview) {
-                        const filterField = document.getElementById('bulk-filter-field').value;
-                        const filterOp = document.getElementById('bulk-filter-op').value;
-                        const filterVal = document.getElementById('bulk-filter-value-select').value;
-                        const action = document.getElementById('bulk-action').value;
-                        const patchVal = document.getElementById('bulk-patch-value-select').value;
-                        const patch = {};
-                        if (action === 'set-editor') patch.editor = patchVal;
-                        else if (action === 'add-tag') patch.tagsAdd = [patchVal];
-                        else if (action === 'remove-tag') patch.tagsRemove = [patchVal];
-                        return JSON.stringify({
-                            filter: { criteria: [{ metadata: filterField, operator: filterOp, value: filterVal, action: 'include' }], logic: 'and' },
-                            patch,
-                            preview
-                        });
-                    }
-                    function bulkMetadataPreview() {
-                        fetch('/api/metadata/bulk-update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: bulkBuildRequest(true) })
-                            .then(r => r.json()).then(data => {
-                                document.getElementById('bulk-update-result').innerHTML =
-                                    data.count + ' {{T "files would be updated"}}:<br><small>' + (data.updated || []).join('<br>') + '</small>';
-                            });
-                    }
-                    function bulkMetadataApply() {
-                        if (!confirm('{{T "Apply bulk metadata change? This cannot be undone."}}')) return;
-                        fetch('/api/metadata/bulk-update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: bulkBuildRequest(false) })
-                            .then(r => r.json()).then(data => {
-                                document.getElementById('bulk-update-result').innerHTML = data.count + ' {{T "files updated"}}';
-                            });
-                    }
-                    </script>
                 </div>
+                <div class="bulk-update-actions">
+                    <button type="button" class="btn-secondary" onclick="bulkMetadataPreview()">{{T "Preview"}}</button>
+                    <button type="button" class="btn-danger" onclick="bulkMetadataApply()">{{T "Apply"}}</button>
+                </div>
+                <div id="bulk-update-result"></div>
+                <script>
+                function bulkFilterFieldChanged() {
+                    const field = document.getElementById('bulk-filter-field').value;
+                    const wrap = document.getElementById('bulk-filter-value-wrap');
+                    if (field === 'editor') {
+                        wrap.innerHTML = '<select id="bulk-filter-value-select" class="form-select" hx-get="/api/metadata/editors?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></select>';
+                        htmx.process(wrap);
+                    } else {
+                        wrap.innerHTML = '<input id="bulk-filter-value-select" type="text" class="form-input" />';
+                    }
+                }
+                function bulkActionChanged() {
+                    const action = document.getElementById('bulk-action').value;
+                    const wrap = document.getElementById('bulk-patch-value-wrap');
+                    if (action === 'set-editor') {
+                        wrap.innerHTML = '<select id="bulk-patch-value-select" class="form-select" hx-get="/api/metadata/editors?format=options" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></select>';
+                        htmx.process(wrap);
+                    } else {
+                        wrap.innerHTML = '<input id="bulk-patch-value-select" type="text" class="form-input" placeholder="{{T "tag name"}}" />';
+                    }
+                }
+                function bulkBuildRequest(preview) {
+                    const filterField = document.getElementById('bulk-filter-field').value;
+                    const filterOp = document.getElementById('bulk-filter-op').value;
+                    const filterVal = document.getElementById('bulk-filter-value-select').value;
+                    const action = document.getElementById('bulk-action').value;
+                    const patchVal = document.getElementById('bulk-patch-value-select').value;
+                    const patch = {};
+                    if (action === 'set-editor') patch.editor = patchVal;
+                    else if (action === 'add-tag') patch.tagsAdd = [patchVal];
+                    else if (action === 'remove-tag') patch.tagsRemove = [patchVal];
+                    return JSON.stringify({
+                        filter: { criteria: [{ metadata: filterField, operator: filterOp, value: filterVal, action: 'include' }], logic: 'and' },
+                        patch,
+                        preview
+                    });
+                }
+                function bulkMetadataPreview() {
+                    fetch('/api/metadata/bulk-update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: bulkBuildRequest(true) })
+                        .then(r => r.json()).then(data => {
+                            document.getElementById('bulk-update-result').innerHTML =
+                                data.count + ' {{T "files would be updated"}}:<br><small>' + (data.updated || []).join('<br>') + '</small>';
+                        });
+                }
+                function bulkMetadataApply() {
+                    if (!confirm('{{T "Apply bulk metadata change? This cannot be undone."}}')) return;
+                    fetch('/api/metadata/bulk-update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: bulkBuildRequest(false) })
+                        .then(r => r.json()).then(data => {
+                            document.getElementById('bulk-update-result').innerHTML = data.count + ' {{T "files updated"}}';
+                        });
+                }
+                </script>
+            </div>
+        </section>
 
-                <div class="admin-card">
-                    <h3>{{T "Test Data Management"}}</h3>
-                    <div class="help-text">{{T "manage test data for development and testing purposes"}}</div>
-                    <form>
-                        <button type="button" hx-post="/api/testdata/setup" hx-swap="none" hx-confirm="{{T "Setup test data? This will create example files in the data/test folder."}}">
-                            {{T "Setup Test Data"}}
-                        </button>
-                        <button type="button" hx-post="/api/testdata/clean" hx-swap="none" hx-confirm="{{T "This will remove all files in the data/test Folder."}}">
-                            {{T "Clean Test Data"}}
-                        </button>
-                        <button type="button" hx-post="/api/testdata/filtertest" hx-target="#testdata-result" hx-confirm="{{T "Run filter tests? This will create test metadata objects."}}">
-                            {{T "Run Filter Tests"}}
-                        </button>
-                        <button type="button" hx-get="/api/testdata/filtertest/testdata" hx-target="#testdata-result">
-                            {{T "View Filter Test Metadata"}}
-                        </button>
-                    </form>
+        <section class="settings-section settings-section-wide">
+            <h2>{{T "Test Data"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "manage test data for development and testing purposes"}}</div>
+                <div class="admin-action-list">
+                    <button class="btn-secondary" hx-post="/api/testdata/setup" hx-swap="none"
+                            hx-confirm="{{T "Setup test data? This will create example files in the data/test folder."}}">
+                        {{T "Setup Test Data"}}
+                    </button>
+                    <button class="btn-danger" hx-post="/api/testdata/clean" hx-swap="none"
+                            hx-confirm="{{T "This will remove all files in the data/test Folder."}}">
+                        {{T "Clean Test Data"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/filtertest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run filter tests? This will create test metadata objects."}}">
+                        {{T "Run Filter Tests"}}
+                    </button>
+                    <button class="btn-secondary" hx-get="/api/testdata/filtertest/testdata" hx-target="#testdata-result">
+                        {{T "View Filter Test Metadata"}}
+                    </button>
                 </div>
             </div>
             <div id="testdata-result"></div>
         </section>
-        {{ template "environment-section" . }}
+
     </div>
 </div>
 {{ end }}
 
+
 {{ define "environment-section" }}
-<section class="admin-section">
+<section class="settings-section">
     <h2>{{T "Environment Info"}} <small>({{T "restart required to change"}})</small></h2>
-    <div class="admin-grid">
-        <div class="admin-card">
-            <div class="help-text">{{T "Version"}}: <code>{{.Version}}</code></div>
-            <div class="help-text">{{T "Build Time"}}: <code>{{.BuildTime}}</code></div>
-            <div class="help-text">{{T "Server Port"}}: <code>{{.AppConfig.ServerPort}}</code></div>
-            <div class="help-text">{{T "Data Path"}}: <code>{{.AppConfig.DataPath}}</code></div>
-            <div class="help-text">{{T "Storage Path"}}: <code>{{.AppConfig.StoragePath}}</code></div>
-            <div class="help-text">{{T "Themes Path"}}: <code>{{.AppConfig.ThemesPath}}</code></div>
-            <div class="help-text">{{T "Logs Path"}}: <code>{{.AppConfig.LogsPath}}</code></div>
-        </div>
-        <div class="admin-card">
-            <div class="help-text">{{T "Git Remote"}}: <code>{{if .AppConfig.GitRemote}}{{.AppConfig.GitRemote}}{{else}}local only{{end}}</code></div>
-            <div class="help-text">{{T "Git Branch"}}: <code>{{.AppConfig.GitRemoteBranch}}</code></div>
-            <div class="help-text">{{T "Git Auto Push"}}: <code>{{.AppConfig.GitAutoPush}}</code></div>
-            <div class="help-text">{{T "Metadata Storage"}}: <code>{{.AppConfig.MetadataStorageProvider}}</code></div>
-            <div class="help-text">{{T "Cache Storage"}}: <code>{{.AppConfig.CacheStorageProvider}}</code></div>
-            <div class="help-text">{{T "Search Storage"}}: <code>{{.AppConfig.SearchStorageProvider}}</code></div>
-            <div class="help-text">{{T "Search Engine"}}: <code>{{.AppConfig.SearchEngine}}</code></div>
-        </div>
-        <div class="admin-card">
-            <div class="help-text">{{T "Kanban Events Enabled"}}: <code>{{.AppConfig.KanbanEventsEnabled}}</code></div>
-            <div class="help-text">{{T "Kanban Events Storage"}}: <code>{{.AppConfig.KanbanEventsProvider}}</code></div>
-            <div class="help-text">{{T "Kanban Prefix"}}: <code>{{.AppConfig.KanbanPrefix}}</code></div>
-            <div class="help-text">{{T "Kanban Statuses"}}: <code>{{join .AppConfig.KanbanStatuses ", "}}</code></div>
-            <div class="help-text">{{T "Kanban Columns"}}: <code>{{join .AppConfig.KanbanColumns ", "}}</code></div>
-            <div class="help-text">{{T "Kanban Archive Status"}}: <code>{{if .AppConfig.KanbanArchiveStatus}}{{.AppConfig.KanbanArchiveStatus}}{{else}}disabled{{end}}</code></div>
-        </div>
-        <div class="admin-card">
-            <div class="help-text">{{T "Cronjob Interval"}}: <code>{{.AppConfig.CronjobInterval}}</code></div>
-            <div class="help-text">{{T "Search Index Interval"}}: <code>{{.AppConfig.SearchIndexInterval}}</code></div>
-            <div class="help-text">{{T "Metadata Rebuild Interval"}}: <code>{{.AppConfig.MetadataRebuildInterval}}</code></div>
-            <div class="help-text">{{T "Notify Duration"}}: <code>{{.AppConfig.NotifyDuration}}ms</code></div>
-            <div class="help-text">{{T "Auto-create Tags"}}: <code>{{if .AppConfig.AutoCreateTags}}{{join .AppConfig.AutoCreateTags ", "}}{{else}}disabled{{end}}</code></div>
-            <div class="help-text">{{T "Auto-create Collections"}}: <code>{{if .AppConfig.AutoCreateCollections}}{{join .AppConfig.AutoCreateCollections ", "}}{{else}}all{{end}}</code></div>
-        </div>
+    <div class="setting-item">
+        <div class="help-text">{{T "Version"}} <small style="opacity:0.55;">-ldflags</small>: <code>{{.Version}}</code></div>
+        <div class="help-text">{{T "Build Time"}} <small style="opacity:0.55;">-ldflags</small>: <code>{{.BuildTime}}</code></div>
+        <div class="help-text">{{T "Server Port"}} <small style="opacity:0.55;">KNOV_SERVER_PORT</small>: <code>{{.AppConfig.ServerPort}}</code></div>
+        <div class="help-text">{{T "Data Path"}} <small style="opacity:0.55;">KNOV_DATA_PATH</small>: <code>{{.AppConfig.DataPath}}</code></div>
+        <div class="help-text">{{T "Storage Path"}} <small style="opacity:0.55;">KNOV_STORAGE_PATH</small>: <code>{{.AppConfig.StoragePath}}</code></div>
+        <div class="help-text">{{T "Themes Path"}} <small style="opacity:0.55;">KNOV_THEMES_PATH</small>: <code>{{.AppConfig.ThemesPath}}</code></div>
+        <div class="help-text">{{T "Logs Path"}} <small style="opacity:0.55;">KNOV_LOGS_PATH</small>: <code>{{.AppConfig.LogsPath}}</code></div>
+        <div class="help-text">{{T "Git Remote"}} <small style="opacity:0.55;">KNOV_GIT_REMOTE</small>: <code>{{if .AppConfig.GitRemote}}{{.AppConfig.GitRemote}}{{else}}local only{{end}}</code></div>
+        <div class="help-text">{{T "Git Branch"}} <small style="opacity:0.55;">KNOV_GIT_REMOTE_BRANCH</small>: <code>{{.AppConfig.GitRemoteBranch}}</code></div>
+        <div class="help-text">{{T "Git Auto Push"}} <small style="opacity:0.55;">KNOV_GIT_AUTO_PUSH</small>: <code>{{.AppConfig.GitAutoPush}}</code></div>
+        <div class="help-text">{{T "Metadata Storage"}} <small style="opacity:0.55;">KNOV_METADATA_STORAGE_PROVIDER</small>: <code>{{.AppConfig.MetadataStorageProvider}}</code></div>
+        <div class="help-text">{{T "Cache Storage"}} <small style="opacity:0.55;">KNOV_CACHE_STORAGE_PROVIDER</small>: <code>{{.AppConfig.CacheStorageProvider}}</code></div>
+        <div class="help-text">{{T "Search Storage"}} <small style="opacity:0.55;">KNOV_SEARCH_STORAGE_PROVIDER</small>: <code>{{.AppConfig.SearchStorageProvider}}</code></div>
+        <div class="help-text">{{T "Kanban Events Enabled"}} <small style="opacity:0.55;">KNOV_KANBAN_EVENTS_ENABLED</small>: <code>{{.AppConfig.KanbanEventsEnabled}}</code></div>
+        <div class="help-text">{{T "Kanban Events Storage"}} <small style="opacity:0.55;">KNOV_KANBAN_EVENTS_STORAGE_PROVIDER</small>: <code>{{.AppConfig.KanbanEventsProvider}}</code></div>
+        <div class="help-text">{{T "Search Engine"}} <small style="opacity:0.55;">KNOV_SEARCH_ENGINE</small>: <code>{{.AppConfig.SearchEngine}}</code></div>
+        <div class="help-text">{{T "Cronjob Interval"}} <small style="opacity:0.55;">KNOV_CRONJOB_INTERVAL</small>: <code>{{.AppConfig.CronjobInterval}}</code></div>
+        <div class="help-text">{{T "Search Index Interval"}} <small style="opacity:0.55;">KNOV_SEARCH_INDEX_INTERVAL</small>: <code>{{.AppConfig.SearchIndexInterval}}</code></div>
+        <div class="help-text">{{T "Metadata Rebuild Interval"}} <small style="opacity:0.55;">KNOV_METADATA_REBUILD_INTERVAL</small>: <code>{{.AppConfig.MetadataRebuildInterval}}</code></div>
+        <div class="help-text">{{T "Notify Duration"}} <small style="opacity:0.55;">KNOV_NOTIFY_DURATION</small>: <code>{{.AppConfig.NotifyDuration}}ms</code></div>
+        <div class="help-text">{{T "Kanban Prefix"}} <small style="opacity:0.55;">KNOV_KANBAN_PREFIX</small>: <code>{{.AppConfig.KanbanPrefix}}</code></div>
+        <div class="help-text">{{T "Kanban Statuses"}} <small style="opacity:0.55;">KNOV_KANBAN_STATUS</small>: <code>{{join .AppConfig.KanbanStatuses ", "}}</code></div>
+        <div class="help-text">{{T "Kanban Columns"}} <small style="opacity:0.55;">KNOV_KANBAN_COLUMNS</small>: <code>{{join .AppConfig.KanbanColumns ", "}}</code></div>
+        <div class="help-text">{{T "Auto-create Tags"}} <small style="opacity:0.55;">KNOV_AUTOCREATE_TAGS</small>: <code>{{if .AppConfig.AutoCreateTags}}{{join .AppConfig.AutoCreateTags ", "}}{{else}}disabled{{end}}</code></div>
+        <div class="help-text">{{T "Auto-create Collections"}} <small style="opacity:0.55;">KNOV_AUTOCREATE_COLLECTIONS</small>: <code>{{if .AppConfig.AutoCreateCollections}}{{join .AppConfig.AutoCreateCollections ", "}}{{else}}all{{end}}</code></div>
+        <div class="help-text">{{T "Kanban Tag Colors"}} <small style="opacity:0.55;">KNOV_KANBAN_TAG_COLORS</small>: <code>{{if .AppConfig.KanbanTagColors}}{{range $k,$v := .AppConfig.KanbanTagColors}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
+        <div class="help-text">{{T "Kanban Card Styles"}} <small style="opacity:0.55;">KNOV_KANBAN_CARD_STYLES</small>: <code>{{if .AppConfig.KanbanCardStyles}}{{range $k,$v := .AppConfig.KanbanCardStyles}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
+        <div class="help-text">{{T "Kanban Archive Status"}} <small style="opacity:0.55;">KNOV_KANBAN_ARCHIVE_STATUS</small>: <code>{{if .AppConfig.KanbanArchiveStatus}}{{.AppConfig.KanbanArchiveStatus}}{{else}}disabled{{end}}</code></div>
     </div>
 </section>
 {{ end }}
