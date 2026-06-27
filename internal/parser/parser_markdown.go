@@ -145,7 +145,7 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	result = sanitizeHTML(result)
 	result = InjectHeaderIDs(result)
 	result = h.addHeaderButtons(result, filePath)
-	result = h.wrapHeaderSections(result)
+	result = h.wrapHeaderSections(result, filePath)
 	return []byte(result), nil
 }
 
@@ -398,9 +398,12 @@ func (h *MarkdownHandler) addHeaderButtons(htmlContent, filePath string) string 
 	})
 }
 
-// wrapHeaderSections wraps content between headers in <div class="content-section">.
-func (h *MarkdownHandler) wrapHeaderSections(htmlContent string) string {
+// wrapHeaderSections wraps content between headers in <div class="content-section">
+// and appends a section-edit button at the bottom-right of each section.
+func (h *MarkdownHandler) wrapHeaderSections(htmlContent, filePath string) string {
 	headerRe := regexp.MustCompile(`<h([1-6])[^>]*>.*?</h[1-6]>`)
+	idRe := regexp.MustCompile(`id="([^"]+)"`)
+	relPath := pathutils.ToRelative(filePath)
 	matches := headerRe.FindAllStringIndex(htmlContent, -1)
 
 	if len(matches) == 0 {
@@ -415,7 +418,8 @@ func (h *MarkdownHandler) wrapHeaderSections(htmlContent string) string {
 		}
 	}
 	for i, match := range matches {
-		out.WriteString(htmlContent[match[0]:match[1]])
+		headerHTML := htmlContent[match[0]:match[1]]
+		out.WriteString(headerHTML)
 		start := match[1]
 		end := len(htmlContent)
 		if i+1 < len(matches) {
@@ -423,7 +427,18 @@ func (h *MarkdownHandler) wrapHeaderSections(htmlContent string) string {
 		}
 		section := strings.TrimSpace(htmlContent[start:end])
 		if section != "" {
-			fmt.Fprintf(&out, `<div class="content-section">%s</div>`, section)
+			editBtn := ""
+			if relPath != "" {
+				if idParts := idRe.FindStringSubmatch(headerHTML); len(idParts) >= 2 {
+					editBtn = fmt.Sprintf(
+						`<a href="/files/edit/%s?section=%s" class="section-edit-btn" title="%s"><i class="fa fa-pen"></i> %s</a>`,
+						relPath, idParts[1],
+						translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
+						translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
+					)
+				}
+			}
+			fmt.Fprintf(&out, `<div class="content-section">%s%s</div>`, section, editBtn)
 		}
 	}
 	return out.String()

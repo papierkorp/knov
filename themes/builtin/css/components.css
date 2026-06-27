@@ -2437,6 +2437,40 @@ main textarea {
 }
 
 /* =============================================
+   fileview: content-section wrapper + bottom edit btn
+   ============================================= */
+
+.content-section {
+  position: relative;
+}
+
+.section-edit-btn {
+  display: block;
+  width: fit-content;
+  margin-left: auto;
+  margin-top: 6px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  font-size: 0.72em;
+  text-decoration: none;
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+}
+
+.content-section:hover .section-edit-btn {
+  opacity: 1;
+}
+
+.section-edit-btn:hover {
+  color: var(--primary);
+  background: var(--bg);
+  border-color: var(--border);
+  text-decoration: none;
+}
+
+/* =============================================
    fileview: header edit btn + anchor — hover only
    ============================================= */
 

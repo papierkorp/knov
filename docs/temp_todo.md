@@ -14,8 +14,6 @@
 - add a `create_your_own_theme.md` file
 
 **per ai**
-- search in file for rail theme (new slideout)
-- additional section edit button on the bottom right
 - detect if a request is already loading and block multiple requests of the same kind (e.g. to block a user starting multiple cronjobs or metadata rebuilds at the same time one after another)
 - wiki link for text editor?
 - add a new setting/env for the default editor
