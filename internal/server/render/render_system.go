@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	"knov/internal/job"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/parser"
@@ -135,6 +136,56 @@ function toggleLogFileView(btn) {
 	tm := thememanager.GetThemeManager()
 	if err := tm.RenderSystemPage(w, "Logs", template.HTML(content)); err != nil {
 		logging.LogError("failed to render logs page: %v", err)
+	}
+}
+
+// RenderJobsTable returns an HTML table of recent job runs.
+func RenderJobsTable(runs []job.JobRun) string {
+	var sb strings.Builder
+	sb.WriteString(`<table class="jobs-table"><thead><tr><th>Job</th><th>Started</th><th>Finished</th><th>Duration</th><th>Status</th><th>Error</th></tr></thead><tbody>`)
+	if len(runs) == 0 {
+		sb.WriteString(`<tr><td colspan="6" style="text-align:center;color:#999;">No jobs recorded yet</td></tr>`)
+	}
+	for _, r := range runs {
+		duration := ""
+		finished := ""
+		if r.FinishedAt != nil {
+			finished = r.FinishedAt.Format("15:04:05")
+			duration = r.FinishedAt.Sub(r.StartedAt).Round(1e6).String()
+		}
+		statusClass := "job-status-" + string(r.Status)
+		sb.WriteString(fmt.Sprintf(
+			`<tr class="%s"><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>`,
+			template.HTMLEscapeString(statusClass),
+			template.HTMLEscapeString(r.Name),
+			template.HTMLEscapeString(r.StartedAt.Format("15:04:05")),
+			template.HTMLEscapeString(finished),
+			template.HTMLEscapeString(duration),
+			template.HTMLEscapeString(string(r.Status)),
+			template.HTMLEscapeString(r.Error),
+		))
+	}
+	sb.WriteString(`</tbody></table>`)
+	return sb.String()
+}
+
+func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
+	content := `<style>
+.jobs-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.jobs-table th { text-align: left; padding: .35rem .6rem; border-bottom: 2px solid #ccc; white-space: nowrap; }
+.jobs-table td { padding: .28rem .6rem; border-bottom: 1px solid #eee; vertical-align: top; white-space: nowrap; }
+.jobs-table td:last-child { white-space: normal; word-break: break-word; color: #c0392b; font-size: .8rem; }
+.job-status-running td:nth-child(5) { color: #2563eb; font-weight: 600; }
+.job-status-ok td:nth-child(5) { color: #16a34a; font-weight: 600; }
+.job-status-error td:nth-child(5) { color: #c0392b; font-weight: 600; }
+.job-status-error { background: #fff1f0; }
+.job-status-running { background: #eff6ff; }
+</style>` +
+		`<div id="jobs-entries" hx-get="/api/system/jobs" hx-trigger="load, every 3s" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'></div>`
+
+	tm := thememanager.GetThemeManager()
+	if err := tm.RenderSystemPage(w, "Jobs", template.HTML(content)); err != nil {
+		logging.LogError("failed to render jobs page: %v", err)
 	}
 }
 

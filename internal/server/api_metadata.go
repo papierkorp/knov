@@ -3,6 +3,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
+	"knov/internal/job"
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/kanban"
@@ -257,35 +259,15 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "failed to initialize metadata"
 // @Router /api/metadata/rebuild [post]
 func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
-	files.StartMetaGetCounter()
-	defer files.StopMetaGetCounter()
-
-	if err := files.MetaDataInitializeAll(); err != nil {
-		http.Error(w, "failed to initialize metadata", http.StatusInternalServerError)
+	if err := job.RunFullRebuild(); err != nil {
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		http.Error(w, err.Error(), status)
 		return
 	}
-
-	stalePurged, err := files.MetaDataPurgeStale()
-	if err != nil {
-		logging.LogError("failed to purge stale metadata: %v", err)
-	}
-
-	dupPurged, err := files.MetaDataPurgeDuplicates()
-	if err != nil {
-		logging.LogError("failed to purge duplicate metadata: %v", err)
-	}
-
-	if err = files.MetaDataLinksRebuild(); err != nil {
-		http.Error(w, "failed to rebuild metadata links", http.StatusInternalServerError)
-		return
-	}
-
-	if err := files.UpdateOrphanedMediaCache(); err != nil {
-		logging.LogWarning("failed to update orphaned media cache after rebuild: %v", err)
-	}
-
-	logging.LogInfo("purged %d stale metadata entries", stalePurged)
-	logging.LogInfo("purged %d duplicate metadata entries", dupPurged)
 
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata rebuilt successfully"))
 	writeResponse(w, r, map[string]string{"status": "metadata initialized"}, "")

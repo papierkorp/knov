@@ -62,6 +62,7 @@ func StartServerChi() {
 	r.Get("/system/changelog", render.HandleSystemChangelog)
 	r.Get("/system/logs", render.HandleSystemLogs)
 	r.Get("/system/version", render.HandleSystemVersion)
+	r.Get("/system/jobs", render.HandleSystemJobs)
 	r.Get("/settings", handleSettings)
 	r.Get("/admin", handleAdmin)
 	r.Get("/playground", handlePlayground)
@@ -157,6 +158,7 @@ func StartServerChi() {
 		r.Route("/system", func(r chi.Router) {
 			r.Post("/restart", handleAPIRestartApp)
 			r.Delete("/cache", handleAPIInvalidateCache)
+			r.Get("/jobs", handleAPIGetJobs)
 		})
 
 		// ----------------------------------------------------------------------------------------

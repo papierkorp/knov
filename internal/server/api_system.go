@@ -12,9 +12,10 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
-	"knov/internal/files"
+	"knov/internal/job"
 	"knov/internal/logging"
 	"knov/internal/server/notify"
+	"knov/internal/server/render"
 	"knov/internal/translation"
 )
 
@@ -27,7 +28,7 @@ import (
 // @Failure 500 {string} string "failed to invalidate cache"
 // @Router /api/system/cache [delete]
 func handleAPIInvalidateCache(w http.ResponseWriter, r *http.Request) {
-	if err := files.CacheInvalidate(); err != nil {
+	if err := job.RunCacheInvalidate(); err != nil {
 		logging.LogError("failed to invalidate cache: %v", err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to invalidate cache"))
 		http.Error(w, "failed to invalidate cache", http.StatusInternalServerError)
@@ -88,6 +89,23 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Write([]byte(sb.String()))
+}
+
+// @Summary Get job history
+// @Description Returns recent job runs as HTML table (for HTMX) or JSON
+// @Tags system
+// @Produce json,html
+// @Success 200 {array} job.JobRun
+// @Router /api/system/jobs [get]
+func handleAPIGetJobs(w http.ResponseWriter, r *http.Request) {
+	runs := job.GetRecentRuns()
+	acceptHeader := r.Header.Get("Accept")
+	if strings.Contains(acceptHeader, "text/html") {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write([]byte(render.RenderJobsTable(runs)))
+		return
+	}
+	writeResponse(w, r, runs, render.RenderJobsTable(runs))
 }
 
 func handleAPIDownloadLogs(w http.ResponseWriter, r *http.Request) {

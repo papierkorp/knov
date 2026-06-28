@@ -14,7 +14,6 @@
 - add a `create_your_own_theme.md` file
 
 **per ai**
-- detect if a request is already loading and block multiple requests of the same kind (e.g. to block a user starting multiple cronjobs or metadata rebuilds at the same time one after another)
 - wiki link for text editor?
 - add a new setting/env for the default editor
 - add chat to a single file?
@@ -22,6 +21,10 @@
 - version
   - version build time = 2 hours wrong, e.g: Build time	2026-06-24 13:31 UTC, my local time: 15:31
   - change to a generated file?
+- changelog
+  - change other
+  - add internal (for e.g. refactor)
+  - month language always english
 - codemirror copy + paste with y+p does not work properly (e.g. i have something - in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
 - add a log builder for manual run cronjob
 - rename testdata to test and add some kind of test (playwright?)

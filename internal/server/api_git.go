@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"knov/internal/configmanager"
+	"knov/internal/job"
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/pathutils"
@@ -87,12 +88,15 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "push triggered"
 // @Router /api/git/push [post]
 func handleAPIGitPush(w http.ResponseWriter, r *http.Request) {
-	if configmanager.GetGitRemote() == "" {
-		notify.SetHeader(w, notify.LevelWarning, translation.SprintfForRequest(configmanager.GetLanguage(), "no remote configured"))
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "no remote configured")))
+	if err := job.RunGitPush(); err != nil {
+		level := notify.LevelError
+		if configmanager.GetGitRemote() == "" {
+			level = notify.LevelWarning
+		}
+		notify.SetHeader(w, level, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error())))
 		return
 	}
-	git.Push()
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "push triggered"))
 	writeResponse(w, r, map[string]string{"status": "push triggered"}, "")
 }
@@ -104,14 +108,13 @@ func handleAPIGitPush(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "pull completed"
 // @Router /api/git/pull [post]
 func handleAPIGitPull(w http.ResponseWriter, r *http.Request) {
-	if configmanager.GetGitRemote() == "" {
-		notify.SetHeader(w, notify.LevelWarning, translation.SprintfForRequest(configmanager.GetLanguage(), "no remote configured"))
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "no remote configured")))
-		return
-	}
-	if err := git.PullRebase(); err != nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "pull failed: %s", err.Error()))
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "pull failed")))
+	if err := job.RunGitPull(); err != nil {
+		level := notify.LevelError
+		if configmanager.GetGitRemote() == "" {
+			level = notify.LevelWarning
+		}
+		notify.SetHeader(w, level, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error())))
 		return
 	}
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "pull completed"))

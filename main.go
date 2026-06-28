@@ -11,7 +11,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
-	"knov/internal/cronjob"
+	"knov/internal/job"
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/git"
@@ -130,7 +130,7 @@ func main() {
 
 	go func() {
 		time.Sleep(5 * time.Minute)
-		cronjob.Start()
+		job.Start()
 	}()
 
 	server.StartServerChi()

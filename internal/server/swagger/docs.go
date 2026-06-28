@@ -670,8 +670,8 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
-                    "500": {
-                        "description": "Internal server error",
+                    "409": {
+                        "description": "already running",
                         "schema": {
                             "type": "string"
                         }
@@ -5192,6 +5192,30 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/jobs": {
+            "get": {
+                "description": "Returns recent job runs as HTML table (for HTMX) or JSON",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Get job history",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/job.JobRun"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/restart": {
             "post": {
                 "description": "Restarts the application (requires process manager like systemd or docker)",
@@ -5906,6 +5930,40 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "job.JobRun": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "finishedAt": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "output": {},
+                "startedAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/job.JobStatus"
+                }
+            }
+        },
+        "job.JobStatus": {
+            "type": "string",
+            "enum": [
+                "running",
+                "ok",
+                "error"
+            ],
+            "x-enum-varnames": [
+                "JobStatusRunning",
+                "JobStatusOK",
+                "JobStatusError"
+            ]
         },
         "notificationStorage.Notification": {
             "type": "object",

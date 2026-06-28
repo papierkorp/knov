@@ -280,6 +280,30 @@ definitions:
       total:
         type: integer
     type: object
+  job.JobRun:
+    properties:
+      error:
+        type: string
+      finishedAt:
+        type: string
+      name:
+        type: string
+      output: {}
+      startedAt:
+        type: string
+      status:
+        $ref: '#/definitions/job.JobStatus'
+    type: object
+  job.JobStatus:
+    enum:
+    - running
+    - ok
+    - error
+    type: string
+    x-enum-varnames:
+    - JobStatusRunning
+    - JobStatusOK
+    - JobStatusError
   notificationStorage.Notification:
     properties:
       created_at:
@@ -863,8 +887,8 @@ paths:
           description: '{"status":"ok","message":"cronjob executed successfully"}'
           schema:
             type: string
-        "500":
-          description: Internal server error
+        "409":
+          description: already running
           schema:
             type: string
       summary: Run cronjob
@@ -3917,6 +3941,22 @@ paths:
           schema:
             type: string
       summary: Invalidate cache
+      tags:
+      - system
+  /api/system/jobs:
+    get:
+      description: Returns recent job runs as HTML table (for HTMX) or JSON
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/job.JobRun'
+            type: array
+      summary: Get job history
       tags:
       - system
   /api/system/restart:
