@@ -482,13 +482,37 @@ func CommitAllPending() (bool, error) {
 		return false, err
 	}
 
-	SyncBeforeCommit(nil)
+	// collect dirty files for the commit message and to snapshot before SyncBeforeCommit
+	// can hard-reset them away when a remote is configured
+	var localFiles []string
+	var relPaths []string
+	dataDir := configmanager.GetAppConfig().DataPath
+	if status, err := worktree.Status(); err == nil {
+		for relPath, s := range status {
+			if s.Worktree != git.Unmodified || s.Staging != git.Unmodified {
+				localFiles = append(localFiles, filepath.Join(dataDir, relPath))
+				relPaths = append(relPaths, relPath)
+			}
+		}
+	}
+	SyncBeforeCommit(localFiles)
 
 	if err := worktree.AddWithOptions(&git.AddOptions{All: true}); err != nil {
 		return false, fmt.Errorf("git add -A failed: %w", err)
 	}
 
-	_, err = worktree.Commit("auto-commit: files modified", &git.CommitOptions{
+	const fileListLimit = 5
+	var commitMsg string
+	switch {
+	case len(relPaths) == 0:
+		commitMsg = "auto-commit: external changes"
+	case len(relPaths) <= fileListLimit:
+		commitMsg = "auto-commit: " + strings.Join(relPaths, ", ")
+	default:
+		commitMsg = fmt.Sprintf("auto-commit: %d files modified externally", len(relPaths))
+	}
+
+	_, err = worktree.Commit(commitMsg, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  "knov",
 			Email: "knov@localhost",
