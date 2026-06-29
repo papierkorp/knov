@@ -40,6 +40,7 @@ func RenderTextareaSectionEditorForm(filePath, sectionID string) string {
 				</div>
 				<div id="editor-status"></div>
 			</form>
+			<script>(function(){var c=document.currentScript.parentElement;if(window.initWikiAutocompleteForInputs)initWikiAutocompleteForInputs(c,{cursorEnd:%t},'.textarea-editor-input');})()</script>
 		</div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section"),
 		sectionID,
@@ -47,7 +48,8 @@ func RenderTextareaSectionEditorForm(filePath, sectionID string) string {
 		content,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save section"),
 		cancelURL,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"))
+		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
+		configmanager.WikiLinkCursorEnd.Get())
 }
 
 // RenderTextareaEditorComponent renders a plain textarea editor with save/cancel buttons.
@@ -108,11 +110,13 @@ func RenderTextareaEditorComponent(filepath, content string, editorType ...strin
 				</div>
 				<div id="editor-status"></div>
 			</form>
+			<script>(function(){var c=document.currentScript.parentElement;if(window.initWikiAutocompleteForInputs)initWikiAutocompleteForInputs(c,{cursorEnd:%t},'.textarea-editor-input');})()</script>
 		</div>`,
 		filepathField,
 		content,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
-		convertButton)
+		convertButton,
+		configmanager.WikiLinkCursorEnd.Get())
 }

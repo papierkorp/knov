@@ -311,6 +311,51 @@
     });
   };
 
+  // ── textarea caret position via mirror div ───────────────────────────────
+  // window.getSelection() does not expose the cursor inside a <textarea>, so
+  // we measure it by cloning the textarea's style into a hidden mirror div.
+
+  function getTextareaCaretRect(textarea) {
+    var computed = window.getComputedStyle(textarea);
+    var taRect = textarea.getBoundingClientRect();
+    var mirror = document.createElement("div");
+
+    mirror.style.cssText = [
+      "position:fixed",
+      "visibility:hidden",
+      "pointer-events:none",
+      "white-space:pre-wrap",
+      "word-wrap:break-word",
+      "overflow:hidden",
+      "width:" + taRect.width + "px",
+      "height:" + taRect.height + "px",
+      "top:" + taRect.top + "px",
+      "left:" + taRect.left + "px",
+    ].join(";");
+
+    [
+      "box-sizing", "font-family", "font-size", "font-weight", "font-style",
+      "line-height", "letter-spacing", "word-spacing", "text-indent",
+      "padding-top", "padding-right", "padding-bottom", "padding-left",
+      "border-top-width", "border-right-width", "border-bottom-width", "border-left-width",
+    ].forEach(function (p) {
+      mirror.style[p] = computed[p];
+    });
+
+    mirror.appendChild(
+      document.createTextNode(textarea.value.substring(0, textarea.selectionStart)),
+    );
+    var caret = document.createElement("span");
+    caret.textContent = "​";
+    mirror.appendChild(caret);
+
+    document.body.appendChild(mirror);
+    mirror.scrollTop = textarea.scrollTop;
+    var rect = caret.getBoundingClientRect();
+    document.body.removeChild(mirror);
+    return rect;
+  }
+
   // ── plain input/textarea variant (event-delegated) ───────────────────────
 
   global.initWikiAutocompleteForInputs = function (
@@ -338,7 +383,10 @@
         return;
       }
       var before = input.value.substring(0, input.selectionStart);
-      triggerAutocomplete(before, input, function (path) {
+      var anchor = input.tagName === "TEXTAREA"
+        ? { getBoundingClientRect: function () { return getTextareaCaretRect(input); } }
+        : input;
+      triggerAutocomplete(before, anchor, function (path) {
         var pos = input.selectionStart;
         var val = input.value;
         var ws = val.substring(0, pos).lastIndexOf("[[");

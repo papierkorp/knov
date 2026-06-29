@@ -14,7 +14,6 @@
 - add a `create_your_own_theme.md` file
 
 **per ai**
-- wiki link for text editor?
 - add chat to a single file?
 - references - add date
 - version
