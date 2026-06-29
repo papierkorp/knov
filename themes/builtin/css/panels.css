@@ -544,6 +544,11 @@
   overflow-y: auto;
 }
 
+.search-snippet-sep {
+  opacity: 0.4;
+  margin: 0 2px;
+}
+
 /* toggle switch */
 .fp-toggle-switch {
   position: relative;

@@ -92,39 +92,18 @@ func RenderSearchResultsCards(files []files.File, query string) string {
 	return html.String()
 }
 
-func extractSearchContext(filePath, query string) string {
-	if query == "" {
-		return ""
-	}
-
-	fullPath := pathutils.ToDocsPath(filePath)
-	content, err := os.ReadFile(fullPath)
-	if err != nil {
-		return fmt.Sprintf(`<span class="search-match-filename">%s</span>`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "filename match"))
-	}
-
-	originalContent := string(content)
-	contentLower := strings.ToLower(originalContent)
-	queryLower := strings.ToLower(query)
-
-	hitPos := strings.Index(contentLower, queryLower)
-	if hitPos == -1 {
-		return fmt.Sprintf(`<span class="search-match-filename">%s</span>`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "content match"))
-	}
-
+// extractSnippet returns an HTML snippet of originalContent around hitPos with
+// a <mark> around the matched term of matchLen bytes.
+func extractSnippet(originalContent, contentLower string, hitPos, matchLen int) string {
 	const window = 60
 	start := hitPos - window
 	if start < 0 {
 		start = 0
 	}
-	end := hitPos + len(query) + window
+	end := hitPos + matchLen + window
 	if end > len(originalContent) {
 		end = len(originalContent)
 	}
-
-	// trim to word boundaries to avoid cutting mid-rune or mid-word
 	for start > 0 && originalContent[start] != ' ' && originalContent[start] != '\n' {
 		start--
 	}
@@ -132,13 +111,9 @@ func extractSearchContext(filePath, query string) string {
 		end++
 	}
 
-	prefix := strings.TrimSpace(originalContent[start:hitPos])
-	match := originalContent[hitPos : hitPos+len(query)]
-	suffix := strings.TrimSpace(originalContent[hitPos+len(query) : end])
-
-	// collapse internal newlines/extra whitespace for display
-	prefix = strings.Join(strings.Fields(prefix), " ")
-	suffix = strings.Join(strings.Fields(suffix), " ")
+	prefix := strings.Join(strings.Fields(strings.TrimSpace(originalContent[start:hitPos])), " ")
+	match := originalContent[hitPos : hitPos+matchLen]
+	suffix := strings.Join(strings.Fields(strings.TrimSpace(originalContent[hitPos+matchLen:end])), " ")
 
 	var b strings.Builder
 	if start > 0 {
@@ -157,6 +132,44 @@ func extractSearchContext(filePath, query string) string {
 		b.WriteString("...")
 	}
 	return b.String()
+}
+
+func extractSearchContext(filePath, query string) string {
+	if query == "" {
+		return ""
+	}
+
+	fullPath := pathutils.ToDocsPath(filePath)
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		return fmt.Sprintf(`<span class="search-match-filename">%s</span>`,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "filename match"))
+	}
+
+	originalContent := string(content)
+	contentLower := strings.ToLower(originalContent)
+	queryLower := strings.ToLower(query)
+
+	hitPos := strings.Index(contentLower, queryLower)
+	if hitPos != -1 {
+		return extractSnippet(originalContent, contentLower, hitPos, len(query))
+	}
+
+	// Phrase not found as a unit — collect one snippet per query word.
+	words := strings.Fields(queryLower)
+	var snippets []string
+	for _, word := range words {
+		pos := strings.Index(contentLower, word)
+		if pos == -1 {
+			continue
+		}
+		snippets = append(snippets, extractSnippet(originalContent, contentLower, pos, len(word)))
+	}
+	if len(snippets) == 0 {
+		return fmt.Sprintf(`<span class="search-match-filename">%s</span>`,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "content match"))
+	}
+	return strings.Join(snippets, ` <span class="search-snippet-sep">·</span> `)
 }
 
 // RenderSearchHistoryResults renders deleted-file history search results as HTML
