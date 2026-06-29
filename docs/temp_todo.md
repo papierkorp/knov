@@ -15,7 +15,6 @@
 
 **per ai**
 - wiki link for text editor?
-- add a new setting/env for the default editor
 - add chat to a single file?
 - references - add date
 - version
@@ -31,7 +30,6 @@
 - search
   - basic ssl search - content found - show which content?
   - create new file - search for path - bad background color and color mix hard to read
-
 
 - deployment
   - codeberg deployment pipeline?

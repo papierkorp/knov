@@ -47,7 +47,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 		if metadata != nil && metadata.Editor != "" {
 			sectionEditorType = metadata.Editor
 		} else {
-			sectionEditorType = files.EditorTypeToastUI
+			sectionEditorType = defaultMarkdownEditor()
 		}
 		switch sectionEditorType {
 		case files.EditorTypeCodeMirror:
@@ -67,11 +67,8 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	if editorParam != "" {
 		et = files.EditorType(editorParam)
 	} else if fp == "" {
-		// no filepath and no editor provided — default to markdown for new files
-		html = render.RenderToastUIEditorForm("", prefillPath, "")
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
-		return
+		// no filepath and no editor provided — use configured default for new files
+		et = defaultMarkdownEditor()
 	} else {
 		// existing file: read editor from metadata, fall back to handler detection
 		metadata, _ := files.MetaDataGet(fp)
@@ -82,7 +79,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 			if handler != nil && handler.Name() != "markdown" {
 				et = files.EditorTypeTextarea
 			} else {
-				et = files.EditorTypeToastUI
+				et = defaultMarkdownEditor()
 			}
 		}
 	}
@@ -763,4 +760,13 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	fmt.Fprintf(w, `<div class="status-success">%s</div>`, successMsg)
+}
+
+// defaultMarkdownEditor returns the configured default editor for markdown files.
+// KNOV_DEFAULT_EDITOR env var takes precedence over the user setting.
+func defaultMarkdownEditor() files.EditorType {
+	if env := configmanager.GetAppConfig().DefaultEditor; env != "" {
+		return files.EditorType(env)
+	}
+	return files.EditorType(configmanager.DefaultMarkdownEditor.Get())
 }

@@ -87,6 +87,17 @@ var (
 	})
 
 	// ── Editor / All Editors ──────────────────────────────────────────────────
+	DefaultMarkdownEditor = register(&StringSetting{
+		key: "defaultMarkdownEditor", Default: "toastui-editor",
+		Section: SectionEditor, Group: GroupAllEditors,
+		Label:   "Default Markdown Editor",
+		Desc:    "which editor opens by default for new and unassigned markdown files",
+		Options: []SettingOption{
+			{"toastui-editor", "ToastUI (rich markdown editor)"},
+			{"codemirror-editor", "CodeMirror (plain text editor)"},
+			{"textarea-editor", "Textarea (simple text area)"},
+		},
+	})
 	SpellCheck = register(&BoolSetting{
 		key: "spellCheck", Default: false,
 		Section: SectionEditor, Group: GroupAllEditors,

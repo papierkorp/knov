@@ -58,6 +58,7 @@ type AppConfig struct {
 	KanbanCardStyles        map[string]string // status → "normal"|"italic"|"highlighted"|"deleted"
 	KanbanArchiveStatus     string
 	NotifyDuration          int
+	DefaultEditor           string
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -113,6 +114,7 @@ func InitAppConfig() {
 		KanbanCardStyles:        getStringMapEnv("KNOV_KANBAN_CARD_STYLES"),
 		KanbanArchiveStatus:     getEnv("KNOV_KANBAN_ARCHIVE_STATUS", "archive"),
 		NotifyDuration:          getIntEnv("KNOV_NOTIFY_DURATION", 3500),
+		DefaultEditor:           getEnv("KNOV_DEFAULT_EDITOR", ""),
 	}
 
 	initLogLevel()

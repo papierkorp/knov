@@ -22,11 +22,6 @@
       "translation": ""
     },
     {
-      "id": "Add",
-      "message": "Add",
-      "translation": ""
-    },
-    {
       "id": "add file",
       "message": "add file",
       "translation": ""
@@ -102,19 +97,9 @@
       "translation": ""
     },
     {
-      "id": "All Editors",
-      "message": "All Editors",
-      "translation": ""
-    },
-    {
       "id": "All Files",
       "message": "All Files",
       "translation": "All Files"
-    },
-    {
-      "id": "Allowed MIME Types",
-      "message": "Allowed MIME Types",
-      "translation": ""
     },
     {
       "id": "all tags",
@@ -177,11 +162,6 @@
       "translation": ""
     },
     {
-      "id": "archive visibility updated",
-      "message": "archive visibility updated",
-      "translation": ""
-    },
-    {
       "id": "Are you sure?",
       "message": "Are you sure?",
       "translation": "Are you sure?"
@@ -202,11 +182,6 @@
       "translation": ""
     },
     {
-      "id": "at least one mime type required",
-      "message": "at least one mime type required",
-      "translation": ""
-    },
-    {
       "id": "auth test failed",
       "message": "auth test failed",
       "translation": ""
@@ -214,11 +189,6 @@
     {
       "id": "auth test passed",
       "message": "auth test passed",
-      "translation": ""
-    },
-    {
-      "id": "Auto-close brackets",
-      "message": "Auto-close brackets",
       "translation": ""
     },
     {
@@ -232,28 +202,8 @@
       "translation": ""
     },
     {
-      "id": "Automatically insert closing brackets, parentheses and quotes",
-      "message": "Automatically insert closing brackets, parentheses and quotes",
-      "translation": ""
-    },
-    {
       "id": "back to board",
       "message": "back to board",
-      "translation": ""
-    },
-    {
-      "id": "Border Style",
-      "message": "Border Style",
-      "translation": ""
-    },
-    {
-      "id": "border style updated",
-      "message": "border style updated",
-      "translation": ""
-    },
-    {
-      "id": "Bracket matching",
-      "message": "Bracket matching",
       "translation": ""
     },
     {
@@ -265,16 +215,6 @@
       "id": "Browse",
       "message": "Browse",
       "translation": "Browse"
-    },
-    {
-      "id": "Browse by Folder Structure",
-      "message": "Browse by Folder Structure",
-      "translation": ""
-    },
-    {
-      "id": "Browse by Metadata",
-      "message": "Browse by Metadata",
-      "translation": "Browse by Metadata"
     },
     {
       "id": "Browse Files",
@@ -347,11 +287,6 @@
       "translation": ""
     },
     {
-      "id": "caption setting updated",
-      "message": "caption setting updated",
-      "translation": ""
-    },
-    {
       "id": "cards",
       "message": "cards",
       "translation": ""
@@ -359,11 +294,6 @@
     {
       "id": "cascade status",
       "message": "cascade status",
-      "translation": ""
-    },
-    {
-      "id": "Center aligned",
-      "message": "Center aligned",
       "translation": ""
     },
     {
@@ -382,33 +312,8 @@
       "translation": ""
     },
     {
-      "id": "Chat",
-      "message": "Chat",
-      "translation": ""
-    },
-    {
       "id": "children",
       "message": "children",
-      "translation": ""
-    },
-    {
-      "id": "choose file",
-      "message": "choose file",
-      "translation": ""
-    },
-    {
-      "id": "choose how dates are displayed throughout the app",
-      "message": "choose how dates are displayed throughout the app",
-      "translation": ""
-    },
-    {
-      "id": "choose the visual appearance of the interface",
-      "message": "choose the visual appearance of the interface",
-      "translation": ""
-    },
-    {
-      "id": "choose your preferred interface language",
-      "message": "choose your preferred interface language",
       "translation": ""
     },
     {
@@ -422,43 +327,13 @@
       "translation": ""
     },
     {
-      "id": "click setting updated",
-      "message": "click setting updated",
-      "translation": ""
-    },
-    {
-      "id": "Click to Enlarge",
-      "message": "Click to Enlarge",
-      "translation": ""
-    },
-    {
       "id": "close",
       "message": "close",
       "translation": ""
     },
     {
-      "id": "Close",
-      "message": "Close",
-      "translation": ""
-    },
-    {
-      "id": "code block wrap setting updated",
-      "message": "code block wrap setting updated",
-      "translation": ""
-    },
-    {
-      "id": "Code folding",
-      "message": "Code folding",
-      "translation": ""
-    },
-    {
       "id": "CodeMirror",
       "message": "CodeMirror",
-      "translation": ""
-    },
-    {
-      "id": "Code / Text Editor (CodeMirror)",
-      "message": "Code / Text Editor (CodeMirror)",
       "translation": ""
     },
     {
@@ -482,18 +357,8 @@
       "translation": ""
     },
     {
-      "id": "Collections",
-      "message": "Collections",
-      "translation": "Collections"
-    },
-    {
       "id": "collection updated",
       "message": "collection updated",
-      "translation": ""
-    },
-    {
-      "id": "comma-separated list of allowed MIME types (e.g., image/*, application/pdf)",
-      "message": "comma-separated list of allowed MIME types (e.g., image/*, application/pdf)",
       "translation": ""
     },
     {
@@ -542,21 +407,6 @@
       "translation": ""
     },
     {
-      "id": "control whether code block content wraps or scrolls",
-      "message": "control whether code block content wraps or scrolls",
-      "translation": ""
-    },
-    {
-      "id": "control whether section editing includes content from sub-headers",
-      "message": "control whether section editing includes content from sub-headers",
-      "translation": ""
-    },
-    {
-      "id": "Control which file types are visible in file listings and browsing",
-      "message": "Control which file types are visible in file listings and browsing",
-      "translation": ""
-    },
-    {
       "id": "convert to markdown",
       "message": "convert to markdown",
       "translation": ""
@@ -597,18 +447,18 @@
       "translation": ""
     },
     {
-      "id": "cronjob executed successfully",
-      "message": "cronjob executed successfully",
-      "translation": ""
-    },
-    {
       "id": "Cronjob Interval",
       "message": "Cronjob Interval",
       "translation": ""
     },
     {
-      "id": "current custom favicon",
-      "message": "current custom favicon",
+      "id": "cronjob is already running",
+      "message": "cronjob is already running",
+      "translation": ""
+    },
+    {
+      "id": "cronjob started",
+      "message": "cronjob started",
       "translation": ""
     },
     {
@@ -654,11 +504,6 @@
     {
       "id": "dashboardId is required",
       "message": "dashboardId is required",
-      "translation": ""
-    },
-    {
-      "id": "dashboard ID (leave empty for default)",
-      "message": "dashboard ID (leave empty for default)",
       "translation": ""
     },
     {
@@ -712,33 +557,8 @@
       "translation": ""
     },
     {
-      "id": "Data Path Configuration",
-      "message": "Data Path Configuration",
-      "translation": ""
-    },
-    {
       "id": "data path saved. restart required.",
       "message": "data path saved. restart required.",
-      "translation": ""
-    },
-    {
-      "id": "Date Format",
-      "message": "Date Format",
-      "translation": ""
-    },
-    {
-      "id": "default max-width and max-height for media previews in pixels",
-      "message": "default max-width and max-height for media previews in pixels",
-      "translation": ""
-    },
-    {
-      "id": "Default Preview Size (px)",
-      "message": "Default Preview Size (px)",
-      "translation": ""
-    },
-    {
-      "id": "Default view",
-      "message": "Default view",
       "translation": ""
     },
     {
@@ -797,11 +617,6 @@
       "translation": ""
     },
     {
-      "id": "Description",
-      "message": "Description",
-      "translation": ""
-    },
-    {
       "id": "deselect all",
       "message": "deselect all",
       "translation": ""
@@ -829,41 +644,6 @@
     {
       "id": "dismiss",
       "message": "dismiss",
-      "translation": ""
-    },
-    {
-      "id": "display a search box above the table",
-      "message": "display a search box above the table",
-      "translation": ""
-    },
-    {
-      "id": "Display filename below media previews",
-      "message": "Display filename below media previews",
-      "translation": ""
-    },
-    {
-      "id": "display first / prev / next / last buttons",
-      "message": "display first / prev / next / last buttons",
-      "translation": ""
-    },
-    {
-      "id": "Display Mode",
-      "message": "Display Mode",
-      "translation": ""
-    },
-    {
-      "id": "display mode updated",
-      "message": "display mode updated",
-      "translation": ""
-    },
-    {
-      "id": "Display the formatting toolbar above the editor",
-      "message": "Display the formatting toolbar above the editor",
-      "translation": ""
-    },
-    {
-      "id": "Display the markdown / WYSIWYG switch tab at the bottom",
-      "message": "Display the markdown / WYSIWYG switch tab at the bottom",
       "translation": ""
     },
     {
@@ -907,26 +687,6 @@
       "translation": ""
     },
     {
-      "id": "Editor Settings",
-      "message": "Editor Settings",
-      "translation": ""
-    },
-    {
-      "id": "editor setting updated",
-      "message": "editor setting updated",
-      "translation": ""
-    },
-    {
-      "id": "Editor-Type",
-      "message": "Editor-Type",
-      "translation": ""
-    },
-    {
-      "id": "Editor Types",
-      "message": "Editor Types",
-      "translation": ""
-    },
-    {
       "id": "editor updated",
       "message": "editor updated",
       "translation": ""
@@ -944,26 +704,6 @@
     {
       "id": "edit table",
       "message": "edit table",
-      "translation": ""
-    },
-    {
-      "id": "enable clicking previews to open full-size version",
-      "message": "enable clicking previews to open full-size version",
-      "translation": ""
-    },
-    {
-      "id": "Enable Media Previews",
-      "message": "Enable Media Previews",
-      "translation": ""
-    },
-    {
-      "id": "enable or disable media preview generation",
-      "message": "enable or disable media preview generation",
-      "translation": ""
-    },
-    {
-      "id": "Enable vim normal/insert/visual mode in the code editor",
-      "message": "Enable vim normal/insert/visual mode in the code editor",
       "translation": ""
     },
     {
@@ -1012,11 +752,6 @@
       "translation": ""
     },
     {
-      "id": "executable visibility updated",
-      "message": "executable visibility updated",
-      "translation": ""
-    },
-    {
       "id": "Expected Files",
       "message": "Expected Files",
       "translation": ""
@@ -1062,11 +797,6 @@
       "translation": ""
     },
     {
-      "id": "Export to Markdown",
-      "message": "Export to Markdown",
-      "translation": ""
-    },
-    {
       "id": "failed",
       "message": "failed",
       "translation": ""
@@ -1074,11 +804,6 @@
     {
       "id": "failed to browse files",
       "message": "failed to browse files",
-      "translation": ""
-    },
-    {
-      "id": "failed to clean test data",
-      "message": "failed to clean test data",
       "translation": ""
     },
     {
@@ -1169,11 +894,6 @@
     {
       "id": "failed to get metadata",
       "message": "failed to get metadata",
-      "translation": ""
-    },
-    {
-      "id": "failed to get orphaned media",
-      "message": "failed to get orphaned media",
       "translation": ""
     },
     {
@@ -1377,11 +1097,6 @@
       "translation": ""
     },
     {
-      "id": "failed to save setting",
-      "message": "failed to save setting",
-      "translation": ""
-    },
-    {
       "id": "failed to save todo",
       "message": "failed to save todo",
       "translation": ""
@@ -1389,11 +1104,6 @@
     {
       "id": "failed to search git history",
       "message": "failed to search git history",
-      "translation": ""
-    },
-    {
-      "id": "failed to setup test data",
-      "message": "failed to setup test data",
       "translation": ""
     },
     {
@@ -1454,11 +1164,6 @@
     {
       "id": "file does not exist",
       "message": "file does not exist",
-      "translation": ""
-    },
-    {
-      "id": "File Extensions",
-      "message": "File Extensions",
       "translation": ""
     },
     {
@@ -1562,11 +1267,6 @@
       "translation": ""
     },
     {
-      "id": "File Type Visibility",
-      "message": "File Type Visibility",
-      "translation": ""
-    },
-    {
       "id": "file with new name already exists",
       "message": "file with new name already exists",
       "translation": ""
@@ -1642,11 +1342,6 @@
       "translation": ""
     },
     {
-      "id": "Filters",
-      "message": "Filters",
-      "translation": ""
-    },
-    {
       "id": "filter saved successfully!",
       "message": "filter saved successfully!",
       "translation": ""
@@ -1662,8 +1357,13 @@
       "translation": ""
     },
     {
-      "id": "filter visibility updated",
-      "message": "filter visibility updated",
+      "id": "find in file",
+      "message": "find in file",
+      "translation": ""
+    },
+    {
+      "id": "find in file...",
+      "message": "find in file...",
       "translation": ""
     },
     {
@@ -1697,11 +1397,6 @@
       "translation": ""
     },
     {
-      "id": "Folders",
-      "message": "Folders",
-      "translation": "Folders"
-    },
-    {
       "id": "folders updated",
       "message": "folders updated",
       "translation": ""
@@ -1725,11 +1420,6 @@
       "id": "from date",
       "message": "from date",
       "translation": ""
-    },
-    {
-      "id": "General Settings",
-      "message": "General Settings",
-      "translation": "General Settings"
     },
     {
       "id": "Git Auto Push",
@@ -1782,163 +1472,8 @@
       "translation": ""
     },
     {
-      "id": "Help",
-      "message": "Help",
-      "translation": "Help"
-    },
-    {
-      "id": "hidden files setting updated",
-      "message": "hidden files setting updated",
-      "translation": ""
-    },
-    {
-      "id": "Hide Archives",
-      "message": "Hide Archives",
-      "translation": ""
-    },
-    {
       "id": "hide diff",
       "message": "hide diff",
-      "translation": ""
-    },
-    {
-      "id": "Hide .docx, .xlsx, .pptx, .ods and similar files",
-      "message": "Hide .docx, .xlsx, .pptx, .ods and similar files",
-      "translation": ""
-    },
-    {
-      "id": "Hide Executables",
-      "message": "Hide Executables",
-      "translation": ""
-    },
-    {
-      "id": "Hide .exe, .jar, .pfx and similar files",
-      "message": "Hide .exe, .jar, .pfx and similar files",
-      "translation": ""
-    },
-    {
-      "id": "Hide files marked as image type",
-      "message": "Hide files marked as image type",
-      "translation": ""
-    },
-    {
-      "id": "Hide files marked as PDF type",
-      "message": "Hide files marked as PDF type",
-      "translation": ""
-    },
-    {
-      "id": "Hide files marked as video type",
-      "message": "Hide files marked as video type",
-      "translation": ""
-    },
-    {
-      "id": "Hide files using the filter editor",
-      "message": "Hide files using the filter editor",
-      "translation": ""
-    },
-    {
-      "id": "Hide files using the index editor",
-      "message": "Hide files using the index editor",
-      "translation": ""
-    },
-    {
-      "id": "Hide files using the list editor",
-      "message": "Hide files using the list editor",
-      "translation": ""
-    },
-    {
-      "id": "Hide files using the markdown editor",
-      "message": "Hide files using the markdown editor",
-      "translation": ""
-    },
-    {
-      "id": "Hide files using the text editor",
-      "message": "Hide files using the text editor",
-      "translation": ""
-    },
-    {
-      "id": "Hide files using the todo editor",
-      "message": "Hide files using the todo editor",
-      "translation": ""
-    },
-    {
-      "id": "Hide Filter Files",
-      "message": "Hide Filter Files",
-      "translation": ""
-    },
-    {
-      "id": "Hide Image Files",
-      "message": "Hide Image Files",
-      "translation": ""
-    },
-    {
-      "id": "Hide Index Files",
-      "message": "Hide Index Files",
-      "translation": ""
-    },
-    {
-      "id": "Hide List Files",
-      "message": "Hide List Files",
-      "translation": ""
-    },
-    {
-      "id": "Hide Markdown Files",
-      "message": "Hide Markdown Files",
-      "translation": ""
-    },
-    {
-      "id": "Hide Office Documents",
-      "message": "Hide Office Documents",
-      "translation": ""
-    },
-    {
-      "id": "Hide PDF Files",
-      "message": "Hide PDF Files",
-      "translation": ""
-    },
-    {
-      "id": "Hide Scripts",
-      "message": "Hide Scripts",
-      "translation": ""
-    },
-    {
-      "id": "Hide .sh, .bat and similar files",
-      "message": "Hide .sh, .bat and similar files",
-      "translation": ""
-    },
-    {
-      "id": "Hide Text Files",
-      "message": "Hide Text Files",
-      "translation": ""
-    },
-    {
-      "id": "Hide Todo Files",
-      "message": "Hide Todo Files",
-      "translation": ""
-    },
-    {
-      "id": "Hide Video Files",
-      "message": "Hide Video Files",
-      "translation": ""
-    },
-    {
-      "id": "Hide .zip, .rar, .7z and similar files",
-      "message": "Hide .zip, .rar, .7z and similar files",
-      "translation": ""
-    },
-    {
-      "id": "Highlight all other occurrences of the selected text",
-      "message": "Highlight all other occurrences of the selected text",
-      "translation": ""
-    },
-    {
-      "id": "Highlight matching brackets, parentheses and braces",
-      "message": "Highlight matching brackets, parentheses and braces",
-      "translation": ""
-    },
-    {
-      "id": "Highlight selection matches",
-      "message": "Highlight selection matches",
       "translation": ""
     },
     {
@@ -1962,31 +1497,6 @@
       "translation": "Home"
     },
     {
-      "id": "Home Dashboard",
-      "message": "Home Dashboard",
-      "translation": ""
-    },
-    {
-      "id": "home dashboard updated",
-      "message": "home dashboard updated",
-      "translation": ""
-    },
-    {
-      "id": "how many rows to show per page in interactive tables",
-      "message": "how many rows to show per page in interactive tables",
-      "translation": ""
-    },
-    {
-      "id": "how media previews are positioned in the document",
-      "message": "how media previews are positioned in the document",
-      "translation": ""
-    },
-    {
-      "id": "how the live preview is shown in markdown mode",
-      "message": "how the live preview is shown in markdown mode",
-      "translation": ""
-    },
-    {
       "id": "https://github.com/user/repo.git or git@github.com:user/repo.git",
       "message": "https://github.com/user/repo.git or git@github.com:user/repo.git",
       "translation": ""
@@ -1999,11 +1509,6 @@
     {
       "id": "ids are required",
       "message": "ids are required",
-      "translation": ""
-    },
-    {
-      "id": "image visibility updated",
-      "message": "image visibility updated",
       "translation": ""
     },
     {
@@ -2032,11 +1537,6 @@
       "translation": ""
     },
     {
-      "id": "Include sub-headers when editing sections",
-      "message": "Include sub-headers when editing sections",
-      "translation": ""
-    },
-    {
       "id": "indent",
       "message": "indent",
       "translation": ""
@@ -2052,23 +1552,8 @@
       "translation": ""
     },
     {
-      "id": "index extension setting updated",
-      "message": "index extension setting updated",
-      "translation": ""
-    },
-    {
       "id": "index saved successfully",
       "message": "index saved successfully",
-      "translation": ""
-    },
-    {
-      "id": "index visibility updated",
-      "message": "index visibility updated",
-      "translation": ""
-    },
-    {
-      "id": "Inline with text",
-      "message": "Inline with text",
       "translation": ""
     },
     {
@@ -2082,11 +1567,6 @@
       "translation": ""
     },
     {
-      "id": "invalid border style",
-      "message": "invalid border style",
-      "translation": ""
-    },
-    {
       "id": "invalid dashboard json",
       "message": "invalid dashboard json",
       "translation": ""
@@ -2094,11 +1574,6 @@
     {
       "id": "invalid data format",
       "message": "invalid data format",
-      "translation": ""
-    },
-    {
-      "id": "invalid display mode",
-      "message": "invalid display mode",
       "translation": ""
     },
     {
@@ -2127,28 +1602,18 @@
       "translation": ""
     },
     {
-      "id": "invalid page size",
-      "message": "invalid page size",
-      "translation": ""
-    },
-    {
-      "id": "invalid preview size",
-      "message": "invalid preview size",
-      "translation": ""
-    },
-    {
       "id": "invalid settings file",
       "message": "invalid settings file",
       "translation": ""
     },
     {
-      "id": "invalid upload size",
-      "message": "invalid upload size",
+      "id": "item deleted",
+      "message": "item deleted",
       "translation": ""
     },
     {
-      "id": "item deleted",
-      "message": "item deleted",
+      "id": "Jobs",
+      "message": "Jobs",
       "translation": ""
     },
     {
@@ -2232,11 +1697,6 @@
       "translation": ""
     },
     {
-      "id": "Latest Changes",
-      "message": "Latest Changes",
-      "translation": "Latest Changes"
-    },
-    {
       "id": "layout",
       "message": "layout",
       "translation": ""
@@ -2247,28 +1707,13 @@
       "translation": ""
     },
     {
-      "id": "Left aligned",
-      "message": "Left aligned",
-      "translation": ""
-    },
-    {
       "id": "less than",
       "message": "less than",
       "translation": ""
     },
     {
-      "id": "Let the browser underline misspelled words while editing",
-      "message": "Let the browser underline misspelled words while editing",
-      "translation": ""
-    },
-    {
       "id": "limit",
       "message": "limit",
-      "translation": ""
-    },
-    {
-      "id": "Line numbers",
-      "message": "Line numbers",
       "translation": ""
     },
     {
@@ -2307,18 +1752,8 @@
       "translation": ""
     },
     {
-      "id": "list extension setting updated",
-      "message": "list extension setting updated",
-      "translation": ""
-    },
-    {
       "id": "list saved successfully",
       "message": "list saved successfully",
-      "translation": ""
-    },
-    {
-      "id": "list visibility updated",
-      "message": "list visibility updated",
       "translation": ""
     },
     {
@@ -2329,11 +1764,6 @@
     {
       "id": "loading...",
       "message": "loading...",
-      "translation": ""
-    },
-    {
-      "id": "Loading...",
-      "message": "Loading...",
       "translation": ""
     },
     {
@@ -2367,11 +1797,6 @@
       "translation": ""
     },
     {
-      "id": "Loading languages...",
-      "message": "Loading languages...",
-      "translation": ""
-    },
-    {
       "id": "loading media",
       "message": "loading media",
       "translation": ""
@@ -2379,11 +1804,6 @@
     {
       "id": "loading media details...",
       "message": "loading media details...",
-      "translation": ""
-    },
-    {
-      "id": "loading media files...",
-      "message": "loading media files...",
       "translation": ""
     },
     {
@@ -2407,11 +1827,6 @@
       "translation": ""
     },
     {
-      "id": "Loading themes...",
-      "message": "Loading themes...",
-      "translation": ""
-    },
-    {
       "id": "Loading theme settings...",
       "message": "Loading theme settings...",
       "translation": ""
@@ -2424,11 +1839,6 @@
     {
       "id": "loading version content...",
       "message": "loading version content...",
-      "translation": ""
-    },
-    {
-      "id": "loading versions...",
-      "message": "loading versions...",
       "translation": ""
     },
     {
@@ -2447,21 +1857,6 @@
       "translation": ""
     },
     {
-      "id": "Logging",
-      "message": "Logging",
-      "translation": ""
-    },
-    {
-      "id": "Log Level",
-      "message": "Log Level",
-      "translation": ""
-    },
-    {
-      "id": "log level updated",
-      "message": "log level updated",
-      "translation": ""
-    },
-    {
       "id": "Logs",
       "message": "Logs",
       "translation": ""
@@ -2472,38 +1867,8 @@
       "translation": ""
     },
     {
-      "id": "Make previews clickable to view full-size",
-      "message": "Make previews clickable to view full-size",
-      "translation": ""
-    },
-    {
       "id": "manage test data for development and testing purposes",
       "message": "manage test data for development and testing purposes",
-      "translation": ""
-    },
-    {
-      "id": "Markdown Editor (ToastUI)",
-      "message": "Markdown Editor (ToastUI)",
-      "translation": ""
-    },
-    {
-      "id": "Markdown source",
-      "message": "Markdown source",
-      "translation": ""
-    },
-    {
-      "id": "markdown visibility updated",
-      "message": "markdown visibility updated",
-      "translation": ""
-    },
-    {
-      "id": "maximum file size in megabytes for uploads",
-      "message": "maximum file size in megabytes for uploads",
-      "translation": ""
-    },
-    {
-      "id": "Max Upload Size (MB)",
-      "message": "Max Upload Size (MB)",
       "translation": ""
     },
     {
@@ -2529,21 +1894,6 @@
     {
       "id": "media file storage usage and cleanup",
       "message": "media file storage usage and cleanup",
-      "translation": ""
-    },
-    {
-      "id": "Media Overview",
-      "message": "Media Overview",
-      "translation": ""
-    },
-    {
-      "id": "Media Types",
-      "message": "Media Types",
-      "translation": ""
-    },
-    {
-      "id": "Media Upload Settings",
-      "message": "Media Upload Settings",
       "translation": ""
     },
     {
@@ -2597,16 +1947,6 @@
       "translation": ""
     },
     {
-      "id": "mime types updated",
-      "message": "mime types updated",
-      "translation": ""
-    },
-    {
-      "id": "missing border style",
-      "message": "missing border style",
-      "translation": ""
-    },
-    {
       "id": "missing collection",
       "message": "missing collection",
       "translation": ""
@@ -2624,11 +1964,6 @@
     {
       "id": "missing data",
       "message": "missing data",
-      "translation": ""
-    },
-    {
-      "id": "missing display mode",
-      "message": "missing display mode",
       "translation": ""
     },
     {
@@ -2687,11 +2022,6 @@
       "translation": ""
     },
     {
-      "id": "missing mime types",
-      "message": "missing mime types",
-      "translation": ""
-    },
-    {
       "id": "missing parameters",
       "message": "missing parameters",
       "translation": ""
@@ -2699,11 +2029,6 @@
     {
       "id": "missing path parameter",
       "message": "missing path parameter",
-      "translation": ""
-    },
-    {
-      "id": "missing preview size",
-      "message": "missing preview size",
       "translation": ""
     },
     {
@@ -2719,11 +2044,6 @@
     {
       "id": "missing type or value parameter",
       "message": "missing type or value parameter",
-      "translation": ""
-    },
-    {
-      "id": "missing upload size",
-      "message": "missing upload size",
       "translation": ""
     },
     {
@@ -2792,6 +2112,11 @@
       "translation": ""
     },
     {
+      "id": "next",
+      "message": "next",
+      "translation": ""
+    },
+    {
       "id": "no ancestors",
       "message": "no ancestors",
       "translation": ""
@@ -2799,11 +2124,6 @@
     {
       "id": "no ancestors found",
       "message": "no ancestors found",
-      "translation": ""
-    },
-    {
-      "id": "No border",
-      "message": "No border",
       "translation": ""
     },
     {
@@ -2967,11 +2287,6 @@
       "translation": ""
     },
     {
-      "id": "Notifications",
-      "message": "Notifications",
-      "translation": ""
-    },
-    {
       "id": "Notify Duration",
       "message": "Notify Duration",
       "translation": ""
@@ -3002,18 +2317,8 @@
       "translation": "No widgets configured"
     },
     {
-      "id": "office document visibility updated",
-      "message": "office document visibility updated",
-      "translation": ""
-    },
-    {
       "id": "OK",
       "message": "OK",
-      "translation": ""
-    },
-    {
-      "id": "Only highlight when the selection matches a complete word",
-      "message": "Only highlight when the selection matches a complete word",
       "translation": ""
     },
     {
@@ -3082,11 +2387,6 @@
       "translation": ""
     },
     {
-      "id": "Overview",
-      "message": "Overview",
-      "translation": "Overview"
-    },
-    {
       "id": "parents",
       "message": "parents",
       "translation": ""
@@ -3132,11 +2432,6 @@
       "translation": ""
     },
     {
-      "id": "pdf visibility updated",
-      "message": "pdf visibility updated",
-      "translation": ""
-    },
-    {
       "id": "Playground",
       "message": "Playground",
       "translation": "Playground"
@@ -3144,11 +2439,6 @@
     {
       "id": "Preview",
       "message": "Preview",
-      "translation": ""
-    },
-    {
-      "id": "Preview layout",
-      "message": "Preview layout",
       "translation": ""
     },
     {
@@ -3167,18 +2457,8 @@
       "translation": ""
     },
     {
-      "id": "Preview Settings",
-      "message": "Preview Settings",
-      "translation": ""
-    },
-    {
-      "id": "preview setting updated",
-      "message": "preview setting updated",
-      "translation": ""
-    },
-    {
-      "id": "preview size updated",
-      "message": "preview size updated",
+      "id": "previous",
+      "message": "previous",
       "translation": ""
     },
     {
@@ -3189,11 +2469,6 @@
     {
       "id": "pull completed",
       "message": "pull completed",
-      "translation": ""
-    },
-    {
-      "id": "pull failed",
-      "message": "pull failed",
       "translation": ""
     },
     {
@@ -3232,11 +2507,6 @@
       "translation": ""
     },
     {
-      "id": "References",
-      "message": "References",
-      "translation": ""
-    },
-    {
       "id": "refresh",
       "message": "refresh",
       "translation": ""
@@ -3252,11 +2522,6 @@
       "translation": ""
     },
     {
-      "id": "Relative line numbers",
-      "message": "Relative line numbers",
-      "translation": ""
-    },
-    {
       "id": "remote",
       "message": "remote",
       "translation": ""
@@ -3269,11 +2534,6 @@
     {
       "id": "remove",
       "message": "remove",
-      "translation": ""
-    },
-    {
-      "id": "remove custom favicon and revert to default?",
-      "message": "remove custom favicon and revert to default?",
       "translation": ""
     },
     {
@@ -3322,21 +2582,6 @@
       "translation": ""
     },
     {
-      "id": "Right aligned",
-      "message": "Right aligned",
-      "translation": ""
-    },
-    {
-      "id": "Rounded border",
-      "message": "Rounded border",
-      "translation": ""
-    },
-    {
-      "id": "Rows per page",
-      "message": "Rows per page",
-      "translation": ""
-    },
-    {
       "id": "Run Cronjob",
       "message": "Run Cronjob",
       "translation": ""
@@ -3382,33 +2627,13 @@
       "translation": ""
     },
     {
-      "id": "Save index files as .index instead of .md",
-      "message": "Save index files as .index instead of .md",
-      "translation": ""
-    },
-    {
-      "id": "Save list files as .list instead of .md",
-      "message": "Save list files as .list instead of .md",
-      "translation": ""
-    },
-    {
       "id": "save section",
       "message": "save section",
       "translation": ""
     },
     {
-      "id": "Save todo files as .todo instead of .md",
-      "message": "Save todo files as .todo instead of .md",
-      "translation": ""
-    },
-    {
       "id": "scanning .gohtml template files...",
       "message": "scanning .gohtml template files...",
-      "translation": ""
-    },
-    {
-      "id": "script visibility updated",
-      "message": "script visibility updated",
       "translation": ""
     },
     {
@@ -3420,16 +2645,6 @@
       "id": "search...",
       "message": "search...",
       "translation": ""
-    },
-    {
-      "id": "Search",
-      "message": "Search",
-      "translation": ""
-    },
-    {
-      "id": "Search..",
-      "message": "Search..",
-      "translation": "Search.."
     },
     {
       "id": "search by filename...",
@@ -3474,16 +2689,6 @@
     {
       "id": "section",
       "message": "section",
-      "translation": ""
-    },
-    {
-      "id": "Section Editing &amp; Display",
-      "message": "Section Editing &amp; Display",
-      "translation": ""
-    },
-    {
-      "id": "section edit setting updated",
-      "message": "section edit setting updated",
       "translation": ""
     },
     {
@@ -3532,16 +2737,6 @@
       "translation": ""
     },
     {
-      "id": "Select Language",
-      "message": "Select Language",
-      "translation": ""
-    },
-    {
-      "id": "Select Theme",
-      "message": "Select Theme",
-      "translation": ""
-    },
-    {
       "id": "select widget type",
       "message": "select widget type",
       "translation": ""
@@ -3554,11 +2749,6 @@
     {
       "id": "Server Port",
       "message": "Server Port",
-      "translation": ""
-    },
-    {
-      "id": "set a dashboard ID to use as the home page",
-      "message": "set a dashboard ID to use as the home page",
       "translation": ""
     },
     {
@@ -3602,11 +2792,6 @@
       "translation": ""
     },
     {
-      "id": "Shadow border",
-      "message": "Shadow border",
-      "translation": ""
-    },
-    {
       "id": "shift+tab",
       "message": "shift+tab",
       "translation": ""
@@ -3617,88 +2802,13 @@
       "translation": ""
     },
     {
-      "id": "Show Captions",
-      "message": "Show Captions",
-      "translation": ""
-    },
-    {
       "id": "show events",
       "message": "show events",
       "translation": ""
     },
     {
-      "id": "show filename as caption under previews",
-      "message": "show filename as caption under previews",
-      "translation": ""
-    },
-    {
-      "id": "Show files and folders starting with a dot",
-      "message": "Show files and folders starting with a dot",
-      "translation": ""
-    },
-    {
-      "id": "Show fold indicators in the gutter and enable folding keybindings",
-      "message": "Show fold indicators in the gutter and enable folding keybindings",
-      "translation": ""
-    },
-    {
-      "id": "Show Hidden Files",
-      "message": "Show Hidden Files",
-      "translation": ""
-    },
-    {
-      "id": "Show images and media with CSS sizing in file view",
-      "message": "Show images and media with CSS sizing in file view",
-      "translation": ""
-    },
-    {
-      "id": "Show line numbers in the gutter",
-      "message": "Show line numbers in the gutter",
-      "translation": ""
-    },
-    {
-      "id": "Show line numbers relative to the cursor (useful with vim mode)",
-      "message": "Show line numbers relative to the cursor (useful with vim mode)",
-      "translation": ""
-    },
-    {
-      "id": "Show mode switch bar",
-      "message": "Show mode switch bar",
-      "translation": ""
-    },
-    {
-      "id": "Show pagination buttons",
-      "message": "Show pagination buttons",
-      "translation": ""
-    },
-    {
-      "id": "Show row count info",
-      "message": "Show row count info",
-      "translation": ""
-    },
-    {
-      "id": "Show search input",
-      "message": "Show search input",
-      "translation": ""
-    },
-    {
-      "id": "Show toolbar",
-      "message": "Show toolbar",
-      "translation": ""
-    },
-    {
-      "id": "Simple border",
-      "message": "Simple border",
-      "translation": ""
-    },
-    {
       "id": "size",
       "message": "size",
-      "translation": ""
-    },
-    {
-      "id": "Spell checking",
-      "message": "Spell checking",
       "translation": ""
     },
     {
@@ -3742,11 +2852,6 @@
       "translation": ""
     },
     {
-      "id": "System Administration",
-      "message": "System Administration",
-      "translation": ""
-    },
-    {
       "id": "system maintenance operations for keeping your application running smoothly",
       "message": "system maintenance operations for keeping your application running smoothly",
       "translation": ""
@@ -3762,38 +2867,8 @@
       "translation": ""
     },
     {
-      "id": "table info setting updated",
-      "message": "table info setting updated",
-      "translation": ""
-    },
-    {
       "id": "table of contents",
       "message": "table of contents",
-      "translation": ""
-    },
-    {
-      "id": "table page size updated",
-      "message": "table page size updated",
-      "translation": ""
-    },
-    {
-      "id": "table paging setting updated",
-      "message": "table paging setting updated",
-      "translation": ""
-    },
-    {
-      "id": "table search setting updated",
-      "message": "table search setting updated",
-      "translation": ""
-    },
-    {
-      "id": "Table Settings",
-      "message": "Table Settings",
-      "translation": ""
-    },
-    {
-      "id": "Tab (switch between editor and preview)",
-      "message": "Tab (switch between editor and preview)",
       "translation": ""
     },
     {
@@ -3805,11 +2880,6 @@
       "id": "tags",
       "message": "tags",
       "translation": ""
-    },
-    {
-      "id": "Tags",
-      "message": "Tags",
-      "translation": "Tags"
     },
     {
       "id": "tags updated",
@@ -3842,11 +2912,6 @@
       "translation": ""
     },
     {
-      "id": "Test Data Management",
-      "message": "Test Data Management",
-      "translation": ""
-    },
-    {
       "id": "test data setup completed",
       "message": "test data setup completed",
       "translation": ""
@@ -3859,11 +2924,6 @@
     {
       "id": "text file",
       "message": "text file",
-      "translation": ""
-    },
-    {
-      "id": "text visibility updated",
-      "message": "text visibility updated",
       "translation": ""
     },
     {
@@ -3932,18 +2992,8 @@
       "translation": ""
     },
     {
-      "id": "todo extension setting updated",
-      "message": "todo extension setting updated",
-      "translation": ""
-    },
-    {
       "id": "todo saved successfully",
       "message": "todo saved successfully",
-      "translation": ""
-    },
-    {
-      "id": "todo visibility updated",
-      "message": "todo visibility updated",
       "translation": ""
     },
     {
@@ -4037,33 +3087,8 @@
       "translation": ""
     },
     {
-      "id": "upload a custom favicon (.ico, .png or .svg, max 2 MB)",
-      "message": "upload a custom favicon (.ico, .png or .svg, max 2 MB)",
-      "translation": ""
-    },
-    {
-      "id": "upload favicon",
-      "message": "upload favicon",
-      "translation": ""
-    },
-    {
-      "id": "upload size updated",
-      "message": "upload size updated",
-      "translation": ""
-    },
-    {
-      "id": "URL",
-      "message": "URL",
-      "translation": ""
-    },
-    {
       "id": "used",
       "message": "used",
-      "translation": ""
-    },
-    {
-      "id": "Use dedicated file extensions instead of .md for these editor types",
-      "message": "Use dedicated file extensions instead of .md for these editor types",
       "translation": ""
     },
     {
@@ -4074,21 +3099,6 @@
     {
       "id": "used media files",
       "message": "used media files",
-      "translation": ""
-    },
-    {
-      "id": "Use .index Extension",
-      "message": "Use .index Extension",
-      "translation": ""
-    },
-    {
-      "id": "Use .list Extension",
-      "message": "Use .list Extension",
-      "translation": ""
-    },
-    {
-      "id": "Use .todo Extension",
-      "message": "Use .todo Extension",
       "translation": ""
     },
     {
@@ -4107,23 +3117,8 @@
       "translation": ""
     },
     {
-      "id": "version history",
-      "message": "version history",
-      "translation": ""
-    },
-    {
       "id": "version no longer available",
       "message": "version no longer available",
-      "translation": ""
-    },
-    {
-      "id": "Vertical (side-by-side)",
-      "message": "Vertical (side-by-side)",
-      "translation": ""
-    },
-    {
-      "id": "video visibility updated",
-      "message": "video visibility updated",
       "translation": ""
     },
     {
@@ -4134,16 +3129,6 @@
     {
       "id": "View all collections",
       "message": "View all collections",
-      "translation": ""
-    },
-    {
-      "id": "View all editor types",
-      "message": "View all editor types",
-      "translation": ""
-    },
-    {
-      "id": "View all filter files",
-      "message": "View all filter files",
       "translation": ""
     },
     {
@@ -4177,46 +3162,6 @@
       "translation": ""
     },
     {
-      "id": "Vim keybindings",
-      "message": "Vim keybindings",
-      "translation": ""
-    },
-    {
-      "id": "visual style of preview borders",
-      "message": "visual style of preview borders",
-      "translation": ""
-    },
-    {
-      "id": "When enabled, editing a section includes all sub-level headers",
-      "message": "When enabled, editing a section includes all sub-level headers",
-      "translation": ""
-    },
-    {
-      "id": "When enabled, long lines in code blocks wrap instead of scrolling horizontally",
-      "message": "When enabled, long lines in code blocks wrap instead of scrolling horizontally",
-      "translation": ""
-    },
-    {
-      "id": "When off, cursor lands before ]] (between path and brackets)",
-      "message": "When off, cursor lands before ]] (between path and brackets)",
-      "translation": ""
-    },
-    {
-      "id": "which editing mode opens by default",
-      "message": "which editing mode opens by default",
-      "translation": ""
-    },
-    {
-      "id": "Whole-word matches only",
-      "message": "Whole-word matches only",
-      "translation": ""
-    },
-    {
-      "id": "Why did you add this reference?",
-      "message": "Why did you add this reference?",
-      "translation": ""
-    },
-    {
       "id": "widget",
       "message": "widget",
       "translation": ""
@@ -4239,21 +3184,6 @@
     {
       "id": "widget type",
       "message": "widget type",
-      "translation": ""
-    },
-    {
-      "id": "Wiki link autocomplete: jump cursor past closing ]]",
-      "message": "Wiki link autocomplete: jump cursor past closing ]]",
-      "translation": ""
-    },
-    {
-      "id": "Wrap long lines in code blocks",
-      "message": "Wrap long lines in code blocks",
-      "translation": ""
-    },
-    {
-      "id": "WYSIWYG",
-      "message": "WYSIWYG",
       "translation": ""
     },
     {
