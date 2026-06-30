@@ -212,12 +212,15 @@ func RunAsync() error {
 	}
 	go func() {
 		defer runMu.Unlock()
+		log := logging.LogBuilder("manual_cronjob")
+		log.Println("manual run started")
 		logging.LogInfo("manually triggering all jobs")
 		RunFileSync() // includes filter-reindex as a sub-step
 		RunSearchReindex()
 		RunMetadataRebuild()
 		RunNotificationPurge()
 		logging.LogInfo("manual job execution completed")
+		log.Println("manual run completed")
 	}()
 	return nil
 }

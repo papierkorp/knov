@@ -18,9 +18,6 @@
 - version change to a generated file?
 - codemirror copy + paste with y+p does not work properly (e.g. i have something - in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
 - rename testdata to test and add some kind of test (playwright?)
-- search
-  - create new file - search for path - bad background color and color mix hard to read
-- log builder for manual cronjob
 - deployment
   - make docker build viable
     - for usage
