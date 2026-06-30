@@ -315,7 +315,8 @@ func injectDefaultCSS(html string) string {
 		return html
 	}
 
-	defaultCSSLinks := `    <link href="/static/css/notify.css" rel="stylesheet" />
+	defaultCSSLinks := `    <link href="/static/css/defaults.css" rel="stylesheet" />
+    <link href="/static/css/notify.css" rel="stylesheet" />
     <link href="/static/css/codehighlight.css" rel="stylesheet" />
     <link href="/static/css/indexeditor.css" rel="stylesheet" />
     <link href="/static/css/listeditor.css" rel="stylesheet" />

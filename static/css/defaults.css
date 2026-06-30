@@ -1,0 +1,41 @@
+/* CSS variable defaults — :where() gives zero specificity so any theme rule wins. */
+:where(:root) {
+  --bg:            #ffffff;
+  --text:          #111111;
+  --bg-secondary:  #f0f0f0;
+  --text-secondary:#666666;
+  --border:        #cccccc;
+  --surface:       #ffffff;
+
+  --primary: #3b82f6;
+  --accent:  #60a5fa;
+  --neutral: #64748b;
+
+  --danger:  #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+
+  --find-highlight:         #ffe066;
+  --find-highlight-current: #ff9500;
+  --find-highlight-outline: #e07800;
+  --find-highlight-text:    #000000;
+}
+
+/* Dark mode defaults — active when the app sets data-dark-mode="true" on body. */
+:where(body[data-dark-mode="true"]) {
+  --bg:            #1a1a1a;
+  --text:          #f0f0f0;
+  --bg-secondary:  #2a2a2a;
+  --text-secondary:#aaaaaa;
+  --border:        #444444;
+  --surface:       #2a2a2a;
+
+  --danger:  #ef4444;
+  --success: #4ade80;
+  --warning: #fbbf24;
+
+  --find-highlight:         #7a6a00;
+  --find-highlight-current: #b37200;
+  --find-highlight-outline: #ffa500;
+  --find-highlight-text:    #f0f0f0;
+}

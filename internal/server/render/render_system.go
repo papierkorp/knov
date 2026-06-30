@@ -56,7 +56,7 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 .log-table td:nth-child(1) { white-space: nowrap; }
 .log-table td:nth-child(2) { white-space: nowrap; }
 .log-table td:nth-child(4) { word-break: break-word; }
-.log-caller { white-space: nowrap; font-size: .75rem; color: #999 !important; }
+.log-caller { white-space: nowrap; font-size: .75rem; color: var(--text-secondary) !important; }
 .log-level-debug td { color: #aaa; }
 .log-level-warning td { background: #fffbe6; }
 .log-level-warning td:nth-child(2) { color: #b45309; font-weight: 600; }
@@ -66,7 +66,7 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 .log-line { padding: .1rem .4rem; border-bottom: 1px solid #f0f0f0; }
 .log-line:hover { background: rgba(0,0,0,.03); }
 #log-more-area { padding: .5rem 0; display: flex; align-items: center; gap: .75rem; }
-.log-line-info { font-size: .8rem; color: #999; }
+.log-line-info { font-size: .8rem; color: var(--text-secondary); }
 </style>` +
 		`<div class="system-logs">` +
 		`<div class="system-logs-toolbar">` +
@@ -197,7 +197,7 @@ func RenderJobsTable(runs []job.JobRun) string {
 	var sb strings.Builder
 	sb.WriteString(`<table class="jobs-table"><thead><tr><th>Job</th><th>Started</th><th>Finished</th><th>Duration</th><th>Status</th><th>Error</th></tr></thead><tbody>`)
 	if len(runs) == 0 {
-		sb.WriteString(`<tr><td colspan="6" style="text-align:center;color:#999;">No jobs recorded yet</td></tr>`)
+		sb.WriteString(`<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);">No jobs recorded yet</td></tr>`)
 	}
 	for _, r := range runs {
 		duration := ""

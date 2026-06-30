@@ -46,8 +46,8 @@
     var activeEl = null;
     Array.from(dropdown.children).forEach(function (li, i) {
       var on = i === idx;
-      li.style.background = on ? "var(--accent,#0070f3)" : "";
-      li.style.color = on ? "#fff" : "inherit";
+      li.style.background = on ? "var(--bg-secondary,#e5e7eb)" : "";
+      li.style.color = on ? "var(--text,#1f2937)" : "inherit";
       if (on) activeEl = li;
     });
     activeIdx = idx;
@@ -81,7 +81,7 @@
       nameSpan.style.fontWeight = "600";
       nameSpan.textContent = item.filename;
       var pathSpan = document.createElement("span");
-      pathSpan.style.cssText = "margin-left:8px;opacity:0.55;font-size:11px;";
+      pathSpan.style.cssText = "margin-left:8px;color:var(--text-secondary,#6b7280);font-size:11px;";
       pathSpan.textContent = item.path;
       li.appendChild(nameSpan);
       li.appendChild(pathSpan);

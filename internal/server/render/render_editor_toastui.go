@@ -232,12 +232,9 @@ func jsUploadMediaBlob() string {
 			formData.append('file', blob);
 			formData.append('context_path', contextPath);
 
-			const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
 			const uploadMessage = document.createElement('div');
 			uploadMessage.className = 'upload-notification';
-			uploadMessage.style.cssText = 'position:fixed;top:10px;right:10px;padding:12px 16px;border-radius:6px;z-index:9999;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
-			uploadMessage.style.backgroundColor = isDarkMode ? '#374151' : '#0ea5e9';
-			uploadMessage.style.color = isDarkMode ? '#f9fafb' : '#ffffff';
+			uploadMessage.style.cssText = 'position:fixed;top:10px;right:10px;padding:12px 16px;border-radius:6px;z-index:9999;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.15);background:var(--primary);color:var(--surface);';
 			uploadMessage.textContent = 'uploading...';
 			document.body.appendChild(uploadMessage);
 
@@ -272,27 +269,21 @@ func jsMediaSelector() string {
 	return `
 		// media browser modal — opened by the toolbar "Select Media" button
 		window.showMediaSelector = function(editor) {
-			const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
-
 			const modal = document.createElement('div');
 			modal.className = 'media-selector-modal';
 			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
 
 			const popup = document.createElement('div');
 			popup.className = 'media-selector-popup';
-			popup.style.cssText = 'background:white;border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;flex-direction:column;';
-			if (isDarkMode) {
-				popup.style.backgroundColor = '#374151';
-				popup.style.color = '#f9fafb';
-			}
+			popup.style.cssText = 'background:var(--surface);color:var(--text);border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;flex-direction:column;';
 
 			const header = document.createElement('div');
-			header.style.cssText = 'padding:12px 16px;border-bottom:1px solid ' + (isDarkMode ? '#4b5563' : '#eee') + ';display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-			header.innerHTML = '<h3 style="margin:0;font-size:1em;">select media file</h3><button onclick="closeMediaSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>';
+			header.style.cssText = 'padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+			header.innerHTML = '<h3 style="margin:0;font-size:1em;">select media file</h3><button onclick="closeMediaSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);">&times;</button>';
 
 			const search = document.createElement('div');
-			search.style.cssText = 'padding:8px 16px;border-bottom:1px solid ' + (isDarkMode ? '#4b5563' : '#eee') + ';flex-shrink:0;';
-			search.innerHTML = '<input type="text" placeholder="filter..." style="width:100%;padding:6px 10px;border:1px solid ' + (isDarkMode ? '#4b5563' : '#d1d5db') + ';border-radius:4px;background:' + (isDarkMode ? '#1f2937' : '#fff') + ';color:' + (isDarkMode ? '#f9fafb' : '#111') + ';font-size:0.9em;box-sizing:border-box;" oninput="filterMediaSelectorList(this.value)">';
+			search.style.cssText = 'padding:8px 16px;border-bottom:1px solid var(--border);flex-shrink:0;';
+			search.innerHTML = '<input type="text" placeholder="filter..." style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);font-size:0.9em;box-sizing:border-box;" oninput="filterMediaSelectorList(this.value)">';
 
 			const body = document.createElement('div');
 			body.style.cssText = 'padding:12px 16px;overflow-y:auto;flex:1;';
@@ -371,29 +362,23 @@ func jsFormSubmit(frontMatter string) string {
 func jsWikiFileSelector() string {
 	return `
 		window.showWikiFileSelector = function(editor) {
-			const isDarkMode = document.body.getAttribute('data-dark-mode') === 'true';
-
 			const modal = document.createElement('div');
 			modal.className = 'wiki-file-selector-modal';
 			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
 
 			const popup = document.createElement('div');
-			popup.style.cssText = 'background:white;border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;flex-direction:column;';
-			if (isDarkMode) {
-				popup.style.backgroundColor = '#374151';
-				popup.style.color = '#f9fafb';
-			}
+			popup.style.cssText = 'background:var(--surface);color:var(--text);border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;flex-direction:column;';
 
 			const header = document.createElement('div');
-			header.style.cssText = 'padding:12px 16px;border-bottom:1px solid ' + (isDarkMode ? '#4b5563' : '#eee') + ';display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-			header.innerHTML = '<h3 style="margin:0;font-size:1em;">insert wiki file link</h3><button onclick="closeWikiFileSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;">&times;</button>';
+			header.style.cssText = 'padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+			header.innerHTML = '<h3 style="margin:0;font-size:1em;">insert wiki file link</h3><button onclick="closeWikiFileSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);">&times;</button>';
 
 			const search = document.createElement('div');
-			search.style.cssText = 'padding:8px 16px;border-bottom:1px solid ' + (isDarkMode ? '#4b5563' : '#eee') + ';flex-shrink:0;';
+			search.style.cssText = 'padding:8px 16px;border-bottom:1px solid var(--border);flex-shrink:0;';
 			const searchInput = document.createElement('input');
 			searchInput.type = 'text';
 			searchInput.placeholder = 'filter...';
-			searchInput.style.cssText = 'width:100%;padding:6px 10px;border:1px solid ' + (isDarkMode ? '#4b5563' : '#d1d5db') + ';border-radius:4px;background:' + (isDarkMode ? '#1f2937' : '#fff') + ';color:' + (isDarkMode ? '#f9fafb' : '#111') + ';font-size:0.9em;box-sizing:border-box;';
+			searchInput.style.cssText = 'width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);font-size:0.9em;box-sizing:border-box;';
 			search.appendChild(searchInput);
 
 			const body = document.createElement('div');
@@ -414,14 +399,14 @@ func jsWikiFileSelector() string {
 						.then(function(results) {
 							body.innerHTML = '';
 							if (!results || results.length === 0) {
-								body.innerHTML = '<span style="color:' + (isDarkMode ? '#9ca3af' : '#888') + ';font-size:0.9em;">no files found</span>';
+								body.innerHTML = '<span style="color:var(--text-secondary);font-size:0.9em;">no files found</span>';
 								return;
 							}
 							results.forEach(function(f) {
 								const item = document.createElement('div');
 								item.style.cssText = 'padding:6px 8px;cursor:pointer;border-radius:4px;font-size:0.9em;';
 								item.textContent = f.path;
-								item.addEventListener('mouseenter', function() { item.style.background = isDarkMode ? '#4b5563' : '#f3f4f6'; });
+								item.addEventListener('mouseenter', function() { item.style.background = 'var(--bg-secondary)'; });
 								item.addEventListener('mouseleave', function() { item.style.background = ''; });
 								item.addEventListener('click', function() {
 									const label = f.filename.replace(/\.[^.]+$/, '');

@@ -113,15 +113,15 @@
 }
 
 .fp-action-btn.fp-btn-delete {
-  border-color: color-mix(in srgb, #dc2626 40%, var(--border));
-  background: color-mix(in srgb, #dc2626 6%, var(--bg));
-  color: var(--danger, #dc2626);
+  border-color: color-mix(in srgb, var(--danger) 40%, var(--border));
+  background: color-mix(in srgb, var(--danger) 6%, var(--bg));
+  color: var(--danger);
 }
 
 .fp-action-btn.fp-btn-delete:hover {
-  background: var(--danger, #dc2626);
+  background: var(--danger);
   color: var(--bg);
-  border-color: var(--danger, #dc2626);
+  border-color: var(--danger);
 }
 
 .fp-file-modes {
@@ -1308,37 +1308,26 @@
 }
 
 .fp-find-hl {
-  background: #ffe066;
-  color: #000;
+  background: var(--find-highlight);
+  color: var(--find-highlight-text);
   border-radius: 2px;
   padding: 0 1px;
 }
 
 .fp-find-item.active .fp-find-hl {
-  background: #ff9500;
+  background: var(--find-highlight-current);
 }
 
 mark.kfind {
-  background: #ffe066;
-  color: inherit;
+  background: var(--find-highlight);
+  color: var(--find-highlight-text);
   border-radius: 2px;
   padding: 0 1px;
 }
 
 mark.kfind.current {
-  background: #ff9500;
-  outline: 2px solid #e07800;
-}
-
-@media (prefers-color-scheme: dark) {
-  mark.kfind {
-    background: #7a6a00;
-    color: var(--text);
-  }
-  mark.kfind.current {
-    background: #b37200;
-    outline-color: #ffa500;
-  }
+  background: var(--find-highlight-current);
+  outline: 2px solid var(--find-highlight-outline);
 }
 
 /* =============================================

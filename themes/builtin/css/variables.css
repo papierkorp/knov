@@ -33,6 +33,16 @@ body {
   --bg-secondary:  #b0b8c1;
   --text-secondary:#374151;
   --border:        #94a3b8;
+  --surface:       #ffffff;
+
+  --danger:  #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+
+  --find-highlight:         #ffe066;
+  --find-highlight-current: #ff9500;
+  --find-highlight-outline: #e07800;
+  --find-highlight-text:    #000;
 
   background: var(--bg);
   color: var(--text);
@@ -47,6 +57,16 @@ body[data-dark-mode="true"] {
   --bg-secondary:  #111827;
   --text-secondary:#d1d5db;
   --border:        #374151;
+  --surface:       #374151;
+
+  --danger:  #ef4444;
+  --success: #4ade80;
+  --warning: #fbbf24;
+
+  --find-highlight:         #7a6a00;
+  --find-highlight-current: #b37200;
+  --find-highlight-outline: #ffa500;
+  --find-highlight-text:    var(--text);
 }
 
 /* font families */

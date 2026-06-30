@@ -592,6 +592,12 @@ Defined by `ThemeMetadata` in `internal/thememanager/thememanager.go`. Required 
 
 Setting types supported: `boolean`, `select` (with `options`), `textarea`, `number` (with optional `min`/`max`).
 
+## CSS Variables
+
+`static/css/defaults.css` is injected automatically before any theme CSS and defines fallback values for every CSS variable the app uses. Themes override these on `body` (or more specific selectors) in their own stylesheet — any variable left unset falls back to the default, so themes only need to declare what they actually change.
+
+Variables available: `--bg`, `--bg-secondary`, `--text`, `--text-secondary`, `--border`, `--surface`, `--primary`, `--accent`, `--neutral`, `--danger`, `--success`, `--warning`, and the four `--find-highlight-*` variables. Dark mode defaults are applied automatically via `body[data-dark-mode="true"]`.
+
 ## Templates
 
 - Every template must define a `content` block consumed by `base.gohtml`
