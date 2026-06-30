@@ -5858,6 +5858,9 @@ const docTemplate = `{
         "files.Reference": {
             "type": "object",
             "properties": {
+                "addedAt": {
+                    "type": "string"
+                },
                 "description": {
                     "description": "why this link was added",
                     "type": "string"

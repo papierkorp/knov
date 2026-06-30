@@ -1236,6 +1236,7 @@ func handleAPIAddMetadataReference(w http.ResponseWriter, r *http.Request) {
 	metadata.References = append(metadata.References, files.Reference{
 		URL:         refURL,
 		Description: description,
+		AddedAt:     time.Now(),
 	})
 
 	if err := files.MetaDataSave(metadata); err != nil {

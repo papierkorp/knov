@@ -15,7 +15,6 @@
 
 **per ai**
 - add chat to a single file?
-- references - add date
 - version change to a generated file?
 - changelog
   - change other
@@ -28,7 +27,6 @@
   - create new file - search for path - bad background color and color mix hard to read
 
 - deployment
-  - codeberg deployment pipeline?
   - make docker build viable
     - for usage
     - for devs

@@ -92,6 +92,9 @@ func RenderReferencesSidebarHTML(refs []files.Reference) string {
 		if ref.Description != "" {
 			fmt.Fprintf(&html, `<span class="reference-description">%s</span>`, ref.Description)
 		}
+		if !ref.AddedAt.IsZero() {
+			fmt.Fprintf(&html, `<span class="reference-date">%s</span>`, configmanager.FormatDate(ref.AddedAt))
+		}
 		html.WriteString(`</div>`)
 	}
 	html.WriteString(`</div>`)
@@ -111,6 +114,9 @@ func RenderReferencesHTML(refs []files.Reference) string {
 		fmt.Fprintf(&html, `<a href="%s" target="_blank" rel="noopener noreferrer" class="reference-url">%s</a>`, ref.URL, ref.URL)
 		if ref.Description != "" {
 			fmt.Fprintf(&html, `<span class="reference-description">%s</span>`, ref.Description)
+		}
+		if !ref.AddedAt.IsZero() {
+			fmt.Fprintf(&html, `<span class="reference-date">%s</span>`, configmanager.FormatDate(ref.AddedAt))
 		}
 		html.WriteString(`</div>`)
 		html.WriteString(`<div class="reference-item-actions">`)

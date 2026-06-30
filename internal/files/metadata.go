@@ -92,8 +92,9 @@ type Metadata struct {
 
 // Reference represents an external resource linked to a file
 type Reference struct {
-	URL         string `json:"url"`
-	Description string `json:"description"` // why this link was added
+	URL         string    `json:"url"`
+	Description string    `json:"description"` // why this link was added
+	AddedAt     time.Time `json:"addedAt,omitempty"`
 }
 
 // kanbanStatusFromTags extracts the kanban status value from a tag list; returns "" if absent.

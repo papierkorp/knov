@@ -2668,6 +2668,12 @@ dl.media-info dd {
   font-style: italic;
 }
 
+.reference-date {
+  color: var(--text-secondary);
+  font-size: 0.78em;
+  opacity: 0.65;
+}
+
 .reference-item-actions {
   flex-shrink: 0;
 }
