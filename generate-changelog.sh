@@ -20,15 +20,18 @@ for YEAR in $YEARS; do
     MONTHS=$(echo "$ALL" | awk -v y="$YEAR" '$1 ~ "^"y"-" {print $1}' | sort -ur)
 
     for MONTH in $MONTHS; do
-        MONTH_NAME=$(date -d "$MONTH-01" +"%B" 2>/dev/null || date -j -f "%Y-%m-%d" "$MONTH-01" +"%B")
+        MONTH_NAME=$(LC_ALL=C date -d "$MONTH-01" +"%B" 2>/dev/null || LC_ALL=C date -j -f "%Y-%m-%d" "$MONTH-01" +"%B")
         SUBJECTS=$(echo "$ALL" | awk -v m="$MONTH" '$1 == m {$1=""; print substr($0,2)}')
 
-        BREAKING=$(echo "$SUBJECTS" | grep -E "^.+(\(.+\))?!:|^BREAKING CHANGE:" | sed 's/^/- /' || true)
-        FEATS=$(echo "$SUBJECTS"   | grep -iE "^feat(\(.+\))?!?:"                                             | sed 's/^[^:]*: */- /' || true)
-        FIXES=$(echo "$SUBJECTS"   | grep -iE "^fix(\(.+\))?!?:"                                              | sed 's/^[^:]*: */- /' || true)
-        OTHERS=$(echo "$SUBJECTS"  | grep -iE "^(build|chore|ci|docs|style|refactor|perf|test)(\(.+\))?!?:"  | sed 's/^[^:]*: */- /' || true)
+        BREAKING=$(echo "$SUBJECTS"    | grep -E "^.+(\(.+\))?!:|^BREAKING CHANGE:"                        | sed 's/^/- /' || true)
+        FEATS=$(echo "$SUBJECTS"       | grep -iE "^feat(\(.+\))?!?:"                                      | sed 's/^[^:]*: */- /' || true)
+        FIXES=$(echo "$SUBJECTS"       | grep -iE "^fix(\(.+\))?!?:"                                       | sed 's/^[^:]*: */- /' || true)
+        DOCS=$(echo "$SUBJECTS"        | grep -iE "^docs(\(.+\))?!?:"                                      | sed 's/^[^:]*: */- /' || true)
+        DEPLOYMENT=$(echo "$SUBJECTS"  | grep -iE "^(build|ci|deploy)(\(.+\))?!?:"                         | sed 's/^[^:]*: */- /' || true)
+        INTERNAL=$(echo "$SUBJECTS"    | grep -iE "^(refactor|chore)(\(.+\))?!?:"                          | sed 's/^[^:]*: */- /' || true)
+        OTHERS=$(echo "$SUBJECTS"      | grep -iE "^(style|perf|test)(\(.+\))?!?:"                         | sed 's/^[^:]*: */- /' || true)
 
-        if [ -z "$BREAKING" ] && [ -z "$FEATS" ] && [ -z "$FIXES" ] && [ -z "$OTHERS" ]; then
+        if [ -z "$BREAKING" ] && [ -z "$FEATS" ] && [ -z "$FIXES" ] && [ -z "$DOCS" ] && [ -z "$DEPLOYMENT" ] && [ -z "$INTERNAL" ] && [ -z "$OTHERS" ]; then
             continue
         fi
 
@@ -48,6 +51,21 @@ for YEAR in $YEARS; do
         if [ -n "$FIXES" ]; then
             echo "### fixes" >> "$OUTPUT"
             echo "$FIXES" >> "$OUTPUT"
+            echo "" >> "$OUTPUT"
+        fi
+        if [ -n "$DOCS" ]; then
+            echo "### docs" >> "$OUTPUT"
+            echo "$DOCS" >> "$OUTPUT"
+            echo "" >> "$OUTPUT"
+        fi
+        if [ -n "$DEPLOYMENT" ]; then
+            echo "### deployment" >> "$OUTPUT"
+            echo "$DEPLOYMENT" >> "$OUTPUT"
+            echo "" >> "$OUTPUT"
+        fi
+        if [ -n "$INTERNAL" ]; then
+            echo "### internal" >> "$OUTPUT"
+            echo "$INTERNAL" >> "$OUTPUT"
             echo "" >> "$OUTPUT"
         fi
         if [ -n "$OTHERS" ]; then
