@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -140,9 +141,32 @@ func writeToFile(line string) {
 
 // ── log functions ─────────────────────────────────────────────────────────────
 
+var (
+	timeFormatterMu sync.RWMutex
+	timeFormatter   func(time.Time) string
+)
+
+// SetTimeFormatter sets the function used to format timestamps in log file lines.
+// Call this after config is loaded to apply the user's datetime/timezone settings.
+func SetTimeFormatter(fn func(time.Time) string) {
+	timeFormatterMu.Lock()
+	timeFormatter = fn
+	timeFormatterMu.Unlock()
+}
+
+func formatLogTime(t time.Time) string {
+	timeFormatterMu.RLock()
+	fn := timeFormatter
+	timeFormatterMu.RUnlock()
+	if fn != nil {
+		return fn(t)
+	}
+	return t.Format("2006-01-02 15:04:05")
+}
+
 func logLine(level, caller, format string, args ...any) string {
 	msg := fmt.Sprintf(format, args...)
-	return fmt.Sprintf("%s [%s]: %s", level, caller, msg)
+	return fmt.Sprintf("%s %s [%s]: %s", formatLogTime(time.Now()), level, caller, msg)
 }
 
 // LogDebug logs debug messages
@@ -266,4 +290,48 @@ func resolveLogsDir() string {
 		return v
 	}
 	return filepath.Join(resolveBaseDir(), "logs")
+}
+
+// GetLogsDir returns the resolved logs directory path.
+func GetLogsDir() string {
+	return resolveLogsDir()
+}
+
+// GetAllLogFiles returns basenames of all log files in the logs directory, sorted by modification time (newest first).
+func GetAllLogFiles() []string {
+	dir := resolveLogsDir()
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil
+	}
+
+	type fileEntry struct {
+		name    string
+		modTime time.Time
+	}
+	var files []fileEntry
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		name := e.Name()
+		if !strings.HasSuffix(name, ".log") && !strings.Contains(name, ".log.") {
+			continue
+		}
+		info, err := e.Info()
+		if err != nil {
+			continue
+		}
+		files = append(files, fileEntry{name: name, modTime: info.ModTime()})
+	}
+
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].modTime.After(files[j].modTime)
+	})
+
+	names := make([]string, len(files))
+	for i, f := range files {
+		names[i] = f.name
+	}
+	return names
 }

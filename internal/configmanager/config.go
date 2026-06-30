@@ -123,6 +123,7 @@ func InitAppConfig() {
 		logging.LogError("failed to initialize git repository: %s", err)
 	}
 
+	logging.SetTimeFormatter(FormatDateTimeSeconds)
 	logging.LogInfo("app config initialized")
 }
 

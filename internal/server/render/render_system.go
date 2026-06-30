@@ -25,18 +25,29 @@ func SetDocsFiles(fs embed.FS) {
 }
 
 func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
-	hasFile := logging.HasFileLogging()
-	fileBtn := ""
+	logFiles := logging.GetAllLogFiles()
+	hasFile := len(logFiles) > 0
+
+	sourceSelect := ""
 	downloadBtn := ""
 	if hasFile {
-		fileBtn = `<button id="log-file-btn" class="btn-secondary" onclick="toggleLogFileView(this)">Show full file</button>`
-		downloadBtn = `<a class="system-logs-download" href="/api/logs/download">Download log file</a>`
+		var sb strings.Builder
+		sb.WriteString(`<select id="log-source-select" onchange="onLogSourceChange(this)">`)
+		sb.WriteString(`<option value="live">Live</option>`)
+		for _, name := range logFiles {
+			sb.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, template.HTMLEscapeString(name), template.HTMLEscapeString(name)))
+		}
+		sb.WriteString(`</select>`)
+		sourceSelect = sb.String()
+		downloadBtn = `<a id="log-download-link" class="system-logs-download" href="/api/logs/download" style="display:none">Download</a>`
 	}
+
 	content := `<style>
 .system-logs { display: flex; flex-direction: column; gap: .75rem; }
 .system-logs-toolbar { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
 #log-filter { flex: 1; min-width: 160px; max-width: 280px; padding: .3rem .6rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; }
 #log-level-filter { padding: .3rem .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; }
+#log-source-select { padding: .3rem .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; }
 .system-logs-download { padding: .3rem .75rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; text-decoration: none; color: inherit; }
 .system-logs-download:hover { background: rgba(0,0,0,.05); }
 .log-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
@@ -54,6 +65,8 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 .log-file-lines { font-family: monospace; font-size: .8rem; white-space: pre-wrap; word-break: break-all; display: flex; flex-direction: column; gap: 1px; }
 .log-line { padding: .1rem .4rem; border-bottom: 1px solid #f0f0f0; }
 .log-line:hover { background: rgba(0,0,0,.03); }
+#log-more-area { padding: .5rem 0; display: flex; align-items: center; gap: .75rem; }
+.log-line-info { font-size: .8rem; color: #999; }
 </style>` +
 		`<div class="system-logs">` +
 		`<div class="system-logs-toolbar">` +
@@ -67,7 +80,7 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 		`</select>` +
 		`<button class="btn-secondary" onclick="refreshLogs()">Refresh</button>` +
 		`<button id="log-pause-btn" class="btn-secondary" onclick="toggleLogPolling(this)">Pause</button>` +
-		fileBtn +
+		sourceSelect +
 		downloadBtn +
 		`</div>` +
 		`<div id="log-entries" hx-get="/api/logs" hx-trigger="load, every 5s" hx-swap="innerHTML"></div>` +
@@ -75,6 +88,9 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 		`<script>
 var _logPaused = false;
 var _logFileView = false;
+var _logCurrentFile = '';
+var _logCurrentOffset = 0;
+var _logLimit = 1000;
 
 document.addEventListener('htmx:beforeRequest', function(e) {
 	if (e.target.id === 'log-entries' && (_logPaused || _logFileView)) e.preventDefault();
@@ -104,8 +120,11 @@ function applyLogFilters() {
 }
 
 function refreshLogs() {
-	if (_logFileView) {
-		htmx.ajax('GET', '/api/logs/file', {target: '#log-entries', swap: 'innerHTML'});
+	var sel = document.getElementById('log-source-select');
+	var val = sel ? sel.value : 'live';
+	if (val !== 'live') {
+		_logCurrentOffset = 0;
+		htmx.ajax('GET', '/api/logs/file?name=' + encodeURIComponent(val), {target: '#log-entries', swap: 'innerHTML'});
 	} else {
 		htmx.ajax('GET', '/api/logs', {target: '#log-entries', swap: 'innerHTML'});
 	}
@@ -117,20 +136,53 @@ function toggleLogPolling(btn) {
 	btn.classList.toggle('active', _logPaused);
 }
 
-function toggleLogFileView(btn) {
-	_logFileView = !_logFileView;
-	btn.textContent = _logFileView ? 'Show live' : 'Show full file';
-	btn.classList.toggle('active', _logFileView);
+function onLogSourceChange(sel) {
+	var val = sel.value;
 	var pauseBtn = document.getElementById('log-pause-btn');
-	if (_logFileView) {
-		_logPaused = true;
-		if (pauseBtn) { pauseBtn.textContent = 'Resume'; pauseBtn.classList.add('active'); }
-		htmx.ajax('GET', '/api/logs/file', {target: '#log-entries', swap: 'innerHTML'});
-	} else {
+	var downloadLink = document.getElementById('log-download-link');
+	if (val === 'live') {
+		_logFileView = false;
 		_logPaused = false;
+		_logCurrentFile = '';
+		_logCurrentOffset = 0;
 		if (pauseBtn) { pauseBtn.textContent = 'Pause'; pauseBtn.classList.remove('active'); }
+		if (downloadLink) { downloadLink.style.display = 'none'; }
 		htmx.ajax('GET', '/api/logs', {target: '#log-entries', swap: 'innerHTML'});
+	} else {
+		_logFileView = true;
+		_logPaused = true;
+		_logCurrentFile = val;
+		_logCurrentOffset = 0;
+		if (pauseBtn) { pauseBtn.textContent = 'Resume'; pauseBtn.classList.add('active'); }
+		if (downloadLink) {
+			downloadLink.href = '/api/logs/download?name=' + encodeURIComponent(val);
+			downloadLink.style.display = '';
+		}
+		htmx.ajax('GET', '/api/logs/file?name=' + encodeURIComponent(val), {target: '#log-entries', swap: 'innerHTML'});
 	}
+}
+
+function loadMoreLogLines() {
+	_logCurrentOffset += _logLimit;
+	var url = '/api/logs/file?chunk=true&limit=' + _logLimit + '&offset=' + _logCurrentOffset + '&name=' + encodeURIComponent(_logCurrentFile);
+	fetch(url)
+		.then(function(resp) {
+			var hasMore = resp.headers.get('X-Log-Has-More') === 'true';
+			var total = parseInt(resp.headers.get('X-Log-Total-Lines') || '0', 10);
+			var moreArea = document.getElementById('log-more-area');
+			if (moreArea) moreArea.style.display = hasMore ? '' : 'none';
+			var info = document.getElementById('log-line-info');
+			if (info && total > 0) {
+				var shown = Math.min(_logCurrentOffset + _logLimit, total);
+				info.textContent = 'showing last ' + shown + ' of ' + total + ' lines';
+			}
+			return resp.text();
+		})
+		.then(function(html) {
+			var linesEl = document.getElementById('log-file-lines');
+			if (linesEl) linesEl.insertAdjacentHTML('afterbegin', html);
+			applyLogFilters();
+		});
 }
 </script>`
 
