@@ -2,6 +2,7 @@ package configmanager
 
 import (
 	"fmt"
+	"time"
 
 	"knov/internal/translation"
 )
@@ -90,8 +91,8 @@ var (
 	DefaultMarkdownEditor = register(&StringSetting{
 		key: "defaultMarkdownEditor", Default: "toastui-editor",
 		Section: SectionEditor, Group: GroupAllEditors,
-		Label:   "Default Markdown Editor",
-		Desc:    "which editor opens by default for new and unassigned markdown files",
+		Label: "Default Markdown Editor",
+		Desc:  "which editor opens by default for new and unassigned markdown files",
 		Options: []SettingOption{
 			{"toastui-editor", "ToastUI (rich markdown editor)"},
 			{"codemirror-editor", "CodeMirror (plain text editor)"},
@@ -367,6 +368,16 @@ var (
 			{"YYYY-MM-DD", "YYYY-MM-DD (2026-12-31)"},
 			{"MM/DD/YYYY", "MM/DD/YYYY (12/31/2026)"},
 			{"DD/MM/YYYY", "DD/MM/YYYY (31/12/2026)"},
+		},
+	})
+	Timezone = register(&StringSetting{
+		key: "timezone", Default: time.Local.String(),
+		Section: SectionGeneral, Group: GroupNone,
+		Label: "Timezone",
+		Desc:  "IANA timezone name for displaying timestamps (e.g. Local, Europe/Berlin, America/New_York)",
+		Validate: func(v string) error {
+			_, err := time.LoadLocation(v)
+			return err
 		},
 	})
 	ShowHiddenFiles = register(&BoolSetting{

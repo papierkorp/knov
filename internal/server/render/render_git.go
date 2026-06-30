@@ -24,7 +24,7 @@ func RenderGitHistoryFileList(files []git.GitHistoryFile, collection string, nex
 	for _, file := range files {
 		linkPath := pathutils.ToRelative(file.Path)
 		fmt.Fprintf(&b, `<li>%s - <a href="/files/%s"><strong>%s</strong></a> (%s)</li>`,
-			file.Date,
+			configmanager.FormatDateTime(file.Date),
 			linkPath,
 			file.Name,
 			strings.TrimSpace(file.Message))
@@ -79,7 +79,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 				cssClass,
 				pathutils.ToRelative(filePath),
 				version.Commit,
-				version.Date,
+				configmanager.FormatDateTime(version.Date),
 				version.Message,
 			))
 		}
@@ -113,7 +113,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 					<span class="version-date">%s</span> - <span class="version-message">%s</span>
 				</li>`,
 				cssClass,
-				version.Date,
+				configmanager.FormatDateTime(version.Date),
 				version.Message,
 			))
 		}
@@ -143,7 +143,7 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 					</div>
 				</li>`,
 				cssClass,
-				version.Date,
+				configmanager.FormatDateTime(version.Date),
 				version.Message,
 				translation.SprintfForRequest(configmanager.GetLanguage(), "by"),
 				version.Author,

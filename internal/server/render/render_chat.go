@@ -129,7 +129,7 @@ func renderMessage(m chat.Message, short bool) string {
 	newFileURL := fmt.Sprintf(`/api/chat/messages/%s/move?mode=new`, m.ID)
 	appendURL := fmt.Sprintf(`/api/chat/messages/%s/move?mode=append`, m.ID)
 	deleteURL := fmt.Sprintf(`/api/chat/messages/%s`, m.ID)
-	timestamp := m.CreatedAt.Format("2006-01-02 15:04")
+	timestamp := configmanager.FormatDateTime(m.CreatedAt)
 	lang := configmanager.GetLanguage()
 
 	return fmt.Sprintf(`<div class="chat-message" id="%s" data-id="%s">

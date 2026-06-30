@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"knov/internal/configmanager"
 	"knov/internal/notificationStorage"
 )
 
@@ -85,6 +86,6 @@ func formatNotifyTime(t time.Time) string {
 	case diff < 24*time.Hour:
 		return fmt.Sprintf("%dh ago", int(diff.Hours()))
 	default:
-		return t.Format("02 Jan 15:04")
+		return t.In(configmanager.GetTimezone()).Format("02 Jan 15:04")
 	}
 }

@@ -188,7 +188,7 @@ func RenderSearchHistoryResults(results []git.GitHistoryFile, query string) stri
 			f.Path,
 			html.EscapeString(f.Commit),
 			html.EscapeString(f.Name),
-			html.EscapeString(f.Date),
+			html.EscapeString(configmanager.FormatDateTime(f.Date)),
 			html.EscapeString(strings.TrimSpace(f.Message)),
 		)
 	}

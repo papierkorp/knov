@@ -140,8 +140,8 @@ func RenderMetadataCSV(metadata []*files.Metadata) string {
 		name := escapeCSV(m.Title)
 		collection := escapeCSV(m.Collection)
 		editor := escapeCSV(string(m.Editor))
-		createdat := m.CreatedAt.Format("2006-01-02 15:04:05")
-		lastedited := m.LastEdited.Format("2006-01-02 15:04:05")
+		createdat := configmanager.FormatDateTimeSeconds(m.CreatedAt)
+		lastedited := configmanager.FormatDateTimeSeconds(m.LastEdited)
 		tags := escapeCSV(strings.Join(m.Tags, ";"))
 		folders := escapeCSV(strings.Join(m.Folders, ";"))
 

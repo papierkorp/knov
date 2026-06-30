@@ -84,7 +84,8 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	date, message, err := git.GetCommitDetails(commit)
+	commitTime, message, err := git.GetCommitDetails(commit)
+	date := configmanager.FormatDateTime(commitTime)
 	if err != nil {
 		date = "unknown"
 		message = "commit details unavailable"

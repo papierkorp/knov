@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	Version   = ""
-	BuildTime = ""
+	Version        = ""
+	BuildTime      = ""
+	BuildTimeParsed time.Time
 )
 
 func init() {
@@ -24,6 +25,14 @@ func init() {
 		}
 	}
 	if BuildTime == "" {
-		BuildTime = time.Now().UTC().Format("2006-01-02 15:04") + " UTC"
+		BuildTimeParsed = time.Now().UTC()
+		BuildTime = BuildTimeParsed.Format("2006-01-02 15:04") + " UTC"
+	} else {
+		t, err := time.ParseInLocation("2006-01-02 15:04 UTC", BuildTime, time.UTC)
+		if err == nil {
+			BuildTimeParsed = t
+		} else {
+			BuildTimeParsed = time.Now().UTC()
+		}
 	}
 }

@@ -16,9 +16,7 @@
 **per ai**
 - add chat to a single file?
 - references - add date
-- version
-  - version build time = 2 hours wrong, e.g: Build time	2026-06-24 13:31 UTC, my local time: 15:31
-  - change to a generated file?
+- version change to a generated file?
 - changelog
   - change other
   - add internal (for e.g. refactor)
@@ -27,7 +25,6 @@
 - add a log builder for manual run cronjob
 - rename testdata to test and add some kind of test (playwright?)
 - search
-  - basic ssl search - content found - show which content?
   - create new file - search for path - bad background color and color mix hard to read
 
 - deployment

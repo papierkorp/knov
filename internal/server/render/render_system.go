@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/job"
 	"knov/internal/files"
 	"knov/internal/logging"
@@ -150,7 +151,7 @@ func RenderJobsTable(runs []job.JobRun) string {
 		duration := ""
 		finished := ""
 		if r.FinishedAt != nil {
-			finished = r.FinishedAt.Format("15:04:05")
+			finished = configmanager.FormatTime(*r.FinishedAt)
 			duration = r.FinishedAt.Sub(r.StartedAt).Round(1e6).String()
 		}
 		statusClass := "job-status-" + string(r.Status)
@@ -158,7 +159,7 @@ func RenderJobsTable(runs []job.JobRun) string {
 			`<tr class="%s"><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>`,
 			template.HTMLEscapeString(statusClass),
 			template.HTMLEscapeString(r.Name),
-			template.HTMLEscapeString(r.StartedAt.Format("15:04:05")),
+			template.HTMLEscapeString(configmanager.FormatTime(r.StartedAt)),
 			template.HTMLEscapeString(finished),
 			template.HTMLEscapeString(duration),
 			template.HTMLEscapeString(string(r.Status)),
@@ -252,7 +253,7 @@ func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
 </style>` +
 		`<table class="version-table"><tbody>` +
 		row("Version", version.Version) +
-		row("Build time", version.BuildTime) +
+		row("Build time", configmanager.FormatDateTime(version.BuildTimeParsed)) +
 		row("Go version", runtime.Version()) +
 		row("OS / Arch", runtime.GOOS+"/"+runtime.GOARCH) +
 		`</tbody></table>` +

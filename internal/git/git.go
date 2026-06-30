@@ -33,20 +33,20 @@ import (
 
 // GitHistoryFile represents a file in git history
 type GitHistoryFile struct {
-	Name    string `json:"name"`
-	Path    string `json:"path"`
-	Commit  string `json:"commit"`
-	Date    string `json:"date"`
-	Message string `json:"message"`
+	Name    string    `json:"name"`
+	Path    string    `json:"path"`
+	Commit  string    `json:"commit"`
+	Date    time.Time `json:"date"`
+	Message string    `json:"message"`
 }
 
 // FileVersion represents a single version of a file
 type FileVersion struct {
-	Commit    string `json:"commit"`
-	Date      string `json:"date"`
-	Message   string `json:"message"`
-	Author    string `json:"author"`
-	IsCurrent bool   `json:"is_current"`
+	Commit    string    `json:"commit"`
+	Date      time.Time `json:"date"`
+	Message   string    `json:"message"`
+	Author    string    `json:"author"`
+	IsCurrent bool      `json:"is_current"`
 }
 
 // FileVersionList is a list of file versions
@@ -183,7 +183,7 @@ func GetRecentlyChangedFiles(count, offset int) ([]GitHistoryFile, error) {
 				Name:    filepath.Base(relPath),
 				Path:    relPath,
 				Commit:  c.Hash.String()[:7],
-				Date:    c.Author.When.Format("02-01-2006 - 15:04"),
+				Date:    c.Author.When,
 				Message: c.Message,
 			})
 			if len(files) >= count {
@@ -563,7 +563,7 @@ func GetFileHistory(filePath string) ([]FileVersion, error) {
 	err = iter.ForEach(func(c *object.Commit) error {
 		versions = append(versions, FileVersion{
 			Commit:    c.Hash.String()[:7],
-			Date:      c.Author.When.Format("02-01-2006 - 15:04"),
+			Date:      c.Author.When,
 			Message:   c.Message,
 			Author:    c.Author.Name,
 			IsCurrent: false,
@@ -906,28 +906,25 @@ func RestoreFileToCommit(filePath, commit string) error {
 }
 
 // GetCommitDetails returns details for a specific commit
-func GetCommitDetails(commit string) (string, string, error) {
+func GetCommitDetails(commit string) (time.Time, string, error) {
 	repo, err := openRepo()
 	if err != nil {
-		return "", "", err
+		return time.Time{}, "", err
 	}
 
 	commitHash, err := expandCommitHash(repo, commit)
 	if err != nil {
 		logging.LogError("failed to find commit %s: %v", commit, err)
-		return "", "", err
+		return time.Time{}, "", err
 	}
 
 	commitObj, err := repo.CommitObject(commitHash)
 	if err != nil {
 		logging.LogError("failed to get commit details for %s: %v", commit, err)
-		return "", "", err
+		return time.Time{}, "", err
 	}
 
-	date := commitObj.Author.When.Format("02-01-2006 - 15:04")
-	message := strings.TrimSpace(commitObj.Message)
-
-	return date, message, nil
+	return commitObj.Author.When, strings.TrimSpace(commitObj.Message), nil
 }
 
 // CommitExists checks if a commit hash exists in the repository
@@ -1905,7 +1902,7 @@ func SearchGitByTitle(query string, limit int, deletedOnly bool) ([]GitHistoryFi
 				Name:    filepath.Base(relPath),
 				Path:    relPath,
 				Commit:  c.Hash.String()[:7],
-				Date:    c.Author.When.Format("2006-01-02"),
+				Date:    c.Author.When,
 				Message: strings.TrimSpace(c.Message),
 			})
 		}
@@ -1986,7 +1983,7 @@ func SearchDeletedFilesByContent(query string, limit int) ([]GitHistoryFile, err
 				Name:    filepath.Base(change.From.Name),
 				Path:    change.From.Name,
 				Commit:  c.Hash.String()[:7],
-				Date:    c.Author.When.Format("2006-01-02"),
+				Date:    c.Author.When,
 				Message: strings.TrimSpace(c.Message),
 			})
 		}

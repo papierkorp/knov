@@ -6,6 +6,17 @@ import (
 	"knov/internal/logging"
 )
 
+// GetTimezone returns the configured timezone location, falling back to time.Local on error.
+func GetTimezone() *time.Location {
+	tz := Timezone.Get()
+	loc, err := time.LoadLocation(tz)
+	if err != nil {
+		logging.LogWarning("timezone '%s' not supported, falling back to local time", tz)
+		return time.Local
+	}
+	return loc
+}
+
 // -----------------------------------------------------------------------------
 // -------------------------------- Date Format ---------------------------------
 // -----------------------------------------------------------------------------
@@ -43,17 +54,22 @@ func SetDateFormat(style string) {
 	SaveSettings() //nolint:errcheck
 }
 
-// FormatDate formats t as a date only, using the configured display style.
+// FormatDate formats t as a date only, using the configured display style and timezone.
 func FormatDate(t time.Time) string {
-	return t.Format(dateLayouts[GetDateFormat()])
+	return t.In(GetTimezone()).Format(dateLayouts[GetDateFormat()])
 }
 
-// FormatDateTime formats t as date + time (HH:MM), using the configured display style for the date part.
+// FormatDateTime formats t as date + time (HH:MM), using the configured display style and timezone.
 func FormatDateTime(t time.Time) string {
-	return t.Format(dateLayouts[GetDateFormat()] + " 15:04")
+	return t.In(GetTimezone()).Format(dateLayouts[GetDateFormat()] + " 15:04")
 }
 
-// FormatDateTimeSeconds formats t as date + time (HH:MM:SS), using the configured display style for the date part.
+// FormatDateTimeSeconds formats t as date + time (HH:MM:SS), using the configured display style and timezone.
 func FormatDateTimeSeconds(t time.Time) string {
-	return t.Format(dateLayouts[GetDateFormat()] + " 15:04:05")
+	return t.In(GetTimezone()).Format(dateLayouts[GetDateFormat()] + " 15:04:05")
+}
+
+// FormatTime formats t as time only (HH:MM:SS), using the configured timezone.
+func FormatTime(t time.Time) string {
+	return t.In(GetTimezone()).Format("15:04:05")
 }
