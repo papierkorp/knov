@@ -102,6 +102,32 @@ func handleAPIFilterTestMetadata(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, metadataList, html)
 }
 
+// @Summary Run editors tests
+// @Description Executes the editors test suite (create/edit/save per editor type, section/table save, todo-toggle, convert-to-markdown, file rename/move, bulk ops)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "editors test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/editorstest [post]
+func handleAPIEditorsTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug("editors test request received")
+
+	results, err := job.RunEditorsTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError("failed to run editors tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
 // @Summary Run all test suites
 // @Description Executes every registered in-app test suite and aggregates the results
 // @Tags testdata

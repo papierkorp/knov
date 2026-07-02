@@ -5267,6 +5267,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/testdata/editorstest": {
+            "post": {
+                "description": "Executes the editors test suite (create/edit/save per editor type, section/table save, todo-toggle, convert-to-markdown, file rename/move, bulk ops)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run editors tests",
+                "responses": {
+                    "200": {
+                        "description": "editors test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/testdata/filtertest": {
             "post": {
                 "description": "Executes comprehensive filter test scenarios with 12 test metadata objects",

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"knov/internal/test"
+	"knov/internal/test/editorstest"
 	"knov/internal/test/filtertest"
 )
 
@@ -57,6 +58,30 @@ func (j *filterTestJob) Run() error {
 func (j *filterTestJob) Output() any { return j.results }
 
 func (j *filterTestJob) Message() string {
+	if j.results == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d passed, %d failed", j.results.Passed, j.results.Failed)
+}
+
+type editorsTestJob struct {
+	results *test.SuiteResult
+}
+
+func (j *editorsTestJob) Name() string { return "editors-test" }
+
+func (j *editorsTestJob) Run() error {
+	results, err := (editorstest.Suite{}).Run()
+	j.results = results
+	if err != nil {
+		return fmt.Errorf("editors tests failed: %w", err)
+	}
+	return nil
+}
+
+func (j *editorsTestJob) Output() any { return j.results }
+
+func (j *editorsTestJob) Message() string {
 	if j.results == nil {
 		return ""
 	}

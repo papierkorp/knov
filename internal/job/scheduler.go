@@ -28,6 +28,7 @@ var (
 	testdataSetupMu sync.Mutex
 	testdataCleanMu sync.Mutex
 	filterTestMu    sync.Mutex
+	editorsTestMu   sync.Mutex
 	runAllTestsMu   sync.Mutex
 	runMu           sync.Mutex // prevents concurrent manual Run() calls
 )
@@ -209,6 +210,15 @@ func RunTestdataClean() error {
 func RunFilterTest() (*test.SuiteResult, error) {
 	j := &filterTestJob{}
 	if err := execute(&filterTestMu, j); err != nil {
+		return nil, err
+	}
+	return j.results, nil
+}
+
+// RunEditorsTest runs the editors test suite and returns its results alongside any error.
+func RunEditorsTest() (*test.SuiteResult, error) {
+	j := &editorsTestJob{}
+	if err := execute(&editorsTestMu, j); err != nil {
 		return nil, err
 	}
 	return j.results, nil
