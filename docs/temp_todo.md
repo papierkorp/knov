@@ -63,10 +63,11 @@ Want to go with D?
 
 go native only, no npm/playwright. tier 1 = `net/http/testing` against real chi router (temp data dir + temp `git init` repo per test, assert status + parsed fragment via `golang.org/x/net/html`, no snapshots). tier 2 = `chromedp` (pure go, no npm), only for real browser/JS interaction. work top to bottom, check off as done.
 
-**0. setup (do first, blocks everything below)**
-- [ ] rename `internal/testdata` -> `internal/test` (avoid Go's reserved `testdata/` dir semantics)
-- [ ] build shared tier 1 harness: temp data dir + temp git repo fixture, router bootstrap helper, html-fragment assertion helper
-- [ ] decide chromedp package location for tier 2 (separate `e2e` package), stub one trivial test to confirm it runs headless in this env
+**0. setup (do first, blocks everything below)** — done
+- [x] rename `internal/testdata` -> `internal/test` (avoid Go's reserved `testdata/` dir semantics); regenerated swagger docs
+- [x] build shared tier 1 bootstrap: `internal/testkit/testkit.go` (`testkit.NewApp(t)` boots real app - contentStorage/metadataStorage/searchStorage/chatStorage/cacheStorage/notificationStorage/thememanager - against a temp data dir + temp `git init` repo, returns `httptest.Server` on the real router); extracted `server.NewRouter()` out of `StartServerChi` so tests can get the router without binding a port. lives in its own package (not `_test.go`, not clustered in `internal/server`) so any package's tests can reuse it; singletons mean tests using it must not run `t.Parallel()`. tests that use it need `package server_test` (external), since an internal `package server` test file importing `testkit` (which imports `server`) is a real cycle.
+- [x] chromedp added (`github.com/chromedp/chromedp`), smoke tests `TestTestkitSmoke` + `TestChromedpSmoke` in `internal/server/smoke_test.go` (single file, `package server_test`) confirm testkit boots and headless google-chrome drives pages from it in this env
+  - follow-up before real tier-2 tests: `/static/*` and `/themes/*` assets 404 under testkit (embed.FS unset in tests, `/themes/*` resolved relative to CWD) - fine for DOM/nav checks, but toastui/drag-drop tests will need real JS, so wire a disk-fallback for `handleStatic` + `t.Chdir` to repo root first
 
 **1. core CRUD-ish areas**
 - [ ] filter: all operators, AND/OR, include/exclude, save/delete named filter, value-input form, used by dashboard widget + kanban

@@ -1,5 +1,5 @@
 // Package testdata - auto-generated test files (testA/testB/testC structure) and their metadata
-package testdata
+package test
 
 import (
 	"fmt"

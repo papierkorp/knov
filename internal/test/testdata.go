@@ -1,5 +1,5 @@
-// Package testdata - Test data setup and management
-package testdata
+// Package test - Test data setup and management
+package test
 
 import (
 	"embed"

@@ -8,12 +8,12 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
-	"knov/internal/testdata"
+	"knov/internal/test"
 	"knov/internal/translation"
 )
 
 // RenderFilterTestResults renders comprehensive filter test results with detailed breakdown
-func RenderFilterTestResults(results *testdata.FilterTestResults) string {
+func RenderFilterTestResults(results *test.FilterTestResults) string {
 	var html strings.Builder
 
 	html.WriteString(`<div id="component-filter-test-results">`)

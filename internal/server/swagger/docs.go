@@ -5282,7 +5282,7 @@ const docTemplate = `{
                     "200": {
                         "description": "filter test results",
                         "schema": {
-                            "$ref": "#/definitions/testdata.FilterTestResults"
+                            "$ref": "#/definitions/test.FilterTestResults"
                         }
                     },
                     "500": {
@@ -6086,7 +6086,7 @@ const docTemplate = `{
                 "value": {}
             }
         },
-        "testdata.FilterTestResult": {
+        "test.FilterTestResult": {
             "type": "object",
             "properties": {
                 "actual_count": {
@@ -6124,7 +6124,7 @@ const docTemplate = `{
                 }
             }
         },
-        "testdata.FilterTestResults": {
+        "test.FilterTestResults": {
             "type": "object",
             "properties": {
                 "errors": {
@@ -6145,7 +6145,7 @@ const docTemplate = `{
                 "results": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/testdata.FilterTestResult"
+                        "$ref": "#/definitions/test.FilterTestResult"
                     }
                 },
                 "success": {

@@ -1,5 +1,5 @@
 // Package testdata - Test file creation for filter testing
-package testdata
+package test
 
 import (
 	"fmt"

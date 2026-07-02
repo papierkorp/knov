@@ -24,7 +24,7 @@ import (
 	"knov/internal/searchStorage"
 	"knov/internal/server"
 
-	"knov/internal/testdata"
+	"knov/internal/test"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
@@ -47,7 +47,7 @@ func main() {
 	server.SetStaticFiles(staticFS)
 	server.SetDocsFiles(docsFS)
 	thememanager.SetBuiltinFiles(builtinThemeFS)
-	testdata.SetDocsFiles(docsFS)
+	test.SetDocsFiles(docsFS)
 
 	logging.Init()
 	logging.InitInterceptor()

@@ -5276,7 +5276,7 @@
                     "200": {
                         "description": "filter test results",
                         "schema": {
-                            "$ref": "#/definitions/testdata.FilterTestResults"
+                            "$ref": "#/definitions/test.FilterTestResults"
                         }
                     },
                     "500": {
@@ -6080,7 +6080,7 @@
                 "value": {}
             }
         },
-        "testdata.FilterTestResult": {
+        "test.FilterTestResult": {
             "type": "object",
             "properties": {
                 "actual_count": {
@@ -6118,7 +6118,7 @@
                 }
             }
         },
-        "testdata.FilterTestResults": {
+        "test.FilterTestResults": {
             "type": "object",
             "properties": {
                 "errors": {
@@ -6139,7 +6139,7 @@
                 "results": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/testdata.FilterTestResult"
+                        "$ref": "#/definitions/test.FilterTestResult"
                     }
                 },
                 "success": {

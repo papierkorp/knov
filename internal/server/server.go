@@ -48,6 +48,22 @@ func StartServerChi() {
 	port := appConfig.ServerPort
 
 	fmt.Printf("starting chi http server on http://localhost:%s\n", port)
+	r := NewRouter()
+
+	// ----------------------------------------------------------------------------------------
+	// ----------------------------------- start chi server -----------------------------------
+	// ----------------------------------------------------------------------------------------
+
+	err := http.ListenAndServe(":"+port, r)
+	if err != nil {
+		fmt.Printf("error starting chi server: %v\n", err)
+		return
+	}
+}
+
+// NewRouter builds the chi router with all routes registered, without starting
+// an HTTP listener. Used by StartServerChi and by httptest-based tests.
+func NewRouter() *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
@@ -427,15 +443,7 @@ func StartServerChi() {
 
 	})
 
-	// ----------------------------------------------------------------------------------------
-	// ----------------------------------- start chi server -----------------------------------
-	// ----------------------------------------------------------------------------------------
-
-	err := http.ListenAndServe(":"+port, r)
-	if err != nil {
-		fmt.Printf("error starting chi server: %v\n", err)
-		return
-	}
+	return r
 }
 
 // ----------------------------------------------------------------------------------------

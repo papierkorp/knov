@@ -15,7 +15,7 @@ import (
 	"knov/internal/notificationStorage"
 	"knov/internal/pathutils"
 	"knov/internal/search"
-	"knov/internal/testdata"
+	"knov/internal/test"
 )
 
 // ----------------------------------------------------------------------------------------
@@ -404,7 +404,7 @@ type testdataSetupJob struct{}
 func (j *testdataSetupJob) Name() string { return "testdata-setup" }
 
 func (j *testdataSetupJob) Run() error {
-	if err := testdata.SetupTestData(); err != nil {
+	if err := test.SetupTestData(); err != nil {
 		return fmt.Errorf("failed to setup test data: %w", err)
 	}
 	return nil
@@ -415,20 +415,20 @@ type testdataCleanJob struct{}
 func (j *testdataCleanJob) Name() string { return "testdata-clean" }
 
 func (j *testdataCleanJob) Run() error {
-	if err := testdata.CleanTestData(); err != nil {
+	if err := test.CleanTestData(); err != nil {
 		return fmt.Errorf("failed to clean test data: %w", err)
 	}
 	return nil
 }
 
 type filterTestJob struct {
-	results *testdata.FilterTestResults
+	results *test.FilterTestResults
 }
 
 func (j *filterTestJob) Name() string { return "filter-test" }
 
 func (j *filterTestJob) Run() error {
-	results, err := testdata.RunFilterTests()
+	results, err := test.RunFilterTests()
 	j.results = results
 	if err != nil {
 		return fmt.Errorf("filter tests failed: %w", err)
@@ -446,7 +446,7 @@ func (j *filterTestJob) Message() string {
 }
 
 // RunFilterTest runs the filter test suite and returns its results alongside any error.
-func RunFilterTest() (*testdata.FilterTestResults, error) {
+func RunFilterTest() (*test.FilterTestResults, error) {
 	j := &filterTestJob{}
 	if err := execute(&filterTestMu, j); err != nil {
 		return nil, err

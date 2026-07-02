@@ -1,5 +1,5 @@
 // Package testdata - Filter testing functionality
-package testdata
+package test
 
 import (
 	"fmt"

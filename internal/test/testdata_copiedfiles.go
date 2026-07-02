@@ -1,5 +1,5 @@
 // Package testdata - copied (embedded) docs files and their metadata
-package testdata
+package test
 
 import (
 	"fmt"

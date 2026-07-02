@@ -383,7 +383,7 @@ definitions:
         type: string
       value: {}
     type: object
-  testdata.FilterTestResult:
+  test.FilterTestResult:
     properties:
       actual_count:
         type: integer
@@ -408,7 +408,7 @@ definitions:
       success:
         type: boolean
     type: object
-  testdata.FilterTestResults:
+  test.FilterTestResults:
     properties:
       errors:
         items:
@@ -422,7 +422,7 @@ definitions:
         type: integer
       results:
         items:
-          $ref: '#/definitions/testdata.FilterTestResult'
+          $ref: '#/definitions/test.FilterTestResult'
         type: array
       success:
         type: boolean
@@ -4007,7 +4007,7 @@ paths:
         "200":
           description: filter test results
           schema:
-            $ref: '#/definitions/testdata.FilterTestResults'
+            $ref: '#/definitions/test.FilterTestResults'
         "500":
           description: Internal server error
           schema:
