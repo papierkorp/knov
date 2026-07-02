@@ -61,53 +61,43 @@ Want to go with D?
 
 # testing
 
-go native only, no npm/playwright. tier 1 = `net/http/testing` against real chi router (temp data dir + temp `git init` repo per test, assert status + parsed fragment via `golang.org/x/net/html`, no snapshots). tier 2 = `chromedp` (pure go, no npm), only for real browser/JS interaction. work top to bottom, check off as done.
+In-app runtime test suites, not `go test`. Knov ships as a single binary with no go toolchain on the target machine, so the existing pattern (`internal/test/testfilter.go`: seeds real files/metadata, runs real filter configs, returns pass/fail results, wired to an admin button + `POST /api/testdata/filtertest`) is the model to extend, not `go test`/httptest.
 
-**0. setup (do first, blocks everything below)** — done
-- [x] rename `internal/testdata` -> `internal/test` (avoid Go's reserved `testdata/` dir semantics); regenerated swagger docs
-- [x] build shared tier 1 bootstrap: `internal/testkit/testkit.go` (`testkit.NewApp(t)` boots real app - contentStorage/metadataStorage/searchStorage/chatStorage/cacheStorage/notificationStorage/thememanager - against a temp data dir + temp `git init` repo, returns `httptest.Server` on the real router); extracted `server.NewRouter()` out of `StartServerChi` so tests can get the router without binding a port. lives in its own package (not `_test.go`, not clustered in `internal/server`) so any package's tests can reuse it; singletons mean tests using it must not run `t.Parallel()`. tests that use it need `package server_test` (external), since an internal `package server` test file importing `testkit` (which imports `server`) is a real cycle.
-- [x] chromedp added (`github.com/chromedp/chromedp`), smoke tests `TestTestkitSmoke` + `TestChromedpSmoke` in `internal/server/smoke_test.go` (single file, `package server_test`) confirm testkit boots and headless google-chrome drives pages from it in this env
-  - follow-up before real tier-2 tests: `/static/*` and `/themes/*` assets 404 under testkit (embed.FS unset in tests, `/themes/*` resolved relative to CWD) - fine for DOM/nav checks, but toastui/drag-drop tests will need real JS, so wire a disk-fallback for `handleStatic` + `t.Chdir` to repo root first
+**architecture**
+- shared interface in `internal/test`:
+  ```go
+  type CaseResult struct { Name, Expected, Actual, Error string; Success bool; Detail any }
+  type SuiteResult struct { Suite string; Total, Passed, Failed int; Success bool; Cases []CaseResult }
+  type Suite interface { Name() string; Run() (*SuiteResult, error) }
+  ```
+  `Expected`/`Actual` are free-form strings (not typed lists) - each suite formats its own comparison text, since groups compare very different things (file lists vs single pass/fail vs rendered content). `Detail` carries whatever group-specific extra the admin UI wants to show (e.g. the `filter.Config` used for a case).
+- one subpackage per test group under `internal/test/`, e.g. `internal/test/filtertest`, `internal/test/editorstest`, `internal/test/chattest`. Suffix every subpackage with `test` (not the bare domain name) - a subpackage literally called `filter` would collide with `knov/internal/filter` in every file that needs both (cronjob.go, api handlers), forcing aliases everywhere. `test<group>` avoids that entirely.
+- `internal/test/registry.go` holds `var suites = []Suite{filtertest.Suite{}, editorstest.Suite{}, ...}` and `RunAllTests() (*SuiteResult, error)` loops over it and aggregates - adding a group later is one line here plus its subpackage.
+- per-suite wiring, same shape as the existing filter test: a `job.Job` wrapper in `internal/job` (mutex + history, `execute()`), an HTTP handler in `internal/server` (`POST /api/testdata/<group>test`, swagger-annotated), and an admin button. `RunAllTests()` gets the same treatment (its own job wrapper + `POST /api/testdata/run-all` + "run all tests" button).
+- `internal/testkit` (httptest+chromedp harness from step 0) is not the primary vehicle for any of this - keep it around only for the rare case a group genuinely needs a real HTTP/router pass or actual browser JS check.
 
-**1. core CRUD-ish areas**
-- [ ] filter: all operators, AND/OR, include/exclude, save/delete named filter, value-input form, used by dashboard widget + kanban
-- [ ] editors create+edit+save: toastui, textarea, codemirror, filter, list, todo, index, table; section-save, table-save, todo-toggle, convert-to-markdown
-- [ ] editors JS interaction (tier 2): toastui toolbar actually edits content
-- [ ] file rename/move: updates links elsewhere
-- [ ] bulk ops: bulk delete files, bulk metadata patch, bulk chat move/delete
+**0. build the architecture + rewrite filtertest as suite #1 (do first, step by step)**
+- [ ] add `Suite`/`SuiteResult`/`CaseResult` types to `internal/test` (new file, e.g. `internal/test/suite.go`)
+- [ ] create `internal/test/filtertest/` package; move `testfilter_testfiles.go` + `testfilter_testmetadata.go` into it unchanged (just package rename, fixtures stay as-is)
+- [ ] rewrite `testfilter.go` into `internal/test/filtertest/filtertest.go`: `CaseResult`/`SuiteResult` instead of `FilterTestResult`/`FilterTestResults`, add a `Suite`-implementing type (`Name() string { return "filter" }`, `Run()` wraps the existing `testConfigs` table, one `CaseResult` per config), delete the old `internal/test/testfilter.go`
+- [ ] update every caller of the old types: `internal/job/cronjob.go` (`filterTestJob`, `RunFilterTest`), `internal/job/scheduler.go` wrapper, `internal/server/api_testdata.go` (`handleAPIFilterTest`, `handleAPIFilterTestMetadata`) + swagger annotations
+- [ ] update `render.RenderFilterTestResults` (or replace with a generic `SuiteResult` table renderer reusable by every future suite) so the admin page still renders correctly
+- [ ] add `internal/test/registry.go`: `suites []Suite` + `RunAllTests() (*SuiteResult, error)`
+- [ ] wire `RunAllTests()` through its own job wrapper + `POST /api/testdata/run-all` + admin "run all tests" button
+- [ ] manual check: admin page "run filter tests" button and new "run all tests" button both work against a real running dev instance, endpoint/button locations unchanged (no user-facing change)
 
-**2. search & history**
-- [ ] search: title-only, full-content, deleted-file/history search, all response formats (dropdown/list/cards/json), empty query
-- [ ] git repo history: latest-changes pagination, filter by collection, search by filename, push/pull, test-auth
-- [ ] git file history: list versions, view version, diff, restore + verify restored content
+**suite build order** (after step 0; filter is done as part of step 0, so this starts at the next group)
+- [ ] 1. editors - create+edit+save for toastui, textarea, codemirror, filter, list, todo, index, table; section-save, table-save, todo-toggle, convert-to-markdown; file rename/move (updates links elsewhere); bulk ops (bulk delete files, bulk metadata patch, bulk chat move/delete)
+- [ ] 2. search & history - search (title-only, full-content, deleted-file/history, all response formats, empty query); git repo history (latest-changes pagination, filter by collection, search by filename, push/pull, test-auth); git file history (list versions, view version, diff, restore + verify restored content)
+- [ ] 3. chat - add/delete/get message (global + file-scoped), move, bulk move/delete, pagination
+- [ ] 4. dashboard & kanban - dashboard (render each widget type, CRUD, import/export, rename); kanban (board load, filter, column order persists, card move)
+- [ ] 5. browse & info slideout - browse/icons (`/browse/files`, `/browse/media`, `/browse/{metadata}[/{value}]`, file tree, folder contents, autocomplete); metadata (get/set all fields, inline-display/inline-edit); TOC (header extraction); references (add/remove/list); connections (parents/ancestors/kids/grandchildren/related/used-links/links-to-here, conflict banner+diff)
+- [ ] 6. jobs, media, admin - jobs (metadata-rebuild, search-index, media-cleanup, cache-invalidate, manual trigger, status/history) - assert on filesystem/DB state, not just success; media (upload, list, preview, rename, delete, orphaned-cleanup, stats); admin actions (cache invalidate, git push/pull/test-auth, data path change); export/import (markdown, zip, metadata export, dashboard/settings export->import round-trip)
+- [ ] 7. settings, notifications, logs - notifications (flash consumed once, persistent list, delete one, clear all); settings/themes/config (bulk+individual settings, theme list/switch/settings, config repo url/data path/favicon/languages); logs (in-memory list, file pagination/chunking, download)
 
-**3. chat**
-- [ ] add/delete/get message (global + file-scoped), move, bulk move/delete, pagination
+note: browser-only interactions (kanban drag-and-drop, toastui toolbar) can't be verified by an in-app runtime suite the same way - either accept coverage of the underlying API/state instead, or handle those specific cases via the `testkit` chromedp path separately.
 
-**4. dashboard & kanban**
-- [ ] dashboard: render each widget type (filter, filterForm, fileContent, static, tags, collections, folders), CRUD, import/export, rename
-- [ ] kanban: board load, filter, column order persists (tier 1)
-- [ ] kanban card drag-move (tier 2)
-
-**5. browse & info slideout**
-- [ ] browse/icons: `/browse/files`, `/browse/media`, `/browse/{metadata}[/{value}]`, file tree, folder contents, autocomplete
-- [ ] info slideout - metadata: get/set all fields, inline-display/inline-edit fragments
-- [ ] info slideout - TOC: header extraction matches nested heading structure
-- [ ] info slideout - references: add/remove/list
-- [ ] info slideout - connections: parents/ancestors/kids/grandchildren/related/used-links/links-to-here, conflict banner+diff
-
-**6. jobs, media, admin**
-- [ ] jobs: metadata-rebuild (all + single file), search-index (new file becomes searchable), media-cleanup (orphan removed, referenced kept), cache-invalidate, manual trigger, status/history reflects run - assert on filesystem/DB state, not just HTTP 200
-- [ ] media: upload, list, preview, rename, delete, orphaned-cleanup, stats
-- [ ] admin actions: cache invalidate, git push/pull/test-auth, data path change; isolate restart handler so it doesn't kill the test process
-- [ ] export/import: markdown, zip, metadata export, dashboard export->import round-trip, settings export->import round-trip
-
-**7. settings, notifications, logs**
-- [ ] notifications: flash consumed once (204 after), persistent list, delete one, clear all
-- [ ] settings/themes/config: bulk+individual settings, theme list/switch/settings, config repo url/data path/favicon/languages
-- [ ] logs: in-memory list, file pagination/chunking, download
-
-**8. htmx/JS call inventory sweep (builtin theme, ~45 endpoints - reference for the tests above, not a separate step)**
+**htmx/JS call inventory (builtin theme, ~45 endpoints - reference for scoping suite cases above, not a separate step)**
 - admin.gohtml: metadata rebuild, cronjob trigger, cache invalidate, restart, config repository get/post, git pull/push/test-auth, config datapath get/post, media stats, media cleanup-orphaned, config import, metadata editors?format=options (x4), testdata setup/clean/filtertest(+testdata)
 - base.gohtml: search?format=list, filters/add-criteria, filters (execute), metadata/references (post)
 - files/browse: files/bulk (delete), files/browse?metadata=&value=, files/list(?actions=true), files/tree?actions=true, files/folder?path=, files/rename/*, files/move-folder/*, files/delete/*, files/versions/* (+?output=full), files/versions/restore/*, files/versions/diff/*

@@ -1,28 +1,24 @@
 # Testing
 
-Go native only. Two tiers, depending on whether real browser/JS behaviour is under test.
+In-app runtime test suites - not `go test`. Knov ships as a single binary with no go toolchain on the target machine, so tests need to be runnable against a real running instance, from an admin button or an API call. The existing filter test (`internal/test/testfilter.go`, wired to the admin page and `POST /api/testdata/filtertest`) is the model every other suite follows.
 
-**Tier 1 - `net/http/httptest`**
-- Boots the real chi router (`server.NewRouter()`) against a temp data dir and a freshly `git init`'d repo, via `testkit.NewApp(t)` in `internal/testkit/testkit.go`
-- Runs the same init sequence as `main.go`: content storage, all sqlite-backed storages, theme manager, settings
-- Requests go through real HTTP against `httptest.Server`; assertions check status code and parsed HTML fragments, not raw string snapshots
-- Covers everything that doesn't require a real browser: filters, editors, search, git history, chat, dashboards, kanban API, metadata/links, jobs, media, admin actions, settings, notifications, logs
-
-**Tier 2 - `chromedp`**
-- Pure Go, drives a real headless Chrome over the DevTools protocol - no Node/npm involved
-- Reserved for behaviour that only exists in the browser: drag-and-drop (kanban), the toastui rich editor, confirming an htmx swap actually lands in the DOM
-- Also uses `testkit.NewApp(t)`, so there's one bootstrap for both tiers
-- Static/theme JS and CSS assets are not wired into testkit yet, so tests needing real client-side JS (not just DOM/navigation checks) need that fixed first
+**Suite interface**
+- `internal/test` defines the shared shape every suite returns: `CaseResult` (name, free-form `Expected`/`Actual` strings, error, success, `Detail any` for suite-specific extras) and `SuiteResult` (suite name, totals, pass/fail, list of `CaseResult`), plus a `Suite` interface (`Name() string`, `Run() (*SuiteResult, error)`)
+- `Expected`/`Actual` are plain strings rather than typed values, since suites compare very different things (a list of matching files, a single pass/fail, rendered content) - each suite formats its own comparison text
 
 **Package layout**
-- `internal/testkit` holds the bootstrap itself (not a `_test.go` file, so any package's tests can import it) - it only depends on `server.NewRouter()` and other packages' exported `Init` functions, no unexported access needed
-- Tests that use testkit must live in an external test package (`package server_test`, not `package server`) - testkit importing `server` back would otherwise be a real import cycle for internal test files
-- Go test files live next to the code they cover, one `_test.go` per `api_*.go` in `internal/server` is the target structure
-- `internal/test` holds the in-app "seed test data" feature (creates sample files/git history for manual QA) - unrelated to the Go test suite, just named similarly
+- One subpackage per test group under `internal/test/`, e.g. `internal/test/filtertest`, `internal/test/editorstest` - each seeds real files/metadata via the internal packages directly (no HTTP round-trip) and implements `Suite`
+- Subpackages are always suffixed `test` (`filtertest`, not `filter`) - a subpackage named `filter` would collide with `knov/internal/filter` in every file that needs both (job wrapper, API handler), forcing an import alias everywhere; the suffix avoids that
+- `internal/test/registry.go` holds the list of suites and `RunAllTests()`, which runs them in order and aggregates - adding a suite later means adding its subpackage and one line here
 
-**Singletons**
-- App state (content storage, metadata/search/chat/cache/notification storage) lives in package-level singletons, same as in production
-- Only one test app can be "live" per process at a time - tests using testkit must not call `t.Parallel()`
+**Wiring (same shape for every suite, including `RunAllTests()` itself)**
+- A `job.Job` wrapper in `internal/job` (mutex-guarded via `execute()`, recorded in job history, visible at `/system/jobs`)
+- An HTTP handler in `internal/server`, swagger-annotated, at `POST /api/testdata/<group>test`
+- A button on the admin page
+
+**Where `internal/testkit` fits**
+- `internal/testkit` (`httptest` + `chromedp`) is not the primary vehicle for suites - it stays around for the rare case a suite genuinely needs a real HTTP/router pass, and for the handful of things an in-app suite structurally can't verify: real browser/JS interaction like kanban drag-and-drop or the toastui editor toolbar
+- For those, cover the underlying API/state through a normal suite, and only reach for `testkit`'s chromedp path if the interaction itself needs checking
 
 **Scope**
-- The full test-case checklist and the htmx/JS call inventory backing it live in `docs/temp_todo.md` under `# testing`
+- The suite build order and the htmx/JS call inventory backing it live in `docs/temp_todo.md` under `# testing`
