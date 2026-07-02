@@ -5282,7 +5282,7 @@ const docTemplate = `{
                     "200": {
                         "description": "filter test results",
                         "schema": {
-                            "$ref": "#/definitions/test.FilterTestResults"
+                            "$ref": "#/definitions/test.SuiteResult"
                         }
                     },
                     "500": {
@@ -5310,6 +5310,33 @@ const docTemplate = `{
                         "description": "filter test metadata table",
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/testdata/run-all": {
+            "post": {
+                "description": "Executes every registered in-app test suite and aggregates the results",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run all test suites",
+                "responses": {
+                    "200": {
+                        "description": "aggregated test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
                         }
                     },
                     "500": {
@@ -6086,72 +6113,49 @@ const docTemplate = `{
                 "value": {}
             }
         },
-        "test.FilterTestResult": {
+        "test.CaseResult": {
             "type": "object",
             "properties": {
-                "actual_count": {
-                    "type": "integer"
-                },
-                "actual_files": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "config": {
-                    "$ref": "#/definitions/filter.Config"
-                },
-                "config_name": {
+                "actual": {
                     "type": "string"
                 },
-                "description": {
-                    "type": "string"
-                },
+                "detail": {},
                 "error": {
                     "type": "string"
                 },
-                "expected_count": {
-                    "type": "integer"
+                "expected": {
+                    "type": "string"
                 },
-                "expected_files": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "name": {
+                    "type": "string"
                 },
                 "success": {
                     "type": "boolean"
                 }
             }
         },
-        "test.FilterTestResults": {
+        "test.SuiteResult": {
             "type": "object",
             "properties": {
-                "errors": {
+                "cases": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/test.CaseResult"
                     }
                 },
-                "failed_tests": {
+                "failed": {
                     "type": "integer"
                 },
-                "log_file": {
-                    "type": "string"
-                },
-                "passed_tests": {
+                "passed": {
                     "type": "integer"
-                },
-                "results": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/test.FilterTestResult"
-                    }
                 },
                 "success": {
                     "type": "boolean"
                 },
-                "total_tests": {
+                "suite": {
+                    "type": "string"
+                },
+                "total": {
                     "type": "integer"
                 }
             }

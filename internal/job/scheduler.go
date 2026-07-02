@@ -7,6 +7,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/logging"
+	"knov/internal/test"
 )
 
 var (
@@ -27,6 +28,7 @@ var (
 	testdataSetupMu sync.Mutex
 	testdataCleanMu sync.Mutex
 	filterTestMu    sync.Mutex
+	runAllTestsMu   sync.Mutex
 	runMu           sync.Mutex // prevents concurrent manual Run() calls
 )
 
@@ -201,6 +203,24 @@ func RunTestdataSetup() error {
 // RunTestdataClean cleans test data with dedup protection.
 func RunTestdataClean() error {
 	return execute(&testdataCleanMu, &testdataCleanJob{})
+}
+
+// RunFilterTest runs the filter test suite and returns its results alongside any error.
+func RunFilterTest() (*test.SuiteResult, error) {
+	j := &filterTestJob{}
+	if err := execute(&filterTestMu, j); err != nil {
+		return nil, err
+	}
+	return j.results, nil
+}
+
+// RunAllTests runs every registered test suite and returns the aggregated results.
+func RunAllTests() (*test.SuiteResult, error) {
+	j := &runAllTestsJob{}
+	if err := execute(&runAllTestsMu, j); err != nil {
+		return nil, err
+	}
+	return j.results, nil
 }
 
 // RunAsync starts a manual run of all jobs in a background goroutine.

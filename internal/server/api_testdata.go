@@ -9,7 +9,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
-	"knov/internal/test"
+	"knov/internal/test/filtertest"
 	"knov/internal/translation"
 )
 
@@ -59,7 +59,7 @@ func handleAPICleanTestData(w http.ResponseWriter, r *http.Request) {
 // @Description Executes comprehensive filter test scenarios with 12 test metadata objects
 // @Tags testdata
 // @Produce json,html
-// @Success 200 {object} test.FilterTestResults "filter test results"
+// @Success 200 {object} test.SuiteResult "filter test results"
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/filtertest [post]
 func handleAPIFilterTest(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +77,7 @@ func handleAPIFilterTest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderFilterTestResults(results)
+	html := render.RenderSuiteResult(results)
 	writeResponse(w, r, results, html)
 }
 
@@ -91,7 +91,7 @@ func handleAPIFilterTest(w http.ResponseWriter, r *http.Request) {
 func handleAPIFilterTestMetadata(w http.ResponseWriter, r *http.Request) {
 	logging.LogDebug("filter test metadata table request received")
 
-	metadataList := test.GetFilterTestMetadata()
+	metadataList := filtertest.GetFilterTestMetadata()
 	if metadataList == nil {
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get filter test metadata"))
 		writeResponse(w, r, nil, "")
@@ -100,4 +100,30 @@ func handleAPIFilterTestMetadata(w http.ResponseWriter, r *http.Request) {
 
 	html := render.RenderFilterTestMetadataTable(metadataList)
 	writeResponse(w, r, metadataList, html)
+}
+
+// @Summary Run all test suites
+// @Description Executes every registered in-app test suite and aggregates the results
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "aggregated test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/run-all [post]
+func handleAPIRunAllTests(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug("run all tests request received")
+
+	results, err := job.RunAllTests()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError("failed to run all tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
 }

@@ -3,17 +3,18 @@ package render
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/filter"
 	"knov/internal/test"
 	"knov/internal/translation"
 )
 
-// RenderFilterTestResults renders comprehensive filter test results with detailed breakdown
-func RenderFilterTestResults(results *test.FilterTestResults) string {
+// RenderSuiteResult renders a SuiteResult (from any test suite, or RunAllTests) with a
+// per-case breakdown. Generic across suites since CaseResult.Expected/Actual are free-form.
+func RenderSuiteResult(results *test.SuiteResult) string {
 	var html strings.Builder
 
 	html.WriteString(`<div id="component-filter-test-results">`)
@@ -21,18 +22,18 @@ func RenderFilterTestResults(results *test.FilterTestResults) string {
 	// summary section
 	html.WriteString(`<div class="test-summary">`)
 	html.WriteString(fmt.Sprintf(`<h4>%s</h4>`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "Filter Test Results Summary")))
+		translation.SprintfForRequest(configmanager.GetLanguage(), "Test Results Summary")))
 
 	html.WriteString(`<div class="summary-stats">`)
-	html.WriteString(fmt.Sprintf(`<span class="stat total">Total: %d</span>`, results.TotalTests))
-	html.WriteString(fmt.Sprintf(`<span class="stat passed">✅ Passed: %d</span>`, results.PassedTests))
-	html.WriteString(fmt.Sprintf(`<span class="stat failed">❌ Failed: %d</span>`, results.FailedTests))
+	html.WriteString(fmt.Sprintf(`<span class="stat total">Total: %d</span>`, results.Total))
+	html.WriteString(fmt.Sprintf(`<span class="stat passed">✅ Passed: %d</span>`, results.Passed))
+	html.WriteString(fmt.Sprintf(`<span class="stat failed">❌ Failed: %d</span>`, results.Failed))
 
 	// overall status
 	overallStatus := "✅ ALL TESTS PASSED"
 	statusClass := "status-ok"
-	if results.FailedTests > 0 {
-		overallStatus = fmt.Sprintf("⚠️ %d TESTS FAILED", results.FailedTests)
+	if results.Failed > 0 {
+		overallStatus = fmt.Sprintf("⚠️ %d TESTS FAILED", results.Failed)
 		statusClass = "status-failure"
 	}
 	html.WriteString(fmt.Sprintf(`<span class="overall-status %s">%s</span>`, statusClass, overallStatus))
@@ -40,9 +41,9 @@ func RenderFilterTestResults(results *test.FilterTestResults) string {
 	html.WriteString(`</div>`)
 
 	// detailed results
-	for _, result := range results.Results {
+	for _, c := range results.Cases {
 		statusClass := "test-passed"
-		if !result.Success {
+		if !c.Success {
 			statusClass = "test-failed"
 		}
 
@@ -52,109 +53,43 @@ func RenderFilterTestResults(results *test.FilterTestResults) string {
 		html.WriteString(`<div class="test-header">`)
 
 		statusIcon := "✅"
-		if !result.Success {
+		if !c.Success {
 			statusIcon = "❌"
 		}
 		fmt.Fprintf(&html, `<div class="test-title"><span class="status-icon">%s</span><h5>%s</h5></div>`,
-			statusIcon, result.ConfigName)
+			statusIcon, c.Name)
 
-		// counts and description
-		html.WriteString(fmt.Sprintf(`<p class="test-description"><strong>%s</strong></p>`, result.Description))
 		html.WriteString(`<div class="test-counts">`)
-		html.WriteString(fmt.Sprintf(`<span class="count-expected"><strong>Expected:</strong> %d files</span>`, result.ExpectedCount))
-		html.WriteString(fmt.Sprintf(`<span class="count-actual"><strong>Actual:</strong> %d files</span>`, result.ActualCount))
-		if !result.Success && result.Error != "" {
-			html.WriteString(fmt.Sprintf(`<p class="test-error">Error: %s</p>`, result.Error))
+		html.WriteString(fmt.Sprintf(`<span class="count-expected"><strong>Expected:</strong> %s</span>`, c.Expected))
+		html.WriteString(fmt.Sprintf(`<span class="count-actual"><strong>Actual:</strong> %s</span>`, c.Actual))
+		if !c.Success && c.Error != "" {
+			html.WriteString(fmt.Sprintf(`<p class="test-error">Error: %s</p>`, c.Error))
 		}
 		html.WriteString(`</div>`)
 		html.WriteString(`</div>`)
 
-		// filter configuration - collapsible
-		html.WriteString(`<details class="test-config">`)
-		html.WriteString(fmt.Sprintf(`<summary>⚙️ %s</summary>`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "Filter Configuration")))
+		// suite-specific detail - collapsible
+		if cfg, ok := c.Detail.(filter.Config); ok {
+			html.WriteString(`<details class="test-config">`)
+			html.WriteString(fmt.Sprintf(`<summary>⚙️ %s</summary>`,
+				translation.SprintfForRequest(configmanager.GetLanguage(), "Filter Configuration")))
 
-		html.WriteString(`<div class="config-content">`)
-		html.WriteString(fmt.Sprintf(`<p class="config-logic"><strong>Logic:</strong> <code>%s</code></p>`, strings.ToUpper(result.Config.Logic)))
-		html.WriteString(`<p class="config-criteria-title"><strong>Criteria:</strong></p>`)
-		html.WriteString(`<ul class="config-criteria">`)
-		for _, criteria := range result.Config.Criteria {
-			actionClass := "action-include"
-			if criteria.Action == "exclude" {
-				actionClass = "action-exclude"
-			}
-			html.WriteString(fmt.Sprintf(`<li><code>%s</code> %s <code>"%s"</code> <span class="action-badge %s">%s</span></li>`,
-				criteria.Metadata, criteria.Operator, criteria.Value, actionClass, strings.ToUpper(criteria.Action)))
-		}
-		html.WriteString(`</ul>`)
-		html.WriteString(`</div>`)
-		html.WriteString(`</details>`)
-
-		// files comparison - collapsible
-		html.WriteString(`<details class="test-files">`)
-		html.WriteString(fmt.Sprintf(`<summary>📁 %s</summary>`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "Files Comparison")))
-
-		html.WriteString(`<div class="files-content">`)
-		html.WriteString(`<div class="files-grid">`)
-
-		// expected files
-		html.WriteString(`<div class="expected-files">`)
-		html.WriteString(fmt.Sprintf(`<h6 class="files-header expected">📋 %s (%d)</h6>`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "Expected Files"),
-			len(result.ExpectedFiles)))
-		if len(result.ExpectedFiles) > 0 {
-			// create sorted copy of expected files
-			sortedExpected := make([]string, len(result.ExpectedFiles))
-			copy(sortedExpected, result.ExpectedFiles)
-			sort.Strings(sortedExpected)
-
-			html.WriteString(`<ul class="files-list">`)
-			for _, file := range sortedExpected {
-				html.WriteString(fmt.Sprintf(`<li>%s</li>`, file))
+			html.WriteString(`<div class="config-content">`)
+			html.WriteString(fmt.Sprintf(`<p class="config-logic"><strong>Logic:</strong> <code>%s</code></p>`, strings.ToUpper(cfg.Logic)))
+			html.WriteString(`<p class="config-criteria-title"><strong>Criteria:</strong></p>`)
+			html.WriteString(`<ul class="config-criteria">`)
+			for _, criteria := range cfg.Criteria {
+				actionClass := "action-include"
+				if criteria.Action == "exclude" {
+					actionClass = "action-exclude"
+				}
+				html.WriteString(fmt.Sprintf(`<li><code>%s</code> %s <code>"%s"</code> <span class="action-badge %s">%s</span></li>`,
+					criteria.Metadata, criteria.Operator, criteria.Value, actionClass, strings.ToUpper(criteria.Action)))
 			}
 			html.WriteString(`</ul>`)
-		} else {
-			html.WriteString(`<em class="no-files">No files expected</em>`)
+			html.WriteString(`</div>`)
+			html.WriteString(`</details>`)
 		}
-		html.WriteString(`</div>`)
-
-		// actual files
-		html.WriteString(`<div class="actual-files">`)
-		html.WriteString(fmt.Sprintf(`<h6 class="files-header actual">📄 %s (%d)</h6>`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "Actual Files"),
-			len(result.ActualFiles)))
-		if len(result.ActualFiles) > 0 {
-			// create sorted copy of actual files
-			sortedActual := make([]string, len(result.ActualFiles))
-			copy(sortedActual, result.ActualFiles)
-			sort.Strings(sortedActual)
-
-			html.WriteString(`<ul class="files-list">`)
-			for _, file := range sortedActual {
-				// highlight if file is unexpected
-				liClass := ""
-				isExpected := false
-				for _, expected := range result.ExpectedFiles {
-					if expected == file {
-						isExpected = true
-						break
-					}
-				}
-				if !isExpected && !result.Success {
-					liClass = ` class="unexpected-file"`
-				}
-				html.WriteString(fmt.Sprintf(`<li%s>%s</li>`, liClass, file))
-			}
-			html.WriteString(`</ul>`)
-		} else {
-			html.WriteString(`<em class="no-files">No files found</em>`)
-		}
-		html.WriteString(`</div>`)
-
-		html.WriteString(`</div>`)
-		html.WriteString(`</div>`)
-		html.WriteString(`</details>`)
 
 		html.WriteString(`</div>`)
 	}

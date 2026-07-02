@@ -383,50 +383,35 @@ definitions:
         type: string
       value: {}
     type: object
-  test.FilterTestResult:
+  test.CaseResult:
     properties:
-      actual_count:
-        type: integer
-      actual_files:
-        items:
-          type: string
-        type: array
-      config:
-        $ref: '#/definitions/filter.Config'
-      config_name:
+      actual:
         type: string
-      description:
-        type: string
+      detail: {}
       error:
         type: string
-      expected_count:
-        type: integer
-      expected_files:
-        items:
-          type: string
-        type: array
+      expected:
+        type: string
+      name:
+        type: string
       success:
         type: boolean
     type: object
-  test.FilterTestResults:
+  test.SuiteResult:
     properties:
-      errors:
+      cases:
         items:
-          type: string
+          $ref: '#/definitions/test.CaseResult'
         type: array
-      failed_tests:
+      failed:
         type: integer
-      log_file:
-        type: string
-      passed_tests:
+      passed:
         type: integer
-      results:
-        items:
-          $ref: '#/definitions/test.FilterTestResult'
-        type: array
       success:
         type: boolean
-      total_tests:
+      suite:
+        type: string
+      total:
         type: integer
     type: object
 host: localhost:1324
@@ -4007,7 +3992,7 @@ paths:
         "200":
           description: filter test results
           schema:
-            $ref: '#/definitions/test.FilterTestResults'
+            $ref: '#/definitions/test.SuiteResult'
         "500":
           description: Internal server error
           schema:
@@ -4032,6 +4017,25 @@ paths:
           schema:
             type: string
       summary: Get filter test metadata table
+      tags:
+      - testdata
+  /api/testdata/run-all:
+    post:
+      description: Executes every registered in-app test suite and aggregates the
+        results
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: aggregated test results
+          schema:
+            $ref: '#/definitions/test.SuiteResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run all test suites
       tags:
       - testdata
   /api/testdata/setup:

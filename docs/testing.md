@@ -1,6 +1,6 @@
 # Testing
 
-In-app runtime test suites - not `go test`. Knov ships as a single binary with no go toolchain on the target machine, so tests need to be runnable against a real running instance, from an admin button or an API call. The existing filter test (`internal/test/testfilter.go`, wired to the admin page and `POST /api/testdata/filtertest`) is the model every other suite follows.
+In-app runtime test suites - not `go test`. Knov ships as a single binary with no go toolchain on the target machine, so tests need to be runnable against a real running instance, from an admin button or an API call. The filter suite (`internal/test/filtertest/`, wired to the admin page and `POST /api/testdata/filtertest`) is the model every other suite follows.
 
 **Suite interface**
 - `internal/test` defines the shared shape every suite returns: `CaseResult` (name, free-form `Expected`/`Actual` strings, error, success, `Detail any` for suite-specific extras) and `SuiteResult` (suite name, totals, pass/fail, list of `CaseResult`), plus a `Suite` interface (`Name() string`, `Run() (*SuiteResult, error)`)
@@ -9,7 +9,7 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 **Package layout**
 - One subpackage per test group under `internal/test/`, e.g. `internal/test/filtertest`, `internal/test/editorstest` - each seeds real files/metadata via the internal packages directly (no HTTP round-trip) and implements `Suite`
 - Subpackages are always suffixed `test` (`filtertest`, not `filter`) - a subpackage named `filter` would collide with `knov/internal/filter` in every file that needs both (job wrapper, API handler), forcing an import alias everywhere; the suffix avoids that
-- `internal/test/registry.go` holds the list of suites and `RunAllTests()`, which runs them in order and aggregates - adding a suite later means adding its subpackage and one line here
+- `internal/test/registry.go` holds `RunAllTests()`, which runs the registered suites in order and aggregates. Suites self-register via `test.Register(Suite{})` in their own `init()` (a `<group>test` package importing `internal/test` for the shared types rules out `internal/test` importing back to build the list directly) - adding a suite later means adding its subpackage plus that `init()` line
 
 **Wiring (same shape for every suite, including `RunAllTests()` itself)**
 - A `job.Job` wrapper in `internal/job` (mutex-guarded via `execute()`, recorded in job history, visible at `/system/jobs`)

@@ -1,5 +1,5 @@
-// Package testdata - Filter test metadata definitions
-package test
+// Package filtertest - Filter test metadata definitions
+package filtertest
 
 import (
 	"time"

@@ -404,6 +404,7 @@ func NewRouter() *chi.Mux {
 			r.Post("/clean", handleAPICleanTestData)
 			r.Post("/filtertest", handleAPIFilterTest)
 			r.Get("/filtertest/testdata", handleAPIFilterTestMetadata)
+			r.Post("/run-all", handleAPIRunAllTests)
 		})
 
 		// ----------------------------------------------------------------------------------------
