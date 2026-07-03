@@ -128,6 +128,58 @@ func handleAPIEditorsTest(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, results, html)
 }
 
+// @Summary Run search tests
+// @Description Executes the search suite (title-only, full-content, deleted-file search, empty query, limit truncation)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "search test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/searchtest [post]
+func handleAPISearchTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug("search test request received")
+
+	results, err := job.RunSearchTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError("failed to run search tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
+// @Summary Run git history tests
+// @Description Executes the git repo/file history suite (latest-changes pagination + collection filter, filename history search, file version history/view/diff/restore, remote push/pull/test-auth)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "git history test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/githistorytest [post]
+func handleAPIGitHistoryTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug("git history test request received")
+
+	results, err := job.RunGitHistoryTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError("failed to run git history tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
 // @Summary Run all test suites
 // @Description Executes every registered in-app test suite and aggregates the results
 // @Tags testdata

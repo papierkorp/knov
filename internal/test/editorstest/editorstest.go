@@ -14,7 +14,7 @@ import (
 
 // testDir is the docs-relative fixture folder every case seeds into, wiped at the start
 // of each run so cases never see stale state from a previous run.
-const testDir = "editors-tests"
+const testDir = "test/editors-tests"
 
 // Suite runs the editors test cases against real files, metadata and content handlers.
 type Suite struct{}
@@ -73,7 +73,7 @@ func resetTestDir() error {
 	return os.MkdirAll(full, 0755)
 }
 
-// testPath returns a docs-relative path under the fixture folder, e.g. "editors-tests/toastui.md".
+// testPath returns a docs-relative path under the fixture folder, e.g. "test/editors-tests/toastui.md".
 func testPath(name string) string {
 	return filepath.Join(testDir, name)
 }

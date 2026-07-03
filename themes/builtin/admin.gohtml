@@ -296,6 +296,14 @@
                             hx-confirm="{{T "Run editors tests? This will create test files and metadata."}}">
                         {{T "Run Editors Tests"}}
                     </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/searchtest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run search tests? This will create test files and git commits."}}">
+                        {{T "Run Search Tests"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/githistorytest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run git history tests? This will create test files, git commits, and temporarily point the git remote at a throwaway local repo."}}">
+                        {{T "Run Git History Tests"}}
+                    </button>
                     <button class="btn-secondary" hx-post="/api/testdata/run-all" hx-target="#testdata-result"
                             hx-confirm="{{T "Run all test suites? This will create test metadata objects."}}">
                         {{T "Run All Tests"}}

@@ -17,7 +17,7 @@ func createFilterTestFiles() error {
 	docsPath := contentStorage.GetDocsPath()
 
 	// remove existing filter-tests directory to ensure clean state
-	filterTestsPath := filepath.Join(docsPath, "filter-tests")
+	filterTestsPath := filepath.Join(docsPath, "test/filter-tests")
 	if _, err := os.Stat(filterTestsPath); err == nil {
 		logging.LogInfo("removing existing filter-tests directory")
 		if err := os.RemoveAll(filterTestsPath); err != nil {
@@ -31,27 +31,27 @@ func createFilterTestFiles() error {
 		content string
 	}{
 		{
-			path:    "filter-tests/filtertestfolder/filterTestA.md",
+			path:    "test/filter-tests/filtertestfolder/filterTestA.md",
 			content: `# filterTestA`,
 		},
 		{
-			path:    "filter-tests/filtertestfolder/filterTestB.md",
+			path:    "test/filter-tests/filtertestfolder/filterTestB.md",
 			content: `# filterTestB`,
 		},
 		{
-			path:    "filter-tests/filterTestC.md",
+			path:    "test/filter-tests/filterTestC.md",
 			content: `# filterTestC`,
 		},
 		{
-			path:    "filter-tests/filterTestD.md",
+			path:    "test/filter-tests/filterTestD.md",
 			content: `# filterTestD`,
 		},
 		{
-			path:    "filter-tests/filterTestE.md",
+			path:    "test/filter-tests/filterTestE.md",
 			content: `# filterTestE`,
 		},
 		{
-			path:    "filter-tests/filterTestF.md",
+			path:    "test/filter-tests/filterTestF.md",
 			content: `# filterTestF`,
 		},
 	}

@@ -4039,6 +4039,26 @@ paths:
       summary: Get filter test metadata table
       tags:
       - testdata
+  /api/testdata/githistorytest:
+    post:
+      description: Executes the git repo/file history suite (latest-changes pagination
+        + collection filter, filename history search, file version history/view/diff/restore,
+        remote push/pull/test-auth)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: git history test results
+          schema:
+            $ref: '#/definitions/test.SuiteResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run git history tests
+      tags:
+      - testdata
   /api/testdata/run-all:
     post:
       description: Executes every registered in-app test suite and aggregates the
@@ -4056,6 +4076,25 @@ paths:
           schema:
             type: string
       summary: Run all test suites
+      tags:
+      - testdata
+  /api/testdata/searchtest:
+    post:
+      description: Executes the search suite (title-only, full-content, deleted-file
+        search, empty query, limit truncation)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: search test results
+          schema:
+            $ref: '#/definitions/test.SuiteResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run search tests
       tags:
       - testdata
   /api/testdata/setup:

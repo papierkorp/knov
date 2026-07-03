@@ -10,6 +10,7 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 - One subpackage per test group under `internal/test/`, e.g. `internal/test/filtertest`, `internal/test/editorstest` - each seeds real files/metadata via the internal packages directly (no HTTP round-trip) and implements `Suite`
 - Subpackages are always suffixed `test` (`filtertest`, not `filter`) - a subpackage named `filter` would collide with `knov/internal/filter` in every file that needs both (job wrapper, API handler), forcing an import alias everywhere; the suffix avoids that
 - `internal/test/registry.go` holds `RunAllTests()`, which runs the registered suites in order and aggregates. Suites self-register via `test.Register(Suite{})` in their own `init()` (a `<group>test` package importing `internal/test` for the shared types rules out `internal/test` importing back to build the list directly) - adding a suite later means adding its subpackage plus that `init()` line
+- Every suite's fixtures live under `docs/test/` (e.g. `test/filter-tests`, `test/editors-tests`) so the admin "Clean Test Data" button removes them all in one go
 
 **Wiring (same shape for every suite, including `RunAllTests()` itself)**
 - A `job.Job` wrapper in `internal/job` (mutex-guarded via `execute()`, recorded in job history, visible at `/system/jobs`)
@@ -31,3 +32,13 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 - Wipes and reseeds its own fixture folder at the start of every run, then runs one independent case per editor operation: create+edit+save for every editor type, section save, table save, todo-toggle, convert-to-markdown, file rename/move, and the bulk ops (delete, metadata patch, chat move/delete)
 - Editor HTTP handlers mix request parsing with business logic inline, so there's usually no single function to call directly - cases instead call the same underlying functions the handler calls (content storage write + metadata save + link rebuild, the content handler's section/table save, todo state cycling, the dokuwiki converter, etc.), reproducing the handler's real sequence of calls without an HTTP round-trip
 - Two bulk-op cases (metadata patch, chat move) can't reach their handler's actual logic because it's unexported in `internal/server` - those replicate the same behavior using the equivalent exported building blocks instead
+
+## Search suite (`internal/test/searchtest`)
+- Seeds a few files (title match, content match, added-then-deleted) and calls `search.SearchFiles*`/`search.SearchDeletedFiles*` directly
+- Indexes synchronously after seeding, since content search otherwise depends on the periodic reindex cronjob
+- Doesn't cover the response-format rendering (dropdown/list/cards) - `internal/server/render` imports `internal/job`, which imports every suite, so importing it here would cycle
+
+## Git history suite (`internal/test/githistorytest`)
+- Seeds a versioned file and an added-then-deleted file, committed via git, then calls `internal/git`'s history/diff/restore/remote functions directly
+- Collection filtering needs two real top-level folders, since collection is derived from a file's path rather than settable through metadata
+- The remote case points the git remote at a throwaway local bare repo (no network) and always restores whatever was configured before it ran

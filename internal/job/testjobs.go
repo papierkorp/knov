@@ -8,6 +8,8 @@ import (
 	"knov/internal/test"
 	"knov/internal/test/editorstest"
 	"knov/internal/test/filtertest"
+	"knov/internal/test/githistorytest"
+	"knov/internal/test/searchtest"
 )
 
 // ----------------------------------------------------------------------------------------
@@ -82,6 +84,54 @@ func (j *editorsTestJob) Run() error {
 func (j *editorsTestJob) Output() any { return j.results }
 
 func (j *editorsTestJob) Message() string {
+	if j.results == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d passed, %d failed", j.results.Passed, j.results.Failed)
+}
+
+type searchTestJob struct {
+	results *test.SuiteResult
+}
+
+func (j *searchTestJob) Name() string { return "search-test" }
+
+func (j *searchTestJob) Run() error {
+	results, err := (searchtest.Suite{}).Run()
+	j.results = results
+	if err != nil {
+		return fmt.Errorf("search tests failed: %w", err)
+	}
+	return nil
+}
+
+func (j *searchTestJob) Output() any { return j.results }
+
+func (j *searchTestJob) Message() string {
+	if j.results == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d passed, %d failed", j.results.Passed, j.results.Failed)
+}
+
+type gitHistoryTestJob struct {
+	results *test.SuiteResult
+}
+
+func (j *gitHistoryTestJob) Name() string { return "git-history-test" }
+
+func (j *gitHistoryTestJob) Run() error {
+	results, err := (githistorytest.Suite{}).Run()
+	j.results = results
+	if err != nil {
+		return fmt.Errorf("git history tests failed: %w", err)
+	}
+	return nil
+}
+
+func (j *gitHistoryTestJob) Output() any { return j.results }
+
+func (j *gitHistoryTestJob) Message() string {
 	if j.results == nil {
 		return ""
 	}

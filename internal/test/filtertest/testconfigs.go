@@ -16,7 +16,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -91,7 +91,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -114,7 +114,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -137,7 +137,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -160,7 +160,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -183,7 +183,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -206,7 +206,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -229,7 +229,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -237,7 +237,7 @@ var testConfigs = []testConfig{
 				{
 					Metadata: "child-of",
 					Operator: "equals",
-					Value:    "filter-tests/filterTestD.md",
+					Value:    "test/filter-tests/filterTestD.md",
 					Action:   "include",
 				},
 			},
@@ -252,7 +252,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -260,7 +260,7 @@ var testConfigs = []testConfig{
 				{
 					Metadata: "parent-of",
 					Operator: "equals",
-					Value:    "filter-tests/filterTestE.md",
+					Value:    "test/filter-tests/filterTestE.md",
 					Action:   "include",
 				},
 			},
@@ -275,7 +275,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -283,7 +283,7 @@ var testConfigs = []testConfig{
 				{
 					Metadata: "ancestor-of",
 					Operator: "equals",
-					Value:    "filter-tests/filterTestD.md",
+					Value:    "test/filter-tests/filterTestD.md",
 					Action:   "include",
 				},
 			},
@@ -298,7 +298,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -333,7 +333,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -368,7 +368,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -376,19 +376,19 @@ var testConfigs = []testConfig{
 				{
 					Metadata: "child-of",
 					Operator: "equals",
-					Value:    "filter-tests/filterTestD.md",
+					Value:    "test/filter-tests/filterTestD.md",
 					Action:   "include",
 				},
 				{
 					Metadata: "parent-of",
 					Operator: "equals",
-					Value:    "filter-tests/filterTestF.md",
+					Value:    "test/filter-tests/filterTestF.md",
 					Action:   "include",
 				},
 				{
 					Metadata: "ancestor-of",
 					Operator: "equals",
-					Value:    "filter-tests/filterTestD.md",
+					Value:    "test/filter-tests/filterTestD.md",
 					Action:   "include",
 				},
 			},
@@ -403,7 +403,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -426,7 +426,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",
@@ -449,7 +449,7 @@ var testConfigs = []testConfig{
 		config: filter.Config{
 			Criteria: []filter.Criteria{
 				{
-					Metadata: "collection",
+					Metadata: "folders",
 					Operator: "equals",
 					Value:    "filter-tests",
 					Action:   "include",

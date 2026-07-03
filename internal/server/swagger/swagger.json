@@ -5342,6 +5342,33 @@
                 }
             }
         },
+        "/api/testdata/githistorytest": {
+            "post": {
+                "description": "Executes the git repo/file history suite (latest-changes pagination + collection filter, filename history search, file version history/view/diff/restore, remote push/pull/test-auth)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run git history tests",
+                "responses": {
+                    "200": {
+                        "description": "git history test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/testdata/run-all": {
             "post": {
                 "description": "Executes every registered in-app test suite and aggregates the results",
@@ -5356,6 +5383,33 @@
                 "responses": {
                     "200": {
                         "description": "aggregated test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/testdata/searchtest": {
+            "post": {
+                "description": "Executes the search suite (title-only, full-content, deleted-file search, empty query, limit truncation)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run search tests",
+                "responses": {
+                    "200": {
+                        "description": "search test results",
                         "schema": {
                             "$ref": "#/definitions/test.SuiteResult"
                         }

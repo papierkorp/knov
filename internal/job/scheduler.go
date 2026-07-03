@@ -16,21 +16,23 @@ var (
 	searchInterval          time.Duration
 	metadataRebuildInterval time.Duration
 
-	fileMu          sync.Mutex
-	searchMu        sync.Mutex
-	rebuildMu       sync.Mutex
-	filterMu        sync.Mutex
-	notifMu         sync.Mutex
-	cacheInvalidMu  sync.Mutex
-	mediaCleanupMu  sync.Mutex
-	gitPullMu       sync.Mutex
-	gitPushMu       sync.Mutex
-	testdataSetupMu sync.Mutex
-	testdataCleanMu sync.Mutex
-	filterTestMu    sync.Mutex
-	editorsTestMu   sync.Mutex
-	runAllTestsMu   sync.Mutex
-	runMu           sync.Mutex // prevents concurrent manual Run() calls
+	fileMu           sync.Mutex
+	searchMu         sync.Mutex
+	rebuildMu        sync.Mutex
+	filterMu         sync.Mutex
+	notifMu          sync.Mutex
+	cacheInvalidMu   sync.Mutex
+	mediaCleanupMu   sync.Mutex
+	gitPullMu        sync.Mutex
+	gitPushMu        sync.Mutex
+	testdataSetupMu  sync.Mutex
+	testdataCleanMu  sync.Mutex
+	filterTestMu     sync.Mutex
+	editorsTestMu    sync.Mutex
+	searchTestMu     sync.Mutex
+	gitHistoryTestMu sync.Mutex
+	runAllTestsMu    sync.Mutex
+	runMu            sync.Mutex // prevents concurrent manual Run() calls
 )
 
 // execute runs job under mu, recording start/finish in job history.
@@ -219,6 +221,24 @@ func RunFilterTest() (*test.SuiteResult, error) {
 func RunEditorsTest() (*test.SuiteResult, error) {
 	j := &editorsTestJob{}
 	if err := execute(&editorsTestMu, j); err != nil {
+		return nil, err
+	}
+	return j.results, nil
+}
+
+// RunSearchTest runs the search test suite and returns its results alongside any error.
+func RunSearchTest() (*test.SuiteResult, error) {
+	j := &searchTestJob{}
+	if err := execute(&searchTestMu, j); err != nil {
+		return nil, err
+	}
+	return j.results, nil
+}
+
+// RunGitHistoryTest runs the git repo/file history test suite and returns its results alongside any error.
+func RunGitHistoryTest() (*test.SuiteResult, error) {
+	j := &gitHistoryTestJob{}
+	if err := execute(&gitHistoryTestMu, j); err != nil {
 		return nil, err
 	}
 	return j.results, nil
