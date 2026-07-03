@@ -44,7 +44,7 @@ func (r *knovNodeRenderer) renderTaskCheckBox(w util.BufWriter, source []byte, n
 }
 
 // todoCheckboxLineRe matches a GFM checkbox list item prefix, capturing the marker char.
-var todoCheckboxLineRe = regexp.MustCompile(`^([ \t]*)- \[([ xX\-Oo])\] `)
+var todoCheckboxLineRe = regexp.MustCompile(`^([ \t]*)[-*+] \[([ xX\-Oo])\] `)
 
 // todoMarkerCycle is the open -> done -> cancelled -> waiting -> open cycle order.
 var todoMarkerCycle = []byte{' ', 'X', '-', 'O'}
@@ -108,10 +108,10 @@ func CycleTodoStateAtLine(content []byte, line int) ([]byte, error) {
 // The placeholders are resolved in postprocessTodoStates.
 func (h *MarkdownHandler) preprocessTodoStates(content []byte) []byte {
 	s := string(content)
-	// replace - [-] with - [x] KNOVTODO:cancelled
-	s = regexp.MustCompile(`(?m)^([ \t]*)- \[-\] `).ReplaceAllString(s, "$1- [x] KNOVTODO:cancelled ")
-	// replace - [O] / - [o] with - [ ] KNOVTODO:waiting
-	s = regexp.MustCompile(`(?mi)^([ \t]*)- \[O\] `).ReplaceAllString(s, "$1- [ ] KNOVTODO:waiting ")
+	// replace - [-] / * [-] / + [-] with <marker> [x] KNOVTODO:cancelled
+	s = regexp.MustCompile(`(?m)^([ \t]*)([-*+]) \[-\] `).ReplaceAllString(s, "$1$2 [x] KNOVTODO:cancelled ")
+	// replace - [O] / - [o] (and *, +) with <marker> [ ] KNOVTODO:waiting
+	s = regexp.MustCompile(`(?mi)^([ \t]*)([-*+]) \[O\] `).ReplaceAllString(s, "$1$2 [ ] KNOVTODO:waiting ")
 	return []byte(s)
 }
 

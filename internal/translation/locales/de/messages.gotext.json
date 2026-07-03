@@ -12,11 +12,6 @@
       "translation": ""
     },
     {
-      "id": "Actual Files",
-      "message": "Actual Files",
-      "translation": ""
-    },
-    {
       "id": "add",
       "message": "add",
       "translation": ""
@@ -752,11 +747,6 @@
       "translation": ""
     },
     {
-      "id": "Expected Files",
-      "message": "Expected Files",
-      "translation": ""
-    },
-    {
       "id": "export",
       "message": "export",
       "translation": ""
@@ -1237,11 +1227,6 @@
       "translation": ""
     },
     {
-      "id": "Files Comparison",
-      "message": "Files Comparison",
-      "translation": ""
-    },
-    {
       "id": "file size",
       "message": "file size",
       "translation": ""
@@ -1349,11 +1334,6 @@
     {
       "id": "Filter Test Metadata",
       "message": "Filter Test Metadata",
-      "translation": ""
-    },
-    {
-      "id": "Filter Test Results Summary",
-      "message": "Filter Test Results Summary",
       "translation": ""
     },
     {
@@ -2582,8 +2562,28 @@
       "translation": ""
     },
     {
+      "id": "Run All Tests",
+      "message": "Run All Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run all test suites? This will create test metadata objects.",
+      "message": "Run all test suites? This will create test metadata objects.",
+      "translation": ""
+    },
+    {
       "id": "Run Cronjob",
       "message": "Run Cronjob",
+      "translation": ""
+    },
+    {
+      "id": "Run Editors Tests",
+      "message": "Run Editors Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run editors tests? This will create test files and metadata.",
+      "message": "Run editors tests? This will create test files and metadata.",
       "translation": ""
     },
     {
@@ -2914,6 +2914,11 @@
     {
       "id": "test data setup completed",
       "message": "test data setup completed",
+      "translation": ""
+    },
+    {
+      "id": "Test Results Summary",
+      "message": "Test Results Summary",
       "translation": ""
     },
     {
