@@ -1,6 +1,13 @@
 package filtertest
 
-import "knov/internal/filter"
+import (
+	"fmt"
+	"path/filepath"
+	"slices"
+
+	"knov/internal/filter"
+	"knov/internal/test"
+)
 
 // testConfig is a single filter test scenario: a filter.Config plus its expected result.
 type testConfig struct {
@@ -467,4 +474,55 @@ var testConfigs = []testConfig{
 		expectedCount: 1,
 		expectedFiles: []string{"filterTestE.md"},
 	},
+}
+
+// runCase executes a single scenario against the real filter engine and compares the
+// matched files to what the scenario expects.
+func runCase(tc testConfig) test.CaseResult {
+	expected := fmt.Sprintf("%d files: %v", tc.expectedCount, tc.expectedFiles)
+
+	filterResult, err := filter.FilterFilesWithConfig(&tc.config)
+	if err != nil {
+		return test.CaseResult{
+			Name:     tc.name,
+			Expected: expected,
+			Actual:   "error",
+			Error:    err.Error(),
+			Success:  false,
+			Detail:   tc.config,
+		}
+	}
+
+	actualBasenames := make([]string, len(filterResult.Files))
+	for i, file := range filterResult.Files {
+		actualBasenames[i] = filepath.Base(file.Path)
+	}
+	actual := fmt.Sprintf("%d files: %v", len(actualBasenames), actualBasenames)
+
+	var missingFiles []string
+	for _, expectedFile := range tc.expectedFiles {
+		if !slices.Contains(actualBasenames, expectedFile) {
+			missingFiles = append(missingFiles, expectedFile)
+		}
+	}
+
+	success := len(actualBasenames) == tc.expectedCount && len(missingFiles) == 0
+
+	caseResult := test.CaseResult{
+		Name:     tc.name,
+		Expected: expected,
+		Actual:   actual,
+		Success:  success,
+		Detail:   tc.config,
+	}
+
+	if !success {
+		if len(actualBasenames) != tc.expectedCount {
+			caseResult.Error = fmt.Sprintf("expected %d files, got %d", tc.expectedCount, len(actualBasenames))
+		} else {
+			caseResult.Error = fmt.Sprintf("file mismatch — missing: %v", missingFiles)
+		}
+	}
+
+	return caseResult
 }

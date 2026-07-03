@@ -11,6 +11,7 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 - Subpackages are always suffixed `test` (`filtertest`, not `filter`) - a subpackage named `filter` would collide with `knov/internal/filter` in every file that needs both (job wrapper, API handler), forcing an import alias everywhere; the suffix avoids that
 - `internal/test/registry.go` holds `RunAllTests()`, which runs the registered suites in order and aggregates. Suites self-register via `test.Register(Suite{})` in their own `init()` (a `<group>test` package importing `internal/test` for the shared types rules out `internal/test` importing back to build the list directly) - adding a suite later means adding its subpackage plus that `init()` line
 - Every suite's fixtures live under `docs/test/` (e.g. `test/filter-tests`, `test/editors-tests`) so the admin "Clean Test Data" button removes them all in one go
+- Same file layout in every subpackage: `<group>test.go` holds only the `Suite` type (`Name()`, `Run()`); `sampledata.go` holds the setup - physical file writes, metadata, git commit helpers, wipe/reseed; `testcases.go` (or `testcases_<category>.go` when there's enough of them to split) holds the actual cases
 
 **Wiring (same shape for every suite, including `RunAllTests()` itself)**
 - A `job.Job` wrapper in `internal/job` (mutex-guarded via `execute()`, recorded in job history, visible at `/system/jobs`)
@@ -40,5 +41,5 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 
 ## Git history suite (`internal/test/githistorytest`)
 - Seeds a versioned file and an added-then-deleted file, committed via git, then calls `internal/git`'s history/diff/restore/remote functions directly
-- Collection filtering needs two real top-level folders, since collection is derived from a file's path rather than settable through metadata
+- Collection filtering checks inclusion under the shared `test` collection and exclusion under a made-up collection name, since collection is derived from a file's top-level folder - nesting fixtures under `docs/test/` means every suite's files share that one real collection, so distinct real collections can't be told apart here
 - The remote case points the git remote at a throwaway local bare repo (no network) and always restores whatever was configured before it ran
