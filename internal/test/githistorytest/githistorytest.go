@@ -17,7 +17,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		return nil, err
 	}
 
-	cases := []func(*fixtureState) test.CaseResult{
+	cases := []func(*sampleState) test.CaseResult{
 		caseGitLatestChangesPagination,
 		caseGitLatestChangesCollectionFilter,
 		caseGitSearchByFilename,

@@ -18,7 +18,7 @@ import (
 // PullRebase against it, then always restores whatever remote was configured before the
 // case ran. KNOV_GIT_REMOTE is the only remote setting UpdateEnvFile applies live (branch/
 // autopush changes need a restart), so the case works with the currently configured branch.
-func caseGitRemotePushPullTestAuth(_ *fixtureState) test.CaseResult {
+func caseGitRemotePushPullTestAuth(_ *sampleState) test.CaseResult {
 	name := "git-remote-push-pull-test-auth"
 
 	bareDir, err := os.MkdirTemp("", "knov-searchtest-remote-*")

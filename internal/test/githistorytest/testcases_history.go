@@ -10,7 +10,7 @@ import (
 	"knov/internal/test"
 )
 
-func caseGitLatestChangesPagination(_ *fixtureState) test.CaseResult {
+func caseGitLatestChangesPagination(_ *sampleState) test.CaseResult {
 	name := "git-latestchanges-pagination"
 
 	page1, err := git.GetRecentlyChangedFiles(1, 0)
@@ -52,10 +52,10 @@ func pathsOf(fs []git.GitHistoryFile) []string {
 // collection filter (it's not extracted into internal/git, so this reproduces the same
 // loop+files.MetaDataGet comparison directly, same approach editorstest uses for its
 // unexported-handler bulk-op cases). Collection is derived from a file's top-level folder
-// (files.CollectionFromPath), and every fixture here lives under "test/" (so the admin
+// (files.CollectionFromPath), and every sample file here lives under "test/" (so the admin
 // "Clean Test Data" button can remove it), meaning they all share the "test" collection -
 // checks that collection=testCollection includes gamma while a bogus collection excludes it.
-func caseGitLatestChangesCollectionFilter(_ *fixtureState) test.CaseResult {
+func caseGitLatestChangesCollectionFilter(_ *sampleState) test.CaseResult {
 	name := "git-latestchanges-collection-filter"
 
 	wantPath := pathutils.ToWithPrefix(testPath(gammaFile))
@@ -105,7 +105,7 @@ func containsPath(paths []string, want string) bool {
 	return false
 }
 
-func caseGitSearchByFilename(_ *fixtureState) test.CaseResult {
+func caseGitSearchByFilename(_ *sampleState) test.CaseResult {
 	name := "git-search-by-filename"
 
 	results, err := git.SearchGitByTitle("gamma-versioned", 10, false)
@@ -133,7 +133,7 @@ func caseGitSearchByFilename(_ *fixtureState) test.CaseResult {
 	return cr
 }
 
-func caseGitFileHistoryVersions(_ *fixtureState) test.CaseResult {
+func caseGitFileHistoryVersions(_ *sampleState) test.CaseResult {
 	name := "git-file-history-versions"
 
 	versions, err := git.GetFileHistory(pathutils.ToDocsPath(testPath(gammaFile)))
@@ -154,7 +154,7 @@ func caseGitFileHistoryVersions(_ *fixtureState) test.CaseResult {
 	return cr
 }
 
-func caseGitFileViewVersion(state *fixtureState) test.CaseResult {
+func caseGitFileViewVersion(state *sampleState) test.CaseResult {
 	name := "git-file-view-version"
 
 	content, err := git.GetFileAtCommit(pathutils.ToDocsPath(testPath(gammaFile)), state.gammaCommit1)
@@ -175,7 +175,7 @@ func caseGitFileViewVersion(state *fixtureState) test.CaseResult {
 	return cr
 }
 
-func caseGitFileDiff(state *fixtureState) test.CaseResult {
+func caseGitFileDiff(state *sampleState) test.CaseResult {
 	name := "git-file-diff"
 
 	diff, err := git.GetFileDiff(pathutils.ToDocsPath(testPath(gammaFile)), state.gammaCommit1, state.gammaCommit2)
@@ -196,7 +196,7 @@ func caseGitFileDiff(state *fixtureState) test.CaseResult {
 	return cr
 }
 
-func caseGitFileRestore(state *fixtureState) test.CaseResult {
+func caseGitFileRestore(state *sampleState) test.CaseResult {
 	name := "git-file-restore"
 
 	if err := git.RestoreFileToCommit(pathutils.ToDocsPath(testPath(gammaFile)), state.gammaCommit1); err != nil {

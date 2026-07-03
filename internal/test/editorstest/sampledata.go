@@ -1,4 +1,4 @@
-// Package editorstest - fixture folder and per-case sample file/metadata helpers
+// Package editorstest - sample folder and per-case sample file/metadata helpers
 package editorstest
 
 import (
@@ -11,11 +11,11 @@ import (
 	"knov/internal/test"
 )
 
-// testDir is the docs-relative fixture folder every case seeds into, wiped at the start
+// testDir is the docs-relative sample folder every case seeds into, wiped at the start
 // of each run so cases never see stale state from a previous run.
 const testDir = "test/editors-tests"
 
-// resetTestDir clears the fixture folder on disk so every run starts from a clean state.
+// resetTestDir clears the sample folder on disk so every run starts from a clean state.
 func resetTestDir() error {
 	full := pathutils.ToDocsPath(testDir)
 	if err := os.RemoveAll(full); err != nil {
@@ -24,7 +24,7 @@ func resetTestDir() error {
 	return os.MkdirAll(full, 0755)
 }
 
-// testPath returns a docs-relative path under the fixture folder, e.g. "test/editors-tests/toastui.md".
+// testPath returns a docs-relative path under the sample folder, e.g. "test/editors-tests/toastui.md".
 func testPath(name string) string {
 	return filepath.Join(testDir, name)
 }

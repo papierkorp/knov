@@ -22,7 +22,7 @@ func caseBulkDeleteFiles() test.CaseResult {
 	paths := []string{testPath("bulk1.md"), testPath("bulk2.md"), testPath("bulk3.md")}
 
 	for _, p := range paths {
-		if err := writeFile(p, "# bulk delete fixture\n"); err != nil {
+		if err := writeFile(p, "# bulk delete sample\n"); err != nil {
 			return errCase(name, err)
 		}
 		if err := files.MetaDataSave(&files.Metadata{
@@ -80,7 +80,7 @@ func caseBulkMetadataPatch() test.CaseResult {
 	paths := []string{testPath("patch1.md"), testPath("patch2.md")}
 
 	for _, p := range paths {
-		if err := writeFile(p, "# bulk patch fixture\n"); err != nil {
+		if err := writeFile(p, "# bulk patch sample\n"); err != nil {
 			return errCase(name, err)
 		}
 		if err := files.MetaDataSave(&files.Metadata{

@@ -19,7 +19,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-// testDir is the docs-relative fixture folder every case seeds into, wiped and recommitted
+// testDir is the docs-relative sample folder every case seeds into, wiped and recommitted
 // at the start of each run so cases never see stale state from a previous run.
 const testDir = "test/search-tests"
 
@@ -89,7 +89,7 @@ func commitAll(message string) error {
 	return nil
 }
 
-// resetAndSeed wipes the fixture folder, then recreates it with alpha (title search), beta
+// resetAndSeed wipes the sample folder, then recreates it with alpha (title search), beta
 // (full-content search) and delta (added then deleted, for deleted-file search).
 func resetAndSeed() error {
 	full := pathutils.ToDocsPath(testDir)
@@ -134,7 +134,7 @@ func resetAndSeed() error {
 
 	// full-content search reads from the search index, which is only ever populated by
 	// the periodic reindex cronjob - index synchronously here so search cases see the
-	// freshly-seeded fixture content immediately instead of racing that cronjob.
+	// freshly-seeded sample content immediately instead of racing that cronjob.
 	if err := search.IndexAllFiles(); err != nil {
 		return err
 	}

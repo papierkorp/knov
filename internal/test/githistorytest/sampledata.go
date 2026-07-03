@@ -20,13 +20,13 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-// testDir is the docs-relative fixture folder every case seeds into, wiped and recommitted
+// testDir is the docs-relative sample folder every case seeds into, wiped and recommitted
 // at the start of each run so cases never see stale state from a previous run. Nested under
 // "test/" so the admin "Clean Test Data" button (which wipes docs/test) removes it too.
 const testDir = "test/git-history-tests"
 
 // collection is derived from a file's top-level folder (files.CollectionFromPath) - every
-// fixture here lives under "test/", so they all share the "test" collection. The
+// sample file here lives under "test/", so they all share the "test" collection. The
 // collection-filter case checks that collection alone (no other suite's folder is a plausible
 // false positive, since a bogus collection name matches nothing).
 const testCollection = "test"
@@ -41,9 +41,9 @@ const (
 	gammaContentV2 = "gamma version two content, changed"
 )
 
-// fixtureState records the commit hashes produced while seeding, so history/diff/restore
+// sampleState records the commit hashes produced while seeding, so history/diff/restore
 // cases can reference specific versions without re-deriving them from git log.
-type fixtureState struct {
+type sampleState struct {
 	gammaCommit1 string // commit that added gamma with v1 content
 	gammaCommit2 string // commit that changed gamma to v2 content
 }
@@ -105,11 +105,11 @@ func commitAll(message string) error {
 	return nil
 }
 
-// resetAndSeed wipes the fixture folder, then recreates it with a sequence of commits:
+// resetAndSeed wipes the sample folder, then recreates it with a sequence of commits:
 //  1. gamma-v1 and eta added and committed (gammaCommit1)
 //  2. gamma edited to v2 and committed (gammaCommit2) -> gamma has 2 versions to diff/restore
 //  3. eta deleted and committed (most recent) -> latest-changes pagination ordering
-func resetAndSeed() (*fixtureState, error) {
+func resetAndSeed() (*sampleState, error) {
 	full := pathutils.ToDocsPath(testDir)
 	if err := os.RemoveAll(full); err != nil {
 		return nil, err
@@ -135,7 +135,7 @@ func resetAndSeed() (*fixtureState, error) {
 	if err := commitAll("githistorytest: seed gamma-v1, eta"); err != nil {
 		return nil, err
 	}
-	state := &fixtureState{}
+	state := &sampleState{}
 	commit1, err := git.GetCurrentCommit()
 	if err != nil {
 		return nil, err
