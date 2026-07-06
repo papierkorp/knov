@@ -63,6 +63,22 @@ const filePath = '%s';
 const returnURL = '%s';
 
 const container = document.getElementById('handsontable-container');
+
+function computeTableHeight() {
+	const scrollParent = container.closest('main') || document.documentElement;
+	let paddingBottomSum = 0;
+	for (let el = container.parentElement; el; el = el.parentElement) {
+		paddingBottomSum += parseFloat(getComputedStyle(el).paddingBottom) || 0;
+		if (el === scrollParent) {
+			break;
+		}
+	}
+	const availableBottom = scrollParent.getBoundingClientRect().bottom - paddingBottomSum;
+	// subtract a couple px to absorb sub-pixel layout rounding, which would
+	// otherwise leave a hairline scrollbar on the scroll parent
+	return availableBottom - container.getBoundingClientRect().top - 2;
+}
+
 const hot = new Handsontable(container, {
 	data: tableData.rows,
 	colHeaders: tableData.headers,
@@ -77,7 +93,7 @@ const hot = new Handsontable(container, {
 	themeName: 'ht-theme-main-dark-auto',
 	licenseKey: 'non-commercial-and-evaluation',
 	minSpareRows: 1,
-	height: 'auto',
+	height: computeTableHeight(),
 	width: '100%%',
 	cells: function(row, col) {
 		return {
@@ -89,6 +105,10 @@ const hot = new Handsontable(container, {
 			console.log('table changed');
 		}
 	}
+});
+
+window.addEventListener('resize', function() {
+	hot.updateSettings({ height: computeTableHeight() });
 });
 
 hot.addHook('afterOnCellMouseDown', function (event, coords, TD) {

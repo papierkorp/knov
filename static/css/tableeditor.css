@@ -95,7 +95,7 @@
 
 .page-file-dittable #handsontable-container {
   width: 100%;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .page-file-dittable .status-ok {

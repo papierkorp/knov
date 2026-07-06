@@ -383,6 +383,12 @@ function setupFilePage() {
     return true;
   }
 
+  // table editor page — no file panel metadata to populate
+  if (path.match(/^\/files\/edittable\/(.+)/)) {
+    closePanel();
+    return true;
+  }
+
   // edit pages — show file panel with metadata
   const editMatch = path.match(/^\/files\/edit\/(.+)/);
   if (editMatch) {
@@ -446,7 +452,9 @@ function setupFilePage() {
   }
 
   // file pages
-  const fileMatch = path.match(/^\/files\/(?!edit\/|new\/|history\/)(.+)/);
+  const fileMatch = path.match(
+    /^\/files\/(?!edit\/|new\/|history\/|edittable\/)(.+)/,
+  );
   if (!fileMatch) return false;
 
   const filepath = fileMatch[1];

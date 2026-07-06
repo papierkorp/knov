@@ -18,6 +18,12 @@
 - version change to a generated file?
 - codemirror copy + paste with y+p does not work properly (e.g. i have something - in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
 - remove folders in browse
+- edit table 
+  - lot of empty space below
+  - add save and cancel buttons also to the bottom (both top and bottom)
+- builtin theme - info slideout - toc - allow me to collapse folds (from top to bottom level) with a click
+- create a system for themes (another repoistory with themes)
+  - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
 - deployment
   - make docker build viable
     - for usage
