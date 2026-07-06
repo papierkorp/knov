@@ -173,6 +173,12 @@ var (
 		Label:   "Show Pagination Buttons",
 		Desc:    "display first / prev / next / last navigation buttons below the table",
 	})
+	ShowColumnFilters = register(&BoolSetting{
+		key: "showColumnFilters", Default: true,
+		Section: SectionTable,
+		Label:   "Show Column Filters",
+		Desc:    "display a value-picker dropdown below column headers that have repeated values",
+	})
 
 	// ── Media ─────────────────────────────────────────────────────────────────
 	MaxUploadSizeMB = register(&IntSetting{

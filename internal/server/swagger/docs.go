@@ -396,6 +396,16 @@ const docTemplate = `{
                         "description": "Search query",
                         "name": "search",
                         "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Column filter, repeatable, format '\u003ccolumnIndex\u003e:\u003cvalue\u003e'",
+                        "name": "filter",
+                        "in": "query"
                     }
                 ],
                 "responses": {

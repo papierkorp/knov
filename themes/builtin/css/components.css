@@ -1503,6 +1503,53 @@ blockquote p blockquote p,
   background: var(--bg);
 }
 
+.table-filter-row th,
+.view-reader .table-filter-row th {
+  padding: 0 8px 6px;
+  border-top: none;
+  font-weight: normal;
+}
+
+.table-filter,
+.view-reader .table-filter {
+  width: auto;
+  max-width: 100%;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.75em;
+  font-weight: normal;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.table-filter:hover,
+.view-reader .table-filter:hover {
+  border-color: var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.table-filter:focus,
+.view-reader .table-filter:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.table-filter.table-filter-active,
+.view-reader .table-filter.table-filter-active {
+  border-color: var(--primary);
+  background: var(--bg);
+  color: var(--text);
+}
+
 .table-container td .table-container td,
 .view-reader .table-container td {
   padding: 8px 14px;

@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	htmlescape "html"
 	"regexp"
 	"sort"
 	"strconv"
@@ -110,6 +111,101 @@ func SearchTable(data *types.TableData, query string) *types.TableData {
 	}
 }
 
+// FilterTable returns only the rows whose value in the given column matches
+// value exactly (case-insensitive). An empty value or out-of-range column
+// leaves the data unchanged.
+func FilterTable(data *types.TableData, column int, value string) *types.TableData {
+	if value == "" || column < 0 || column >= len(data.Headers) {
+		return data
+	}
+
+	value = strings.ToLower(value)
+	var filteredRows [][]types.TableCell
+
+	for _, row := range data.Rows {
+		if column >= len(row) {
+			continue
+		}
+		if strings.ToLower(stripHTMLTags(row[column].RawValue)) == value {
+			filteredRows = append(filteredRows, row)
+		}
+	}
+
+	return &types.TableData{
+		Headers: data.Headers,
+		Rows:    filteredRows,
+		Total:   len(filteredRows),
+	}
+}
+
+// columnFilterNumericStrip matches currency symbols, thousands separators and
+// whitespace so numeric-looking cell values can be recognized regardless of
+// formatting (e.g. "1.500,50 €").
+var columnFilterNumericStrip = regexp.MustCompile(`[$€£¥,\s]`)
+
+// isNumericValue reports whether s looks like a number once common currency
+// formatting is stripped.
+func isNumericValue(s string) bool {
+	if s == "" {
+		return false
+	}
+	_, err := strconv.ParseFloat(columnFilterNumericStrip.ReplaceAllString(s, ""), 64)
+	return err == nil
+}
+
+// ColumnFilterValues returns the sorted, lowercased, de-duplicated set of
+// values found in the given column of the (unfiltered) table. It returns nil
+// when the column isn't worth offering as a filter:
+//   - there are fewer than 2 distinct values (nothing to group),
+//   - the column is mostly numeric (quantities/prices are better sorted than
+//     filtered by exact value),
+//   - or most values are unique, e.g. free-text descriptions, where a filter
+//     wouldn't meaningfully narrow anything down.
+func ColumnFilterValues(data *types.TableData, column int) []string {
+	if column < 0 || column >= len(data.Headers) {
+		return nil
+	}
+
+	seen := make(map[string]bool)
+	var values []string
+	numericCount := 0
+	nonEmptyCount := 0
+
+	for _, row := range data.Rows {
+		if column >= len(row) {
+			continue
+		}
+		raw := strings.TrimSpace(stripHTMLTags(row[column].RawValue))
+		if raw == "" {
+			continue
+		}
+		nonEmptyCount++
+		if isNumericValue(raw) {
+			numericCount++
+		}
+
+		v := strings.ToLower(raw)
+		if seen[v] {
+			continue
+		}
+		seen[v] = true
+		values = append(values, v)
+	}
+
+	if nonEmptyCount == 0 || len(values) <= 1 {
+		return nil
+	}
+	if float64(numericCount)/float64(nonEmptyCount) > 0.8 {
+		return nil
+	}
+	if float64(len(values))/float64(nonEmptyCount) > 0.5 {
+		return nil
+	}
+
+	sort.Strings(values)
+	return values
+}
+
 func parseNumber(s string) float64 {
 	s = regexp.MustCompile(`[$â‚¬Â£Â¥,\s]`).ReplaceAllString(s, "")
 	num, _ := strconv.ParseFloat(s, 64)
@@ -133,7 +229,7 @@ func parseDate(s string) int64 {
 	return 0
 }
 
-func RenderTableHTML(data *types.TableData, filepath string, tableIndex, page, size int, sortCol int, sortOrder string, searchQuery string) string {
+func RenderTableHTML(data, fullData *types.TableData, filepath string, tableIndex, page, size int, sortCol int, sortOrder string, searchQuery string, activeFilters map[int]string) string {
 	var html string
 
 	totalPages := (data.Total + size - 1) / size
@@ -146,13 +242,31 @@ func RenderTableHTML(data *types.TableData, filepath string, tableIndex, page, s
 
 	targetID := fmt.Sprintf("table-component-%d", tableIndex)
 
-	// search is NOT included in baseParams — it is injected at request time
-	// via hx-include so pagination and sort always reflect the live input value
+	// search and filters are NOT included in baseParams — they are injected at
+	// request time via hx-include so pagination and sort always reflect the
+	// live input values
 	baseParams := fmt.Sprintf("filepath=%s&tableindex=%d&size=%d", filepath, tableIndex, size)
 	if sortCol >= 0 {
 		baseParams += fmt.Sprintf("&sort=%d&order=%s", sortCol, sortOrder)
 	}
-	searchInclude := fmt.Sprintf("#table-search-%d", tableIndex)
+	// includes the search input plus every column filter select, all of which
+	// live inside the table container and carry their own name attribute
+	searchInclude := fmt.Sprintf("#%s [name]", targetID)
+
+	// compute which columns are eligible for a filter dropdown, based on the
+	// full (unfiltered) table so the option list stays stable while filtering
+	var filterOptions [][]string
+	hasAnyFilter := false
+	if configmanager.ShowColumnFilters.Get() {
+		filterOptions = make([][]string, len(data.Headers))
+		for i, header := range data.Headers {
+			values := ColumnFilterValues(fullData, header.ColumnIdx)
+			filterOptions[i] = values
+			if values != nil {
+				hasAnyFilter = true
+			}
+		}
+	}
 
 	html += fmt.Sprintf(`<div id="%s" class="table-container">`, targetID)
 
@@ -169,11 +283,10 @@ func RenderTableHTML(data *types.TableData, filepath string, tableIndex, page, s
 			       hx-trigger="keyup changed delay:300ms"
 			       hx-target="#%s"
 			       hx-swap="outerHTML"
-			       hx-include="this"
+			       hx-include="%s"
 			       hx-preserve
 			       name="search">
-		`, searchInputID, searchQuery, baseParams, targetID)
-		// note: hx-include="this" sends name="search" — baseParams has no search param
+		`, searchInputID, searchQuery, baseParams, targetID, searchInclude)
 		// hx-preserve keeps the existing DOM node on swap so focus/cursor are not lost
 		html += `</div>`
 	}
@@ -201,7 +314,49 @@ func RenderTableHTML(data *types.TableData, filepath string, tableIndex, page, s
 		html += fmt.Sprintf(`<th data-type="%s" data-align="%s" hx-get="/api/components/table?%s" hx-target="#%s" hx-swap="outerHTML" hx-include="%s" class="sortable">%s%s</th>`,
 			header.DataType, header.Align, headerParams, targetID, searchInclude, header.Content, sortIndicator)
 	}
-	html += `</tr></thead>`
+	html += `</tr>`
+
+	if hasAnyFilter {
+		html += `<tr class="table-filter-row">`
+		for i, header := range data.Headers {
+			values := filterOptions[i]
+			if values == nil {
+				html += `<th></th>`
+				continue
+			}
+
+			current := activeFilters[header.ColumnIdx]
+
+			selectClass := "table-filter"
+			if current != "" {
+				selectClass += " table-filter-active"
+			}
+
+			html += fmt.Sprintf(`<th><select name="filter" class="%s" hx-get="/api/components/table?%s&page=1" hx-target="#%s" hx-swap="outerHTML" hx-include="%s">`,
+				selectClass, baseParams, targetID, searchInclude)
+
+			allSelected := ""
+			if current == "" {
+				allSelected = " selected"
+			}
+			html += fmt.Sprintf(`<option value=""%s>%s</option>`, allSelected,
+				translation.SprintfForRequest(configmanager.GetLanguage(), "all"))
+
+			for _, value := range values {
+				selected := ""
+				if current == value {
+					selected = " selected"
+				}
+				escaped := htmlescape.EscapeString(value)
+				html += fmt.Sprintf(`<option value="%d:%s"%s>%s</option>`, header.ColumnIdx, escaped, selected, escaped)
+			}
+
+			html += `</select></th>`
+		}
+		html += `</tr>`
+	}
+
+	html += `</thead>`
 
 	html += `<tbody>`
 	for _, row := range data.Rows {

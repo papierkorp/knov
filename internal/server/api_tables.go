@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
@@ -23,6 +24,7 @@ import (
 // @Param sort query int false "Column index to sort by" default(-1)
 // @Param order query string false "Sort order (asc/desc)" default(asc)
 // @Param search query string false "Search query"
+// @Param filter query []string false "Column filter, repeatable, format '<columnIndex>:<value>'"
 // @Produce text/html
 // @Success 200 {string} string "table html fragment"
 // @Failure 400 {string} string "invalid parameters"
@@ -70,6 +72,19 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 
 	searchQuery := r.URL.Query().Get("search")
 
+	activeFilters := map[int]string{}
+	for _, raw := range r.URL.Query()["filter"] {
+		colStr, value, ok := strings.Cut(raw, ":")
+		if !ok || value == "" {
+			continue
+		}
+		col, err := strconv.Atoi(colStr)
+		if err != nil || col < 0 {
+			continue
+		}
+		activeFilters[col] = value
+	}
+
 	handler := contentHandler.GetHandler("markdown")
 	headers, rows, err := handler.ExtractTable(filepath, tableIndex)
 	if err != nil {
@@ -78,10 +93,18 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tableData := simpleToTableData(headers, rows)
+	// keep a reference to the full, unfiltered table so filter dropdown
+	// options stay complete regardless of the currently active search/filters
+	fullTableData := simpleToTableData(headers, rows)
+
+	tableData := fullTableData
 
 	if searchQuery != "" {
 		tableData = parser.SearchTable(tableData, searchQuery)
+	}
+
+	for col, value := range activeFilters {
+		tableData = parser.FilterTable(tableData, col, value)
 	}
 
 	if sortCol >= 0 {
@@ -90,7 +113,7 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 
 	paginatedData := parser.PaginateTable(tableData, page, size)
 
-	html := render.RenderTableComponent(paginatedData, filepath, tableIndex, page, size, sortCol, sortOrder, searchQuery)
+	html := render.RenderTableComponent(paginatedData, fullTableData, filepath, tableIndex, page, size, sortCol, sortOrder, searchQuery, activeFilters)
 
 	writeResponse(w, r, nil, html)
 }

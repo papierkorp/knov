@@ -688,6 +688,13 @@ paths:
         in: query
         name: search
         type: string
+      - collectionFormat: csv
+        description: Column filter, repeatable, format '<columnIndex>:<value>'
+        in: query
+        items:
+          type: string
+        name: filter
+        type: array
       produces:
       - text/html
       responses:

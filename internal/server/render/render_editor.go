@@ -1,20 +1,11 @@
-// Package render - HTMX HTML rendering functions for server responses
 package render
 
 import (
 	"fmt"
-	"strings"
-
 	"knov/internal/configmanager"
-	"knov/internal/parser"
 	"knov/internal/translation"
-	"knov/internal/types"
+	"strings"
 )
-
-// RenderTableComponent renders a paginated, sortable, searchable table HTML fragment
-func RenderTableComponent(tableData *types.TableData, filepath string, tableIndex, page, size, sortCol int, sortOrder, searchQuery string) string {
-	return parser.RenderTableHTML(tableData, filepath, tableIndex, page, size, sortCol, sortOrder, searchQuery)
-}
 
 // RenderIndexEntryRowHelper generates HTML for a single index entry row
 func RenderIndexEntryRowHelper(index int, entry IndexEntry) string {
