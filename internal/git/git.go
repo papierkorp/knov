@@ -550,33 +550,82 @@ func GetFileHistory(filePath string) ([]FileVersion, error) {
 		return nil, err
 	}
 
-	iter, err := repo.Log(&git.LogOptions{
-		From:     ref.Hash(),
-		FileName: &relPath,
-	})
+	headCommit, err := repo.CommitObject(ref.Hash())
 	if err != nil {
 		return nil, err
 	}
-	defer iter.Close()
 
 	var versions []FileVersion
-	err = iter.ForEach(func(c *object.Commit) error {
-		versions = append(versions, FileVersion{
-			Commit:    c.Hash.String()[:7],
-			Date:      c.Author.When,
-			Message:   c.Message,
-			Author:    c.Author.Name,
-			IsCurrent: false,
+	currentPath := relPath
+	fromCommit := headCommit
+	visited := make(map[string]bool)
+
+	// walk the file's history segment by segment, following renames across
+	// commit boundaries the same way `git log --follow` does - go-git's
+	// LogOptions has no built-in --follow support
+	for {
+		iter, err := repo.Log(&git.LogOptions{
+			From:     fromCommit.Hash,
+			FileName: &currentPath,
 		})
-		return nil
-	})
+		if err != nil {
+			return nil, err
+		}
+
+		var lastCommit *object.Commit
+		err = iter.ForEach(func(c *object.Commit) error {
+			versions = append(versions, FileVersion{
+				Commit:    c.Hash.String()[:7],
+				Date:      c.Author.When,
+				Message:   c.Message,
+				Author:    c.Author.Name,
+				IsCurrent: false,
+			})
+			lastCommit = c
+			return nil
+		})
+		iter.Close()
+		if err != nil {
+			return nil, err
+		}
+
+		if lastCommit == nil || len(lastCommit.ParentHashes) == 0 {
+			break
+		}
+
+		parent, err := repo.CommitObject(lastCommit.ParentHashes[0])
+		if err != nil {
+			break
+		}
+
+		moves, err := detectMovesInCommit(repo, parent, lastCommit)
+		if err != nil {
+			logging.LogWarning("failed to detect renames for %s at commit %s: %v", currentPath, lastCommit.Hash.String()[:7], err)
+			break
+		}
+
+		oldPath := ""
+		for _, m := range moves {
+			if m.NewPath == currentPath {
+				oldPath = m.OldPath
+				break
+			}
+		}
+		if oldPath == "" || visited[oldPath] {
+			break
+		}
+
+		visited[oldPath] = true
+		currentPath = oldPath
+		fromCommit = parent
+	}
 
 	// mark the first (most recent) as current
 	if len(versions) > 0 {
 		versions[0].IsCurrent = true
 	}
 
-	return versions, err
+	return versions, nil
 }
 
 // GetCurrentCommit returns the current HEAD commit hash
@@ -1128,6 +1177,36 @@ func GetFileDiff(filePath, fromCommit, toCommit string) (string, error) {
 		return "", err
 	}
 
+	// relPath reflects the file's current (HEAD) name. If it was renamed at
+	// some point between HEAD and either side of this comparison, resolve
+	// what it was actually called there - otherwise the tree diff below sees
+	// two unrelated paths and reports the file as deleted rather than diffing
+	// its content.
+	fromRelPath := relPath
+	toRelPath := relPath
+	if headRef, err := repo.Head(); err == nil {
+		if headCommit, err := repo.CommitObject(headRef.Hash()); err == nil {
+			fromRelPath = resolvePathAtCommit(repo, relPath, headCommit, fromCommitObj)
+			toRelPath = resolvePathAtCommit(repo, relPath, headCommit, toCommitObj)
+		}
+	}
+
+	if fromRelPath != toRelPath {
+		fromEntry, fromErr := fromTree.FindEntry(fromRelPath)
+		toEntry, toErr := toTree.FindEntry(toRelPath)
+		if fromErr == nil && toErr == nil {
+			change := &object.Change{
+				From: object.ChangeEntry{Name: fromRelPath, Tree: fromTree, TreeEntry: *fromEntry},
+				To:   object.ChangeEntry{Name: toRelPath, Tree: toTree, TreeEntry: *toEntry},
+			}
+			patch, err := change.Patch()
+			if err != nil {
+				return "", err
+			}
+			return patch.String(), nil
+		}
+	}
+
 	changes, err := object.DiffTree(fromTree, toTree)
 	if err != nil {
 		return "", err
@@ -1144,6 +1223,39 @@ func GetFileDiff(filePath, fromCommit, toCommit string) (string, error) {
 	}
 
 	return "", fmt.Errorf("no changes found for file %s between commits", relPath)
+}
+
+// resolvePathAtCommit walks backward from `from` toward `target` along first
+// parents, applying the same rename detection used by GetFileRenames, and
+// returns the path the file had at `target`. Falls back to `path` unchanged
+// if `target` isn't reached (e.g. it's not an ancestor of `from`).
+func resolvePathAtCommit(repo *git.Repository, path string, from, target *object.Commit) string {
+	current := path
+	cur := from
+	for cur.Hash != target.Hash {
+		if len(cur.ParentHashes) == 0 {
+			return current
+		}
+
+		parent, err := repo.CommitObject(cur.ParentHashes[0])
+		if err != nil {
+			return current
+		}
+
+		moves, err := detectMovesInCommit(repo, parent, cur)
+		if err == nil {
+			for _, m := range moves {
+				if m.NewPath == current {
+					current = m.OldPath
+					break
+				}
+			}
+		}
+
+		cur = parent
+	}
+
+	return current
 }
 
 // GetFileRenames returns files that were moved/renamed since a specific commit
