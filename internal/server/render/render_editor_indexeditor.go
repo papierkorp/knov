@@ -4,12 +4,18 @@ package render
 import (
 	"fmt"
 	"strings"
+	"sync/atomic"
 
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
+
+// indexEntryRowCounter generates unique DOM ids for index entry rows added
+// dynamically via htmx, whose array index is always the placeholder value 999
+// and would otherwise collide when multiple rows are added in one session.
+var indexEntryRowCounter atomic.Uint64
 
 // ----------------------------------------------------------------------------
 // ---------------------------------- Index Editor ------------------------------------
@@ -43,18 +49,13 @@ func ParseMarkdownToIndexConfig(content string) *IndexConfig {
 			continue
 		}
 
-		// file link (- [text](path))
-		if strings.HasPrefix(line, "- [") {
-			// extract path from markdown link: - [text](path)
-			start := strings.Index(line, "](")
-			end := strings.Index(line, ")")
-			if start != -1 && end != -1 && end > start {
-				path := line[start+2 : end]
-				config.Entries = append(config.Entries, IndexEntry{
-					Type:  "file",
-					Value: path,
-				})
-			}
+		// file link, stored on disk as a [[wikilink]] (- [[path]] or - [[path#anchor]])
+		if value, found := strings.CutPrefix(line, "- [["); found {
+			value = strings.TrimSuffix(value, "]]")
+			config.Entries = append(config.Entries, IndexEntry{
+				Type:  "file",
+				Value: value,
+			})
 			continue
 		}
 	}
@@ -183,18 +184,15 @@ window.removeEntry = function(button) {
 window.reindexEntries = function() {
 	const container = document.getElementById('entries-container');
 	if (!container) {
-		console.log('reindexEntries: container not found');
 		return;
 	}
 	const allRows = container.querySelectorAll('.entry-row');
-	console.log('reindexEntries: found', allRows.length, 'rows');
 	allRows.forEach((r, i) => {
 		r.setAttribute('data-entry-index', i);
 		r.querySelectorAll('[name^="entries["]').forEach(input => {
 			const name = input.getAttribute('name');
 			// Replace entries[any_number] with entries[i]
 			const newName = name.replace(/entries\[\d+\]/, 'entries[' + i + ']');
-			console.log('reindexEntries: renaming', name, '->', newName);
 			input.setAttribute('name', newName);
 		});
 		const upBtn = r.querySelector('.btn-move:first-of-type');
@@ -238,7 +236,7 @@ func renderIndexEntryRow(index int, entry IndexEntry) string {
 	case "file":
 		html.WriteString(`<div class="entry-file">`)
 		fmt.Fprintf(&html, `<label>%s:</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file"))
-		inputID := fmt.Sprintf("entry-file-%d", index)
+		inputID := fmt.Sprintf("entry-file-%d", indexEntryRowCounter.Add(1))
 		html.WriteString(GenerateDatalistInput(inputID, fmt.Sprintf("entries[%d][value]", index), entry.Value, translation.SprintfForRequest(configmanager.GetLanguage(), "search files"), "/api/files/list?format=datalist"))
 		html.WriteString(`</div>`)
 
@@ -253,4 +251,24 @@ func renderIndexEntryRow(index int, entry IndexEntry) string {
 	html.WriteString(`</div>`)
 
 	return html.String()
+}
+
+// RenderIndexEntryRowHelper generates HTML for a single index entry row added
+// dynamically via htmx, reusing the same row markup as the initial render so
+// there is only one place that builds an entry row.
+func RenderIndexEntryRowHelper(index int, entry IndexEntry) string {
+	html := renderIndexEntryRow(index, entry)
+
+	// Use HTMX event to trigger reindexing after content is swapped
+	html += `<script>
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+	if (evt.detail.target.id === 'entries-container') {
+		if (typeof window.reindexEntries === 'function') {
+			window.reindexEntries();
+		}
+	}
+});
+</script>`
+
+	return html
 }

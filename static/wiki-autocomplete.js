@@ -432,6 +432,23 @@
         hide();
         return;
       }
+      onInsert = function (path) {
+        inputEl.value = path;
+      };
+
+      // typing "#" after a file path suggests that file's headings, same
+      // data source as the [[wikilink]] anchor autocomplete, without
+      // requiring the user to type the [[...]] bracket syntax
+      var hashIdx = v.indexOf("#");
+      if (hashIdx !== -1) {
+        debouncedFetchHeaders(
+          v.substring(0, hashIdx),
+          v.substring(hashIdx + 1),
+          inputEl,
+        );
+        return;
+      }
+
       var vl = v.toLowerCase();
       var items = suggestions
         .filter(function (s) {
@@ -441,9 +458,6 @@
           var parts = s.replace(/\/$/, "").split("/");
           return { filename: parts[parts.length - 1], path: s };
         });
-      onInsert = function (path) {
-        inputEl.value = path;
-      };
       show(items, inputEl);
     }
 

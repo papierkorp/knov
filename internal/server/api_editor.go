@@ -230,8 +230,10 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 			markdown.WriteString("\n---\n\n")
 		case "file":
 			if entry.Value != "" {
-				// create markdown link: [filename](filename)
-				markdown.WriteString(fmt.Sprintf("- [%s](%s)\n", entry.Value, entry.Value))
+				// stored as a [[wikilink]] so header/anchor targeting and
+				// display-text resolution reuse the regular wikilink logic,
+				// even though the editor field itself is a plain path input
+				markdown.WriteString(fmt.Sprintf("- [[%s]]\n", entry.Value))
 			}
 		case "title":
 			if entry.Value != "" {
