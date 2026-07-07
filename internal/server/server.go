@@ -274,6 +274,7 @@ func NewRouter() *chi.Mux {
 			r.Post("/rename/*", handleAPIRenameFile)
 			r.Post("/move-folder/*", handleAPIMoveFolderFile)
 			r.Delete("/delete/*", handleAPIDeleteFile)
+			r.Delete("/delete-folder/*", handleAPIDeleteFolder)
 			r.Delete("/bulk", handleAPIDeleteFilesBulk)
 		})
 

@@ -1701,6 +1701,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/files/delete-folder/{folderpath}": {
+            "delete": {
+                "description": "Recursively deletes a folder, all files inside it, and their metadata",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Delete a folder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Folder path to delete (relative, no docs/ prefix)",
+                        "name": "folderpath",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success message",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/delete/{filepath}": {
             "delete": {
                 "description": "Deletes a file and its metadata",

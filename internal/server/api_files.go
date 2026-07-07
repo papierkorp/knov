@@ -1020,6 +1020,68 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, map[string]string{"status": "deleted"}, "")
 }
 
+// @Summary Delete a folder
+// @Description Recursively deletes a folder, all files inside it, and their metadata
+// @Tags files
+// @Param folderpath path string true "Folder path to delete (relative, no docs/ prefix)"
+// @Produce html
+// @Success 200 {string} string "success message"
+// @Router /api/files/delete-folder/{folderpath} [delete]
+func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
+	folderPath := strings.TrimPrefix(r.URL.Path, "/api/files/delete-folder/")
+	if folderPath == "" {
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	fullPath := pathutils.ToDocsPath(folderPath)
+	info, err := os.Stat(fullPath)
+	if os.IsNotExist(err) || !info.IsDir() {
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	logging.LogInfo("deleting folder: %s", folderPath)
+
+	// collect every file inside so we can clean up metadata and git afterwards
+	var filesInFolder []string
+	_ = filepath.Walk(fullPath, func(p string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return nil
+		}
+		filesInFolder = append(filesInFolder, p)
+		return nil
+	})
+
+	if err := os.RemoveAll(fullPath); err != nil {
+		logging.LogError("failed to delete folder %s: %v", folderPath, err)
+		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete folder") + `</div>`
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(errorHTML))
+		return
+	}
+
+	for _, filePath := range filesInFolder {
+		if err := files.MetaDataDelete(pathutils.ToRelative(filePath)); err != nil {
+			logging.LogWarning("failed to delete metadata for %s: %v", filePath, err)
+		}
+		go git.CommitDeletedFile(filePath)
+	}
+
+	logging.LogInfo("successfully deleted folder: %s (%d files)", folderPath, len(filesInFolder))
+
+	w.Header().Set("HX-Redirect", "/browse")
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "folder deleted"))
+	writeResponse(w, r, map[string]string{"status": "deleted"}, "")
+}
+
 // @Summary Delete all files in a collection or folder
 // @Description Deletes all files belonging to a specific collection or folder, including their metadata
 // @Tags files

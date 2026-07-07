@@ -215,7 +215,9 @@ func renderTreeChildren(html *strings.Builder, node *files.TreeNode, deletable b
 			dirPath := pathPrefix + child.Name
 			if deletable {
 				renameLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "rename")
-				fmt.Fprintf(html, `<span class="browse-item-row"><button class="fp-tree-dir" draggable="true" data-path="%s" data-type="folder" onclick="this.closest('li').classList.toggle('fp-tree-collapsed')"><i class="fa fa-folder"></i> %s</button><button class="browse-rename-btn" data-path="%s" data-type="folder" title="%s"><i class="fa fa-pen"></i></button></span>`, dirPath, child.Name, dirPath, renameLabel)
+				deleteLabel := translation.SprintfForRequest(configmanager.GetLanguage(), "delete folder")
+				confirmMsg := translation.SprintfForRequest(configmanager.GetLanguage(), "delete folder and all its contents") + " " + child.Name + "?"
+				fmt.Fprintf(html, `<span class="browse-item-row"><button class="fp-tree-dir" draggable="true" data-path="%s" data-type="folder" onclick="this.closest('li').classList.toggle('fp-tree-collapsed')"><i class="fa fa-folder"></i> %s</button><button class="browse-rename-btn" data-path="%s" data-type="folder" title="%s"><i class="fa fa-pen"></i></button><button class="btn-danger-icon browse-delete-btn" hx-delete="/api/files/delete-folder/%s" hx-confirm="%s" hx-target="closest li" hx-swap="outerHTML" title="%s"><i class="fa fa-trash"></i></button></span>`, dirPath, child.Name, dirPath, renameLabel, url.PathEscape(dirPath), confirmMsg, deleteLabel)
 			} else {
 				fmt.Fprintf(html, `<button class="fp-tree-dir" draggable="true" data-path="%s" data-type="folder" onclick="this.closest('li').classList.toggle('fp-tree-collapsed')"><i class="fa fa-folder"></i> %s</button>`, dirPath, child.Name)
 			}

@@ -1570,6 +1570,25 @@ paths:
       summary: Convert single file from DokuWiki to Markdown
       tags:
       - files
+  /api/files/delete-folder/{folderpath}:
+    delete:
+      description: Recursively deletes a folder, all files inside it, and their metadata
+      parameters:
+      - description: Folder path to delete (relative, no docs/ prefix)
+        in: path
+        name: folderpath
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: success message
+          schema:
+            type: string
+      summary: Delete a folder
+      tags:
+      - files
   /api/files/delete/{filepath}:
     delete:
       consumes:

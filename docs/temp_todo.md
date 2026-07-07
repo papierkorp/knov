@@ -15,9 +15,8 @@
 
 **per ai**
 - add chat to a single file?
-- version change to a generated file?
 - codemirror copy + paste with y+p does not work properly (e.g. i have something - in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
-- remove folders in browse
+  - is a harder problem to tackle
 - create a system for themes (another repoistory with themes)
   - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
 - deployment
@@ -25,6 +24,7 @@
     - for usage
     - for devs
 - backup solution
+- i have quite a few different file removals - can we consolidate them?
 
 # performance updates
 
