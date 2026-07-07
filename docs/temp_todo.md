@@ -24,7 +24,6 @@
     - for usage
     - for devs
 - backup solution
-- i have quite a few different file removals - can we consolidate them?
 
 # performance updates
 

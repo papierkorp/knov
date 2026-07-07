@@ -756,30 +756,21 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/rename/{filepath} [post]
 func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data"))
 		return
 	}
 
 	// get current file path from URL
 	currentPath := strings.TrimPrefix(r.URL.Path, "/api/files/rename/")
 	if currentPath == "" {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
 
 	// get new name from form (can be full path or just filename)
 	newName := r.FormValue("name")
 	if newName == "" {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "new file path is required"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "new file path is required"))
 		return
 	}
 
@@ -791,20 +782,14 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	// check if current file exists
 	currentFullPath := pathutils.ToDocsPath(currentPath)
 	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist"))
 		return
 	}
 
 	// check if new path already exists
 	newFullPath := pathutils.ToDocsPath(newPath)
 	if _, err := os.Stat(newFullPath); err == nil {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new name already exists"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusConflict)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusConflict, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new name already exists"))
 		return
 	}
 
@@ -812,20 +797,14 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	newDir := filepath.Dir(newFullPath)
 	if err := os.MkdirAll(newDir, 0755); err != nil {
 		logging.LogError("failed to create directory %s: %v", newDir, err)
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
 		return
 	}
 
 	// rename the file
 	if err := os.Rename(currentFullPath, newFullPath); err != nil {
 		logging.LogError("failed to rename file %s -> %s: %v", currentPath, newPath, err)
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file"))
 		return
 	}
 
@@ -854,28 +833,19 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 // @Router /api/files/move-folder/{folderpath} [post]
 func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form data"))
 		return
 	}
 
 	currentPath := strings.TrimPrefix(r.URL.Path, "/api/files/move-folder/")
 	if currentPath == "" {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path"))
 		return
 	}
 
 	targetParent := r.FormValue("target")
 	if targetParent == "" {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "target folder is required"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "target folder is required"))
 		return
 	}
 
@@ -883,10 +853,7 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	if folderName == "" {
 		folderName = filepath.Base(currentPath)
 	} else if strings.Contains(folderName, "/") || strings.Contains(folderName, "\\") {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "folder name must not contain path separators"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "folder name must not contain path separators"))
 		return
 	}
 	newPath := filepath.Clean(targetParent + "/" + folderName)
@@ -898,28 +865,19 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 
 	// prevent moving a folder into itself or a descendant
 	if strings.HasPrefix(newPath+"/", currentPath+"/") {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "cannot move folder into itself"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "cannot move folder into itself"))
 		return
 	}
 
 	currentFullPath := pathutils.ToDocsPath(currentPath)
 	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist"))
 		return
 	}
 
 	newFullPath := pathutils.ToDocsPath(newPath)
 	if _, err := os.Stat(newFullPath); err == nil {
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "folder with new name already exists"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusConflict)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusConflict, translation.SprintfForRequest(configmanager.GetLanguage(), "folder with new name already exists"))
 		return
 	}
 
@@ -938,19 +896,13 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 
 	if err := os.MkdirAll(filepath.Dir(newFullPath), 0755); err != nil {
 		logging.LogError("failed to create parent directory for %s: %v", newFullPath, err)
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
 		return
 	}
 
 	if err := os.Rename(currentFullPath, newFullPath); err != nil {
 		logging.LogError("failed to move folder %s -> %s: %v", currentPath, newPath, err)
-		html := render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move folder"))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(html))
+		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move folder"))
 		return
 	}
 
@@ -965,6 +917,27 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, map[string]string{"folderpath": newPath}, "")
 }
 
+// cleanupDeletedFileMetadata deletes a file's metadata and commits the
+// deletion to git. Shared by every delete path (single file, folder walk,
+// bulk delete) for a file that has already been removed from disk.
+func cleanupDeletedFileMetadata(fullPath string) {
+	relPath := pathutils.ToRelative(fullPath)
+	if err := files.MetaDataDelete(relPath); err != nil {
+		logging.LogWarning("failed to delete metadata for %s: %v", relPath, err)
+	}
+	go git.CommitDeletedFile(fullPath)
+}
+
+// removeFileAndMetadata removes a single file from disk, then cleans up its
+// metadata and git history via cleanupDeletedFileMetadata.
+func removeFileAndMetadata(fullPath string) error {
+	if err := os.Remove(fullPath); err != nil {
+		return err
+	}
+	cleanupDeletedFileMetadata(fullPath)
+	return nil
+}
+
 // @Summary Delete a file
 // @Description Deletes a file and its metadata
 // @Tags files
@@ -977,10 +950,7 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 	// get file path from URL
 	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/delete/")
 	if filePath == "" {
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path") + `</div>`
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(errorHTML))
+		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"))
 		return
 	}
 
@@ -989,29 +959,17 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 	// check if file exists
 	fullPath := pathutils.ToDocsPath(filePath)
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist") + `</div>`
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(errorHTML))
+		writeAPIError(w, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist"))
 		return
 	}
 
-	// delete the file
-	if err := os.Remove(fullPath); err != nil {
+	// delete the file, its metadata, and commit the deletion to git
+	if err := removeFileAndMetadata(fullPath); err != nil {
 		logging.LogError("failed to delete file %s: %v", filePath, err)
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete file") + `</div>`
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(errorHTML))
+		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete file"))
 		return
 	}
 
-	// delete metadata
-	if err := files.MetaDataDelete(filePath); err != nil {
-		logging.LogWarning("failed to delete metadata for %s: %v", filePath, err)
-	}
-
-	go git.CommitDeletedFile(fullPath)
 	logging.LogInfo("successfully deleted file: %s", filePath)
 
 	// redirect to browse or home page
@@ -1030,26 +988,21 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 	folderPath := strings.TrimPrefix(r.URL.Path, "/api/files/delete-folder/")
 	if folderPath == "" {
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path") + `</div>`
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(errorHTML))
+		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder path"))
 		return
 	}
 
 	fullPath := pathutils.ToDocsPath(folderPath)
 	info, err := os.Stat(fullPath)
 	if os.IsNotExist(err) || !info.IsDir() {
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist") + `</div>`
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(errorHTML))
+		writeAPIError(w, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "folder does not exist"))
 		return
 	}
 
 	logging.LogInfo("deleting folder: %s", folderPath)
 
-	// collect every file inside so we can clean up metadata and git afterwards
+	// collect every file inside so we can clean up metadata and git afterwards,
+	// since os.RemoveAll below removes them before we get a chance to look
 	var filesInFolder []string
 	_ = filepath.Walk(fullPath, func(p string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
@@ -1061,18 +1014,12 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 
 	if err := os.RemoveAll(fullPath); err != nil {
 		logging.LogError("failed to delete folder %s: %v", folderPath, err)
-		errorHTML := `<div class="status-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete folder") + `</div>`
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(errorHTML))
+		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete folder"))
 		return
 	}
 
 	for _, filePath := range filesInFolder {
-		if err := files.MetaDataDelete(pathutils.ToRelative(filePath)); err != nil {
-			logging.LogWarning("failed to delete metadata for %s: %v", filePath, err)
-		}
-		go git.CommitDeletedFile(filePath)
+		cleanupDeletedFileMetadata(filePath)
 	}
 
 	logging.LogInfo("successfully deleted folder: %s (%d files)", folderPath, len(filesInFolder))
@@ -1148,15 +1095,10 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		relPath := pathutils.ToRelative(file.Path)
-		fullPath := pathutils.ToDocsPath(relPath)
-
-		if err := os.Remove(fullPath); err != nil {
-			logging.LogWarning("failed to delete file %s: %v", relPath, err)
+		fullPath := pathutils.ToDocsPath(pathutils.ToRelative(file.Path))
+		if err := removeFileAndMetadata(fullPath); err != nil {
+			logging.LogWarning("failed to delete file %s: %v", fullPath, err)
 			continue
-		}
-		if err := files.MetaDataDelete(file.Path); err != nil {
-			logging.LogWarning("failed to delete metadata for %s: %v", file.Path, err)
 		}
 		deleted++
 	}
