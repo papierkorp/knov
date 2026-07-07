@@ -1260,7 +1260,7 @@
   min-width: 0;
 }
 
-.fp-toc-fold-all-btn {
+.fp-fold-all-btn {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -1277,9 +1277,25 @@
   cursor: pointer;
 }
 
-.fp-toc-fold-all-btn:hover {
+.fp-fold-all-btn:hover {
   color: var(--primary);
   border-color: var(--primary);
+}
+
+.fp-browse-search-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fp-browse-search-row #fp-browse-search {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.fp-browse-search-row .fp-fold-all-btn {
+  margin-bottom: 0;
 }
 
 /* =============================================

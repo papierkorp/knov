@@ -97,6 +97,22 @@ function switchBrowseMode(mode) {
     });
 }
 
+function setAllBrowseTreeFolds(collapse) {
+  const el = document.getElementById("fp-browse-content");
+  if (!el) return;
+  el.querySelectorAll("li").forEach((li) => {
+    const hasDirBtn =
+      li.querySelector(":scope > button.fp-tree-dir") ||
+      li.querySelector(":scope > span.browse-item-row > button.fp-tree-dir");
+    if (!hasDirBtn) return;
+    li.classList.toggle("fp-tree-collapsed", collapse);
+    delete li.dataset.wasCollapsed;
+  });
+  // re-apply an active filter so visibility reflects the new fold state
+  const search = document.getElementById("fp-browse-search");
+  if (search && search.value) filterBrowseContent(search.value);
+}
+
 function filterBrowseContent(query) {
   const q = query.toLowerCase();
   const el = document.getElementById("fp-browse-content");

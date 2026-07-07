@@ -106,8 +106,12 @@
                     <button class="fp-browse-mode-btn"        data-mode="filters"       onclick="switchBrowseMode('filters')"       title="{{T "filters"}}"><i class="fa fa-filter"></i></button>
                     <button class="fp-browse-mode-btn"        data-mode="notifications" onclick="switchBrowseMode('notifications')" title="{{T "notifications"}}"><i class="fa fa-bell"></i></button>
                 </div>
-                <input type="text" id="fp-browse-search" placeholder="{{T "filter..."}}"
-                       oninput="filterBrowseContent(this.value)"/>
+                <div class="fp-browse-search-row">
+                    <input type="text" id="fp-browse-search" placeholder="{{T "filter..."}}"
+                           oninput="filterBrowseContent(this.value)"/>
+                    <button type="button" class="fp-fold-all-btn" title="{{T "collapse all"}}" onclick="setAllBrowseTreeFolds(true)"><i class="fa fa-angles-up"></i></button>
+                    <button type="button" class="fp-fold-all-btn" title="{{T "expand all"}}" onclick="setAllBrowseTreeFolds(false)"><i class="fa fa-angles-down"></i></button>
+                </div>
             </div>
             <div class="flyout-content" id="fp-browse-content"
                  data-url="/api/files/tree?actions=true" data-loaded="false">
@@ -275,8 +279,8 @@
                     <div class="fp-toc-controls">
                         <input type="search" id="fp-toc-filter" placeholder="{{T "filter..."}}"
                                oninput="filterTocItems(this.value)"/>
-                        <button type="button" class="fp-toc-fold-all-btn" title="{{T "collapse all"}}" onclick="setAllTocFolds(true)"><i class="fa fa-angles-up"></i></button>
-                        <button type="button" class="fp-toc-fold-all-btn" title="{{T "expand all"}}" onclick="setAllTocFolds(false)"><i class="fa fa-angles-down"></i></button>
+                        <button type="button" class="fp-fold-all-btn" title="{{T "collapse all"}}" onclick="setAllTocFolds(true)"><i class="fa fa-angles-up"></i></button>
+                        <button type="button" class="fp-fold-all-btn" title="{{T "expand all"}}" onclick="setAllTocFolds(false)"><i class="fa fa-angles-down"></i></button>
                     </div>
                     <nav id="fp-toc-nav" class="fp-toc-nav"></nav>
                 </div>
