@@ -18,9 +18,12 @@
 - version change to a generated file?
 - codemirror copy + paste with y+p does not work properly (e.g. i have something - in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
 - remove folders in browse
-- builtin theme - info slideout - toc - allow me to collapse folds (from top to bottom level) with a click
+- builtin theme add a kanban icon
+- builtin theme browse slideout - tree - collapse all extend all 
 - create a system for themes (another repoistory with themes)
   - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
+- index file - also add header (just like with wiki links) => can we use wikilinks instead so we dont have to care about 2 different systems doing the same?
+- remove all console logs from index editor
 - deployment
   - make docker build viable
     - for usage

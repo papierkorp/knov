@@ -1050,7 +1050,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tocData = document.getElementById("fp-toc-data");
   const tocNav = document.getElementById("fp-toc-nav");
-  if (tocData && tocNav) tocNav.innerHTML = tocData.innerHTML;
+  if (tocData && tocNav) {
+    tocNav.innerHTML = tocData.innerHTML;
+    setupTocFolding();
+  }
 
   const isSystemPage = !document.getElementById("fp-file-modes");
   if (isSystemPage) {
@@ -1081,14 +1084,116 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ================================================================
 // toc filter — client-side, no API call
+// matches stay in the DOM (just hidden) and auto-unfold their
+// collapsed ancestors so hits are never hidden by a fold
 // ================================================================
 function filterTocItems(query) {
   const nav = document.getElementById("fp-toc-nav");
   if (!nav) return;
+  const items = Array.from(nav.querySelectorAll("a[data-level]"));
   const q = query.toLowerCase().trim();
-  nav.querySelectorAll("a").forEach((a) => {
-    const text = a.textContent.toLowerCase();
-    a.style.display = q === "" || text.includes(q) ? "" : "none";
+
+  if (q === "") {
+    items.forEach((a) => {
+      a.style.display = "";
+    });
+    updateTocFoldVisibility();
+    return;
+  }
+
+  const showSet = new Set();
+  items.forEach((a, i) => {
+    if (!a.textContent.toLowerCase().includes(q)) return;
+    showSet.add(i);
+    // reveal the ancestor chain, unfolding any that are collapsed
+    let level = parseInt(a.dataset.level, 10);
+    for (let j = i - 1; j >= 0 && level > 0; j--) {
+      const jLevel = parseInt(items[j].dataset.level, 10);
+      if (jLevel < level) {
+        showSet.add(j);
+        level = jLevel;
+        if (items[j].classList.contains("fp-toc-collapsed")) {
+          items[j].classList.remove("fp-toc-collapsed");
+          const toggle = items[j].querySelector(".fp-toc-fold-toggle");
+          if (toggle) toggle.textContent = "▾";
+        }
+      }
+    }
+  });
+
+  updateTocFoldVisibility();
+  items.forEach((a, i) => {
+    a.style.display = showSet.has(i) ? "" : "none";
+  });
+}
+
+// ================================================================
+// toc folding — collapse/expand headings by nesting level
+// ================================================================
+function setupTocFolding() {
+  const nav = document.getElementById("fp-toc-nav");
+  if (!nav) return;
+  const items = Array.from(nav.querySelectorAll("a[data-level]"));
+  items.forEach((a, i) => {
+    if (a.querySelector(".fp-toc-fold-gutter")) return;
+    const level = parseInt(a.dataset.level, 10);
+    const next = items[i + 1];
+    const hasChildren = !!next && parseInt(next.dataset.level, 10) > level;
+    // every item gets a fixed-width gutter so indentation lines up
+    // whether or not it has a toggle glyph in it
+    const gutter = document.createElement("span");
+    gutter.className = "fp-toc-fold-gutter";
+    if (hasChildren) {
+      a.classList.add("fp-toc-has-children");
+      const toggle = document.createElement("span");
+      toggle.className = "fp-toc-fold-toggle";
+      toggle.textContent = "▾";
+      toggle.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleTocFold(a);
+      });
+      gutter.appendChild(toggle);
+    }
+    a.insertBefore(gutter, a.firstChild);
+  });
+  updateTocFoldVisibility();
+}
+
+function toggleTocFold(a) {
+  const collapsed = a.classList.toggle("fp-toc-collapsed");
+  const toggle = a.querySelector(".fp-toc-fold-toggle");
+  if (toggle) toggle.textContent = collapsed ? "▸" : "▾";
+  updateTocFoldVisibility();
+}
+
+function setAllTocFolds(collapse) {
+  const nav = document.getElementById("fp-toc-nav");
+  if (!nav) return;
+  nav.querySelectorAll("a.fp-toc-has-children").forEach((a) => {
+    a.classList.toggle("fp-toc-collapsed", collapse);
+    const toggle = a.querySelector(".fp-toc-fold-toggle");
+    if (toggle) toggle.textContent = collapse ? "▸" : "▾";
+  });
+  updateTocFoldVisibility();
+}
+
+// hides an item if any ancestor heading above it in the outline is collapsed
+function updateTocFoldVisibility() {
+  const nav = document.getElementById("fp-toc-nav");
+  if (!nav) return;
+  const items = Array.from(nav.querySelectorAll("a[data-level]"));
+  const collapsedLevels = [];
+  items.forEach((a) => {
+    const level = parseInt(a.dataset.level, 10);
+    while (
+      collapsedLevels.length &&
+      collapsedLevels[collapsedLevels.length - 1] >= level
+    ) {
+      collapsedLevels.pop();
+    }
+    a.classList.toggle("fp-toc-hidden", collapsedLevels.length > 0);
+    if (a.classList.contains("fp-toc-collapsed")) collapsedLevels.push(level);
   });
 }
 

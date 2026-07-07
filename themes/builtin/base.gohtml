@@ -272,8 +272,12 @@
                 </div>
 
                 <div class="fp-sub-panel{{if .SystemPage}} active{{end}}" id="fps-toc">
-                    <input type="search" id="fp-toc-filter" placeholder="{{T "filter..."}}"
-                           oninput="filterTocItems(this.value)"/>
+                    <div class="fp-toc-controls">
+                        <input type="search" id="fp-toc-filter" placeholder="{{T "filter..."}}"
+                               oninput="filterTocItems(this.value)"/>
+                        <button type="button" class="fp-toc-fold-all-btn" title="{{T "collapse all"}}" onclick="setAllTocFolds(true)"><i class="fa fa-angles-up"></i></button>
+                        <button type="button" class="fp-toc-fold-all-btn" title="{{T "expand all"}}" onclick="setAllTocFolds(false)"><i class="fa fa-angles-down"></i></button>
+                    </div>
                     <nav id="fp-toc-nav" class="fp-toc-nav"></nav>
                 </div>
 

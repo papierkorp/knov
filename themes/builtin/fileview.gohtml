@@ -13,7 +13,7 @@
 {{ if .FileContent.TOC }}
 <div id="fp-toc-data" style="display:none;">
     {{ range .FileContent.TOC }}
-        <a href="#{{ .ID }}" style="padding-left:{{ mul .Level 12 }}px">{{ .Text }}</a>
+        <a href="#{{ .ID }}" data-level="{{ .Level }}" style="padding-left:{{ mul .Level 12 }}px">{{ .Text }}</a>
     {{ end }}
 </div>
 {{ else }}

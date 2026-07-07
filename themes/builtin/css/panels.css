@@ -305,6 +305,26 @@
   font-style: italic;
 }
 
+.fp-toc-nav a.fp-toc-hidden {
+  display: none;
+}
+
+.fp-toc-fold-gutter {
+  display: inline-block;
+  width: 0.9em;
+  margin-right: 2px;
+  text-align: center;
+}
+
+.fp-toc-fold-toggle {
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.fp-toc-fold-toggle:hover {
+  color: var(--primary);
+}
+
 /* version items */
 .fp-version-item {
   background: var(--bg);
@@ -1226,6 +1246,39 @@
 #fp-versions-search:focus,
 #fp-latest-search:focus,
 #fp-find-input:focus {
+  border-color: var(--primary);
+}
+
+.fp-toc-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fp-toc-controls #fp-toc-filter {
+  flex: 1;
+  min-width: 0;
+}
+
+.fp-toc-fold-all-btn {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-bottom: 6px;
+  padding: 0;
+  font-size: 0.75em;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.fp-toc-fold-all-btn:hover {
+  color: var(--primary);
   border-color: var(--primary);
 }
 
