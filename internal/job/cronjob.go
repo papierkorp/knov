@@ -69,11 +69,12 @@ func (j *fileJob) Run() error {
 					logging.LogInfo("processing file move: %s -> %s", oldNormalized, newNormalized)
 					if err := files.UpdateLinksForMovedFile(oldNormalized, newNormalized); err != nil {
 						logging.LogError("cronjob: failed to update links for moved file %s -> %s: %v", oldNormalized, newNormalized, err)
+						// fall back to generic add/delete handling so the new path still gets metadata
+						filesToProcess = append(filesToProcess, move.NewPath)
+						filesToDelete = append(filesToDelete, move.OldPath)
 					} else {
 						logging.LogInfo("successfully updated links for moved file %s -> %s", oldNormalized, newNormalized)
 					}
-					filesToProcess = append(filesToProcess, move.NewPath)
-					filesToDelete = append(filesToDelete, move.OldPath)
 				}
 			}
 

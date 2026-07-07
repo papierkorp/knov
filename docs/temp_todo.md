@@ -19,7 +19,6 @@
 - codemirror copy + paste with y+p does not work properly (e.g. i have something - in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
 - remove folders in browse
 - builtin theme - info slideout - toc - allow me to collapse folds (from top to bottom level) with a click
-- if a file/folder is moved outside of the application e.g. linux `mv` command => i need to detect this in the git cronjob and move the metadata (example i had a `sirconic_todo` folder with `*.md` files and moved all the files to `sirconic_todo/todo` with a `mv * todo` command => afterwards all the metadata was gone and a new metadata was created)
 - create a system for themes (another repoistory with themes)
   - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
 - deployment
