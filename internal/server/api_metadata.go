@@ -909,10 +909,14 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tags, err := files.GetAllTags()
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"), http.StatusInternalServerError)
-		return
+	tags, err := files.GetAllTagsCountFromCache()
+	if err != nil || len(tags) == 0 {
+		logging.LogError("failed to get cached tag counts, fallback to live data: %v", err)
+		tags, err = files.GetAllTags()
+		if err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"), http.StatusInternalServerError)
+			return
+		}
 	}
 	html := render.RenderBrowseHTML(tags, "/browse/tag", r.URL.Query().Get("actions") == "true", "tag")
 	writeResponse(w, r, tags, html)
@@ -959,10 +963,14 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	collections, err := files.GetAllCollections()
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"), http.StatusInternalServerError)
-		return
+	collections, err := files.GetAllCollectionsCountFromCache()
+	if err != nil || len(collections) == 0 {
+		logging.LogError("failed to get cached collection counts, fallback to live data: %v", err)
+		collections, err = files.GetAllCollections()
+		if err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"), http.StatusInternalServerError)
+			return
+		}
 	}
 	html := render.RenderBrowseHTML(collections, "/browse/collection", r.URL.Query().Get("actions") == "true", "collection")
 	writeResponse(w, r, collections, html)
@@ -1009,10 +1017,14 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	folders, err := files.GetAllFolders()
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"), http.StatusInternalServerError)
-		return
+	folders, err := files.GetAllFoldersCountFromCache()
+	if err != nil || len(folders) == 0 {
+		logging.LogError("failed to get cached folder counts, fallback to live data: %v", err)
+		folders, err = files.GetAllFolders()
+		if err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"), http.StatusInternalServerError)
+			return
+		}
 	}
 	html := render.RenderBrowseHTML(folders, "/browse/folder", r.URL.Query().Get("actions") == "true", "folder")
 	writeResponse(w, r, folders, html)
@@ -1082,10 +1094,14 @@ func handleAPIGetAllEditors(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filetypes, err := files.GetAllEditors()
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get editor types"), http.StatusInternalServerError)
-		return
+	filetypes, err := files.GetAllEditorsCountFromCache()
+	if err != nil || len(filetypes) == 0 {
+		logging.LogError("failed to get cached editor counts, fallback to live data: %v", err)
+		filetypes, err = files.GetAllEditors()
+		if err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get editor types"), http.StatusInternalServerError)
+			return
+		}
 	}
 	html := render.RenderBrowseHTML(filetypes, "/browse/editor", false, "")
 	writeResponse(w, r, filetypes, html)

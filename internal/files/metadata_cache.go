@@ -27,6 +27,10 @@ const (
 	CacheKeyOrphanedMedia         CacheKey = "orphaned_media"
 	CacheKeyAncestorsInCollection CacheKey = "ancestors_in_collection/"
 	CacheKeyFullFileList          CacheKey = "all_files_full"
+	CacheKeyTagCounts             CacheKey = "tag_counts"
+	CacheKeyCollectionCounts      CacheKey = "collection_counts"
+	CacheKeyFolderCounts          CacheKey = "folder_counts"
+	CacheKeyEditorCounts          CacheKey = "editor_counts"
 )
 
 // saveFileListToCache persists the full file list (including metadata) to cache storage
@@ -149,6 +153,48 @@ func getStringListFromCache(key CacheKey) ([]string, error) {
 	return result, nil
 }
 
+// saveCountMapToCache saves a name->count map to cache storage
+func saveCountMapToCache(key CacheKey, counts map[string]int) error {
+	logging.LogDebug("saving %s to cache", key)
+	jsonData, err := json.Marshal(counts)
+	if err != nil {
+		return err
+	}
+	return cacheStorage.Set(string(key), jsonData)
+}
+
+// getCountMapFromCache retrieves a name->count map from cache storage.
+// Returns (nil, nil) on a cache miss so callers can fall back to live data.
+func getCountMapFromCache(key CacheKey) (map[string]int, error) {
+	data, err := cacheStorage.Get(string(key))
+	if err != nil {
+		if strings.Contains(err.Error(), "key not found") ||
+			strings.Contains(err.Error(), "no such file") {
+			return nil, nil
+		}
+		return nil, err
+	}
+	if data == nil {
+		return nil, nil
+	}
+
+	var result map[string]int
+	if err := json.Unmarshal(data, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// sortedCountKeys returns the sorted names from a name->count map
+func sortedCountKeys(counts map[string]int) []string {
+	keys := make([]string, 0, len(counts))
+	for k := range counts {
+		keys = append(keys, k)
+	}
+	slices.Sort(keys)
+	return keys
+}
+
 // GetAllTags returns all unique tags with their counts
 func GetAllTags() (TagCount, error) {
 	allFiles, err := GetAllFiles()
@@ -237,64 +283,108 @@ func GetAllEditors() (EditorTypeCount, error) {
 	return editorTypeCount, nil
 }
 
-// SaveAllTagsToCache saves all unique tags to cache storage
+// SaveAllTagsToCache saves all unique tags, and their counts, to cache storage
 func SaveAllTagsToCache() error {
 	allTags, err := GetAllTags()
 	if err != nil {
 		return err
 	}
 
-	var tagList []string
-	for tag := range allTags {
-		tagList = append(tagList, tag)
+	if err := saveCountMapToCache(CacheKeyTagCounts, allTags); err != nil {
+		return err
 	}
-
-	return saveStringListToCache(CacheKeyTags, tagList)
+	return saveStringListToCache(CacheKeyTags, sortedCountKeys(allTags))
 }
 
-// GetAllTagsFromCache retrieves cached tags from cache storage
+// GetAllTagsFromCache retrieves cached tag names from cache storage
 func GetAllTagsFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyTags)
 }
 
-// SaveAllCollectionsToCache saves all unique collections to cache storage
+// GetAllTagsCountFromCache retrieves cached tag counts from cache storage.
+// Returns (nil, nil) on a cache miss so callers can fall back to live data.
+func GetAllTagsCountFromCache() (TagCount, error) {
+	counts, err := getCountMapFromCache(CacheKeyTagCounts)
+	if err != nil || counts == nil {
+		return nil, err
+	}
+	return TagCount(counts), nil
+}
+
+// SaveAllCollectionsToCache saves all unique collections, and their counts, to cache storage
 func SaveAllCollectionsToCache() error {
 	allCollections, err := GetAllCollections()
 	if err != nil {
 		return err
 	}
 
-	var collectionList []string
-	for collection := range allCollections {
-		collectionList = append(collectionList, collection)
+	if err := saveCountMapToCache(CacheKeyCollectionCounts, allCollections); err != nil {
+		return err
 	}
-
-	return saveStringListToCache(CacheKeyCollections, collectionList)
+	return saveStringListToCache(CacheKeyCollections, sortedCountKeys(allCollections))
 }
 
-// GetAllCollectionsFromCache retrieves cached collections from cache storage
+// GetAllCollectionsFromCache retrieves cached collection names from cache storage
 func GetAllCollectionsFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyCollections)
 }
 
-// SaveAllFoldersToCache saves all unique folders to cache storage
+// GetAllCollectionsCountFromCache retrieves cached collection counts from cache storage.
+// Returns (nil, nil) on a cache miss so callers can fall back to live data.
+func GetAllCollectionsCountFromCache() (CollectionCount, error) {
+	counts, err := getCountMapFromCache(CacheKeyCollectionCounts)
+	if err != nil || counts == nil {
+		return nil, err
+	}
+	return CollectionCount(counts), nil
+}
+
+// SaveAllFoldersToCache saves all unique folders, and their counts, to cache storage
 func SaveAllFoldersToCache() error {
 	allFolders, err := GetAllFolders()
 	if err != nil {
 		return err
 	}
 
-	var folderList []string
-	for folder := range allFolders {
-		folderList = append(folderList, folder)
+	if err := saveCountMapToCache(CacheKeyFolderCounts, allFolders); err != nil {
+		return err
 	}
-
-	return saveStringListToCache(CacheKeyFolders, folderList)
+	return saveStringListToCache(CacheKeyFolders, sortedCountKeys(allFolders))
 }
 
-// GetAllFoldersFromCache retrieves cached folders from cache storage
+// GetAllFoldersFromCache retrieves cached folder names from cache storage
 func GetAllFoldersFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyFolders)
+}
+
+// GetAllFoldersCountFromCache retrieves cached folder counts from cache storage.
+// Returns (nil, nil) on a cache miss so callers can fall back to live data.
+func GetAllFoldersCountFromCache() (FolderCount, error) {
+	counts, err := getCountMapFromCache(CacheKeyFolderCounts)
+	if err != nil || counts == nil {
+		return nil, err
+	}
+	return FolderCount(counts), nil
+}
+
+// SaveAllEditorsToCache saves all editor type counts to cache storage
+func SaveAllEditorsToCache() error {
+	allEditors, err := GetAllEditors()
+	if err != nil {
+		return err
+	}
+
+	return saveCountMapToCache(CacheKeyEditorCounts, allEditors)
+}
+
+// GetAllEditorsCountFromCache retrieves cached editor type counts from cache storage.
+// Returns (nil, nil) on a cache miss so callers can fall back to live data.
+func GetAllEditorsCountFromCache() (EditorTypeCount, error) {
+	counts, err := getCountMapFromCache(CacheKeyEditorCounts)
+	if err != nil || counts == nil {
+		return nil, err
+	}
+	return EditorTypeCount(counts), nil
 }
 
 // SaveAllFilePathsToCache saves all file paths to cache storage
@@ -356,9 +446,10 @@ func GetAllTitles() ([]string, error) {
 
 // MetadataCollector collects metadata across multiple files efficiently
 type MetadataCollector struct {
-	Tags                  map[string]bool
-	Collections           map[string]bool
-	Folders               map[string]bool
+	Tags                  map[string]int
+	Collections           map[string]int
+	Folders               map[string]int
+	Editors               map[string]int
 	FolderPaths           map[string]bool
 	Titles                map[string]bool
 	FilePaths             []string
@@ -369,9 +460,10 @@ type MetadataCollector struct {
 // NewMetadataCollector creates a new metadata collector
 func NewMetadataCollector() *MetadataCollector {
 	return &MetadataCollector{
-		Tags:                  make(map[string]bool),
-		Collections:           make(map[string]bool),
-		Folders:               make(map[string]bool),
+		Tags:                  make(map[string]int),
+		Collections:           make(map[string]int),
+		Folders:               make(map[string]int),
+		Editors:               make(map[string]int),
 		FolderPaths:           make(map[string]bool),
 		Titles:                make(map[string]bool),
 		FilePaths:             []string{},
@@ -388,19 +480,24 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 	// collect tags
 	for _, tag := range metadata.Tags {
 		if tag != "" {
-			mc.Tags[tag] = true
+			mc.Tags[tag]++
 		}
 	}
 
 	// collect collections
 	if metadata.Collection != "" {
-		mc.Collections[metadata.Collection] = true
+		mc.Collections[metadata.Collection]++
 	}
 
 	for _, f := range metadata.Folders {
 		if f != "" {
-			mc.Folders[f] = true
+			mc.Folders[f]++
 		}
+	}
+
+	// collect editor type
+	if metadata.Editor != "" {
+		mc.Editors[string(metadata.Editor)]++
 	}
 
 	// collect folder paths from file path
@@ -439,13 +536,25 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 
 // SaveAllToCache saves all collected metadata to system cache
 func (mc *MetadataCollector) SaveAllToCache() error {
-	if err := saveStringListToCache(CacheKeyTags, utils.SetToSortedSlice(mc.Tags)); err != nil {
+	if err := saveCountMapToCache(CacheKeyTagCounts, mc.Tags); err != nil {
 		return err
 	}
-	if err := saveStringListToCache(CacheKeyCollections, utils.SetToSortedSlice(mc.Collections)); err != nil {
+	if err := saveStringListToCache(CacheKeyTags, sortedCountKeys(mc.Tags)); err != nil {
 		return err
 	}
-	if err := saveStringListToCache(CacheKeyFolders, utils.SetToSortedSlice(mc.Folders)); err != nil {
+	if err := saveCountMapToCache(CacheKeyCollectionCounts, mc.Collections); err != nil {
+		return err
+	}
+	if err := saveStringListToCache(CacheKeyCollections, sortedCountKeys(mc.Collections)); err != nil {
+		return err
+	}
+	if err := saveCountMapToCache(CacheKeyFolderCounts, mc.Folders); err != nil {
+		return err
+	}
+	if err := saveStringListToCache(CacheKeyFolders, sortedCountKeys(mc.Folders)); err != nil {
+		return err
+	}
+	if err := saveCountMapToCache(CacheKeyEditorCounts, mc.Editors); err != nil {
 		return err
 	}
 	if err := saveStringListToCache(CacheKeyFolderPaths, utils.SetToSortedSlice(mc.FolderPaths)); err != nil {

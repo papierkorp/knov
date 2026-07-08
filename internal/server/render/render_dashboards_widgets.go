@@ -81,27 +81,39 @@ func renderStaticWidget(config *dashboard.StaticConfig) (string, error) {
 }
 
 func renderTagsWidget() (string, error) {
-	tagCount, err := files.GetAllTags()
-	if err != nil {
-		return "", err
+	tagCount, err := files.GetAllTagsCountFromCache()
+	if err != nil || len(tagCount) == 0 {
+		logging.LogError("failed to get cached tag counts, fallback to live data: %v", err)
+		tagCount, err = files.GetAllTags()
+		if err != nil {
+			return "", err
+		}
 	}
 
 	return RenderBrowseHTML(map[string]int(tagCount), "/browse/"+mapping.DatabaseToURL("tags"), false, ""), nil
 }
 
 func renderCollectionsWidget() (string, error) {
-	collectionCount, err := files.GetAllCollections()
-	if err != nil {
-		return "", err
+	collectionCount, err := files.GetAllCollectionsCountFromCache()
+	if err != nil || len(collectionCount) == 0 {
+		logging.LogError("failed to get cached collection counts, fallback to live data: %v", err)
+		collectionCount, err = files.GetAllCollections()
+		if err != nil {
+			return "", err
+		}
 	}
 
 	return RenderBrowseHTML(map[string]int(collectionCount), "/browse/collection", false, ""), nil
 }
 
 func renderFoldersWidget() (string, error) {
-	folderCount, err := files.GetAllFolders()
-	if err != nil {
-		return "", err
+	folderCount, err := files.GetAllFoldersCountFromCache()
+	if err != nil || len(folderCount) == 0 {
+		logging.LogError("failed to get cached folder counts, fallback to live data: %v", err)
+		folderCount, err = files.GetAllFolders()
+		if err != nil {
+			return "", err
+		}
 	}
 
 	return RenderBrowseHTML(map[string]int(folderCount), "/browse/"+mapping.DatabaseToURL("folders"), false, ""), nil
