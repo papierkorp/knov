@@ -24,6 +24,8 @@ type ChatStorage interface {
 	GetByID(id string) (*Message, error)
 	GetPage(filePath string, limit, offset int) ([]Message, int, error)
 	GetBackendType() string
+	MoveFilePath(oldPath, newPath string) error
+	DeleteByFilePath(filePath string) error
 }
 
 var storage ChatStorage
@@ -64,4 +66,14 @@ func GetPage(filePath string, limit, offset int) ([]Message, int, error) {
 // GetBackendType returns the storage backend type
 func GetBackendType() string {
 	return storage.GetBackendType()
+}
+
+// MoveFilePath reattaches all messages from oldPath to newPath (used when a file is renamed/moved)
+func MoveFilePath(oldPath, newPath string) error {
+	return storage.MoveFilePath(oldPath, newPath)
+}
+
+// DeleteByFilePath removes all messages attached to filePath (used when a file is deleted)
+func DeleteByFilePath(filePath string) error {
+	return storage.DeleteByFilePath(filePath)
 }

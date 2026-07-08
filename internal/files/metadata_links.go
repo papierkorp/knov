@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"knov/internal/chat"
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
 	"knov/internal/parser"
@@ -413,6 +414,10 @@ func UpdateLinksForMovedFile(oldPath, newPath string) error {
 	if err := moveFileMetadata(oldPath, newPath); err != nil {
 		logging.LogError("failed to move metadata for %s: %v", oldPath, err)
 		return err
+	}
+
+	if err := chat.MoveFilePath(normalizedOldPath, normalizedNewPath); err != nil {
+		logging.LogWarning("failed to move chat messages for %s -> %s: %v", normalizedOldPath, normalizedNewPath, err)
 	}
 
 	movedMetadata, err := MetaDataGet(normalizedNewPath)

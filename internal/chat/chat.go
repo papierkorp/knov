@@ -29,3 +29,13 @@ func GetByID(id string) (*Message, error) {
 func GetPage(filePath string, offset int) ([]Message, int, error) {
 	return chatStorage.GetPage(filePath, PageSize, offset)
 }
+
+// MoveFilePath reattaches all messages from oldPath to newPath (used when a file is renamed/moved)
+func MoveFilePath(oldPath, newPath string) error {
+	return chatStorage.MoveFilePath(oldPath, newPath)
+}
+
+// DeleteForFile removes all messages attached to the given file path (used when a file is deleted)
+func DeleteForFile(filePath string) error {
+	return chatStorage.DeleteByFilePath(filePath)
+}

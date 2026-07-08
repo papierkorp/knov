@@ -829,19 +829,22 @@
   overflow-x: hidden;
 }
 
-#fp-chat #component-chat {
+#fp-chat #component-chat,
+#fps-chat #component-chat {
   max-width: 100%;
   padding: 0;
   gap: 6px;
   overflow-x: hidden;
 }
 
-#fp-chat #component-chat-history {
+#fp-chat #component-chat-history,
+#fps-chat #component-chat-history {
   gap: 4px;
   overflow-x: hidden;
 }
 
-#fp-chat .chat-message {
+#fp-chat .chat-message,
+#fps-chat .chat-message {
   padding: 4px 7px;
   border-radius: 4px;
   font-size: 0.82em;
@@ -850,53 +853,75 @@
   overflow-wrap: break-word;
 }
 
-#fp-chat .chat-message-content {
+#fp-chat .chat-message-content,
+#fps-chat .chat-message-content {
   margin-bottom: 0;
   line-height: 1.35;
   overflow: hidden;
 }
 
-/* short message hover menu */
-#fp-chat .chat-message-short {
-  position: relative;
+/* short message: content+timestamp on the left, kebab menu vertically
+   centered against the whole card on the right */
+#fp-chat .chat-message-short,
+#fps-chat .chat-message-short {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-#fp-chat .chat-message-short::after {
-  content: attr(data-time);
-  position: absolute;
-  right: 6px;
-  top: 4px;
+#fp-chat .chat-message-short-main,
+#fps-chat .chat-message-short-main {
+  flex: 1;
+  min-width: 0;
+}
+
+#fp-chat .chat-message-short-main .chat-timestamp,
+#fps-chat .chat-message-short-main .chat-timestamp {
+  display: block;
   font-size: 0.65em;
   color: var(--text-secondary);
-  opacity: 0;
-  transition: opacity 0.15s;
-  pointer-events: none;
-  white-space: nowrap;
+  opacity: 0.7;
+  margin-top: 2px;
 }
-#fp-chat .chat-message-short:hover::after {
+
+#fp-chat .chat-short-menu-wrap,
+#fps-chat .chat-short-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+#fp-chat .chat-short-menu-btn,
+#fps-chat .chat-short-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.8em;
+  line-height: 1;
+  padding: 3px 6px;
+  cursor: pointer;
+  border-radius: 3px;
+  opacity: 0.55;
+  transition:
+    opacity 0.15s,
+    background 0.15s,
+    color 0.15s;
+}
+
+#fp-chat .chat-short-menu-btn:hover,
+#fps-chat .chat-short-menu-btn:hover,
+#fp-chat .chat-short-menu-btn:focus-visible,
+#fps-chat .chat-short-menu-btn:focus-visible {
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  color: var(--text);
   opacity: 1;
 }
 
-#fp-chat .chat-short-menu-btn {
-  display: none;
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  color: var(--text-secondary);
-  font-size: 0.75em;
-  line-height: 1;
-  padding: 1px 5px;
-  cursor: pointer;
-}
-
-#fp-chat .chat-message-short:hover .chat-short-menu-btn {
-  display: block;
-}
-
 .chat-short-menu {
+  position: fixed;
+  z-index: 30;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -906,7 +931,10 @@
   flex-direction: column;
   gap: 3px;
   min-width: 100px;
-  inset: unset;
+}
+
+.chat-short-menu[hidden] {
+  display: none;
 }
 
 .chat-short-menu .btn-small {

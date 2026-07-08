@@ -104,26 +104,35 @@ func renderMessage(m chat.Message, short bool) string {
 		newFileURL := fmt.Sprintf(`/api/chat/messages/%s/move?mode=new&short=true`, m.ID)
 		appendURL := fmt.Sprintf(`/api/chat/messages/%s/move?mode=append&short=true`, m.ID)
 		deleteURL := fmt.Sprintf(`/api/chat/messages/%s`, m.ID)
+		timestamp := configmanager.FormatTime(m.CreatedAt)
 		lang := configmanager.GetLanguage()
 		return fmt.Sprintf(`<div class="chat-message chat-message-short" id="%s" data-id="%s">
-	<div class="chat-message-actions">
-		<button class="btn-small btn-secondary"
-			hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
-		<button class="btn-small btn-secondary"
-			hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
-		<button class="btn-small btn-danger"
-			hx-delete="%s" hx-target="#%s" hx-swap="outerHTML"
-			hx-confirm="%s">%s</button>
+	<div class="chat-message-short-main">
+		<div class="chat-message-content">%s</div>
+		<span class="chat-timestamp">%s</span>
 	</div>
-	<div class="chat-message-content">%s</div>
+	<div class="chat-short-menu-wrap">
+		<button type="button" class="chat-short-menu-btn" onclick="toggleChatShortMenu(this)" title="%s"><i class="fa fa-ellipsis-vertical"></i></button>
+		<div class="chat-short-menu" hidden>
+			<button class="btn-small btn-secondary"
+				hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
+			<button class="btn-small btn-secondary"
+				hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
+			<button class="btn-small btn-danger"
+				hx-delete="%s" hx-target="#%s" hx-swap="outerHTML"
+				hx-confirm="%s">%s</button>
+		</div>
+	</div>
 </div>`,
 			msgDivID, m.ID,
+			m.Content,
+			timestamp,
+			translation.SprintfForRequest(lang, "actions"),
 			newFileURL, msgDivID, translation.SprintfForRequest(lang, "to new file"),
 			appendURL, msgDivID, translation.SprintfForRequest(lang, "append"),
 			deleteURL, msgDivID,
 			translation.SprintfForRequest(lang, "delete this message?"),
-			translation.SprintfForRequest(lang, "delete"),
-			m.Content)
+			translation.SprintfForRequest(lang, "delete"))
 	}
 
 	newFileURL := fmt.Sprintf(`/api/chat/messages/%s/move?mode=new`, m.ID)
@@ -236,17 +245,20 @@ func RenderChatBulkBar(short bool) string {
 	}
 	_ = shortParam
 	return fmt.Sprintf(`<div id="chat-bulk-bar" class="chat-bulk-bar" style="display:none">
-	<span class="chat-bulk-count"></span>
-	<button class="btn-small btn-secondary" onclick="chatBulkToNewFile()">%s</button>
-	<button class="btn-small btn-secondary" onclick="chatBulkAppend()">%s</button>
-	<button class="btn-small btn-danger"    onclick="chatBulkDelete()">%s</button>
-	<span class="chat-bulk-separator"></span>
-	<button class="btn-small btn-secondary" onclick="chatBulkClear()">%s</button>
+	<div class="chat-bulk-header">
+		<span class="chat-bulk-count"></span>
+		<button type="button" class="chat-bulk-clear-btn" onclick="chatBulkClear()" title="%s"><i class="fa fa-xmark"></i></button>
+	</div>
+	<div class="chat-bulk-actions">
+		<button class="btn-small btn-secondary" onclick="chatBulkToNewFile()">%s</button>
+		<button class="btn-small btn-secondary" onclick="chatBulkAppend()">%s</button>
+		<button class="btn-small btn-danger"    onclick="chatBulkDelete()">%s</button>
+	</div>
 </div>`,
+		translation.SprintfForRequest(lang, "deselect all"),
 		translation.SprintfForRequest(lang, "to new file"),
 		translation.SprintfForRequest(lang, "append"),
 		translation.SprintfForRequest(lang, "delete selected"),
-		translation.SprintfForRequest(lang, "deselect all"),
 	)
 }
 

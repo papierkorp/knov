@@ -337,6 +337,11 @@
       "translation": ""
     },
     {
+      "id": "collapse all",
+      "message": "collapse all",
+      "translation": ""
+    },
+    {
       "id": "collection",
       "message": "collection",
       "translation": ""
@@ -597,6 +602,16 @@
       "translation": ""
     },
     {
+      "id": "delete folder",
+      "message": "delete folder",
+      "translation": ""
+    },
+    {
+      "id": "delete folder and all its contents",
+      "message": "delete folder and all its contents",
+      "translation": ""
+    },
+    {
       "id": "delete selected",
       "message": "delete selected",
       "translation": ""
@@ -747,6 +762,11 @@
       "translation": ""
     },
     {
+      "id": "expand all",
+      "message": "expand all",
+      "translation": ""
+    },
+    {
       "id": "export",
       "message": "export",
       "translation": ""
@@ -809,6 +829,11 @@
     {
       "id": "failed to delete filter",
       "message": "failed to delete filter",
+      "translation": ""
+    },
+    {
+      "id": "failed to delete folder",
+      "message": "failed to delete folder",
       "translation": ""
     },
     {
@@ -1349,6 +1374,11 @@
     {
       "id": "folder",
       "message": "folder",
+      "translation": ""
+    },
+    {
+      "id": "folder deleted",
+      "message": "folder deleted",
       "translation": ""
     },
     {
@@ -2594,6 +2624,26 @@
     {
       "id": "Run filter tests? This will create test metadata objects.",
       "message": "Run filter tests? This will create test metadata objects.",
+      "translation": ""
+    },
+    {
+      "id": "Run Git History Tests",
+      "message": "Run Git History Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run git history tests? This will create test files, git commits, and temporarily point the git remote at a throwaway local repo.",
+      "message": "Run git history tests? This will create test files, git commits, and temporarily point the git remote at a throwaway local repo.",
+      "translation": ""
+    },
+    {
+      "id": "Run Search Tests",
+      "message": "Run Search Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run search tests? This will create test files and git commits.",
+      "message": "Run search tests? This will create test files and git commits.",
       "translation": ""
     },
     {

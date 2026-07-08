@@ -13,17 +13,21 @@
 - translations
 - add a `create_your_own_theme.md` file
 
+
 **per ai**
-- add chat to a single file?
-- codemirror copy + paste with y+p does not work properly (e.g. i have something - in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
-  - is a harder problem to tackle
-- create a system for themes (another repoistory with themes)
-  - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
 - deployment
   - make docker build viable
     - for usage
     - for devs
+- optimize
+  - e.g. browse slideout shows loading for seconds - this has to go smoother (e.g. load all the cache first and then update to live data?)
+
+**larger project if time, not important**
+- codemirror copy + paste with y+p does not work properly (e.g. i have something in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
+  - is a harder problem to tackle
 - backup solution
+- create a system for themes (another repoistory with themes)
+  - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
 
 # performance updates
 

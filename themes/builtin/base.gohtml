@@ -255,6 +255,7 @@
                     <button class="fp-file-mode-btn active" data-mode="metadata"    onclick="switchFileSubPanel('metadata')"    title="{{T "metadata"}}"><i class="fa fa-circle-info"></i></button>
                     <button class="fp-file-mode-btn"        data-mode="toc"         onclick="switchFileSubPanel('toc')"         title="{{T "table of contents"}}"><i class="fa fa-list"></i></button>
                     <button class="fp-file-mode-btn"        data-mode="history"     onclick="switchFileSubPanel('history')"     title="{{T "history"}}"><i class="fa fa-clock-rotate-left"></i></button>
+                    <button class="fp-file-mode-btn"        data-mode="chat"        onclick="switchFileSubPanel('chat')"        title="{{T "chat"}}"><i class="fa fa-comments"></i></button>
                     <button class="fp-file-mode-btn"        data-mode="references"  onclick="switchFileSubPanel('references')"  title="{{T "references"}}"><i class="fa fa-link"></i></button>
                     <button class="fp-file-mode-btn"        data-mode="connections" onclick="switchFileSubPanel('connections')" title="{{T "connections"}}"><i class="fa fa-diagram-project"></i></button>
                     <button class="fp-file-mode-btn"        data-mode="find"        onclick="switchFileSubPanel('find')"        title="{{T "find in file"}}"><i class="fa fa-magnifying-glass"></i></button>
@@ -290,6 +291,12 @@
                     <input type="search" id="fp-versions-search" placeholder="{{T "filter..."}}"
                            oninput="filterFpVersions(this.value)" autocomplete="off"/>
                     <div id="fp-versions"><span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span></div>
+                </div>
+
+                <div class="fp-sub-panel" id="fps-chat">
+                    <div id="fp-file-chat-content" data-url="" data-loaded="false">
+                        <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
+                    </div>
                 </div>
 
                 <div class="fp-sub-panel" id="fps-references">

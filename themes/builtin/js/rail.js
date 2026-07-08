@@ -575,6 +575,19 @@ function setupFilePage() {
     swap: "innerHTML",
     headers: { Accept: "text/html" },
   });
+
+  const chatContentEl = document.getElementById("fp-file-chat-content");
+  if (chatContentEl) {
+    chatContentEl.dataset.url =
+      "/api/chat/messages?file=" + fp + "&short=true";
+    chatContentEl.dataset.loaded = "true";
+    htmx.ajax("GET", chatContentEl.dataset.url, {
+      target: chatContentEl,
+      swap: "innerHTML",
+      headers: { Accept: "text/html" },
+    });
+  }
+
   // auto-open file info panel
   togglePanel("fp-file");
   return true;

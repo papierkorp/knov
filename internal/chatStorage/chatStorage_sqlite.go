@@ -201,3 +201,27 @@ func (s *sqliteStorage) GetPage(filePath string, limit, offset int) ([]Message, 
 func (s *sqliteStorage) GetBackendType() string {
 	return "sqlite"
 }
+
+func (s *sqliteStorage) MoveFilePath(oldPath, newPath string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	_, err := s.db.Exec(`UPDATE messages SET file_path = ? WHERE file_path = ?`, newPath, oldPath)
+	if err != nil {
+		return fmt.Errorf("failed to move messages: %w", err)
+	}
+	logging.LogDebug("moved chat messages from %s to %s", oldPath, newPath)
+	return nil
+}
+
+func (s *sqliteStorage) DeleteByFilePath(filePath string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	_, err := s.db.Exec(`DELETE FROM messages WHERE file_path = ?`, filePath)
+	if err != nil {
+		return fmt.Errorf("failed to delete messages for file: %w", err)
+	}
+	logging.LogDebug("deleted chat messages for %s", filePath)
+	return nil
+}

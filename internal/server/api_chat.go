@@ -29,6 +29,9 @@ import (
 // @Router /api/chat/messages [get]
 func handleAPIGetChat(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("file")
+	if filePath != "" {
+		filePath = pathutils.ToWithPrefix(filePath)
+	}
 	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
 	short := r.URL.Query().Get("short") == "true"
 
@@ -70,6 +73,9 @@ func handleAPIPostChatMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filePath := r.URL.Query().Get("file")
+	if filePath != "" {
+		filePath = pathutils.ToWithPrefix(filePath)
+	}
 	short := r.URL.Query().Get("short") == "true"
 
 	msg, err := chat.Add(content, filePath)

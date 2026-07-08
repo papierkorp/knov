@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"knov/internal/chat"
 	"knov/internal/configmanager"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
@@ -495,7 +496,11 @@ func MetaDataInitializeAll() error {
 
 // MetaDataDelete removes metadata for a file path
 func MetaDataDelete(filepath string) error {
-	return metadataStorage.Delete(pathutils.ToWithPrefix(filepath))
+	normalized := pathutils.ToWithPrefix(filepath)
+	if err := chat.DeleteForFile(normalized); err != nil {
+		logging.LogWarning("failed to delete chat messages for %s: %v", normalized, err)
+	}
+	return metadataStorage.Delete(normalized)
 }
 
 // MetaDataExportAll returns all metadata entries
