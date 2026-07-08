@@ -125,7 +125,7 @@ func (j *fileJob) Run() error {
 		}
 	}
 
-	if err := files.SaveAllSystemDataToCache(); err != nil {
+	if err := files.RebuildAllCaches(); err != nil {
 		logging.LogError("cronjob: failed to save system data to cache: %v", err)
 	}
 

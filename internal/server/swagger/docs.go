@@ -2103,6 +2103,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/files/overview": {
+            "get": {
+                "description": "Returns every metadata/link fragment used on a file's detail page (created/edited\ndates, collection, folders, ancestors, kids, grandchildren, used/media/inbound\nlinks, related files) in a single response, replacing the ~11 separate round trips\nthat page used to fire on every load. Keys are semantic field names, not\ntheme-specific DOM ids — the theme's own JS maps them onto its markup.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get file overview (dates, hierarchy, links, related files)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/files/raw": {
             "get": {
                 "description": "Returns unprocessed file content for editing",

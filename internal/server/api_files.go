@@ -24,6 +24,7 @@ import (
 	"knov/internal/mapping"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
+	"knov/internal/search"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
@@ -37,7 +38,7 @@ import (
 // @Router /api/files/folder-suggestions [get]
 func handleAPIGetFolderSuggestions(w http.ResponseWriter, r *http.Request) {
 	// get cached folder paths, fallback to live data if needed
-	folderPaths, err := files.GetAllFolderPathsFromSystemData()
+	folderPaths, err := files.GetAllFolderPathsFromCache()
 	if err != nil {
 		logging.LogError("failed to get cached folder paths, fallback to live data: %v", err)
 		// fallback to live data
@@ -120,63 +121,6 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 	}, html)
 }
 
-// @Summary Get file tree overview
-// @Description Returns all files as an indented folder tree structure
-// @Tags files
-// @Produce json,html
-// @Router /api/files/tree [get]
-func handleAPIGetFileTree(w http.ResponseWriter, r *http.Request) {
-	allFiles, err := files.GetAllFiles()
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
-		return
-	}
-	allFiles = files.FilterByVisibility(allFiles)
-	tree := files.BuildFileTree(allFiles)
-	html := render.RenderTreeOverview(tree, r.URL.Query().Get("actions") == "true")
-	writeResponse(w, r, allFiles, html)
-}
-
-// @Summary Get all files
-// @Tags files
-// @Param format query string false "Response format (options for HTML select options)"
-// @Produce json,html
-// @Router /api/files/list [get]
-func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
-	format := r.URL.Query().Get("format")
-
-	if format == "options" {
-		cachedFilePaths, err := files.GetAllFilePathsFromSystemData()
-		if err != nil {
-			logging.LogError("failed to get cached file paths: %v", err)
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
-			return
-		}
-		html := render.RenderFilesOptionsFromPaths(cachedFilePaths)
-		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprint(w, html)
-		return
-	}
-
-	allFiles, err := files.GetAllFiles()
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
-		return
-	}
-
-	allFiles = files.FilterByVisibility(allFiles)
-
-	if format == "datalist" {
-		html := render.RenderFilesDatalist(allFiles)
-		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprint(w, html)
-		return
-	}
-
-	html := render.RenderFilesList(allFiles, r.URL.Query().Get("actions") == "true")
-	writeResponse(w, r, allFiles, html)
-}
-
 // @Summary Get file content as html
 // @Tags files
 // @Param filepath path string true "File path"
@@ -215,6 +159,91 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 
 	html := render.RenderFileHeader(filepath)
 	writeResponse(w, r, data, html)
+}
+
+// @Summary Get file overview (dates, hierarchy, links, related files)
+// @Description Returns every metadata/link fragment used on a file's detail page (created/edited
+// @Description dates, collection, folders, ancestors, kids, grandchildren, used/media/inbound
+// @Description links, related files) in a single response, replacing the ~11 separate round trips
+// @Description that page used to fire on every load. Keys are semantic field names, not
+// @Description theme-specific DOM ids — the theme's own JS maps them onto its markup.
+// @Tags files
+// @Param filepath query string true "File path"
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Router /api/files/overview [get]
+func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+
+	lang := configmanager.GetLanguage()
+	result := map[string]string{}
+
+	metadata, err := files.MetaDataGet(pathutils.ToWithPrefix(filePath))
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(lang, "failed to get metadata"), http.StatusInternalServerError)
+		return
+	}
+
+	if metadata != nil {
+		result["created"] = fmt.Sprintf(`<span class="createdat">%s</span>`, configmanager.FormatDateTime(metadata.CreatedAt))
+		result["edited"] = fmt.Sprintf(`<span class="lastedited">%s</span>`, configmanager.FormatDateTime(metadata.LastEdited))
+		result["collection"] = render.RenderMetadataLinkHTML(metadata.Collection, "collections")
+		result["folders"] = render.RenderMetadataLinksHTML(metadata.Folders, "folders")
+
+		if len(metadata.Ancestor) == 0 {
+			result["ancestors"] = render.RenderNoLinksMessage("no ancestors")
+		} else {
+			result["ancestors"] = render.RenderLinksList(metadata.Ancestor, false)
+		}
+
+		if len(metadata.Kids) == 0 {
+			result["kids"] = render.RenderNoLinksMessage(translation.SprintfForRequest(lang, "no children"))
+		} else {
+			result["kids"] = render.RenderKidsLinks(metadata.Kids)
+		}
+
+		var grandchildren []string
+		for _, kid := range metadata.Kids {
+			kidMeta, err := files.MetaDataGet(kid)
+			if err != nil || kidMeta == nil {
+				continue
+			}
+			grandchildren = append(grandchildren, kidMeta.Kids...)
+		}
+		if len(grandchildren) == 0 {
+			result["grandchildren"] = render.RenderNoLinksMessage(translation.SprintfForRequest(lang, "no grandchildren"))
+		} else {
+			result["grandchildren"] = render.RenderLinksList(grandchildren, false)
+		}
+
+		if len(metadata.UsedLinks) == 0 {
+			result["usedLinks"] = render.RenderNoLinksMessage(translation.SprintfForRequest(lang, "no outbound links"))
+		} else {
+			result["usedLinks"] = render.RenderUsedLinks(metadata.UsedLinks)
+		}
+
+		result["mediaLinks"] = render.RenderMediaLinks(metadata.UsedLinks)
+
+		if len(metadata.LinksToHere) == 0 {
+			result["linksFrom"] = render.RenderNoLinksMessage("no inbound links")
+		} else {
+			result["linksFrom"] = render.RenderLinksList(metadata.LinksToHere, false)
+		}
+	}
+
+	relatedPaths, err := search.GetRelatedFiles(filePath, 5)
+	if err != nil || len(relatedPaths) == 0 {
+		result["related"] = render.RenderRelatedFiles(nil)
+	} else {
+		result["related"] = render.RenderRelatedFiles(relatedPaths)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
 }
 
 // @Summary Get raw file content
@@ -1172,7 +1201,7 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
 
-	allFiles, err := files.GetAllPhysicalFiles()
+	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

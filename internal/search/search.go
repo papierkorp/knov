@@ -76,7 +76,7 @@ func IndexAllFiles() error {
 // SearchFilesByTitle searches only file titles/names, ignoring content.
 // Separate entry point — loads its own file list.
 func SearchFilesByTitle(query string, limit int) ([]files.File, error) {
-	allFiles, err := files.GetAllFiles()
+	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func SearchFiles(query string, limit int) ([]files.File, error) {
 		return []files.File{}, nil
 	}
 
-	allFiles, err := files.GetAllFiles()
+	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}

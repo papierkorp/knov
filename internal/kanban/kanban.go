@@ -242,7 +242,7 @@ func GetEvents(collection, filePath string, from, to *time.Time, limit int) ([]k
 // TagsForCollection returns all unique non-kanban tags present on kanban cards in the collection.
 func TagsForCollection(collection string) ([]string, error) {
 	prefix := configmanager.GetKanbanPrefix()
-	allFiles, err := files.GetAllFiles()
+	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +273,7 @@ func TagsForCollection(collection string) ([]string, error) {
 // FilesForCollection returns the file paths of all kanban cards (files with a kanban status) in the collection, sorted.
 func FilesForCollection(collection string) ([]string, error) {
 	prefix := configmanager.GetKanbanPrefix()
-	allFiles, err := files.GetAllFiles()
+	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}

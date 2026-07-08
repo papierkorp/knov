@@ -1,4 +1,4 @@
-// Package files - System-wide metadata operations (cache, aggregation)
+// Package files - metadata cache operations (aggregation, persisted lookups)
 package files
 
 import (
@@ -26,7 +26,90 @@ const (
 	CacheKeyTitles                CacheKey = "all_titles"
 	CacheKeyOrphanedMedia         CacheKey = "orphaned_media"
 	CacheKeyAncestorsInCollection CacheKey = "ancestors_in_collection/"
+	CacheKeyFullFileList          CacheKey = "all_files_full"
 )
+
+// saveFileListToCache persists the full file list (including metadata) to cache storage
+func saveFileListToCache(allFiles []File) error {
+	logging.LogDebug("saving %s to cache", CacheKeyFullFileList)
+	jsonData, err := json.Marshal(allFiles)
+	if err != nil {
+		return err
+	}
+	return cacheStorage.Set(string(CacheKeyFullFileList), jsonData)
+}
+
+// getFileListFromCache retrieves the full file list from cache storage.
+// Returns (nil, nil) on a cache miss so callers can distinguish "not cached yet"
+// from "cached but genuinely empty".
+func getFileListFromCache() ([]File, error) {
+	data, err := cacheStorage.Get(string(CacheKeyFullFileList))
+	if err != nil {
+		if strings.Contains(err.Error(), "key not found") ||
+			strings.Contains(err.Error(), "no such file") {
+			return nil, nil
+		}
+		return nil, err
+	}
+	if data == nil {
+		return nil, nil
+	}
+
+	var result []File
+	if err := json.Unmarshal(data, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// GetAllFilesCached returns the same data as GetAllFiles (a full disk walk plus
+// a metadata lookup per file), but serves it from cache storage when available,
+// avoiding the O(n) walk + n metadata reads on every tree/list request.
+// The cache is populated by the periodic RebuildAllCaches job and kept
+// fresh in between by InvalidateFileListCache on mutations.
+func GetAllFilesCached() ([]File, error) {
+	cached, err := getFileListFromCache()
+	if err != nil {
+		logging.LogWarning("failed to read file list cache, falling back to live data: %v", err)
+	} else if cached != nil {
+		return cached, nil
+	}
+
+	allFiles, err := GetAllPhysicalFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := saveFileListToCache(allFiles); err != nil {
+		logging.LogWarning("failed to persist file list cache: %v", err)
+	}
+
+	return allFiles, nil
+}
+
+// InvalidateFileListCache forces the next GetAllFilesCached call to rebuild
+// from disk. Called after any mutation that adds, removes, renames, or
+// changes the visibility-relevant metadata of a file.
+func InvalidateFileListCache() {
+	if err := cacheStorage.Delete(string(CacheKeyFullFileList)); err != nil {
+		logging.LogWarning("failed to invalidate file list cache: %v", err)
+	}
+}
+
+// RefreshCaches invalidates the file list cache immediately (so the very next
+// request gets fresh data) and rebuilds all other caches - tags, collections,
+// folders, file/folder paths, orphaned media - in the background. Call this
+// after any mutation that adds, removes, renames, or changes the metadata of
+// a file; otherwise those caches only catch up on the next periodic
+// RebuildAllCaches cron run.
+func RefreshCaches() {
+	InvalidateFileListCache()
+	go func() {
+		if err := RebuildAllCaches(); err != nil {
+			logging.LogWarning("failed to refresh caches after mutation: %v", err)
+		}
+	}()
+}
 
 // saveStringListToCache saves a sorted string list to cache storage
 func saveStringListToCache(key CacheKey, data []string) error {
@@ -154,8 +237,8 @@ func GetAllEditors() (EditorTypeCount, error) {
 	return editorTypeCount, nil
 }
 
-// SaveAllTagsToSystemData saves all unique tags to system storage
-func SaveAllTagsToSystemData() error {
+// SaveAllTagsToCache saves all unique tags to cache storage
+func SaveAllTagsToCache() error {
 	allTags, err := GetAllTags()
 	if err != nil {
 		return err
@@ -169,13 +252,13 @@ func SaveAllTagsToSystemData() error {
 	return saveStringListToCache(CacheKeyTags, tagList)
 }
 
-// GetAllTagsFromSystemData retrieves cached tags from system storage
-func GetAllTagsFromSystemData() ([]string, error) {
+// GetAllTagsFromCache retrieves cached tags from cache storage
+func GetAllTagsFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyTags)
 }
 
-// SaveAllCollectionsToSystemData saves all unique collections to system storage
-func SaveAllCollectionsToSystemData() error {
+// SaveAllCollectionsToCache saves all unique collections to cache storage
+func SaveAllCollectionsToCache() error {
 	allCollections, err := GetAllCollections()
 	if err != nil {
 		return err
@@ -189,13 +272,13 @@ func SaveAllCollectionsToSystemData() error {
 	return saveStringListToCache(CacheKeyCollections, collectionList)
 }
 
-// GetAllCollectionsFromSystemData retrieves cached collections from system storage
-func GetAllCollectionsFromSystemData() ([]string, error) {
+// GetAllCollectionsFromCache retrieves cached collections from cache storage
+func GetAllCollectionsFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyCollections)
 }
 
-// SaveAllFoldersToSystemData saves all unique folders to system storage
-func SaveAllFoldersToSystemData() error {
+// SaveAllFoldersToCache saves all unique folders to cache storage
+func SaveAllFoldersToCache() error {
 	allFolders, err := GetAllFolders()
 	if err != nil {
 		return err
@@ -209,13 +292,13 @@ func SaveAllFoldersToSystemData() error {
 	return saveStringListToCache(CacheKeyFolders, folderList)
 }
 
-// GetAllFoldersFromSystemData retrieves cached folders from system storage
-func GetAllFoldersFromSystemData() ([]string, error) {
+// GetAllFoldersFromCache retrieves cached folders from cache storage
+func GetAllFoldersFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyFolders)
 }
 
-// SaveAllFilePathsToSystemData saves all file paths to system storage
-func SaveAllFilePathsToSystemData() error {
+// SaveAllFilePathsToCache saves all file paths to cache storage
+func SaveAllFilePathsToCache() error {
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return err
@@ -229,13 +312,13 @@ func SaveAllFilePathsToSystemData() error {
 	return saveStringListToCache(CacheKeyFilePaths, fileList)
 }
 
-// GetAllFilePathsFromSystemData retrieves cached file paths from system storage
-func GetAllFilePathsFromSystemData() ([]string, error) {
+// GetAllFilePathsFromCache retrieves cached file paths from cache storage
+func GetAllFilePathsFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyFilePaths)
 }
 
-// GetAllTitlesFromSystemData retrieves cached titles from system storage
-func GetAllTitlesFromSystemData() ([]string, error) {
+// GetAllTitlesFromCache retrieves cached titles from cache storage
+func GetAllTitlesFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyTitles)
 }
 
@@ -386,24 +469,29 @@ func (mc *MetadataCollector) SaveAllToCache() error {
 	return nil
 }
 
-// SaveAllSystemDataToCache saves all metadata lists to system storage in a single pass
-func SaveAllSystemDataToCache() error {
+// RebuildAllCaches saves all metadata lists to cache storage in a single pass
+func RebuildAllCaches() error {
 	logging.LogInfo("collecting all system metadata for cache update")
 
 	collector := NewMetadataCollector()
 
-	// collect from document files
+	// collect from document files (pathsToFiles already attached metadata to each file)
 	allFiles, err := GetAllFiles()
 	if err != nil {
 		return err
 	}
 
 	for _, file := range allFiles {
-		metadata, err := MetaDataGet(file.Path)
-		if err != nil || metadata == nil {
+		if file.Metadata == nil {
 			continue
 		}
-		collector.CollectFromMetadata(file.Path, metadata)
+		collector.CollectFromMetadata(file.Path, file.Metadata)
+	}
+
+	// persist the full file list too, so tree/list requests can reuse this same
+	// walk instead of triggering their own
+	if err := saveFileListToCache(allFiles); err != nil {
+		logging.LogWarning("failed to persist file list cache: %v", err)
 	}
 
 	// collect from media files (needed for orphaned media detection)
@@ -413,13 +501,12 @@ func SaveAllSystemDataToCache() error {
 	} else {
 		for _, file := range mediaFiles {
 			normalizedPath := pathutils.ToWithPrefix(file.Path)
-			metadata, err := MetaDataGet(normalizedPath)
-			if err != nil || metadata == nil {
+			if file.Metadata == nil {
 				// no metadata → never referenced → orphaned
 				collector.OrphanedMedia = append(collector.OrphanedMedia, normalizedPath)
 				continue
 			}
-			collector.CollectFromMetadata(normalizedPath, metadata)
+			collector.CollectFromMetadata(normalizedPath, file.Metadata)
 		}
 	}
 
@@ -431,8 +518,8 @@ func SaveAllSystemDataToCache() error {
 	return nil
 }
 
-// GetAllFolderPathsFromSystemData retrieves cached folder path suggestions from system storage
-func GetAllFolderPathsFromSystemData() ([]string, error) {
+// GetAllFolderPathsFromCache retrieves cached folder path suggestions from cache storage
+func GetAllFolderPathsFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyFolderPaths)
 }
 
@@ -470,8 +557,8 @@ func GetAllFolderPaths() ([]string, error) {
 	return result, nil
 }
 
-// SaveAllFolderPathsToSystemData saves all folder path suggestions to system storage
-func SaveAllFolderPathsToSystemData() error {
+// SaveAllFolderPathsToCache saves all folder path suggestions to cache storage
+func SaveAllFolderPathsToCache() error {
 	folderPaths, err := GetAllFolderPaths()
 	if err != nil {
 		return err
@@ -480,7 +567,7 @@ func SaveAllFolderPathsToSystemData() error {
 	return saveStringListToCache(CacheKeyFolderPaths, folderPaths)
 }
 
-// GetOrphanedMediaFromCache retrieves cached orphaned media list from system storage
+// GetOrphanedMediaFromCache retrieves cached orphaned media list from cache storage
 func GetOrphanedMediaFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyOrphanedMedia)
 }

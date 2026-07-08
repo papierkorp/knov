@@ -519,30 +519,35 @@ function setupFilePage() {
   // hide no-file message and show metadata rows
   const noFile = document.getElementById("fp-no-file");
   if (noFile) noFile.style.display = "none";
-  const htmxFields = {
-    "fp-meta-created": "/api/metadata/createdat?filepath=" + fp,
-    "fp-meta-edited": "/api/metadata/lastedited?filepath=" + fp,
-    "fp-meta-collection": "/api/metadata/collection?filepath=" + fp,
-    "fp-meta-folders": "/api/metadata/folders?filepath=" + fp,
-    "fp-ancestors": "/api/links/ancestors?filepath=" + fp,
-    "fp-children": "/api/links/kids?filepath=" + fp,
-    "fp-grandchildren": "/api/links/grandchildren?filepath=" + fp,
-    "fp-links-to": "/api/links/used?filepath=" + fp,
-    "fp-media-links": "/api/links/media?filepath=" + fp,
-    "fp-links-from": "/api/links/linkstohere?filepath=" + fp,
-    "fp-related": "/api/links/related?filepath=" + fp,
-  };
 
-  for (const [id, url] of Object.entries(htmxFields)) {
-    const el = document.getElementById(id);
-    if (!el) continue;
-    fetch(url, { headers: { Accept: "text/html" } })
-      .then((r) => r.text())
-      .then((html) => {
-        el.innerHTML = html;
-      })
-      .catch(() => {});
-  }
+  // fetch all sidebar metadata/link fragments in a single request instead of
+  // firing one fetch per field, which used to queue up behind the browser's
+  // per-origin connection limit and made the page look like it was still loading.
+  // The API returns semantic field names; map them onto this theme's DOM ids here.
+  const sidebarFieldTargets = {
+    created: "fp-meta-created",
+    edited: "fp-meta-edited",
+    collection: "fp-meta-collection",
+    folders: "fp-meta-folders",
+    ancestors: "fp-ancestors",
+    kids: "fp-children",
+    grandchildren: "fp-grandchildren",
+    usedLinks: "fp-links-to",
+    mediaLinks: "fp-media-links",
+    linksFrom: "fp-links-from",
+    related: "fp-related",
+  };
+  fetch("/api/files/overview?filepath=" + fp, {
+    headers: { Accept: "application/json" },
+  })
+    .then((r) => r.json())
+    .then((fields) => {
+      for (const [field, html] of Object.entries(fields)) {
+        const el = document.getElementById(sidebarFieldTargets[field]);
+        if (el) el.innerHTML = html;
+      }
+    })
+    .catch(() => {});
 
   // inline-edit fields: swap outerHTML so edit button HTMX works
   const inlineFields = {

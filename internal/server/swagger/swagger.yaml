@@ -1836,6 +1836,32 @@ paths:
       summary: Move a folder into another folder
       tags:
       - files
+  /api/files/overview:
+    get:
+      description: |-
+        Returns every metadata/link fragment used on a file's detail page (created/edited
+        dates, collection, folders, ancestors, kids, grandchildren, used/media/inbound
+        links, related files) in a single response, replacing the ~11 separate round trips
+        that page used to fire on every load. Keys are semantic field names, not
+        theme-specific DOM ids — the theme's own JS maps them onto its markup.
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get file overview (dates, hierarchy, links, related files)
+      tags:
+      - files
   /api/files/raw:
     get:
       description: Returns unprocessed file content for editing

@@ -45,7 +45,7 @@ type Result struct {
 
 // FilterFiles filters files based on criteria
 func FilterFiles(criteria []Criteria, logic string) ([]files.File, error) {
-	allFiles, err := files.GetAllFiles()
+	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}

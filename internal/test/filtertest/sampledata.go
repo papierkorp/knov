@@ -150,13 +150,13 @@ func createFilterTestMetadata() error {
 		}
 	}
 
-	if err := files.SaveAllCollectionsToSystemData(); err != nil {
+	if err := files.SaveAllCollectionsToCache(); err != nil {
 		logging.LogWarning("failed to update collections cache: %v", err)
 	}
-	if err := files.SaveAllFoldersToSystemData(); err != nil {
+	if err := files.SaveAllFoldersToCache(); err != nil {
 		logging.LogWarning("failed to update folders cache: %v", err)
 	}
-	if err := files.SaveAllTagsToSystemData(); err != nil {
+	if err := files.SaveAllTagsToCache(); err != nil {
 		logging.LogWarning("failed to update tags cache: %v", err)
 	}
 

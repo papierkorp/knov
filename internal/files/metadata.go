@@ -385,6 +385,7 @@ func MetaDataSave(m *Metadata) error {
 		return err
 	}
 
+	RefreshCaches()
 	logging.LogDebug("metadata saved for: %s", finalMetadata.Path)
 	return nil
 }
@@ -500,6 +501,7 @@ func MetaDataDelete(filepath string) error {
 	if err := chat.DeleteForFile(normalized); err != nil {
 		logging.LogWarning("failed to delete chat messages for %s: %v", normalized, err)
 	}
+	RefreshCaches()
 	return metadataStorage.Delete(normalized)
 }
 

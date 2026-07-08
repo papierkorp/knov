@@ -245,6 +245,7 @@ func NewRouter() *chi.Mux {
 		r.Route("/files", func(r chi.Router) {
 			r.Get("/list", handleAPIGetAllFiles)
 			r.Get("/tree", handleAPIGetFileTree)
+			r.Get("/overview", handleAPIGetFileOverview)
 			r.Get("/content/*", handleAPIGetFileContent)
 			r.Post("/filter", handleAPIFilterFiles)
 			r.Get("/header", handleAPIGetFileHeader)
@@ -1021,7 +1022,7 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 
 func handleKanbanSelect(w http.ResponseWriter, r *http.Request) {
 	// try cache first, fall back to live data
-	collections, err := files.GetAllCollectionsFromSystemData()
+	collections, err := files.GetAllCollectionsFromCache()
 	if err != nil || len(collections) == 0 {
 		allCols, liveErr := files.GetAllCollections()
 		if liveErr == nil {

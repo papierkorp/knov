@@ -402,6 +402,8 @@ func updateKidsAndLinksToHere(metadata *Metadata) {
 func UpdateLinksForMovedFile(oldPath, newPath string) error {
 	logging.LogInfo("updating links for moved file: %s -> %s", oldPath, newPath)
 
+	RefreshCaches()
+
 	normalizedOldPath := pathutils.ToWithPrefix(oldPath)
 	normalizedNewPath := pathutils.ToWithPrefix(newPath)
 

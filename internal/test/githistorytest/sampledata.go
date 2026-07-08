@@ -161,7 +161,7 @@ func resetAndSeed() (*sampleState, error) {
 		return nil, err
 	}
 
-	if err := files.SaveAllCollectionsToSystemData(); err != nil {
+	if err := files.SaveAllCollectionsToCache(); err != nil {
 		return nil, err
 	}
 

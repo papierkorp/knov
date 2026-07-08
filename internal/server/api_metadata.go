@@ -885,7 +885,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 
 	format := r.URL.Query().Get("format")
 	if format == "options" {
-		cachedTags, err := files.GetAllTagsFromSystemData()
+		cachedTags, err := files.GetAllTagsFromCache()
 		if err != nil || len(cachedTags) == 0 {
 			logging.LogError("failed to get cached tags, fallback to live data: %v", err)
 			tags, err := files.GetAllTags()
@@ -935,7 +935,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 
 	format := r.URL.Query().Get("format")
 	if format == "options" {
-		cachedCollections, err := files.GetAllCollectionsFromSystemData()
+		cachedCollections, err := files.GetAllCollectionsFromCache()
 		if err != nil || len(cachedCollections) == 0 {
 			logging.LogError("failed to get cached collections, fallback to live data: %v", err)
 			collections, err := files.GetAllCollections()
@@ -985,7 +985,7 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 
 	format := r.URL.Query().Get("format")
 	if format == "options" {
-		cachedFolders, err := files.GetAllFoldersFromSystemData()
+		cachedFolders, err := files.GetAllFoldersFromCache()
 		if err != nil || len(cachedFolders) == 0 {
 			logging.LogError("failed to get cached folders, fallback to live data: %v", err)
 			folders, err := files.GetAllFolders()
@@ -1029,7 +1029,7 @@ func handleAPIGetAllTitles(w http.ResponseWriter, r *http.Request) {
 	format := r.URL.Query().Get("format")
 
 	if format == "options" {
-		cachedTitles, err := files.GetAllTitlesFromSystemData()
+		cachedTitles, err := files.GetAllTitlesFromCache()
 		if err != nil || len(cachedTitles) == 0 {
 			logging.LogError("failed to get cached titles, fallback to live data: %v", err)
 			cachedTitles, err = files.GetAllTitles()
@@ -1047,7 +1047,7 @@ func handleAPIGetAllTitles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	titles, err := files.GetAllTitlesFromSystemData()
+	titles, err := files.GetAllTitlesFromCache()
 	if err != nil || len(titles) == 0 {
 		titles, err = files.GetAllTitles()
 		if err != nil {

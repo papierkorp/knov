@@ -34,6 +34,16 @@ func GetLinkDisplayText(filePath string) string {
 
 	// get the components we might need
 	filename := filepath.Base(filePath)
+
+	// these modes never need the title, so skip the metadata lookup entirely —
+	// this is the hot path for large trees/lists where it's called per file
+	switch displayMode {
+	case "filename":
+		return filename
+	case "filepath":
+		return filePath
+	}
+
 	var title string
 	metadata, err := files.MetaDataGet(filePath)
 	if err == nil && metadata != nil && metadata.Title != "" {
@@ -41,10 +51,6 @@ func GetLinkDisplayText(filePath string) string {
 	}
 
 	switch displayMode {
-	case "filename":
-		return filename
-	case "filepath":
-		return filePath
 	case "title":
 		if title != "" {
 			return title
