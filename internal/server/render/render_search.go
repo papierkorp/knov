@@ -30,7 +30,7 @@ func RenderSearchDropdown(results []files.File, query string) string {
 		if i >= displayCount {
 			break
 		}
-		displayText := GetLinkDisplayText(file.Path)
+		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
 		html.WriteString(fmt.Sprintf(`
 		<li><a href="%s">%s</a></li>`, file.ViewURL(), displayText))
 	}
@@ -77,7 +77,7 @@ func RenderSearchResultsCards(files []files.File, query string) string {
 	html.WriteString(`<div id="search-results-cards">`)
 
 	for _, file := range files {
-		displayText := GetLinkDisplayText(file.Path)
+		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
 		context := extractSearchContext(file.Path, query)
 
 		html.WriteString(fmt.Sprintf(`

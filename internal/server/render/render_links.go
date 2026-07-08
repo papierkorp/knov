@@ -13,13 +13,37 @@ import (
 	"knov/internal/translation"
 )
 
-// GetLinkDisplayText returns filename, filepath, or title based on theme setting
+// GetLinkDisplayText returns filename, filepath, or title based on theme setting.
+// It fetches metadata itself, so only use it where the caller doesn't already
+// have the file's metadata loaded (e.g. a bare path from a links list). When
+// iterating a []files.File whose .Metadata is already populated (as returned by
+// GetAllFiles/GetAllFilesCached), call GetLinkDisplayTextWithMetadata instead to
+// avoid a redundant metadata store lookup per file.
 func GetLinkDisplayText(filePath string) string {
-	// get current theme setting for link display mode
+	// these modes never need the title, so skip the metadata lookup entirely
+	if mode := linkDisplayMode(); mode == "filename" || mode == "filepath" {
+		return renderLinkDisplayText(filePath, mode, nil)
+	}
+
+	metadata, err := files.MetaDataGet(filePath)
+	if err != nil {
+		metadata = nil
+	}
+	return GetLinkDisplayTextWithMetadata(filePath, metadata)
+}
+
+// GetLinkDisplayTextWithMetadata is identical to GetLinkDisplayText but takes
+// already-loaded metadata instead of fetching it, avoiding a metadata store
+// lookup per file when rendering a tree/list/search result that already has it.
+func GetLinkDisplayTextWithMetadata(filePath string, metadata *files.Metadata) string {
+	return renderLinkDisplayText(filePath, linkDisplayMode(), metadata)
+}
+
+// linkDisplayMode reads the current theme's configured link display mode.
+func linkDisplayMode() string {
 	currentTheme := configmanager.GetTheme()
 	linkDisplayMode := configmanager.GetThemeSetting(currentTheme, "linkDisplayMode")
 
-	// convert interface{} to string for comparison
 	var displayMode string
 	if linkDisplayMode != nil {
 		if mode, ok := linkDisplayMode.(string); ok {
@@ -31,12 +55,13 @@ func GetLinkDisplayText(filePath string) string {
 	if displayMode == "" {
 		displayMode = "filename"
 	}
+	return displayMode
+}
 
+func renderLinkDisplayText(filePath string, displayMode string, metadata *files.Metadata) string {
 	// get the components we might need
 	filename := filepath.Base(filePath)
 
-	// these modes never need the title, so skip the metadata lookup entirely —
-	// this is the hot path for large trees/lists where it's called per file
 	switch displayMode {
 	case "filename":
 		return filename
@@ -45,8 +70,7 @@ func GetLinkDisplayText(filePath string) string {
 	}
 
 	var title string
-	metadata, err := files.MetaDataGet(filePath)
-	if err == nil && metadata != nil && metadata.Title != "" {
+	if metadata != nil && metadata.Title != "" {
 		title = metadata.Title
 	}
 

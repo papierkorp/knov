@@ -180,6 +180,7 @@ type TreeNode struct {
 	Name     string
 	Path     string // relative path, only set for file nodes
 	IsDir    bool
+	Metadata *Metadata // only set for file nodes, carried over from the source File
 	Children []*TreeNode
 }
 
@@ -189,29 +190,29 @@ func BuildFileTree(allFiles []File) *TreeNode {
 	for _, file := range allFiles {
 		rel := pathutils.ToRelative(file.Path)
 		parts := strings.Split(rel, "/")
-		insertTreeNode(root, parts, rel)
+		insertTreeNode(root, parts, rel, file.Metadata)
 	}
 	sortTreeNode(root)
 	return root
 }
 
-func insertTreeNode(parent *TreeNode, parts []string, filePath string) {
+func insertTreeNode(parent *TreeNode, parts []string, filePath string, metadata *Metadata) {
 	if len(parts) == 0 {
 		return
 	}
 	if len(parts) == 1 {
-		parent.Children = append(parent.Children, &TreeNode{Name: parts[0], Path: filePath})
+		parent.Children = append(parent.Children, &TreeNode{Name: parts[0], Path: filePath, Metadata: metadata})
 		return
 	}
 	for _, child := range parent.Children {
 		if child.IsDir && child.Name == parts[0] {
-			insertTreeNode(child, parts[1:], filePath)
+			insertTreeNode(child, parts[1:], filePath, metadata)
 			return
 		}
 	}
 	dir := &TreeNode{Name: parts[0], IsDir: true}
 	parent.Children = append(parent.Children, dir)
-	insertTreeNode(dir, parts[1:], filePath)
+	insertTreeNode(dir, parts[1:], filePath, metadata)
 }
 
 func sortTreeNode(node *TreeNode) {

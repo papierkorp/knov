@@ -255,7 +255,7 @@ func RenderFilterResult(result *filter.Result, display string) string {
 func renderFileListItems(fileList []files.File) string {
 	var b strings.Builder
 	for _, file := range fileList {
-		b.WriteString(fmt.Sprintf(`<a class="filter-list-item" href="%s">%s</a>`, file.ViewURL(), GetLinkDisplayText(file.Path)))
+		b.WriteString(fmt.Sprintf(`<a class="filter-list-item" href="%s">%s</a>`, file.ViewURL(), GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)))
 	}
 	return b.String()
 }
