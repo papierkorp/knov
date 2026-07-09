@@ -27,6 +27,7 @@
     - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
 - move file button (can be done in rename)
 - kanban add button - let me set a folder e.g. i have a `sirconic` collection but i want new files to be created in `sirconic/todo` instead (allow me to set a folder for each collection)
+- <details> are not shown and are blocking section edit
 
 # testing
 
