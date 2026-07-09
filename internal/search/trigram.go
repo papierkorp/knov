@@ -10,13 +10,39 @@ import (
 	"knov/internal/logging"
 )
 
-var trigramIdx = &trigramIndex{
-	index: make(map[string]map[string]struct{}),
-}
+// trigramMu guards the trigramIdx pointer itself (swapped wholesale on each
+// reindex), not the map contents inside it - each trigramIndex instance is
+// only ever written by the single goroutine building it in IndexAllFiles, then
+// published read-only via replaceTrigramIndex.
+var (
+	trigramMu  sync.RWMutex
+	trigramIdx = newTrigramIndex()
+)
 
 type trigramIndex struct {
-	mu    sync.RWMutex
 	index map[string]map[string]struct{} // trigram → set of file paths
+}
+
+func newTrigramIndex() *trigramIndex {
+	return &trigramIndex{index: make(map[string]map[string]struct{})}
+}
+
+// currentTrigramIndex returns the index currently in use for searches.
+func currentTrigramIndex() *trigramIndex {
+	trigramMu.RLock()
+	defer trigramMu.RUnlock()
+	return trigramIdx
+}
+
+// replaceTrigramIndex atomically swaps in a freshly rebuilt index. Called
+// once at the end of IndexAllFiles, after the new index has been fully
+// populated from the current file list - so deleted files, which are never
+// added to the new index because they're absent from GetAllPhysicalFiles,
+// disappear from search on the next reindex without any per-delete cleanup.
+func replaceTrigramIndex(newIdx *trigramIndex) {
+	trigramMu.Lock()
+	trigramIdx = newIdx
+	trigramMu.Unlock()
 }
 
 // tg extracts overlapping 3-character trigrams from a string
@@ -34,9 +60,6 @@ func tg(s string) []string {
 // add indexes file content into the trigram index
 func (ti *trigramIndex) add(path string, content []byte) {
 	words := strings.Fields(strings.ToLower(string(content)))
-
-	ti.mu.Lock()
-	defer ti.mu.Unlock()
 
 	seen := make(map[string]struct{})
 	for _, word := range words {
@@ -76,9 +99,6 @@ func (ti *trigramIndex) search(query string, limit int) []string {
 		return nil
 	}
 
-	ti.mu.RLock()
-	defer ti.mu.RUnlock()
-
 	scores := make(map[string]int)
 	for t := range queryTrigrams {
 		for path := range ti.index[t] {
@@ -117,7 +137,7 @@ func (ti *trigramIndex) search(query string, limit int) []string {
 
 // searchFilesTrigram resolves trigram path results to File structs using a pre-loaded file list
 func searchFilesTrigram(query string, limit int, allFiles []files.File) ([]files.File, error) {
-	paths := trigramIdx.search(query, limit)
+	paths := currentTrigramIndex().search(query, limit)
 	if len(paths) == 0 {
 		return nil, nil
 	}

@@ -14,6 +14,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
 	"knov/internal/pathutils"
+	"knov/internal/searchStorage"
 	"knov/internal/utils"
 )
 
@@ -534,6 +535,17 @@ func MetaDataDeleteNoRefresh(filepath string) error {
 	normalized := pathutils.ToWithPrefix(filepath)
 	if err := chat.DeleteForFile(normalized); err != nil {
 		logging.LogWarning("failed to delete chat messages for %s: %v", normalized, err)
+	}
+	// remove from the live full-text search index too - otherwise a deleted
+	// file's content stays searchable forever, since IndexAllFiles only ever
+	// adds/updates entries for files that still exist, never prunes ones that
+	// don't. Keyed by the un-prefixed relative path, matching how IndexFile
+	// indexes it (via file.Path from GetAllPhysicalFiles). The trigram fallback
+	// index is handled separately - it's fully rebuilt on each periodic
+	// reindex (see search.IndexAllFiles), so deleted files drop out of it
+	// within one reindex cycle without needing per-delete wiring here.
+	if err := searchStorage.DeleteIndexedContent(pathutils.ToRelative(filepath)); err != nil {
+		logging.LogWarning("failed to remove %s from search index: %v", normalized, err)
 	}
 	return metadataStorage.Delete(normalized)
 }

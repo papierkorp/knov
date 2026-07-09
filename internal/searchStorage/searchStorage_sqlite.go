@@ -69,7 +69,7 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 
 // initialize runs all pending migrations for this storage.
 func (ss *sqliteStorage) initialize() error {
-	const version = 2
+	const version = 3
 	steps := []dbmigration.Migration{
 		{
 			Up: func(tx *sql.Tx) error {
@@ -103,6 +103,35 @@ func (ss *sqliteStorage) initialize() error {
 			Down: func(tx *sql.Tx) error {
 				// sqlite < 3.35 workaround not needed for this project; DROP COLUMN supported
 				_, err := tx.Exec(`ALTER TABLE search_content DROP COLUMN indexed_at`)
+				return err
+			},
+		},
+		{
+			// separate tables (not a "deleted" column on search_index) because
+			// FTS5 virtual tables don't support ALTER TABLE ADD COLUMN. Indexed
+			// once by the cronjob when it detects a deletion, so deleted-file
+			// content search reads this instead of walking the full commit log.
+			Up: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`
+				CREATE VIRTUAL TABLE IF NOT EXISTS deleted_search_index USING fts5(
+					path UNINDEXED,
+					content,
+					tokenize='porter ascii'
+				);
+				CREATE TABLE IF NOT EXISTS deleted_search_content (
+					path TEXT PRIMARY KEY,
+					content BLOB,
+					indexed_at DATETIME
+				);
+				CREATE INDEX IF NOT EXISTS idx_deleted_search_content_path ON deleted_search_content(path);
+				`)
+				return err
+			},
+			Down: func(tx *sql.Tx) error {
+				_, err := tx.Exec(`
+				DROP TABLE IF EXISTS deleted_search_index;
+				DROP TABLE IF EXISTS deleted_search_content;
+				`)
 				return err
 			},
 		},
@@ -247,6 +276,67 @@ func (ss *sqliteStorage) SearchContent(query string, limit int) ([]SearchResult,
 	}
 
 	logging.LogDebug("search query '%s' returned %d results", query, len(results))
+	return results, rows.Err()
+}
+
+// IndexDeletedFile indexes a deleted file's pre-deletion content in the
+// separate deleted-files FTS table, so content search over deleted files
+// doesn't need to walk the commit log.
+func (ss *sqliteStorage) IndexDeletedFile(path string, content []byte) error {
+	ss.mutex.Lock()
+	defer ss.mutex.Unlock()
+
+	now := time.Now().UTC()
+
+	_, err := ss.db.Exec("INSERT OR REPLACE INTO deleted_search_content (path, content, indexed_at) VALUES (?, ?, ?)", path, content, now)
+	if err != nil {
+		logging.LogError("failed to store deleted search content for %s: %v", path, err)
+		return err
+	}
+
+	_, err = ss.db.Exec("INSERT OR REPLACE INTO deleted_search_index (path, content) VALUES (?, ?)", path, string(content))
+	if err != nil {
+		logging.LogError("failed to index deleted file %s: %v", path, err)
+		return err
+	}
+
+	logging.LogDebug("indexed deleted file: %s", path)
+	return nil
+}
+
+// SearchDeletedContent performs full-text search over deleted files' pre-deletion content
+func (ss *sqliteStorage) SearchDeletedContent(query string, limit int) ([]SearchResult, error) {
+	ss.mutex.RLock()
+	defer ss.mutex.RUnlock()
+
+	sqlQuery := `
+		SELECT
+			si.path,
+			sc.content,
+			bm25(deleted_search_index) as score
+		FROM deleted_search_index si
+		JOIN deleted_search_content sc ON si.path = sc.path
+		WHERE deleted_search_index MATCH ?
+		ORDER BY score
+		LIMIT ?
+	`
+
+	rows, err := ss.db.Query(sqlQuery, query, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []SearchResult
+	for rows.Next() {
+		var result SearchResult
+		if err := rows.Scan(&result.Path, &result.Content, &result.Score); err != nil {
+			return nil, err
+		}
+		results = append(results, result)
+	}
+
+	logging.LogDebug("deleted-file search query '%s' returned %d results", query, len(results))
 	return results, rows.Err()
 }
 

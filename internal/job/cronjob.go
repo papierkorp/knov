@@ -96,6 +96,11 @@ func (j *fileJob) Run() error {
 	}
 	filesToProcess = filteredProcess
 
+	// build/extend the persisted deleted-files search index before wiping the
+	// metadata below, so title/content search over deleted files can read the
+	// index instead of walking the full commit log on every keystroke
+	git.IndexDeletedFiles(lastCommit, filesToDelete)
+
 	if len(filesToDelete) > 0 {
 		logging.LogInfo("deleting metadata for %d files", len(filesToDelete))
 		for _, filePath := range filesToDelete {

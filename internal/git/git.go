@@ -3,21 +3,25 @@ package git
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
+	"knov/internal/cacheStorage"
 	"knov/internal/configStorage"
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/notificationStorage"
 	"knov/internal/pathutils"
+	"knov/internal/searchStorage"
 
 	"sync"
 
@@ -1989,10 +1993,144 @@ func TestAuth() (string, error) {
 // ----------- History Search -------------------
 // -----------------------------------------------
 
-// SearchGitByTitle searches git history for files whose filename contains the query string.
-// When deletedOnly is true only files deleted in a commit are returned (for the "search history" feature).
-// When deletedOnly is false all touched files are returned (for the latestchanges search).
+// deletedFilesIndexKey is the cacheStorage key for the persisted list of
+// deleted-file title/commit metadata. Kept in git.go (not files/metadata_cache.go)
+// because files can't import git, and this index is git-specific.
+const deletedFilesIndexKey = "git_deleted_files_index"
+
+func isCacheMiss(err error) bool {
+	return err != nil && (strings.Contains(err.Error(), "key not found") || strings.Contains(err.Error(), "no such file"))
+}
+
+// loadDeletedFilesIndex reads the persisted deleted-files index. Returns
+// (nil, nil) when nothing has been indexed yet.
+func loadDeletedFilesIndex() ([]GitHistoryFile, error) {
+	data, err := cacheStorage.Get(deletedFilesIndexKey)
+	if err != nil {
+		if isCacheMiss(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	if data == nil {
+		return nil, nil
+	}
+	var entries []GitHistoryFile
+	if err := json.Unmarshal(data, &entries); err != nil {
+		return nil, err
+	}
+	return entries, nil
+}
+
+func saveDeletedFilesIndex(entries []GitHistoryFile) error {
+	data, err := json.Marshal(entries)
+	if err != nil {
+		return err
+	}
+	return cacheStorage.Set(deletedFilesIndexKey, data)
+}
+
+// IndexDeletedFiles records newly deleted files into the persisted deleted-files
+// index (title/commit metadata via cacheStorage, pre-deletion content via the
+// searchStorage FTS index), so deleted-file title/content search can read the
+// index instead of walking the full commit log on every keystroke.
+//
+// Called by the cronjob once per run with the paths it just detected as deleted
+// since lastCommit. Like detectMovesInCommit, changes across the whole range are
+// attributed to the current HEAD commit rather than tracking down the exact
+// commit that removed each file - that would require a per-file history walk,
+// which is exactly the cost this index exists to avoid.
+func IndexDeletedFiles(lastCommit string, deletedPaths []string) {
+	if len(deletedPaths) == 0 {
+		return
+	}
+
+	repo, err := openRepo()
+	if err != nil {
+		return
+	}
+	ref, err := repo.Head()
+	if err != nil {
+		return
+	}
+	headCommit, err := repo.CommitObject(ref.Hash())
+	if err != nil {
+		return
+	}
+
+	var lastTree *object.Tree
+	if lastCommit != "" {
+		if lastHash, err := expandCommitHash(repo, lastCommit); err == nil {
+			if lastCommitObj, err := repo.CommitObject(lastHash); err == nil {
+				lastTree, _ = lastCommitObj.Tree()
+			}
+		}
+	}
+
+	dataDir := configmanager.GetAppConfig().DataPath
+	dataDirName := filepath.Base(dataDir)
+
+	entries, err := loadDeletedFilesIndex()
+	if err != nil {
+		logging.LogWarning("git: failed to load deleted files index, starting fresh: %v", err)
+	}
+	seen := make(map[string]bool, len(entries))
+	for _, e := range entries {
+		seen[e.Path] = true
+	}
+
+	added := 0
+	for _, path := range deletedPaths {
+		relPath := path
+		if strings.HasPrefix(relPath, dataDirName+string(filepath.Separator)) {
+			relPath = strings.TrimPrefix(relPath, dataDirName+string(filepath.Separator))
+		}
+		if seen[relPath] {
+			continue
+		}
+		seen[relPath] = true
+
+		entries = append(entries, GitHistoryFile{
+			Name:    filepath.Base(relPath),
+			Path:    relPath,
+			Commit:  headCommit.Hash.String()[:7],
+			Date:    headCommit.Author.When,
+			Message: strings.TrimSpace(headCommit.Message),
+		})
+		added++
+
+		if lastTree != nil {
+			if f, ferr := lastTree.File(path); ferr == nil {
+				if content, cerr := f.Contents(); cerr == nil {
+					if ierr := searchStorage.IndexDeletedFile(relPath, []byte(content)); ierr != nil {
+						logging.LogWarning("git: failed to index deleted file content for %s: %v", relPath, ierr)
+					}
+				}
+			}
+		}
+	}
+
+	if added == 0 {
+		return
+	}
+	if err := saveDeletedFilesIndex(entries); err != nil {
+		logging.LogWarning("git: failed to persist deleted files index: %v", err)
+		return
+	}
+	logging.LogInfo("git: indexed %d newly deleted files (%d total)", added, len(entries))
+}
+
+// SearchGitByTitle searches for files whose filename contains the query string.
+// When deletedOnly is true, this reads the persisted deleted-files index
+// (built incrementally by the cronjob via IndexDeletedFiles) instead of
+// walking the commit log - see IndexDeletedFiles.
+// When deletedOnly is false all touched files are returned (for the
+// latestchanges search), which still requires a live commit-log walk.
 func SearchGitByTitle(query string, limit int, deletedOnly bool) ([]GitHistoryFile, error) {
+	if deletedOnly {
+		return searchDeletedFilesIndexByTitle(query, limit)
+	}
+
 	repo, err := openRepo()
 	if err != nil {
 		return nil, err
@@ -2039,9 +2177,6 @@ func SearchGitByTitle(query string, limit int, deletedOnly bool) ([]GitHistoryFi
 			return nil
 		}
 		for _, change := range changes {
-			if deletedOnly && (change.To.Name != "" || change.From.Name == "") {
-				continue
-			}
 			name := change.To.Name
 			if name == "" {
 				name = change.From.Name
@@ -2070,12 +2205,81 @@ func SearchGitByTitle(query string, limit int, deletedOnly bool) ([]GitHistoryFi
 	if err != nil && err != storer.ErrStop {
 		return nil, err
 	}
-	logging.LogDebug("git title search '%s' (deletedOnly=%v) found %d files", query, deletedOnly, len(results))
+	logging.LogDebug("git title search '%s' (deletedOnly=false) found %d files", query, len(results))
+	return results, nil
+}
+
+// searchDeletedFilesIndexByTitle serves deleted-file title search from the
+// persisted index instead of walking commit history.
+func searchDeletedFilesIndexByTitle(query string, limit int) ([]GitHistoryFile, error) {
+	entries, err := loadDeletedFilesIndex()
+	if err != nil {
+		return nil, err
+	}
+
+	queryLower := strings.ToLower(query)
+	var results []GitHistoryFile
+	for _, e := range entries {
+		if strings.Contains(strings.ToLower(e.Name), queryLower) {
+			results = append(results, e)
+		}
+	}
+	// most-recently-deleted first, matching the old walk-from-HEAD ordering
+	sort.Slice(results, func(i, j int) bool { return results[i].Date.After(results[j].Date) })
+	if limit > 0 && len(results) > limit {
+		results = results[:limit]
+	}
+
+	logging.LogDebug("git title search '%s' (deletedOnly=true, indexed) found %d files", query, len(results))
 	return results, nil
 }
 
 // SearchDeletedFilesByContent finds deleted files whose content contained the query string.
 func SearchDeletedFilesByContent(query string, limit int) ([]GitHistoryFile, error) {
+	results, err := searchDeletedFilesIndexByContent(query, limit)
+	if err == nil {
+		return results, nil
+	}
+	logging.LogWarning("git: deleted-file content index search failed, falling back to commit-log walk: %v", err)
+	return searchDeletedFilesByContentLiveWalk(query, limit)
+}
+
+// searchDeletedFilesIndexByContent serves deleted-file content search from the
+// searchStorage FTS index (built incrementally by the cronjob via
+// IndexDeletedFiles) instead of reading every deleted file's content out of
+// the commit log on every keystroke.
+func searchDeletedFilesIndexByContent(query string, limit int) ([]GitHistoryFile, error) {
+	ftsResults, err := searchStorage.SearchDeletedContent(query, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	entries, err := loadDeletedFilesIndex()
+	if err != nil {
+		return nil, err
+	}
+	byPath := make(map[string]GitHistoryFile, len(entries))
+	for _, e := range entries {
+		byPath[e.Path] = e
+	}
+
+	results := make([]GitHistoryFile, 0, len(ftsResults))
+	for _, r := range ftsResults {
+		if meta, ok := byPath[r.Path]; ok {
+			results = append(results, meta)
+		} else {
+			results = append(results, GitHistoryFile{Name: filepath.Base(r.Path), Path: r.Path})
+		}
+	}
+
+	logging.LogDebug("git content search '%s' (indexed) found %d deleted files", query, len(results))
+	return results, nil
+}
+
+// searchDeletedFilesByContentLiveWalk is the original commit-log walk,
+// kept as a fallback for when the FTS index query fails (e.g. malformed
+// FTS5 query syntax) or hasn't been populated yet.
+func searchDeletedFilesByContentLiveWalk(query string, limit int) ([]GitHistoryFile, error) {
 	repo, err := openRepo()
 	if err != nil {
 		return nil, err

@@ -27,7 +27,15 @@ func InitSearch() error {
 	return IndexAllFiles()
 }
 
-// IndexAllFiles indexes all files, skipping those already indexed and unchanged.
+// IndexAllFiles indexes all files, skipping the (expensive) FTS reindex for
+// files already indexed and unchanged. The trigram fallback index is always
+// fully rebuilt from the current file list and swapped in at the end - since
+// deleted files are naturally absent from GetAllPhysicalFiles, this is also
+// how deleted files stop showing up in trigram search results, without any
+// per-delete cleanup. That means a deleted file can still surface via the
+// trigram fallback until the next time this runs (the periodic search-reindex
+// job) - acceptable since it's a last-resort fallback only consulted when FTS
+// finds zero hits, not the primary search path.
 func IndexAllFiles() error {
 	allFiles, err := files.GetAllPhysicalFiles()
 	if err != nil {
@@ -36,6 +44,7 @@ func IndexAllFiles() error {
 
 	logging.LogInfo("checking %d files for search indexing", len(allFiles))
 
+	newTrigram := newTrigramIndex()
 	indexed, skipped := 0, 0
 	for _, file := range allFiles {
 		fullPath := pathutils.ToDocsPath(file.Path)
@@ -46,12 +55,17 @@ func IndexAllFiles() error {
 			continue
 		}
 
-		// skip if already indexed and file hasn't changed since
-		if indexedAt, err := searchStorage.GetIndexedAt(file.Path); err == nil && !indexedAt.IsZero() {
-			if !info.ModTime().After(indexedAt) {
-				skipped++
+		// skip the FTS reindex if already indexed and unchanged, but still need
+		// its content to rebuild the trigram index below
+		if indexedAt, err := searchStorage.GetIndexedAt(file.Path); err == nil && !indexedAt.IsZero() && !info.ModTime().After(indexedAt) {
+			content, err := searchStorage.GetIndexedContent(file.Path)
+			if err != nil || content == nil {
+				logging.LogWarning("failed to get indexed content for trigram rebuild of %s: %v", file.Path, err)
 				continue
 			}
+			newTrigram.add(file.Path, content)
+			skipped++
+			continue
 		}
 
 		content, err := os.ReadFile(fullPath)
@@ -65,9 +79,10 @@ func IndexAllFiles() error {
 			continue
 		}
 
-		trigramIdx.add(file.Path, content)
+		newTrigram.add(file.Path, content)
 		indexed++
 	}
+	replaceTrigramIndex(newTrigram)
 
 	logging.LogInfo("search indexing complete: %d indexed, %d skipped (up to date)", indexed, skipped)
 	return nil

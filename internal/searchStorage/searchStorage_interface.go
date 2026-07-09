@@ -16,6 +16,8 @@ type SearchStorage interface {
 	DeleteIndexedContent(path string) error
 	ListAllIndexedFiles() ([]string, error)
 	SearchContent(query string, limit int) ([]SearchResult, error)
+	IndexDeletedFile(path string, content []byte) error
+	SearchDeletedContent(query string, limit int) ([]SearchResult, error)
 	GetBackendType() string
 }
 
@@ -76,6 +78,16 @@ func ListAllIndexedFiles() ([]string, error) {
 // SearchContent performs full-text search
 func SearchContent(query string, limit int) ([]SearchResult, error) {
 	return storage.SearchContent(query, limit)
+}
+
+// IndexDeletedFile indexes a deleted file's pre-deletion content
+func IndexDeletedFile(path string, content []byte) error {
+	return storage.IndexDeletedFile(path, content)
+}
+
+// SearchDeletedContent performs full-text search over deleted files' content
+func SearchDeletedContent(query string, limit int) ([]SearchResult, error) {
+	return storage.SearchDeletedContent(query, limit)
 }
 
 // GetBackendType returns the backend type
