@@ -11,6 +11,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/files"
+	"knov/internal/git"
 	"knov/internal/pathutils"
 	"knov/internal/search"
 	"knov/internal/test"
@@ -124,6 +125,10 @@ func resetAndSeed() error {
 	if err := commitAll("searchtest: seed alpha, beta, delta"); err != nil {
 		return err
 	}
+	seedCommit, err := git.GetCurrentCommit()
+	if err != nil {
+		return err
+	}
 
 	if err := os.Remove(pathutils.ToDocsPath(testPath(deltaFile))); err != nil {
 		return err
@@ -138,6 +143,15 @@ func resetAndSeed() error {
 	if err := search.IndexAllFiles(); err != nil {
 		return err
 	}
+
+	// deleted-file title/content search reads the persisted deleted-files index, which is
+	// otherwise only built incrementally by the cronjob's git.IndexDeletedFiles call - build
+	// it synchronously here too, same reasoning as the search.IndexAllFiles() call above.
+	deletedFiles, err := git.GetDeletedFilesSinceCommit(seedCommit)
+	if err != nil {
+		return err
+	}
+	git.IndexDeletedFiles(seedCommit, deletedFiles)
 
 	return nil
 }
