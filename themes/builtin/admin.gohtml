@@ -304,6 +304,10 @@
                             hx-confirm="{{T "Run git history tests? This will create test files, git commits, and temporarily point the git remote at a throwaway local repo."}}">
                         {{T "Run Git History Tests"}}
                     </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/chattest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run chat tests? This will create and delete chat messages and test files."}}">
+                        {{T "Run Chat Tests"}}
+                    </button>
                     <button class="btn-secondary" hx-post="/api/testdata/run-all" hx-target="#testdata-result"
                             hx-confirm="{{T "Run all test suites? This will create test metadata objects."}}">
                         {{T "Run All Tests"}}

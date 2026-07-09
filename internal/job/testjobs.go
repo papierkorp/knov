@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"knov/internal/test"
+	"knov/internal/test/chattest"
 	"knov/internal/test/editorstest"
 	"knov/internal/test/filtertest"
 	"knov/internal/test/githistorytest"
@@ -132,6 +133,30 @@ func (j *gitHistoryTestJob) Run() error {
 func (j *gitHistoryTestJob) Output() any { return j.results }
 
 func (j *gitHistoryTestJob) Message() string {
+	if j.results == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d passed, %d failed", j.results.Passed, j.results.Failed)
+}
+
+type chatTestJob struct {
+	results *test.SuiteResult
+}
+
+func (j *chatTestJob) Name() string { return "chat-test" }
+
+func (j *chatTestJob) Run() error {
+	results, err := (chattest.Suite{}).Run()
+	j.results = results
+	if err != nil {
+		return fmt.Errorf("chat tests failed: %w", err)
+	}
+	return nil
+}
+
+func (j *chatTestJob) Output() any { return j.results }
+
+func (j *chatTestJob) Message() string {
 	if j.results == nil {
 		return ""
 	}

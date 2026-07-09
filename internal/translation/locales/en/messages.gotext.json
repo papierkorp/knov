@@ -2607,6 +2607,16 @@
       "translation": ""
     },
     {
+      "id": "Run Chat Tests",
+      "message": "Run Chat Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run chat tests? This will create and delete chat messages and test files.",
+      "message": "Run chat tests? This will create and delete chat messages and test files.",
+      "translation": ""
+    },
+    {
       "id": "Run Cronjob",
       "message": "Run Cronjob",
       "translation": ""

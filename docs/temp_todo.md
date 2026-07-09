@@ -26,33 +26,6 @@
   - create a system for themes (another repoistory with themes)
     - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
 
-# performance updates
-
-**read**
-- use Query in filter.go
-- Refactor filter.go to use query
-
-dont give me any code yet - what options do i ave to make the rebuild metadata concurrent?
-at the moment im running through ALL files mutliple times (e.g. with MetaDataPurgeStale, MetaDataPurgeDuplicates, linksrebuild..)May 13Claude responded: Looking at the current flow, you have roughly:Weighed concurrent metadata rebuild strategies to eliminate redundant file iterationsWeighed concurrent metadata rebuild strategies to eliminate redundant file iterationsLooking at the current flow, you have roughly:
-
-Walk all files → build/update metadata (sequential)
-Walk all metadata → purge stale (sequential)
-Walk all metadata → purge duplicates (sequential)
-Walk all metadata → rebuild links (sequential)
-
-Options:
-A — Single pass, pipeline everything
-One walk over all files, do metadata update + link extraction in the same iteration. Then one walk over metadataStorage for purge stale + duplicates combined. Cuts the number of full scans from ~4 to 2. No concurrency needed, just smarter ordering.
-B — Worker pool per file
-Keep the multi-pass structure but process each file concurrently using a sync.WaitGroup + buffered channel as a worker pool. Most useful for the rebuild step since it does I/O (read file → extract links → write metadata). Stale/duplicate purges are already just map operations so they're fast.
-C — Fan-out with errgroup
-Use golang.org/x/sync/errgroup with a semaphore to bound concurrency. Cleaner error handling than raw goroutines. Same idea as B but more idiomatic.
-D — Combine A + C
-Single pass over files with a worker pool, doing metadata + link extraction per file concurrently, then one combined purge pass at the end. Best of both worlds.
-My recommendation: D. The real bottleneck is the per-file I/O in the rebuild (reading file content for link/title extraction). Parallelizing that with a bounded worker pool (e.g. runtime.NumCPU() workers) gives the biggest win. The purge passes are already fast (just map lookups) so combining them into one pass is enough there — no need to parallelize.
-The main thing to watch out for: metadataStorage writes need a mutex or you need to collect results and write sequentially after the workers finish.
-Want to go with D?
-
 # testing
 
 In-app runtime test suites, not `go test`. Knov ships as a single binary with no go toolchain on the target machine, so the existing pattern (`internal/test/testfilter.go`: seeds real files/metadata, runs real filter configs, returns pass/fail results, wired to an admin button + `POST /api/testdata/filtertest`) is the model to extend, not `go test`/httptest.
@@ -89,7 +62,9 @@ In-app runtime test suites, not `go test`. Knov ships as a single binary with no
   - git repo history (latest-changes pagination, filter by collection, search by filename, push/pull, test-auth) and git file history (list versions, view version, diff, restore + verify restored content) - `internal/test/githistorytest`, 8 cases, wired via `job.RunGitHistoryTest`/`POST /api/testdata/githistorytest`/admin button. Seeds a versioned file (2 commits, for diff/view/restore) and a file added-then-deleted (for latest-changes pagination ordering) in `test/git-history-tests`. The collection-filter case checks inclusion under the shared `test` collection and exclusion under a made-up collection name - since sample files live under `docs/test/` for the "Clean Test Data" button, there's no second real collection left to test exclusion against. The remote push/pull/test-auth case points the git remote at a throwaway local bare repo (`file://`, no network) and always restores whatever remote was configured before it ran; since `KNOV_GIT_REMOTE_BRANCH` isn't a live-editable setting, it also temporarily adds a local ref for the configured branch name pointing at HEAD when the repo's actual branch differs (e.g. default `master` vs. the configured default `main`), removing it afterward.
 
   Verified live: both suites pass independently (6/6, 8/8), `run-all` shows 48/48 across all four suites, and "Clean Test Data" removes every suite's sample files in one go.
-- [ ] 3. chat - add/delete/get message (global + file-scoped), move, bulk move/delete, pagination
+- [x] 3. chat - add/delete/get message (global + file-scoped), move, bulk move/delete, pagination - `internal/test/chattest`, 10 cases, wired via `job.RunChatTest`/`POST /api/testdata/chattest`/admin button. Covers add (global + file-scoped)/delete/get-by-id, `GetPage` pagination (limit truncation at `chat.PageSize`=50 + offset page), single move (append mode via `contentStorage`, new-file mode via a local `formatForEditorReplica`), bulk move (new-file mode), bulk delete, and the file-rename/file-delete cascades (`chat.MoveFilePath`, `chat.DeleteForFile`). `handleAPIMoveChatMessage`/`handleAPIBulkMoveChatMessages`/`handleAPIBulkDeleteChatMessages`/`formatForEditor` are all unexported in `internal/server`, so cases replicate their exact sequence of calls instead of calling the handlers - same approach as editorstest's bulk-metadata-patch case. editorstest's existing `caseBulkChatMoveDelete` (append-mode bulk move + bulk delete) was left as-is rather than migrated, since it's a reasonable smoke test in the editors context and chattest covers the same operations more thoroughly plus the new-file mode. Global (unscoped) chat messages aren't tied to any file path, so they can't be wiped via the `docs/test/` folder reset like every other suite's sample data - cases that add global messages delete them again themselves (`defer chat.Delete`), and cases using fixed file-scoped paths clean those via `chat.DeleteForFile` both at suite start and via `defer`, so a run is self-cleaning even if an earlier run left messages behind.
+
+  Verified live: chattest passes independently (10/10) and after "Clean Test Data", `run-all` shows 56/58 across all five suites (the 2 failures are search's pre-existing `search-deleted-file-by-*` cases, reproducible with searchtest run alone - not related to this suite).
 - [ ] 4. dashboard & kanban - dashboard (render each widget type, CRUD, import/export, rename); kanban (board load, filter, column order persists, card move)
 - [ ] 5. browse & info slideout - browse/icons (`/browse/files`, `/browse/media`, `/browse/{metadata}[/{value}]`, file tree, folder contents, autocomplete); metadata (get/set all fields, inline-display/inline-edit); TOC (header extraction); references (add/remove/list); connections (parents/ancestors/kids/grandchildren/related/used-links/links-to-here, conflict banner+diff)
 - [ ] 6. jobs, media, admin - jobs (metadata-rebuild, search-index, media-cleanup, cache-invalidate, manual trigger, status/history) - assert on filesystem/DB state, not just success; media (upload, list, preview, rename, delete, orphaned-cleanup, stats); admin actions (cache invalidate, git push/pull/test-auth, data path change); export/import (markdown, zip, metadata export, dashboard/settings export->import round-trip)

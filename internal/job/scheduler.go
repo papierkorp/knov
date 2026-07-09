@@ -31,6 +31,7 @@ var (
 	editorsTestMu    sync.Mutex
 	searchTestMu     sync.Mutex
 	gitHistoryTestMu sync.Mutex
+	chatTestMu       sync.Mutex
 	runAllTestsMu    sync.Mutex
 	runMu            sync.Mutex // prevents concurrent manual Run() calls
 )
@@ -239,6 +240,15 @@ func RunSearchTest() (*test.SuiteResult, error) {
 func RunGitHistoryTest() (*test.SuiteResult, error) {
 	j := &gitHistoryTestJob{}
 	if err := execute(&gitHistoryTestMu, j); err != nil {
+		return nil, err
+	}
+	return j.results, nil
+}
+
+// RunChatTest runs the chat test suite and returns its results alongside any error.
+func RunChatTest() (*test.SuiteResult, error) {
+	j := &chatTestJob{}
+	if err := execute(&chatTestMu, j); err != nil {
 		return nil, err
 	}
 	return j.results, nil

@@ -5311,6 +5311,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/testdata/chattest": {
+            "post": {
+                "description": "Executes the chat suite (add/delete/get message global + file-scoped, pagination, single move append/new-file, bulk move new-file, bulk delete, file rename/delete cascade)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run chat tests",
+                "responses": {
+                    "200": {
+                        "description": "chat test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/testdata/clean": {
             "post": {
                 "description": "Removes all test data files and metadata",
