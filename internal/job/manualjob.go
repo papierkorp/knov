@@ -178,7 +178,9 @@ func doMediaCleanup() (MediaCleanupResult, error) {
 			result.Failed++
 			continue
 		}
-		if err := files.MetaDataDelete(mediaPath); err != nil {
+		// no-refresh: avoid a full background cache rebuild per deleted file
+		// when cleaning up dozens of orphaned media at once; refreshed once below.
+		if err := files.MetaDataDeleteNoRefresh(mediaPath); err != nil {
 			logging.LogWarning("media-cleanup: failed to delete metadata for %s: %v", mediaPath, err)
 		}
 		result.Deleted++
@@ -187,6 +189,9 @@ func doMediaCleanup() (MediaCleanupResult, error) {
 
 	if err := files.UpdateOrphanedMediaCache(); err != nil {
 		logging.LogWarning("media-cleanup: failed to refresh orphaned media cache: %v", err)
+	}
+	if result.Deleted > 0 {
+		files.RefreshCaches()
 	}
 
 	return result, nil

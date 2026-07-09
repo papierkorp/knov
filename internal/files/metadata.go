@@ -367,27 +367,47 @@ func ClearConflictFile(originalFilePath string) error {
 	return MetaDataSaveRaw(metadata)
 }
 
-// MetaDataSave saves metadata using the configured storage method
+// MetaDataSave saves metadata using the configured storage method, then
+// refreshes the aggregate caches. When saving many files in one batch (e.g.
+// the cronjob processing a list of changed files that already refreshes
+// everything once at the end), use MetaDataSaveNoRefresh instead - otherwise
+// each save kicks off its own full background cache rebuild.
 func MetaDataSave(m *Metadata) error {
+	saved, err := metaDataSave(m)
+	if err != nil || !saved {
+		return err
+	}
+	RefreshCaches()
+	return nil
+}
+
+// MetaDataSaveNoRefresh is MetaDataSave without the aggregate cache refresh.
+// See MetaDataSave.
+func MetaDataSaveNoRefresh(m *Metadata) error {
+	_, err := metaDataSave(m)
+	return err
+}
+
+// metaDataSave does the actual write and reports whether anything was saved.
+func metaDataSave(m *Metadata) (bool, error) {
 	finalMetadata := metaDataUpdate(m.Path, m)
 	if finalMetadata == nil {
-		return nil
+		return false, nil
 	}
 
 	data, err := json.Marshal(finalMetadata)
 	if err != nil {
 		logging.LogError("failed to marshal metadata: %v", err)
-		return err
+		return false, err
 	}
 
 	if err := metadataStorage.Set(finalMetadata.Path, data); err != nil {
 		logging.LogError("failed to save metadata for %s: %v", finalMetadata.Path, err)
-		return err
+		return false, err
 	}
 
-	RefreshCaches()
 	logging.LogDebug("metadata saved for: %s", finalMetadata.Path)
-	return nil
+	return true, nil
 }
 
 // MetaDataSaveRaw saves metadata without processing
@@ -495,13 +515,26 @@ func MetaDataInitializeAll() error {
 	return nil
 }
 
-// MetaDataDelete removes metadata for a file path
+// MetaDataDelete removes metadata for a file path and refreshes the aggregate
+// caches. For deleting many files in one request, call MetaDataDeleteNoRefresh
+// in the loop and RefreshCaches() once afterwards instead - otherwise each
+// deletion kicks off its own full background cache rebuild.
 func MetaDataDelete(filepath string) error {
+	if err := MetaDataDeleteNoRefresh(filepath); err != nil {
+		return err
+	}
+	RefreshCaches()
+	return nil
+}
+
+// MetaDataDeleteNoRefresh removes metadata for a file path without refreshing
+// the aggregate caches (tags/collections/folders/editors/file list). See
+// MetaDataDelete.
+func MetaDataDeleteNoRefresh(filepath string) error {
 	normalized := pathutils.ToWithPrefix(filepath)
 	if err := chat.DeleteForFile(normalized); err != nil {
 		logging.LogWarning("failed to delete chat messages for %s: %v", normalized, err)
 	}
-	RefreshCaches()
 	return metadataStorage.Delete(normalized)
 }
 

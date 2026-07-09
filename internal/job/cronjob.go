@@ -67,7 +67,8 @@ func (j *fileJob) Run() error {
 					oldNormalized := pathutils.ToWithPrefix(move.OldPath)
 					newNormalized := pathutils.ToWithPrefix(move.NewPath)
 					logging.LogInfo("processing file move: %s -> %s", oldNormalized, newNormalized)
-					if err := files.UpdateLinksForMovedFile(oldNormalized, newNormalized); err != nil {
+					// no-refresh: this whole run ends with one RebuildAllCaches() below
+					if err := files.UpdateLinksForMovedFileNoRefresh(oldNormalized, newNormalized); err != nil {
 						logging.LogError("cronjob: failed to update links for moved file %s -> %s: %v", oldNormalized, newNormalized, err)
 						// fall back to generic add/delete handling so the new path still gets metadata
 						filesToProcess = append(filesToProcess, move.NewPath)
@@ -99,7 +100,7 @@ func (j *fileJob) Run() error {
 		logging.LogInfo("deleting metadata for %d files", len(filesToDelete))
 		for _, filePath := range filesToDelete {
 			normalizedPath := pathutils.ToWithPrefix(filePath)
-			if err := files.MetaDataDelete(normalizedPath); err != nil {
+			if err := files.MetaDataDeleteNoRefresh(normalizedPath); err != nil {
 				logging.LogError("cronjob: failed to delete metadata for %s: %v", normalizedPath, err)
 				continue
 			}
@@ -117,7 +118,7 @@ func (j *fileJob) Run() error {
 				Path:   normalizedPath,
 				Editor: files.EditorTypeToastUI,
 			}
-			if err := files.MetaDataSave(metadata); err != nil {
+			if err := files.MetaDataSaveNoRefresh(metadata); err != nil {
 				logging.LogError("cronjob: failed to save metadata for %s: %v", normalizedPath, err)
 				continue
 			}

@@ -398,11 +398,23 @@ func updateKidsAndLinksToHere(metadata *Metadata) {
 	metadata.LinksToHere = linksToHere
 }
 
-// UpdateLinksForMovedFile updates all files that link to a moved file with the new path.
+// UpdateLinksForMovedFile updates all files that link to a moved file with the
+// new path, then refreshes the aggregate caches. For moving/renaming many
+// files in one request (e.g. a folder move), call UpdateLinksForMovedFileNoRefresh
+// in the loop and RefreshCaches() once afterwards instead - otherwise each file
+// kicks off its own full background cache rebuild.
 func UpdateLinksForMovedFile(oldPath, newPath string) error {
-	logging.LogInfo("updating links for moved file: %s -> %s", oldPath, newPath)
-
+	if err := UpdateLinksForMovedFileNoRefresh(oldPath, newPath); err != nil {
+		return err
+	}
 	RefreshCaches()
+	return nil
+}
+
+// UpdateLinksForMovedFileNoRefresh is UpdateLinksForMovedFile without the
+// aggregate cache refresh. See UpdateLinksForMovedFile.
+func UpdateLinksForMovedFileNoRefresh(oldPath, newPath string) error {
+	logging.LogInfo("updating links for moved file: %s -> %s", oldPath, newPath)
 
 	normalizedOldPath := pathutils.ToWithPrefix(oldPath)
 	normalizedNewPath := pathutils.ToWithPrefix(newPath)

@@ -19,29 +19,18 @@
   - make docker build viable
     - for usage
     - for devs
-- optimize
-  - e.g. browse slideout shows loading for seconds - this has to go smoother (e.g. load all the cache first and then update to live data?)
-
-**larger project if time, not important**
-- codemirror copy + paste with y+p does not work properly (e.g. i have something in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
-  - is a harder problem to tackle
-- backup solution
-- create a system for themes (another repoistory with themes)
-  - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
+- larger project if time, not important
+  - codemirror copy + paste with y+p does not work properly (e.g. i have something in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
+    - is a harder problem to tackle
+  - backup solution
+  - create a system for themes (another repoistory with themes)
+    - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
 
 # performance updates
 
 **read**
-- use Query() instead of a loop through files.GetAllFiles()
 - use Query in filter.go
 - Refactor filter.go to use query
-
-**write**
-- add a SetBatch for rebuild metadata
-- But if you ever wanted to make it faster the right approach would be to build a one-time index of deleted files at startup/cronjob time and search that instead of walking commits live. (git history search)
-
-**concurrent**
-- make rebuild metadata concurrent e.g. each letter?
 
 dont give me any code yet - what options do i ave to make the rebuild metadata concurrent?
 at the moment im running through ALL files mutliple times (e.g. with MetaDataPurgeStale, MetaDataPurgeDuplicates, linksrebuild..)May 13Claude responded: Looking at the current flow, you have roughly:Weighed concurrent metadata rebuild strategies to eliminate redundant file iterationsWeighed concurrent metadata rebuild strategies to eliminate redundant file iterationsLooking at the current flow, you have roughly:

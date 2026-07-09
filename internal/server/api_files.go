@@ -936,9 +936,12 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, f := range filesToUpdate {
-		if err := files.UpdateLinksForMovedFile(f.oldRel, f.newRel); err != nil {
+		if err := files.UpdateLinksForMovedFileNoRefresh(f.oldRel, f.newRel); err != nil {
 			logging.LogWarning("failed to update links for %s -> %s: %v", f.oldRel, f.newRel, err)
 		}
+	}
+	if len(filesToUpdate) > 0 {
+		files.RefreshCaches()
 	}
 
 	logging.LogInfo("successfully moved folder: %s -> %s (%d files updated)", currentPath, newPath, len(filesToUpdate))
@@ -946,15 +949,26 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, map[string]string{"folderpath": newPath}, "")
 }
 
-// cleanupDeletedFileMetadata deletes a file's metadata and commits the
-// deletion to git. Shared by every delete path (single file, folder walk,
-// bulk delete) for a file that has already been removed from disk.
+// cleanupDeletedFileMetadata deletes a file's metadata, refreshes the
+// aggregate caches, and commits the deletion to git. For a single deleted
+// file (the common case).
 func cleanupDeletedFileMetadata(fullPath string) {
+	cleanupDeletedFileMetadataNoRefresh(fullPath)
+	files.RefreshCaches()
+	go git.CommitDeletedFile(fullPath)
+}
+
+// cleanupDeletedFileMetadataNoRefresh deletes a file's metadata without
+// refreshing the aggregate caches or committing to git. Used when deleting
+// many files in one request (folder delete, bulk delete) - the caller loops
+// this, then does one files.RefreshCaches() and one batched
+// git.CommitDeletedFiles() after the loop, instead of paying for a full cache
+// rebuild and a separate git commit per file.
+func cleanupDeletedFileMetadataNoRefresh(fullPath string) {
 	relPath := pathutils.ToRelative(fullPath)
-	if err := files.MetaDataDelete(relPath); err != nil {
+	if err := files.MetaDataDeleteNoRefresh(relPath); err != nil {
 		logging.LogWarning("failed to delete metadata for %s: %v", relPath, err)
 	}
-	go git.CommitDeletedFile(fullPath)
 }
 
 // removeFileAndMetadata removes a single file from disk, then cleans up its
@@ -964,6 +978,16 @@ func removeFileAndMetadata(fullPath string) error {
 		return err
 	}
 	cleanupDeletedFileMetadata(fullPath)
+	return nil
+}
+
+// removeFileAndMetadataNoRefresh is removeFileAndMetadata without the cache
+// refresh/git commit. See cleanupDeletedFileMetadataNoRefresh.
+func removeFileAndMetadataNoRefresh(fullPath string) error {
+	if err := os.Remove(fullPath); err != nil {
+		return err
+	}
+	cleanupDeletedFileMetadataNoRefresh(fullPath)
 	return nil
 }
 
@@ -1048,7 +1072,15 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, filePath := range filesInFolder {
-		cleanupDeletedFileMetadata(filePath)
+		cleanupDeletedFileMetadataNoRefresh(filePath)
+	}
+	if len(filesInFolder) > 0 {
+		files.RefreshCaches()
+		go func() {
+			if err := git.CommitDeletedFiles(filesInFolder); err != nil {
+				logging.LogError("failed to commit deleted folder %s: %v", folderPath, err)
+			}
+		}()
 	}
 
 	logging.LogInfo("successfully deleted folder: %s (%d files)", folderPath, len(filesInFolder))
@@ -1094,6 +1126,7 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 	}
 
 	deleted := 0
+	var deletedFullPaths []string
 	for _, file := range allFiles {
 		meta, err := files.MetaDataGet(file.Path)
 		if err != nil || meta == nil {
@@ -1125,11 +1158,21 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fullPath := pathutils.ToDocsPath(pathutils.ToRelative(file.Path))
-		if err := removeFileAndMetadata(fullPath); err != nil {
+		if err := removeFileAndMetadataNoRefresh(fullPath); err != nil {
 			logging.LogWarning("failed to delete file %s: %v", fullPath, err)
 			continue
 		}
+		deletedFullPaths = append(deletedFullPaths, fullPath)
 		deleted++
+	}
+
+	if deleted > 0 {
+		files.RefreshCaches()
+		go func() {
+			if err := git.CommitDeletedFiles(deletedFullPaths); err != nil {
+				logging.LogError("failed to commit bulk deleted files (%s=%s): %v", groupType, value, err)
+			}
+		}()
 	}
 
 	logging.LogInfo("bulk deleted %d files from %s=%s", deleted, groupType, value)

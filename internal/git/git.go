@@ -65,6 +65,21 @@ func openRepo() (*git.Repository, error) {
 	return git.PlainOpen(dataDir)
 }
 
+// gitWriteMu serializes operations that stage/commit changes to the repo
+// (Add + Commit against the on-disk index and refs). Saves/deletes each fire
+// their commit in a background goroutine, and the cronjob's CommitAllPending
+// runs independently on a timer, so without this lock two of these can race
+// on the same index file and corrupt it or silently drop a commit. Only the
+// entrypoints called concurrently from goroutines/cron need it - functions
+// they call internally (Push, SyncBeforeCommit) must not also take this lock,
+// or the second Lock() call would deadlock.
+var gitWriteMu sync.Mutex
+
+// gitPushMu serializes the background push goroutines Push() spawns, so two
+// concurrent pushes can't race each other. Deliberately separate from
+// gitWriteMu - see Push().
+var gitPushMu sync.Mutex
+
 // EnsureRepoConfig sets local git config options that should always be present.
 // Called once at startup. Safe to call on repos knov didn't create.
 func EnsureRepoConfig() {
@@ -237,6 +252,9 @@ func AddNewFiles() ([]string, error) {
 
 	logging.LogInfo("found %d untracked files", len(untrackedFiles))
 
+	gitWriteMu.Lock()
+	defer gitWriteMu.Unlock()
+
 	SyncBeforeCommit(untrackedFiles)
 
 	repo, err := openRepo()
@@ -274,13 +292,20 @@ func AddNewFiles() ([]string, error) {
 	return untrackedFiles, nil
 }
 
-// CommitDeletedFiles commits all deleted files
+// CommitDeletedFiles commits all deleted files in a single commit instead of
+// one commit per file. deletedFiles are full filesystem paths, same convention
+// as CommitFile/CommitDeletedFile.
 func CommitDeletedFiles(deletedFiles []string) error {
 	if len(deletedFiles) == 0 {
 		return nil
 	}
 
+	gitWriteMu.Lock()
+	defer gitWriteMu.Unlock()
+
 	SyncBeforeCommit(deletedFiles)
+
+	dataDir := configmanager.GetAppConfig().DataPath
 
 	repo, err := openRepo()
 	if err != nil {
@@ -294,9 +319,13 @@ func CommitDeletedFiles(deletedFiles []string) error {
 
 	// add deletions to staging
 	for _, file := range deletedFiles {
-		_, err = worktree.Add(file)
+		relPath, err := filepath.Rel(dataDir, file)
 		if err != nil {
-			logging.LogError("failed to stage deleted file %s: %v", file, err)
+			logging.LogError("failed to get relative path for %s: %v", file, err)
+			continue
+		}
+		if _, err := worktree.Add(relPath); err != nil {
+			logging.LogError("failed to stage deleted file %s: %v", relPath, err)
 			continue
 		}
 	}
@@ -329,6 +358,9 @@ func CommitFile(fullPath string) {
 		logging.LogError("git: failed to get relative path for %s: %v", fullPath, err)
 		return
 	}
+
+	gitWriteMu.Lock()
+	defer gitWriteMu.Unlock()
 
 	if remoteEnabled() {
 		SyncBeforeCommit([]string{fullPath})
@@ -381,6 +413,9 @@ func CommitDeletedFile(fullPath string) {
 		return
 	}
 
+	gitWriteMu.Lock()
+	defer gitWriteMu.Unlock()
+
 	if remoteEnabled() {
 		SyncBeforeCommit([]string{fullPath})
 	}
@@ -428,6 +463,9 @@ func CommitModifiedFiles(modifiedFiles []string) error {
 		return nil
 	}
 
+	gitWriteMu.Lock()
+	defer gitWriteMu.Unlock()
+
 	SyncBeforeCommit(modifiedFiles)
 
 	repo, err := openRepo()
@@ -471,6 +509,9 @@ func CommitModifiedFiles(modifiedFiles []string) error {
 // using the equivalent of "git add -A" and commits them.
 // Returns true when a commit was actually made, false when the tree was already clean.
 func CommitAllPending() (bool, error) {
+	gitWriteMu.Lock()
+	defer gitWriteMu.Unlock()
+
 	repo, err := openRepo()
 	if err != nil {
 		logging.LogDebug("git: no repository found, skipping commit")
@@ -1811,6 +1852,12 @@ func Push() {
 	}
 
 	go func() {
+		// separate from gitWriteMu on purpose: push runs in the background so
+		// local commits never block on the network round trip, but concurrent
+		// pushes still need to be serialized against each other.
+		gitPushMu.Lock()
+		defer gitPushMu.Unlock()
+
 		repo, err := openRepo()
 		if err != nil {
 			gitLog().Printf("push: failed to open repo: %v", err)
