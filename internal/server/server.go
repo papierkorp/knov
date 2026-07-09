@@ -410,6 +410,8 @@ func NewRouter() *chi.Mux {
 			r.Post("/searchtest", handleAPISearchTest)
 			r.Post("/githistorytest", handleAPIGitHistoryTest)
 			r.Post("/chattest", handleAPIChatTest)
+			r.Post("/dashboardtest", handleAPIDashboardTest)
+			r.Post("/kanbantest", handleAPIKanbanTest)
 			r.Post("/run-all", handleAPIRunAllTests)
 		})
 

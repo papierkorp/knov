@@ -4053,6 +4053,25 @@ paths:
       summary: Clean test data
       tags:
       - testdata
+  /api/testdata/dashboardtest:
+    post:
+      description: Executes the dashboard suite (CRUD, rename, export/import round-trip,
+        filter/fileContent/tags/collections/folders widget data)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: dashboard test results
+          schema:
+            $ref: '#/definitions/test.SuiteResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run dashboard tests
+      tags:
+      - testdata
   /api/testdata/editorstest:
     post:
       description: Executes the editors test suite (create/edit/save per editor type,
@@ -4129,6 +4148,25 @@ paths:
           schema:
             type: string
       summary: Run git history tests
+      tags:
+      - testdata
+  /api/testdata/kanbantest:
+    post:
+      description: Executes the kanban suite (board load, filter, search query, sorting,
+        card move + event log, column order persistence, pure helpers)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: kanban test results
+          schema:
+            $ref: '#/definitions/test.SuiteResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run kanban tests
       tags:
       - testdata
   /api/testdata/run-all:

@@ -5365,6 +5365,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/testdata/dashboardtest": {
+            "post": {
+                "description": "Executes the dashboard suite (CRUD, rename, export/import round-trip, filter/fileContent/tags/collections/folders widget data)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run dashboard tests",
+                "responses": {
+                    "200": {
+                        "description": "dashboard test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/testdata/editorstest": {
             "post": {
                 "description": "Executes the editors test suite (create/edit/save per editor type, section/table save, todo-toggle, convert-to-markdown, file rename/move, bulk ops)",
@@ -5460,6 +5487,33 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "git history test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/testdata/kanbantest": {
+            "post": {
+                "description": "Executes the kanban suite (board load, filter, search query, sorting, card move + event log, column order persistence, pure helpers)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run kanban tests",
+                "responses": {
+                    "200": {
+                        "description": "kanban test results",
                         "schema": {
                             "$ref": "#/definitions/test.SuiteResult"
                         }

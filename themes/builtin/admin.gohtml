@@ -308,6 +308,14 @@
                             hx-confirm="{{T "Run chat tests? This will create and delete chat messages and test files."}}">
                         {{T "Run Chat Tests"}}
                     </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/dashboardtest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run dashboard tests? This will create and delete test dashboards."}}">
+                        {{T "Run Dashboard Tests"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/kanbantest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run kanban tests? This will create test files and move kanban cards."}}">
+                        {{T "Run Kanban Tests"}}
+                    </button>
                     <button class="btn-secondary" hx-post="/api/testdata/run-all" hx-target="#testdata-result"
                             hx-confirm="{{T "Run all test suites? This will create test metadata objects."}}">
                         {{T "Run All Tests"}}

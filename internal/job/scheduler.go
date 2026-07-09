@@ -32,6 +32,8 @@ var (
 	searchTestMu     sync.Mutex
 	gitHistoryTestMu sync.Mutex
 	chatTestMu       sync.Mutex
+	dashboardTestMu  sync.Mutex
+	kanbanTestMu     sync.Mutex
 	runAllTestsMu    sync.Mutex
 	runMu            sync.Mutex // prevents concurrent manual Run() calls
 )
@@ -249,6 +251,24 @@ func RunGitHistoryTest() (*test.SuiteResult, error) {
 func RunChatTest() (*test.SuiteResult, error) {
 	j := &chatTestJob{}
 	if err := execute(&chatTestMu, j); err != nil {
+		return nil, err
+	}
+	return j.results, nil
+}
+
+// RunDashboardTest runs the dashboard test suite and returns its results alongside any error.
+func RunDashboardTest() (*test.SuiteResult, error) {
+	j := &dashboardTestJob{}
+	if err := execute(&dashboardTestMu, j); err != nil {
+		return nil, err
+	}
+	return j.results, nil
+}
+
+// RunKanbanTest runs the kanban test suite and returns its results alongside any error.
+func RunKanbanTest() (*test.SuiteResult, error) {
+	j := &kanbanTestJob{}
+	if err := execute(&kanbanTestMu, j); err != nil {
 		return nil, err
 	}
 	return j.results, nil

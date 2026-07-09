@@ -48,3 +48,16 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 - Calls `internal/chat`'s exported single-message API directly (add/delete/get-by-id, `GetPage` pagination, `MoveFilePath`, `DeleteForFile`) for both global and file-scoped messages
 - `handleAPIMoveChatMessage`/`handleAPIBulkMoveChatMessages`/`handleAPIBulkDeleteChatMessages`/`formatForEditor` are unexported in `internal/server`, so the move/bulk-move/bulk-delete cases replicate their exact call sequence instead - same approach as editorstest's bulk-metadata-patch case
 - Global (unscoped) messages aren't tied to a file path, so they can't be cleared by wiping the suite's `docs/test/` folder like every other suite's sample data - cases that create global messages delete them again themselves, and cases using fixed file-scoped paths clear those via `DeleteForFile` both at suite start and via `defer`
+
+## Dashboard suite (`internal/test/dashboardtest`)
+- Calls `internal/dashboard`'s exported CRUD directly, and covers each widget type's underlying data resolution (filter, fileContent, tags/collections/folders) rather than rendered HTML - `render.RenderWidget` lives in `internal/server/render`, unreachable here for the same import-cycle reason noted for search's format rendering
+- Export/import is a trivial `json.MarshalIndent`/`Unmarshal` round-trip in the real handler, replicated inline rather than imported
+- Dashboards live in `configStorage` keyed by id, not under `docs/test/` - fixed dashboard names are deleted by their derived id at suite start instead of relying on a folder wipe
+
+## Kanban suite (`internal/test/kanbantest`)
+- Calls `internal/kanban`'s exported board-build, card-move, order-persistence and helper functions directly
+- `kanban.MoveCard` saves via `MetaDataSaveRaw`, which skips the cache refresh `MetaDataSave` normally triggers - cases call `files.InvalidateFileListCache()` afterward so `BuildBoard` sees the move immediately (the kanban analog of searchtest's synchronous reindex)
+- Sample cards pin `CreatedAt` via a `MetaDataSave` followed by a `MetaDataGet`+`MetaDataSaveRaw` round-trip, since `MetaDataSave` always stamps `LastEdited`/`CreatedAt` from the save call itself
+- `MetaDataSave` only overwrites `Tags` when the new value is non-empty, so a stale kanban status tag from a previous run has to be stripped explicitly via `MetaDataSaveRaw` at seed time
+- Column order (`kanban-order/<collection>`) is config-store backed like dashboards, not touched by wiping `docs/test/`, so it's reset at suite start and via `defer`
+- Native HTML5 drag-and-drop itself is the one piece genuinely untestable outside a browser - the suite covers the API/state it drives (`SaveOrder`/`BuildBoard`) instead

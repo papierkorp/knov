@@ -7,9 +7,11 @@ import (
 
 	"knov/internal/test"
 	"knov/internal/test/chattest"
+	"knov/internal/test/dashboardtest"
 	"knov/internal/test/editorstest"
 	"knov/internal/test/filtertest"
 	"knov/internal/test/githistorytest"
+	"knov/internal/test/kanbantest"
 	"knov/internal/test/searchtest"
 )
 
@@ -157,6 +159,54 @@ func (j *chatTestJob) Run() error {
 func (j *chatTestJob) Output() any { return j.results }
 
 func (j *chatTestJob) Message() string {
+	if j.results == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d passed, %d failed", j.results.Passed, j.results.Failed)
+}
+
+type dashboardTestJob struct {
+	results *test.SuiteResult
+}
+
+func (j *dashboardTestJob) Name() string { return "dashboard-test" }
+
+func (j *dashboardTestJob) Run() error {
+	results, err := (dashboardtest.Suite{}).Run()
+	j.results = results
+	if err != nil {
+		return fmt.Errorf("dashboard tests failed: %w", err)
+	}
+	return nil
+}
+
+func (j *dashboardTestJob) Output() any { return j.results }
+
+func (j *dashboardTestJob) Message() string {
+	if j.results == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d passed, %d failed", j.results.Passed, j.results.Failed)
+}
+
+type kanbanTestJob struct {
+	results *test.SuiteResult
+}
+
+func (j *kanbanTestJob) Name() string { return "kanban-test" }
+
+func (j *kanbanTestJob) Run() error {
+	results, err := (kanbantest.Suite{}).Run()
+	j.results = results
+	if err != nil {
+		return fmt.Errorf("kanban tests failed: %w", err)
+	}
+	return nil
+}
+
+func (j *kanbanTestJob) Output() any { return j.results }
+
+func (j *kanbanTestJob) Message() string {
 	if j.results == nil {
 		return ""
 	}
