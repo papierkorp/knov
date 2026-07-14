@@ -485,6 +485,10 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 		if strings.HasPrefix(u, "/files/media/") {
 			return "[" + text + "](/media/" + u[len("/files/media/"):] + ")"
 		}
+		if strings.HasPrefix(u, "/media/") {
+			// already an absolute, directly-servable media route — leave untouched
+			return match
+		}
 		if strings.HasPrefix(u, "media/") {
 			return "[" + text + "](/" + u + "?mode=detail)"
 		}
