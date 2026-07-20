@@ -28,6 +28,11 @@
 - move file button (can be done in rename)
 - kanban add button - let me set a folder e.g. i have a `sirconic` collection but i want new files to be created in `sirconic/todo` instead (allow me to set a folder for each collection)
 - <details> are not shown and are blocking section edit
+- file upload per drag and drop into the toastui editor
+- multi file upload per insertMedia button in toastui editor
+- pdf export for full site
+- pdf export for section
+- change kanban to use specific (defined folders) instead of collections
 
 # testing
 
