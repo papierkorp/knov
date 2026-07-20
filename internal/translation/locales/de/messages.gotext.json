@@ -207,6 +207,11 @@
       "translation": ""
     },
     {
+      "id": "board history",
+      "message": "board history",
+      "translation": ""
+    },
+    {
       "id": "browse",
       "message": "browse",
       "translation": ""
@@ -349,11 +354,6 @@
     {
       "id": "collection",
       "message": "collection",
-      "translation": ""
-    },
-    {
-      "id": "collection history",
-      "message": "collection history",
       "translation": ""
     },
     {
@@ -1647,6 +1647,11 @@
       "translation": ""
     },
     {
+      "id": "Kanban Boards",
+      "message": "Kanban Boards",
+      "translation": ""
+    },
+    {
       "id": "Kanban Card Styles",
       "message": "Kanban Card Styles",
       "translation": ""
@@ -1962,13 +1967,8 @@
       "translation": ""
     },
     {
-      "id": "missing collection",
-      "message": "missing collection",
-      "translation": ""
-    },
-    {
-      "id": "missing collection parameter",
-      "message": "missing collection parameter",
+      "id": "missing board",
+      "message": "missing board",
       "translation": ""
     },
     {
@@ -2014,6 +2014,11 @@
     {
       "id": "missing filepath parameter",
       "message": "missing filepath parameter",
+      "translation": ""
+    },
+    {
+      "id": "missing folder parameter",
+      "message": "missing folder parameter",
       "translation": ""
     },
     {
@@ -2142,6 +2147,11 @@
       "translation": ""
     },
     {
+      "id": "no boards configured",
+      "message": "no boards configured",
+      "translation": ""
+    },
+    {
       "id": "no children",
       "message": "no children",
       "translation": ""
@@ -2149,11 +2159,6 @@
     {
       "id": "no children found",
       "message": "no children found",
-      "translation": ""
-    },
-    {
-      "id": "no collections found",
-      "message": "no collections found",
       "translation": ""
     },
     {
@@ -2622,6 +2627,16 @@
       "translation": ""
     },
     {
+      "id": "Run Dashboard Tests",
+      "message": "Run Dashboard Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run dashboard tests? This will create and delete test dashboards.",
+      "message": "Run dashboard tests? This will create and delete test dashboards.",
+      "translation": ""
+    },
+    {
       "id": "Run Editors Tests",
       "message": "Run Editors Tests",
       "translation": ""
@@ -2649,6 +2664,16 @@
     {
       "id": "Run git history tests? This will create test files, git commits, and temporarily point the git remote at a throwaway local repo.",
       "message": "Run git history tests? This will create test files, git commits, and temporarily point the git remote at a throwaway local repo.",
+      "translation": ""
+    },
+    {
+      "id": "Run Kanban Tests",
+      "message": "Run Kanban Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run kanban tests? This will create test files and move kanban cards.",
+      "message": "Run kanban tests? This will create test files and move kanban cards.",
       "translation": ""
     },
     {
@@ -2762,8 +2787,8 @@
       "translation": ""
     },
     {
-      "id": "select a collection to open the kanban board",
-      "message": "select a collection to open the kanban board",
+      "id": "select a board to open the kanban board",
+      "message": "select a board to open the kanban board",
       "translation": ""
     },
     {
@@ -3124,6 +3149,11 @@
     {
       "id": "undo",
       "message": "undo",
+      "translation": ""
+    },
+    {
+      "id": "unknown board",
+      "message": "unknown board",
       "translation": ""
     },
     {

@@ -26,6 +26,17 @@ func CollectionFromPath(path string) string {
 	return strings.SplitN(folderPath, "/", 2)[0]
 }
 
+// FolderFromPath derives a file's containing folder path (all segments joined with "/"),
+// matching the Folders metadata field computed by metaDataUpdate. Returns "" for root-level files.
+func FolderFromPath(path string) string {
+	relPath := pathutils.ToRelative(path)
+	folderPath := filepath.ToSlash(filepath.Dir(relPath))
+	if folderPath == "." || folderPath == "" {
+		return ""
+	}
+	return folderPath
+}
+
 // File represents a file in the system
 type File struct {
 	Name     string    `json:"name"`

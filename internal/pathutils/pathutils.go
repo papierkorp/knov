@@ -185,6 +185,13 @@ func getMediaPath() string {
 	return filepath.Join(configmanager.GetAppConfig().DataPath, "media")
 }
 
+// FolderContains reports whether dirPath is folderPath itself or a subfolder of it
+// (recursive folder-path matching) — shared by kanban board scoping and
+// auto-create-tag folder scoping.
+func FolderContains(dirPath, folderPath string) bool {
+	return dirPath == folderPath || strings.HasPrefix(dirPath, folderPath+"/")
+}
+
 // ToFileURL returns a browser-safe URL for viewing a file.
 // Segments are path-escaped so spaces, Unicode, and special characters work correctly.
 func ToFileURL(rel string) string {

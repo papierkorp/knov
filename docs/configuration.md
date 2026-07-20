@@ -101,12 +101,12 @@ Filters are saved queries that produce a live list of matching files.
 
 ## File Auto-Tagging
 
-Useful for kanban setups where every new file should land in a default column.
+Useful for kanban setups where every new file in a given folder should land in a default column.
 
-- `KNOV_AUTOCREATE_TAGS` - comma-separated list of tags applied to every newly created file
-- `KNOV_AUTOCREATE_COLLECTIONS` - if set, auto-tagging only applies to files created in these collections; leave empty to apply everywhere
+- `KNOV_AUTOCREATE_TAGS` - comma-separated list of `folder/path:tag` entries (recursive - also covers subfolders); a bare tag with no `folder/path:` prefix applies to every newly created file everywhere
+- Multiple entries can target the same folder (or the same tag can be repeated across folders) - each entry is independent
 
-Example: `KNOV_AUTOCREATE_TAGS=kb-status-inbox` puts every new file straight into the inbox column.
+Example: `KNOV_AUTOCREATE_TAGS=projects/work:kb-status-inbox,personal/todo:kb-status-inbox` puts every new file created under either of those two kanban board folders straight into the inbox column of its board.
 
 ---
 

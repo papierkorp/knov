@@ -52,8 +52,7 @@ type AppConfig struct {
 	KanbanPrefix            string
 	KanbanStatuses          []string
 	KanbanColumns           []string
-	AutoCreateTags          []string
-	AutoCreateCollections   []string
+	AutoCreateTags          []AutoCreateTag
 	KanbanTagColors         map[string]string
 	KanbanCardStyles        map[string]string // status → "normal"|"italic"|"highlighted"|"deleted"
 	KanbanArchiveStatus     string
@@ -67,6 +66,13 @@ type KanbanBoard struct {
 	FolderPath  string
 	DisplayName string
 	Slug        string
+}
+
+// AutoCreateTag applies Tag to every new file created under FolderPath (recursive - also
+// covers subfolders). FolderPath == "" means apply to every new file regardless of location.
+type AutoCreateTag struct {
+	FolderPath string
+	Tag        string
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -116,8 +122,7 @@ func InitAppConfig() {
 		KanbanPrefix:            getEnv("KNOV_KANBAN_PREFIX", "kb"),
 		KanbanStatuses:          getStringListEnv("KNOV_KANBAN_STATUS", []string{"inbox", "inprogress", "blocked", "archive"}),
 		KanbanColumns:           getStringListEnv("KNOV_KANBAN_COLUMNS", []string{"inbox", "inprogress", "blocked"}),
-		AutoCreateTags:          getStringListEnv("KNOV_AUTOCREATE_TAGS", []string{}),
-		AutoCreateCollections:   getStringListEnv("KNOV_AUTOCREATE_COLLECTIONS", []string{}),
+		AutoCreateTags:          getAutoCreateTagsEnv("KNOV_AUTOCREATE_TAGS"),
 		KanbanTagColors:         getStringMapEnv("KNOV_KANBAN_TAG_COLORS"),
 		KanbanCardStyles:        getStringMapEnv("KNOV_KANBAN_CARD_STYLES"),
 		KanbanArchiveStatus:     getEnv("KNOV_KANBAN_ARCHIVE_STATUS", "archive"),
@@ -220,6 +225,37 @@ func getKanbanBoardsEnv(key string) []KanbanBoard {
 	return boards
 }
 
+// getAutoCreateTagsEnv parses "folder/path:tagname, tagname2, other/folder:tagname3" into a
+// list of auto-create tag rules. An entry with no ":" is a bare tag applied to every new file;
+// an entry with ":" scopes the tag to that folder (and its subfolders).
+func getAutoCreateTagsEnv(key string) []AutoCreateTag {
+	var result []AutoCreateTag
+	value := os.Getenv(key)
+	if value == "" {
+		return result
+	}
+	for _, entry := range strings.Split(value, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		parts := strings.SplitN(entry, ":", 2)
+		if len(parts) == 1 {
+			if tag := strings.TrimSpace(parts[0]); tag != "" {
+				result = append(result, AutoCreateTag{Tag: tag})
+			}
+			continue
+		}
+		folderPath := strings.Trim(strings.TrimSpace(parts[0]), "/")
+		tag := strings.TrimSpace(parts[1])
+		if tag == "" {
+			continue
+		}
+		result = append(result, AutoCreateTag{FolderPath: folderPath, Tag: tag})
+	}
+	return result
+}
+
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
@@ -272,14 +308,9 @@ func GetKanbanColumns() []string {
 	return appConfig.KanbanColumns
 }
 
-// GetAutoCreateTags returns tags automatically added to every newly created file
-func GetAutoCreateTags() []string {
+// GetAutoCreateTags returns the folder-scoped tags applied to newly created files
+func GetAutoCreateTags() []AutoCreateTag {
 	return appConfig.AutoCreateTags
-}
-
-// GetAutoCreateCollections returns the collections that scope auto-tag behaviour (empty = all)
-func GetAutoCreateCollections() []string {
-	return appConfig.AutoCreateCollections
 }
 
 // KanbanStatusTag returns the full tag for a given status

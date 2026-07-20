@@ -391,6 +391,8 @@ sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 
   *(This exact ambiguity caused a real regression during the folder-boards migration: with a board configured at `test` and every test suite's fixtures living under `docs/test/`, `resolveBoardFolder`'s longest-prefix guess collapsed `kanbantest`'s own fixture folder `test/kanban-tests` down to `test`, so its event-log assertion queried the wrong key and saw 0 events. Passing the board explicitly removes the guess entirely.)*
 - The HTTP layer (`api_kanban.go`) is the only place that resolves slug → folder, via `configmanager.GetKanbanBoardBySlug`; unknown slugs 404
 - `Metadata.Collection`/`CollectionFromPath` are untouched and still back browse-by-collection, the dashboard collections widget, the generic filter engine's `collection` criterion, etc. - kanban just no longer uses them for board scoping
+- The recursive "is dirPath under folderPath" check is shared, not duplicated: `pathutils.FolderContains(dirPath, folderPath)` backs both `kanban.folderMatches`/`resolveBoardFolder` and `KNOV_AUTOCREATE_TAGS`'s folder scoping (`api_files.go`, via `files.FolderFromPath`) - same recursive semantics everywhere a folder scope is matched against a file's location
+- `KNOV_AUTOCREATE_TAGS` (formerly two settings, `KNOV_AUTOCREATE_TAGS` + `KNOV_AUTOCREATE_COLLECTIONS`) is now a single list of `configmanager.AutoCreateTag{FolderPath, Tag}`: a bare entry (no `:`) means `FolderPath == ""`, applied to every new file; a `folder/path:tag` entry is folder-scoped and recursive, matching board-folder semantics instead of the old flat collection-equality check
 
 ## Key Files
 

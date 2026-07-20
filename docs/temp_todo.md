@@ -33,7 +33,8 @@
 - pdf export for section
 - if a file is moved outside the app => are all links from rebuild?
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
-- change KNOV_AUTOCREATE_TAGS and KNOV_AUTOCREATE_COLLECTIONS to one: KNOV_AUTOCREATE_TAGS which takes: <folderpath/foldername>:<tagname> so its way more flexible and also works better with the new kanban system
+- update kanban board history - to use folders instead of collections
+- now we have a few different FolderFromPath function where most accomplish the same or am im wrong? i just felt like we already added a few of them => maybe we can consolidate them?
 
 # testing
 

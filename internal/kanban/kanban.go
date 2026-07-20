@@ -53,8 +53,7 @@ const (
 // i.e. board scoping is recursive: a board configured for "projects/work" also includes
 // "projects/work/urgent/*".
 func folderMatches(meta *files.Metadata, folderPath string) bool {
-	dir := strings.Join(meta.Folders, "/")
-	return dir == folderPath || strings.HasPrefix(dir, folderPath+"/")
+	return pathutils.FolderContains(strings.Join(meta.Folders, "/"), folderPath)
 }
 
 // resolveBoardFolder returns the most specific (longest) configured kanban board folder that
@@ -62,7 +61,7 @@ func folderMatches(meta *files.Metadata, folderPath string) bool {
 func resolveBoardFolder(dir string) string {
 	best := ""
 	for _, b := range configmanager.GetKanbanBoards() {
-		if (dir == b.FolderPath || strings.HasPrefix(dir, b.FolderPath+"/")) && len(b.FolderPath) > len(best) {
+		if pathutils.FolderContains(dir, b.FolderPath) && len(b.FolderPath) > len(best) {
 			best = b.FolderPath
 		}
 	}

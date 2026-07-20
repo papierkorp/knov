@@ -97,8 +97,7 @@ All settings go in your `.env` file. Copy `.env.example` to get started — ever
 
 | Variable | Notes |
 |---|---|
-| `KNOV_AUTOCREATE_TAGS` | Tags added to every new file automatically |
-| `KNOV_AUTOCREATE_COLLECTIONS` | Limit auto-tags to these collections only |
+| `KNOV_AUTOCREATE_TAGS` | Tags added to new files — `folder/path:tag` scopes to a folder (recursive), a bare tag applies everywhere |
 | `KNOV_USE_EXTENSION_INDEX` | Use `.index` extension instead of `.md` for index/filter files |
 
 ## Notes
