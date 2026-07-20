@@ -25,7 +25,7 @@
   - backup solution
   - create a system for themes (another repoistory with themes)
     - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
-- move file button (can be done in rename)
+- move file button (can be done in rename at the moment)
 - <details> are not shown and are blocking section edit
 - file upload per drag and drop into the toastui editor
 - multi file upload per insertMedia button in toastui editor
@@ -35,6 +35,10 @@
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
 - update kanban board history - to use folders instead of collections
 - now we have a few different FolderFromPath function where most accomplish the same or am im wrong? i just felt like we already added a few of them => maybe we can consolidate them?
+- update cache if a file in kanban is moved (at the moment its always moved back to its starting position in the board)
+- create todofolder for: it/gamedev/projekte/turnbasedmonster based on claude todo
+- fts5 use analzye? (https://jvns.ca/blog/2026/07/17/learning-about-running-sqlite/)
+
 
 # testing
 
