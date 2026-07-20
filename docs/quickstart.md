@@ -51,9 +51,9 @@ Back the data and storage folders up to keep everything safe.
 
 ## Kanban
 
-- A file needs to be inside a **subfolder** to appear on a board - the folder name becomes the board name (a collection)
-- Add a status tag (can be configured, defaults to `kb-status`) to a file to put it on the board: `kb-status-inbox`, `kb-status-inprogress`, `kb-status-blocked`, `kb-status-archive`
-- Go to `/kanban` to open a board
+- Configure boards explicitly with `KNOV_KANBAN_BOARDS=folder/path:Display Name` (comma-separated) - each board covers that folder and its subfolders
+- Add a status tag (can be configured, defaults to `kb-status`) to a file in a board's folder to put it on the board: `kb-status-inbox`, `kb-status-inprogress`, `kb-status-blocked`, `kb-status-archive`
+- Go to `/kanban` to see your configured boards and open one
 
 ## Themes
 
@@ -88,6 +88,7 @@ All settings go in your `.env` file. Copy `.env.example` to get started — ever
 
 | Variable | Notes |
 |---|---|
+| `KNOV_KANBAN_BOARDS` | Boards to show — `folder/path:Display Name`, comma-separated |
 | `KNOV_KANBAN_PREFIX` | Tag prefix for status tags (default: `kb-status`) |
 | `KNOV_KANBAN_COLUMNS` | Comma-separated list of status columns |
 | `KNOV_KANBAN_TAG_COLORS` | Color chips per tag — e.g. `urgent:red,markus:green` |

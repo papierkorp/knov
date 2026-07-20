@@ -796,9 +796,9 @@ func CacheInvalidate() error {
 	return nil
 }
 
-// GetAncestorsInCollection returns unique ancestor paths from all files in a collection
-func GetAncestorsInCollection(collection string) ([]string, error) {
-	allFiles, err := GetAllPhysicalFiles()
+// GetAncestorsInFolder returns unique ancestor paths from all files in a folder (and its subfolders).
+func GetAncestorsInFolder(folderPath string) ([]string, error) {
+	allFiles, err := GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}
@@ -806,7 +806,11 @@ func GetAncestorsInCollection(collection string) ([]string, error) {
 	seen := make(map[string]struct{})
 	var ancestors []string
 	for _, f := range allFiles {
-		if f.Metadata == nil || f.Metadata.Collection != collection {
+		if f.Metadata == nil {
+			continue
+		}
+		dir := strings.Join(f.Metadata.Folders, "/")
+		if dir != folderPath && !strings.HasPrefix(dir, folderPath+"/") {
 			continue
 		}
 		if len(f.Metadata.Ancestor) == 0 {

@@ -369,7 +369,7 @@ sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 
 
 ## Architecture
 
-- Board is a **page shell + HTMX** pattern: `/kanban/{collection}` renders the template, `GET /api/kanban/{collection}` returns the column HTML on load and on filter change
+- Board is a **page shell + HTMX** pattern: `/kanban/{board}` renders the template, `GET /api/kanban/{board}` returns the column HTML on load and on filter change. `{board}` is a URL slug, not a raw folder path.
 - Excerpts are **lazy-loaded** per card via `GET /api/kanban/excerpt?filepath=...&chars=30`
 - Card moves are **optimistic UI** — the card is moved in the DOM immediately, then `POST /api/kanban/card/move` persists the tag change using `MetaDataSaveRaw` (skips parent/link processing)
 
@@ -380,18 +380,26 @@ sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 
 - `sanitizeKanbanTags()` in `metadata.go` enforces: one kanban tag max, known sub-namespace only (`status` for now), status must be in allowlist — called on every `MetaDataSave`
 - Adding a new sub-namespace (e.g. `kb-priority-*`): add it to `knownSubNamespaces` in `sanitizeKanbanTags`
 
-## Collection
+## Boards
 
-- A file appears on a board only if `metadata.Collection == {collection}` — collection is derived from the file's first-level folder automatically
-- Root-level files (`collection: ""`) never appear on any board
+- Boards are explicitly configured folders, not auto-derived collections: `KNOV_KANBAN_BOARDS=folder/path:Display Name,...` (`internal/configmanager/config.go` → `AppConfig.KanbanBoards []KanbanBoard{FolderPath, DisplayName, Slug}`)
+- `Slug` is derived from `FolderPath` via `utils.GenerateID` (same helper used for markdown header/TOC anchor IDs) - duplicate slugs get a numeric suffix, not an error
+- A file appears on a board if its directory equals the board's `FolderPath` or is nested under it (`kanban.folderMatches`, recursive match against `metadata.Folders` joined with `/`) - this is a superset of the old "same top-level collection" rule, not a replacement filter criterion in the generic filter engine
+- `kanban.BuildBoard`/`TagsForFolder`/`FilesForFolder`/`GetOrder`/`SaveOrder` all take a literal folder path, not a slug - they have no dependency on `configmanager.GetKanbanBoards()` at all, which is what lets `kanbantest` seed/assert against a folder path directly with zero config plumbing
+- `kanban.MoveCard(boardFolder, filePath, newStatus string)` takes the board folder explicitly so the event log entry is scoped to the board the move actually happened on - the drag-and-drop frontend already knows which board it's on (`window.KANBAN_CONFIG.board`), so `kanban.js` sends it as a `board` form field on every `/api/kanban/card/move` call, and `api_kanban.go` resolves it to a folder path before calling `MoveCard`. Boards are recursive (`projects/work` also covers `projects/work/urgent`), so guessing the board purely from the file's own directory is ambiguous whenever board folders overlap or nest - `kanban.resolveBoardFolder` (longest matching configured `FolderPath`) is kept only as a fallback for callers that don't know the board (empty `boardFolder`), not as the primary path
+
+  *(This exact ambiguity caused a real regression during the folder-boards migration: with a board configured at `test` and every test suite's fixtures living under `docs/test/`, `resolveBoardFolder`'s longest-prefix guess collapsed `kanbantest`'s own fixture folder `test/kanban-tests` down to `test`, so its event-log assertion queried the wrong key and saw 0 events. Passing the board explicitly removes the guess entirely.)*
+- The HTTP layer (`api_kanban.go`) is the only place that resolves slug → folder, via `configmanager.GetKanbanBoardBySlug`; unknown slugs 404
+- `Metadata.Collection`/`CollectionFromPath` are untouched and still back browse-by-collection, the dashboard collections widget, the generic filter engine's `collection` criterion, etc. - kanban just no longer uses them for board scoping
 
 ## Key Files
 
 | File                    | Role                                                                 |
 | ----------------------- | -------------------------------------------------------------------- |
-| `config.go`             | `GetKanbanPrefix/Statuses/Columns`, `IsKanbanTag`, `KanbanStatusTag` |
+| `config.go`             | `GetKanbanPrefix/Statuses/Columns`, `GetKanbanBoards/GetKanbanBoardBySlug`, `IsKanbanTag`, `KanbanStatusTag` |
 | `metadata.go`           | `sanitizeKanbanTags`, `SanitizeKanbanTags`                           |
-| `api_kanban.go`         | board handler, move handler, excerpt handler, `extractExcerpt`       |
+| `kanban.go`             | `BuildBoard`, `TagsForFolder`, `FilesForFolder`, `MoveCard`, `folderMatches`, `resolveBoardFolder` |
+| `api_kanban.go`         | board handler, move handler, excerpt handler, `resolveBoard` (slug→folder, 404 on unknown) |
 | `render_kanban.go`      | `RenderKanbanCard`, `RenderKanbanColumn`                             |
 | `static_kanban.css`     | all kanban styles (ID + class selectors)                             |
 | `{theme}-kanban.gohtml` | page shell per theme                                                 |
@@ -399,6 +407,7 @@ sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 
 ## Env Vars
 
 ```
+KNOV_KANBAN_BOARDS=projects/work:Work Board,personal/todo:Personal Todo  # boards (folder:name)
 KNOV_KANBAN_PREFIX=kb          # tag prefix
 KNOV_KANBAN_STATUS=inbox,inprogress,blocked,archive  # all valid statuses
 KNOV_KANBAN_COLUMNS=inbox,inprogress,blocked         # visible columns (subset)

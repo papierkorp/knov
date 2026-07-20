@@ -34,7 +34,7 @@ type FilterFormOpts struct {
 	FilterID    string // for Save context: shown as input (new) or hidden (edit)
 	IsEdit      bool   // for Save context: true = editing existing filter
 	WidgetIndex int    // for Dashboard context
-	Collection  string // for Kanban context
+	KanbanBoard string // for Kanban context: board URL slug
 }
 
 // ----------------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ func resolveFilterFormActionTarget(opts FilterFormOpts) (action, submitTarget st
 	case FilterFormContextSave:
 		return "/api/filters/save", "#editor-status"
 	case FilterFormContextKanban:
-		return fmt.Sprintf("/api/kanban/%s/filter", opts.Collection), "#view-kanban-board-wrap"
+		return fmt.Sprintf("/api/kanban/%s/filter", opts.KanbanBoard), "#view-kanban-board-wrap"
 	default: // FilterFormContextApply
 		return "/api/filters", "#filter-results"
 	}

@@ -1,7 +1,7 @@
 // theme: builtin
 (function () {
     var cfg = window.KANBAN_CONFIG || {};
-    var collection = cfg.collection || '';
+    var board = cfg.board || '';
     var archiveStatus = cfg.archiveStatus || '';
     var eventsModulePath = cfg.eventsModulePath || '';
     var t = cfg.t || {};
@@ -61,7 +61,7 @@
             (kanbanEventsModule ? Promise.resolve(kanbanEventsModule) : import(eventsModulePath))
                 .then(function (mod) {
                     kanbanEventsModule = mod;
-                    mod.show({ wrap: wrap, collection: collection, t: eventsT });
+                    mod.show({ wrap: wrap, board: board, t: eventsT });
                 })
                 .catch(function () {
                     wrap.innerHTML = '<p>' + (t.failedToLoad || '') + '</p>';
@@ -70,7 +70,7 @@
             btn.title = t.showEvents || '';
             btn.querySelector('i').className = 'fa fa-timeline';
             btn.classList.replace('btn-primary', 'btn-secondary');
-            htmx.ajax('GET', '/api/kanban/' + collection, { target: '#view-kanban-board-wrap', swap: 'innerHTML' });
+            htmx.ajax('GET', '/api/kanban/' + board, { target: '#view-kanban-board-wrap', swap: 'innerHTML' });
         }
     };
 
@@ -129,6 +129,7 @@
             var body = new URLSearchParams();
             body.append('filepath', filepath);
             body.append('status', newStatus);
+            body.append('board', board);
             fetch('/api/kanban/card/move', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
                 .catch(function (err) { console.error('kanban move error', err); });
             saveColumnOrder(oldStatus);
@@ -162,6 +163,7 @@
         var body = new URLSearchParams();
         body.append('filepath', filepath);
         body.append('status', archiveStatus);
+        body.append('board', board);
         fetch('/api/kanban/card/move', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
             .catch(function (err) { console.error('kanban archive error', err); });
     };
@@ -193,7 +195,7 @@
         var body = new URLSearchParams();
         body.append('status', status);
         body.append('order', paths.join(','));
-        fetch('/api/kanban/' + collection + '/order', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
+        fetch('/api/kanban/' + board + '/order', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
             .catch(function (err) { console.error('kanban order error', err); });
     }
 

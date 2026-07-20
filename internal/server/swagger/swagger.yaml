@@ -2322,14 +2322,14 @@ paths:
       summary: Health check
       tags:
       - health
-  /api/kanban/{collection}:
+  /api/kanban/{board}:
     get:
       description: Returns all kanban cards grouped by status column for the given
-        collection
+        board
       parameters:
-      - description: Collection name
+      - description: Board slug
         in: path
-        name: collection
+        name: board
         required: true
         type: string
       - description: Filter by ancestor (epic)
@@ -2348,17 +2348,17 @@ paths:
       - application/json
       - text/html
       responses: {}
-      summary: Get kanban board for a collection
+      summary: Get kanban board for a folder
       tags:
       - kanban
-  /api/kanban/{collection}/events:
+  /api/kanban/{board}/events:
     get:
       description: Returns kanban card move events, newest first. All parameters are
         optional.
       parameters:
-      - description: Collection name
+      - description: Board slug
         in: path
-        name: collection
+        name: board
         required: true
         type: string
       - description: Filter by file path
@@ -2383,14 +2383,14 @@ paths:
       summary: Get kanban event log
       tags:
       - kanban
-  /api/kanban/{collection}/files:
+  /api/kanban/{board}/files:
     get:
       description: Returns the file paths of all cards currently on the kanban board
-        for a collection, sorted.
+        for a board, sorted.
       parameters:
-      - description: Collection name
+      - description: Board slug
         in: path
-        name: collection
+        name: board
         required: true
         type: string
       produces:
@@ -2399,16 +2399,16 @@ paths:
       summary: Get kanban card file paths
       tags:
       - kanban
-  /api/kanban/{collection}/filter:
+  /api/kanban/{board}/filter:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Filters the kanban board using the full filter form; collection
-        is always injected as the first criterion
+      description: Filters the kanban board using the full filter form, scoped to
+        the board's folder
       parameters:
-      - description: Collection name
+      - description: Board slug
         in: path
-        name: collection
+        name: board
         required: true
         type: string
       produces:
@@ -2422,15 +2422,15 @@ paths:
       summary: Apply advanced filter to kanban board
       tags:
       - kanban
-  /api/kanban/{collection}/order:
+  /api/kanban/{board}/order:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Persists the drag-and-drop card order for all columns in a collection
+      description: Persists the drag-and-drop card order for all columns in a board
       parameters:
-      - description: Collection name
+      - description: Board slug
         in: path
-        name: collection
+        name: board
         required: true
         type: string
       - description: Column status
@@ -2451,18 +2451,18 @@ paths:
       summary: Save card order for a kanban column
       tags:
       - kanban
-  /api/kanban/{collection}/tags:
+  /api/kanban/{board}/tags:
     get:
       parameters:
-      - description: Collection name
+      - description: Board slug
         in: path
-        name: collection
+        name: board
         required: true
         type: string
       produces:
       - text/html
       responses: {}
-      summary: Get all non-kanban tags used in a collection's kanban cards
+      summary: Get all non-kanban tags used in a board's kanban cards
       tags:
       - kanban
   /api/kanban/card/move:
@@ -2481,6 +2481,11 @@ paths:
         in: formData
         name: status
         required: true
+        type: string
+      - description: Board slug (scopes the event log entry; omit to guess from the
+          file's folder)
+        in: formData
+        name: board
         type: string
       produces:
       - application/json
@@ -2544,13 +2549,14 @@ paths:
       summary: Get ancestor links for a file
       tags:
       - links
-  /api/links/ancestors-in-collection:
+  /api/links/ancestors-in-folder:
     get:
-      description: Returns unique ancestor paths for all files in the given collection
+      description: Returns unique ancestor paths for all files in the given folder
+        (and its subfolders)
       parameters:
-      - description: Collection name
+      - description: Folder path
         in: query
-        name: collection
+        name: folder
         required: true
         type: string
       produces:
@@ -2564,14 +2570,14 @@ paths:
               type: string
             type: array
         "400":
-          description: missing collection parameter
+          description: missing folder parameter
           schema:
             type: string
         "500":
           description: failed to get ancestors
           schema:
             type: string
-      summary: Get ancestor files within a collection
+      summary: Get ancestor files within a folder
       tags:
       - links
   /api/links/conflicts/banner:

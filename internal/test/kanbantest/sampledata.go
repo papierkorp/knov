@@ -15,12 +15,11 @@ import (
 )
 
 // testDir is the docs-relative sample folder every case seeds into, wiped at the start of
-// each run so cases never see stale state from a previous run. Nested under docs/test/, it
-// shares the "test" collection with every other suite's sample data (collection is derived
-// from a file's top-level folder).
+// each run so cases never see stale state from a previous run. It also doubles as the kanban
+// board's folder scope (kanban boards are now scoped by folder path, not by top-level collection).
 const testDir = "test/kanban-tests"
 
-const testCollection = "test"
+const testFolder = testDir
 
 const (
 	alphaFile   = "kanban-alpha.md"   // inbox, older
@@ -98,9 +97,9 @@ func clearKanbanStatus(relPath string) error {
 	return files.MetaDataSaveRaw(meta)
 }
 
-// resetAndSeed wipes the sample folder, resets the shared "test" collection's kanban card
-// order (kanban-order/test, config-store backed - not touched by wiping the folder), and
-// seeds a fixed set of cards across statuses plus one unstatused card for the move case.
+// resetAndSeed wipes the sample folder, resets its kanban card order (kanban-order/<folder>,
+// config-store backed - not touched by wiping the folder), and seeds a fixed set of cards
+// across statuses plus one unstatused card for the move case.
 func resetAndSeed() error {
 	full := pathutils.ToDocsPath(testDir)
 	if err := os.RemoveAll(full); err != nil {
@@ -110,7 +109,7 @@ func resetAndSeed() error {
 		return err
 	}
 
-	if err := kanban.SaveOrder(testCollection, kanban.Order{}); err != nil {
+	if err := kanban.SaveOrder(testFolder, kanban.Order{}); err != nil {
 		return err
 	}
 

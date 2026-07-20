@@ -2842,6 +2842,12 @@ const docTemplate = `{
                         "name": "status",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Board slug (scopes the event log entry; omit to guess from the file's folder)",
+                        "name": "board",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -2907,9 +2913,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/kanban/{collection}": {
+        "/api/kanban/{board}": {
             "get": {
-                "description": "Returns all kanban cards grouped by status column for the given collection",
+                "description": "Returns all kanban cards grouped by status column for the given board",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -2917,12 +2923,12 @@ const docTemplate = `{
                 "tags": [
                     "kanban"
                 ],
-                "summary": "Get kanban board for a collection",
+                "summary": "Get kanban board for a folder",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Collection name",
-                        "name": "collection",
+                        "description": "Board slug",
+                        "name": "board",
                         "in": "path",
                         "required": true
                     },
@@ -2948,7 +2954,7 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/kanban/{collection}/events": {
+        "/api/kanban/{board}/events": {
             "get": {
                 "description": "Returns kanban card move events, newest first. All parameters are optional.",
                 "produces": [
@@ -2961,8 +2967,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Collection name",
-                        "name": "collection",
+                        "description": "Board slug",
+                        "name": "board",
                         "in": "path",
                         "required": true
                     },
@@ -2994,9 +3000,9 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/kanban/{collection}/files": {
+        "/api/kanban/{board}/files": {
             "get": {
-                "description": "Returns the file paths of all cards currently on the kanban board for a collection, sorted.",
+                "description": "Returns the file paths of all cards currently on the kanban board for a board, sorted.",
                 "produces": [
                     "application/json"
                 ],
@@ -3007,8 +3013,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Collection name",
-                        "name": "collection",
+                        "description": "Board slug",
+                        "name": "board",
                         "in": "path",
                         "required": true
                     }
@@ -3016,9 +3022,9 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/kanban/{collection}/filter": {
+        "/api/kanban/{board}/filter": {
             "post": {
-                "description": "Filters the kanban board using the full filter form; collection is always injected as the first criterion",
+                "description": "Filters the kanban board using the full filter form, scoped to the board's folder",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -3033,8 +3039,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Collection name",
-                        "name": "collection",
+                        "description": "Board slug",
+                        "name": "board",
                         "in": "path",
                         "required": true
                     }
@@ -3049,9 +3055,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/kanban/{collection}/order": {
+        "/api/kanban/{board}/order": {
             "post": {
-                "description": "Persists the drag-and-drop card order for all columns in a collection",
+                "description": "Persists the drag-and-drop card order for all columns in a board",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -3062,8 +3068,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Collection name",
-                        "name": "collection",
+                        "description": "Board slug",
+                        "name": "board",
                         "in": "path",
                         "required": true
                     },
@@ -3092,7 +3098,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/kanban/{collection}/tags": {
+        "/api/kanban/{board}/tags": {
             "get": {
                 "produces": [
                     "text/html"
@@ -3100,12 +3106,12 @@ const docTemplate = `{
                 "tags": [
                     "kanban"
                 ],
-                "summary": "Get all non-kanban tags used in a collection's kanban cards",
+                "summary": "Get all non-kanban tags used in a board's kanban cards",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Collection name",
-                        "name": "collection",
+                        "description": "Board slug",
+                        "name": "board",
                         "in": "path",
                         "required": true
                     }
@@ -3135,9 +3141,9 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/links/ancestors-in-collection": {
+        "/api/links/ancestors-in-folder": {
             "get": {
-                "description": "Returns unique ancestor paths for all files in the given collection",
+                "description": "Returns unique ancestor paths for all files in the given folder (and its subfolders)",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -3145,12 +3151,12 @@ const docTemplate = `{
                 "tags": [
                     "links"
                 ],
-                "summary": "Get ancestor files within a collection",
+                "summary": "Get ancestor files within a folder",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Collection name",
-                        "name": "collection",
+                        "description": "Folder path",
+                        "name": "folder",
                         "in": "query",
                         "required": true
                     }
@@ -3166,7 +3172,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "missing collection parameter",
+                        "description": "missing folder parameter",
                         "schema": {
                             "type": "string"
                         }

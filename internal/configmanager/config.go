@@ -57,8 +57,16 @@ type AppConfig struct {
 	KanbanTagColors         map[string]string
 	KanbanCardStyles        map[string]string // status → "normal"|"italic"|"highlighted"|"deleted"
 	KanbanArchiveStatus     string
+	KanbanBoards            []KanbanBoard
 	NotifyDuration          int
 	DefaultEditor           string
+}
+
+// KanbanBoard maps a folder to a kanban board with a display name and a stable URL slug
+type KanbanBoard struct {
+	FolderPath  string
+	DisplayName string
+	Slug        string
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -113,6 +121,7 @@ func InitAppConfig() {
 		KanbanTagColors:         getStringMapEnv("KNOV_KANBAN_TAG_COLORS"),
 		KanbanCardStyles:        getStringMapEnv("KNOV_KANBAN_CARD_STYLES"),
 		KanbanArchiveStatus:     getEnv("KNOV_KANBAN_ARCHIVE_STATUS", "archive"),
+		KanbanBoards:            getKanbanBoardsEnv("KNOV_KANBAN_BOARDS"),
 		NotifyDuration:          getIntEnv("KNOV_NOTIFY_DURATION", 3500),
 		DefaultEditor:           getEnv("KNOV_DEFAULT_EDITOR", ""),
 	}
@@ -152,6 +161,21 @@ func GetKanbanArchiveStatus() string {
 	return appConfig.KanbanArchiveStatus
 }
 
+// GetKanbanBoards returns the configured folder-based kanban boards
+func GetKanbanBoards() []KanbanBoard {
+	return appConfig.KanbanBoards
+}
+
+// GetKanbanBoardBySlug looks up a configured kanban board by its URL slug
+func GetKanbanBoardBySlug(slug string) (KanbanBoard, bool) {
+	for _, b := range appConfig.KanbanBoards {
+		if b.Slug == slug {
+			return b, true
+		}
+	}
+	return KanbanBoard{}, false
+}
+
 // getStringMapEnv parses "key1:val1,key2:val2" into a map
 func getStringMapEnv(key string) map[string]string {
 	result := make(map[string]string)
@@ -168,6 +192,32 @@ func getStringMapEnv(key string) map[string]string {
 		}
 	}
 	return result
+}
+
+// getKanbanBoardsEnv parses "folder/path:Display Name, other/folder:Other Name" into a list of
+// kanban boards, deriving a stable URL slug from each folder path (colliding slugs get a
+// numeric suffix, same scheme as header-anchor IDs).
+func getKanbanBoardsEnv(key string) []KanbanBoard {
+	var boards []KanbanBoard
+	usedSlugs := map[string]int{}
+	value := os.Getenv(key)
+	if value == "" {
+		return boards
+	}
+	for _, pair := range strings.Split(value, ",") {
+		parts := strings.SplitN(strings.TrimSpace(pair), ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		folderPath := strings.Trim(strings.TrimSpace(parts[0]), "/")
+		displayName := strings.TrimSpace(parts[1])
+		if folderPath == "" || displayName == "" {
+			continue
+		}
+		slug := utils.GenerateID(folderPath, usedSlugs)
+		boards = append(boards, KanbanBoard{FolderPath: folderPath, DisplayName: displayName, Slug: slug})
+	}
+	return boards
 }
 
 func getEnv(key, defaultValue string) string {

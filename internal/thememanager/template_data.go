@@ -333,7 +333,7 @@ func NewBrowseMetadataTemplateData(metadataType string) BrowseMetadataTemplateDa
 type FileNewTemplateData struct {
 	BaseTemplateData
 	Editor      string
-	PrefillPath string // pre-populates the file path input (e.g. a kanban collection prefix)
+	PrefillPath string // pre-populates the file path input (e.g. a kanban board's folder)
 }
 
 // NewFileNewTemplateData creates file creation specific data
@@ -545,7 +545,10 @@ func NewFilterEditTemplateData(filterID string) FilterEditTemplateData {
 // KanbanTemplateData extends base with kanban board data
 type KanbanTemplateData struct {
 	BaseTemplateData
-	Collection      string
+	Board           string // URL slug
+	FolderPath      string // configured folder path (for new-file prefill etc.)
+	TopCollection   string // FolderPath's first segment, for the collection-scoped history link
+	DisplayName     string
 	Columns         []kanban.Column
 	Statuses        []string // all possible statuses (for move target)
 	Prefix          string   // kanban tag prefix
@@ -554,10 +557,14 @@ type KanbanTemplateData struct {
 }
 
 // NewKanbanTemplateData creates kanban board template data
-func NewKanbanTemplateData(collection string, columns []kanban.Column, filterPanelHTML string) KanbanTemplateData {
+func NewKanbanTemplateData(board configmanager.KanbanBoard, columns []kanban.Column, filterPanelHTML string) KanbanTemplateData {
+	topCollection, _, _ := strings.Cut(board.FolderPath, "/")
 	return KanbanTemplateData{
-		BaseTemplateData: NewBaseTemplateData("kanban: " + collection),
-		Collection:       collection,
+		BaseTemplateData: NewBaseTemplateData("kanban: " + board.DisplayName),
+		Board:            board.Slug,
+		FolderPath:       board.FolderPath,
+		TopCollection:    topCollection,
+		DisplayName:      board.DisplayName,
 		Columns:          columns,
 		Statuses:         configmanager.GetKanbanStatuses(),
 		Prefix:           configmanager.GetKanbanPrefix(),
@@ -566,19 +573,19 @@ func NewKanbanTemplateData(collection string, columns []kanban.Column, filterPan
 	}
 }
 
-// KanbanSelectTemplateData extends base with collection picker data
+// KanbanSelectTemplateData extends base with board picker data
 type KanbanSelectTemplateData struct {
 	BaseTemplateData
-	Collection    string // always empty — signals the template to show the picker
-	Collections   []string
+	Board         string // always empty — signals the template to show the picker
+	Boards        []configmanager.KanbanBoard
 	ArchiveStatus string
 }
 
-// NewKanbanSelectTemplateData creates the collection picker template data
-func NewKanbanSelectTemplateData(collections []string) KanbanSelectTemplateData {
+// NewKanbanSelectTemplateData creates the board picker template data
+func NewKanbanSelectTemplateData(boards []configmanager.KanbanBoard) KanbanSelectTemplateData {
 	return KanbanSelectTemplateData{
 		BaseTemplateData: NewBaseTemplateData("kanban"),
-		Collections:      collections,
+		Boards:           boards,
 		ArchiveStatus:    configmanager.GetKanbanArchiveStatus(),
 	}
 }

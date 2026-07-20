@@ -29,7 +29,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseMoveCardEventLog,
 		caseColumnOrderPersists,
 		caseApplyOrderPure,
-		caseTagsAndFilesForCollection,
+		caseTagsAndFilesForFolder,
 		caseExcerpt,
 		caseKanbanHelpers,
 	}

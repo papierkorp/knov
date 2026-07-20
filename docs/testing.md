@@ -59,5 +59,5 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 - `kanban.MoveCard` saves via `MetaDataSaveRaw`, which skips the cache refresh `MetaDataSave` normally triggers - cases call `files.InvalidateFileListCache()` afterward so `BuildBoard` sees the move immediately (the kanban analog of searchtest's synchronous reindex)
 - Sample cards pin `CreatedAt` via a `MetaDataSave` followed by a `MetaDataGet`+`MetaDataSaveRaw` round-trip, since `MetaDataSave` always stamps `LastEdited`/`CreatedAt` from the save call itself
 - `MetaDataSave` only overwrites `Tags` when the new value is non-empty, so a stale kanban status tag from a previous run has to be stripped explicitly via `MetaDataSaveRaw` at seed time
-- Column order (`kanban-order/<collection>`) is config-store backed like dashboards, not touched by wiping `docs/test/`, so it's reset at suite start and via `defer`
+- Column order (`kanban-order/<folder>`) is config-store backed like dashboards, not touched by wiping `docs/test/`, so it's reset at suite start and via `defer`
 - Native HTML5 drag-and-drop itself is the one piece genuinely untestable outside a browser - the suite covers the API/state it drives (`SaveOrder`/`BuildBoard`) instead

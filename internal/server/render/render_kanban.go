@@ -124,28 +124,11 @@ func RenderKanbanBoard(columns []kanban.Column) string {
 	return html.String()
 }
 
-// RenderKanbanCollectionSelect renders the collection picker page body
-func RenderKanbanCollectionSelect(collections []string) string {
-	var html strings.Builder
-	html.WriteString(`<div id="page-kanban-select">`)
-	fmt.Fprintf(&html, `<h2>%s</h2>`, translation.SprintfForRequest(configmanager.GetLanguage(), "kanban"))
-	fmt.Fprintf(&html, `<p>%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "select a collection to open the kanban board"))
-	html.WriteString(`<div class="kanban-collection-list">`)
-	for _, c := range collections {
-		fmt.Fprintf(&html, `<a class="kanban-collection-item" href="/kanban/%s">%s</a>`, c, c)
-	}
-	if len(collections) == 0 {
-		fmt.Fprintf(&html, `<p class="kanban-empty">%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no collections found"))
-	}
-	html.WriteString(`</div></div>`)
-	return html.String()
-}
-
 // RenderKanbanFilterPanel renders the advanced filter form for the kanban toolbar panel
-func RenderKanbanFilterPanel(collection string) string {
+func RenderKanbanFilterPanel(board string) string {
 	return RenderFilterForm(FilterFormOpts{
-		Context:    FilterFormContextKanban,
-		Collection: collection,
+		Context:     FilterFormContextKanban,
+		KanbanBoard: board,
 	})
 }
 

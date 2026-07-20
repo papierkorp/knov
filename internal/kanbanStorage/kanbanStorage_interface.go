@@ -9,17 +9,17 @@ import (
 
 // Event represents a single kanban card move.
 type Event struct {
-	FilePath   string    `json:"filePath"`
-	Collection string    `json:"collection"`
-	FromStatus string    `json:"fromStatus"`
-	ToStatus   string    `json:"toStatus"`
-	Timestamp  time.Time `json:"timestamp"`
+	FilePath    string    `json:"filePath"`
+	BoardFolder string    `json:"boardFolder"`
+	FromStatus  string    `json:"fromStatus"`
+	ToStatus    string    `json:"toStatus"`
+	Timestamp   time.Time `json:"timestamp"`
 }
 
 // KanbanStorage defines the interface for kanban event persistence.
 type KanbanStorage interface {
-	LogEvent(filePath, collection, fromStatus, toStatus string) error
-	GetEvents(collection, filePath string, from, to *time.Time, limit int) ([]Event, error)
+	LogEvent(filePath, boardFolder, fromStatus, toStatus string) error
+	GetEvents(boardFolder, filePath string, from, to *time.Time, limit int) ([]Event, error)
 }
 
 var storage KanbanStorage
@@ -52,12 +52,12 @@ func Init(enabled bool, provider, storagePath string) error {
 }
 
 // LogEvent records a kanban card move.
-func LogEvent(filePath, collection, fromStatus, toStatus string) error {
-	return storage.LogEvent(filePath, collection, fromStatus, toStatus)
+func LogEvent(filePath, boardFolder, fromStatus, toStatus string) error {
+	return storage.LogEvent(filePath, boardFolder, fromStatus, toStatus)
 }
 
 // GetEvents retrieves kanban move events with optional filters, newest first.
 // Pass empty strings / nil times to skip those filters; limit=0 means no limit.
-func GetEvents(collection, filePath string, from, to *time.Time, limit int) ([]Event, error) {
-	return storage.GetEvents(collection, filePath, from, to, limit)
+func GetEvents(boardFolder, filePath string, from, to *time.Time, limit int) ([]Event, error) {
+	return storage.GetEvents(boardFolder, filePath, from, to, limit)
 }

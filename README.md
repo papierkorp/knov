@@ -44,7 +44,7 @@ KNOV tracks metadata automatically and lets you enrich it manually.
 - Ancestor/parent/child chain (from manually set parents)
 - Inbound and outbound links (parsed from markdown link syntax)
 - Related files (computed via SQLite similarity)
-- Kanban board assignment (derived from status tags)
+- Kanban column assignment (derived from status tags, within a configured board's folder)
 
 **Manual:**
 - Tags, parent links, editor type
@@ -68,7 +68,7 @@ Filters are saved metadata queries that produce a live file list.
 
 ## Kanban
 
-- Files are organised into boards by collection (top-level folder)
+- Boards are explicitly configured folders (`KNOV_KANBAN_BOARDS=folder/path:Display Name`), each covering that folder and its subfolders
 - A file gets a kanban status tag to appear in a column - e.g. `kb-status-inbox`
 - Drag cards between columns to update status - saves automatically
 - Quick filters (ancestor, tag, search) always visible in the toolbar

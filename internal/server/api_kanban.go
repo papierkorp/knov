@@ -22,24 +22,37 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// @Summary Get kanban board for a collection
-// @Description Returns all kanban cards grouped by status column for the given collection
+// resolveBoard looks up a configured kanban board by its URL slug, writing a 404 if unknown.
+func resolveBoard(w http.ResponseWriter, r *http.Request) (configmanager.KanbanBoard, bool) {
+	slug := chi.URLParam(r, "board")
+	if slug == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing board"), http.StatusBadRequest)
+		return configmanager.KanbanBoard{}, false
+	}
+	board, ok := configmanager.GetKanbanBoardBySlug(slug)
+	if !ok {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown board"), http.StatusNotFound)
+		return configmanager.KanbanBoard{}, false
+	}
+	return board, true
+}
+
+// @Summary Get kanban board for a folder
+// @Description Returns all kanban cards grouped by status column for the given board
 // @Tags kanban
-// @Param collection path string true "Collection name"
+// @Param board path string true "Board slug"
 // @Param ancestor query string false "Filter by ancestor (epic)"
 // @Param tag query string false "Filter by tag"
 // @Param q query string false "Search query"
 // @Produce json,html
-// @Router /api/kanban/{collection} [get]
+// @Router /api/kanban/{board} [get]
 func handleAPIGetKanbanBoard(w http.ResponseWriter, r *http.Request) {
-	collection := chi.URLParam(r, "collection")
-	if collection == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing collection"), http.StatusBadRequest)
+	board, ok := resolveBoard(w, r)
+	if !ok {
 		return
 	}
 
 	cfg := &filter.Config{Logic: "and"}
-	cfg.Criteria = append(cfg.Criteria, filter.Criteria{Metadata: "collection", Operator: "equals", Value: collection, Action: "include"})
 
 	if ancestor := r.URL.Query().Get("ancestor"); ancestor != "" {
 		cfg.Criteria = append(cfg.Criteria, filter.Criteria{Metadata: "ancestor-of", Operator: "equals", Value: ancestor, Action: "include"})
@@ -48,22 +61,21 @@ func handleAPIGetKanbanBoard(w http.ResponseWriter, r *http.Request) {
 		cfg.Criteria = append(cfg.Criteria, filter.Criteria{Metadata: "tags", Operator: "equals", Value: tag, Action: "include"})
 	}
 
-	cols, _ := kanban.BuildBoard(collection, cfg, strings.ToLower(r.URL.Query().Get("q")), kanban.SortBy(r.URL.Query().Get("sort")))
+	cols, _ := kanban.BuildBoard(board.FolderPath, cfg, strings.ToLower(r.URL.Query().Get("q")), kanban.SortBy(r.URL.Query().Get("sort")))
 	writeResponse(w, r, cols, render.RenderKanbanBoard(cols))
 }
 
 // @Summary Apply advanced filter to kanban board
-// @Description Filters the kanban board using the full filter form; collection is always injected as the first criterion
+// @Description Filters the kanban board using the full filter form, scoped to the board's folder
 // @Tags kanban
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
-// @Param collection path string true "Collection name"
+// @Param board path string true "Board slug"
 // @Success 200 {string} string "kanban board html"
-// @Router /api/kanban/{collection}/filter [post]
+// @Router /api/kanban/{board}/filter [post]
 func handleAPIPostKanbanFilter(w http.ResponseWriter, r *http.Request) {
-	collection := chi.URLParam(r, "collection")
-	if collection == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing collection"), http.StatusBadRequest)
+	board, ok := resolveBoard(w, r)
+	if !ok {
 		return
 	}
 
@@ -73,10 +85,9 @@ func handleAPIPostKanbanFilter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cfg := filter.ParseFilterConfigFromForm(r, -1)
-	cfg.Criteria = append([]filter.Criteria{{Metadata: "collection", Operator: "equals", Value: collection, Action: "include"}}, cfg.Criteria...)
 	cfg.Logic = "and"
 
-	cols, _ := kanban.BuildBoard(collection, cfg, "", kanban.SortBy(r.FormValue("sort")))
+	cols, _ := kanban.BuildBoard(board.FolderPath, cfg, "", kanban.SortBy(r.FormValue("sort")))
 	writeResponse(w, r, cols, render.RenderKanbanBoard(cols))
 }
 
@@ -87,6 +98,7 @@ func handleAPIPostKanbanFilter(w http.ResponseWriter, r *http.Request) {
 // @Produce json,html
 // @Param filepath formData string true "File path"
 // @Param status formData string true "New kanban status"
+// @Param board formData string false "Board slug (scopes the event log entry; omit to guess from the file's folder)"
 // @Success 200 {string} string "card updated"
 // @Failure 400 {string} string "missing parameter"
 // @Failure 404 {string} string "file not found"
@@ -110,7 +122,12 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	oldStatus, err := kanban.MoveCard(filePath, newStatus)
+	var boardFolder string
+	if board, ok := configmanager.GetKanbanBoardBySlug(r.FormValue("board")); ok {
+		boardFolder = board.FolderPath
+	}
+
+	oldStatus, err := kanban.MoveCard(boardFolder, filePath, newStatus)
 	if err != nil {
 		logging.LogError("failed to move kanban card %s to %s: %v", filePath, newStatus, err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"))
@@ -129,18 +146,17 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Save card order for a kanban column
-// @Description Persists the drag-and-drop card order for all columns in a collection
+// @Description Persists the drag-and-drop card order for all columns in a board
 // @Tags kanban
 // @Accept application/x-www-form-urlencoded
-// @Param collection path string true "Collection name"
+// @Param board path string true "Board slug"
 // @Param status formData string true "Column status"
 // @Param order formData string true "Comma-separated list of filepaths in display order"
 // @Success 200 {string} string "order saved"
-// @Router /api/kanban/{collection}/order [post]
+// @Router /api/kanban/{board}/order [post]
 func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
-	collection := chi.URLParam(r, "collection")
-	if collection == "" {
-		http.Error(w, "missing collection", http.StatusBadRequest)
+	board, ok := resolveBoard(w, r)
+	if !ok {
 		return
 	}
 	if err := r.ParseForm(); err != nil {
@@ -161,15 +177,15 @@ func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	stored, err := kanban.GetOrder(collection)
+	stored, err := kanban.GetOrder(board.FolderPath)
 	if err != nil {
-		logging.LogError("kanban: load order failed for %s: %v", collection, err)
+		logging.LogError("kanban: load order failed for %s: %v", board.FolderPath, err)
 		stored = kanban.Order{}
 	}
 	stored[status] = paths
 
-	if err := kanban.SaveOrder(collection, stored); err != nil {
-		logging.LogError("kanban: save order failed for %s: %v", collection, err)
+	if err := kanban.SaveOrder(board.FolderPath, stored); err != nil {
+		logging.LogError("kanban: save order failed for %s: %v", board.FolderPath, err)
 		http.Error(w, "failed to save order", http.StatusInternalServerError)
 		return
 	}
@@ -208,19 +224,19 @@ func handleAPIGetKanbanExcerpt(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @Summary Get all non-kanban tags used in a collection's kanban cards
+// @Summary Get all non-kanban tags used in a board's kanban cards
 // @Tags kanban
-// @Param collection path string true "Collection name"
+// @Param board path string true "Board slug"
 // @Produce html
-// @Router /api/kanban/{collection}/tags [get]
+// @Router /api/kanban/{board}/tags [get]
 func handleAPIGetKanbanTags(w http.ResponseWriter, r *http.Request) {
-	collection := chi.URLParam(r, "collection")
-	if collection == "" {
+	board, ok := configmanager.GetKanbanBoardBySlug(chi.URLParam(r, "board"))
+	if !ok {
 		w.Write([]byte(""))
 		return
 	}
 
-	tags, err := kanban.TagsForCollection(collection)
+	tags, err := kanban.TagsForFolder(board.FolderPath)
 	if err != nil {
 		w.Write([]byte(""))
 		return
@@ -237,17 +253,16 @@ func handleAPIGetKanbanTags(w http.ResponseWriter, r *http.Request) {
 // @Summary Get kanban event log
 // @Description Returns kanban card move events, newest first. All parameters are optional.
 // @Tags kanban
-// @Param collection path string true "Collection name"
+// @Param board path string true "Board slug"
 // @Param file query string false "Filter by file path"
 // @Param from query string false "Start of time range (RFC3339)"
 // @Param to query string false "End of time range (RFC3339)"
 // @Param limit query int false "Max number of events (default 100, 0 = unlimited)"
 // @Produce json
-// @Router /api/kanban/{collection}/events [get]
+// @Router /api/kanban/{board}/events [get]
 func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
-	collection := chi.URLParam(r, "collection")
-	if collection == "" {
-		http.Error(w, "missing collection", http.StatusBadRequest)
+	board, ok := resolveBoard(w, r)
+	if !ok {
 		return
 	}
 
@@ -272,9 +287,9 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	events, err := kanban.GetEvents(collection, filePath, from, to, limit)
+	events, err := kanban.GetEvents(board.FolderPath, filePath, from, to, limit)
 	if err != nil {
-		logging.LogError("failed to get kanban events for %s: %v", collection, err)
+		logging.LogError("failed to get kanban events for %s: %v", board.FolderPath, err)
 		http.Error(w, "failed to get events", http.StatusInternalServerError)
 		return
 	}
@@ -284,21 +299,20 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Get kanban card file paths
-// @Description Returns the file paths of all cards currently on the kanban board for a collection, sorted.
+// @Description Returns the file paths of all cards currently on the kanban board for a board, sorted.
 // @Tags kanban
-// @Param collection path string true "Collection name"
+// @Param board path string true "Board slug"
 // @Produce json
-// @Router /api/kanban/{collection}/files [get]
+// @Router /api/kanban/{board}/files [get]
 func handleAPIGetKanbanFiles(w http.ResponseWriter, r *http.Request) {
-	collection := chi.URLParam(r, "collection")
-	if collection == "" {
-		http.Error(w, "missing collection", http.StatusBadRequest)
+	board, ok := resolveBoard(w, r)
+	if !ok {
 		return
 	}
 
-	paths, err := kanban.FilesForCollection(collection)
+	paths, err := kanban.FilesForFolder(board.FolderPath)
 	if err != nil {
-		logging.LogError("failed to get kanban files for %s: %v", collection, err)
+		logging.LogError("failed to get kanban files for %s: %v", board.FolderPath, err)
 		http.Error(w, "failed to get files", http.StatusInternalServerError)
 		return
 	}

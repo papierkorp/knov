@@ -8,16 +8,16 @@ import (
 	"knov/internal/logging"
 )
 
-// Order maps status → ordered list of file paths for one collection.
+// Order maps status → ordered list of file paths for one board folder.
 type Order map[string][]string
 
-func orderKey(collection string) string {
-	return fmt.Sprintf("kanban-order/%s", collection)
+func orderKey(folderPath string) string {
+	return fmt.Sprintf("kanban-order/%s", folderPath)
 }
 
-// GetOrder loads the stored card order for a collection.
-func GetOrder(collection string) (Order, error) {
-	data, err := configStorage.Get(orderKey(collection))
+// GetOrder loads the stored card order for a board folder.
+func GetOrder(folderPath string) (Order, error) {
+	data, err := configStorage.Get(orderKey(folderPath))
 	if err != nil {
 		return Order{}, err
 	}
@@ -26,19 +26,19 @@ func GetOrder(collection string) (Order, error) {
 	}
 	var o Order
 	if err := json.Unmarshal(data, &o); err != nil {
-		logging.LogWarning("kanban: corrupt order for collection %s, resetting: %v", collection, err)
+		logging.LogWarning("kanban: corrupt order for folder %s, resetting: %v", folderPath, err)
 		return Order{}, nil
 	}
 	return o, nil
 }
 
-// SaveOrder persists the card order for a collection.
-func SaveOrder(collection string, o Order) error {
+// SaveOrder persists the card order for a board folder.
+func SaveOrder(folderPath string, o Order) error {
 	data, err := json.MarshalIndent(o, "", "  ")
 	if err != nil {
 		return fmt.Errorf("kanban: marshal order failed: %w", err)
 	}
-	return configStorage.Set(orderKey(collection), data)
+	return configStorage.Set(orderKey(folderPath), data)
 }
 
 // ApplyOrder reorders cards according to stored order.

@@ -47,9 +47,10 @@ func newSQLiteStorage(storagePath string) (*sqliteKanbanStorage, error) {
 }
 
 func (s *sqliteKanbanStorage) initialize() error {
-	const version = 1
+	const version = 2
 	steps := []dbmigration.Migration{
 		{Up: migrationV1Up, Down: migrationV1Down},
+		{Up: migrationV2Up, Down: migrationV2Down},
 	}
 	if err := dbmigration.Migrate(s.db, version, steps); err != nil {
 		return fmt.Errorf("kanban storage migration failed: %w", err)
@@ -79,27 +80,48 @@ func migrationV1Down(tx *sql.Tx) error {
 	return err
 }
 
-func (s *sqliteKanbanStorage) LogEvent(filePath, collection, fromStatus, toStatus string) error {
+// migrationV2Up renames the collection column to board_folder: kanban boards moved from
+// auto-derived top-level collections to explicitly configured (and recursively matched)
+// folders, so the column no longer holds a collection name.
+func migrationV2Up(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+	ALTER TABLE kanban_events RENAME COLUMN collection TO board_folder;
+	DROP INDEX IF EXISTS idx_kanban_events_collection;
+	CREATE INDEX IF NOT EXISTS idx_kanban_events_board_folder ON kanban_events(board_folder);
+	`)
+	return err
+}
+
+func migrationV2Down(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+	ALTER TABLE kanban_events RENAME COLUMN board_folder TO collection;
+	DROP INDEX IF EXISTS idx_kanban_events_board_folder;
+	CREATE INDEX IF NOT EXISTS idx_kanban_events_collection ON kanban_events(collection);
+	`)
+	return err
+}
+
+func (s *sqliteKanbanStorage) LogEvent(filePath, boardFolder, fromStatus, toStatus string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	_, err := s.db.Exec(
-		`INSERT INTO kanban_events (file_path, collection, from_status, to_status, timestamp) VALUES (?, ?, ?, ?, ?)`,
-		filePath, collection, fromStatus, toStatus, time.Now(),
+		`INSERT INTO kanban_events (file_path, board_folder, from_status, to_status, timestamp) VALUES (?, ?, ?, ?, ?)`,
+		filePath, boardFolder, fromStatus, toStatus, time.Now(),
 	)
 	return err
 }
 
-func (s *sqliteKanbanStorage) GetEvents(collection, filePath string, from, to *time.Time, limit int) ([]Event, error) {
+func (s *sqliteKanbanStorage) GetEvents(boardFolder, filePath string, from, to *time.Time, limit int) ([]Event, error) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
-	query := `SELECT file_path, collection, from_status, to_status, timestamp FROM kanban_events WHERE 1=1`
+	query := `SELECT file_path, board_folder, from_status, to_status, timestamp FROM kanban_events WHERE 1=1`
 	args := []interface{}{}
 
-	if collection != "" {
-		query += ` AND collection = ?`
-		args = append(args, collection)
+	if boardFolder != "" {
+		query += ` AND board_folder = ?`
+		args = append(args, boardFolder)
 	}
 	if filePath != "" {
 		query += ` AND file_path = ?`
@@ -130,7 +152,7 @@ func (s *sqliteKanbanStorage) GetEvents(collection, filePath string, from, to *t
 	events := make([]Event, 0)
 	for rows.Next() {
 		var e Event
-		if err := rows.Scan(&e.FilePath, &e.Collection, &e.FromStatus, &e.ToStatus, &e.Timestamp); err != nil {
+		if err := rows.Scan(&e.FilePath, &e.BoardFolder, &e.FromStatus, &e.ToStatus, &e.Timestamp); err != nil {
 			return nil, err
 		}
 		events = append(events, e)

@@ -1447,13 +1447,13 @@ mark.kfind.current {
   margin-bottom: 1.5rem;
 }
 
-#page-kanban-select .kanban-collection-list {
+#page-kanban-select .kanban-board-list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-#page-kanban-select .kanban-collection-item {
+#page-kanban-select .kanban-board-item {
   display: block;
   padding: 0.75rem 1rem;
   border: 1px solid var(--border);
@@ -1466,7 +1466,7 @@ mark.kfind.current {
     background 0.15s;
 }
 
-#page-kanban-select .kanban-collection-item:hover {
+#page-kanban-select .kanban-board-item:hover {
   border-color: var(--primary);
   background: var(--bg);
 }

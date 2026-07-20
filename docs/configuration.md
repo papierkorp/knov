@@ -31,14 +31,19 @@ Knov uses git to version every file change automatically. You do not interact wi
 
 The kanban board organises files into columns based on status tags.
 
-**How files appear on a board:**
-- A file must live inside a subfolder - the top-level folder name becomes the board (collection)
-- Add one status tag to the file to place it in a column - e.g. `kb-status-inbox`
+**Boards:**
+- Each board is a folder you configure explicitly via `KNOV_KANBAN_BOARDS` - format: `folder/path:Display Name`, comma-separated, e.g. `KNOV_KANBAN_BOARDS=projects/work:Work Board,personal/todo:Personal Todo`
+- A board covers that folder and all its subfolders (recursive)
+- The board's URL is a slug derived from its folder path (e.g. `projects/work` → `/kanban/projects-work`); duplicate slugs are automatically disambiguated with a numeric suffix
+- `/kanban` with no boards configured shows an empty picker; each configured board appears there under its display name
+
+**Placing files on a board:**
+- Add one status tag to a file inside a configured board's folder to place it in a column - e.g. `kb-status-inbox`
 - Only one status tag per file is valid; if you add two the last one wins
 
 **Configuring columns:**
 - Default columns: `inbox`, `inprogress`, `blocked`, `archive`
-- Change them with `KNOV_KANBAN_COLUMNS` (comma-separated)
+- Change them with `KNOV_KANBAN_COLUMNS` (comma-separated) - these apply to every board
 - The tag prefix defaults to `kb-status` - change it with `KNOV_KANBAN_PREFIX`
 - Tags that start with the prefix but are not in the allowed column list are rejected
 - add a "archive" status which is not displayed as a column but activated as a separate drop zone with `KNOV_KANBAN_ARCHIVE_STATUS` - leave it empty to disable this feature
@@ -50,8 +55,8 @@ The kanban board organises files into columns based on status tags.
 - Any valid CSS colour name or hex value works
 
 **Event log:**
-- Every time a card moves between columns an event is recorded (file, collection, from/to status, timestamp)
-- Query events via `GET /api/kanban/{collection}/events` — supports `?file=`, `?from=`, `?to=`, `?limit=` parameters
+- Every time a card moves between columns an event is recorded (file, board folder, from/to status, timestamp)
+- Query events via `GET /api/kanban/{board}/events` (board = the URL slug) — supports `?file=`, `?from=`, `?to=`, `?limit=` parameters
 - `KNOV_KANBAN_EVENTS_ENABLED=true` (default) — set to `false` to disable event logging entirely
 - `KNOV_KANBAN_EVENTS_STORAGE_PROVIDER=sqlite` (default) — storage backend for events
 

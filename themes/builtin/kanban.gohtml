@@ -3,41 +3,41 @@
 <link rel="stylesheet" href="/static/css/kanban.css"/>
 <div id="view-kanban">
 
-    {{if .Collection}}
+    {{if .Board}}
 
     <div id="view-kanban-toolbar">
-        <span class="kanban-title">{{T "kanban"}}: {{.Collection}}</span>
+        <span class="kanban-title">{{T "kanban"}}: {{.DisplayName}}</span>
 
         <select id="kanban-ancestor-select" name="ancestor"
-                hx-get="/api/kanban/{{.Collection}}"
+                hx-get="/api/kanban/{{.Board}}"
                 hx-trigger="change"
                 hx-target="#view-kanban-board-wrap"
                 hx-swap="innerHTML"
                 hx-include="#kanban-tag-select,#kanban-search,#kanban-sort-select"
-                hx-get-ancestors="/api/links/ancestors-in-collection?collection={{.Collection}}&format=options">
+                hx-get-ancestors="/api/links/ancestors-in-folder?folder={{.FolderPath}}&format=options">
             <option value="">{{T "all ancestors"}}</option>
         </select>
 
         <select id="kanban-tag-select" name="tag"
-                hx-get="/api/kanban/{{.Collection}}"
+                hx-get="/api/kanban/{{.Board}}"
                 hx-trigger="change"
                 hx-target="#view-kanban-board-wrap"
                 hx-swap="innerHTML"
                 hx-include="#kanban-ancestor-select,#kanban-search,#kanban-sort-select"
-                hx-get-tags="/api/kanban/{{.Collection}}/tags">
+                hx-get-tags="/api/kanban/{{.Board}}/tags">
             <option value="">{{T "all tags"}}</option>
         </select>
 
         <input type="search" id="kanban-search" name="q"
                placeholder="{{T "search..."}}"
-               hx-get="/api/kanban/{{.Collection}}"
+               hx-get="/api/kanban/{{.Board}}"
                hx-trigger="keyup changed delay:300ms"
                hx-target="#view-kanban-board-wrap"
                hx-swap="innerHTML"
                hx-include="#kanban-ancestor-select,#kanban-tag-select,#kanban-sort-select"/>
 
         <select id="kanban-sort-select" name="sort"
-                hx-get="/api/kanban/{{.Collection}}"
+                hx-get="/api/kanban/{{.Board}}"
                 hx-trigger="change"
                 hx-target="#view-kanban-board-wrap"
                 hx-swap="innerHTML"
@@ -50,8 +50,8 @@
             <option value="kanbanMovedAt">{{T "kanban moved at"}}</option>
         </select>
 
-        <a href="/files/new/toastui?prefillpath={{.Collection}}/" class="btn-secondary" title="{{T "new file"}}"><i class="fa fa-plus"></i></a>
-        <a href="/history?collection={{.Collection}}" class="btn-secondary" title="{{T "collection history"}}"><i class="fa fa-clock-rotate-left"></i></a>
+        <a href="/files/new/toastui?prefillpath={{.FolderPath}}/" class="btn-secondary" title="{{T "new file"}}"><i class="fa fa-plus"></i></a>
+        <a href="/history?collection={{.TopCollection}}" class="btn-secondary" title="{{T "board history"}}"><i class="fa fa-clock-rotate-left"></i></a>
         <button id="kanban-events-btn" class="btn-secondary" onclick="kanbanToggleEvents()" title="{{T "show events"}}"><i class="fa fa-timeline"></i></button>
         <button class="btn-secondary" onclick="document.getElementById('kanban-filter-panel').toggleAttribute('hidden')" title="{{T "advanced filter"}}"><i class="fa fa-filter"></i></button>
     </div>
@@ -62,7 +62,7 @@
     </div>
 
     <div id="view-kanban-board-wrap"
-         hx-get="/api/kanban/{{.Collection}}"
+         hx-get="/api/kanban/{{.Board}}"
          hx-trigger="load">
         {{T "loading..."}}
     </div>
@@ -81,12 +81,12 @@
 
     <div id="page-kanban-select">
         <h2>{{T "kanban"}}</h2>
-        <p>{{T "select a collection to open the kanban board"}}</p>
-        <div class="kanban-collection-list">
-            {{range .Collections}}
-            <a class="kanban-collection-item" href="/kanban/{{.}}">{{.}}</a>
+        <p>{{T "select a board to open the kanban board"}}</p>
+        <div class="kanban-board-list">
+            {{range .Boards}}
+            <a class="kanban-board-item" href="/kanban/{{.Slug}}">{{.DisplayName}}</a>
             {{else}}
-            <p class="kanban-empty">{{T "no collections found"}}</p>
+            <p class="kanban-empty">{{T "no boards configured"}}</p>
             {{end}}
         </div>
     </div>
@@ -97,7 +97,7 @@
 
 <script>
 window.KANBAN_CONFIG = {
-    collection: '{{.Collection}}',
+    board: '{{.Board}}',
     archiveStatus: '{{.ArchiveStatus}}',
     eventsModulePath: '/themes/{{.CurrentTheme}}/js/kanban-events.js',
     dateFormat: '{{.DateFormat}}',

@@ -206,22 +206,22 @@ func handleAPIGetLinksToHere(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, metadata.LinksToHere, render.RenderLinksList(metadata.LinksToHere, false))
 }
 
-// @Summary Get ancestor files within a collection
-// @Description Returns unique ancestor paths for all files in the given collection
+// @Summary Get ancestor files within a folder
+// @Description Returns unique ancestor paths for all files in the given folder (and its subfolders)
 // @Tags links
-// @Param collection query string true "Collection name"
+// @Param folder query string true "Folder path"
 // @Produce json,html
 // @Success 200 {array} string
-// @Failure 400 {string} string "missing collection parameter"
+// @Failure 400 {string} string "missing folder parameter"
 // @Failure 500 {string} string "failed to get ancestors"
-// @Router /api/links/ancestors-in-collection [get]
-func handleAPIGetAncestorsInCollection(w http.ResponseWriter, r *http.Request) {
-	collection := r.URL.Query().Get("collection")
-	if collection == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing collection parameter"), http.StatusBadRequest)
+// @Router /api/links/ancestors-in-folder [get]
+func handleAPIGetAncestorsInFolder(w http.ResponseWriter, r *http.Request) {
+	folderPath := r.URL.Query().Get("folder")
+	if folderPath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing folder parameter"), http.StatusBadRequest)
 		return
 	}
-	ancestors, err := files.GetAncestorsInCollection(collection)
+	ancestors, err := files.GetAncestorsInFolder(folderPath)
 	if err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get ancestors"), http.StatusInternalServerError)
 		return

@@ -71,10 +71,10 @@ function endOfDayISO(dateStr) {
     return new Date(dateStr + 'T23:59:59.999').toISOString();
 }
 
-function buildEventsURL(collection, dateFrom, dateTo, fileFilter) {
+function buildEventsURL(board, dateFrom, dateTo, fileFilter) {
     // a specific file's full history shouldn't be truncated by the default page-sized limit
     var limit = fileFilter ? 0 : 200;
-    var url = '/api/kanban/' + collection + '/events?limit=' + limit;
+    var url = '/api/kanban/' + board + '/events?limit=' + limit;
     if (dateFrom) url += '&from=' + encodeURIComponent(startOfDayISO(dateFrom));
     if (dateTo) url += '&to=' + encodeURIComponent(endOfDayISO(dateTo));
     if (fileFilter) url += '&file=' + encodeURIComponent(fileFilter);
@@ -115,7 +115,7 @@ function renderHeader(t, sortState) {
     }).join('') + '</tr>';
 }
 
-// opts: { wrap: HTMLElement, collection: string, t: { loading, noEvents, failedToLoad, filterPlaceholder, time, file, from, to, all, dateFrom, dateTo } }
+// opts: { wrap: HTMLElement, board: string, t: { loading, noEvents, failedToLoad, filterPlaceholder, time, file, from, to, all, dateFrom, dateTo } }
 export function show(opts) {
     load(opts, '', '', null, '');
 }
@@ -128,8 +128,8 @@ function load(opts, dateFrom, dateTo, sortState, fileFilter) {
     wrap.innerHTML = '<p>' + t.loading + '</p>';
 
     Promise.all([
-        fetch(buildEventsURL(opts.collection, dateFrom, dateTo, fileFilter), { headers: { Accept: 'application/json' } }).then(function(r) { return r.json(); }),
-        fetch('/api/kanban/' + opts.collection + '/files', { headers: { Accept: 'application/json' } }).then(function(r) { return r.json(); })
+        fetch(buildEventsURL(opts.board, dateFrom, dateTo, fileFilter), { headers: { Accept: 'application/json' } }).then(function(r) { return r.json(); }),
+        fetch('/api/kanban/' + opts.board + '/files', { headers: { Accept: 'application/json' } }).then(function(r) { return r.json(); })
     ])
         .then(function(results) {
             var events = results[0] || [];

@@ -362,6 +362,7 @@
         <div class="help-text">{{T "Kanban Tag Colors"}} <small style="opacity:0.55;">KNOV_KANBAN_TAG_COLORS</small>: <code>{{if .AppConfig.KanbanTagColors}}{{range $k,$v := .AppConfig.KanbanTagColors}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
         <div class="help-text">{{T "Kanban Card Styles"}} <small style="opacity:0.55;">KNOV_KANBAN_CARD_STYLES</small>: <code>{{if .AppConfig.KanbanCardStyles}}{{range $k,$v := .AppConfig.KanbanCardStyles}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
         <div class="help-text">{{T "Kanban Archive Status"}} <small style="opacity:0.55;">KNOV_KANBAN_ARCHIVE_STATUS</small>: <code>{{if .AppConfig.KanbanArchiveStatus}}{{.AppConfig.KanbanArchiveStatus}}{{else}}disabled{{end}}</code></div>
+        <div class="help-text">{{T "Kanban Boards"}} <small style="opacity:0.55;">KNOV_KANBAN_BOARDS</small>: <code>{{if .AppConfig.KanbanBoards}}{{range .AppConfig.KanbanBoards}}{{.FolderPath}}:{{.DisplayName}} {{end}}{{else}}none{{end}}</code></div>
     </div>
 </section>
 {{ end }}

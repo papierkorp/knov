@@ -49,14 +49,35 @@ const (
 	SortKanbanMovedAt SortBy = "kanbanMovedAt" // most recently moved on kanban first
 )
 
+// folderMatches reports whether meta's directory is folderPath itself or a subfolder of it,
+// i.e. board scoping is recursive: a board configured for "projects/work" also includes
+// "projects/work/urgent/*".
+func folderMatches(meta *files.Metadata, folderPath string) bool {
+	dir := strings.Join(meta.Folders, "/")
+	return dir == folderPath || strings.HasPrefix(dir, folderPath+"/")
+}
+
+// resolveBoardFolder returns the most specific (longest) configured kanban board folder that
+// contains dir, or "" if no configured board covers it.
+func resolveBoardFolder(dir string) string {
+	best := ""
+	for _, b := range configmanager.GetKanbanBoards() {
+		if (dir == b.FolderPath || strings.HasPrefix(dir, b.FolderPath+"/")) && len(b.FolderPath) > len(best) {
+			best = b.FolderPath
+		}
+	}
+	return best
+}
+
 // BuildBoard runs the filter, applies optional search, sorts by sortBy, and returns columns with cards.
-func BuildBoard(collection string, cfg *filter.Config, searchQuery string, sortBy SortBy) ([]Column, error) {
+// folderPath scopes the board to that folder and its subfolders.
+func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortBy SortBy) ([]Column, error) {
 	columns := configmanager.GetKanbanColumns()
 	prefix := configmanager.GetKanbanPrefix()
 
 	result, err := filter.FilterFilesWithConfig(cfg)
 	if err != nil {
-		logging.LogError("kanban: filter failed for collection %s: %v", collection, err)
+		logging.LogError("kanban: filter failed for folder %s: %v", folderPath, err)
 		result = &filter.Result{}
 	}
 
@@ -67,7 +88,7 @@ func BuildBoard(collection string, cfg *filter.Config, searchQuery string, sortB
 
 	lq := strings.ToLower(searchQuery)
 	for _, file := range result.Files {
-		if file.Metadata == nil {
+		if file.Metadata == nil || !folderMatches(file.Metadata, folderPath) {
 			continue
 		}
 		meta := file.Metadata
@@ -119,7 +140,7 @@ func BuildBoard(collection string, cfg *filter.Config, searchQuery string, sortB
 	// only load stored order for custom sort
 	var storedOrder Order
 	if sortBy == "" {
-		storedOrder, _ = GetOrder(collection)
+		storedOrder, _ = GetOrder(folderPath)
 	}
 
 	for col, cards := range cardsByStatus {
@@ -199,7 +220,9 @@ func BuildBoard(collection string, cfg *filter.Config, searchQuery string, sortB
 }
 
 // MoveCard updates the kanban status tag on a file and returns the previous status (empty if none).
-func MoveCard(filePath, newStatus string) (oldStatus string, err error) {
+// boardFolder scopes the event log entry; pass "" to fall back to guessing the board from the
+// file's own location (used when the caller doesn't know which board triggered the move).
+func MoveCard(boardFolder, filePath, newStatus string) (oldStatus string, err error) {
 	normalizedPath := pathutils.ToWithPrefix(filePath)
 	meta, err := files.MetaDataGet(normalizedPath)
 	if err != nil || meta == nil {
@@ -226,7 +249,15 @@ func MoveCard(filePath, newStatus string) (oldStatus string, err error) {
 	if err := files.MetaDataSaveRaw(meta); err != nil {
 		return "", err
 	}
-	if err := kanbanStorage.LogEvent(filePath, meta.Collection, oldStatus, newStatus); err != nil {
+	eventFolder := boardFolder
+	if eventFolder == "" {
+		dir := strings.Join(meta.Folders, "/")
+		eventFolder = resolveBoardFolder(dir)
+		if eventFolder == "" {
+			eventFolder = dir // file isn't under any configured board; log under its own folder
+		}
+	}
+	if err := kanbanStorage.LogEvent(filePath, eventFolder, oldStatus, newStatus); err != nil {
 		logging.LogWarning("kanban: failed to log event for %s: %v", filePath, err)
 	}
 	logging.LogInfo("kanban: moved card %s to status %s", filePath, newStatus)
@@ -235,12 +266,12 @@ func MoveCard(filePath, newStatus string) (oldStatus string, err error) {
 
 // GetEvents returns kanban move events with optional filters, newest first.
 // Pass empty strings / nil times to skip those filters; limit=0 means no limit.
-func GetEvents(collection, filePath string, from, to *time.Time, limit int) ([]kanbanStorage.Event, error) {
-	return kanbanStorage.GetEvents(collection, filePath, from, to, limit)
+func GetEvents(folderPath, filePath string, from, to *time.Time, limit int) ([]kanbanStorage.Event, error) {
+	return kanbanStorage.GetEvents(folderPath, filePath, from, to, limit)
 }
 
-// TagsForCollection returns all unique non-kanban tags present on kanban cards in the collection.
-func TagsForCollection(collection string) ([]string, error) {
+// TagsForFolder returns all unique non-kanban tags present on kanban cards in the folder (and its subfolders).
+func TagsForFolder(folderPath string) ([]string, error) {
 	prefix := configmanager.GetKanbanPrefix()
 	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
@@ -249,7 +280,7 @@ func TagsForCollection(collection string) ([]string, error) {
 
 	tagSet := make(map[string]struct{})
 	for _, file := range allFiles {
-		if file.Metadata == nil || file.Metadata.Collection != collection {
+		if file.Metadata == nil || !folderMatches(file.Metadata, folderPath) {
 			continue
 		}
 		if StatusFromTags(file.Metadata.Tags, prefix) == "" {
@@ -270,8 +301,9 @@ func TagsForCollection(collection string) ([]string, error) {
 	return tags, nil
 }
 
-// FilesForCollection returns the file paths of all kanban cards (files with a kanban status) in the collection, sorted.
-func FilesForCollection(collection string) ([]string, error) {
+// FilesForFolder returns the file paths of all kanban cards (files with a kanban status) in the folder
+// (and its subfolders), sorted.
+func FilesForFolder(folderPath string) ([]string, error) {
 	prefix := configmanager.GetKanbanPrefix()
 	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
@@ -280,7 +312,7 @@ func FilesForCollection(collection string) ([]string, error) {
 
 	var paths []string
 	for _, file := range allFiles {
-		if file.Metadata == nil || file.Metadata.Collection != collection {
+		if file.Metadata == nil || !folderMatches(file.Metadata, folderPath) {
 			continue
 		}
 		if StatusFromTags(file.Metadata.Tags, prefix) == "" {

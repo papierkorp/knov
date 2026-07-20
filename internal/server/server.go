@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -115,7 +114,7 @@ func NewRouter() *chi.Mux {
 	r.Get("/chat", handleChat)
 
 	r.Get("/kanban", handleKanbanSelect)
-	r.Get("/kanban/{collection}", handleKanbanBoard)
+	r.Get("/kanban/{board}", handleKanbanBoard)
 
 	// ----------------------------------------------------------------------------------------
 	// ------------------------------------- static routes -------------------------------------
@@ -341,7 +340,7 @@ func NewRouter() *chi.Mux {
 		r.Route("/links", func(r chi.Router) {
 			r.Get("/parents", handleAPIGetParents)
 			r.Get("/ancestors", handleAPIGetAncestors)
-			r.Get("/ancestors-in-collection", handleAPIGetAncestorsInCollection)
+			r.Get("/ancestors-in-folder", handleAPIGetAncestorsInFolder)
 			r.Get("/kids", handleAPIGetKids)
 			r.Get("/grandchildren", handleAPIGetGrandchildren)
 			r.Get("/used", handleAPIGetUsedLinks)
@@ -357,12 +356,12 @@ func NewRouter() *chi.Mux {
 		// --------------------------------------- KANBAN ------------------------------------------
 		// ----------------------------------------------------------------------------------------
 		r.Route("/kanban", func(r chi.Router) {
-			r.Get("/{collection}", handleAPIGetKanbanBoard)
-			r.Get("/{collection}/events", handleAPIGetKanbanEvents)
-			r.Get("/{collection}/files", handleAPIGetKanbanFiles)
-			r.Get("/{collection}/tags", handleAPIGetKanbanTags)
-			r.Post("/{collection}/filter", handleAPIPostKanbanFilter)
-			r.Post("/{collection}/order", handleAPIKanbanSaveOrder)
+			r.Get("/{board}", handleAPIGetKanbanBoard)
+			r.Get("/{board}/events", handleAPIGetKanbanEvents)
+			r.Get("/{board}/files", handleAPIGetKanbanFiles)
+			r.Get("/{board}/tags", handleAPIGetKanbanTags)
+			r.Post("/{board}/filter", handleAPIPostKanbanFilter)
+			r.Post("/{board}/order", handleAPIKanbanSaveOrder)
 			r.Post("/card/move", handleAPIKanbanMoveCard)
 			r.Get("/excerpt", handleAPIGetKanbanExcerpt)
 		})
@@ -1024,31 +1023,22 @@ func handleChat(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleKanbanSelect(w http.ResponseWriter, r *http.Request) {
-	// try cache first, fall back to live data
-	collections, err := files.GetAllCollectionsFromCache()
-	if err != nil || len(collections) == 0 {
-		allCols, liveErr := files.GetAllCollections()
-		if liveErr == nil {
-			collections = make([]string, 0, len(allCols))
-			for c := range allCols {
-				collections = append(collections, c)
-			}
-			slices.Sort(collections)
-		}
-	}
-
 	tm := thememanager.GetThemeManager()
-	data := thememanager.NewKanbanSelectTemplateData(collections)
+	data := thememanager.NewKanbanSelectTemplateData(configmanager.GetKanbanBoards())
 	if err := tm.Render(w, "kanban", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}
 }
 
 func handleKanbanBoard(w http.ResponseWriter, r *http.Request) {
-	collection := chi.URLParam(r, "collection")
+	board, ok := configmanager.GetKanbanBoardBySlug(chi.URLParam(r, "board"))
+	if !ok {
+		http.Error(w, "unknown board", http.StatusNotFound)
+		return
+	}
 	tm := thememanager.GetThemeManager()
-	filterPanel := render.RenderKanbanFilterPanel(collection)
-	data := thememanager.NewKanbanTemplateData(collection, nil, filterPanel)
+	filterPanel := render.RenderKanbanFilterPanel(board.Slug)
+	data := thememanager.NewKanbanTemplateData(board, nil, filterPanel)
 	if err := tm.Render(w, "kanban", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}

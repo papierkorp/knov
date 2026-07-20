@@ -11,11 +11,10 @@ import (
 	"knov/internal/test"
 )
 
-func collectionFilterConfig() *filter.Config {
-	return &filter.Config{
-		Criteria: []filter.Criteria{{Metadata: "collection", Operator: "equals", Value: testCollection, Action: "include"}},
-		Logic:    "and",
-	}
+// emptyFilterConfig returns a filter config with no criteria - folder scoping is handled
+// directly by BuildBoard's folderPath parameter, not injected as a filter criterion.
+func emptyFilterConfig() *filter.Config {
+	return &filter.Config{Logic: "and"}
 }
 
 func columnPaths(cols []kanban.Column, status string) []string {
@@ -43,7 +42,7 @@ func containsPath(paths []string, target string) bool {
 func caseBoardLoadColumns() test.CaseResult {
 	name := "board-load-columns"
 
-	cols, err := kanban.BuildBoard(testCollection, collectionFilterConfig(), "", "")
+	cols, err := kanban.BuildBoard(testFolder, emptyFilterConfig(), "", "")
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -70,7 +69,7 @@ func caseBoardLoadColumns() test.CaseResult {
 func caseBoardSearchQuery() test.CaseResult {
 	name := "board-search-query"
 
-	cols, err := kanban.BuildBoard(testCollection, collectionFilterConfig(), "Gamma", "")
+	cols, err := kanban.BuildBoard(testFolder, emptyFilterConfig(), "Gamma", "")
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -97,11 +96,11 @@ func caseBoardSearchQuery() test.CaseResult {
 func caseBoardSorting() test.CaseResult {
 	name := "board-sorting"
 
-	byCreated, err := kanban.BuildBoard(testCollection, collectionFilterConfig(), "", kanban.SortCreatedAt)
+	byCreated, err := kanban.BuildBoard(testFolder, emptyFilterConfig(), "", kanban.SortCreatedAt)
 	if err != nil {
 		return errCase(name, err)
 	}
-	byAlpha, err := kanban.BuildBoard(testCollection, collectionFilterConfig(), "", kanban.SortAlphabetical)
+	byAlpha, err := kanban.BuildBoard(testFolder, emptyFilterConfig(), "", kanban.SortAlphabetical)
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -128,13 +127,13 @@ func caseBoardSorting() test.CaseResult {
 func caseMoveCard() test.CaseResult {
 	name := "move-card"
 
-	oldStatus, err := kanban.MoveCard(testPath(moveFile), "inprogress")
+	oldStatus, err := kanban.MoveCard(testFolder, testPath(moveFile), "inprogress")
 	if err != nil {
 		return errCase(name, err)
 	}
 	files.InvalidateFileListCache()
 
-	cols, err := kanban.BuildBoard(testCollection, collectionFilterConfig(), "", "")
+	cols, err := kanban.BuildBoard(testFolder, emptyFilterConfig(), "", "")
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -157,13 +156,13 @@ func caseMoveCard() test.CaseResult {
 func caseMoveCardEventLog() test.CaseResult {
 	name := "move-card-event-log"
 
-	oldStatus, err := kanban.MoveCard(testPath(moveFile), "blocked")
+	oldStatus, err := kanban.MoveCard(testFolder, testPath(moveFile), "blocked")
 	if err != nil {
 		return errCase(name, err)
 	}
 	files.InvalidateFileListCache()
 
-	events, err := kanban.GetEvents(testCollection, testPath(moveFile), nil, nil, 10)
+	events, err := kanban.GetEvents(testFolder, testPath(moveFile), nil, nil, 10)
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -187,15 +186,15 @@ func caseMoveCardEventLog() test.CaseResult {
 // (sortBy="") board build applies it on top of the createdAt ordering.
 func caseColumnOrderPersists() test.CaseResult {
 	name := "column-order-persists"
-	defer kanban.SaveOrder(testCollection, kanban.Order{})
+	defer kanban.SaveOrder(testFolder, kanban.Order{})
 
-	if err := kanban.SaveOrder(testCollection, kanban.Order{
+	if err := kanban.SaveOrder(testFolder, kanban.Order{
 		"inbox": {testPath(alphaFile), testPath(betaFile)},
 	}); err != nil {
 		return errCase(name, err)
 	}
 
-	cols, err := kanban.BuildBoard(testCollection, collectionFilterConfig(), "", "")
+	cols, err := kanban.BuildBoard(testFolder, emptyFilterConfig(), "", "")
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -233,14 +232,14 @@ func caseApplyOrderPure() test.CaseResult {
 	return cr
 }
 
-func caseTagsAndFilesForCollection() test.CaseResult {
-	name := "tags-and-files-for-collection"
+func caseTagsAndFilesForFolder() test.CaseResult {
+	name := "tags-and-files-for-folder"
 
-	tags, err := kanban.TagsForCollection(testCollection)
+	tags, err := kanban.TagsForFolder(testFolder)
 	if err != nil {
 		return errCase(name, err)
 	}
-	filePaths, err := kanban.FilesForCollection(testCollection)
+	filePaths, err := kanban.FilesForFolder(testFolder)
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -258,12 +257,12 @@ func caseTagsAndFilesForCollection() test.CaseResult {
 	success := hasMarker && !hasKanbanTag && containsPath(filePaths, testPath(alphaFile)) && containsPath(filePaths, testPath(gammaFile))
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: "TagsForCollection includes the marker tag but no kanban status tags; FilesForCollection includes alpha and gamma",
+		Expected: "TagsForFolder includes the marker tag but no kanban status tags; FilesForFolder includes alpha and gamma",
 		Actual:   fmt.Sprintf("tags=%v filesIncludeAlpha=%v filesIncludeGamma=%v", tags, containsPath(filePaths, testPath(alphaFile)), containsPath(filePaths, testPath(gammaFile))),
 		Success:  success,
 	}
 	if !success {
-		cr.Error = "TagsForCollection/FilesForCollection did not return the expected data"
+		cr.Error = "TagsForFolder/FilesForFolder did not return the expected data"
 	}
 	return cr
 }
