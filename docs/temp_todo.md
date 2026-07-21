@@ -34,7 +34,6 @@
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
 - create todofolder for: it/gamedev/projekte/turnbasedmonster based on claude todo
 - show last git sync/cronjob
-- git version history for files broken
 
 # testing
 

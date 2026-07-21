@@ -576,6 +576,7 @@ function setupFilePage() {
   }
 
   htmx.ajax("GET", "/api/files/versions/" + fp + "?output=full", {
+    source: document.getElementById("fp-versions"),
     target: document.getElementById("fp-versions"),
     swap: "innerHTML",
     headers: { Accept: "text/html" },
