@@ -374,9 +374,13 @@ func handleAPIRepairBrokenLinks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	entries := r.Form["repair"]
+	log := logging.LogBuilder("repair-broken-links")
+	log.Printf("=== broken links repair started: %d requested ===", len(entries))
+
 	repaired := 0
 	skipped := 0
-	for _, entry := range r.Form["repair"] {
+	for _, entry := range entries {
 		parts := strings.SplitN(entry, "|", 3)
 		if len(parts) != 3 {
 			continue
@@ -385,16 +389,21 @@ func handleAPIRepairBrokenLinks(w http.ResponseWriter, r *http.Request) {
 		ok, err := files.RepairBrokenLink(sourceFile, target, suggested)
 		if err != nil {
 			logging.LogError("failed to repair link in %s: %v", sourceFile, err)
+			log.Printf("skipped: %s: %s -> %s (error: %v)", sourceFile, target, suggested, err)
 			skipped++
 			continue
 		}
 		if !ok {
 			logging.LogWarning("no matching link occurrence found in %s for %s", sourceFile, target)
+			log.Printf("skipped: %s: %s -> %s (no matching link occurrence found)", sourceFile, target, suggested)
 			skipped++
 			continue
 		}
+		log.Printf("repaired: %s: %s -> %s", sourceFile, target, suggested)
 		repaired++
 	}
+
+	log.Printf("=== broken links repair completed: %d repaired, %d skipped ===", repaired, skipped)
 
 	if repaired > 0 {
 		files.RefreshCaches()
