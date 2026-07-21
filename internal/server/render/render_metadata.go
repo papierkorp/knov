@@ -3,6 +3,7 @@ package render
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -127,6 +128,59 @@ func RenderReferencesHTML(refs []files.Reference) string {
 	}
 	html.WriteString(`</div>`)
 	return html.String()
+}
+
+// RenderBrokenLinksHTML renders the scan result of FindBrokenLinks as a
+// checkbox list of proposed repairs, all checked by default. Broken links
+// with no suggested fix are omitted - there's nothing to select for those.
+func RenderBrokenLinksHTML(broken []files.BrokenLink) string {
+	repairable := make([]files.BrokenLink, 0, len(broken))
+	for _, bl := range broken {
+		if bl.Suggested != "" {
+			repairable = append(repairable, bl)
+		}
+	}
+
+	var html strings.Builder
+	html.WriteString(`<div id="component-broken-links">`)
+
+	if len(repairable) == 0 {
+		fmt.Fprintf(&html, `<p class="no-items">%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no repairable broken links found"))
+		html.WriteString(`</div>`)
+		return html.String()
+	}
+
+	html.WriteString(`<table class="broken-links-table"><thead><tr><th><input type="checkbox" checked onclick="toggleAllBrokenLinks(this)"></th>`)
+	fmt.Fprintf(&html, `<th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "file"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "broken link"),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "suggested fix"))
+
+	for _, bl := range repairable {
+		value := fmt.Sprintf("%s|%s|%s", bl.SourceFile, bl.Target, bl.Suggested)
+		fmt.Fprintf(&html, `<tr><td><input type="checkbox" name="repair" value="%s" checked></td><td>%s</td><td>%s</td><td>%s</td></tr>`,
+			value, bl.SourceFile, bl.Target, brokenLinkSuggestedCell(bl.Suggested))
+	}
+
+	html.WriteString(`</tbody></table>`)
+	fmt.Fprintf(&html, `<button type="button" class="btn-danger" onclick="repairBrokenLinks()">%s</button>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "Repair Selected"))
+	html.WriteString(`</div>`)
+	return html.String()
+}
+
+// brokenLinkSuggestedCell renders the suggested-fix path, with a thumbnail
+// preview when the suggestion is an image, so the fix can be eyeballed before applying.
+func brokenLinkSuggestedCell(suggested string) string {
+	if !strings.HasPrefix(suggested, "media/") {
+		return suggested
+	}
+	relativePath := strings.TrimPrefix(suggested, "media/")
+	if !files.IsImageFile(strings.ToLower(filepath.Ext(relativePath))) {
+		return suggested
+	}
+	return fmt.Sprintf(`<img src="/media/%s" alt="%s" class="media-compact-thumb" loading="lazy"> %s`,
+		relativePath, filepath.Base(relativePath), suggested)
 }
 
 // RenderMetadataCSV generates CSV content for metadata export

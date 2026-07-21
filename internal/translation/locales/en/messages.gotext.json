@@ -207,6 +207,11 @@
       "translation": ""
     },
     {
+      "id": "broken link",
+      "message": "broken link",
+      "translation": ""
+    },
+    {
       "id": "browse",
       "message": "browse",
       "translation": ""
@@ -1114,6 +1119,11 @@
     {
       "id": "failed to save todo",
       "message": "failed to save todo",
+      "translation": ""
+    },
+    {
+      "id": "failed to scan for broken links",
+      "message": "failed to scan for broken links",
       "translation": ""
     },
     {
@@ -2287,6 +2297,11 @@
       "translation": ""
     },
     {
+      "id": "no repairable broken links found",
+      "message": "no repairable broken links found",
+      "translation": ""
+    },
+    {
       "id": "no results found",
       "message": "no results found",
       "translation": ""
@@ -2572,6 +2587,16 @@
       "translation": "Rename"
     },
     {
+      "id": "Repair Broken Links",
+      "message": "Repair Broken Links",
+      "translation": ""
+    },
+    {
+      "id": "Repair Selected",
+      "message": "Repair Selected",
+      "translation": ""
+    },
+    {
       "id": "restarting application...",
       "message": "restarting application...",
       "translation": ""
@@ -2714,6 +2739,16 @@
     {
       "id": "save section",
       "message": "save section",
+      "translation": ""
+    },
+    {
+      "id": "scan all files for links pointing to paths that no longer exist and repair the selected ones",
+      "message": "scan all files for links pointing to paths that no longer exist and repair the selected ones",
+      "translation": ""
+    },
+    {
+      "id": "Scan for Broken Links",
+      "message": "Scan for Broken Links",
       "translation": ""
     },
     {
@@ -2924,6 +2959,11 @@
     {
       "id": "Storage Statistics",
       "message": "Storage Statistics",
+      "translation": ""
+    },
+    {
+      "id": "suggested fix",
+      "message": "suggested fix",
       "translation": ""
     },
     {

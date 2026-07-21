@@ -273,6 +273,38 @@
         </section>
 
         <section class="settings-section settings-section-wide">
+            <h2>{{T "Repair Broken Links"}}</h2>
+            <div class="setting-item">
+                <div class="help-text">{{T "scan all files for links pointing to paths that no longer exist and repair the selected ones"}}</div>
+                <button type="button" class="btn-secondary" onclick="scanBrokenLinks()">{{T "Scan for Broken Links"}}</button>
+                <div id="broken-links-result" style="margin-top:12px;"></div>
+                <script>
+                function scanBrokenLinks() {
+                    fetch('/api/metadata/broken-links', { headers: { 'Accept': 'text/html' } })
+                        .then(r => r.text()).then(html => {
+                            document.getElementById('broken-links-result').innerHTML = html;
+                        });
+                }
+                function toggleAllBrokenLinks(checkbox) {
+                    document.querySelectorAll('#component-broken-links input[name="repair"]').forEach(cb => cb.checked = checkbox.checked);
+                }
+                function repairBrokenLinks() {
+                    const checked = document.querySelectorAll('#component-broken-links input[name="repair"]:checked');
+                    const params = new URLSearchParams();
+                    checked.forEach(cb => params.append('repair', cb.value));
+                    fetch('/api/metadata/broken-links/repair', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'text/html' },
+                        body: params
+                    }).then(r => r.text()).then(html => {
+                        document.getElementById('broken-links-result').innerHTML = html;
+                    });
+                }
+                </script>
+            </div>
+        </section>
+
+        <section class="settings-section settings-section-wide">
             <h2>{{T "Test Data"}}</h2>
             <div class="setting-item">
                 <div class="help-text">{{T "manage test data for development and testing purposes"}}</div>

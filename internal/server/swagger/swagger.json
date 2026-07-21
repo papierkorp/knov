@@ -3902,6 +3902,78 @@
                 }
             }
         },
+        "/api/metadata/broken-links": {
+            "get": {
+                "description": "Scans link metadata (no file content is read) for outbound links pointing to files that no longer exist, suggesting a repair target where the broken link's filename uniquely matches an existing file.",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Scan for broken links",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/files.BrokenLink"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to scan for broken links",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/metadata/broken-links/repair": {
+            "post": {
+                "description": "Applies the selected repairs from a broken-links scan, rewriting each link to its suggested target",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "metadata"
+                ],
+                "summary": "Repair selected broken links",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Repair entries as sourceFile|target|suggested, repeatable",
+                        "name": "repair",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "broken links repaired",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "failed to parse form",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/metadata/bulk-update": {
             "post": {
                 "description": "Applies a metadata patch to all files that match the given filter criteria. Pass preview:true to see which files would be affected without applying changes. Supported patch fields: editor (set), tagsAdd (append), tagsRemove (remove from list).",
@@ -5951,6 +6023,20 @@
                 "WidgetTypeCollections",
                 "WidgetTypeFolders"
             ]
+        },
+        "files.BrokenLink": {
+            "type": "object",
+            "properties": {
+                "sourceFile": {
+                    "type": "string"
+                },
+                "suggested": {
+                    "type": "string"
+                },
+                "target": {
+                    "type": "string"
+                }
+            }
         },
         "files.CollectionCount": {
             "type": "object",

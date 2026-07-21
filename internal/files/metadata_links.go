@@ -4,6 +4,8 @@ package files
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -454,8 +456,13 @@ func UpdateLinksForMovedFileNoRefresh(oldPath, newPath string) error {
 
 		updatedFiles := 0
 		for _, linkingFilePath := range oldMetadata.LinksToHere {
-			if err := updateLinksInFile(linkingFilePath, oldPath, newPath); err != nil {
+			ok, err := updateLinksInFile(linkingFilePath, oldPath, newPath)
+			if err != nil {
 				logging.LogError("failed to update links in file %s: %v", linkingFilePath, err)
+				continue
+			}
+			if !ok {
+				logging.LogWarning("no literal link occurrence found in %s for %s -> %s", linkingFilePath, oldPath, newPath)
 				continue
 			}
 			updatedFiles++
@@ -494,13 +501,23 @@ func UpdateLinksForMovedFileNoRefresh(oldPath, newPath string) error {
 	return nil
 }
 
+// rebuildLinkTarget reconstructs a link target for newPath, preserving whether
+// the original link used an absolute "/files/..." view URL or a bare relative path.
+func rebuildLinkTarget(originalTarget, newPath string) string {
+	if strings.HasPrefix(strings.TrimPrefix(originalTarget, "/"), "files/") {
+		return pathutils.ToFileURL(pathutils.ToWithPrefix(newPath))
+	}
+	return newPath
+}
+
 // updateLinksInFile updates links within a single file from oldPath to newPath.
-func updateLinksInFile(filePath, oldPath, newPath string) error {
+// The returned bool reports whether a matching link was actually found and rewritten.
+func updateLinksInFile(filePath, oldPath, newPath string) (bool, error) {
 	fullPath := pathutils.ToFullPath(filePath)
 
 	contentData, err := os.ReadFile(fullPath)
 	if err != nil {
-		return fmt.Errorf("failed to read file %s: %w", filePath, err)
+		return false, fmt.Errorf("failed to read file %s: %w", filePath, err)
 	}
 
 	content := string(contentData)
@@ -509,19 +526,30 @@ func updateLinksInFile(filePath, oldPath, newPath string) error {
 	handler := parser.GetParserRegistry().GetHandler(fullPath)
 	if handler == nil {
 		logging.LogWarning("no handler found for file %s, skipping link update", filePath)
-		return nil
+		return false, nil
 	}
 
 	updated := false
 
-	// markdown-style links: [text](oldPath) -> [text](newPath)
-	oldMarkdownLink := fmt.Sprintf("](%s)", oldPath)
-	newMarkdownLink := fmt.Sprintf("](%s)", newPath)
-	if strings.Contains(content, oldMarkdownLink) {
-		content = strings.ReplaceAll(content, oldMarkdownLink, newMarkdownLink)
+	// markdown-style links: [text](oldPath) -> [text](newPath). The link target may
+	// also carry an anchor and/or be an absolute "/files/docs/..." view URL rather than
+	// a bare relative path, so each target is cleaned the same way metadata links are
+	// before comparing, and the original absolute/relative style is preserved on write.
+	markdownLinkRe := regexp.MustCompile(`\]\(([^)]+)\)`)
+	content = markdownLinkRe.ReplaceAllStringFunc(content, func(match string) string {
+		raw := match[2 : len(match)-1]
+		base, anchor, hasAnchor := strings.Cut(raw, "#")
+		if utils.CleanLink(base) != oldPath {
+			return match
+		}
 		updated = true
-		logging.LogDebug("updated markdown links in %s", filePath)
-	}
+		logging.LogDebug("updated markdown link in %s", filePath)
+		newTarget := rebuildLinkTarget(base, newPath)
+		if hasAnchor {
+			newTarget += "#" + anchor
+		}
+		return "](" + newTarget + ")"
+	})
 
 	// wiki-style links: [[oldPath]] -> [[newPath]]
 	oldWikiLink := fmt.Sprintf("[[%s]]", oldPath)
@@ -564,7 +592,7 @@ func updateLinksInFile(filePath, oldPath, newPath string) error {
 
 	if updated && content != originalContent {
 		if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
-			return fmt.Errorf("failed to write updated content to %s: %w", filePath, err)
+			return false, fmt.Errorf("failed to write updated content to %s: %w", filePath, err)
 		}
 
 		logging.LogInfo("updated links in file %s: %s -> %s", filePath, oldPath, newPath)
@@ -574,7 +602,7 @@ func updateLinksInFile(filePath, oldPath, newPath string) error {
 		}
 	}
 
-	return nil
+	return updated, nil
 }
 
 // moveFileMetadata moves metadata from old path to new path.
@@ -848,9 +876,10 @@ func UpdateLinksForMovedMedia(oldMediaPath, newMediaPath string) error {
 		if !slices.Contains(metadata.UsedLinks, normalizedOld) {
 			continue
 		}
-		if err := updateLinksInFile(file.Path, oldMediaPath, newMediaPath); err != nil {
+		ok, err := updateLinksInFile(file.Path, oldMediaPath, newMediaPath)
+		if err != nil {
 			logging.LogWarning("failed to update media links in %s: %v", file.Path, err)
-		} else {
+		} else if ok {
 			updated++
 			logging.LogInfo("updated media link in %s: %s -> %s", file.Path, oldMediaPath, newMediaPath)
 		}
@@ -863,4 +892,67 @@ func UpdateLinksForMovedMedia(oldMediaPath, newMediaPath string) error {
 // MoveMediaMetadata moves metadata from old media path to new media path.
 func MoveMediaMetadata(oldPath, newPath string) error {
 	return moveFileMetadata(oldPath, newPath)
+}
+
+// BrokenLink is an outbound link whose target no longer exists.
+type BrokenLink struct {
+	SourceFile string `json:"sourceFile"`
+	Target     string `json:"target"`
+	Suggested  string `json:"suggested,omitempty"`
+}
+
+// FindBrokenLinks scans link metadata (no file content is read) for outbound
+// links pointing to paths that no longer exist. A repair is suggested when
+// exactly one existing file shares the broken link's basename.
+func FindBrokenLinks() ([]BrokenLink, error) {
+	docFiles, err := GetAllPhysicalFiles()
+	if err != nil {
+		return nil, err
+	}
+	mediaFiles, err := GetAllMediaFiles()
+	if err != nil {
+		return nil, err
+	}
+
+	validPaths := make(map[string]bool, len(docFiles)+len(mediaFiles))
+	byBasename := make(map[string][]string)
+	for _, f := range docFiles {
+		// links may be written either relative ("note.md") or with the docs/
+		// prefix ("docs/note.md", as produced by the app's own file-view URLs)
+		validPaths[f.Path] = true
+		validPaths[pathutils.ToWithPrefix(f.Path)] = true
+		byBasename[filepath.Base(f.Path)] = append(byBasename[filepath.Base(f.Path)], f.Path)
+	}
+	for _, f := range mediaFiles {
+		validPaths[f.Path] = true
+		byBasename[filepath.Base(f.Path)] = append(byBasename[filepath.Base(f.Path)], f.Path)
+	}
+
+	var broken []BrokenLink
+	for _, f := range docFiles {
+		metadata, err := MetaDataGet(f.Path)
+		if err != nil || metadata == nil {
+			continue
+		}
+		for _, target := range metadata.UsedLinks {
+			if validPaths[target] {
+				continue
+			}
+			bl := BrokenLink{SourceFile: metadata.Path, Target: target}
+			if candidates := byBasename[filepath.Base(target)]; len(candidates) == 1 {
+				bl.Suggested = candidates[0]
+			}
+			broken = append(broken, bl)
+		}
+	}
+
+	return broken, nil
+}
+
+// RepairBrokenLink rewrites a single broken link occurrence in sourceFile
+// from oldTarget to newTarget and resyncs link metadata for that file.
+// Returns false (with no error) if no matching link occurrence was found,
+// e.g. because the link was written in a form updateLinksInFile doesn't match.
+func RepairBrokenLink(sourceFile, oldTarget, newTarget string) (bool, error) {
+	return updateLinksInFile(sourceFile, oldTarget, newTarget)
 }

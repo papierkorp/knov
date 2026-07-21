@@ -3645,3 +3645,18 @@ dl.media-info dd {
   border-radius: 4px;
   padding: 10px 12px;
 }
+
+/* repair broken links */
+#component-broken-links .broken-links-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 0.88em;
+}
+
+#component-broken-links .broken-links-table th,
+#component-broken-links .broken-links-table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}

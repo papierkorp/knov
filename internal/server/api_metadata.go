@@ -340,6 +340,76 @@ func handleAPIExportMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @Summary Scan for broken links
+// @Description Scans link metadata (no file content is read) for outbound links pointing to files that no longer exist, suggesting a repair target where the broken link's filename uniquely matches an existing file.
+// @Tags metadata
+// @Produce json,html
+// @Success 200 {array} files.BrokenLink
+// @Failure 500 {string} string "failed to scan for broken links"
+// @Router /api/metadata/broken-links [get]
+func handleAPIScanBrokenLinks(w http.ResponseWriter, r *http.Request) {
+	broken, err := files.FindBrokenLinks()
+	if err != nil {
+		logging.LogError("failed to scan for broken links: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to scan for broken links"), http.StatusInternalServerError)
+		return
+	}
+
+	html := render.RenderBrokenLinksHTML(broken)
+	writeResponse(w, r, broken, html)
+}
+
+// @Summary Repair selected broken links
+// @Description Applies the selected repairs from a broken-links scan, rewriting each link to its suggested target
+// @Tags metadata
+// @Accept application/x-www-form-urlencoded
+// @Produce json,html
+// @Param repair formData []string false "Repair entries as sourceFile|target|suggested, repeatable"
+// @Success 200 {string} string "broken links repaired"
+// @Failure 400 {string} string "failed to parse form"
+// @Router /api/metadata/broken-links/repair [post]
+func handleAPIRepairBrokenLinks(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		return
+	}
+
+	repaired := 0
+	skipped := 0
+	for _, entry := range r.Form["repair"] {
+		parts := strings.SplitN(entry, "|", 3)
+		if len(parts) != 3 {
+			continue
+		}
+		sourceFile, target, suggested := parts[0], parts[1], parts[2]
+		ok, err := files.RepairBrokenLink(sourceFile, target, suggested)
+		if err != nil {
+			logging.LogError("failed to repair link in %s: %v", sourceFile, err)
+			skipped++
+			continue
+		}
+		if !ok {
+			logging.LogWarning("no matching link occurrence found in %s for %s", sourceFile, target)
+			skipped++
+			continue
+		}
+		repaired++
+	}
+
+	if repaired > 0 {
+		files.RefreshCaches()
+	}
+
+	broken, _ := files.FindBrokenLinks()
+	html := render.RenderBrokenLinksHTML(broken)
+	if skipped > 0 {
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "%d links repaired, %d could not be matched in their file", repaired, skipped))
+	} else {
+		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "%d links repaired", repaired))
+	}
+	writeResponse(w, r, map[string]int{"repaired": repaired, "skipped": skipped}, html)
+}
+
 // ----------------------------------------------------------------------------------------
 // ---------------------------------- GET INDIVIDUAL ----------------------------------
 // ----------------------------------------------------------------------------------------

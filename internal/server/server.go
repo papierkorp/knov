@@ -303,6 +303,8 @@ func NewRouter() *chi.Mux {
 			r.Post("/rebuild/*", handleAPIRebuildFileMetadata)
 			r.Post("/export", handleAPIExportMetadata)
 			r.Post("/bulk-update", handleAPIBulkUpdateMetadata)
+			r.Get("/broken-links", handleAPIScanBrokenLinks)
+			r.Post("/broken-links/repair", handleAPIRepairBrokenLinks)
 
 			r.Get("/collection", handleAPIGetMetadataCollection)
 			r.Get("/editor", handleAPIGetMetadataEditor)

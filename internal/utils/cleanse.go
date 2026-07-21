@@ -33,7 +33,12 @@ func CleanLink(link string) string {
 	// map URL path prefixes to metadata path prefixes
 	cleanLink = strings.TrimPrefix(cleanLink, "/")
 	if strings.HasPrefix(cleanLink, "files/") {
-		cleanLink = "docs/" + cleanLink[len("files/"):]
+		cleanLink = strings.TrimPrefix(cleanLink, "files/")
+		// ToFileURL already embeds the docs/media prefix (e.g. "files/docs/...",
+		// "files/media/..."); only add "docs/" back if it's missing entirely
+		if !strings.HasPrefix(cleanLink, "docs/") && !strings.HasPrefix(cleanLink, "media/") {
+			cleanLink = "docs/" + cleanLink
+		}
 	}
 
 	// decode percent-encoding so paths like "docs/foo%20bar.md" become "docs/foo bar.md"

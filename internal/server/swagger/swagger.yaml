@@ -109,6 +109,15 @@ definitions:
     - WidgetTypeTags
     - WidgetTypeCollections
     - WidgetTypeFolders
+  files.BrokenLink:
+    properties:
+      sourceFile:
+        type: string
+      suggested:
+        type: string
+      target:
+        type: string
+    type: object
   files.CollectionCount:
     additionalProperties:
       type: integer
@@ -3066,6 +3075,57 @@ paths:
           schema:
             type: string
       summary: Set metadata for a single file
+      tags:
+      - metadata
+  /api/metadata/broken-links:
+    get:
+      description: Scans link metadata (no file content is read) for outbound links
+        pointing to files that no longer exist, suggesting a repair target where the
+        broken link's filename uniquely matches an existing file.
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/files.BrokenLink'
+            type: array
+        "500":
+          description: failed to scan for broken links
+          schema:
+            type: string
+      summary: Scan for broken links
+      tags:
+      - metadata
+  /api/metadata/broken-links/repair:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Applies the selected repairs from a broken-links scan, rewriting
+        each link to its suggested target
+      parameters:
+      - collectionFormat: csv
+        description: Repair entries as sourceFile|target|suggested, repeatable
+        in: formData
+        items:
+          type: string
+        name: repair
+        type: array
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: broken links repaired
+          schema:
+            type: string
+        "400":
+          description: failed to parse form
+          schema:
+            type: string
+      summary: Repair selected broken links
       tags:
       - metadata
   /api/metadata/bulk-update:
