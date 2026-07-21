@@ -87,6 +87,11 @@
       "translation": ""
     },
     {
+      "id": "after",
+      "message": "after",
+      "translation": ""
+    },
+    {
       "id": "all",
       "message": "all",
       "translation": ""
@@ -199,6 +204,11 @@
     {
       "id": "back to board",
       "message": "back to board",
+      "translation": ""
+    },
+    {
+      "id": "before",
+      "message": "before",
       "translation": ""
     },
     {
@@ -1859,11 +1869,6 @@
     {
       "id": "loading types...",
       "message": "loading types...",
-      "translation": ""
-    },
-    {
-      "id": "loading version content...",
-      "message": "loading version content...",
       "translation": ""
     },
     {

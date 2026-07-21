@@ -38,6 +38,7 @@
 - optimize `files/history` it takes really long => why? is there a better way?
 - fix broken links => also search for wiki links
 - show diffs from save file but different dates/versions (maybe 2 selects in sidebar?)
+- kanban - show archive
 
 # testing
 
