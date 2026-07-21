@@ -49,16 +49,17 @@
 
     {{else}}
         <!-- General history / latest changes -->
-        <h1>{{if .Collection}}{{T "recent file history"}}: {{.Collection}}{{else}}{{T "recent file history"}}{{end}}</h1>
+        <h1>{{if .Folder}}{{T "recent file history"}}: {{.Folder}}{{else if .Collection}}{{T "recent file history"}}: {{.Collection}}{{else}}{{T "recent file history"}}{{end}}</h1>
         <input type="search" id="latestchanges-search"
                placeholder="{{T "search by filename..."}}"
                autocomplete="off"
                oninput="updateLatestChangesSearch(this.value)"/>
         <div id="latestchanges-results"
-             hx-get="/api/git/latestchanges?count=50{{if .Collection}}&collection={{.Collection}}{{end}}"
+             hx-get="/api/git/latestchanges?count=50{{if .Collection}}&collection={{.Collection}}{{end}}{{if .Folder}}&folder={{.Folder}}{{end}}"
              hx-trigger="load"
              hx-headers='{"Accept": "text/html"}'
-             data-collection="{{.Collection}}">
+             data-collection="{{.Collection}}"
+             data-folder="{{.Folder}}">
             {{T "loading recent changes..."}}
         </div>
         <script src="/themes/{{.CurrentTheme}}/js/history-search.js"></script>

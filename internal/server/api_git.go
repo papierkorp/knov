@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/job"
@@ -21,6 +22,7 @@ import (
 // @Param offset query int false "Offset for pagination (default 0)"
 // @Param q query string false "Search query — filters by filename in git history"
 // @Param collection query string false "Filter by collection"
+// @Param folder query string false "Filter by folder, recursive (includes subfolders)"
 // @Produce json,html
 // @Router /api/git/latestchanges [get]
 func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +44,7 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 
 	query := r.URL.Query().Get("q")
 	collection := r.URL.Query().Get("collection")
+	folder := r.URL.Query().Get("folder")
 
 	// search mode — git title search, no pagination
 	if query != "" {
@@ -50,7 +53,7 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to search git history"), http.StatusInternalServerError)
 			return
 		}
-		html := render.RenderGitHistoryFileList(results, "", 0, false)
+		html := render.RenderGitHistoryFileList(results, "", "", 0, false)
 		writeResponse(w, r, results, html)
 		return
 	}
@@ -62,22 +65,26 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 	}
 
 	unfilteredCount := len(allFiles)
-	if collection != "" {
+	if collection != "" || folder != "" {
 		var filtered []git.GitHistoryFile
 		for _, f := range allFiles {
 			meta, err := files.MetaDataGet(pathutils.ToWithPrefix(f.Path))
 			if err != nil || meta == nil {
 				continue
 			}
-			if meta.Collection == collection {
-				filtered = append(filtered, f)
+			if collection != "" && meta.Collection != collection {
+				continue
 			}
+			if folder != "" && !pathutils.FolderContains(strings.Join(meta.Folders, "/"), folder) {
+				continue
+			}
+			filtered = append(filtered, f)
 		}
 		allFiles = filtered
 	}
 
 	hasMore := unfilteredCount == count
-	html := render.RenderGitHistoryFileList(allFiles, collection, offset+count, hasMore)
+	html := render.RenderGitHistoryFileList(allFiles, collection, folder, offset+count, hasMore)
 	writeResponse(w, r, allFiles, html)
 }
 

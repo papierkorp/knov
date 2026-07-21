@@ -2733,6 +2733,12 @@ const docTemplate = `{
                         "description": "Filter by collection",
                         "name": "collection",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by folder, recursive (includes subfolders)",
+                        "name": "folder",
+                        "in": "query"
                     }
                 ],
                 "responses": {}

@@ -33,9 +33,7 @@
 - pdf export for section
 - if a file is moved outside the app => are all links from rebuild?
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
-- update kanban board history - to use folders instead of collections
 - create todofolder for: it/gamedev/projekte/turnbasedmonster based on claude todo
-- fts5 use analzye? (https://jvns.ca/blog/2026/07/17/learning-about-running-sqlite/)
 
 
 # testing

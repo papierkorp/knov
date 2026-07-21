@@ -421,6 +421,7 @@ type HistoryTemplateData struct {
 	SingleVersion   bool   // true if only one version exists
 	FileDeleted     bool   // true if the file no longer exists on disk
 	Collection      string // optional collection filter for the general history view
+	Folder          string // optional folder filter (recursive) for the general history view, e.g. from a kanban board
 }
 
 // NewHistoryTemplateData creates file history specific data
@@ -546,8 +547,7 @@ func NewFilterEditTemplateData(filterID string) FilterEditTemplateData {
 type KanbanTemplateData struct {
 	BaseTemplateData
 	Board           string // URL slug
-	FolderPath      string // configured folder path (for new-file prefill etc.)
-	TopCollection   string // FolderPath's first segment, for the collection-scoped history link
+	FolderPath      string // configured folder path (for new-file prefill etc. and the board history link)
 	DisplayName     string
 	Columns         []kanban.Column
 	Statuses        []string // all possible statuses (for move target)
@@ -558,12 +558,10 @@ type KanbanTemplateData struct {
 
 // NewKanbanTemplateData creates kanban board template data
 func NewKanbanTemplateData(board configmanager.KanbanBoard, columns []kanban.Column, filterPanelHTML string) KanbanTemplateData {
-	topCollection, _, _ := strings.Cut(board.FolderPath, "/")
 	return KanbanTemplateData{
 		BaseTemplateData: NewBaseTemplateData("kanban: " + board.DisplayName),
 		Board:            board.Slug,
 		FolderPath:       board.FolderPath,
-		TopCollection:    topCollection,
 		DisplayName:      board.DisplayName,
 		Columns:          columns,
 		Statuses:         configmanager.GetKanbanStatuses(),

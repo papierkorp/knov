@@ -2263,6 +2263,10 @@ paths:
         in: query
         name: collection
         type: string
+      - description: Filter by folder, recursive (includes subfolders)
+        in: query
+        name: folder
+        type: string
       produces:
       - application/json
       - text/html

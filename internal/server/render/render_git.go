@@ -18,7 +18,7 @@ import (
 
 // RenderGitHistoryFileList renders a list of git history files as HTML.
 // nextOffset is the offset to use for the load more button; hasMore controls whether to show it.
-func RenderGitHistoryFileList(files []git.GitHistoryFile, collection string, nextOffset int, hasMore bool) string {
+func RenderGitHistoryFileList(files []git.GitHistoryFile, collection, folder string, nextOffset int, hasMore bool) string {
 	var b strings.Builder
 	b.WriteString("<ul>")
 	for _, file := range files {
@@ -33,12 +33,13 @@ func RenderGitHistoryFileList(files []git.GitHistoryFile, collection string, nex
 	if hasMore {
 		url := fmt.Sprintf("/api/git/latestchanges?count=50&offset=%d", nextOffset)
 		if collection != "" {
-			fmt.Fprintf(&b, `<button class="load-more-btn" hx-get="%s&collection=%s" hx-target="this" hx-swap="outerHTML" hx-headers='{"Accept":"text/html"}'>%s</button>`,
-				url, collection, translation.SprintfForRequest(configmanager.GetLanguage(), "load more"))
-		} else {
-			fmt.Fprintf(&b, `<button class="load-more-btn" hx-get="%s" hx-target="this" hx-swap="outerHTML" hx-headers='{"Accept":"text/html"}'>%s</button>`,
-				url, translation.SprintfForRequest(configmanager.GetLanguage(), "load more"))
+			url += "&collection=" + collection
 		}
+		if folder != "" {
+			url += "&folder=" + folder
+		}
+		fmt.Fprintf(&b, `<button class="load-more-btn" hx-get="%s" hx-target="this" hx-swap="outerHTML" hx-headers='{"Accept":"text/html"}'>%s</button>`,
+			url, translation.SprintfForRequest(configmanager.GetLanguage(), "load more"))
 	}
 	return b.String()
 }

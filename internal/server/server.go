@@ -691,6 +691,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 
 	data := thememanager.NewHistoryTemplateData("", "", "", nil, false)
 	data.Collection = r.URL.Query().Get("collection")
+	data.Folder = r.URL.Query().Get("folder")
 
 	err := tm.Render(w, "history", data)
 	if err != nil {
