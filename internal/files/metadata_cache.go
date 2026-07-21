@@ -501,14 +501,8 @@ func (mc *MetadataCollector) CollectFromMetadata(filePath string, metadata *Meta
 	}
 
 	// collect folder paths from file path
-	dir := filepath.Dir(filePath)
-	if dir != "." && dir != "" {
-		// generate all parent paths: xxx/, xxx/yyy/, xxx/yyy/zzz/
-		parts := strings.Split(dir, string(filepath.Separator))
-		for i := 1; i <= len(parts); i++ {
-			path := strings.Join(parts[:i], "/") + "/"
-			mc.FolderPaths[path] = true
-		}
+	for _, path := range ancestorFolderPaths(filePath) {
+		mc.FolderPaths[path] = true
 	}
 
 	// collect orphaned media
@@ -632,6 +626,22 @@ func GetAllFolderPathsFromCache() ([]string, error) {
 	return getStringListFromCache(CacheKeyFolderPaths)
 }
 
+// ancestorFolderPaths returns every ancestor folder of filePath, each with a trailing slash.
+// For xxx/yyy/zzz.md it returns: xxx/, xxx/yyy/, xxx/yyy/zzz/
+func ancestorFolderPaths(filePath string) []string {
+	dir := filepath.ToSlash(filepath.Dir(filePath))
+	if dir == "." || dir == "" {
+		return nil
+	}
+
+	parts := strings.Split(dir, "/")
+	paths := make([]string, len(parts))
+	for i := range parts {
+		paths[i] = strings.Join(parts[:i+1], "/") + "/"
+	}
+	return paths
+}
+
 // GetAllFolderPaths returns all unique folder paths for suggestions
 // For xxx/yyy/zzz it returns: xxx/, xxx/yyy/, xxx/yyy/zzz/
 func GetAllFolderPaths() ([]string, error) {
@@ -643,16 +653,7 @@ func GetAllFolderPaths() ([]string, error) {
 	folderPaths := make(map[string]bool)
 
 	for _, file := range allFiles {
-		// get directory path
-		dir := filepath.ToSlash(filepath.Dir(file.Path))
-		if dir == "." || dir == "" {
-			continue
-		}
-
-		// generate all parent paths
-		parts := strings.Split(dir, "/")
-		for i := 1; i <= len(parts); i++ {
-			path := strings.Join(parts[:i], "/") + "/"
+		for _, path := range ancestorFolderPaths(file.Path) {
 			folderPaths[path] = true
 		}
 	}

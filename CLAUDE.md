@@ -1,0 +1,22 @@
+- im currently working on the following golang, htmx app. 
+- i want you to anwser with as little code as possible to only fix the problem i anwsered without any unecessary code, as simple and small as possible with as few changes as possible
+- Create an artifact called "current_files_manifest.md" that lists all the artifacts you have created in this conversation with their current versions and last update times.
+- Instead of creating a new artifact, please update your existing [filename] artifact with the new changes and present your artifact to me so we use the same file
+- check current status of the project 
+- give me the full file not just the changes
+- for logging message i only want use lowercase
+- if you create an api call keep in mind to keep it theme friendly (lean more towards being generic) and also add comments for swagger to work, also stay with accept form data we dont need to accept json
+- for styles/css files use Global styles only in style.css and all specific files use ID selectors (#page-, #component-, #view-)
+- think theme-agnostic
+- always search the project since you already have all the files
+- i dont want any html generation in the handler - use the render subpackage for any html strings
+- make the api RESTful
+- no need for backwards compability since the app is not released yet - you can remove functions/routes
+- dont forget to use translation.SprintfForRequest in the server package for handler and the render package for EVERY String
+- Use fmt.Fprintf(…) instead of WriteString(fmt.Sprintf(…)) (QF1012 default)
+- if anything related to paths prop up - use the pathutils package!
+- for every return in the api folder use: writeResponse
+- i create the uploaded files using the Makefiles - so the filenames are not completly the same in the repo, there is a FILE_LIST.txt with the tree command for you to have a overview over all files in the repo
+- if working with paths - be careful about windows paths
+- if you add a new env also add it to .env.example and the html templates of both themes
+- if possible use slices.Contains instead of loops

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"knov/internal/configmanager"
-	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/kanban"
 	"knov/internal/pathutils"
@@ -131,7 +130,6 @@ func caseMoveCard() test.CaseResult {
 	if err != nil {
 		return errCase(name, err)
 	}
-	files.InvalidateFileListCache()
 
 	cols, err := kanban.BuildBoard(testFolder, emptyFilterConfig(), "", "")
 	if err != nil {
@@ -160,7 +158,6 @@ func caseMoveCardEventLog() test.CaseResult {
 	if err != nil {
 		return errCase(name, err)
 	}
-	files.InvalidateFileListCache()
 
 	events, err := kanban.GetEvents(testFolder, testPath(moveFile), nil, nil, 10)
 	if err != nil {

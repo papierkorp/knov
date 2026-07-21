@@ -34,8 +34,6 @@
 - if a file is moved outside the app => are all links from rebuild?
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
 - update kanban board history - to use folders instead of collections
-- now we have a few different FolderFromPath function where most accomplish the same or am im wrong? i just felt like we already added a few of them => maybe we can consolidate them?
-- update cache if a file in kanban is moved (at the moment its always moved back to its starting position in the board)
 - create todofolder for: it/gamedev/projekte/turnbasedmonster based on claude todo
 - fts5 use analzye? (https://jvns.ca/blog/2026/07/17/learning-about-running-sqlite/)
 

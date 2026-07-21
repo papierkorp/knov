@@ -248,6 +248,7 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus string, err er
 	if err := files.MetaDataSaveRaw(meta); err != nil {
 		return "", err
 	}
+	files.RefreshCaches()
 	eventFolder := boardFolder
 	if eventFolder == "" {
 		dir := strings.Join(meta.Folders, "/")
@@ -269,15 +270,16 @@ func GetEvents(folderPath, filePath string, from, to *time.Time, limit int) ([]k
 	return kanbanStorage.GetEvents(folderPath, filePath, from, to, limit)
 }
 
-// TagsForFolder returns all unique non-kanban tags present on kanban cards in the folder (and its subfolders).
-func TagsForFolder(folderPath string) ([]string, error) {
+// cardFilesInFolder returns all cached files that are kanban cards (have a kanban status tag)
+// scoped to folderPath (and its subfolders).
+func cardFilesInFolder(folderPath string) ([]files.File, error) {
 	prefix := configmanager.GetKanbanPrefix()
 	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
 		return nil, err
 	}
 
-	tagSet := make(map[string]struct{})
+	var cards []files.File
 	for _, file := range allFiles {
 		if file.Metadata == nil || !folderMatches(file.Metadata, folderPath) {
 			continue
@@ -285,6 +287,20 @@ func TagsForFolder(folderPath string) ([]string, error) {
 		if StatusFromTags(file.Metadata.Tags, prefix) == "" {
 			continue
 		}
+		cards = append(cards, file)
+	}
+	return cards, nil
+}
+
+// TagsForFolder returns all unique non-kanban tags present on kanban cards in the folder (and its subfolders).
+func TagsForFolder(folderPath string) ([]string, error) {
+	cards, err := cardFilesInFolder(folderPath)
+	if err != nil {
+		return nil, err
+	}
+
+	tagSet := make(map[string]struct{})
+	for _, file := range cards {
 		for _, t := range file.Metadata.Tags {
 			if !configmanager.IsKanbanTag(t) {
 				tagSet[t] = struct{}{}
@@ -303,20 +319,13 @@ func TagsForFolder(folderPath string) ([]string, error) {
 // FilesForFolder returns the file paths of all kanban cards (files with a kanban status) in the folder
 // (and its subfolders), sorted.
 func FilesForFolder(folderPath string) ([]string, error) {
-	prefix := configmanager.GetKanbanPrefix()
-	allFiles, err := files.GetAllFilesCached()
+	cards, err := cardFilesInFolder(folderPath)
 	if err != nil {
 		return nil, err
 	}
 
-	var paths []string
-	for _, file := range allFiles {
-		if file.Metadata == nil || !folderMatches(file.Metadata, folderPath) {
-			continue
-		}
-		if StatusFromTags(file.Metadata.Tags, prefix) == "" {
-			continue
-		}
+	paths := make([]string, 0, len(cards))
+	for _, file := range cards {
 		paths = append(paths, pathutils.ToRelative(file.Path))
 	}
 	slices.Sort(paths)

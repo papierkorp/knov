@@ -167,12 +167,9 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	currentMetadata.Size = newMetadata.Size
 
 	// update collection and folder based on folder structure (use path without docs/media prefix)
-	normalizedPath := pathutils.ToRelative(filePath)
-
-	folderPath := filepath.ToSlash(filepath.Dir(normalizedPath))
-	if folderPath != "." && folderPath != "" {
-		parts := strings.Split(folderPath, "/")
-		currentMetadata.Folders = parts
+	folderPath := FolderFromPath(filePath)
+	if folderPath != "" {
+		currentMetadata.Folders = strings.Split(folderPath, "/")
 		currentMetadata.Collection = CollectionFromPath(filePath)
 	} else {
 		currentMetadata.Folders = []string{}
