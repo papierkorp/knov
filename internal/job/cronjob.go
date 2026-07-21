@@ -42,9 +42,12 @@ func (j *fileJob) Run() error {
 		if err != nil {
 			logging.LogError("cronjob: failed to get current commit: %v", err)
 		} else if currentCommit != "" && currentCommit != lastCommit {
+			hadError := false
+
 			changedFiles, err := git.GetFilesChangedSinceCommit(lastCommit)
 			if err != nil {
 				logging.LogError("cronjob: failed to get changed files: %v", err)
+				hadError = true
 			} else if len(changedFiles) > 0 {
 				logging.LogInfo("detected %d files changed since last commit", len(changedFiles))
 				filesToProcess = append(filesToProcess, changedFiles...)
@@ -53,6 +56,7 @@ func (j *fileJob) Run() error {
 			deletedFiles, err := git.GetDeletedFilesSinceCommit(lastCommit)
 			if err != nil {
 				logging.LogError("cronjob: failed to get deleted files: %v", err)
+				hadError = true
 			} else if len(deletedFiles) > 0 {
 				logging.LogInfo("detected %d files deleted since last commit", len(deletedFiles))
 				filesToDelete = append(filesToDelete, deletedFiles...)
@@ -61,6 +65,7 @@ func (j *fileJob) Run() error {
 			movedFiles, err := git.GetFileRenames(lastCommit)
 			if err != nil {
 				logging.LogError("cronjob: failed to get file renames: %v", err)
+				hadError = true
 			} else if len(movedFiles) > 0 {
 				logging.LogInfo("detected %d file moves since last commit", len(movedFiles))
 				for _, move := range movedFiles {
@@ -79,7 +84,9 @@ func (j *fileJob) Run() error {
 				}
 			}
 
-			if err := git.SetLastProcessedCommit(currentCommit); err != nil {
+			if hadError {
+				logging.LogWarning("cronjob: not advancing last processed commit due to errors above, will retry next run")
+			} else if err := git.SetLastProcessedCommit(currentCommit); err != nil {
 				logging.LogError("cronjob: failed to save last processed commit: %v", err)
 			}
 		}

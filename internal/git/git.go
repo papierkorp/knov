@@ -1399,45 +1399,22 @@ func detectMovesInCommit(repo *git.Repository, fromCommit, toCommit *object.Comm
 		return nil, err
 	}
 
-	var renames []FileMove
-	deletedFiles := make(map[string]bool)
-	addedFiles := make(map[string]string) // path -> hash
-
-	// first pass: collect deletions and additions
-	for _, change := range changes {
-		switch change.To.Name {
-		case "":
-			// deletion
-			deletedFiles[change.From.Name] = true
-		default:
-			if change.From.Name == "" {
-				// addition
-				addedFiles[change.To.Name] = change.To.TreeEntry.Hash.String()
-			}
-		}
+	// use go-git's similarity-based rename detection so moves that also
+	// changed content slightly (reformatting, front-matter edits, etc.)
+	// are still recognized, not just byte-identical moves
+	changes, err = object.DetectRenames(changes, nil)
+	if err != nil {
+		return nil, err
 	}
 
-	// second pass: match deletions with additions by content hash
+	var renames []FileMove
 	for _, change := range changes {
-		if change.To.Name == "" && deletedFiles[change.From.Name] {
-			// this is a deleted file, look for matching addition
-			oldHash := change.From.TreeEntry.Hash.String()
-
-			for addedPath, addedHash := range addedFiles {
-				if oldHash == addedHash {
-					// found a match - this is a rename
-					renames = append(renames, FileMove{
-						OldPath: change.From.Name,
-						NewPath: addedPath,
-						Commit:  toCommit.Hash.String(),
-					})
-
-					// remove from tracking to avoid duplicate matches
-					delete(addedFiles, addedPath)
-					deletedFiles[change.From.Name] = false
-					break
-				}
-			}
+		if change.From.Name != "" && change.To.Name != "" && change.From.Name != change.To.Name {
+			renames = append(renames, FileMove{
+				OldPath: change.From.Name,
+				NewPath: change.To.Name,
+				Commit:  toCommit.Hash.String(),
+			})
 		}
 	}
 
