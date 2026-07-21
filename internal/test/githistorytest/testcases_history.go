@@ -178,7 +178,7 @@ func caseGitFileViewVersion(state *sampleState) test.CaseResult {
 func caseGitFileDiff(state *sampleState) test.CaseResult {
 	name := "git-file-diff"
 
-	diff, err := git.GetFileDiff(pathutils.ToDocsPath(testPath(gammaFile)), state.gammaCommit1, state.gammaCommit2)
+	diff, _, _, err := git.GetFileDiff(pathutils.ToDocsPath(testPath(gammaFile)), state.gammaCommit1, state.gammaCommit2)
 	if err != nil {
 		return errCase(name, err)
 	}

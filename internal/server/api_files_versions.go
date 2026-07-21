@@ -169,7 +169,7 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	diff, err := git.GetFileDiff(fullPath, fromCommit, toCommit)
+	diff, oldCommit, newCommit, err := git.GetFileDiff(fullPath, fromCommit, toCommit)
 	if err != nil {
 		logging.LogError("failed to get diff for %s between %s and %s: %v", filePath, fromCommit, toCommit, err)
 		// return soft HTML error so htmx does not treat this as a hard failure
@@ -179,9 +179,35 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderFileDiff(diff, filePath, fromCommit, toCommit)
+	currentCommit := ""
+	if versions, err := git.GetFileHistory(fullPath); err == nil && len(versions) > 0 {
+		currentCommit = versions[0].Commit
+	}
+
+	before := buildFileDiffVersion(fullPath, oldCommit, currentCommit)
+	after := buildFileDiffVersion(fullPath, newCommit, currentCommit)
+
+	html := render.RenderFileDiff(diff, filePath, before, after)
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
+}
+
+// buildFileDiffVersion loads the display metadata and full content for one
+// side of a file diff at the given commit.
+func buildFileDiffVersion(fullPath, commit, currentCommit string) render.FileDiffVersion {
+	date, message, err := git.GetCommitDetails(commit)
+	dateStr := "unknown"
+	if err == nil {
+		dateStr = configmanager.FormatDateTime(date)
+	}
+	content, err := git.GetFileAtCommit(fullPath, commit)
+	if err != nil {
+		content = translation.SprintfForRequest(configmanager.GetLanguage(), "version no longer available")
+	}
+	// currentCommit comes from GetFileHistory as a short (7-char) hash while
+	// commit here is always the full hash, so compare by prefix
+	isCurrent := currentCommit != "" && strings.HasPrefix(commit, currentCommit)
+	return render.FileDiffVersion{Commit: commit, Date: dateStr, Message: message, Content: content, IsCurrent: isCurrent}
 }
 
 // @Summary Restore file version

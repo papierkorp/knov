@@ -679,6 +679,14 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 			selectedCommit = currentCommit
 		}
 
+		// GetFileHistory returns short (7-char) hashes; a caller may pass a full
+		// hash for the same commit (e.g. a direct link), which would otherwise
+		// never string-equal currentCommit and wrongly look like a non-current
+		// version. Normalize to the same short form git already resolves fine.
+		if len(selectedCommit) > 7 {
+			selectedCommit = selectedCommit[:7]
+		}
+
 		data := thememanager.NewHistoryTemplateData(filePath, currentCommit, selectedCommit, versions, false)
 		_, statErr := os.Stat(pathutils.ToFullPath(filePath))
 		data.FileDeleted = os.IsNotExist(statErr)

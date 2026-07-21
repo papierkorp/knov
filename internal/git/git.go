@@ -1153,11 +1153,16 @@ func GetFileAtCommit(filePath, commit string) (string, error) {
 	return content, nil
 }
 
-// GetFileDiff returns the diff between two commits for a file
-func GetFileDiff(filePath, fromCommit, toCommit string) (string, error) {
+// GetFileDiff returns the diff between two commits for a file. The two commits
+// may be passed in either order - they're sorted chronologically internally so
+// the diff always reads old->new ("-" is always the older content, "+" the
+// newer one), regardless of which one the caller happened to pass as "from".
+// oldCommit/newCommit report which hash ended up on which side, so the caller
+// can label the diff accordingly.
+func GetFileDiff(filePath, fromCommit, toCommit string) (diff, oldCommit, newCommit string, err error) {
 	repo, err := openRepo()
 	if err != nil {
-		return "", err
+		return "", "", "", err
 	}
 
 	dataDir := configmanager.GetAppConfig().DataPath
@@ -1171,12 +1176,12 @@ func GetFileDiff(filePath, fromCommit, toCommit string) (string, error) {
 		// Get the parent of fromCommit
 		fromHash, err := expandCommitHash(repo, fromCommit)
 		if err != nil {
-			return "", fmt.Errorf("failed to find commit %s: %v", fromCommit, err)
+			return "", "", "", fmt.Errorf("failed to find commit %s: %v", fromCommit, err)
 		}
 
 		fromCommitObj, err := repo.CommitObject(fromHash)
 		if err != nil {
-			return "", err
+			return "", "", "", err
 		}
 
 		parents := fromCommitObj.Parents()
@@ -1185,7 +1190,7 @@ func GetFileDiff(filePath, fromCommit, toCommit string) (string, error) {
 		parentCommit, err := parents.Next()
 		if err != nil {
 			// No parent commit (probably the initial commit)
-			return "", fmt.Errorf("no parent commit found for %s", fromCommit)
+			return "", "", "", fmt.Errorf("no parent commit found for %s", fromCommit)
 		}
 
 		toCommit = parentCommit.Hash.String()
@@ -1194,32 +1199,45 @@ func GetFileDiff(filePath, fromCommit, toCommit string) (string, error) {
 	// Expand commit hashes
 	fromCommitHash, err := expandCommitHash(repo, fromCommit)
 	if err != nil {
-		return "", fmt.Errorf("failed to find commit %s: %v", fromCommit, err)
+		return "", "", "", fmt.Errorf("failed to find commit %s: %v", fromCommit, err)
 	}
 
 	toCommitHash, err := expandCommitHash(repo, toCommit)
 	if err != nil {
-		return "", fmt.Errorf("failed to find commit %s: %v", toCommit, err)
+		return "", "", "", fmt.Errorf("failed to find commit %s: %v", toCommit, err)
 	}
 
 	fromCommitObj, err := repo.CommitObject(fromCommitHash)
 	if err != nil {
-		return "", err
+		return "", "", "", err
 	}
 
 	toCommitObj, err := repo.CommitObject(toCommitHash)
 	if err != nil {
-		return "", err
+		return "", "", "", err
 	}
 
-	fromTree, err := fromCommitObj.Tree()
+	// sort chronologically so "old"/"new" below always match reality,
+	// independent of which side the caller passed as from/to. Ancestry is
+	// used rather than raw timestamps since commits made in quick succession
+	// (e.g. batched auto-commits) can share the same second-resolution time.
+	oldCommitObj, newCommitObj := fromCommitObj, toCommitObj
+	if toIsAncestor, ancErr := toCommitObj.IsAncestor(fromCommitObj); ancErr == nil && toIsAncestor {
+		oldCommitObj, newCommitObj = toCommitObj, fromCommitObj
+	} else if fromCommitObj.Committer.When.After(toCommitObj.Committer.When) {
+		oldCommitObj, newCommitObj = toCommitObj, fromCommitObj
+	}
+	oldCommit = oldCommitObj.Hash.String()
+	newCommit = newCommitObj.Hash.String()
+
+	oldTree, err := oldCommitObj.Tree()
 	if err != nil {
-		return "", err
+		return "", "", "", err
 	}
 
-	toTree, err := toCommitObj.Tree()
+	newTree, err := newCommitObj.Tree()
 	if err != nil {
-		return "", err
+		return "", "", "", err
 	}
 
 	// relPath reflects the file's current (HEAD) name. If it was renamed at
@@ -1227,47 +1245,47 @@ func GetFileDiff(filePath, fromCommit, toCommit string) (string, error) {
 	// what it was actually called there - otherwise the tree diff below sees
 	// two unrelated paths and reports the file as deleted rather than diffing
 	// its content.
-	fromRelPath := relPath
-	toRelPath := relPath
+	oldRelPath := relPath
+	newRelPath := relPath
 	if headRef, err := repo.Head(); err == nil {
 		if headCommit, err := repo.CommitObject(headRef.Hash()); err == nil {
-			fromRelPath = resolvePathAtCommit(repo, relPath, headCommit, fromCommitObj)
-			toRelPath = resolvePathAtCommit(repo, relPath, headCommit, toCommitObj)
+			oldRelPath = resolvePathAtCommit(repo, relPath, headCommit, oldCommitObj)
+			newRelPath = resolvePathAtCommit(repo, relPath, headCommit, newCommitObj)
 		}
 	}
 
-	if fromRelPath != toRelPath {
-		fromEntry, fromErr := fromTree.FindEntry(fromRelPath)
-		toEntry, toErr := toTree.FindEntry(toRelPath)
-		if fromErr == nil && toErr == nil {
+	if oldRelPath != newRelPath {
+		oldEntry, oldErr := oldTree.FindEntry(oldRelPath)
+		newEntry, newErr := newTree.FindEntry(newRelPath)
+		if oldErr == nil && newErr == nil {
 			change := &object.Change{
-				From: object.ChangeEntry{Name: fromRelPath, Tree: fromTree, TreeEntry: *fromEntry},
-				To:   object.ChangeEntry{Name: toRelPath, Tree: toTree, TreeEntry: *toEntry},
+				From: object.ChangeEntry{Name: oldRelPath, Tree: oldTree, TreeEntry: *oldEntry},
+				To:   object.ChangeEntry{Name: newRelPath, Tree: newTree, TreeEntry: *newEntry},
 			}
 			patch, err := change.Patch()
 			if err != nil {
-				return "", err
+				return "", "", "", err
 			}
-			return patch.String(), nil
+			return patch.String(), oldCommit, newCommit, nil
 		}
 	}
 
-	changes, err := object.DiffTree(fromTree, toTree)
+	changes, err := object.DiffTree(oldTree, newTree)
 	if err != nil {
-		return "", err
+		return "", "", "", err
 	}
 
 	for _, change := range changes {
 		if change.To.Name == relPath || change.From.Name == relPath {
 			patch, err := change.Patch()
 			if err != nil {
-				return "", err
+				return "", "", "", err
 			}
-			return patch.String(), nil
+			return patch.String(), oldCommit, newCommit, nil
 		}
 	}
 
-	return "", fmt.Errorf("no changes found for file %s between commits", relPath)
+	return "", "", "", fmt.Errorf("no changes found for file %s between commits", relPath)
 }
 
 // resolvePathAtCommit walks backward from `from` toward `target` along first

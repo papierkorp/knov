@@ -29,23 +29,16 @@
                 </div>
             {{end}}
         </div>
-        <div class="file-history-content">
-            {{if .SelectedVersion}}
-                <!-- Show specific version content -->
-                <div hx-get="/api/files/versions/{{urlQuery .FilePath}}?commit={{.SelectedVersion}}"
-                     hx-trigger="load"
-                     hx-swap="outerHTML">
-                    {{T "loading version content..."}}
-                </div>
-            {{else}}
+        {{if not .SelectedVersion}}
+            <div class="file-history-content">
                 <!-- Show all versions list -->
                 <div hx-get="/api/files/versions/{{urlQuery .FilePath}}"
                      hx-trigger="load"
                      hx-swap="outerHTML">
                     {{T "loading file history..."}}
                 </div>
-            {{end}}
-        </div>
+            </div>
+        {{end}}
 
     {{else}}
         <!-- General history / latest changes -->

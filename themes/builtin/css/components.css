@@ -2320,6 +2320,36 @@ main textarea {
   color: var(--text);
 }
 
+#component-diff-fullfiles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+#component-diff-fullfiles .diff-fullfile {
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  border-radius: 4px;
+}
+
+#component-diff-fullfiles .diff-fullfile summary {
+  cursor: pointer;
+  padding: 7px 14px;
+  font-size: 0.82em;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  user-select: none;
+}
+
+#component-diff-fullfiles .diff-fullfile summary:hover {
+  color: var(--text);
+}
+
+#component-diff-fullfiles .diff-fullfile-restore {
+  padding: 8px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+
 #component-filter-test-results .config-content,
 #component-filter-test-results .files-content {
   padding: 10px 14px;

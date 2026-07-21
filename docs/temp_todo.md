@@ -34,6 +34,10 @@
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
 - create todofolder for: it/gamedev/projekte/turnbasedmonster based on claude todo
 - show last git sync/cronjob
+- can we add a filter/collapse in the log output for each `=== session started` ? (either change the logbuilder or modify the log output with a logparser?)
+- optimize `files/history` it takes really long => why? is there a better way?
+- fix broken links => also search for wiki links
+- show diffs from save file but different dates/versions (maybe 2 selects in sidebar?)
 
 # testing
 

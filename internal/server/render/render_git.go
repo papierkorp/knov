@@ -3,6 +3,7 @@ package render
 
 import (
 	"fmt"
+	htmlpkg "html"
 	"os"
 	"path/filepath"
 	"strings"
@@ -184,25 +185,58 @@ func RenderFileAtVersion(content, filePath, commit, date, message string, output
 	return html.String()
 }
 
-// RenderFileDiff renders diff between two file versions with syntax highlighting
-func RenderFileDiff(diff, filePath, fromCommit, toCommit string) string {
+// FileDiffVersion describes one side of a file diff for display.
+type FileDiffVersion struct {
+	Commit    string
+	Date      string
+	Message   string
+	Content   string
+	IsCurrent bool
+}
+
+// RenderFileDiff renders the diff between two file versions with syntax highlighting,
+// plus the full before/after file content so the change is unambiguous even
+// without reading the unified diff.
+func RenderFileDiff(diff, filePath string, before, after FileDiffVersion) string {
 	var html strings.Builder
 	html.WriteString(`<div class="file-diff-content">`)
 	html.WriteString(fmt.Sprintf(`<div class="diff-header">
 		<h3>%s: %s</h3>
-		<p>%s | %s</p>
+		<p>%s: %s (%s) &rarr; %s: %s (%s)</p>
 	</div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "diff"),
 		filePath,
-		fromCommit,
-		toCommit))
+		translation.SprintfForRequest(configmanager.GetLanguage(), "before"),
+		before.Date, before.Commit,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "after"),
+		after.Date, after.Commit))
 
 	// apply syntax highlighting to diff output
 	highlightedDiff := parser.HighlightCodeBlock(diff, "diff")
 	html.WriteString(highlightedDiff)
 
+	html.WriteString(`<div id="component-diff-fullfiles">`)
+	html.WriteString(renderDiffFullFile(translation.SprintfForRequest(configmanager.GetLanguage(), "before"), filePath, before))
+	html.WriteString(renderDiffFullFile(translation.SprintfForRequest(configmanager.GetLanguage(), "after"), filePath, after))
+	html.WriteString(`</div>`)
+
 	html.WriteString(`</div>`)
 	return html.String()
+}
+
+func renderDiffFullFile(label, filePath string, v FileDiffVersion) string {
+	restoreBtn := ""
+	if !v.IsCurrent {
+		restoreBtn = fmt.Sprintf(`<form hx-post="/api/files/versions/restore/%s" hx-swap="none" class="diff-fullfile-restore">
+			<input type="hidden" name="commit" value="%s">
+			<button type="submit" class="action-button action-restore">%s</button>
+		</form>`, filePath, v.Commit, translation.SprintfForRequest(configmanager.GetLanguage(), "restore this version"))
+	}
+	return fmt.Sprintf(`<details class="diff-fullfile">
+		<summary>%s: %s (%s)</summary>
+		%s
+		<pre class="file-content">%s</pre>
+	</details>`, label, v.Date, v.Commit, restoreBtn, htmlpkg.EscapeString(v.Content))
 }
 
 // RenderConflictDiff renders a live text diff between the current file and a conflict copy.

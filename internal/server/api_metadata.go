@@ -16,6 +16,7 @@ import (
 	"knov/internal/job"
 	"knov/internal/files"
 	"knov/internal/filter"
+	"knov/internal/git"
 	"knov/internal/kanban"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
@@ -400,6 +401,7 @@ func handleAPIRepairBrokenLinks(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		log.Printf("repaired: %s: %s -> %s", sourceFile, target, suggested)
+		go git.CommitFile(pathutils.ToFullPath(sourceFile))
 		repaired++
 	}
 
