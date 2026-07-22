@@ -26,7 +26,6 @@
   - create a system for themes (another repoistory with themes)
     - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
 - move file button (can be done in rename at the moment)
-- <details> are not shown and are blocking section edit
 - file upload per drag and drop into the toastui editor
 - multi file upload per insertMedia button in toastui editor
 - pdf export for full site

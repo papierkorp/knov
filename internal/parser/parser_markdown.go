@@ -116,6 +116,7 @@ var htmlBlockRe = regexp.MustCompile(`(?i)^<(html|head|body|div|section|article|
 
 func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error) {
 	content, blocks := h.extractCodeBlocks(content)
+	content, detailsBlocks := h.extractHTMLBlocks(content, "details", "summary")
 	content = h.preprocessTodoStates(content)
 
 	md := goldmark.New(
@@ -141,6 +142,7 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 
 	result := buf.String()
 	result = h.restoreOrphanCodeBlocks(result, blocks)
+	result = h.restoreHTMLBlocks(result, "details", detailsBlocks)
 	result = h.postprocessTodoStates(result)
 	result = sanitizeHTML(result)
 	result = InjectHeaderIDs(result)
@@ -361,6 +363,95 @@ func (h *MarkdownHandler) restoreOrphanCodeBlocks(html string, blocks []codeBloc
 		highlighted := HighlightCodeBlock(blocks[i].content, blocks[i].lang)
 		html = strings.ReplaceAll(html, "<p>"+placeholder+"</p>", highlighted)
 		html = strings.ReplaceAll(html, placeholder, highlighted)
+	}
+	return html
+}
+
+// ---------------------------------------------------------------------------
+// HTML wrapper-tag extract/restore — renders a chosen tag's wrapper live
+// (sanitized) while leaving the enclosed content to be parsed as normal
+// markdown by goldmark. Used for tags goldmark would otherwise silently drop
+// or safely escape as raw HTML (e.g. <details>).
+// ---------------------------------------------------------------------------
+
+type htmlWrapperBlock struct {
+	openHTML  string
+	closeHTML string
+}
+
+// extractHTMLBlocks pulls the opening/closing wrapper for the given tag out of bare
+// HTML blocks and replaces them with placeholders, so they survive goldmark's
+// HTML-block handling and can be reinserted as sanitized, live HTML after rendering.
+// If innerTag is non-empty and immediately follows the opening tag on its own line
+// (e.g. <summary> right after <details>), its content is rendered as inline markdown
+// and kept as part of the open wrapper; everything else in between is left untouched.
+func (h *MarkdownHandler) extractHTMLBlocks(content []byte, tag, innerTag string) ([]byte, []htmlWrapperBlock) {
+	openRe := regexp.MustCompile(`(?i)^<` + tag + `[\s>]`)
+	var innerRe *regexp.Regexp
+	if innerTag != "" {
+		innerRe = regexp.MustCompile(`(?is)^<` + innerTag + `[^>]*>(.*)</` + innerTag + `>\s*$`)
+	}
+
+	var blocks []htmlWrapperBlock
+	lines := strings.Split(string(content), "\n")
+	var result []string
+	i := 0
+	for i < len(lines) {
+		trimmed := strings.TrimSpace(lines[i])
+		if !openRe.MatchString(trimmed) {
+			result = append(result, lines[i])
+			i++
+			continue
+		}
+
+		// collect the whole block, tracking tag depth since the content commonly
+		// contains blank lines
+		var block []string
+		depth := 0
+		for i < len(lines) {
+			block = append(block, lines[i])
+			low := strings.ToLower(lines[i])
+			depth += strings.Count(low, "<"+tag)
+			depth -= strings.Count(low, "</"+tag)
+			i++
+			if depth <= 0 {
+				break
+			}
+		}
+		if len(block) < 2 {
+			result = append(result, block...)
+			continue
+		}
+
+		openLines := []string{block[0]}
+		bodyStart := 1
+		if innerRe != nil && len(block) > 2 {
+			if m := innerRe.FindStringSubmatch(strings.TrimSpace(block[1])); m != nil {
+				openLines = append(openLines, fmt.Sprintf("<%s>%s</%s>", innerTag, RenderInlineMarkdown(m[1]), innerTag))
+				bodyStart = 2
+			}
+		}
+
+		idx := len(blocks)
+		blocks = append(blocks, htmlWrapperBlock{
+			openHTML:  strings.Join(openLines, "\n"),
+			closeHTML: block[len(block)-1],
+		})
+
+		placeholder := fmt.Sprintf("KNOVHTML%s%d", strings.ToUpper(tag), idx)
+		result = append(result, "", placeholder+"OPEN", "")
+		result = append(result, block[bodyStart:len(block)-1]...)
+		result = append(result, "", placeholder+"CLOSE", "")
+	}
+	return []byte(strings.Join(result, "\n")), blocks
+}
+
+// restoreHTMLBlocks reinserts the extracted wrapper tags as live HTML.
+func (h *MarkdownHandler) restoreHTMLBlocks(html, tag string, blocks []htmlWrapperBlock) string {
+	for i, b := range blocks {
+		placeholder := fmt.Sprintf("KNOVHTML%s%d", strings.ToUpper(tag), i)
+		html = strings.ReplaceAll(html, "<p>"+placeholder+"OPEN</p>", b.openHTML)
+		html = strings.ReplaceAll(html, "<p>"+placeholder+"CLOSE</p>", b.closeHTML)
 	}
 	return html
 }
