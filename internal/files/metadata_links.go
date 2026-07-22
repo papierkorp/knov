@@ -849,7 +849,7 @@ func StopMetaGetCounter() {
 	}
 	count := *rebuildMetaGetCount
 	rebuildMetaGetCount = nil
-	logging.LogInfo(logging.KeyMetadataRebuild, "total MetaDataGet calls: %d", count)
+	logging.LogInfo(logging.KeyFullRebuild, "total MetaDataGet calls: %d", count)
 }
 
 // UpdateLinksForMovedMedia updates all doc files that reference a moved media file.

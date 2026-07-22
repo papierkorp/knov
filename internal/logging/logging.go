@@ -26,20 +26,22 @@ const (
 	KeyFileSync        Key = "file-sync"
 	KeySearchReindex   Key = "search-reindex"
 	KeyMetadataRebuild Key = "metadata-rebuild"
+	KeyFullRebuild     Key = "full-rebuild"
+	KeyMediaCleanup    Key = "media-cleanup"
 	KeyGitRemote       Key = "git-remote"
-	KeyDokuwikiExport  Key = "dokuwiki_export"
+	KeyDokuwikiExport  Key = "dokuwiki-export"
 	KeyRepairLinks     Key = "repair-broken-links"
 	KeyDBMigration     Key = "database-migration"
 	KeyMetaMigration   Key = "metadata-migration"
 	KeyFilterDebug     Key = "filter-debug"
-	KeyManualCronjob   Key = "manual_cronjob"
+	KeyManualCronjob   Key = "manual-cronjob"
 )
 
 // AvailableKeys lists every valid log destination, e.g. for an admin log-viewer dropdown.
 var AvailableKeys = []Key{
-	KeyApp, KeyFileSync, KeySearchReindex, KeyMetadataRebuild, KeyGitRemote,
-	KeyDokuwikiExport, KeyRepairLinks, KeyDBMigration, KeyMetaMigration,
-	KeyFilterDebug, KeyManualCronjob,
+	KeyApp, KeyFileSync, KeySearchReindex, KeyMetadataRebuild, KeyFullRebuild,
+	KeyMediaCleanup, KeyGitRemote, KeyDokuwikiExport, KeyRepairLinks,
+	KeyDBMigration, KeyMetaMigration, KeyFilterDebug, KeyManualCronjob,
 }
 
 // String returns the key's display/file name ("app" for the default key).

@@ -31,7 +31,7 @@ type fullRebuildJob struct{}
 func (j *fullRebuildJob) Name() string { return "metadata-full-rebuild" }
 
 func (j *fullRebuildJob) Run() error {
-	logging.LogInfo(logging.KeyApp, "running full metadata rebuild")
+	logging.LogInfo(logging.KeyFullRebuild, "running full metadata rebuild")
 
 	files.StartMetaGetCounter()
 	defer files.StopMetaGetCounter()
@@ -42,24 +42,24 @@ func (j *fullRebuildJob) Run() error {
 
 	stalePurged, err := files.MetaDataPurgeStale()
 	if err != nil {
-		logging.LogError(logging.KeyApp, "full rebuild: failed to purge stale metadata: %v", err)
+		logging.LogError(logging.KeyFullRebuild, "full rebuild: failed to purge stale metadata: %v", err)
 	}
 
 	dupPurged, err := files.MetaDataPurgeDuplicates()
 	if err != nil {
-		logging.LogError(logging.KeyApp, "full rebuild: failed to purge duplicate metadata: %v", err)
+		logging.LogError(logging.KeyFullRebuild, "full rebuild: failed to purge duplicate metadata: %v", err)
 	}
 
-	if err := files.MetaDataLinksRebuild(logging.KeyMetadataRebuild); err != nil {
+	if err := files.MetaDataLinksRebuild(logging.KeyFullRebuild); err != nil {
 		return fmt.Errorf("failed to rebuild metadata links: %w", err)
 	}
 
 	if err := files.UpdateOrphanedMediaCache(); err != nil {
-		logging.LogWarning(logging.KeyApp, "full rebuild: failed to update orphaned media cache: %v", err)
+		logging.LogWarning(logging.KeyFullRebuild, "full rebuild: failed to update orphaned media cache: %v", err)
 	}
 
-	logging.LogInfo(logging.KeyApp, "full rebuild: purged %d stale, %d duplicate metadata entries", stalePurged, dupPurged)
-	logging.LogInfo(logging.KeyApp, "full metadata rebuild completed")
+	logging.LogInfo(logging.KeyFullRebuild, "full rebuild: purged %d stale, %d duplicate metadata entries", stalePurged, dupPurged)
+	logging.LogInfo(logging.KeyFullRebuild, "full metadata rebuild completed")
 	return nil
 }
 
@@ -164,7 +164,7 @@ func doMediaCleanup() (MediaCleanupResult, error) {
 		// double-check the file is still orphaned (cache may be stale)
 		meta, err := files.MetaDataGet(mediaPath)
 		if err == nil && meta != nil && len(meta.LinksToHere) > 0 {
-			logging.LogWarning(logging.KeyApp, "media-cleanup: skipping %s: no longer orphaned", mediaPath)
+			logging.LogWarning(logging.KeyMediaCleanup, "media-cleanup: skipping %s: no longer orphaned", mediaPath)
 			continue
 		}
 
@@ -174,21 +174,21 @@ func doMediaCleanup() (MediaCleanupResult, error) {
 		}
 
 		if err := contentStorage.DeleteFile(fullPath); err != nil {
-			logging.LogError(logging.KeyApp, "media-cleanup: failed to delete %s: %v", mediaPath, err)
+			logging.LogError(logging.KeyMediaCleanup, "media-cleanup: failed to delete %s: %v", mediaPath, err)
 			result.Failed++
 			continue
 		}
 		// no-refresh: avoid a full background cache rebuild per deleted file
 		// when cleaning up dozens of orphaned media at once; refreshed once below.
-		if err := files.MetaDataDeleteNoRefresh(logging.KeyApp, mediaPath); err != nil {
-			logging.LogWarning(logging.KeyApp, "media-cleanup: failed to delete metadata for %s: %v", mediaPath, err)
+		if err := files.MetaDataDeleteNoRefresh(logging.KeyMediaCleanup, mediaPath); err != nil {
+			logging.LogWarning(logging.KeyMediaCleanup, "media-cleanup: failed to delete metadata for %s: %v", mediaPath, err)
 		}
 		result.Deleted++
-		logging.LogInfo(logging.KeyApp, "media-cleanup: deleted %s", mediaPath)
+		logging.LogInfo(logging.KeyMediaCleanup, "media-cleanup: deleted %s", mediaPath)
 	}
 
 	if err := files.UpdateOrphanedMediaCache(); err != nil {
-		logging.LogWarning(logging.KeyApp, "media-cleanup: failed to refresh orphaned media cache: %v", err)
+		logging.LogWarning(logging.KeyMediaCleanup, "media-cleanup: failed to refresh orphaned media cache: %v", err)
 	}
 	if result.Deleted > 0 {
 		files.RefreshCaches()

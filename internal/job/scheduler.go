@@ -1,6 +1,7 @@
 package job
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -293,11 +294,31 @@ func RunAsync() error {
 	go func() {
 		defer runMu.Unlock()
 		logging.LogInfo(logging.KeyManualCronjob, "manual run started")
-		RunFileSync() // includes filter-reindex as a sub-step
-		RunSearchReindex()
-		RunMetadataRebuild()
-		RunNotificationPurge()
-		logging.LogInfo(logging.KeyManualCronjob, "manual run completed")
+
+		steps := []struct {
+			name string
+			run  func() error
+		}{
+			{"file-sync", RunFileSync}, // includes filter-reindex as a sub-step
+			{"search-reindex", RunSearchReindex},
+			{"metadata-rebuild", RunMetadataRebuild},
+			{"notification-purge", RunNotificationPurge},
+		}
+
+		ok := 0
+		for _, step := range steps {
+			switch err := step.run(); {
+			case err == nil:
+				logging.LogInfo(logging.KeyManualCronjob, "%s: ok", step.name)
+				ok++
+			case errors.Is(err, ErrAlreadyRunning):
+				logging.LogWarning(logging.KeyManualCronjob, "%s: skipped (already running)", step.name)
+			default:
+				logging.LogError(logging.KeyManualCronjob, "%s: failed: %v", step.name, err)
+			}
+		}
+
+		logging.LogInfo(logging.KeyManualCronjob, "manual run completed: %d/%d ok", ok, len(steps))
 	}()
 	return nil
 }

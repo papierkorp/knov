@@ -38,7 +38,6 @@
 - show diffs from same file but different dates/versions (maybe 2 selects in sidebar?)
 - kanban - show archive
 - add logging to tests
-- logging keys - why have some `-` and other `_`
 - loggging - update the keys e.g. manual_cronjob is completly worthless as it is now - can we add some additional logs to a certain key in the logging package?
 
 # testing

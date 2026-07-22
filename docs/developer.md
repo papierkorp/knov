@@ -169,27 +169,29 @@ Two layers:
 
 # Logging
 
-Centralised logging in `internal/logging`. All app code uses the four level functions (`LogDebug`, `LogInfo`, `LogWarning`, `LogError`) — never the standard `log` package directly.
+Centralised logging in `internal/logging`. All app code uses the four level functions (`LogDebug`, `LogInfo`, `LogWarning`, `LogError`) — never the standard `log` package directly. Every call takes a `Key` as its first argument.
+
+**Keys**
+
+- `Key` identifies the destination. `KeyApp` (the zero value) is the general log, written to `logs/app.log`. Every other key gets its own rotating file at `logs/<key>.log` — never duplicated into `app.log`.
+- Valid keys are declared as constants in `internal/logging` and listed in `AvailableKeys` (powers the admin log viewer's source filter).
+- Adding a new key: add the const + add it to `AvailableKeys`. Only give a shared function its own key when it's genuinely noisy *and* its callers disagree on attribution — a function called from exactly one place should just hardcode that caller's key directly, no threading needed.
 
 **Ring buffer**
 
-- Every log entry is held in a fixed-size in-memory ring buffer (last 500 entries), regardless of level.
-- Powers the in-app log viewer at `/system/logs` — live-polled via htmx, filterable, pauseable.
+- Every log entry (any key) is held in a fixed-size in-memory ring buffer (last 500 entries), regardless of level.
+- Powers the in-app log viewer at `/system/logs` — live-polled via htmx, filterable by level/source/text, pauseable.
 
 **File output**
 
-- Opt-in via `KNOV_LOG_FILE_ENABLED` (default on). Writes to `logs/app.log` with size-based rotation.
-- Level threshold controlled by `KNOV_LOG_FILE_LEVEL` (default `info`).
-- A session separator is written to the file on every startup so restarts are immediately visible when scrolling.
+- Opt-in via `KNOV_LOG_FILE_ENABLED` (default on). `KeyApp` writes to `logs/app.log`; every other key gets its own rotating file, all sharing the same rotation settings.
+- Level threshold controlled by `KNOV_LOG_FILE_LEVEL` (default `info`), applied the same regardless of key.
+- A session separator is written on startup (and on each scheduled-job run, for job keys), so restarts/runs are immediately visible when scrolling — the log viewer collapses these into expandable sections.
 
 **Standard library interception**
 
-- `InitInterceptor()` wraps `log.SetOutput` so all third-party and framework `log.Printf` calls (e.g. chi access logs) are also captured — into the ring buffer and into the file.
-- Must be called before any other initialisation to avoid missing early entries.
-
-**Named loggers**
-
-- `LogBuilder(key)` returns a `*log.Logger` that appends to `logs/<key>.log`. Used for long-running background jobs where a dedicated file is more useful than the main log.
+- `InitInterceptor()` wraps `log.SetOutput` so third-party/framework `log.Printf` calls (e.g. chi access logs) are also captured into the ring buffer and `app.log`. Must be called before any other initialisation to avoid missing early entries.
+- Console output from the four level functions bypasses this interceptor (writes straight to stdout) — they already record their own ring buffer entry and file line directly, so routing through the interceptor too would double-log everything back into `app.log`.
 
 **Env vars**
 
@@ -322,7 +324,7 @@ func (ss *sqliteStorage) initialize() error {
 	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
 		return fmt.Errorf("metadata storage migration failed: %w", err)
 	}
-	logging.LogDebug("metadata sqlite storage ready at version %d", version)
+	logging.LogDebug(logging.KeyApp, "metadata sqlite storage ready at version %d", version)
 	return nil
 }
 
