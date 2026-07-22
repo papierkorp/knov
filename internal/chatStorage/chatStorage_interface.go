@@ -39,7 +39,7 @@ func Init(storagePath string) error {
 		return fmt.Errorf("failed to initialize chat storage: %w", err)
 	}
 
-	logging.LogInfo("chat storage initialized: sqlite")
+	logging.LogInfo(logging.KeyApp, "chat storage initialized: sqlite")
 	return nil
 }
 

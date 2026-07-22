@@ -35,7 +35,7 @@ const (
 
 // saveFileListToCache persists the full file list (including metadata) to cache storage
 func saveFileListToCache(allFiles []File) error {
-	logging.LogDebug("saving %s to cache", CacheKeyFullFileList)
+	logging.LogDebug(logging.KeyApp, "saving %s to cache", CacheKeyFullFileList)
 	jsonData, err := json.Marshal(allFiles)
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func getFileListFromCache() ([]File, error) {
 func GetAllFilesCached() ([]File, error) {
 	cached, err := getFileListFromCache()
 	if err != nil {
-		logging.LogWarning("failed to read file list cache, falling back to live data: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to read file list cache, falling back to live data: %v", err)
 	} else if cached != nil {
 		return cached, nil
 	}
@@ -85,7 +85,7 @@ func GetAllFilesCached() ([]File, error) {
 	}
 
 	if err := saveFileListToCache(allFiles); err != nil {
-		logging.LogWarning("failed to persist file list cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to persist file list cache: %v", err)
 	}
 
 	return allFiles, nil
@@ -96,7 +96,7 @@ func GetAllFilesCached() ([]File, error) {
 // changes the visibility-relevant metadata of a file.
 func InvalidateFileListCache() {
 	if err := cacheStorage.Delete(string(CacheKeyFullFileList)); err != nil {
-		logging.LogWarning("failed to invalidate file list cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to invalidate file list cache: %v", err)
 	}
 }
 
@@ -110,14 +110,14 @@ func RefreshCaches() {
 	InvalidateFileListCache()
 	go func() {
 		if err := RebuildAllCaches(); err != nil {
-			logging.LogWarning("failed to refresh caches after mutation: %v", err)
+			logging.LogWarning(logging.KeyApp, "failed to refresh caches after mutation: %v", err)
 		}
 	}()
 }
 
 // saveStringListToCache saves a sorted string list to cache storage
 func saveStringListToCache(key CacheKey, data []string) error {
-	logging.LogDebug("saving %s to cache", key)
+	logging.LogDebug(logging.KeyApp, "saving %s to cache", key)
 	sortedData := make([]string, len(data))
 	copy(sortedData, data)
 	slices.Sort(sortedData)
@@ -155,7 +155,7 @@ func getStringListFromCache(key CacheKey) ([]string, error) {
 
 // saveCountMapToCache saves a name->count map to cache storage
 func saveCountMapToCache(key CacheKey, counts map[string]int) error {
-	logging.LogDebug("saving %s to cache", key)
+	logging.LogDebug(logging.KeyApp, "saving %s to cache", key)
 	jsonData, err := json.Marshal(counts)
 	if err != nil {
 		return err
@@ -419,13 +419,13 @@ func GetAllTitles() ([]string, error) {
 		return nil, err
 	}
 
-	logging.LogInfo("getAllTitles: scanning %d files", len(allFiles))
+	logging.LogInfo(logging.KeyApp, "getAllTitles: scanning %d files", len(allFiles))
 	seen := make(map[string]bool)
 	var titles []string
 	for _, file := range allFiles {
 		meta := file.Metadata
 		if meta == nil {
-			logging.LogDebug("getAllTitles: no metadata for %s", file.Path)
+			logging.LogDebug(logging.KeyApp, "getAllTitles: no metadata for %s", file.Path)
 			continue
 		}
 		title := meta.Title
@@ -433,13 +433,13 @@ func GetAllTitles() ([]string, error) {
 			updateTitle(meta)
 			title = meta.Title
 		}
-		logging.LogDebug("getAllTitles: %s -> %q", file.Path, title)
+		logging.LogDebug(logging.KeyApp, "getAllTitles: %s -> %q", file.Path, title)
 		if title != "" && !seen[title] {
 			seen[title] = true
 			titles = append(titles, title)
 		}
 	}
-	logging.LogInfo("getAllTitles: found %d unique titles", len(titles))
+	logging.LogInfo(logging.KeyApp, "getAllTitles: found %d unique titles", len(titles))
 	slices.Sort(titles)
 	return titles, nil
 }
@@ -574,7 +574,7 @@ func (mc *MetadataCollector) SaveAllToCache() error {
 
 // RebuildAllCaches saves all metadata lists to cache storage in a single pass
 func RebuildAllCaches() error {
-	logging.LogInfo("collecting all system metadata for cache update")
+	logging.LogInfo(logging.KeyFileSync, "collecting all system metadata for cache update")
 
 	collector := NewMetadataCollector()
 
@@ -594,13 +594,13 @@ func RebuildAllCaches() error {
 	// persist the full file list too, so tree/list requests can reuse this same
 	// walk instead of triggering their own
 	if err := saveFileListToCache(allFiles); err != nil {
-		logging.LogWarning("failed to persist file list cache: %v", err)
+		logging.LogWarning(logging.KeyFileSync, "failed to persist file list cache: %v", err)
 	}
 
 	// collect from media files (needed for orphaned media detection)
 	mediaFiles, err := GetAllMediaFiles()
 	if err != nil {
-		logging.LogWarning("failed to get media files for cache update: %v", err)
+		logging.LogWarning(logging.KeyFileSync, "failed to get media files for cache update: %v", err)
 	} else {
 		for _, file := range mediaFiles {
 			normalizedPath := pathutils.ToWithPrefix(file.Path)
@@ -617,7 +617,7 @@ func RebuildAllCaches() error {
 		return err
 	}
 
-	logging.LogInfo("system metadata cache update completed")
+	logging.LogInfo(logging.KeyFileSync, "system metadata cache update completed")
 	return nil
 }
 
@@ -685,7 +685,7 @@ func GetOrphanedMediaFromCache() ([]string, error) {
 // UpdateOrphanedMediaCache efficiently updates only the orphaned media cache
 // by checking media files instead of all files
 func UpdateOrphanedMediaCache() error {
-	logging.LogDebug("updating orphaned media cache")
+	logging.LogDebug(logging.KeyApp, "updating orphaned media cache")
 
 	mediaFiles, err := GetAllMediaFiles()
 	if err != nil {
@@ -709,19 +709,19 @@ func UpdateOrphanedMediaCache() error {
 		return err
 	}
 
-	logging.LogDebug("orphaned media cache updated: %d orphaned files", len(orphanedMedia))
+	logging.LogDebug(logging.KeyApp, "orphaned media cache updated: %d orphaned files", len(orphanedMedia))
 	return nil
 }
 
 // UpdateOrphanedMediaCacheForFile incrementally updates orphaned media cache
 // for media files affected by changes to a specific file
 func UpdateOrphanedMediaCacheForFile(filePath string) error {
-	logging.LogDebug("incrementally updating orphaned media cache for file: %s", filePath)
+	logging.LogDebug(logging.KeyApp, "incrementally updating orphaned media cache for file: %s", filePath)
 
 	// get file metadata to find affected media files
 	metadata, err := MetaDataGet(filePath)
 	if err != nil || metadata == nil {
-		logging.LogDebug("no metadata found for %s, skipping cache update", filePath)
+		logging.LogDebug(logging.KeyApp, "no metadata found for %s, skipping cache update", filePath)
 		return nil
 	}
 
@@ -735,20 +735,20 @@ func UpdateOrphanedMediaCacheForFile(filePath string) error {
 
 	// if no media files are affected, nothing to do
 	if len(affectedMediaFiles) == 0 {
-		logging.LogDebug("no media files affected by changes to %s", filePath)
+		logging.LogDebug(logging.KeyApp, "no media files affected by changes to %s", filePath)
 		return nil
 	}
 
 	// get current orphaned media cache
 	orphanedMedia, err := GetOrphanedMediaFromCache()
 	if err != nil {
-		logging.LogWarning("failed to get orphaned media cache, will rebuild: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to get orphaned media cache, will rebuild: %v", err)
 		return UpdateOrphanedMediaCache() // fallback to full rebuild
 	}
 
 	// if cache is empty, rebuild it instead of trying to update incrementally
 	if len(orphanedMedia) == 0 {
-		logging.LogDebug("orphaned media cache is empty, rebuilding instead of incremental update")
+		logging.LogDebug(logging.KeyApp, "orphaned media cache is empty, rebuilding instead of incremental update")
 		return UpdateOrphanedMediaCache()
 	}
 
@@ -784,7 +784,7 @@ func UpdateOrphanedMediaCacheForFile(filePath string) error {
 		return err
 	}
 
-	logging.LogDebug("incrementally updated orphaned media cache: checked %d affected files", len(affectedMediaFiles))
+	logging.LogDebug(logging.KeyApp, "incrementally updated orphaned media cache: checked %d affected files", len(affectedMediaFiles))
 	return nil
 }
 
@@ -793,7 +793,7 @@ func CacheInvalidate() error {
 	if err := cacheStorage.Flush(); err != nil {
 		return fmt.Errorf("failed to invalidate cache: %w", err)
 	}
-	logging.LogInfo("cache invalidated")
+	logging.LogInfo(logging.KeyApp, "cache invalidated")
 	return nil
 }
 

@@ -40,7 +40,7 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	if format == "options" {
 		cachedFilePaths, err := files.GetAllFilePathsFromCache()
 		if err != nil {
-			logging.LogError("failed to get cached file paths: %v", err)
+			logging.LogError(logging.KeyApp, "failed to get cached file paths: %v", err)
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
 			return
 		}

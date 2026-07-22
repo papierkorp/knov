@@ -37,7 +37,7 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 	// fix permissions on existing database file if it exists
 	if _, err := os.Stat(dbPath); err == nil {
 		if err := os.Chmod(dbPath, 0644); err != nil {
-			logging.LogWarning("failed to fix search database permissions: %v", err)
+			logging.LogWarning(logging.KeyApp, "failed to fix search database permissions: %v", err)
 		}
 	}
 
@@ -49,10 +49,10 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 
 	// set pragmas for better performance and safety
 	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
-		logging.LogWarning("failed to set WAL mode for search: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to set WAL mode for search: %v", err)
 	}
 	if _, err := db.Exec("PRAGMA synchronous=NORMAL"); err != nil {
-		logging.LogWarning("failed to set synchronous mode for search: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to set synchronous mode for search: %v", err)
 	}
 
 	storage := &sqliteStorage{
@@ -139,7 +139,7 @@ func (ss *sqliteStorage) initialize() error {
 	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
 		return fmt.Errorf("search storage migration failed: %w", err)
 	}
-	logging.LogDebug("search sqlite storage ready at version %d", version)
+	logging.LogDebug(logging.KeyApp, "search sqlite storage ready at version %d", version)
 	return nil
 }
 
@@ -152,17 +152,17 @@ func (ss *sqliteStorage) IndexFile(path string, content []byte) error {
 
 	_, err := ss.db.Exec("INSERT OR REPLACE INTO search_content (path, content, indexed_at) VALUES (?, ?, ?)", path, content, now)
 	if err != nil {
-		logging.LogError("failed to store search content for %s: %v", path, err)
+		logging.LogError(logging.KeyApp, "failed to store search content for %s: %v", path, err)
 		return err
 	}
 
 	_, err = ss.db.Exec("INSERT OR REPLACE INTO search_index (path, content) VALUES (?, ?)", path, string(content))
 	if err != nil {
-		logging.LogError("failed to index file %s: %v", path, err)
+		logging.LogError(logging.KeyApp, "failed to index file %s: %v", path, err)
 		return err
 	}
 
-	logging.LogDebug("indexed file: %s", path)
+	logging.LogDebug(logging.KeyApp, "indexed file: %s", path)
 	return nil
 }
 
@@ -204,18 +204,18 @@ func (ss *sqliteStorage) DeleteIndexedContent(path string) error {
 	// remove from FTS index
 	_, err := ss.db.Exec("DELETE FROM search_index WHERE path = ?", path)
 	if err != nil {
-		logging.LogError("failed to delete from search index %s: %v", path, err)
+		logging.LogError(logging.KeyApp, "failed to delete from search index %s: %v", path, err)
 		return err
 	}
 
 	// remove from content table
 	_, err = ss.db.Exec("DELETE FROM search_content WHERE path = ?", path)
 	if err != nil {
-		logging.LogError("failed to delete search content %s: %v", path, err)
+		logging.LogError(logging.KeyApp, "failed to delete search content %s: %v", path, err)
 		return err
 	}
 
-	logging.LogDebug("deleted indexed content: %s", path)
+	logging.LogDebug(logging.KeyApp, "deleted indexed content: %s", path)
 	return nil
 }
 
@@ -275,7 +275,7 @@ func (ss *sqliteStorage) SearchContent(query string, limit int) ([]SearchResult,
 		results = append(results, result)
 	}
 
-	logging.LogDebug("search query '%s' returned %d results", query, len(results))
+	logging.LogDebug(logging.KeyApp, "search query '%s' returned %d results", query, len(results))
 	return results, rows.Err()
 }
 
@@ -290,17 +290,17 @@ func (ss *sqliteStorage) IndexDeletedFile(path string, content []byte) error {
 
 	_, err := ss.db.Exec("INSERT OR REPLACE INTO deleted_search_content (path, content, indexed_at) VALUES (?, ?, ?)", path, content, now)
 	if err != nil {
-		logging.LogError("failed to store deleted search content for %s: %v", path, err)
+		logging.LogError(logging.KeyApp, "failed to store deleted search content for %s: %v", path, err)
 		return err
 	}
 
 	_, err = ss.db.Exec("INSERT OR REPLACE INTO deleted_search_index (path, content) VALUES (?, ?)", path, string(content))
 	if err != nil {
-		logging.LogError("failed to index deleted file %s: %v", path, err)
+		logging.LogError(logging.KeyApp, "failed to index deleted file %s: %v", path, err)
 		return err
 	}
 
-	logging.LogDebug("indexed deleted file: %s", path)
+	logging.LogDebug(logging.KeyApp, "indexed deleted file: %s", path)
 	return nil
 }
 
@@ -336,7 +336,7 @@ func (ss *sqliteStorage) SearchDeletedContent(query string, limit int) ([]Search
 		results = append(results, result)
 	}
 
-	logging.LogDebug("deleted-file search query '%s' returned %d results", query, len(results))
+	logging.LogDebug(logging.KeyApp, "deleted-file search query '%s' returned %d results", query, len(results))
 	return results, rows.Err()
 }
 

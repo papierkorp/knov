@@ -37,7 +37,7 @@ func handleAPIGetChat(w http.ResponseWriter, r *http.Request) {
 
 	messages, total, err := chat.GetPage(filePath, offset)
 	if err != nil {
-		logging.LogError("failed to get chat messages: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get chat messages: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load chat"), http.StatusInternalServerError)
 		return
 	}
@@ -80,12 +80,12 @@ func handleAPIPostChatMessage(w http.ResponseWriter, r *http.Request) {
 
 	msg, err := chat.Add(content, filePath)
 	if err != nil {
-		logging.LogError("failed to add chat message: %v", err)
+		logging.LogError(logging.KeyApp, "failed to add chat message: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save message"), http.StatusInternalServerError)
 		return
 	}
 
-	logging.LogDebug("added chat message: %s", msg.ID)
+	logging.LogDebug(logging.KeyApp, "added chat message: %s", msg.ID)
 	writeResponse(w, r, msg, render.RenderChatMessage(*msg, short))
 }
 
@@ -99,12 +99,12 @@ func handleAPIDeleteChatMessage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	if err := chat.Delete(id); err != nil {
-		logging.LogError("failed to delete chat message %s: %v", id, err)
+		logging.LogError(logging.KeyApp, "failed to delete chat message %s: %v", id, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete message"), http.StatusInternalServerError)
 		return
 	}
 
-	logging.LogDebug("deleted chat message: %s", id)
+	logging.LogDebug(logging.KeyApp, "deleted chat message: %s", id)
 	writeResponse(w, r, map[string]string{"id": id}, "")
 }
 
@@ -206,7 +206,7 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 				Editor: files.EditorFromExtension(target),
 			}
 			if err := files.MetaDataSave(metadata); err != nil {
-				logging.LogWarning("failed to save metadata after append: %v", err)
+				logging.LogWarning(logging.KeyApp, "failed to save metadata after append: %v", err)
 			}
 		}
 	} else {
@@ -219,21 +219,21 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 			Editor: resolvedEditor,
 		}
 		if err := files.MetaDataSave(metadata); err != nil {
-			logging.LogWarning("failed to save metadata for moved chat message: %v", err)
+			logging.LogWarning(logging.KeyApp, "failed to save metadata for moved chat message: %v", err)
 		}
 	}
 
 	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
-		logging.LogError("failed to write file during chat move: %v", err)
+		logging.LogError(logging.KeyApp, "failed to write file during chat move: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move message"), http.StatusInternalServerError)
 		return
 	}
 
 	if err := chat.Delete(id); err != nil {
-		logging.LogError("failed to delete message after move: %v", err)
+		logging.LogError(logging.KeyApp, "failed to delete message after move: %v", err)
 	}
 
-	logging.LogInfo("moved chat message %s to %s (mode: %s)", id, target, mode)
+	logging.LogInfo(logging.KeyApp, "moved chat message %s to %s (mode: %s)", id, target, mode)
 	writeResponse(w, r, map[string]string{"target": target}, render.RenderChatMoveSuccess(target))
 }
 
@@ -284,7 +284,7 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 		}
 		msg, err := chat.GetByID(id)
 		if err != nil || msg == nil {
-			logging.LogWarning("bulk move: message %s not found, skipping", id)
+			logging.LogWarning(logging.KeyApp, "bulk move: message %s not found, skipping", id)
 			continue
 		}
 		parts = append(parts, msg.Content)
@@ -320,12 +320,12 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 			Editor: resolvedEditor,
 		}
 		if err := files.MetaDataSave(metadata); err != nil {
-			logging.LogWarning("failed to save metadata for bulk chat move: %v", err)
+			logging.LogWarning(logging.KeyApp, "failed to save metadata for bulk chat move: %v", err)
 		}
 	}
 
 	if err := contentStorage.WriteFile(fullPath, newContent, 0644); err != nil {
-		logging.LogError("failed to write file during bulk chat move: %v", err)
+		logging.LogError(logging.KeyApp, "failed to write file during bulk chat move: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move messages"), http.StatusInternalServerError)
 		return
 	}
@@ -337,11 +337,11 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		if err := chat.Delete(id); err != nil {
-			logging.LogWarning("bulk move: failed to delete message %s: %v", id, err)
+			logging.LogWarning(logging.KeyApp, "bulk move: failed to delete message %s: %v", id, err)
 		}
 	}
 
-	logging.LogInfo("bulk moved %d messages to %s (mode: %s)", len(parts), target, mode)
+	logging.LogInfo(logging.KeyApp, "bulk moved %d messages to %s (mode: %s)", len(parts), target, mode)
 	writeResponse(w, r, map[string]string{"target": target}, render.RenderChatMoveSuccess(target))
 }
 
@@ -370,13 +370,13 @@ func handleAPIBulkDeleteChatMessages(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		if err := chat.Delete(id); err != nil {
-			logging.LogWarning("bulk delete: failed to delete message %s: %v", id, err)
+			logging.LogWarning(logging.KeyApp, "bulk delete: failed to delete message %s: %v", id, err)
 			continue
 		}
 		count++
 	}
 
-	logging.LogInfo("bulk deleted %d messages", count)
+	logging.LogInfo(logging.KeyApp, "bulk deleted %d messages", count)
 	writeResponse(w, r, map[string]int{"deleted": count}, "")
 }
 

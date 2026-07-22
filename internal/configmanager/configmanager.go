@@ -36,7 +36,7 @@ func CheckLanguage(lang string) string {
 		}
 	}
 
-	logging.LogWarning("language '%s' not supported, falling back to 'en', availableLanguages: %v", lang, availableLanguages)
+	logging.LogWarning(logging.KeyApp, "language '%s' not supported, falling back to 'en', availableLanguages: %v", lang, availableLanguages)
 	return "en"
 }
 
@@ -49,7 +49,7 @@ func GetLanguage() string {
 func SetLanguage(lang string) {
 	validLang := CheckLanguage(lang)
 	Language.SetFromString(validLang) //nolint:errcheck // pre-validated by CheckLanguage
-	SaveSettings()                   //nolint:errcheck
+	SaveSettings()                    //nolint:errcheck
 }
 
 // GetTheme returns the current theme name.
@@ -58,5 +58,5 @@ func GetTheme() string { return Theme.Get() }
 // SetTheme updates the theme and persists.
 func SetTheme(theme string) {
 	Theme.SetFromString(theme) //nolint:errcheck // theme is a dynamic-select, no Options to validate against
-	SaveSettings() //nolint:errcheck
+	SaveSettings()             //nolint:errcheck
 }

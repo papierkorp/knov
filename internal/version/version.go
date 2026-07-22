@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	Version        = ""
-	BuildTime      = ""
+	Version         = ""
+	BuildTime       = ""
 	BuildTimeParsed time.Time
 )
 

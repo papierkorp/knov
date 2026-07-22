@@ -13,10 +13,10 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
-	"knov/internal/job"
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/git"
+	"knov/internal/job"
 	"knov/internal/kanban"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
@@ -88,7 +88,7 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 
 	matched, err := filter.FilterFiles(req.Filter.Criteria, req.Filter.Logic)
 	if err != nil {
-		logging.LogError("bulk-update: filter failed: %v", err)
+		logging.LogError(logging.KeyApp, "bulk-update: filter failed: %v", err)
 		http.Error(w, "failed to filter files", http.StatusInternalServerError)
 		return
 	}
@@ -107,13 +107,13 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 	var failed []string
 	for _, f := range matched {
 		if err := applyBulkPatch(f.Metadata, p); err != nil {
-			logging.LogError("bulk-update: failed to save %s: %v", f.Metadata.Path, err)
+			logging.LogError(logging.KeyApp, "bulk-update: failed to save %s: %v", f.Metadata.Path, err)
 			failed = append(failed, f.Metadata.Path)
 		}
 	}
 
 	if len(failed) > 0 {
-		logging.LogWarning("bulk-update: %d/%d files failed to save", len(failed), len(matched))
+		logging.LogWarning(logging.KeyApp, "bulk-update: %d/%d files failed to save", len(failed), len(matched))
 	}
 
 	updated := len(matched) - len(failed)
@@ -159,7 +159,7 @@ func applyBulkPatch(current *files.Metadata, p bulkUpdatePatch) error {
 		}
 
 		if len(tags) == 0 {
-			logging.LogWarning("bulk-update: skipping tag clear for %s (clearing all tags is not supported via bulk update)", current.Path)
+			logging.LogWarning(logging.KeyApp, "bulk-update: skipping tag clear for %s (clearing all tags is not supported via bulk update)", current.Path)
 			return nil
 		}
 		return files.MetaDataSave(&files.Metadata{Path: current.Path, Tags: tags})
@@ -189,7 +189,7 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 	normalizedPath := pathutils.ToWithPrefix(filePath)
 	metadata, err := files.MetaDataGet(normalizedPath)
 	if err != nil {
-		logging.LogError("failed to get metadata for %s: %v", normalizedPath, err)
+		logging.LogError(logging.KeyApp, "failed to get metadata for %s: %v", normalizedPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get metadata"), http.StatusInternalServerError)
 		return
 	}
@@ -292,7 +292,7 @@ func handleAPIRebuildFileMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := files.MetaDataLinksRebuildForFile(filePath); err != nil {
-		logging.LogError("failed to rebuild metadata links for %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to rebuild metadata links for %s: %v", filePath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rebuild metadata links"), http.StatusInternalServerError)
 		return
 	}
@@ -351,7 +351,7 @@ func handleAPIExportMetadata(w http.ResponseWriter, r *http.Request) {
 func handleAPIScanBrokenLinks(w http.ResponseWriter, r *http.Request) {
 	broken, err := files.FindBrokenLinks()
 	if err != nil {
-		logging.LogError("failed to scan for broken links: %v", err)
+		logging.LogError(logging.KeyApp, "failed to scan for broken links: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to scan for broken links"), http.StatusInternalServerError)
 		return
 	}
@@ -376,8 +376,7 @@ func handleAPIRepairBrokenLinks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	entries := r.Form["repair"]
-	log := logging.LogBuilder("repair-broken-links")
-	log.Printf("=== broken links repair started: %d requested ===", len(entries))
+	logging.LogInfo(logging.KeyRepairLinks, "broken links repair started: %d requested", len(entries))
 
 	repaired := 0
 	skipped := 0
@@ -389,23 +388,21 @@ func handleAPIRepairBrokenLinks(w http.ResponseWriter, r *http.Request) {
 		sourceFile, target, suggested := parts[0], parts[1], parts[2]
 		ok, err := files.RepairBrokenLink(sourceFile, target, suggested)
 		if err != nil {
-			logging.LogError("failed to repair link in %s: %v", sourceFile, err)
-			log.Printf("skipped: %s: %s -> %s (error: %v)", sourceFile, target, suggested, err)
+			logging.LogError(logging.KeyRepairLinks, "skipped: %s: %s -> %s (error: %v)", sourceFile, target, suggested, err)
 			skipped++
 			continue
 		}
 		if !ok {
-			logging.LogWarning("no matching link occurrence found in %s for %s", sourceFile, target)
-			log.Printf("skipped: %s: %s -> %s (no matching link occurrence found)", sourceFile, target, suggested)
+			logging.LogWarning(logging.KeyRepairLinks, "skipped: %s: %s -> %s (no matching link occurrence found)", sourceFile, target, suggested)
 			skipped++
 			continue
 		}
-		log.Printf("repaired: %s: %s -> %s", sourceFile, target, suggested)
+		logging.LogInfo(logging.KeyRepairLinks, "repaired: %s: %s -> %s", sourceFile, target, suggested)
 		go git.CommitFile(pathutils.ToFullPath(sourceFile))
 		repaired++
 	}
 
-	log.Printf("=== broken links repair completed: %d repaired, %d skipped ===", repaired, skipped)
+	logging.LogInfo(logging.KeyRepairLinks, "broken links repair completed: %d repaired, %d skipped", repaired, skipped)
 
 	if repaired > 0 {
 		files.RefreshCaches()
@@ -656,7 +653,7 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logging.LogInfo("changing file path via metadata: %s -> %s", filePath, newpath)
+	logging.LogInfo(logging.KeyApp, "changing file path via metadata: %s -> %s", filePath, newpath)
 
 	var currentFullPath, newFullPath string
 	if strings.HasPrefix(filePath, "media/") {
@@ -681,26 +678,26 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 
 	newDir := filepath.Dir(newFullPath)
 	if err := os.MkdirAll(newDir, 0755); err != nil {
-		logging.LogError("failed to create directory %s: %v", newDir, err)
+		logging.LogError(logging.KeyApp, "failed to create directory %s: %v", newDir, err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
 		return
 	}
 
 	if err := os.Rename(currentFullPath, newFullPath); err != nil {
-		logging.LogError("failed to move file %s -> %s: %v", filePath, newpath, err)
+		logging.LogError(logging.KeyApp, "failed to move file %s -> %s: %v", filePath, newpath, err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"), http.StatusInternalServerError)
 		return
 	}
 
 	if !strings.HasPrefix(filePath, "media/") {
-		if err := files.UpdateLinksForMovedFile(filePath, newpath); err != nil {
-			logging.LogWarning("failed to update links for moved file %s -> %s: %v", filePath, newpath, err)
+		if err := files.UpdateLinksForMovedFile(logging.KeyApp, filePath, newpath); err != nil {
+			logging.LogWarning(logging.KeyApp, "failed to update links for moved file %s -> %s: %v", filePath, newpath, err)
 		}
 	}
 
-	logging.LogInfo("successfully moved file via metadata: %s -> %s", filePath, newpath)
+	logging.LogInfo(logging.KeyApp, "successfully moved file via metadata: %s -> %s", filePath, newpath)
 	newRelPath := pathutils.ToRelative(newpath)
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved successfully"))
 	w.Header().Set("HX-Redirect", pathutils.ToFileURL(newRelPath))
@@ -968,7 +965,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 	if format == "options" {
 		cachedTags, err := files.GetAllTagsFromCache()
 		if err != nil || len(cachedTags) == 0 {
-			logging.LogError("failed to get cached tags, fallback to live data: %v", err)
+			logging.LogError(logging.KeyApp, "failed to get cached tags, fallback to live data: %v", err)
 			tags, err := files.GetAllTags()
 			if err != nil {
 				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"), http.StatusInternalServerError)
@@ -992,7 +989,7 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 
 	tags, err := files.GetAllTagsCountFromCache()
 	if err != nil || len(tags) == 0 {
-		logging.LogError("failed to get cached tag counts, fallback to live data: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get cached tag counts, fallback to live data: %v", err)
 		tags, err = files.GetAllTags()
 		if err != nil {
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get tags"), http.StatusInternalServerError)
@@ -1022,7 +1019,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 	if format == "options" {
 		cachedCollections, err := files.GetAllCollectionsFromCache()
 		if err != nil || len(cachedCollections) == 0 {
-			logging.LogError("failed to get cached collections, fallback to live data: %v", err)
+			logging.LogError(logging.KeyApp, "failed to get cached collections, fallback to live data: %v", err)
 			collections, err := files.GetAllCollections()
 			if err != nil {
 				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"), http.StatusInternalServerError)
@@ -1046,7 +1043,7 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 
 	collections, err := files.GetAllCollectionsCountFromCache()
 	if err != nil || len(collections) == 0 {
-		logging.LogError("failed to get cached collection counts, fallback to live data: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get cached collection counts, fallback to live data: %v", err)
 		collections, err = files.GetAllCollections()
 		if err != nil {
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get collections"), http.StatusInternalServerError)
@@ -1076,7 +1073,7 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 	if format == "options" {
 		cachedFolders, err := files.GetAllFoldersFromCache()
 		if err != nil || len(cachedFolders) == 0 {
-			logging.LogError("failed to get cached folders, fallback to live data: %v", err)
+			logging.LogError(logging.KeyApp, "failed to get cached folders, fallback to live data: %v", err)
 			folders, err := files.GetAllFolders()
 			if err != nil {
 				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"), http.StatusInternalServerError)
@@ -1100,7 +1097,7 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 
 	folders, err := files.GetAllFoldersCountFromCache()
 	if err != nil || len(folders) == 0 {
-		logging.LogError("failed to get cached folder counts, fallback to live data: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get cached folder counts, fallback to live data: %v", err)
 		folders, err = files.GetAllFolders()
 		if err != nil {
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get folders"), http.StatusInternalServerError)
@@ -1124,7 +1121,7 @@ func handleAPIGetAllTitles(w http.ResponseWriter, r *http.Request) {
 	if format == "options" {
 		cachedTitles, err := files.GetAllTitlesFromCache()
 		if err != nil || len(cachedTitles) == 0 {
-			logging.LogError("failed to get cached titles, fallback to live data: %v", err)
+			logging.LogError(logging.KeyApp, "failed to get cached titles, fallback to live data: %v", err)
 			cachedTitles, err = files.GetAllTitles()
 			if err != nil {
 				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get titles"), http.StatusInternalServerError)
@@ -1177,7 +1174,7 @@ func handleAPIGetAllEditors(w http.ResponseWriter, r *http.Request) {
 
 	filetypes, err := files.GetAllEditorsCountFromCache()
 	if err != nil || len(filetypes) == 0 {
-		logging.LogError("failed to get cached editor counts, fallback to live data: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get cached editor counts, fallback to live data: %v", err)
 		filetypes, err = files.GetAllEditors()
 		if err != nil {
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get editor types"), http.StatusInternalServerError)
@@ -1337,7 +1334,7 @@ func handleAPIAddMetadataReference(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err := files.MetaDataSave(metadata); err != nil {
-		logging.LogError("failed to save references for %s: %v", normalizedPath, err)
+		logging.LogError(logging.KeyApp, "failed to save references for %s: %v", normalizedPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
 		return
 	}
@@ -1384,7 +1381,7 @@ func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 	metadata.References = filtered
 
 	if err := files.MetaDataSave(metadata); err != nil {
-		logging.LogError("failed to save references for %s: %v", normalizedPath, err)
+		logging.LogError(logging.KeyApp, "failed to save references for %s: %v", normalizedPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
 		return
 	}

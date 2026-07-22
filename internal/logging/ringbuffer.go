@@ -11,6 +11,7 @@ const ringBufferSize = 500
 type LogEntry struct {
 	Time    time.Time
 	Level   string
+	Key     Key
 	Caller  string
 	Message string
 }

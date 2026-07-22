@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"knov/internal/files"
+	"knov/internal/logging"
 	"knov/internal/pathutils"
 	"knov/internal/test"
 )
@@ -34,7 +35,7 @@ func renameCase(name, oldRel, newRel string) test.CaseResult {
 
 	// full link rebuild so the target's LinksToHere is populated before the move -
 	// UpdateLinksForSingleFile only updates a file's own outbound links, not who points at it.
-	if err := files.MetaDataLinksRebuild(); err != nil {
+	if err := files.MetaDataLinksRebuild(logging.KeyApp); err != nil {
 		return errCase(name, err)
 	}
 
@@ -46,7 +47,7 @@ func renameCase(name, oldRel, newRel string) test.CaseResult {
 	if err := os.Rename(oldFull, newFull); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.UpdateLinksForMovedFile(oldRel, newRel); err != nil {
+	if err := files.UpdateLinksForMovedFile(logging.KeyApp, oldRel, newRel); err != nil {
 		return errCase(name, err)
 	}
 

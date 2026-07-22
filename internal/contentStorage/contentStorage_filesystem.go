@@ -51,7 +51,7 @@ func (fs *filesystemStorage) initialize() error {
 		return fmt.Errorf("failed to create media directory: %w", err)
 	}
 
-	logging.LogDebug("content storage directories initialized")
+	logging.LogDebug(logging.KeyApp, "content storage directories initialized")
 	return nil
 }
 

@@ -31,7 +31,7 @@ import (
 // @Success 200 {object} filter.Result
 // @Router /api/filters [post]
 func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
-	logging.LogDebug("filter request received")
+	logging.LogDebug(logging.KeyApp, "filter request received")
 
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
@@ -47,21 +47,21 @@ func handleAPIFilterFiles(w http.ResponseWriter, r *http.Request) {
 	config := filter.ParseFilterConfigFromForm(r, widgetIndex)
 
 	if err := filter.ValidateConfig(config); err != nil {
-		logging.LogError("invalid filter config: %v", err)
+		logging.LogError(logging.KeyApp, "invalid filter config: %v", err)
 		http.Error(w, fmt.Sprintf(translation.SprintfForRequest(configmanager.GetLanguage(), "invalid filter config: %v"), err), http.StatusBadRequest)
 		return
 	}
 
-	logging.LogDebug("built filter config: %+v", config)
+	logging.LogDebug(logging.KeyApp, "built filter config: %+v", config)
 
 	result, err := filter.FilterFilesWithConfig(config)
 	if err != nil {
-		logging.LogError("failed to filter files: %v", err)
+		logging.LogError(logging.KeyApp, "failed to filter files: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to filter files"), http.StatusInternalServerError)
 		return
 	}
 
-	logging.LogDebug("filtered %d files from %d total", len(result.Files), result.Total)
+	logging.LogDebug(logging.KeyApp, "filtered %d files from %d total", len(result.Files), result.Total)
 
 	html := render.RenderFilterResult(result, config.Display)
 	writeResponse(w, r, result, html)
@@ -129,7 +129,7 @@ func handleAPIFilterSave(w http.ResponseWriter, r *http.Request) {
 	config := filter.ParseFilterConfigFromForm(r, widgetIndex)
 
 	if err := filter.SaveFilterConfig(config, filterID); err != nil {
-		logging.LogError("failed to save filter config: %v", err)
+		logging.LogError(logging.KeyApp, "failed to save filter config: %v", err)
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save filter. please check the logs for details."))
@@ -226,12 +226,12 @@ func handleAPIFilterDelete(w http.ResponseWriter, r *http.Request) {
 	filterID := strings.TrimPrefix(r.URL.Path, "/api/filters/")
 
 	if err := filter.DeleteFilterConfig(filterID); err != nil {
-		logging.LogError("failed to delete filter config %s: %v", filterID, err)
+		logging.LogError(logging.KeyApp, "failed to delete filter config %s: %v", filterID, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete filter"), http.StatusInternalServerError)
 		return
 	}
 
-	logging.LogInfo("deleted filter: %s", filterID)
+	logging.LogInfo(logging.KeyApp, "deleted filter: %s", filterID)
 	w.Header().Set("Content-Type", "text/html")
 	fmt.Fprintf(w, `<div class="status-ok">%s</div><script>setTimeout(() => window.location.href = '/', 1000);</script>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "filter deleted"))

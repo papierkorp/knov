@@ -25,7 +25,7 @@ func GenerateID(text string, usedIDs map[string]int) string {
 	}
 	usedIDs[originalID]++
 
-	logging.LogDebug("GenerateID: '%s' -> '%s' (count: %d, usedIDs: %v)", text, id, count, usedIDs)
+	logging.LogDebug(logging.KeyApp, "GenerateID: '%s' -> '%s' (count: %d, usedIDs: %v)", text, id, count, usedIDs)
 
 	return id
 }

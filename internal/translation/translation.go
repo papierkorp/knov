@@ -15,7 +15,7 @@ var globalPrinter *message.Printer
 // Init ..
 func Init() {
 	globalPrinter = message.NewPrinter(language.English)
-	logging.LogDebug("translation globalprinter: %v", globalPrinter)
+	logging.LogDebug(logging.KeyApp, "translation globalprinter: %v", globalPrinter)
 }
 
 // SetLanguage ..
@@ -25,14 +25,14 @@ func SetLanguage(lang string) {
 		language.German,
 	}), lang)
 
-	logging.LogDebug("translations setlanguage tag %s", tag)
+	logging.LogDebug(logging.KeyApp, "translations setlanguage tag %s", tag)
 	globalPrinter = message.NewPrinter(tag)
 }
 
 // Sprintf to be used for text that has to be translated
 func Sprintf(key string, args ...any) string {
 	if globalPrinter == nil {
-		logging.LogError("translation not initialized, using fallback for key: %s", key)
+		logging.LogError(logging.KeyApp, "translation not initialized, using fallback for key: %s", key)
 		return key
 	}
 
@@ -41,7 +41,7 @@ func Sprintf(key string, args ...any) string {
 
 	// If translation failed (returns same as input), log it for debugging
 	// if translated == key && len(args) == 0 {
-	// logging.LogDebug("translation missing for key: %s", key)
+	// logging.LogDebug(logging.KeyApp, "translation missing for key: %s", key)
 	// }
 
 	return translated
@@ -61,7 +61,7 @@ func SprintfForRequest(lang string, key string, args ...any) string {
 
 	// If translation failed, fallback to key
 	// if translated == key && len(args) == 0 {
-	// 	logging.LogDebug("translation missing for key: %s (lang: %s)", key, lang)
+	// 	logging.LogDebug(logging.KeyApp, "translation missing for key: %s (lang: %s)", key, lang)
 	// }
 
 	return translated

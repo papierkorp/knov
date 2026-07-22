@@ -14,14 +14,14 @@ import (
 
 // createFilterTestFiles creates the physical test files on disk
 func createFilterTestFiles() error {
-	logging.LogInfo("creating filter test files on disk")
+	logging.LogInfo(logging.KeyApp, "creating filter test files on disk")
 
 	docsPath := contentStorage.GetDocsPath()
 
 	// remove existing filter-tests directory to ensure clean state
 	filterTestsPath := filepath.Join(docsPath, "test/filter-tests")
 	if _, err := os.Stat(filterTestsPath); err == nil {
-		logging.LogInfo("removing existing filter-tests directory")
+		logging.LogInfo(logging.KeyApp, "removing existing filter-tests directory")
 		if err := os.RemoveAll(filterTestsPath); err != nil {
 			return fmt.Errorf("failed to remove existing filter-tests directory: %v", err)
 		}
@@ -74,7 +74,7 @@ func createFilterTestFiles() error {
 		}
 	}
 
-	logging.LogInfo("filter test files created successfully")
+	logging.LogInfo(logging.KeyApp, "filter test files created successfully")
 	return nil
 }
 
@@ -135,29 +135,27 @@ func getFilterTestMetadata() []*files.Metadata {
 
 // createFilterTestMetadata creates the test files and metadata objects on disk.
 func createFilterTestMetadata() error {
-	debugLogger := logging.LogBuilder("filter-debug")
-
 	if err := createFilterTestFiles(); err != nil {
-		debugLogger.Printf("failed to create filter test files: %v", err)
+		logging.LogInfo(logging.KeyFilterDebug, "failed to create filter test files: %v", err)
 		return fmt.Errorf("failed to create filter test files: %v", err)
 	}
 
 	for _, metadata := range getFilterTestMetadata() {
 		if err := files.MetaDataSave(metadata); err != nil {
-			logging.LogError("failed to save metadata for %s: %v", metadata.Path, err)
-			debugLogger.Printf("error saving metadata for %s: %v", metadata.Path, err)
+			logging.LogError(logging.KeyApp, "failed to save metadata for %s: %v", metadata.Path, err)
+			logging.LogInfo(logging.KeyFilterDebug, "error saving metadata for %s: %v", metadata.Path, err)
 			return fmt.Errorf("failed to save metadata for %s: %v", metadata.Path, err)
 		}
 	}
 
 	if err := files.SaveAllCollectionsToCache(); err != nil {
-		logging.LogWarning("failed to update collections cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to update collections cache: %v", err)
 	}
 	if err := files.SaveAllFoldersToCache(); err != nil {
-		logging.LogWarning("failed to update folders cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to update folders cache: %v", err)
 	}
 	if err := files.SaveAllTagsToCache(); err != nil {
-		logging.LogWarning("failed to update tags cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to update tags cache: %v", err)
 	}
 
 	return nil

@@ -18,20 +18,20 @@ import (
 func InitSettings() {
 	data, err := configStorage.Get("settings")
 	if err != nil {
-		logging.LogError("failed to read user settings: %v", err)
+		logging.LogError(logging.KeyApp, "failed to read user settings: %v", err)
 		return
 	}
 	if data == nil {
-		logging.LogInfo("no user settings found, using defaults")
+		logging.LogInfo(logging.KeyApp, "no user settings found, using defaults")
 		if err := SaveSettings(); err != nil {
-			logging.LogError("failed to save default settings: %v", err)
+			logging.LogError(logging.KeyApp, "failed to save default settings: %v", err)
 		}
 		return
 	}
 
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(data, &raw); err != nil {
-		logging.LogError("failed to decode user settings: %v", err)
+		logging.LogError(logging.KeyApp, "failed to decode user settings: %v", err)
 		return
 	}
 
@@ -46,7 +46,7 @@ func InitSettings() {
 
 	applyLanguage(Language.Get())
 
-	logging.LogInfo("user settings loaded")
+	logging.LogInfo(logging.KeyApp, "user settings loaded")
 }
 
 func applyLanguage(lang string) {
@@ -61,14 +61,14 @@ func SaveSettings() error {
 	}
 	data, err := json.Marshal(m)
 	if err != nil {
-		logging.LogError("failed to marshal settings: %v", err)
+		logging.LogError(logging.KeyApp, "failed to marshal settings: %v", err)
 		return err
 	}
 	if err := configStorage.Set("settings", data); err != nil {
-		logging.LogError("failed to save settings: %v", err)
+		logging.LogError(logging.KeyApp, "failed to save settings: %v", err)
 		return err
 	}
-	logging.LogInfo("user settings saved")
+	logging.LogInfo(logging.KeyApp, "user settings saved")
 	return nil
 }
 
@@ -80,7 +80,7 @@ func BulkSetFromForm(values map[string][]string) []error {
 	for key, vals := range values {
 		s := GetSetting(key)
 		if s == nil {
-			logging.LogDebug("BulkSetFromForm: unknown setting key %q, skipping", key)
+			logging.LogDebug(logging.KeyApp, "BulkSetFromForm: unknown setting key %q, skipping", key)
 			continue
 		}
 		val := ""
@@ -147,7 +147,7 @@ func GetCustomFaviconExt() string {
 // SetCustomFaviconExt updates the custom favicon extension and persists.
 func SetCustomFaviconExt(ext string) {
 	if err := configStorage.Set("customFaviconExt", []byte(ext)); err != nil {
-		logging.LogError("failed to save custom favicon ext: %v", err)
+		logging.LogError(logging.KeyApp, "failed to save custom favicon ext: %v", err)
 	}
 }
 
@@ -193,8 +193,8 @@ func GetBorderStyle() string {
 	}
 	return s
 }
-func GetShowCaption() bool         { return ShowCaption.Get() }
-func GetClickToEnlarge() bool      { return ClickToEnlarge.Get() }
+func GetShowCaption() bool          { return ShowCaption.Get() }
+func GetClickToEnlarge() bool       { return ClickToEnlarge.Get() }
 func GetAllowedMimeTypes() []string { return AllowedMimeTypes.Get() }
 
 func GetTablePageSize() int {

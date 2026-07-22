@@ -134,11 +134,11 @@ func InitAppConfig() {
 	initLogLevel()
 
 	if err := InitGitRepository(); err != nil {
-		logging.LogError("failed to initialize git repository: %s", err)
+		logging.LogError(logging.KeyApp, "failed to initialize git repository: %s", err)
 	}
 
 	logging.SetTimeFormatter(FormatDateTimeSeconds)
-	logging.LogInfo("app config initialized")
+	logging.LogInfo(logging.KeyApp, "app config initialized")
 }
 
 // GetAppConfig returns the current app config
@@ -325,7 +325,7 @@ func IsKanbanTag(tag string) bool {
 
 func initLogLevel() {
 	logLevel := getEnv("KNOV_LOG_LEVEL", "info")
-	logging.LogInfo("loglevel set to: %s", logLevel)
+	logging.LogInfo(logging.KeyApp, "loglevel set to: %s", logLevel)
 	os.Setenv("KNOV_LOG_LEVEL", logLevel)
 }
 
@@ -334,12 +334,12 @@ func SetLogLevel(level string) {
 	validLevels := []string{"debug", "info", "warning", "error"}
 
 	if !slices.Contains(validLevels, level) {
-		logging.LogWarning("invalid log level '%s', falling back to 'info'", level)
+		logging.LogWarning(logging.KeyApp, "invalid log level '%s', falling back to 'info'", level)
 		level = "info"
 	}
 
 	os.Setenv("KNOV_LOG_LEVEL", level)
-	logging.LogInfo("log level updated to: %s", level)
+	logging.LogInfo(logging.KeyApp, "log level updated to: %s", level)
 }
 
 // GetDataPath returns the data path
@@ -454,7 +454,7 @@ func InitGitRepository() error {
 	gitDir := filepath.Join(dataPath, ".git")
 
 	if _, err := os.Stat(gitDir); !os.IsNotExist(err) {
-		logging.LogInfo("git repository already exists in %s", dataPath)
+		logging.LogInfo(logging.KeyApp, "git repository already exists in %s", dataPath)
 		return nil
 	}
 
@@ -464,7 +464,7 @@ func InitGitRepository() error {
 			var err error
 			auth, err = ssh.NewPublicKeysFromFile("git", appConfig.GitSSHKey, "")
 			if err != nil {
-				logging.LogError("failed to load ssh key for clone: %v", err)
+				logging.LogError(logging.KeyApp, "failed to load ssh key for clone: %v", err)
 				return err
 			}
 		}
@@ -473,17 +473,17 @@ func InitGitRepository() error {
 			Auth: auth,
 		})
 		if err != nil {
-			logging.LogError("failed to clone repository: %v", err)
+			logging.LogError(logging.KeyApp, "failed to clone repository: %v", err)
 			return err
 		}
-		logging.LogInfo("git repository cloned from %s to %s", appConfig.GitRemote, dataPath)
+		logging.LogInfo(logging.KeyApp, "git repository cloned from %s to %s", appConfig.GitRemote, dataPath)
 	} else {
 		_, err := git.PlainInit(dataPath, false)
 		if err != nil {
-			logging.LogError("failed to initialize git repository: %v", err)
+			logging.LogError(logging.KeyApp, "failed to initialize git repository: %v", err)
 			return err
 		}
-		logging.LogInfo("local git repository initialized in %s", dataPath)
+		logging.LogInfo(logging.KeyApp, "local git repository initialized in %s", dataPath)
 	}
 
 	return nil
@@ -545,13 +545,13 @@ func applyEnvToAppConfig(key, value string) {
 func loadEnvFile() {
 	envPath := ".env"
 	if _, err := os.Stat(envPath); os.IsNotExist(err) {
-		logging.LogInfo("no .env file found, using environment variables and defaults")
+		logging.LogInfo(logging.KeyApp, "no .env file found, using environment variables and defaults")
 		return
 	}
 
 	data, err := os.ReadFile(envPath)
 	if err != nil {
-		logging.LogWarning("failed to read .env file: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to read .env file: %v", err)
 		return
 	}
 
@@ -569,7 +569,7 @@ func loadEnvFile() {
 		}
 	}
 
-	logging.LogInfo(".env file loaded")
+	logging.LogInfo(logging.KeyApp, ".env file loaded")
 }
 
 func ExtensionForEditor(editorType string) string {

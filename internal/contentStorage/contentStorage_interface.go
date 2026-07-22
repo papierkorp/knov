@@ -38,7 +38,7 @@ func Init() error {
 		return fmt.Errorf("failed to initialize content storage: %w", err)
 	}
 
-	logging.LogInfo("content storage initialized: filesystem")
+	logging.LogInfo(logging.KeyApp, "content storage initialized: filesystem")
 	return nil
 }
 

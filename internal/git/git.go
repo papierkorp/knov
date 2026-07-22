@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -94,7 +93,7 @@ func EnsureRepoConfig() {
 
 	cfg, err := repo.Config()
 	if err != nil {
-		logging.LogWarning("git: failed to read repo config: %v", err)
+		logging.LogWarning(logging.KeyApp, "git: failed to read repo config: %v", err)
 		return
 	}
 
@@ -103,9 +102,9 @@ func EnsureRepoConfig() {
 	if cfg.Raw.Section("core").Option("filemode") != "false" {
 		cfg.Raw.Section("core").SetOption("filemode", "false")
 		if err := repo.SetConfig(cfg); err != nil {
-			logging.LogWarning("git: failed to set core.filemode=false: %v", err)
+			logging.LogWarning(logging.KeyApp, "git: failed to set core.filemode=false: %v", err)
 		} else {
-			logging.LogInfo("git: set core.filemode=false in repo config")
+			logging.LogInfo(logging.KeyApp, "git: set core.filemode=false in repo config")
 		}
 	}
 }
@@ -115,7 +114,7 @@ func EnsureRepoConfig() {
 func GetRecentlyChangedFiles(count, offset int) ([]GitHistoryFile, error) {
 	repo, err := openRepo()
 	if err != nil {
-		logging.LogError("failed to open git repository: %v", err)
+		logging.LogError(logging.KeyApp, "failed to open git repository: %v", err)
 		return nil, err
 	}
 
@@ -218,7 +217,7 @@ func GetRecentlyChangedFiles(count, offset int) ([]GitHistoryFile, error) {
 func GetUntrackedFiles() ([]string, error) {
 	repo, err := openRepo()
 	if err != nil {
-		logging.LogDebug("no git repository found")
+		logging.LogDebug(logging.KeyApp, "no git repository found")
 		return nil, nil
 	}
 
@@ -250,11 +249,11 @@ func AddNewFiles() ([]string, error) {
 	}
 
 	if len(untrackedFiles) == 0 {
-		logging.LogDebug("no new files to add")
+		logging.LogDebug(logging.KeyApp, "no new files to add")
 		return nil, nil
 	}
 
-	logging.LogInfo("found %d untracked files", len(untrackedFiles))
+	logging.LogInfo(logging.KeyApp, "found %d untracked files", len(untrackedFiles))
 
 	gitWriteMu.Lock()
 	defer gitWriteMu.Unlock()
@@ -274,7 +273,7 @@ func AddNewFiles() ([]string, error) {
 	// add all files
 	_, err = worktree.Add(".")
 	if err != nil {
-		logging.LogError("failed to add files to git: %v", err)
+		logging.LogError(logging.KeyApp, "failed to add files to git: %v", err)
 		return nil, err
 	}
 
@@ -287,11 +286,11 @@ func AddNewFiles() ([]string, error) {
 		},
 	})
 	if err != nil {
-		logging.LogError("failed to commit files: %v", err)
+		logging.LogError(logging.KeyApp, "failed to commit files: %v", err)
 		return nil, err
 	}
 
-	logging.LogInfo("auto-committed %d new files to git", len(untrackedFiles))
+	logging.LogInfo(logging.KeyApp, "auto-committed %d new files to git", len(untrackedFiles))
 	Push()
 	return untrackedFiles, nil
 }
@@ -325,11 +324,11 @@ func CommitDeletedFiles(deletedFiles []string) error {
 	for _, file := range deletedFiles {
 		relPath, err := filepath.Rel(dataDir, file)
 		if err != nil {
-			logging.LogError("failed to get relative path for %s: %v", file, err)
+			logging.LogError(logging.KeyApp, "failed to get relative path for %s: %v", file, err)
 			continue
 		}
 		if _, err := worktree.Add(relPath); err != nil {
-			logging.LogError("failed to stage deleted file %s: %v", relPath, err)
+			logging.LogError(logging.KeyApp, "failed to stage deleted file %s: %v", relPath, err)
 			continue
 		}
 	}
@@ -343,11 +342,11 @@ func CommitDeletedFiles(deletedFiles []string) error {
 		},
 	})
 	if err != nil {
-		logging.LogError("failed to commit deleted files: %v", err)
+		logging.LogError(logging.KeyApp, "failed to commit deleted files: %v", err)
 		return err
 	}
 
-	logging.LogInfo("auto-committed %d deleted files to git", len(deletedFiles))
+	logging.LogInfo(logging.KeyApp, "auto-committed %d deleted files to git", len(deletedFiles))
 	Push()
 	return nil
 }
@@ -359,7 +358,7 @@ func CommitFile(fullPath string) {
 	dataDir := configmanager.GetAppConfig().DataPath
 	relPath, err := filepath.Rel(dataDir, fullPath)
 	if err != nil {
-		logging.LogError("git: failed to get relative path for %s: %v", fullPath, err)
+		logging.LogError(logging.KeyApp, "git: failed to get relative path for %s: %v", fullPath, err)
 		return
 	}
 
@@ -372,18 +371,18 @@ func CommitFile(fullPath string) {
 
 	repo, err := openRepo()
 	if err != nil {
-		logging.LogError("git: failed to open repo for commit of %s: %v", relPath, err)
+		logging.LogError(logging.KeyApp, "git: failed to open repo for commit of %s: %v", relPath, err)
 		return
 	}
 
 	worktree, err := repo.Worktree()
 	if err != nil {
-		logging.LogError("git: failed to get worktree for commit of %s: %v", relPath, err)
+		logging.LogError(logging.KeyApp, "git: failed to get worktree for commit of %s: %v", relPath, err)
 		return
 	}
 
 	if _, err := worktree.Add(relPath); err != nil {
-		logging.LogError("git: failed to stage %s: %v", relPath, err)
+		logging.LogError(logging.KeyApp, "git: failed to stage %s: %v", relPath, err)
 		return
 	}
 
@@ -396,14 +395,14 @@ func CommitFile(fullPath string) {
 	})
 	if err != nil {
 		if err.Error() == "nothing to commit, working tree clean" || err.Error() == "cannot create empty commit: clean working tree" {
-			logging.LogDebug("git: nothing to commit for %s", relPath)
+			logging.LogDebug(logging.KeyApp, "git: nothing to commit for %s", relPath)
 			return
 		}
-		logging.LogError("git: failed to commit %s: %v", relPath, err)
+		logging.LogError(logging.KeyApp, "git: failed to commit %s: %v", relPath, err)
 		return
 	}
 
-	logging.LogInfo("git: committed %s", relPath)
+	logging.LogInfo(logging.KeyApp, "git: committed %s", relPath)
 	Push()
 }
 
@@ -413,7 +412,7 @@ func CommitDeletedFile(fullPath string) {
 	dataDir := configmanager.GetAppConfig().DataPath
 	relPath, err := filepath.Rel(dataDir, fullPath)
 	if err != nil {
-		logging.LogError("git: failed to get relative path for %s: %v", fullPath, err)
+		logging.LogError(logging.KeyApp, "git: failed to get relative path for %s: %v", fullPath, err)
 		return
 	}
 
@@ -426,18 +425,18 @@ func CommitDeletedFile(fullPath string) {
 
 	repo, err := openRepo()
 	if err != nil {
-		logging.LogError("git: failed to open repo for delete commit of %s: %v", relPath, err)
+		logging.LogError(logging.KeyApp, "git: failed to open repo for delete commit of %s: %v", relPath, err)
 		return
 	}
 
 	worktree, err := repo.Worktree()
 	if err != nil {
-		logging.LogError("git: failed to get worktree for delete commit of %s: %v", relPath, err)
+		logging.LogError(logging.KeyApp, "git: failed to get worktree for delete commit of %s: %v", relPath, err)
 		return
 	}
 
 	if _, err := worktree.Add(relPath); err != nil {
-		logging.LogError("git: failed to stage deleted file %s: %v", relPath, err)
+		logging.LogError(logging.KeyApp, "git: failed to stage deleted file %s: %v", relPath, err)
 		return
 	}
 
@@ -450,14 +449,14 @@ func CommitDeletedFile(fullPath string) {
 	})
 	if err != nil {
 		if err.Error() == "nothing to commit, working tree clean" || err.Error() == "cannot create empty commit: clean working tree" {
-			logging.LogDebug("git: nothing to commit for deleted file %s", relPath)
+			logging.LogDebug(logging.KeyApp, "git: nothing to commit for deleted file %s", relPath)
 			return
 		}
-		logging.LogError("git: failed to commit deleted file %s: %v", relPath, err)
+		logging.LogError(logging.KeyApp, "git: failed to commit deleted file %s: %v", relPath, err)
 		return
 	}
 
-	logging.LogInfo("git: committed deletion of %s", relPath)
+	logging.LogInfo(logging.KeyApp, "git: committed deletion of %s", relPath)
 	Push()
 }
 
@@ -486,7 +485,7 @@ func CommitModifiedFiles(modifiedFiles []string) error {
 	for _, file := range modifiedFiles {
 		_, err = worktree.Add(file)
 		if err != nil {
-			logging.LogError("failed to stage modified file %s: %v", file, err)
+			logging.LogError(logging.KeyApp, "failed to stage modified file %s: %v", file, err)
 			continue
 		}
 	}
@@ -500,11 +499,11 @@ func CommitModifiedFiles(modifiedFiles []string) error {
 		},
 	})
 	if err != nil {
-		logging.LogError("failed to commit modified files: %v", err)
+		logging.LogError(logging.KeyApp, "failed to commit modified files: %v", err)
 		return err
 	}
 
-	logging.LogInfo("auto-committed %d modified files to git", len(modifiedFiles))
+	logging.LogInfo(logging.KeyApp, "auto-committed %d modified files to git", len(modifiedFiles))
 	Push()
 	return nil
 }
@@ -518,7 +517,7 @@ func CommitAllPending() (bool, error) {
 
 	repo, err := openRepo()
 	if err != nil {
-		logging.LogDebug("git: no repository found, skipping commit")
+		logging.LogDebug(logging.KeyFileSync, "git: no repository found, skipping commit")
 		return false, nil
 	}
 
@@ -566,13 +565,13 @@ func CommitAllPending() (bool, error) {
 	})
 	if err != nil {
 		if strings.Contains(err.Error(), "nothing to commit") || strings.Contains(err.Error(), "clean working tree") {
-			logging.LogDebug("git: nothing to commit")
+			logging.LogDebug(logging.KeyFileSync, "git: nothing to commit")
 			return false, nil
 		}
 		return false, fmt.Errorf("git commit failed: %w", err)
 	}
 
-	logging.LogInfo("git: auto-committed pending changes")
+	logging.LogInfo(logging.KeyFileSync, "git: auto-committed pending changes")
 	Push()
 	return true, nil
 }
@@ -645,7 +644,7 @@ func GetFileHistory(filePath string) ([]FileVersion, error) {
 
 		moves, err := detectMovesInCommit(repo, parent, lastCommit)
 		if err != nil {
-			logging.LogWarning("failed to detect renames for %s at commit %s: %v", currentPath, lastCommit.Hash.String()[:7], err)
+			logging.LogWarning(logging.KeyApp, "failed to detect renames for %s at commit %s: %v", currentPath, lastCommit.Hash.String()[:7], err)
 			break
 		}
 
@@ -682,7 +681,7 @@ func GetCurrentCommit() (string, error) {
 
 	ref, err := repo.Head()
 	if err != nil {
-		logging.LogError("failed to get current commit: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get current commit: %v", err)
 		return "", err
 	}
 
@@ -724,9 +723,9 @@ func GetFilesChangedSinceCommit(lastCommit string) ([]string, error) {
 
 	// validate that the commit exists before using it
 	if !CommitExists(lastCommit) {
-		logging.LogWarning("commit %s no longer exists, resetting to process all files", lastCommit)
+		logging.LogWarning(logging.KeyFileSync, "commit %s no longer exists, resetting to process all files", lastCommit)
 		if err := SetLastProcessedCommit(""); err != nil {
-			logging.LogError("failed to reset last processed commit: %v", err)
+			logging.LogError(logging.KeyFileSync, "failed to reset last processed commit: %v", err)
 		}
 		return GetFilesChangedSinceCommit("")
 	}
@@ -739,9 +738,9 @@ func GetFilesChangedSinceCommit(lastCommit string) ([]string, error) {
 
 	lastCommitHash, err := expandCommitHash(repo, lastCommit)
 	if err != nil {
-		logging.LogWarning("commit %s no longer exists, resetting to process all files: %v", lastCommit, err)
+		logging.LogWarning(logging.KeyFileSync, "commit %s no longer exists, resetting to process all files: %v", lastCommit, err)
 		if err := SetLastProcessedCommit(""); err != nil {
-			logging.LogError("failed to reset last processed commit: %v", err)
+			logging.LogError(logging.KeyFileSync, "failed to reset last processed commit: %v", err)
 		}
 		return GetFilesChangedSinceCommit("")
 	}
@@ -797,9 +796,9 @@ func GetDeletedFilesSinceCommit(lastCommit string) ([]string, error) {
 	}
 
 	if !CommitExists(lastCommit) {
-		logging.LogWarning("commit %s no longer exists, cannot check for deleted files", lastCommit)
+		logging.LogWarning(logging.KeyFileSync, "commit %s no longer exists, cannot check for deleted files", lastCommit)
 		if err := SetLastProcessedCommit(""); err != nil {
-			logging.LogError("failed to reset last processed commit: %v", err)
+			logging.LogError(logging.KeyFileSync, "failed to reset last processed commit: %v", err)
 		}
 		return nil, nil
 	}
@@ -811,9 +810,9 @@ func GetDeletedFilesSinceCommit(lastCommit string) ([]string, error) {
 
 	lastCommitHash, err := expandCommitHash(repo, lastCommit)
 	if err != nil {
-		logging.LogWarning("commit %s no longer exists, cannot check for deleted files: %v", lastCommit, err)
+		logging.LogWarning(logging.KeyFileSync, "commit %s no longer exists, cannot check for deleted files: %v", lastCommit, err)
 		if err := SetLastProcessedCommit(""); err != nil {
-			logging.LogError("failed to reset last processed commit: %v", err)
+			logging.LogError(logging.KeyFileSync, "failed to reset last processed commit: %v", err)
 		}
 		return nil, nil
 	}
@@ -857,7 +856,7 @@ func GetDeletedFilesSinceCommit(lastCommit string) ([]string, error) {
 func GetUncommittedDeletedFiles() ([]string, error) {
 	repo, err := openRepo()
 	if err != nil {
-		logging.LogDebug("no git repository found")
+		logging.LogDebug(logging.KeyApp, "no git repository found")
 		return nil, nil
 	}
 
@@ -885,7 +884,7 @@ func GetUncommittedDeletedFiles() ([]string, error) {
 func GetModifiedFiles() ([]string, error) {
 	repo, err := openRepo()
 	if err != nil {
-		logging.LogDebug("no git repository found")
+		logging.LogDebug(logging.KeyApp, "no git repository found")
 		return nil, nil
 	}
 
@@ -924,13 +923,13 @@ func RestoreFileToCommit(filePath, commit string) error {
 
 	commitHash, err := expandCommitHash(repo, commit)
 	if err != nil {
-		logging.LogError("failed to find commit %s: %v", commit, err)
+		logging.LogError(logging.KeyApp, "failed to find commit %s: %v", commit, err)
 		return err
 	}
 
 	commitObj, err := repo.CommitObject(commitHash)
 	if err != nil {
-		logging.LogError("failed to get commit %s: %v", commit, err)
+		logging.LogError(logging.KeyApp, "failed to get commit %s: %v", commit, err)
 		return err
 	}
 
@@ -952,7 +951,7 @@ func RestoreFileToCommit(filePath, commit string) error {
 			}
 		}
 		if err != nil {
-			logging.LogError("failed to get file %s from commit %s: %v", relPath, commit, err)
+			logging.LogError(logging.KeyApp, "failed to get file %s from commit %s: %v", relPath, commit, err)
 			return err
 		}
 	}
@@ -978,7 +977,7 @@ func RestoreFileToCommit(filePath, commit string) error {
 
 	_, err = worktree.Add(relPath)
 	if err != nil {
-		logging.LogError("failed to add restored file %s: %v", relPath, err)
+		logging.LogError(logging.KeyApp, "failed to add restored file %s: %v", relPath, err)
 		return err
 	}
 
@@ -991,11 +990,11 @@ func RestoreFileToCommit(filePath, commit string) error {
 		},
 	})
 	if err != nil {
-		logging.LogError("failed to commit restored file %s: %v", relPath, err)
+		logging.LogError(logging.KeyApp, "failed to commit restored file %s: %v", relPath, err)
 		return err
 	}
 
-	logging.LogInfo("restored file %s to commit %s and logged the change", relPath, commit)
+	logging.LogInfo(logging.KeyApp, "restored file %s to commit %s and logged the change", relPath, commit)
 	return nil
 }
 
@@ -1008,13 +1007,13 @@ func GetCommitDetails(commit string) (time.Time, string, error) {
 
 	commitHash, err := expandCommitHash(repo, commit)
 	if err != nil {
-		logging.LogError("failed to find commit %s: %v", commit, err)
+		logging.LogError(logging.KeyApp, "failed to find commit %s: %v", commit, err)
 		return time.Time{}, "", err
 	}
 
 	commitObj, err := repo.CommitObject(commitHash)
 	if err != nil {
-		logging.LogError("failed to get commit details for %s: %v", commit, err)
+		logging.LogError(logging.KeyApp, "failed to get commit details for %s: %v", commit, err)
 		return time.Time{}, "", err
 	}
 
@@ -1113,7 +1112,7 @@ func GetFileAtCommit(filePath, commit string) (string, error) {
 	// Expand short commit hash to full hash
 	commitHash, err := expandCommitHash(repo, commit)
 	if err != nil {
-		logging.LogWarning("commit %s does not exist for file %s: %v", commit, filePath, err)
+		logging.LogWarning(logging.KeyApp, "commit %s does not exist for file %s: %v", commit, filePath, err)
 		return "", fmt.Errorf("commit %s not found", commit)
 	}
 
@@ -1140,7 +1139,7 @@ func GetFileAtCommit(filePath, commit string) (string, error) {
 			}
 		}
 		if err != nil {
-			logging.LogError("failed to get file %s at commit %s: %v", relPath, commit, err)
+			logging.LogError(logging.KeyApp, "failed to get file %s at commit %s: %v", relPath, commit, err)
 			return "", err
 		}
 	}
@@ -1329,7 +1328,7 @@ func GetFileRenames(lastCommit string) ([]FileMove, error) {
 	}
 
 	if lastCommit == "" {
-		logging.LogDebug("no last commit provided, checking recent renames")
+		logging.LogDebug(logging.KeyFileSync, "no last commit provided, checking recent renames")
 		// if no last commit, check recent commits for renames
 		ref, err := repo.Head()
 		if err != nil {
@@ -1360,7 +1359,7 @@ func GetFileRenames(lastCommit string) ([]FileMove, error) {
 
 			moves, err := detectMovesInCommit(repo, parent, commit)
 			if err != nil {
-				logging.LogWarning("failed to detect moves in commit %s: %v", commit.Hash.String()[:7], err)
+				logging.LogWarning(logging.KeyFileSync, "failed to detect moves in commit %s: %v", commit.Hash.String()[:7], err)
 				return nil
 			}
 
@@ -1373,7 +1372,7 @@ func GetFileRenames(lastCommit string) ([]FileMove, error) {
 
 	// check for renames since specific commit
 	if !CommitExists(lastCommit) {
-		logging.LogWarning("commit %s no longer exists, cannot check for renames", lastCommit)
+		logging.LogWarning(logging.KeyFileSync, "commit %s no longer exists, cannot check for renames", lastCommit)
 		return nil, fmt.Errorf("commit %s not found", lastCommit)
 	}
 
@@ -1443,18 +1442,6 @@ func detectMovesInCommit(repo *git.Repository, fromCommit, toCommit *object.Comm
 // ----------- Remote sync (optional) -----------
 // -----------------------------------------------
 
-var (
-	gitLogOnce sync.Once
-	gitLogInst *log.Logger
-)
-
-func gitLog() *log.Logger {
-	gitLogOnce.Do(func() {
-		gitLogInst = logging.LogBuilder("git-remote")
-	})
-	return gitLogInst
-}
-
 // remoteEnabled returns true when a remote is configured.
 func remoteEnabled() bool {
 	return configmanager.GetGitRemote() != ""
@@ -1482,7 +1469,7 @@ func buildAuth() (transport.AuthMethod, error) {
 		auth, err := ssh.NewSSHAgentAuth("git")
 		if err != nil {
 			// SSH agent not available — fall back to default key files
-			gitLog().Printf("SSH agent not available (%v), trying default keys", err)
+			logging.LogInfo(logging.KeyGitRemote, "SSH agent not available (%v), trying default keys", err)
 			home, _ := os.UserHomeDir()
 			for _, name := range []string{"id_ed25519", "id_rsa", "id_ecdsa"} {
 				keyPath := filepath.Join(home, ".ssh", name)
@@ -1493,7 +1480,7 @@ func buildAuth() (transport.AuthMethod, error) {
 					}
 				}
 			}
-			gitLog().Printf("no SSH auth available — set KNOV_GIT_SSH_KEY to your key path")
+			logging.LogInfo(logging.KeyGitRemote, "no SSH auth available — set KNOV_GIT_SSH_KEY to your key path")
 			return nil, nil
 		}
 		return auth, nil
@@ -1548,7 +1535,7 @@ func PullRebase() error {
 
 	auth, err := buildAuth()
 	if err != nil {
-		gitLog().Printf("pull: failed to build auth: %v", err)
+		logging.LogInfo(logging.KeyGitRemote, "pull: failed to build auth: %v", err)
 	}
 
 	err = worktree.PullContext(ctx, &git.PullOptions{
@@ -1561,11 +1548,11 @@ func PullRebase() error {
 
 	if err != nil {
 		if errors.Is(err, git.NoErrAlreadyUpToDate) {
-			gitLog().Printf("already up to date")
+			logging.LogInfo(logging.KeyGitRemote, "already up to date")
 			return nil
 		}
 		if errors.Is(err, context.DeadlineExceeded) {
-			gitLog().Printf("pull timed out after %s — continuing with local commit", timeout)
+			logging.LogInfo(logging.KeyGitRemote, "pull timed out after %s — continuing with local commit", timeout)
 			return nil // non-fatal: commit locally, push on next cycle
 		}
 		// check if it's a merge conflict
@@ -1575,7 +1562,7 @@ func PullRebase() error {
 		return fmt.Errorf("git pull failed: %w", err)
 	}
 
-	gitLog().Printf("pulled from %s/%s", remote, branch)
+	logging.LogInfo(logging.KeyGitRemote, "pulled from %s/%s", remote, branch)
 	return nil
 }
 
@@ -1593,7 +1580,7 @@ func fetchAndReset() (map[string]struct{}, error) {
 
 	auth, err := buildAuth()
 	if err != nil {
-		gitLog().Printf("fetch: failed to build auth: %v", err)
+		logging.LogInfo(logging.KeyGitRemote, "fetch: failed to build auth: %v", err)
 	}
 
 	timeout := parsePushTimeout()
@@ -1609,13 +1596,13 @@ func fetchAndReset() (map[string]struct{}, error) {
 	})
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		if errors.Is(err, context.DeadlineExceeded) {
-			gitLog().Printf("fetch timed out after %s — continuing with local commit", timeout)
+			logging.LogInfo(logging.KeyGitRemote, "fetch timed out after %s — continuing with local commit", timeout)
 			return nil, nil
 		}
 		return nil, fmt.Errorf("git fetch failed: %w", err)
 	}
 	if errors.Is(err, git.NoErrAlreadyUpToDate) {
-		gitLog().Printf("fetch: already up to date")
+		logging.LogInfo(logging.KeyGitRemote, "fetch: already up to date")
 		return nil, nil
 	}
 
@@ -1666,12 +1653,12 @@ func fetchAndReset() (map[string]struct{}, error) {
 		return nil, fmt.Errorf("fetch: hard reset failed: %w", err)
 	}
 
-	gitLog().Printf("fetched and reset to remote %s/%s", remote, branch)
+	logging.LogInfo(logging.KeyGitRemote, "fetched and reset to remote %s/%s", remote, branch)
 	keys := make([]string, 0, len(changedFiles))
 	for k := range changedFiles {
 		keys = append(keys, k)
 	}
-	logging.LogDebug("git: remotely changed files: %v", keys)
+	logging.LogDebug(logging.KeyApp, "git: remotely changed files: %v", keys)
 	return changedFiles, nil
 }
 
@@ -1688,7 +1675,7 @@ func abortMerge() {
 	dataDir := configmanager.GetAppConfig().DataPath
 	mergeHead := filepath.Join(dataDir, ".git", "MERGE_HEAD")
 	if err := os.Remove(mergeHead); err != nil && !os.IsNotExist(err) {
-		logging.LogWarning("git: failed to remove MERGE_HEAD: %v", err)
+		logging.LogWarning(logging.KeyApp, "git: failed to remove MERGE_HEAD: %v", err)
 	}
 	// also reset the index to HEAD to clean up staged conflict markers
 	repo, err := openRepo()
@@ -1700,7 +1687,7 @@ func abortMerge() {
 		return
 	}
 	_ = worktree.Reset(&git.ResetOptions{Mode: git.HardReset})
-	logging.LogDebug("git: merge aborted, reset to HEAD")
+	logging.LogDebug(logging.KeyApp, "git: merge aborted, reset to HEAD")
 }
 
 // saveConflictCopy saves the current (local) content of a file as filename.conflict.YYYYMMDD-HHMMSS.md
@@ -1735,19 +1722,19 @@ func HandleConflict(localFilePaths []string) {
 		}
 		conflictPath, err := saveConflictCopy(path)
 		if err != nil {
-			logging.LogError("git conflict: failed to save conflict copy for %s: %v", path, err)
+			logging.LogError(logging.KeyApp, "git conflict: failed to save conflict copy for %s: %v", path, err)
 			continue
 		}
-		logging.LogWarning("git conflict: saved local version as %s", conflictPath)
+		logging.LogWarning(logging.KeyApp, "git conflict: saved local version as %s", conflictPath)
 		notificationStorage.Add("warning",
 			fmt.Sprintf("conflict in %s — your version saved as %s", filepath.Base(path), filepath.Base(conflictPath)),
 			true)
 		conflictMeta := pathutils.ToWithPrefix(conflictPath)
 		if err := files.SetConflictFile(origMeta, conflictMeta); err != nil {
-			logging.LogWarning("git conflict: failed to update conflict metadata for %s: %v", origMeta, err)
+			logging.LogWarning(logging.KeyApp, "git conflict: failed to update conflict metadata for %s: %v", origMeta, err)
 		}
 		if err := files.SetConflictOf(conflictMeta, origMeta); err != nil {
-			logging.LogWarning("git conflict: failed to set conflictOf metadata for %s: %v", conflictMeta, err)
+			logging.LogWarning(logging.KeyApp, "git conflict: failed to set conflictOf metadata for %s: %v", conflictMeta, err)
 		}
 	}
 	abortMerge()
@@ -1788,7 +1775,7 @@ func SyncBeforeCommit(localFiles []string) {
 		snapshots = append(snapshots, snapshot{fullPath: f, relPath: filepath.ToSlash(rel), content: data})
 	}
 
-	logging.LogDebug("git: sync snapshots: %v", func() []string {
+	logging.LogDebug(logging.KeyApp, "git: sync snapshots: %v", func() []string {
 		r := make([]string, len(snapshots))
 		for i, s := range snapshots {
 			r[i] = s.relPath
@@ -1799,7 +1786,7 @@ func SyncBeforeCommit(localFiles []string) {
 	// 2. fetch remote, get set of remotely-changed files, hard-reset to remote HEAD
 	changedRemotely, err := fetchAndReset()
 	if err != nil {
-		logging.LogWarning("git sync before commit failed: %v — committing locally", err)
+		logging.LogWarning(logging.KeyApp, "git sync before commit failed: %v — committing locally", err)
 		return
 	}
 	if changedRemotely == nil {
@@ -1825,20 +1812,20 @@ func SyncBeforeCommit(localFiles []string) {
 		ts := time.Now().Format("20060102-150405")
 		conflictPath := base + ".conflict." + ts + ".md"
 		if err := os.WriteFile(conflictPath, snap.content, 0644); err != nil {
-			logging.LogError("git: failed to save conflict copy for %s: %v", snap.fullPath, err)
+			logging.LogError(logging.KeyApp, "git: failed to save conflict copy for %s: %v", snap.fullPath, err)
 			continue
 		}
-		logging.LogWarning("git: conflict on %s — local version saved as %s", filepath.Base(snap.fullPath), filepath.Base(conflictPath))
+		logging.LogWarning(logging.KeyApp, "git: conflict on %s — local version saved as %s", filepath.Base(snap.fullPath), filepath.Base(conflictPath))
 		notificationStorage.Add("warning",
 			fmt.Sprintf("conflict in %s — your version saved as %s", filepath.Base(snap.fullPath), filepath.Base(conflictPath)),
 			true)
 		origMeta := pathutils.ToWithPrefix(snap.fullPath)
 		conflictMeta := pathutils.ToWithPrefix(conflictPath)
 		if err := files.SetConflictFile(origMeta, conflictMeta); err != nil {
-			logging.LogWarning("git: failed to update conflict metadata for %s: %v", origMeta, err)
+			logging.LogWarning(logging.KeyApp, "git: failed to update conflict metadata for %s: %v", origMeta, err)
 		}
 		if err := files.SetConflictOf(conflictMeta, origMeta); err != nil {
-			logging.LogWarning("git: failed to set conflictOf metadata for %s: %v", conflictMeta, err)
+			logging.LogWarning(logging.KeyApp, "git: failed to set conflictOf metadata for %s: %v", conflictMeta, err)
 		}
 	}
 }
@@ -1859,7 +1846,7 @@ func Push() {
 
 		repo, err := openRepo()
 		if err != nil {
-			gitLog().Printf("push: failed to open repo: %v", err)
+			logging.LogInfo(logging.KeyGitRemote, "push: failed to open repo: %v", err)
 			return
 		}
 
@@ -1872,7 +1859,7 @@ func Push() {
 
 		auth, authErr := buildAuth()
 		if authErr != nil {
-			gitLog().Printf("push: failed to build auth: %v", authErr)
+			logging.LogInfo(logging.KeyGitRemote, "push: failed to build auth: %v", authErr)
 		}
 
 		err = repo.PushContext(ctx, &git.PushOptions{
@@ -1884,14 +1871,14 @@ func Push() {
 
 		if err != nil {
 			if errors.Is(err, git.NoErrAlreadyUpToDate) {
-				gitLog().Printf("nothing to push")
+				logging.LogInfo(logging.KeyGitRemote, "nothing to push")
 				return
 			}
-			gitLog().Printf("push failed: %v", err)
+			logging.LogInfo(logging.KeyGitRemote, "push failed: %v", err)
 			return
 		}
 
-		gitLog().Printf("pushed to %s/%s", remote, branch)
+		logging.LogInfo(logging.KeyGitRemote, "pushed to %s/%s", remote, branch)
 	}()
 }
 
@@ -1914,7 +1901,7 @@ func EnsureRemote() error {
 	if err == nil {
 		urls := existing.Config().URLs
 		if len(urls) > 0 && urls[0] == remote {
-			logging.LogDebug("git remote origin already set to %s", remote)
+			logging.LogDebug(logging.KeyApp, "git remote origin already set to %s", remote)
 			return nil
 		}
 		// exists but wrong URL — delete and recreate
@@ -1931,7 +1918,7 @@ func EnsureRemote() error {
 		return fmt.Errorf("failed to create remote origin: %w", err)
 	}
 
-	logging.LogInfo("git remote origin set to %s", remote)
+	logging.LogInfo(logging.KeyApp, "git remote origin set to %s", remote)
 	return nil
 }
 
@@ -1939,26 +1926,26 @@ func EnsureRemote() error {
 // Returns a descriptive result string and logs details to logs/git-remote.log.
 func TestAuth() (string, error) {
 	remote := configmanager.GetGitRemote()
-	gitLog().Printf("=== auth test start ===")
-	gitLog().Printf("remote: %s", remote)
-	gitLog().Printf("branch: %s", configmanager.GetGitRemoteBranch())
-	gitLog().Printf("ssh key: %q", configmanager.GetGitSSHKey())
-	gitLog().Printf("user: %q", configmanager.GetAppConfig().GitUser)
+	logging.LogInfo(logging.KeyGitRemote, "=== auth test start ===")
+	logging.LogInfo(logging.KeyGitRemote, "remote: %s", remote)
+	logging.LogInfo(logging.KeyGitRemote, "branch: %s", configmanager.GetGitRemoteBranch())
+	logging.LogInfo(logging.KeyGitRemote, "ssh key: %q", configmanager.GetGitSSHKey())
+	logging.LogInfo(logging.KeyGitRemote, "user: %q", configmanager.GetAppConfig().GitUser)
 
 	auth, err := buildAuth()
 	if err != nil {
-		gitLog().Printf("auth build failed: %v", err)
+		logging.LogInfo(logging.KeyGitRemote, "auth build failed: %v", err)
 		return "", fmt.Errorf("auth build failed: %w", err)
 	}
 	if auth == nil {
-		gitLog().Printf("auth: nil (no credentials configured)")
+		logging.LogInfo(logging.KeyGitRemote, "auth: nil (no credentials configured)")
 	} else {
-		gitLog().Printf("auth: %T", auth)
+		logging.LogInfo(logging.KeyGitRemote, "auth: %T", auth)
 	}
 
 	repo, err := openRepo()
 	if err != nil {
-		gitLog().Printf("open repo failed: %v", err)
+		logging.LogInfo(logging.KeyGitRemote, "open repo failed: %v", err)
 		return "", fmt.Errorf("open repo failed: %w", err)
 	}
 
@@ -1968,19 +1955,19 @@ func TestAuth() (string, error) {
 	// ls-remote is the lightest possible check — doesn't change anything
 	rem, err := repo.Remote("origin")
 	if err != nil {
-		gitLog().Printf("no origin remote: %v", err)
+		logging.LogInfo(logging.KeyGitRemote, "no origin remote: %v", err)
 		return "", fmt.Errorf("no origin remote: %w", err)
 	}
 
 	refs, err := rem.ListContext(ctx, &git.ListOptions{Auth: auth})
 	if err != nil {
-		gitLog().Printf("list remote failed: %v", err)
+		logging.LogInfo(logging.KeyGitRemote, "list remote failed: %v", err)
 		return "", fmt.Errorf("remote auth failed: %w", err)
 	}
 
 	result := fmt.Sprintf("connected to %s — %d refs found", remote, len(refs))
-	gitLog().Printf("%s", result)
-	gitLog().Printf("=== auth test end ===")
+	logging.LogInfo(logging.KeyGitRemote, "%s", result)
+	logging.LogInfo(logging.KeyGitRemote, "=== auth test end ===")
 	return result, nil
 }
 
@@ -2067,7 +2054,7 @@ func IndexDeletedFiles(lastCommit string, deletedPaths []string) {
 
 	entries, err := loadDeletedFilesIndex()
 	if err != nil {
-		logging.LogWarning("git: failed to load deleted files index, starting fresh: %v", err)
+		logging.LogWarning(logging.KeyFileSync, "git: failed to load deleted files index, starting fresh: %v", err)
 	}
 	seen := make(map[string]bool, len(entries))
 	for _, e := range entries {
@@ -2098,7 +2085,7 @@ func IndexDeletedFiles(lastCommit string, deletedPaths []string) {
 			if f, ferr := lastTree.File(path); ferr == nil {
 				if content, cerr := f.Contents(); cerr == nil {
 					if ierr := searchStorage.IndexDeletedFile(relPath, []byte(content)); ierr != nil {
-						logging.LogWarning("git: failed to index deleted file content for %s: %v", relPath, ierr)
+						logging.LogWarning(logging.KeyFileSync, "git: failed to index deleted file content for %s: %v", relPath, ierr)
 					}
 				}
 			}
@@ -2109,10 +2096,10 @@ func IndexDeletedFiles(lastCommit string, deletedPaths []string) {
 		return
 	}
 	if err := saveDeletedFilesIndex(entries); err != nil {
-		logging.LogWarning("git: failed to persist deleted files index: %v", err)
+		logging.LogWarning(logging.KeyFileSync, "git: failed to persist deleted files index: %v", err)
 		return
 	}
-	logging.LogInfo("git: indexed %d newly deleted files (%d total)", added, len(entries))
+	logging.LogInfo(logging.KeyFileSync, "git: indexed %d newly deleted files (%d total)", added, len(entries))
 }
 
 // SearchGitByTitle searches for files whose filename contains the query string.
@@ -2200,7 +2187,7 @@ func SearchGitByTitle(query string, limit int, deletedOnly bool) ([]GitHistoryFi
 	if err != nil && err != storer.ErrStop {
 		return nil, err
 	}
-	logging.LogDebug("git title search '%s' (deletedOnly=false) found %d files", query, len(results))
+	logging.LogDebug(logging.KeyApp, "git title search '%s' (deletedOnly=false) found %d files", query, len(results))
 	return results, nil
 }
 
@@ -2225,7 +2212,7 @@ func searchDeletedFilesIndexByTitle(query string, limit int) ([]GitHistoryFile, 
 		results = results[:limit]
 	}
 
-	logging.LogDebug("git title search '%s' (deletedOnly=true, indexed) found %d files", query, len(results))
+	logging.LogDebug(logging.KeyApp, "git title search '%s' (deletedOnly=true, indexed) found %d files", query, len(results))
 	return results, nil
 }
 
@@ -2235,7 +2222,7 @@ func SearchDeletedFilesByContent(query string, limit int) ([]GitHistoryFile, err
 	if err == nil {
 		return results, nil
 	}
-	logging.LogWarning("git: deleted-file content index search failed, falling back to commit-log walk: %v", err)
+	logging.LogWarning(logging.KeyApp, "git: deleted-file content index search failed, falling back to commit-log walk: %v", err)
 	return searchDeletedFilesByContentLiveWalk(query, limit)
 }
 
@@ -2267,7 +2254,7 @@ func searchDeletedFilesIndexByContent(query string, limit int) ([]GitHistoryFile
 		}
 	}
 
-	logging.LogDebug("git content search '%s' (indexed) found %d deleted files", query, len(results))
+	logging.LogDebug(logging.KeyApp, "git content search '%s' (indexed) found %d deleted files", query, len(results))
 	return results, nil
 }
 
@@ -2350,6 +2337,6 @@ func searchDeletedFilesByContentLiveWalk(query string, limit int) ([]GitHistoryF
 	if err != nil && err != storer.ErrStop {
 		return nil, err
 	}
-	logging.LogDebug("git content search '%s' found %d deleted files", query, len(results))
+	logging.LogDebug(logging.KeyApp, "git content search '%s' found %d deleted files", query, len(results))
 	return results, nil
 }

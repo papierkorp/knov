@@ -43,13 +43,13 @@ func SetHeader(w http.ResponseWriter, level Level, message string) {
 	p := payload{Type: level, Message: message}
 	data, err := json.Marshal(map[string]payload{"notify": p})
 	if err != nil {
-		logging.LogError("notify: failed to marshal header payload: %v", err)
+		logging.LogError(logging.KeyApp, "notify: failed to marshal header payload: %v", err)
 		return
 	}
 	w.Header().Set("HX-Trigger", string(data))
 
 	if _, err := notificationStorage.Add(string(level), message, false); err != nil {
-		logging.LogError("notify: failed to persist notification: %v", err)
+		logging.LogError(logging.KeyApp, "notify: failed to persist notification: %v", err)
 	}
 }
 
@@ -58,7 +58,7 @@ func SetHeader(w http.ResponseWriter, level Level, message string) {
 // would be lost before the browser renders the toast.
 func SetFlash(level Level, message string) {
 	if _, err := notificationStorage.Add(string(level), message, true); err != nil {
-		logging.LogError("notify: failed to store flash notification: %v", err)
+		logging.LogError(logging.KeyApp, "notify: failed to store flash notification: %v", err)
 	}
 }
 

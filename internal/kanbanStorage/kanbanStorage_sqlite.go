@@ -32,10 +32,10 @@ func newSQLiteStorage(storagePath string) (*sqliteKanbanStorage, error) {
 	}
 
 	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
-		logging.LogWarning("kanban storage: failed to set wal mode: %v", err)
+		logging.LogWarning(logging.KeyApp, "kanban storage: failed to set wal mode: %v", err)
 	}
 	if _, err := db.Exec("PRAGMA synchronous=NORMAL"); err != nil {
-		logging.LogWarning("kanban storage: failed to set synchronous mode: %v", err)
+		logging.LogWarning(logging.KeyApp, "kanban storage: failed to set synchronous mode: %v", err)
 	}
 
 	s := &sqliteKanbanStorage{db: db}
@@ -55,7 +55,7 @@ func (s *sqliteKanbanStorage) initialize() error {
 	if err := dbmigration.Migrate(s.db, version, steps); err != nil {
 		return fmt.Errorf("kanban storage migration failed: %w", err)
 	}
-	logging.LogDebug("kanban sqlite storage ready at version %d", version)
+	logging.LogDebug(logging.KeyApp, "kanban sqlite storage ready at version %d", version)
 	return nil
 }
 

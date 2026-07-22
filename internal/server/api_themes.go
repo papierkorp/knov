@@ -54,12 +54,12 @@ func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
 		if theme.Name == themeName {
 			err := tm.SetCurrentTheme(theme)
 			if err != nil {
-				logging.LogError("cannot set theme via api: %v", err)
+				logging.LogError(logging.KeyApp, "cannot set theme via api: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 
-			logging.LogInfo("theme switched to: %s", themeName)
+			logging.LogInfo(logging.KeyApp, "theme switched to: %s", themeName)
 			w.Header().Set("HX-Refresh", "true")
 			w.WriteHeader(http.StatusOK)
 			return
@@ -67,7 +67,7 @@ func handleAPISetTheme(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// theme not found
-	logging.LogError("theme not found: %s", themeName)
+	logging.LogError(logging.KeyApp, "theme not found: %s", themeName)
 	w.WriteHeader(http.StatusBadRequest)
 }
 
@@ -126,7 +126,7 @@ func handleAPISetThemeSetting(w http.ResponseWriter, r *http.Request) {
 	}
 
 	configmanager.SetThemeSetting(themeName, settingKey, settingValue)
-	logging.LogDebug("theme setting updated: %s.%s = %v", themeName, settingKey, settingValue)
+	logging.LogDebug(logging.KeyApp, "theme setting updated: %s.%s = %v", themeName, settingKey, settingValue)
 
 	w.Header().Set("HX-Refresh", "true")
 	w.WriteHeader(http.StatusOK)
@@ -194,7 +194,7 @@ func handleAPIUpdateThemeSetting(w http.ResponseWriter, r *http.Request) {
 	}
 
 	configmanager.SetThemeSetting(currentTheme, key, settingValue)
-	logging.LogDebug("theme setting updated: %s = %v", key, settingValue)
+	logging.LogDebug(logging.KeyApp, "theme setting updated: %s = %v", key, settingValue)
 
 	w.Header().Set("HX-Refresh", "true")
 	w.WriteHeader(http.StatusOK)

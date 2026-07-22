@@ -88,7 +88,7 @@ func handleAPIGetTable(w http.ResponseWriter, r *http.Request) {
 	handler := contentHandler.GetHandler("markdown")
 	headers, rows, err := handler.ExtractTable(filepath, tableIndex)
 	if err != nil {
-		logging.LogError("failed to extract table from %s: %v", filepath, err)
+		logging.LogError(logging.KeyApp, "failed to extract table from %s: %v", filepath, err)
 		writeResponse(w, r, nil, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"))
 		return
 	}

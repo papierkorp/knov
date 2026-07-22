@@ -40,7 +40,7 @@ func Init(storagePath string) error {
 		return fmt.Errorf("failed to initialize notification storage: %w", err)
 	}
 
-	logging.LogInfo("notification storage initialized: sqlite")
+	logging.LogInfo(logging.KeyApp, "notification storage initialized: sqlite")
 	return nil
 }
 

@@ -36,10 +36,10 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 	}
 
 	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
-		logging.LogWarning("failed to set wal mode for notifications: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to set wal mode for notifications: %v", err)
 	}
 	if _, err := db.Exec("PRAGMA synchronous=NORMAL"); err != nil {
-		logging.LogWarning("failed to set synchronous mode for notifications: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to set synchronous mode for notifications: %v", err)
 	}
 
 	s := &sqliteStorage{db: db}
@@ -80,7 +80,7 @@ func (s *sqliteStorage) initialize() error {
 		return fmt.Errorf("notification storage migration failed: %w", err)
 	}
 
-	logging.LogDebug("notification sqlite storage ready at version %d", version)
+	logging.LogDebug(logging.KeyApp, "notification sqlite storage ready at version %d", version)
 	return nil
 }
 
@@ -110,7 +110,7 @@ func (s *sqliteStorage) Add(level, message string, pending bool) (*Notification,
 		return nil, fmt.Errorf("failed to insert notification: %w", err)
 	}
 
-	logging.LogDebug("stored notification: [%s] %s (pending=%v)", level, message, pending)
+	logging.LogDebug(logging.KeyApp, "stored notification: [%s] %s (pending=%v)", level, message, pending)
 	return &Notification{ID: id, Level: level, Message: message, CreatedAt: now, Pending: pending}, nil
 }
 
@@ -197,7 +197,7 @@ func (s *sqliteStorage) Purge(maxCount int, maxAgeDays int) error {
 		return fmt.Errorf("failed to enforce notification count limit: %w", err)
 	}
 
-	logging.LogDebug("notification purge complete (max %d, max age %d days)", maxCount, maxAgeDays)
+	logging.LogDebug(logging.KeyApp, "notification purge complete (max %d, max age %d days)", maxCount, maxAgeDays)
 	return nil
 }
 
@@ -208,7 +208,7 @@ func (s *sqliteStorage) DeleteByID(id string) error {
 	if _, err := s.db.Exec(`DELETE FROM notifications WHERE id = ?`, id); err != nil {
 		return fmt.Errorf("failed to delete notification: %w", err)
 	}
-	logging.LogDebug("deleted notification: %s", id)
+	logging.LogDebug(logging.KeyApp, "deleted notification: %s", id)
 	return nil
 }
 
@@ -220,7 +220,7 @@ func (s *sqliteStorage) Clear() error {
 		return fmt.Errorf("failed to clear notifications: %w", err)
 	}
 
-	logging.LogDebug("notifications cleared")
+	logging.LogDebug(logging.KeyApp, "notifications cleared")
 	return nil
 }
 

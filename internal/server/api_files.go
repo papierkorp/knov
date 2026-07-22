@@ -39,11 +39,11 @@ func handleAPIGetFolderSuggestions(w http.ResponseWriter, r *http.Request) {
 	// get cached folder paths, fallback to live data if needed
 	folderPaths, err := files.GetAllFolderPathsFromCache()
 	if err != nil {
-		logging.LogError("failed to get cached folder paths, fallback to live data: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get cached folder paths, fallback to live data: %v", err)
 		// fallback to live data
 		folderPaths, err = files.GetAllFolderPaths()
 		if err != nil {
-			logging.LogError("failed to get folder paths: %v", err)
+			logging.LogError(logging.KeyApp, "failed to get folder paths: %v", err)
 			w.Header().Set("Content-Type", "text/html")
 			w.Write([]byte(""))
 			return
@@ -80,7 +80,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 	// read directory
 	entries, err := os.ReadDir(fullPath)
 	if err != nil {
-		logging.LogError("failed to read folder %s: %v", fullPath, err)
+		logging.LogError(logging.KeyApp, "failed to read folder %s: %v", fullPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read folder"), http.StatusInternalServerError)
 		return
 	}
@@ -262,7 +262,7 @@ func handleAPIGetRawContent(w http.ResponseWriter, r *http.Request) {
 	fullPath := pathutils.ToDocsPath(filepath)
 	content, err := contentStorage.ReadFile(fullPath)
 	if err != nil {
-		logging.LogError("failed to get raw content: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get raw content: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get raw content"), http.StatusInternalServerError)
 		return
 	}
@@ -307,7 +307,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 	if isNewFile {
 		dir := filepath.Dir(fullPath)
 		if err := os.MkdirAll(dir, 0755); err != nil {
-			logging.LogError("failed to create directory %s: %v", dir, err)
+			logging.LogError(logging.KeyApp, "failed to create directory %s: %v", dir, err)
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
 			return
 		}
@@ -315,13 +315,13 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 
 	err := os.WriteFile(fullPath, []byte(content), 0644)
 	if err != nil {
-		logging.LogError("failed to save file %s: %v", fullPath, err)
+		logging.LogError(logging.KeyApp, "failed to save file %s: %v", fullPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
 		return
 	}
 	go git.CommitFile(fullPath)
 
-	logging.LogInfo("saved file: %s", filePath)
+	logging.LogInfo(logging.KeyApp, "saved file: %s", filePath)
 
 	// create metadata for new files
 	if isNewFile {
@@ -346,25 +346,25 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 			}
 			if len(tagsToApply) > 0 {
 				metadata.Tags = append(metadata.Tags, tagsToApply...)
-				logging.LogInfo("applied auto-create tags %v to new file: %s", tagsToApply, filePath)
+				logging.LogInfo(logging.KeyApp, "applied auto-create tags %v to new file: %s", tagsToApply, filePath)
 			}
 		}
 
 		if err := files.MetaDataSave(metadata); err != nil {
-			logging.LogError("failed to save metadata for new file %s: %v", filePath, err)
+			logging.LogError(logging.KeyApp, "failed to save metadata for new file %s: %v", filePath, err)
 		} else {
-			logging.LogInfo("created metadata for new file: %s (editor: %s)", filePath, editor)
+			logging.LogInfo(logging.KeyApp, "created metadata for new file: %s (editor: %s)", filePath, editor)
 		}
 	} else {
 		// update links for existing files
 		normalizedPath := pathutils.ToWithPrefix(filePath)
 		if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
-			logging.LogWarning("failed to update links for file %s: %v", filePath, err)
+			logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 		}
 
 		// update orphaned media cache for affected media files
 		if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
-			logging.LogWarning("failed to update orphaned media cache: %v", err)
+			logging.LogWarning(logging.KeyApp, "failed to update orphaned media cache: %v", err)
 		}
 	}
 
@@ -428,13 +428,13 @@ func handleAPIToggleTodoState(w http.ResponseWriter, r *http.Request) {
 
 	updated, err := parser.CycleTodoStateAtLine(content, line)
 	if err != nil {
-		logging.LogError("failed to cycle todo state for %s at line %d: %v", filePath, line, err)
+		logging.LogError(logging.KeyApp, "failed to cycle todo state for %s at line %d: %v", filePath, line, err)
 		fail(http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update todo state"))
 		return
 	}
 
 	if err := contentStorage.WriteFile(fullPath, updated, 0644); err != nil {
-		logging.LogError("failed to write file %s: %v", fullPath, err)
+		logging.LogError(logging.KeyApp, "failed to write file %s: %v", fullPath, err)
 		fail(http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		return
 	}
@@ -472,7 +472,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 	// read file content
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
-		logging.LogError("failed to read file %s: %v", fullPath, err)
+		logging.LogError(logging.KeyApp, "failed to read file %s: %v", fullPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
 		return
 	}
@@ -488,7 +488,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 	w.Write([]byte(markdown))
 
-	logging.LogInfo("exported file to markdown: %s", filePath)
+	logging.LogInfo(logging.KeyApp, "exported file to markdown: %s", filePath)
 }
 
 // @Summary Export all files as zip
@@ -531,7 +531,7 @@ func handleAPIExportAllFiles(w http.ResponseWriter, r *http.Request) {
 		// read file content
 		content, err := os.ReadFile(path)
 		if err != nil {
-			logging.LogWarning("failed to read file %s: %v", path, err)
+			logging.LogWarning(logging.KeyApp, "failed to read file %s: %v", path, err)
 			return nil // skip this file but continue
 		}
 
@@ -550,7 +550,7 @@ func handleAPIExportAllFiles(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		logging.LogError("failed to create zip archive: %v", err)
+		logging.LogError(logging.KeyApp, "failed to create zip archive: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"), http.StatusInternalServerError)
 		return
 	}
@@ -558,7 +558,7 @@ func handleAPIExportAllFiles(w http.ResponseWriter, r *http.Request) {
 	// close zip writer
 	err = zipWriter.Close()
 	if err != nil {
-		logging.LogError("failed to close zip writer: %v", err)
+		logging.LogError(logging.KeyApp, "failed to close zip writer: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"), http.StatusInternalServerError)
 		return
 	}
@@ -571,7 +571,7 @@ func handleAPIExportAllFiles(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 	w.Write(buf.Bytes())
 
-	logging.LogInfo("exported all files as zip: %s", filename)
+	logging.LogInfo(logging.KeyApp, "exported all files as zip: %s", filename)
 }
 
 // @Summary Export all files with dokuwiki to markdown conversion
@@ -583,14 +583,13 @@ func handleAPIExportAllFiles(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "export failed"
 // @Router /api/files/export/markdown-converted [post]
 func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *http.Request) {
-	exportLog := logging.LogBuilder("dokuwiki_export")
 	dataPath := configmanager.GetAppConfig().DataPath
 
 	// create zip in memory
 	buf := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(buf)
 
-	exportLog.Printf("=== export started: %s ===", dataPath)
+	logging.LogInfo(logging.KeyDokuwikiExport, "export started: %s", dataPath)
 
 	// walk through data directory
 	err := filepath.Walk(dataPath, func(path string, info os.FileInfo, err error) error {
@@ -617,8 +616,7 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 		// read file content
 		content, err := os.ReadFile(path)
 		if err != nil {
-			logging.LogWarning("failed to read file %s: %v", path, err)
-			exportLog.Printf("skip (read error): %s — %v", relPath, err)
+			logging.LogWarning(logging.KeyDokuwikiExport, "skip (read error): %s — %v", relPath, err)
 			return nil // skip this file but continue
 		}
 
@@ -629,7 +627,7 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 			content = []byte(markdown)
 			oldRelPath := relPath
 			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + ".md"
-			exportLog.Printf("converted: %s -> %s", oldRelPath, relPath)
+			logging.LogDebug(logging.KeyDokuwikiExport, "converted: %s -> %s", oldRelPath, relPath)
 		}
 
 		// add file to zip
@@ -647,7 +645,7 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 	})
 
 	if err != nil {
-		logging.LogError("failed to create zip archive: %v", err)
+		logging.LogError(logging.KeyApp, "failed to create zip archive: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"), http.StatusInternalServerError)
 		return
 	}
@@ -655,7 +653,7 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 	// close zip writer
 	err = zipWriter.Close()
 	if err != nil {
-		logging.LogError("failed to close zip writer: %v", err)
+		logging.LogError(logging.KeyApp, "failed to close zip writer: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export files"), http.StatusInternalServerError)
 		return
 	}
@@ -668,7 +666,7 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 	w.Write(buf.Bytes())
 
-	logging.LogInfo("exported all files as zip with markdown conversion: %s", filename)
+	logging.LogInfo(logging.KeyApp, "exported all files as zip with markdown conversion: %s", filename)
 }
 
 // @Summary Browse files by single metadata field
@@ -687,7 +685,7 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logging.LogDebug("browse request: %s=%s", metadata, value)
+	logging.LogDebug(logging.KeyApp, "browse request: %s=%s", metadata, value)
 
 	// map URL-friendly field names to database field names
 	actualMetadata := mapping.URLToDatabase(metadata)
@@ -707,16 +705,16 @@ func handleAPIBrowseFiles(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	logging.LogDebug("browse criteria: metadata=%s (mapped to %s), operator=%s, value=%s", metadata, actualMetadata, operator, value)
+	logging.LogDebug(logging.KeyApp, "browse criteria: metadata=%s (mapped to %s), operator=%s, value=%s", metadata, actualMetadata, operator, value)
 
 	browsedFiles, err := filter.FilterFiles(criteria, "and")
 	if err != nil {
-		logging.LogError("failed to browse files: %v", err)
+		logging.LogError(logging.KeyApp, "failed to browse files: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to browse files"), http.StatusInternalServerError)
 		return
 	}
 
-	logging.LogDebug("browsed %d files for %s=%s", len(browsedFiles), metadata, value)
+	logging.LogDebug(logging.KeyApp, "browsed %d files for %s=%s", len(browsedFiles), metadata, value)
 
 	html := render.RenderBrowseFilesHTML(browsedFiles, r.URL.Query().Get("actions") == "true")
 	writeResponse(w, r, browsedFiles, html)
@@ -732,7 +730,7 @@ func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
 
 	html, err := render.RenderMetadataForm(filePath, "")
 	if err != nil {
-		logging.LogError("failed to generate metadata form: %v", err)
+		logging.LogError(logging.KeyApp, "failed to generate metadata form: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to generate metadata form"), http.StatusInternalServerError)
 		return
 	}
@@ -765,7 +763,7 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 
 	html, err := render.RenderMetadataForm(filePath, defaultFiletype)
 	if err != nil {
-		logging.LogError("failed to generate metadata form: %v", err)
+		logging.LogError(logging.KeyApp, "failed to generate metadata form: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to generate metadata form"), http.StatusInternalServerError)
 		return
 	}
@@ -806,7 +804,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	// use the new name as the new path (allows for directory moves)
 	newPath := filepath.Clean(newName)
 
-	logging.LogInfo("renaming file: %s -> %s", currentPath, newPath)
+	logging.LogInfo(logging.KeyApp, "renaming file: %s -> %s", currentPath, newPath)
 
 	// check if current file exists
 	currentFullPath := pathutils.ToDocsPath(currentPath)
@@ -825,25 +823,25 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 	// create directory for new path if needed
 	newDir := filepath.Dir(newFullPath)
 	if err := os.MkdirAll(newDir, 0755); err != nil {
-		logging.LogError("failed to create directory %s: %v", newDir, err)
+		logging.LogError(logging.KeyApp, "failed to create directory %s: %v", newDir, err)
 		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
 		return
 	}
 
 	// rename the file
 	if err := os.Rename(currentFullPath, newFullPath); err != nil {
-		logging.LogError("failed to rename file %s -> %s: %v", currentPath, newPath, err)
+		logging.LogError(logging.KeyApp, "failed to rename file %s -> %s: %v", currentPath, newPath, err)
 		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file"))
 		return
 	}
 
 	// update links in other files that reference this file
-	if err := files.UpdateLinksForMovedFile(currentPath, newPath); err != nil {
-		logging.LogWarning("failed to update links for renamed file %s -> %s: %v", currentPath, newPath, err)
+	if err := files.UpdateLinksForMovedFile(logging.KeyApp, currentPath, newPath); err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to update links for renamed file %s -> %s: %v", currentPath, newPath, err)
 		// don't fail the operation for this, just log a warning
 	}
 
-	logging.LogInfo("successfully renamed file: %s -> %s", currentPath, newPath)
+	logging.LogInfo(logging.KeyApp, "successfully renamed file: %s -> %s", currentPath, newPath)
 
 	// redirect to the new file location
 	w.Header().Set("HX-Redirect", pathutils.ToFileURL(newPath))
@@ -924,27 +922,27 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err := os.MkdirAll(filepath.Dir(newFullPath), 0755); err != nil {
-		logging.LogError("failed to create parent directory for %s: %v", newFullPath, err)
+		logging.LogError(logging.KeyApp, "failed to create parent directory for %s: %v", newFullPath, err)
 		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
 		return
 	}
 
 	if err := os.Rename(currentFullPath, newFullPath); err != nil {
-		logging.LogError("failed to move folder %s -> %s: %v", currentPath, newPath, err)
+		logging.LogError(logging.KeyApp, "failed to move folder %s -> %s: %v", currentPath, newPath, err)
 		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move folder"))
 		return
 	}
 
 	for _, f := range filesToUpdate {
-		if err := files.UpdateLinksForMovedFileNoRefresh(f.oldRel, f.newRel); err != nil {
-			logging.LogWarning("failed to update links for %s -> %s: %v", f.oldRel, f.newRel, err)
+		if err := files.UpdateLinksForMovedFileNoRefresh(logging.KeyApp, f.oldRel, f.newRel); err != nil {
+			logging.LogWarning(logging.KeyApp, "failed to update links for %s -> %s: %v", f.oldRel, f.newRel, err)
 		}
 	}
 	if len(filesToUpdate) > 0 {
 		files.RefreshCaches()
 	}
 
-	logging.LogInfo("successfully moved folder: %s -> %s (%d files updated)", currentPath, newPath, len(filesToUpdate))
+	logging.LogInfo(logging.KeyApp, "successfully moved folder: %s -> %s (%d files updated)", currentPath, newPath, len(filesToUpdate))
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "folder moved"))
 	writeResponse(w, r, map[string]string{"folderpath": newPath}, "")
 }
@@ -966,8 +964,8 @@ func cleanupDeletedFileMetadata(fullPath string) {
 // rebuild and a separate git commit per file.
 func cleanupDeletedFileMetadataNoRefresh(fullPath string) {
 	relPath := pathutils.ToRelative(fullPath)
-	if err := files.MetaDataDeleteNoRefresh(relPath); err != nil {
-		logging.LogWarning("failed to delete metadata for %s: %v", relPath, err)
+	if err := files.MetaDataDeleteNoRefresh(logging.KeyApp, relPath); err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to delete metadata for %s: %v", relPath, err)
 	}
 }
 
@@ -1007,7 +1005,7 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logging.LogInfo("deleting file: %s", filePath)
+	logging.LogInfo(logging.KeyApp, "deleting file: %s", filePath)
 
 	// check if file exists
 	fullPath := pathutils.ToDocsPath(filePath)
@@ -1018,12 +1016,12 @@ func handleAPIDeleteFile(w http.ResponseWriter, r *http.Request) {
 
 	// delete the file, its metadata, and commit the deletion to git
 	if err := removeFileAndMetadata(fullPath); err != nil {
-		logging.LogError("failed to delete file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to delete file %s: %v", filePath, err)
 		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete file"))
 		return
 	}
 
-	logging.LogInfo("successfully deleted file: %s", filePath)
+	logging.LogInfo(logging.KeyApp, "successfully deleted file: %s", filePath)
 
 	// redirect to browse or home page
 	w.Header().Set("HX-Redirect", "/browse")
@@ -1052,7 +1050,7 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logging.LogInfo("deleting folder: %s", folderPath)
+	logging.LogInfo(logging.KeyApp, "deleting folder: %s", folderPath)
 
 	// collect every file inside so we can clean up metadata and git afterwards,
 	// since os.RemoveAll below removes them before we get a chance to look
@@ -1066,7 +1064,7 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err := os.RemoveAll(fullPath); err != nil {
-		logging.LogError("failed to delete folder %s: %v", folderPath, err)
+		logging.LogError(logging.KeyApp, "failed to delete folder %s: %v", folderPath, err)
 		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete folder"))
 		return
 	}
@@ -1078,12 +1076,12 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 		files.RefreshCaches()
 		go func() {
 			if err := git.CommitDeletedFiles(filesInFolder); err != nil {
-				logging.LogError("failed to commit deleted folder %s: %v", folderPath, err)
+				logging.LogError(logging.KeyApp, "failed to commit deleted folder %s: %v", folderPath, err)
 			}
 		}()
 	}
 
-	logging.LogInfo("successfully deleted folder: %s (%d files)", folderPath, len(filesInFolder))
+	logging.LogInfo(logging.KeyApp, "successfully deleted folder: %s (%d files)", folderPath, len(filesInFolder))
 
 	w.Header().Set("HX-Redirect", "/browse")
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "folder deleted"))
@@ -1119,7 +1117,7 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 
 	allFiles, err := files.GetAllFiles()
 	if err != nil {
-		logging.LogError("failed to get all files: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get all files: %v", err)
 		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files")))
 		return
@@ -1159,7 +1157,7 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 
 		fullPath := pathutils.ToDocsPath(pathutils.ToRelative(file.Path))
 		if err := removeFileAndMetadataNoRefresh(fullPath); err != nil {
-			logging.LogWarning("failed to delete file %s: %v", fullPath, err)
+			logging.LogWarning(logging.KeyApp, "failed to delete file %s: %v", fullPath, err)
 			continue
 		}
 		deletedFullPaths = append(deletedFullPaths, fullPath)
@@ -1170,12 +1168,12 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 		files.RefreshCaches()
 		go func() {
 			if err := git.CommitDeletedFiles(deletedFullPaths); err != nil {
-				logging.LogError("failed to commit bulk deleted files (%s=%s): %v", groupType, value, err)
+				logging.LogError(logging.KeyApp, "failed to commit bulk deleted files (%s=%s): %v", groupType, value, err)
 			}
 		}()
 	}
 
-	logging.LogInfo("bulk deleted %d files from %s=%s", deleted, groupType, value)
+	logging.LogInfo(logging.KeyApp, "bulk deleted %d files from %s=%s", deleted, groupType, value)
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "deleted %d files", deleted))
 	w.Header().Set("HX-Redirect", "/browse/"+groupType)
 	writeResponse(w, r, map[string]int{"deleted": deleted}, "")

@@ -16,12 +16,11 @@ import (
 	"knov/internal/translation"
 )
 
-
 // jsEscapeString escapes a string for safe use in JavaScript
 func jsEscapeString(s string) string {
 	jsonBytes, err := json.Marshal(s)
 	if err != nil {
-		logging.LogError("failed to marshal string for javascript: %v", err)
+		logging.LogError(logging.KeyApp, "failed to marshal string for javascript: %v", err)
 		return `""`
 	}
 	return string(jsonBytes)
@@ -592,4 +591,3 @@ func RenderToastUISectionEditorForm(filePath, sectionID string) string {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
 		getToastUIEditorScript(content, ""))
 }
-

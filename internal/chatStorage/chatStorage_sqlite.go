@@ -36,10 +36,10 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 	}
 
 	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
-		logging.LogWarning("failed to set wal mode for chat: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to set wal mode for chat: %v", err)
 	}
 	if _, err := db.Exec("PRAGMA synchronous=NORMAL"); err != nil {
-		logging.LogWarning("failed to set synchronous mode for chat: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to set synchronous mode for chat: %v", err)
 	}
 
 	s := &sqliteStorage{db: db}
@@ -78,7 +78,7 @@ func (s *sqliteStorage) initialize() error {
 	if err := dbmigration.Migrate(s.db, version, steps); err != nil {
 		return fmt.Errorf("chat storage migration failed: %w", err)
 	}
-	logging.LogDebug("chat sqlite storage ready at version %d", version)
+	logging.LogDebug(logging.KeyApp, "chat sqlite storage ready at version %d", version)
 	return nil
 }
 
@@ -108,7 +108,7 @@ func (s *sqliteStorage) Add(content, filePath string) (*Message, error) {
 		return nil, fmt.Errorf("failed to insert message: %w", err)
 	}
 
-	logging.LogDebug("added chat message: %s", id)
+	logging.LogDebug(logging.KeyApp, "added chat message: %s", id)
 	return &Message{ID: id, Content: content, CreatedAt: now, UpdatedAt: now, FilePath: filePath}, nil
 }
 
@@ -120,7 +120,7 @@ func (s *sqliteStorage) Delete(id string) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete message: %w", err)
 	}
-	logging.LogDebug("deleted chat message: %s", id)
+	logging.LogDebug(logging.KeyApp, "deleted chat message: %s", id)
 	return nil
 }
 
@@ -210,7 +210,7 @@ func (s *sqliteStorage) MoveFilePath(oldPath, newPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to move messages: %w", err)
 	}
-	logging.LogDebug("moved chat messages from %s to %s", oldPath, newPath)
+	logging.LogDebug(logging.KeyApp, "moved chat messages from %s to %s", oldPath, newPath)
 	return nil
 }
 
@@ -222,6 +222,6 @@ func (s *sqliteStorage) DeleteByFilePath(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete messages for file: %w", err)
 	}
-	logging.LogDebug("deleted chat messages for %s", filePath)
+	logging.LogDebug(logging.KeyApp, "deleted chat messages for %s", filePath)
 	return nil
 }

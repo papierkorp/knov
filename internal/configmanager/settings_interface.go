@@ -75,9 +75,9 @@ func intPtr(n int) *int { return &n }
 // ── BoolSetting ───────────────────────────────────────────────────────────────
 
 type BoolSetting struct {
-	key     string
-	Default bool
-	val     atomic.Pointer[bool]
+	key      string
+	Default  bool
+	val      atomic.Pointer[bool]
 	Section  SettingSection
 	Group    SettingGroup
 	Label    string
@@ -165,7 +165,7 @@ func (s *IntSetting) setFromJSON(v interface{}) {
 		return
 	}
 	if err := s.validate(n); err != nil {
-		logging.LogWarning("setting %q: ignoring stored value %d: %v", s.key, n, err)
+		logging.LogWarning(logging.KeyApp, "setting %q: ignoring stored value %d: %v", s.key, n, err)
 		return
 	}
 	s.val.Store(&n)
@@ -235,7 +235,7 @@ func (s *StringSetting) setFromJSON(v interface{}) {
 		return
 	}
 	if err := s.validate(str); err != nil {
-		logging.LogWarning("setting %q: ignoring stored value %q: %v", s.key, str, err)
+		logging.LogWarning(logging.KeyApp, "setting %q: ignoring stored value %q: %v", s.key, str, err)
 		return
 	}
 	s.val.Store(&str)
@@ -263,9 +263,9 @@ func (s *StringSetting) Type() string {
 // ── StringSliceSetting ────────────────────────────────────────────────────────
 
 type StringSliceSetting struct {
-	key     string
-	Default []string
-	val     atomic.Pointer[[]string]
+	key      string
+	Default  []string
+	val      atomic.Pointer[[]string]
 	Section  SettingSection
 	Group    SettingGroup
 	Label    string

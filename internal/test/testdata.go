@@ -48,7 +48,7 @@ func SetupTestData() error {
 		return fmt.Errorf("failed to simulate file changes: %w", err)
 	}
 
-	logging.LogInfo("test data setup completed")
+	logging.LogInfo(logging.KeyApp, "test data setup completed")
 	return nil
 }
 
@@ -61,16 +61,16 @@ func CleanTestData() error {
 
 	deleteTestFilter()
 
-	logging.LogInfo("test data cleaned")
+	logging.LogInfo(logging.KeyApp, "test data cleaned")
 	return nil
 }
 
 func setupTestMetadata() error {
-	logging.LogInfo("creating test metadata")
+	logging.LogInfo(logging.KeyApp, "creating test metadata")
 
 	for _, meta := range getCopiedFilesMetadata() {
 		if err := files.MetaDataSave(meta); err != nil {
-			logging.LogError("failed to save metadata for %s: %v", meta.Path, err)
+			logging.LogError(logging.KeyApp, "failed to save metadata for %s: %v", meta.Path, err)
 		}
 	}
 
@@ -80,7 +80,7 @@ func setupTestMetadata() error {
 
 	createTestFilter()
 
-	return files.MetaDataLinksRebuild()
+	return files.MetaDataLinksRebuild(logging.KeyApp)
 }
 
 func createTestFilter() {
@@ -95,13 +95,13 @@ func createTestFilter() {
 		Limit: 50,
 	}
 	if err := filter.SaveFilterConfig(cfg, "test/example_filter"); err != nil {
-		logging.LogError("failed to create test filter: %v", err)
+		logging.LogError(logging.KeyApp, "failed to create test filter: %v", err)
 	}
 }
 
 func deleteTestFilter() {
 	if err := filter.DeleteFilterConfig("test/example_filter"); err != nil {
-		logging.LogError("failed to delete test filter: %v", err)
+		logging.LogError(logging.KeyApp, "failed to delete test filter: %v", err)
 	}
 }
 
@@ -138,7 +138,7 @@ func commitGitChanges(commitMessage string) error {
 	}
 
 	if _, err = worktree.Add("."); err != nil {
-		logging.LogError("failed to stage files for commit %q: %v", commitMessage, err)
+		logging.LogError(logging.KeyApp, "failed to stage files for commit %q: %v", commitMessage, err)
 	}
 
 	if _, err = worktree.Commit(commitMessage, &git.CommitOptions{
@@ -149,7 +149,7 @@ func commitGitChanges(commitMessage string) error {
 		},
 		AllowEmptyCommits: true,
 	}); err != nil {
-		logging.LogError("failed to commit %q: %v", commitMessage, err)
+		logging.LogError(logging.KeyApp, "failed to commit %q: %v", commitMessage, err)
 	}
 
 	return nil

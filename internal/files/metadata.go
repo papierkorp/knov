@@ -21,12 +21,12 @@ import (
 type EditorType string
 
 const (
-	EditorTypeToastUI  EditorType = "toastui-editor"
-	EditorTypeTextarea EditorType = "textarea-editor"
-	EditorTypeFilter   EditorType = "filter-editor"
-	EditorTypeList     EditorType = "list-editor"
-	EditorTypeTodo     EditorType = "todo-editor"
-	EditorTypeIndex    EditorType = "index-editor"
+	EditorTypeToastUI    EditorType = "toastui-editor"
+	EditorTypeTextarea   EditorType = "textarea-editor"
+	EditorTypeFilter     EditorType = "filter-editor"
+	EditorTypeList       EditorType = "list-editor"
+	EditorTypeTodo       EditorType = "todo-editor"
+	EditorTypeIndex      EditorType = "index-editor"
 	EditorTypeCodeMirror EditorType = "codemirror-editor"
 )
 
@@ -148,7 +148,7 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 	// get file size
 	fileInfo, err := os.Stat(fullPath)
 	if err != nil {
-		logging.LogWarning("failed to get file size for %s: %v", fullPath, err)
+		logging.LogWarning(logging.KeyApp, "failed to get file size for %s: %v", fullPath, err)
 	} else {
 		newMetadata.Size = fileInfo.Size()
 	}
@@ -181,7 +181,7 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		oldKanbanStatus := kanbanStatusFromTags(currentMetadata.Tags)
 		cleaned, err := sanitizeKanbanTags(newMetadata.Tags)
 		if err != nil {
-			logging.LogWarning("tag sanitization for %s: %v", filePath, err)
+			logging.LogWarning(logging.KeyApp, "tag sanitization for %s: %v", filePath, err)
 		}
 		currentMetadata.Tags = cleaned
 		applyKanbanTimestamps(currentMetadata, oldKanbanStatus)
@@ -395,16 +395,16 @@ func metaDataSave(m *Metadata) (bool, error) {
 
 	data, err := json.Marshal(finalMetadata)
 	if err != nil {
-		logging.LogError("failed to marshal metadata: %v", err)
+		logging.LogError(logging.KeyApp, "failed to marshal metadata: %v", err)
 		return false, err
 	}
 
 	if err := metadataStorage.Set(finalMetadata.Path, data); err != nil {
-		logging.LogError("failed to save metadata for %s: %v", finalMetadata.Path, err)
+		logging.LogError(logging.KeyApp, "failed to save metadata for %s: %v", finalMetadata.Path, err)
 		return false, err
 	}
 
-	logging.LogDebug("metadata saved for: %s", finalMetadata.Path)
+	logging.LogDebug(logging.KeyApp, "metadata saved for: %s", finalMetadata.Path)
 	return true, nil
 }
 
@@ -412,16 +412,16 @@ func metaDataSave(m *Metadata) (bool, error) {
 func MetaDataSaveRaw(m *Metadata) error {
 	data, err := json.Marshal(m)
 	if err != nil {
-		logging.LogError("failed to marshal metadata: %v", err)
+		logging.LogError(logging.KeyApp, "failed to marshal metadata: %v", err)
 		return err
 	}
 
 	if err := metadataStorage.Set(m.Path, data); err != nil {
-		logging.LogError("failed to save metadata for %s: %v", m.Path, err)
+		logging.LogError(logging.KeyApp, "failed to save metadata for %s: %v", m.Path, err)
 		return err
 	}
 
-	logging.LogDebug("raw metadata saved for: %s", m.Path)
+	logging.LogDebug(logging.KeyApp, "raw metadata saved for: %s", m.Path)
 	return nil
 }
 
@@ -433,7 +433,7 @@ func MetaDataGet(filepath string) (*Metadata, error) {
 	// normalize path for metadata lookup - add docs/ prefix if not present and not media
 	normalizedPath := pathutils.ToWithPrefix(filepath)
 
-	logging.LogDebug("MetaDataGet: filepath='%s' -> normalizedPath='%s'", filepath, normalizedPath)
+	logging.LogDebug(logging.KeyApp, "MetaDataGet: filepath='%s' -> normalizedPath='%s'", filepath, normalizedPath)
 
 	data, err := metadataStorage.Get(normalizedPath)
 	if err != nil {
@@ -454,7 +454,7 @@ func MetaDataGet(filepath string) (*Metadata, error) {
 
 // MetaDataInitializeAll initializes metadata for all files without metadata
 func MetaDataInitializeAll() error {
-	logging.LogInfo("initializing metadata for all files")
+	logging.LogInfo(logging.KeyApp, "initializing metadata for all files")
 
 	allFiles, err := GetAllPhysicalFiles()
 	if err != nil {
@@ -466,7 +466,7 @@ func MetaDataInitializeAll() error {
 
 		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil {
-			logging.LogWarning("error checking metadata for %s: %v", normalizedPath, err)
+			logging.LogWarning(logging.KeyApp, "error checking metadata for %s: %v", normalizedPath, err)
 			continue
 		}
 
@@ -476,23 +476,23 @@ func MetaDataInitializeAll() error {
 
 		newMetadata := &Metadata{Path: normalizedPath}
 		if err := MetaDataSave(newMetadata); err != nil {
-			logging.LogWarning("failed to initialize metadata for %s: %v", normalizedPath, err)
+			logging.LogWarning(logging.KeyApp, "failed to initialize metadata for %s: %v", normalizedPath, err)
 		} else {
-			logging.LogInfo("initialized metadata for %s", normalizedPath)
+			logging.LogInfo(logging.KeyApp, "initialized metadata for %s", normalizedPath)
 		}
 	}
 
 	// also initialize metadata for media files (e.g. imported from dokuwiki directly on disk)
 	allMediaFiles, err := GetAllMediaFiles()
 	if err != nil {
-		logging.LogWarning("failed to get media files for initialization: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to get media files for initialization: %v", err)
 	} else {
 		for _, file := range allMediaFiles {
 			normalizedPath := pathutils.ToWithPrefix(file.Path)
 
 			metadata, err := MetaDataGet(normalizedPath)
 			if err != nil {
-				logging.LogWarning("error checking metadata for %s: %v", normalizedPath, err)
+				logging.LogWarning(logging.KeyApp, "error checking metadata for %s: %v", normalizedPath, err)
 				continue
 			}
 
@@ -502,14 +502,14 @@ func MetaDataInitializeAll() error {
 
 			newMetadata := &Metadata{Path: normalizedPath}
 			if err := MetaDataSaveRaw(newMetadata); err != nil {
-				logging.LogWarning("failed to initialize metadata for %s: %v", normalizedPath, err)
+				logging.LogWarning(logging.KeyApp, "failed to initialize metadata for %s: %v", normalizedPath, err)
 			} else {
-				logging.LogInfo("initialized metadata for media file %s", normalizedPath)
+				logging.LogInfo(logging.KeyApp, "initialized metadata for media file %s", normalizedPath)
 			}
 		}
 	}
 
-	logging.LogInfo("metadata initialization completed")
+	logging.LogInfo(logging.KeyApp, "metadata initialization completed")
 	return nil
 }
 
@@ -518,7 +518,7 @@ func MetaDataInitializeAll() error {
 // in the loop and RefreshCaches() once afterwards instead - otherwise each
 // deletion kicks off its own full background cache rebuild.
 func MetaDataDelete(filepath string) error {
-	if err := MetaDataDeleteNoRefresh(filepath); err != nil {
+	if err := MetaDataDeleteNoRefresh(logging.KeyApp, filepath); err != nil {
 		return err
 	}
 	RefreshCaches()
@@ -528,10 +528,10 @@ func MetaDataDelete(filepath string) error {
 // MetaDataDeleteNoRefresh removes metadata for a file path without refreshing
 // the aggregate caches (tags/collections/folders/editors/file list). See
 // MetaDataDelete.
-func MetaDataDeleteNoRefresh(filepath string) error {
+func MetaDataDeleteNoRefresh(key logging.Key, filepath string) error {
 	normalized := pathutils.ToWithPrefix(filepath)
 	if err := chat.DeleteForFile(normalized); err != nil {
-		logging.LogWarning("failed to delete chat messages for %s: %v", normalized, err)
+		logging.LogWarning(key, "failed to delete chat messages for %s: %v", normalized, err)
 	}
 	// remove from the live full-text search index too - otherwise a deleted
 	// file's content stays searchable forever, since IndexAllFiles only ever
@@ -542,7 +542,7 @@ func MetaDataDeleteNoRefresh(filepath string) error {
 	// reindex (see search.IndexAllFiles), so deleted files drop out of it
 	// within one reindex cycle without needing per-delete wiring here.
 	if err := searchStorage.DeleteIndexedContent(pathutils.ToRelative(filepath)); err != nil {
-		logging.LogWarning("failed to remove %s from search index: %v", normalized, err)
+		logging.LogWarning(key, "failed to remove %s from search index: %v", normalized, err)
 	}
 	return metadataStorage.Delete(normalized)
 }
@@ -558,7 +558,7 @@ func MetaDataExportAll() ([]*Metadata, error) {
 	for _, file := range allFiles {
 		metadata, err := MetaDataGet(file.Path)
 		if err != nil {
-			logging.LogWarning("failed to get metadata for %s: %v", file.Path, err)
+			logging.LogWarning(logging.KeyApp, "failed to get metadata for %s: %v", file.Path, err)
 			continue
 		}
 		if metadata != nil {
@@ -572,7 +572,7 @@ func MetaDataExportAll() ([]*Metadata, error) {
 // ValidateMediaMimeType checks if a MIME type is allowed for media uploads
 func ValidateMediaMimeType(mimeType string) bool {
 	if mimeType == "" {
-		logging.LogWarning("empty mime type provided for validation")
+		logging.LogWarning(logging.KeyApp, "empty mime type provided for validation")
 		return false
 	}
 
@@ -581,19 +581,19 @@ func ValidateMediaMimeType(mimeType string) bool {
 
 	// if no allowed types configured, deny by default for security
 	if len(allowedTypes) == 0 {
-		logging.LogWarning("no allowed mime types configured, denying upload")
+		logging.LogWarning(logging.KeyApp, "no allowed mime types configured, denying upload")
 		return false
 	}
 
 	// normalize MIME type using utils function
 	mimeType = utils.Normalize(mimeType)
-	logging.LogDebug("validating mime type: %s against allowed types: %v", mimeType, allowedTypes)
+	logging.LogDebug(logging.KeyApp, "validating mime type: %s against allowed types: %v", mimeType, allowedTypes)
 
 	// check exact matches first
 	for _, allowedType := range allowedTypes {
 		allowedType = utils.Normalize(allowedType)
 		if allowedType == mimeType {
-			logging.LogDebug("mime type %s allowed (exact match)", mimeType)
+			logging.LogDebug(logging.KeyApp, "mime type %s allowed (exact match)", mimeType)
 			return true
 		}
 
@@ -601,12 +601,12 @@ func ValidateMediaMimeType(mimeType string) bool {
 		if strings.HasSuffix(allowedType, "/*") {
 			category := strings.TrimSuffix(allowedType, "/*")
 			if strings.HasPrefix(mimeType, category+"/") {
-				logging.LogDebug("mime type %s allowed (wildcard match: %s)", mimeType, allowedType)
+				logging.LogDebug(logging.KeyApp, "mime type %s allowed (wildcard match: %s)", mimeType, allowedType)
 				return true
 			}
 		}
 	}
 
-	logging.LogWarning("mime type %s not allowed, blocked upload", mimeType)
+	logging.LogWarning(logging.KeyApp, "mime type %s not allowed, blocked upload", mimeType)
 	return false
 }

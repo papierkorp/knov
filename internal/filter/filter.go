@@ -227,7 +227,7 @@ func matchesOperator(metadataValue, operator, criteriaValue string) bool {
 	case "regex":
 		matched, err := regexp.MatchString(criteriaValue, metadataValue)
 		if err != nil {
-			logging.LogWarning("invalid regex pattern: %s", criteriaValue)
+			logging.LogWarning(logging.KeyApp, "invalid regex pattern: %s", criteriaValue)
 			return false
 		}
 		return matched
@@ -363,10 +363,10 @@ func GenerateFilterIndex(filterID string, config *Config) error {
 		Editor: files.EditorTypeFilter,
 	}
 	if err := files.MetaDataSave(metadata); err != nil {
-		logging.LogWarning("failed to save metadata for filter index %s: %v", indexPath, err)
+		logging.LogWarning(logging.KeyApp, "failed to save metadata for filter index %s: %v", indexPath, err)
 	}
 
-	logging.LogInfo("generated filter index: %s (%d files)", indexPath, len(result.Files))
+	logging.LogInfo(logging.KeyApp, "generated filter index: %s (%d files)", indexPath, len(result.Files))
 	return nil
 }
 
@@ -387,10 +387,10 @@ func SaveFilterConfig(config *Config, filterID string) error {
 
 	// generate the paired index file immediately
 	if err := GenerateFilterIndex(filterID, config); err != nil {
-		logging.LogWarning("failed to generate filter index for %s: %v", filterID, err)
+		logging.LogWarning(logging.KeyApp, "failed to generate filter index for %s: %v", filterID, err)
 	}
 
-	logging.LogInfo("saved filter: %s", filterID)
+	logging.LogInfo(logging.KeyApp, "saved filter: %s", filterID)
 	return nil
 }
 
@@ -415,20 +415,20 @@ func GetFilterConfig(filterID string) (*Config, error) {
 func RegenerateAllIndexes() {
 	ids, err := GetAllFilters()
 	if err != nil {
-		logging.LogError("failed to list filters for index regeneration: %v", err)
+		logging.LogError(logging.KeyApp, "failed to list filters for index regeneration: %v", err)
 		return
 	}
 	for _, id := range ids {
 		config, err := GetFilterConfig(id)
 		if err != nil || config == nil {
-			logging.LogWarning("failed to load filter config %s: %v", id, err)
+			logging.LogWarning(logging.KeyApp, "failed to load filter config %s: %v", id, err)
 			continue
 		}
 		if err := GenerateFilterIndex(id, config); err != nil {
-			logging.LogWarning("failed to regenerate filter index %s: %v", id, err)
+			logging.LogWarning(logging.KeyApp, "failed to regenerate filter index %s: %v", id, err)
 		}
 	}
-	logging.LogDebug("filter indexes regenerated (%d filters)", len(ids))
+	logging.LogDebug(logging.KeyApp, "filter indexes regenerated (%d filters)", len(ids))
 }
 
 func GetAllFilters() ([]string, error) {
@@ -449,10 +449,10 @@ func DeleteFilterConfig(filterID string) error {
 	indexPath := FilterIndexPath(filterID)
 	fullPath := pathutils.ToDocsPath(indexPath)
 	if err := contentStorage.DeleteFile(fullPath); err != nil {
-		logging.LogWarning("failed to delete filter index file %s: %v", fullPath, err)
+		logging.LogWarning(logging.KeyApp, "failed to delete filter index file %s: %v", fullPath, err)
 	}
 	if err := files.MetaDataDelete(pathutils.ToWithPrefix(indexPath)); err != nil {
-		logging.LogWarning("failed to delete filter index metadata %s: %v", indexPath, err)
+		logging.LogWarning(logging.KeyApp, "failed to delete filter index metadata %s: %v", indexPath, err)
 	}
 
 	return configStorage.Delete(filterKey(filterID))
@@ -599,6 +599,6 @@ func ParseFilterConfigFromForm(r *http.Request, widgetIndex int) *Config {
 		})
 	}
 
-	logging.LogDebug("parsed %d filter criteria", len(criteria))
+	logging.LogDebug(logging.KeyApp, "parsed %d filter criteria", len(criteria))
 	return &Config{Criteria: criteria, Logic: logic, Display: display, Limit: limit}
 }

@@ -35,7 +35,7 @@ var autoTestFiles = []string{
 
 // createTestStructure creates the auto-generated folder structure and files
 func createTestStructure() error {
-	logging.LogInfo("creating test structure")
+	logging.LogInfo(logging.KeyApp, "creating test structure")
 
 	docsPath := contentStorage.GetDocsPath()
 
@@ -86,7 +86,7 @@ func setAutoTestFileContent() error {
 }
 
 func simulateFileChange() error {
-	logging.LogInfo("simulating file changes for version history")
+	logging.LogInfo(logging.KeyApp, "simulating file changes for version history")
 
 	changedFiles := []string{
 		"test/testA/testA.md",
@@ -119,7 +119,7 @@ func simulateFileChange() error {
 	}
 
 	if err := commitGitChanges("update test files with additional content"); err != nil {
-		logging.LogWarning("failed to commit test file changes: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to commit test file changes: %v", err)
 	}
 
 	return nil
@@ -176,7 +176,7 @@ func createAutoMetadata() error {
 		}
 
 		if err := files.MetaDataSave(metadata); err != nil {
-			logging.LogError("failed to save test metadata for %s: %v", file, err)
+			logging.LogError(logging.KeyApp, "failed to save test metadata for %s: %v", file, err)
 		}
 	}
 

@@ -22,6 +22,6 @@ func GetRelatedFiles(filePath string, limit int) ([]string, error) {
 		result = result[:limit]
 	}
 
-	logging.LogDebug("found %d related files for %s", len(result), filePath)
+	logging.LogDebug(logging.KeyApp, "found %d related files for %s", len(result), filePath)
 	return result, nil
 }

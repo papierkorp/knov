@@ -129,7 +129,7 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 
 	oldStatus, err := kanban.MoveCard(boardFolder, filePath, newStatus)
 	if err != nil {
-		logging.LogError("failed to move kanban card %s to %s: %v", filePath, newStatus, err)
+		logging.LogError(logging.KeyApp, "failed to move kanban card %s to %s: %v", filePath, newStatus, err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"))
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"), http.StatusInternalServerError)
 		return
@@ -179,13 +179,13 @@ func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
 
 	stored, err := kanban.GetOrder(board.FolderPath)
 	if err != nil {
-		logging.LogError("kanban: load order failed for %s: %v", board.FolderPath, err)
+		logging.LogError(logging.KeyApp, "kanban: load order failed for %s: %v", board.FolderPath, err)
 		stored = kanban.Order{}
 	}
 	stored[status] = paths
 
 	if err := kanban.SaveOrder(board.FolderPath, stored); err != nil {
-		logging.LogError("kanban: save order failed for %s: %v", board.FolderPath, err)
+		logging.LogError(logging.KeyApp, "kanban: save order failed for %s: %v", board.FolderPath, err)
 		http.Error(w, "failed to save order", http.StatusInternalServerError)
 		return
 	}
@@ -289,7 +289,7 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 
 	events, err := kanban.GetEvents(board.FolderPath, filePath, from, to, limit)
 	if err != nil {
-		logging.LogError("failed to get kanban events for %s: %v", board.FolderPath, err)
+		logging.LogError(logging.KeyApp, "failed to get kanban events for %s: %v", board.FolderPath, err)
 		http.Error(w, "failed to get events", http.StatusInternalServerError)
 		return
 	}
@@ -312,7 +312,7 @@ func handleAPIGetKanbanFiles(w http.ResponseWriter, r *http.Request) {
 
 	paths, err := kanban.FilesForFolder(board.FolderPath)
 	if err != nil {
-		logging.LogError("failed to get kanban files for %s: %v", board.FolderPath, err)
+		logging.LogError(logging.KeyApp, "failed to get kanban files for %s: %v", board.FolderPath, err)
 		http.Error(w, "failed to get files", http.StatusInternalServerError)
 		return
 	}

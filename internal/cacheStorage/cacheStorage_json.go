@@ -40,11 +40,11 @@ func (js *jsonStorage) Get(key string) ([]byte, error) {
 		if os.IsNotExist(err) {
 			return nil, nil
 		}
-		logging.LogError("failed to read cache file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to read cache file %s: %v", filePath, err)
 		return nil, err
 	}
 
-	logging.LogDebug("retrieved cache data for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "retrieved cache data for key: %s", key)
 	return data, nil
 }
 
@@ -57,16 +57,16 @@ func (js *jsonStorage) Set(key string, data []byte) error {
 	dir := filepath.Dir(filePath)
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		logging.LogError("failed to create cache directory %s: %v", dir, err)
+		logging.LogError(logging.KeyApp, "failed to create cache directory %s: %v", dir, err)
 		return err
 	}
 
 	if err := os.WriteFile(filePath, data, 0644); err != nil {
-		logging.LogError("failed to write cache file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to write cache file %s: %v", filePath, err)
 		return err
 	}
 
-	logging.LogDebug("stored cache data for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "stored cache data for key: %s", key)
 	return nil
 }
 
@@ -81,11 +81,11 @@ func (js *jsonStorage) Delete(key string) error {
 		if os.IsNotExist(err) {
 			return nil
 		}
-		logging.LogError("failed to delete cache file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to delete cache file %s: %v", filePath, err)
 		return err
 	}
 
-	logging.LogDebug("deleted cache data for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "deleted cache data for key: %s", key)
 	return nil
 }
 
@@ -116,7 +116,7 @@ func (js *jsonStorage) List(prefix string) ([]string, error) {
 	})
 
 	if err != nil {
-		logging.LogError("failed to list cache keys with prefix %s: %v", prefix, err)
+		logging.LogError(logging.KeyApp, "failed to list cache keys with prefix %s: %v", prefix, err)
 		return nil, err
 	}
 
@@ -164,10 +164,10 @@ func (js *jsonStorage) Flush() error {
 		return os.Remove(path)
 	})
 	if err != nil {
-		logging.LogError("failed to flush cache: %v", err)
+		logging.LogError(logging.KeyApp, "failed to flush cache: %v", err)
 		return err
 	}
 
-	logging.LogInfo("cache flushed")
+	logging.LogInfo(logging.KeyApp, "cache flushed")
 	return nil
 }

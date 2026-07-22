@@ -36,7 +36,7 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 	// fix permissions on existing database file if it exists
 	if _, err := os.Stat(dbPath); err == nil {
 		if err := os.Chmod(dbPath, 0644); err != nil {
-			logging.LogWarning("failed to fix cache database permissions: %v", err)
+			logging.LogWarning(logging.KeyApp, "failed to fix cache database permissions: %v", err)
 		}
 	}
 
@@ -48,10 +48,10 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 
 	// set pragmas for better performance and safety
 	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
-		logging.LogWarning("failed to set WAL mode for cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to set WAL mode for cache: %v", err)
 	}
 	if _, err := db.Exec("PRAGMA synchronous=NORMAL"); err != nil {
-		logging.LogWarning("failed to set synchronous mode for cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to set synchronous mode for cache: %v", err)
 	}
 
 	storage := &sqliteStorage{
@@ -90,7 +90,7 @@ func (ss *sqliteStorage) initialize() error {
 	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
 		return fmt.Errorf("cache storage migration failed: %w", err)
 	}
-	logging.LogDebug("cache sqlite storage ready at version %d", version)
+	logging.LogDebug(logging.KeyApp, "cache sqlite storage ready at version %d", version)
 	return nil
 }
 
@@ -118,11 +118,11 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 
 	_, err := ss.db.Exec("INSERT OR REPLACE INTO cache (key, value) VALUES (?, ?)", key, data)
 	if err != nil {
-		logging.LogError("failed to set cache key %s: %v", key, err)
+		logging.LogError(logging.KeyApp, "failed to set cache key %s: %v", key, err)
 		return err
 	}
 
-	logging.LogDebug("stored cache data for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "stored cache data for key: %s", key)
 	return nil
 }
 
@@ -133,11 +133,11 @@ func (ss *sqliteStorage) Delete(key string) error {
 
 	_, err := ss.db.Exec("DELETE FROM cache WHERE key = ?", key)
 	if err != nil {
-		logging.LogError("failed to delete cache key %s: %v", key, err)
+		logging.LogError(logging.KeyApp, "failed to delete cache key %s: %v", key, err)
 		return err
 	}
 
-	logging.LogDebug("deleted cache key: %s", key)
+	logging.LogDebug(logging.KeyApp, "deleted cache key: %s", key)
 	return nil
 }
 
@@ -186,10 +186,10 @@ func (ss *sqliteStorage) Flush() error {
 
 	_, err := ss.db.Exec("DELETE FROM cache")
 	if err != nil {
-		logging.LogError("failed to flush cache: %v", err)
+		logging.LogError(logging.KeyApp, "failed to flush cache: %v", err)
 		return err
 	}
 
-	logging.LogInfo("cache flushed")
+	logging.LogInfo(logging.KeyApp, "cache flushed")
 	return nil
 }

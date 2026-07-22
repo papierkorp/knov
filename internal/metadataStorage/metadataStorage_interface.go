@@ -38,7 +38,7 @@ func readMarker() string {
 // writeMarker persists the active backend name to configStorage.
 func writeMarker(provider string) {
 	if err := configStorage.Set(markerKey, []byte(provider)); err != nil {
-		logging.LogWarning("metadata migration: failed to write backend marker: %v", err)
+		logging.LogWarning(logging.KeyApp, "metadata migration: failed to write backend marker: %v", err)
 	}
 }
 
@@ -67,43 +67,37 @@ func checkMetadataMigration(provider string) (bool, string) {
 }
 
 // migrate copies all entries from src to dst, then calls src.Cleanup().
-// Every step is logged to logs/metadata-migration.log via LogBuilder.
+// Every step is logged to logs/metadata-migration.log.
 func migrate(src, dst MetadataStorage) error {
-	log := logging.LogBuilder("metadata-migration")
-
 	all, err := src.GetAll()
 	if err != nil {
 		return fmt.Errorf("failed to read source storage: %w", err)
 	}
 
-	log.Printf("starting migration: %s -> %s (%d entries)", src.GetBackendType(), dst.GetBackendType(), len(all))
-	logging.LogInfo("metadata migration: %s -> %s (%d entries)", src.GetBackendType(), dst.GetBackendType(), len(all))
+	logging.LogInfo(logging.KeyMetaMigration, "starting migration: %s -> %s (%d entries)", src.GetBackendType(), dst.GetBackendType(), len(all))
 
 	var written, failed int
 	for key, data := range all {
 		if err := dst.Set(key, data); err != nil {
-			log.Printf("error writing %s: %v", key, err)
-			logging.LogWarning("metadata migration: failed to write key %s: %v", key, err)
+			logging.LogWarning(logging.KeyMetaMigration, "error writing %s: %v", key, err)
 			failed++
 		} else {
-			log.Printf("migrated %s", key)
+			logging.LogDebug(logging.KeyMetaMigration, "migrated %s", key)
 			written++
 		}
 	}
 
 	if failed > 0 {
-		log.Printf("migration had %d write errors — skipping cleanup to preserve source data", failed)
+		logging.LogWarning(logging.KeyMetaMigration, "migration had %d write errors — skipping cleanup to preserve source data", failed)
 		return fmt.Errorf("migration completed with %d write errors (see logs/metadata-migration.log)", failed)
 	}
 
-	log.Printf("cleaning up old backend (%s)", src.GetBackendType())
+	logging.LogInfo(logging.KeyMetaMigration, "cleaning up old backend (%s)", src.GetBackendType())
 	if err := src.Cleanup(); err != nil {
-		log.Printf("cleanup error: %v", err)
-		logging.LogWarning("metadata migration: cleanup of old backend failed: %v", err)
+		logging.LogWarning(logging.KeyMetaMigration, "cleanup of old backend failed: %v", err)
 	}
 
-	log.Printf("migration complete: %d entries migrated", written)
-	logging.LogInfo("metadata migration: complete — %d entries migrated", written)
+	logging.LogInfo(logging.KeyMetaMigration, "migration complete: %d entries migrated", written)
 	return nil
 }
 
@@ -113,18 +107,18 @@ func Init(provider, storagePath string) error {
 	switch provider {
 	case "json", "yaml", "sqlite":
 	default:
-		logging.LogWarning("unknown metadata storage provider '%s', using json", provider)
+		logging.LogWarning(logging.KeyApp, "unknown metadata storage provider '%s', using json", provider)
 		provider = "json"
 	}
 
 	needsMigration, previous := checkMetadataMigration(provider)
 
 	if needsMigration {
-		logging.LogInfo("metadata storage provider changed: %s -> %s, running migration", previous, provider)
+		logging.LogInfo(logging.KeyApp, "metadata storage provider changed: %s -> %s, running migration", previous, provider)
 
 		oldBackend, err := newBackend(previous, storagePath)
 		if err != nil {
-			logging.LogWarning("metadata migration: could not open old backend %s: %v", previous, err)
+			logging.LogWarning(logging.KeyApp, "metadata migration: could not open old backend %s: %v", previous, err)
 		} else {
 			newB, err := newBackend(provider, storagePath)
 			if err != nil {
@@ -135,7 +129,7 @@ func Init(provider, storagePath string) error {
 			}
 			storage = newB
 			writeMarker(provider)
-			logging.LogInfo("metadata storage initialized after migration: %s", provider)
+			logging.LogInfo(logging.KeyApp, "metadata storage initialized after migration: %s", provider)
 			return nil
 		}
 	}
@@ -147,7 +141,7 @@ func Init(provider, storagePath string) error {
 	}
 
 	writeMarker(provider)
-	logging.LogInfo("metadata storage initialized: %s", provider)
+	logging.LogInfo(logging.KeyApp, "metadata storage initialized: %s", provider)
 	return nil
 }
 

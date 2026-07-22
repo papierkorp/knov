@@ -40,10 +40,10 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 
 	// set pragmas for better performance and safety
 	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
-		logging.LogWarning("failed to set wal mode: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to set wal mode: %v", err)
 	}
 	if _, err := db.Exec("PRAGMA synchronous=NORMAL"); err != nil {
-		logging.LogWarning("failed to set synchronous mode: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to set synchronous mode: %v", err)
 	}
 
 	storage := &sqliteStorage{
@@ -72,7 +72,7 @@ func (ss *sqliteStorage) initialize() error {
 	if err := dbmigration.Migrate(ss.db, version, steps); err != nil {
 		return fmt.Errorf("metadata storage migration failed: %w", err)
 	}
-	logging.LogDebug("metadata sqlite storage ready at version %d", version)
+	logging.LogDebug(logging.KeyApp, "metadata sqlite storage ready at version %d", version)
 	return nil
 }
 
@@ -198,7 +198,7 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 		return nil, nil
 	}
 	if err != nil {
-		logging.LogError("failed to get metadata for key %s: %v", key, err)
+		logging.LogError(logging.KeyApp, "failed to get metadata for key %s: %v", key, err)
 		return nil, err
 	}
 
@@ -289,11 +289,11 @@ func (ss *sqliteStorage) Get(key string) ([]byte, error) {
 
 	data, err := json.Marshal(result)
 	if err != nil {
-		logging.LogError("failed to marshal metadata for key %s: %v", key, err)
+		logging.LogError(logging.KeyApp, "failed to marshal metadata for key %s: %v", key, err)
 		return nil, err
 	}
 
-	logging.LogDebug("retrieved metadata for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "retrieved metadata for key: %s", key)
 	return data, nil
 }
 
@@ -308,7 +308,7 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 
 	var metadata map[string]interface{}
 	if err := json.Unmarshal(data, &metadata); err != nil {
-		logging.LogError("failed to unmarshal metadata for key %s: %v", key, err)
+		logging.LogError(logging.KeyApp, "failed to unmarshal metadata for key %s: %v", key, err)
 		return fmt.Errorf("failed to unmarshal metadata: %w", err)
 	}
 
@@ -393,11 +393,11 @@ func (ss *sqliteStorage) Set(key string, data []byte) error {
 	)
 
 	if err != nil {
-		logging.LogError("failed to store metadata for key %s: %v", key, err)
+		logging.LogError(logging.KeyApp, "failed to store metadata for key %s: %v", key, err)
 		return err
 	}
 
-	logging.LogDebug("stored metadata for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "stored metadata for key: %s", key)
 	return nil
 }
 
@@ -408,11 +408,11 @@ func (ss *sqliteStorage) Delete(key string) error {
 
 	_, err := ss.db.Exec("DELETE FROM metadata WHERE path = ?", key)
 	if err != nil {
-		logging.LogError("failed to delete metadata for key %s: %v", key, err)
+		logging.LogError(logging.KeyApp, "failed to delete metadata for key %s: %v", key, err)
 		return err
 	}
 
-	logging.LogDebug("deleted metadata for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "deleted metadata for key: %s", key)
 	return nil
 }
 
@@ -425,7 +425,7 @@ func (ss *sqliteStorage) GetAll() (map[string][]byte, error) {
 
 	rows, err := ss.db.Query("SELECT path FROM metadata")
 	if err != nil {
-		logging.LogError("failed to get all metadata paths: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get all metadata paths: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -433,13 +433,13 @@ func (ss *sqliteStorage) GetAll() (map[string][]byte, error) {
 	for rows.Next() {
 		var path string
 		if err := rows.Scan(&path); err != nil {
-			logging.LogWarning("failed to scan path: %v", err)
+			logging.LogWarning(logging.KeyApp, "failed to scan path: %v", err)
 			continue
 		}
 
 		data, err := ss.Get(path)
 		if err != nil {
-			logging.LogWarning("failed to get metadata for %s: %v", path, err)
+			logging.LogWarning(logging.KeyApp, "failed to get metadata for %s: %v", path, err)
 			continue
 		}
 		if data != nil {
@@ -448,11 +448,11 @@ func (ss *sqliteStorage) GetAll() (map[string][]byte, error) {
 	}
 
 	if err := rows.Err(); err != nil {
-		logging.LogError("error iterating metadata rows: %v", err)
+		logging.LogError(logging.KeyApp, "error iterating metadata rows: %v", err)
 		return nil, err
 	}
 
-	logging.LogDebug("retrieved %d metadata entries", len(result))
+	logging.LogDebug(logging.KeyApp, "retrieved %d metadata entries", len(result))
 	return result, nil
 }
 
@@ -477,17 +477,17 @@ func (ss *sqliteStorage) Cleanup() error {
 	defer ss.mutex.Unlock()
 
 	if err := ss.db.Close(); err != nil {
-		logging.LogWarning("sqlite metadata cleanup: failed to close db: %v", err)
+		logging.LogWarning(logging.KeyApp, "sqlite metadata cleanup: failed to close db: %v", err)
 	}
 
 	dbPath := filepath.Join(ss.basePath, "metadata.db")
 	for _, f := range []string{dbPath, dbPath + "-wal", dbPath + "-shm"} {
 		if err := os.Remove(f); err != nil && !os.IsNotExist(err) {
-			logging.LogError("sqlite metadata cleanup: failed to remove %s: %v", f, err)
+			logging.LogError(logging.KeyApp, "sqlite metadata cleanup: failed to remove %s: %v", f, err)
 			return err
 		}
 	}
 
-	logging.LogInfo("sqlite metadata cleanup: removed db at %s", ss.basePath)
+	logging.LogInfo(logging.KeyApp, "sqlite metadata cleanup: removed db at %s", ss.basePath)
 	return nil
 }

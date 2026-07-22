@@ -63,7 +63,7 @@ func handleAPICleanTestData(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/filtertest [post]
 func handleAPIFilterTest(w http.ResponseWriter, r *http.Request) {
-	logging.LogDebug("filter test request received")
+	logging.LogDebug(logging.KeyApp, "filter test request received")
 
 	results, err := job.RunFilterTest()
 	if err != nil {
@@ -71,7 +71,7 @@ func handleAPIFilterTest(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		logging.LogError("failed to run filter tests: %v", err)
+		logging.LogError(logging.KeyApp, "failed to run filter tests: %v", err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		http.Error(w, err.Error(), status)
 		return
@@ -89,7 +89,7 @@ func handleAPIFilterTest(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/filtertest/testdata [get]
 func handleAPIFilterTestMetadata(w http.ResponseWriter, r *http.Request) {
-	logging.LogDebug("filter test metadata table request received")
+	logging.LogDebug(logging.KeyApp, "filter test metadata table request received")
 
 	metadataList := filtertest.GetFilterTestMetadata()
 	if metadataList == nil {
@@ -110,7 +110,7 @@ func handleAPIFilterTestMetadata(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/editorstest [post]
 func handleAPIEditorsTest(w http.ResponseWriter, r *http.Request) {
-	logging.LogDebug("editors test request received")
+	logging.LogDebug(logging.KeyApp, "editors test request received")
 
 	results, err := job.RunEditorsTest()
 	if err != nil {
@@ -118,7 +118,7 @@ func handleAPIEditorsTest(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		logging.LogError("failed to run editors tests: %v", err)
+		logging.LogError(logging.KeyApp, "failed to run editors tests: %v", err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		http.Error(w, err.Error(), status)
 		return
@@ -136,7 +136,7 @@ func handleAPIEditorsTest(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/searchtest [post]
 func handleAPISearchTest(w http.ResponseWriter, r *http.Request) {
-	logging.LogDebug("search test request received")
+	logging.LogDebug(logging.KeyApp, "search test request received")
 
 	results, err := job.RunSearchTest()
 	if err != nil {
@@ -144,7 +144,7 @@ func handleAPISearchTest(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		logging.LogError("failed to run search tests: %v", err)
+		logging.LogError(logging.KeyApp, "failed to run search tests: %v", err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		http.Error(w, err.Error(), status)
 		return
@@ -162,7 +162,7 @@ func handleAPISearchTest(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/githistorytest [post]
 func handleAPIGitHistoryTest(w http.ResponseWriter, r *http.Request) {
-	logging.LogDebug("git history test request received")
+	logging.LogDebug(logging.KeyApp, "git history test request received")
 
 	results, err := job.RunGitHistoryTest()
 	if err != nil {
@@ -170,7 +170,7 @@ func handleAPIGitHistoryTest(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		logging.LogError("failed to run git history tests: %v", err)
+		logging.LogError(logging.KeyApp, "failed to run git history tests: %v", err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		http.Error(w, err.Error(), status)
 		return
@@ -188,7 +188,7 @@ func handleAPIGitHistoryTest(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/chattest [post]
 func handleAPIChatTest(w http.ResponseWriter, r *http.Request) {
-	logging.LogDebug("chat test request received")
+	logging.LogDebug(logging.KeyApp, "chat test request received")
 
 	results, err := job.RunChatTest()
 	if err != nil {
@@ -196,7 +196,7 @@ func handleAPIChatTest(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		logging.LogError("failed to run chat tests: %v", err)
+		logging.LogError(logging.KeyApp, "failed to run chat tests: %v", err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		http.Error(w, err.Error(), status)
 		return
@@ -214,7 +214,7 @@ func handleAPIChatTest(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/dashboardtest [post]
 func handleAPIDashboardTest(w http.ResponseWriter, r *http.Request) {
-	logging.LogDebug("dashboard test request received")
+	logging.LogDebug(logging.KeyApp, "dashboard test request received")
 
 	results, err := job.RunDashboardTest()
 	if err != nil {
@@ -222,7 +222,7 @@ func handleAPIDashboardTest(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		logging.LogError("failed to run dashboard tests: %v", err)
+		logging.LogError(logging.KeyApp, "failed to run dashboard tests: %v", err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		http.Error(w, err.Error(), status)
 		return
@@ -240,7 +240,7 @@ func handleAPIDashboardTest(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/kanbantest [post]
 func handleAPIKanbanTest(w http.ResponseWriter, r *http.Request) {
-	logging.LogDebug("kanban test request received")
+	logging.LogDebug(logging.KeyApp, "kanban test request received")
 
 	results, err := job.RunKanbanTest()
 	if err != nil {
@@ -248,7 +248,7 @@ func handleAPIKanbanTest(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		logging.LogError("failed to run kanban tests: %v", err)
+		logging.LogError(logging.KeyApp, "failed to run kanban tests: %v", err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		http.Error(w, err.Error(), status)
 		return
@@ -266,7 +266,7 @@ func handleAPIKanbanTest(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} string "Internal server error"
 // @Router /api/testdata/run-all [post]
 func handleAPIRunAllTests(w http.ResponseWriter, r *http.Request) {
-	logging.LogDebug("run all tests request received")
+	logging.LogDebug(logging.KeyApp, "run all tests request received")
 
 	results, err := job.RunAllTests()
 	if err != nil {
@@ -274,7 +274,7 @@ func handleAPIRunAllTests(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
 		}
-		logging.LogError("failed to run all tests: %v", err)
+		logging.LogError(logging.KeyApp, "failed to run all tests: %v", err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		http.Error(w, err.Error(), status)
 		return

@@ -17,10 +17,10 @@ import (
 // InitSearch initializes search by indexing all files
 func InitSearch() error {
 	engineType := configmanager.GetSearchEngine()
-	logging.LogInfo("initializing search engine: %s", engineType)
+	logging.LogInfo(logging.KeyApp, "initializing search engine: %s", engineType)
 
 	if engineType == "grep" {
-		logging.LogInfo("grep search engine initialized (no indexing needed)")
+		logging.LogInfo(logging.KeyApp, "grep search engine initialized (no indexing needed)")
 		return nil
 	}
 
@@ -42,7 +42,7 @@ func IndexAllFiles() error {
 		return fmt.Errorf("failed to get all files: %w", err)
 	}
 
-	logging.LogInfo("checking %d files for search indexing", len(allFiles))
+	logging.LogInfo(logging.KeySearchReindex, "checking %d files for search indexing", len(allFiles))
 
 	newTrigram := newTrigramIndex()
 	indexed, skipped := 0, 0
@@ -51,7 +51,7 @@ func IndexAllFiles() error {
 
 		info, err := os.Stat(fullPath)
 		if err != nil {
-			logging.LogWarning("failed to stat file %s for indexing: %v", file.Path, err)
+			logging.LogWarning(logging.KeySearchReindex, "failed to stat file %s for indexing: %v", file.Path, err)
 			continue
 		}
 
@@ -60,7 +60,7 @@ func IndexAllFiles() error {
 		if indexedAt, err := searchStorage.GetIndexedAt(file.Path); err == nil && !indexedAt.IsZero() && !info.ModTime().After(indexedAt) {
 			content, err := searchStorage.GetIndexedContent(file.Path)
 			if err != nil || content == nil {
-				logging.LogWarning("failed to get indexed content for trigram rebuild of %s: %v", file.Path, err)
+				logging.LogWarning(logging.KeySearchReindex, "failed to get indexed content for trigram rebuild of %s: %v", file.Path, err)
 				continue
 			}
 			newTrigram.add(file.Path, content)
@@ -70,12 +70,12 @@ func IndexAllFiles() error {
 
 		content, err := os.ReadFile(fullPath)
 		if err != nil {
-			logging.LogWarning("failed to read file %s for indexing: %v", file.Path, err)
+			logging.LogWarning(logging.KeySearchReindex, "failed to read file %s for indexing: %v", file.Path, err)
 			continue
 		}
 
 		if err := searchStorage.IndexFile(file.Path, content); err != nil {
-			logging.LogWarning("failed to index file %s: %v", file.Path, err)
+			logging.LogWarning(logging.KeySearchReindex, "failed to index file %s: %v", file.Path, err)
 			continue
 		}
 
@@ -84,7 +84,7 @@ func IndexAllFiles() error {
 	}
 	replaceTrigramIndex(newTrigram)
 
-	logging.LogInfo("search indexing complete: %d indexed, %d skipped (up to date)", indexed, skipped)
+	logging.LogInfo(logging.KeySearchReindex, "search indexing complete: %d indexed, %d skipped (up to date)", indexed, skipped)
 	return nil
 }
 
@@ -167,7 +167,7 @@ func SearchFiles(query string, limit int) ([]files.File, error) {
 }
 
 func searchFilesRepository(query string, limit int, allFiles []files.File) ([]files.File, error) {
-	logging.LogDebug("searching for: %s (limit: %d)", query, limit)
+	logging.LogDebug(logging.KeyApp, "searching for: %s (limit: %d)", query, limit)
 
 	// use much higher FTS limit to ensure we get all relevant files before deduplication
 	// FTS can return multiple matches per file, so we need a higher limit to find all unique files
@@ -178,7 +178,7 @@ func searchFilesRepository(query string, limit int, allFiles []files.File) ([]fi
 
 	searchResults, err := searchStorage.SearchContent(query, ftsLimit)
 	if err != nil {
-		logging.LogWarning("fts search failed, falling back to manual search: %v", err)
+		logging.LogWarning(logging.KeyApp, "fts search failed, falling back to manual search: %v", err)
 		return searchFilesRepositoryFallback(query, limit, allFiles)
 	}
 
@@ -200,11 +200,11 @@ func searchFilesRepository(query string, limit int, allFiles []files.File) ([]fi
 	}
 
 	if len(results) == 0 {
-		logging.LogDebug("fts returned no results for '%s', trying trigram fallback", query)
+		logging.LogDebug(logging.KeyApp, "fts returned no results for '%s', trying trigram fallback", query)
 		return searchFilesTrigram(query, limit, allFiles)
 	}
 
-	logging.LogDebug("found %d results for query: %s", len(results), query)
+	logging.LogDebug(logging.KeyApp, "found %d results for query: %s", len(results), query)
 	return results, nil
 }
 
@@ -240,7 +240,7 @@ func searchFilesRepositoryFallback(query string, limit int, allFiles []files.Fil
 }
 
 func searchFilesGrep(query string, limit int, allFiles []files.File) ([]files.File, error) {
-	logging.LogDebug("using grep search for: %s (limit: %d)", query, limit)
+	logging.LogDebug(logging.KeyApp, "using grep search for: %s (limit: %d)", query, limit)
 
 	queryLower := strings.ToLower(query)
 	var results []files.File
@@ -267,7 +267,7 @@ func searchFilesGrep(query string, limit int, allFiles []files.File) ([]files.Fi
 		}
 	}
 
-	logging.LogDebug("found %d results for query: %s", len(results), query)
+	logging.LogDebug(logging.KeyApp, "found %d results for query: %s", len(results), query)
 	return results, nil
 }
 

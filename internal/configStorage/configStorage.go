@@ -28,7 +28,7 @@ func Init(provider, storagePath string) error {
 	case "json":
 		storage, err = newJSONStorage(storagePath)
 	default:
-		logging.LogWarning("unknown config storage provider '%s', using json", provider)
+		logging.LogWarning(logging.KeyApp, "unknown config storage provider '%s', using json", provider)
 		storage, err = newJSONStorage(storagePath)
 	}
 
@@ -36,7 +36,7 @@ func Init(provider, storagePath string) error {
 		return fmt.Errorf("failed to initialize config storage: %w", err)
 	}
 
-	logging.LogInfo("config storage initialized: %s", provider)
+	logging.LogInfo(logging.KeyApp, "config storage initialized: %s", provider)
 	return nil
 }
 

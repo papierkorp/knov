@@ -29,7 +29,7 @@ var storage KanbanStorage
 func Init(enabled bool, provider, storagePath string) error {
 	if !enabled {
 		storage = &noopStorage{}
-		logging.LogInfo("kanban storage disabled")
+		logging.LogInfo(logging.KeyApp, "kanban storage disabled")
 		return nil
 	}
 	switch provider {
@@ -39,14 +39,14 @@ func Init(enabled bool, provider, storagePath string) error {
 			return err
 		}
 		storage = s
-		logging.LogInfo("kanban storage initialized: sqlite")
+		logging.LogInfo(logging.KeyApp, "kanban storage initialized: sqlite")
 	default:
 		s, err := newSQLiteStorage(storagePath)
 		if err != nil {
 			return err
 		}
 		storage = s
-		logging.LogInfo("kanban storage initialized: sqlite (unknown provider %q, using sqlite)", provider)
+		logging.LogInfo(logging.KeyApp, "kanban storage initialized: sqlite (unknown provider %q, using sqlite)", provider)
 	}
 	return nil
 }

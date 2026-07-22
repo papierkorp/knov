@@ -42,7 +42,7 @@ var (
 // Returns ErrAlreadyRunning if the job is already active, or the job's own error.
 func execute(mu *sync.Mutex, job Job) error {
 	if !mu.TryLock() {
-		logging.LogDebug("%s job already running, skipping", job.Name())
+		logging.LogDebug(logging.KeyApp, "%s job already running, skipping", job.Name())
 		return fmt.Errorf("%s: %w", job.Name(), ErrAlreadyRunning)
 	}
 	slot := recordStart(job.Name())
@@ -76,7 +76,7 @@ func Start() {
 	fileIntervalStr := configmanager.GetAppConfig().CronjobInterval
 	parsedFileInterval, err := time.ParseDuration(fileIntervalStr)
 	if err != nil {
-		logging.LogWarning("invalid cronjob interval '%s', using default 5m", fileIntervalStr)
+		logging.LogWarning(logging.KeyApp, "invalid cronjob interval '%s', using default 5m", fileIntervalStr)
 		parsedFileInterval = 5 * time.Minute
 	}
 	fileInterval = parsedFileInterval
@@ -84,7 +84,7 @@ func Start() {
 	searchIntervalStr := configmanager.GetAppConfig().SearchIndexInterval
 	parsedSearchInterval, err := time.ParseDuration(searchIntervalStr)
 	if err != nil {
-		logging.LogWarning("invalid search index interval '%s', using default 15m", searchIntervalStr)
+		logging.LogWarning(logging.KeyApp, "invalid search index interval '%s', using default 15m", searchIntervalStr)
 		parsedSearchInterval = 15 * time.Minute
 	}
 	searchInterval = parsedSearchInterval
@@ -92,7 +92,7 @@ func Start() {
 	metadataRebuildIntervalStr := configmanager.GetAppConfig().MetadataRebuildInterval
 	parsedMetadataRebuildInterval, err := time.ParseDuration(metadataRebuildIntervalStr)
 	if err != nil {
-		logging.LogWarning("invalid metadata rebuild interval '%s', using default 30m", metadataRebuildIntervalStr)
+		logging.LogWarning(logging.KeyApp, "invalid metadata rebuild interval '%s', using default 30m", metadataRebuildIntervalStr)
 		parsedMetadataRebuildInterval = 30 * time.Minute
 	}
 	metadataRebuildInterval = parsedMetadataRebuildInterval
@@ -106,7 +106,7 @@ func Start() {
 			case <-ticker.C:
 				RunFileSync()
 			case <-stopChan:
-				logging.LogInfo("file cronjob stopped")
+				logging.LogInfo(logging.KeyApp, "file cronjob stopped")
 				return
 			}
 		}
@@ -121,7 +121,7 @@ func Start() {
 			case <-ticker.C:
 				RunSearchReindex()
 			case <-stopChan:
-				logging.LogInfo("search cronjob stopped")
+				logging.LogInfo(logging.KeyApp, "search cronjob stopped")
 				return
 			}
 		}
@@ -135,13 +135,13 @@ func Start() {
 			case <-ticker.C:
 				RunMetadataRebuild()
 			case <-stopChan:
-				logging.LogInfo("metadata rebuild cronjob stopped")
+				logging.LogInfo(logging.KeyApp, "metadata rebuild cronjob stopped")
 				return
 			}
 		}
 	}()
 
-	logging.LogInfo("cronjob scheduler started (file: %v, search: %v, metadata rebuild: %v)", fileInterval, searchInterval, metadataRebuildInterval)
+	logging.LogInfo(logging.KeyApp, "cronjob scheduler started (file: %v, search: %v, metadata rebuild: %v)", fileInterval, searchInterval, metadataRebuildInterval)
 }
 
 // Stop stops the cronjob scheduler.
@@ -292,15 +292,12 @@ func RunAsync() error {
 	}
 	go func() {
 		defer runMu.Unlock()
-		log := logging.LogBuilder("manual_cronjob")
-		log.Println("manual run started")
-		logging.LogInfo("manually triggering all jobs")
+		logging.LogInfo(logging.KeyManualCronjob, "manual run started")
 		RunFileSync() // includes filter-reindex as a sub-step
 		RunSearchReindex()
 		RunMetadataRebuild()
 		RunNotificationPurge()
-		logging.LogInfo("manual job execution completed")
-		log.Println("manual run completed")
+		logging.LogInfo(logging.KeyManualCronjob, "manual run completed")
 	}()
 	return nil
 }

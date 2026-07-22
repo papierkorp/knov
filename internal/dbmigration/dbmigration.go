@@ -72,11 +72,9 @@ func Migrate(db *sql.DB, target int, migrations []Migration) error {
 
 // runStep executes one migration and its version bump atomically.
 func runStep(db *sql.DB, from, to int, step func(*sql.Tx) error) error {
-	migrationLog := logging.LogBuilder("database-migration")
 	name := dbName(db)
 
-	logging.LogInfo("%s: db migration %d→%d", name, from, to)
-	migrationLog.Printf("%s: migration %d→%d starting", name, from, to)
+	logging.LogInfo(logging.KeyDBMigration, "%s: migration %d→%d starting", name, from, to)
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -85,7 +83,7 @@ func runStep(db *sql.DB, from, to int, step func(*sql.Tx) error) error {
 
 	if err := step(tx); err != nil {
 		tx.Rollback()
-		migrationLog.Printf("%s: migration %d→%d failed: %v", name, from, to, err)
+		logging.LogError(logging.KeyDBMigration, "%s: migration %d→%d failed: %v", name, from, to, err)
 		return fmt.Errorf("migration %d→%d failed: %w", from, to, err)
 	}
 
@@ -98,8 +96,7 @@ func runStep(db *sql.DB, from, to int, step func(*sql.Tx) error) error {
 		return fmt.Errorf("failed to commit migration %d→%d: %w", from, to, err)
 	}
 
-	logging.LogInfo("%s: db migration %d→%d done", name, from, to)
-	migrationLog.Printf("%s: migration %d→%d completed successfully", name, from, to)
+	logging.LogInfo(logging.KeyDBMigration, "%s: migration %d→%d completed successfully", name, from, to)
 	return nil
 }
 

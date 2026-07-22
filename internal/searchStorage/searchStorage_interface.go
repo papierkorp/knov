@@ -38,7 +38,7 @@ func Init(provider, storagePath string) error {
 	case "sqlite":
 		storage, err = newSQLiteStorage(storagePath)
 	default:
-		logging.LogWarning("unknown search storage provider '%s', using sqlite", provider)
+		logging.LogWarning(logging.KeyApp, "unknown search storage provider '%s', using sqlite", provider)
 		storage, err = newSQLiteStorage(storagePath)
 	}
 
@@ -46,7 +46,7 @@ func Init(provider, storagePath string) error {
 		return fmt.Errorf("failed to initialize search storage: %w", err)
 	}
 
-	logging.LogInfo("search storage initialized: %s", provider)
+	logging.LogInfo(logging.KeyApp, "search storage initialized: %s", provider)
 	return nil
 }
 

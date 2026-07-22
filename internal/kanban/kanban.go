@@ -76,7 +76,7 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 
 	result, err := filter.FilterFilesWithConfig(cfg)
 	if err != nil {
-		logging.LogError("kanban: filter failed for folder %s: %v", folderPath, err)
+		logging.LogError(logging.KeyApp, "kanban: filter failed for folder %s: %v", folderPath, err)
 		result = &filter.Result{}
 	}
 
@@ -258,9 +258,9 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus string, err er
 		}
 	}
 	if err := kanbanStorage.LogEvent(filePath, eventFolder, oldStatus, newStatus); err != nil {
-		logging.LogWarning("kanban: failed to log event for %s: %v", filePath, err)
+		logging.LogWarning(logging.KeyApp, "kanban: failed to log event for %s: %v", filePath, err)
 	}
-	logging.LogInfo("kanban: moved card %s to status %s", filePath, newStatus)
+	logging.LogInfo(logging.KeyApp, "kanban: moved card %s to status %s", filePath, newStatus)
 	return oldStatus, nil
 }
 

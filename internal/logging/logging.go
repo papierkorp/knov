@@ -3,7 +3,6 @@ package logging
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -14,6 +13,42 @@ import (
 	"sync"
 	"time"
 )
+
+// ── keys ───────────────────────────────────────────────────────────────────────
+
+// Key identifies a log destination. KeyApp is the general app.log; every
+// other key gets its own rotating file under the logs directory, and never
+// duplicates into app.log.
+type Key string
+
+const (
+	KeyApp             Key = "" // general/default -> app.log
+	KeyFileSync        Key = "file-sync"
+	KeySearchReindex   Key = "search-reindex"
+	KeyMetadataRebuild Key = "metadata-rebuild"
+	KeyGitRemote       Key = "git-remote"
+	KeyDokuwikiExport  Key = "dokuwiki_export"
+	KeyRepairLinks     Key = "repair-broken-links"
+	KeyDBMigration     Key = "database-migration"
+	KeyMetaMigration   Key = "metadata-migration"
+	KeyFilterDebug     Key = "filter-debug"
+	KeyManualCronjob   Key = "manual_cronjob"
+)
+
+// AvailableKeys lists every valid log destination, e.g. for an admin log-viewer dropdown.
+var AvailableKeys = []Key{
+	KeyApp, KeyFileSync, KeySearchReindex, KeyMetadataRebuild, KeyGitRemote,
+	KeyDokuwikiExport, KeyRepairLinks, KeyDBMigration, KeyMetaMigration,
+	KeyFilterDebug, KeyManualCronjob,
+}
+
+// String returns the key's display/file name ("app" for the default key).
+func (k Key) String() string {
+	if k == KeyApp {
+		return "app"
+	}
+	return string(k)
+}
 
 // ── level filtering ───────────────────────────────────────────────────────────
 
@@ -87,25 +122,32 @@ var (
 	fileWriterMux sync.Mutex
 )
 
-// Init sets up the rotating file logger. Call once at startup.
-func Init() {
-	if os.Getenv("KNOV_LOG_FILE_ENABLED") == "false" {
-		return
-	}
-
-	maxMB := 10
+// resolveRotationLimits reads the shared size/file-count rotation config used
+// by every rotating log file (app.log and each per-key log).
+func resolveRotationLimits() (maxMB, maxFiles int) {
+	maxMB = 10
 	if v := os.Getenv("KNOV_LOG_MAX_SIZE_MB"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
 			maxMB = n
 		}
 	}
 
-	maxFiles := 5
+	maxFiles = 5
 	if v := os.Getenv("KNOV_LOG_MAX_FILES"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
 			maxFiles = n
 		}
 	}
+	return maxMB, maxFiles
+}
+
+// Init sets up the rotating file logger. Call once at startup.
+func Init() {
+	if os.Getenv("KNOV_LOG_FILE_ENABLED") == "false" {
+		return
+	}
+
+	maxMB, maxFiles := resolveRotationLimits()
 
 	logsDir := resolveLogsDir()
 	if err := os.MkdirAll(logsDir, 0755); err != nil {
@@ -124,7 +166,7 @@ func Init() {
 	fileWriter = rw
 	fileWriterMux.Unlock()
 
-	fmt.Fprintf(rw, "\n════════════════════════════════════════\n session started %s\n════════════════════════════════════════\n\n", time.Now().Format("2006-01-02 15:04:05"))
+	fmt.Fprintf(rw, "\n════════════════════════════════════════\n session started %s\n════════════════════════════════════════\n\n", formatLogTime(time.Now()))
 
 	log.Printf("logging: file logging enabled, writing to %s (max %dMB, %d files)", logPath, maxMB, maxFiles)
 }
@@ -137,6 +179,77 @@ func writeToFile(line string) {
 		return
 	}
 	fmt.Fprintln(fw, line)
+}
+
+// ── per-key rotating logs ─────────────────────────────────────────────────────
+
+var (
+	keyWritersMu sync.Mutex
+	keyWriters   = make(map[Key]*rotatingWriter)
+)
+
+// getKeyWriter returns (creating and caching if needed) the rotating writer
+// for a non-default key, writing to logs/<key>.log.
+func getKeyWriter(key Key) *rotatingWriter {
+	keyWritersMu.Lock()
+	defer keyWritersMu.Unlock()
+
+	if rw, ok := keyWriters[key]; ok {
+		return rw
+	}
+
+	logsDir := resolveLogsDir()
+	if err := os.MkdirAll(logsDir, 0755); err != nil {
+		log.Printf("logging: failed to create logs directory %s: %v", logsDir, err)
+		return nil
+	}
+
+	logFile := filepath.Join(logsDir, key.String()+".log")
+	maxMB, maxFiles := resolveRotationLimits()
+	rw, err := newRotatingWriter(logFile, maxMB, maxFiles)
+	if err != nil {
+		log.Printf("logging: failed to create log file %s: %v", logFile, err)
+		return nil
+	}
+
+	// write session separator so restarts are immediately visible in the file
+	fmt.Fprintf(rw, "\n=== session started %s ===\n", formatLogTime(time.Now()))
+	keyWriters[key] = rw
+	return rw
+}
+
+// writeKeyed appends a pre-formatted line to key's destination (app.log for
+// KeyApp, its own rotating file otherwise).
+func writeKeyed(key Key, line string) {
+	if key == KeyApp {
+		writeToFile(line)
+		return
+	}
+	rw := getKeyWriter(key)
+	if rw == nil {
+		return
+	}
+	fmt.Fprintln(rw, line)
+}
+
+// MarkSessionStart writes a "=== session started ===" separator to key's log
+// file, so admins can see each logical run (e.g. one cronjob execution)
+// collapsed into its own section in the log viewer.
+func MarkSessionStart(key Key) {
+	sep := fmt.Sprintf("\n=== session started %s ===\n", formatLogTime(time.Now()))
+	if key == KeyApp {
+		fileWriterMux.Lock()
+		fw := fileWriter
+		fileWriterMux.Unlock()
+		if fw == nil {
+			return
+		}
+		fmt.Fprint(fw, sep)
+		return
+	}
+	if rw := getKeyWriter(key); rw != nil {
+		fmt.Fprint(rw, sep)
+	}
 }
 
 // ── log functions ─────────────────────────────────────────────────────────────
@@ -164,111 +277,77 @@ func formatLogTime(t time.Time) string {
 	return t.Format("2006-01-02 15:04:05")
 }
 
-func logLine(level, caller, format string, args ...any) string {
+func logLine(key Key, level, caller, format string, args ...any) string {
 	msg := fmt.Sprintf(format, args...)
-	return fmt.Sprintf("%s %s [%s]: %s", formatLogTime(time.Now()), level, caller, msg)
+	if key == KeyApp {
+		return fmt.Sprintf("%s %s [%s]: %s", formatLogTime(time.Now()), level, caller, msg)
+	}
+	return fmt.Sprintf("%s %s [%s] [%s]: %s", formatLogTime(time.Now()), level, key, caller, msg)
 }
 
-// LogDebug logs debug messages
-func LogDebug(format string, args ...any) {
+// consolePrintf writes directly to stdout rather than through the standard
+// "log" package, so it isn't re-captured by the stdlib interceptor
+// (InitInterceptor) and duplicated back into app.log - LogDebug/Info/Warning/
+// Error already record their own ring buffer entry and file line directly.
+func consolePrintf(key Key, level, caller, msg string) {
+	ts := formatLogTime(time.Now())
+	if key == KeyApp {
+		fmt.Fprintf(os.Stdout, "%s %s [%s]: %s\n", ts, level, caller, msg)
+		return
+	}
+	fmt.Fprintf(os.Stdout, "%s %s [%s] [%s]: %s\n", ts, level, key, caller, msg)
+}
+
+// LogDebug logs a debug message under key.
+func LogDebug(key Key, format string, args ...any) {
 	caller := getCaller()
 	msg := fmt.Sprintf(format, args...)
 	if shouldLog("debug") {
-		log.Printf("debug [%s]: %s", caller, msg)
+		consolePrintf(key, "debug", caller, msg)
 	}
 	if shouldLogToFile("debug") {
-		writeToFile(logLine("debug", caller, format, args...))
+		writeKeyed(key, logLine(key, "debug", caller, format, args...))
 	}
-	addToRing(LogEntry{Time: time.Now(), Level: "debug", Caller: caller, Message: msg})
+	addToRing(LogEntry{Time: time.Now(), Level: "debug", Key: key, Caller: caller, Message: msg})
 }
 
-// LogInfo logs info messages
-func LogInfo(format string, args ...any) {
+// LogInfo logs an info message under key.
+func LogInfo(key Key, format string, args ...any) {
 	caller := getCaller()
 	msg := fmt.Sprintf(format, args...)
 	if shouldLog("info") {
-		log.Printf("info [%s]: %s", caller, msg)
+		consolePrintf(key, "info", caller, msg)
 	}
 	if shouldLogToFile("info") {
-		writeToFile(logLine("info", caller, format, args...))
+		writeKeyed(key, logLine(key, "info", caller, format, args...))
 	}
-	addToRing(LogEntry{Time: time.Now(), Level: "info", Caller: caller, Message: msg})
+	addToRing(LogEntry{Time: time.Now(), Level: "info", Key: key, Caller: caller, Message: msg})
 }
 
-// LogWarning logs warning messages
-func LogWarning(format string, args ...any) {
+// LogWarning logs a warning message under key.
+func LogWarning(key Key, format string, args ...any) {
 	caller := getCaller()
 	msg := fmt.Sprintf(format, args...)
 	if shouldLog("warning") {
-		log.Printf("warning [%s]: %s", caller, msg)
+		consolePrintf(key, "warning", caller, msg)
 	}
 	if shouldLogToFile("warning") {
-		writeToFile(logLine("warning", caller, format, args...))
+		writeKeyed(key, logLine(key, "warning", caller, format, args...))
 	}
-	addToRing(LogEntry{Time: time.Now(), Level: "warning", Caller: caller, Message: msg})
+	addToRing(LogEntry{Time: time.Now(), Level: "warning", Key: key, Caller: caller, Message: msg})
 }
 
-// LogError logs error messages
-func LogError(format string, args ...any) {
+// LogError logs an error message under key.
+func LogError(key Key, format string, args ...any) {
 	caller := getCaller()
 	msg := fmt.Sprintf(format, args...)
 	if shouldLog("error") {
-		log.Printf("error [%s]: %s", caller, msg)
+		consolePrintf(key, "error", caller, msg)
 	}
 	if shouldLogToFile("error") {
-		writeToFile(logLine("error", caller, format, args...))
+		writeKeyed(key, logLine(key, "error", caller, format, args...))
 	}
-	addToRing(LogEntry{Time: time.Now(), Level: "error", Caller: caller, Message: msg})
-}
-
-// ── log builder ───────────────────────────────────────────────────────────────
-
-var (
-	loggers    = make(map[string]*log.Logger)
-	loggersMux sync.RWMutex
-)
-
-// LogBuilder returns a named logger that appends to logs/<key>.log.
-// A session separator is written each time the logger is first opened.
-func LogBuilder(key string) *log.Logger {
-	loggersMux.RLock()
-	if logger, exists := loggers[key]; exists {
-		loggersMux.RUnlock()
-		return logger
-	}
-	loggersMux.RUnlock()
-
-	loggersMux.Lock()
-	defer loggersMux.Unlock()
-
-	if logger, exists := loggers[key]; exists {
-		return logger
-	}
-
-	logsDir := resolveLogsDir()
-	if err := os.MkdirAll(logsDir, 0755); err != nil {
-		log.Printf("failed to create logs directory %s: %v", logsDir, err)
-		return log.New(os.Stdout, "", log.LstdFlags)
-	}
-
-	logFile := filepath.Join(logsDir, key+".log")
-	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		log.Printf("failed to create log file %s: %v", logFile, err)
-		return log.New(os.Stdout, "", log.LstdFlags)
-	}
-
-	// write session separator so restarts are immediately visible in the file
-	separator := fmt.Sprintf("\n=== session started %s ===\n", time.Now().Format("2006-01-02 15:04:05"))
-	fmt.Fprint(file, separator)
-
-	multiWriter := io.MultiWriter(file, os.Stdout)
-	logger := log.New(multiWriter, "["+key+"] ", log.LstdFlags)
-
-	log.Printf("created logger '%s' writing to: %s", key, logFile)
-
-	loggers[key] = logger
-	return logger
+	addToRing(LogEntry{Time: time.Now(), Level: "error", Key: key, Caller: caller, Message: msg})
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────

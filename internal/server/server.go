@@ -260,7 +260,7 @@ func NewRouter() *chi.Mux {
 			r.Get("/folder", handleAPIGetFolder)
 			r.Get("/folder-suggestions", handleAPIGetFolderSuggestions)
 			r.Get("/autocomplete", handleAPIFilesAutocomplete)
-				r.Get("/headers", handleAPIFilesHeaders)
+			r.Get("/headers", handleAPIFilesHeaders)
 			r.Get("/export/markdown", handleAPIExportToMarkdown)
 			r.Post("/export/zip", handleAPIExportAllFiles)
 			r.Post("/export/markdown-converted", handleAPIExportAllFilesWithMarkdownConversion)
@@ -528,7 +528,7 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 
 	if basePath == "themes" {
 		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			logging.LogDebug("theme file not found: %s", fullPath)
+			logging.LogDebug(logging.KeyApp, "theme file not found: %s", fullPath)
 			http.NotFound(w, r)
 			return
 		}
@@ -537,18 +537,18 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		if ext == ".css" {
 			cssData, err := os.ReadFile(fullPath)
 			if err != nil {
-				logging.LogError("failed to read theme CSS file %s: %v", fullPath, err)
+				logging.LogError(logging.KeyApp, "failed to read theme CSS file %s: %v", fullPath, err)
 				http.NotFound(w, r)
 				return
 			}
 			w.Header().Set("Content-Type", "text/css; charset=utf-8")
 			w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 			w.Write(cssData)
-			logging.LogDebug("serving theme CSS file: %s", fullPath)
+			logging.LogDebug(logging.KeyApp, "serving theme CSS file: %s", fullPath)
 			return
 		}
 
-		logging.LogDebug("serving theme file: %s", fullPath)
+		logging.LogDebug(logging.KeyApp, "serving theme file: %s", fullPath)
 		http.ServeFile(w, r, fullPath)
 	} else {
 		data, err := staticFiles.ReadFile(fullPath)
@@ -583,7 +583,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 	if id := configmanager.GetHomeDashboard(); id != "" {
 		dash, err := dashboard.Get(id)
 		if err != nil {
-			logging.LogWarning("home dashboard %q not found, falling back to home page: %v", id, err)
+			logging.LogWarning(logging.KeyApp, "home dashboard %q not found, falling back to home page: %v", id, err)
 		} else {
 			tm := thememanager.GetThemeManager()
 			data := thememanager.NewDashboardTemplateData(dash)
@@ -662,7 +662,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 
 		versions, err := git.GetFileHistory(fullPath)
 		if err != nil {
-			logging.LogError("failed to get file history for %s: %v", filePath, err)
+			logging.LogError(logging.KeyApp, "failed to get file history for %s: %v", filePath, err)
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file history"), http.StatusInternalServerError)
 			return
 		}
@@ -800,7 +800,7 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 	fullPath := pathutils.ToMediaPath(mediaPath)
 
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-		logging.LogWarning("media file not found: %s", fullPath)
+		logging.LogWarning(logging.KeyApp, "media file not found: %s", fullPath)
 		http.NotFound(w, r)
 		return
 	}
@@ -824,7 +824,7 @@ func handleMedia(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Cache-Control", "public, max-age=31536000")
 
-	logging.LogDebug("serving media file: %s", fullPath)
+	logging.LogDebug(logging.KeyApp, "serving media file: %s", fullPath)
 	http.ServeFile(w, r, fullPath)
 }
 
@@ -1054,4 +1054,3 @@ func handleKanbanBoard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}
 }
-

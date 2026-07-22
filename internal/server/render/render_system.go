@@ -3,20 +3,87 @@ package render
 import (
 	"embed"
 	"fmt"
+	"html"
 	"html/template"
 	"net/http"
+	"regexp"
 	"runtime"
 	"sort"
 	"strings"
 
 	"knov/internal/configmanager"
-	"knov/internal/job"
 	"knov/internal/files"
+	"knov/internal/job"
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/thememanager"
 	"knov/internal/version"
 )
+
+var logSessionLineRe = regexp.MustCompile(`^=== session started .* ===$`)
+
+// detectLogLevel extracts the "debug/info/warning/error" level from a raw log
+// line, so the log viewer's level filter can work on raw file lines the same
+// way it does for the structured "Live" table. Covers both line shapes used
+// across the app's log files:
+//   - app.log (KeyApp):        "<time> <level> [<caller>]: <msg>"
+//   - per-key logs:            "<time> <level> [<key>] [<caller>]: <msg>"
+//
+// The level word always appears within the first few fields, right after the
+// timestamp, so scanning a small window avoids false positives from the level
+// words appearing later in a message body.
+func detectLogLevel(line string) string {
+	fields := strings.Fields(line)
+	limit := min(len(fields), 5)
+	for _, f := range fields[:limit] {
+		f = strings.TrimSuffix(strings.Trim(f, "[]"), ":")
+		switch f {
+		case "debug", "info", "warning", "error":
+			return f
+		}
+	}
+	return ""
+}
+
+// LogFileLines groups raw log lines into collapsible sections, one per
+// "=== session started ===" marker, with only the most recent session expanded.
+func LogFileLines(lines []string) string {
+	lastSessionIdx := -1
+	for i, line := range lines {
+		if logSessionLineRe.MatchString(strings.TrimSpace(line)) {
+			lastSessionIdx = i
+		}
+	}
+
+	var sb strings.Builder
+	inSession := false
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if logSessionLineRe.MatchString(trimmed) {
+			if inSession {
+				sb.WriteString(`</div></details>`)
+			}
+			openAttr := ""
+			if i == lastSessionIdx {
+				openAttr = " open"
+			}
+			fmt.Fprintf(&sb, `<details class="log-session"%s><summary>%s</summary><div class="log-session-lines">`, openAttr, html.EscapeString(trimmed))
+			inSession = true
+			continue
+		}
+		class := "log-line"
+		if level := detectLogLevel(line); level != "" {
+			class += " log-level-" + level
+		}
+		fmt.Fprintf(&sb, `<div class="%s">`, class)
+		sb.WriteString(html.EscapeString(line))
+		sb.WriteString(`</div>`)
+	}
+	if inSession {
+		sb.WriteString(`</div></details>`)
+	}
+	return sb.String()
+}
 
 var docsFiles embed.FS
 
@@ -28,7 +95,14 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 	logFiles := logging.GetAllLogFiles()
 	hasFile := len(logFiles) > 0
 
-	sourceSelect := ""
+	var keyFilterOptions strings.Builder
+	keyFilterOptions.WriteString(`<option value="">all keys</option>`)
+	for _, key := range logging.AvailableKeys {
+		name := key.String()
+		fmt.Fprintf(&keyFilterOptions, `<option value="%s">%s</option>`, template.HTMLEscapeString(name), template.HTMLEscapeString(name))
+	}
+
+	fileSelect := ""
 	downloadBtn := ""
 	if hasFile {
 		var sb strings.Builder
@@ -38,7 +112,7 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 			sb.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, template.HTMLEscapeString(name), template.HTMLEscapeString(name)))
 		}
 		sb.WriteString(`</select>`)
-		sourceSelect = sb.String()
+		fileSelect = sb.String()
 		downloadBtn = `<a id="log-download-link" class="system-logs-download" href="/api/logs/download" style="display:none">Download</a>`
 	}
 
@@ -47,6 +121,7 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 .system-logs-toolbar { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
 #log-filter { flex: 1; min-width: 160px; max-width: 280px; padding: .3rem .6rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; }
 #log-level-filter { padding: .3rem .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; }
+#log-key-filter { padding: .3rem .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; }
 #log-source-select { padding: .3rem .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; }
 .system-logs-download { padding: .3rem .75rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; text-decoration: none; color: inherit; }
 .system-logs-download:hover { background: rgba(0,0,0,.05); }
@@ -55,7 +130,8 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 .log-table td { padding: .25rem .6rem; border-bottom: 1px solid #eee; vertical-align: top; }
 .log-table td:nth-child(1) { white-space: nowrap; }
 .log-table td:nth-child(2) { white-space: nowrap; }
-.log-table td:nth-child(4) { word-break: break-word; }
+.log-table td:nth-child(3) { white-space: nowrap; }
+.log-table td:nth-child(5) { word-break: break-word; }
 .log-caller { white-space: nowrap; font-size: .75rem; color: var(--text-secondary) !important; }
 .log-level-debug td { color: #aaa; }
 .log-level-warning td { background: #fffbe6; }
@@ -63,6 +139,9 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 .log-level-error td { background: #fff1f0; }
 .log-level-error td:nth-child(2) { color: #c0392b; font-weight: 600; }
 .log-file-lines { font-family: monospace; font-size: .8rem; white-space: pre-wrap; word-break: break-all; display: flex; flex-direction: column; gap: 1px; }
+.log-session { border: 1px solid #e5e5e5; border-radius: 4px; margin-bottom: 4px; }
+.log-session > summary { cursor: pointer; padding: .3rem .5rem; font-weight: 600; background: rgba(0,0,0,.03); }
+.log-session-lines { display: flex; flex-direction: column; gap: 1px; }
 .log-line { padding: .1rem .4rem; border-bottom: 1px solid #f0f0f0; }
 .log-line:hover { background: rgba(0,0,0,.03); }
 #log-more-area { padding: .5rem 0; display: flex; align-items: center; gap: .75rem; }
@@ -78,9 +157,12 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 		`<option value="warning">warning</option>` +
 		`<option value="error">error</option>` +
 		`</select>` +
+		`<select id="log-key-filter" onchange="applyLogFilters()">` +
+		keyFilterOptions.String() +
+		`</select>` +
 		`<button class="btn-secondary" onclick="refreshLogs()">Refresh</button>` +
 		`<button id="log-pause-btn" class="btn-secondary" onclick="toggleLogPolling(this)">Pause</button>` +
-		sourceSelect +
+		fileSelect +
 		downloadBtn +
 		`</div>` +
 		`<div id="log-entries" hx-get="/api/logs" hx-trigger="load, every 5s" hx-swap="innerHTML"></div>` +
@@ -103,19 +185,23 @@ document.addEventListener('htmx:afterSettle', function(e) {
 function applyLogFilters() {
 	var msgQ   = ((document.getElementById('log-filter')       || {}).value || '').toLowerCase().trim();
 	var level  = (document.getElementById('log-level-filter')  || {}).value || '';
+	var key    = (document.getElementById('log-key-filter')    || {}).value || '';
 	var container = document.getElementById('log-entries');
 	if (!container) return;
 	var rows = container.querySelectorAll('tbody tr');
 	if (rows.length === 0) {
 		container.querySelectorAll('.log-line').forEach(function(row) {
-			row.style.display = msgQ === '' || row.textContent.toLowerCase().includes(msgQ) ? '' : 'none';
+			var matchMsg   = msgQ === ''  || row.textContent.toLowerCase().includes(msgQ);
+			var matchLevel = level === '' || row.classList.contains('log-level-' + level);
+			row.style.display = matchMsg && matchLevel ? '' : 'none';
 		});
 		return;
 	}
 	rows.forEach(function(row) {
 		var matchMsg   = msgQ === ''  || row.textContent.toLowerCase().includes(msgQ);
 		var matchLevel = level === '' || row.classList.contains('log-level-' + level);
-		row.style.display = matchMsg && matchLevel ? '' : 'none';
+		var matchKey   = key === ''   || row.classList.contains('log-key-' + key);
+		row.style.display = matchMsg && matchLevel && matchKey ? '' : 'none';
 	});
 }
 
@@ -188,7 +274,7 @@ function loadMoreLogLines() {
 
 	tm := thememanager.GetThemeManager()
 	if err := tm.RenderSystemPage(w, "Logs", template.HTML(content)); err != nil {
-		logging.LogError("failed to render logs page: %v", err)
+		logging.LogError(logging.KeyApp, "failed to render logs page: %v", err)
 	}
 }
 
@@ -238,7 +324,7 @@ func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 
 	tm := thememanager.GetThemeManager()
 	if err := tm.RenderSystemPage(w, "Jobs", template.HTML(content)); err != nil {
-		logging.LogError("failed to render jobs page: %v", err)
+		logging.LogError(logging.KeyApp, "failed to render jobs page: %v", err)
 	}
 }
 
@@ -263,13 +349,13 @@ func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
 
 		data, err := docsFiles.ReadFile("docs/changelogs/" + entry.Name())
 		if err != nil {
-			logging.LogWarning("failed to read changelog %s: %v", entry.Name(), err)
+			logging.LogWarning(logging.KeyApp, "failed to read changelog %s: %v", entry.Name(), err)
 			continue
 		}
 
 		rendered, err := mdHandler.Render(data, "")
 		if err != nil {
-			logging.LogWarning("failed to render changelog %s: %v", entry.Name(), err)
+			logging.LogWarning(logging.KeyApp, "failed to render changelog %s: %v", entry.Name(), err)
 			continue
 		}
 
@@ -286,7 +372,7 @@ func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
 	data := thememanager.NewFileViewTemplateData("Changelog", "system/changelog.md", fileContent)
 	data.SystemPage = true
 	if err := tm.Render(w, "fileview", data); err != nil {
-		logging.LogError("failed to render changelog page: %v", err)
+		logging.LogError(logging.KeyApp, "failed to render changelog page: %v", err)
 	}
 }
 
@@ -313,6 +399,6 @@ func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
 
 	tm := thememanager.GetThemeManager()
 	if err := tm.RenderSystemPage(w, "Version", template.HTML(content)); err != nil {
-		logging.LogError("failed to render version page: %v", err)
+		logging.LogError(logging.KeyApp, "failed to render version page: %v", err)
 	}
 }

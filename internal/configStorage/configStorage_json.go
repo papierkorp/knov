@@ -41,11 +41,11 @@ func (js *jsonStorage) Get(key string) ([]byte, error) {
 		if os.IsNotExist(err) {
 			return nil, nil
 		}
-		logging.LogError("failed to read config file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to read config file %s: %v", filePath, err)
 		return nil, err
 	}
 
-	logging.LogDebug("retrieved config for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "retrieved config for key: %s", key)
 	return data, nil
 }
 
@@ -58,23 +58,23 @@ func (js *jsonStorage) Set(key string, data []byte) error {
 	dir := filepath.Dir(filePath)
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		logging.LogError("failed to create config directory %s: %v", dir, err)
+		logging.LogError(logging.KeyApp, "failed to create config directory %s: %v", dir, err)
 		return err
 	}
 
 	if len(data) > 0 && (data[0] == '{' || data[0] == '[') {
 		var temp interface{}
 		if err := json.Unmarshal(data, &temp); err != nil {
-			logging.LogWarning("config for key %s is not valid json: %v", key, err)
+			logging.LogWarning(logging.KeyApp, "config for key %s is not valid json: %v", key, err)
 		}
 	}
 
 	if err := os.WriteFile(filePath, data, 0644); err != nil {
-		logging.LogError("failed to write config file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to write config file %s: %v", filePath, err)
 		return err
 	}
 
-	logging.LogDebug("stored config for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "stored config for key: %s", key)
 	return nil
 }
 
@@ -89,11 +89,11 @@ func (js *jsonStorage) Delete(key string) error {
 		if os.IsNotExist(err) {
 			return nil
 		}
-		logging.LogError("failed to delete config file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to delete config file %s: %v", filePath, err)
 		return err
 	}
 
-	logging.LogDebug("deleted config for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "deleted config for key: %s", key)
 	return nil
 }
 
@@ -118,7 +118,7 @@ func (js *jsonStorage) GetAll() (map[string][]byte, error) {
 			key := js.pathToKey(relPath)
 			data, err := os.ReadFile(path)
 			if err != nil {
-				logging.LogWarning("failed to read config file %s: %v", path, err)
+				logging.LogWarning(logging.KeyApp, "failed to read config file %s: %v", path, err)
 				return nil
 			}
 
@@ -128,11 +128,11 @@ func (js *jsonStorage) GetAll() (map[string][]byte, error) {
 	})
 
 	if err != nil {
-		logging.LogError("failed to get all config: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get all config: %v", err)
 		return nil, err
 	}
 
-	logging.LogDebug("retrieved %d config entries", len(result))
+	logging.LogDebug(logging.KeyApp, "retrieved %d config entries", len(result))
 	return result, nil
 }
 
@@ -163,7 +163,7 @@ func (js *jsonStorage) List(prefix string) ([]string, error) {
 	})
 
 	if err != nil {
-		logging.LogError("failed to list config keys with prefix %s: %v", prefix, err)
+		logging.LogError(logging.KeyApp, "failed to list config keys with prefix %s: %v", prefix, err)
 		return nil, err
 	}
 

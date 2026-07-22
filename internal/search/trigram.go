@@ -154,6 +154,6 @@ func searchFilesTrigram(query string, limit int, allFiles []files.File) ([]files
 		}
 	}
 
-	logging.LogDebug("trigram search for '%s' returned %d results", query, len(result))
+	logging.LogDebug(logging.KeyApp, "trigram search for '%s' returned %d results", query, len(result))
 	return result, nil
 }

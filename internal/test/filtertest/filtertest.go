@@ -25,10 +25,8 @@ func GetFilterTestMetadata() []*files.Metadata {
 
 // Run executes the filter test scenarios and returns the aggregated suite result.
 func (Suite) Run() (*test.SuiteResult, error) {
-	debugLogger := logging.LogBuilder("filter-debug")
-
 	if err := createFilterTestMetadata(); err != nil {
-		debugLogger.Printf("failed to create filter test metadata: %v", err)
+		logging.LogInfo(logging.KeyFilterDebug, "failed to create filter test metadata: %v", err)
 		return nil, fmt.Errorf("failed to create filter test metadata: %v", err)
 	}
 
@@ -41,7 +39,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 			result.Passed++
 		} else {
 			result.Failed++
-			debugLogger.Printf("test %s failed: %s", caseResult.Name, caseResult.Error)
+			logging.LogInfo(logging.KeyFilterDebug, "test %s failed: %s", caseResult.Name, caseResult.Error)
 		}
 	}
 
@@ -49,7 +47,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 	result.Success = result.Failed == 0
 
 	if result.Failed > 0 {
-		debugLogger.Printf("filter tests completed with failures: %d passed, %d failed", result.Passed, result.Failed)
+		logging.LogInfo(logging.KeyFilterDebug, "filter tests completed with failures: %d passed, %d failed", result.Passed, result.Failed)
 	}
 
 	return result, nil

@@ -11,10 +11,10 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
-	"knov/internal/job"
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/git"
+	"knov/internal/job"
 	"knov/internal/kanbanStorage"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
@@ -55,13 +55,13 @@ func main() {
 	translation.Init()
 
 	if err := git.EnsureRemote(); err != nil {
-		logging.LogWarning("failed to configure git remote: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to configure git remote: %v", err)
 	}
 	git.EnsureRepoConfig()
 
 	// initialize content storage (creates data/docs and data/media directories)
 	if err := contentStorage.Init(); err != nil {
-		logging.LogError("failed to initialize content storage: %v", err)
+		logging.LogError(logging.KeyApp, "failed to initialize content storage: %v", err)
 		return
 	}
 
@@ -75,37 +75,37 @@ func main() {
 	appConfig := configmanager.GetAppConfig()
 
 	if err := configStorage.Init(appConfig.ConfigStorageProvider, appConfig.StoragePath); err != nil {
-		logging.LogError("failed to initialize config storage: %v", err)
+		logging.LogError(logging.KeyApp, "failed to initialize config storage: %v", err)
 		return
 	}
 
 	if err := metadataStorage.Init(appConfig.MetadataStorageProvider, appConfig.StoragePath); err != nil {
-		logging.LogError("failed to initialize metadata storage: %v", err)
+		logging.LogError(logging.KeyApp, "failed to initialize metadata storage: %v", err)
 		return
 	}
 
 	if err := kanbanStorage.Init(appConfig.KanbanEventsEnabled, appConfig.KanbanEventsProvider, appConfig.StoragePath); err != nil {
-		logging.LogError("failed to initialize kanban storage: %v", err)
+		logging.LogError(logging.KeyApp, "failed to initialize kanban storage: %v", err)
 		return
 	}
 
 	if err := cacheStorage.Init(appConfig.CacheStorageProvider, appConfig.StoragePath); err != nil {
-		logging.LogError("failed to initialize cache storage: %v", err)
+		logging.LogError(logging.KeyApp, "failed to initialize cache storage: %v", err)
 		return
 	}
 
 	if err := searchStorage.Init(appConfig.SearchStorageProvider, appConfig.StoragePath); err != nil {
-		logging.LogError("failed to initialize search storage: %v", err)
+		logging.LogError(logging.KeyApp, "failed to initialize search storage: %v", err)
 		return
 	}
 
 	if err := chatStorage.Init(appConfig.StoragePath); err != nil {
-		logging.LogError("failed to initialize chat storage: %v", err)
+		logging.LogError(logging.KeyApp, "failed to initialize chat storage: %v", err)
 		return
 	}
 
 	if err := notificationStorage.Init(appConfig.StoragePath); err != nil {
-		logging.LogError("failed to initialize notification storage: %v", err)
+		logging.LogError(logging.KeyApp, "failed to initialize notification storage: %v", err)
 		return
 	}
 
@@ -118,13 +118,13 @@ func main() {
 
 	go func() {
 		if err := search.InitSearch(); err != nil {
-			logging.LogError("failed to initialize search: %v", err)
+			logging.LogError(logging.KeyApp, "failed to initialize search: %v", err)
 		}
 	}()
 	go func() {
 		time.Sleep(2 * time.Minute)
-		if err := files.MetaDataLinksRebuild(); err != nil {
-			logging.LogError("failed to run startup metadata rebuild: %v", err)
+		if err := files.MetaDataLinksRebuild(logging.KeyApp); err != nil {
+			logging.LogError(logging.KeyApp, "failed to run startup metadata rebuild: %v", err)
 		}
 	}()
 

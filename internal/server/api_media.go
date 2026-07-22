@@ -12,8 +12,8 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
-	"knov/internal/job"
 	"knov/internal/files"
+	"knov/internal/job"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
 	"knov/internal/server/notify"
@@ -40,14 +40,14 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 	// check if context path is provided (prevent uploads for unsaved files)
 	contextPath := r.FormValue("context_path")
 	if contextPath == "" {
-		logging.LogWarning("media upload attempted without context path")
+		logging.LogWarning(logging.KeyApp, "media upload attempted without context path")
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "save document first to enable media uploads"), http.StatusBadRequest)
 		return
 	}
 
 	// prevent uploads to unsaved files (context_path like "new")
 	if contextPath == "new" || strings.HasPrefix(contextPath, "new/") {
-		logging.LogWarning("media upload attempted for unsaved file: %s", contextPath)
+		logging.LogWarning(logging.KeyApp, "media upload attempted for unsaved file: %s", contextPath)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "save document first to enable media uploads"), http.StatusBadRequest)
 		return
 	}
@@ -57,7 +57,7 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(maxUploadSize)
 	if err != nil {
-		logging.LogError("failed to parse multipart form: %v", err)
+		logging.LogError(logging.KeyApp, "failed to parse multipart form: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse upload form"), http.StatusBadRequest)
 		return
 	}
@@ -65,7 +65,7 @@ func handleAPIMediaUpload(w http.ResponseWriter, r *http.Request) {
 	// get uploaded file
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		logging.LogError("failed to get uploaded file: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get uploaded file: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no file uploaded"), http.StatusBadRequest)
 		return
 	}
@@ -119,7 +119,7 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 
 	mediaFiles, err := files.GetAllMediaFiles()
 	if err != nil {
-		logging.LogError("failed to get media files: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get media files: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to load media files"), http.StatusInternalServerError)
 		return
 	}
@@ -132,7 +132,7 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 	// get orphaned media from cache
 	orphanedMedia, err := files.GetOrphanedMediaFromCache()
 	if err != nil {
-		logging.LogWarning("failed to get orphaned media: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to get orphaned media: %v", err)
 		orphanedMedia = []string{} // fallback to empty
 	}
 
@@ -200,7 +200,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 		fullMediaPath = "media/" + mediaPath
 	}
 
-	logging.LogInfo("deleting media file: %s", fullMediaPath)
+	logging.LogInfo(logging.KeyApp, "deleting media file: %s", fullMediaPath)
 
 	// check if file exists
 	fullPath := pathutils.ToMediaPath(strings.TrimPrefix(fullMediaPath, "media/"))
@@ -213,7 +213,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	// check if file is still referenced
 	metadata, err := files.MetaDataGet(fullMediaPath)
 	if err == nil && metadata != nil && len(metadata.LinksToHere) > 0 {
-		logging.LogWarning("cannot delete media file %s: still referenced by %d files", fullMediaPath, len(metadata.LinksToHere))
+		logging.LogWarning(logging.KeyApp, "cannot delete media file %s: still referenced by %d files", fullMediaPath, len(metadata.LinksToHere))
 
 		// get current filter
 		filter := r.URL.Query().Get("filter")
@@ -274,18 +274,18 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 
 	// delete file from filesystem
 	if err := contentStorage.DeleteFile(fullPath); err != nil {
-		logging.LogError("failed to delete media file %s: %v", fullPath, err)
+		logging.LogError(logging.KeyApp, "failed to delete media file %s: %v", fullPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete file"), http.StatusInternalServerError)
 		return
 	}
 
 	// delete metadata
 	if err := files.MetaDataDelete(fullMediaPath); err != nil {
-		logging.LogWarning("failed to delete metadata for media file %s: %v", fullMediaPath, err)
+		logging.LogWarning(logging.KeyApp, "failed to delete metadata for media file %s: %v", fullMediaPath, err)
 		// don't fail the whole operation, just log warning
 	}
 
-	logging.LogInfo("successfully deleted media file: %s", fullMediaPath)
+	logging.LogInfo(logging.KeyApp, "successfully deleted media file: %s", fullMediaPath)
 
 	// return updated media list with current filter preserved
 	filter := r.URL.Query().Get("filter")
@@ -295,7 +295,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 
 	mediaFiles, err := files.GetAllMediaFiles()
 	if err != nil {
-		logging.LogError("failed to get media files after deletion: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get media files after deletion: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to refresh media list"), http.StatusInternalServerError)
 		return
 	}
@@ -303,7 +303,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 	// get orphaned media from cache
 	orphanedMedia, err := files.GetOrphanedMediaFromCache()
 	if err != nil {
-		logging.LogWarning("failed to get orphaned media: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to get orphaned media: %v", err)
 		orphanedMedia = []string{}
 	}
 
@@ -363,7 +363,7 @@ func handleAPIMediaPreview(w http.ResponseWriter, r *http.Request) {
 func handleAPIMediaStats(w http.ResponseWriter, r *http.Request) {
 	stats, err := files.GetMediaStorageStats()
 	if err != nil {
-		logging.LogError("failed to get media storage stats: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get media storage stats: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get storage stats"), http.StatusInternalServerError)
 		return
 	}
@@ -495,11 +495,11 @@ func handleAPIMediaRename(w http.ResponseWriter, r *http.Request) {
 
 	// update links in docs BEFORE moving metadata so LinksToHere is still readable
 	if err := files.UpdateLinksForMovedMedia(oldMediaPath, newMediaPath); err != nil {
-		logging.LogWarning("media rename: failed to update links %s -> %s: %v", oldMediaPath, newMediaPath, err)
+		logging.LogWarning(logging.KeyApp, "media rename: failed to update links %s -> %s: %v", oldMediaPath, newMediaPath, err)
 	}
 
 	if err := os.MkdirAll(filepath.Dir(newFull), 0755); err != nil {
-		logging.LogError("media rename: failed to create directory for %s: %v", newFull, err)
+		logging.LogError(logging.KeyApp, "media rename: failed to create directory for %s: %v", newFull, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory")))
@@ -507,7 +507,7 @@ func handleAPIMediaRename(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := os.Rename(currentFull, newFull); err != nil {
-		logging.LogError("media rename: failed to rename %s -> %s: %v", currentFull, newFull, err)
+		logging.LogError(logging.KeyApp, "media rename: failed to rename %s -> %s: %v", currentFull, newFull, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file")))
@@ -515,10 +515,10 @@ func handleAPIMediaRename(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := files.MoveMediaMetadata(oldMediaPath, newMediaPath); err != nil {
-		logging.LogWarning("media rename: failed to move metadata %s -> %s: %v", oldMediaPath, newMediaPath, err)
+		logging.LogWarning(logging.KeyApp, "media rename: failed to move metadata %s -> %s: %v", oldMediaPath, newMediaPath, err)
 	}
 
-	logging.LogInfo("media renamed: %s -> %s", oldMediaPath, newMediaPath)
+	logging.LogInfo(logging.KeyApp, "media renamed: %s -> %s", oldMediaPath, newMediaPath)
 
 	// redirect to the new media detail page
 	w.Header().Set("HX-Redirect", "/media/"+newRel+"?mode=detail")

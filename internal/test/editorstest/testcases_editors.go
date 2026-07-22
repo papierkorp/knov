@@ -6,8 +6,8 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
-	"knov/internal/filter"
 	"knov/internal/files"
+	"knov/internal/filter"
 	"knov/internal/pathutils"
 	"knov/internal/test"
 )

@@ -28,7 +28,7 @@ import (
 func handleAPIGetDashboards(w http.ResponseWriter, r *http.Request) {
 	dashboards, err := dashboard.GetAll()
 	if err != nil {
-		logging.LogError("failed to get dashboards: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get dashboards: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get dashboards"), http.StatusInternalServerError)
 		return
 	}
@@ -145,7 +145,7 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 	// Parse widgets from form data - handle both old and new format
 	widgets, err := parseWidgetsFromForm(r)
 	if err != nil {
-		logging.LogError("failed to parse widgets: %v", err)
+		logging.LogError(logging.KeyApp, "failed to parse widgets: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse widgets"), http.StatusBadRequest)
 		return
 	}
@@ -157,7 +157,7 @@ func handleAPICreateDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := dashboard.Create(dash); err != nil {
-		logging.LogError("failed to create dashboard: %v", err)
+		logging.LogError(logging.KeyApp, "failed to create dashboard: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -179,7 +179,7 @@ func handleAPIGetDashboard(w http.ResponseWriter, r *http.Request) {
 
 	dash, err := dashboard.Get(id)
 	if err != nil {
-		logging.LogError("failed to get dashboard %s: %v", id, err)
+		logging.LogError(logging.KeyApp, "failed to get dashboard %s: %v", id, err)
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -226,7 +226,7 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 
 	widgets, err := parseWidgetsFromForm(r)
 	if err != nil {
-		logging.LogError("failed to parse widgets: %v", err)
+		logging.LogError(logging.KeyApp, "failed to parse widgets: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse widgets"), http.StatusBadRequest)
 		return
 	}
@@ -236,7 +236,7 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := dashboard.Update(dash); err != nil {
-		logging.LogError("failed to update dashboard: %v", err)
+		logging.LogError(logging.KeyApp, "failed to update dashboard: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -261,7 +261,7 @@ func handleAPIDashboardForm(w http.ResponseWriter, r *http.Request) {
 	if isEdit {
 		dash, err = dashboard.Get(dashboardID)
 		if err != nil {
-			logging.LogError("failed to get dashboard %s: %v", dashboardID, err)
+			logging.LogError(logging.KeyApp, "failed to get dashboard %s: %v", dashboardID, err)
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard not found"), http.StatusNotFound)
 			return
 		}
@@ -364,7 +364,7 @@ func handleAPIDeleteDashboard(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/api/dashboards/")
 
 	if err := dashboard.Delete(id); err != nil {
-		logging.LogError("failed to delete dashboard %s: %v", id, err)
+		logging.LogError(logging.KeyApp, "failed to delete dashboard %s: %v", id, err)
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -402,7 +402,7 @@ func handleAPIRenderWidget(w http.ResponseWriter, r *http.Request) {
 
 	dash, err := dashboard.Get(dashboardId)
 	if err != nil {
-		logging.LogError("failed to get dashboard %s: %v", dashboardId, err)
+		logging.LogError(logging.KeyApp, "failed to get dashboard %s: %v", dashboardId, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard not found"), http.StatusNotFound)
 		return
 	}
@@ -423,7 +423,7 @@ func handleAPIRenderWidget(w http.ResponseWriter, r *http.Request) {
 
 	html, err := render.RenderWidget(widget.Type, widget.Config)
 	if err != nil {
-		logging.LogError("failed to render widget %s: %v", widgetId, err)
+		logging.LogError(logging.KeyApp, "failed to render widget %s: %v", widgetId, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to render widget"), http.StatusInternalServerError)
 		return
 	}
@@ -463,7 +463,7 @@ func handleAPIRenameDashboard(w http.ResponseWriter, r *http.Request) {
 
 	dash.Name = name
 	if err := dashboard.Update(dash); err != nil {
-		logging.LogError("failed to rename dashboard: %v", err)
+		logging.LogError(logging.KeyApp, "failed to rename dashboard: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -486,14 +486,14 @@ func handleAPIExportDashboard(w http.ResponseWriter, r *http.Request) {
 
 	dash, err := dashboard.Get(id)
 	if err != nil {
-		logging.LogError("failed to get dashboard %s: %v", id, err)
+		logging.LogError(logging.KeyApp, "failed to get dashboard %s: %v", id, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard not found"), http.StatusNotFound)
 		return
 	}
 
 	data, err := json.MarshalIndent(dash, "", "  ")
 	if err != nil {
-		logging.LogError("failed to marshal dashboard %s: %v", id, err)
+		logging.LogError(logging.KeyApp, "failed to marshal dashboard %s: %v", id, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "export failed"), http.StatusInternalServerError)
 		return
 	}
@@ -538,12 +538,12 @@ func handleAPIImportDashboard(w http.ResponseWriter, r *http.Request) {
 	// reset id so Create derives a fresh one from the (possibly new) name
 	dash.ID = ""
 	if err := dashboard.Create(&dash); err != nil {
-		logging.LogError("failed to import dashboard: %v", err)
+		logging.LogError(logging.KeyApp, "failed to import dashboard: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	logging.LogInfo("imported dashboard: %s", dash.ID)
+	logging.LogInfo(logging.KeyApp, "imported dashboard: %s", dash.ID)
 	data := translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard imported")
 	html := render.RenderDashboardCreated(dash.ID)
 	writeResponse(w, r, data, html)

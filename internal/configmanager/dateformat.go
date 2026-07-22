@@ -11,7 +11,7 @@ func GetTimezone() *time.Location {
 	tz := Timezone.Get()
 	loc, err := time.LoadLocation(tz)
 	if err != nil {
-		logging.LogWarning("timezone '%s' not supported, falling back to local time", tz)
+		logging.LogWarning(logging.KeyApp, "timezone '%s' not supported, falling back to local time", tz)
 		return time.Local
 	}
 	return loc
@@ -39,7 +39,7 @@ func CheckDateFormat(style string) string {
 	if _, ok := dateLayouts[style]; ok {
 		return style
 	}
-	logging.LogWarning("date format '%s' not supported, falling back to 'DD.MM.YYYY'", style)
+	logging.LogWarning(logging.KeyApp, "date format '%s' not supported, falling back to 'DD.MM.YYYY'", style)
 	return "DD.MM.YYYY"
 }
 
@@ -51,7 +51,7 @@ func GetDateFormat() string {
 // SetDateFormat updates user settings with a new date display style.
 func SetDateFormat(style string) {
 	DateFormat.SetFromString(CheckDateFormat(style)) //nolint:errcheck // pre-validated by CheckDateFormat
-	SaveSettings() //nolint:errcheck
+	SaveSettings()                                   //nolint:errcheck
 }
 
 // FormatDate formats t as a date only, using the configured display style and timezone.

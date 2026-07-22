@@ -32,13 +32,13 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	// read file content
 	fileBytes, err := io.ReadAll(file)
 	if err != nil {
-		logging.LogError("failed to read uploaded file: %v", err)
+		logging.LogError(logging.KeyApp, "failed to read uploaded file: %v", err)
 		return nil, fmt.Errorf("failed to read uploaded file")
 	}
 
 	// check file size after reading
 	if int64(len(fileBytes)) > maxUploadSize {
-		logging.LogWarning("uploaded file too large: %d bytes (max: %d)", len(fileBytes), maxUploadSize)
+		logging.LogWarning(logging.KeyApp, "uploaded file too large: %d bytes (max: %d)", len(fileBytes), maxUploadSize)
 		return nil, fmt.Errorf("file too large")
 	}
 
@@ -47,7 +47,7 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 
 	// validate MIME type
 	if !ValidateMediaMimeType(contentType) {
-		logging.LogWarning("unsupported media type: %s", contentType)
+		logging.LogWarning(logging.KeyApp, "unsupported media type: %s", contentType)
 		return nil, fmt.Errorf("unsupported file type")
 	}
 
@@ -84,7 +84,7 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 
 	// write file to disk using contentStorage
 	if err := contentStorage.WriteFile(fullMediaPath, fileBytes, 0644); err != nil {
-		logging.LogError("failed to write media file %s: %v", fullMediaPath, err)
+		logging.LogError(logging.KeyApp, "failed to write media file %s: %v", fullMediaPath, err)
 		return nil, fmt.Errorf("failed to save file")
 	}
 
@@ -99,19 +99,19 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	}
 
 	if err := MetaDataSave(metadata); err != nil {
-		logging.LogError("failed to save metadata for media file %s: %v", metadataPath, err)
+		logging.LogError(logging.KeyApp, "failed to save metadata for media file %s: %v", metadataPath, err)
 		// don't fail the whole request, just log the error
 	} else {
-		logging.LogInfo("created metadata for media file: %s", metadataPath)
+		logging.LogInfo(logging.KeyApp, "created metadata for media file: %s", metadataPath)
 
 		// update links for this media file (scan all files to find references)
 		if err := UpdateLinksForSingleFile(metadataPath); err != nil {
-			logging.LogWarning("failed to update links for media file %s: %v", metadataPath, err)
+			logging.LogWarning(logging.KeyApp, "failed to update links for media file %s: %v", metadataPath, err)
 			// don't fail the request, just log the error
 		}
 	}
 
-	logging.LogInfo("uploaded media file: %s (%s, %d bytes)", fullMediaPath, contentType, len(fileBytes))
+	logging.LogInfo(logging.KeyApp, "uploaded media file: %s (%s, %d bytes)", fullMediaPath, contentType, len(fileBytes))
 
 	// return result with relative path for markdown links
 	return &MediaUploadResult{

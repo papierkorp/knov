@@ -35,7 +35,7 @@ func SetThemeSetting(themeName, settingKey string, value interface{}) {
 	fresh[themeName][settingKey] = value
 	ThemeSettingsStore.Set(fresh)
 	if err := SaveSettings(); err != nil {
-		logging.LogError("failed to save theme setting: %v", err)
+		logging.LogError(logging.KeyApp, "failed to save theme setting: %v", err)
 	}
 }
 

@@ -17,9 +17,9 @@ func (w *stdlogWriter) Write(p []byte) (int, error) {
 
 	line := strings.TrimRight(string(p), "\n")
 	msg := stripStdlogPrefix(line)
-	addToRing(LogEntry{Time: time.Now(), Level: "info", Caller: "stdlib", Message: msg})
+	addToRing(LogEntry{Time: time.Now(), Level: "info", Key: KeyApp, Caller: "stdlib", Message: msg})
 	if shouldLogToFile("info") {
-		writeToFile(logLine("info", "stdlib", "%s", msg))
+		writeToFile(logLine(KeyApp, "info", "stdlib", "%s", msg))
 	}
 
 	return n, err

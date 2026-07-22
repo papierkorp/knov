@@ -107,14 +107,14 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 		var renderErr error
 		html, renderErr = render.RenderFilterEditor(fp)
 		if renderErr != nil {
-			logging.LogError("failed to render filter editor: %v", renderErr)
+			logging.LogError(logging.KeyApp, "failed to render filter editor: %v", renderErr)
 			html = render.RenderTextareaEditorComponent(fp, content)
 		}
 	case files.EditorTypeIndex:
 		var renderErr error
 		html, renderErr = render.RenderIndexEditor(fp)
 		if renderErr != nil {
-			logging.LogError("failed to render index editor: %v", renderErr)
+			logging.LogError(logging.KeyApp, "failed to render index editor: %v", renderErr)
 			html = render.RenderTextareaEditorComponent(fp, content)
 		}
 	case files.EditorTypeCodeMirror:
@@ -244,7 +244,7 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 
 	// save as markdown file
 	if err := contentStorage.WriteFile(fullPath, []byte(markdown.String()), 0644); err != nil {
-		logging.LogError("failed to write index file: %v", err)
+		logging.LogError(logging.KeyApp, "failed to write index file: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save index"), http.StatusInternalServerError)
 		return
 	}
@@ -261,25 +261,25 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := files.MetaDataSave(metadata); err != nil {
-		logging.LogError("failed to save metadata for index file %s: %v", filezpath, err)
+		logging.LogError(logging.KeyApp, "failed to save metadata for index file %s: %v", filezpath, err)
 		// don't fail the whole request, just log the error
 	} else {
-		logging.LogInfo("saved metadata for index file: %s (collection: %s)", filezpath, collectionName)
+		logging.LogInfo(logging.KeyApp, "saved metadata for index file: %s (collection: %s)", filezpath, collectionName)
 	}
 
 	// update links for this file
 	normalizedPath := filepath.Join("docs", filezpath)
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
-		logging.LogWarning("failed to update links for file %s: %v", filezpath, err)
+		logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filezpath, err)
 		// don't fail the request, just log the error
 	}
 
 	// update orphaned media cache
 	if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
-		logging.LogWarning("failed to update orphaned media cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to update orphaned media cache: %v", err)
 	}
 
-	logging.LogInfo("saved index file: %s", filezpath)
+	logging.LogInfo(logging.KeyApp, "saved index file: %s", filezpath)
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "index saved successfully"))
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "index saved successfully"),
@@ -366,7 +366,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	// parse JSON content from frontend
 	var listItems []render.ListItem
 	if err := json.Unmarshal([]byte(content), &listItems); err != nil {
-		logging.LogError("failed to parse list items: %v", err)
+		logging.LogError(logging.KeyApp, "failed to parse list items: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse list content"), http.StatusBadRequest)
 		return
 	}
@@ -380,14 +380,14 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	// create directory if it doesn't exist
 	dir := filepath.Dir(fullPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		logging.LogError("failed to create directory %s: %v", dir, err)
+		logging.LogError(logging.KeyApp, "failed to create directory %s: %v", dir, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
 		return
 	}
 
 	// save content as markdown
 	if err := contentStorage.WriteFile(fullPath, []byte(markdown), 0644); err != nil {
-		logging.LogError("failed to write list file: %v", err)
+		logging.LogError(logging.KeyApp, "failed to write list file: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save list"), http.StatusInternalServerError)
 		return
 	}
@@ -400,25 +400,25 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := files.MetaDataSave(metadata); err != nil {
-		logging.LogError("failed to save metadata for list file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to save metadata for list file %s: %v", filePath, err)
 		// don't fail the whole request, just log the error
 	} else {
-		logging.LogInfo("saved metadata for list file: %s (filetype: %s)", filePath, files.EditorTypeTodo)
+		logging.LogInfo(logging.KeyApp, "saved metadata for list file: %s (filetype: %s)", filePath, files.EditorTypeTodo)
 	}
 
 	// update links for this file
 	normalizedPath := filepath.Join("docs", filePath)
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
-		logging.LogWarning("failed to update links for file %s: %v", filePath, err)
+		logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 		// don't fail the request, just log the error
 	}
 
 	// update orphaned media cache
 	if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
-		logging.LogWarning("failed to update orphaned media cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to update orphaned media cache: %v", err)
 	}
 
-	logging.LogInfo("saved list file: %s", filePath)
+	logging.LogInfo(logging.KeyApp, "saved list file: %s", filePath)
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"))
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"),
@@ -458,7 +458,7 @@ func handleAPISaveTodoEditor(w http.ResponseWriter, r *http.Request) {
 	// parse JSON content from frontend
 	var listItems []render.ListItem
 	if err := json.Unmarshal([]byte(content), &listItems); err != nil {
-		logging.LogError("failed to parse todo items: %v", err)
+		logging.LogError(logging.KeyApp, "failed to parse todo items: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse todo content"), http.StatusBadRequest)
 		return
 	}
@@ -470,13 +470,13 @@ func handleAPISaveTodoEditor(w http.ResponseWriter, r *http.Request) {
 
 	dir := filepath.Dir(fullPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		logging.LogError("failed to create directory %s: %v", dir, err)
+		logging.LogError(logging.KeyApp, "failed to create directory %s: %v", dir, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
 		return
 	}
 
 	if err := contentStorage.WriteFile(fullPath, []byte(markdown), 0644); err != nil {
-		logging.LogError("failed to write todo file: %v", err)
+		logging.LogError(logging.KeyApp, "failed to write todo file: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save todo"), http.StatusInternalServerError)
 		return
 	}
@@ -488,20 +488,20 @@ func handleAPISaveTodoEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := files.MetaDataSave(metadata); err != nil {
-		logging.LogError("failed to save metadata for todo file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to save metadata for todo file %s: %v", filePath, err)
 	} else {
-		logging.LogInfo("saved metadata for todo file: %s", filePath)
+		logging.LogInfo(logging.KeyApp, "saved metadata for todo file: %s", filePath)
 	}
 
 	normalizedPath := filepath.Join("docs", filePath)
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
-		logging.LogWarning("failed to update links for file %s: %v", filePath, err)
+		logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 	}
 	if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
-		logging.LogWarning("failed to update orphaned media cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to update orphaned media cache: %v", err)
 	}
 
-	logging.LogInfo("saved todo file: %s", filePath)
+	logging.LogInfo(logging.KeyApp, "saved todo file: %s", filePath)
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "todo saved successfully"))
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "todo saved successfully"),
@@ -527,15 +527,15 @@ func handleAPISaveTodoEditor(w http.ResponseWriter, r *http.Request) {
 func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	// parse multipart form data (FormData from JavaScript)
 	if err := r.ParseMultipartForm(10 << 20); err != nil { // 10 MB max
-		logging.LogError("failed to parse multipart form: %v", err)
+		logging.LogError(logging.KeyApp, "failed to parse multipart form: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
 		return
 	}
 
 	filePath := r.FormValue("filepath")
-	logging.LogDebug("received filepath: '%s'", filePath)
+	logging.LogDebug(logging.KeyApp, "received filepath: '%s'", filePath)
 	if filePath == "" {
-		logging.LogError("missing filepath in form data")
+		logging.LogError(logging.KeyApp, "missing filepath in form data")
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing file path"), http.StatusBadRequest)
 		return
 	}
@@ -544,7 +544,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	rowsJSON := r.FormValue("rows")
 	tableIndexStr := r.FormValue("tableIndex")
 
-	logging.LogDebug("received headers: %d bytes, rows: %d bytes, tableIndex: %s", len(headersJSON), len(rowsJSON), tableIndexStr)
+	logging.LogDebug(logging.KeyApp, "received headers: %d bytes, rows: %d bytes, tableIndex: %s", len(headersJSON), len(rowsJSON), tableIndexStr)
 
 	if headersJSON == "" || rowsJSON == "" || tableIndexStr == "" {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing data"), http.StatusBadRequest)
@@ -554,7 +554,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	// parse headers
 	var headers []string
 	if err := json.Unmarshal([]byte(headersJSON), &headers); err != nil {
-		logging.LogError("failed to parse headers: %v", err)
+		logging.LogError(logging.KeyApp, "failed to parse headers: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid data format"), http.StatusBadRequest)
 		return
 	}
@@ -562,7 +562,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	// parse rows
 	var rows [][]string
 	if err := json.Unmarshal([]byte(rowsJSON), &rows); err != nil {
-		logging.LogError("failed to parse rows: %v", err)
+		logging.LogError(logging.KeyApp, "failed to parse rows: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid data format"), http.StatusBadRequest)
 		return
 	}
@@ -573,38 +573,38 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		var err error
 		tableIndex, err = strconv.Atoi(tableIndexStr)
 		if err != nil {
-			logging.LogError("failed to parse table index: %v", err)
+			logging.LogError(logging.KeyApp, "failed to parse table index: %v", err)
 			tableIndex = 0
 		}
 	}
 
 	// debug log the parsed data
-	logging.LogDebug("parsed data - tableIndex: %d, headers: %v, rows count: %d", tableIndex, headers, len(rows))
+	logging.LogDebug(logging.KeyApp, "parsed data - tableIndex: %d, headers: %v, rows count: %d", tableIndex, headers, len(rows))
 	for i, row := range rows {
-		logging.LogDebug("row %d: %v", i, row)
+		logging.LogDebug(logging.KeyApp, "row %d: %v", i, row)
 	}
 
 	// save table using contenthandler
 	handler := contentHandler.GetHandler("markdown")
 	if err := handler.SaveTable(filePath, tableIndex, headers, rows); err != nil {
-		logging.LogError("failed to save table in file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to save table in file %s: %v", filePath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
 		return
 	}
 	go git.CommitFile(pathutils.ToFullPath(filePath))
 
-	logging.LogInfo("saved table in file: %s", filePath)
+	logging.LogInfo(logging.KeyApp, "saved table in file: %s", filePath)
 
 	// update links for this file
 	normalizedPath := pathutils.ToWithPrefix(filePath)
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
-		logging.LogWarning("failed to update links for file %s: %v", filePath, err)
+		logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 		// don't fail the request, just log the error
 	}
 
 	// update orphaned media cache
 	if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
-		logging.LogWarning("failed to update orphaned media cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to update orphaned media cache: %v", err)
 	}
 
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"))
@@ -675,24 +675,24 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	// save section content using contenthandler
 	handler := contentHandler.GetHandler("markdown")
 	if err := handler.SaveSection(filePath, sectionID, content); err != nil {
-		logging.LogError("failed to save section %s in file %s: %v", sectionID, filePath, err)
+		logging.LogError(logging.KeyApp, "failed to save section %s in file %s: %v", sectionID, filePath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"), http.StatusInternalServerError)
 		return
 	}
 	go git.CommitFile(pathutils.ToFullPath(filePath))
 
-	logging.LogInfo("saved section %s in file: %s", sectionID, filePath)
+	logging.LogInfo(logging.KeyApp, "saved section %s in file: %s", sectionID, filePath)
 
 	// update links for this file
 	normalizedPath := pathutils.ToWithPrefix(filePath)
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
-		logging.LogWarning("failed to update links for file %s: %v", filePath, err)
+		logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 		// don't fail the request, just log the error
 	}
 
 	// update orphaned media cache
 	if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
-		logging.LogWarning("failed to update orphaned media cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to update orphaned media cache: %v", err)
 	}
 
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"))
@@ -733,7 +733,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 	// read file content
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
-		logging.LogError("failed to read file %s: %v", fullPath, err)
+		logging.LogError(logging.KeyApp, "failed to read file %s: %v", fullPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
 		return
 	}
@@ -747,13 +747,13 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 
 	// save markdown file
 	if err := os.WriteFile(markdownFullPath, []byte(markdown), 0644); err != nil {
-		logging.LogError("failed to write markdown file %s: %v", markdownFullPath, err)
+		logging.LogError(logging.KeyApp, "failed to write markdown file %s: %v", markdownFullPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save converted file"), http.StatusInternalServerError)
 		return
 	}
 	go git.CommitFile(markdownFullPath)
 
-	logging.LogInfo("converted dokuwiki file to markdown: %s -> %s", filePath, markdownFileName)
+	logging.LogInfo(logging.KeyApp, "converted dokuwiki file to markdown: %s -> %s", filePath, markdownFileName)
 
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file converted to markdown successfully"),

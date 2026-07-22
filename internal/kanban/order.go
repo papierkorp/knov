@@ -26,7 +26,7 @@ func GetOrder(folderPath string) (Order, error) {
 	}
 	var o Order
 	if err := json.Unmarshal(data, &o); err != nil {
-		logging.LogWarning("kanban: corrupt order for folder %s, resetting: %v", folderPath, err)
+		logging.LogWarning(logging.KeyApp, "kanban: corrupt order for folder %s, resetting: %v", folderPath, err)
 		return Order{}, nil
 	}
 	return o, nil

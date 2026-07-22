@@ -83,7 +83,7 @@ func (f File) ViewURL() string {
 func GetAllPhysicalFiles() ([]File, error) {
 	paths, err := contentStorage.ListFiles()
 	if err != nil {
-		logging.LogError("failed to list files: %v", err)
+		logging.LogError(logging.KeyApp, "failed to list files: %v", err)
 		return nil, err
 	}
 	return pathsToFiles(paths, ""), nil
@@ -98,12 +98,12 @@ func GetAllFiles() ([]File, error) {
 func GetAllMediaFiles() ([]File, error) {
 	paths, err := contentStorage.ListMediaFiles()
 	if err != nil {
-		logging.LogError("failed to list media files: %v", err)
+		logging.LogError(logging.KeyApp, "failed to list media files: %v", err)
 		return nil, err
 	}
 
 	files := pathsToFiles(paths, "media")
-	logging.LogDebug("found %d media files", len(files))
+	logging.LogDebug(logging.KeyApp, "found %d media files", len(files))
 	return files, nil
 }
 

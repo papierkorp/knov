@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
-	"knov/internal/job"
 	"knov/internal/files"
 	"knov/internal/git"
+	"knov/internal/job"
 	"knov/internal/pathutils"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"

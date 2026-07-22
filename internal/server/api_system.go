@@ -30,7 +30,7 @@ import (
 // @Router /api/system/cache [delete]
 func handleAPIInvalidateCache(w http.ResponseWriter, r *http.Request) {
 	if err := job.RunCacheInvalidate(); err != nil {
-		logging.LogError("failed to invalidate cache: %v", err)
+		logging.LogError(logging.KeyApp, "failed to invalidate cache: %v", err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to invalidate cache"))
 		http.Error(w, "failed to invalidate cache", http.StatusInternalServerError)
 		return
@@ -44,14 +44,16 @@ func handleAPIGetLogs(w http.ResponseWriter, r *http.Request) {
 	entries := logging.GetRecentEntries(200)
 
 	var sb strings.Builder
-	sb.WriteString(`<table class="log-table"><thead><tr><th>Time</th><th>Level</th><th>Caller</th><th>Message</th></tr></thead><tbody>`)
+	sb.WriteString(`<table class="log-table"><thead><tr><th>Time</th><th>Level</th><th>Source</th><th>Caller</th><th>Message</th></tr></thead><tbody>`)
 	for i := len(entries) - 1; i >= 0; i-- {
 		e := entries[i]
 		sb.WriteString(fmt.Sprintf(
-			`<tr class="log-level-%s"><td>%s</td><td>%s</td><td class="log-caller">%s</td><td>%s</td></tr>`,
+			`<tr class="log-level-%s log-key-%s"><td>%s</td><td>%s</td><td>%s</td><td class="log-caller">%s</td><td>%s</td></tr>`,
 			html.EscapeString(e.Level),
+			html.EscapeString(e.Key.String()),
 			html.EscapeString(configmanager.FormatDateTimeSeconds(e.Time)),
 			html.EscapeString(e.Level),
+			html.EscapeString(e.Key.String()),
 			html.EscapeString(e.Caller),
 			html.EscapeString(e.Message),
 		))
@@ -101,7 +103,7 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 
 	f, err := os.Open(path)
 	if err != nil {
-		logging.LogError("failed to open log file: %v", err)
+		logging.LogError(logging.KeyApp, "failed to open log file: %v", err)
 		http.Error(w, "failed to open log file", http.StatusInternalServerError)
 		return
 	}
@@ -133,11 +135,7 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 
 	var sb strings.Builder
 	if isChunk {
-		for _, line := range chunk {
-			sb.WriteString(`<div class="log-line">`)
-			sb.WriteString(html.EscapeString(line))
-			sb.WriteString(`</div>`)
-		}
+		sb.WriteString(render.LogFileLines(chunk))
 	} else {
 		sb.WriteString(`<div id="log-file-container">`)
 		if hasMore {
@@ -149,11 +147,7 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 			sb.WriteString(`<div id="log-more-area" style="display:none"><button class="btn-secondary" onclick="loadMoreLogLines()">Load earlier lines</button></div>`)
 		}
 		sb.WriteString(`<div class="log-file-lines" id="log-file-lines">`)
-		for _, line := range chunk {
-			sb.WriteString(`<div class="log-line">`)
-			sb.WriteString(html.EscapeString(line))
-			sb.WriteString(`</div>`)
-		}
+		sb.WriteString(render.LogFileLines(chunk))
 		sb.WriteString(`</div></div>`)
 	}
 
@@ -186,7 +180,7 @@ func handleAPIDownloadLogs(w http.ResponseWriter, r *http.Request) {
 
 	f, err := os.Open(path)
 	if err != nil {
-		logging.LogError("failed to open log file for download: %v", err)
+		logging.LogError(logging.KeyApp, "failed to open log file for download: %v", err)
 		http.Error(w, "failed to open log file", http.StatusInternalServerError)
 		return
 	}

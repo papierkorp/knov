@@ -37,7 +37,7 @@ func newYAMLStorage(_ string) (*yamlFrontmatterStorage, error) {
 	if err := os.MkdirAll(docsPath, 0755); err != nil {
 		return nil, err
 	}
-	logging.LogDebug("yaml front matter storage using docs path: %s", docsPath)
+	logging.LogDebug(logging.KeyApp, "yaml front matter storage using docs path: %s", docsPath)
 	return &yamlFrontmatterStorage{docsPath: docsPath}, nil
 }
 
@@ -81,7 +81,7 @@ func (ys *yamlFrontmatterStorage) Get(key string) ([]byte, error) {
 		if os.IsNotExist(err) {
 			return nil, nil
 		}
-		logging.LogError("yaml front matter: failed to read %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "yaml front matter: failed to read %s: %v", filePath, err)
 		return nil, err
 	}
 
@@ -92,17 +92,17 @@ func (ys *yamlFrontmatterStorage) Get(key string) ([]byte, error) {
 
 	var raw interface{}
 	if err := yaml.Unmarshal(frontmatter, &raw); err != nil {
-		logging.LogError("yaml front matter: failed to parse front matter in %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "yaml front matter: failed to parse front matter in %s: %v", filePath, err)
 		return nil, err
 	}
 
 	jsonData, err := json.Marshal(raw)
 	if err != nil {
-		logging.LogError("yaml front matter: failed to marshal json for %s: %v", key, err)
+		logging.LogError(logging.KeyApp, "yaml front matter: failed to marshal json for %s: %v", key, err)
 		return nil, err
 	}
 
-	logging.LogDebug("yaml front matter: retrieved metadata for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "yaml front matter: retrieved metadata for key: %s", key)
 	return jsonData, nil
 }
 
@@ -121,23 +121,23 @@ func (ys *yamlFrontmatterStorage) Set(key string, data []byte) error {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			logging.LogDebug("yaml front matter: file does not exist yet, skipping set for %s", key)
+			logging.LogDebug(logging.KeyApp, "yaml front matter: file does not exist yet, skipping set for %s", key)
 			return nil
 		}
-		logging.LogError("yaml front matter: failed to read %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "yaml front matter: failed to read %s: %v", filePath, err)
 		return err
 	}
 
 	// convert incoming JSON → map → YAML
 	var raw interface{}
 	if err := json.Unmarshal(data, &raw); err != nil {
-		logging.LogError("yaml front matter: data for %s is not valid json: %v", key, err)
+		logging.LogError(logging.KeyApp, "yaml front matter: data for %s is not valid json: %v", key, err)
 		return err
 	}
 
 	yamlBytes, err := yaml.Marshal(raw)
 	if err != nil {
-		logging.LogError("yaml front matter: failed to marshal yaml for %s: %v", key, err)
+		logging.LogError(logging.KeyApp, "yaml front matter: failed to marshal yaml for %s: %v", key, err)
 		return err
 	}
 
@@ -149,11 +149,11 @@ func (ys *yamlFrontmatterStorage) Set(key string, data []byte) error {
 	out.Write(body)
 
 	if err := os.WriteFile(filePath, out.Bytes(), 0644); err != nil {
-		logging.LogError("yaml front matter: failed to write %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "yaml front matter: failed to write %s: %v", filePath, err)
 		return err
 	}
 
-	logging.LogDebug("yaml front matter: stored metadata for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "yaml front matter: stored metadata for key: %s", key)
 	return nil
 }
 
@@ -172,17 +172,17 @@ func (ys *yamlFrontmatterStorage) Delete(key string) error {
 		if os.IsNotExist(err) {
 			return nil
 		}
-		logging.LogError("yaml front matter: failed to read %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "yaml front matter: failed to read %s: %v", filePath, err)
 		return err
 	}
 
 	_, body := stripFrontMatter(content)
 	if err := os.WriteFile(filePath, body, 0644); err != nil {
-		logging.LogError("yaml front matter: failed to write %s after delete: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "yaml front matter: failed to write %s after delete: %v", filePath, err)
 		return err
 	}
 
-	logging.LogDebug("yaml front matter: deleted metadata for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "yaml front matter: deleted metadata for key: %s", key)
 	return nil
 }
 
@@ -200,7 +200,7 @@ func (ys *yamlFrontmatterStorage) GetAll() (map[string][]byte, error) {
 
 		content, err := os.ReadFile(path)
 		if err != nil {
-			logging.LogWarning("yaml front matter: cannot read %s: %v", path, err)
+			logging.LogWarning(logging.KeyApp, "yaml front matter: cannot read %s: %v", path, err)
 			return nil
 		}
 
@@ -211,13 +211,13 @@ func (ys *yamlFrontmatterStorage) GetAll() (map[string][]byte, error) {
 
 		var raw interface{}
 		if err := yaml.Unmarshal(frontmatter, &raw); err != nil {
-			logging.LogWarning("yaml front matter: cannot parse front matter in %s: %v", path, err)
+			logging.LogWarning(logging.KeyApp, "yaml front matter: cannot parse front matter in %s: %v", path, err)
 			return nil
 		}
 
 		jsonData, err := json.Marshal(raw)
 		if err != nil {
-			logging.LogWarning("yaml front matter: cannot marshal json for %s: %v", path, err)
+			logging.LogWarning(logging.KeyApp, "yaml front matter: cannot marshal json for %s: %v", path, err)
 			return nil
 		}
 
@@ -231,11 +231,11 @@ func (ys *yamlFrontmatterStorage) GetAll() (map[string][]byte, error) {
 	})
 
 	if err != nil {
-		logging.LogError("yaml front matter: failed to walk docs path: %v", err)
+		logging.LogError(logging.KeyApp, "yaml front matter: failed to walk docs path: %v", err)
 		return nil, err
 	}
 
-	logging.LogDebug("yaml front matter: retrieved %d metadata entries", len(result))
+	logging.LogDebug(logging.KeyApp, "yaml front matter: retrieved %d metadata entries", len(result))
 	return result, nil
 }
 
@@ -277,7 +277,7 @@ func (ys *yamlFrontmatterStorage) Cleanup() error {
 
 		content, err := os.ReadFile(path)
 		if err != nil {
-			logging.LogWarning("yaml cleanup: cannot read %s: %v", path, err)
+			logging.LogWarning(logging.KeyApp, "yaml cleanup: cannot read %s: %v", path, err)
 			failed++
 			return nil
 		}
@@ -288,7 +288,7 @@ func (ys *yamlFrontmatterStorage) Cleanup() error {
 		}
 
 		if err := os.WriteFile(path, body, 0644); err != nil {
-			logging.LogError("yaml cleanup: failed to write %s: %v", path, err)
+			logging.LogError(logging.KeyApp, "yaml cleanup: failed to write %s: %v", path, err)
 			failed++
 			return nil
 		}
@@ -298,10 +298,10 @@ func (ys *yamlFrontmatterStorage) Cleanup() error {
 	})
 
 	if err != nil {
-		logging.LogError("yaml metadata cleanup: walk error: %v", err)
+		logging.LogError(logging.KeyApp, "yaml metadata cleanup: walk error: %v", err)
 		return err
 	}
 
-	logging.LogInfo("yaml metadata cleanup: stripped front matter from %d files (%d failed)", cleaned, failed)
+	logging.LogInfo(logging.KeyApp, "yaml metadata cleanup: stripped front matter from %d files (%d failed)", cleaned, failed)
 	return nil
 }

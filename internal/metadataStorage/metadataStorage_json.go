@@ -41,11 +41,11 @@ func (js *jsonStorage) Get(key string) ([]byte, error) {
 		if os.IsNotExist(err) {
 			return nil, nil
 		}
-		logging.LogError("failed to read metadata file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to read metadata file %s: %v", filePath, err)
 		return nil, err
 	}
 
-	logging.LogDebug("retrieved metadata for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "retrieved metadata for key: %s", key)
 	return data, nil
 }
 
@@ -58,23 +58,23 @@ func (js *jsonStorage) Set(key string, data []byte) error {
 	dir := filepath.Dir(filePath)
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		logging.LogError("failed to create metadata directory %s: %v", dir, err)
+		logging.LogError(logging.KeyApp, "failed to create metadata directory %s: %v", dir, err)
 		return err
 	}
 
 	if len(data) > 0 && (data[0] == '{' || data[0] == '[') {
 		var temp interface{}
 		if err := json.Unmarshal(data, &temp); err != nil {
-			logging.LogWarning("metadata for key %s is not valid json: %v", key, err)
+			logging.LogWarning(logging.KeyApp, "metadata for key %s is not valid json: %v", key, err)
 		}
 	}
 
 	if err := os.WriteFile(filePath, data, 0644); err != nil {
-		logging.LogError("failed to write metadata file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to write metadata file %s: %v", filePath, err)
 		return err
 	}
 
-	logging.LogDebug("stored metadata for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "stored metadata for key: %s", key)
 	return nil
 }
 
@@ -89,11 +89,11 @@ func (js *jsonStorage) Delete(key string) error {
 		if os.IsNotExist(err) {
 			return nil
 		}
-		logging.LogError("failed to delete metadata file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to delete metadata file %s: %v", filePath, err)
 		return err
 	}
 
-	logging.LogDebug("deleted metadata for key: %s", key)
+	logging.LogDebug(logging.KeyApp, "deleted metadata for key: %s", key)
 	return nil
 }
 
@@ -118,7 +118,7 @@ func (js *jsonStorage) GetAll() (map[string][]byte, error) {
 			key := js.pathToKey(relPath)
 			data, err := os.ReadFile(path)
 			if err != nil {
-				logging.LogWarning("failed to read metadata file %s: %v", path, err)
+				logging.LogWarning(logging.KeyApp, "failed to read metadata file %s: %v", path, err)
 				return nil
 			}
 
@@ -128,11 +128,11 @@ func (js *jsonStorage) GetAll() (map[string][]byte, error) {
 	})
 
 	if err != nil {
-		logging.LogError("failed to get all metadata: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get all metadata: %v", err)
 		return nil, err
 	}
 
-	logging.LogDebug("retrieved %d metadata entries", len(result))
+	logging.LogDebug(logging.KeyApp, "retrieved %d metadata entries", len(result))
 	return result, nil
 }
 
@@ -168,10 +168,10 @@ func (js *jsonStorage) Cleanup() error {
 	defer js.mutex.Unlock()
 
 	if err := os.RemoveAll(js.basePath); err != nil {
-		logging.LogError("json metadata cleanup: failed to remove %s: %v", js.basePath, err)
+		logging.LogError(logging.KeyApp, "json metadata cleanup: failed to remove %s: %v", js.basePath, err)
 		return err
 	}
 
-	logging.LogInfo("json metadata cleanup: removed %s", js.basePath)
+	logging.LogInfo(logging.KeyApp, "json metadata cleanup: removed %s", js.basePath)
 	return nil
 }

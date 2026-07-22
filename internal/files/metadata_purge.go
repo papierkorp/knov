@@ -30,7 +30,7 @@ func MetaDataPurgeStale() (int, error) {
 	// media files have metadata too — don't treat them as stale
 	mediaFiles, err := GetAllMediaFiles()
 	if err != nil {
-		logging.LogWarning("failed to get media files for stale purge, skipping media: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to get media files for stale purge, skipping media: %v", err)
 	} else {
 		for _, f := range mediaFiles {
 			valid[pathutils.ToWithPrefix(f.Path)] = struct{}{}
@@ -41,15 +41,15 @@ func MetaDataPurgeStale() (int, error) {
 	for key := range all {
 		if _, ok := valid[key]; !ok {
 			if err := metadataStorage.Delete(key); err != nil {
-				logging.LogWarning("failed to delete stale metadata for %s: %v", key, err)
+				logging.LogWarning(logging.KeyApp, "failed to delete stale metadata for %s: %v", key, err)
 				continue
 			}
-			logging.LogInfo("purged stale metadata: %s", key)
+			logging.LogInfo(logging.KeyApp, "purged stale metadata: %s", key)
 			purged++
 		}
 	}
 
-	logging.LogInfo("metadata purge complete: removed %d stale entries", purged)
+	logging.LogInfo(logging.KeyApp, "metadata purge complete: removed %d stale entries", purged)
 	return purged, nil
 }
 
@@ -80,12 +80,12 @@ func MetaDataPurgeDuplicates() (int, error) {
 
 	for _, key := range duplicates {
 		if err := metadataStorage.Delete(key); err != nil {
-			logging.LogWarning("failed to delete duplicate metadata for %s: %v", key, err)
+			logging.LogWarning(logging.KeyApp, "failed to delete duplicate metadata for %s: %v", key, err)
 			continue
 		}
-		logging.LogInfo("purged duplicate metadata: %s", key)
+		logging.LogInfo(logging.KeyApp, "purged duplicate metadata: %s", key)
 	}
 
-	logging.LogInfo("metadata duplicate purge complete: removed %d duplicate entries", len(duplicates))
+	logging.LogInfo(logging.KeyApp, "metadata duplicate purge complete: removed %d duplicate entries", len(duplicates))
 	return len(duplicates), nil
 }

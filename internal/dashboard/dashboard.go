@@ -42,20 +42,20 @@ func GetAll() ([]Dashboard, error) {
 	for _, key := range globalKeys {
 		data, err := configStorage.Get(key)
 		if err != nil {
-			logging.LogWarning("failed to get dashboard %s: %v", key, err)
+			logging.LogWarning(logging.KeyApp, "failed to get dashboard %s: %v", key, err)
 			continue
 		}
 
 		var dashboard Dashboard
 		if err := json.Unmarshal(data, &dashboard); err != nil {
-			logging.LogWarning("failed to unmarshal dashboard %s: %v", key, err)
+			logging.LogWarning(logging.KeyApp, "failed to unmarshal dashboard %s: %v", key, err)
 			continue
 		}
 
 		dashboards = append(dashboards, dashboard)
 	}
 
-	logging.LogDebug("retrieved %d dashboards", len(dashboards))
+	logging.LogDebug(logging.KeyApp, "retrieved %d dashboards", len(dashboards))
 	return dashboards, nil
 }
 
@@ -77,7 +77,7 @@ func Get(id string) (*Dashboard, error) {
 		return nil, err
 	}
 
-	logging.LogDebug("retrieved dashboard: %s", id)
+	logging.LogDebug(logging.KeyApp, "retrieved dashboard: %s", id)
 	return &dashboard, nil
 }
 
@@ -117,7 +117,7 @@ func Create(dashboard *Dashboard) error {
 		return err
 	}
 
-	logging.LogDebug("created dashboard: %s", dashboard.ID)
+	logging.LogDebug(logging.KeyApp, "created dashboard: %s", dashboard.ID)
 	return nil
 }
 
@@ -138,7 +138,7 @@ func Update(dashboard *Dashboard) error {
 		return err
 	}
 
-	logging.LogDebug("updated dashboard: %s", dashboard.ID)
+	logging.LogDebug(logging.KeyApp, "updated dashboard: %s", dashboard.ID)
 	return nil
 }
 
@@ -164,6 +164,6 @@ func Delete(id string) error {
 		return err
 	}
 
-	logging.LogDebug("deleted dashboard: %s", id)
+	logging.LogDebug(logging.KeyApp, "deleted dashboard: %s", id)
 	return nil
 }

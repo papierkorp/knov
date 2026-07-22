@@ -30,7 +30,7 @@ func Init(provider, storagePath string) error {
 	case "json":
 		storage, err = newJSONStorage(storagePath)
 	default:
-		logging.LogWarning("unknown cache storage provider '%s', using sqlite", provider)
+		logging.LogWarning(logging.KeyApp, "unknown cache storage provider '%s', using sqlite", provider)
 		storage, err = newSQLiteStorage(storagePath)
 	}
 
@@ -38,7 +38,7 @@ func Init(provider, storagePath string) error {
 		return fmt.Errorf("failed to initialize cache storage: %w", err)
 	}
 
-	logging.LogInfo("cache storage initialized: %s", provider)
+	logging.LogInfo(logging.KeyApp, "cache storage initialized: %s", provider)
 	return nil
 }
 

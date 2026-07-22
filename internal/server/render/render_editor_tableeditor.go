@@ -19,7 +19,7 @@ func RenderTableEditorForm(filePath string, tableIndex int) string {
 	handler := contentHandler.GetHandler("markdown")
 	headers, rows, err := handler.ExtractTable(filePath, tableIndex)
 	if err != nil {
-		logging.LogError("failed to extract table from file %s: %v", filePath, err)
+		logging.LogError(logging.KeyApp, "failed to extract table from file %s: %v", filePath, err)
 		return fmt.Sprintf(`<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no table found in file"))
 	}
 
@@ -33,7 +33,7 @@ func RenderTableEditorForm(filePath string, tableIndex int) string {
 	// convert to JSON
 	tableJSON, err := json.Marshal(tableData)
 	if err != nil {
-		logging.LogError("failed to marshal table data: %v", err)
+		logging.LogError(logging.KeyApp, "failed to marshal table data: %v", err)
 		return fmt.Sprintf(`<div class="status-error">%s</div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to process table"))
 	}
 

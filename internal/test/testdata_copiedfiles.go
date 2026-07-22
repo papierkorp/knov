@@ -15,7 +15,7 @@ import (
 // copyTestFiles copies the embedded docs/testfiles/ tree into the runtime docs/test/
 // and the docs root markdown files into docs/test/docs/
 func copyTestFiles() error {
-	logging.LogInfo("copying test files")
+	logging.LogInfo(logging.KeyApp, "copying test files")
 
 	if err := copyEmbeddedDir("docs/testfiles", filepath.Join(contentStorage.GetDocsPath(), "test")); err != nil {
 		return fmt.Errorf("failed to copy testfiles: %w", err)

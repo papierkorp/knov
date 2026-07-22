@@ -21,73 +21,74 @@ type fileJob struct{}
 func (j *fileJob) Name() string { return "file-sync" }
 
 func (j *fileJob) Run() error {
-	logging.LogDebug("running file cronjob")
+	logging.MarkSessionStart(logging.KeyFileSync)
+	logging.LogDebug(logging.KeyFileSync, "running file cronjob")
 
 	if err := git.PullRebase(); err != nil {
-		logging.LogWarning("cronjob: git pull failed: %v", err)
+		logging.LogWarning(logging.KeyFileSync, "git pull failed: %v", err)
 	}
 
 	var filesToProcess []string
 	var filesToDelete []string
 
 	if _, err := git.CommitAllPending(); err != nil {
-		logging.LogError("cronjob: failed to commit pending changes: %v", err)
+		logging.LogError(logging.KeyFileSync, "failed to commit pending changes: %v", err)
 	}
 
 	lastCommit, err := git.GetLastProcessedCommit()
 	if err != nil {
-		logging.LogError("cronjob: failed to get last processed commit: %v", err)
+		logging.LogError(logging.KeyFileSync, "failed to get last processed commit: %v", err)
 	} else {
 		currentCommit, err := git.GetCurrentCommit()
 		if err != nil {
-			logging.LogError("cronjob: failed to get current commit: %v", err)
+			logging.LogError(logging.KeyFileSync, "failed to get current commit: %v", err)
 		} else if currentCommit != "" && currentCommit != lastCommit {
 			hadError := false
 
 			changedFiles, err := git.GetFilesChangedSinceCommit(lastCommit)
 			if err != nil {
-				logging.LogError("cronjob: failed to get changed files: %v", err)
+				logging.LogError(logging.KeyFileSync, "failed to get changed files: %v", err)
 				hadError = true
 			} else if len(changedFiles) > 0 {
-				logging.LogInfo("detected %d files changed since last commit", len(changedFiles))
+				logging.LogInfo(logging.KeyFileSync, "detected %d files changed since last commit", len(changedFiles))
 				filesToProcess = append(filesToProcess, changedFiles...)
 			}
 
 			deletedFiles, err := git.GetDeletedFilesSinceCommit(lastCommit)
 			if err != nil {
-				logging.LogError("cronjob: failed to get deleted files: %v", err)
+				logging.LogError(logging.KeyFileSync, "failed to get deleted files: %v", err)
 				hadError = true
 			} else if len(deletedFiles) > 0 {
-				logging.LogInfo("detected %d files deleted since last commit", len(deletedFiles))
+				logging.LogInfo(logging.KeyFileSync, "detected %d files deleted since last commit", len(deletedFiles))
 				filesToDelete = append(filesToDelete, deletedFiles...)
 			}
 
 			movedFiles, err := git.GetFileRenames(lastCommit)
 			if err != nil {
-				logging.LogError("cronjob: failed to get file renames: %v", err)
+				logging.LogError(logging.KeyFileSync, "failed to get file renames: %v", err)
 				hadError = true
 			} else if len(movedFiles) > 0 {
-				logging.LogInfo("detected %d file moves since last commit", len(movedFiles))
+				logging.LogInfo(logging.KeyFileSync, "detected %d file moves since last commit", len(movedFiles))
 				for _, move := range movedFiles {
 					oldNormalized := pathutils.ToWithPrefix(move.OldPath)
 					newNormalized := pathutils.ToWithPrefix(move.NewPath)
-					logging.LogInfo("processing file move: %s -> %s", oldNormalized, newNormalized)
+					logging.LogInfo(logging.KeyFileSync, "processing file move: %s -> %s", oldNormalized, newNormalized)
 					// no-refresh: this whole run ends with one RebuildAllCaches() below
-					if err := files.UpdateLinksForMovedFileNoRefresh(oldNormalized, newNormalized); err != nil {
-						logging.LogError("cronjob: failed to update links for moved file %s -> %s: %v", oldNormalized, newNormalized, err)
+					if err := files.UpdateLinksForMovedFileNoRefresh(logging.KeyFileSync, oldNormalized, newNormalized); err != nil {
+						logging.LogError(logging.KeyFileSync, "failed to update links for moved file %s -> %s: %v", oldNormalized, newNormalized, err)
 						// fall back to generic add/delete handling so the new path still gets metadata
 						filesToProcess = append(filesToProcess, move.NewPath)
 						filesToDelete = append(filesToDelete, move.OldPath)
 					} else {
-						logging.LogInfo("successfully updated links for moved file %s -> %s", oldNormalized, newNormalized)
+						logging.LogInfo(logging.KeyFileSync, "successfully updated links for moved file %s -> %s", oldNormalized, newNormalized)
 					}
 				}
 			}
 
 			if hadError {
-				logging.LogWarning("cronjob: not advancing last processed commit due to errors above, will retry next run")
+				logging.LogWarning(logging.KeyFileSync, "not advancing last processed commit due to errors above, will retry next run")
 			} else if err := git.SetLastProcessedCommit(currentCommit); err != nil {
-				logging.LogError("cronjob: failed to save last processed commit: %v", err)
+				logging.LogError(logging.KeyFileSync, "failed to save last processed commit: %v", err)
 			}
 		}
 	}
@@ -109,21 +110,21 @@ func (j *fileJob) Run() error {
 	git.IndexDeletedFiles(lastCommit, filesToDelete)
 
 	if len(filesToDelete) > 0 {
-		logging.LogInfo("deleting metadata for %d files", len(filesToDelete))
+		logging.LogInfo(logging.KeyFileSync, "deleting metadata for %d files", len(filesToDelete))
 		for _, filePath := range filesToDelete {
 			normalizedPath := pathutils.ToWithPrefix(filePath)
-			if err := files.MetaDataDeleteNoRefresh(normalizedPath); err != nil {
-				logging.LogError("cronjob: failed to delete metadata for %s: %v", normalizedPath, err)
+			if err := files.MetaDataDeleteNoRefresh(logging.KeyFileSync, normalizedPath); err != nil {
+				logging.LogError(logging.KeyFileSync, "failed to delete metadata for %s: %v", normalizedPath, err)
 				continue
 			}
-			logging.LogDebug("deleted metadata for %s", normalizedPath)
+			logging.LogDebug(logging.KeyFileSync, "deleted metadata for %s", normalizedPath)
 		}
 	}
 
 	if len(filesToProcess) == 0 {
-		logging.LogDebug("no files to process")
+		logging.LogDebug(logging.KeyFileSync, "no files to process")
 	} else {
-		logging.LogInfo("processing %d files", len(filesToProcess))
+		logging.LogInfo(logging.KeyFileSync, "processing %d files", len(filesToProcess))
 		for _, filePath := range filesToProcess {
 			normalizedPath := pathutils.ToWithPrefix(filePath)
 			metadata := &files.Metadata{
@@ -131,21 +132,21 @@ func (j *fileJob) Run() error {
 				Editor: files.EditorTypeToastUI,
 			}
 			if err := files.MetaDataSaveNoRefresh(metadata); err != nil {
-				logging.LogError("cronjob: failed to save metadata for %s: %v", normalizedPath, err)
+				logging.LogError(logging.KeyFileSync, "failed to save metadata for %s: %v", normalizedPath, err)
 				continue
 			}
-			logging.LogDebug("processed metadata for %s", normalizedPath)
+			logging.LogDebug(logging.KeyFileSync, "processed metadata for %s", normalizedPath)
 		}
 	}
 
 	if err := files.RebuildAllCaches(); err != nil {
-		logging.LogError("cronjob: failed to save system data to cache: %v", err)
+		logging.LogError(logging.KeyFileSync, "failed to save system data to cache: %v", err)
 	}
 
 	// run filter index as a sub-step so it gets its own history entry
 	execute(&filterMu, &filterJob{})
 
-	logging.LogDebug("file cronjob completed")
+	logging.LogDebug(logging.KeyFileSync, "file cronjob completed")
 	return nil
 }
 
@@ -170,11 +171,12 @@ type searchIndexJob struct{}
 func (j *searchIndexJob) Name() string { return "search-reindex" }
 
 func (j *searchIndexJob) Run() error {
-	logging.LogDebug("running search index cronjob")
+	logging.MarkSessionStart(logging.KeySearchReindex)
+	logging.LogDebug(logging.KeySearchReindex, "running search index cronjob")
 	if err := search.IndexAllFiles(); err != nil {
 		return fmt.Errorf("failed to reindex search: %w", err)
 	}
-	logging.LogDebug("search index cronjob completed")
+	logging.LogDebug(logging.KeySearchReindex, "search index cronjob completed")
 	return nil
 }
 
@@ -188,10 +190,11 @@ type rebuildJob struct{}
 func (j *rebuildJob) Name() string { return "metadata-links-rebuild" }
 
 func (j *rebuildJob) Run() error {
-	logging.LogDebug("running metadata rebuild cronjob")
-	if err := files.MetaDataLinksRebuild(); err != nil {
+	logging.MarkSessionStart(logging.KeyMetadataRebuild)
+	logging.LogDebug(logging.KeyMetadataRebuild, "running metadata rebuild cronjob")
+	if err := files.MetaDataLinksRebuild(logging.KeyMetadataRebuild); err != nil {
 		return fmt.Errorf("metadata rebuild failed: %w", err)
 	}
-	logging.LogDebug("metadata rebuild cronjob completed")
+	logging.LogDebug(logging.KeyMetadataRebuild, "metadata rebuild cronjob completed")
 	return nil
 }

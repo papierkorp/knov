@@ -73,13 +73,13 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 	repositoryURL := r.FormValue("repositoryURL")
 
 	if err := configmanager.UpdateEnvFile("KNOV_GIT_REMOTE", repositoryURL); err != nil {
-		logging.LogError("failed to update env file: %v", err)
+		logging.LogError(logging.KeyApp, "failed to update env file: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save"), http.StatusInternalServerError)
 		return
 	}
 
 	if err := git.EnsureRemote(); err != nil {
-		logging.LogWarning("failed to configure git remote: %v", err)
+		logging.LogWarning(logging.KeyApp, "failed to configure git remote: %v", err)
 	}
 
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "git remote saved"))
@@ -94,7 +94,7 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {string} string "restarting"
 // @Router /api/system/restart [post]
 func handleAPIRestartApp(w http.ResponseWriter, r *http.Request) {
-	logging.LogInfo("application restart requested")
+	logging.LogInfo(logging.KeyApp, "application restart requested")
 
 	data := "restarting"
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "restarting application..."))
@@ -125,7 +125,7 @@ func handleAPISetDataPath(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := configmanager.UpdateEnvFile("KNOV_DATA_PATH", dataPath); err != nil {
-		logging.LogError("failed to update env file: %v", err)
+		logging.LogError(logging.KeyApp, "failed to update env file: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save"), http.StatusInternalServerError)
 		return
 	}
@@ -183,7 +183,7 @@ func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
 
 	faviconDir := filepath.Join(configmanager.GetAppConfig().StoragePath, "favicon")
 	if err := os.MkdirAll(faviconDir, 0755); err != nil {
-		logging.LogError("favicon upload: failed to create directory: %v", err)
+		logging.LogError(logging.KeyApp, "favicon upload: failed to create directory: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
 		writeResponse(w, r, nil, "")
@@ -193,7 +193,7 @@ func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
 	destPath := filepath.Join(faviconDir, "favicon"+ext)
 	data, err := io.ReadAll(file)
 	if err != nil {
-		logging.LogError("favicon upload: failed to read file: %v", err)
+		logging.LogError(logging.KeyApp, "favicon upload: failed to read file: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"))
 		writeResponse(w, r, nil, "")
@@ -201,7 +201,7 @@ func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := os.WriteFile(destPath, data, 0644); err != nil {
-		logging.LogError("favicon upload: failed to write file: %v", err)
+		logging.LogError(logging.KeyApp, "favicon upload: failed to write file: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save file"))
 		writeResponse(w, r, nil, "")
@@ -210,7 +210,7 @@ func handleAPIUploadFavicon(w http.ResponseWriter, r *http.Request) {
 
 	configmanager.SetCustomFaviconExt(ext)
 
-	logging.LogInfo("favicon uploaded: %s", destPath)
+	logging.LogInfo(logging.KeyApp, "favicon uploaded: %s", destPath)
 	w.Header().Set("HX-Trigger", "faviconChanged")
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "favicon uploaded"))
 	writeResponse(w, r, nil, "")
@@ -234,7 +234,7 @@ func handleAPIDeleteFavicon(w http.ResponseWriter, r *http.Request) {
 
 	destPath := filepath.Join(configmanager.GetAppConfig().StoragePath, "favicon", "favicon"+ext)
 	if err := os.Remove(destPath); err != nil && !os.IsNotExist(err) {
-		logging.LogError("favicon delete: %v", err)
+		logging.LogError(logging.KeyApp, "favicon delete: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to remove favicon"))
 		writeResponse(w, r, nil, "")
@@ -243,7 +243,7 @@ func handleAPIDeleteFavicon(w http.ResponseWriter, r *http.Request) {
 
 	configmanager.SetCustomFaviconExt("")
 
-	logging.LogInfo("custom favicon removed")
+	logging.LogInfo(logging.KeyApp, "custom favicon removed")
 	w.Header().Set("HX-Trigger", "faviconChanged")
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "custom favicon removed"))
 	writeResponse(w, r, nil, "")
@@ -257,7 +257,7 @@ func handleAPIDeleteFavicon(w http.ResponseWriter, r *http.Request) {
 func handleAPIExportSettings(w http.ResponseWriter, r *http.Request) {
 	data, err := configmanager.ExportSettingsJSON()
 	if err != nil {
-		logging.LogError("failed to export settings: %v", err)
+		logging.LogError(logging.KeyApp, "failed to export settings: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to export settings"), http.StatusInternalServerError)
 		return
 	}
@@ -296,7 +296,7 @@ func handleAPIImportSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logging.LogInfo("settings imported successfully")
+	logging.LogInfo(logging.KeyApp, "settings imported successfully")
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "settings imported successfully"))
 	w.Header().Set("HX-Refresh", "true")
 	writeResponse(w, r, map[string]string{"status": "imported"}, "")

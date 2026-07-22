@@ -31,7 +31,7 @@ type fullRebuildJob struct{}
 func (j *fullRebuildJob) Name() string { return "metadata-full-rebuild" }
 
 func (j *fullRebuildJob) Run() error {
-	logging.LogInfo("running full metadata rebuild")
+	logging.LogInfo(logging.KeyApp, "running full metadata rebuild")
 
 	files.StartMetaGetCounter()
 	defer files.StopMetaGetCounter()
@@ -42,24 +42,24 @@ func (j *fullRebuildJob) Run() error {
 
 	stalePurged, err := files.MetaDataPurgeStale()
 	if err != nil {
-		logging.LogError("full rebuild: failed to purge stale metadata: %v", err)
+		logging.LogError(logging.KeyApp, "full rebuild: failed to purge stale metadata: %v", err)
 	}
 
 	dupPurged, err := files.MetaDataPurgeDuplicates()
 	if err != nil {
-		logging.LogError("full rebuild: failed to purge duplicate metadata: %v", err)
+		logging.LogError(logging.KeyApp, "full rebuild: failed to purge duplicate metadata: %v", err)
 	}
 
-	if err := files.MetaDataLinksRebuild(); err != nil {
+	if err := files.MetaDataLinksRebuild(logging.KeyMetadataRebuild); err != nil {
 		return fmt.Errorf("failed to rebuild metadata links: %w", err)
 	}
 
 	if err := files.UpdateOrphanedMediaCache(); err != nil {
-		logging.LogWarning("full rebuild: failed to update orphaned media cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "full rebuild: failed to update orphaned media cache: %v", err)
 	}
 
-	logging.LogInfo("full rebuild: purged %d stale, %d duplicate metadata entries", stalePurged, dupPurged)
-	logging.LogInfo("full metadata rebuild completed")
+	logging.LogInfo(logging.KeyApp, "full rebuild: purged %d stale, %d duplicate metadata entries", stalePurged, dupPurged)
+	logging.LogInfo(logging.KeyApp, "full metadata rebuild completed")
 	return nil
 }
 
@@ -72,7 +72,7 @@ type filterJob struct{}
 func (j *filterJob) Name() string { return "filter-reindex" }
 
 func (j *filterJob) Run() error {
-	logging.LogDebug("running filter index cronjob")
+	logging.LogDebug(logging.KeyFileSync, "running filter index cronjob")
 
 	ids, err := filter.GetAllFilters()
 	if err != nil {
@@ -83,16 +83,16 @@ func (j *filterJob) Run() error {
 	for _, id := range ids {
 		config, err := filter.GetFilterConfig(id)
 		if err != nil || config == nil {
-			logging.LogWarning("cronjob: failed to load filter config %s: %v", id, err)
+			logging.LogWarning(logging.KeyFileSync, "cronjob: failed to load filter config %s: %v", id, err)
 			continue
 		}
 		if err := filter.GenerateFilterIndex(id, config); err != nil {
-			logging.LogWarning("cronjob: failed to regenerate filter index %s: %v", id, err)
+			logging.LogWarning(logging.KeyFileSync, "cronjob: failed to regenerate filter index %s: %v", id, err)
 			lastErr = err
 		}
 	}
 
-	logging.LogDebug("filter index cronjob completed (%d filters)", len(ids))
+	logging.LogDebug(logging.KeyFileSync, "filter index cronjob completed (%d filters)", len(ids))
 	return lastErr
 }
 
@@ -164,7 +164,7 @@ func doMediaCleanup() (MediaCleanupResult, error) {
 		// double-check the file is still orphaned (cache may be stale)
 		meta, err := files.MetaDataGet(mediaPath)
 		if err == nil && meta != nil && len(meta.LinksToHere) > 0 {
-			logging.LogWarning("media-cleanup: skipping %s: no longer orphaned", mediaPath)
+			logging.LogWarning(logging.KeyApp, "media-cleanup: skipping %s: no longer orphaned", mediaPath)
 			continue
 		}
 
@@ -174,21 +174,21 @@ func doMediaCleanup() (MediaCleanupResult, error) {
 		}
 
 		if err := contentStorage.DeleteFile(fullPath); err != nil {
-			logging.LogError("media-cleanup: failed to delete %s: %v", mediaPath, err)
+			logging.LogError(logging.KeyApp, "media-cleanup: failed to delete %s: %v", mediaPath, err)
 			result.Failed++
 			continue
 		}
 		// no-refresh: avoid a full background cache rebuild per deleted file
 		// when cleaning up dozens of orphaned media at once; refreshed once below.
-		if err := files.MetaDataDeleteNoRefresh(mediaPath); err != nil {
-			logging.LogWarning("media-cleanup: failed to delete metadata for %s: %v", mediaPath, err)
+		if err := files.MetaDataDeleteNoRefresh(logging.KeyApp, mediaPath); err != nil {
+			logging.LogWarning(logging.KeyApp, "media-cleanup: failed to delete metadata for %s: %v", mediaPath, err)
 		}
 		result.Deleted++
-		logging.LogInfo("media-cleanup: deleted %s", mediaPath)
+		logging.LogInfo(logging.KeyApp, "media-cleanup: deleted %s", mediaPath)
 	}
 
 	if err := files.UpdateOrphanedMediaCache(); err != nil {
-		logging.LogWarning("media-cleanup: failed to refresh orphaned media cache: %v", err)
+		logging.LogWarning(logging.KeyApp, "media-cleanup: failed to refresh orphaned media cache: %v", err)
 	}
 	if result.Deleted > 0 {
 		files.RefreshCaches()

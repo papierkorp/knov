@@ -25,7 +25,7 @@ import (
 func handleAPIGetNotificationFlash(w http.ResponseWriter, r *http.Request) {
 	n, err := notificationStorage.GetPending()
 	if err != nil {
-		logging.LogError("failed to get pending notification: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get pending notification: %v", err)
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
@@ -35,7 +35,7 @@ func handleAPIGetNotificationFlash(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := notificationStorage.ClearPending(n.ID); err != nil {
-		logging.LogError("failed to clear pending notification %s: %v", n.ID, err)
+		logging.LogError(logging.KeyApp, "failed to clear pending notification %s: %v", n.ID, err)
 	}
 
 	// always JSON — this endpoint is only called by the JS fetch, never by htmx HTML swap
@@ -60,7 +60,7 @@ func handleAPIGetNotifications(w http.ResponseWriter, r *http.Request) {
 
 	notifications, err := notificationStorage.GetRecent(limit)
 	if err != nil {
-		logging.LogError("failed to get notifications: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get notifications: %v", err)
 		http.Error(w, "failed to get notifications", http.StatusInternalServerError)
 		return
 	}
@@ -77,7 +77,7 @@ func handleAPIGetNotifications(w http.ResponseWriter, r *http.Request) {
 // @Router /api/notifications [delete]
 func handleAPIDeleteNotifications(w http.ResponseWriter, r *http.Request) {
 	if err := notificationStorage.Clear(); err != nil {
-		logging.LogError("failed to clear notifications: %v", err)
+		logging.LogError(logging.KeyApp, "failed to clear notifications: %v", err)
 		http.Error(w, "failed to clear notifications", http.StatusInternalServerError)
 		return
 	}
@@ -100,7 +100,7 @@ func handleAPIDeleteNotification(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := notificationStorage.DeleteByID(id); err != nil {
-		logging.LogError("failed to delete notification %s: %v", id, err)
+		logging.LogError(logging.KeyApp, "failed to delete notification %s: %v", id, err)
 		http.Error(w, "failed to delete notification", http.StatusInternalServerError)
 		return
 	}
@@ -108,7 +108,7 @@ func handleAPIDeleteNotification(w http.ResponseWriter, r *http.Request) {
 	// return updated list so hx-target="#fp-browse-content" refreshes in place
 	notifications, err := notificationStorage.GetRecent(50)
 	if err != nil {
-		logging.LogError("failed to get notifications after delete: %v", err)
+		logging.LogError(logging.KeyApp, "failed to get notifications after delete: %v", err)
 		http.Error(w, "failed to get notifications", http.StatusInternalServerError)
 		return
 	}

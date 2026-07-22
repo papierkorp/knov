@@ -120,7 +120,7 @@ func loadAllThemes() error {
 
 		err := LoadSingleTheme(themeName, themesDir)
 		if err != nil {
-			logging.LogWarning("failed to load theme '%s': %v", themeName, err)
+			logging.LogWarning(logging.KeyApp, "failed to load theme '%s': %v", themeName, err)
 			continue
 		}
 	}
@@ -234,7 +234,7 @@ func LoadSingleTheme(themeName, themesDir string) error {
 		case "kanban":
 			templates.kanban = tmpl
 		default:
-			logging.LogWarning("unknown template file '%s' -> ignoring", filePath)
+			logging.LogWarning(logging.KeyApp, "unknown template file '%s' -> ignoring", filePath)
 		}
 	}
 
@@ -254,7 +254,7 @@ func LoadSingleTheme(themeName, themesDir string) error {
 		return fmt.Errorf("could not add theme: %w", err)
 	}
 
-	logging.LogInfo("added theme: %s", metadata.Name)
+	logging.LogInfo(logging.KeyApp, "added theme: %s", metadata.Name)
 
 	return nil
 }
@@ -282,10 +282,10 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data 
 		overwriteTemplate, parseErr := template.ParseFiles(overwritePath)
 
 		if parseErr != nil {
-			logging.LogWarning("failed to parse overwrite template '%s': %v, using theme template", templateName, parseErr)
+			logging.LogWarning(logging.KeyApp, "failed to parse overwrite template '%s': %v, using theme template", templateName, parseErr)
 		} else {
 			template = overwriteTemplate
-			logging.LogDebug("using overwrite template for '%s'", templateName)
+			logging.LogDebug(logging.KeyApp, "using overwrite template for '%s'", templateName)
 		}
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -392,7 +392,7 @@ func initBuiltInTheme(builtinTheme embed.FS) error {
 		return fmt.Errorf("failed to extract builtin theme: %w", err)
 	}
 
-	logging.LogInfo("extracted builtin theme")
+	logging.LogInfo(logging.KeyApp, "extracted builtin theme")
 	return nil
 }
 
@@ -402,14 +402,14 @@ func setBuiltinAsDefault() {
 		if theme.Name == "builtin" {
 			err := themeManager.SetCurrentTheme(theme)
 			if err != nil {
-				logging.LogError("failed to set builtin theme: %v", err)
+				logging.LogError(logging.KeyApp, "failed to set builtin theme: %v", err)
 			} else {
-				logging.LogInfo("current theme set to: builtin")
+				logging.LogInfo(logging.KeyApp, "current theme set to: builtin")
 			}
 			return
 		}
 	}
-	logging.LogError("builtin theme not found")
+	logging.LogError(logging.KeyApp, "builtin theme not found")
 }
 
 // -----------------------------------------------
@@ -424,16 +424,16 @@ func SetTheme() {
 		if theme.Name == savedThemeName {
 			err := themeManager.SetCurrentTheme(theme)
 			if err != nil {
-				logging.LogWarning("failed to set saved theme '%s': %v, falling back to builtin", savedThemeName, err)
+				logging.LogWarning(logging.KeyApp, "failed to set saved theme '%s': %v, falling back to builtin", savedThemeName, err)
 				setBuiltinAsDefault()
 			} else {
-				logging.LogInfo("current theme set to: %s", savedThemeName)
+				logging.LogInfo(logging.KeyApp, "current theme set to: %s", savedThemeName)
 			}
 			return
 		}
 	}
 
-	logging.LogWarning("saved theme '%s' not found, falling back to builtin", savedThemeName)
+	logging.LogWarning(logging.KeyApp, "saved theme '%s' not found, falling back to builtin", savedThemeName)
 	setBuiltinAsDefault()
 }
 
