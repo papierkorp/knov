@@ -38,7 +38,6 @@
 - show diffs from same file but different dates/versions (maybe 2 selects in sidebar?)
 - kanban - show archive
 - add logging to tests
-- loggging - update the keys e.g. manual_cronjob is completly worthless as it is now - can we add some additional logs to a certain key in the logging package?
 
 # testing
 
@@ -109,29 +108,6 @@ note: browser-only interactions (kanban drag-and-drop, toastui toolbar) can't be
 - filters: filters/criteria-row?row_index=, filters/* (saved list, data-url driven)
 - unmapped/needs tracing before writing tests: base.gohtml:360 `hx-post=""` and :374 `hx-delete=""` (target injected at runtime, not static)
 
-# logging rework
-
-Goal: cronjob logs currently just log into the shared `app.log`. Want per-key log files (cronjobs + the existing ad-hoc `LogBuilder` destinations) without duplicating everything into `app.log` too. Landed on: kill `LogBuilder`, make every `Log*` call take a mandatory `Key` instead - one call surface, one place (`internal/logging`) that owns routing/rotation/console echo/ring buffer for every destination.
-
-Already tried and reverted this session:
-- mirroring into a job-scoped sink (`WithJobSink`/`mirrorToJobSink`) - first version used one global `*log.Logger` (any goroutine's logs leaked into whichever job was running); fixed to be goroutine-ID-scoped, but it only ever duplicates into `app.log`, never actually removes the noise from it. Superseded by the key rework below - remove this code as part of it.
-
-**architecture**
-- `type Key string` + `const KeyApp Key = ""` (zero value, so unset/legacy `LogEntry{}` values default to it), `KeyFileSync`, `KeySearchReindex`, `KeyMetadataRebuild`, plus one const per former `LogBuilder` call site (`KeyGitRemote`, `KeyDokuwikiExport`, `KeyRepairLinks`, `KeyDBMigration`, `KeyMetaMigration`, `KeyFilterDebug`, `KeyManualCronjob`) - `Key.String()` returns `"app"` for the zero value - `var AvailableKeys = []Key{...}` lists them all for the admin log-viewer dropdown
-- `LogInfo(key Key, format string, args ...any)` / `LogDebug`/`LogWarning`/`LogError` - key is the mandatory first arg, no more ambient/goroutine-scoped default
-- per-key rotating writer cache inside `internal/logging` (replaces the old `loggers map[string]*log.Logger` from `LogBuilder`) - `key == KeyApp` writes to `app.log`, any other key writes only to its own file (the actual "split out" goal, not a mirror)
-- `LogEntry` (ring buffer feeding the admin "Live" view) got a `Key` field so that view can filter by source
-- not every shared multi-caller function got threaded - only the ones whose *own* log lines are genuinely noisy and whose callers meaningfully disagree on attribution (`UpdateLinksForMovedFileNoRefresh`/`MetaDataDeleteNoRefresh`/`moveFileMetadata`/`updateLinksInFile` in `files`). Functions called only by one of the 3 cronjobs in production (`CommitAllPending`, `GetLastProcessedCommit`, `GetFilesChangedSinceCommit`, `GetFileRenames`, `IndexDeletedFiles`, `RebuildAllCaches`, `search.IndexAllFiles`) just got their own direct log lines hardcoded to that job's key instead - no signature change, since the only other callers are test setup or none at all. `git.PullRebase`/`Push`/`TestAuth`/`fetchAndReset` (remote sync) got a static `KeyGitRemote` instead, same reasoning as the old `LogBuilder("git-remote")` - one dedicated log regardless of trigger. Genuinely per-save shared helpers (`updateTitle`, `updateUsedLinks`, `updateAncestors`, `updateParentChildRelationships` - also called from `metadata.go`'s `MetaDataSave` hot path used by every file edit) were deliberately left un-threaded to avoid cascading into that call graph - their nested log lines during a rebuild still land in `app.log`.
-- **real bug found during manual verification, not in the original plan**: unifying console echo through `log.Printf` meant it got re-captured by `logging.InitInterceptor()`'s `stdlogWriter` tee and duplicated straight back into `app.log` (tagged generic `info [stdlib]`), for every key - completely defeating the "split out of app.log" goal. This pre-existed for the original `LogDebug`/etc even before this rework (they always called `log.Printf`), just wasn't as visible since `LogBuilder` loggers previously wrote straight to `os.Stdout`, bypassing the interceptor. Fixed by having `consolePrintf` write directly to `os.Stdout` instead of through the global `log` package - `LogDebug`/`Info`/`Warning`/`Error` already add their own ring buffer entry and file line directly, so nothing was lost.
-
-**todo**
-- [x] 1. core rewrite in `internal/logging`: `Key` type + `AvailableKeys`, new `LogInfo`/`LogDebug`/`LogWarning`/`LogError` signatures, per-key rotating writer cache, `LogEntry.Key`, delete `LogBuilder`
-- [x] 2. delete `WithJobSink`/`mirrorToJobSink`/`goroutineID`/`jobSinksMu` (this session's now-superseded attempt) from `internal/logging/logging.go` and `internal/job/cronjob.go` (`logJob`/`startJobLog` helpers)
-- [x] 3. migrate the existing `LogBuilder` call sites to explicit keys: `filter-debug` (`internal/test/filtertest`), `metadata-migration` (`internal/metadataStorage`), `database-migration` (`internal/dbmigration`), `git-remote` (`internal/git`), `dokuwiki_export` (`internal/server/api_files.go`), `repair-broken-links` (`internal/server/api_metadata.go`), `rebuild-metadata` (`internal/files/metadata_links.go`), `manual_cronjob` (`internal/job/scheduler.go`)
-- [x] 4. thread `key Key` through the shared multi-caller functions in `git.go`/`files`/`search` that the 3 cronjobs call into, and update every non-cronjob caller (`internal/server/api_files_versions.go`, `internal/job/manualjob.go`, `internal/test/*`) to pass the appropriate key - see architecture note above for which functions actually got threaded vs. hardcoded
-- [x] 5. mechanically update the remaining ~700+ leaf call sites (everything else in the codebase) to pass `KeyApp`
-- [x] 6. admin log viewer: key/source filter dropdown next to the existing level/message filters (`internal/server/render/render_system.go`), per-key log file selector for the file-view tab (already worked for free once files existed - the selector reads `logging.GetAllLogFiles()`)
-- [x] 7. verify: `go build`/`go vet`/`gofmt` clean; manually ran the binary against a scratch data dir, triggered `/api/cronjob` (manual run-all) and confirmed `file-sync.log`/`search-reindex.log`/`metadata-rebuild.log`/`manual_cronjob.log` each contain exactly their own run's lines (including nested git/files calls), `app.log` stayed clean of cronjob noise, and the admin `/system/logs` page renders the new Source column/filter and per-file dropdown correctly
 
 # docs
 

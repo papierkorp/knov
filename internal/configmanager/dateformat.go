@@ -64,9 +64,22 @@ func FormatDateTime(t time.Time) string {
 	return t.In(GetTimezone()).Format(dateLayouts[GetDateFormat()] + " 15:04")
 }
 
+// dateTimeSecondsLayout is the Go reference-time layout for a date + time
+// (HH:MM:SS) value, shared by FormatDateTimeSeconds and ParseDateTimeSeconds
+// so they can never drift apart.
+func dateTimeSecondsLayout() string {
+	return dateLayouts[GetDateFormat()] + " 15:04:05"
+}
+
 // FormatDateTimeSeconds formats t as date + time (HH:MM:SS), using the configured display style and timezone.
 func FormatDateTimeSeconds(t time.Time) string {
-	return t.In(GetTimezone()).Format(dateLayouts[GetDateFormat()] + " 15:04:05")
+	return t.In(GetTimezone()).Format(dateTimeSecondsLayout())
+}
+
+// ParseDateTimeSeconds parses a string produced by FormatDateTimeSeconds back
+// into a time.Time, using the configured display style and timezone.
+func ParseDateTimeSeconds(s string) (time.Time, error) {
+	return time.ParseInLocation(dateTimeSecondsLayout(), s, GetTimezone())
 }
 
 // FormatTime formats t as time only (HH:MM:SS), using the configured timezone.

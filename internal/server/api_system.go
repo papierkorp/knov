@@ -4,11 +4,11 @@ package server
 import (
 	"bufio"
 	"fmt"
-	"html"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -40,28 +40,63 @@ func handleAPIInvalidateCache(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, map[string]string{"status": "cache invalidated"}, "")
 }
 
+// @Summary Get recent log entries
+// @Description Returns the most recent in-memory log entries across every key as an HTML table, newest first. Powers the "Live" view on the admin logs page.
+// @Tags system
+// @Produce html
+// @Success 200 {string} string "log table HTML"
+// @Router /api/logs [get]
 func handleAPIGetLogs(w http.ResponseWriter, r *http.Request) {
 	entries := logging.GetRecentEntries(200)
 
-	var sb strings.Builder
-	sb.WriteString(`<table class="log-table"><thead><tr><th>Time</th><th>Level</th><th>Source</th><th>Caller</th><th>Message</th></tr></thead><tbody>`)
-	for i := len(entries) - 1; i >= 0; i-- {
-		e := entries[i]
-		sb.WriteString(fmt.Sprintf(
-			`<tr class="log-level-%s log-key-%s"><td>%s</td><td>%s</td><td>%s</td><td class="log-caller">%s</td><td>%s</td></tr>`,
-			html.EscapeString(e.Level),
-			html.EscapeString(e.Key.String()),
-			html.EscapeString(configmanager.FormatDateTimeSeconds(e.Time)),
-			html.EscapeString(e.Level),
-			html.EscapeString(e.Key.String()),
-			html.EscapeString(e.Caller),
-			html.EscapeString(e.Message),
-		))
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(render.RenderLogTable(entries)))
+}
+
+// handleAPIGetLogsFileAll merges every current (non-rotated) per-key log file
+// into one chronologically sorted table - the "All (merged)" file-view option.
+// Unlike a single file, this reads and re-sorts on every request rather than
+// supporting the "load earlier lines" chunking handleAPIGetLogsFile does.
+func handleAPIGetLogsFileAll(w http.ResponseWriter, r *http.Request) {
+	limit := 1000
+	if v := r.URL.Query().Get("limit"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			limit = n
+		}
 	}
-	sb.WriteString(`</tbody></table>`)
+
+	dir := logging.GetLogsDir()
+	var entries []logging.LogEntry
+	for _, name := range logging.GetAllLogFiles() {
+		if !strings.HasSuffix(name, ".log") {
+			continue // skip rotated .log.N parts
+		}
+
+		f, err := os.Open(filepath.Join(dir, name))
+		if err != nil {
+			continue
+		}
+		var lines []string
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			lines = append(lines, scanner.Text())
+		}
+		f.Close()
+
+		key := logging.KeyApp
+		if base := strings.TrimSuffix(name, ".log"); base != "app" {
+			key = logging.Key(base)
+		}
+		entries = append(entries, render.ParseLogLines(key, lines)...)
+	}
+
+	sort.Slice(entries, func(i, j int) bool { return entries[i].Time.Before(entries[j].Time) })
+	if len(entries) > limit {
+		entries = entries[len(entries)-limit:]
+	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write([]byte(sb.String()))
+	w.Write([]byte(render.RenderLogTable(entries)))
 }
 
 func resolveLogFilePath(r *http.Request) string {
@@ -80,7 +115,23 @@ func resolveLogFilePath(r *http.Request) string {
 	return p
 }
 
+// @Summary Get log file contents
+// @Description Returns lines from a log file for the file-view tab. name selects a single key's log file (e.g. file-sync.log), name=all merges every current key's log into one chronologically sorted table, or name is omitted for the active app.log. chunk/limit/offset page through a single file (not supported for name=all).
+// @Tags system
+// @Produce html
+// @Param name query string false "log file name, or 'all' to merge every key's log"
+// @Param limit query int false "max lines/entries to return (default 1000)"
+// @Param offset query int false "lines to skip from the end, for paging a single file"
+// @Param chunk query bool false "return only the appended fragment, without the surrounding container"
+// @Success 200 {string} string "log lines HTML"
+// @Failure 404 {string} string "file logging not enabled"
+// @Router /api/logs/file [get]
 func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Query().Get("name") == "all" {
+		handleAPIGetLogsFileAll(w, r)
+		return
+	}
+
 	path := resolveLogFilePath(r)
 	if path == "" {
 		http.Error(w, "file logging not enabled", http.StatusNotFound)
@@ -171,6 +222,14 @@ func handleAPIGetJobs(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, runs, render.RenderJobsTable(runs))
 }
 
+// @Summary Download a log file
+// @Description Downloads the raw contents of a single log file as plain text
+// @Tags system
+// @Produce plain
+// @Param name query string false "log file name (default: the active app.log)"
+// @Success 200 {file} file "log file contents"
+// @Failure 404 {string} string "file logging not enabled"
+// @Router /api/logs/download [get]
 func handleAPIDownloadLogs(w http.ResponseWriter, r *http.Request) {
 	path := resolveLogFilePath(r)
 	if path == "" {

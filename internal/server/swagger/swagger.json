@@ -3434,6 +3434,112 @@
                 "responses": {}
             }
         },
+        "/api/logs": {
+            "get": {
+                "description": "Returns the most recent in-memory log entries across every key as an HTML table, newest first. Powers the \"Live\" view on the admin logs page.",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Get recent log entries",
+                "responses": {
+                    "200": {
+                        "description": "log table HTML",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/logs/download": {
+            "get": {
+                "description": "Downloads the raw contents of a single log file as plain text",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Download a log file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "log file name (default: the active app.log)",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "log file contents",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "file logging not enabled",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/logs/file": {
+            "get": {
+                "description": "Returns lines from a log file for the file-view tab. name selects a single key's log file (e.g. file-sync.log), name=all merges every current key's log into one chronologically sorted table, or name is omitted for the active app.log. chunk/limit/offset page through a single file (not supported for name=all).",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Get log file contents",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "log file name, or 'all' to merge every key's log",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "max lines/entries to return (default 1000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "lines to skip from the end, for paging a single file",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "return only the appended fragment, without the surrounding container",
+                        "name": "chunk",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "log lines HTML",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "file logging not enabled",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/media/cleanup-orphaned": {
             "post": {
                 "description": "Deletes all orphaned media files (files not referenced by any documents)",

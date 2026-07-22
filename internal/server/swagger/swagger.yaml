@@ -2762,6 +2762,80 @@ paths:
       summary: Get used links for a file
       tags:
       - links
+  /api/logs:
+    get:
+      description: Returns the most recent in-memory log entries across every key
+        as an HTML table, newest first. Powers the "Live" view on the admin logs page.
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: log table HTML
+          schema:
+            type: string
+      summary: Get recent log entries
+      tags:
+      - system
+  /api/logs/download:
+    get:
+      description: Downloads the raw contents of a single log file as plain text
+      parameters:
+      - description: 'log file name (default: the active app.log)'
+        in: query
+        name: name
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: log file contents
+          schema:
+            type: file
+        "404":
+          description: file logging not enabled
+          schema:
+            type: string
+      summary: Download a log file
+      tags:
+      - system
+  /api/logs/file:
+    get:
+      description: Returns lines from a log file for the file-view tab. name selects
+        a single key's log file (e.g. file-sync.log), name=all merges every current
+        key's log into one chronologically sorted table, or name is omitted for the
+        active app.log. chunk/limit/offset page through a single file (not supported
+        for name=all).
+      parameters:
+      - description: log file name, or 'all' to merge every key's log
+        in: query
+        name: name
+        type: string
+      - description: max lines/entries to return (default 1000)
+        in: query
+        name: limit
+        type: integer
+      - description: lines to skip from the end, for paging a single file
+        in: query
+        name: offset
+        type: integer
+      - description: return only the appended fragment, without the surrounding container
+        in: query
+        name: chunk
+        type: boolean
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: log lines HTML
+          schema:
+            type: string
+        "404":
+          description: file logging not enabled
+          schema:
+            type: string
+      summary: Get log file contents
+      tags:
+      - system
   /api/media/{mediapath}:
     delete:
       description: Deletes a media file and its metadata

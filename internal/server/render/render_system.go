@@ -85,6 +85,80 @@ func LogFileLines(lines []string) string {
 	return sb.String()
 }
 
+// logMessageRe splits the "[<caller>]: <message>" tail common to every log
+// line shape once the timestamp/level/key prefix has been stripped.
+var logMessageRe = regexp.MustCompile(`^\[([^\]]*)\]:\s?(.*)$`)
+
+// ParseLogLines parses raw lines from a single key's log file into LogEntry
+// values, so files can be merged into one chronological view (the "All"
+// option in the file-view dropdown). Session separators and anything whose
+// leading timestamp doesn't match the currently configured date/time display
+// format are skipped - lines written under a since-changed format won't parse.
+func ParseLogLines(key logging.Key, lines []string) []logging.LogEntry {
+	var entries []logging.LogEntry
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" || logSessionLineRe.MatchString(trimmed) {
+			continue
+		}
+
+		fields := strings.Fields(trimmed)
+		if len(fields) < 3 {
+			continue
+		}
+		ts := fields[0] + " " + fields[1]
+
+		t, err := configmanager.ParseDateTimeSeconds(ts)
+		if err != nil {
+			continue
+		}
+
+		level := detectLogLevel(trimmed)
+		rest := strings.TrimSpace(strings.TrimPrefix(trimmed, ts))
+		rest = strings.TrimSpace(strings.TrimPrefix(rest, level))
+		if key != logging.KeyApp {
+			rest = strings.TrimPrefix(rest, "["+key.String()+"] ")
+		}
+
+		caller, message := "", rest
+		if m := logMessageRe.FindStringSubmatch(rest); m != nil {
+			caller, message = m[1], m[2]
+		}
+
+		entries = append(entries, logging.LogEntry{
+			Time:    t,
+			Level:   level,
+			Key:     key,
+			Caller:  caller,
+			Message: message,
+		})
+	}
+	return entries
+}
+
+// RenderLogTable renders a structured log table (Time/Level/Source/Caller/
+// Message), newest first - shared by the live ring-buffer view and the
+// merged "All" log-file view.
+func RenderLogTable(entries []logging.LogEntry) string {
+	var sb strings.Builder
+	sb.WriteString(`<table class="log-table"><thead><tr><th>Time</th><th>Level</th><th>Source</th><th>Caller</th><th>Message</th></tr></thead><tbody>`)
+	for i := len(entries) - 1; i >= 0; i-- {
+		e := entries[i]
+		fmt.Fprintf(&sb,
+			`<tr class="log-level-%s log-key-%s"><td>%s</td><td>%s</td><td>%s</td><td class="log-caller">%s</td><td>%s</td></tr>`,
+			html.EscapeString(e.Level),
+			html.EscapeString(e.Key.String()),
+			html.EscapeString(configmanager.FormatDateTimeSeconds(e.Time)),
+			html.EscapeString(e.Level),
+			html.EscapeString(e.Key.String()),
+			html.EscapeString(e.Caller),
+			html.EscapeString(e.Message),
+		)
+	}
+	sb.WriteString(`</tbody></table>`)
+	return sb.String()
+}
+
 var docsFiles embed.FS
 
 func SetDocsFiles(fs embed.FS) {
@@ -108,6 +182,7 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 		var sb strings.Builder
 		sb.WriteString(`<select id="log-source-select" onchange="onLogSourceChange(this)">`)
 		sb.WriteString(`<option value="live">Live</option>`)
+		sb.WriteString(`<option value="all">All (merged)</option>`)
 		for _, name := range logFiles {
 			sb.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, template.HTMLEscapeString(name), template.HTMLEscapeString(name)))
 		}
@@ -241,8 +316,12 @@ function onLogSourceChange(sel) {
 		_logCurrentOffset = 0;
 		if (pauseBtn) { pauseBtn.textContent = 'Resume'; pauseBtn.classList.add('active'); }
 		if (downloadLink) {
-			downloadLink.href = '/api/logs/download?name=' + encodeURIComponent(val);
-			downloadLink.style.display = '';
+			if (val === 'all') {
+				downloadLink.style.display = 'none';
+			} else {
+				downloadLink.href = '/api/logs/download?name=' + encodeURIComponent(val);
+				downloadLink.style.display = '';
+			}
 		}
 		htmx.ajax('GET', '/api/logs/file?name=' + encodeURIComponent(val), {target: '#log-entries', swap: 'innerHTML'});
 	}
