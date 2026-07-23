@@ -689,6 +689,8 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		}
 
 		data := thememanager.NewHistoryTemplateData(filePath, currentCommit, selectedCommit, versions, false)
+		data.CompareFrom = r.URL.Query().Get("from")
+		data.CompareTo = r.URL.Query().Get("to")
 		_, statErr := os.Stat(pathutils.ToFullPath(filePath))
 		data.FileDeleted = os.IsNotExist(statErr)
 

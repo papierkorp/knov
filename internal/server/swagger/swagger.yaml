@@ -2015,6 +2015,11 @@ paths:
         in: query
         name: output
         type: string
+      - description: Render an inline from/to compare form instead of a link to the
+          full history page (only applies to output=full)
+        in: query
+        name: compare
+        type: boolean
       produces:
       - application/json
       - text/html

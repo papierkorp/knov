@@ -422,6 +422,8 @@ type HistoryTemplateData struct {
 	FileDeleted     bool   // true if the file no longer exists on disk
 	Collection      string // optional collection filter for the general history view
 	Folder          string // optional folder filter (recursive) for the general history view, e.g. from a kanban board
+	CompareFrom     string // optional commit for an explicit from/to diff (arbitrary version pair, not just vs current)
+	CompareTo       string // optional commit for an explicit from/to diff
 }
 
 // NewHistoryTemplateData creates file history specific data

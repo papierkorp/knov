@@ -2427,6 +2427,12 @@ const docTemplate = `{
                         "description": "Output format: full, sidebar, compact, content (default: full)",
                         "name": "output",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Render an inline from/to compare form instead of a link to the full history page (only applies to output=full)",
+                        "name": "compare",
+                        "in": "query"
                     }
                 ],
                 "responses": {

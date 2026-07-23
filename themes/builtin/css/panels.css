@@ -1690,6 +1690,49 @@ mark.kfind.current {
   margin-bottom: 0;
 }
 
+#component-version-compare {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+}
+
+#component-version-compare select {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 4px 6px;
+  font-size: 0.85em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+#component-version-compare .version-compare-arrow {
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+}
+
+#component-version-compare button {
+  flex: 1 1 100%;
+  padding: 4px 8px;
+  font-size: 0.85em;
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  background: var(--primary);
+  color: var(--surface);
+  cursor: pointer;
+}
+
+#component-version-compare button:hover {
+  opacity: 0.9;
+}
+
 /* =============================================
    browse deletable list (collections/folders)
    ============================================= */

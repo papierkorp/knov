@@ -5,9 +5,10 @@
         <!-- File-specific history -->
         <div class="file-history-header">
             <h1>{{T "History"}}: <a href="/files/{{.FilePath}}" class="file-link">{{.FilePath}}</a></h1>
-            {{if .SelectedVersion}}
+            {{if or .SelectedVersion (and .CompareFrom .CompareTo)}}
                 <div class="version-actions">
-                    {{if or .FileDeleted (ne .SelectedVersion .CurrentVersion)}}
+                    <a href="/files/history/{{urlPathSegment .FilePath}}" class="action-link">{{T "view all versions"}}</a>
+                    {{if and .SelectedVersion (or .FileDeleted (ne .SelectedVersion .CurrentVersion))}}
                         <form hx-post="/api/files/versions/restore/{{urlQuery .FilePath}}"
                               hx-swap="none"
                               style="display: inline;">
@@ -19,8 +20,15 @@
             {{end}}
         </div>
         <hr />
-        <div id="diff-content" class="diff-section" {{if .SelectedVersion}}style="display: block;"{{end}}>
-            {{if .SelectedVersion}}
+        <div id="diff-content" class="diff-section" {{if or .SelectedVersion (and .CompareFrom .CompareTo)}}style="display: block;"{{end}}>
+            {{if and .CompareFrom .CompareTo}}
+                <!-- Auto-load diff for an explicit from/to version pair -->
+                <div hx-get="/api/files/versions/diff/{{urlQuery .FilePath}}?from={{.CompareFrom}}&to={{.CompareTo}}"
+                     hx-trigger="load"
+                     hx-swap="innerHTML">
+                    {{T "loading diff..."}}
+                </div>
+            {{else if .SelectedVersion}}
                 <!-- Auto-load diff for selected version -->
                 <div hx-get="/api/files/versions/diff/{{urlQuery .FilePath}}?from={{.SelectedVersion}}&to={{if eq .SelectedVersion .CurrentVersion}}previous{{else}}current{{end}}"
                      hx-trigger="load"
@@ -29,10 +37,10 @@
                 </div>
             {{end}}
         </div>
-        {{if not .SelectedVersion}}
+        {{if not (or .SelectedVersion (and .CompareFrom .CompareTo))}}
             <div class="file-history-content">
                 <!-- Show all versions list -->
-                <div hx-get="/api/files/versions/{{urlQuery .FilePath}}"
+                <div hx-get="/api/files/versions/{{urlQuery .FilePath}}?compare=true"
                      hx-trigger="load"
                      hx-swap="outerHTML">
                     {{T "loading file history..."}}

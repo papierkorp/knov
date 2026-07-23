@@ -1318,7 +1318,9 @@ func GetFileDiff(filePath, fromCommit, toCommit string) (diff, oldCommit, newCom
 		}
 	}
 
-	return "", "", "", fmt.Errorf("no changes found for file %s between commits", relPath)
+	// content is byte-identical between the two commits - not an error, just
+	// nothing to show a line diff for
+	return "", oldCommit, newCommit, nil
 }
 
 // resolvePathAtCommit walks backward from `from` toward `target` along first

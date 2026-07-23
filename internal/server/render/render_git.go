@@ -46,8 +46,11 @@ func RenderGitHistoryFileList(files []git.GitHistoryFile, collection, folder str
 }
 
 // RenderFileVersionsList renders list of file versions as HTML
-// output can be "full", "sidebar", or "compact"
-func RenderFileVersionsList(versions []git.FileVersion, filePath string, output string) string {
+// output can be "full", "sidebar", or "compact". showCompareForm only
+// applies to "full" - it renders the from/to compare picker inline instead
+// of a plain link to the full history page, which is too bulky for the
+// narrow file info rail.
+func RenderFileVersionsList(versions []git.FileVersion, filePath string, output string, showCompareForm bool) string {
 	if len(versions) == 0 {
 		return `<div class="no-versions">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no version history available") + `</div>`
 	}
@@ -125,6 +128,17 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 
 	default: // "full"
 		html.WriteString(`<div class="file-versions-list">`)
+
+		if len(versions) > 1 {
+			if showCompareForm {
+				html.WriteString(renderVersionCompareForm(versions, filePath))
+			} else {
+				fmt.Fprintf(&html, `<a href="/files/history/%s" class="action-link">%s</a>`,
+					pathutils.ToRelative(filePath),
+					translation.SprintfForRequest(configmanager.GetLanguage(), "compare versions"))
+			}
+		}
+
 		html.WriteString(`<ul class="version-list">`)
 
 		for _, version := range versions {
@@ -160,6 +174,39 @@ func RenderFileVersionsList(versions []git.FileVersion, filePath string, output 
 	}
 
 	return html.String()
+}
+
+// renderVersionCompareForm renders a from/to version picker letting the user
+// diff any two versions against each other, not just a version against
+// current. Submits as a plain navigation to the full history page (like the
+// per-version "view" links), since the full diff view doesn't fit well in
+// the narrow file info sidebar this also renders inside.
+func renderVersionCompareForm(versions []git.FileVersion, filePath string) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, `<form id="component-version-compare" method="get" action="/files/history/%s">`,
+		pathutils.ToRelative(filePath))
+	b.WriteString(renderVersionCompareSelect("from", versions, 1))
+	b.WriteString(`<span class="version-compare-arrow">&rarr;</span>`)
+	b.WriteString(renderVersionCompareSelect("to", versions, 0))
+	fmt.Fprintf(&b, `<button type="submit">%s</button></form>`,
+		translation.SprintfForRequest(configmanager.GetLanguage(), "compare"))
+	return b.String()
+}
+
+// renderVersionCompareSelect renders a <select> of every version, pre-selecting defaultIndex.
+func renderVersionCompareSelect(name string, versions []git.FileVersion, defaultIndex int) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, `<select name="%s" class="version-compare-select">`, name)
+	for i, v := range versions {
+		selected := ""
+		if i == defaultIndex {
+			selected = " selected"
+		}
+		fmt.Fprintf(&b, `<option value="%s"%s>%s: %s</option>`,
+			v.Commit, selected, configmanager.FormatDateTime(v.Date), htmlpkg.EscapeString(v.Message))
+	}
+	b.WriteString(`</select>`)
+	return b.String()
 }
 
 // RenderFileAtVersion renders file content at a specific version
@@ -211,9 +258,14 @@ func RenderFileDiff(diff, filePath string, before, after FileDiffVersion) string
 		translation.SprintfForRequest(configmanager.GetLanguage(), "after"),
 		after.Date, after.Commit))
 
-	// apply syntax highlighting to diff output
-	highlightedDiff := parser.HighlightCodeBlock(diff, "diff")
-	html.WriteString(highlightedDiff)
+	if diff == "" {
+		fmt.Fprintf(&html, `<p class="diff-empty">%s</p>`,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "no differences between these versions"))
+	} else {
+		// apply syntax highlighting to diff output
+		highlightedDiff := parser.HighlightCodeBlock(diff, "diff")
+		html.WriteString(highlightedDiff)
+	}
 
 	html.WriteString(`<div id="component-diff-fullfiles">`)
 	html.WriteString(renderDiffFullFile(translation.SprintfForRequest(configmanager.GetLanguage(), "before"), filePath, before))

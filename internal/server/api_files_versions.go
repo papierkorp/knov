@@ -22,6 +22,7 @@ import (
 // @Param filepath path string true "File path"
 // @Param commit query string false "Specific commit (current, previous, or commit hash)"
 // @Param output query string false "Output format: full, sidebar, compact, content (default: full)"
+// @Param compare query bool false "Render an inline from/to compare form instead of a link to the full history page (only applies to output=full)"
 // @Produce json,html
 // @Success 200 "File versions or specific version content"
 // @Router /api/files/versions/{filepath} [get]
@@ -38,6 +39,7 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 	if output == "" {
 		output = "full"
 	}
+	showCompareForm := r.URL.Query().Get("compare") == "true"
 
 	if commit == "" {
 		versions, err := git.GetFileHistory(fullPath)
@@ -48,7 +50,7 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(html))
 			return
 		}
-		html := render.RenderFileVersionsList(versions, filePath, output)
+		html := render.RenderFileVersionsList(versions, filePath, output, showCompareForm)
 		writeResponse(w, r, versions, html)
 		return
 	}

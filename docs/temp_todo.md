@@ -31,7 +31,6 @@
 - pdf export for full site
 - pdf export for section
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
-- show diffs from same file but different dates/versions (maybe 2 selects in sidebar?)
 - add logging to tests
 
 # testing
