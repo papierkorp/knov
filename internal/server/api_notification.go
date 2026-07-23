@@ -23,19 +23,15 @@ import (
 // @Success 204 "no pending notification"
 // @Router /api/notifications/flash [get]
 func handleAPIGetNotificationFlash(w http.ResponseWriter, r *http.Request) {
-	n, err := notificationStorage.GetPending()
+	n, err := notificationStorage.ConsumePending()
 	if err != nil {
-		logging.LogError(logging.KeyApp, "failed to get pending notification: %v", err)
+		logging.LogError(logging.KeyApp, "failed to consume pending notification: %v", err)
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 	if n == nil {
 		w.WriteHeader(http.StatusNoContent)
 		return
-	}
-
-	if err := notificationStorage.ClearPending(n.ID); err != nil {
-		logging.LogError(logging.KeyApp, "failed to clear pending notification %s: %v", n.ID, err)
 	}
 
 	// always JSON — this endpoint is only called by the JS fetch, never by htmx HTML swap

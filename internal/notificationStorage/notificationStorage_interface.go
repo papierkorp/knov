@@ -20,8 +20,7 @@ type Notification struct {
 // NotificationStorage defines the storage backend interface.
 type NotificationStorage interface {
 	Add(level, message string, pending bool) (*Notification, error)
-	GetPending() (*Notification, error)
-	ClearPending(id string) error
+	ConsumePending() (*Notification, error)
 	GetRecent(limit int) ([]Notification, error)
 	Purge(maxCount int, maxAgeDays int) error
 	DeleteByID(id string) error
@@ -50,14 +49,10 @@ func Add(level, message string, pending bool) (*Notification, error) {
 	return storage.Add(level, message, pending)
 }
 
-// GetPending returns the oldest pending notification, or nil if none.
-func GetPending() (*Notification, error) {
-	return storage.GetPending()
-}
-
-// ClearPending marks a notification as no longer pending.
-func ClearPending(id string) error {
-	return storage.ClearPending(id)
+// ConsumePending atomically returns and clears the oldest pending notification,
+// or nil if none. Atomic so concurrent callers never receive the same one twice.
+func ConsumePending() (*Notification, error) {
+	return storage.ConsumePending()
 }
 
 // GetRecent returns the most recent notifications, newest first.

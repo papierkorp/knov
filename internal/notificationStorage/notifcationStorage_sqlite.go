@@ -114,9 +114,12 @@ func (s *sqliteStorage) Add(level, message string, pending bool) (*Notification,
 	return &Notification{ID: id, Level: level, Message: message, CreatedAt: now, Pending: pending}, nil
 }
 
-func (s *sqliteStorage) GetPending() (*Notification, error) {
-	s.mutex.RLock()
-	defer s.mutex.RUnlock()
+// ConsumePending atomically reads and clears the oldest pending notification,
+// so concurrent callers (multiple tabs, boosted preloads) can never both
+// receive the same one.
+func (s *sqliteStorage) ConsumePending() (*Notification, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
 	var n Notification
 	err := s.db.QueryRow(
@@ -128,19 +131,13 @@ func (s *sqliteStorage) GetPending() (*Notification, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get pending notification: %w", err)
 	}
+
+	if _, err := s.db.Exec(`UPDATE notifications SET pending = 0 WHERE id = ?`, n.ID); err != nil {
+		return nil, fmt.Errorf("failed to clear pending notification: %w", err)
+	}
+
 	n.Pending = true
 	return &n, nil
-}
-
-func (s *sqliteStorage) ClearPending(id string) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	_, err := s.db.Exec(`UPDATE notifications SET pending = 0 WHERE id = ?`, id)
-	if err != nil {
-		return fmt.Errorf("failed to clear pending notification: %w", err)
-	}
-	return nil
 }
 
 func (s *sqliteStorage) GetRecent(limit int) ([]Notification, error) {
