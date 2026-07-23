@@ -841,6 +841,10 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 		// don't fail the operation for this, just log a warning
 	}
 
+	if err := git.InvalidateFileHistoryCache(currentPath); err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to invalidate file history cache for %s: %v", currentPath, err)
+	}
+
 	logging.LogInfo(logging.KeyApp, "successfully renamed file: %s -> %s", currentPath, newPath)
 
 	// redirect to the new file location
@@ -966,6 +970,9 @@ func cleanupDeletedFileMetadataNoRefresh(fullPath string) {
 	relPath := pathutils.ToRelative(fullPath)
 	if err := files.MetaDataDeleteNoRefresh(logging.KeyApp, relPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete metadata for %s: %v", relPath, err)
+	}
+	if err := git.InvalidateFileHistoryCache(relPath); err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to invalidate file history cache for %s: %v", relPath, err)
 	}
 }
 

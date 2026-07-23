@@ -576,6 +576,26 @@ func CommitAllPending() (bool, error) {
 	return true, nil
 }
 
+// fileHistoryCacheEntry holds a computed history alongside the HEAD it was
+// computed at, so a stale entry is detected by a simple hash comparison
+// instead of needing explicit invalidation.
+type fileHistoryCacheEntry struct {
+	HeadCommit string        `json:"headCommit"`
+	Versions   []FileVersion `json:"versions"`
+}
+
+// fileHistoryCacheKey builds the cacheStorage key for a file's history entry.
+func fileHistoryCacheKey(relPath string) string {
+	return "git_file_history_" + pathutils.ToRelative(relPath)
+}
+
+// InvalidateFileHistoryCache removes the cached history entry for a file.
+// Call this when a file is deleted or renamed, so no orphaned entry lingers
+// under a path that no longer exists.
+func InvalidateFileHistoryCache(path string) error {
+	return cacheStorage.Delete(fileHistoryCacheKey(path))
+}
+
 // GetFileHistory returns the git history for a specific file
 func GetFileHistory(filePath string) ([]FileVersion, error) {
 	repo, err := openRepo()
@@ -592,6 +612,14 @@ func GetFileHistory(filePath string) ([]FileVersion, error) {
 	ref, err := repo.Head()
 	if err != nil {
 		return nil, err
+	}
+
+	cacheKey := fileHistoryCacheKey(relPath)
+	if data, err := cacheStorage.Get(cacheKey); err == nil && data != nil {
+		var cached fileHistoryCacheEntry
+		if err := json.Unmarshal(data, &cached); err == nil && cached.HeadCommit == ref.Hash().String() {
+			return cached.Versions, nil
+		}
 	}
 
 	headCommit, err := repo.CommitObject(ref.Hash())
@@ -667,6 +695,12 @@ func GetFileHistory(filePath string) ([]FileVersion, error) {
 	// mark the first (most recent) as current
 	if len(versions) > 0 {
 		versions[0].IsCurrent = true
+	}
+
+	if data, err := json.Marshal(fileHistoryCacheEntry{HeadCommit: ref.Hash().String(), Versions: versions}); err == nil {
+		if err := cacheStorage.Set(cacheKey, data); err != nil {
+			logging.LogWarning(logging.KeyApp, "failed to cache file history for %s: %v", relPath, err)
+		}
 	}
 
 	return versions, nil
