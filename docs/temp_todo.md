@@ -30,8 +30,6 @@
 - pdf export for section
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
 - add logging to tests
-- refresh button in /system/jobs
-- insert a existing image into a new/existing md file => update its usesd (used in)
 
 # testing
 

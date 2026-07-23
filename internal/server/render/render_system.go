@@ -399,6 +399,7 @@ func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 .job-status-error { background: #fff1f0; }
 .job-status-running { background: #eff6ff; }
 </style>` +
+		`<div class="jobs-toolbar"><button class="btn-secondary" hx-get="/api/system/jobs" hx-target="#jobs-entries" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'>Refresh</button></div>` +
 		`<div id="jobs-entries" hx-get="/api/system/jobs" hx-trigger="load, every 3s" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'></div>`
 
 	tm := thememanager.GetThemeManager()
