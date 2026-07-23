@@ -1668,6 +1668,35 @@ paths:
       summary: Export all files with dokuwiki to markdown conversion
       tags:
       - files
+  /api/files/export/pdf:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Renders a file's markdown source to a downloadable pdf
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: pdf file
+          schema:
+            type: file
+        "400":
+          description: invalid request
+          schema:
+            type: string
+        "500":
+          description: export failed
+          schema:
+            type: string
+      summary: Export file to pdf
+      tags:
+      - files
   /api/files/export/zip:
     post:
       consumes:

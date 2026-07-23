@@ -232,6 +232,16 @@
       "translation": ""
     },
     {
+      "id": "Browse by Folder Structure",
+      "message": "Browse by Folder Structure",
+      "translation": ""
+    },
+    {
+      "id": "Browse by Metadata",
+      "message": "Browse by Metadata",
+      "translation": ""
+    },
+    {
       "id": "Browse Files",
       "message": "Browse Files",
       "translation": ""
@@ -312,11 +322,6 @@
       "translation": ""
     },
     {
-      "id": "changelog",
-      "message": "changelog",
-      "translation": ""
-    },
-    {
       "id": "Changelog",
       "message": "Changelog",
       "translation": ""
@@ -372,8 +377,23 @@
       "translation": ""
     },
     {
+      "id": "Collections",
+      "message": "Collections",
+      "translation": ""
+    },
+    {
       "id": "collection updated",
       "message": "collection updated",
+      "translation": ""
+    },
+    {
+      "id": "compare",
+      "message": "compare",
+      "translation": ""
+    },
+    {
+      "id": "compare versions",
+      "message": "compare versions",
       "translation": ""
     },
     {
@@ -712,6 +732,11 @@
       "translation": ""
     },
     {
+      "id": "Editor-Type",
+      "message": "Editor-Type",
+      "translation": ""
+    },
+    {
       "id": "editor updated",
       "message": "editor updated",
       "translation": ""
@@ -822,6 +847,11 @@
       "translation": ""
     },
     {
+      "id": "export to pdf",
+      "message": "export to pdf",
+      "translation": ""
+    },
+    {
       "id": "failed",
       "message": "failed",
       "translation": ""
@@ -829,6 +859,11 @@
     {
       "id": "failed to browse files",
       "message": "failed to browse files",
+      "translation": ""
+    },
+    {
+      "id": "failed to convert file to pdf",
+      "message": "failed to convert file to pdf",
       "translation": ""
     },
     {
@@ -879,6 +914,11 @@
     {
       "id": "failed to get ancestors",
       "message": "failed to get ancestors",
+      "translation": ""
+    },
+    {
+      "id": "failed to get archived cards",
+      "message": "failed to get archived cards",
       "translation": ""
     },
     {
@@ -964,11 +1004,6 @@
     {
       "id": "failed to load chat",
       "message": "failed to load chat",
-      "translation": ""
-    },
-    {
-      "id": "failed to load events",
-      "message": "failed to load events",
       "translation": ""
     },
     {
@@ -1372,6 +1407,11 @@
       "translation": ""
     },
     {
+      "id": "Filters",
+      "message": "Filters",
+      "translation": ""
+    },
+    {
       "id": "filter saved successfully!",
       "message": "filter saved successfully!",
       "translation": ""
@@ -1424,6 +1464,11 @@
     {
       "id": "folders",
       "message": "folders",
+      "translation": ""
+    },
+    {
+      "id": "Folders",
+      "message": "Folders",
       "translation": ""
     },
     {
@@ -2082,6 +2127,11 @@
       "translation": ""
     },
     {
+      "id": "more actions",
+      "message": "more actions",
+      "translation": ""
+    },
+    {
       "id": "move down",
       "message": "move down",
       "translation": ""
@@ -2157,6 +2207,11 @@
       "translation": ""
     },
     {
+      "id": "no archived files",
+      "message": "no archived files",
+      "translation": ""
+    },
+    {
       "id": "no boards configured",
       "message": "no boards configured",
       "translation": ""
@@ -2189,6 +2244,11 @@
     {
       "id": "no deleted files found",
       "message": "no deleted files found",
+      "translation": ""
+    },
+    {
+      "id": "no differences between these versions",
+      "message": "no differences between these versions",
       "translation": ""
     },
     {
@@ -2772,6 +2832,11 @@
       "translation": ""
     },
     {
+      "id": "search archived files...",
+      "message": "search archived files...",
+      "translation": ""
+    },
+    {
       "id": "search by filename...",
       "message": "search by filename...",
       "translation": ""
@@ -2927,6 +2992,11 @@
       "translation": ""
     },
     {
+      "id": "show archive",
+      "message": "show archive",
+      "translation": ""
+    },
+    {
       "id": "show events",
       "message": "show events",
       "translation": ""
@@ -3009,6 +3079,11 @@
     {
       "id": "tags",
       "message": "tags",
+      "translation": ""
+    },
+    {
+      "id": "Tags",
+      "message": "Tags",
       "translation": ""
     },
     {
@@ -3272,6 +3347,16 @@
       "translation": ""
     },
     {
+      "id": "View all editor types",
+      "message": "View all editor types",
+      "translation": ""
+    },
+    {
+      "id": "View all filter files",
+      "message": "View all filter files",
+      "translation": ""
+    },
+    {
       "id": "View all folders",
       "message": "View all folders",
       "translation": ""
@@ -3284,6 +3369,11 @@
     {
       "id": "View all types",
       "message": "View all types",
+      "translation": ""
+    },
+    {
+      "id": "view all versions",
+      "message": "view all versions",
       "translation": ""
     },
     {

@@ -262,6 +262,7 @@ func NewRouter() *chi.Mux {
 			r.Get("/autocomplete", handleAPIFilesAutocomplete)
 			r.Get("/headers", handleAPIFilesHeaders)
 			r.Get("/export/markdown", handleAPIExportToMarkdown)
+			r.Get("/export/pdf", handleAPIExportToPDF)
 			r.Post("/export/zip", handleAPIExportAllFiles)
 			r.Post("/export/markdown-converted", handleAPIExportAllFilesWithMarkdownConversion)
 

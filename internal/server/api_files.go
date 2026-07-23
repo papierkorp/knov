@@ -23,6 +23,7 @@ import (
 	"knov/internal/mapping"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
+	"knov/internal/pdfexport"
 	"knov/internal/search"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
@@ -489,6 +490,47 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(markdown))
 
 	logging.LogInfo(logging.KeyApp, "exported file to markdown: %s", filePath)
+}
+
+// @Summary Export file to pdf
+// @Description Renders a file's markdown source to a downloadable pdf
+// @Tags files
+// @Accept application/x-www-form-urlencoded
+// @Produce application/pdf
+// @Param filepath query string true "File path"
+// @Success 200 {file} file "pdf file"
+// @Failure 400 {string} string "invalid request"
+// @Failure 500 {string} string "export failed"
+// @Router /api/files/export/pdf [get]
+func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+
+	fullPath := pathutils.ToDocsPath(filePath)
+
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		logging.LogError(logging.KeyApp, "failed to read file %s: %v", fullPath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
+		return
+	}
+
+	pdf, err := pdfexport.MarkdownToPDF(content)
+	if err != nil {
+		logging.LogError(logging.KeyApp, "failed to convert file to pdf %s: %v", filePath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to convert file to pdf"), http.StatusInternalServerError)
+		return
+	}
+
+	filename := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath)) + ".pdf"
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	w.Write(pdf)
+
+	logging.LogInfo(logging.KeyApp, "exported file to pdf: %s", filePath)
 }
 
 // @Summary Export all files as zip

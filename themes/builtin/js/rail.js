@@ -487,6 +487,10 @@ function setupFilePage() {
   const editLink = document.getElementById("fp-edit-link");
   if (editLink) editLink.href = "/files/edit/" + filepath;
 
+  const exportPdfLink = document.getElementById("fp-export-pdf-link");
+  if (exportPdfLink)
+    exportPdfLink.href = "/api/files/export/pdf?filepath=" + filepath;
+
   const rebuildBtn = document.getElementById("fp-rebuild-btn");
   if (rebuildBtn) {
     rebuildBtn.setAttribute("hx-post", "/api/metadata/rebuild/" + filepath);

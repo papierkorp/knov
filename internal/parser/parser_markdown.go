@@ -35,15 +35,15 @@ func (h *MarkdownHandler) CanHandle(filename string) bool {
 func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 	content = StripFrontMatter(content)
 	processed := h.wrapRawHTMLBlocks(string(content))
-	processed = h.processWikiLinks(processed)
+	processed = ResolveWikiLinks(processed)
 	processed = h.processMarkdownLinks(processed)
 	return []byte(processed), nil
 }
 
 var wikiLinkRe = regexp.MustCompile(`\[\[([^\[\]]+)\]\]`)
 
-// processWikiLinks converts [[path]] and [[path|display]] to standard markdown links.
-func (h *MarkdownHandler) processWikiLinks(content string) string {
+// ResolveWikiLinks converts [[path]] and [[path|display]] to standard markdown links.
+func ResolveWikiLinks(content string) string {
 	return wikiLinkRe.ReplaceAllStringFunc(content, func(match string) string {
 		inner := match[2 : len(match)-2]
 		parts := strings.SplitN(inner, "|", 2)

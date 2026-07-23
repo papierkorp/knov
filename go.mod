@@ -8,6 +8,7 @@ require (
 	github.com/alecthomas/chroma/v2 v2.20.0
 	github.com/chromedp/chromedp v0.15.1
 	github.com/go-git/go-git/v5 v5.16.4
+	github.com/go-pdf/fpdf v0.8.0
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.6

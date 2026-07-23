@@ -30,6 +30,14 @@
 - pdf export for section
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
 - add logging to tests
+- Path traversal bug - . A request like `?filepath=../../somefile` resolves outside the docs directory => The fix strategy is central: make `ToDocsPath` (or a validation step in `parsePath`) verify the resolved path is still under the docs root
+- Content-Disposition filename is unquoted - A source file named `my notes.md` produces `filename=my notes.pdf`, which is a malformed header => `.FormatMediaType` exists for exactly this
+- pdfexport
+  - make a linebreak a config
+  - The Swagger `@Accept application/x-www-form-urlencoded` on a GET that only reads query parameters is slightly off-label, and the `href="#" download` fallback in the template means a click with JS broken downloads the HTML page itself
+  - rail.js builds the query string without URI-encoding. A filename containing `&`, `#`, `%`, or `+` corrupts the `filepath` parameter and the export silently targets the wrong path or 500s. The existing edit link concatenates into a path segment, which is more forgiving; a query parameter is not
+  - GFM task-list checkboxes vanish. GFM is enabled, but `collectTokens` has no case for the task-checkbox inline node, and since it has no children the default recursion emits nothing - `- [ ] buy milk` exports as `buy milk`
+  - **Long unbreakable words overflow the page.** `writeParagraph` always places the first token of a line regardless of width, and only code blocks do character-level breaking — a long URL or token runs off the right edge and is clipped. Relatedly, `minColumnWidth` has a floor but no ceiling, so one page-wide word in a table cell defeats the shrink loop (it exits when no flexible space remains) and the table overflows
 
 # testing
 
