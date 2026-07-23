@@ -26,11 +26,11 @@
       - for usage
       - for devs
 - move file button (can be done in rename at the moment)
-- multi file upload per insertMedia button in toastui editor
 - pdf export for full site
 - pdf export for section
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
 - add logging to tests
+- refresh button in /syste/jobs
 
 # testing
 

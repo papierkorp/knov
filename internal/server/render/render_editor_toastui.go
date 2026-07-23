@@ -151,27 +151,56 @@ func jsEditorInit(content string) string {
 	}())
 }
 
-// jsFileInputAcceptAll patches the built-in image popup file input to accept all file types.
-// ToastUI sets accept="image/*" by default. We override it on init and via MutationObserver
-// for the lazy-rendered popup.
+// jsFileInputAcceptAll patches the built-in image popup: file input accepts all types and
+// multi-select, and OK is intercepted (capture phase, ahead of ToastUI's own click handler on
+// the same button) so multi-file uploads only happen once OK is pressed, not on selection.
+// ToastUI's own OK handler only ever inserts files[0], so single-file selection is untouched.
 func jsFileInputAcceptAll() string {
 	return `
-		// patch built-in image popup file input to accept all file types
-		// also rename the image button tooltip to "Insert Media"
-		setTimeout(function() {
-			document.querySelectorAll('.toastui-editor-popup input[type="file"]').forEach(function(input) {
-				input.setAttribute('accept', '*');
-			});
+		// patch built-in image popup: allow multi-select, upload all files on OK press.
+		// The click listener sits on the popup (an ancestor of the OK button) in the
+		// capture phase, so for multi-file selections it runs and stops the event before
+		// ToastUI's own click handler (bound directly to the OK button) ever sees it.
+		function patchImagePopup(popupEl) {
+			const input = popupEl.querySelector('input[type="file"]');
+			if (!input || input.dataset.multiUploadPatched) return;
+			input.dataset.multiUploadPatched = 'true';
+			input.setAttribute('accept', '*');
+			input.setAttribute('multiple', 'multiple');
+			popupEl.addEventListener('click', function(e) {
+				if (!e.target.closest('.toastui-editor-ok-button')) return;
+				const files = Array.from(input.files || []);
+				if (files.length <= 1) return;
+				e.preventDefault();
+				e.stopPropagation();
+				files.forEach(function(file) {
+					uploadMediaBlob(file, function(url, alt) {
+						if (!url) return;
+						const isImage = file.type.startsWith('image/');
+						editor.insertText(isImage ? '![' + alt + '](' + url + ')' : '[' + alt + '](' + url + ')');
+					});
+				});
+				input.value = '';
+				const closeButton = popupEl.querySelector('.toastui-editor-close-button');
+				if (closeButton) closeButton.click();
+			}, true);
+		}
 
+		setTimeout(function() {
+			document.querySelectorAll('.toastui-editor-popup-add-image').forEach(patchImagePopup);
 		}, 500);
 
-		// also patch lazily-rendered popups via MutationObserver
+		// also patch lazily-rendered popups via MutationObserver. ToastUI reuses a single
+		// hidden popup wrapper for image/table/link popups, swapping its class and content
+		// each time rather than creating a fresh node, so the wrapper itself is never an
+		// "added" node after the first use — closest() finds it via the newly-added children.
 		const popupObserver = new MutationObserver(function(mutations) {
 			mutations.forEach(function(mutation) {
 				mutation.addedNodes.forEach(function(node) {
 					if (node.nodeType !== 1) return;
-					const fileInput = node.querySelector && node.querySelector('input[type="file"]');
-					if (fileInput) fileInput.setAttribute('accept', '*');
+					const popupEl = (node.closest && node.closest('.toastui-editor-popup-add-image'))
+						|| (node.querySelector && node.querySelector('.toastui-editor-popup-add-image'));
+					if (popupEl) patchImagePopup(popupEl);
 				});
 			});
 		});
