@@ -92,7 +92,7 @@ func MetaDataLinksRebuild(key logging.Key) error {
 			if handler != nil {
 				links := handler.ExtractLinks(contentData)
 				for _, link := range links {
-					cleanLink := utils.CleanLink(link)
+					cleanLink := resolveMediaLink(utils.CleanLink(link))
 					if cleanLink != "" && cleanLink != metadata.Path && !slices.Contains(metadata.UsedLinks, cleanLink) {
 						metadata.UsedLinks = append(metadata.UsedLinks, cleanLink)
 					}
@@ -272,6 +272,20 @@ func findTopAncestor(filePath string, visited map[string]bool, cache map[string]
 	return filePath
 }
 
+// resolveMediaLink promotes a link lacking the "media/" prefix to its prefixed
+// form when it matches an existing media file. The media detail page displays
+// paths without that prefix, so links copied from there would otherwise never
+// match stored media metadata and silently fail to register in LinksToHere.
+func resolveMediaLink(link string) string {
+	if link == "" || strings.HasPrefix(link, "media/") || strings.HasPrefix(link, "docs/") {
+		return link
+	}
+	if _, err := os.Stat(pathutils.ToMediaPath(link)); err == nil {
+		return "media/" + link
+	}
+	return link
+}
+
 func updateUsedLinks(metadata *Metadata) {
 	// skip link extraction for media files
 	if strings.HasPrefix(metadata.Path, "media/") {
@@ -304,7 +318,7 @@ func updateUsedLinks(metadata *Metadata) {
 	metadata.UsedLinks = []string{}
 
 	for _, link := range links {
-		cleanLink := utils.CleanLink(link)
+		cleanLink := resolveMediaLink(utils.CleanLink(link))
 
 		if cleanLink == "" || cleanLink == metadata.Path {
 			continue
