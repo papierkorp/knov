@@ -548,39 +548,43 @@ func updateLinksInFile(key logging.Key, filePath, oldPath, newPath string) (bool
 		return "](" + newTarget + ")"
 	})
 
-	// wiki-style links: [[oldPath]] -> [[newPath]]
-	oldWikiLink := fmt.Sprintf("[[%s]]", oldPath)
-	newWikiLink := fmt.Sprintf("[[%s]]", newPath)
-	if strings.Contains(content, oldWikiLink) {
-		content = strings.ReplaceAll(content, oldWikiLink, newWikiLink)
-		updated = true
-		logging.LogDebug(key, "updated wiki links in %s", filePath)
+	// wiki-style links: [[oldPath]] and [[oldPath|text]] -> same with newPath.
+	// Also tries the extensionless form ([[note]] for note.md), since that's
+	// how wiki links are normally typed.
+	oldWikiTargets := []string{oldPath}
+	newWikiTargets := []string{newPath}
+	if noExt := strings.TrimSuffix(oldPath, ".md"); noExt != oldPath {
+		oldWikiTargets = append(oldWikiTargets, noExt)
+		newWikiTargets = append(newWikiTargets, strings.TrimSuffix(newPath, ".md"))
 	}
 
-	// dokuwiki-style links: [[oldPath|text]] -> [[newPath|text]]
 	lines := strings.Split(content, "\n")
 	for i, line := range lines {
-		if strings.Contains(line, oldPath) {
-			start := strings.Index(line, "[["+oldPath)
-			if start != -1 {
-				end := strings.Index(line[start:], "]]")
-				if end != -1 {
-					end += start
-					linkPart := line[start+2 : end]
+		for t, oldTarget := range oldWikiTargets {
+			newTarget := newWikiTargets[t]
+			start := strings.Index(line, "[["+oldTarget)
+			if start == -1 {
+				continue
+			}
+			end := strings.Index(line[start:], "]]")
+			if end == -1 {
+				continue
+			}
+			end += start
+			linkPart := line[start+2 : end]
 
-					if strings.HasPrefix(linkPart, oldPath) {
-						if len(linkPart) == len(oldPath) {
-							lines[i] = strings.Replace(line, "[["+oldPath+"]]", "[["+newPath+"]]", 1)
-							updated = true
-						} else if linkPart[len(oldPath)] == '|' {
-							textPart := linkPart[len(oldPath):]
-							lines[i] = strings.Replace(line, "[["+oldPath+textPart+"]]", "[["+newPath+textPart+"]]", 1)
-							updated = true
-						}
-					}
-				}
+			if linkPart == oldTarget {
+				line = strings.Replace(line, "[["+oldTarget+"]]", "[["+newTarget+"]]", 1)
+				updated = true
+				logging.LogDebug(key, "updated wiki link in %s", filePath)
+			} else if strings.HasPrefix(linkPart, oldTarget) && linkPart[len(oldTarget)] == '|' {
+				textPart := linkPart[len(oldTarget):]
+				line = strings.Replace(line, "[["+oldTarget+textPart+"]]", "[["+newTarget+textPart+"]]", 1)
+				updated = true
+				logging.LogDebug(key, "updated wiki link in %s", filePath)
 			}
 		}
+		lines[i] = line
 	}
 
 	if updated {

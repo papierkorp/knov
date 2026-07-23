@@ -15,16 +15,16 @@
 
 
 **per ai**
-- deployment
-  - make docker build viable
-    - for usage
-    - for devs
-- larger project if time, not important
+- not important
   - codemirror copy + paste with y+p does not work properly (e.g. i have something in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
     - is a harder problem to tackle
   - backup solution
   - create a system for themes (another repoistory with themes)
     - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
+  - deployment
+    - make docker build viable
+      - for usage
+      - for devs
 - move file button (can be done in rename at the moment)
 - file upload per drag and drop into the toastui editor
 - multi file upload per insertMedia button in toastui editor
@@ -33,7 +33,6 @@
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
 - show last git sync/cronjob
 - optimize `files/history` it takes really long => why? is there a better way?
-- fix broken links => also search for wiki links
 - show diffs from same file but different dates/versions (maybe 2 selects in sidebar?)
 - kanban - show archive
 - add logging to tests
