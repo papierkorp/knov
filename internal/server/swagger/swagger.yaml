@@ -2364,6 +2364,23 @@ paths:
       summary: Get kanban board for a folder
       tags:
       - kanban
+  /api/kanban/{board}/archive:
+    get:
+      description: Returns all cards with the archive status for the board's folder
+        (and subfolders), newest first
+      parameters:
+      - description: Board slug
+        in: path
+        name: board
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      summary: Get archived kanban cards for a board
+      tags:
+      - kanban
   /api/kanban/{board}/events:
     get:
       description: Returns kanban card move events, newest first. All parameters are
@@ -2378,20 +2395,21 @@ paths:
         in: query
         name: file
         type: string
-      - description: Start of time range (RFC3339)
+      - description: Start of time range (RFC3339 or YYYY-MM-DD)
         in: query
         name: from
         type: string
-      - description: End of time range (RFC3339)
+      - description: End of time range (RFC3339 or YYYY-MM-DD)
         in: query
         name: to
         type: string
-      - description: Max number of events (default 100, 0 = unlimited)
+      - description: Max number of events (default 200, 0 = unlimited)
         in: query
         name: limit
         type: integer
       produces:
       - application/json
+      - text/html
       responses: {}
       summary: Get kanban event log
       tags:

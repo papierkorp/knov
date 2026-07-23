@@ -34,8 +34,8 @@
 - show last git sync/cronjob
 - optimize `files/history` it takes really long => why? is there a better way?
 - show diffs from same file but different dates/versions (maybe 2 selects in sidebar?)
-- kanban - show archive
 - add logging to tests
+- http://localhost:1324/browse/collections/test doesnt show any files => the links in the info metadata panel for collections is wrong it should be browse/collection instead of browse/collections - even tough im more inclined to use collections
 
 # testing
 
@@ -107,6 +107,30 @@ note: browser-only interactions (kanban drag-and-drop, toastui toolbar) can't be
 - unmapped/needs tracing before writing tests: base.gohtml:360 `hx-post=""` and :374 `hx-delete=""` (target injected at runtime, not static)
 
 
-# docs
+# ai prompts
+
+## docs
 
 small, precise and concise, high level overview, no examples that are prone to change, just a few bullet points, as few subheaders as possible (i think it becomes more unreadable if its too segmented)
+
+## review
+
+Role: Act as a Staff-Level Software Engineer conducting a code review with a high bar for quality and maintainability.
+
+Task: Review the current git diff. You are strictly prohibited from rewriting the code or providing "fixed" code snippets. You are only permitted to give your professional opinion on the changes.
+
+Constraints:
+- Do not output any code. Do not suggest code blocks, patches, or refactored versions of the provided diff.
+- Verdict: If the changes are completely safe, logically sound, and meet standard best practices, explicitly state: "VERDICT: APPROVED" in your response.
+- Problems: If you find any issues, do not fix them. Instead, explain why they are problematic, the potential impact (e.g., runtime error, security hole, performance bottleneck, unreadability), and optionally, the strategy to fix them (without writing the actual code).
+
+Areas to scrutinize (your opinion must cover these):
+- Correctness: Are there off-by-one errors, incorrect variable reassignments, or logical flaws?
+- Edge Cases: Will this fail on empty arrays, null values, or extreme inputs?
+- Security: Does this introduce injection risks, exposed secrets, or unsafe deserialization?
+- Performance: Are there O(n²) loops hiding in the changes, or unnecessary database queries?
+- Maintainability: Is the naming clear? Is it adding accidental complexity or tight coupling?
+- Side Effects: Are there changes to global state, environment variables, or external APIs that weren't considered?
+- Architecture: are the changes in line with the rest of the codebase?
+
+Also give your opinion about the changes

@@ -2960,11 +2960,35 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/kanban/{board}/archive": {
+            "get": {
+                "description": "Returns all cards with the archive status for the board's folder (and subfolders), newest first",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "kanban"
+                ],
+                "summary": "Get archived kanban cards for a board",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Board slug",
+                        "name": "board",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/kanban/{board}/events": {
             "get": {
                 "description": "Returns kanban card move events, newest first. All parameters are optional.",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "kanban"
@@ -2986,19 +3010,19 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Start of time range (RFC3339)",
+                        "description": "Start of time range (RFC3339 or YYYY-MM-DD)",
                         "name": "from",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "End of time range (RFC3339)",
+                        "description": "End of time range (RFC3339 or YYYY-MM-DD)",
                         "name": "to",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Max number of events (default 100, 0 = unlimited)",
+                        "description": "Max number of events (default 200, 0 = unlimited)",
                         "name": "limit",
                         "in": "query"
                     }

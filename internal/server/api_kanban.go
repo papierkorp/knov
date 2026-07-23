@@ -65,6 +65,28 @@ func handleAPIGetKanbanBoard(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, cols, render.RenderKanbanBoard(cols))
 }
 
+// @Summary Get archived kanban cards for a board
+// @Description Returns all cards with the archive status for the board's folder (and subfolders), newest first
+// @Tags kanban
+// @Param board path string true "Board slug"
+// @Produce json,html
+// @Router /api/kanban/{board}/archive [get]
+func handleAPIGetKanbanArchive(w http.ResponseWriter, r *http.Request) {
+	board, ok := resolveBoard(w, r)
+	if !ok {
+		return
+	}
+
+	cards, err := kanban.Archived(board.FolderPath)
+	if err != nil {
+		logging.LogError(logging.KeyApp, "failed to get archived cards for %s: %v", board.FolderPath, err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get archived cards"), http.StatusInternalServerError)
+		return
+	}
+
+	writeResponse(w, r, cards, render.RenderKanbanArchive(cards))
+}
+
 // @Summary Apply advanced filter to kanban board
 // @Description Filters the kanban board using the full filter form, scoped to the board's folder
 // @Tags kanban
@@ -255,10 +277,10 @@ func handleAPIGetKanbanTags(w http.ResponseWriter, r *http.Request) {
 // @Tags kanban
 // @Param board path string true "Board slug"
 // @Param file query string false "Filter by file path"
-// @Param from query string false "Start of time range (RFC3339)"
-// @Param to query string false "End of time range (RFC3339)"
-// @Param limit query int false "Max number of events (default 100, 0 = unlimited)"
-// @Produce json
+// @Param from query string false "Start of time range (RFC3339 or YYYY-MM-DD)"
+// @Param to query string false "End of time range (RFC3339 or YYYY-MM-DD)"
+// @Param limit query int false "Max number of events (default 200, 0 = unlimited)"
+// @Produce json,html
 // @Router /api/kanban/{board}/events [get]
 func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 	board, ok := resolveBoard(w, r)
@@ -267,20 +289,22 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filePath := r.URL.Query().Get("file")
+	fromRaw := r.URL.Query().Get("from")
+	toRaw := r.URL.Query().Get("to")
 
 	var from, to *time.Time
-	if s := r.URL.Query().Get("from"); s != "" {
-		if t, err := time.Parse(time.RFC3339, s); err == nil {
+	if fromRaw != "" {
+		if t, err := parseEventBoundary(fromRaw, false); err == nil {
 			from = &t
 		}
 	}
-	if s := r.URL.Query().Get("to"); s != "" {
-		if t, err := time.Parse(time.RFC3339, s); err == nil {
+	if toRaw != "" {
+		if t, err := parseEventBoundary(toRaw, true); err == nil {
 			to = &t
 		}
 	}
 
-	limit := 100
+	limit := 200
 	if l := r.URL.Query().Get("limit"); l != "" {
 		if n, err := strconv.Atoi(l); err == nil && n >= 0 {
 			limit = n
@@ -294,8 +318,29 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(events)
+	filePaths, err := kanban.FilesForFolder(board.FolderPath)
+	if err != nil {
+		logging.LogError(logging.KeyApp, "failed to get kanban files for %s: %v", board.FolderPath, err)
+	}
+
+	writeResponse(w, r, events, render.RenderKanbanEvents(events, filePaths, board.Slug, filePath, fromRaw, toRaw))
+}
+
+// parseEventBoundary parses a time-range boundary as RFC3339, falling back to a bare
+// YYYY-MM-DD date (as produced by a native <input type="date">) expanded to the start
+// or end of that day.
+func parseEventBoundary(s string, endOfDay bool) (time.Time, error) {
+	if t, err := time.Parse(time.RFC3339, s); err == nil {
+		return t, nil
+	}
+	d, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		return time.Time{}, err
+	}
+	if endOfDay {
+		d = d.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
+	}
+	return d, nil
 }
 
 // @Summary Get kanban card file paths

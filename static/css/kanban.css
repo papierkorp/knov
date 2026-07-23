@@ -307,3 +307,177 @@
 .kanban-events-table tbody tr:hover {
   background: var(--surface-hover, color-mix(in srgb, var(--text) 4%, transparent));
 }
+
+/* ---- Archive list ---- */
+
+.kanban-archive-view {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  overflow: auto;
+}
+
+.kanban-archive-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.kanban-archive-search {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 20rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.kanban-archive-tag-filter {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.kanban-archive-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.kanban-archive-table th,
+.kanban-archive-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.kanban-archive-table th {
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.kanban-archive-table th.kanban-archive-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.kanban-archive-table th.kanban-archive-sortable:hover {
+  color: var(--text);
+}
+
+.kanban-archive-sort-arrow {
+  font-size: 0.7em;
+}
+
+.kanban-archive-table tbody tr:hover {
+  background: var(--surface-hover, color-mix(in srgb, var(--text) 4%, transparent));
+}
+
+.kanban-archive-title {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.kanban-archive-title:hover {
+  text-decoration: underline;
+}
+
+.kanban-archive-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* ---- Toolbar overflow menu ---- */
+
+.kanban-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.kanban-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.kanban-menu-btn:hover,
+.kanban-menu-btn:focus-visible {
+  background: var(--surface-hover, color-mix(in srgb, var(--text) 10%, transparent));
+  color: var(--text);
+}
+
+.kanban-menu {
+  position: fixed;
+  z-index: 30;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--text) 20%, transparent);
+  padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 200px;
+}
+
+.kanban-menu[hidden] {
+  display: none;
+}
+
+.kanban-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.9rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.kanban-menu-item i {
+  width: 1.1em;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.kanban-menu-item:hover,
+.kanban-menu-item:focus-visible {
+  background: var(--surface-hover, color-mix(in srgb, var(--text) 8%, transparent));
+}
+
+.kanban-menu-item--active {
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  color: var(--primary);
+}
+
+.kanban-menu-item--active i {
+  color: var(--primary);
+}
+
+.kanban-menu-item--active:hover,
+.kanban-menu-item--active:focus-visible {
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+}

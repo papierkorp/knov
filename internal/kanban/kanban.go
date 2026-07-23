@@ -105,22 +105,7 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 			}
 		}
 
-		card := Card{
-			FilePath:   pathutils.ToRelative(file.Path),
-			Title:      meta.Title,
-			Collection: meta.Collection,
-			Status:     status,
-			Tags:       meta.Tags,
-			CreatedAt:  meta.CreatedAt.Format("2006-01-02"),
-			LastEdited: meta.LastEdited.Format("2006-01-02"),
-		}
-		if !meta.KanbanAddedAt.IsZero() {
-			card.KanbanAddedAt = meta.KanbanAddedAt.Format("2006-01-02T15:04:05Z07:00")
-		}
-		if !meta.KanbanMovedAt.IsZero() {
-			card.KanbanMovedAt = meta.KanbanMovedAt.Format("2006-01-02T15:04:05Z07:00")
-		}
-		cardsByStatus[status] = append(cardsByStatus[status], card)
+		cardsByStatus[status] = append(cardsByStatus[status], cardFromFile(file, status))
 	}
 
 	// precompute file sizes once if needed
@@ -268,6 +253,56 @@ func MoveCard(boardFolder, filePath, newStatus string) (oldStatus string, err er
 // Pass empty strings / nil times to skip those filters; limit=0 means no limit.
 func GetEvents(folderPath, filePath string, from, to *time.Time, limit int) ([]kanbanStorage.Event, error) {
 	return kanbanStorage.GetEvents(folderPath, filePath, from, to, limit)
+}
+
+// cardFromFile builds a Card from a cached file entry and its already-resolved kanban status.
+func cardFromFile(file files.File, status string) Card {
+	meta := file.Metadata
+	card := Card{
+		FilePath:   pathutils.ToRelative(file.Path),
+		Title:      meta.Title,
+		Collection: meta.Collection,
+		Status:     status,
+		Tags:       meta.Tags,
+		CreatedAt:  meta.CreatedAt.Format("2006-01-02"),
+		LastEdited: meta.LastEdited.Format("2006-01-02"),
+	}
+	if !meta.KanbanAddedAt.IsZero() {
+		card.KanbanAddedAt = meta.KanbanAddedAt.Format("2006-01-02T15:04:05Z07:00")
+	}
+	if !meta.KanbanMovedAt.IsZero() {
+		card.KanbanMovedAt = meta.KanbanMovedAt.Format("2006-01-02T15:04:05Z07:00")
+	}
+	return card
+}
+
+// Archived returns kanban cards with the archive status for the given folder (and its
+// subfolders), newest-created first. A direct scan scoped by folder + status tag, same
+// approach as cardFilesInFolder, rather than the general filter engine.
+func Archived(folderPath string) ([]Card, error) {
+	archiveStatus := configmanager.GetKanbanArchiveStatus()
+	prefix := configmanager.GetKanbanPrefix()
+
+	allFiles, err := files.GetAllFilesCached()
+	if err != nil {
+		return nil, err
+	}
+
+	var cards []Card
+	for _, file := range allFiles {
+		if file.Metadata == nil || !folderMatches(file.Metadata, folderPath) {
+			continue
+		}
+		if StatusFromTags(file.Metadata.Tags, prefix) != archiveStatus {
+			continue
+		}
+		cards = append(cards, cardFromFile(file, archiveStatus))
+	}
+
+	sort.Slice(cards, func(i, j int) bool {
+		return cards[i].CreatedAt > cards[j].CreatedAt
+	})
+	return cards, nil
 }
 
 // cardFilesInFolder returns all cached files that are kanban cards (have a kanban status tag)

@@ -51,9 +51,16 @@
         </select>
 
         <a href="/files/new/toastui?prefillpath={{.FolderPath}}/" class="btn-secondary" title="{{T "new file"}}"><i class="fa fa-plus"></i></a>
-        <a href="/history?folder={{.FolderPath}}" class="btn-secondary" title="{{T "board history"}}"><i class="fa fa-clock-rotate-left"></i></a>
-        <button id="kanban-events-btn" class="btn-secondary" onclick="kanbanToggleEvents()" title="{{T "show events"}}"><i class="fa fa-timeline"></i></button>
         <button class="btn-secondary" onclick="document.getElementById('kanban-filter-panel').toggleAttribute('hidden')" title="{{T "advanced filter"}}"><i class="fa fa-filter"></i></button>
+
+        <div class="kanban-menu-wrap">
+            <button type="button" class="kanban-menu-btn" onclick="toggleKanbanMenu(this)" title="{{T "more actions"}}"><i class="fa fa-ellipsis-vertical"></i></button>
+            <div class="kanban-menu" hidden>
+                <a href="/history?folder={{.FolderPath}}" class="kanban-menu-item"><i class="fa fa-clock-rotate-left"></i> {{T "board history"}}</a>
+                <button id="kanban-events-btn" class="kanban-menu-item" onclick="kanbanToggleEvents()"><i class="fa fa-timeline"></i> {{T "show events"}}</button>
+                <button id="kanban-archive-btn" class="kanban-menu-item" onclick="kanbanToggleArchive()"><i class="fa fa-box-archive"></i> {{T "show archive"}}</button>
+            </div>
+        </div>
     </div>
 
     {{/* ---- Advanced filter panel ---- */}}
@@ -99,22 +106,10 @@
 window.KANBAN_CONFIG = {
     board: '{{.Board}}',
     archiveStatus: '{{.ArchiveStatus}}',
-    eventsModulePath: '/themes/{{.CurrentTheme}}/js/kanban-events.js',
-    dateFormat: '{{.DateFormat}}',
     t: {
         backToBoard: '{{T "back to board"}}',
         showEvents: '{{T "show events"}}',
-        loading: '{{T "loading..."}}',
-        failedToLoad: '{{T "failed to load events"}}',
-        noEvents: '{{T "no events yet"}}',
-        filterPlaceholder: '{{T "filter events..."}}',
-        time: '{{T "time"}}',
-        file: '{{T "file"}}',
-        from: '{{T "from"}}',
-        to: '{{T "to"}}',
-        all: '{{T "all"}}',
-        dateFrom: '{{T "from date"}}',
-        dateTo: '{{T "to date"}}'
+        showArchive: '{{T "show archive"}}'
     }
 };
 </script>
