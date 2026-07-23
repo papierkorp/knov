@@ -35,7 +35,6 @@
 - optimize `files/history` it takes really long => why? is there a better way?
 - show diffs from same file but different dates/versions (maybe 2 selects in sidebar?)
 - add logging to tests
-- http://localhost:1324/browse/collections/test doesnt show any files => the links in the info metadata panel for collections is wrong it should be browse/collection instead of browse/collections - even tough im more inclined to use collections
 
 # testing
 

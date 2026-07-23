@@ -190,7 +190,7 @@ func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 	if metadata != nil {
 		result["created"] = fmt.Sprintf(`<span class="createdat">%s</span>`, configmanager.FormatDateTime(metadata.CreatedAt))
 		result["edited"] = fmt.Sprintf(`<span class="lastedited">%s</span>`, configmanager.FormatDateTime(metadata.LastEdited))
-		result["collection"] = render.RenderMetadataLinkHTML(metadata.Collection, "collections")
+		result["collection"] = render.RenderMetadataLinkHTML(metadata.Collection, "collection")
 		result["folders"] = render.RenderMetadataLinksHTML(metadata.Folders, "folders")
 
 		if len(metadata.Ancestor) == 0 {

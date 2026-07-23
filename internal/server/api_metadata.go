@@ -445,7 +445,7 @@ func handleAPIGetMetadataCollection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderMetadataLinkHTML(metadata.Collection, "collections")
+	html := render.RenderMetadataLinkHTML(metadata.Collection, "collection")
 	writeResponse(w, r, metadata.Collection, html)
 }
 
