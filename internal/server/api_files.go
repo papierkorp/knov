@@ -510,17 +510,18 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fullPath := pathutils.ToDocsPath(filePath)
+	logging.LogDebug(logging.KeyPdfExport, "pdf export requested: %s (resolved: %s)", filePath, fullPath)
 
 	content, err := os.ReadFile(fullPath)
 	if err != nil {
-		logging.LogError(logging.KeyApp, "failed to read file %s: %v", fullPath, err)
+		logging.LogError(logging.KeyPdfExport, "pdf export: failed to read file %s: %v", fullPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
 		return
 	}
 
-	pdf, err := pdfexport.MarkdownToPDF(content)
+	pdf, err := renderPDFSafely(content)
 	if err != nil {
-		logging.LogError(logging.KeyApp, "failed to convert file to pdf %s: %v", filePath, err)
+		logging.LogError(logging.KeyPdfExport, "pdf export: failed to convert file to pdf %s: %v", filePath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to convert file to pdf"), http.StatusInternalServerError)
 		return
 	}
@@ -530,7 +531,20 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 	w.Write(pdf)
 
-	logging.LogInfo(logging.KeyApp, "exported file to pdf: %s", filePath)
+	logging.LogInfo(logging.KeyPdfExport, "exported file to pdf: %s (%d bytes)", filePath, len(pdf))
+}
+
+// renderPDFSafely calls pdfexport.MarkdownToPDF and turns any panic into an
+// error so it lands in the app log instead of only the recoverer's stderr
+// output, which is easy to miss when the binary runs as a background service.
+func renderPDFSafely(content []byte) (pdf []byte, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			logging.LogError(logging.KeyPdfExport, "pdf export: panic during conversion: %v", r)
+			err = fmt.Errorf("panic during pdf conversion: %v", r)
+		}
+	}()
+	return pdfexport.MarkdownToPDF(content)
 }
 
 // @Summary Export all files as zip

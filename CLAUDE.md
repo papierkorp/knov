@@ -5,6 +5,7 @@
 - check current status of the project 
 - give me the full file not just the changes
 - for logging message i only want use lowercase
+- use the logging package with a appropriate key
 - if you create an api call keep in mind to keep it theme friendly (lean more towards being generic) and also add comments for swagger to work, also stay with accept form data we dont need to accept json
 - for styles/css files use Global styles only in style.css and all specific files use ID selectors (#page-, #component-, #view-)
 - think theme-agnostic

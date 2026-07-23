@@ -4,6 +4,7 @@ package pdfexport
 import (
 	"bytes"
 
+	"knov/internal/logging"
 	"knov/internal/parser"
 
 	"github.com/yuin/goldmark"
@@ -13,6 +14,8 @@ import (
 
 // MarkdownToPDF renders markdown source to a PDF document.
 func MarkdownToPDF(markdown []byte) ([]byte, error) {
+	logging.LogDebug(logging.KeyPdfExport, "pdf export: converting %d bytes of markdown", len(markdown))
+
 	source := []byte(parser.ResolveWikiLinks(string(markdown)))
 
 	md := goldmark.New(goldmark.WithExtensions(extension.GFM))
@@ -23,7 +26,10 @@ func MarkdownToPDF(markdown []byte) ([]byte, error) {
 
 	var buf bytes.Buffer
 	if err := r.pdf.Output(&buf); err != nil {
+		logging.LogError(logging.KeyPdfExport, "pdf export: fpdf output failed: %v", err)
 		return nil, err
 	}
+
+	logging.LogDebug(logging.KeyPdfExport, "pdf export: produced %d byte pdf", buf.Len())
 	return buf.Bytes(), nil
 }
