@@ -26,7 +26,6 @@
       - for usage
       - for devs
 - move file button (can be done in rename at the moment)
-- file upload per drag and drop into the toastui editor
 - multi file upload per insertMedia button in toastui editor
 - pdf export for full site
 - pdf export for section

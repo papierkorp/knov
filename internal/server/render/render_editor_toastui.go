@@ -183,13 +183,16 @@ func jsFileInputAcceptAll() string {
 func jsDragAndDrop() string {
 	return `
 		// drag-and-drop: accept all file types, insert as markdown image or link
+		// captured before ToastUI's own drop handler so multi-file drops aren't
+		// truncated to the single file ToastUI's built-in handling supports
 		const editorEl = document.querySelector('#toastui-editor');
 		editorEl.addEventListener('dragover', function(e) {
 			e.preventDefault();
 			e.dataTransfer.dropEffect = 'copy';
-		});
+		}, true);
 		editorEl.addEventListener('drop', function(e) {
 			e.preventDefault();
+			e.stopPropagation();
 			const files = e.dataTransfer.files;
 			if (!files || files.length === 0) return;
 			Array.from(files).forEach(function(file) {
@@ -202,7 +205,7 @@ func jsDragAndDrop() string {
 					editor.insertText(markdown);
 				});
 			});
-		});`
+		}, true);`
 }
 
 // jsUploadMediaBlob defines the shared upload helper used by the blob hook and drag-and-drop.
