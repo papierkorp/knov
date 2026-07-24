@@ -492,7 +492,7 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(r.URL.Path, "/static/") {
 		basePath = "static"
 		filePath = strings.TrimPrefix(r.URL.Path, "/static/")
-		fullPath = filepath.ToSlash(filepath.Join(basePath, filePath))
+		fullPath = pathutils.ToSlash(filepath.Join(basePath, filePath))
 	} else if strings.HasPrefix(r.URL.Path, "/themes/") {
 		basePath = "themes"
 		filePath = strings.TrimPrefix(r.URL.Path, "/themes/")

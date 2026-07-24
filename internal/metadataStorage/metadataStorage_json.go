@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 )
 
 // jsonStorage implements MetadataStorage interface using JSON files
@@ -159,7 +160,7 @@ func (js *jsonStorage) getFilePath(key string) string {
 // pathToKey converts a file path to a key
 func (js *jsonStorage) pathToKey(relPath string) string {
 	key := strings.TrimSuffix(relPath, ".json")
-	return filepath.ToSlash(key)
+	return pathutils.ToSlash(key)
 }
 
 // Cleanup removes the entire json metadata folder

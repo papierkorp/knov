@@ -41,7 +41,7 @@ var (
 )
 
 func testPath(name string) string {
-	return filepath.Join(testDir, name)
+	return pathutils.ToSlash(filepath.Join(testDir, name))
 }
 
 func writeFile(relPath, content string) error {

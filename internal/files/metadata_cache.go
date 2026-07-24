@@ -629,7 +629,7 @@ func GetAllFolderPathsFromCache() ([]string, error) {
 // ancestorFolderPaths returns every ancestor folder of filePath, each with a trailing slash.
 // For xxx/yyy/zzz.md it returns: xxx/, xxx/yyy/, xxx/yyy/zzz/
 func ancestorFolderPaths(filePath string) []string {
-	dir := filepath.ToSlash(filepath.Dir(filePath))
+	dir := pathutils.ToSlash(filepath.Dir(filePath))
 	if dir == "." || dir == "" {
 		return nil
 	}

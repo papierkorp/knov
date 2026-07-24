@@ -106,7 +106,9 @@ func ToFullPath(path string) string {
 	return parsePath(path).FullPath
 }
 
-// ToWithPrefix ensures the path has the correct docs/media prefix for metadata storage
+// ToWithPrefix ensures the path has the correct docs/media prefix for metadata storage.
+// Always forward-slash, even from a Windows full path (e.g. "C:\data\docs\a.md" ->
+// "docs/a.md") - safe to compare against git tree paths, which are always forward-slash.
 func ToWithPrefix(path string) string {
 	return parsePath(path).WithPrefix
 }
@@ -200,6 +202,14 @@ func getDocsPath() string {
 // getMediaPath returns the full path to media directory
 func getMediaPath() string {
 	return filepath.Join(configmanager.GetAppConfig().DataPath, "media")
+}
+
+// ToSlash converts path separators to forward slashes, without any of the docs/media
+// normalization the To* functions above do. Use this over filepath.ToSlash for any path
+// that will be compared against or stored as a forward-slash path (git tree paths, cache
+// keys, URLs) - on Windows filepath.Rel/Join/Dir/Clean etc. all return backslash paths.
+func ToSlash(path string) string {
+	return filepath.ToSlash(path)
 }
 
 // FolderContains reports whether dirPath is folderPath itself or a subfolder of it

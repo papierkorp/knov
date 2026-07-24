@@ -3,10 +3,12 @@ package githistorytest
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/git"
+	"knov/internal/pathutils"
 	"knov/internal/test"
 
 	gogit "github.com/go-git/go-git/v5"
@@ -41,7 +43,7 @@ func caseGitRemotePushPullTestAuth(_ *sampleState) test.CaseResult {
 		}
 	}()
 
-	if err := configmanager.UpdateEnvFile("KNOV_GIT_REMOTE", "file://"+bareDir); err != nil {
+	if err := configmanager.UpdateEnvFile("KNOV_GIT_REMOTE", bareDirFileURL(bareDir)); err != nil {
 		return errCase(name, err)
 	}
 	if err := git.EnsureRemote(); err != nil {
@@ -86,6 +88,17 @@ func caseGitRemotePushPullTestAuth(_ *sampleState) test.CaseResult {
 		cr.Error = "push/pull/test-auth against local bare remote did not behave as expected"
 	}
 	return cr
+}
+
+// bareDirFileURL builds a file:// URL for a local bare repo path. On Windows the path
+// starts with a drive letter (C:\...) which needs a third slash and forward slashes,
+// otherwise the drive letter's colon is parsed as a port.
+func bareDirFileURL(dir string) string {
+	slashDir := pathutils.ToSlash(dir)
+	if filepath.VolumeName(dir) != "" {
+		return "file:///" + slashDir
+	}
+	return "file://" + slashDir
 }
 
 // removeOriginRemote drops the "origin" remote entirely, used when the case's defer

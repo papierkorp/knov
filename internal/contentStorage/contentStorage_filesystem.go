@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 )
 
 // filesystemStorage implements ContentStorage for local filesystem
@@ -112,7 +113,7 @@ func (fs *filesystemStorage) ListFiles() ([]string, error) {
 			if err != nil {
 				return err
 			}
-			files = append(files, filepath.ToSlash(relPath))
+			files = append(files, pathutils.ToSlash(relPath))
 		}
 		return nil
 	})
@@ -143,7 +144,7 @@ func (fs *filesystemStorage) ListMediaFiles() ([]string, error) {
 		if err != nil {
 			return err
 		}
-		files = append(files, filepath.ToSlash(relPath))
+		files = append(files, pathutils.ToSlash(relPath))
 		return nil
 	})
 

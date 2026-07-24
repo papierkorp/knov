@@ -54,9 +54,22 @@ func repoThemesPath(t *testing.T) string {
 func NewApp(t *testing.T) *httptest.Server {
 	t.Helper()
 
-	dataPath := filepath.Join(t.TempDir(), "data")
-	storagePath := filepath.Join(t.TempDir(), "storage")
-	logsPath := filepath.Join(t.TempDir(), "logs")
+	tempDir, err := os.MkdirTemp("", "knov-test-*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	t.Cleanup(func() {
+		// storage backends are package-level singletons with no exported
+		// Close(), so their sqlite handles may still be open here. Linux
+		// allows deleting open files; Windows doesn't, so best-effort only.
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Logf("cleanup: failed to remove temp dir %s: %v", tempDir, err)
+		}
+	})
+
+	dataPath := filepath.Join(tempDir, "data")
+	storagePath := filepath.Join(tempDir, "storage")
+	logsPath := filepath.Join(tempDir, "logs")
 
 	env := map[string]string{
 		"KNOV_DATA_PATH":             dataPath,

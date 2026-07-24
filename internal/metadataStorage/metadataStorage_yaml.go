@@ -16,6 +16,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 
 	"gopkg.in/yaml.v3"
 )
@@ -225,7 +226,7 @@ func (ys *yamlFrontmatterStorage) GetAll() (map[string][]byte, error) {
 		if err != nil {
 			return nil
 		}
-		key := "docs/" + filepath.ToSlash(relPath)
+		key := "docs/" + pathutils.ToSlash(relPath)
 		result[key] = jsonData
 		return nil
 	})

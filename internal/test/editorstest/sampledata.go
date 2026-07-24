@@ -26,7 +26,7 @@ func resetTestDir() error {
 
 // testPath returns a docs-relative path under the sample folder, e.g. "test/editors-tests/toastui.md".
 func testPath(name string) string {
-	return filepath.Join(testDir, name)
+	return pathutils.ToSlash(filepath.Join(testDir, name))
 }
 
 func writeFile(relPath, content string) error {

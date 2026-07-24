@@ -19,7 +19,7 @@ import (
 // Returns "" for root-level files.
 func CollectionFromPath(path string) string {
 	relPath := pathutils.ToRelative(path)
-	folderPath := filepath.ToSlash(filepath.Dir(relPath))
+	folderPath := pathutils.ToSlash(filepath.Dir(relPath))
 	if folderPath == "." || folderPath == "" {
 		return ""
 	}
@@ -30,7 +30,7 @@ func CollectionFromPath(path string) string {
 // matching the Folders metadata field computed by metaDataUpdate. Returns "" for root-level files.
 func FolderFromPath(path string) string {
 	relPath := pathutils.ToRelative(path)
-	folderPath := filepath.ToSlash(filepath.Dir(relPath))
+	folderPath := pathutils.ToSlash(filepath.Dir(relPath))
 	if folderPath == "." || folderPath == "" {
 		return ""
 	}
@@ -58,7 +58,7 @@ func pathsToFiles(paths []string, prefix string) []File {
 		// add prefix to distinguish media files
 		fullPath := path
 		if prefix != "" {
-			fullPath = filepath.ToSlash(filepath.Join(prefix, path))
+			fullPath = pathutils.ToSlash(filepath.Join(prefix, path))
 		}
 
 		// get metadata if it exists

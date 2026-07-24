@@ -232,7 +232,7 @@ func handleAPIGetAncestorsInFolder(w http.ResponseWriter, r *http.Request) {
 		var html strings.Builder
 		for _, a := range ancestors {
 			rel := pathutils.ToRelative(a)
-			fmt.Fprintf(&html, `<option value="%s">%s</option>`, rel, rel)
+			fmt.Fprintf(&html, `<option value="%s">%s</option>`, rel, render.GetLinkDisplayText(rel))
 		}
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html.String()))

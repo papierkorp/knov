@@ -603,11 +603,10 @@ func GetFileHistory(filePath string) ([]FileVersion, error) {
 		return nil, err
 	}
 
-	dataDir := configmanager.GetAppConfig().DataPath
-	relPath, err := filepath.Rel(dataDir, filePath)
-	if err != nil {
-		relPath = filePath
-	}
+	// pathutils.ToWithPrefix, not filepath.Rel - go-git's tree/log/diff APIs compare
+	// paths as plain forward-slash strings with no normalization, so a Windows
+	// backslash path here silently never matches.
+	relPath := pathutils.ToWithPrefix(filePath)
 
 	ref, err := repo.Head()
 	if err != nil {
@@ -949,11 +948,7 @@ func RestoreFileToCommit(filePath, commit string) error {
 		return err
 	}
 
-	dataDir := configmanager.GetAppConfig().DataPath
-	relPath, err := filepath.Rel(dataDir, filePath)
-	if err != nil {
-		relPath = filePath
-	}
+	relPath := pathutils.ToWithPrefix(filePath)
 
 	commitHash, err := expandCommitHash(repo, commit)
 	if err != nil {
@@ -1137,11 +1132,7 @@ func GetFileAtCommit(filePath, commit string) (string, error) {
 		return "", err
 	}
 
-	dataDir := configmanager.GetAppConfig().DataPath
-	relPath, err := filepath.Rel(dataDir, filePath)
-	if err != nil {
-		relPath = filePath
-	}
+	relPath := pathutils.ToWithPrefix(filePath)
 
 	// Expand short commit hash to full hash
 	commitHash, err := expandCommitHash(repo, commit)
@@ -1198,11 +1189,7 @@ func GetFileDiff(filePath, fromCommit, toCommit string) (diff, oldCommit, newCom
 		return "", "", "", err
 	}
 
-	dataDir := configmanager.GetAppConfig().DataPath
-	relPath, err := filepath.Rel(dataDir, filePath)
-	if err != nil {
-		relPath = filePath
-	}
+	relPath := pathutils.ToWithPrefix(filePath)
 
 	// Handle "previous" parameter
 	if toCommit == "previous" {
@@ -1808,7 +1795,7 @@ func SyncBeforeCommit(localFiles []string) {
 		if err != nil {
 			rel = f
 		}
-		snapshots = append(snapshots, snapshot{fullPath: f, relPath: filepath.ToSlash(rel), content: data})
+		snapshots = append(snapshots, snapshot{fullPath: f, relPath: pathutils.ToSlash(rel), content: data})
 	}
 
 	logging.LogDebug(logging.KeyApp, "git: sync snapshots: %v", func() []string {
