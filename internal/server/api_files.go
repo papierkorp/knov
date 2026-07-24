@@ -549,6 +549,7 @@ func renderPDFSafely(content []byte) (pdf []byte, err error) {
 		PageFormat:              configmanager.GetPDFPageFormat(),
 		Orientation:             configmanager.GetPDFOrientation(),
 		MarginMM:                configmanager.GetPDFMarginMM(),
+		UseTaskIcons:            configmanager.GetPDFUseTaskIcons(),
 	}
 	return pdfexport.MarkdownToPDF(content, opts)
 }

@@ -103,15 +103,25 @@ func CycleTodoStateAtLine(content []byte, line int) ([]byte, error) {
 	return []byte(strings.Join(lines, "\n")), nil
 }
 
-// preprocessTodoStates rewrites non-GFM todo states ([-] cancelled, [O] waiting)
+// TodoCancelledPlaceholder and TodoWaitingPlaceholder mark the non-GFM todo
+// states after PreprocessTodoStates rewrites them into a valid checkbox plus
+// a leading text marker. Consumers that walk the parsed AST directly (e.g.
+// pdfexport) can detect these markers to recover the real state.
+const (
+	TodoCancelledPlaceholder = "KNOVTODO:cancelled "
+	TodoWaitingPlaceholder   = "KNOVTODO:waiting "
+)
+
+// PreprocessTodoStates rewrites non-GFM todo states ([-] cancelled, [O] waiting)
 // into standard GFM task items with a placeholder so goldmark parses them as list items.
-// The placeholders are resolved in postprocessTodoStates.
-func (h *MarkdownHandler) preprocessTodoStates(content []byte) []byte {
+// The placeholders are resolved in postprocessTodoStates (HTML) or detected directly
+// by other consumers walking the AST (e.g. pdfexport).
+func PreprocessTodoStates(content []byte) []byte {
 	s := string(content)
 	// replace - [-] / * [-] / + [-] with <marker> [x] KNOVTODO:cancelled
-	s = regexp.MustCompile(`(?m)^([ \t]*)([-*+]) \[-\] `).ReplaceAllString(s, "$1$2 [x] KNOVTODO:cancelled ")
+	s = regexp.MustCompile(`(?m)^([ \t]*)([-*+]) \[-\] `).ReplaceAllString(s, "$1$2 [x] "+TodoCancelledPlaceholder)
 	// replace - [O] / - [o] (and *, +) with <marker> [ ] KNOVTODO:waiting
-	s = regexp.MustCompile(`(?mi)^([ \t]*)([-*+]) \[O\] `).ReplaceAllString(s, "$1$2 [ ] KNOVTODO:waiting ")
+	s = regexp.MustCompile(`(?mi)^([ \t]*)([-*+]) \[O\] `).ReplaceAllString(s, "$1$2 [ ] "+TodoWaitingPlaceholder)
 	return []byte(s)
 }
 

@@ -20,6 +20,7 @@ import (
 	"knov/internal/metadataStorage"
 	"knov/internal/notificationStorage"
 	"knov/internal/parser"
+	"knov/internal/pdfexport"
 	"knov/internal/search"
 	"knov/internal/searchStorage"
 	"knov/internal/server"
@@ -53,6 +54,12 @@ func main() {
 	logging.InitInterceptor()
 	configmanager.InitAppConfig()
 	translation.Init()
+
+	if data, err := staticFS.ReadFile("static/font-awesome/ttf/7-3-1/Font Awesome 7 Free-Solid-900.ttf"); err == nil {
+		pdfexport.SetIconFont(data)
+	} else {
+		logging.LogError(logging.KeyPdfExport, "failed to load pdf export icon font: %v", err)
+	}
 
 	if err := git.EnsureRemote(); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to configure git remote: %v", err)

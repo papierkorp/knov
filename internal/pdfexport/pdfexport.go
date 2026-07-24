@@ -22,6 +22,10 @@ type Options struct {
 	Orientation string
 	// MarginMM is the page margin in millimeters on every side. Zero defaults to 20.
 	MarginMM float64
+	// UseTaskIcons draws task-list checkboxes as status icons instead of plain
+	// text marks ("[ ]", "[x]", "[-]", "[O]"). Has no effect if no icon font
+	// was registered via SetIconFont.
+	UseTaskIcons bool
 }
 
 // MarkdownToPDF renders markdown source to a PDF document.
@@ -29,6 +33,7 @@ func MarkdownToPDF(markdown []byte, opts Options) ([]byte, error) {
 	logging.LogDebug(logging.KeyPdfExport, "pdf export: converting %d bytes of markdown", len(markdown))
 
 	source := []byte(parser.ResolveWikiLinks(string(markdown)))
+	source = parser.PreprocessTodoStates(source)
 
 	md := goldmark.New(goldmark.WithExtensions(extension.GFM))
 	root := md.Parser().Parse(text.NewReader(source))

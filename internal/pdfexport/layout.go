@@ -22,7 +22,7 @@ func (r *renderer) writeParagraph(tokens []token, spacingAfterMM float64) {
 	first := true
 	for _, tok := range tokens {
 		r.applyStyle(tok.style)
-		text := r.translate(tok.text)
+		text := r.textFor(tok)
 		w := r.pdf.GetStringWidth(text)
 		spaceW := r.pdf.GetStringWidth(" ")
 
@@ -68,7 +68,7 @@ func (r *renderer) wrapTokens(tokens []token, width float64) [][]token {
 	used := 0.0
 	for _, tok := range tokens {
 		r.applyStyle(tok.style)
-		w := r.pdf.GetStringWidth(r.translate(tok.text))
+		w := r.pdf.GetStringWidth(r.textFor(tok))
 		spaceW := r.pdf.GetStringWidth(" ")
 
 		need := w
@@ -99,8 +99,13 @@ func (r *renderer) wrapTokens(tokens []token, width float64) [][]token {
 func (r *renderer) expandLongTokens(tokens []token, width float64) []token {
 	out := make([]token, 0, len(tokens))
 	for _, tok := range tokens {
+		if tok.style.isIcon {
+			// a single glyph, never long enough to need breaking
+			out = append(out, tok)
+			continue
+		}
 		r.applyStyle(tok.style)
-		if width <= 0 || r.pdf.GetStringWidth(r.translate(tok.text)) <= width {
+		if width <= 0 || r.pdf.GetStringWidth(r.textFor(tok)) <= width {
 			out = append(out, tok)
 			continue
 		}

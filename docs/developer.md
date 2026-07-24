@@ -15,6 +15,36 @@
 3. Update `go.mod`: change the `go` directive to the new version.
 4. Run `go mod tidy` — this syncs toolchain requirements and may add/update a `toolchain` line.
 
+## Updating Dependencies
+
+### Font Awesome
+
+```bash
+cd static
+rm font-awesome-<old-version>-all.min.css
+
+cd font-awesome
+mkdir webfonts/<new-version>
+mkdir otfs/<new-version>
+
+cd ~
+git clone git@github.com:FortAwesome/Font-Awesome.git
+cd Font-Awesome
+cp webfonts/* .../static/font-awesome/webfonts/<new-version>
+cp all.min.css .../static/font-awesome-<new-version>-all.min.css
+
+cd otfs
+pip install "fonttools[repacker]" otf2ttf
+otf2ttf "Font Awesome 7 Free-Solid-900.otf"
+cp *.ttf .../static/font-awesome/otfs/<new-version>
+```
+
+then update:
+
+- the link in `base.gohtml` from `<link rel="stylesheet" href="/static/font-awesome-<old-version>-all.min.css"/>` to `<link rel="stylesheet" href="/static/font-awesome-<new-version>-all.min.css"/>`
+- the webfonts path in `server.go` in the `handleWebfontsRedirect` function
+
+
 ## Quick Start
 
 Clone and setup:

@@ -563,10 +563,10 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleWebfontsRedirect redirects /webfonts/* requests to /static/webfonts/*
+// handleWebfontsRedirect redirects /webfonts/* requests to /static/font-awesome/webfonts/7-3-1/*
 func handleWebfontsRedirect(w http.ResponseWriter, r *http.Request) {
 	fontPath := strings.TrimPrefix(r.URL.Path, "/webfonts/")
-	newPath := "/static/webfonts/" + fontPath
+	newPath := "/static/font-awesome/webfonts/7-3-1/" + fontPath
 
 	newURL := *r.URL
 	newURL.Path = newPath

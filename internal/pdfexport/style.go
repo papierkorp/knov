@@ -10,9 +10,17 @@ const (
 
 // style carries the inline formatting for a single token of text.
 type style struct {
-	bold, italic, code, link bool
-	size                     float64 // pt
-	href                     string
+	bold, italic, code, link, strike bool
+	size                             float64 // pt
+	href                             string
+
+	// isIcon marks a token as a task-status glyph drawn with the embedded icon
+	// font (see icons.go) instead of the normal text font.
+	isIcon    bool
+	iconColor [3]int // RGB used only when isIcon is set
+
+	// textColor overrides the default black; zero value means "use default".
+	textColor [3]int
 }
 
 func (s style) fontFamily() string {
@@ -29,6 +37,9 @@ func (s style) fontStyle() string {
 	}
 	if s.italic {
 		fs += "I"
+	}
+	if s.strike {
+		fs += "S"
 	}
 	return fs
 }

@@ -427,4 +427,10 @@ var (
 		Desc:    "page margin in millimeters on every side when exporting to pdf",
 		Min:     intPtr(0), Max: intPtr(50),
 	})
+	PDFUseTaskIcons = register(&BoolSetting{
+		key: "pdfUseTaskIcons", Default: true,
+		Section: SectionPDFExport,
+		Label:   "Use Icons for Task Checkboxes",
+		Desc:    "draw task-list checkboxes as status icons instead of plain text marks ([ ], [x], [-], [O]) when exporting to pdf",
+	})
 )

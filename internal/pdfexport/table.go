@@ -141,7 +141,7 @@ func (r *renderer) naturalWidth(tokens []token, header bool) float64 {
 		if i > 0 {
 			w += r.pdf.GetStringWidth(" ")
 		}
-		w += r.pdf.GetStringWidth(r.translate(tok.text))
+		w += r.pdf.GetStringWidth(r.textFor(tok))
 	}
 	w += 2 * cellPadMM
 	if w < minColWidthMM {
@@ -166,7 +166,7 @@ func (r *renderer) minColumnWidth(tokens []token, header bool) float64 {
 			st.bold = true
 		}
 		r.applyStyle(st)
-		if tw := r.pdf.GetStringWidth(r.translate(tok.text)); tw > w {
+		if tw := r.pdf.GetStringWidth(r.textFor(tok)); tw > w {
 			w = tw
 		}
 	}
@@ -222,7 +222,7 @@ func (r *renderer) drawTableRow(cells []tableCell, widths []float64, header bool
 			tx := x + cellPadMM
 			for j, tok := range line {
 				r.applyStyle(tok.style)
-				text := r.translate(tok.text)
+				text := r.textFor(tok)
 				tw := r.pdf.GetStringWidth(text)
 				if j > 0 {
 					tx += r.pdf.GetStringWidth(" ")

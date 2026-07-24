@@ -117,7 +117,7 @@ var htmlBlockRe = regexp.MustCompile(`(?i)^<(html|head|body|div|section|article|
 func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error) {
 	content, blocks := h.extractCodeBlocks(content)
 	content, detailsBlocks := h.extractHTMLBlocks(content, "details", "summary")
-	content = h.preprocessTodoStates(content)
+	content = PreprocessTodoStates(content)
 
 	md := goldmark.New(
 		goldmark.WithExtensions(

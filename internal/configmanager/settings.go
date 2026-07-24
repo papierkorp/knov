@@ -211,6 +211,7 @@ func GetPDFPageBreakBeforeHeadings() bool { return PDFPageBreakBeforeHeadings.Ge
 func GetPDFPageFormat() string            { return PDFPageFormat.Get() }
 func GetPDFOrientation() string           { return PDFOrientation.Get() }
 func GetPDFMarginMM() float64             { return float64(PDFMarginMM.Get()) }
+func GetPDFUseTaskIcons() bool            { return PDFUseTaskIcons.Get() }
 
 // ── mime / extension helpers ──────────────────────────────────────────────────
 
