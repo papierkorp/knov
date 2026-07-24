@@ -474,7 +474,11 @@ function setupFilePage() {
   if (!fileMatch) return false;
 
   const filepath = fileMatch[1];
-  const fp = filepath; // already percent-encoded from window.location.pathname
+  // filepath is a path segment from window.location.pathname: safe to concatenate
+  // into another path segment as-is, but "&"/"+" pass through unescaped there and
+  // would corrupt a query string (delimiter / space substitution), so query uses
+  // need their own encoding.
+  const fp = encodeURIComponent(filepath);
 
   // reveal file rail button
   document.body.setAttribute("data-has-file", "true");
@@ -489,7 +493,7 @@ function setupFilePage() {
 
   const exportPdfLink = document.getElementById("fp-export-pdf-link");
   if (exportPdfLink)
-    exportPdfLink.href = "/api/files/export/pdf?filepath=" + filepath;
+    exportPdfLink.href = "/api/files/export/pdf?filepath=" + fp;
 
   const rebuildBtn = document.getElementById("fp-rebuild-btn");
   if (rebuildBtn) {

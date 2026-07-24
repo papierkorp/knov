@@ -486,7 +486,7 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 	filename = strings.TrimSuffix(filename, filepath.Ext(filename)) + ".md"
 
 	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	setAttachmentFilename(w, filename)
 	w.Write([]byte(markdown))
 
 	logging.LogInfo(logging.KeyApp, "exported file to markdown: %s", filePath)
@@ -495,7 +495,6 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 // @Summary Export file to pdf
 // @Description Renders a file's markdown source to a downloadable pdf
 // @Tags files
-// @Accept application/x-www-form-urlencoded
 // @Produce application/pdf
 // @Param filepath query string true "File path"
 // @Success 200 {file} file "pdf file"
@@ -528,7 +527,7 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 
 	filename := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath)) + ".pdf"
 	w.Header().Set("Content-Type", "application/pdf")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	setAttachmentFilename(w, filename)
 	w.Write(pdf)
 
 	logging.LogInfo(logging.KeyPdfExport, "exported file to pdf: %s (%d bytes)", filePath, len(pdf))
@@ -631,7 +630,7 @@ func handleAPIExportAllFiles(w http.ResponseWriter, r *http.Request) {
 	filename := fmt.Sprintf("knov-export_%s.zip", timestamp)
 
 	w.Header().Set("Content-Type", "application/zip")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	setAttachmentFilename(w, filename)
 	w.Write(buf.Bytes())
 
 	logging.LogInfo(logging.KeyApp, "exported all files as zip: %s", filename)
@@ -726,7 +725,7 @@ func handleAPIExportAllFilesWithMarkdownConversion(w http.ResponseWriter, r *htt
 	filename := fmt.Sprintf("knov-export-markdown_%s.zip", timestamp)
 
 	w.Header().Set("Content-Type", "application/zip")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	setAttachmentFilename(w, filename)
 	w.Write(buf.Bytes())
 
 	logging.LogInfo(logging.KeyApp, "exported all files as zip with markdown conversion: %s", filename)

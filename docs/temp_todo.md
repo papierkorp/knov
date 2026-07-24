@@ -30,11 +30,8 @@
 - pdf export for section
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
 - add logging to tests
-- Path traversal bug - . A request like `?filepath=../../somefile` resolves outside the docs directory => The fix strategy is central: make `ToDocsPath` (or a validation step in `parsePath`) verify the resolved path is still under the docs root
-- Content-Disposition filename is unquoted - A source file named `my notes.md` produces `filename=my notes.pdf`, which is a malformed header => `.FormatMediaType` exists for exactly this
 - pdfexport
-  - The Swagger `@Accept application/x-www-form-urlencoded` on a GET that only reads query parameters is slightly off-label, and the `href="#" download` fallback in the template means a click with JS broken downloads the HTML page itself
-  - rail.js builds the query string without URI-encoding. A filename containing `&`, `#`, `%`, or `+` corrupts the `filepath` parameter and the export silently targets the wrong path or 500s. The existing edit link concatenates into a path segment, which is more forgiving; a query parameter is not
+  - implement images
 - warning color in logs makes it unreadable (at least in dark mode i dont know for light mode)
 - kanban - all ancestors shows the full filepath of the file - this is unneccessary
 - settings/configs to hide certain folders from different searches

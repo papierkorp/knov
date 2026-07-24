@@ -1670,8 +1670,6 @@ paths:
       - files
   /api/files/export/pdf:
     get:
-      consumes:
-      - application/x-www-form-urlencoded
       description: Renders a file's markdown source to a downloadable pdf
       parameters:
       - description: File path

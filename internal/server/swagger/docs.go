@@ -1838,9 +1838,6 @@ const docTemplate = `{
         "/api/files/export/pdf": {
             "get": {
                 "description": "Renders a file's markdown source to a downloadable pdf",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
                 "produces": [
                     "application/pdf"
                 ],

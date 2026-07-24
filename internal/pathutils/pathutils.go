@@ -81,9 +81,9 @@ func parsePath(inputPath string) *PathInfo {
 		fullPath = inputPath
 	} else {
 		if pathType == TypeMedia {
-			fullPath = filepath.Join(getMediaPath(), relativePath)
+			fullPath = containPath(getMediaPath(), filepath.Join(getMediaPath(), relativePath))
 		} else {
-			fullPath = filepath.Join(getDocsPath(), relativePath)
+			fullPath = containPath(getDocsPath(), filepath.Join(getDocsPath(), relativePath))
 		}
 	}
 
@@ -114,13 +114,15 @@ func ToWithPrefix(path string) string {
 // ToDocsPath converts any path to a full docs filesystem path
 func ToDocsPath(path string) string {
 	info := parsePath(path)
-	return filepath.Join(getDocsPath(), info.Relative)
+	docsRoot := getDocsPath()
+	return containPath(docsRoot, filepath.Join(docsRoot, info.Relative))
 }
 
 // ToMediaPath converts any path to a full media filesystem path
 func ToMediaPath(path string) string {
 	info := parsePath(path)
-	return filepath.Join(getMediaPath(), info.Relative)
+	mediaRoot := getMediaPath()
+	return containPath(mediaRoot, filepath.Join(mediaRoot, info.Relative))
 }
 
 // IsMedia returns true if the path represents a media file
@@ -173,6 +175,21 @@ func stripDataPathPrefix(path string) string {
 	}
 
 	return path
+}
+
+// containPath returns candidate if it is root itself or strictly beneath it,
+// otherwise root. A relativePath with enough "../" segments (e.g. from an
+// unsanitized "?filepath=../../../etc/passwd" query param) can walk
+// filepath.Join's result outside root entirely; clamping back to root here —
+// the single place every ToDocsPath/ToMediaPath/ToFullPath call resolves
+// through — means every caller is sandboxed without needing its own check.
+func containPath(root, candidate string) string {
+	root = filepath.Clean(root)
+	candidate = filepath.Clean(candidate)
+	if candidate == root || strings.HasPrefix(candidate, root+string(filepath.Separator)) {
+		return candidate
+	}
+	return root
 }
 
 // getDocsPath returns the full path to docs directory

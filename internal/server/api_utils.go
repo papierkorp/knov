@@ -3,6 +3,7 @@ package server
 
 import (
 	"encoding/json"
+	"mime"
 	"net/http"
 	"strings"
 
@@ -19,6 +20,15 @@ func writeResponse(w http.ResponseWriter, r *http.Request, jsonData any, htmlDat
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(jsonData)
 	}
+}
+
+// setAttachmentFilename sets a Content-Disposition header for filename,
+// properly quoting/escaping it per RFC 6266/2231 (via mime.FormatMediaType)
+// instead of splicing it into the header unquoted — a filename containing a
+// space or other token-breaking character would otherwise produce a
+// malformed header.
+func setAttachmentFilename(w http.ResponseWriter, filename string) {
+	w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": filename}))
 }
 
 // writeAPIError writes a status-coded HTML error response, replacing the
