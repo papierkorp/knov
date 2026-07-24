@@ -26,6 +26,20 @@ type Options struct {
 	// text marks ("[ ]", "[x]", "[-]", "[O]"). Has no effect if no icon font
 	// was registered via SetIconFont.
 	UseTaskIcons bool
+
+	// FontOverall is the base fpdf font family for body text. Empty defaults
+	// to "Arial". Also the fallback for FontHeadings/FontH1 when they're empty.
+	FontOverall string
+	// FontCodeBlock is the fpdf font family for code blocks and inline code
+	// spans. Empty defaults to "Courier". Non-monospace fonts will misalign
+	// code-block wrapping, which assumes a fixed character width.
+	FontCodeBlock string
+	// FontH1 is the fpdf font family for level-1 headings. Empty falls back
+	// to FontHeadings, then FontOverall.
+	FontH1 string
+	// FontHeadings is the fpdf font family for headings (levels 2-6, and 1 if
+	// FontH1 is empty). Empty falls back to FontOverall.
+	FontHeadings string
 }
 
 // MarkdownToPDF renders markdown source to a PDF document.

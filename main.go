@@ -13,6 +13,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/filter"
+	"knov/internal/fonts"
 	"knov/internal/git"
 	"knov/internal/job"
 	"knov/internal/kanbanStorage"
@@ -60,6 +61,7 @@ func main() {
 	} else {
 		logging.LogError(logging.KeyPdfExport, "failed to load pdf export icon font: %v", err)
 	}
+	loadFonts()
 
 	if err := git.EnsureRemote(); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to configure git remote: %v", err)
@@ -141,4 +143,29 @@ func main() {
 	}()
 
 	server.StartServerChi()
+}
+
+// loadFonts registers every embedded font family from the fonts manifest
+// with pdfexport (families with no Dir are skipped — those are core fonts
+// needing no registration). Families that ship no bold/italic/boldItalic
+// pass nil for those styles, and pdfexport falls back to its nearest
+// available style at render time.
+func loadFonts() {
+	read := func(dir, name string) []byte {
+		if name == "" {
+			return nil
+		}
+		data, err := staticFS.ReadFile("static/fonts/" + dir + "/" + name)
+		if err != nil {
+			logging.LogError(logging.KeyPdfExport, "failed to load pdf export font %s/%s: %v", dir, name, err)
+			return nil
+		}
+		return data
+	}
+	for _, f := range fonts.Families {
+		if f.Dir == "" {
+			continue
+		}
+		pdfexport.RegisterFont(f.Name, read(f.Dir, f.Regular), read(f.Dir, f.Bold), read(f.Dir, f.Italic), read(f.Dir, f.BoldItalic))
+	}
 }

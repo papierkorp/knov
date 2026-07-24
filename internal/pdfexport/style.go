@@ -14,6 +14,11 @@ type style struct {
 	size                             float64 // pt
 	href                             string
 
+	// heading is the source heading level (1-6) for tokens from a heading
+	// block, 0 otherwise. Used only to pick a font family — see
+	// renderer.fontFamilyFor.
+	heading int
+
 	// isIcon marks a token as a task-status glyph drawn with the embedded icon
 	// font (see icons.go) instead of the normal text font.
 	isIcon    bool
@@ -21,13 +26,6 @@ type style struct {
 
 	// textColor overrides the default black; zero value means "use default".
 	textColor [3]int
-}
-
-func (s style) fontFamily() string {
-	if s.code {
-		return "Courier"
-	}
-	return "Arial"
 }
 
 func (s style) fontStyle() string {
@@ -57,7 +55,7 @@ func headingStyle(level int) style {
 	if !ok {
 		size = 11
 	}
-	return style{bold: true, size: size}
+	return style{bold: true, size: size, heading: level}
 }
 
 func codeBlockStyle() style { return style{code: true, size: baseFontPt - 1} }

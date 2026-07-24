@@ -46,7 +46,38 @@ func newRenderer(source []byte, opts Options) *renderer {
 		}
 	}
 
+	for _, family := range []string{opts.FontOverall, opts.FontCodeBlock, opts.FontHeadings, opts.FontH1} {
+		registerCustomFonts(pdf, family)
+	}
+
 	return r
+}
+
+// fontFamilyFor resolves the fpdf font family for st from the configured
+// Options, falling back level by level: h1 -> general headings -> overall ->
+// the built-in default for that kind of text. Code (blocks and inline spans)
+// falls back to Courier rather than the overall font, since it must stay
+// monospace for the code-block word-wrap in blocks.go to line up.
+func (r *renderer) fontFamilyFor(st style) string {
+	if st.code {
+		return firstNonEmpty(r.opts.FontCodeBlock, "Courier")
+	}
+	if st.heading == 1 {
+		return firstNonEmpty(r.opts.FontH1, r.opts.FontHeadings, r.opts.FontOverall, "Arial")
+	}
+	if st.heading > 0 {
+		return firstNonEmpty(r.opts.FontHeadings, r.opts.FontOverall, "Arial")
+	}
+	return firstNonEmpty(r.opts.FontOverall, "Arial")
+}
+
+func firstNonEmpty(vals ...string) string {
+	for _, v := range vals {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
 }
 
 func (r *renderer) contentWidth() float64 {
@@ -60,7 +91,8 @@ func (r *renderer) applyStyle(st style) {
 		r.pdf.SetTextColor(st.iconColor[0], st.iconColor[1], st.iconColor[2])
 		return
 	}
-	r.pdf.SetFont(st.fontFamily(), st.fontStyle(), st.size)
+	family := r.fontFamilyFor(st)
+	r.pdf.SetFont(family, resolveFontStyle(family, st.fontStyle()), st.size)
 	switch {
 	case st.link:
 		r.pdf.SetTextColor(30, 100, 200)
@@ -73,15 +105,25 @@ func (r *renderer) applyStyle(st style) {
 	}
 }
 
-// textFor returns the drawable string for tok. Icon glyphs must bypass
-// translate(): that mapping targets the Latin-1-ish encoding used by the
-// core Arial/Courier fonts, and would corrupt a Private Use Area codepoint
-// from the embedded UTF-8 icon font.
+// textFor returns the drawable string for tok. See transformText.
 func (r *renderer) textFor(tok token) string {
-	if tok.style.isIcon {
-		return tok.text
+	return r.transformText(tok.text, tok.style)
+}
+
+// transformText returns the drawable form of text for style st. Icon glyphs
+// and any style whose resolved font is a registered custom TrueType family
+// must bypass translate(): that mapping targets the Latin-1-ish encoding
+// used by the core Arial/Times/Courier fonts, and would corrupt both a
+// Private Use Area codepoint from the embedded icon font and any non-ASCII
+// character in a genuine UTF-8 custom font.
+func (r *renderer) transformText(text string, st style) string {
+	if st.isIcon {
+		return text
 	}
-	return r.translate(tok.text)
+	if _, ok := customFonts[r.fontFamilyFor(st)]; ok {
+		return text
+	}
+	return r.translate(text)
 }
 
 // ensureSpace forces a page break first if height won't fit on the rest of

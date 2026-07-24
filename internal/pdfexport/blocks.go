@@ -89,7 +89,7 @@ func (r *renderer) writeCodeBlock(text string) {
 
 	r.applyStyle(st)
 	innerWidth := width - 2*cellPadMM
-	charW := r.pdf.GetStringWidth("M") // Courier is monospace: every char is this wide
+	charW := r.pdf.GetStringWidth("M") // code fonts are monospace-only (see the fonts manifest): every char is this wide
 	maxChars := int(innerWidth / charW)
 	if maxChars < 1 {
 		maxChars = 1
@@ -132,10 +132,11 @@ func (r *renderer) writeCodeBlock(text string) {
 		r.pdf.SetFillColor(240, 240, 240)
 		r.pdf.Rect(leftX, y0, width, chunkHeight, "F")
 
+		r.pdf.SetY(y0 + cellPadMM)
 		for _, line := range chunk {
 			r.applyStyle(st)
 			r.pdf.SetX(leftX + cellPadMM)
-			r.pdf.CellFormat(innerWidth, lh, r.translate(line), "", 2, "L", false, 0, "")
+			r.pdf.CellFormat(innerWidth, lh, r.transformText(line, st), "", 2, "L", false, 0, "")
 		}
 		r.pdf.SetXY(leftX, y0+chunkHeight)
 		i = end

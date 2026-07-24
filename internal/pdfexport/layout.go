@@ -124,7 +124,7 @@ func (r *renderer) splitLongToken(tok token, width float64) []token {
 	start := 0
 	for start < len(runes) {
 		end := start + 1
-		for end < len(runes) && r.pdf.GetStringWidth(r.translate(string(runes[start:end+1]))) <= width {
+		for end < len(runes) && r.pdf.GetStringWidth(r.transformText(string(runes[start:end+1]), tok.style)) <= width {
 			end++
 		}
 		out = append(out, token{text: string(runes[start:end]), style: tok.style})

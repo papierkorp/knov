@@ -26,15 +26,15 @@
       - for usage
       - for devs
 - move file button (can be done in rename at the moment)
-- pdf export for full site
 - pdf export for section
 - if i build the windows.exe in linux it doesnt work in windows only if i build in the wsl in windows?
 - add logging to tests
-- pdfexport
-  - implement images
 - warning color in logs makes it unreadable (at least in dark mode i dont know for light mode)
 - kanban - all ancestors shows the full filepath of the file - this is unneccessary
 - settings/configs to hide certain folders from different searches
+- update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
+- add the fonts to the general/theme settings as well (not only pdf)
+- another mono font?
 
 # testing
 

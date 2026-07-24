@@ -1890,6 +1890,28 @@ blockquote p blockquote p,
   line-height: 1.4;
 }
 
+/* font-picker <select> + its live preview sample, side by side — see
+   render_settings.go's FontPreview handling */
+.font-select-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.font-select-row .form-select {
+  width: auto;
+  flex: 1;
+}
+
+/* sample text rendered in the currently chosen font, styled like inline
+   code (matches the `code` rule in variables.css) but not italic — the
+   font's own regular letterforms are the point */
+.font-preview-sample {
+  flex-shrink: 0;
+  font-style: normal;
+  white-space: nowrap;
+}
+
 /* editor section (wide): spread setting groups into auto-fill columns */
 #section-editor .setting-group {
   display: grid;

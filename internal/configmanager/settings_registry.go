@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"knov/internal/fonts"
 	"knov/internal/translation"
 )
 
@@ -433,4 +434,58 @@ var (
 		Label:   "Use Icons for Task Checkboxes",
 		Desc:    "draw task-list checkboxes as status icons instead of plain text marks ([ ], [x], [-], [O]) when exporting to pdf",
 	})
+	PDFFontOverall = register(&StringSetting{
+		key: "pdfFontOverall", Default: "Noto Sans",
+		Section:     SectionPDFExport,
+		Label:       "Font (Overall)",
+		Desc:        "base font used for body text when exporting to pdf, and the fallback for headings",
+		Options:     pdfFontOptions,
+		FontPreview: true,
+	})
+	PDFFontCodeBlock = register(&StringSetting{
+		key: "pdfFontCodeBlock", Default: "Noto Sans Mono",
+		Section:     SectionPDFExport,
+		Label:       "Font (Code Blocks)",
+		Desc:        "font used for code blocks and inline code when exporting to pdf (monospace fonts only, so wrapped code lines stay aligned)",
+		Options:     pdfMonoFontOptions,
+		FontPreview: true,
+	})
+	PDFFontHeadings = register(&StringSetting{
+		key: "pdfFontHeadings", Default: "Noto Sans",
+		Section:     SectionPDFExport,
+		Label:       "Font (Headings)",
+		Desc:        "font used for headings when exporting to pdf",
+		Options:     pdfFontOptions,
+		FontPreview: true,
+	})
+	PDFFontH1 = register(&StringSetting{
+		key: "pdfFontH1", Default: "Noto Sans",
+		Section:     SectionPDFExport,
+		Label:       "Font (H1 Headings)",
+		Desc:        "font used for level-1 headings when exporting to pdf, overriding the general heading font",
+		Options:     pdfFontOptions,
+		FontPreview: true,
+	})
 )
+
+// pdf export font options, derived from the fonts manifest so the
+// selectable values, the registered ttf files, and the settings preview
+// can never drift apart. The code block setting only offers monospace
+// families — its wrapping assumes a fixed character width.
+//
+//nolint:gochecknoglobals
+var (
+	pdfFontOptions     = pdfFontOptionList(false)
+	pdfMonoFontOptions = pdfFontOptionList(true)
+)
+
+func pdfFontOptionList(monoOnly bool) []SettingOption {
+	var opts []SettingOption
+	for _, f := range fonts.Families {
+		if monoOnly && !f.Monospace {
+			continue
+		}
+		opts = append(opts, SettingOption{Value: f.Name, Label: f.Name})
+	}
+	return opts
+}

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"knov/internal/configmanager"
+	"knov/internal/fonts"
 )
 
 // RenderSettingsSection renders the inner content of a settings section (h2 + grouped items).
@@ -21,6 +22,13 @@ func RenderSettingsSection(section configmanager.SettingSection, t func(string, 
 	}
 
 	items := configmanager.SettingsBySection(section)
+
+	for _, s := range items {
+		if s.GetMeta().FontPreview {
+			html.WriteString(fontPreviewFaces())
+			break
+		}
+	}
 
 	type groupEntry struct {
 		group configmanager.SettingGroup
@@ -112,6 +120,26 @@ func RenderFaviconItem(t func(string, ...any) string) string {
 	return html.String()
 }
 
+// fontPreviewFaces emits @font-face rules for every embedded family in the
+// fonts manifest, so the font picker previews (see FontPreview in
+// renderSettingItem) render in the actual fonts. Generated from the manifest
+// — rather than duplicated in each theme's css — so the selectable options,
+// the registered ttf files, and the previews can never drift apart. Core
+// fonts have no Dir (and no files); their preview relies on system fonts.
+// Only the regular weight is loaded; the sample never needs bold/italic.
+func fontPreviewFaces() string {
+	var css strings.Builder
+	css.WriteString(`<style>`)
+	for _, f := range fonts.Families {
+		if f.Dir == "" {
+			continue
+		}
+		fmt.Fprintf(&css, `@font-face{font-family:"%s";src:url("/static/fonts/%s/%s") format("truetype");font-display:swap;}`, f.Name, f.Dir, f.Regular)
+	}
+	css.WriteString(`</style>`)
+	return css.String()
+}
+
 func renderSettingItem(s configmanager.RenderableSetting, t func(string, ...any) string) string {
 	var html strings.Builder
 	html.WriteString(`<div class="setting-item">`)
@@ -158,7 +186,17 @@ func renderSettingItem(s configmanager.RenderableSetting, t func(string, ...any)
 		}
 		html.WriteString(fmt.Sprintf(`<form hx-post="%s" hx-trigger="%s" hx-swap="%s"%s>`, postURL, trigger, swap, targetAttr))
 		html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, s.Key(), t(meta.Label)))
-		html.WriteString(fmt.Sprintf(`<select name="%s" id="%s" class="form-select">`, s.Key(), s.Key()))
+		// Native <option> only reliably supports color/background-color across
+		// browsers — Firefox and Safari ignore font-family there, unlike Chrome.
+		// So the font itself is previewed with a code-styled sample directly
+		// after the select instead, updated on change with a one-line inline
+		// handler (no shared JS file needed for a single style property).
+		onchange := ""
+		if meta.FontPreview {
+			html.WriteString(`<div class="font-select-row">`)
+			onchange = " onchange=\"this.nextElementSibling.style.fontFamily=`'${this.value}',sans-serif`\""
+		}
+		html.WriteString(fmt.Sprintf(`<select name="%s" id="%s" class="form-select"%s>`, s.Key(), s.Key(), onchange))
 		for _, opt := range meta.Options {
 			label := opt.Label
 			if label == "" {
@@ -171,6 +209,13 @@ func renderSettingItem(s configmanager.RenderableSetting, t func(string, ...any)
 			html.WriteString(fmt.Sprintf(`<option value="%s"%s>%s</option>`, opt.Value, selected, t(label)))
 		}
 		html.WriteString(`</select>`)
+		if meta.FontPreview {
+			html.WriteString(fmt.Sprintf(
+				`<code class="font-preview-sample" style="font-family:'%s',sans-serif;">%s</code>`,
+				currentVal, t("Aa Bb Gg 0123"),
+			))
+			html.WriteString(`</div>`)
+		}
 		if meta.Desc != "" {
 			html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, t(meta.Desc)))
 		}
