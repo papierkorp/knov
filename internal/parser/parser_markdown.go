@@ -480,12 +480,17 @@ func (h *MarkdownHandler) addHeaderButtons(htmlContent, filePath string) string 
 		if len(parts) < 4 {
 			return match
 		}
+		pdfBtn := fmt.Sprintf(
+			`<a href="/api/files/export/pdf?filepath=%s&section=%s" class="header-pdf-btn" title="%s"><i class="fa fa-file-pdf"></i></a>`,
+			url.QueryEscape(relPath), url.QueryEscape(parts[2]),
+			translation.SprintfForRequest(configmanager.GetLanguage(), "export section to pdf"),
+		)
 		editBtn := fmt.Sprintf(
 			`<a href="/files/edit/%s?section=%s" class="header-edit-btn" title="%s"><i class="fa fa-edit"></i></a>`,
 			relPath, parts[2],
 			translation.SprintfForRequest(configmanager.GetLanguage(), "edit section"),
 		)
-		return fmt.Sprintf(`<h%s id="%s">%s%s</h%s>`, parts[1], parts[2], parts[3], editBtn, parts[1])
+		return fmt.Sprintf(`<h%s id="%s">%s%s%s</h%s>`, parts[1], parts[2], parts[3], pdfBtn, editBtn, parts[1])
 	})
 }
 

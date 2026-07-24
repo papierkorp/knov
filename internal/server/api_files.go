@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
+	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
 	"knov/internal/dokuwikiconverter"
 	"knov/internal/files"
@@ -493,29 +494,49 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Export file to pdf
-// @Description Renders a file's markdown source to a downloadable pdf
+// @Description Renders a file's markdown source, or optionally just one section of it, to a downloadable pdf
 // @Tags files
 // @Produce application/pdf
 // @Param filepath query string true "File path"
+// @Param section query string false "Section ID (optional, exports only this section)"
 // @Success 200 {file} file "pdf file"
 // @Failure 400 {string} string "invalid request"
 // @Failure 500 {string} string "export failed"
 // @Router /api/files/export/pdf [get]
 func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
+	sectionID := r.URL.Query().Get("section")
 	if filePath == "" {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(filePath)
-	logging.LogDebug(logging.KeyPdfExport, "pdf export requested: %s (resolved: %s)", filePath, fullPath)
+	var content []byte
+	filename := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
 
-	content, err := os.ReadFile(fullPath)
-	if err != nil {
-		logging.LogError(logging.KeyPdfExport, "pdf export: failed to read file %s: %v", fullPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
-		return
+	if sectionID != "" {
+		logging.LogDebug(logging.KeyPdfExport, "pdf export requested: %s section %s", filePath, sectionID)
+
+		handler := contentHandler.GetHandler("markdown")
+		sectionContent, err := handler.ExtractSection(filePath, sectionID, configmanager.GetSectionEditIncludeSubheaders())
+		if err != nil {
+			logging.LogError(logging.KeyPdfExport, "pdf export: failed to extract section %s in file %s: %v", sectionID, filePath, err)
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
+			return
+		}
+		content = []byte(sectionContent)
+		filename += "-" + sectionID
+	} else {
+		fullPath := pathutils.ToDocsPath(filePath)
+		logging.LogDebug(logging.KeyPdfExport, "pdf export requested: %s (resolved: %s)", filePath, fullPath)
+
+		fileContent, err := os.ReadFile(fullPath)
+		if err != nil {
+			logging.LogError(logging.KeyPdfExport, "pdf export: failed to read file %s: %v", fullPath, err)
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
+			return
+		}
+		content = fileContent
 	}
 
 	pdf, err := renderPDFSafely(content)
@@ -525,9 +546,8 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filename := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath)) + ".pdf"
 	w.Header().Set("Content-Type", "application/pdf")
-	setAttachmentFilename(w, filename)
+	setAttachmentFilename(w, filename+".pdf")
 	w.Write(pdf)
 
 	logging.LogInfo(logging.KeyPdfExport, "exported file to pdf: %s (%d bytes)", filePath, len(pdf))

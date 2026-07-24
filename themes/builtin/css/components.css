@@ -1349,6 +1349,21 @@ body[data-dark-mode="true"] .tooltip::after {
   border: 1px solid transparent;
 }
 
+.file-content .header-pdf-btn .file-content .header-pdf-btn,
+.file-content .header-pdf-btn {
+  opacity: 0;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.7em;
+  line-height: 1;
+  padding: 0.2em 0.4em;
+  margin-left: 0.3em;
+  transition: opacity 0.2s ease-in-out;
+  border-radius: 3px;
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
+}
+
 .file-content h1:hover .header-edit-btn .file-content h1:hover .header-edit-btn,
 .file-content h2:hover .header-edit-btn .file-content h2:hover .header-edit-btn,
 .file-content h3:hover .header-edit-btn .file-content h3:hover .header-edit-btn,
@@ -1360,7 +1375,13 @@ body[data-dark-mode="true"] .tooltip::after {
 .file-content h3:hover .header-edit-btn,
 .file-content h4:hover .header-edit-btn,
 .file-content h5:hover .header-edit-btn,
-.file-content h6:hover .header-edit-btn {
+.file-content h6:hover .header-edit-btn,
+.file-content h1:hover .header-pdf-btn,
+.file-content h2:hover .header-pdf-btn,
+.file-content h3:hover .header-pdf-btn,
+.file-content h4:hover .header-pdf-btn,
+.file-content h5:hover .header-pdf-btn,
+.file-content h6:hover .header-pdf-btn {
   opacity: 1;
 }
 
@@ -1389,6 +1410,14 @@ body[data-dark-mode="true"] .tooltip::after {
 
 .file-content .header-anchor:hover .file-content .header-anchor:hover,
 .file-content .header-anchor:hover {
+  color: var(--primary);
+  background: var(--bg);
+  border-color: var(--border);
+  text-decoration: none;
+}
+
+.file-content .header-pdf-btn:hover .file-content .header-pdf-btn:hover,
+.file-content .header-pdf-btn:hover {
   color: var(--primary);
   background: var(--bg);
   border-color: var(--border);
@@ -2603,7 +2632,8 @@ main textarea {
    ============================================= */
 
 .header-edit-btn,
-.header-anchor {
+.header-anchor,
+.header-pdf-btn {
   opacity: 0;
   transition: opacity 0.15s;
   margin-left: 6px;
@@ -2623,12 +2653,19 @@ h2:hover .header-anchor,
 h3:hover .header-anchor,
 h4:hover .header-anchor,
 h5:hover .header-anchor,
-h6:hover .header-anchor {
+h6:hover .header-anchor,
+h1:hover .header-pdf-btn,
+h2:hover .header-pdf-btn,
+h3:hover .header-pdf-btn,
+h4:hover .header-pdf-btn,
+h5:hover .header-pdf-btn,
+h6:hover .header-pdf-btn {
   opacity: 1;
 }
 
 .header-edit-btn:hover,
-.header-anchor:hover {
+.header-anchor:hover,
+.header-pdf-btn:hover {
   color: var(--primary);
 }
 
