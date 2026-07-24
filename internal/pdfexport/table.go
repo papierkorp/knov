@@ -5,6 +5,11 @@ import (
 	extast "github.com/yuin/goldmark/extension/ast"
 )
 
+const (
+	minColWidthMM = 18.0
+	maxColWidthMM = 70.0
+)
+
 // ---------------------------------------------------------------------------
 // tables — column widths are computed from actual content instead of a fixed
 // header-only width (the bug that originally motivated dropping mdtopdf):
@@ -139,18 +144,20 @@ func (r *renderer) naturalWidth(tokens []token, header bool) float64 {
 		w += r.pdf.GetStringWidth(r.translate(tok.text))
 	}
 	w += 2 * cellPadMM
-	if w < 18 {
-		w = 18
+	if w < minColWidthMM {
+		w = minColWidthMM
 	}
-	if w > 70 {
-		w = 70
+	if w > maxColWidthMM {
+		w = maxColWidthMM
 	}
 	return w
 }
 
 // minColumnWidth returns the width (mm) needed for the single longest word in
 // tokens — a column can never be shrunk below this without the word overflowing
-// into the next column.
+// into the next column. Capped at maxColWidthMM like naturalWidth: a word wider
+// than that gets character-broken inside the cell (see expandLongTokens)
+// instead of forcing the whole table wider than the page.
 func (r *renderer) minColumnWidth(tokens []token, header bool) float64 {
 	w := 0.0
 	for _, tok := range tokens {
@@ -164,8 +171,11 @@ func (r *renderer) minColumnWidth(tokens []token, header bool) float64 {
 		}
 	}
 	w += 2 * cellPadMM
-	if w < 18 {
-		w = 18
+	if w < minColWidthMM {
+		w = minColWidthMM
+	}
+	if w > maxColWidthMM {
+		w = maxColWidthMM
 	}
 	return w
 }
