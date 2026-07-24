@@ -30,7 +30,11 @@ func (r *renderer) renderBlock(n ast.Node) {
 		}
 		r.writeParagraph(r.collectTokens(n, headingStyle(v.Level)), 3)
 	case *ast.Paragraph:
-		r.writeParagraph(r.collectTokens(n, normalStyle()), 3)
+		if img, ok := soleImage(v); ok {
+			r.renderImage(img)
+		} else {
+			r.writeParagraph(r.collectTokens(n, normalStyle()), 3)
+		}
 	case *ast.TextBlock:
 		r.writeParagraph(r.collectTokens(n, normalStyle()), 1)
 	case *ast.Blockquote:
@@ -51,6 +55,17 @@ func (r *renderer) renderBlock(n ast.Node) {
 		r.renderChildren(n)
 	}
 	r.hasContent = true
+}
+
+// soleImage reports whether n's only child is an image, i.e. an image on its
+// own line — the common case that should be drawn as a real embedded image
+// rather than inline placeholder text.
+func soleImage(n ast.Node) (*ast.Image, bool) {
+	img, ok := n.FirstChild().(*ast.Image)
+	if ok && img == n.LastChild() {
+		return img, true
+	}
+	return nil, false
 }
 
 func (r *renderer) horizontalRule() {
