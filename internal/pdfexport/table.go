@@ -196,7 +196,7 @@ func (r *renderer) drawTableRow(cells []tableCell, widths []float64, header bool
 	rowHeight := float64(maxLines)*lineH + 2*cellPadMM
 	r.ensureSpace(rowHeight)
 
-	x0, y0 := marginMM+r.indent, r.pdf.GetY()
+	x0, y0 := r.margin+r.indent, r.pdf.GetY()
 	if header {
 		r.pdf.SetFillColor(220, 220, 220)
 	} else {

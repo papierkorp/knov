@@ -207,6 +207,11 @@ func GetTablePageSize() int {
 func GetShowHiddenFiles() bool { return ShowHiddenFiles.Get() }
 func GetHomeDashboard() string { return HomeDashboard.Get() }
 
+func GetPDFPageBreakBeforeHeadings() bool { return PDFPageBreakBeforeHeadings.Get() }
+func GetPDFPageFormat() string            { return PDFPageFormat.Get() }
+func GetPDFOrientation() string           { return PDFOrientation.Get() }
+func GetPDFMarginMM() float64             { return float64(PDFMarginMM.Get()) }
+
 // ── mime / extension helpers ──────────────────────────────────────────────────
 
 func IsHiddenByMime(mimeType string) bool {

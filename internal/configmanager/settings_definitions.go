@@ -13,11 +13,12 @@ var (
 	SectionTable     = SettingSection{Key: "table", Label: "Table Settings"}
 	SectionMedia     = SettingSection{Key: "media", Label: "Media Upload Settings"}
 	SectionFileTypes = SettingSection{Key: "file-types", Label: "File Type Visibility", Description: "Control which file types are visible in file listings and browsing"}
+	SectionPDFExport = SettingSection{Key: "pdf-export", Label: "PDF Export Settings"}
 )
 
 // AllSections returns sections in display order.
 func AllSections() []SettingSection {
-	return []SettingSection{SectionGeneral, SectionEditor, SectionTable, SectionMedia, SectionFileTypes}
+	return []SettingSection{SectionGeneral, SectionEditor, SectionTable, SectionMedia, SectionFileTypes, SectionPDFExport}
 }
 
 // SettingGroup is a named sub-section rendered as <div class="setting-group"> inside a section.

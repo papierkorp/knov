@@ -12,7 +12,7 @@ func (r *renderer) writeParagraph(tokens []token, spacingAfterMM float64) {
 	if len(tokens) == 0 {
 		return
 	}
-	leftX := marginMM + r.indent
+	leftX := r.margin + r.indent
 	width := r.contentWidth()
 	r.pdf.SetX(leftX)
 

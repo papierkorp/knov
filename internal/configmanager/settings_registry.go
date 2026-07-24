@@ -398,4 +398,33 @@ var (
 		Label: "Home Dashboard",
 		Desc:  "set a dashboard ID to use as the home page",
 	})
+
+	// ── PDF Export ────────────────────────────────────────────────────────────
+	PDFPageBreakBeforeHeadings = register(&BoolSetting{
+		key: "pdfPageBreakBeforeHeadings", Default: true,
+		Section: SectionPDFExport,
+		Label:   "Page Break Before Headings",
+		Desc:    "start a new page before each top-level heading when exporting to pdf",
+	})
+	PDFPageFormat = register(&StringSetting{
+		key: "pdfPageFormat", Default: "A4",
+		Section: SectionPDFExport,
+		Label:   "Page Format",
+		Desc:    "paper size used when exporting to pdf",
+		Options: []SettingOption{{"A3", "A3"}, {"A4", "A4"}, {"A5", "A5"}, {"Letter", "Letter"}, {"Legal", "Legal"}},
+	})
+	PDFOrientation = register(&StringSetting{
+		key: "pdfOrientation", Default: "P",
+		Section: SectionPDFExport,
+		Label:   "Orientation",
+		Desc:    "page orientation used when exporting to pdf",
+		Options: []SettingOption{{"P", "Portrait"}, {"L", "Landscape"}},
+	})
+	PDFMarginMM = register(&IntSetting{
+		key: "pdfMarginMM", Default: 20,
+		Section: SectionPDFExport,
+		Label:   "Margin (mm)",
+		Desc:    "page margin in millimeters on every side when exporting to pdf",
+		Min:     intPtr(0), Max: intPtr(50),
+	})
 )

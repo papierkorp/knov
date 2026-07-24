@@ -1,9 +1,11 @@
 package pdfexport
 
 const (
-	marginMM   = 20.0
-	baseFontPt = 11.0
-	cellPadMM  = 2.0
+	defaultMarginMM    = 20.0
+	defaultPageFormat  = "A4"
+	defaultOrientation = "P"
+	baseFontPt         = 11.0
+	cellPadMM          = 2.0
 )
 
 // style carries the inline formatting for a single token of text.

@@ -544,7 +544,13 @@ func renderPDFSafely(content []byte) (pdf []byte, err error) {
 			err = fmt.Errorf("panic during pdf conversion: %v", r)
 		}
 	}()
-	return pdfexport.MarkdownToPDF(content)
+	opts := pdfexport.Options{
+		PageBreakBeforeHeadings: configmanager.GetPDFPageBreakBeforeHeadings(),
+		PageFormat:              configmanager.GetPDFPageFormat(),
+		Orientation:             configmanager.GetPDFOrientation(),
+		MarginMM:                configmanager.GetPDFMarginMM(),
+	}
+	return pdfexport.MarkdownToPDF(content, opts)
 }
 
 // @Summary Export all files as zip

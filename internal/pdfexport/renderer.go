@@ -11,21 +11,36 @@ type renderer struct {
 	translate  func(string) string
 	indent     float64
 	hasContent bool // true once anything has been drawn on the current page
+	opts       Options
+	margin     float64
 }
 
-func newRenderer(source []byte) *renderer {
-	pdf := fpdf.New("P", "mm", "A4", ".")
-	pdf.SetMargins(marginMM, marginMM, marginMM)
-	pdf.SetAutoPageBreak(true, marginMM)
+func newRenderer(source []byte, opts Options) *renderer {
+	format := opts.PageFormat
+	if format == "" {
+		format = defaultPageFormat
+	}
+	orientation := opts.Orientation
+	if orientation == "" {
+		orientation = defaultOrientation
+	}
+	margin := opts.MarginMM
+	if margin <= 0 {
+		margin = defaultMarginMM
+	}
+
+	pdf := fpdf.New(orientation, "mm", format, ".")
+	pdf.SetMargins(margin, margin, margin)
+	pdf.SetAutoPageBreak(true, margin)
 	pdf.AddPage()
-	r := &renderer{pdf: pdf, source: source}
+	r := &renderer{pdf: pdf, source: source, opts: opts, margin: margin}
 	r.translate = pdf.UnicodeTranslatorFromDescriptor("")
 	return r
 }
 
 func (r *renderer) contentWidth() float64 {
 	w, _ := r.pdf.GetPageSize()
-	return w - 2*marginMM - r.indent
+	return w - 2*r.margin - r.indent
 }
 
 func (r *renderer) applyStyle(st style) {
@@ -45,7 +60,7 @@ func (r *renderer) applyStyle(st style) {
 // rows), which bypass fpdf's own per-Cell auto page break.
 func (r *renderer) ensureSpace(height float64) {
 	_, pageH := r.pdf.GetPageSize()
-	if r.pdf.GetY()+height > pageH-marginMM {
+	if r.pdf.GetY()+height > pageH-r.margin {
 		r.pdf.AddPage()
 	}
 }

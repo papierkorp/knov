@@ -24,7 +24,7 @@ func (r *renderer) renderChildren(n ast.Node) {
 func (r *renderer) renderBlock(n ast.Node) {
 	switch v := n.(type) {
 	case *ast.Heading:
-		if v.Level == 1 && r.hasContent {
+		if v.Level == 1 && r.hasContent && r.opts.PageBreakBeforeHeadings {
 			r.pdf.AddPage()
 			r.hasContent = false
 		}
@@ -55,8 +55,8 @@ func (r *renderer) renderBlock(n ast.Node) {
 
 func (r *renderer) horizontalRule() {
 	y := r.pdf.GetY() + 2
-	x0 := marginMM + r.indent
-	x1 := marginMM + r.contentWidth()
+	x0 := r.margin + r.indent
+	x1 := r.margin + r.contentWidth()
 	r.pdf.SetDrawColor(150, 150, 150)
 	r.pdf.Line(x0, y, x1, y)
 	r.pdf.Ln(6)
@@ -69,7 +69,7 @@ func (r *renderer) writeCodeBlock(text string) {
 	}
 	st := codeBlockStyle()
 	lh := st.lineHeight()
-	leftX := marginMM + r.indent
+	leftX := r.margin + r.indent
 	width := r.contentWidth()
 
 	r.applyStyle(st)
@@ -97,11 +97,11 @@ func (r *renderer) writeCodeBlock(text string) {
 	_, pageH := r.pdf.GetPageSize()
 	i := 0
 	for i < len(lines) {
-		avail := pageH - marginMM - r.pdf.GetY() - 2*cellPadMM
+		avail := pageH - r.margin - r.pdf.GetY() - 2*cellPadMM
 		fit := int(avail / lh)
 		if fit < 1 {
 			r.pdf.AddPage()
-			fit = int((pageH - 2*marginMM - 2*cellPadMM) / lh)
+			fit = int((pageH - 2*r.margin - 2*cellPadMM) / lh)
 			if fit < 1 {
 				fit = 1
 			}
@@ -164,7 +164,7 @@ func (r *renderer) renderListItem(item *ast.ListItem, marker string) {
 		tokens := r.collectTokens(c, normalStyle())
 		if first {
 			r.applyStyle(st)
-			r.pdf.SetX(marginMM + r.indent)
+			r.pdf.SetX(r.margin + r.indent)
 			r.pdf.CellFormat(markerWidth, st.lineHeight(), marker, "", 0, "L", false, 0, "")
 			r.indent += markerWidth
 			r.writeParagraph(tokens, 1)
