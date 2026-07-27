@@ -509,14 +509,7 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 		cssFile := strings.TrimPrefix(filePath, "css/")
 
 		if cssFile == "custom.css" {
-			currentTheme := configmanager.GetTheme()
-			customCSS := ""
-			if val := configmanager.GetThemeSetting(currentTheme, "customCSS"); val != nil {
-				if css, ok := val.(string); ok {
-					customCSS = css
-				}
-			}
-			w.Write([]byte(customCSS))
+			w.Write([]byte(configmanager.GetCustomCSS()))
 			return
 		}
 	}

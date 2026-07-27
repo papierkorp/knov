@@ -78,15 +78,6 @@ func RenderCheckbox(name, endpoint string, checked bool, extraAttrs string) stri
 	return fmt.Sprintf(`<input %s />`, baseAttrs)
 }
 
-// RenderTextarea renders a textarea with specified attributes
-func RenderTextarea(name, content string, rows int, extraAttrs string) string {
-	baseAttrs := fmt.Sprintf(`name="%s" rows="%d"`, name, rows)
-	if extraAttrs != "" {
-		baseAttrs += " " + extraAttrs
-	}
-	return fmt.Sprintf(`<textarea %s>%s</textarea>`, baseAttrs, content)
-}
-
 // RenderFileCards renders files as cards without search context
 func RenderFileCards(files []files.File) string {
 	var html strings.Builder

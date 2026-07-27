@@ -245,6 +245,13 @@ var (
 		Desc:  "make preview images clickable to open the full-size version",
 	})
 
+	ShowHiddenFiles = register(&BoolSetting{
+		key: "showHiddenFiles", Default: false,
+		Section: SectionFileTypes, Group: GroupNone,
+		Label: "Show Hidden Files",
+		Desc:  "show files and folders starting with a dot",
+	})
+
 	// ── File Types / Editor Types ─────────────────────────────────────────────
 	HideMarkdown = register(&BoolSetting{
 		key: "hideMarkdown", Default: false,
@@ -378,15 +385,9 @@ var (
 			return err
 		},
 	})
-	ShowHiddenFiles = register(&BoolSetting{
-		key: "showHiddenFiles", Default: false,
-		Section: SectionGeneral, Group: GroupFiles,
-		Label: "Show Hidden Files",
-		Desc:  "show files and folders starting with a dot",
-	})
 	HomeDashboard = register(&StringSetting{
 		key: "homeDashboard", Default: "home",
-		Section: SectionGeneral, Group: GroupFiles,
+		Section: SectionGeneral, Group: GroupNone,
 		Label: "Home Dashboard",
 		Desc:  "set a dashboard ID to use as the home page",
 	})
@@ -398,6 +399,13 @@ var (
 		Desc:    "choose the visual appearance of the interface",
 		DynURL:  "/api/themes/",
 		Refresh: true,
+	})
+	CustomCSS = register(&StringSetting{
+		key: "customCSS", Default: "",
+		Section: SectionAppearance, Group: GroupNone,
+		Label:     "Custom CSS",
+		Desc:      "additional CSS applied on top of the active theme, across all themes",
+		Multiline: true,
 	})
 	FontBody = register(&StringSetting{
 		key: "fontBody", Default: "Noto Sans",

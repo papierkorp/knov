@@ -206,6 +206,7 @@ func GetTablePageSize() int {
 }
 func GetShowHiddenFiles() bool { return ShowHiddenFiles.Get() }
 func GetHomeDashboard() string { return HomeDashboard.Get() }
+func GetCustomCSS() string     { return CustomCSS.Get() }
 func GetFontBody() string      { return FontBody.Get() }
 func GetFontHeadings() string  { return FontHeadings.Get() }
 func GetFontH1() string        { return FontH1.Get() }

@@ -68,20 +68,20 @@ The kanban board organises files into columns based on status tags.
 
 ## Themes & Appearance
 
-**Switching themes:**
+### Switching themes
 - Drop a theme folder into `themes/` and select it under **Settings => Theme**
 - The builtin theme is always available as a fallback
 
-**Per-user appearance settings** (no `.env` needed, saved in the UI):
-- Dark mode, colour scheme, font family
-- Which metadata fields show in the sidebar
-- Custom CSS - applied on top of the active theme, survives theme switches
-
-**Overwrite templates:**
+### Overwrite templates
 - Create `themes/overwrite/` and place `.gohtml` files there
 - Any template in that folder takes precedence over the active theme on every request - no restart needed
 - Only put the templates you actually want to change there; everything else falls back normally
 - as a base you can copy the template from your current theme
+
+### custom.css
+
+- is supported by default
+- use this: `@import url("/themes/xxx.css");` in the setting to use a viable css file with proper syntax highlighting
 
 ---
 

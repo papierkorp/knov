@@ -17,12 +17,6 @@
       "label": "Color Scheme",
       "description": "choose the color theme"
     },
-    "customCSS": {
-      "type": "textarea",
-      "default": "",
-      "label": "Custom CSS",
-      "description": "add your own css styles"
-    },
     "linkDisplayMode": {
       "type": "select",
       "options": [

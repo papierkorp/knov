@@ -205,6 +205,7 @@ type StringSetting struct {
 	DynURL      string
 	Refresh     bool
 	FontPreview bool
+	Multiline   bool
 	OnChange    func(interface{})
 	Validate    func(string) error
 }
@@ -261,6 +262,9 @@ func (s *StringSetting) Type() string {
 	}
 	if s.DynURL != "" {
 		return "dynamic-select"
+	}
+	if s.Multiline {
+		return "textarea"
 	}
 	return "text"
 }
