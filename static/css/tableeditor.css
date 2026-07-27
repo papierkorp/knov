@@ -73,7 +73,7 @@
 }
 
 .page-file-dittable .btn-secondary {
-  background: var(--bg-tertiary, #6b7280);
+  background: var(--neutral);
 }
 
 .page-file-dittable .btn-primary:hover {
@@ -99,21 +99,21 @@
 }
 
 .page-file-dittable .status-ok {
-  color: var(--success, #065f46);
-  background: color-mix(in srgb, var(--success, #22c55e) 15%, var(--bg));
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 15%, var(--bg));
   padding: 12px 16px;
   border-radius: 4px;
   margin-top: 16px;
-  border: 1px solid var(--success, #10b981);
+  border: 1px solid var(--success);
 }
 
 .page-file-dittable .status-error {
-  color: var(--danger, #991b1b);
-  background: color-mix(in srgb, var(--danger, #ef4444) 15%, var(--bg));
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 15%, var(--bg));
   padding: 12px 16px;
   border-radius: 4px;
   margin-top: 16px;
-  border: 1px solid var(--danger, #ef4444);
+  border: 1px solid var(--danger);
 }
 
 .page-file-dittable .status-ok a,

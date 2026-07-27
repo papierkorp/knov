@@ -53,7 +53,7 @@
   cursor: move;
   padding: 4px 8px;
   margin-right: 6px;
-  color: var(--text-secondary, #6c757d);
+  color: var(--text-secondary);
   font-size: 18px;
   user-select: none;
   flex-shrink: 0;
@@ -71,7 +71,7 @@
 
 .component-todo-editor .sortable-ghost {
   opacity: 0.4;
-  background: var(--primary, #007bff);
+  background: var(--primary);
 }
 
 .component-todo-editor .list-item {
@@ -84,7 +84,7 @@
 }
 
 .component-todo-editor .list-item.drop-as-child > .item-row {
-  outline: 2px dashed var(--primary, #007bff);
+  outline: 2px dashed var(--primary);
   border-radius: 4px;
   background: color-mix(in srgb, var(--primary) 7%, transparent);
 }
@@ -112,7 +112,7 @@
 }
 
 .component-todo-editor .state-done {
-  color: var(--success, #28a745);
+  color: var(--success);
 }
 
 .component-todo-editor .state-cancelled {
@@ -121,7 +121,7 @@
 }
 
 .component-todo-editor .state-waiting {
-  color: var(--warning, #ffc107);
+  color: var(--warning);
 }
 
 .component-todo-editor .item-input.item-struck {
@@ -177,7 +177,7 @@
 }
 
 .component-todo-editor .controls button:hover {
-  background: var(--bg-secondary, #f0f0f0);
+  background: var(--bg-secondary);
 }
 
 .component-todo-editor .controls .separator {
@@ -193,9 +193,9 @@
 }
 
 .component-todo-editor .controls .danger {
-  background: var(--danger, #dc3545);
+  background: var(--danger);
   color: white;
-  border-color: var(--danger, #dc3545);
+  border-color: var(--danger);
 }
 
 .component-todo-editor .controls .danger:hover {

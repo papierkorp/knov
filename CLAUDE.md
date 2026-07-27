@@ -21,3 +21,4 @@
 - if working with paths - we have to take care of both linux and windows os paths
 - if you add a new env also add it to .env.example and the html templates of both themes
 - if possible use slices.Contains instead of loops
+- dont use hardcoded colors use the available vars instead

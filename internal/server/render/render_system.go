@@ -194,31 +194,31 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 	content := `<style>
 .system-logs { display: flex; flex-direction: column; gap: .75rem; }
 .system-logs-toolbar { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-#log-filter { flex: 1; min-width: 160px; max-width: 280px; padding: .3rem .6rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; }
-#log-level-filter { padding: .3rem .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; }
-#log-key-filter { padding: .3rem .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; }
-#log-source-select { padding: .3rem .5rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; }
-.system-logs-download { padding: .3rem .75rem; border: 1px solid #ccc; border-radius: 4px; font-size: .875rem; text-decoration: none; color: inherit; }
-.system-logs-download:hover { background: rgba(0,0,0,.05); }
+#log-filter { flex: 1; min-width: 160px; max-width: 280px; padding: .3rem .6rem; border: 1px solid var(--border); border-radius: 4px; font-size: .875rem; }
+#log-level-filter { padding: .3rem .5rem; border: 1px solid var(--border); border-radius: 4px; font-size: .875rem; }
+#log-key-filter { padding: .3rem .5rem; border: 1px solid var(--border); border-radius: 4px; font-size: .875rem; }
+#log-source-select { padding: .3rem .5rem; border: 1px solid var(--border); border-radius: 4px; font-size: .875rem; }
+.system-logs-download { padding: .3rem .75rem; border: 1px solid var(--border); border-radius: 4px; font-size: .875rem; text-decoration: none; color: inherit; }
+.system-logs-download:hover { background: color-mix(in srgb, var(--text) 5%, transparent); }
 .log-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
-.log-table th { text-align: left; padding: .35rem .6rem; border-bottom: 2px solid #ccc; white-space: nowrap; }
-.log-table td { padding: .25rem .6rem; border-bottom: 1px solid #eee; vertical-align: top; }
+.log-table th { text-align: left; padding: .35rem .6rem; border-bottom: 2px solid var(--border); white-space: nowrap; }
+.log-table td { padding: .25rem .6rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); vertical-align: top; }
 .log-table td:nth-child(1) { white-space: nowrap; }
 .log-table td:nth-child(2) { white-space: nowrap; }
 .log-table td:nth-child(3) { white-space: nowrap; }
 .log-table td:nth-child(5) { word-break: break-word; }
 .log-caller { white-space: nowrap; font-size: .75rem; color: var(--text-secondary) !important; }
-.log-level-debug td { color: #aaa; }
-.log-level-warning td { background: #fffbe6; }
-.log-level-warning td:nth-child(2) { color: #b45309; font-weight: 600; }
-.log-level-error td { background: #fff1f0; }
-.log-level-error td:nth-child(2) { color: #c0392b; font-weight: 600; }
+.log-level-debug td { color: var(--text-secondary); }
+.log-level-warning td { background: color-mix(in srgb, var(--warning) 15%, transparent); }
+.log-level-warning td:nth-child(2) { color: var(--warning); font-weight: 600; }
+.log-level-error td { background: color-mix(in srgb, var(--danger) 15%, transparent); }
+.log-level-error td:nth-child(2) { color: var(--danger); font-weight: 600; }
 .log-file-lines { font-family: monospace; font-size: .8rem; white-space: pre-wrap; word-break: break-all; display: flex; flex-direction: column; gap: 1px; }
-.log-session { border: 1px solid #e5e5e5; border-radius: 4px; margin-bottom: 4px; }
-.log-session > summary { cursor: pointer; padding: .3rem .5rem; font-weight: 600; background: rgba(0,0,0,.03); }
+.log-session { border: 1px solid var(--border); border-radius: 4px; margin-bottom: 4px; }
+.log-session > summary { cursor: pointer; padding: .3rem .5rem; font-weight: 600; background: color-mix(in srgb, var(--text) 3%, transparent); }
 .log-session-lines { display: flex; flex-direction: column; gap: 1px; }
-.log-line { padding: .1rem .4rem; border-bottom: 1px solid #f0f0f0; }
-.log-line:hover { background: rgba(0,0,0,.03); }
+.log-line { padding: .1rem .4rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); }
+.log-line:hover { background: color-mix(in srgb, var(--text) 3%, transparent); }
 #log-more-area { padding: .5rem 0; display: flex; align-items: center; gap: .75rem; }
 .log-line-info { font-size: .8rem; color: var(--text-secondary); }
 </style>` +
@@ -390,14 +390,14 @@ func RenderJobsTable(runs []job.JobRun) string {
 func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 	content := `<style>
 .jobs-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-.jobs-table th { text-align: left; padding: .35rem .6rem; border-bottom: 2px solid #ccc; white-space: nowrap; }
-.jobs-table td { padding: .28rem .6rem; border-bottom: 1px solid #eee; vertical-align: top; white-space: nowrap; }
-.jobs-table td:last-child { white-space: normal; word-break: break-word; color: #c0392b; font-size: .8rem; }
-.job-status-running td:nth-child(5) { color: #2563eb; font-weight: 600; }
-.job-status-ok td:nth-child(5) { color: #16a34a; font-weight: 600; }
-.job-status-error td:nth-child(5) { color: #c0392b; font-weight: 600; }
-.job-status-error { background: #fff1f0; }
-.job-status-running { background: #eff6ff; }
+.jobs-table th { text-align: left; padding: .35rem .6rem; border-bottom: 2px solid var(--border); white-space: nowrap; }
+.jobs-table td { padding: .28rem .6rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); vertical-align: top; white-space: nowrap; }
+.jobs-table td:last-child { white-space: normal; word-break: break-word; color: var(--danger); font-size: .8rem; }
+.job-status-running td:nth-child(5) { color: var(--primary); font-weight: 600; }
+.job-status-ok td:nth-child(5) { color: var(--success); font-weight: 600; }
+.job-status-error td:nth-child(5) { color: var(--danger); font-weight: 600; }
+.job-status-error { background: color-mix(in srgb, var(--danger) 15%, transparent); }
+.job-status-running { background: color-mix(in srgb, var(--primary) 15%, transparent); }
 </style>` +
 		`<div class="jobs-toolbar"><button class="btn-secondary" hx-get="/api/system/jobs" hx-target="#jobs-entries" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'>Refresh</button></div>` +
 		`<div id="jobs-entries" hx-get="/api/system/jobs" hx-trigger="load, every 3s" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'></div>`
@@ -464,7 +464,7 @@ func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
 
 	content := `<style>
 .version-table { border-collapse: collapse; font-size: .9rem; min-width: 320px; }
-.version-table td { padding: .45rem .75rem; border-bottom: 1px solid var(--border-color, #e5e5e5); vertical-align: top; }
+.version-table td { padding: .45rem .75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
 .version-label { font-weight: 600; white-space: nowrap; width: 160px; }
 .version-value { font-family: monospace; }
 .version-changelog-link { display: inline-block; margin-top: 1.25rem; font-size: .875rem; }

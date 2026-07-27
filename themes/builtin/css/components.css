@@ -47,7 +47,7 @@
 }
 
 .btn-danger {
-  background: var(--danger, #dc3545);
+  background: var(--danger);
   color: var(--bg);
   border: none;
   padding: 8px 12px;
@@ -56,7 +56,7 @@
 }
 
 .btn-danger:hover {
-  background: color-mix(in srgb, var(--danger, #dc3545) 80%, black);
+  background: color-mix(in srgb, var(--danger) 80%, black);
 }
 
 .btn-small {
@@ -80,41 +80,41 @@
    ============================================= */
 
 .status-ok {
-  color: var(--success, #065f46);
-  background: color-mix(in srgb, var(--success, #22c55e) 15%, var(--bg));
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 15%, var(--bg));
   padding: 12px 16px;
   border-radius: 4px;
-  border: 1px solid var(--success, #10b981);
+  border: 1px solid var(--success);
   margin: 8px 0;
   display: block;
 }
 
 .status-error {
-  color: var(--danger, #991b1b);
-  background: color-mix(in srgb, var(--danger, #ef4444) 15%, var(--bg));
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 15%, var(--bg));
   padding: 12px 16px;
   border-radius: 4px;
-  border: 1px solid var(--danger, #ef4444);
+  border: 1px solid var(--danger);
   margin: 8px 0;
   display: block;
 }
 
 .status-warning {
-  color: var(--warning, #92400e);
-  background: color-mix(in srgb, var(--warning, #f59e0b) 15%, var(--bg));
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 15%, var(--bg));
   padding: 12px 16px;
   border-radius: 4px;
-  border: 1px solid var(--warning, #f59e0b);
+  border: 1px solid var(--warning);
   margin: 8px 0;
   display: block;
 }
 
 .status-info {
-  color: var(--info, #1e40af);
-  background: color-mix(in srgb, var(--info, #3b82f6) 15%, var(--bg));
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 15%, var(--bg));
   padding: 12px 16px;
   border-radius: 4px;
-  border: 1px solid var(--info, #3b82f6);
+  border: 1px solid var(--primary);
   margin: 8px 0;
   display: block;
 }
@@ -502,7 +502,7 @@ body[data-dark-mode="true"] .tooltip::after {
 }
 
 .page-file-editor .entry-controls .btn-remove {
-  color: var(--danger, #ef4444);
+  color: var(--danger);
 }
 
 .page-file-editor .entry-content {
@@ -1043,7 +1043,7 @@ body[data-dark-mode="true"] .tooltip::after {
 }
 
 .chat-message.chat-selected {
-  outline: 2px solid var(--primary, #4a90d9);
+  outline: 2px solid var(--primary);
   outline-offset: -2px;
 }
 
@@ -2864,9 +2864,9 @@ dl.media-info dd {
 }
 
 .btn-icon.btn-danger-icon:hover {
-  background: var(--danger, #dc2626);
+  background: var(--danger);
   color: var(--bg);
-  border-color: var(--danger, #dc2626);
+  border-color: var(--danger);
 }
 
 /* tag chips inside media detail view */
@@ -3080,8 +3080,8 @@ dl.media-info dd {
 }
 
 .page-dashboard-editor .btn-remove-widget:hover {
-  background: var(--danger, #dc2626);
-  border-color: var(--danger, #dc2626);
+  background: var(--danger);
+  border-color: var(--danger);
   color: var(--bg);
 }
 
@@ -3467,14 +3467,14 @@ dl.media-info dd {
   opacity: 0.4;
 }
 .file-content .todo-state-done {
-  color: var(--success, #28a745);
+  color: var(--success);
 }
 .file-content .todo-state-cancelled {
   color: var(--text-secondary);
   opacity: 0.6;
 }
 .file-content .todo-state-waiting {
-  color: var(--warning, #ffc107);
+  color: var(--warning);
 }
 
 .file-content li.todo-open {
@@ -3609,19 +3609,19 @@ dl.media-info dd {
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
-  background: color-mix(in srgb, var(--warning, #f59e0b) 12%, transparent);
-  border: 1px solid var(--warning, #f59e0b);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  border: 1px solid var(--warning);
   border-radius: 6px;
   flex-wrap: wrap;
 }
 
 .conflict-banner-icon {
-  color: var(--warning, #f59e0b);
+  color: var(--warning);
   flex-shrink: 0;
 }
 .conflict-banner-text {
   font-weight: 600;
-  color: var(--warning, #f59e0b);
+  color: var(--warning);
   flex-shrink: 0;
 }
 .conflict-banner-files {
@@ -3629,15 +3629,15 @@ dl.media-info dd {
   font-size: 0.9em;
 }
 .conflict-banner-files a {
-  color: var(--warning, #f59e0b);
+  color: var(--warning);
   text-decoration: underline;
 }
 
 .conflict-banner-dismiss {
   margin-left: auto;
   background: none;
-  border: 1px solid var(--warning, #f59e0b);
-  color: var(--warning, #f59e0b);
+  border: 1px solid var(--warning);
+  color: var(--warning);
   border-radius: 4px;
   padding: 0.1rem 0.5rem;
   cursor: pointer;
@@ -3646,7 +3646,7 @@ dl.media-info dd {
 }
 
 .conflict-banner-dismiss:hover {
-  background: color-mix(in srgb, var(--warning, #f59e0b) 20%, transparent);
+  background: color-mix(in srgb, var(--warning) 20%, transparent);
 }
 
 .conflict-diff-container {

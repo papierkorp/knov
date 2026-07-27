@@ -83,7 +83,7 @@
 
 .kanban-card.dragging {
   opacity: 0.5;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--text) 15%, transparent);
 }
 
 .kanban-card-header {
@@ -170,10 +170,10 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 1rem 2rem;
-  border-top: 2px dashed var(--danger, #dc2626);
+  border-top: 2px dashed var(--danger);
   border-radius: 0;
-  background: var(--surface, #fff);
-  color: var(--danger, #dc2626);
+  background: var(--surface);
+  color: var(--danger);
   font-size: 0.875rem;
   font-weight: 500;
   opacity: 0.6;
@@ -189,7 +189,7 @@
 
 #kanban-archive-zone.drag-over {
   opacity: 1;
-  background: color-mix(in srgb, var(--danger, #dc2626) 10%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 
 /* ---- Card style variants (KNOV_KANBAN_CARD_STYLES) ---- */

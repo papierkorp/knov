@@ -116,8 +116,8 @@
 }
 
 .filter-remove-btn:hover {
-  color: var(--danger, #dc3545);
-  background: color-mix(in srgb, var(--danger, #dc3545) 10%, transparent);
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 
 .filter-controls {
@@ -170,7 +170,7 @@
 .filter-logic-opt.active,
 .filter-logic-opt:has(input:checked) {
   background: var(--primary);
-  color: var(--on-primary, #fff);
+  color: var(--primary-text);
 }
 
 .filter-no-results {

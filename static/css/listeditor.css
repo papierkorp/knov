@@ -58,14 +58,14 @@
   cursor: move;
   padding: 4px 8px;
   margin-right: 10px;
-  color: var(--text-secondary, #6c757d);
+  color: var(--text-secondary);
   font-size: 18px;
   user-select: none;
   flex-shrink: 0;
 }
 
 .component-list-editor .drag-handle:hover {
-  color: var(--text-primary, #495057);
+  color: var(--text);
 }
 
 .component-list-editor .nested-list {
@@ -76,11 +76,11 @@
 
 .component-list-editor .sortable-ghost {
   opacity: 0.4;
-  background: var(--primary, #007bff);
+  background: var(--primary);
 }
 
 .component-list-editor .list-item.drop-as-child > .item-row {
-  outline: 2px dashed var(--primary, #007bff);
+  outline: 2px dashed var(--primary);
   border-radius: 4px;
   background: color-mix(in srgb, var(--primary) 7%, transparent);
   position: relative;
@@ -124,7 +124,7 @@
   gap: 12px;
   padding: 8px 14px;
   margin-bottom: 10px;
-  background: var(--bg-secondary, #f8f9fa);
+  background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.875rem;
@@ -169,7 +169,7 @@
 }
 
 .component-list-editor .controls button:hover {
-  background: var(--bg-secondary, #f0f0f0);
+  background: var(--bg-secondary);
 }
 
 .component-list-editor .controls .separator {
@@ -179,9 +179,9 @@
 }
 
 .component-list-editor .controls .danger {
-  background: var(--danger, #dc3545);
+  background: var(--danger);
   color: white;
-  border-color: var(--danger, #dc3545);
+  border-color: var(--danger);
 }
 
 .component-list-editor .controls .danger:hover {

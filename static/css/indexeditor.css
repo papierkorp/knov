@@ -89,8 +89,8 @@
 
 .btn-remove:hover {
   opacity: 1;
-  color: var(--danger, #dc2626);
-  background: color-mix(in srgb, var(--danger, #ef4444) 12%, var(--bg));
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, var(--bg));
 }
 
 .entry-separator {

@@ -39,6 +39,8 @@ body {
   --success: #16a34a;
   --warning: #d97706;
 
+  --primary-text: #fff;
+
   --find-highlight:         #ffe066;
   --find-highlight-current: #ff9500;
   --find-highlight-outline: #e07800;

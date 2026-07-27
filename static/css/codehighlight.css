@@ -8,7 +8,7 @@ pre {
   border: 1px solid var(--border);
   margin: 1em 0;
   position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--text) 10%, transparent);
 }
 
 pre code {
@@ -42,8 +42,8 @@ pre:hover .code-copy-btn {
 }
 
 .code-copy-btn:hover {
-  background: var(--primary, #4a90d9);
-  color: #fff;
+  background: var(--primary);
+  color: var(--primary-text);
   border-color: transparent;
 }
 

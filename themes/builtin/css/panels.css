@@ -266,7 +266,7 @@
 
 .fp-connection-group > div .connection-link:hover {
   background: var(--primary);
-  color: var(--primary-text, #fff);
+  color: var(--primary-text);
 }
 
 .fp-connection-group > div .connection-empty {
@@ -780,7 +780,7 @@
 }
 
 #fp-filter .filter-field .btn-danger.btn-small:hover {
-  color: var(--danger, #dc2626);
+  color: var(--danger);
 }
 
 #fp-filter .fp-filter-results {
@@ -1121,8 +1121,8 @@
   align-self: flex-end;
 }
 .page-dashboard .filter-remove-btn:hover {
-  border-color: var(--danger, #dc2626);
-  color: var(--danger, #dc2626);
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .page-dashboard .filter-no-results {
@@ -1572,13 +1572,13 @@ mark.kfind.current {
 }
 
 .fp-notify-row.fp-notify-success {
-  border-left-color: var(--success, #16a34a);
+  border-left-color: var(--success);
 }
 .fp-notify-row.fp-notify-error {
-  border-left-color: var(--danger, #dc2626);
+  border-left-color: var(--danger);
 }
 .fp-notify-row.fp-notify-warning {
-  border-left-color: var(--warning, #d97706);
+  border-left-color: var(--warning);
 }
 .fp-notify-row.fp-notify-info {
   border-left-color: var(--primary);
@@ -1594,13 +1594,13 @@ mark.kfind.current {
 }
 
 .fp-notify-success .fp-notify-dot {
-  background: var(--success, #16a34a);
+  background: var(--success);
 }
 .fp-notify-error .fp-notify-dot {
-  background: var(--danger, #dc2626);
+  background: var(--danger);
 }
 .fp-notify-warning .fp-notify-dot {
-  background: var(--warning, #d97706);
+  background: var(--warning);
 }
 .fp-notify-info .fp-notify-dot {
   background: var(--primary);
@@ -1650,7 +1650,7 @@ mark.kfind.current {
 }
 
 .fp-notify-delete:hover {
-  color: var(--danger, #dc2626);
+  color: var(--danger);
 }
 
 .fp-notify-header-actions {
@@ -1780,7 +1780,7 @@ mark.kfind.current {
 }
 
 .browse-delete-btn:hover {
-  color: var(--danger, #dc2626);
+  color: var(--danger);
 }
 
 .browse-rename-btn:hover {
@@ -1810,16 +1810,16 @@ mark.kfind.current {
 
 /* conflict group in connections panel */
 .fp-conflict-group {
-  border-left: 2px solid var(--warning, #f59e0b);
+  border-left: 2px solid var(--warning);
   padding-left: 6px;
 }
 
 .fp-conflict-label {
-  color: var(--warning, #f59e0b) !important;
+  color: var(--warning) !important;
 }
 
 .fp-conflict-group > div a {
-  color: var(--warning, #f59e0b);
+  color: var(--warning);
   font-size: 0.85em;
   text-decoration: none;
   display: block;
@@ -1885,7 +1885,7 @@ mark.kfind.current {
 
 .meta-edit-btn--cancel:hover {
   opacity: 1;
-  color: var(--danger, #dc2626);
+  color: var(--danger);
 }
 
 .meta-inline-wrap--editing {

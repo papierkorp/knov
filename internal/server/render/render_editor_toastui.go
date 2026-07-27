@@ -265,7 +265,7 @@ func jsUploadMediaBlob() string {
 
 			const uploadMessage = document.createElement('div');
 			uploadMessage.className = 'upload-notification';
-			uploadMessage.style.cssText = 'position:fixed;top:10px;right:10px;padding:12px 16px;border-radius:6px;z-index:9999;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.15);background:var(--primary);color:var(--surface);';
+			uploadMessage.style.cssText = 'position:fixed;top:10px;right:10px;padding:12px 16px;border-radius:6px;z-index:9999;font-weight:500;box-shadow:0 4px 12px color-mix(in srgb, var(--text) 15%, transparent);background:var(--primary);color:var(--surface);';
 			uploadMessage.textContent = 'uploading...';
 			document.body.appendChild(uploadMessage);
 
@@ -302,11 +302,11 @@ func jsMediaSelector() string {
 		window.showMediaSelector = function(editor) {
 			const modal = document.createElement('div');
 			modal.className = 'media-selector-modal';
-			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:color-mix(in srgb, var(--text) 50%, transparent);z-index:10000;display:flex;align-items:center;justify-content:center;';
 
 			const popup = document.createElement('div');
 			popup.className = 'media-selector-popup';
-			popup.style.cssText = 'background:var(--surface);color:var(--text);border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;flex-direction:column;';
+			popup.style.cssText = 'background:var(--surface);color:var(--text);border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px color-mix(in srgb, var(--text) 30%, transparent);display:flex;flex-direction:column;';
 
 			const header = document.createElement('div');
 			header.style.cssText = 'padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
@@ -395,10 +395,10 @@ func jsWikiFileSelector() string {
 		window.showWikiFileSelector = function(editor) {
 			const modal = document.createElement('div');
 			modal.className = 'wiki-file-selector-modal';
-			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:color-mix(in srgb, var(--text) 50%, transparent);z-index:10000;display:flex;align-items:center;justify-content:center;';
 
 			const popup = document.createElement('div');
-			popup.style.cssText = 'background:var(--surface);color:var(--text);border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;flex-direction:column;';
+			popup.style.cssText = 'background:var(--surface);color:var(--text);border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px color-mix(in srgb, var(--text) 30%, transparent);display:flex;flex-direction:column;';
 
 			const header = document.createElement('div');
 			header.style.cssText = 'padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
