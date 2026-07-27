@@ -360,6 +360,18 @@
                             hx-confirm="{{T "Run connections tests? This will create test files with parent/child/link relationships."}}">
                         {{T "Run Connections Tests"}}
                     </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/jobstest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run jobs tests? This will trigger a full metadata rebuild, search reindex, cache invalidate and media cleanup."}}">
+                        {{T "Run Jobs Tests"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/mediatest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run media tests? This will upload, rename and delete test media files."}}">
+                        {{T "Run Media Tests"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/exporttest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run export tests? This will export test files as zip and round-trip a settings export."}}">
+                        {{T "Run Export Tests"}}
+                    </button>
                     <button class="btn-secondary" hx-post="/api/testdata/run-all" hx-target="#testdata-result"
                             hx-confirm="{{T "Run all test suites? This will create test metadata objects."}}">
                         {{T "Run All Tests"}}

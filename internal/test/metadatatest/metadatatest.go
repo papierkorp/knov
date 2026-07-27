@@ -1,20 +1,23 @@
 // Package metadatatest - Metadata suite: exercises files.MetaDataGet/Save/Delete/ExportAll
 // for every settable field, the references add/remove/list flow, and the pure kanban-tag
 // sanitizer (see docs/temp_todo.md step 5). Inline-display/inline-edit rendering
-// (render.RenderSidebarFieldDisplay/Edit) lives in internal/server/render, which imports
-// internal/job and so can't be imported here (same cycle noted for every prior suite's
-// rendering gap) - those functions only switch on the same four fields exercised below
-// (tags, parents, editor, path) and read straight off *files.Metadata, so covering the data
-// here plus connectionstest's parents/kids coverage exercises the same ground.
+// (render.RenderSidebarFieldDisplay/Edit) lives in internal/server/render - those functions
+// only switch on the same four fields exercised below (tags, parents, editor, path) and read
+// straight off *files.Metadata, so covering the data here plus connectionstest's parents/kids
+// coverage exercises the same ground without needing to assert on rendered HTML.
 package metadatatest
 
-import "knov/internal/test"
+import (
+	"knov/internal/job"
+	"knov/internal/test"
+)
 
 // Suite runs the metadata test cases against real files and metadata storage.
 type Suite struct{}
 
 func init() {
 	test.Register(Suite{})
+	job.RegisterSuiteRunner("metadata-test", func() (*test.SuiteResult, error) { return (Suite{}).Run() })
 }
 
 func (Suite) Name() string { return "metadata" }

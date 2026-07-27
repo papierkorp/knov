@@ -1,12 +1,16 @@
 package githistorytest
 
-import "knov/internal/test"
+import (
+	"knov/internal/job"
+	"knov/internal/test"
+)
 
 // Suite runs the git repo/file history test cases against real files, metadata and commits.
 type Suite struct{}
 
 func init() {
 	test.Register(Suite{})
+	job.RegisterSuiteRunner("git-history-test", func() (*test.SuiteResult, error) { return (Suite{}).Run() })
 }
 
 func (Suite) Name() string { return "git-history" }

@@ -14,13 +14,17 @@
 // kanbantest's CreatedAt pin.
 package connectionstest
 
-import "knov/internal/test"
+import (
+	"knov/internal/job"
+	"knov/internal/test"
+)
 
 // Suite runs the connections test cases against real files and metadata.
 type Suite struct{}
 
 func init() {
 	test.Register(Suite{})
+	job.RegisterSuiteRunner("connections-test", func() (*test.SuiteResult, error) { return (Suite{}).Run() })
 }
 
 func (Suite) Name() string { return "connections" }

@@ -2,13 +2,17 @@
 // internal functions the editor HTTP handlers call, without going through HTTP.
 package editorstest
 
-import "knov/internal/test"
+import (
+	"knov/internal/job"
+	"knov/internal/test"
+)
 
 // Suite runs the editors test cases against real files, metadata and content handlers.
 type Suite struct{}
 
 func init() {
 	test.Register(Suite{})
+	job.RegisterSuiteRunner("editors-test", func() (*test.SuiteResult, error) { return (Suite{}).Run() })
 }
 
 func (Suite) Name() string { return "editors" }

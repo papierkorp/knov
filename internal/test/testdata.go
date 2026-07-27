@@ -59,6 +59,13 @@ func CleanTestData() error {
 		return fmt.Errorf("failed to remove test directory: %w", err)
 	}
 
+	// media suites (mediatest, jobstest) mirror their docs test folder under media/test -
+	// wipe that too, since it's never touched by the docs-side removal above.
+	mediaTestDir := filepath.Join(contentStorage.GetMediaPath(), "test")
+	if err := os.RemoveAll(mediaTestDir); err != nil {
+		return fmt.Errorf("failed to remove media test directory: %w", err)
+	}
+
 	deleteTestFilter()
 
 	logging.LogInfo(logging.KeyApp, "test data cleaned")

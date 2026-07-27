@@ -1,12 +1,16 @@
 package searchtest
 
-import "knov/internal/test"
+import (
+	"knov/internal/job"
+	"knov/internal/test"
+)
 
 // Suite runs the search test cases against real files, metadata and search indexing.
 type Suite struct{}
 
 func init() {
 	test.Register(Suite{})
+	job.RegisterSuiteRunner("search-test", func() (*test.SuiteResult, error) { return (Suite{}).Run() })
 }
 
 func (Suite) Name() string { return "search" }

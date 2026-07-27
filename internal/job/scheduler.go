@@ -18,29 +18,18 @@ var (
 	searchInterval          time.Duration
 	metadataRebuildInterval time.Duration
 
-	fileMu            sync.Mutex
-	searchMu          sync.Mutex
-	rebuildMu         sync.Mutex
-	filterMu          sync.Mutex
-	notifMu           sync.Mutex
-	cacheInvalidMu    sync.Mutex
-	mediaCleanupMu    sync.Mutex
-	gitPullMu         sync.Mutex
-	gitPushMu         sync.Mutex
-	testdataSetupMu   sync.Mutex
-	testdataCleanMu   sync.Mutex
-	filterTestMu      sync.Mutex
-	editorsTestMu     sync.Mutex
-	searchTestMu      sync.Mutex
-	gitHistoryTestMu  sync.Mutex
-	chatTestMu        sync.Mutex
-	dashboardTestMu   sync.Mutex
-	kanbanTestMu      sync.Mutex
-	browseTestMu      sync.Mutex
-	metadataTestMu    sync.Mutex
-	connectionsTestMu sync.Mutex
-	runAllTestsMu     sync.Mutex
-	runMu             sync.Mutex // prevents concurrent manual Run() calls
+	fileMu          sync.Mutex
+	searchMu        sync.Mutex
+	rebuildMu       sync.Mutex
+	filterMu        sync.Mutex
+	notifMu         sync.Mutex
+	cacheInvalidMu  sync.Mutex
+	mediaCleanupMu  sync.Mutex
+	gitPullMu       sync.Mutex
+	gitPushMu       sync.Mutex
+	testdataSetupMu sync.Mutex
+	testdataCleanMu sync.Mutex
+	runMu           sync.Mutex // prevents concurrent manual Run() calls
 )
 
 // execute runs job under mu, recording start/finish in job history.
@@ -229,104 +218,51 @@ func RunTestdataClean() error {
 	return execute(&testdataCleanMu, &testdataCleanJob{})
 }
 
+// Every in-app test suite registers itself via RegisterSuiteRunner in its own init() (see
+// externalsuite.go) instead of getting a dedicated wrapper type + mutex here - each of these
+// is a thin, discoverable, named entry point for the API handlers over that shared mechanism.
+
 // RunFilterTest runs the filter test suite and returns its results alongside any error.
-func RunFilterTest() (*test.SuiteResult, error) {
-	j := &filterTestJob{}
-	if err := execute(&filterTestMu, j); err != nil {
-		return nil, err
-	}
-	return j.results, nil
-}
+func RunFilterTest() (*test.SuiteResult, error) { return RunSuiteTest("filter-test") }
 
 // RunEditorsTest runs the editors test suite and returns its results alongside any error.
-func RunEditorsTest() (*test.SuiteResult, error) {
-	j := &editorsTestJob{}
-	if err := execute(&editorsTestMu, j); err != nil {
-		return nil, err
-	}
-	return j.results, nil
-}
+func RunEditorsTest() (*test.SuiteResult, error) { return RunSuiteTest("editors-test") }
 
 // RunSearchTest runs the search test suite and returns its results alongside any error.
-func RunSearchTest() (*test.SuiteResult, error) {
-	j := &searchTestJob{}
-	if err := execute(&searchTestMu, j); err != nil {
-		return nil, err
-	}
-	return j.results, nil
-}
+func RunSearchTest() (*test.SuiteResult, error) { return RunSuiteTest("search-test") }
 
 // RunGitHistoryTest runs the git repo/file history test suite and returns its results alongside any error.
-func RunGitHistoryTest() (*test.SuiteResult, error) {
-	j := &gitHistoryTestJob{}
-	if err := execute(&gitHistoryTestMu, j); err != nil {
-		return nil, err
-	}
-	return j.results, nil
-}
+func RunGitHistoryTest() (*test.SuiteResult, error) { return RunSuiteTest("git-history-test") }
 
 // RunChatTest runs the chat test suite and returns its results alongside any error.
-func RunChatTest() (*test.SuiteResult, error) {
-	j := &chatTestJob{}
-	if err := execute(&chatTestMu, j); err != nil {
-		return nil, err
-	}
-	return j.results, nil
-}
+func RunChatTest() (*test.SuiteResult, error) { return RunSuiteTest("chat-test") }
 
 // RunDashboardTest runs the dashboard test suite and returns its results alongside any error.
-func RunDashboardTest() (*test.SuiteResult, error) {
-	j := &dashboardTestJob{}
-	if err := execute(&dashboardTestMu, j); err != nil {
-		return nil, err
-	}
-	return j.results, nil
-}
+func RunDashboardTest() (*test.SuiteResult, error) { return RunSuiteTest("dashboard-test") }
 
 // RunKanbanTest runs the kanban test suite and returns its results alongside any error.
-func RunKanbanTest() (*test.SuiteResult, error) {
-	j := &kanbanTestJob{}
-	if err := execute(&kanbanTestMu, j); err != nil {
-		return nil, err
-	}
-	return j.results, nil
-}
+func RunKanbanTest() (*test.SuiteResult, error) { return RunSuiteTest("kanban-test") }
 
 // RunBrowseTest runs the browse test suite and returns its results alongside any error.
-func RunBrowseTest() (*test.SuiteResult, error) {
-	j := &browseTestJob{}
-	if err := execute(&browseTestMu, j); err != nil {
-		return nil, err
-	}
-	return j.results, nil
-}
+func RunBrowseTest() (*test.SuiteResult, error) { return RunSuiteTest("browse-test") }
 
 // RunMetadataTest runs the metadata test suite and returns its results alongside any error.
-func RunMetadataTest() (*test.SuiteResult, error) {
-	j := &metadataTestJob{}
-	if err := execute(&metadataTestMu, j); err != nil {
-		return nil, err
-	}
-	return j.results, nil
-}
+func RunMetadataTest() (*test.SuiteResult, error) { return RunSuiteTest("metadata-test") }
 
 // RunConnectionsTest runs the connections test suite and returns its results alongside any error.
-func RunConnectionsTest() (*test.SuiteResult, error) {
-	j := &connectionsTestJob{}
-	if err := execute(&connectionsTestMu, j); err != nil {
-		return nil, err
-	}
-	return j.results, nil
-}
+func RunConnectionsTest() (*test.SuiteResult, error) { return RunSuiteTest("connections-test") }
+
+// RunJobsTest runs the jobs test suite and returns its results alongside any error.
+func RunJobsTest() (*test.SuiteResult, error) { return RunSuiteTest("jobs-test") }
+
+// RunMediaTest runs the media test suite and returns its results alongside any error.
+func RunMediaTest() (*test.SuiteResult, error) { return RunSuiteTest("media-test") }
+
+// RunExportTest runs the export/import test suite and returns its results alongside any error.
+func RunExportTest() (*test.SuiteResult, error) { return RunSuiteTest("export-test") }
 
 // RunAllTests runs every registered test suite and returns the aggregated results.
-func RunAllTests() (*test.SuiteResult, error) {
-	j := &runAllTestsJob{}
-	if err := execute(&runAllTestsMu, j); err != nil {
-		return nil, err
-	}
-	return j.results, nil
-}
+func RunAllTests() (*test.SuiteResult, error) { return RunSuiteTest("run-all-tests") }
 
 // RunAsync starts a manual run of all jobs in a background goroutine.
 // Acquires runMu synchronously so the caller gets ErrAlreadyRunning immediately

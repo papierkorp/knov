@@ -4331,6 +4331,25 @@ paths:
       summary: Run editors tests
       tags:
       - testdata
+  /api/testdata/exporttest:
+    post:
+      description: Executes the export/import suite (raw zip export, dokuwiki-to-markdown-converted
+        zip export, settings export/import round-trip)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: export test results
+          schema:
+            $ref: '#/definitions/test.SuiteResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run export/import tests
+      tags:
+      - testdata
   /api/testdata/filtertest:
     post:
       description: Executes comprehensive filter test scenarios with 12 test metadata
@@ -4389,6 +4408,25 @@ paths:
       summary: Run git history tests
       tags:
       - testdata
+  /api/testdata/jobstest:
+    post:
+      description: Executes the jobs suite (metadata full rebuild, search reindex,
+        cache invalidate, media cleanup, manual "run all jobs" trigger, job history/status)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: jobs test results
+          schema:
+            $ref: '#/definitions/test.SuiteResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run jobs tests
+      tags:
+      - testdata
   /api/testdata/kanbantest:
     post:
       description: Executes the kanban suite (board load, filter, search query, sorting,
@@ -4406,6 +4444,25 @@ paths:
           schema:
             type: string
       summary: Run kanban tests
+      tags:
+      - testdata
+  /api/testdata/mediatest:
+    post:
+      description: Executes the media suite (upload, list/partition all-used-orphaned,
+        rename, delete, referenced-delete guard, storage stats)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: media test results
+          schema:
+            $ref: '#/definitions/test.SuiteResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run media tests
       tags:
       - testdata
   /api/testdata/metadatatest:

@@ -5,13 +5,17 @@
 // instead: BuildBoard, MoveCard, SaveOrder/GetOrder/ApplyOrder.
 package kanbantest
 
-import "knov/internal/test"
+import (
+	"knov/internal/job"
+	"knov/internal/test"
+)
 
 // Suite runs the kanban test cases against real files, metadata and kanban storage.
 type Suite struct{}
 
 func init() {
 	test.Register(Suite{})
+	job.RegisterSuiteRunner("kanban-test", func() (*test.SuiteResult, error) { return (Suite{}).Run() })
 }
 
 func (Suite) Name() string { return "kanban" }

@@ -336,6 +336,84 @@ func handleAPIConnectionsTest(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, results, html)
 }
 
+// @Summary Run jobs tests
+// @Description Executes the jobs suite (metadata full rebuild, search reindex, cache invalidate, media cleanup, manual "run all jobs" trigger, job history/status)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "jobs test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/jobstest [post]
+func handleAPIJobsTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug(logging.KeyApp, "jobs test request received")
+
+	results, err := job.RunJobsTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError(logging.KeyApp, "failed to run jobs tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
+// @Summary Run media tests
+// @Description Executes the media suite (upload, list/partition all-used-orphaned, rename, delete, referenced-delete guard, storage stats)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "media test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/mediatest [post]
+func handleAPIMediaTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug(logging.KeyApp, "media test request received")
+
+	results, err := job.RunMediaTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError(logging.KeyApp, "failed to run media tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
+// @Summary Run export/import tests
+// @Description Executes the export/import suite (raw zip export, dokuwiki-to-markdown-converted zip export, settings export/import round-trip)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "export test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/exporttest [post]
+func handleAPIExportTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug(logging.KeyApp, "export test request received")
+
+	results, err := job.RunExportTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError(logging.KeyApp, "failed to run export tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
 // @Summary Run all test suites
 // @Description Executes every registered in-app test suite and aggregates the results
 // @Tags testdata

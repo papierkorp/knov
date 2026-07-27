@@ -27,6 +27,24 @@ import (
 	"knov/internal/server"
 
 	"knov/internal/test"
+	// every in-app test suite self-registers (test.Register for run-all,
+	// job.RegisterSuiteRunner for its own admin button) in its own init() - internal/job
+	// doesn't import any of them directly to avoid a cycle for suites that themselves need
+	// to import internal/job (e.g. jobstest), so these blank imports are what actually
+	// trigger each suite's init() (see internal/job/externalsuite.go).
+	_ "knov/internal/test/browsetest"
+	_ "knov/internal/test/chattest"
+	_ "knov/internal/test/connectionstest"
+	_ "knov/internal/test/dashboardtest"
+	_ "knov/internal/test/editorstest"
+	_ "knov/internal/test/exporttest"
+	_ "knov/internal/test/filtertest"
+	_ "knov/internal/test/githistorytest"
+	_ "knov/internal/test/jobstest"
+	_ "knov/internal/test/kanbantest"
+	_ "knov/internal/test/mediatest"
+	_ "knov/internal/test/metadatatest"
+	_ "knov/internal/test/searchtest"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
 )

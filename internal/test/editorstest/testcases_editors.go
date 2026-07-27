@@ -108,8 +108,7 @@ func caseFilterCreateEditSave() test.CaseResult {
 
 // caseListCreateEditSave mirrors handleAPISaveListEditor: convert list items to markdown
 // (render.ConvertListItemsToMarkdown just joins "- "+content+"\n" per item, replicated
-// directly here to avoid pulling in internal/server/render, which imports internal/job -
-// importing it from here would cycle back through job's suite wrappers), write, save
+// directly here rather than importing internal/server/render for one line of logic), write, save
 // metadata. Note: the real handler tags list saves with EditorTypeTodo (not EditorTypeList)
 // - that's existing app behavior, so this case matches it rather than the "correct" type,
 // since the suite verifies what the app actually does.

@@ -4,13 +4,17 @@
 // htmx), so cases call the same exported functions/inline logic those handlers use directly.
 package browsetest
 
-import "knov/internal/test"
+import (
+	"knov/internal/job"
+	"knov/internal/test"
+)
 
 // Suite runs the browse test cases against real files and metadata.
 type Suite struct{}
 
 func init() {
 	test.Register(Suite{})
+	job.RegisterSuiteRunner("browse-test", func() (*test.SuiteResult, error) { return (Suite{}).Run() })
 }
 
 func (Suite) Name() string { return "browse" }

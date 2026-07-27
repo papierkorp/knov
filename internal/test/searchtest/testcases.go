@@ -84,9 +84,9 @@ func caseSearchEmptyQuery() test.CaseResult {
 
 // caseSearchLimit exercises the limit parameter every response format (dropdown/list/
 // cards/json) plugs into handleAPISearch with a different value (6/50/20/100) - the
-// render functions themselves live in internal/server/render, which can't be imported
-// here (it imports internal/job, which imports this suite's job wrapper - a cycle), so
-// this covers the shared truncation behavior that backs every format instead.
+// render functions themselves live in internal/server/render and aren't exercised here,
+// since none of these cases need HTML output - this covers the shared truncation behavior
+// that backs every format instead.
 func caseSearchLimit() test.CaseResult {
 	name := "search-limit"
 
