@@ -3,6 +3,7 @@ package job
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -65,6 +66,19 @@ func execute(mu *sync.Mutex, job Job) error {
 	var output any
 	if o, ok := job.(Outputter); ok {
 		output = o.Output()
+	}
+	if sr, ok := output.(*test.SuiteResult); ok && sr != nil {
+		if sr.Failed == 0 {
+			logging.LogInfo(logging.KeyInAppTests, "suite %s: %d passed, %d failed", sr.Suite, sr.Passed, sr.Failed)
+		} else {
+			var failedNames []string
+			for _, c := range sr.Cases {
+				if !c.Success {
+					failedNames = append(failedNames, c.Name)
+				}
+			}
+			logging.LogWarning(logging.KeyInAppTests, "suite %s: %d passed, %d failed (%s)", sr.Suite, sr.Passed, sr.Failed, strings.Join(failedNames, ", "))
+		}
 	}
 	recordFinish(slot, JobStatusOK, msg, output)
 	return nil

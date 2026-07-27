@@ -36,13 +36,14 @@ const (
 	KeyMetaMigration   Key = "metadata-migration"
 	KeyFilterDebug     Key = "filter-debug"
 	KeyManualCronjob   Key = "manual-cronjob"
+	KeyInAppTests      Key = "in-app-tests"
 )
 
 // AvailableKeys lists every valid log destination, e.g. for an admin log-viewer dropdown.
 var AvailableKeys = []Key{
 	KeyApp, KeyFileSync, KeySearchReindex, KeyMetadataRebuild, KeyFullRebuild,
 	KeyMediaCleanup, KeyGitRemote, KeyDokuwikiExport, KeyPdfExport, KeyRepairLinks,
-	KeyDBMigration, KeyMetaMigration, KeyFilterDebug, KeyManualCronjob,
+	KeyDBMigration, KeyMetaMigration, KeyFilterDebug, KeyManualCronjob, KeyInAppTests,
 }
 
 // String returns the key's display/file name ("app" for the default key).
