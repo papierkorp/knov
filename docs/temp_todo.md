@@ -28,6 +28,14 @@
 - move file button (can be done in rename at the moment)
 - settings/configs to hide certain folders from different searches
 - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
+- theme settings to hide pdf export button one for file one for header
+- optimize clickable todo buttons - can be really laggy
+- file saved notification (below toastui editor) is offcenter
+- Fix review findings in static/wiki-autocomplete.js
+  - Don't trigger md-link autocomplete on external URLs: in triggerAutocomplete, skip the "](" branch when the partial target contains "://".
+  - Don't trigger md-link autocomplete on image embeds: skip the "](" branch when the text before it starts with "![" (check char before the "](" match).
+  - Percent-encode the path segment when inserting md links (all 3 insertMdLink variants: ToastUI, CodeMirror, inputs) so filenames with ")" or spaces don't break the markdown link. Encode path segments only, keep "/" and "#" intact. Counterpart: in dispatchFetch, decode the inner text before querying the API so re-editing an encoded link still matches.
+  - Deduplicate the hardcoded "/files/" string: define one shared constant at the top of the IIFE and use it in dispatchFetch (replace the substring(7) magic number with its length) and all 3 insertMdLink variants.
 
 # testing
 

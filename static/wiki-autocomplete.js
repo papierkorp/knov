@@ -156,14 +156,21 @@
     }, 120);
   }
 
-  function cursorOffset(path, opts) {
-    return opts.cursorEnd || path.indexOf("#") !== -1 ? 2 : 0;
+  function cursorOffset(path, opts, closeLen) {
+    return opts.cursorEnd || path.indexOf("#") !== -1 ? closeLen : 0;
   }
 
+  // Triggers on an unclosed "[[" (wikilink) or an unclosed "](" (markdown
+  // link target), whichever is open at the caret. insertFn receives the
+  // chosen path plus which one matched, so callers can build the right text.
   function triggerAutocomplete(before, anchorEl, insertFn) {
-    var m = before.match(/\[\[([^\]]*)$/);
+    var wiki = before.match(/\[\[([^\]]*)$/);
+    var md = !wiki && before.match(/\]\(([^)]*)$/);
+    var m = wiki || md;
     if (m) {
-      onInsert = insertFn;
+      onInsert = function (path) {
+        insertFn(path, wiki ? "wiki" : "md");
+      };
       dispatchFetch(m[1], anchorEl);
     } else {
       hide();
@@ -171,6 +178,10 @@
   }
 
   function dispatchFetch(inner, anchorEl) {
+    // Markdown links store "/files/<path>" (a real href), but the file and
+    // header lookup APIs expect a plain repo-relative path, same as
+    // wikilinks store internally. Strip the prefix before querying.
+    if (inner.indexOf("/files/") === 0) inner = inner.substring(7);
     var hashIdx = inner.indexOf("#");
     if (hashIdx !== -1) {
       debouncedFetchHeaders(
@@ -220,6 +231,55 @@
     var editorEl = document.getElementById("toastui-editor");
     if (!editorEl) return;
 
+    // Both functions replace the whole open token (e.g. the "[[" or "](" the
+    // user already typed) and reinsert it as part of the new text, rather
+    // than trying to compute a start column that lands *after* the token.
+    // ToastUI columns are 1-based: column C sits right before the character
+    // at 0-based string index C-1. lastIndexOf gives a raw 0-based index, so
+    // it needs +1 to become a column, or the selection starts one character
+    // too early and eats whatever precedes the token.
+
+    function insertWikiLink(path) {
+      var s = editor.getSelection();
+      var line = s[0][0],
+        ch = s[0][1];
+      var lt = editor.getMarkdown().split("\n")[line - 1] || "";
+      var idx = lt.substring(0, ch).lastIndexOf("[[");
+      if (idx === -1) return;
+      // ch is 1-based: subtract 1 to check the two chars that actually follow the cursor
+      var endSel = lt.substring(ch - 1, ch + 1) === "]]" ? ch + 2 : ch;
+      // col 0 = paragraph boundary in ProseMirror → invalid TextSelection endpoint.
+      // col 1 selects from the same position without triggering the error.
+      editor.setSelection([line, Math.max(1, idx + 1)], [line, endSel]);
+      editor.insertText("[[" + path + "]]");
+      moveCursorBack(2 - cursorOffset(path, opts, 2));
+    }
+
+    function insertMdLink(path) {
+      var s = editor.getSelection();
+      var line = s[0][0],
+        ch = s[0][1];
+      var lt = editor.getMarkdown().split("\n")[line - 1] || "";
+      var idx = lt.substring(0, ch).lastIndexOf("](");
+      if (idx === -1) return;
+      // ch is 1-based: subtract 1 to check the char that actually follows the cursor
+      var endSel = lt.substring(ch - 1, ch) === ")" ? ch + 1 : ch;
+      editor.setSelection([line, Math.max(1, idx + 1)], [line, endSel]);
+      editor.insertText("](/files/" + path + ")");
+      moveCursorBack(1 - cursorOffset(path, opts, 1));
+    }
+
+    function moveCursorBack(moveBack) {
+      if (moveBack <= 0) return;
+      var after = editor.getSelection();
+      if (after) {
+        editor.setSelection(
+          [after[0][0], after[0][1] - moveBack],
+          [after[0][0], after[0][1] - moveBack],
+        );
+      }
+    }
+
     attachSharedKeydown(editorEl);
 
     editorEl.addEventListener("keyup", function (e) {
@@ -232,33 +292,15 @@
       }
       var lineText =
         editor.getMarkdown().split("\n")[(sel[0][0] || 1) - 1] || "";
-      // ToastUI returns 1-based columns, so substring may include one char past
-      // the cursor; strip a single trailing ] to keep the regex working when
-      // the cursor is inside an existing [[file#]] link.
-      var before = lineText.substring(0, sel[0][1]).replace(/\]$/, "");
-      triggerAutocomplete(before, editorEl, function (path) {
-        var s = editor.getSelection();
-        var line = s[0][0],
-          ch = s[0][1];
-        var lt = editor.getMarkdown().split("\n")[line - 1] || "";
-        var ws = lt.substring(0, ch).lastIndexOf("[[");
-        if (ws === -1) return;
-        // ch is 1-based: subtract 1 to check the two chars that actually follow the cursor
-        var endSel = lt.substring(ch - 1, ch + 1) === "]]" ? ch + 2 : ch;
-        // col 0 = paragraph boundary in ProseMirror → invalid TextSelection endpoint.
-        // col 1 selects from the same position without triggering the error.
-        editor.setSelection([line, Math.max(1, ws)], [line, endSel]);
-        editor.insertText("[[" + path + "]]");
-        var moveBack = 2 - cursorOffset(path, opts);
-        if (moveBack > 0) {
-          var after = editor.getSelection();
-          if (after) {
-            editor.setSelection(
-              [after[0][0], after[0][1] - moveBack],
-              [after[0][0], after[0][1] - moveBack],
-            );
-          }
-        }
+      // ToastUI's column is 1-based (column C = right before 0-based index
+      // C-1), so the text strictly before the cursor ends at column-1, not
+      // column. Using the raw column here pulled in whatever character
+      // follows the cursor (e.g. the still-open link's closing ")"),
+      // breaking the trigger regex whenever the cursor sits mid-link.
+      var before = lineText.substring(0, sel[0][1] - 1);
+      triggerAutocomplete(before, editorEl, function (path, mode) {
+        if (mode === "md") insertMdLink(path);
+        else insertWikiLink(path);
       });
     });
   };
@@ -268,6 +310,44 @@
   global.initWikiAutocompleteForCodeMirror = function (view, opts) {
     opts = opts || {};
     attachSharedKeydown(view.dom);
+
+    // CodeMirror positions are plain 0-based document offsets, so (unlike the
+    // ToastUI variant above) it's safe to start the replacement right after
+    // the "(" the user already typed instead of replacing it too.
+
+    function insertWikiLink(path) {
+      var cur = view.state.selection.main.head;
+      var li = view.state.doc.lineAt(cur);
+      var b = li.text.substring(0, cur - li.from);
+      var ws = b.lastIndexOf("[[");
+      if (ws === -1) return;
+      var toPos = cur;
+      if (li.text.substring(cur - li.from, cur - li.from + 2) === "]]")
+        toPos += 2;
+      var cursorPos = li.from + ws + 2 + path.length + cursorOffset(path, opts, 2);
+      view.dispatch({
+        changes: { from: li.from + ws, to: toPos, insert: "[[" + path + "]]" },
+        selection: { anchor: cursorPos },
+      });
+    }
+
+    function insertMdLink(path) {
+      var cur = view.state.selection.main.head;
+      var li = view.state.doc.lineAt(cur);
+      var b = li.text.substring(0, cur - li.from);
+      var ws = b.lastIndexOf("](");
+      if (ws === -1) return;
+      var from = li.from + ws + 2;
+      var toPos = cur;
+      if (li.text.substring(cur - li.from, cur - li.from + 1) === ")")
+        toPos += 1;
+      var target = "/files/" + path;
+      var cursorPos = from + target.length + cursorOffset(path, opts, 1);
+      view.dispatch({
+        changes: { from: from, to: toPos, insert: target + ")" },
+        selection: { anchor: cursorPos },
+      });
+    }
 
     view.dom.addEventListener("keyup", function (e) {
       if (["ArrowUp", "ArrowDown", "Enter", "Tab", "Escape"].includes(e.key))
@@ -288,25 +368,9 @@
           };
         },
       };
-      triggerAutocomplete(before, anchor, function (path) {
-        var cur = view.state.selection.main.head;
-        var li = view.state.doc.lineAt(cur);
-        var b = li.text.substring(0, cur - li.from);
-        var ws = b.lastIndexOf("[[");
-        if (ws === -1) return;
-        var toPos = cur;
-        if (li.text.substring(cur - li.from, cur - li.from + 2) === "]]")
-          toPos += 2;
-        var cursorPos =
-          li.from + ws + 2 + path.length + cursorOffset(path, opts);
-        view.dispatch({
-          changes: {
-            from: li.from + ws,
-            to: toPos,
-            insert: "[[" + path + "]]",
-          },
-          selection: { anchor: cursorPos },
-        });
+      triggerAutocomplete(before, anchor, function (path, mode) {
+        if (mode === "md") insertMdLink(path);
+        else insertWikiLink(path);
       });
     });
   };
@@ -374,6 +438,35 @@
 
     attachSharedKeydown(containerEl);
 
+    // Plain string indices, so like the CodeMirror variant it's safe to
+    // start the markdown-link replacement right after the "(".
+
+    function insertWikiLink(input, path) {
+      var pos = input.selectionStart;
+      var val = input.value;
+      var ws = val.substring(0, pos).lastIndexOf("[[");
+      if (ws === -1) return;
+      var endPos = val.substring(pos, pos + 2) === "]]" ? pos + 2 : pos;
+      input.setRangeText("[[" + path + "]]", ws, endPos, "end");
+      var cursorPos = ws + 2 + path.length + cursorOffset(path, opts, 2);
+      input.setSelectionRange(cursorPos, cursorPos);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
+    function insertMdLink(input, path) {
+      var pos = input.selectionStart;
+      var val = input.value;
+      var ws = val.substring(0, pos).lastIndexOf("](");
+      if (ws === -1) return;
+      var start = ws + 2;
+      var endPos = val.substring(pos, pos + 1) === ")" ? pos + 1 : pos;
+      var target = "/files/" + path;
+      input.setRangeText(target + ")", start, endPos, "end");
+      var cursorPos = start + target.length + cursorOffset(path, opts, 1);
+      input.setSelectionRange(cursorPos, cursorPos);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
     containerEl.addEventListener("keyup", function (e) {
       if (["ArrowUp", "ArrowDown", "Enter", "Tab", "Escape"].includes(e.key))
         return;
@@ -386,16 +479,9 @@
       var anchor = input.tagName === "TEXTAREA"
         ? { getBoundingClientRect: function () { return getTextareaCaretRect(input); } }
         : input;
-      triggerAutocomplete(before, anchor, function (path) {
-        var pos = input.selectionStart;
-        var val = input.value;
-        var ws = val.substring(0, pos).lastIndexOf("[[");
-        if (ws === -1) return;
-        var endPos = val.substring(pos, pos + 2) === "]]" ? pos + 2 : pos;
-        input.setRangeText("[[" + path + "]]", ws, endPos, "end");
-        var cursorPos = ws + 2 + path.length + cursorOffset(path, opts);
-        input.setSelectionRange(cursorPos, cursorPos);
-        input.dispatchEvent(new Event("input", { bubbles: true }));
+      triggerAutocomplete(before, anchor, function (path, mode) {
+        if (mode === "md") insertMdLink(input, path);
+        else insertWikiLink(input, path);
       });
     });
   };
