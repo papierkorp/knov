@@ -3,6 +3,7 @@ package thememanager
 import (
 	"encoding/json"
 	"fmt"
+	htmltemplate "html/template"
 	"net/url"
 	"strings"
 	"text/template"
@@ -107,7 +108,7 @@ type BaseTemplateData struct {
 	SystemPage     bool
 	HeaderNavLinks []NavLink
 	MenuNavLinks   []NavLink
-	FontStyleTag   string
+	FontStyleTag   htmltemplate.HTML
 }
 
 // NewBaseTemplateData creates base data used by all templates
@@ -136,15 +137,15 @@ func NewBaseTemplateData(title string) BaseTemplateData {
 // the configured body/heading/code fonts, so any theme can pick them up via
 // var(--font-body|--font-headings|--font-code) without generating its own
 // @font-face rules.
-func fontStyleTag() string {
+func fontStyleTag() htmltemplate.HTML {
 	body := configmanager.GetFontBody()
 	headings := configmanager.GetFontHeadings()
 	h1 := configmanager.GetFontH1()
 	code := configmanager.GetFontCode()
-	return fmt.Sprintf(
+	return htmltemplate.HTML(fmt.Sprintf(
 		`<style>%s:root{--font-body:'%s',sans-serif;--font-headings:'%s',sans-serif;--font-h1:'%s',sans-serif;--font-code:'%s',monospace;}</style>`,
 		fonts.FontFaceCSS(body, headings, h1, code), body, headings, h1, code,
-	)
+	))
 }
 
 // getMergedThemeSettings merges user settings with theme schema defaults
