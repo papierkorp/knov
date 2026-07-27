@@ -108,9 +108,6 @@ function setAllBrowseTreeFolds(collapse) {
     li.classList.toggle("fp-tree-collapsed", collapse);
     delete li.dataset.wasCollapsed;
   });
-  // re-apply an active filter so visibility reflects the new fold state
-  const search = document.getElementById("fp-browse-search");
-  if (search && search.value) filterBrowseContent(search.value);
 }
 
 function filterBrowseContent(query) {

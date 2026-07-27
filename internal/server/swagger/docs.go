@@ -1837,7 +1837,7 @@ const docTemplate = `{
         },
         "/api/files/export/pdf": {
             "get": {
-                "description": "Renders a file's markdown source to a downloadable pdf",
+                "description": "Renders a file's markdown source, or optionally just one section of it, to a downloadable pdf",
                 "produces": [
                     "application/pdf"
                 ],
@@ -1852,6 +1852,12 @@ const docTemplate = `{
                         "name": "filepath",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Section ID (optional, exports only this section)",
+                        "name": "section",
+                        "in": "query"
                     }
                 ],
                 "responses": {

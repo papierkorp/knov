@@ -1,8 +1,8 @@
-- im currently working on the following golang, htmx app. 
+- im currently working on the following golang, htmx app.
 - i want you to anwser with as little code as possible to only fix the problem i anwsered without any unecessary code, as simple and small as possible with as few changes as possible
 - Create an artifact called "current_files_manifest.md" that lists all the artifacts you have created in this conversation with their current versions and last update times.
 - Instead of creating a new artifact, please update your existing [filename] artifact with the new changes and present your artifact to me so we use the same file
-- check current status of the project 
+- check current status of the project
 - give me the full file not just the changes
 - for logging message i only want use lowercase
 - use the logging package with a appropriate key
@@ -18,6 +18,6 @@
 - if anything related to paths prop up - use the pathutils package!
 - for every return in the api folder use: writeResponse
 - i create the uploaded files using the Makefiles - so the filenames are not completly the same in the repo, there is a FILE_LIST.txt with the tree command for you to have a overview over all files in the repo
-- if working with paths - be careful about windows paths
+- if working with paths - we have to take care of both linux and windows os paths
 - if you add a new env also add it to .env.example and the html templates of both themes
 - if possible use slices.Contains instead of loops
