@@ -32,7 +32,6 @@
 - warning color in logs makes it unreadable (at least in dark mode i dont know for light mode)
 - settings/configs to hide certain folders from different searches
 - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
-- add the fonts to the general/theme settings as well (not only pdf)
 - another mono font?
 - add a test key to logging
 

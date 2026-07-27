@@ -335,15 +335,6 @@ var (
 	})
 
 	// ── General ───────────────────────────────────────────────────────────────
-	Theme = register(&StringSetting{
-		key: "theme", Default: "builtin",
-		Section: SectionGeneral, Group: GroupNone,
-		Label:   "Theme",
-		Desc:    "choose the visual appearance of the interface",
-		DynURL:  "/api/themes/",
-		Refresh: true,
-	})
-
 	Language = register(&StringSetting{
 		key: "language", Default: "en",
 		Section: SectionGeneral, Group: GroupNone,
@@ -399,6 +390,47 @@ var (
 		Label: "Home Dashboard",
 		Desc:  "set a dashboard ID to use as the home page",
 	})
+	// ── Appearance ────────────────────────────────────────────────────────────
+	Theme = register(&StringSetting{
+		key: "theme", Default: "builtin",
+		Section: SectionAppearance, Group: GroupNone,
+		Label:   "Theme",
+		Desc:    "choose the visual appearance of the interface",
+		DynURL:  "/api/themes/",
+		Refresh: true,
+	})
+	FontBody = register(&StringSetting{
+		key: "fontBody", Default: "Noto Sans",
+		Section: SectionAppearance, Group: GroupTypography,
+		Label:       "Font (Body)",
+		Desc:        "base font used for body text across the app",
+		Options:     fontOptions,
+		FontPreview: true,
+	})
+	FontHeadings = register(&StringSetting{
+		key: "fontHeadings", Default: "Noto Sans",
+		Section: SectionAppearance, Group: GroupTypography,
+		Label:       "Font (Headings)",
+		Desc:        "font used for headings across the app",
+		Options:     fontOptions,
+		FontPreview: true,
+	})
+	FontH1 = register(&StringSetting{
+		key: "fontH1", Default: "Noto Sans",
+		Section: SectionAppearance, Group: GroupTypography,
+		Label:       "Font (H1 Headings)",
+		Desc:        "font used for level-1 headings across the app, overriding the general heading font",
+		Options:     fontOptions,
+		FontPreview: true,
+	})
+	FontCode = register(&StringSetting{
+		key: "fontCode", Default: "Noto Sans Mono",
+		Section: SectionAppearance, Group: GroupTypography,
+		Label:       "Font (Code)",
+		Desc:        "font used for code blocks and inline code across the app (monospace fonts only, so aligned characters stay aligned)",
+		Options:     monoFontOptions,
+		FontPreview: true,
+	})
 
 	// ── PDF Export ────────────────────────────────────────────────────────────
 	PDFPageBreakBeforeHeadings = register(&BoolSetting{
@@ -439,7 +471,7 @@ var (
 		Section:     SectionPDFExport,
 		Label:       "Font (Overall)",
 		Desc:        "base font used for body text when exporting to pdf, and the fallback for headings",
-		Options:     pdfFontOptions,
+		Options:     fontOptions,
 		FontPreview: true,
 	})
 	PDFFontCodeBlock = register(&StringSetting{
@@ -447,7 +479,7 @@ var (
 		Section:     SectionPDFExport,
 		Label:       "Font (Code Blocks)",
 		Desc:        "font used for code blocks and inline code when exporting to pdf (monospace fonts only, so wrapped code lines stay aligned)",
-		Options:     pdfMonoFontOptions,
+		Options:     monoFontOptions,
 		FontPreview: true,
 	})
 	PDFFontHeadings = register(&StringSetting{
@@ -455,7 +487,7 @@ var (
 		Section:     SectionPDFExport,
 		Label:       "Font (Headings)",
 		Desc:        "font used for headings when exporting to pdf",
-		Options:     pdfFontOptions,
+		Options:     fontOptions,
 		FontPreview: true,
 	})
 	PDFFontH1 = register(&StringSetting{
@@ -463,23 +495,24 @@ var (
 		Section:     SectionPDFExport,
 		Label:       "Font (H1 Headings)",
 		Desc:        "font used for level-1 headings when exporting to pdf, overriding the general heading font",
-		Options:     pdfFontOptions,
+		Options:     fontOptions,
 		FontPreview: true,
 	})
 )
 
-// pdf export font options, derived from the fonts manifest so the
-// selectable values, the registered ttf files, and the settings preview
-// can never drift apart. The code block setting only offers monospace
-// families — its wrapping assumes a fixed character width.
+// font options shared by the pdf export and general html font settings,
+// derived from the fonts manifest so the selectable values, the registered
+// ttf files, and the settings preview can never drift apart. The code block
+// settings only offer monospace families — their wrapping assumes a fixed
+// character width.
 //
 //nolint:gochecknoglobals
 var (
-	pdfFontOptions     = pdfFontOptionList(false)
-	pdfMonoFontOptions = pdfFontOptionList(true)
+	fontOptions     = fontOptionList(false)
+	monoFontOptions = fontOptionList(true)
 )
 
-func pdfFontOptionList(monoOnly bool) []SettingOption {
+func fontOptionList(monoOnly bool) []SettingOption {
 	var opts []SettingOption
 	for _, f := range fonts.Families {
 		if monoOnly && !f.Monospace {

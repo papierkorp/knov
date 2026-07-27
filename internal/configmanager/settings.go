@@ -206,6 +206,10 @@ func GetTablePageSize() int {
 }
 func GetShowHiddenFiles() bool { return ShowHiddenFiles.Get() }
 func GetHomeDashboard() string { return HomeDashboard.Get() }
+func GetFontBody() string      { return FontBody.Get() }
+func GetFontHeadings() string  { return FontHeadings.Get() }
+func GetFontH1() string        { return FontH1.Get() }
+func GetFontCode() string      { return FontCode.Get() }
 
 func GetPDFPageBreakBeforeHeadings() bool { return PDFPageBreakBeforeHeadings.Get() }
 func GetPDFPageFormat() string            { return PDFPageFormat.Get() }

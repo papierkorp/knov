@@ -10,6 +10,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/dashboard"
 	"knov/internal/files"
+	"knov/internal/fonts"
 	"knov/internal/git"
 	"knov/internal/kanban"
 	"knov/internal/parser"
@@ -106,6 +107,7 @@ type BaseTemplateData struct {
 	SystemPage     bool
 	HeaderNavLinks []NavLink
 	MenuNavLinks   []NavLink
+	FontStyleTag   string
 }
 
 // NewBaseTemplateData creates base data used by all templates
@@ -126,7 +128,23 @@ func NewBaseTemplateData(title string) BaseTemplateData {
 		BuildTime:      version.BuildTime,
 		HeaderNavLinks: headerLinks,
 		MenuNavLinks:   menuLinks,
+		FontStyleTag:   fontStyleTag(),
 	}
+}
+
+// fontStyleTag renders the @font-face rules and CSS custom properties for
+// the configured body/heading/code fonts, so any theme can pick them up via
+// var(--font-body|--font-headings|--font-code) without generating its own
+// @font-face rules.
+func fontStyleTag() string {
+	body := configmanager.GetFontBody()
+	headings := configmanager.GetFontHeadings()
+	h1 := configmanager.GetFontH1()
+	code := configmanager.GetFontCode()
+	return fmt.Sprintf(
+		`<style>%s:root{--font-body:'%s',sans-serif;--font-headings:'%s',sans-serif;--font-h1:'%s',sans-serif;--font-code:'%s',monospace;}</style>`,
+		fonts.FontFaceCSS(body, headings, h1, code), body, headings, h1, code,
+	)
 }
 
 // getMergedThemeSettings merges user settings with theme schema defaults

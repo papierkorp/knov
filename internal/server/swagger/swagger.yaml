@@ -4141,7 +4141,8 @@ paths:
     get:
       description: Returns settings for a single section as HTML (HTMX) or JSON
       parameters:
-      - description: Section key (e.g. general, editor, table, media, file-types)
+      - description: Section key (e.g. general, appearance, editor, table, media,
+          file-types)
         in: path
         name: section
         required: true

@@ -8,17 +8,18 @@ type SettingSection struct {
 }
 
 var (
-	SectionGeneral   = SettingSection{Key: "general", Label: "General Settings"}
-	SectionEditor    = SettingSection{Key: "editor", Label: "Editor Settings"}
-	SectionTable     = SettingSection{Key: "table", Label: "Table Settings"}
-	SectionMedia     = SettingSection{Key: "media", Label: "Media Upload Settings"}
-	SectionFileTypes = SettingSection{Key: "file-types", Label: "File Type Visibility", Description: "Control which file types are visible in file listings and browsing"}
-	SectionPDFExport = SettingSection{Key: "pdf-export", Label: "PDF Export Settings"}
+	SectionGeneral    = SettingSection{Key: "general", Label: "General Settings"}
+	SectionAppearance = SettingSection{Key: "appearance", Label: "Appearance", Description: "Theme, typography and favicon"}
+	SectionEditor     = SettingSection{Key: "editor", Label: "Editor Settings"}
+	SectionTable      = SettingSection{Key: "table", Label: "Table Settings"}
+	SectionMedia      = SettingSection{Key: "media", Label: "Media Upload Settings"}
+	SectionFileTypes  = SettingSection{Key: "file-types", Label: "File Type Visibility", Description: "Control which file types are visible in file listings and browsing"}
+	SectionPDFExport  = SettingSection{Key: "pdf-export", Label: "PDF Export Settings"}
 )
 
 // AllSections returns sections in display order.
 func AllSections() []SettingSection {
-	return []SettingSection{SectionGeneral, SectionEditor, SectionTable, SectionMedia, SectionFileTypes, SectionPDFExport}
+	return []SettingSection{SectionGeneral, SectionAppearance, SectionEditor, SectionTable, SectionMedia, SectionFileTypes, SectionPDFExport}
 }
 
 // SettingGroup is a named sub-section rendered as <div class="setting-group"> inside a section.
@@ -39,6 +40,7 @@ var (
 	GroupPreviewSettings = SettingGroup{Key: "preview-settings", Label: "Preview Settings"}
 	GroupEditorTypes     = SettingGroup{Key: "editor-types", Label: "Editor Types"}
 	GroupMediaTypes      = SettingGroup{Key: "media-types", Label: "Media Types"}
+	GroupTypography      = SettingGroup{Key: "typography", Label: "Typography"}
 )
 
 // SettingOption is a single entry in a select input.

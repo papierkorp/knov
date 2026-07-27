@@ -53,7 +53,7 @@ func toSectionJSON(section configmanager.SettingSection) sectionJSON {
 // @Summary Get settings section
 // @Description Returns settings for a single section as HTML (HTMX) or JSON
 // @Tags settings
-// @Param section path string true "Section key (e.g. general, editor, table, media, file-types)"
+// @Param section path string true "Section key (e.g. general, appearance, editor, table, media, file-types)"
 // @Produce json,html
 // @Success 200 {object} sectionJSON
 // @Failure 404 {string} string "unknown section"
@@ -67,7 +67,7 @@ func handleAPIGetSettingsSection(w http.ResponseWriter, r *http.Request) {
 				return translation.SprintfForRequest(lang, key, args...)
 			}
 			var html string
-			if s.Key == configmanager.SectionGeneral.Key {
+			if s.Key == configmanager.SectionAppearance.Key {
 				html = render.RenderSettingsSection(s, t, render.RenderFaviconItem(t))
 			} else {
 				html = render.RenderSettingsSection(s, t)

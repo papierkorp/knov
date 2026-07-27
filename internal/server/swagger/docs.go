@@ -5478,7 +5478,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Section key (e.g. general, editor, table, media, file-types)",
+                        "description": "Section key (e.g. general, appearance, editor, table, media, file-types)",
                         "name": "section",
                         "in": "path",
                         "required": true

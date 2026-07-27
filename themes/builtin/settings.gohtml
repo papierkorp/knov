@@ -10,6 +10,7 @@
             <section class="settings-section settings-section-wide" id="section-file-types" hx-get="/api/settings/file-types" hx-trigger="load" hx-swap="innerHTML"></section>
         </div>
         <div class="settings-col">
+            <section class="settings-section" id="section-appearance" hx-get="/api/settings/appearance" hx-trigger="load" hx-swap="innerHTML"></section>
             {{ template "theme-section" . }}
             <section class="settings-section" id="section-media" hx-get="/api/settings/media" hx-trigger="load" hx-swap="innerHTML"></section>
         </div>
