@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"knov/internal/configmanager"
 	"knov/internal/pathutils"
@@ -43,11 +45,25 @@ func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 var wikiLinkRe = regexp.MustCompile(`\[\[([^\[\]]+)\]\]`)
 
 // ResolveWikiLinks converts [[path]] and [[path|display]] to standard markdown links.
+//
+// When there's no explicit "|display", this leaves the markdown link text
+// empty rather than deriving a label here - processMarkdownLinks (which
+// always runs right after this) owns all fallback-label generation and
+// applies it the same way regardless of whether a link started as [[wiki]]
+// or was hand-typed as [](...). Don't re-add filename/anchor-humanizing logic
+// in this function; that duplication is what previously let the wiki-link
+// path drift out of sync with the hand-typed path (unicode anchors
+// mis-capitalized, an anchor-only [[#some-header]] rendering as ".").
 func ResolveWikiLinks(content string) string {
 	return wikiLinkRe.ReplaceAllStringFunc(content, func(match string) string {
 		inner := match[2 : len(match)-2]
 		parts := strings.SplitN(inner, "|", 2)
 		linkPath := strings.TrimSpace(parts[0])
+
+		display := ""
+		if len(parts) == 2 {
+			display = strings.TrimSpace(parts[1])
+		}
 
 		// split off anchor before any path manipulation
 		anchor := ""
@@ -56,10 +72,14 @@ func ResolveWikiLinks(content string) string {
 			linkPath = linkPath[:idx]
 		}
 
-		display := strings.TrimSuffix(filepath.Base(linkPath), ".md")
-		if len(parts) == 2 {
-			display = strings.TrimSpace(parts[1])
+		// pure same-page anchor (e.g. "[[#some-header]]") - keep it a real
+		// same-page link instead of routing it through /files/. Leaving
+		// display empty lets processMarkdownLinks fill in the header text,
+		// same as it does for a hand-typed "[](#some-header)".
+		if linkPath == "" {
+			return "[" + display + "](" + anchor + ")"
 		}
+
 		if !strings.Contains(filepath.Base(linkPath), ".") {
 			linkPath += ".md"
 		}
@@ -545,8 +565,11 @@ func (h *MarkdownHandler) wrapHeaderSections(htmlContent, filePath string) strin
 // ---------------------------------------------------------------------------
 
 // processMarkdownLinks rewrites internal [text](url) links to /files/ routes.
+// This is also where every empty-text "[](url)" link (including ones
+// ResolveWikiLinks produced from a [[wiki link]] with no "|display") gets its
+// fallback label - keep that logic here only, see the note on ResolveWikiLinks.
 func (h *MarkdownHandler) processMarkdownLinks(content string) string {
-	re := regexp.MustCompile(`(!)?\[([^\]]+)\]\(([^)]+)\)`)
+	re := regexp.MustCompile(`(!)?\[([^\]]*)\]\(([^)]+)\)`)
 	return re.ReplaceAllStringFunc(content, func(match string) string {
 		matches := re.FindStringSubmatch(match)
 		if len(matches) < 4 {
@@ -565,9 +588,21 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 			return matches[1] + "[" + text + "](" + strings.ReplaceAll(u, "\\", "/") + ")"
 		}
 
-		// external links and pure anchors — leave as-is
-		if strings.Contains(u, "://") || strings.HasPrefix(u, "#") {
+		// external links — leave as-is
+		if strings.Contains(u, "://") {
 			return match
+		}
+
+		// pure anchor (same-page link) — fall back to the header text if empty
+		if strings.HasPrefix(u, "#") {
+			if text == "" {
+				slug := strings.TrimPrefix(u, "#")
+				if decoded, err := url.PathUnescape(slug); err == nil {
+					slug = decoded
+				}
+				text = humanizeSlug(slug)
+			}
+			return "[" + text + "](" + u + ")"
 		}
 
 		// split off anchor fragment before any path processing
@@ -575,6 +610,18 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 		if idx := strings.Index(u, "#"); idx != -1 {
 			anchor = u[idx:]
 			u = u[:idx]
+		}
+
+		// empty link text (e.g. "[](path.md#anchor)") — fall back to filename + header
+		if text == "" {
+			decodedU, decodedAnchor := u, anchor
+			if decoded, err := url.PathUnescape(u); err == nil {
+				decodedU = decoded
+			}
+			if decoded, err := url.PathUnescape(anchor); err == nil {
+				decodedAnchor = decoded
+			}
+			text = autoLinkText(decodedU, decodedAnchor)
 		}
 
 		// media links
@@ -607,6 +654,29 @@ func (h *MarkdownHandler) processMarkdownLinks(content string) string {
 		}
 		return "[" + text + "](" + pathutils.ToFileURL(u) + anchor + ")"
 	})
+}
+
+// autoLinkText builds a display label for a link left without one, e.g.
+// "escrow.md" + "#todo-vorlage" -> "escrow - Todo Vorlage".
+func autoLinkText(u, anchor string) string {
+	name := strings.TrimSuffix(filepath.Base(u), filepath.Ext(u))
+	if anchor == "" {
+		return name
+	}
+	return name + " - " + humanizeSlug(strings.TrimPrefix(anchor, "#"))
+}
+
+// humanizeSlug turns a header-anchor slug like "todo-vorlage" into "Todo Vorlage".
+func humanizeSlug(slug string) string {
+	words := strings.Split(slug, "-")
+	for i, w := range words {
+		if w == "" {
+			continue
+		}
+		r, size := utf8.DecodeRuneInString(w)
+		words[i] = string(unicode.ToUpper(r)) + w[size:]
+	}
+	return strings.Join(words, " ")
 }
 
 var wikiExtractRe = regexp.MustCompile(`\[\[([^\[\]|]+)`)

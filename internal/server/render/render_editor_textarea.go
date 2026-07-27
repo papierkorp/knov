@@ -40,7 +40,7 @@ func RenderTextareaSectionEditorForm(filePath, sectionID string) string {
 				</div>
 				<div id="editor-status"></div>
 			</form>
-			<script>(function(){var c=document.currentScript.parentElement;if(window.initWikiAutocompleteForInputs)initWikiAutocompleteForInputs(c,{cursorEnd:%t},'.textarea-editor-input');})()</script>
+			<script>(function(){var c=document.currentScript.parentElement;if(window.initWikiAutocompleteForInputs)initWikiAutocompleteForInputs(c,{cursorEnd:%t,currentFile:%s},'.textarea-editor-input');})()</script>
 		</div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section"),
 		sectionID,
@@ -49,7 +49,8 @@ func RenderTextareaSectionEditorForm(filePath, sectionID string) string {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save section"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
-		configmanager.WikiLinkCursorEnd.Get())
+		configmanager.WikiLinkCursorEnd.Get(),
+		jsEscapeString(filePath))
 }
 
 // RenderTextareaEditorComponent renders a plain textarea editor with save/cancel buttons.
@@ -110,7 +111,7 @@ func RenderTextareaEditorComponent(filepath, content string, editorType ...strin
 				</div>
 				<div id="editor-status"></div>
 			</form>
-			<script>(function(){var c=document.currentScript.parentElement;if(window.initWikiAutocompleteForInputs)initWikiAutocompleteForInputs(c,{cursorEnd:%t},'.textarea-editor-input');})()</script>
+			<script>(function(){var c=document.currentScript.parentElement;if(window.initWikiAutocompleteForInputs)initWikiAutocompleteForInputs(c,{cursorEnd:%t,currentFile:%s},'.textarea-editor-input');})()</script>
 		</div>`,
 		filepathField,
 		content,
@@ -118,5 +119,6 @@ func RenderTextareaEditorComponent(filepath, content string, editorType ...strin
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
 		convertButton,
-		configmanager.WikiLinkCursorEnd.Get())
+		configmanager.WikiLinkCursorEnd.Get(),
+		jsEscapeString(filepath))
 }

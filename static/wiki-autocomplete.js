@@ -1,6 +1,8 @@
 // Wiki link autocomplete for [[...]] syntax.
 
 (function (global) {
+  var FILES_PREFIX = "/files/";
+
   // ── shared dropdown state ────────────────────────────────────────────────
 
   var dropdown = null;
@@ -127,7 +129,7 @@
     }, 120);
   }
 
-  function debouncedFetchHeaders(filepath, q, anchorEl) {
+  function debouncedFetchHeaders(filepath, q, anchorEl, sameFile) {
     clearTimeout(fetchTimer);
     fetchTimer = setTimeout(function () {
       fetch("/api/files/headers?filepath=" + encodeURIComponent(filepath))
@@ -147,7 +149,9 @@
             .map(function (h) {
               return {
                 filename: "#".repeat(h.level) + " " + h.text,
-                path: filepath + "#" + h.id,
+                // same-file lookup ("](#" with no path) → keep the inserted
+                // link a same-page anchor instead of the full file path
+                path: (sameFile ? "" : filepath) + "#" + h.id,
               };
             });
           show(items, anchorEl);
@@ -160,35 +164,61 @@
     return opts.cursorEnd || path.indexOf("#") !== -1 ? closeLen : 0;
   }
 
+  // Encodes each path segment (keeping "/" and "#" as separators intact) so
+  // filenames with ")", spaces, etc. don't break the surrounding "](...)" syntax.
+  function encodePathSegments(path) {
+    return path
+      .split("/")
+      .map(function (seg) {
+        return seg.split("#").map(encodeURIComponent).join("#");
+      })
+      .join("/");
+  }
+
+  // Builds the "](...)" target: a same-page anchor (e.g. "#translation") stays
+  // relative instead of being routed through FILES_PREFIX.
+  function buildTarget(path) {
+    return (path.indexOf("#") === 0 ? "" : FILES_PREFIX) + encodePathSegments(path);
+  }
+
   // Triggers on an unclosed "[[" (wikilink) or an unclosed "](" (markdown
   // link target), whichever is open at the caret. insertFn receives the
   // chosen path plus which one matched, so callers can build the right text.
-  function triggerAutocomplete(before, anchorEl, insertFn) {
+  function triggerAutocomplete(before, anchorEl, insertFn, currentFile) {
     var wiki = before.match(/\[\[([^\]]*)$/);
     var md = !wiki && before.match(/\]\(([^)]*)$/);
+    if (md && md[1].indexOf("://") !== -1) md = false;
+    if (md && /!\[[^\[\]]*$/.test(before.slice(0, md.index))) md = false;
     var m = wiki || md;
     if (m) {
       onInsert = function (path) {
         insertFn(path, wiki ? "wiki" : "md");
       };
-      dispatchFetch(m[1], anchorEl);
+      dispatchFetch(m[1], anchorEl, currentFile);
     } else {
       hide();
     }
   }
 
-  function dispatchFetch(inner, anchorEl) {
+  function dispatchFetch(inner, anchorEl, currentFile) {
     // Markdown links store "/files/<path>" (a real href), but the file and
     // header lookup APIs expect a plain repo-relative path, same as
     // wikilinks store internally. Strip the prefix before querying.
-    if (inner.indexOf("/files/") === 0) inner = inner.substring(7);
+    if (inner.indexOf(FILES_PREFIX) === 0) inner = inner.substring(FILES_PREFIX.length);
+    try {
+      inner = decodeURIComponent(inner);
+    } catch (e) {}
     var hashIdx = inner.indexOf("#");
     if (hashIdx !== -1) {
-      debouncedFetchHeaders(
-        inner.substring(0, hashIdx),
-        inner.substring(hashIdx + 1),
-        anchorEl,
-      );
+      // no filepath before the "#" (e.g. "](#") — link to a header in the
+      // file currently being edited instead of querying an empty filepath
+      var typedFilepath = inner.substring(0, hashIdx);
+      var filepath = typedFilepath || currentFile;
+      if (!filepath) {
+        hide();
+        return;
+      }
+      debouncedFetchHeaders(filepath, inner.substring(hashIdx + 1), anchorEl, typedFilepath === "");
     } else {
       debouncedFetch(inner, anchorEl);
     }
@@ -265,7 +295,7 @@
       // ch is 1-based: subtract 1 to check the char that actually follows the cursor
       var endSel = lt.substring(ch - 1, ch) === ")" ? ch + 1 : ch;
       editor.setSelection([line, Math.max(1, idx + 1)], [line, endSel]);
-      editor.insertText("](/files/" + path + ")");
+      editor.insertText("](" + buildTarget(path) + ")");
       moveCursorBack(1 - cursorOffset(path, opts, 1));
     }
 
@@ -301,7 +331,7 @@
       triggerAutocomplete(before, editorEl, function (path, mode) {
         if (mode === "md") insertMdLink(path);
         else insertWikiLink(path);
-      });
+      }, opts.currentFile);
     });
   };
 
@@ -341,7 +371,7 @@
       var toPos = cur;
       if (li.text.substring(cur - li.from, cur - li.from + 1) === ")")
         toPos += 1;
-      var target = "/files/" + path;
+      var target = buildTarget(path);
       var cursorPos = from + target.length + cursorOffset(path, opts, 1);
       view.dispatch({
         changes: { from: from, to: toPos, insert: target + ")" },
@@ -371,7 +401,7 @@
       triggerAutocomplete(before, anchor, function (path, mode) {
         if (mode === "md") insertMdLink(path);
         else insertWikiLink(path);
-      });
+      }, opts.currentFile);
     });
   };
 
@@ -460,7 +490,7 @@
       if (ws === -1) return;
       var start = ws + 2;
       var endPos = val.substring(pos, pos + 1) === ")" ? pos + 1 : pos;
-      var target = "/files/" + path;
+      var target = buildTarget(path);
       input.setRangeText(target + ")", start, endPos, "end");
       var cursorPos = start + target.length + cursorOffset(path, opts, 1);
       input.setSelectionRange(cursorPos, cursorPos);
@@ -482,7 +512,7 @@
       triggerAutocomplete(before, anchor, function (path, mode) {
         if (mode === "md") insertMdLink(input, path);
         else insertWikiLink(input, path);
-      });
+      }, opts.currentFile);
     });
   };
 

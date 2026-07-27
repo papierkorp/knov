@@ -56,7 +56,7 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 	});
 	view.contentDOM.setAttribute('spellcheck', '%s');
 
-	initWikiAutocompleteForCodeMirror(view, {cursorEnd: %t});
+	initWikiAutocompleteForCodeMirror(view, {cursorEnd: %t, currentFile: %s});
 
 	document.querySelector('.file-form').addEventListener('submit', function() {
 		document.getElementById('editor-content').value = view.state.doc.toString();
@@ -73,7 +73,8 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 		jsBool(configmanager.CodeMirrorHighlightSelection.Get()),
 		jsBool(configmanager.CodeMirrorHighlightSelectionWholeWord.Get()),
 		jsBool(configmanager.SpellCheck.Get()),
-		configmanager.WikiLinkCursorEnd.Get())
+		configmanager.WikiLinkCursorEnd.Get(),
+		jsEscapeString(filePath))
 
 	return fmt.Sprintf(`
 		<form hx-post="/api/files/section/save" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">
@@ -174,7 +175,7 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 	});
 	view.contentDOM.setAttribute('spellcheck', '%s');
 
-	initWikiAutocompleteForCodeMirror(view, {cursorEnd: %t});
+	initWikiAutocompleteForCodeMirror(view, {cursorEnd: %t, currentFile: %s});
 
 	document.querySelector('.file-form').addEventListener('submit', function() {
 		document.getElementById('editor-content').value = view.state.doc.toString();
@@ -191,7 +192,8 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		jsBool(configmanager.CodeMirrorHighlightSelection.Get()),
 		jsBool(configmanager.CodeMirrorHighlightSelectionWholeWord.Get()),
 		jsBool(configmanager.SpellCheck.Get()),
-		configmanager.WikiLinkCursorEnd.Get())
+		configmanager.WikiLinkCursorEnd.Get(),
+		jsEscapeString(filePath))
 
 	return fmt.Sprintf(`
 		<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">

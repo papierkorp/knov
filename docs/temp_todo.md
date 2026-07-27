@@ -31,11 +31,6 @@
 - theme settings to hide pdf export button one for file one for header
 - optimize clickable todo buttons - can be really laggy
 - file saved notification (below toastui editor) is offcenter
-- Fix review findings in static/wiki-autocomplete.js
-  - Don't trigger md-link autocomplete on external URLs: in triggerAutocomplete, skip the "](" branch when the partial target contains "://".
-  - Don't trigger md-link autocomplete on image embeds: skip the "](" branch when the text before it starts with "![" (check char before the "](" match).
-  - Percent-encode the path segment when inserting md links (all 3 insertMdLink variants: ToastUI, CodeMirror, inputs) so filenames with ")" or spaces don't break the markdown link. Encode path segments only, keep "/" and "#" intact. Counterpart: in dispatchFetch, decode the inner text before querying the API so re-editing an encoded link still matches.
-  - Deduplicate the hardcoded "/files/" string: define one shared constant at the top of the IIFE and use it in dispatchFetch (replace the substring(7) magic number with its length) and all 3 insertMdLink variants.
 
 # testing
 
@@ -86,6 +81,7 @@ In-app runtime test suites, not `go test`. Knov ships as a single binary with no
 - [ ] 5. browse & info slideout - browse/icons (`/browse/files`, `/browse/media`, `/browse/{metadata}[/{value}]`, file tree, folder contents, autocomplete); metadata (get/set all fields, inline-display/inline-edit); TOC (header extraction); references (add/remove/list); connections (parents/ancestors/kids/grandchildren/related/used-links/links-to-here, conflict banner+diff)
 - [ ] 6. jobs, media, admin - jobs (metadata-rebuild, search-index, media-cleanup, cache-invalidate, manual trigger, status/history) - assert on filesystem/DB state, not just success; media (upload, list, preview, rename, delete, orphaned-cleanup, stats); admin actions (cache invalidate, git push/pull/test-auth, data path change); export/import (markdown, zip, metadata export, dashboard/settings export->import round-trip)
 - [ ] 7. settings, notifications, logs - notifications (flash consumed once, persistent list, delete one, clear all); settings/themes/config (bulk+individual settings, theme list/switch/settings, config repo url/data path/favicon/languages); logs (in-memory list, file pagination/chunking, download)
+- [ ] 8. parser - `processMarkdownLinks` (`internal/parser`): empty-`[]`-text fallback labels (plain path, path+anchor, pure same-page anchor), percent-encoded path/anchor segments decoded before building the fallback label, unicode header slugs (e.g. German umlauts) capitalized correctly by `humanizeSlug`, external links and image embeds left untouched - pure functions, no file IO, cheap to cover in a `parsertest` suite following the same `Suite`/job/admin-button wiring as the others
 
 note: browser-only interactions (kanban drag-and-drop, toastui toolbar) can't be verified by an in-app runtime suite the same way - either accept coverage of the underlying API/state instead, or handle those specific cases via the `testkit` chromedp path separately.
 

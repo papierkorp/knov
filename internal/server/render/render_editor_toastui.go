@@ -488,7 +488,7 @@ func jsPreventEmptyUndo() string {
 }
 
 // getToastUIEditorScript assembles all JS helpers into a single <script> block.
-func getToastUIEditorScript(content, frontMatter string) string {
+func getToastUIEditorScript(content, frontMatter, filePath string) string {
 	parts := []string{
 		jsEditorInit(content),
 		jsPreventEmptyUndo(),
@@ -499,7 +499,7 @@ func getToastUIEditorScript(content, frontMatter string) string {
 		jsInsertMedia(),
 		jsWikiFileSelector(),
 		jsRegisterEditor(),
-		fmt.Sprintf(`initWikiAutocompleteToastUI(editor, {cursorEnd: %t});`, configmanager.WikiLinkCursorEnd.Get()),
+		fmt.Sprintf(`initWikiAutocompleteToastUI(editor, {cursorEnd: %t, currentFile: %s});`, configmanager.WikiLinkCursorEnd.Get(), jsEscapeString(filePath)),
 		jsFormSubmit(frontMatter),
 	}
 
@@ -579,7 +579,7 @@ func RenderToastUIEditorForm(filePath, prefillPath string, editor ...string) str
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save file"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
-		getToastUIEditorScript(content, frontMatter))
+		getToastUIEditorScript(content, frontMatter, filePath))
 }
 
 // RenderToastUISectionEditorForm renders a ToastUI editor form for editing a single section.
@@ -621,5 +621,5 @@ func RenderToastUISectionEditorForm(filePath, sectionID string) string {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save section"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
-		getToastUIEditorScript(content, ""))
+		getToastUIEditorScript(content, "", filePath))
 }

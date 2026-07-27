@@ -399,7 +399,7 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 
 			return { addItem, addNestedItem, globalIndent, globalOutdent, globalDelete, undoDelete, toggleCascadeStatus };
 		})();
-		initWikiAutocompleteForInputs(document.getElementById('todo-editor-form'), {cursorEnd: %t});
+		initWikiAutocompleteForInputs(document.getElementById('todo-editor-form'), {cursorEnd: %t, currentFile: %s});
 	</script>
 </div>
 	`,
@@ -423,5 +423,6 @@ func RenderTodoEditor(filepath string, initialItem ...string) string {
 		translation.SprintfForRequest(lang, "type here..."),
 		listItemsJSON,
 		startItemJS,
-		configmanager.WikiLinkCursorEnd.Get())
+		configmanager.WikiLinkCursorEnd.Get(),
+		jsEscapeString(filepath))
 }
