@@ -18,26 +18,29 @@ var (
 	searchInterval          time.Duration
 	metadataRebuildInterval time.Duration
 
-	fileMu           sync.Mutex
-	searchMu         sync.Mutex
-	rebuildMu        sync.Mutex
-	filterMu         sync.Mutex
-	notifMu          sync.Mutex
-	cacheInvalidMu   sync.Mutex
-	mediaCleanupMu   sync.Mutex
-	gitPullMu        sync.Mutex
-	gitPushMu        sync.Mutex
-	testdataSetupMu  sync.Mutex
-	testdataCleanMu  sync.Mutex
-	filterTestMu     sync.Mutex
-	editorsTestMu    sync.Mutex
-	searchTestMu     sync.Mutex
-	gitHistoryTestMu sync.Mutex
-	chatTestMu       sync.Mutex
-	dashboardTestMu  sync.Mutex
-	kanbanTestMu     sync.Mutex
-	runAllTestsMu    sync.Mutex
-	runMu            sync.Mutex // prevents concurrent manual Run() calls
+	fileMu            sync.Mutex
+	searchMu          sync.Mutex
+	rebuildMu         sync.Mutex
+	filterMu          sync.Mutex
+	notifMu           sync.Mutex
+	cacheInvalidMu    sync.Mutex
+	mediaCleanupMu    sync.Mutex
+	gitPullMu         sync.Mutex
+	gitPushMu         sync.Mutex
+	testdataSetupMu   sync.Mutex
+	testdataCleanMu   sync.Mutex
+	filterTestMu      sync.Mutex
+	editorsTestMu     sync.Mutex
+	searchTestMu      sync.Mutex
+	gitHistoryTestMu  sync.Mutex
+	chatTestMu        sync.Mutex
+	dashboardTestMu   sync.Mutex
+	kanbanTestMu      sync.Mutex
+	browseTestMu      sync.Mutex
+	metadataTestMu    sync.Mutex
+	connectionsTestMu sync.Mutex
+	runAllTestsMu     sync.Mutex
+	runMu             sync.Mutex // prevents concurrent manual Run() calls
 )
 
 // execute runs job under mu, recording start/finish in job history.
@@ -284,6 +287,33 @@ func RunDashboardTest() (*test.SuiteResult, error) {
 func RunKanbanTest() (*test.SuiteResult, error) {
 	j := &kanbanTestJob{}
 	if err := execute(&kanbanTestMu, j); err != nil {
+		return nil, err
+	}
+	return j.results, nil
+}
+
+// RunBrowseTest runs the browse test suite and returns its results alongside any error.
+func RunBrowseTest() (*test.SuiteResult, error) {
+	j := &browseTestJob{}
+	if err := execute(&browseTestMu, j); err != nil {
+		return nil, err
+	}
+	return j.results, nil
+}
+
+// RunMetadataTest runs the metadata test suite and returns its results alongside any error.
+func RunMetadataTest() (*test.SuiteResult, error) {
+	j := &metadataTestJob{}
+	if err := execute(&metadataTestMu, j); err != nil {
+		return nil, err
+	}
+	return j.results, nil
+}
+
+// RunConnectionsTest runs the connections test suite and returns its results alongside any error.
+func RunConnectionsTest() (*test.SuiteResult, error) {
+	j := &connectionsTestJob{}
+	if err := execute(&connectionsTestMu, j); err != nil {
 		return nil, err
 	}
 	return j.results, nil

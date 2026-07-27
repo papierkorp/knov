@@ -348,6 +348,18 @@
                             hx-confirm="{{T "Run kanban tests? This will create test files and move kanban cards."}}">
                         {{T "Run Kanban Tests"}}
                     </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/browsetest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run browse tests? This will create test files and folders."}}">
+                        {{T "Run Browse Tests"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/metadatatest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run metadata tests? This will create and delete test metadata and references."}}">
+                        {{T "Run Metadata Tests"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/connectionstest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run connections tests? This will create test files with parent/child/link relationships."}}">
+                        {{T "Run Connections Tests"}}
+                    </button>
                     <button class="btn-secondary" hx-post="/api/testdata/run-all" hx-target="#testdata-result"
                             hx-confirm="{{T "Run all test suites? This will create test metadata objects."}}">
                         {{T "Run All Tests"}}

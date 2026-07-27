@@ -258,6 +258,84 @@ func handleAPIKanbanTest(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, results, html)
 }
 
+// @Summary Run browse tests
+// @Description Executes the browse suite (file tree, folder contents, browse-by-tag/folder, autocomplete, folder suggestions, header/TOC extraction, hidden-file-type filter)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "browse test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/browsetest [post]
+func handleAPIBrowseTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug(logging.KeyApp, "browse test request received")
+
+	results, err := job.RunBrowseTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError(logging.KeyApp, "failed to run browse tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
+// @Summary Run metadata tests
+// @Description Executes the metadata suite (get/set all fields, partial-update semantics, delete, export-all, references add/remove, editor types, kanban tag sanitizer)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "metadata test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/metadatatest [post]
+func handleAPIMetadataTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug(logging.KeyApp, "metadata test request received")
+
+	results, err := job.RunMetadataTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError(logging.KeyApp, "failed to run metadata tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
+// @Summary Run connections tests
+// @Description Executes the connections suite (parents/ancestors, kids/grandchildren, used-links, links-to-here, related files, ancestors-in-folder, conflict banner/of-banner)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "connections test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/connectionstest [post]
+func handleAPIConnectionsTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug(logging.KeyApp, "connections test request received")
+
+	results, err := job.RunConnectionsTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError(logging.KeyApp, "failed to run connections tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
 // @Summary Run all test suites
 // @Description Executes every registered in-app test suite and aggregates the results
 // @Tags testdata

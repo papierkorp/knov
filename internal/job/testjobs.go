@@ -6,12 +6,15 @@ import (
 	"fmt"
 
 	"knov/internal/test"
+	"knov/internal/test/browsetest"
 	"knov/internal/test/chattest"
+	"knov/internal/test/connectionstest"
 	"knov/internal/test/dashboardtest"
 	"knov/internal/test/editorstest"
 	"knov/internal/test/filtertest"
 	"knov/internal/test/githistorytest"
 	"knov/internal/test/kanbantest"
+	"knov/internal/test/metadatatest"
 	"knov/internal/test/searchtest"
 )
 
@@ -207,6 +210,78 @@ func (j *kanbanTestJob) Run() error {
 func (j *kanbanTestJob) Output() any { return j.results }
 
 func (j *kanbanTestJob) Message() string {
+	if j.results == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d passed, %d failed", j.results.Passed, j.results.Failed)
+}
+
+type browseTestJob struct {
+	results *test.SuiteResult
+}
+
+func (j *browseTestJob) Name() string { return "browse-test" }
+
+func (j *browseTestJob) Run() error {
+	results, err := (browsetest.Suite{}).Run()
+	j.results = results
+	if err != nil {
+		return fmt.Errorf("browse tests failed: %w", err)
+	}
+	return nil
+}
+
+func (j *browseTestJob) Output() any { return j.results }
+
+func (j *browseTestJob) Message() string {
+	if j.results == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d passed, %d failed", j.results.Passed, j.results.Failed)
+}
+
+type metadataTestJob struct {
+	results *test.SuiteResult
+}
+
+func (j *metadataTestJob) Name() string { return "metadata-test" }
+
+func (j *metadataTestJob) Run() error {
+	results, err := (metadatatest.Suite{}).Run()
+	j.results = results
+	if err != nil {
+		return fmt.Errorf("metadata tests failed: %w", err)
+	}
+	return nil
+}
+
+func (j *metadataTestJob) Output() any { return j.results }
+
+func (j *metadataTestJob) Message() string {
+	if j.results == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d passed, %d failed", j.results.Passed, j.results.Failed)
+}
+
+type connectionsTestJob struct {
+	results *test.SuiteResult
+}
+
+func (j *connectionsTestJob) Name() string { return "connections-test" }
+
+func (j *connectionsTestJob) Run() error {
+	results, err := (connectionstest.Suite{}).Run()
+	j.results = results
+	if err != nil {
+		return fmt.Errorf("connections tests failed: %w", err)
+	}
+	return nil
+}
+
+func (j *connectionsTestJob) Output() any { return j.results }
+
+func (j *connectionsTestJob) Message() string {
 	if j.results == nil {
 		return ""
 	}

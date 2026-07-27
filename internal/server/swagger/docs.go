@@ -5578,6 +5578,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/testdata/browsetest": {
+            "post": {
+                "description": "Executes the browse suite (file tree, folder contents, browse-by-tag/folder, autocomplete, folder suggestions, header/TOC extraction, hidden-file-type filter)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run browse tests",
+                "responses": {
+                    "200": {
+                        "description": "browse test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/testdata/chattest": {
             "post": {
                 "description": "Executes the chat suite (add/delete/get message global + file-scoped, pagination, single move append/new-file, bulk move new-file, bulk delete, file rename/delete cascade)",
@@ -5621,6 +5648,33 @@ const docTemplate = `{
                         "description": "{\"status\":\"ok\",\"message\":\"test data cleaned\"}",
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/testdata/connectionstest": {
+            "post": {
+                "description": "Executes the connections suite (parents/ancestors, kids/grandchildren, used-links, links-to-here, related files, ancestors-in-folder, conflict banner/of-banner)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run connections tests",
+                "responses": {
+                    "200": {
+                        "description": "connections test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
                         }
                     },
                     "500": {
@@ -5781,6 +5835,33 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "kanban test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/testdata/metadatatest": {
+            "post": {
+                "description": "Executes the metadata suite (get/set all fields, partial-update semantics, delete, export-all, references add/remove, editor types, kanban tag sanitizer)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run metadata tests",
+                "responses": {
+                    "200": {
+                        "description": "metadata test results",
                         "schema": {
                             "$ref": "#/definitions/test.SuiteResult"
                         }
