@@ -4447,6 +4447,25 @@ paths:
       summary: Run kanban tests
       tags:
       - testdata
+  /api/testdata/logstest:
+    post:
+      description: Executes the logs suite (in-memory ring buffer, file pagination/chunking,
+        download path guard)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: logs test results
+          schema:
+            $ref: '#/definitions/test.SuiteResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run logs tests
+      tags:
+      - testdata
   /api/testdata/mediatest:
     post:
       description: Executes the media suite (upload, list/partition all-used-orphaned,
@@ -4486,6 +4505,25 @@ paths:
       summary: Run metadata tests
       tags:
       - testdata
+  /api/testdata/notificationtest:
+    post:
+      description: Executes the notification suite (flash consumed once, persistent
+        list, delete one, clear all)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: notification test results
+          schema:
+            $ref: '#/definitions/test.SuiteResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run notification tests
+      tags:
+      - testdata
   /api/testdata/run-all:
     post:
       description: Executes every registered in-app test suite and aggregates the
@@ -4522,6 +4560,26 @@ paths:
           schema:
             type: string
       summary: Run search tests
+      tags:
+      - testdata
+  /api/testdata/settingstest:
+    post:
+      description: Executes the settings/themes/config suite (bulk+individual settings,
+        partial-update semantics, validation, theme list/switch/settings, languages,
+        favicon upload/delete)
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: settings test results
+          schema:
+            $ref: '#/definitions/test.SuiteResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run settings tests
       tags:
       - testdata
   /api/testdata/setup:

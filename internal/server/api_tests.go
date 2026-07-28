@@ -414,6 +414,84 @@ func handleAPIExportTest(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, results, html)
 }
 
+// @Summary Run notification tests
+// @Description Executes the notification suite (flash consumed once, persistent list, delete one, clear all)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "notification test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/notificationtest [post]
+func handleAPINotificationTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug(logging.KeyApp, "notification test request received")
+
+	results, err := job.RunNotificationTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError(logging.KeyApp, "failed to run notification tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
+// @Summary Run settings tests
+// @Description Executes the settings/themes/config suite (bulk+individual settings, partial-update semantics, validation, theme list/switch/settings, languages, favicon upload/delete)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "settings test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/settingstest [post]
+func handleAPISettingsTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug(logging.KeyApp, "settings test request received")
+
+	results, err := job.RunSettingsTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError(logging.KeyApp, "failed to run settings tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
+// @Summary Run logs tests
+// @Description Executes the logs suite (in-memory ring buffer, file pagination/chunking, download path guard)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "logs test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/logstest [post]
+func handleAPILogsTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug(logging.KeyApp, "logs test request received")
+
+	results, err := job.RunLogsTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError(logging.KeyApp, "failed to run logs tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
 // @Summary Run all test suites
 // @Description Executes every registered in-app test suite and aggregates the results
 // @Tags testdata

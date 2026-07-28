@@ -261,6 +261,15 @@ func RunMediaTest() (*test.SuiteResult, error) { return RunSuiteTest("media-test
 // RunExportTest runs the export/import test suite and returns its results alongside any error.
 func RunExportTest() (*test.SuiteResult, error) { return RunSuiteTest("export-test") }
 
+// RunNotificationTest runs the notification test suite and returns its results alongside any error.
+func RunNotificationTest() (*test.SuiteResult, error) { return RunSuiteTest("notification-test") }
+
+// RunSettingsTest runs the settings/themes/config test suite and returns its results alongside any error.
+func RunSettingsTest() (*test.SuiteResult, error) { return RunSuiteTest("settings-test") }
+
+// RunLogsTest runs the logs test suite and returns its results alongside any error.
+func RunLogsTest() (*test.SuiteResult, error) { return RunSuiteTest("logs-test") }
+
 // RunAllTests runs every registered test suite and returns the aggregated results.
 func RunAllTests() (*test.SuiteResult, error) { return RunSuiteTest("run-all-tests") }
 

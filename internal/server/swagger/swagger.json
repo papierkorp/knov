@@ -5896,6 +5896,33 @@
                 }
             }
         },
+        "/api/testdata/logstest": {
+            "post": {
+                "description": "Executes the logs suite (in-memory ring buffer, file pagination/chunking, download path guard)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run logs tests",
+                "responses": {
+                    "200": {
+                        "description": "logs test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/testdata/mediatest": {
             "post": {
                 "description": "Executes the media suite (upload, list/partition all-used-orphaned, rename, delete, referenced-delete guard, storage stats)",
@@ -5950,6 +5977,33 @@
                 }
             }
         },
+        "/api/testdata/notificationtest": {
+            "post": {
+                "description": "Executes the notification suite (flash consumed once, persistent list, delete one, clear all)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run notification tests",
+                "responses": {
+                    "200": {
+                        "description": "notification test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/testdata/run-all": {
             "post": {
                 "description": "Executes every registered in-app test suite and aggregates the results",
@@ -5991,6 +6045,33 @@
                 "responses": {
                     "200": {
                         "description": "search test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/testdata/settingstest": {
+            "post": {
+                "description": "Executes the settings/themes/config suite (bulk+individual settings, partial-update semantics, validation, theme list/switch/settings, languages, favicon upload/delete)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run settings tests",
+                "responses": {
+                    "200": {
+                        "description": "settings test results",
                         "schema": {
                             "$ref": "#/definitions/test.SuiteResult"
                         }

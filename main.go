@@ -42,9 +42,12 @@ import (
 	_ "knov/internal/test/githistorytest"
 	_ "knov/internal/test/jobstest"
 	_ "knov/internal/test/kanbantest"
+	_ "knov/internal/test/logstest"
 	_ "knov/internal/test/mediatest"
 	_ "knov/internal/test/metadatatest"
+	_ "knov/internal/test/notificationstest"
 	_ "knov/internal/test/searchtest"
+	_ "knov/internal/test/settingstest"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
