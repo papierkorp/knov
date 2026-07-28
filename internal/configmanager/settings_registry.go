@@ -441,6 +441,18 @@ var (
 	})
 
 	// ── PDF Export ────────────────────────────────────────────────────────────
+	PDFShowFileButton = register(&BoolSetting{
+		key: "pdfShowFileButton", Default: true,
+		Section: SectionPDFExport,
+		Label:   "Show File Export Button",
+		Desc:    "display the pdf export button in the file actions panel",
+	})
+	PDFShowHeaderButton = register(&BoolSetting{
+		key: "pdfShowHeaderButton", Default: true,
+		Section: SectionPDFExport,
+		Label:   "Show Section Export Buttons",
+		Desc:    "display the pdf export button next to each heading in a rendered file",
+	})
 	PDFPageBreakBeforeHeadings = register(&BoolSetting{
 		key: "pdfPageBreakBeforeHeadings", Default: true,
 		Section: SectionPDFExport,

@@ -94,21 +94,22 @@ func computeNavLinks(settings map[string]interface{}) (header []NavLink, menu []
 
 // BaseTemplateData contains data needed by all templates
 type BaseTemplateData struct {
-	Title          string
-	CurrentTheme   string
-	ThemeSettings  map[string]interface{}
-	Language       string
-	DateFormat     string
-	Themes         []Theme
-	FileType       string
-	CodeBlockWrap  bool
-	T              func(string, ...any) string
-	Version        string
-	BuildTime      string
-	SystemPage     bool
-	HeaderNavLinks []NavLink
-	MenuNavLinks   []NavLink
-	FontStyleTag   htmltemplate.HTML
+	Title             string
+	CurrentTheme      string
+	ThemeSettings     map[string]interface{}
+	Language          string
+	DateFormat        string
+	Themes            []Theme
+	FileType          string
+	CodeBlockWrap     bool
+	T                 func(string, ...any) string
+	Version           string
+	BuildTime         string
+	SystemPage        bool
+	HeaderNavLinks    []NavLink
+	MenuNavLinks      []NavLink
+	FontStyleTag      htmltemplate.HTML
+	ShowPDFFileButton bool
 }
 
 // NewBaseTemplateData creates base data used by all templates
@@ -116,20 +117,21 @@ func NewBaseTemplateData(title string) BaseTemplateData {
 	themeSettings := getMergedThemeSettings()
 	headerLinks, menuLinks := computeNavLinks(themeSettings)
 	return BaseTemplateData{
-		Title:          title,
-		CurrentTheme:   themeManager.GetCurrentThemeName(),
-		ThemeSettings:  themeSettings,
-		Language:       configmanager.GetLanguage(),
-		DateFormat:     configmanager.GetDateFormat(),
-		Themes:         themeManager.GetAvailableThemes(),
-		CodeBlockWrap:  configmanager.CodeBlockWrap.Get(),
-		FileType:       "",
-		T:              translation.Sprintf,
-		Version:        version.Version,
-		BuildTime:      version.BuildTime,
-		HeaderNavLinks: headerLinks,
-		MenuNavLinks:   menuLinks,
-		FontStyleTag:   fontStyleTag(),
+		Title:             title,
+		CurrentTheme:      themeManager.GetCurrentThemeName(),
+		ThemeSettings:     themeSettings,
+		Language:          configmanager.GetLanguage(),
+		DateFormat:        configmanager.GetDateFormat(),
+		Themes:            themeManager.GetAvailableThemes(),
+		CodeBlockWrap:     configmanager.CodeBlockWrap.Get(),
+		FileType:          "",
+		T:                 translation.Sprintf,
+		Version:           version.Version,
+		BuildTime:         version.BuildTime,
+		HeaderNavLinks:    headerLinks,
+		MenuNavLinks:      menuLinks,
+		FontStyleTag:      fontStyleTag(),
+		ShowPDFFileButton: configmanager.PDFShowFileButton.Get(),
 	}
 }
 

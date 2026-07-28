@@ -28,7 +28,6 @@
 - move file button (can be done in rename at the moment)
 - settings/configs to hide certain folders from different searches
 - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
-- theme settings to hide pdf export button one for file one for header
 - optimize clickable todo buttons - can be really laggy
 
 # testing
