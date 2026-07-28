@@ -2323,7 +2323,7 @@ const docTemplate = `{
         },
         "/api/files/todo-toggle": {
             "post": {
-                "description": "Advances open -\u003e done -\u003e cancelled -\u003e waiting -\u003e open for the checkbox on the given line and returns the re-rendered file content",
+                "description": "Advances open -\u003e done -\u003e cancelled -\u003e waiting -\u003e open for the checkbox on the given line and persists it; the client applies the state change itself and only uses this to save",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],

@@ -2002,7 +2002,8 @@ paths:
       consumes:
       - application/x-www-form-urlencoded
       description: Advances open -> done -> cancelled -> waiting -> open for the checkbox
-        on the given line and returns the re-rendered file content
+        on the given line and persists it; the client applies the state change itself
+        and only uses this to save
       parameters:
       - description: file path
         in: formData

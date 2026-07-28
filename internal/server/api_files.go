@@ -388,7 +388,7 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Cycle a todo checkbox's state in place from the rendered file view
-// @Description Advances open -> done -> cancelled -> waiting -> open for the checkbox on the given line and returns the re-rendered file content
+// @Description Advances open -> done -> cancelled -> waiting -> open for the checkbox on the given line and persists it; the client applies the state change itself and only uses this to save
 // @Tags files
 // @Accept application/x-www-form-urlencoded
 // @Param filepath formData string true "file path"
@@ -442,14 +442,7 @@ func handleAPIToggleTodoState(w http.ResponseWriter, r *http.Request) {
 	}
 	go git.CommitFile(fullPath)
 
-	rendered, err := files.GetFileContent(fullPath)
-	if err != nil {
-		fail(http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"))
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(rendered.HTML))
+	writeResponse(w, r, map[string]string{"filepath": filePath}, "")
 }
 
 // @Summary Export file to markdown
