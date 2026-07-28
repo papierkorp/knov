@@ -1,0 +1,19 @@
+{
+  "name": "Example Theme",
+  "version": "1.0.0",
+  "author": "System",
+  "description": "Minimal reference theme showing the required structure — see docs/create_your_own_theme.md",
+  "themeSettings": {
+    "darkMode": {
+      "type": "boolean",
+      "default": false,
+      "label": "Dark mode"
+    },
+    "colorScheme": {
+      "type": "select",
+      "default": "minimal",
+      "label": "Color scheme",
+      "options": ["minimal"]
+    }
+  }
+}

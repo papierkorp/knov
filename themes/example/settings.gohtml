@@ -1,0 +1,17 @@
+{{ define "content" }}
+<h1>{{T "Settings"}}</h1>
+
+<form hx-post="/api/themes" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
+    <label for="theme">theme:</label>
+    <select
+        name="theme"
+        id="theme"
+        hx-get="/api/themes"
+        hx-target="this"
+        hx-swap="innerHTML"
+        hx-trigger="load"
+    >
+        <option>loading themes...</option>
+    </select>
+</form>
+{{ end }}

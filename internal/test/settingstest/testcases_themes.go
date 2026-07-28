@@ -9,8 +9,8 @@ import (
 	"knov/internal/thememanager"
 )
 
-// caseThemeList covers handleAPIGetThemes' GetAvailableThemes - "builtin" and "test" are both
-// always-loaded real themes (themes/builtin, themes/test), so both must be present regardless
+// caseThemeList covers handleAPIGetThemes' GetAvailableThemes - "builtin" and "example" are both
+// always-loaded real themes (themes/builtin, themes/example), so both must be present regardless
 // of environment.
 func caseThemeList() test.CaseResult {
 	name := "theme-list"
@@ -23,12 +23,12 @@ func caseThemeList() test.CaseResult {
 	}
 
 	hasBuiltin := slices.Contains(names, "builtin")
-	hasTest := slices.Contains(names, "test")
+	hasExample := slices.Contains(names, "example")
 
-	success := hasBuiltin && hasTest
+	success := hasBuiltin && hasExample
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: "available themes include builtin and test",
+		Expected: "available themes include builtin and example",
 		Actual:   fmt.Sprintf("available=%v", names),
 		Success:  success,
 	}
@@ -39,7 +39,7 @@ func caseThemeList() test.CaseResult {
 }
 
 // caseThemeSwitch covers handleAPISetTheme's GetAvailableThemes-lookup + SetCurrentTheme path,
-// toggling between builtin/test and back - both are guaranteed present by caseThemeList.
+// toggling between builtin/example and back - both are guaranteed present by caseThemeList.
 func caseThemeSwitch() test.CaseResult {
 	name := "theme-switch"
 
@@ -47,8 +47,8 @@ func caseThemeSwitch() test.CaseResult {
 	original := tm.GetCurrentThemeName()
 	defer configmanager.SetTheme(original)
 
-	target := "test"
-	if original == "test" {
+	target := "example"
+	if original == "example" {
 		target = "builtin"
 	}
 

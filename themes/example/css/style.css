@@ -1,0 +1,18 @@
+/* example theme — minimal styles using the app's CSS variables (see docs/create_your_own_theme.md) */
+
+body {
+    font-family: var(--font-body);
+    margin: 20px;
+    background: var(--bg);
+    color: var(--text);
+}
+
+nav a {
+    margin-right: 10px;
+    text-decoration: none;
+    color: var(--primary);
+}
+
+nav a:hover {
+    text-decoration: underline;
+}

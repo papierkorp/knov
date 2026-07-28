@@ -1,14 +1,18 @@
+{{/* Minimal example base.gohtml — see docs/create_your_own_theme.md for the full reference. */}}
 <!DOCTYPE html>
 <html>
 <head>
     <title>{{ .Title }}</title>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    {{/* {{.CurrentTheme}} keeps this path correct no matter which theme is active */}}
     <link href="/themes/{{.CurrentTheme}}/css/style.css" rel="stylesheet" />
+    {{/* required: renders the @font-face rules + --font-* vars for the user's font settings */}}
     {{ .FontStyleTag }}
 </head>
 <body
     data-theme="{{ .CurrentTheme }}"
+    {{/* darkMode/colorScheme must be declared in theme.json's themeSettings, or these are always empty */}}
     data-dark-mode="{{ index .ThemeSettings "darkMode" }}"
     data-color-scheme="{{ index .ThemeSettings "colorScheme" }}"
     data-language="{{ .Language }}">
@@ -19,6 +23,7 @@
     </nav>
 
     <main>
+        {{/* every template defines "content"; base.gohtml is the only one that consumes it */}}
         {{ template "content" . }}
     </main>
 

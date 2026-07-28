@@ -11,7 +11,6 @@
   - browse media
   - use both builtin and rail theme
 - translations
-- add a `create_your_own_theme.md` file
 
 **per ai**
 - not important
@@ -32,8 +31,15 @@
 - pdfexport header same as footer possible?
 - close the info slideout on /settings (sometimes its open if i open the settings in a new tab)
 - last commit in /system/version does not work for a binary only for dev
+- `RenderSystemPage` in `internal/thememanager/system.go:50` writes the buffer directly without going through `injectDefaultCSS`/`injectDefaultJS` — so `/system/*` pages get no `defaults.css`, no `custom.css`, and no notify script, unlike every themed page. Looks unintentional
 
 # ai prompts
+
+## kill 1324
+
+```bash
+fuser -k 1324/tcp
+```
 
 ## docs
 
