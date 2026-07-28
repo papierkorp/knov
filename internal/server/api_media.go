@@ -251,7 +251,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 			referencingFiles = append(referencingFiles, fmt.Sprintf(`<a href="/files/%s" target="_blank">%s</a>`, ref, ref))
 		}
 
-		errorMsg := fmt.Sprintf(`<div class="status-error" style="margin: 1rem; padding: 1rem; border-radius: 4px;">
+		errorMsg := fmt.Sprintf(`<div class="status-error">
 			<strong>%s</strong><br><br>
 			%s:<br>%s
 		</div>`,

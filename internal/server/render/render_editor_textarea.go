@@ -27,7 +27,7 @@ func RenderTextareaSectionEditorForm(filePath, sectionID string) string {
 
 	return fmt.Sprintf(`
 		<div class="component-textarea-editor">
-			<form hx-post="/api/files/section/save" hx-target="#editor-status" hx-swap="innerHTML">
+			<form hx-post="/api/files/section/save" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">
 				<div class="form-group">
 					<label>%s:</label>
 					<input type="text" name="sectionid" value="%s" readonly />
@@ -37,8 +37,8 @@ func RenderTextareaSectionEditorForm(filePath, sectionID string) string {
 				<div class="form-actions">
 					<button type="submit" class="btn-primary">%s</button>
 					<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
+					<div id="editor-status"></div>
 				</div>
-				<div id="editor-status"></div>
 			</form>
 			<script>(function(){var c=document.currentScript.parentElement;if(window.initWikiAutocompleteForInputs)initWikiAutocompleteForInputs(c,{cursorEnd:%t,currentFile:%s},'.textarea-editor-input');})()</script>
 		</div>`,
@@ -101,15 +101,15 @@ func RenderTextareaEditorComponent(filepath, content string, editorType ...strin
 
 	return fmt.Sprintf(`
 		<div class="component-textarea-editor">
-			<form hx-post="/api/files/save" hx-target="#editor-status" hx-swap="innerHTML">
+			<form hx-post="/api/files/save" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">
 				%s
 				<textarea name="content" rows="25" class="textarea-editor-input">%s</textarea>
 				<div class="form-actions">
 					<button type="submit" class="btn-primary">%s</button>
 					<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
 					%s
+					<div id="editor-status"></div>
 				</div>
-				<div id="editor-status"></div>
 			</form>
 			<script>(function(){var c=document.currentScript.parentElement;if(window.initWikiAutocompleteForInputs)initWikiAutocompleteForInputs(c,{cursorEnd:%t,currentFile:%s},'.textarea-editor-input');})()</script>
 		</div>`,

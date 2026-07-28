@@ -30,7 +30,6 @@
 - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 - theme settings to hide pdf export button one for file one for header
 - optimize clickable todo buttons - can be really laggy
-- file saved notification (below toastui editor) is offcenter
 
 # testing
 

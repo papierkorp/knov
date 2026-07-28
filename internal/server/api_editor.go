@@ -608,7 +608,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"))
-	successMsg := fmt.Sprintf(`<div class="status-success">%s <a href="/files/%s">%s</a></div>`,
+	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="/files/%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"),
 		filePath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
@@ -696,7 +696,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"))
-	successMsg := fmt.Sprintf(`<div class="status-success">%s <a href="/files/%s#%s">%s</a></div>`,
+	successMsg := fmt.Sprintf(`<div class="status-ok">%s <a href="/files/%s#%s">%s</a></div>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section saved successfully"),
 		filePath,
 		sectionID,
@@ -761,7 +761,7 @@ func handleAPIConvertFileToMarkdown(w http.ResponseWriter, r *http.Request) {
 		markdownFileName)
 
 	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprintf(w, `<div class="status-success">%s</div>`, successMsg)
+	fmt.Fprintf(w, `<div class="status-ok">%s</div>`, successMsg)
 }
 
 // defaultMarkdownEditor returns the configured default editor for markdown files.

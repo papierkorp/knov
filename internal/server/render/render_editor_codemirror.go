@@ -90,8 +90,8 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 			<div class="form-actions">
 				<button type="submit" class="btn-primary">%s</button>
 				<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
+				<div id="editor-status"></div>
 			</div>
-			<div id="editor-status"></div>
 		</form>
 		%s`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section"),
@@ -205,8 +205,8 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 			<div class="form-actions">
 				<button type="submit" class="btn-primary">%s</button>
 				<button type="button" onclick="location.href='%s'" class="btn-secondary">%s</button>
+				<div id="editor-status"></div>
 			</div>
-			<div id="editor-status"></div>
 		</form>
 		%s`,
 		action,
