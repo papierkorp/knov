@@ -206,6 +206,7 @@ type StringSetting struct {
 	Refresh     bool
 	FontPreview bool
 	Multiline   bool
+	IsColor     bool
 	OnChange    func(interface{})
 	Validate    func(string) error
 }
@@ -266,6 +267,9 @@ func (s *StringSetting) Type() string {
 	if s.Multiline {
 		return "textarea"
 	}
+	if s.IsColor {
+		return "color"
+	}
 	return "text"
 }
 
@@ -325,6 +329,28 @@ func (s *StringSliceSetting) SetFromString(v string) error {
 	}
 	return nil
 }
+
+// ── NoteSetting ───────────────────────────────────────────────────────────────
+
+// NoteSetting renders a read-only informational line in the settings UI, in
+// place among the real settings of its Section/Group. It carries no user
+// value — Key only exists so it can share the registry's Key-uniqueness and
+// ordering machinery like any other setting.
+type NoteSetting struct {
+	key     string
+	Section SettingSection
+	Group   SettingGroup
+	Text    string
+}
+
+func (s *NoteSetting) Key() string           { return s.key }
+func (s *NoteSetting) Type() string          { return "note" }
+func (s *NoteSetting) GetValue() interface{} { return nil }
+func (s *NoteSetting) GetMeta() Meta {
+	return Meta{Section: s.Section, Group: s.Group, Desc: s.Text}
+}
+func (s *NoteSetting) setFromJSON(interface{})    {}
+func (s *NoteSetting) SetFromString(string) error { return nil }
 
 // ── MapSetting ────────────────────────────────────────────────────────────────
 

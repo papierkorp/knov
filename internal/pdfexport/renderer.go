@@ -1,6 +1,11 @@
 package pdfexport
 
-import "github.com/go-pdf/fpdf"
+import (
+	"strconv"
+	"strings"
+
+	"github.com/go-pdf/fpdf"
+)
 
 // renderer walks a goldmark AST and draws it onto a PDF document. Block-level
 // dispatch lives in blocks.go, inline tokenization in inline.go, paragraph
@@ -33,9 +38,15 @@ func newRenderer(source []byte, opts Options) *renderer {
 	pdf := fpdf.New(orientation, "mm", format, ".")
 	pdf.SetMargins(margin, margin, margin)
 	pdf.SetAutoPageBreak(true, margin)
-	pdf.AddPage()
 	r := &renderer{pdf: pdf, source: source, opts: opts, margin: margin}
 	r.translate = pdf.UnicodeTranslatorFromDescriptor("")
+
+	if opts.FooterLeft != "" || opts.FooterCenter != "" || opts.FooterRight != "" {
+		pdf.AliasNbPages("")
+		pdf.SetFooterFunc(r.drawFooter)
+	}
+
+	pdf.AddPage()
 
 	if len(iconFontData) > 0 {
 		pdf.AddUTF8FontFromBytes(iconFontFamily, "", iconFontData)
@@ -46,7 +57,10 @@ func newRenderer(source []byte, opts Options) *renderer {
 		}
 	}
 
-	for _, family := range []string{opts.FontOverall, opts.FontCodeBlock, opts.FontHeadings, opts.FontH1} {
+	for _, family := range []string{
+		opts.FontOverall, opts.FontCodeBlock, opts.FontHeadings, opts.FontH1,
+		opts.FooterLeftStyle.Font, opts.FooterCenterStyle.Font, opts.FooterRightStyle.Font,
+	} {
 		registerCustomFonts(pdf, family)
 	}
 
@@ -120,10 +134,59 @@ func (r *renderer) transformText(text string, st style) string {
 	if st.isIcon {
 		return text
 	}
-	if _, ok := customFonts[r.fontFamilyFor(st)]; ok {
+	return r.transformTextForFamily(text, r.fontFamilyFor(st))
+}
+
+// transformTextForFamily is the family-keyed core of transformText, used
+// directly by drawFooter since footer zones pick their font independently of
+// the block-level style/heading rules in fontFamilyFor.
+func (r *renderer) transformTextForFamily(text, family string) string {
+	if _, ok := customFonts[family]; ok {
 		return text
 	}
 	return r.translate(text)
+}
+
+// drawFooter renders the configured footer zones, resolving {{page}},
+// {{pages}} and the tokens in opts.FooterTokens. {{pages}} is replaced with
+// fpdf's own page count alias, which fpdf substitutes document-wide when the
+// pdf is closed.
+func (r *renderer) drawFooter() {
+	pairs := []string{"{{page}}", strconv.Itoa(r.pdf.PageNo()), "{{pages}}", "{nb}"}
+	for token, val := range r.opts.FooterTokens {
+		pairs = append(pairs, "{{"+token+"}}", val)
+	}
+	replacer := strings.NewReplacer(pairs...)
+	pageW, _ := r.pdf.GetPageSize()
+	zoneWidth := (pageW - 2*r.margin) / 3
+
+	r.pdf.SetY(-15)
+	family := r.applyFooterStyle(r.opts.FooterLeftStyle)
+	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.FooterLeft), family), "", 0, "L", false, 0, "")
+	family = r.applyFooterStyle(r.opts.FooterCenterStyle)
+	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.FooterCenter), family), "", 0, "C", false, 0, "")
+	family = r.applyFooterStyle(r.opts.FooterRightStyle)
+	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.FooterRight), family), "", 1, "R", false, 0, "")
+}
+
+// applyFooterStyle sets the font, size, weight and color for a footer zone
+// and returns the resolved font family (for transformTextForFamily).
+func (r *renderer) applyFooterStyle(st FooterStyle) string {
+	family := firstNonEmpty(st.Font, r.opts.FontOverall, "Arial")
+	size := st.Size
+	if size <= 0 {
+		size = 8
+	}
+	fontStyle := ""
+	if st.Bold {
+		fontStyle += "B"
+	}
+	if st.Italic {
+		fontStyle += "I"
+	}
+	r.pdf.SetFont(family, resolveFontStyle(family, fontStyle), size)
+	r.pdf.SetTextColor(st.Color[0], st.Color[1], st.Color[2])
+	return family
 }
 
 // ensureSpace forces a page break first if height won't fit on the rest of

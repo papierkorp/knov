@@ -28,7 +28,9 @@
 - move file button (can be done in rename at the moment)
 - settings/configs to hide certain folders from different searches
 - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
-- pdf add a custom footer setting e.g. allow me to add: date, site numbers in different formats (only site number, current sitenumber/allsites), custom text (e.g. important) - i thought about a custom syntax to set the footer?
+- add a theme log key (so a themecreater can instantly see why the theme wasnt loaded)
+- make all strings in the settings translateable..
+- pdfexport header same as footer possible?
 
 # testing
 

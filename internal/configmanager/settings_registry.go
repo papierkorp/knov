@@ -6,6 +6,7 @@ import (
 
 	"knov/internal/fonts"
 	"knov/internal/translation"
+	"knov/internal/utils"
 )
 
 //nolint:gochecknoglobals
@@ -408,35 +409,35 @@ var (
 		Multiline: true,
 	})
 	FontBody = register(&StringSetting{
-		key: "fontBody", Default: "Noto Sans",
+		key: "fontBody", Default: "Roboto",
 		Section: SectionAppearance, Group: GroupTypography,
 		Label:       "Font (Body)",
 		Desc:        "base font used for body text across the app",
-		Options:     fontOptions,
+		Options:     fontOptionList(false),
 		FontPreview: true,
 	})
 	FontHeadings = register(&StringSetting{
-		key: "fontHeadings", Default: "Noto Sans",
+		key: "fontHeadings", Default: "Roboto",
 		Section: SectionAppearance, Group: GroupTypography,
 		Label:       "Font (Headings)",
 		Desc:        "font used for headings across the app",
-		Options:     fontOptions,
+		Options:     fontOptionList(false),
 		FontPreview: true,
 	})
 	FontH1 = register(&StringSetting{
-		key: "fontH1", Default: "Noto Sans",
+		key: "fontH1", Default: "Roboto",
 		Section: SectionAppearance, Group: GroupTypography,
 		Label:       "Font (H1 Headings)",
 		Desc:        "font used for level-1 headings across the app, overriding the general heading font",
-		Options:     fontOptions,
+		Options:     fontOptionList(false),
 		FontPreview: true,
 	})
 	FontCode = register(&StringSetting{
-		key: "fontCode", Default: "Noto Sans Mono",
+		key: "fontCode", Default: "Roboto Mono",
 		Section: SectionAppearance, Group: GroupTypography,
 		Label:       "Font (Code)",
 		Desc:        "font used for code blocks and inline code across the app (monospace fonts only, so aligned characters stay aligned)",
-		Options:     monoFontOptions,
+		Options:     fontOptionList(true),
 		FontPreview: true,
 	})
 
@@ -459,6 +460,12 @@ var (
 		Label:   "Page Break Before Headings",
 		Desc:    "start a new page before each top-level heading when exporting to pdf",
 	})
+	PDFUseTaskIcons = register(&BoolSetting{
+		key: "pdfUseTaskIcons", Default: true,
+		Section: SectionPDFExport,
+		Label:   "Use Icons for Task Checkboxes",
+		Desc:    "draw task-list checkboxes as status icons instead of plain text marks ([ ], [x], [-], [O]) when exporting to pdf",
+	})
 	PDFPageFormat = register(&StringSetting{
 		key: "pdfPageFormat", Default: "A4",
 		Section: SectionPDFExport,
@@ -480,58 +487,163 @@ var (
 		Desc:    "page margin in millimeters on every side when exporting to pdf",
 		Min:     intPtr(0), Max: intPtr(50),
 	})
-	PDFUseTaskIcons = register(&BoolSetting{
-		key: "pdfUseTaskIcons", Default: true,
-		Section: SectionPDFExport,
-		Label:   "Use Icons for Task Checkboxes",
-		Desc:    "draw task-list checkboxes as status icons instead of plain text marks ([ ], [x], [-], [O]) when exporting to pdf",
-	})
 	PDFFontOverall = register(&StringSetting{
-		key: "pdfFontOverall", Default: "Noto Sans",
+		key: "pdfFontOverall", Default: "Roboto",
 		Section:     SectionPDFExport,
 		Label:       "Font (Overall)",
 		Desc:        "base font used for body text when exporting to pdf, and the fallback for headings",
-		Options:     fontOptions,
+		Options:     fontOptionList(false),
 		FontPreview: true,
 	})
 	PDFFontCodeBlock = register(&StringSetting{
-		key: "pdfFontCodeBlock", Default: "Noto Sans Mono",
+		key: "pdfFontCodeBlock", Default: "Roboto Mono",
 		Section:     SectionPDFExport,
 		Label:       "Font (Code Blocks)",
 		Desc:        "font used for code blocks and inline code when exporting to pdf (monospace fonts only, so wrapped code lines stay aligned)",
-		Options:     monoFontOptions,
+		Options:     fontOptionList(true),
 		FontPreview: true,
 	})
 	PDFFontHeadings = register(&StringSetting{
-		key: "pdfFontHeadings", Default: "Noto Sans",
+		key: "pdfFontHeadings", Default: "Roboto",
 		Section:     SectionPDFExport,
 		Label:       "Font (Headings)",
 		Desc:        "font used for headings when exporting to pdf",
-		Options:     fontOptions,
+		Options:     fontOptionList(false),
 		FontPreview: true,
 	})
 	PDFFontH1 = register(&StringSetting{
-		key: "pdfFontH1", Default: "Noto Sans",
+		key: "pdfFontH1", Default: "Roboto",
 		Section:     SectionPDFExport,
 		Label:       "Font (H1 Headings)",
 		Desc:        "font used for level-1 headings when exporting to pdf, overriding the general heading font",
-		Options:     fontOptions,
+		Options:     fontOptionList(false),
 		FontPreview: true,
+	})
+	PDFFooterLeft = register(&StringSetting{
+		key: "pdfFooterLeft", Default: "",
+		Section: SectionPDFExport, Group: GroupPDFFooterLeft,
+		Label: "Text",
+	})
+	PDFFooterLeftFont = register(&StringSetting{
+		key: "pdfFooterLeftFont", Default: "Roboto",
+		Section: SectionPDFExport, Group: GroupPDFFooterLeft,
+		Label:       "Font",
+		Options:     fontOptionList(false),
+		FontPreview: true,
+	})
+	PDFFooterLeftColor = register(&StringSetting{
+		key: "pdfFooterLeftColor", Default: "#000000",
+		Section: SectionPDFExport, Group: GroupPDFFooterLeft,
+		Label:    "Color",
+		IsColor:  true,
+		Validate: utils.ValidateHexColor,
+	})
+	PDFFooterLeftSize = register(&IntSetting{
+		key: "pdfFooterLeftSize", Default: 8,
+		Section: SectionPDFExport, Group: GroupPDFFooterLeft,
+		Label: "Size",
+		Desc:  "font size in points",
+		Min:   intPtr(6), Max: intPtr(24),
+	})
+	PDFFooterLeftBold = register(&BoolSetting{
+		key: "pdfFooterLeftBold", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFFooterLeft,
+		Label: "Bold",
+	})
+	PDFFooterLeftItalic = register(&BoolSetting{
+		key: "pdfFooterLeftItalic", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFFooterLeft,
+		Label: "Italic",
+	})
+	PDFFooterCenter = register(&StringSetting{
+		key: "pdfFooterCenter", Default: "",
+		Section: SectionPDFExport, Group: GroupPDFFooterCenter,
+		Label: "Text",
+	})
+	PDFFooterCenterFont = register(&StringSetting{
+		key: "pdfFooterCenterFont", Default: "Roboto",
+		Section: SectionPDFExport, Group: GroupPDFFooterCenter,
+		Label:       "Font",
+		Options:     fontOptionList(false),
+		FontPreview: true,
+	})
+	PDFFooterCenterColor = register(&StringSetting{
+		key: "pdfFooterCenterColor", Default: "#000000",
+		Section: SectionPDFExport, Group: GroupPDFFooterCenter,
+		Label:    "Color",
+		IsColor:  true,
+		Validate: utils.ValidateHexColor,
+	})
+	PDFFooterCenterSize = register(&IntSetting{
+		key: "pdfFooterCenterSize", Default: 8,
+		Section: SectionPDFExport, Group: GroupPDFFooterCenter,
+		Label: "Size",
+		Desc:  "font size in points",
+		Min:   intPtr(6), Max: intPtr(24),
+	})
+	PDFFooterCenterBold = register(&BoolSetting{
+		key: "pdfFooterCenterBold", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFFooterCenter,
+		Label: "Bold",
+	})
+	PDFFooterCenterItalic = register(&BoolSetting{
+		key: "pdfFooterCenterItalic", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFFooterCenter,
+		Label: "Italic",
+	})
+	PDFFooterRight = register(&StringSetting{
+		key: "pdfFooterRight", Default: "",
+		Section: SectionPDFExport, Group: GroupPDFFooterRight,
+		Label: "Text",
+	})
+	PDFFooterRightFont = register(&StringSetting{
+		key: "pdfFooterRightFont", Default: "Roboto",
+		Section: SectionPDFExport, Group: GroupPDFFooterRight,
+		Label:       "Font",
+		Options:     fontOptionList(false),
+		FontPreview: true,
+	})
+	PDFFooterRightColor = register(&StringSetting{
+		key: "pdfFooterRightColor", Default: "#000000",
+		Section: SectionPDFExport, Group: GroupPDFFooterRight,
+		Label:    "Color",
+		IsColor:  true,
+		Validate: utils.ValidateHexColor,
+	})
+	PDFFooterRightSize = register(&IntSetting{
+		key: "pdfFooterRightSize", Default: 8,
+		Section: SectionPDFExport, Group: GroupPDFFooterRight,
+		Label: "Size",
+		Desc:  "font size in points",
+		Min:   intPtr(6), Max: intPtr(24),
+	})
+	PDFFooterRightBold = register(&BoolSetting{
+		key: "pdfFooterRightBold", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFFooterRight,
+		Label: "Bold",
+	})
+	PDFFooterRightItalic = register(&BoolSetting{
+		key: "pdfFooterRightItalic", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFFooterRight,
+		Label: "Italic",
+	})
+	PDFFooterTokensNote = register(&NoteSetting{
+		key:     "pdfFooterTokensNote",
+		Section: SectionPDFExport,
+		Group:   GroupPDFFooter,
+		Text:    "footer tokens (all columns): {{date}}, {{page}}, {{pages}}, {{filename}}, {{filepath}}, {{folder}}, {{created}}, {{edited}}, {{tags}}, {{collection}}",
 	})
 )
 
-// font options shared by the pdf export and general html font settings,
-// derived from the fonts manifest so the selectable values, the registered
-// ttf files, and the settings preview can never drift apart. The code block
-// settings only offer monospace families — their wrapping assumes a fixed
-// character width.
-//
-//nolint:gochecknoglobals
-var (
-	fontOptions     = fontOptionList(false)
-	monoFontOptions = fontOptionList(true)
-)
-
+// fontOptionList is called inline at each font setting's declaration (rather
+// than shared via a package-level var) so that referencing it doesn't turn
+// the setting into a dependent in Go's package-init dependency graph — that
+// would defer its initialization (and thus its register() call, and thus
+// its position in the settings UI) until after every setting that doesn't
+// reference a shared var, scrambling the display order. Derived from the
+// fonts manifest so the selectable values, the registered ttf files, and the
+// settings preview can never drift apart. The code block settings only offer
+// monospace families — their wrapping assumes a fixed character width.
 func fontOptionList(monoOnly bool) []SettingOption {
 	var opts []SettingOption
 	for _, f := range fonts.Families {

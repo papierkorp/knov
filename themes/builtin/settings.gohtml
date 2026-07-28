@@ -5,15 +5,15 @@
     <div class="settings-sections">
         <div class="settings-col">
             <section class="settings-section" id="section-general" hx-get="/api/settings/general" hx-trigger="load" hx-swap="innerHTML"></section>
-            <section class="settings-section settings-section-wide" id="section-pdf-export" hx-get="/api/settings/pdf-export" hx-trigger="load" hx-swap="innerHTML"></section>
             <section class="settings-section" id="section-table" hx-get="/api/settings/table" hx-trigger="load" hx-swap="innerHTML"></section>
             <section class="settings-section settings-section-wide" id="section-file-types" hx-get="/api/settings/file-types" hx-trigger="load" hx-swap="innerHTML"></section>
+            <section class="settings-section" id="section-media" hx-get="/api/settings/media" hx-trigger="load" hx-swap="innerHTML"></section>
         </div>
         <div class="settings-col">
             <section class="settings-section" id="section-appearance" hx-get="/api/settings/appearance" hx-trigger="load" hx-swap="innerHTML"></section>
             {{ template "theme-section" . }}
-            <section class="settings-section" id="section-media" hx-get="/api/settings/media" hx-trigger="load" hx-swap="innerHTML"></section>
         </div>
+        <section class="settings-section settings-section-wide" id="section-pdf-export" hx-get="/api/settings/pdf-export" hx-trigger="load" hx-swap="innerHTML"></section>
         <section class="settings-section settings-section-wide" id="section-editor" hx-get="/api/settings/editor" hx-trigger="load" hx-swap="innerHTML"></section>
     </div>
 </div>

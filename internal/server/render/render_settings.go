@@ -142,9 +142,14 @@ func fontPreviewFaces() string {
 
 func renderSettingItem(s configmanager.RenderableSetting, t func(string, ...any) string) string {
 	var html strings.Builder
-	html.WriteString(`<div class="setting-item">`)
-
 	meta := s.GetMeta()
+
+	if s.Type() == "note" {
+		fmt.Fprintf(&html, `<div class="setting-item setting-item-note"><p class="section-description">%s</p></div>`, t(meta.Desc))
+		return html.String()
+	}
+
+	html.WriteString(`<div class="setting-item">`)
 	postURL := "/api/settings/" + s.Key()
 
 	trigger := meta.Trigger
@@ -246,6 +251,19 @@ func renderSettingItem(s configmanager.RenderableSetting, t func(string, ...any)
 		if meta.Target != "" {
 			html.WriteString(fmt.Sprintf(`<div id="%s"></div>`, strings.TrimPrefix(meta.Target, "#")))
 		}
+		if meta.Desc != "" {
+			html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, t(meta.Desc)))
+		}
+		html.WriteString(`</form>`)
+
+	case "color":
+		currentVal := ""
+		if v, ok := s.GetValue().(string); ok {
+			currentVal = v
+		}
+		html.WriteString(fmt.Sprintf(`<form hx-post="%s" hx-trigger="%s" hx-swap="%s"%s>`, postURL, trigger, swap, targetAttr))
+		html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, s.Key(), t(meta.Label)))
+		html.WriteString(fmt.Sprintf(`<input type="color" name="%s" id="%s" value="%s" class="form-input" />`, s.Key(), s.Key(), currentVal))
 		if meta.Desc != "" {
 			html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, t(meta.Desc)))
 		}

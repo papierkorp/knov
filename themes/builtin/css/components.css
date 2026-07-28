@@ -1989,6 +1989,70 @@ blockquote p blockquote p,
   margin-top: 0;
 }
 
+/* pdf-export section (wide): ungrouped settings wrap into a multi-column
+   row, and the left/center/right footer groups sit side by side as their
+   own columns instead of stacking full-width */
+#section-pdf-export {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 24px;
+}
+
+/* forced line breaks (checkboxes | other ungrouped settings | groups),
+   done via order + an invisible full-width spacer per break rather than
+   relying on flex-wrap running out of width on its own — that only breaks
+   reliably once a row is actually full, which isn't guaranteed with few
+   enough items. Ordering by *kind* (via :has()) instead of DOM position
+   also means this keeps working no matter how settings get rearranged. */
+#section-pdf-export::after {
+  content: "";
+  flex-basis: 100%;
+  order: 2;
+}
+
+#section-pdf-export::before {
+  content: "";
+  flex-basis: 100%;
+  order: 4;
+}
+
+#section-pdf-export > h2,
+#section-pdf-export > .section-description {
+  flex: 1 1 100%;
+  order: 0;
+}
+
+#section-pdf-export > .setting-item {
+  flex: 1 1 220px;
+  order: 1;
+}
+
+#section-pdf-export > .setting-item:not(:has(.checkbox-label)) {
+  order: 3;
+}
+
+#section-pdf-export > .setting-item-note {
+  flex: 1 1 100%;
+  order: 3;
+  margin-top: 16px;
+}
+
+#section-pdf-export > .setting-item-note .section-description {
+  margin-top: 0;
+}
+
+#section-pdf-export .setting-group {
+  flex: 1 1 240px;
+  order: 5;
+}
+
+/* a group holding only a note (no real inputs) reads better as its own
+   full-width row below the column groups than as a cramped extra column */
+#section-pdf-export .setting-group:has(.setting-item-note) {
+  flex-basis: 100%;
+  order: 6;
+}
+
 /* =============================================
    broad form element styles (scoped to main to
    avoid bleeding into editors / third-party widgets)

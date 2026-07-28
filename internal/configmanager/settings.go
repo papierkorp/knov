@@ -221,6 +221,24 @@ func GetPDFFontOverall() string           { return PDFFontOverall.Get() }
 func GetPDFFontCodeBlock() string         { return PDFFontCodeBlock.Get() }
 func GetPDFFontHeadings() string          { return PDFFontHeadings.Get() }
 func GetPDFFontH1() string                { return PDFFontH1.Get() }
+func GetPDFFooterLeft() string            { return PDFFooterLeft.Get() }
+func GetPDFFooterLeftFont() string        { return PDFFooterLeftFont.Get() }
+func GetPDFFooterLeftColor() string       { return PDFFooterLeftColor.Get() }
+func GetPDFFooterLeftSize() int           { return PDFFooterLeftSize.Get() }
+func GetPDFFooterLeftBold() bool          { return PDFFooterLeftBold.Get() }
+func GetPDFFooterLeftItalic() bool        { return PDFFooterLeftItalic.Get() }
+func GetPDFFooterCenter() string          { return PDFFooterCenter.Get() }
+func GetPDFFooterCenterFont() string      { return PDFFooterCenterFont.Get() }
+func GetPDFFooterCenterColor() string     { return PDFFooterCenterColor.Get() }
+func GetPDFFooterCenterSize() int         { return PDFFooterCenterSize.Get() }
+func GetPDFFooterCenterBold() bool        { return PDFFooterCenterBold.Get() }
+func GetPDFFooterCenterItalic() bool      { return PDFFooterCenterItalic.Get() }
+func GetPDFFooterRight() string           { return PDFFooterRight.Get() }
+func GetPDFFooterRightFont() string       { return PDFFooterRightFont.Get() }
+func GetPDFFooterRightColor() string      { return PDFFooterRightColor.Get() }
+func GetPDFFooterRightSize() int          { return PDFFooterRightSize.Get() }
+func GetPDFFooterRightBold() bool         { return PDFFooterRightBold.Get() }
+func GetPDFFooterRightItalic() bool       { return PDFFooterRightItalic.Get() }
 
 // ── mime / extension helpers ──────────────────────────────────────────────────
 

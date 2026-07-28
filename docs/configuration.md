@@ -134,6 +134,17 @@ Each theme supports a way to take a look at the last 100 notifications.
 
 ---
 
+## PDF Export
+
+Configured under **Settings => PDF Export**.
+
+- Page format, orientation, margin, fonts and task-icon rendering are all configurable
+- A footer can be set per zone (left, center, right), each shown on every exported page
+- Footer text supports the tokens `{{date}}`, `{{page}}`, `{{pages}}`, `{{filename}}`, `{{filepath}}`, `{{folder}}`, `{{created}}`, `{{edited}}`, `{{tags}}` and `{{collection}}`; any other text is shown literally
+- `{{created}}`/`{{edited}}`/`{{tags}}`/`{{collection}}` come from the file's metadata
+- Leave a footer zone empty to omit it
+- Each footer zone has its own font, size, color, bold and italic setting
+
 ## Logging
 
 - `KNOV_LOG_LEVEL` - controls verbosity (`debug`, `info`, `warning`, `error`)

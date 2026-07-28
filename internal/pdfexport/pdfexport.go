@@ -40,6 +40,30 @@ type Options struct {
 	// FontHeadings is the fpdf font family for headings (levels 2-6, and 1 if
 	// FontH1 is empty). Empty falls back to FontOverall.
 	FontHeadings string
+
+	// FooterLeft, FooterCenter and FooterRight are the templates drawn in the
+	// respective footer zone of every page. Each may contain {{page}},
+	// {{pages}} and any key present in FooterTokens (e.g. {{date}}).
+	// Empty zones are left blank.
+	FooterLeft, FooterCenter, FooterRight string
+	// FooterTokens maps a token name (without braces) to its resolved value,
+	// e.g. "date" -> "{{date}}" substitutions. {{page}} and {{pages}} are
+	// handled separately since they vary per page.
+	FooterTokens map[string]string
+	// FooterLeftStyle, FooterCenterStyle and FooterRightStyle control the
+	// font, size, weight and color used to draw the respective footer zone.
+	FooterLeftStyle, FooterCenterStyle, FooterRightStyle FooterStyle
+}
+
+// FooterStyle controls how a single footer zone is drawn.
+type FooterStyle struct {
+	// Font is the fpdf font family. Empty falls back to Options.FontOverall, then "Arial".
+	Font string
+	// Color is the RGB text color. Zero value is black.
+	Color [3]int
+	// Size is the font size in points. Zero or negative defaults to 8.
+	Size         float64
+	Bold, Italic bool
 }
 
 // MarkdownToPDF renders markdown source to a PDF document.
