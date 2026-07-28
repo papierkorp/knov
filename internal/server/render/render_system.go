@@ -474,6 +474,7 @@ func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
 		row("Build time", configmanager.FormatDateTime(version.BuildTimeParsed)) +
 		row("Go version", runtime.Version()) +
 		row("OS / Arch", runtime.GOOS+"/"+runtime.GOARCH) +
+		row("Last commit", version.LastCommitMessage) +
 		`</tbody></table>` +
 		`<a class="version-changelog-link" href="/system/changelog">Release notes / Changelog &rarr;</a>`
 

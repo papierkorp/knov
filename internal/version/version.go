@@ -8,9 +8,10 @@ import (
 )
 
 var (
-	Version         = ""
-	BuildTime       = ""
-	BuildTimeParsed time.Time
+	Version           = ""
+	BuildTime         = ""
+	BuildTimeParsed   time.Time
+	LastCommitMessage = ""
 )
 
 func init() {
@@ -22,6 +23,11 @@ func init() {
 			Version = "dev"
 		} else {
 			Version = year + "-" + strings.TrimSpace(string(count)) + "-" + strings.TrimSpace(string(hash)) + "-dev"
+		}
+	}
+	if LastCommitMessage == "" {
+		if msg, err := exec.Command("git", "log", "-1", "--pretty=%s").Output(); err == nil {
+			LastCommitMessage = strings.TrimSpace(string(msg))
 		}
 	}
 	if BuildTime == "" {
