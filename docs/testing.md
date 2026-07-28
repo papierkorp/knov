@@ -14,7 +14,7 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 - Same file layout in every subpackage: `<group>test.go` holds only the `Suite` type (`Name()`, `Run()`); `sampledata.go` holds the setup - physical file writes, metadata, git commit helpers, wipe/reseed; `testcases.go` (or `testcases_<category>.go` when there's enough of them to split) holds the actual cases
 
 **Wiring (same shape for every suite, including `RunAllTests()` itself)**
-- A `job.Job` wrapper in `internal/job` (mutex-guarded via `execute()`, recorded in job history, visible at `/system/jobs`)
+- Every suite self-registers via `job.RegisterSuiteRunner(name, run)` in its own `init()`, alongside its `test.Register(Suite{})` call - `internal/job/externalsuite.go`'s `externalSuiteJob` looks the runner up by name at execute time (mutex-guarded, recorded in job history, visible at `/system/jobs`), so `internal/job` never imports a suite package directly. That's what lets a suite that itself needs to call into `internal/job` (e.g. jobstest, to exercise the scheduler/history directly) exist without an import cycle
 - An HTTP handler in `internal/server`, swagger-annotated, at `POST /api/testdata/<group>test`
 - A button on the admin page
 
@@ -61,3 +61,51 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 - `MetaDataSave` only overwrites `Tags` when the new value is non-empty, so a stale kanban status tag from a previous run has to be stripped explicitly via `MetaDataSaveRaw` at seed time
 - Column order (`kanban-order/<folder>`) is config-store backed like dashboards, not touched by wiping `docs/test/`, so it's reset at suite start and via `defer`
 - Native HTML5 drag-and-drop itself is the one piece genuinely untestable outside a browser - the suite covers the API/state it drives (`SaveOrder`/`BuildBoard`) instead
+
+## Browse suite (`internal/test/browsetest`)
+- Calls `internal/files`' tree/folder/browse/autocomplete functions directly, replicating each handler's inline logic (file-tree nesting, folder-contents listing, browse-by-tag/folder, autocomplete, folder suggestions, header/TOC extraction) since none of it is exported as a single callable
+- Browse-by-folder needs a folder *segment* as the query value, not the joined path - `Folders` is stored one path segment per element
+- `GetAllFolderPathsFromCache` only refreshes in a background goroutine after `MetaDataSave`, so the suite calls `files.RebuildAllCaches()` synchronously to avoid racing it
+
+## Metadata suite (`internal/test/metadatatest`)
+- Calls `internal/files`' metadata get/set/delete/export functions directly, covering every settable field and the partial-update semantics (empty `Tags`/`Editor` means "unspecified", not "clear it")
+- References add/remove has no exported wrapper, so the suite replicates the handler's inline append/filter
+- `MetaDataSave` only overwrites `References` when non-nil, so `resetAndSeed` explicitly deletes metadata first rather than relying on a physical-file wipe
+
+## Connections suite (`internal/test/connectionstest`)
+- Seeds parents/kids/ancestors and used-links/links-to-here via real `MetaDataSave`/`UpdateLinksForSingleFile` calls so the actual cascade computes them, not faked
+- Grandchildren replicates the handler's inline kid-of-kids loop, since there's no exported equivalent
+- Related-files has no per-file computation path (only a full-vault rebuild computes it), so it's seeded directly via `MetaDataSaveRaw` instead
+
+## Jobs suite (`internal/test/jobstest`)
+- Calls `job.RunFullRebuild`/`RunSearchReindex`/`RunCacheInvalidate`/`RunMediaCleanup` and the manual "run all jobs" trigger directly, asserting on the resulting filesystem/DB state rather than just "no error" - e.g. seeding a raw save that bypasses the normal link cascade, so `Ancestor`/`Kids`/`UsedLinks` only exist once the rebuild job actually recomputes them
+- The first suite that itself needs to call into `internal/job` (to exercise the scheduler/history) while also needing its own admin-button job - see the `RegisterSuiteRunner` wiring above, which this suite drove the design of
+
+## Media suite (`internal/test/mediatest`)
+- Calls `files.UploadMedia` with a real `multipart.File`/`*multipart.FileHeader` (round-tripped through an actual multipart form body), and the other media functions (list/partition, delete, storage stats) directly
+- Rename and orphan-detection replicate their handlers' inline sequence, since neither has an exported wrapper
+- Leaves the orphaned-media *cleanup* job itself to jobstest, to avoid duplicating that one case across two suites
+
+## Export/import suite (`internal/test/exporttest`)
+- Both zip-export handlers are inline `filepath.Walk`+`archive/zip` logic with no exported wrapper, so the suite replicates the walk directly, round-tripping through a real `zip.Writer`/`zip.Reader`
+- Settings export/import round-trips a real setting (`HideTodo`) through `configmanager.ExportSettingsJSON`/`ImportSettingsJSON`, restored via `defer` since it's a real global setting, not sandboxed test data
+
+## Notification suite (`internal/test/notificationstest`)
+- Calls `internal/notificationStorage`'s exported API directly (`Add`/`ConsumePending`/`GetRecent`/`DeleteByID`/`Clear`) - everything here is already exported, no handler logic to replicate
+- Notifications are a real global sqlite log, not tied to `docs/test/`, so cases self-clean themselves rather than relying on the folder wipe
+- `Clear()` is the real "Clear all" admin action and has no undo - the case accepts that outcome, same as a user clicking the real button would
+
+## Settings suite (`internal/test/settingstest`)
+- Calls `configmanager`'s settings registry (`BulkSetFromForm`, `GetSetting(key).SetFromString`) and `thememanager`'s theme list/switch/settings directly - almost everything here is exported, the one exception being favicon upload/delete's inline file write
+- Every case mutates a real persisted global setting (not sandboxed test data) and restores the original value via `defer`, same pattern as exporttest's settings round-trip
+- Config repo url isn't re-tested here - it's the same `UpdateEnvFile`+`git.EnsureRemote` pair githistorytest's remote case already exercises; data path change stays out of scope entirely (needs a process restart to take effect)
+
+## Logs suite (`internal/test/logstest`)
+- Calls `logging.GetRecentEntries` directly for the ring buffer, and replicates `handleAPIGetLogsFile`'s inline offset/limit slicing arithmetic for pagination/chunking, since there's no exported wrapper for it
+- Reuses `logging.KeyInAppTests` - already a real, shared log key the job scheduler logs every suite run's summary to - rather than inventing a synthetic key
+- Assertions check that probe lines appear in the expected region (substring containment) rather than exact byte/line-count equality, tolerating real interleaved log activity
+
+## Parser suite (`internal/test/parsertest`)
+- Calls `parser.ProcessMarkdownLinks` directly - pure string-in/string-out, no file IO and no global state, the only suite with no setup/teardown at all
+- Covers empty-link-text fallback labels, percent-encoded path/anchor segments decoded before the fallback label is built (the href's anchor fragment itself is left exactly as originally written), unicode header slug capitalization, and external links/image embeds left untouched
+- `humanizeSlug` stays unexported and is fully exercised through `ProcessMarkdownLinks`, so no replication was needed here, unlike every other suite
