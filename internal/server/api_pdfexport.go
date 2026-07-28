@@ -95,6 +95,7 @@ func renderPDFSafely(filePath string, content []byte) (pdf []byte, err error) {
 		Orientation:             configmanager.GetPDFOrientation(),
 		MarginMM:                configmanager.GetPDFMarginMM(),
 		UseTaskIcons:            configmanager.GetPDFUseTaskIcons(),
+		SyntaxHighlighting:      configmanager.GetPDFSyntaxHighlighting(),
 		FontOverall:             configmanager.GetPDFFontOverall(),
 		FontCodeBlock:           configmanager.GetPDFFontCodeBlock(),
 		FontHeadings:            configmanager.GetPDFFontHeadings(),

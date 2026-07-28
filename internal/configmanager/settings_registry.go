@@ -466,6 +466,12 @@ var (
 		Label:   "Use Icons for Task Checkboxes",
 		Desc:    "draw task-list checkboxes as status icons instead of plain text marks ([ ], [x], [-], [O]) when exporting to pdf",
 	})
+	PDFSyntaxHighlighting = register(&BoolSetting{
+		key: "pdfSyntaxHighlighting", Default: true,
+		Section: SectionPDFExport,
+		Label:   "Syntax Highlighting",
+		Desc:    "color-highlight code blocks by language when exporting to pdf",
+	})
 	PDFPageFormat = register(&StringSetting{
 		key: "pdfPageFormat", Default: "A4",
 		Section: SectionPDFExport,

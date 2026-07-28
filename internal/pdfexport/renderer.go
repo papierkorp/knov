@@ -110,10 +110,10 @@ func (r *renderer) applyStyle(st style) {
 	switch {
 	case st.link:
 		r.pdf.SetTextColor(30, 100, 200)
-	case st.code:
-		r.pdf.SetTextColor(120, 40, 40)
 	case st.textColor != [3]int{}:
 		r.pdf.SetTextColor(st.textColor[0], st.textColor[1], st.textColor[2])
+	case st.code:
+		r.pdf.SetTextColor(120, 40, 40)
 	default:
 		r.pdf.SetTextColor(0, 0, 0)
 	}

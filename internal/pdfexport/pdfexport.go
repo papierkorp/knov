@@ -26,6 +26,9 @@ type Options struct {
 	// text marks ("[ ]", "[x]", "[-]", "[O]"). Has no effect if no icon font
 	// was registered via SetIconFont.
 	UseTaskIcons bool
+	// SyntaxHighlighting color-highlights code blocks by language. When
+	// false, code blocks are drawn as plain monospace text.
+	SyntaxHighlighting bool
 
 	// FontOverall is the base fpdf font family for body text. Empty defaults
 	// to "Arial". Also the fallback for FontHeadings/FontH1 when they're empty.

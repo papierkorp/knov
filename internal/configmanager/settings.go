@@ -217,6 +217,7 @@ func GetPDFPageFormat() string            { return PDFPageFormat.Get() }
 func GetPDFOrientation() string           { return PDFOrientation.Get() }
 func GetPDFMarginMM() float64             { return float64(PDFMarginMM.Get()) }
 func GetPDFUseTaskIcons() bool            { return PDFUseTaskIcons.Get() }
+func GetPDFSyntaxHighlighting() bool      { return PDFSyntaxHighlighting.Get() }
 func GetPDFFontOverall() string           { return PDFFontOverall.Get() }
 func GetPDFFontCodeBlock() string         { return PDFFontCodeBlock.Get() }
 func GetPDFFontHeadings() string          { return PDFFontHeadings.Get() }

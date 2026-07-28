@@ -32,6 +32,7 @@
 - make all strings in the settings translateable..
 - pdfexport header same as footer possible?
 - close the info slideout on /settings (sometimes its open if i open the settings in a new tab)
+- last commit in /system/version does not work for a binary only for dev
 
 # testing
 

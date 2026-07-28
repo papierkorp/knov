@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"knov/internal/parser"
+
 	"github.com/yuin/goldmark/ast"
 	extast "github.com/yuin/goldmark/extension/ast"
 )
@@ -38,6 +40,10 @@ func (r *renderer) renderBlock(n ast.Node) {
 	case *ast.TextBlock:
 		r.writeParagraph(r.collectTokens(n, normalStyle()), 1)
 	case *ast.Blockquote:
+		// margin top
+		if r.hasContent {
+			r.pdf.Ln(3)
+		}
 		x := r.margin + r.indent
 		y0 := r.pdf.GetY()
 		r.indent += 8
@@ -50,9 +56,13 @@ func (r *renderer) renderBlock(n ast.Node) {
 	case *ast.List:
 		r.renderList(v)
 	case *ast.CodeBlock:
-		r.writeCodeBlock(string(v.Text(r.source)))
+		r.writeCodeBlock(string(v.Text(r.source)), "")
 	case *ast.FencedCodeBlock:
-		r.writeCodeBlock(string(v.Text(r.source)))
+		lang := ""
+		if info := v.Info; info != nil {
+			lang = strings.TrimSpace(string(info.Segment.Value(r.source)))
+		}
+		r.writeCodeBlock(string(v.Text(r.source)), lang)
 	case *ast.ThematicBreak:
 		r.horizontalRule()
 	case *extast.Table:
@@ -83,7 +93,16 @@ func (r *renderer) horizontalRule() {
 	r.pdf.Ln(6)
 }
 
-func (r *renderer) writeCodeBlock(text string) {
+// codeRun is a single colored, monospace fragment of a wrapped code line —
+// the drawing-time counterpart of parser.HighlightToken once split across
+// line breaks and the hard character wrap.
+type codeRun struct {
+	text         string
+	color        [3]int
+	bold, italic bool
+}
+
+func (r *renderer) writeCodeBlock(text, language string) {
 	text = strings.TrimRight(text, "\n")
 	if text == "" {
 		return
@@ -101,15 +120,13 @@ func (r *renderer) writeCodeBlock(text string) {
 		maxChars = 1
 	}
 
-	var lines []string
-	for _, line := range strings.Split(text, "\n") {
-		runes := []rune(line)
-		for len(runes) > maxChars {
-			lines = append(lines, string(runes[:maxChars]))
-			runes = runes[maxChars:]
-		}
-		lines = append(lines, string(runes))
+	toks := []parser.HighlightToken{{Text: text}}
+	bg := [3]int{240, 240, 240}
+	if r.opts.SyntaxHighlighting {
+		toks = parser.HighlightTokens(text, language)
+		bg = parser.HighlightBackground()
 	}
+	lines := wrapHighlightedCode(toks, maxChars)
 
 	// Draw in page-sized chunks: a code block taller than one page can't get a
 	// single Rect for its background, and the cursor position afterwards must
@@ -135,19 +152,70 @@ func (r *renderer) writeCodeBlock(text string) {
 
 		chunkHeight := float64(len(chunk))*lh + 2*cellPadMM
 		y0 := r.pdf.GetY()
-		r.pdf.SetFillColor(240, 240, 240)
+		r.pdf.SetFillColor(bg[0], bg[1], bg[2])
 		r.pdf.Rect(leftX, y0, width, chunkHeight, "F")
 
-		r.pdf.SetY(y0 + cellPadMM)
+		y := y0 + cellPadMM
 		for _, line := range chunk {
-			r.applyStyle(st)
-			r.pdf.SetX(leftX + cellPadMM)
-			r.pdf.CellFormat(innerWidth, lh, r.transformText(line, st), "", 2, "L", false, 0, "")
+			x := leftX + cellPadMM
+			for _, run := range line {
+				rst := st
+				rst.bold, rst.italic, rst.textColor = run.bold, run.italic, run.color
+				r.applyStyle(rst)
+				w := r.pdf.GetStringWidth(r.transformText(run.text, rst))
+				r.pdf.SetXY(x, y)
+				r.pdf.CellFormat(w, lh, r.transformText(run.text, rst), "", 0, "L", false, 0, "")
+				x += w
+			}
+			y += lh
 		}
 		r.pdf.SetXY(leftX, y0+chunkHeight)
 		i = end
 	}
 	r.pdf.Ln(3)
+}
+
+// wrapHighlightedCode splits highlighted tokens into physical lines (at "\n"
+// boundaries in the token text, then again at maxChars), preserving each
+// fragment's color/weight as a codeRun.
+func wrapHighlightedCode(toks []parser.HighlightToken, maxChars int) [][]codeRun {
+	var lines [][]codeRun
+	var cur []codeRun
+	count := 0
+
+	emit := func(text string, tok parser.HighlightToken) {
+		for len(text) > 0 {
+			if count >= maxChars {
+				lines = append(lines, cur)
+				cur = nil
+				count = 0
+			}
+			runes := []rune(text)
+			n := maxChars - count
+			if n > len(runes) {
+				n = len(runes)
+			}
+			cur = append(cur, codeRun{text: string(runes[:n]), color: tok.Color, bold: tok.Bold, italic: tok.Italic})
+			count += n
+			text = string(runes[n:])
+		}
+	}
+
+	for _, tok := range toks {
+		parts := strings.Split(tok.Text, "\n")
+		for i, part := range parts {
+			if part != "" {
+				emit(part, tok)
+			}
+			if i < len(parts)-1 {
+				lines = append(lines, cur)
+				cur = nil
+				count = 0
+			}
+		}
+	}
+	lines = append(lines, cur)
+	return lines
 }
 
 func (r *renderer) renderList(list *ast.List) {
