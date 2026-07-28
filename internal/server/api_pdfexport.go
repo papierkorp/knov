@@ -105,6 +105,7 @@ func renderPDFSafely(filePath string, content []byte) (pdf []byte, err error) {
 		FooterLeftStyle:         footerStyle(configmanager.GetPDFFooterLeftFont(), configmanager.GetPDFFooterLeftColor(), configmanager.GetPDFFooterLeftSize(), configmanager.GetPDFFooterLeftBold(), configmanager.GetPDFFooterLeftItalic()),
 		FooterCenterStyle:       footerStyle(configmanager.GetPDFFooterCenterFont(), configmanager.GetPDFFooterCenterColor(), configmanager.GetPDFFooterCenterSize(), configmanager.GetPDFFooterCenterBold(), configmanager.GetPDFFooterCenterItalic()),
 		FooterRightStyle:        footerStyle(configmanager.GetPDFFooterRightFont(), configmanager.GetPDFFooterRightColor(), configmanager.GetPDFFooterRightSize(), configmanager.GetPDFFooterRightBold(), configmanager.GetPDFFooterRightItalic()),
+		FooterRule:              configmanager.GetPDFFooterRule(),
 	}
 	if opts.FooterLeft != "" || opts.FooterCenter != "" || opts.FooterRight != "" {
 		opts.FooterTokens = footerTokens(filePath)

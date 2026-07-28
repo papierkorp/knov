@@ -53,6 +53,8 @@ type Options struct {
 	// FooterLeftStyle, FooterCenterStyle and FooterRightStyle control the
 	// font, size, weight and color used to draw the respective footer zone.
 	FooterLeftStyle, FooterCenterStyle, FooterRightStyle FooterStyle
+	// FooterRule draws a horizontal rule above the footer when true.
+	FooterRule bool
 }
 
 // FooterStyle controls how a single footer zone is drawn.

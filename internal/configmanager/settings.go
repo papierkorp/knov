@@ -239,6 +239,7 @@ func GetPDFFooterRightColor() string      { return PDFFooterRightColor.Get() }
 func GetPDFFooterRightSize() int          { return PDFFooterRightSize.Get() }
 func GetPDFFooterRightBold() bool         { return PDFFooterRightBold.Get() }
 func GetPDFFooterRightItalic() bool       { return PDFFooterRightItalic.Get() }
+func GetPDFFooterRule() bool              { return PDFFooterRule.Get() }
 
 // ── mime / extension helpers ──────────────────────────────────────────────────
 

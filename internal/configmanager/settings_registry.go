@@ -627,6 +627,11 @@ var (
 		Section: SectionPDFExport, Group: GroupPDFFooterRight,
 		Label: "Italic",
 	})
+	PDFFooterRule = register(&BoolSetting{
+		key: "pdfFooterRule", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFFooter,
+		Label: "Show Rule Above Footer",
+	})
 	PDFFooterTokensNote = register(&NoteSetting{
 		key:     "pdfFooterTokensNote",
 		Section: SectionPDFExport,

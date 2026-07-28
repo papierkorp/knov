@@ -157,8 +157,14 @@ func (r *renderer) drawFooter() {
 		pairs = append(pairs, "{{"+token+"}}", val)
 	}
 	replacer := strings.NewReplacer(pairs...)
-	pageW, _ := r.pdf.GetPageSize()
+	pageW, pageH := r.pdf.GetPageSize()
 	zoneWidth := (pageW - 2*r.margin) / 3
+
+	if r.opts.FooterRule {
+		y := pageH - 15
+		r.pdf.SetDrawColor(150, 150, 150)
+		r.pdf.Line(r.margin, y, pageW-r.margin, y)
+	}
 
 	r.pdf.SetY(-15)
 	family := r.applyFooterStyle(r.opts.FooterLeftStyle)

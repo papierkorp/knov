@@ -38,9 +38,15 @@ func (r *renderer) renderBlock(n ast.Node) {
 	case *ast.TextBlock:
 		r.writeParagraph(r.collectTokens(n, normalStyle()), 1)
 	case *ast.Blockquote:
+		x := r.margin + r.indent
+		y0 := r.pdf.GetY()
 		r.indent += 8
 		r.renderChildren(n)
 		r.indent -= 8
+		if y1 := r.pdf.GetY(); y1 > y0 {
+			r.pdf.SetFillColor(150, 150, 150)
+			r.pdf.Rect(x, y0, 1.5, y1-y0, "F")
+		}
 	case *ast.List:
 		r.renderList(v)
 	case *ast.CodeBlock:
