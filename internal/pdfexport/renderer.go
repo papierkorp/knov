@@ -1,6 +1,7 @@
 package pdfexport
 
 import (
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -19,6 +20,15 @@ type renderer struct {
 	opts           Options
 	margin         float64
 	iconFontLoaded bool
+
+	// headingLinks maps a heading's anchor slug (e.g. "developer-guide") to
+	// the fpdf internal link id targeting it, so a same-document "#slug"
+	// link can jump to it. Populated by registerHeadingAnchors before
+	// rendering starts; headingSlugs/headingIdx replay the same slugs, in
+	// the same document order, as headings are actually drawn.
+	headingLinks map[string]int
+	headingSlugs []string
+	headingIdx   int
 }
 
 func newRenderer(source []byte, opts Options) *renderer {
@@ -38,7 +48,7 @@ func newRenderer(source []byte, opts Options) *renderer {
 	pdf := fpdf.New(orientation, "mm", format, ".")
 	pdf.SetMargins(margin, margin, margin)
 	pdf.SetAutoPageBreak(true, margin)
-	r := &renderer{pdf: pdf, source: source, opts: opts, margin: margin}
+	r := &renderer{pdf: pdf, source: source, opts: opts, margin: margin, headingLinks: map[string]int{}}
 	r.translate = pdf.UnicodeTranslatorFromDescriptor("")
 
 	if opts.FooterLeft != "" || opts.FooterCenter != "" || opts.FooterRight != "" {
@@ -97,6 +107,30 @@ func firstNonEmpty(vals ...string) string {
 func (r *renderer) contentWidth() float64 {
 	w, _ := r.pdf.GetPageSize()
 	return w - 2*r.margin - r.indent
+}
+
+// resolveLink turns a link-style token's href into the (link, linkStr) pair
+// CellFormat expects: a same-document "#slug" anchor becomes an fpdf
+// internal link id when that heading exists in this export, anything else
+// (external URLs, cross-file links fpdf can't jump to) is passed through as
+// a plain URL string.
+func (r *renderer) resolveLink(st style) (int, string) {
+	if !st.link {
+		return 0, ""
+	}
+	if slug, ok := strings.CutPrefix(st.href, "#"); ok {
+		// hand-typed anchors are often percent-encoded (e.g. copied from a
+		// rendered href); wiki-link-derived ones aren't. headingLinks is
+		// keyed by the decoded slug, so normalize before comparing.
+		if decoded, err := url.PathUnescape(slug); err == nil {
+			slug = decoded
+		}
+		if id, ok := r.headingLinks[slug]; ok {
+			return id, ""
+		}
+		return 0, ""
+	}
+	return 0, st.href
 }
 
 func (r *renderer) applyStyle(st style) {

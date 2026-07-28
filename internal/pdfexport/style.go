@@ -64,4 +64,8 @@ func codeBlockStyle() style { return style{code: true, size: baseFontPt - 1} }
 type token struct {
 	text  string
 	style style
+	// breakLine marks a forced line break (a soft or hard line break in the
+	// markdown source, e.g. a line ending in the middle of a paragraph)
+	// rather than a drawable word. text is empty when set.
+	breakLine bool
 }

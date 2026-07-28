@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"knov/internal/parser"
+	"knov/internal/utils"
 
 	"github.com/yuin/goldmark/ast"
 	extast "github.com/yuin/goldmark/extension/ast"
@@ -20,6 +21,30 @@ func (r *renderer) renderChildren(n ast.Node) {
 	}
 }
 
+// registerHeadingAnchors walks the whole tree up front, computing each
+// heading's anchor slug with the same algorithm (and, walked in the same
+// document order, the same collision counting) the web view uses to assign
+// header ids — see utils.GenerateID and parser.InjectHeaderIDs. This lets a
+// same-document "#slug" link (e.g. from a wiki link or a hand-typed anchor)
+// resolve to an fpdf internal link before that heading has actually been
+// drawn, since a link can point forward in the document.
+func (r *renderer) registerHeadingAnchors(root ast.Node) {
+	usedIDs := make(map[string]int)
+	_ = ast.Walk(root, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if !entering {
+			return ast.WalkContinue, nil
+		}
+		h, ok := n.(*ast.Heading)
+		if !ok {
+			return ast.WalkContinue, nil
+		}
+		slug := utils.GenerateID(plainText(h, r.source), usedIDs)
+		r.headingSlugs = append(r.headingSlugs, slug)
+		r.headingLinks[slug] = r.pdf.AddLink()
+		return ast.WalkContinue, nil
+	})
+}
+
 // renderBlock dispatches a single block-level node to its drawing routine.
 // Add a case here for any new block-level markdown/HTML construct — each one
 // is self-contained and doesn't touch the others.
@@ -30,7 +55,14 @@ func (r *renderer) renderBlock(n ast.Node) {
 			r.pdf.AddPage()
 			r.hasContent = false
 		}
+		y0 := r.pdf.GetY()
 		r.writeParagraph(r.collectTokens(n, headingStyle(v.Level)), 3)
+		if r.headingIdx < len(r.headingSlugs) {
+			if linkID, ok := r.headingLinks[r.headingSlugs[r.headingIdx]]; ok {
+				r.pdf.SetLink(linkID, y0, -1)
+			}
+			r.headingIdx++
+		}
 	case *ast.Paragraph:
 		if img, ok := soleImage(v); ok {
 			r.renderImage(img)
@@ -53,6 +85,8 @@ func (r *renderer) renderBlock(n ast.Node) {
 			r.pdf.SetFillColor(150, 150, 150)
 			r.pdf.Rect(x, y0, 1.5, y1-y0, "F")
 		}
+		// margin bottom
+		r.pdf.Ln(4)
 	case *ast.List:
 		r.renderList(v)
 	case *ast.CodeBlock:

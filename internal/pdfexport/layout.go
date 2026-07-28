@@ -21,6 +21,15 @@ func (r *renderer) writeParagraph(tokens []token, spacingAfterMM float64) {
 	lineH := 0.0
 	first := true
 	for _, tok := range tokens {
+		if tok.breakLine {
+			if lineH == 0 {
+				lineH = normalStyle().lineHeight()
+			}
+			r.pdf.Ln(lineH)
+			r.pdf.SetX(leftX)
+			used, lineH, first = 0, 0, true
+			continue
+		}
 		r.applyStyle(tok.style)
 		text := r.textFor(tok)
 		w := r.pdf.GetStringWidth(text)
@@ -43,11 +52,8 @@ func (r *renderer) writeParagraph(tokens []token, spacingAfterMM float64) {
 			used += spaceW
 		}
 		r.applyStyle(tok.style)
-		link := ""
-		if tok.style.link {
-			link = tok.style.href
-		}
-		r.pdf.CellFormat(w, tok.style.lineHeight(), text, "", 0, "L", false, 0, link)
+		linkID, linkStr := r.resolveLink(tok.style)
+		r.pdf.CellFormat(w, tok.style.lineHeight(), text, "", 0, "L", false, linkID, linkStr)
 		used += w
 		if tok.style.lineHeight() > lineH {
 			lineH = tok.style.lineHeight()
@@ -67,6 +73,12 @@ func (r *renderer) wrapTokens(tokens []token, width float64) [][]token {
 	var cur []token
 	used := 0.0
 	for _, tok := range tokens {
+		if tok.breakLine {
+			lines = append(lines, cur)
+			cur = nil
+			used = 0
+			continue
+		}
 		r.applyStyle(tok.style)
 		w := r.pdf.GetStringWidth(r.textFor(tok))
 		spaceW := r.pdf.GetStringWidth(" ")

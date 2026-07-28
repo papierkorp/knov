@@ -75,13 +75,14 @@ type FooterStyle struct {
 func MarkdownToPDF(markdown []byte, opts Options) ([]byte, error) {
 	logging.LogDebug(logging.KeyPdfExport, "pdf export: converting %d bytes of markdown", len(markdown))
 
-	source := []byte(parser.ResolveWikiLinks(string(markdown)))
-	source = parser.PreprocessTodoStates(source)
+	resolved := parser.ProcessMarkdownLinks(parser.ResolveWikiLinks(string(markdown)))
+	source := parser.PreprocessTodoStates([]byte(resolved))
 
 	md := goldmark.New(goldmark.WithExtensions(extension.GFM))
 	root := md.Parser().Parse(text.NewReader(source))
 
 	r := newRenderer(source, opts)
+	r.registerHeadingAnchors(root)
 	r.renderChildren(root)
 
 	var buf bytes.Buffer

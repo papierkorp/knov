@@ -52,6 +52,14 @@ func (r *renderer) collectTokens(n ast.Node, base style) []token {
 			}
 			pending = append(pending, seg.Value(r.source)...)
 			pendingEnd = seg.Stop
+			// A line break in the source (soft or hard — the web view
+			// renders both as <br> via goldmark's WithHardWraps) must
+			// survive into the pdf as a forced break, not collapse into
+			// the space that separates ordinary word tokens.
+			if t.SoftLineBreak() || t.HardLineBreak() {
+				flushPending()
+				toks = append(toks, token{breakLine: true})
+			}
 			continue
 		}
 		flushPending()

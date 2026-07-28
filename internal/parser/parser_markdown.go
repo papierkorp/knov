@@ -38,7 +38,7 @@ func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
 	content = StripFrontMatter(content)
 	processed := h.wrapRawHTMLBlocks(string(content))
 	processed = ResolveWikiLinks(processed)
-	processed = h.processMarkdownLinks(processed)
+	processed = ProcessMarkdownLinks(processed)
 	return []byte(processed), nil
 }
 
@@ -47,7 +47,7 @@ var wikiLinkRe = regexp.MustCompile(`\[\[([^\[\]]+)\]\]`)
 // ResolveWikiLinks converts [[path]] and [[path|display]] to standard markdown links.
 //
 // When there's no explicit "|display", this leaves the markdown link text
-// empty rather than deriving a label here - processMarkdownLinks (which
+// empty rather than deriving a label here - ProcessMarkdownLinks (which
 // always runs right after this) owns all fallback-label generation and
 // applies it the same way regardless of whether a link started as [[wiki]]
 // or was hand-typed as [](...). Don't re-add filename/anchor-humanizing logic
@@ -74,7 +74,7 @@ func ResolveWikiLinks(content string) string {
 
 		// pure same-page anchor (e.g. "[[#some-header]]") - keep it a real
 		// same-page link instead of routing it through /files/. Leaving
-		// display empty lets processMarkdownLinks fill in the header text,
+		// display empty lets ProcessMarkdownLinks fill in the header text,
 		// same as it does for a hand-typed "[](#some-header)".
 		if linkPath == "" {
 			return "[" + display + "](" + anchor + ")"
@@ -567,11 +567,11 @@ func (h *MarkdownHandler) wrapHeaderSections(htmlContent, filePath string) strin
 // Link processing and helpers
 // ---------------------------------------------------------------------------
 
-// processMarkdownLinks rewrites internal [text](url) links to /files/ routes.
+// ProcessMarkdownLinks rewrites internal [text](url) links to /files/ routes.
 // This is also where every empty-text "[](url)" link (including ones
 // ResolveWikiLinks produced from a [[wiki link]] with no "|display") gets its
 // fallback label - keep that logic here only, see the note on ResolveWikiLinks.
-func (h *MarkdownHandler) processMarkdownLinks(content string) string {
+func ProcessMarkdownLinks(content string) string {
 	re := regexp.MustCompile(`(!)?\[([^\]]*)\]\(([^)]+)\)`)
 	return re.ReplaceAllStringFunc(content, func(match string) string {
 		matches := re.FindStringSubmatch(match)

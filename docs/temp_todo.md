@@ -13,7 +13,6 @@
 - translations
 - add a `create_your_own_theme.md` file
 
-
 **per ai**
 - not important
   - codemirror copy + paste with y+p does not work properly (e.g. i have something in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
