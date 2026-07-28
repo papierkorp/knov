@@ -6010,6 +6010,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/testdata/parsertest": {
+            "post": {
+                "description": "Executes the parser suite (ProcessMarkdownLinks: empty-text fallback labels, percent-encoded path/anchor decoding, unicode header slug capitalization, external links/image embeds left untouched)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run parser tests",
+                "responses": {
+                    "200": {
+                        "description": "parser test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/testdata/run-all": {
             "post": {
                 "description": "Executes every registered in-app test suite and aggregates the results",

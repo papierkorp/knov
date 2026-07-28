@@ -492,6 +492,32 @@ func handleAPILogsTest(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, results, html)
 }
 
+// @Summary Run parser tests
+// @Description Executes the parser suite (ProcessMarkdownLinks: empty-text fallback labels, percent-encoded path/anchor decoding, unicode header slug capitalization, external links/image embeds left untouched)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "parser test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/parsertest [post]
+func handleAPIParserTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug(logging.KeyApp, "parser test request received")
+
+	results, err := job.RunParserTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError(logging.KeyApp, "failed to run parser tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
 // @Summary Run all test suites
 // @Description Executes every registered in-app test suite and aggregates the results
 // @Tags testdata

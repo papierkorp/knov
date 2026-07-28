@@ -424,6 +424,7 @@ func NewRouter() *chi.Mux {
 			r.Post("/notificationtest", handleAPINotificationTest)
 			r.Post("/settingstest", handleAPISettingsTest)
 			r.Post("/logstest", handleAPILogsTest)
+			r.Post("/parsertest", handleAPIParserTest)
 			r.Post("/run-all", handleAPIRunAllTests)
 		})
 

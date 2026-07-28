@@ -270,6 +270,9 @@ func RunSettingsTest() (*test.SuiteResult, error) { return RunSuiteTest("setting
 // RunLogsTest runs the logs test suite and returns its results alongside any error.
 func RunLogsTest() (*test.SuiteResult, error) { return RunSuiteTest("logs-test") }
 
+// RunParserTest runs the parser test suite and returns its results alongside any error.
+func RunParserTest() (*test.SuiteResult, error) { return RunSuiteTest("parser-test") }
+
 // RunAllTests runs every registered test suite and returns the aggregated results.
 func RunAllTests() (*test.SuiteResult, error) { return RunSuiteTest("run-all-tests") }
 
