@@ -482,6 +482,16 @@ var (
 		Section: SectionPDFExport,
 		Label:   "Show Rule Above Footer",
 	})
+	PDFHeaderSkipFirstPage = register(&BoolSetting{
+		key: "pdfHeaderSkipFirstPage", Default: false,
+		Section: SectionPDFExport,
+		Label:   "Hide Header On First Page",
+	})
+	PDFFooterSkipFirstPage = register(&BoolSetting{
+		key: "pdfFooterSkipFirstPage", Default: false,
+		Section: SectionPDFExport,
+		Label:   "Hide Footer On First Page",
+	})
 	PDFPageFormat = register(&StringSetting{
 		key: "pdfPageFormat", Default: "A4",
 		Section: SectionPDFExport,

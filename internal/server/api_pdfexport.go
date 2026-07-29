@@ -107,6 +107,7 @@ func renderPDFSafely(filePath string, content []byte) (pdf []byte, err error) {
 		FooterCenterStyle:       zoneStyle(configmanager.GetPDFFooterCenterFont(), configmanager.GetPDFFooterCenterColor(), configmanager.GetPDFFooterCenterSize(), configmanager.GetPDFFooterCenterBold(), configmanager.GetPDFFooterCenterItalic()),
 		FooterRightStyle:        zoneStyle(configmanager.GetPDFFooterRightFont(), configmanager.GetPDFFooterRightColor(), configmanager.GetPDFFooterRightSize(), configmanager.GetPDFFooterRightBold(), configmanager.GetPDFFooterRightItalic()),
 		FooterRule:              configmanager.GetPDFFooterRule(),
+		FooterSkipFirstPage:     configmanager.GetPDFFooterSkipFirstPage(),
 		HeaderLeft:              configmanager.GetPDFHeaderLeft(),
 		HeaderCenter:            configmanager.GetPDFHeaderCenter(),
 		HeaderRight:             configmanager.GetPDFHeaderRight(),
@@ -114,6 +115,7 @@ func renderPDFSafely(filePath string, content []byte) (pdf []byte, err error) {
 		HeaderCenterStyle:       zoneStyle(configmanager.GetPDFHeaderCenterFont(), configmanager.GetPDFHeaderCenterColor(), configmanager.GetPDFHeaderCenterSize(), configmanager.GetPDFHeaderCenterBold(), configmanager.GetPDFHeaderCenterItalic()),
 		HeaderRightStyle:        zoneStyle(configmanager.GetPDFHeaderRightFont(), configmanager.GetPDFHeaderRightColor(), configmanager.GetPDFHeaderRightSize(), configmanager.GetPDFHeaderRightBold(), configmanager.GetPDFHeaderRightItalic()),
 		HeaderRule:              configmanager.GetPDFHeaderRule(),
+		HeaderSkipFirstPage:     configmanager.GetPDFHeaderSkipFirstPage(),
 	}
 	if opts.FooterLeft != "" || opts.FooterCenter != "" || opts.FooterRight != "" {
 		opts.FooterTokens = zoneTokens(filePath)

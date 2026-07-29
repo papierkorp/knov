@@ -241,6 +241,7 @@ func GetPDFFooterRightSize() int          { return PDFFooterRightSize.Get() }
 func GetPDFFooterRightBold() bool         { return PDFFooterRightBold.Get() }
 func GetPDFFooterRightItalic() bool       { return PDFFooterRightItalic.Get() }
 func GetPDFFooterRule() bool              { return PDFFooterRule.Get() }
+func GetPDFFooterSkipFirstPage() bool     { return PDFFooterSkipFirstPage.Get() }
 func GetPDFHeaderLeft() string            { return PDFHeaderLeft.Get() }
 func GetPDFHeaderLeftFont() string        { return PDFHeaderLeftFont.Get() }
 func GetPDFHeaderLeftColor() string       { return PDFHeaderLeftColor.Get() }
@@ -260,6 +261,7 @@ func GetPDFHeaderRightSize() int          { return PDFHeaderRightSize.Get() }
 func GetPDFHeaderRightBold() bool         { return PDFHeaderRightBold.Get() }
 func GetPDFHeaderRightItalic() bool       { return PDFHeaderRightItalic.Get() }
 func GetPDFHeaderRule() bool              { return PDFHeaderRule.Get() }
+func GetPDFHeaderSkipFirstPage() bool     { return PDFHeaderSkipFirstPage.Get() }
 
 // ── mime / extension helpers ──────────────────────────────────────────────────
 

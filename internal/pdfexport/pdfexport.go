@@ -58,6 +58,8 @@ type Options struct {
 	FooterLeftStyle, FooterCenterStyle, FooterRightStyle ZoneStyle
 	// FooterRule draws a horizontal rule above the footer when true.
 	FooterRule bool
+	// FooterSkipFirstPage leaves the footer blank on the first page when true.
+	FooterSkipFirstPage bool
 
 	// HeaderLeft, HeaderCenter and HeaderRight are the templates drawn in the
 	// respective header zone of every page. Each may contain {{page}},
@@ -72,6 +74,8 @@ type Options struct {
 	HeaderLeftStyle, HeaderCenterStyle, HeaderRightStyle ZoneStyle
 	// HeaderRule draws a horizontal rule below the header when true.
 	HeaderRule bool
+	// HeaderSkipFirstPage leaves the header blank on the first page when true.
+	HeaderSkipFirstPage bool
 }
 
 // ZoneStyle controls how a single header or footer zone is drawn.

@@ -195,6 +195,9 @@ func (r *renderer) transformTextForFamily(text, family string) string {
 // fpdf's own page count alias, which fpdf substitutes document-wide when the
 // pdf is closed.
 func (r *renderer) drawFooter() {
+	if r.opts.FooterSkipFirstPage && r.pdf.PageNo() == 1 {
+		return
+	}
 	pairs := []string{"{{page}}", strconv.Itoa(r.pdf.PageNo()), "{{pages}}", "{nb}"}
 	for token, val := range r.opts.FooterTokens {
 		pairs = append(pairs, "{{"+token+"}}", val)
@@ -223,6 +226,9 @@ func (r *renderer) drawFooter() {
 // does. It draws within the top margin (mirroring the footer's placement
 // within the bottom margin), so it needs no extra page space of its own.
 func (r *renderer) drawHeader() {
+	if r.opts.HeaderSkipFirstPage && r.pdf.PageNo() == 1 {
+		return
+	}
 	pairs := []string{"{{page}}", strconv.Itoa(r.pdf.PageNo()), "{{pages}}", "{nb}"}
 	for token, val := range r.opts.HeaderTokens {
 		pairs = append(pairs, "{{"+token+"}}", val)
