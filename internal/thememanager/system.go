@@ -52,6 +52,9 @@ func (tm *ThemeManager) RenderSystemPage(w http.ResponseWriter, title string, co
 		return err
 	}
 
-	_, err = w.Write([]byte(buf.String()))
+	html := injectDefaultCSS(buf.String())
+	html = injectDefaultJS(html)
+
+	_, err = w.Write([]byte(html))
 	return err
 }
