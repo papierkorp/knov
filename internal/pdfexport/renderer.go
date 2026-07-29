@@ -205,20 +205,16 @@ func (r *renderer) drawFooter() {
 	replacer := strings.NewReplacer(pairs...)
 	pageW, pageH := r.pdf.GetPageSize()
 	zoneWidth := (pageW - 2*r.margin) / 3
+	y := pageH - 15
 
 	if r.opts.FooterRule {
-		y := pageH - 15
 		r.pdf.SetDrawColor(150, 150, 150)
 		r.pdf.Line(r.margin, y, pageW-r.margin, y)
 	}
 
-	r.pdf.SetY(-15)
-	family := r.applyZoneStyle(r.opts.FooterLeftStyle)
-	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.FooterLeft), family), "", 0, "L", false, 0, "")
-	family = r.applyZoneStyle(r.opts.FooterCenterStyle)
-	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.FooterCenter), family), "", 0, "C", false, 0, "")
-	family = r.applyZoneStyle(r.opts.FooterRightStyle)
-	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.FooterRight), family), "", 1, "R", false, 0, "")
+	r.drawZone(replacer.Replace(r.opts.FooterLeft), r.opts.FooterLeftStyle, r.margin, y, zoneWidth, "L")
+	r.drawZone(replacer.Replace(r.opts.FooterCenter), r.opts.FooterCenterStyle, r.margin+zoneWidth, y, zoneWidth, "C")
+	r.drawZone(replacer.Replace(r.opts.FooterRight), r.opts.FooterRightStyle, r.margin+2*zoneWidth, y, zoneWidth, "R")
 }
 
 // drawHeader renders the configured header zones, resolving {{page}},
@@ -236,19 +232,32 @@ func (r *renderer) drawHeader() {
 	replacer := strings.NewReplacer(pairs...)
 	pageW, _ := r.pdf.GetPageSize()
 	zoneWidth := (pageW - 2*r.margin) / 3
+	y := 5.0
 
-	r.pdf.SetY(5)
-	family := r.applyZoneStyle(r.opts.HeaderLeftStyle)
-	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.HeaderLeft), family), "", 0, "L", false, 0, "")
-	family = r.applyZoneStyle(r.opts.HeaderCenterStyle)
-	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.HeaderCenter), family), "", 0, "C", false, 0, "")
-	family = r.applyZoneStyle(r.opts.HeaderRightStyle)
-	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.HeaderRight), family), "", 1, "R", false, 0, "")
+	r.drawZone(replacer.Replace(r.opts.HeaderLeft), r.opts.HeaderLeftStyle, r.margin, y, zoneWidth, "L")
+	r.drawZone(replacer.Replace(r.opts.HeaderCenter), r.opts.HeaderCenterStyle, r.margin+zoneWidth, y, zoneWidth, "C")
+	r.drawZone(replacer.Replace(r.opts.HeaderRight), r.opts.HeaderRightStyle, r.margin+2*zoneWidth, y, zoneWidth, "R")
 
 	if r.opts.HeaderRule {
 		r.pdf.SetDrawColor(150, 150, 150)
 		r.pdf.Line(r.margin, 15, pageW-r.margin, 15)
 	}
+}
+
+// drawZone draws text as a single-line cell spanning [x, x+width) at row
+// y..y+10, aligned per alignStr ("L", "C" or "R"). If text is exactly a
+// markdown image link (e.g. "![alt](media/logo.png)"), it embeds that image
+// instead — see drawZoneImage — falling back to drawing the raw text if the
+// image can't be embedded.
+func (r *renderer) drawZone(text string, st ZoneStyle, x, y, width float64, alignStr string) {
+	if m := zoneImageLinkRe.FindStringSubmatch(strings.TrimSpace(text)); m != nil {
+		if r.drawZoneImage(m[1], x, y, width, alignStr) {
+			return
+		}
+	}
+	family := r.applyZoneStyle(st)
+	r.pdf.SetXY(x, y)
+	r.pdf.CellFormat(width, 10, r.transformTextForFamily(text, family), "", 0, alignStr, false, 0, "")
 }
 
 // applyZoneStyle sets the font, size, weight and color for a header or

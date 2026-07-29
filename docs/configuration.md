@@ -139,11 +139,15 @@ Each theme supports a way to take a look at the last 100 notifications.
 Configured under **Settings => PDF Export**.
 
 - Page format, orientation, margin, fonts and task-icon rendering are all configurable
-- A footer can be set per zone (left, center, right), each shown on every exported page
-- Footer text supports the tokens `{{date}}`, `{{page}}`, `{{pages}}`, `{{filename}}`, `{{filepath}}`, `{{folder}}`, `{{created}}`, `{{edited}}`, `{{tags}}` and `{{collection}}`; any other text is shown literally
+- A header and a footer can each be set per zone (left, center, right), shown on every exported page
+- Header/footer text supports the tokens `{{date}}`, `{{page}}`, `{{pages}}`, `{{filename}}`, `{{filepath}}`, `{{folder}}`, `{{created}}`, `{{edited}}`, `{{tags}}` and `{{collection}}`; any other text is shown literally
 - `{{created}}`/`{{edited}}`/`{{tags}}`/`{{collection}}` come from the file's metadata
-- Leave a footer zone empty to omit it
-- Each footer zone has its own font, size, color, bold and italic setting
+- A zone can instead hold a markdown image link, e.g. `![logo](media/logo.png)`, to embed a small local image instead of text - external URLs aren't supported
+- Zone images are scaled to 8mm tall (width follows the image's aspect ratio), capped to the zone's width for very wide images, and vertically centered in the zone
+- Leave a zone empty to omit it
+- Each zone has its own font, size, color, bold and italic setting
+- Optional rule lines can be shown above the footer / below the header
+- The header and footer can each be hidden on the first page independently, useful for a cover page
 
 ## Logging
 

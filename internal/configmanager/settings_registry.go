@@ -765,7 +765,7 @@ var (
 		key:     "pdfTokensNote",
 		Section: SectionPDFExport,
 		Group:   GroupPDFNotes,
-		Text:    "tokens (all columns): {{date}}, {{page}}, {{pages}}, {{filename}}, {{filepath}}, {{folder}}, {{created}}, {{edited}}, {{tags}}, {{collection}}",
+		Text:    "tokens (all columns): {{date}}, {{page}}, {{pages}}, {{filename}}, {{filepath}}, {{folder}}, {{created}}, {{edited}}, {{tags}}, {{collection}}. a column's text can instead be a markdown image link (e.g. ![logo](media/logo.png)) to show a small local image there",
 	})
 )
 
