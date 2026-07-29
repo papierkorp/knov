@@ -2,7 +2,8 @@
 APP_NAME  := knov
 VERSION   := $(shell date -u '+%Y')-$(shell git rev-list --count HEAD)-$(shell git rev-parse --short HEAD)
 BUILD_TIME := $(shell date -u '+%Y-%m-%d %H:%M')
-LDFLAGS   := -ldflags "-X 'knov/internal/version.Version=$(VERSION)' -X 'knov/internal/version.BuildTime=$(BUILD_TIME) UTC'"
+LAST_COMMIT_MSG := $(shell git log -1 --pretty=%s)
+LDFLAGS   := -ldflags "-X 'knov/internal/version.Version=$(VERSION)' -X 'knov/internal/version.BuildTime=$(BUILD_TIME) UTC' -X 'knov/internal/version.LastCommitMessage=$(LAST_COMMIT_MSG)'"
 
 # ------------- actual usage -------------
 dev: swaggo-api-init changelog
@@ -89,7 +90,7 @@ tempai:
 	@echo "See tempai/FILE_LIST.txt for project structure (from 'make tree')"
 
 # windows prod
-# APP_NAME=knov && VERSION=$(date -u '+%Y')-$(git rev-list --count HEAD)-$(git rev-parse --short HEAD) && BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M') && swag init -g main.go -d . --exclude tempai -o internal/server/swagger && GOOS=windows GOARCH=amd64 go build -ldflags "-X 'knov/internal/version.Version=$VERSION' -X 'knov/internal/version.BuildTime=$BUILD_TIME UTC'" -o bin/knov.exe ./
+# APP_NAME=knov && VERSION=$(date -u '+%Y')-$(git rev-list --count HEAD)-$(git rev-parse --short HEAD) && BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M') && LAST_COMMIT_MSG=$(git log -1 --pretty=%s) && swag init -g main.go -d . --exclude tempai -o internal/server/swagger && GOOS=windows GOARCH=amd64 go build -ldflags "-X 'knov/internal/version.Version=$VERSION' -X 'knov/internal/version.BuildTime=$BUILD_TIME UTC' -X 'knov/internal/version.LastCommitMessage=$LAST_COMMIT_MSG'" -o bin/knov.exe ./
 
 # windows dev
 #KNOV_LOG_LEVEL=debug go run ./
