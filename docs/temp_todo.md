@@ -11,6 +11,7 @@
   - browse media
   - use both builtin and rail theme
 - translations
+- i like the https://traven.dev/ look with a topbar with settings in the topbar to enable/disable certain features
 
 **per ai**
 - not important
