@@ -103,20 +103,30 @@ func renderPDFSafely(filePath string, content []byte) (pdf []byte, err error) {
 		FooterLeft:              configmanager.GetPDFFooterLeft(),
 		FooterCenter:            configmanager.GetPDFFooterCenter(),
 		FooterRight:             configmanager.GetPDFFooterRight(),
-		FooterLeftStyle:         footerStyle(configmanager.GetPDFFooterLeftFont(), configmanager.GetPDFFooterLeftColor(), configmanager.GetPDFFooterLeftSize(), configmanager.GetPDFFooterLeftBold(), configmanager.GetPDFFooterLeftItalic()),
-		FooterCenterStyle:       footerStyle(configmanager.GetPDFFooterCenterFont(), configmanager.GetPDFFooterCenterColor(), configmanager.GetPDFFooterCenterSize(), configmanager.GetPDFFooterCenterBold(), configmanager.GetPDFFooterCenterItalic()),
-		FooterRightStyle:        footerStyle(configmanager.GetPDFFooterRightFont(), configmanager.GetPDFFooterRightColor(), configmanager.GetPDFFooterRightSize(), configmanager.GetPDFFooterRightBold(), configmanager.GetPDFFooterRightItalic()),
+		FooterLeftStyle:         zoneStyle(configmanager.GetPDFFooterLeftFont(), configmanager.GetPDFFooterLeftColor(), configmanager.GetPDFFooterLeftSize(), configmanager.GetPDFFooterLeftBold(), configmanager.GetPDFFooterLeftItalic()),
+		FooterCenterStyle:       zoneStyle(configmanager.GetPDFFooterCenterFont(), configmanager.GetPDFFooterCenterColor(), configmanager.GetPDFFooterCenterSize(), configmanager.GetPDFFooterCenterBold(), configmanager.GetPDFFooterCenterItalic()),
+		FooterRightStyle:        zoneStyle(configmanager.GetPDFFooterRightFont(), configmanager.GetPDFFooterRightColor(), configmanager.GetPDFFooterRightSize(), configmanager.GetPDFFooterRightBold(), configmanager.GetPDFFooterRightItalic()),
 		FooterRule:              configmanager.GetPDFFooterRule(),
+		HeaderLeft:              configmanager.GetPDFHeaderLeft(),
+		HeaderCenter:            configmanager.GetPDFHeaderCenter(),
+		HeaderRight:             configmanager.GetPDFHeaderRight(),
+		HeaderLeftStyle:         zoneStyle(configmanager.GetPDFHeaderLeftFont(), configmanager.GetPDFHeaderLeftColor(), configmanager.GetPDFHeaderLeftSize(), configmanager.GetPDFHeaderLeftBold(), configmanager.GetPDFHeaderLeftItalic()),
+		HeaderCenterStyle:       zoneStyle(configmanager.GetPDFHeaderCenterFont(), configmanager.GetPDFHeaderCenterColor(), configmanager.GetPDFHeaderCenterSize(), configmanager.GetPDFHeaderCenterBold(), configmanager.GetPDFHeaderCenterItalic()),
+		HeaderRightStyle:        zoneStyle(configmanager.GetPDFHeaderRightFont(), configmanager.GetPDFHeaderRightColor(), configmanager.GetPDFHeaderRightSize(), configmanager.GetPDFHeaderRightBold(), configmanager.GetPDFHeaderRightItalic()),
+		HeaderRule:              configmanager.GetPDFHeaderRule(),
 	}
 	if opts.FooterLeft != "" || opts.FooterCenter != "" || opts.FooterRight != "" {
-		opts.FooterTokens = footerTokens(filePath)
+		opts.FooterTokens = zoneTokens(filePath)
+	}
+	if opts.HeaderLeft != "" || opts.HeaderCenter != "" || opts.HeaderRight != "" {
+		opts.HeaderTokens = zoneTokens(filePath)
 	}
 	return pdfexport.MarkdownToPDF(content, opts)
 }
 
-// footerStyle builds a pdfexport.FooterStyle from the resolved footer setting values.
-func footerStyle(font, hexColor string, size int, bold, italic bool) pdfexport.FooterStyle {
-	return pdfexport.FooterStyle{
+// zoneStyle builds a pdfexport.ZoneStyle from the resolved header/footer setting values.
+func zoneStyle(font, hexColor string, size int, bold, italic bool) pdfexport.ZoneStyle {
+	return pdfexport.ZoneStyle{
 		Font:   font,
 		Color:  utils.HexToRGB(hexColor),
 		Size:   float64(size),
@@ -125,8 +135,8 @@ func footerStyle(font, hexColor string, size int, bold, italic bool) pdfexport.F
 	}
 }
 
-// footerTokens resolves the values available for pdf footer templates.
-func footerTokens(filePath string) map[string]string {
+// zoneTokens resolves the values available for pdf header/footer templates.
+func zoneTokens(filePath string) map[string]string {
 	relPath := pathutils.ToRelative(filePath)
 	tokens := map[string]string{
 		"date":     configmanager.FormatDate(time.Now()),

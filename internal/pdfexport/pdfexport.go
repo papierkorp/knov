@@ -55,13 +55,27 @@ type Options struct {
 	FooterTokens map[string]string
 	// FooterLeftStyle, FooterCenterStyle and FooterRightStyle control the
 	// font, size, weight and color used to draw the respective footer zone.
-	FooterLeftStyle, FooterCenterStyle, FooterRightStyle FooterStyle
+	FooterLeftStyle, FooterCenterStyle, FooterRightStyle ZoneStyle
 	// FooterRule draws a horizontal rule above the footer when true.
 	FooterRule bool
+
+	// HeaderLeft, HeaderCenter and HeaderRight are the templates drawn in the
+	// respective header zone of every page. Each may contain {{page}},
+	// {{pages}} and any key present in HeaderTokens (e.g. {{date}}). Empty
+	// zones are left blank.
+	HeaderLeft, HeaderCenter, HeaderRight string
+	// HeaderTokens maps a token name (without braces) to its resolved value,
+	// same semantics as FooterTokens.
+	HeaderTokens map[string]string
+	// HeaderLeftStyle, HeaderCenterStyle and HeaderRightStyle control the
+	// font, size, weight and color used to draw the respective header zone.
+	HeaderLeftStyle, HeaderCenterStyle, HeaderRightStyle ZoneStyle
+	// HeaderRule draws a horizontal rule below the header when true.
+	HeaderRule bool
 }
 
-// FooterStyle controls how a single footer zone is drawn.
-type FooterStyle struct {
+// ZoneStyle controls how a single header or footer zone is drawn.
+type ZoneStyle struct {
 	// Font is the fpdf font family. Empty falls back to Options.FontOverall, then "Arial".
 	Font string
 	// Color is the RGB text color. Zero value is black.

@@ -27,8 +27,7 @@
 - settings/configs to hide certain folders from different searches
 - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 - make all strings in the settings translateable..
-- pdfexport header same as footer possible?
-
+- pdfexport setting to ignore footer and header respectivly on the first page
 
 # ai prompts
 

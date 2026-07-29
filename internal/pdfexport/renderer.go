@@ -55,9 +55,15 @@ func newRenderer(source []byte, opts Options) *renderer {
 		pdf.AliasNbPages("")
 		pdf.SetFooterFunc(r.drawFooter)
 	}
+	if opts.HeaderLeft != "" || opts.HeaderCenter != "" || opts.HeaderRight != "" {
+		pdf.AliasNbPages("")
+		pdf.SetHeaderFuncMode(r.drawHeader, true)
+	}
 
-	pdf.AddPage()
-
+	// Fonts must be registered on the pdf instance before the first AddPage,
+	// since a header func (unlike a footer func) runs synchronously during
+	// that very call and would otherwise SetFont a family that isn't loaded
+	// yet.
 	if len(iconFontData) > 0 {
 		pdf.AddUTF8FontFromBytes(iconFontFamily, "", iconFontData)
 		if pdf.Ok() {
@@ -70,9 +76,12 @@ func newRenderer(source []byte, opts Options) *renderer {
 	for _, family := range []string{
 		opts.FontOverall, opts.FontCodeBlock, opts.FontHeadings, opts.FontH1,
 		opts.FooterLeftStyle.Font, opts.FooterCenterStyle.Font, opts.FooterRightStyle.Font,
+		opts.HeaderLeftStyle.Font, opts.HeaderCenterStyle.Font, opts.HeaderRightStyle.Font,
 	} {
 		registerCustomFonts(pdf, family)
 	}
+
+	pdf.AddPage()
 
 	return r
 }
@@ -201,17 +210,45 @@ func (r *renderer) drawFooter() {
 	}
 
 	r.pdf.SetY(-15)
-	family := r.applyFooterStyle(r.opts.FooterLeftStyle)
+	family := r.applyZoneStyle(r.opts.FooterLeftStyle)
 	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.FooterLeft), family), "", 0, "L", false, 0, "")
-	family = r.applyFooterStyle(r.opts.FooterCenterStyle)
+	family = r.applyZoneStyle(r.opts.FooterCenterStyle)
 	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.FooterCenter), family), "", 0, "C", false, 0, "")
-	family = r.applyFooterStyle(r.opts.FooterRightStyle)
+	family = r.applyZoneStyle(r.opts.FooterRightStyle)
 	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.FooterRight), family), "", 1, "R", false, 0, "")
 }
 
-// applyFooterStyle sets the font, size, weight and color for a footer zone
-// and returns the resolved font family (for transformTextForFamily).
-func (r *renderer) applyFooterStyle(st FooterStyle) string {
+// drawHeader renders the configured header zones, resolving {{page}},
+// {{pages}} and the tokens in opts.HeaderTokens the same way drawFooter
+// does. It draws within the top margin (mirroring the footer's placement
+// within the bottom margin), so it needs no extra page space of its own.
+func (r *renderer) drawHeader() {
+	pairs := []string{"{{page}}", strconv.Itoa(r.pdf.PageNo()), "{{pages}}", "{nb}"}
+	for token, val := range r.opts.HeaderTokens {
+		pairs = append(pairs, "{{"+token+"}}", val)
+	}
+	replacer := strings.NewReplacer(pairs...)
+	pageW, _ := r.pdf.GetPageSize()
+	zoneWidth := (pageW - 2*r.margin) / 3
+
+	r.pdf.SetY(5)
+	family := r.applyZoneStyle(r.opts.HeaderLeftStyle)
+	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.HeaderLeft), family), "", 0, "L", false, 0, "")
+	family = r.applyZoneStyle(r.opts.HeaderCenterStyle)
+	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.HeaderCenter), family), "", 0, "C", false, 0, "")
+	family = r.applyZoneStyle(r.opts.HeaderRightStyle)
+	r.pdf.CellFormat(zoneWidth, 10, r.transformTextForFamily(replacer.Replace(r.opts.HeaderRight), family), "", 1, "R", false, 0, "")
+
+	if r.opts.HeaderRule {
+		r.pdf.SetDrawColor(150, 150, 150)
+		r.pdf.Line(r.margin, 15, pageW-r.margin, 15)
+	}
+}
+
+// applyZoneStyle sets the font, size, weight and color for a header or
+// footer zone and returns the resolved font family (for
+// transformTextForFamily).
+func (r *renderer) applyZoneStyle(st ZoneStyle) string {
 	family := firstNonEmpty(st.Font, r.opts.FontOverall, "Arial")
 	size := st.Size
 	if size <= 0 {

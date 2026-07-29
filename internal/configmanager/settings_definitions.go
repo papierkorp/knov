@@ -40,10 +40,13 @@ var (
 	GroupEditorTypes     = SettingGroup{Key: "editor-types", Label: "Editor Types"}
 	GroupMediaTypes      = SettingGroup{Key: "media-types", Label: "Media Types"}
 	GroupTypography      = SettingGroup{Key: "typography", Label: "Typography"}
+	GroupPDFNotes        = SettingGroup{Key: "pdf-notes", Label: "PDF Notes"}
 	GroupPDFFooterLeft   = SettingGroup{Key: "pdf-footer-left", Label: "Footer Left"}
 	GroupPDFFooterCenter = SettingGroup{Key: "pdf-footer-center", Label: "Footer Center"}
 	GroupPDFFooterRight  = SettingGroup{Key: "pdf-footer-right", Label: "Footer Right"}
-	GroupPDFFooter       = SettingGroup{Key: "pdf-footer", Label: "Footer"}
+	GroupPDFHeaderLeft   = SettingGroup{Key: "pdf-header-left", Label: "Header Left"}
+	GroupPDFHeaderCenter = SettingGroup{Key: "pdf-header-center", Label: "Header Center"}
+	GroupPDFHeaderRight  = SettingGroup{Key: "pdf-header-right", Label: "Header Right"}
 )
 
 // SettingOption is a single entry in a select input.

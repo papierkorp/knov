@@ -472,6 +472,16 @@ var (
 		Label:   "Syntax Highlighting",
 		Desc:    "color-highlight code blocks by language when exporting to pdf",
 	})
+	PDFHeaderRule = register(&BoolSetting{
+		key: "pdfHeaderRule", Default: false,
+		Section: SectionPDFExport,
+		Label:   "Show Rule Below Header",
+	})
+	PDFFooterRule = register(&BoolSetting{
+		key: "pdfFooterRule", Default: false,
+		Section: SectionPDFExport,
+		Label:   "Show Rule Above Footer",
+	})
 	PDFPageFormat = register(&StringSetting{
 		key: "pdfPageFormat", Default: "A4",
 		Section: SectionPDFExport,
@@ -633,16 +643,119 @@ var (
 		Section: SectionPDFExport, Group: GroupPDFFooterRight,
 		Label: "Italic",
 	})
-	PDFFooterRule = register(&BoolSetting{
-		key: "pdfFooterRule", Default: false,
-		Section: SectionPDFExport, Group: GroupPDFFooter,
-		Label: "Show Rule Above Footer",
+	PDFHeaderLeft = register(&StringSetting{
+		key: "pdfHeaderLeft", Default: "",
+		Section: SectionPDFExport, Group: GroupPDFHeaderLeft,
+		Label: "Text",
 	})
-	PDFFooterTokensNote = register(&NoteSetting{
-		key:     "pdfFooterTokensNote",
+	PDFHeaderLeftFont = register(&StringSetting{
+		key: "pdfHeaderLeftFont", Default: "Roboto",
+		Section: SectionPDFExport, Group: GroupPDFHeaderLeft,
+		Label:       "Font",
+		Options:     fontOptionList(false),
+		FontPreview: true,
+	})
+	PDFHeaderLeftColor = register(&StringSetting{
+		key: "pdfHeaderLeftColor", Default: "#000000",
+		Section: SectionPDFExport, Group: GroupPDFHeaderLeft,
+		Label:    "Color",
+		IsColor:  true,
+		Validate: utils.ValidateHexColor,
+	})
+	PDFHeaderLeftSize = register(&IntSetting{
+		key: "pdfHeaderLeftSize", Default: 8,
+		Section: SectionPDFExport, Group: GroupPDFHeaderLeft,
+		Label: "Size",
+		Desc:  "font size in points",
+		Min:   intPtr(6), Max: intPtr(24),
+	})
+	PDFHeaderLeftBold = register(&BoolSetting{
+		key: "pdfHeaderLeftBold", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFHeaderLeft,
+		Label: "Bold",
+	})
+	PDFHeaderLeftItalic = register(&BoolSetting{
+		key: "pdfHeaderLeftItalic", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFHeaderLeft,
+		Label: "Italic",
+	})
+	PDFHeaderCenter = register(&StringSetting{
+		key: "pdfHeaderCenter", Default: "",
+		Section: SectionPDFExport, Group: GroupPDFHeaderCenter,
+		Label: "Text",
+	})
+	PDFHeaderCenterFont = register(&StringSetting{
+		key: "pdfHeaderCenterFont", Default: "Roboto",
+		Section: SectionPDFExport, Group: GroupPDFHeaderCenter,
+		Label:       "Font",
+		Options:     fontOptionList(false),
+		FontPreview: true,
+	})
+	PDFHeaderCenterColor = register(&StringSetting{
+		key: "pdfHeaderCenterColor", Default: "#000000",
+		Section: SectionPDFExport, Group: GroupPDFHeaderCenter,
+		Label:    "Color",
+		IsColor:  true,
+		Validate: utils.ValidateHexColor,
+	})
+	PDFHeaderCenterSize = register(&IntSetting{
+		key: "pdfHeaderCenterSize", Default: 8,
+		Section: SectionPDFExport, Group: GroupPDFHeaderCenter,
+		Label: "Size",
+		Desc:  "font size in points",
+		Min:   intPtr(6), Max: intPtr(24),
+	})
+	PDFHeaderCenterBold = register(&BoolSetting{
+		key: "pdfHeaderCenterBold", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFHeaderCenter,
+		Label: "Bold",
+	})
+	PDFHeaderCenterItalic = register(&BoolSetting{
+		key: "pdfHeaderCenterItalic", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFHeaderCenter,
+		Label: "Italic",
+	})
+	PDFHeaderRight = register(&StringSetting{
+		key: "pdfHeaderRight", Default: "",
+		Section: SectionPDFExport, Group: GroupPDFHeaderRight,
+		Label: "Text",
+	})
+	PDFHeaderRightFont = register(&StringSetting{
+		key: "pdfHeaderRightFont", Default: "Roboto",
+		Section: SectionPDFExport, Group: GroupPDFHeaderRight,
+		Label:       "Font",
+		Options:     fontOptionList(false),
+		FontPreview: true,
+	})
+	PDFHeaderRightColor = register(&StringSetting{
+		key: "pdfHeaderRightColor", Default: "#000000",
+		Section: SectionPDFExport, Group: GroupPDFHeaderRight,
+		Label:    "Color",
+		IsColor:  true,
+		Validate: utils.ValidateHexColor,
+	})
+	PDFHeaderRightSize = register(&IntSetting{
+		key: "pdfHeaderRightSize", Default: 8,
+		Section: SectionPDFExport, Group: GroupPDFHeaderRight,
+		Label: "Size",
+		Desc:  "font size in points",
+		Min:   intPtr(6), Max: intPtr(24),
+	})
+	PDFHeaderRightBold = register(&BoolSetting{
+		key: "pdfHeaderRightBold", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFHeaderRight,
+		Label: "Bold",
+	})
+	PDFHeaderRightItalic = register(&BoolSetting{
+		key: "pdfHeaderRightItalic", Default: false,
+		Section: SectionPDFExport, Group: GroupPDFHeaderRight,
+		Label: "Italic",
+	})
+	PDFFTokensNote = register(&NoteSetting{
+		key:     "pdfTokensNote",
 		Section: SectionPDFExport,
-		Group:   GroupPDFFooter,
-		Text:    "footer tokens (all columns): {{date}}, {{page}}, {{pages}}, {{filename}}, {{filepath}}, {{folder}}, {{created}}, {{edited}}, {{tags}}, {{collection}}",
+		Group:   GroupPDFNotes,
+		Text:    "tokens (all columns): {{date}}, {{page}}, {{pages}}, {{filename}}, {{filepath}}, {{folder}}, {{created}}, {{edited}}, {{tags}}, {{collection}}",
 	})
 )
 
