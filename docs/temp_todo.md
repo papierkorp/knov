@@ -26,7 +26,6 @@
 - move file button (can be done in rename at the moment)
 - settings/configs to hide certain folders from different searches
 - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
-- add a theme log key (so a themecreater can instantly see why the theme wasnt loaded)
 - make all strings in the settings translateable..
 - pdfexport header same as footer possible?
 - close the info slideout on /settings (sometimes its open if i open the settings in a new tab)
