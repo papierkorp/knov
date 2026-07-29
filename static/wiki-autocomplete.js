@@ -181,26 +181,51 @@
     return (path.indexOf("#") === 0 ? "" : FILES_PREFIX) + encodePathSegments(path);
   }
 
-  // Triggers on an unclosed "[[" (wikilink) or an unclosed "](" (markdown
-  // link target), whichever is open at the caret. insertFn receives the
-  // chosen path plus which one matched, so callers can build the right text.
+  // Builds the "](...)" target for a media file, matching the "media/<path>"
+  // form the media selector modal already inserts (no FILES_PREFIX).
+  function buildMediaTarget(path) {
+    return "media/" + encodePathSegments(path);
+  }
+
+  // Triggers on an unclosed "[[" (wikilink), an unclosed "![" + "](" (media/image
+  // link target), or an unclosed "](" (markdown link target), whichever is open
+  // at the caret. insertFn receives the chosen path plus which one matched, so
+  // callers can build the right text.
   function triggerAutocomplete(before, anchorEl, insertFn, currentFile) {
     var wiki = before.match(/\[\[([^\]]*)$/);
     var md = !wiki && before.match(/\]\(([^)]*)$/);
     if (md && md[1].indexOf("://") !== -1) md = false;
-    if (md && /!\[[^\[\]]*$/.test(before.slice(0, md.index))) md = false;
+    var isMedia = md && /!\[[^\[\]]*$/.test(before.slice(0, md.index));
     var m = wiki || md;
     if (m) {
       onInsert = function (path) {
-        insertFn(path, wiki ? "wiki" : "md");
+        insertFn(path, wiki ? "wiki" : isMedia ? "media" : "md");
       };
-      dispatchFetch(m[1], anchorEl, currentFile);
+      dispatchFetch(m[1], anchorEl, currentFile, isMedia);
     } else {
       hide();
     }
   }
 
-  function dispatchFetch(inner, anchorEl, currentFile) {
+  function debouncedFetchMedia(q, anchorEl) {
+    clearTimeout(fetchTimer);
+    fetchTimer = setTimeout(function () {
+      fetch("/api/media/autocomplete?q=" + encodeURIComponent(q))
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (items) {
+          show(items, anchorEl);
+        })
+        .catch(hide);
+    }, 120);
+  }
+
+  function dispatchFetch(inner, anchorEl, currentFile, isMedia) {
+    if (isMedia) {
+      debouncedFetchMedia(inner, anchorEl);
+      return;
+    }
     // Markdown links store "/files/<path>" (a real href), but the file and
     // header lookup APIs expect a plain repo-relative path, same as
     // wikilinks store internally. Strip the prefix before querying.
@@ -285,7 +310,7 @@
       moveCursorBack(2 - cursorOffset(path, opts, 2));
     }
 
-    function insertMdLink(path) {
+    function insertMdLink(path, isMedia) {
       var s = editor.getSelection();
       var line = s[0][0],
         ch = s[0][1];
@@ -294,8 +319,9 @@
       if (idx === -1) return;
       // ch is 1-based: subtract 1 to check the char that actually follows the cursor
       var endSel = lt.substring(ch - 1, ch) === ")" ? ch + 1 : ch;
+      var target = isMedia ? buildMediaTarget(path) : buildTarget(path);
       editor.setSelection([line, Math.max(1, idx + 1)], [line, endSel]);
-      editor.insertText("](" + buildTarget(path) + ")");
+      editor.insertText("](" + target + ")");
       moveCursorBack(1 - cursorOffset(path, opts, 1));
     }
 
@@ -329,8 +355,8 @@
       // breaking the trigger regex whenever the cursor sits mid-link.
       var before = lineText.substring(0, sel[0][1] - 1);
       triggerAutocomplete(before, editorEl, function (path, mode) {
-        if (mode === "md") insertMdLink(path);
-        else insertWikiLink(path);
+        if (mode === "wiki") insertWikiLink(path);
+        else insertMdLink(path, mode === "media");
       }, opts.currentFile);
     });
   };
@@ -361,7 +387,7 @@
       });
     }
 
-    function insertMdLink(path) {
+    function insertMdLink(path, isMedia) {
       var cur = view.state.selection.main.head;
       var li = view.state.doc.lineAt(cur);
       var b = li.text.substring(0, cur - li.from);
@@ -371,7 +397,7 @@
       var toPos = cur;
       if (li.text.substring(cur - li.from, cur - li.from + 1) === ")")
         toPos += 1;
-      var target = buildTarget(path);
+      var target = isMedia ? buildMediaTarget(path) : buildTarget(path);
       var cursorPos = from + target.length + cursorOffset(path, opts, 1);
       view.dispatch({
         changes: { from: from, to: toPos, insert: target + ")" },
@@ -399,8 +425,8 @@
         },
       };
       triggerAutocomplete(before, anchor, function (path, mode) {
-        if (mode === "md") insertMdLink(path);
-        else insertWikiLink(path);
+        if (mode === "wiki") insertWikiLink(path);
+        else insertMdLink(path, mode === "media");
       }, opts.currentFile);
     });
   };
@@ -483,14 +509,14 @@
       input.dispatchEvent(new Event("input", { bubbles: true }));
     }
 
-    function insertMdLink(input, path) {
+    function insertMdLink(input, path, isMedia) {
       var pos = input.selectionStart;
       var val = input.value;
       var ws = val.substring(0, pos).lastIndexOf("](");
       if (ws === -1) return;
       var start = ws + 2;
       var endPos = val.substring(pos, pos + 1) === ")" ? pos + 1 : pos;
-      var target = buildTarget(path);
+      var target = isMedia ? buildMediaTarget(path) : buildTarget(path);
       input.setRangeText(target + ")", start, endPos, "end");
       var cursorPos = start + target.length + cursorOffset(path, opts, 1);
       input.setSelectionRange(cursorPos, cursorPos);
@@ -510,8 +536,8 @@
         ? { getBoundingClientRect: function () { return getTextareaCaretRect(input); } }
         : input;
       triggerAutocomplete(before, anchor, function (path, mode) {
-        if (mode === "md") insertMdLink(input, path);
-        else insertWikiLink(input, path);
+        if (mode === "wiki") insertWikiLink(input, path);
+        else insertMdLink(input, path, mode === "media");
       }, opts.currentFile);
     });
   };

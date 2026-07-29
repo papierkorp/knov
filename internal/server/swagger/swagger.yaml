@@ -2927,6 +2927,27 @@ paths:
       summary: Delete media file
       tags:
       - media
+  /api/media/autocomplete:
+    get:
+      description: Returns media files matching a query string for use in image/media
+        link autocomplete
+      parameters:
+      - description: search query
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: array of {path, filename}
+          schema:
+            items:
+              type: object
+            type: array
+      summary: Autocomplete media file paths
+      tags:
+      - media
   /api/media/cleanup-orphaned:
     post:
       consumes:

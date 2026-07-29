@@ -285,6 +285,7 @@ func NewRouter() *chi.Mux {
 		r.Route("/media", func(r chi.Router) {
 			r.Post("/upload", handleAPIMediaUpload)
 			r.Get("/list", handleAPIGetAllMedia)
+			r.Get("/autocomplete", handleAPIMediaAutocomplete)
 			r.Get("/preview", handleAPIMediaPreview)
 			r.Delete("/*", handleAPIDeleteMedia)
 			r.Get("/stats", handleAPIMediaStats)

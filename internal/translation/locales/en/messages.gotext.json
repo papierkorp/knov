@@ -2807,6 +2807,16 @@
       "translation": ""
     },
     {
+      "id": "Run Logs Tests",
+      "message": "Run Logs Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run logs tests? This will write probe entries to the in-app-tests log.",
+      "message": "Run logs tests? This will write probe entries to the in-app-tests log.",
+      "translation": ""
+    },
+    {
       "id": "Run Media Tests",
       "message": "Run Media Tests",
       "translation": ""
@@ -2827,6 +2837,26 @@
       "translation": ""
     },
     {
+      "id": "Run Notification Tests",
+      "message": "Run Notification Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run notification tests? This will add, consume and clear real notifications.",
+      "message": "Run notification tests? This will add, consume and clear real notifications.",
+      "translation": ""
+    },
+    {
+      "id": "Run parser tests?",
+      "message": "Run parser tests?",
+      "translation": ""
+    },
+    {
+      "id": "Run Parser Tests",
+      "message": "Run Parser Tests",
+      "translation": ""
+    },
+    {
       "id": "Run Search Tests",
       "message": "Run Search Tests",
       "translation": ""
@@ -2834,6 +2864,16 @@
     {
       "id": "Run search tests? This will create test files and git commits.",
       "message": "Run search tests? This will create test files and git commits.",
+      "translation": ""
+    },
+    {
+      "id": "Run Settings Tests",
+      "message": "Run Settings Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run settings tests? This will temporarily change real settings, theme and favicon, then restore them.",
+      "message": "Run settings tests? This will temporarily change real settings, theme and favicon, then restore them.",
       "translation": ""
     },
     {

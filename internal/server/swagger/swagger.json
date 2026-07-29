@@ -3617,6 +3617,37 @@
                 }
             }
         },
+        "/api/media/autocomplete": {
+            "get": {
+                "description": "Returns media files matching a query string for use in image/media link autocomplete",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Autocomplete media file paths",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "search query",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "array of {path, filename}",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/media/cleanup-orphaned": {
             "post": {
                 "description": "Deletes all orphaned media files (files not referenced by any documents)",
