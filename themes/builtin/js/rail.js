@@ -36,8 +36,7 @@ function switchMediaFilter(filter, btn) {
   const url = "/api/media/list?mode=compact&filter=" + filter;
   fetch(url, { headers: { Accept: "text/html" } })
     .then((r) => {
-      const hidden = parseInt(r.headers.get("X-Hidden-Count") || "0", 10);
-      updateMediaHiddenWarning(hidden);
+      updateMediaHiddenWarning(r.headers.get("X-Hidden-Message"));
       return r.text();
     })
     .then((html) => {
@@ -45,11 +44,11 @@ function switchMediaFilter(filter, btn) {
     });
 }
 
-function updateMediaHiddenWarning(hiddenCount) {
+function updateMediaHiddenWarning(message) {
   const el = document.getElementById("fp-media-warning");
   if (!el) return;
-  if (hiddenCount > 0) {
-    el.textContent = hiddenCount + " files not shown (hidden in settings)";
+  if (message) {
+    el.textContent = message;
     el.style.display = "block";
   } else {
     el.style.display = "none";
@@ -235,12 +234,11 @@ function lazyLoad(panelId) {
   const url = el.dataset.url;
   if (!url) return;
   el.dataset.loaded = "true";
-  // media panel: use fetch to read X-Hidden-Count header
+  // media panel: use fetch to read X-Hidden-Message header
   if (panelId === "fp-media") {
     fetch(url, { headers: { Accept: "text/html" } })
       .then((r) => {
-        const hidden = parseInt(r.headers.get("X-Hidden-Count") || "0", 10);
-        updateMediaHiddenWarning(hidden);
+        updateMediaHiddenWarning(r.headers.get("X-Hidden-Message"));
         return r.text();
       })
       .then((html) => {
@@ -267,8 +265,7 @@ function reloadPanel(panelId) {
   if (panelId === "fp-media") {
     fetch(url, { headers: { Accept: "text/html" } })
       .then((r) => {
-        const hidden = parseInt(r.headers.get("X-Hidden-Count") || "0", 10);
-        updateMediaHiddenWarning(hidden);
+        updateMediaHiddenWarning(r.headers.get("X-Hidden-Message"));
         return r.text();
       })
       .then((html) => {

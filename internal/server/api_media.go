@@ -163,7 +163,9 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 		case "compact":
 			html := render.RenderMediaListCompact(filteredMedia, "detail")
 			w.Header().Set("Content-Type", "text/html")
-			w.Header().Set("X-Hidden-Count", fmt.Sprintf("%d", hiddenCount))
+			if hiddenCount > 0 {
+				w.Header().Set("X-Hidden-Message", translation.SprintfForRequest(configmanager.GetLanguage(), "%d files not shown (hidden in settings)", hiddenCount))
+			}
 			w.Write([]byte(html))
 		default:
 			html := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), visibleOrphanedCount, hiddenCount)

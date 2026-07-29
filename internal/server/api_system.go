@@ -179,7 +179,6 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 	hasMore := start > 0
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("X-Log-Total-Lines", strconv.Itoa(total))
 	if hasMore {
 		w.Header().Set("X-Log-Has-More", "true")
 	}
@@ -189,6 +188,11 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 
 	var sb strings.Builder
 	if isChunk {
+		shown := offset + limit
+		if shown > total {
+			shown = total
+		}
+		w.Header().Set("X-Log-Line-Info", translation.SprintfForRequest(lang, "showing last %d of %d lines", shown, total))
 		sb.WriteString(render.LogFileLines(chunk))
 	} else {
 		sb.WriteString(`<div id="log-file-container">`)

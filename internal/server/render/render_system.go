@@ -233,6 +233,9 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 .log-line:hover { background: color-mix(in srgb, var(--text) 3%, transparent); }
 #log-more-area { padding: .5rem 0; display: flex; align-items: center; gap: .75rem; }
 .log-line-info { font-size: .8rem; color: var(--text-secondary); }
+#log-pause-btn .log-resume-label { display: none; }
+#log-pause-btn.active .log-pause-label { display: none; }
+#log-pause-btn.active .log-resume-label { display: inline; }
 </style>` +
 		`<div class="system-logs">` +
 		`<div class="system-logs-toolbar">` +
@@ -248,7 +251,7 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 		keyFilterOptions.String() +
 		`</select>` +
 		fmt.Sprintf(`<button class="btn-secondary" onclick="refreshLogs()">%s</button>`, t("Refresh")) +
-		fmt.Sprintf(`<button id="log-pause-btn" class="btn-secondary" onclick="toggleLogPolling(this)">%s</button>`, t("Pause")) +
+		fmt.Sprintf(`<button id="log-pause-btn" class="btn-secondary" onclick="toggleLogPolling(this)"><span class="log-pause-label">%s</span><span class="log-resume-label">%s</span></button>`, t("Pause"), t("Resume")) +
 		fileSelect +
 		downloadBtn +
 		`</div>` +
@@ -305,7 +308,6 @@ function refreshLogs() {
 
 function toggleLogPolling(btn) {
 	_logPaused = !_logPaused;
-	btn.textContent = _logPaused ? 'Resume' : 'Pause';
 	btn.classList.toggle('active', _logPaused);
 }
 
@@ -318,7 +320,7 @@ function onLogSourceChange(sel) {
 		_logPaused = false;
 		_logCurrentFile = '';
 		_logCurrentOffset = 0;
-		if (pauseBtn) { pauseBtn.textContent = 'Pause'; pauseBtn.classList.remove('active'); }
+		if (pauseBtn) pauseBtn.classList.remove('active');
 		if (downloadLink) { downloadLink.style.display = 'none'; }
 		htmx.ajax('GET', '/api/logs', {target: '#log-entries', swap: 'innerHTML'});
 	} else {
@@ -326,7 +328,7 @@ function onLogSourceChange(sel) {
 		_logPaused = true;
 		_logCurrentFile = val;
 		_logCurrentOffset = 0;
-		if (pauseBtn) { pauseBtn.textContent = 'Resume'; pauseBtn.classList.add('active'); }
+		if (pauseBtn) pauseBtn.classList.add('active');
 		if (downloadLink) {
 			if (val === 'all') {
 				downloadLink.style.display = 'none';
@@ -345,14 +347,11 @@ function loadMoreLogLines() {
 	fetch(url)
 		.then(function(resp) {
 			var hasMore = resp.headers.get('X-Log-Has-More') === 'true';
-			var total = parseInt(resp.headers.get('X-Log-Total-Lines') || '0', 10);
+			var lineInfo = resp.headers.get('X-Log-Line-Info');
 			var moreArea = document.getElementById('log-more-area');
 			if (moreArea) moreArea.style.display = hasMore ? '' : 'none';
 			var info = document.getElementById('log-line-info');
-			if (info && total > 0) {
-				var shown = Math.min(_logCurrentOffset + _logLimit, total);
-				info.textContent = 'showing last ' + shown + ' of ' + total + ' lines';
-			}
+			if (info && lineInfo) info.textContent = lineInfo;
 			return resp.text();
 		})
 		.then(function(html) {
