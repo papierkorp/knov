@@ -26,8 +26,10 @@
 - move file button (can be done in rename at the moment)
 - settings/configs to hide certain folders from different searches
 - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
-- make all strings in the settings translateable..
 - handle image links in lists/todo => maybe just show the link? make setting to choos between link/image? at the moment its just invisible
+- filter editor - add a save and cancel button
+- loading kanban (/kanban/arbeit-sirconic-todo) takes a really long time => does it load ALL files and not just the collection files?
+- kanban server route - all ancestors selection - check if ancestor is archived and only show it if not
 
 
 # ai prompts

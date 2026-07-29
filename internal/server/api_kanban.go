@@ -182,13 +182,13 @@ func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
 		return
 	}
 
 	status := r.FormValue("status")
 	if status == "" {
-		http.Error(w, "missing status", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing status"), http.StatusBadRequest)
 		return
 	}
 
@@ -208,7 +208,7 @@ func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
 
 	if err := kanban.SaveOrder(board.FolderPath, stored); err != nil {
 		logging.LogError(logging.KeyApp, "kanban: save order failed for %s: %v", board.FolderPath, err)
-		http.Error(w, "failed to save order", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save order"), http.StatusInternalServerError)
 		return
 	}
 
@@ -314,7 +314,7 @@ func handleAPIGetKanbanEvents(w http.ResponseWriter, r *http.Request) {
 	events, err := kanban.GetEvents(board.FolderPath, filePath, from, to, limit)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get kanban events for %s: %v", board.FolderPath, err)
-		http.Error(w, "failed to get events", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get events"), http.StatusInternalServerError)
 		return
 	}
 
@@ -358,7 +358,7 @@ func handleAPIGetKanbanFiles(w http.ResponseWriter, r *http.Request) {
 	paths, err := kanban.FilesForFolder(board.FolderPath)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to get kanban files for %s: %v", board.FolderPath, err)
-		http.Error(w, "failed to get files", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
 		return
 	}
 

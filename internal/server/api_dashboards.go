@@ -281,7 +281,7 @@ func handleAPIDashboardForm(w http.ResponseWriter, r *http.Request) {
 func handleAPIWidgetForm(w http.ResponseWriter, r *http.Request) {
 	// Get next available index by counting existing widgets
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
 		return
 	}
 
@@ -305,7 +305,7 @@ func handleAPIWidgetForm(w http.ResponseWriter, r *http.Request) {
 // @Router /api/dashboards/widget-config [post]
 func handleAPIWidgetConfig(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
 		return
 	}
 
@@ -390,7 +390,7 @@ func handleAPIRenderWidget(w http.ResponseWriter, r *http.Request) {
 	widgetId := strings.TrimPrefix(r.URL.Path, "/api/dashboards/widget/")
 
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
 		return
 	}
 
@@ -445,13 +445,13 @@ func handleAPIRenameDashboard(w http.ResponseWriter, r *http.Request) {
 	id = strings.TrimSuffix(id, "/rename")
 
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
 		return
 	}
 
 	name := r.FormValue("name")
 	if name == "" {
-		http.Error(w, "name is required", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "name is required"), http.StatusBadRequest)
 		return
 	}
 

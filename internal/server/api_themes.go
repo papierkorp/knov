@@ -8,6 +8,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/server/render"
 	"knov/internal/thememanager"
+	"knov/internal/translation"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -82,7 +83,7 @@ func handleAPIGetThemeSettings(w http.ResponseWriter, r *http.Request) {
 	themeName := chi.URLParam(r, "themeName")
 
 	if themeName == "" {
-		http.Error(w, "theme name is required", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "theme name is required"), http.StatusBadRequest)
 		return
 	}
 
@@ -110,7 +111,7 @@ func handleAPISetThemeSetting(w http.ResponseWriter, r *http.Request) {
 	value := r.FormValue("value")
 
 	if themeName == "" || settingKey == "" {
-		http.Error(w, "theme name and setting key are required", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "theme name and setting key are required"), http.StatusBadRequest)
 		return
 	}
 
@@ -165,7 +166,7 @@ func handleAPIUpdateThemeSetting(w http.ResponseWriter, r *http.Request) {
 	value := r.FormValue("value")
 
 	if key == "" {
-		http.Error(w, "key parameter is required", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "key parameter is required"), http.StatusBadRequest)
 		return
 	}
 
@@ -176,7 +177,7 @@ func handleAPIUpdateThemeSetting(w http.ResponseWriter, r *http.Request) {
 	// get setting definition to determine type
 	setting, exists := schema[key]
 	if !exists {
-		http.Error(w, "unknown setting key", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown setting key"), http.StatusBadRequest)
 		return
 	}
 

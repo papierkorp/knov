@@ -29,6 +29,11 @@ func jsEscapeString(s string) string {
 // jsEditorInit returns the ToastUI editor constructor call.
 // Binds the upload hook so blob uploads go through uploadMediaBlob.
 func jsEditorInit(content string) string {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
 	initialView := configmanager.ToastuiInitialView.Get()
 	if initialView == "" {
 		initialView = "markdown"
@@ -46,14 +51,14 @@ func jsEditorInit(content string) string {
 		hideModeSwitch = "true"
 	}
 	// when toolbar is hidden pass an empty array; otherwise use the configured items
-	toolbarItemsJS := `[
+	toolbarItemsJS := fmt.Sprintf(`[
 				['heading', 'bold', 'italic', 'strike'],
 				['hr', 'quote'],
 				['ul', 'ol', 'task', 'indent', 'outdent'],
 				['table', 'image', 'link'],
 				[{
 					name: 'selectMedia',
-					tooltip: 'Select Media',
+					tooltip: %s,
 					el: (() => {
 						const button = document.createElement('button');
 						button.className = 'toastui-editor-toolbar-icons';
@@ -65,7 +70,7 @@ func jsEditorInit(content string) string {
 					})()
 				}, {
 					name: 'selectWikiFile',
-					tooltip: 'Insert Wiki File Link',
+					tooltip: %s,
 					el: (() => {
 						const button = document.createElement('button');
 						button.className = 'toastui-editor-toolbar-icons';
@@ -77,7 +82,7 @@ func jsEditorInit(content string) string {
 					})()
 				}],
 				['code', 'codeblock']
-			]`
+			]`, jsEscapeString(t("Select Media")), jsEscapeString(t("Insert Wiki File Link")))
 	if !configmanager.ToastuiShowToolbar.Get() {
 		toolbarItemsJS = "[]"
 	}
@@ -241,7 +246,12 @@ func jsDragAndDrop() string {
 // Derives the context path from the current URL, shows an upload notification, then POSTs
 // to /api/media/upload and calls callback(url, alt) on success.
 func jsUploadMediaBlob() string {
-	return `
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
+	return fmt.Sprintf(`
 		// shared upload helper: derives context from URL, uploads, calls callback(url, alt)
 		function uploadMediaBlob(blob, callback) {
 			const currentPath = window.location.pathname;
@@ -254,7 +264,7 @@ func jsUploadMediaBlob() string {
 			}
 
 			if (!contextPath) {
-				alert('please save the document first to enable file uploads.');
+				alert(%s);
 				callback('', '');
 				return;
 			}
@@ -265,8 +275,8 @@ func jsUploadMediaBlob() string {
 
 			const uploadMessage = document.createElement('div');
 			uploadMessage.className = 'upload-notification';
-			uploadMessage.style.cssText = 'position:fixed;top:10px;right:10px;padding:12px 16px;border-radius:6px;z-index:9999;font-weight:500;box-shadow:0 4px 12px color-mix(in srgb, var(--text) 15%, transparent);background:var(--primary);color:var(--surface);';
-			uploadMessage.textContent = 'uploading...';
+			uploadMessage.style.cssText = 'position:fixed;top:10px;right:10px;padding:12px 16px;border-radius:6px;z-index:9999;font-weight:500;box-shadow:0 4px 12px color-mix(in srgb, var(--text) 15%%, transparent);background:var(--primary);color:var(--surface);';
+			uploadMessage.textContent = %s;
 			document.body.appendChild(uploadMessage);
 
 			fetch('/api/media/upload', {
@@ -277,48 +287,59 @@ func jsUploadMediaBlob() string {
 			.then(function(response) {
 				if (!response.ok) {
 					return response.text().then(function(t) {
-						throw new Error(t || 'upload failed: ' + response.statusText);
+						throw new Error(t || (%s + response.statusText));
 					});
 				}
 				return response.json();
 			})
 			.then(function(data) {
 				if (document.body.contains(uploadMessage)) document.body.removeChild(uploadMessage);
-				callback('media/' + data.path, data.filename || blob.name || 'uploaded file');
+				callback('media/' + data.path, data.filename || blob.name || %s);
 			})
 			.catch(function(error) {
 				if (document.body.contains(uploadMessage)) document.body.removeChild(uploadMessage);
-				alert('failed to upload file: ' + error.message);
+				alert(%s + error.message);
 				callback('', '');
 			});
-		}`
+		}`,
+		jsEscapeString(t("please save the document first to enable file uploads.")),
+		jsEscapeString(t("uploading...")),
+		jsEscapeString(t("upload failed: ")),
+		jsEscapeString(t("uploaded file")),
+		jsEscapeString(t("failed to upload file: ")),
+	)
 }
 
 // jsMediaSelector defines the media browser modal (showMediaSelector / closeMediaSelector).
 // Opens a modal that fetches /api/media/list?mode=select as HTML.
 func jsMediaSelector() string {
-	return `
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
+	return fmt.Sprintf(`
 		// media browser modal — opened by the toolbar "Select Media" button
 		window.showMediaSelector = function(editor) {
 			const modal = document.createElement('div');
 			modal.className = 'media-selector-modal';
-			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:color-mix(in srgb, var(--text) 50%, transparent);z-index:10000;display:flex;align-items:center;justify-content:center;';
+			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%%;height:100%%;background:color-mix(in srgb, var(--text) 50%%, transparent);z-index:10000;display:flex;align-items:center;justify-content:center;';
 
 			const popup = document.createElement('div');
 			popup.className = 'media-selector-popup';
-			popup.style.cssText = 'background:var(--surface);color:var(--text);border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px color-mix(in srgb, var(--text) 30%, transparent);display:flex;flex-direction:column;';
+			popup.style.cssText = 'background:var(--surface);color:var(--text);border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px color-mix(in srgb, var(--text) 30%%, transparent);display:flex;flex-direction:column;';
 
 			const header = document.createElement('div');
 			header.style.cssText = 'padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-			header.innerHTML = '<h3 style="margin:0;font-size:1em;">select media file</h3><button onclick="closeMediaSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);">&times;</button>';
+			header.innerHTML = '<h3 style="margin:0;font-size:1em;">' + %s + '</h3><button onclick="closeMediaSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);">&times;</button>';
 
 			const search = document.createElement('div');
 			search.style.cssText = 'padding:8px 16px;border-bottom:1px solid var(--border);flex-shrink:0;';
-			search.innerHTML = '<input type="text" placeholder="filter..." style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);font-size:0.9em;box-sizing:border-box;" oninput="filterMediaSelectorList(this.value)">';
+			search.innerHTML = '<input type="text" placeholder="' + %s + '" style="width:100%%;padding:6px 10px;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);font-size:0.9em;box-sizing:border-box;" oninput="filterMediaSelectorList(this.value)">';
 
 			const body = document.createElement('div');
 			body.style.cssText = 'padding:12px 16px;overflow-y:auto;flex:1;';
-			body.innerHTML = 'loading media files...';
+			body.innerHTML = %s;
 
 			popup.appendChild(header);
 			popup.appendChild(search);
@@ -329,7 +350,7 @@ func jsMediaSelector() string {
 			fetch('/api/media/list?mode=select', { headers: { 'Accept': 'text/html' } })
 				.then(function(r) { return r.text(); })
 				.then(function(html) { body.innerHTML = html; })
-				.catch(function() { body.innerHTML = 'error loading media files'; });
+				.catch(function() { body.innerHTML = %s; });
 
 			// focus search after items load
 			setTimeout(function() {
@@ -349,7 +370,12 @@ func jsMediaSelector() string {
 				const name = (item.querySelector('.media-select-name') || {}).textContent || '';
 				item.style.display = name.toLowerCase().includes(q) ? '' : 'none';
 			});
-		};`
+		};`,
+		jsEscapeString(t("select media file")),
+		jsEscapeString(t("filter...")),
+		jsEscapeString(t("loading media files...")),
+		jsEscapeString(t("error loading media files")),
+	)
 }
 
 // jsInsertMedia defines insertMediaIntoEditor and insertMediaLink — called by the media
@@ -391,25 +417,30 @@ func jsFormSubmit(frontMatter string) string {
 // jsWikiFileSelector defines a modal for browsing wiki files and inserting a full markdown link.
 // Uses the /api/files/autocomplete endpoint as datasource.
 func jsWikiFileSelector() string {
-	return `
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
+	return fmt.Sprintf(`
 		window.showWikiFileSelector = function(editor) {
 			const modal = document.createElement('div');
 			modal.className = 'wiki-file-selector-modal';
-			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:color-mix(in srgb, var(--text) 50%, transparent);z-index:10000;display:flex;align-items:center;justify-content:center;';
+			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%%;height:100%%;background:color-mix(in srgb, var(--text) 50%%, transparent);z-index:10000;display:flex;align-items:center;justify-content:center;';
 
 			const popup = document.createElement('div');
-			popup.style.cssText = 'background:var(--surface);color:var(--text);border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px color-mix(in srgb, var(--text) 30%, transparent);display:flex;flex-direction:column;';
+			popup.style.cssText = 'background:var(--surface);color:var(--text);border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px color-mix(in srgb, var(--text) 30%%, transparent);display:flex;flex-direction:column;';
 
 			const header = document.createElement('div');
 			header.style.cssText = 'padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-			header.innerHTML = '<h3 style="margin:0;font-size:1em;">insert wiki file link</h3><button onclick="closeWikiFileSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);">&times;</button>';
+			header.innerHTML = '<h3 style="margin:0;font-size:1em;">' + %s + '</h3><button onclick="closeWikiFileSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);">&times;</button>';
 
 			const search = document.createElement('div');
 			search.style.cssText = 'padding:8px 16px;border-bottom:1px solid var(--border);flex-shrink:0;';
 			const searchInput = document.createElement('input');
 			searchInput.type = 'text';
-			searchInput.placeholder = 'filter...';
-			searchInput.style.cssText = 'width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);font-size:0.9em;box-sizing:border-box;';
+			searchInput.placeholder = %s;
+			searchInput.style.cssText = 'width:100%%;padding:6px 10px;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);font-size:0.9em;box-sizing:border-box;';
 			search.appendChild(searchInput);
 
 			const body = document.createElement('div');
@@ -430,7 +461,7 @@ func jsWikiFileSelector() string {
 						.then(function(results) {
 							body.innerHTML = '';
 							if (!results || results.length === 0) {
-								body.innerHTML = '<span style="color:var(--text-secondary);font-size:0.9em;">no files found</span>';
+								body.innerHTML = '<span style="color:var(--text-secondary);font-size:0.9em;">' + %s + '</span>';
 								return;
 							}
 							results.forEach(function(f) {
@@ -447,7 +478,7 @@ func jsWikiFileSelector() string {
 								body.appendChild(item);
 							});
 						})
-						.catch(function() { body.innerHTML = 'error loading files'; });
+						.catch(function() { body.innerHTML = %s; });
 				}, 120);
 			}
 
@@ -459,7 +490,12 @@ func jsWikiFileSelector() string {
 		window.closeWikiFileSelector = function() {
 			const modal = document.querySelector('.wiki-file-selector-modal');
 			if (modal) modal.remove();
-		};`
+		};`,
+		jsEscapeString(t("insert wiki file link")),
+		jsEscapeString(t("filter...")),
+		jsEscapeString(t("no files found")),
+		jsEscapeString(t("error loading files")),
+	)
 }
 
 // jsRegisterEditor stores the editor instance on window so media helpers can reach it.

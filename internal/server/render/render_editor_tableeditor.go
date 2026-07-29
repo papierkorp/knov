@@ -118,7 +118,7 @@ hot.addHook('afterOnCellMouseDown', function (event, coords, TD) {
       // Double click
       const colIndex = coords.col;
       const currentHeader = hot.getColHeader(colIndex);
-      const newHeader = prompt('Edit column header:', currentHeader);
+      const newHeader = prompt('%s', currentHeader);
 
       if (newHeader !== null && newHeader !== currentHeader && newHeader.trim() !== '') {
         // Get current headers
@@ -177,6 +177,7 @@ function cancelTableEdit() {
 		string(tableJSON),
 		jsEscape(filePath),
 		jsEscape(returnURL),
+		translation.SprintfForRequest(configmanager.GetLanguage(), "Edit column header:"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "error saving table"),
 	)
 

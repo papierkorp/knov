@@ -3,9 +3,11 @@ package server
 import (
 	"net/http"
 
+	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/search"
 	"knov/internal/server/render"
+	"knov/internal/translation"
 )
 
 // @Summary Search files
@@ -55,14 +57,14 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 		if titleOnly {
 			results, err := search.SearchDeletedFilesByTitle(query, limit)
 			if err != nil {
-				http.Error(w, "history search failed", http.StatusInternalServerError)
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "history search failed"), http.StatusInternalServerError)
 				return
 			}
 			histHTML = render.RenderSearchHistoryResults(results, query)
 		} else {
 			results, err := search.SearchDeletedFilesByContent(query, limit)
 			if err != nil {
-				http.Error(w, "history search failed", http.StatusInternalServerError)
+				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "history search failed"), http.StatusInternalServerError)
 				return
 			}
 			histHTML = render.RenderSearchHistoryResults(results, query)
@@ -79,7 +81,7 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 		results, err = search.SearchFiles(query, limit)
 	}
 	if err != nil {
-		http.Error(w, "search failed", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "search failed"), http.StatusInternalServerError)
 		return
 	}
 

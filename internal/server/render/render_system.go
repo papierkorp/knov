@@ -17,6 +17,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/parser"
 	"knov/internal/thememanager"
+	"knov/internal/translation"
 	"knov/internal/version"
 )
 
@@ -140,8 +141,14 @@ func ParseLogLines(key logging.Key, lines []string) []logging.LogEntry {
 // Message), newest first - shared by the live ring-buffer view and the
 // merged "All" log-file view.
 func RenderLogTable(entries []logging.LogEntry) string {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
 	var sb strings.Builder
-	sb.WriteString(`<table class="log-table"><thead><tr><th>Time</th><th>Level</th><th>Source</th><th>Caller</th><th>Message</th></tr></thead><tbody>`)
+	fmt.Fprintf(&sb, `<table class="log-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
+		t("Time"), t("Level"), t("Source"), t("Caller"), t("Message"))
 	for i := len(entries) - 1; i >= 0; i-- {
 		e := entries[i]
 		fmt.Fprintf(&sb,
@@ -166,11 +173,16 @@ func SetDocsFiles(fs embed.FS) {
 }
 
 func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
 	logFiles := logging.GetAllLogFiles()
 	hasFile := len(logFiles) > 0
 
 	var keyFilterOptions strings.Builder
-	keyFilterOptions.WriteString(`<option value="">all keys</option>`)
+	fmt.Fprintf(&keyFilterOptions, `<option value="">%s</option>`, t("all keys"))
 	for _, key := range logging.AvailableKeys {
 		name := key.String()
 		fmt.Fprintf(&keyFilterOptions, `<option value="%s">%s</option>`, template.HTMLEscapeString(name), template.HTMLEscapeString(name))
@@ -181,14 +193,14 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 	if hasFile {
 		var sb strings.Builder
 		sb.WriteString(`<select id="log-source-select" onchange="onLogSourceChange(this)">`)
-		sb.WriteString(`<option value="live">Live</option>`)
-		sb.WriteString(`<option value="all">All (merged)</option>`)
+		fmt.Fprintf(&sb, `<option value="live">%s</option>`, t("Live"))
+		fmt.Fprintf(&sb, `<option value="all">%s</option>`, t("All (merged)"))
 		for _, name := range logFiles {
 			sb.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, template.HTMLEscapeString(name), template.HTMLEscapeString(name)))
 		}
 		sb.WriteString(`</select>`)
 		fileSelect = sb.String()
-		downloadBtn = `<a id="log-download-link" class="system-logs-download" href="/api/logs/download" style="display:none">Download</a>`
+		downloadBtn = fmt.Sprintf(`<a id="log-download-link" class="system-logs-download" href="/api/logs/download" style="display:none">%s</a>`, t("Download"))
 	}
 
 	content := `<style>
@@ -224,19 +236,19 @@ func HandleSystemLogs(w http.ResponseWriter, r *http.Request) {
 </style>` +
 		`<div class="system-logs">` +
 		`<div class="system-logs-toolbar">` +
-		`<input id="log-filter" type="search" placeholder="Filter logs…" autocomplete="off" oninput="applyLogFilters()">` +
+		fmt.Sprintf(`<input id="log-filter" type="search" placeholder="%s" autocomplete="off" oninput="applyLogFilters()">`, t("Filter logs…")) +
 		`<select id="log-level-filter" onchange="applyLogFilters()">` +
-		`<option value="">all levels</option>` +
-		`<option value="debug">debug</option>` +
-		`<option value="info">info</option>` +
-		`<option value="warning">warning</option>` +
-		`<option value="error">error</option>` +
+		fmt.Sprintf(`<option value="">%s</option>`, t("all levels")) +
+		fmt.Sprintf(`<option value="debug">%s</option>`, t("debug")) +
+		fmt.Sprintf(`<option value="info">%s</option>`, t("info")) +
+		fmt.Sprintf(`<option value="warning">%s</option>`, t("warning")) +
+		fmt.Sprintf(`<option value="error">%s</option>`, t("error")) +
 		`</select>` +
 		`<select id="log-key-filter" onchange="applyLogFilters()">` +
 		keyFilterOptions.String() +
 		`</select>` +
-		`<button class="btn-secondary" onclick="refreshLogs()">Refresh</button>` +
-		`<button id="log-pause-btn" class="btn-secondary" onclick="toggleLogPolling(this)">Pause</button>` +
+		fmt.Sprintf(`<button class="btn-secondary" onclick="refreshLogs()">%s</button>`, t("Refresh")) +
+		fmt.Sprintf(`<button id="log-pause-btn" class="btn-secondary" onclick="toggleLogPolling(this)">%s</button>`, t("Pause")) +
 		fileSelect +
 		downloadBtn +
 		`</div>` +
@@ -359,10 +371,16 @@ function loadMoreLogLines() {
 
 // RenderJobsTable returns an HTML table of recent job runs.
 func RenderJobsTable(runs []job.JobRun) string {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
 	var sb strings.Builder
-	sb.WriteString(`<table class="jobs-table"><thead><tr><th>Job</th><th>Started</th><th>Finished</th><th>Duration</th><th>Status</th><th>Error</th></tr></thead><tbody>`)
+	fmt.Fprintf(&sb, `<table class="jobs-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
+		t("Job"), t("Started"), t("Finished"), t("Duration"), t("Status"), t("Error"))
 	if len(runs) == 0 {
-		sb.WriteString(`<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);">No jobs recorded yet</td></tr>`)
+		fmt.Fprintf(&sb, `<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);">%s</td></tr>`, t("No jobs recorded yet"))
 	}
 	for _, r := range runs {
 		duration := ""
@@ -388,6 +406,11 @@ func RenderJobsTable(runs []job.JobRun) string {
 }
 
 func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
 	content := `<style>
 .jobs-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
 .jobs-table th { text-align: left; padding: .35rem .6rem; border-bottom: 2px solid var(--border); white-space: nowrap; }
@@ -399,7 +422,7 @@ func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 .job-status-error { background: color-mix(in srgb, var(--danger) 15%, transparent); }
 .job-status-running { background: color-mix(in srgb, var(--primary) 15%, transparent); }
 </style>` +
-		`<div class="jobs-toolbar"><button class="btn-secondary" hx-get="/api/system/jobs" hx-target="#jobs-entries" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'>Refresh</button></div>` +
+		fmt.Sprintf(`<div class="jobs-toolbar"><button class="btn-secondary" hx-get="/api/system/jobs" hx-target="#jobs-entries" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'>%s</button></div>`, t("Refresh")) +
 		`<div id="jobs-entries" hx-get="/api/system/jobs" hx-trigger="load, every 3s" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'></div>`
 
 	tm := thememanager.GetThemeManager()
@@ -409,9 +432,10 @@ func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
+	lang := configmanager.GetLanguage()
 	entries, err := docsFiles.ReadDir("docs/changelogs")
 	if err != nil {
-		http.Error(w, "failed to read changelogs", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(lang, "failed to read changelogs"), http.StatusInternalServerError)
 		return
 	}
 
@@ -457,6 +481,11 @@ func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
 	row := func(label, value string) string {
 		return fmt.Sprintf(`<tr><td class="version-label">%s</td><td class="version-value">%s</td></tr>`,
 			template.HTMLEscapeString(label), template.HTMLEscapeString(value))
@@ -470,13 +499,13 @@ func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
 .version-changelog-link { display: inline-block; margin-top: 1.25rem; font-size: .875rem; }
 </style>` +
 		`<table class="version-table"><tbody>` +
-		row("Version", version.Version) +
-		row("Build time", configmanager.FormatDateTime(version.BuildTimeParsed)) +
-		row("Go version", runtime.Version()) +
-		row("OS / Arch", runtime.GOOS+"/"+runtime.GOARCH) +
-		row("Last commit", version.LastCommitMessage) +
+		row(t("Version"), version.Version) +
+		row(t("Build time"), configmanager.FormatDateTime(version.BuildTimeParsed)) +
+		row(t("Go version"), runtime.Version()) +
+		row(t("OS / Arch"), runtime.GOOS+"/"+runtime.GOARCH) +
+		row(t("Last commit"), version.LastCommitMessage) +
 		`</tbody></table>` +
-		`<a class="version-changelog-link" href="/system/changelog">Release notes / Changelog &rarr;</a>`
+		fmt.Sprintf(`<a class="version-changelog-link" href="/system/changelog">%s &rarr;</a>`, t("Release notes / Changelog"))
 
 	tm := thememanager.GetThemeManager()
 	if err := tm.RenderSystemPage(w, "Version", template.HTML(content)); err != nil {

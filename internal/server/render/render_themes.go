@@ -46,6 +46,11 @@ func RenderThemeSettings(settings interface{}, themeName string) string {
 func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, currentValues map[string]interface{}, descriptionType DescriptionType) string {
 	var html strings.Builder
 
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
 	// extract and sort keys for consistent ordering
 	keys := make([]string, 0, len(schema))
 	for key := range schema {
@@ -56,6 +61,8 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 	// iterate in sorted order
 	for _, key := range keys {
 		setting := schema[key]
+		label := t(setting.Label)
+		desc := t(setting.Description)
 		html.WriteString(`<div class="setting-item">`)
 
 		// get current value
@@ -84,19 +91,19 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 					<span class="checkmark"></span>
 					%s
 				</label>`,
-				key, checkedAttr, key, setting.Label))
-			if descriptionType == DescriptionTypeHelpText && setting.Description != "" {
-				html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, setting.Description))
+				key, checkedAttr, key, label))
+			if descriptionType == DescriptionTypeHelpText && desc != "" {
+				html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, desc))
 			}
 
 		case "select":
 			html.WriteString(fmt.Sprintf(`<form hx-post="/api/themes/settings" hx-vals='{"key": "%s"}' hx-trigger="change">`, key))
 
 			// render label with conditional tooltip
-			if descriptionType == "tooltips" && setting.Description != "" {
-				html.WriteString(fmt.Sprintf(`<label for="%s" class="tooltip" data-tooltip="%s">%s</label>`, key, setting.Description, setting.Label))
+			if descriptionType == "tooltips" && desc != "" {
+				html.WriteString(fmt.Sprintf(`<label for="%s" class="tooltip" data-tooltip="%s">%s</label>`, key, desc, label))
 			} else {
-				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, setting.Label))
+				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, label))
 			}
 
 			html.WriteString(fmt.Sprintf(`<select name="value" id="%s" class="form-select">`, key))
@@ -116,8 +123,8 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 			html.WriteString(`</select>`)
 
 			// render help text if not using tooltips
-			if descriptionType == "help-text" && setting.Description != "" {
-				html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, setting.Description))
+			if descriptionType == "help-text" && desc != "" {
+				html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, desc))
 			}
 			html.WriteString(`</form>`)
 
@@ -129,17 +136,17 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 			html.WriteString(fmt.Sprintf(`<form hx-post="/api/themes/settings" hx-vals='{"key": "%s"}' hx-trigger="change">`, key))
 
 			// render label with conditional tooltip
-			if descriptionType == "tooltips" && setting.Description != "" {
-				html.WriteString(fmt.Sprintf(`<label for="%s" class="tooltip" data-tooltip="%s">%s</label>`, key, setting.Description, setting.Label))
+			if descriptionType == "tooltips" && desc != "" {
+				html.WriteString(fmt.Sprintf(`<label for="%s" class="tooltip" data-tooltip="%s">%s</label>`, key, desc, label))
 			} else {
-				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, setting.Label))
+				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, label))
 			}
 
 			html.WriteString(fmt.Sprintf(`<input type="text" name="value" id="%s" value="%s" class="form-input" />`, key, current))
 
 			// render help text if not using tooltips
-			if descriptionType == "help-text" && setting.Description != "" {
-				html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, setting.Description))
+			if descriptionType == "help-text" && desc != "" {
+				html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, desc))
 			}
 			html.WriteString(`</form>`)
 
@@ -151,17 +158,17 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 			html.WriteString(fmt.Sprintf(`<form hx-post="/api/themes/settings" hx-vals='{"key": "%s"}' hx-trigger="change delay:500ms">`, key))
 
 			// render label with conditional tooltip
-			if descriptionType == "tooltips" && setting.Description != "" {
-				html.WriteString(fmt.Sprintf(`<label for="%s" class="tooltip" data-tooltip="%s">%s</label>`, key, setting.Description, setting.Label))
+			if descriptionType == "tooltips" && desc != "" {
+				html.WriteString(fmt.Sprintf(`<label for="%s" class="tooltip" data-tooltip="%s">%s</label>`, key, desc, label))
 			} else {
-				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, setting.Label))
+				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, label))
 			}
 
 			html.WriteString(fmt.Sprintf(`<textarea name="value" id="%s" rows="10" class="form-textarea">%s</textarea>`, key, current))
 
 			// render help text if not using tooltips
-			if descriptionType == "help-text" && setting.Description != "" {
-				html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, setting.Description))
+			if descriptionType == "help-text" && desc != "" {
+				html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, desc))
 			}
 			html.WriteString(`</form>`)
 
@@ -175,17 +182,17 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 			html.WriteString(fmt.Sprintf(`<form hx-post="/api/themes/settings" hx-vals='{"key": "%s"}' hx-trigger="change">`, key))
 
 			// render label with conditional tooltip
-			if descriptionType == "tooltips" && setting.Description != "" {
-				html.WriteString(fmt.Sprintf(`<label for="%s" class="tooltip" data-tooltip="%s">%s</label>`, key, setting.Description, setting.Label))
+			if descriptionType == "tooltips" && desc != "" {
+				html.WriteString(fmt.Sprintf(`<label for="%s" class="tooltip" data-tooltip="%s">%s</label>`, key, desc, label))
 			} else {
-				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, setting.Label))
+				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, label))
 			}
 
 			html.WriteString(fmt.Sprintf(`<input type="number" name="value" id="%s" value="%d" class="form-input" />`, key, current))
 
 			// render help text if not using tooltips
-			if descriptionType == "help-text" && setting.Description != "" {
-				html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, setting.Description))
+			if descriptionType == "help-text" && desc != "" {
+				html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, desc))
 			}
 			html.WriteString(`</form>`)
 		}

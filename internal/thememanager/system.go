@@ -11,7 +11,7 @@ import (
 
 const systemPageContent = `{{ define "content" }}
 <div class="system-page">
-    <h1 class="system-page-title">{{ .SystemTitle }}</h1>
+    <h1 class="system-page-title">{{T .SystemTitle}}</h1>
     <div class="system-page-content">{{ .Content }}</div>
 </div>
 {{ end }}`

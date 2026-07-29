@@ -32,7 +32,7 @@ func handleAPIInvalidateCache(w http.ResponseWriter, r *http.Request) {
 	if err := job.RunCacheInvalidate(); err != nil {
 		logging.LogError(logging.KeyApp, "failed to invalidate cache: %v", err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to invalidate cache"))
-		http.Error(w, "failed to invalidate cache", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to invalidate cache"), http.StatusInternalServerError)
 		return
 	}
 
@@ -134,7 +134,7 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 
 	path := resolveLogFilePath(r)
 	if path == "" {
-		http.Error(w, "file logging not enabled", http.StatusNotFound)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "file logging not enabled"), http.StatusNotFound)
 		return
 	}
 
@@ -155,7 +155,7 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 	f, err := os.Open(path)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to open log file: %v", err)
-		http.Error(w, "failed to open log file", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to open log file"), http.StatusInternalServerError)
 		return
 	}
 	defer f.Close()
@@ -184,6 +184,9 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Log-Has-More", "true")
 	}
 
+	lang := configmanager.GetLanguage()
+	loadEarlierLabel := translation.SprintfForRequest(lang, "Load earlier lines")
+
 	var sb strings.Builder
 	if isChunk {
 		sb.WriteString(render.LogFileLines(chunk))
@@ -191,11 +194,12 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 		sb.WriteString(`<div id="log-file-container">`)
 		if hasMore {
 			sb.WriteString(fmt.Sprintf(
-				`<div id="log-more-area"><button class="btn-secondary" onclick="loadMoreLogLines()">Load earlier lines</button> <span id="log-line-info" class="log-line-info">showing last %d of %d lines</span></div>`,
-				end-start, total,
+				`<div id="log-more-area"><button class="btn-secondary" onclick="loadMoreLogLines()">%s</button> <span id="log-line-info" class="log-line-info">%s</span></div>`,
+				loadEarlierLabel,
+				translation.SprintfForRequest(lang, "showing last %d of %d lines", end-start, total),
 			))
 		} else {
-			sb.WriteString(`<div id="log-more-area" style="display:none"><button class="btn-secondary" onclick="loadMoreLogLines()">Load earlier lines</button></div>`)
+			sb.WriteString(fmt.Sprintf(`<div id="log-more-area" style="display:none"><button class="btn-secondary" onclick="loadMoreLogLines()">%s</button></div>`, loadEarlierLabel))
 		}
 		sb.WriteString(`<div class="log-file-lines" id="log-file-lines">`)
 		sb.WriteString(render.LogFileLines(chunk))
@@ -233,14 +237,14 @@ func handleAPIGetJobs(w http.ResponseWriter, r *http.Request) {
 func handleAPIDownloadLogs(w http.ResponseWriter, r *http.Request) {
 	path := resolveLogFilePath(r)
 	if path == "" {
-		http.Error(w, "file logging not enabled", http.StatusNotFound)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "file logging not enabled"), http.StatusNotFound)
 		return
 	}
 
 	f, err := os.Open(path)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to open log file for download: %v", err)
-		http.Error(w, "failed to open log file", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to open log file"), http.StatusInternalServerError)
 		return
 	}
 	defer f.Close()

@@ -76,7 +76,7 @@ func handleAPIGetSettingsSection(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	http.Error(w, "unknown section", http.StatusNotFound)
+	http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown section"), http.StatusNotFound)
 }
 
 // @Summary Get all settings
@@ -111,7 +111,7 @@ func handleAPIGetAllSettings(w http.ResponseWriter, r *http.Request) {
 // @Router /api/settings [post]
 func handleAPIBulkSetSettings(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "invalid form data", http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
 		return
 	}
 	errs := configmanager.BulkSetFromForm(r.Form)
@@ -141,7 +141,7 @@ func handleAPISetSetting(w http.ResponseWriter, r *http.Request) {
 	key := chi.URLParam(r, "key")
 	s := configmanager.GetSetting(key)
 	if s == nil {
-		http.Error(w, "unknown setting", http.StatusNotFound)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "unknown setting"), http.StatusNotFound)
 		return
 	}
 	if err := s.SetFromString(r.FormValue(key)); err != nil {
@@ -149,7 +149,7 @@ func handleAPISetSetting(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := configmanager.SaveSettings(); err != nil {
-		http.Error(w, "failed to save setting", http.StatusInternalServerError)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save setting"), http.StatusInternalServerError)
 		return
 	}
 	if rs, ok := s.(configmanager.RenderableSetting); ok && rs.GetMeta().Refresh {

@@ -8,13 +8,19 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/notificationStorage"
+	"knov/internal/translation"
 )
 
 // RenderNotificationList renders a compact notification log for the flyout panel.
 // Each row has a delete button that reloads the list on success.
 func RenderNotificationList(notifications []notificationStorage.Notification) string {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
 	if len(notifications) == 0 {
-		return `<div id="notifications-list-target"><div class="fp-notify-empty">no notifications yet</div></div>`
+		return fmt.Sprintf(`<div id="notifications-list-target"><div class="fp-notify-empty">%s</div></div>`, t("no notifications yet"))
 	}
 
 	var html strings.Builder
@@ -26,8 +32,8 @@ func RenderNotificationList(notifications []notificationStorage.Notification) st
 			hx-swap="innerHTML"
 			hx-confirm="%s">%s</button>
 	</div>`,
-		"clear all notifications?",
-		"clear all",
+		t("clear all notifications?"),
+		t("clear all"),
 	)
 	html.WriteString(`<div class="fp-notify-list">`)
 	for _, n := range notifications {
@@ -41,12 +47,13 @@ func RenderNotificationList(notifications []notificationStorage.Notification) st
 				hx-delete="/api/notifications/%s"
 				hx-target="#notifications-list-target"
 				hx-swap="innerHTML"
-				title="remove">×</button>
+				title="%s">×</button>
 		</div>`,
 			n.Level, n.ID,
 			n.Message,
-			formatNotifyTime(n.CreatedAt),
+			formatNotifyTime(n.CreatedAt, t),
 			n.ID,
+			t("remove"),
 		)
 	}
 	html.WriteString(`</div>`)
@@ -57,6 +64,10 @@ func RenderNotificationList(notifications []notificationStorage.Notification) st
 // RenderNotificationPopover renders a self-contained popover for the builtin theme
 // hamburger menu — loads notifications lazily via htmx on open.
 func RenderNotificationPopover() string {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
 	return fmt.Sprintf(`<div id="notifications-popover" popover="auto" class="notifications-popover">
 	<div class="notifications-popover-header">
 		<span>%s</span>
@@ -70,22 +81,22 @@ func RenderNotificationPopover() string {
 		<span class="notifications-loading">%s</span>
 	</div>
 </div>`,
-		"Notifications",
-		"loading...",
+		t("Notifications"),
+		t("loading..."),
 	)
 }
 
-func formatNotifyTime(t time.Time) string {
+func formatNotifyTime(tm time.Time, t func(string, ...any) string) string {
 	now := time.Now()
-	diff := now.Sub(t)
+	diff := now.Sub(tm)
 	switch {
 	case diff < time.Minute:
-		return "just now"
+		return t("just now")
 	case diff < time.Hour:
-		return fmt.Sprintf("%dm ago", int(diff.Minutes()))
+		return t("%dm ago", int(diff.Minutes()))
 	case diff < 24*time.Hour:
-		return fmt.Sprintf("%dh ago", int(diff.Hours()))
+		return t("%dh ago", int(diff.Hours()))
 	default:
-		return t.In(configmanager.GetTimezone()).Format("02 Jan 15:04")
+		return tm.In(configmanager.GetTimezone()).Format("02 Jan 15:04")
 	}
 }

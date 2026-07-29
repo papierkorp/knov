@@ -20,7 +20,7 @@ import (
 func handleAPIRunCronjob(w http.ResponseWriter, r *http.Request) {
 	if err := job.RunAsync(); err != nil {
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "cronjob is already running"))
-		http.Error(w, "cronjob is already running", http.StatusConflict)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "cronjob is already running"), http.StatusConflict)
 		return
 	}
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "cronjob started"))

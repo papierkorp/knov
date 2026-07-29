@@ -2,7 +2,7 @@
 <h1>{{T "Settings"}}</h1>
 
 <form hx-post="/api/themes" hx-target="body" hx-swap="outerHTML" hx-trigger="change">
-    <label for="theme">theme:</label>
+    <label for="theme">{{T "theme:"}}</label>
     <select
         name="theme"
         id="theme"
@@ -11,7 +11,7 @@
         hx-swap="innerHTML"
         hx-trigger="load"
     >
-        <option>loading themes...</option>
+        <option>{{T "loading themes..."}}</option>
     </select>
 </form>
 {{ end }}
