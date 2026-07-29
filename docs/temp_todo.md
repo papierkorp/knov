@@ -28,9 +28,8 @@
 - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 - make all strings in the settings translateable..
 - pdfexport header same as footer possible?
-- close the info slideout on /settings (sometimes its open if i open the settings in a new tab)
 - last commit in /system/version does not work for a binary only for dev
-- `RenderSystemPage` in `internal/thememanager/system.go:50` writes the buffer directly without going through `injectDefaultCSS`/`injectDefaultJS` — so `/system/*` pages get no `defaults.css`, no `custom.css`, and no notify script, unlike every themed page. Looks unintentional
+- `RenderSystemPage` in `internal/thememanager/system.go:50` writes the buffer directly without going through `injectDefaultCSS`/`injectDefaultJS` — so `/system/*` pages get no `defaults.css`, no `custom.css`, and no notify script, unlike every themed page
 
 # ai prompts
 

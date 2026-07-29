@@ -396,6 +396,12 @@ function setupFilePage() {
     return true;
   }
 
+  // settings page — no file panel content applies here
+  if (path === "/settings") {
+    closePanel();
+    return true;
+  }
+
   // table editor page — no file panel metadata to populate
   if (path.match(/^\/files\/edittable\/(.+)/)) {
     closePanel();
@@ -1107,7 +1113,8 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.pathname === "/history";
   if (!isFilePage && !isHistoryPage && !isSystemPage) {
     const saved = localStorage.getItem("rail-panel");
-    if (saved && document.getElementById(saved)) togglePanel(saved);
+    if (saved && saved !== "fp-file" && document.getElementById(saved))
+      togglePanel(saved);
   }
 
   // restore saved file sub-panel selection (skip on system pages — TOC is set in HTML)
