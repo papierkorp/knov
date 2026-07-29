@@ -22,3 +22,4 @@
 - if you add a new env also add it to .env.example and the html templates of both themes
 - if possible use slices.Contains instead of loops
 - dont use hardcoded colors use the available vars instead
+- goal: less hand-rolled JS, more htmx

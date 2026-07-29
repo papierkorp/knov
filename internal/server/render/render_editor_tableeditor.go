@@ -115,23 +115,47 @@ hot.addHook('afterOnCellMouseDown', function (event, coords, TD) {
   if (coords.row === -1) {
     // Column header row
     if (event.detail === 2) {
-      // Double click
+      // Double click: overlay a text input on the header cell instead of a
+      // native prompt() dialog, so the label stays free of hardcoded JS text.
       const colIndex = coords.col;
       const currentHeader = hot.getColHeader(colIndex);
-      const newHeader = prompt('%s', currentHeader);
+      const rect = TD.getBoundingClientRect();
 
-      if (newHeader !== null && newHeader !== currentHeader && newHeader.trim() !== '') {
-        // Get current headers
-        const currentHeaders = hot.getSettings().colHeaders;
-        const newHeaders = [...currentHeaders]; // Create a copy
-        newHeaders[colIndex] = newHeader;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentHeader;
+      input.style.cssText = 'position:fixed;left:' + rect.left + 'px;top:' + rect.top + 'px;' +
+        'width:' + rect.width + 'px;height:' + rect.height + 'px;z-index:1000;box-sizing:border-box;' +
+        'border:2px solid var(--primary);background:var(--surface);color:var(--text);font:inherit;padding:0 4px;';
+      document.body.appendChild(input);
+      input.focus();
+      input.select();
 
-        // Update the table with new headers
-        hot.updateSettings({ colHeaders: newHeaders });
-
-        // Also update the tableData.headers to keep in sync
-        tableData.headers = newHeaders;
+      let committed = false;
+      function commit() {
+        if (committed) return;
+        committed = true;
+        const newHeader = input.value.trim();
+        input.remove();
+        if (newHeader !== '' && newHeader !== currentHeader) {
+          const currentHeaders = hot.getSettings().colHeaders;
+          const newHeaders = [...currentHeaders];
+          newHeaders[colIndex] = newHeader;
+          hot.updateSettings({ colHeaders: newHeaders });
+          tableData.headers = newHeaders;
+        }
       }
+
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          input.blur();
+        } else if (e.key === 'Escape') {
+          input.value = currentHeader;
+          input.blur();
+        }
+      });
     }
   }
 });
@@ -177,7 +201,6 @@ function cancelTableEdit() {
 		string(tableJSON),
 		jsEscape(filePath),
 		jsEscape(returnURL),
-		translation.SprintfForRequest(configmanager.GetLanguage(), "Edit column header:"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "error saving table"),
 	)
 
