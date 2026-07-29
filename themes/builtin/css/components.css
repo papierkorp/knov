@@ -204,7 +204,10 @@
   }
 }
 
-#media-selector-modal .media-selector-content {
+/* shared chrome for the editor toolbar's file-browser popovers
+   (media selector: #media-selector-modal, wiki-file selector: #wiki-file-selector-modal) */
+
+.media-selector-content {
   min-width: 0;
   width: 600px;
   max-width: 90vw;
@@ -216,7 +219,7 @@
   overflow: hidden;
 }
 
-#media-selector-modal .media-selector-header {
+.media-selector-header {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -225,7 +228,7 @@
   flex-shrink: 0;
 }
 
-#media-selector-modal .media-selector-header h3 {
+.media-selector-header h3 {
   margin: 0;
   padding: 0;
   border: none;
@@ -233,12 +236,13 @@
   font-size: 1em;
 }
 
-#media-selector-modal .form-input {
+.media-selector-content .form-input {
   margin: 8px 16px;
   width: calc(100% - 32px);
 }
 
-#media-selector-body {
+#media-selector-body,
+#wiki-file-selector-body {
   padding: 0 16px 12px;
   overflow-y: auto;
   flex: 1;

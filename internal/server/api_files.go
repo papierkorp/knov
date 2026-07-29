@@ -1236,7 +1236,7 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 // @Description Returns files matching a query string for use in wiki link autocomplete
 // @Tags files
 // @Param q query string false "search query"
-// @Produce json
+// @Produce json,html
 // @Success 200 {array} object "array of {path, filename}"
 // @Router /api/files/autocomplete [get]
 func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
@@ -1248,16 +1248,11 @@ func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type result struct {
-		Path     string `json:"path"`
-		Filename string `json:"filename"`
-	}
-
-	results := make([]result, 0, 20)
+	results := make([]render.WikiFileResult, 0, 20)
 	for _, f := range allFiles {
 		rel := pathutils.ToRelative(f.Path)
 		if q == "" || strings.Contains(strings.ToLower(rel), q) {
-			results = append(results, result{
+			results = append(results, render.WikiFileResult{
 				Path:     rel,
 				Filename: filepath.Base(rel),
 			})
@@ -1267,6 +1262,5 @@ func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(results)
+	writeResponse(w, r, results, render.RenderWikiFileAutocompleteList(results))
 }

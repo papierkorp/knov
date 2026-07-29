@@ -403,6 +403,25 @@ func jsInsertMedia() string {
 		};`
 }
 
+// jsInsertWikiFile defines insertWikiFileIntoEditor — called by the wiki-file selector list
+// items to insert the chosen file into the editor as a markdown link. Builds the "](...)"
+// target via wiki-autocomplete.js's buildTarget so paths get the same encoding (spaces, "#",
+// etc.) as the inline [[wikilink]] autocomplete instead of duplicating that logic here.
+func jsInsertWikiFile() string {
+	return `
+		// insert selected wiki file from the browser modal into the editor
+		window.insertWikiFileIntoEditor = function(element) {
+			const path     = element.querySelector('.wiki-file-path').value;
+			const filename = element.querySelector('.wiki-file-filename').value;
+			const label    = filename.replace(/\.[^.]+$/, '');
+			const editor   = window.currentEditor;
+			if (editor) {
+				editor.insertText('[' + label + '](' + buildTarget(path) + ')');
+			}
+			closeWikiFileSelector();
+		};`
+}
+
 // jsFormSubmit wires up the form submit listener to prepend any stashed YAML front matter
 // before writing the editor content to the hidden field.
 func jsFormSubmit(frontMatter string) string {
@@ -415,8 +434,11 @@ func jsFormSubmit(frontMatter string) string {
 		});`, jsEscapeString(frontMatter))
 }
 
-// jsWikiFileSelector defines a modal for browsing wiki files and inserting a full markdown link.
-// Uses the /api/files/autocomplete endpoint as datasource.
+// jsWikiFileSelector defines the wiki-file browser modal (showWikiFileSelector /
+// closeWikiFileSelector). Drives the #wiki-file-selector-modal popover (see
+// renderWikiFileSelectorModalHTML) via the native Popover API, and fetches
+// /api/files/autocomplete as HTML into its body — same endpoint the inline [[wikilink]]
+// autocomplete uses, just requesting text/html instead of json (see wiki-autocomplete.js).
 func jsWikiFileSelector() string {
 	lang := configmanager.GetLanguage()
 	t := func(key string, args ...any) string {
@@ -425,78 +447,91 @@ func jsWikiFileSelector() string {
 
 	return fmt.Sprintf(`
 		window.showWikiFileSelector = function(editor) {
-			const modal = document.createElement('div');
-			modal.className = 'wiki-file-selector-modal';
-			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%%;height:100%%;background:color-mix(in srgb, var(--text) 50%%, transparent);z-index:10000;display:flex;align-items:center;justify-content:center;';
-
-			const popup = document.createElement('div');
-			popup.style.cssText = 'background:var(--surface);color:var(--text);border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px color-mix(in srgb, var(--text) 30%%, transparent);display:flex;flex-direction:column;';
-
-			const header = document.createElement('div');
-			header.style.cssText = 'padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-			header.innerHTML = '<h3 style="margin:0;font-size:1em;">' + %s + '</h3><button onclick="closeWikiFileSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);">&times;</button>';
-
-			const search = document.createElement('div');
-			search.style.cssText = 'padding:8px 16px;border-bottom:1px solid var(--border);flex-shrink:0;';
-			const searchInput = document.createElement('input');
-			searchInput.type = 'text';
-			searchInput.placeholder = %s;
-			searchInput.style.cssText = 'width:100%%;padding:6px 10px;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);font-size:0.9em;box-sizing:border-box;';
-			search.appendChild(searchInput);
-
-			const body = document.createElement('div');
-			body.style.cssText = 'padding:12px 16px;overflow-y:auto;flex:1;';
-
-			popup.appendChild(header);
-			popup.appendChild(search);
-			popup.appendChild(body);
-			modal.appendChild(popup);
-			document.body.appendChild(modal);
+			const modal = document.getElementById('wiki-file-selector-modal');
+			const body = document.getElementById('wiki-file-selector-body');
+			const input = document.getElementById('wiki-file-selector-search-input');
+			if (input) input.value = '';
 
 			var debounceTimer;
 			function fetchFiles(q) {
 				clearTimeout(debounceTimer);
 				debounceTimer = setTimeout(function() {
-					fetch('/api/files/autocomplete?q=' + encodeURIComponent(q))
-						.then(function(r) { return r.json(); })
-						.then(function(results) {
-							body.innerHTML = '';
-							if (!results || results.length === 0) {
-								body.innerHTML = '<span style="color:var(--text-secondary);font-size:0.9em;">' + %s + '</span>';
-								return;
-							}
-							results.forEach(function(f) {
-								const item = document.createElement('div');
-								item.style.cssText = 'padding:6px 8px;cursor:pointer;border-radius:4px;font-size:0.9em;';
-								item.textContent = f.path;
-								item.addEventListener('mouseenter', function() { item.style.background = 'var(--bg-secondary)'; });
-								item.addEventListener('mouseleave', function() { item.style.background = ''; });
-								item.addEventListener('click', function() {
-									const label = f.filename.replace(/\.[^.]+$/, '');
-									editor.insertText('[' + label + '](/files/' + f.path + ')');
-									closeWikiFileSelector();
-								});
-								body.appendChild(item);
-							});
-						})
+					fetch('/api/files/autocomplete?q=' + encodeURIComponent(q), { headers: { 'Accept': 'text/html' } })
+						.then(function(r) { return r.text(); })
+						.then(function(html) { body.innerHTML = html; })
 						.catch(function() { body.innerHTML = %s; });
 				}, 120);
 			}
 
-			searchInput.addEventListener('input', function() { fetchFiles(this.value); });
+			if (input) input.oninput = function() { fetchFiles(this.value); };
 			fetchFiles('');
-			setTimeout(function() { searchInput.focus(); }, 50);
+			modal.showPopover();
+			if (input) setTimeout(function() { input.focus(); }, 50);
 		};
 
 		window.closeWikiFileSelector = function() {
-			const modal = document.querySelector('.wiki-file-selector-modal');
-			if (modal) modal.remove();
+			document.getElementById('wiki-file-selector-modal').hidePopover();
 		};`,
-		jsEscapeString(t("insert wiki file link")),
-		jsEscapeString(t("filter...")),
-		jsEscapeString(t("no files found")),
 		jsEscapeString(t("error loading files")),
 	)
+}
+
+// renderWikiFileSelectorModalHTML renders the (initially closed) wiki-file-link popover markup.
+// Same native [popover] idiom as renderMediaSelectorModalHTML.
+func renderWikiFileSelectorModalHTML() string {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
+	return fmt.Sprintf(`
+		<div id="wiki-file-selector-modal" popover>
+			<div class="modal-content media-selector-content">
+				<div class="media-selector-header">
+					<h3>%s</h3>
+					<button type="button" popovertarget="wiki-file-selector-modal" popovertargetaction="hide" class="btn-icon">&times;</button>
+				</div>
+				<input type="text" id="wiki-file-selector-search-input" class="form-input" placeholder="%s" />
+				<div id="wiki-file-selector-body"></div>
+			</div>
+		</div>`,
+		t("insert wiki file link"),
+		t("filter..."),
+	)
+}
+
+// WikiFileResult is a single autocomplete match, shared between the JSON response and the
+// server-rendered wiki-file-selector list (see handleAPIFilesAutocomplete in the server
+// package / jsWikiFileSelector above).
+type WikiFileResult struct {
+	Path     string `json:"path"`
+	Filename string `json:"filename"`
+}
+
+// RenderWikiFileAutocompleteList renders file search results as HTML for the wiki-file-link
+// modal body. Mirrors RenderMediaListSelect: each item stores its insertion data in hidden
+// inputs and calls insertWikiFileIntoEditor (jsInsertWikiFile) on click.
+func RenderWikiFileAutocompleteList(results []WikiFileResult) string {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
+	if len(results) == 0 {
+		return fmt.Sprintf(`<p class="no-media">%s</p>`, t("no files found"))
+	}
+
+	var htmlBuilder strings.Builder
+	htmlBuilder.WriteString(`<div class="wiki-file-select-list">`)
+	for _, f := range results {
+		htmlBuilder.WriteString(`<div class="wiki-file-select-item" onclick="insertWikiFileIntoEditor(this)">`)
+		fmt.Fprintf(&htmlBuilder, `<input type="hidden" class="wiki-file-path" value="%s">`, f.Path)
+		fmt.Fprintf(&htmlBuilder, `<input type="hidden" class="wiki-file-filename" value="%s">`, f.Filename)
+		fmt.Fprintf(&htmlBuilder, `<span class="wiki-file-select-name">%s</span>`, f.Path)
+		htmlBuilder.WriteString(`</div>`)
+	}
+	htmlBuilder.WriteString(`</div>`)
+	return htmlBuilder.String()
 }
 
 // jsRegisterEditor stores the editor instance on window so media helpers can reach it.
@@ -535,6 +570,7 @@ func getToastUIEditorScript(content, frontMatter, filePath string) string {
 		jsMediaSelector(),
 		jsInsertMedia(),
 		jsWikiFileSelector(),
+		jsInsertWikiFile(),
 		jsRegisterEditor(),
 		fmt.Sprintf(`initWikiAutocompleteToastUI(editor, {cursorEnd: %t, currentFile: %s});`, configmanager.WikiLinkCursorEnd.Get(), jsEscapeString(filePath)),
 		jsFormSubmit(frontMatter),
@@ -611,6 +647,7 @@ func RenderToastUIEditorForm(filePath, prefillPath string, editor ...string) str
 			</div>
 		</form>
 		%s
+		%s
 		%s`,
 		action,
 		filepathInput,
@@ -618,6 +655,7 @@ func RenderToastUIEditorForm(filePath, prefillPath string, editor ...string) str
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
 		renderMediaSelectorModalHTML(),
+		renderWikiFileSelectorModalHTML(),
 		getToastUIEditorScript(content, frontMatter, filePath))
 }
 
@@ -654,6 +692,7 @@ func RenderToastUISectionEditorForm(filePath, sectionID string) string {
 			</div>
 		</form>
 		%s
+		%s
 		%s`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section"),
 		sectionID,
@@ -662,5 +701,6 @@ func RenderToastUISectionEditorForm(filePath, sectionID string) string {
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
 		renderMediaSelectorModalHTML(),
+		renderWikiFileSelectorModalHTML(),
 		getToastUIEditorScript(content, "", filePath))
 }

@@ -1464,6 +1464,7 @@ paths:
         type: string
       produces:
       - application/json
+      - text/html
       responses:
         "200":
           description: array of {path, filename}

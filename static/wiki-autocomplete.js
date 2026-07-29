@@ -118,7 +118,9 @@
   function debouncedFetch(q, anchorEl) {
     clearTimeout(fetchTimer);
     fetchTimer = setTimeout(function () {
-      fetch("/api/files/autocomplete?q=" + encodeURIComponent(q))
+      fetch("/api/files/autocomplete?q=" + encodeURIComponent(q), {
+        headers: { Accept: "application/json" },
+      })
         .then(function (r) {
           return r.json();
         })
@@ -616,4 +618,9 @@
   }
 
   global.initPathAutocomplete = initPathAutocomplete;
+
+  // exposed so other insertion paths (e.g. the toolbar-triggered wiki-file
+  // selector modal) build the same encoded "](...)" target instead of
+  // duplicating (and potentially drifting from) the encoding logic here
+  global.buildTarget = buildTarget;
 })(window);

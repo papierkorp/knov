@@ -30,7 +30,10 @@
 - filter editor - add a save and cancel button
 - loading kanban (/kanban/arbeit-sirconic-todo) takes a really long time => does it load ALL files and not just the collection files?
 - kanban server route - all ancestors selection - it always shows all ancestors even if all of its child are already archived - maybe a new env which sets all done/archived status?
+- take a look at all routes if we use writeResponse everywhere neccessary and if we can update the functions where we only use json to htmx as well
 - take a look at the whole codebase into all javascript snippets/scripts with the goal of reducing javascript in favor of more htmx - im also fine with refactoring to make this to work since i think we already use a lot of javascript which could be resolved using htmx
+- refactor render_editor_toastui.go (autcomplete duplications)
+- refactor wiki-autocomplete.js to use htmx (at the moment it takes json input) -> maybe we can generalize the navigation in such a output since we need it a few times
 
 # remove javascript
 
@@ -38,7 +41,7 @@ goal: less hand-rolled JS, more htmx - also fixes translation gaps since server-
 
 - [x] table editor column header: replace `prompt('Edit column header:', ...)` (render_editor_tableeditor.go) with a contenteditable cell on double-click - no dialog, no string, no translation problem
 - [x] media selector modal (render_editor_toastui.go, jsMediaSelector): replaced hand-built `document.createElement` modal with the app's existing native `[popover]` modal idiom (same one used for rename/delete modals, base.gohtml) - modal chrome is now server-rendered/translated HTML, show/hide/backdrop/Escape all come from the browser for free
-- wiki file link modal (render_editor_toastui.go, jsWikiFileSelector): same idea - currently fetches JSON from /api/files/autocomplete and builds the list by hand in JS; switch to the datalist/htmx autocomplete pattern instead
+- [x] wiki file link modal (render_editor_toastui.go, jsWikiFileSelector): /api/files/autocomplete now uses writeResponse to return the same data as server-rendered/translated HTML (Accept: text/html) alongside the existing JSON (Accept: application/json) - modal reuses the media-selector's [popover] chrome and just swaps in the HTML; inline [[wikilink]] autocomplete (wiki-autocomplete.js) still gets JSON since it now explicitly requests it
 - admin logs page Pause/Resume button (render_system.go): render both translated labels server-side as two spans, toggle visibility with a CSS class instead of JS textContent swap
 - dynamic count messages (rail.js hidden-files warning, admin logs "showing last X of Y lines"): keep the number computed in JS, but source the translated sentence template from a data-attribute rendered by the server instead of hardcoding it in JS
 

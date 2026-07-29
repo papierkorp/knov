@@ -1519,7 +1519,8 @@ const docTemplate = `{
             "get": {
                 "description": "Returns files matching a query string for use in wiki link autocomplete",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
