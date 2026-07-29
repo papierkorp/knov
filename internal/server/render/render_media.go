@@ -3,6 +3,7 @@ package render
 
 import (
 	"fmt"
+	stdhtml "html"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -425,6 +426,14 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 	fmt.Fprintf(&html, `<a href="/media/%s" target="_blank" class="btn btn-secondary">
 		<i class="fas fa-external-link-alt"></i> %s
 	</a>`, relativePath, translation.SprintfForRequest(configmanager.GetLanguage(), "open in new tab"))
+	mdPrefix := ""
+	if files.IsImageFile(fileExt) {
+		mdPrefix = "!"
+	}
+	copyLink := fmt.Sprintf("%s[%s](media/%s)", mdPrefix, filename, relativePath)
+	fmt.Fprintf(&html, `<button type="button" class="btn btn-secondary" data-copy-link="%s" onclick="copyMediaLink(this)">
+		<i class="fas fa-copy"></i> %s
+	</button>`, stdhtml.EscapeString(copyLink), translation.SprintfForRequest(configmanager.GetLanguage(), "copy link"))
 	fmt.Fprintf(&html, `<button type="button" class="btn btn-danger"
 		hx-delete="/api/media/%s"
 		hx-confirm="%s"
@@ -435,6 +444,9 @@ func RenderMediaDetail(metadata *files.Metadata) string {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "are you sure you want to delete this file?"),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "delete"))
 	html.WriteString(`</div>`)
+
+	fmt.Fprintf(&html, `<script>if(!window.copyMediaLink){window.copyMediaLink=function(btn){navigator.clipboard.writeText(btn.dataset.copyLink).then(function(){document.body.dispatchEvent(new CustomEvent('notify',{detail:{type:'success',message:%s}}));});};}</script>`,
+		jsEscapeString(translation.SprintfForRequest(configmanager.GetLanguage(), "link copied to clipboard")))
 
 	html.WriteString(`</div>`) // close media-metadata
 	html.WriteString(`</div>`) // close media-detail

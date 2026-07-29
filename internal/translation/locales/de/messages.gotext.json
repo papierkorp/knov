@@ -447,6 +447,11 @@
       "translation": ""
     },
     {
+      "id": "copy link",
+      "message": "copy link",
+      "translation": ""
+    },
+    {
       "id": "create",
       "message": "create",
       "translation": ""
@@ -1799,6 +1804,11 @@
     {
       "id": "limit",
       "message": "limit",
+      "translation": ""
+    },
+    {
+      "id": "link copied to clipboard",
+      "message": "link copied to clipboard",
       "translation": ""
     },
     {

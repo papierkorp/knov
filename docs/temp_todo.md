@@ -27,7 +27,6 @@
 - settings/configs to hide certain folders from different searches
 - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 - make all strings in the settings translateable..
-- /media detailview - copy + paste link to insert
 - handle image links in lists/todo => maybe just show the link? make setting to choos between link/image? at the moment its just invisible
 
 
