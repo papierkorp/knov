@@ -37,7 +37,7 @@
 goal: less hand-rolled JS, more htmx - also fixes translation gaps since server-rendered HTML is already translated but JS-built strings aren't (browser auto-translate doesn't see JS string literals either)
 
 - [x] table editor column header: replace `prompt('Edit column header:', ...)` (render_editor_tableeditor.go) with a contenteditable cell on double-click - no dialog, no string, no translation problem
-- media selector modal (render_editor_toastui.go, jsMediaSelector): replace hand-built `document.createElement` modal with the existing datalist + hx-get autocomplete pattern (render_utils.go, used for media link autocomplete) so the whole thing is server-rendered/translated HTML instead of JS-built text
+- [x] media selector modal (render_editor_toastui.go, jsMediaSelector): replaced hand-built `document.createElement` modal with the app's existing native `[popover]` modal idiom (same one used for rename/delete modals, base.gohtml) - modal chrome is now server-rendered/translated HTML, show/hide/backdrop/Escape all come from the browser for free
 - wiki file link modal (render_editor_toastui.go, jsWikiFileSelector): same idea - currently fetches JSON from /api/files/autocomplete and builds the list by hand in JS; switch to the datalist/htmx autocomplete pattern instead
 - admin logs page Pause/Resume button (render_system.go): render both translated labels server-side as two spans, toggle visibility with a CSS class instead of JS textContent swap
 - dynamic count messages (rail.js hidden-files warning, admin logs "showing last X of Y lines"): keep the number computed in JS, but source the translated sentence template from a data-attribute rendered by the server instead of hardcoding it in JS

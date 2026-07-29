@@ -311,7 +311,8 @@ func jsUploadMediaBlob() string {
 }
 
 // jsMediaSelector defines the media browser modal (showMediaSelector / closeMediaSelector).
-// Opens a modal that fetches /api/media/list?mode=select as HTML.
+// Drives the #media-selector-modal popover (see renderMediaSelectorModalHTML) via the native
+// Popover API, and fetches /api/media/list?mode=select as HTML into its body.
 func jsMediaSelector() string {
 	lang := configmanager.GetLanguage()
 	t := func(key string, args ...any) string {
@@ -321,60 +322,60 @@ func jsMediaSelector() string {
 	return fmt.Sprintf(`
 		// media browser modal — opened by the toolbar "Select Media" button
 		window.showMediaSelector = function(editor) {
-			const modal = document.createElement('div');
-			modal.className = 'media-selector-modal';
-			modal.style.cssText = 'position:fixed;top:0;left:0;width:100%%;height:100%%;background:color-mix(in srgb, var(--text) 50%%, transparent);z-index:10000;display:flex;align-items:center;justify-content:center;';
-
-			const popup = document.createElement('div');
-			popup.className = 'media-selector-popup';
-			popup.style.cssText = 'background:var(--surface);color:var(--text);border-radius:8px;width:600px;max-height:560px;overflow:hidden;box-shadow:0 4px 12px color-mix(in srgb, var(--text) 30%%, transparent);display:flex;flex-direction:column;';
-
-			const header = document.createElement('div');
-			header.style.cssText = 'padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-			header.innerHTML = '<h3 style="margin:0;font-size:1em;">' + %s + '</h3><button onclick="closeMediaSelector()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);">&times;</button>';
-
-			const search = document.createElement('div');
-			search.style.cssText = 'padding:8px 16px;border-bottom:1px solid var(--border);flex-shrink:0;';
-			search.innerHTML = '<input type="text" placeholder="' + %s + '" style="width:100%%;padding:6px 10px;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);font-size:0.9em;box-sizing:border-box;" oninput="filterMediaSelectorList(this.value)">';
-
-			const body = document.createElement('div');
-			body.style.cssText = 'padding:12px 16px;overflow-y:auto;flex:1;';
+			const modal = document.getElementById('media-selector-modal');
+			const body = document.getElementById('media-selector-body');
+			const input = document.getElementById('media-selector-search-input');
+			if (input) input.value = '';
 			body.innerHTML = %s;
-
-			popup.appendChild(header);
-			popup.appendChild(search);
-			popup.appendChild(body);
-			modal.appendChild(popup);
-			document.body.appendChild(modal);
 
 			fetch('/api/media/list?mode=select', { headers: { 'Accept': 'text/html' } })
 				.then(function(r) { return r.text(); })
 				.then(function(html) { body.innerHTML = html; })
 				.catch(function() { body.innerHTML = %s; });
 
-			// focus search after items load
-			setTimeout(function() {
-				const input = modal.querySelector('input[type="text"]');
-				if (input) input.focus();
-			}, 150);
+			modal.showPopover();
+			if (input) setTimeout(function() { input.focus(); }, 50);
 		};
 
 		window.closeMediaSelector = function() {
-			const modal = document.querySelector('.media-selector-modal');
-			if (modal) modal.remove();
+			document.getElementById('media-selector-modal').hidePopover();
 		};
 
 		window.filterMediaSelectorList = function(query) {
 			const q = query.toLowerCase();
-			document.querySelectorAll('.media-selector-modal .media-select-item').forEach(function(item) {
+			document.querySelectorAll('#media-selector-modal .media-select-item').forEach(function(item) {
 				const name = (item.querySelector('.media-select-name') || {}).textContent || '';
 				item.style.display = name.toLowerCase().includes(q) ? '' : 'none';
 			});
 		};`,
-		jsEscapeString(t("select media file")),
-		jsEscapeString(t("filter...")),
 		jsEscapeString(t("loading media files...")),
 		jsEscapeString(t("error loading media files")),
+	)
+}
+
+// renderMediaSelectorModalHTML renders the (initially closed) media browser popover markup.
+// Uses the app's existing native [popover] modal idiom (see base.gohtml's rail-modals) instead
+// of building the modal chrome in JS, so show/hide/backdrop/Escape all come from the browser
+// for free and every string here is server-rendered/translated rather than JS-built.
+func renderMediaSelectorModalHTML() string {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
+	return fmt.Sprintf(`
+		<div id="media-selector-modal" popover>
+			<div class="modal-content media-selector-content">
+				<div class="media-selector-header">
+					<h3>%s</h3>
+					<button type="button" popovertarget="media-selector-modal" popovertargetaction="hide" class="btn-icon">&times;</button>
+				</div>
+				<input type="text" id="media-selector-search-input" class="form-input" placeholder="%s" oninput="filterMediaSelectorList(this.value)" />
+				<div id="media-selector-body"></div>
+			</div>
+		</div>`,
+		t("select media file"),
+		t("filter..."),
 	)
 }
 
@@ -609,12 +610,14 @@ func RenderToastUIEditorForm(filePath, prefillPath string, editor ...string) str
 				<div id="editor-status"></div>
 			</div>
 		</form>
+		%s
 		%s`,
 		action,
 		filepathInput,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save file"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
+		renderMediaSelectorModalHTML(),
 		getToastUIEditorScript(content, frontMatter, filePath))
 }
 
@@ -650,6 +653,7 @@ func RenderToastUISectionEditorForm(filePath, sectionID string) string {
 				<div id="editor-status"></div>
 			</div>
 		</form>
+		%s
 		%s`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section"),
 		sectionID,
@@ -657,5 +661,6 @@ func RenderToastUISectionEditorForm(filePath, sectionID string) string {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save section"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
+		renderMediaSelectorModalHTML(),
 		getToastUIEditorScript(content, "", filePath))
 }
