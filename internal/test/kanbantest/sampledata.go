@@ -62,7 +62,7 @@ func writeCard(relPath, title string, tags []string, createdAt time.Time) error 
 	}
 	if err := files.MetaDataSave(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(relPath),
-		Editor: files.EditorTypeToastUI,
+		Editor: files.EditorTypeCodeMirror,
 		Tags:   tags,
 	}); err != nil {
 		return err
@@ -141,7 +141,7 @@ func resetAndSeed() error {
 	}
 	if err := files.MetaDataSave(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(testPath(excerptFile)),
-		Editor: files.EditorTypeToastUI,
+		Editor: files.EditorTypeCodeMirror,
 	}); err != nil {
 		return err
 	}

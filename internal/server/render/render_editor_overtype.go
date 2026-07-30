@@ -14,7 +14,7 @@ import (
 )
 
 // jsOverTypeInit returns the OverType editor constructor call.
-// Reuses uploadMediaBlob (see render_editor_toastui.go) as the fileUpload.onInsertFile hook,
+// Reuses uploadMediaBlob (see render_editor_shared.go) as the fileUpload.onInsertFile hook,
 // so paste/drag-drop/toolbar upload all go through the same /api/media/upload flow.
 func jsOverTypeInit(content, filePath string) string {
 	toolbar := "true"

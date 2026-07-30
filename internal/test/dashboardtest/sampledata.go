@@ -52,7 +52,7 @@ func writeFile(relPath, content string) error {
 func saveMetadata(relPath string, tags []string) error {
 	return files.MetaDataSave(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(relPath),
-		Editor: files.EditorTypeToastUI,
+		Editor: files.EditorTypeCodeMirror,
 		Tags:   tags,
 	})
 }

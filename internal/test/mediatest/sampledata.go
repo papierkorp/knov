@@ -71,7 +71,7 @@ func linkDoc(relDocPath, mediaRelPath string) error {
 	if err := writeFile(relDocPath, "# "+relDocPath+"\n\n![img](media/"+mediaRelPath+")\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSave(&files.Metadata{Path: pathutils.ToWithPrefix(relDocPath), Editor: files.EditorTypeToastUI}); err != nil {
+	if err := files.MetaDataSave(&files.Metadata{Path: pathutils.ToWithPrefix(relDocPath), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 	return files.UpdateLinksForSingleFile(pathutils.ToWithPrefix(relDocPath))
@@ -97,7 +97,7 @@ func resetAndSeed() error {
 	if err := writeFile(testPath(contextFile), "# media-context.md\n\ncontent\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSave(&files.Metadata{Path: withPrefix(contextFile), Editor: files.EditorTypeToastUI}); err != nil {
+	if err := files.MetaDataSave(&files.Metadata{Path: withPrefix(contextFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 

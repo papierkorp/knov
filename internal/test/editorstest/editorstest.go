@@ -23,9 +23,8 @@ func (Suite) Run() (*test.SuiteResult, error) {
 	}
 
 	cases := []func() test.CaseResult{
-		caseToastUICreateEditSave,
-		caseTextareaCreateEditSave,
 		caseCodeMirrorCreateEditSave,
+		caseOverTypeCreateEditSave,
 		caseFilterCreateEditSave,
 		caseListCreateEditSave,
 		caseTodoCreateEditSave,

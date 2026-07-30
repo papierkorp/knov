@@ -31,7 +31,6 @@ type SettingGroup struct {
 
 var (
 	GroupNone            = SettingGroup{}
-	GroupToastUI         = SettingGroup{Key: "toastui", Label: "ToastUI Editor"}
 	GroupCodeMirror      = SettingGroup{Key: "code-mirror", Label: "Code / Text Editor (CodeMirror)"}
 	GroupOverType        = SettingGroup{Key: "overtype", Label: "OverType Editor"}
 	GroupAllEditors      = SettingGroup{Key: "all-editors", Label: "All Editors"}

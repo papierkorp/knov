@@ -160,7 +160,7 @@ func handleAPIGetChatMoveForm(w http.ResponseWriter, r *http.Request) {
 // @Param id path string true "Message ID"
 // @Param mode formData string true "Mode: new or append"
 // @Param target formData string true "Target filename (new) or existing file path (append)"
-// @Param editor formData string false "Editor type for new files (e.g. toastui-editor, todo-editor)"
+// @Param editor formData string false "Editor type for new files (e.g. codemirror-editor, todo-editor)"
 // @Produce json,html
 // @Router /api/chat/messages/{id}/move [post]
 func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
@@ -411,13 +411,10 @@ func formatForEditor(target, content string, editor files.EditorType) (string, [
 			}
 		}
 		return target, []byte(b.String()), files.EditorTypeIndex
-	case files.EditorTypeTextarea:
-		target = strings.TrimSuffix(target, filepath.Ext(target)) + ".txt"
-		return target, []byte(content), files.EditorTypeTextarea
 	default:
 		if !strings.Contains(target, ".") {
 			target = target + ".md"
 		}
-		return target, []byte(content), files.EditorTypeToastUI
+		return target, []byte(content), defaultMarkdownEditor()
 	}
 }

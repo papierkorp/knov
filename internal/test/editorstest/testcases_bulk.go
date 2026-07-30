@@ -27,7 +27,7 @@ func caseBulkDeleteFiles() test.CaseResult {
 		}
 		if err := files.MetaDataSave(&files.Metadata{
 			Path:   pathutils.ToWithPrefix(p),
-			Editor: files.EditorTypeToastUI,
+			Editor: files.EditorTypeCodeMirror,
 			Tags:   []string{tag},
 		}); err != nil {
 			return errCase(name, err)
@@ -85,7 +85,7 @@ func caseBulkMetadataPatch() test.CaseResult {
 		}
 		if err := files.MetaDataSave(&files.Metadata{
 			Path:   pathutils.ToWithPrefix(p),
-			Editor: files.EditorTypeToastUI,
+			Editor: files.EditorTypeCodeMirror,
 			Tags:   []string{"edtest-patch-before"},
 		}); err != nil {
 			return errCase(name, err)
@@ -138,7 +138,7 @@ func caseBulkChatMoveDelete() test.CaseResult {
 	if err := writeFile(targetPath, "# Chat target\n"); err != nil {
 		return errCase(name, err)
 	}
-	if err := saveMetadata(targetPath, files.EditorTypeToastUI); err != nil {
+	if err := saveMetadata(targetPath, files.EditorTypeCodeMirror); err != nil {
 		return errCase(name, err)
 	}
 

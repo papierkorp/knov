@@ -21,8 +21,6 @@ import (
 type EditorType string
 
 const (
-	EditorTypeToastUI    EditorType = "toastui-editor"
-	EditorTypeTextarea   EditorType = "textarea-editor"
 	EditorTypeFilter     EditorType = "filter-editor"
 	EditorTypeList       EditorType = "list-editor"
 	EditorTypeTodo       EditorType = "todo-editor"
@@ -40,8 +38,6 @@ type EditorTypeCount map[string]int
 // AllEditorTypes returns all available editor types
 func AllEditorTypes() []EditorType {
 	return []EditorType{
-		EditorTypeToastUI,
-		EditorTypeTextarea,
 		EditorTypeFilter,
 		EditorTypeList,
 		EditorTypeTodo,
@@ -64,7 +60,7 @@ func EditorFromExtension(path string) EditorType {
 	case ".index", ".moc":
 		return EditorTypeIndex
 	case ".txt":
-		return EditorTypeTextarea
+		return EditorTypeCodeMirror
 	default:
 		return ""
 	}
@@ -216,7 +212,7 @@ func metaDataUpdate(filePath string, newMetadata *Metadata) *Metadata {
 		if et := EditorFromExtension(metadataPath); et != "" {
 			currentMetadata.Editor = et
 		} else {
-			currentMetadata.Editor = EditorTypeToastUI
+			currentMetadata.Editor = EditorType(configmanager.DefaultMarkdownEditor.Get())
 		}
 	}
 

@@ -330,7 +330,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Editor type for new files (e.g. toastui-editor, todo-editor)",
+                        "description": "Editor type for new files (e.g. codemirror-editor, todo-editor)",
                         "name": "editor",
                         "in": "formData"
                     }
@@ -1438,49 +1438,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/api/editor/textarea": {
-            "get": {
-                "description": "Returns a simple textarea editor component for editing file content",
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "editor"
-                ],
-                "summary": "Get textarea editor component",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "file path",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/api/editor/toastui-form": {
-            "get": {
-                "description": "Returns a ToastUI editor form for creating or editing files",
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "editor"
-                ],
-                "summary": "Get ToastUI editor form HTML",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "file path (optional for new files)",
-                        "name": "filepath",
-                        "in": "query"
-                    }
-                ],
-                "responses": {}
             }
         },
         "/api/editor/todoeditor": {
@@ -6538,8 +6495,6 @@ const docTemplate = `{
         "files.EditorType": {
             "type": "string",
             "enum": [
-                "toastui-editor",
-                "textarea-editor",
                 "filter-editor",
                 "list-editor",
                 "todo-editor",
@@ -6548,8 +6503,6 @@ const docTemplate = `{
                 "overtype-editor"
             ],
             "x-enum-varnames": [
-                "EditorTypeToastUI",
-                "EditorTypeTextarea",
                 "EditorTypeFilter",
                 "EditorTypeList",
                 "EditorTypeTodo",

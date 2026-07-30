@@ -55,7 +55,7 @@ func resetAndSeed() error {
 	}
 	if err := files.MetaDataSave(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(testPath(alphaFile)),
-		Editor: files.EditorTypeToastUI,
+		Editor: files.EditorTypeCodeMirror,
 		Tags:   []string{marker},
 	}); err != nil {
 		return err
@@ -66,7 +66,7 @@ func resetAndSeed() error {
 	}
 	if err := files.MetaDataSave(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(testPath(betaFile)),
-		Editor: files.EditorTypeToastUI,
+		Editor: files.EditorTypeCodeMirror,
 	}); err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func resetAndSeed() error {
 	}
 	if err := files.MetaDataSave(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(testPath(tocFile)),
-		Editor: files.EditorTypeToastUI,
+		Editor: files.EditorTypeCodeMirror,
 	}); err != nil {
 		return err
 	}

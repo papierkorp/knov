@@ -22,14 +22,14 @@ func renameCase(name, oldRel, newRel string) test.CaseResult {
 	if err := writeFile(oldRel, "# rename/move target\n"); err != nil {
 		return errCase(name, err)
 	}
-	if err := saveMetadata(oldRel, files.EditorTypeToastUI); err != nil {
+	if err := saveMetadata(oldRel, files.EditorTypeCodeMirror); err != nil {
 		return errCase(name, err)
 	}
 
 	if err := writeFile(referencer, fmt.Sprintf("[link](%s)\n", oldRel)); err != nil {
 		return errCase(name, err)
 	}
-	if err := saveMetadata(referencer, files.EditorTypeToastUI); err != nil {
+	if err := saveMetadata(referencer, files.EditorTypeCodeMirror); err != nil {
 		return errCase(name, err)
 	}
 

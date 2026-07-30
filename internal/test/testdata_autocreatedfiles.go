@@ -172,7 +172,7 @@ func createAutoMetadata() error {
 			Path:    metadataPath,
 			Tags:    extractFilenameTags(filepath.Base(file)),
 			Parents: parents,
-			Editor:  files.EditorTypeToastUI,
+			Editor:  files.EditorTypeCodeMirror,
 		}
 
 		if err := files.MetaDataSave(metadata); err != nil {

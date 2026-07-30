@@ -2236,13 +2236,6 @@ main textarea {
   text-align: left;
 }
 
-#component-textarea-editor textarea {
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-}
-
 #testdata-result:not(:empty) {
   margin-top: 16px;
   width: 100%;
@@ -3778,16 +3771,8 @@ dl.media-info dd {
 }
 
 /* -----------------------------------------------------------------------
-   full-height editor — textarea and sortable editors fill available space
+   full-height editor — sortable editor fills available space
    ----------------------------------------------------------------------- */
-
-/* toast ui height is set dynamically in JS based on available space */
-
-.page-file-editor .textarea-editor-input {
-  height: calc(100vh - var(--editor-overhead, 200px));
-  resize: none;
-  box-sizing: border-box;
-}
 
 .page-file-editor .component-sortable-editor {
   height: calc(100vh - var(--editor-overhead, 200px));

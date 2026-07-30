@@ -87,7 +87,7 @@ func resetAndSeed() error {
 	if err := writeFile(testPath(parentFile), "# jobs-parent.md\n\ncontent\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSave(&files.Metadata{Path: withPrefix(parentFile), Editor: files.EditorTypeToastUI}); err != nil {
+	if err := files.MetaDataSave(&files.Metadata{Path: withPrefix(parentFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 
@@ -96,7 +96,7 @@ func resetAndSeed() error {
 	}
 	if err := files.MetaDataSaveRaw(&files.Metadata{
 		Path:    withPrefix(childFile),
-		Editor:  files.EditorTypeToastUI,
+		Editor:  files.EditorTypeCodeMirror,
 		Parents: []string{withPrefix(parentFile)},
 	}); err != nil {
 		return err
@@ -105,20 +105,20 @@ func resetAndSeed() error {
 	if err := writeFile(testPath(linkedFile), "# jobs-linked.md\n\ncontent\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSave(&files.Metadata{Path: withPrefix(linkedFile), Editor: files.EditorTypeToastUI}); err != nil {
+	if err := files.MetaDataSave(&files.Metadata{Path: withPrefix(linkedFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 	if err := writeFile(testPath(linkerFile), "# jobs-linker.md\n\nSee ["+linkedFile+"]("+testPath(linkedFile)+")\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSaveRaw(&files.Metadata{Path: withPrefix(linkerFile), Editor: files.EditorTypeToastUI}); err != nil {
+	if err := files.MetaDataSaveRaw(&files.Metadata{Path: withPrefix(linkerFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 
 	if err := writeFile(testPath(searchFile), "# jobs-search.md\n\n"+searchMarker+"\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSave(&files.Metadata{Path: withPrefix(searchFile), Editor: files.EditorTypeToastUI}); err != nil {
+	if err := files.MetaDataSave(&files.Metadata{Path: withPrefix(searchFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 
@@ -133,7 +133,7 @@ func resetAndSeed() error {
 	if err := writeFile(usedMediaLinker, "# jobs-media-linker.md\n\n![img](media/"+mediaPath(usedMediaFile)+")\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSave(&files.Metadata{Path: withPrefix("jobs-media-linker.md"), Editor: files.EditorTypeToastUI}); err != nil {
+	if err := files.MetaDataSave(&files.Metadata{Path: withPrefix("jobs-media-linker.md"), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 	if err := files.UpdateLinksForSingleFile(withPrefix("jobs-media-linker.md")); err != nil {

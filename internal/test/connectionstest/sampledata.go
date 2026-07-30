@@ -80,33 +80,33 @@ func resetAndSeed() error {
 		return err
 	}
 
-	if err := saveMetadata(parentFile, &files.Metadata{Editor: files.EditorTypeToastUI}); err != nil {
+	if err := saveMetadata(parentFile, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	if err := saveMetadata(childFile, &files.Metadata{Editor: files.EditorTypeToastUI, Parents: []string{withPrefix(parentFile)}}); err != nil {
+	if err := saveMetadata(childFile, &files.Metadata{Editor: files.EditorTypeCodeMirror, Parents: []string{withPrefix(parentFile)}}); err != nil {
 		return err
 	}
-	if err := saveMetadata(grandchild, &files.Metadata{Editor: files.EditorTypeToastUI, Parents: []string{withPrefix(childFile)}}); err != nil {
+	if err := saveMetadata(grandchild, &files.Metadata{Editor: files.EditorTypeCodeMirror, Parents: []string{withPrefix(childFile)}}); err != nil {
 		return err
 	}
-	if err := saveMetadata(parent2File, &files.Metadata{Editor: files.EditorTypeToastUI}); err != nil {
+	if err := saveMetadata(parent2File, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	if err := saveMetadata(child2File, &files.Metadata{Editor: files.EditorTypeToastUI, Parents: []string{withPrefix(parent2File)}}); err != nil {
+	if err := saveMetadata(child2File, &files.Metadata{Editor: files.EditorTypeCodeMirror, Parents: []string{withPrefix(parent2File)}}); err != nil {
 		return err
 	}
 
-	if err := saveMetadata(linkedFile, &files.Metadata{Editor: files.EditorTypeToastUI}); err != nil {
+	if err := saveMetadata(linkedFile, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	if err := saveMetadata(linkerFile, &files.Metadata{Editor: files.EditorTypeToastUI}); err != nil {
+	if err := saveMetadata(linkerFile, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 	if err := files.UpdateLinksForSingleFile(withPrefix(linkerFile)); err != nil {
 		return err
 	}
 
-	if err := saveMetadata(relatedFile, &files.Metadata{Editor: files.EditorTypeToastUI}); err != nil {
+	if err := saveMetadata(relatedFile, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 	relatedMeta, err := files.MetaDataGet(withPrefix(relatedFile))
@@ -118,10 +118,10 @@ func resetAndSeed() error {
 		return err
 	}
 
-	if err := saveMetadata(conflictOriginal, &files.Metadata{Editor: files.EditorTypeToastUI}); err != nil {
+	if err := saveMetadata(conflictOriginal, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	if err := saveMetadata(conflictCopy, &files.Metadata{Editor: files.EditorTypeToastUI}); err != nil {
+	if err := saveMetadata(conflictCopy, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 

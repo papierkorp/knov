@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"slices"
 
+	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/logging"
@@ -129,7 +130,7 @@ func (j *fileJob) Run() error {
 			normalizedPath := pathutils.ToWithPrefix(filePath)
 			metadata := &files.Metadata{
 				Path:   normalizedPath,
-				Editor: files.EditorTypeToastUI,
+				Editor: files.EditorType(configmanager.DefaultMarkdownEditor.Get()),
 			}
 			if err := files.MetaDataSaveNoRefresh(metadata); err != nil {
 				logging.LogError(logging.KeyFileSync, "failed to save metadata for %s: %v", normalizedPath, err)

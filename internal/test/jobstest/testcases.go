@@ -108,7 +108,7 @@ func caseCacheInvalidate() test.CaseResult {
 	if err := writeFile(newFile, "# jobs-cache-new.md\n\ncontent\n"); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.MetaDataSaveRaw(&files.Metadata{Path: pathutils.ToWithPrefix(newFile), Editor: files.EditorTypeToastUI}); err != nil {
+	if err := files.MetaDataSaveRaw(&files.Metadata{Path: pathutils.ToWithPrefix(newFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
 

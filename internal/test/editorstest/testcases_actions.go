@@ -22,7 +22,7 @@ func caseSectionSave() test.CaseResult {
 	if err := writeFile(relPath, initial); err != nil {
 		return errCase(name, err)
 	}
-	if err := saveMetadata(relPath, files.EditorTypeToastUI); err != nil {
+	if err := saveMetadata(relPath, files.EditorTypeCodeMirror); err != nil {
 		return errCase(name, err)
 	}
 
@@ -61,7 +61,7 @@ func caseTodoToggle() test.CaseResult {
 	if err := writeFile(relPath, "- [ ] task one\n"); err != nil {
 		return errCase(name, err)
 	}
-	if err := saveMetadata(relPath, files.EditorTypeToastUI); err != nil {
+	if err := saveMetadata(relPath, files.EditorTypeCodeMirror); err != nil {
 		return errCase(name, err)
 	}
 

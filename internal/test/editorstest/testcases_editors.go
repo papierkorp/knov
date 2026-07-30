@@ -12,7 +12,7 @@ import (
 	"knov/internal/test"
 )
 
-// createEditSaveCase covers the raw-content editors (toastui, textarea, codemirror): write
+// createEditSaveCase covers the raw-content editors (codemirror, overtype): write
 // initial content + metadata, overwrite with edited content, verify both persisted.
 func createEditSaveCase(name, relPath string, editor files.EditorType, initial, edited string) test.CaseResult {
 	if err := writeFile(relPath, initial); err != nil {
@@ -50,19 +50,14 @@ func createEditSaveCase(name, relPath string, editor files.EditorType, initial, 
 	return cr
 }
 
-func caseToastUICreateEditSave() test.CaseResult {
-	return createEditSaveCase("toastui", testPath("toastui.md"), files.EditorTypeToastUI,
-		"# ToastUI initial\n", "# ToastUI edited\n")
-}
-
-func caseTextareaCreateEditSave() test.CaseResult {
-	return createEditSaveCase("textarea", testPath("textarea.md"), files.EditorTypeTextarea,
-		"plain text initial", "plain text edited")
-}
-
 func caseCodeMirrorCreateEditSave() test.CaseResult {
 	return createEditSaveCase("codemirror", testPath("codemirror.md"), files.EditorTypeCodeMirror,
 		"# CodeMirror initial\n", "# CodeMirror edited\n")
+}
+
+func caseOverTypeCreateEditSave() test.CaseResult {
+	return createEditSaveCase("overtype", testPath("overtype.md"), files.EditorTypeOverType,
+		"# OverType initial\n", "# OverType edited\n")
 }
 
 // caseFilterCreateEditSave saves a filter config, resaves it with different criteria, and
@@ -246,7 +241,7 @@ func caseTableCreateEditSave() test.CaseResult {
 	if err := writeFile(relPath, initial); err != nil {
 		return errCase(name, err)
 	}
-	if err := saveMetadata(relPath, files.EditorTypeToastUI); err != nil {
+	if err := saveMetadata(relPath, files.EditorTypeCodeMirror); err != nil {
 		return errCase(name, err)
 	}
 

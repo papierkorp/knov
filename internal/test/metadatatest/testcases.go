@@ -22,7 +22,7 @@ func caseMetadataGetSetFields() test.CaseResult {
 
 	err := files.MetaDataSave(&files.Metadata{
 		Path:      pathutils.ToWithPrefix(testPath(fieldsFile)),
-		Editor:    files.EditorTypeToastUI,
+		Editor:    files.EditorTypeCodeMirror,
 		Tags:      []string{"metadatatest-alpha"},
 		CreatedAt: fixedCreatedAt,
 	})
@@ -38,7 +38,7 @@ func caseMetadataGetSetFields() test.CaseResult {
 	success := got != nil &&
 		got.Collection == "test" &&
 		slices.Equal(got.Folders, []string{"test", "metadata-tests"}) &&
-		got.Editor == files.EditorTypeToastUI &&
+		got.Editor == files.EditorTypeCodeMirror &&
 		slices.Equal(got.Tags, []string{"metadatatest-alpha"}) &&
 		got.CreatedAt.Equal(fixedCreatedAt) &&
 		got.Title != "" &&
@@ -78,7 +78,7 @@ func caseMetadataPartialUpdate() test.CaseResult {
 
 	success := got != nil &&
 		slices.Equal(got.Tags, []string{"metadatatest-beta"}) &&
-		got.Editor == files.EditorTypeToastUI
+		got.Editor == files.EditorTypeCodeMirror
 
 	cr := test.CaseResult{
 		Name:     name,
@@ -96,7 +96,7 @@ func caseMetadataDelete() test.CaseResult {
 	name := "metadata-delete"
 
 	path := pathutils.ToWithPrefix(testPath(deleteFile))
-	if err := files.MetaDataSave(&files.Metadata{Path: path, Editor: files.EditorTypeToastUI}); err != nil {
+	if err := files.MetaDataSave(&files.Metadata{Path: path, Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
 	if err := files.MetaDataDelete(path); err != nil {
@@ -125,7 +125,7 @@ func caseMetadataExportAll() test.CaseResult {
 	name := "metadata-export-all"
 
 	path := pathutils.ToWithPrefix(testPath(exportFile))
-	if err := files.MetaDataSave(&files.Metadata{Path: path, Editor: files.EditorTypeToastUI}); err != nil {
+	if err := files.MetaDataSave(&files.Metadata{Path: path, Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
 
@@ -160,7 +160,7 @@ func caseReferencesAdd() test.CaseResult {
 	name := "references-add"
 
 	path := pathutils.ToWithPrefix(testPath(referencesFile))
-	if err := files.MetaDataSave(&files.Metadata{Path: path, Editor: files.EditorTypeToastUI}); err != nil {
+	if err := files.MetaDataSave(&files.Metadata{Path: path, Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
 
@@ -244,13 +244,13 @@ func caseAllEditorTypes() test.CaseResult {
 	name := "all-editor-types"
 
 	types := files.AllEditorTypes()
-	success := len(types) == 7 &&
-		slices.Contains(types, files.EditorTypeToastUI) &&
+	success := len(types) == 6 &&
+		slices.Contains(types, files.EditorTypeCodeMirror) &&
 		slices.Contains(types, files.EditorTypeTodo)
 
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: "7 editor types, including toastui-editor and todo-editor",
+		Expected: "6 editor types, including codemirror-editor and todo-editor",
 		Actual:   fmt.Sprintf("%d types: %v", len(types), types),
 		Success:  success,
 	}

@@ -325,7 +325,7 @@ var testConfigs = []testConfig{
 				{
 					Metadata: "editor",
 					Operator: "equals",
-					Value:    "toastui-editor",
+					Value:    "codemirror-editor",
 					Action:   "include",
 				},
 			},

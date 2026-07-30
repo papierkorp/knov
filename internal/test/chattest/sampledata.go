@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"knov/internal/chat"
+	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/pathutils"
@@ -67,7 +68,7 @@ func resetAndSeed() error {
 	if err := writeFile(testPath(moveTargetFile), "# Chat target\n"); err != nil {
 		return err
 	}
-	if err := saveMetadata(testPath(moveTargetFile), files.EditorTypeToastUI); err != nil {
+	if err := saveMetadata(testPath(moveTargetFile), files.EditorTypeCodeMirror); err != nil {
 		return err
 	}
 
@@ -118,13 +119,19 @@ func formatForEditorReplica(target, content string, editor files.EditorType) (st
 			}
 		}
 		return target, []byte(b.String()), files.EditorTypeIndex
-	case files.EditorTypeTextarea:
-		target = strings.TrimSuffix(target, filepath.Ext(target)) + ".txt"
-		return target, []byte(content), files.EditorTypeTextarea
 	default:
 		if !strings.Contains(target, ".") {
 			target = target + ".md"
 		}
-		return target, []byte(content), files.EditorTypeToastUI
+		return target, []byte(content), defaultMarkdownEditorReplica()
 	}
+}
+
+// defaultMarkdownEditorReplica mirrors internal/server/api_editor.go's unexported
+// defaultMarkdownEditor - see formatForEditorReplica.
+func defaultMarkdownEditorReplica() files.EditorType {
+	if env := configmanager.GetAppConfig().DefaultEditor; env != "" {
+		return files.EditorType(env)
+	}
+	return files.EditorType(configmanager.DefaultMarkdownEditor.Get())
 }

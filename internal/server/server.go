@@ -92,10 +92,8 @@ func NewRouter() *chi.Mux {
 	r.Get("/files/edit/*", handleFileEdit)
 	r.Get("/files/edittable/*", handleFileEditTable)
 	r.Get("/files/history/*", handleHistory)
-	r.Get("/files/new/toastui", handleFileNewToastUI)
 	r.Get("/files/new/codemirror", handleFileNewCodeMirror)
 	r.Get("/files/new/overtype", handleFileNewOverType)
-	r.Get("/files/new/text", handleFileNewText)
 	r.Get("/files/new/list", handleFileNewList)
 	r.Get("/files/new/todo", handleFileNewTodo)
 	r.Get("/files/new/filter", handleFileNewFilter)
@@ -156,8 +154,6 @@ func NewRouter() *chi.Mux {
 
 		r.Route("/editor", func(r chi.Router) {
 			r.Get("/", handleAPIGetEditorHandler)
-			r.Get("/toastui-form", handleAPIToastUIEditorForm)
-			r.Get("/textarea", handleAPIGetTextareaEditor)
 			r.Post("/indexeditor", handleAPISaveIndexEditor)
 			r.Post("/indexeditor/add-entry", handleAPIAddIndexEntry)
 			r.Post("/filtereditor", handleAPISaveFilterEditor)
@@ -957,23 +953,6 @@ func handleFileEdit(w http.ResponseWriter, r *http.Request) {
 // -------------------------------- Filetype-specific handlers ---------------------------
 // ----------------------------------------------------------------------------------------
 
-func handleFileNewToastUI(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileNewTemplateData("toastui-editor")
-	data.PrefillPath = r.URL.Query().Get("prefillpath")
-	if err := tm.Render(w, "filenew", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-	}
-}
-
-func handleFileNewText(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileNewTemplateData("textarea-editor")
-	if err := tm.Render(w, "filenew", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-	}
-}
-
 func handleFileNewList(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("list-editor")
@@ -1009,6 +988,7 @@ func handleFileNewIndex(w http.ResponseWriter, r *http.Request) {
 func handleFileNewCodeMirror(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("codemirror-editor")
+	data.PrefillPath = r.URL.Query().Get("prefillpath")
 	if err := tm.Render(w, "filenew", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}

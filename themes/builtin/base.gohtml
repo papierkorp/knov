@@ -18,7 +18,6 @@
     {{ .FontStyleTag }}
     <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
     <link rel="stylesheet" href="/static/font-awesome-7.3.1-all.min.css"/>
-    <link rel="stylesheet" href="/static/toastui-editor-3.2.2.min.css"/>
     <link rel="stylesheet" href="/static/handsontable-16.2.0.full.min.css"/>
     <link rel="stylesheet" href="/static/handsontable-theme-main-16.2.0.min.css"/>
 </head>
@@ -73,10 +72,8 @@
             <div class="flyout-header">{{T "new"}}<button class="flyout-close-btn" onclick="closePanel()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button></div>
             <div class="flyout-content">
                 <a href="/dashboard/new">{{T "Dashboard"}}</a>
-                <a href="/files/new/toastui">{{T "ToastUI"}}</a>
                 <a href="/files/new/codemirror">{{T "CodeMirror"}}</a>
                 <a href="/files/new/overtype">{{T "OverType"}}</a>
-                <a href="/files/new/text">{{T "Text"}}</a>
                 <a href="/files/new/list">{{T "List"}}</a>
                 <a href="/files/new/todo">{{T "Todo"}}</a>
                 <a href="/files/new/filter">{{T "Filter"}}</a>
@@ -359,7 +356,6 @@
 {{ template "rail-modals" . }}
 
 <script src="/static/htmx-2.0.10.min.js"></script>
-<script src="/static/toastui-editor-3.2.2.min.js"></script>
 <script src="/static/codemirror6-bundle.min.js"></script>
 <script src="/static/overtype-2.4.0.min.js"></script>
 <script src="/static/sortable-1.15.0.min.js"></script>

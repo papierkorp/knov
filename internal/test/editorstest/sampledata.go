@@ -24,7 +24,7 @@ func resetTestDir() error {
 	return os.MkdirAll(full, 0755)
 }
 
-// testPath returns a docs-relative path under the sample folder, e.g. "test/editors-tests/toastui.md".
+// testPath returns a docs-relative path under the sample folder, e.g. "test/editors-tests/codemirror.md".
 func testPath(name string) string {
 	return pathutils.ToSlash(filepath.Join(testDir, name))
 }

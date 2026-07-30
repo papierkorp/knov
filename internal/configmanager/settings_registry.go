@@ -11,34 +11,6 @@ import (
 
 //nolint:gochecknoglobals
 var (
-	// ── Editor / ToastUI ─────────────────────────────────────────────────────
-	ToastuiInitialView = register(&StringSetting{
-		key: "toastuiInitialView", Default: "markdown",
-		Section: SectionEditor, Group: GroupToastUI,
-		Label:   "Default View",
-		Desc:    "which editing mode opens when you first open a markdown file",
-		Options: []SettingOption{{"markdown", "Markdown source"}, {"wysiwyg", "WYSIWYG"}},
-	})
-	ToastuiPreviewStyle = register(&StringSetting{
-		key: "toastuiPreviewStyle", Default: "tab",
-		Section: SectionEditor, Group: GroupToastUI,
-		Label:   "Preview Layout",
-		Desc:    "how the live preview is shown in markdown mode",
-		Options: []SettingOption{{"tab", "Tab (switch between editor and preview)"}, {"vertical", "Vertical (side-by-side)"}},
-	})
-	ToastuiShowToolbar = register(&BoolSetting{
-		key: "toastuiShowToolbar", Default: true,
-		Section: SectionEditor, Group: GroupToastUI,
-		Label: "Show Toolbar",
-		Desc:  "display the formatting toolbar above the editor",
-	})
-	ToastuiShowModeSwitch = register(&BoolSetting{
-		key: "toastuiShowModeSwitch", Default: true,
-		Section: SectionEditor, Group: GroupToastUI,
-		Label: "Show Mode Switch Bar",
-		Desc:  "display the markdown / WYSIWYG switch tab at the bottom of the editor",
-	})
-
 	// ── Editor / Code / Text Editor (CodeMirror) ─────────────────────────────
 	CodeMirrorVimMode = register(&BoolSetting{
 		key: "codeMirrorVimMode", Default: false,
@@ -111,14 +83,12 @@ var (
 
 	// ── Editor / All Editors ──────────────────────────────────────────────────
 	DefaultMarkdownEditor = register(&StringSetting{
-		key: "defaultMarkdownEditor", Default: "toastui-editor",
+		key: "defaultMarkdownEditor", Default: "codemirror-editor",
 		Section: SectionEditor, Group: GroupAllEditors,
 		Label: "Default Markdown Editor",
 		Desc:  "which editor opens by default for new and unassigned markdown files",
 		Options: []SettingOption{
-			{"toastui-editor", "ToastUI (rich markdown editor)"},
 			{"codemirror-editor", "CodeMirror (plain text editor)"},
-			{"textarea-editor", "Textarea (simple text area)"},
 			{"overtype-editor", "OverType (minimalist markdown editor)"},
 		},
 	})
@@ -280,12 +250,6 @@ var (
 		Section: SectionFileTypes, Group: GroupEditorTypes,
 		Label: "Hide Markdown Files",
 		Desc:  "exclude markdown files from file listings and browse views",
-	})
-	HideText = register(&BoolSetting{
-		key: "hideText", Default: false,
-		Section: SectionFileTypes, Group: GroupEditorTypes,
-		Label: "Hide Text Files",
-		Desc:  "exclude plain-text files from file listings and browse views",
 	})
 	HideList = register(&BoolSetting{
 		key: "hideList", Default: false,

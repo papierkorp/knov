@@ -36,7 +36,6 @@
 - refactor render_editor_toastui.go (autcomplete duplications)
 - refactor wiki-autocomplete.js to use htmx (at the moment it takes json input) -> maybe we can generalize the navigation in such a output since we need it a few times
 - overtype editor - view mode select color overwrite the font color
-- remove textarea and toastui editor and make codemirror the default and move codemirror and overtype to the top of the list
 - wire the editor settings directly in the editor via a button menu besides the toolbar
 - codemirror index.html => render problem (script block, and markdown content at least)
 - opening admin in new tab - close the sidebar just like for settings and system

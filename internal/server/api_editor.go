@@ -16,7 +16,6 @@ import (
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/logging"
-	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
@@ -50,14 +49,10 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 			sectionEditorType = defaultMarkdownEditor()
 		}
 		switch sectionEditorType {
-		case files.EditorTypeCodeMirror:
-			html = render.RenderCodeMirrorSectionEditorForm(fp, sectionID)
 		case files.EditorTypeOverType:
 			html = render.RenderOverTypeSectionEditorForm(fp, sectionID)
-		case files.EditorTypeTextarea:
-			html = render.RenderTextareaSectionEditorForm(fp, sectionID)
 		default:
-			html = render.RenderToastUISectionEditorForm(fp, sectionID)
+			html = render.RenderCodeMirrorSectionEditorForm(fp, sectionID)
 		}
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
@@ -72,35 +67,17 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 		// no filepath and no editor provided — use configured default for new files
 		et = defaultMarkdownEditor()
 	} else {
-		// existing file: read editor from metadata, fall back to handler detection
+		// existing file: read editor from metadata, fall back to configured default
 		metadata, _ := files.MetaDataGet(fp)
 		if metadata != nil && metadata.Editor != "" {
 			et = metadata.Editor
 		} else {
-			handler := parser.GetParserRegistry().GetHandler(fp)
-			if handler != nil && handler.Name() != "markdown" {
-				et = files.EditorTypeTextarea
-			} else {
-				et = defaultMarkdownEditor()
-			}
-		}
-	}
-
-	// get file content if editing existing file
-	var content string
-	if fp != "" {
-		fullPath := pathutils.ToDocsPath(fp)
-		if rawContent, err := contentStorage.ReadFile(fullPath); err == nil {
-			content = string(rawContent)
+			et = defaultMarkdownEditor()
 		}
 	}
 
 	// render the appropriate editor
 	switch et {
-	case files.EditorTypeToastUI:
-		html = render.RenderToastUIEditorForm(fp, prefillPath, editorParam)
-	case files.EditorTypeTextarea:
-		html = render.RenderTextareaEditorComponent(fp, content, editorParam)
 	case files.EditorTypeList:
 		html = render.RenderListEditor(fp)
 	case files.EditorTypeTodo:
@@ -110,64 +87,20 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 		html, renderErr = render.RenderFilterEditor(fp)
 		if renderErr != nil {
 			logging.LogError(logging.KeyApp, "failed to render filter editor: %v", renderErr)
-			html = render.RenderTextareaEditorComponent(fp, content)
+			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 		}
 	case files.EditorTypeIndex:
 		var renderErr error
 		html, renderErr = render.RenderIndexEditor(fp)
 		if renderErr != nil {
 			logging.LogError(logging.KeyApp, "failed to render index editor: %v", renderErr)
-			html = render.RenderTextareaEditorComponent(fp, content)
+			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 		}
-	case files.EditorTypeCodeMirror:
-		html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 	case files.EditorTypeOverType:
 		html = render.RenderOverTypeEditorForm(fp, prefillPath, editorParam)
 	default:
-		html = render.RenderToastUIEditorForm(fp, prefillPath, "")
+		html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 	}
-
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
-}
-
-// @Summary Get ToastUI editor form HTML
-// @Description Returns a ToastUI editor form for creating or editing files
-// @Tags editor
-// @Param filepath query string false "file path (optional for new files)"
-// @Produce html
-// @Router /api/editor/toastui-form [get]
-func handleAPIToastUIEditorForm(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
-
-	html := render.RenderToastUIEditorForm(filePath, "")
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
-}
-
-// @Summary Get textarea editor component
-// @Description Returns a simple textarea editor component for editing file content
-// @Tags editor
-// @Param filepath query string true "file path"
-// @Produce html
-// @Router /api/editor/textarea [get]
-func handleAPIGetTextareaEditor(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Query().Get("filepath")
-	if filepath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
-		return
-	}
-
-	fullPath := pathutils.ToDocsPath(filepath)
-	content, err := contentStorage.ReadFile(fullPath)
-	var contentStr string
-	if err != nil {
-		contentStr = "" // empty for new files
-	} else {
-		contentStr = string(content)
-	}
-
-	html := render.RenderTextareaEditorComponent(filepath, contentStr)
 
 	w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(html))
