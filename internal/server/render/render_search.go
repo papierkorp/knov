@@ -78,7 +78,7 @@ func RenderSearchResultsCards(files []files.File, query string) string {
 
 	for _, file := range files {
 		displayText := GetLinkDisplayTextWithMetadata(file.Path, file.Metadata)
-		context := extractSearchContext(file.Path, query)
+		context := extractSearchContext(file.Path, query, file.FuzzyMatch)
 
 		html.WriteString(fmt.Sprintf(`
 			<div class="search-result-card">
@@ -134,7 +134,7 @@ func extractSnippet(originalContent, contentLower string, hitPos, matchLen int) 
 	return b.String()
 }
 
-func extractSearchContext(filePath, query string) string {
+func extractSearchContext(filePath, query string, fuzzy bool) string {
 	if query == "" {
 		return ""
 	}
@@ -166,8 +166,11 @@ func extractSearchContext(filePath, query string) string {
 		snippets = append(snippets, extractSnippet(originalContent, contentLower, pos, len(word)))
 	}
 	if len(snippets) == 0 {
-		return fmt.Sprintf(`<span class="search-match-filename">%s</span>`,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "content match"))
+		label := translation.SprintfForRequest(configmanager.GetLanguage(), "content match")
+		if fuzzy {
+			label = translation.SprintfForRequest(configmanager.GetLanguage(), "fuzzy match")
+		}
+		return fmt.Sprintf(`<span class="search-match-filename">%s</span>`, label)
 	}
 	return strings.Join(snippets, ` <span class="search-snippet-sep">·</span> `)
 }

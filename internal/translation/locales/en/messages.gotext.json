@@ -1557,6 +1557,11 @@
       "translation": ""
     },
     {
+      "id": "fuzzy match",
+      "message": "fuzzy match",
+      "translation": ""
+    },
+    {
       "id": "Git Auto Push",
       "message": "Git Auto Push",
       "translation": ""

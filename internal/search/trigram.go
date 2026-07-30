@@ -150,6 +150,7 @@ func searchFilesTrigram(query string, limit int, allFiles []files.File) ([]files
 	result := make([]files.File, 0, len(paths))
 	for _, path := range paths {
 		if f, ok := fileMap[path]; ok {
+			f.FuzzyMatch = true
 			result = append(result, f)
 		}
 	}

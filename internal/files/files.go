@@ -39,9 +39,10 @@ func FolderFromPath(path string) string {
 
 // File represents a file in the system
 type File struct {
-	Name     string    `json:"name"`
-	Path     string    `json:"path"`
-	Metadata *Metadata `json:"metadata,omitempty"`
+	Name       string    `json:"name"`
+	Path       string    `json:"path"`
+	Metadata   *Metadata `json:"metadata,omitempty"`
+	FuzzyMatch bool      `json:"-"` // set by search when the result comes from fuzzy (trigram) matching rather than an exact match
 }
 
 type FileContent struct {
