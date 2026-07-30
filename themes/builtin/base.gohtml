@@ -127,11 +127,11 @@
             <div class="flyout-content">
                 <div class="fp-search-options">
                     <label class="fp-search-option-label">
-                        <input type="checkbox" id="fp-search-title-only" onchange="updateSearchMode()"/>
+                        <input type="checkbox" id="fp-search-title-only" name="titleonly" value="true"/>
                         <span>{{T "title only"}}</span>
                     </label>
                     <label class="fp-search-option-label">
-                        <input type="checkbox" id="fp-search-history" onchange="updateSearchMode()"/>
+                        <input type="checkbox" id="fp-search-history" name="history" value="true"/>
                         <span>{{T "search history"}}</span>
                     </label>
                 </div>
@@ -140,7 +140,8 @@
                            placeholder="{{T "search..."}}"
                            hx-get="/api/search?format=list"
                            hx-target="#fp-search-results"
-                           hx-trigger="keyup changed delay:300ms"/>
+                           hx-include="#fp-search-title-only, #fp-search-history"
+                           hx-trigger="keyup changed delay:300ms, change from:#fp-search-title-only, change from:#fp-search-history"/>
                 </div>
                 <div id="fp-search-results" class="fp-search-results"></div>
             </div>

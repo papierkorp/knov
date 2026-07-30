@@ -61,44 +61,32 @@ function chatBulkCancelForm() {
     if (form) form.remove();
 }
 
+function chatBulkRemoveSelected() {
+    chatSelected.forEach(function (id) {
+        var el = document.getElementById('chat-message-' + id);
+        if (el) el.remove();
+    });
+    chatBulkClear();
+}
+
 function chatBulkSubmit(mode) {
     var ids = chatBulkGetIDs();
     var target = (document.getElementById('chat-bulk-target') || {}).value || '';
     var editor = (document.getElementById('chat-bulk-editor') || {}).value || '';
     if (!target) return;
-    fetch('/api/chat/messages/bulk/move', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'ids=' + encodeURIComponent(ids) + '&mode=' + encodeURIComponent(mode)
-            + '&target=' + encodeURIComponent(target) + '&editor=' + encodeURIComponent(editor)
-    }).then(function (res) { return res.text(); }).then(function (html) {
-        chatSelected.forEach(function (id) {
-            var el = document.getElementById('chat-message-' + id);
-            if (el) el.remove();
-        });
-        chatBulkClear();
-        var history = document.getElementById('component-chat-history');
-        if (history && html) {
-            var tmp = document.createElement('div');
-            tmp.innerHTML = html;
-            history.insertBefore(tmp.firstChild, history.firstChild);
-        }
-    });
+    htmx.ajax('POST', '/api/chat/messages/bulk/move', {
+        target: '#component-chat-history',
+        swap: 'afterbegin',
+        values: { ids: ids, mode: mode, target: target, editor: editor }
+    }).then(chatBulkRemoveSelected);
 }
 
 function chatBulkDelete() {
     if (!confirm('Delete selected messages?')) return;
-    fetch('/api/chat/messages/bulk', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'ids=' + encodeURIComponent(chatBulkGetIDs())
-    }).then(function () {
-        chatSelected.forEach(function (id) {
-            var el = document.getElementById('chat-message-' + id);
-            if (el) el.remove();
-        });
-        chatBulkClear();
-    });
+    htmx.ajax('DELETE', '/api/chat/messages/bulk', {
+        swap: 'none',
+        values: { ids: chatBulkGetIDs() }
+    }).then(chatBulkRemoveSelected);
 }
 
 // ================================================================

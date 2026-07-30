@@ -8,20 +8,19 @@
             placeholder="{{T "Search files..."}}"
             hx-get="/api/search?format=cards"
             hx-target="#page-search-results"
-            hx-trigger="keyup changed delay:300ms, load"
+            hx-trigger="keyup changed delay:300ms, load, change from:#search-titleonly, change from:#search-history"
             hx-include="#search-titleonly, #search-history"
             name="q"
             id="search-page-input"
-            data-format="cards"
             value="{{ .SearchQuery }}"
         />
         <div class="search-options">
             <label class="search-option-label">
-                <input type="checkbox" id="search-titleonly" name="titleonly" value="true" onchange="updatePageSearchMode()"/>
+                <input type="checkbox" id="search-titleonly" name="titleonly" value="true"/>
                 <span>{{T "title only"}}</span>
             </label>
             <label class="search-option-label">
-                <input type="checkbox" id="search-history" name="history" value="true" onchange="updatePageSearchMode()"/>
+                <input type="checkbox" id="search-history" name="history" value="true"/>
                 <span>{{T "search history"}}</span>
             </label>
         </div>
@@ -34,5 +33,4 @@
         {{ end }}
     </div>
 </div>
-<script src="/themes/{{.CurrentTheme}}/js/search-mode.js"></script>
 {{ end }}

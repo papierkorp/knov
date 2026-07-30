@@ -162,6 +162,7 @@ func RenderBrokenLinksHTML(broken []files.BrokenLink) string {
 		return html.String()
 	}
 
+	html.WriteString(`<form hx-post="/api/metadata/broken-links/repair" hx-target="#broken-links-result" hx-swap="innerHTML">`)
 	html.WriteString(`<table class="broken-links-table"><thead><tr><th><input type="checkbox" checked onclick="toggleAllBrokenLinks(this)"></th>`)
 	fmt.Fprintf(&html, `<th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file"),
@@ -175,9 +176,9 @@ func RenderBrokenLinksHTML(broken []files.BrokenLink) string {
 	}
 
 	html.WriteString(`</tbody></table>`)
-	fmt.Fprintf(&html, `<button type="button" class="btn-danger" onclick="repairBrokenLinks()">%s</button>`,
+	fmt.Fprintf(&html, `<button type="submit" class="btn-danger">%s</button>`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "Repair Selected"))
-	html.WriteString(`</div>`)
+	html.WriteString(`</form></div>`)
 	return html.String()
 }
 

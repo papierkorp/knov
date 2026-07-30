@@ -34,14 +34,12 @@ function switchMediaFilter(filter, btn) {
   if (!el) return;
 
   const url = "/api/media/list?mode=compact&filter=" + filter;
-  fetch(url, { headers: { Accept: "text/html" } })
-    .then((r) => {
-      updateMediaHiddenWarning(r.headers.get("X-Hidden-Message"));
-      return r.text();
-    })
-    .then((html) => {
-      el.innerHTML = html;
-    });
+  el.dataset.url = url;
+  htmx.ajax("GET", url, {
+    target: el,
+    swap: "innerHTML",
+    headers: { Accept: "text/html" },
+  });
 }
 
 function updateMediaHiddenWarning(message) {
@@ -234,18 +232,6 @@ function lazyLoad(panelId) {
   const url = el.dataset.url;
   if (!url) return;
   el.dataset.loaded = "true";
-  // media panel: use fetch to read X-Hidden-Message header
-  if (panelId === "fp-media") {
-    fetch(url, { headers: { Accept: "text/html" } })
-      .then((r) => {
-        updateMediaHiddenWarning(r.headers.get("X-Hidden-Message"));
-        return r.text();
-      })
-      .then((html) => {
-        el.innerHTML = html;
-      });
-    return;
-  }
   htmx.ajax("GET", url, {
     target: el,
     swap: "innerHTML",
@@ -261,19 +247,6 @@ function reloadPanel(panelId) {
   if (!el) return;
   const url = el.dataset.url;
   if (!url) return;
-  el.dataset.loaded = "false";
-  if (panelId === "fp-media") {
-    fetch(url, { headers: { Accept: "text/html" } })
-      .then((r) => {
-        updateMediaHiddenWarning(r.headers.get("X-Hidden-Message"));
-        return r.text();
-      })
-      .then((html) => {
-        el.innerHTML = html;
-        el.dataset.loaded = "true";
-      });
-    return;
-  }
   htmx.ajax("GET", url, {
     target: el,
     swap: "innerHTML",
@@ -291,10 +264,15 @@ function refreshPanel(panelId) {
 // auto-reload panels after mutating API calls
 // ================================================================
 document.body.addEventListener("htmx:afterRequest", function (e) {
-  const method = (e.detail.requestConfig?.verb || "").toUpperCase();
-  if (method === "GET") return;
   if (!e.detail.successful) return;
+  const method = (e.detail.requestConfig?.verb || "").toUpperCase();
   const url = e.detail.requestConfig?.path || "";
+
+  // media list loads carry the hidden-files warning in a response header
+  if (method === "GET" && url.startsWith("/api/media/list")) {
+    updateMediaHiddenWarning(e.detail.xhr?.getResponseHeader("X-Hidden-Message"));
+  }
+  if (method === "GET") return;
 
   if (/^\/api\/(files|editor|metadata)\//.test(url)) {
     reloadPanel("fp-browse");
@@ -304,21 +282,6 @@ document.body.addEventListener("htmx:afterRequest", function (e) {
     reloadPanel("fp-media");
   }
 });
-
-// ================================================================
-// search options toggles (title-only + search history)
-// ================================================================
-function updateSearchMode() {
-  const input = document.getElementById("fp-search-input");
-  if (!input) return;
-  const titleOnly = document.getElementById("fp-search-title-only")?.checked;
-  const history = document.getElementById("fp-search-history")?.checked;
-  let url = "/api/search?format=list";
-  if (titleOnly) url += "&titleonly=true";
-  if (history) url += "&history=true";
-  input.setAttribute("hx-get", url);
-  htmx.process(input);
-}
 
 // ================================================================
 // file sub-panel switching
@@ -427,12 +390,11 @@ function setupFilePage() {
     for (const [id, url] of Object.entries(editFields)) {
       const el = document.getElementById(id);
       if (!el) continue;
-      fetch(url, { headers: { Accept: "text/html" } })
-        .then((r) => r.text())
-        .then((html) => {
-          el.innerHTML = html;
-        })
-        .catch(() => {});
+      htmx.ajax("GET", url, {
+        target: el,
+        swap: "innerHTML",
+        headers: { Accept: "text/html" },
+      });
     }
     // inline-edit fields: swap outerHTML so edit button HTMX works
     const editInlineFields = {
@@ -443,20 +405,11 @@ function setupFilePage() {
     for (const [id, field] of Object.entries(editInlineFields)) {
       const el = document.getElementById(id);
       if (!el) continue;
-      fetch("/api/metadata/inline-display?field=" + field + "&filepath=" + fp, {
-        headers: { Accept: "text/html" },
-      })
-        .then((r) => r.text())
-        .then((html) => {
-          const tmp = document.createElement("div");
-          tmp.innerHTML = html;
-          const newEl = tmp.firstElementChild;
-          if (newEl) {
-            el.replaceWith(newEl);
-            htmx.process(newEl);
-          }
-        })
-        .catch(() => {});
+      htmx.ajax(
+        "GET",
+        "/api/metadata/inline-display?field=" + field + "&filepath=" + fp,
+        { target: el, swap: "outerHTML", headers: { Accept: "text/html" } },
+      );
     }
     htmx.ajax("GET", "/api/metadata/references?filepath=" + fp, {
       target: document.getElementById("component-references-list"),
@@ -567,20 +520,11 @@ function setupFilePage() {
   for (const [id, field] of Object.entries(inlineFields)) {
     const el = document.getElementById(id);
     if (!el) continue;
-    fetch("/api/metadata/inline-display?field=" + field + "&filepath=" + fp, {
-      headers: { Accept: "text/html" },
-    })
-      .then((r) => r.text())
-      .then((html) => {
-        const tmp = document.createElement("div");
-        tmp.innerHTML = html;
-        const newEl = tmp.firstElementChild;
-        if (newEl) {
-          el.replaceWith(newEl);
-          htmx.process(newEl);
-        }
-      })
-      .catch(() => {});
+    htmx.ajax(
+      "GET",
+      "/api/metadata/inline-display?field=" + field + "&filepath=" + fp,
+      { target: el, swap: "outerHTML", headers: { Accept: "text/html" } },
+    );
   }
 
   htmx.ajax("GET", "/api/files/versions/" + fp + "?output=full", {
