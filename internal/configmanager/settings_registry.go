@@ -89,6 +89,14 @@ var (
 		Desc:  "only highlight when the selection matches a complete word boundary",
 	})
 
+	// ── Editor / OverType ──────────────────────────────────────────────────────
+	OverTypeShowToolbar = register(&BoolSetting{
+		key: "overtypeShowToolbar", Default: true,
+		Section: SectionEditor, Group: GroupOverType,
+		Label: "Show Toolbar",
+		Desc:  "display the formatting toolbar above the editor",
+	})
+
 	// ── Editor / All Editors ──────────────────────────────────────────────────
 	DefaultMarkdownEditor = register(&StringSetting{
 		key: "defaultMarkdownEditor", Default: "toastui-editor",
@@ -99,6 +107,7 @@ var (
 			{"toastui-editor", "ToastUI (rich markdown editor)"},
 			{"codemirror-editor", "CodeMirror (plain text editor)"},
 			{"textarea-editor", "Textarea (simple text area)"},
+			{"overtype-editor", "OverType (minimalist markdown editor)"},
 		},
 	})
 	SpellCheck = register(&BoolSetting{

@@ -52,6 +52,8 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 		switch sectionEditorType {
 		case files.EditorTypeCodeMirror:
 			html = render.RenderCodeMirrorSectionEditorForm(fp, sectionID)
+		case files.EditorTypeOverType:
+			html = render.RenderOverTypeSectionEditorForm(fp, sectionID)
 		case files.EditorTypeTextarea:
 			html = render.RenderTextareaSectionEditorForm(fp, sectionID)
 		default:
@@ -119,6 +121,8 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	case files.EditorTypeCodeMirror:
 		html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
+	case files.EditorTypeOverType:
+		html = render.RenderOverTypeEditorForm(fp, prefillPath, editorParam)
 	default:
 		html = render.RenderToastUIEditorForm(fp, prefillPath, "")
 	}

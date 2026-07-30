@@ -131,6 +131,7 @@ definitions:
     - todo-editor
     - index-editor
     - codemirror-editor
+    - overtype-editor
     type: string
     x-enum-varnames:
     - EditorTypeToastUI
@@ -140,6 +141,7 @@ definitions:
     - EditorTypeTodo
     - EditorTypeIndex
     - EditorTypeCodeMirror
+    - EditorTypeOverType
   files.EditorTypeCount:
     additionalProperties:
       type: integer

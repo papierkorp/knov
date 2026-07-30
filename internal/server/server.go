@@ -94,6 +94,7 @@ func NewRouter() *chi.Mux {
 	r.Get("/files/history/*", handleHistory)
 	r.Get("/files/new/toastui", handleFileNewToastUI)
 	r.Get("/files/new/codemirror", handleFileNewCodeMirror)
+	r.Get("/files/new/overtype", handleFileNewOverType)
 	r.Get("/files/new/text", handleFileNewText)
 	r.Get("/files/new/list", handleFileNewList)
 	r.Get("/files/new/todo", handleFileNewTodo)
@@ -1008,6 +1009,14 @@ func handleFileNewIndex(w http.ResponseWriter, r *http.Request) {
 func handleFileNewCodeMirror(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("codemirror-editor")
+	if err := tm.Render(w, "filenew", data); err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+	}
+}
+
+func handleFileNewOverType(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("overtype-editor")
 	if err := tm.Render(w, "filenew", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}

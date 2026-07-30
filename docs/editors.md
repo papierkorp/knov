@@ -1,12 +1,30 @@
 # Editors
 
+# overtype
+
+https://github.com/panphora/overtype
+
+```bash
+wget https://cdn.jsdelivr.net/npm/overtype@latest
+```
+
+# editor.md
+
+https://github.com/pandao/editor.md
+
 # traven
 
 https://github.com/slpstream/traven
 
 # codemirror
 
+## codemirror5
+
 https://github.com/codemirror/codemirror5
+
+## codemirror6
+
+https://github.com/blueberrycongee/codemirror-live-markdown
 
 # toastui
 
@@ -19,6 +37,10 @@ https://github.com/deftio/quikdown
 ```bash
 wget -O static/quikdown-1.2.21.min.js https://cdn.jsdelivr.net/npm/quikdown
 ```
+
+# codejar
+
+https://medv.io/codejar/
 
 # knov
 
@@ -50,6 +72,15 @@ please anwser in english i want to create my own texteditor for my already exist
   - which automatically adjust the height if i use tab
   - just like this sublime text plugin: https://github.com/SublimeText/TableEditor
 - easily customizable
+- auto continue lists
+- keyboard shortcuts
+- auto pairing markers
+- paste handling
+- image paste/drop
+- code block highlighting
+- wiki links
+- folding headers/sections
+- frontmatter
 
 i already have a markdown parser builtin my app which is also reachable via an api
 i also have a existing codehighlighter
