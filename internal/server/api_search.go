@@ -5,6 +5,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/git"
 	"knov/internal/search"
 	"knov/internal/server/render"
 	"knov/internal/translation"
@@ -28,12 +29,7 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if query == "" {
-		emptyHTML := render.RenderSearchHint()
-		if format == "json" {
-			writeResponse(w, r, []files.File{}, emptyHTML)
-		} else {
-			w.Write([]byte(emptyHTML))
-		}
+		writeResponse(w, r, []files.File{}, render.RenderSearchHint())
 		return
 	}
 
@@ -53,23 +49,18 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 
 	// history search — returns git.GitHistoryFile results, rendered as list
 	if history {
-		var histHTML string
+		var histResults []git.GitHistoryFile
+		var err error
 		if titleOnly {
-			results, err := search.SearchDeletedFilesByTitle(query, limit)
-			if err != nil {
-				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "history search failed"), http.StatusInternalServerError)
-				return
-			}
-			histHTML = render.RenderSearchHistoryResults(results, query)
+			histResults, err = search.SearchDeletedFilesByTitle(query, limit)
 		} else {
-			results, err := search.SearchDeletedFilesByContent(query, limit)
-			if err != nil {
-				http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "history search failed"), http.StatusInternalServerError)
-				return
-			}
-			histHTML = render.RenderSearchHistoryResults(results, query)
+			histResults, err = search.SearchDeletedFilesByContent(query, limit)
 		}
-		w.Write([]byte(histHTML))
+		if err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "history search failed"), http.StatusInternalServerError)
+			return
+		}
+		writeResponse(w, r, histResults, render.RenderSearchHistoryResults(histResults, query))
 		return
 	}
 
@@ -85,20 +76,15 @@ func handleAPISearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var html string
 	switch format {
 	case "json":
-		writeResponse(w, r, results, "")
-	case "dropdown":
-		html := render.RenderSearchDropdown(results, query)
-		w.Write([]byte(html))
 	case "list":
-		html := render.RenderSearchList(results, query)
-		writeResponse(w, r, results, html)
+		html = render.RenderSearchList(results, query)
 	case "cards":
-		html := render.RenderSearchCards(results, query)
-		writeResponse(w, r, results, html)
+		html = render.RenderSearchCards(results, query)
 	default:
-		html := render.RenderSearchDropdown(results, query)
-		w.Write([]byte(html))
+		html = render.RenderSearchDropdown(results, query)
 	}
+	writeResponse(w, r, results, html)
 }

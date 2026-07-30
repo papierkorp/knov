@@ -226,8 +226,7 @@ func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetKanbanExcerpt(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	if filePath == "" {
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(""))
+		writeResponse(w, r, map[string]string{"excerpt": ""}, "")
 		return
 	}
 
@@ -240,10 +239,11 @@ func handleAPIGetKanbanExcerpt(w http.ResponseWriter, r *http.Request) {
 
 	excerpt := kanban.Excerpt(pathutils.ToDocsPath(filePath), chars)
 
-	w.Header().Set("Content-Type", "text/html")
+	var html string
 	if excerpt != "" {
-		fmt.Fprintf(w, `<div class="kanban-card-excerpt">%s</div>`, excerpt)
+		html = fmt.Sprintf(`<div class="kanban-card-excerpt">%s</div>`, excerpt)
 	}
+	writeResponse(w, r, map[string]string{"excerpt": excerpt}, html)
 }
 
 // @Summary Get all non-kanban tags used in a board's kanban cards
@@ -254,13 +254,13 @@ func handleAPIGetKanbanExcerpt(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetKanbanTags(w http.ResponseWriter, r *http.Request) {
 	board, ok := configmanager.GetKanbanBoardBySlug(chi.URLParam(r, "board"))
 	if !ok {
-		w.Write([]byte(""))
+		writeResponse(w, r, []string{}, "")
 		return
 	}
 
 	tags, err := kanban.TagsForFolder(board.FolderPath)
 	if err != nil {
-		w.Write([]byte(""))
+		writeResponse(w, r, []string{}, "")
 		return
 	}
 
@@ -268,8 +268,7 @@ func handleAPIGetKanbanTags(w http.ResponseWriter, r *http.Request) {
 	for _, t := range tags {
 		fmt.Fprintf(&html, `<option value="%s">%s</option>`, t, t)
 	}
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html.String()))
+	writeResponse(w, r, tags, html.String())
 }
 
 // @Summary Get kanban event log

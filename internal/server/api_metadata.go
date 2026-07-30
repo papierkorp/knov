@@ -37,12 +37,6 @@ type bulkUpdatePatch struct {
 	TagsRemove []string          `json:"tagsRemove,omitempty"`
 }
 
-type bulkUpdateRequest struct {
-	Filter  filter.Config   `json:"filter"`
-	Patch   bulkUpdatePatch `json:"patch"`
-	Preview bool            `json:"preview"`
-}
-
 type bulkUpdateResult struct {
 	Updated []string `json:"updated"`
 	Count   int      `json:"count"`
@@ -50,43 +44,57 @@ type bulkUpdateResult struct {
 }
 
 // @Summary Bulk update metadata for files matching a filter
-// @Description Applies a metadata patch to all files that match the given filter criteria. Pass preview:true to see which files would be affected without applying changes. Supported patch fields: editor (set), tagsAdd (append), tagsRemove (remove from list).
+// @Description Applies a metadata patch to all files that match the given filter criteria. Pass preview=true to see which files would be affected without applying changes. Supported actions: set-editor, add-tag, remove-tag.
 // @Tags metadata
-// @Accept json
+// @Accept application/x-www-form-urlencoded
 // @Produce json,html
-// @Param body body bulkUpdateRequest true "Filter and patch"
+// @Param filterField formData string true "Metadata field to filter on"
+// @Param filterOp formData string true "Filter operator (equals, contains, regex)"
+// @Param filterValue formData string true "Filter value"
+// @Param action formData string true "Patch action (set-editor, add-tag, remove-tag)"
+// @Param patchValue formData string true "Patch value"
+// @Param preview formData bool false "Preview only, do not apply"
 // @Success 200 {object} bulkUpdateResult
-// @Failure 400 {string} string "invalid json or no patch fields"
+// @Failure 400 {string} string "invalid form data or patch"
 // @Failure 500 {string} string "internal error"
 // @Router /api/metadata/bulk-update [post]
 func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
-	var req bulkUpdateRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid json"), http.StatusBadRequest)
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid form data"), http.StatusBadRequest)
 		return
 	}
 
-	p := req.Patch
-	if p.Editor == nil && len(p.TagsAdd) == 0 && len(p.TagsRemove) == 0 {
+	patchValue := r.FormValue("patchValue")
+	if patchValue == "" {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no patch fields provided"), http.StatusBadRequest)
 		return
 	}
 
-	if p.Editor != nil {
-		valid := false
-		for _, et := range files.AllEditorTypes() {
-			if *p.Editor == et {
-				valid = true
-				break
-			}
-		}
-		if !valid {
+	var p bulkUpdatePatch
+	switch r.FormValue("action") {
+	case "set-editor":
+		editor := files.EditorType(patchValue)
+		if !slices.Contains(files.AllEditorTypes(), editor) {
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid editor type"), http.StatusBadRequest)
 			return
 		}
+		p.Editor = &editor
+	case "add-tag":
+		p.TagsAdd = []string{patchValue}
+	case "remove-tag":
+		p.TagsRemove = []string{patchValue}
+	default:
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "no patch fields provided"), http.StatusBadRequest)
+		return
 	}
 
-	matched, err := filter.FilterFiles(req.Filter.Criteria, req.Filter.Logic)
+	criteria := []filter.Criteria{{
+		Metadata: r.FormValue("filterField"),
+		Operator: r.FormValue("filterOp"),
+		Value:    r.FormValue("filterValue"),
+		Action:   "include",
+	}}
+	matched, err := filter.FilterFiles(criteria, "and")
 	if err != nil {
 		logging.LogError(logging.KeyApp, "bulk-update: filter failed: %v", err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to filter files"), http.StatusInternalServerError)
@@ -98,9 +106,9 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 		paths = append(paths, f.Metadata.Path)
 	}
 
-	if req.Preview {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(bulkUpdateResult{Updated: paths, Count: len(paths), Preview: true})
+	if r.FormValue("preview") == "true" {
+		writeResponse(w, r, bulkUpdateResult{Updated: paths, Count: len(paths), Preview: true},
+			render.RenderBulkUpdateResult(paths, len(paths), true))
 		return
 	}
 
@@ -118,8 +126,8 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 
 	updated := len(matched) - len(failed)
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "%d files updated", updated))
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(bulkUpdateResult{Updated: paths, Count: updated, Preview: false})
+	writeResponse(w, r, bulkUpdateResult{Updated: paths, Count: updated, Preview: false},
+		render.RenderBulkUpdateResult(paths, updated, false))
 }
 
 func applyBulkPatch(current *files.Metadata, p bulkUpdatePatch) error {
@@ -203,21 +211,13 @@ func handleAPIGetMetadata(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	acceptHeader := r.Header.Get("Accept")
-	if strings.Contains(acceptHeader, "text/html") {
-		if strings.HasPrefix(normalizedPath, "media/") {
-			html := render.RenderMediaDetail(metadata)
-			w.Header().Set("Content-Type", "text/html")
-			w.Write([]byte(html))
-			return
-		}
-		html := render.RenderFileMetadataSimple(metadata)
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
-		return
+	var html string
+	if strings.HasPrefix(normalizedPath, "media/") {
+		html = render.RenderMediaDetail(metadata)
+	} else {
+		html = render.RenderFileMetadataSimple(metadata)
 	}
-
-	writeResponse(w, r, metadata, fmt.Sprintf("metadata for %s", normalizedPath))
+	writeResponse(w, r, metadata, html)
 }
 
 // @Summary Set metadata for a single file
@@ -980,10 +980,9 @@ func handleAPIGetAllTags(w http.ResponseWriter, r *http.Request) {
 		}
 		var html strings.Builder
 		for _, tag := range cachedTags {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, tag, tag))
+			fmt.Fprintf(&html, `<option value="%s">%s</option>`, tag, tag)
 		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
+		writeResponse(w, r, cachedTags, html.String())
 		return
 	}
 
@@ -1034,10 +1033,9 @@ func handleAPIGetAllCollections(w http.ResponseWriter, r *http.Request) {
 		}
 		var html strings.Builder
 		for _, collection := range cachedCollections {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, collection, collection))
+			fmt.Fprintf(&html, `<option value="%s">%s</option>`, collection, collection)
 		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
+		writeResponse(w, r, cachedCollections, html.String())
 		return
 	}
 
@@ -1088,10 +1086,9 @@ func handleAPIGetAllFolders(w http.ResponseWriter, r *http.Request) {
 		}
 		var html strings.Builder
 		for _, folder := range cachedFolders {
-			html.WriteString(fmt.Sprintf(`<option value="%s">%s</option>`, folder, folder))
+			fmt.Fprintf(&html, `<option value="%s">%s</option>`, folder, folder)
 		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
+		writeResponse(w, r, cachedFolders, html.String())
 		return
 	}
 
@@ -1132,8 +1129,7 @@ func handleAPIGetAllTitles(w http.ResponseWriter, r *http.Request) {
 		for _, title := range cachedTitles {
 			fmt.Fprintf(&html, `<option value="%s">%s</option>`, title, title)
 		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
+		writeResponse(w, r, cachedTitles, html.String())
 		return
 	}
 
@@ -1161,14 +1157,15 @@ func handleAPIGetAllEditors(w http.ResponseWriter, r *http.Request) {
 	if format == "options" {
 		context := r.URL.Query().Get("context")
 		var html strings.Builder
+		var types []files.EditorType
 		for _, ft := range files.AllEditorTypes() {
 			if context == "chat" && ft == files.EditorTypeFilter {
 				continue
 			}
+			types = append(types, ft)
 			fmt.Fprintf(&html, `<option value="%s">%s</option>`, ft, ft)
 		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
+		writeResponse(w, r, types, html.String())
 		return
 	}
 

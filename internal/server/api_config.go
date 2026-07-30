@@ -43,8 +43,7 @@ func handleAPIGetCurrentDataPath(w http.ResponseWriter, r *http.Request) {
 	dataPath := appConfig.DataPath
 
 	html := render.RenderInputField("text", "dataPath", "data-path", dataPath, translation.SprintfForRequest(configmanager.GetLanguage(), "/path/to/data"), true)
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]string{"dataPath": dataPath}, html)
 }
 
 // @Summary Get git remote URL

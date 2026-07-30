@@ -11,6 +11,18 @@ import (
 	"knov/internal/translation"
 )
 
+// RenderBulkUpdateResult renders the result of a bulk metadata update or preview
+func RenderBulkUpdateResult(paths []string, count int, preview bool) string {
+	if !preview {
+		return translation.SprintfForRequest(configmanager.GetLanguage(), "%d files updated", count)
+	}
+	var html strings.Builder
+	fmt.Fprintf(&html, "%s:<br><small>%s</small>",
+		translation.SprintfForRequest(configmanager.GetLanguage(), "%d files would be updated", count),
+		strings.Join(paths, "<br>"))
+	return html.String()
+}
+
 // RenderMetadataForm renders the complete metadata form for a file
 func RenderMetadataForm(filePath string, defaultFiletype string) (string, error) {
 	var html strings.Builder

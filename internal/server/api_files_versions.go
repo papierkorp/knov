@@ -46,8 +46,7 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			logging.LogDebug(logging.KeyApp, "failed to get file history for %s: %v", filePath, err)
 			html := `<div class="no-versions">` + translation.SprintfForRequest(configmanager.GetLanguage(), "no git history available") + `</div>`
-			w.Header().Set("Content-Type", "text/html")
-			w.Write([]byte(html))
+			writeResponse(w, r, []string{}, html)
 			return
 		}
 		html := render.RenderFileVersionsList(versions, filePath, output, showCompareForm)
@@ -81,8 +80,7 @@ func handleAPIGetFileVersions(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logging.LogDebug(logging.KeyApp, "failed to get file %s at commit %s: %v", filePath, commit, err)
 		html := `<div class="version-error">` + translation.SprintfForRequest(configmanager.GetLanguage(), "version no longer available") + `</div>`
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
+		writeResponse(w, r, map[string]string{"error": "version no longer available"}, html)
 		return
 	}
 
@@ -190,8 +188,7 @@ func handleAPIGetFileVersionDiff(w http.ResponseWriter, r *http.Request) {
 	after := buildFileDiffVersion(fullPath, newCommit, currentCommit)
 
 	html := render.RenderFileDiff(diff, filePath, before, after)
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]string{"filepath": filePath, "diff": diff}, html)
 }
 
 // buildFileDiffVersion loads the display metadata and full content for one

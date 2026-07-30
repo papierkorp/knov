@@ -44,8 +44,7 @@ func handleAPIGetFolderSuggestions(w http.ResponseWriter, r *http.Request) {
 		folderPaths, err = files.GetAllFolderPaths()
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get folder paths: %v", err)
-			w.Header().Set("Content-Type", "text/html")
-			w.Write([]byte(""))
+			writeResponse(w, r, []string{}, "")
 			return
 		}
 	}
@@ -53,12 +52,10 @@ func handleAPIGetFolderSuggestions(w http.ResponseWriter, r *http.Request) {
 	var html strings.Builder
 	for _, folderPath := range folderPaths {
 		// add suggestion with placeholder filename
-		suggestion := folderPath
-		html.WriteString(fmt.Sprintf(`<option value="%s"></option>`, suggestion))
+		fmt.Fprintf(&html, `<option value="%s"></option>`, folderPath)
 	}
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html.String()))
+	writeResponse(w, r, folderPaths, html.String())
 }
 
 // @Summary Get folder structure
@@ -135,8 +132,7 @@ func handleAPIGetFileContent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(content.HTML))
+	writeResponse(w, r, content, content.HTML)
 }
 
 // @Summary Get file header with link and breadcrumb
@@ -728,8 +724,7 @@ func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]string{"filepath": filePath}, html)
 }
 
 // @Summary Get file form HTML
@@ -740,8 +735,7 @@ func handleAPIGetMetadataFormHTML(w http.ResponseWriter, r *http.Request) {
 func handleAPIFileForm(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("filepath")
 	html := render.RenderFileForm(filePath)
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]string{"filepath": filePath}, html)
 }
 
 // @Summary Get metadata form HTML
@@ -761,8 +755,7 @@ func handleAPIMetadataForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]string{"filepath": filePath, "editor": defaultFiletype}, html)
 }
 
 // @Summary Rename a file

@@ -87,8 +87,7 @@ func handleAPIGetFilterCriteriaRow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	html := render.RenderFilterCriteriaRow(-1, index, nil)
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]int{"index": index}, html)
 }
 
 // @Summary Save filter configuration
@@ -184,8 +183,7 @@ func handleAPIGetFilterValueInput(w http.ResponseWriter, r *http.Request) {
 	}
 
 	html := render.RenderFilterValueInput(inputId, inputName, value, metadata)
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]string{"metadata": metadata, "value": value}, html)
 }
 
 // @Summary Add filter criteria
@@ -211,8 +209,7 @@ func handleAPIAddFilterCriteria(w http.ResponseWriter, r *http.Request) {
 	}
 	html := render.RenderFilterCriteriaRow(widgetIndex, criteriaIndex, nil)
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]int{"index": criteriaIndex}, html)
 }
 
 // @Summary Delete filter

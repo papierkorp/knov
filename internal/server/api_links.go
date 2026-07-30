@@ -230,12 +230,13 @@ func handleAPIGetAncestorsInFolder(w http.ResponseWriter, r *http.Request) {
 	format := r.URL.Query().Get("format")
 	if format == "options" {
 		var html strings.Builder
+		rels := make([]string, 0, len(ancestors))
 		for _, a := range ancestors {
 			rel := pathutils.ToRelative(a)
+			rels = append(rels, rel)
 			fmt.Fprintf(&html, `<option value="%s">%s</option>`, rel, render.GetLinkDisplayText(rel))
 		}
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html.String()))
+		writeResponse(w, r, rels, html.String())
 		return
 	}
 

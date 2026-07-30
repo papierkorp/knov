@@ -249,20 +249,6 @@ definitions:
     additionalProperties:
       type: integer
     type: object
-  filter.Config:
-    properties:
-      criteria:
-        items:
-          $ref: '#/definitions/filter.Criteria'
-        type: array
-      display:
-        description: list, cards, dropdown, content
-        type: string
-      limit:
-        type: integer
-      logic:
-        type: string
-    type: object
   filter.Criteria:
     properties:
       action:
@@ -322,28 +308,6 @@ definitions:
       message:
         type: string
       pending:
-        type: boolean
-    type: object
-  server.bulkUpdatePatch:
-    properties:
-      editor:
-        $ref: '#/definitions/files.EditorType'
-      tagsAdd:
-        items:
-          type: string
-        type: array
-      tagsRemove:
-        items:
-          type: string
-        type: array
-    type: object
-  server.bulkUpdateRequest:
-    properties:
-      filter:
-        $ref: '#/definitions/filter.Config'
-      patch:
-        $ref: '#/definitions/server.bulkUpdatePatch'
-      preview:
         type: boolean
     type: object
   server.bulkUpdateResult:
@@ -3250,18 +3214,40 @@ paths:
   /api/metadata/bulk-update:
     post:
       consumes:
-      - application/json
+      - application/x-www-form-urlencoded
       description: 'Applies a metadata patch to all files that match the given filter
-        criteria. Pass preview:true to see which files would be affected without applying
-        changes. Supported patch fields: editor (set), tagsAdd (append), tagsRemove
-        (remove from list).'
+        criteria. Pass preview=true to see which files would be affected without applying
+        changes. Supported actions: set-editor, add-tag, remove-tag.'
       parameters:
-      - description: Filter and patch
-        in: body
-        name: body
+      - description: Metadata field to filter on
+        in: formData
+        name: filterField
         required: true
-        schema:
-          $ref: '#/definitions/server.bulkUpdateRequest'
+        type: string
+      - description: Filter operator (equals, contains, regex)
+        in: formData
+        name: filterOp
+        required: true
+        type: string
+      - description: Filter value
+        in: formData
+        name: filterValue
+        required: true
+        type: string
+      - description: Patch action (set-editor, add-tag, remove-tag)
+        in: formData
+        name: action
+        required: true
+        type: string
+      - description: Patch value
+        in: formData
+        name: patchValue
+        required: true
+        type: string
+      - description: Preview only, do not apply
+        in: formData
+        name: preview
+        type: boolean
       produces:
       - application/json
       - text/html
@@ -3271,7 +3257,7 @@ paths:
           schema:
             $ref: '#/definitions/server.bulkUpdateResult'
         "400":
-          description: invalid json or no patch fields
+          description: invalid form data or patch
           schema:
             type: string
         "500":

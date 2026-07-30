@@ -268,8 +268,7 @@ func handleAPIDashboardForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	html := render.RenderDashboardForm(dash, isEdit)
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, dash, html)
 }
 
 // @Summary Get widget form
@@ -289,8 +288,7 @@ func handleAPIWidgetForm(w http.ResponseWriter, r *http.Request) {
 	index := int(time.Now().Unix()) % 1000
 
 	html := render.RenderWidgetForm(index, nil)
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]int{"index": index}, html)
 }
 
 // @Summary Get widget configuration form
@@ -343,14 +341,12 @@ func handleAPIWidgetConfig(w http.ResponseWriter, r *http.Request) {
 	if widgetType == "" {
 		// empty type, show placeholder
 		html := fmt.Sprintf(`<div class="config-placeholder"><p>%s</p></div>`, translation.SprintfForRequest(configmanager.GetLanguage(), "select a widget type to see configuration options"))
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
+		writeResponse(w, r, map[string]any{"index": index, "type": ""}, html)
 		return
 	}
 
 	html := render.RenderWidgetConfig(index, widgetType, nil)
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]any{"index": index, "type": widgetType}, html)
 }
 
 // @Summary Delete dashboard
@@ -428,8 +424,7 @@ func handleAPIRenderWidget(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, widget, html)
 }
 
 // @Summary Rename dashboard

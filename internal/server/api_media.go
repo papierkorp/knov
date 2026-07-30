@@ -152,31 +152,19 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// determine response format
-	acceptHeader := r.Header.Get("Accept")
-	if strings.Contains(acceptHeader, "text/html") {
-		switch mode {
-		case "select":
-			html := render.RenderMediaListSelect(filteredMedia)
-			w.Header().Set("Content-Type", "text/html")
-			w.Write([]byte(html))
-		case "compact":
-			html := render.RenderMediaListCompact(filteredMedia, "detail")
-			w.Header().Set("Content-Type", "text/html")
-			if hiddenCount > 0 {
-				w.Header().Set("X-Hidden-Message", translation.SprintfForRequest(configmanager.GetLanguage(), "%d files not shown (hidden in settings)", hiddenCount))
-			}
-			w.Write([]byte(html))
-		default:
-			html := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), visibleOrphanedCount, hiddenCount)
-			w.Header().Set("Content-Type", "text/html")
-			w.Write([]byte(html))
+	var html string
+	switch mode {
+	case "select":
+		html = render.RenderMediaListSelect(filteredMedia)
+	case "compact":
+		html = render.RenderMediaListCompact(filteredMedia, "detail")
+		if hiddenCount > 0 {
+			w.Header().Set("X-Hidden-Message", translation.SprintfForRequest(configmanager.GetLanguage(), "%d files not shown (hidden in settings)", hiddenCount))
 		}
-		return
+	default:
+		html = render.RenderMediaList(filteredMedia, filter, len(mediaFiles), visibleOrphanedCount, hiddenCount)
 	}
-
-	// return JSON response
-	writeResponse(w, r, filteredMedia, fmt.Sprintf("found %d media files", len(filteredMedia)))
+	writeResponse(w, r, filteredMedia, html)
 }
 
 // @Summary Autocomplete media file paths
@@ -305,9 +293,8 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 		finalHTML := strings.Replace(mediaListHTML, `<div id="component-media-content">`,
 			`<div id="component-media-content">`+errorMsg, 1)
 
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusOK) // use 200 so htmx swaps the content
-		w.Write([]byte(finalHTML))
+		// 200 so htmx swaps the content
+		writeResponse(w, r, map[string]any{"error": "still referenced", "references": metadata.LinksToHere}, finalHTML)
 		return
 	}
 
@@ -351,9 +338,7 @@ func handleAPIDeleteMedia(w http.ResponseWriter, r *http.Request) {
 
 	// render updated media list
 	html := render.RenderMediaList(filteredMedia, filter, len(mediaFiles), len(orphanedMedia), 0)
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(html))
+	writeResponse(w, r, filteredMedia, html)
 }
 
 // @Summary Get media preview HTML
@@ -388,8 +373,7 @@ func handleAPIMediaPreview(w http.ResponseWriter, r *http.Request) {
 
 	// render preview HTML using simple CSS approach
 	html := render.RenderMediaPreviewWithSize(mediaPath, size)
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]any{"path": mediaPath, "size": size}, html)
 }
 
 // @Summary Get media storage statistics
@@ -407,19 +391,7 @@ func handleAPIMediaStats(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if this is an HTMX request or if Accept header prefers HTML
-	acceptHeader := r.Header.Get("Accept")
-	isHTMX := r.Header.Get("HX-Request") == "true"
-
-	if isHTMX || strings.Contains(acceptHeader, "text/html") {
-		html := render.RenderMediaStorageStats(stats)
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
-		return
-	}
-
-	// return JSON response
-	writeResponse(w, r, stats, "storage stats retrieved")
+	writeResponse(w, r, stats, render.RenderMediaStorageStats(stats))
 }
 
 // @Summary Cleanup orphaned media files

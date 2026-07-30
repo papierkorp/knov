@@ -4154,9 +4154,9 @@ const docTemplate = `{
         },
         "/api/metadata/bulk-update": {
             "post": {
-                "description": "Applies a metadata patch to all files that match the given filter criteria. Pass preview:true to see which files would be affected without applying changes. Supported patch fields: editor (set), tagsAdd (append), tagsRemove (remove from list).",
+                "description": "Applies a metadata patch to all files that match the given filter criteria. Pass preview=true to see which files would be affected without applying changes. Supported actions: set-editor, add-tag, remove-tag.",
                 "consumes": [
-                    "application/json"
+                    "application/x-www-form-urlencoded"
                 ],
                 "produces": [
                     "application/json",
@@ -4168,13 +4168,45 @@ const docTemplate = `{
                 "summary": "Bulk update metadata for files matching a filter",
                 "parameters": [
                     {
-                        "description": "Filter and patch",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/server.bulkUpdateRequest"
-                        }
+                        "type": "string",
+                        "description": "Metadata field to filter on",
+                        "name": "filterField",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter operator (equals, contains, regex)",
+                        "name": "filterOp",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter value",
+                        "name": "filterValue",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Patch action (set-editor, add-tag, remove-tag)",
+                        "name": "action",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Patch value",
+                        "name": "patchValue",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Preview only, do not apply",
+                        "name": "preview",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -4185,7 +4217,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid json or no patch fields",
+                        "description": "invalid form data or patch",
                         "schema": {
                             "type": "string"
                         }
@@ -6672,27 +6704,6 @@ const docTemplate = `{
                 "type": "integer"
             }
         },
-        "filter.Config": {
-            "type": "object",
-            "properties": {
-                "criteria": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/filter.Criteria"
-                    }
-                },
-                "display": {
-                    "description": "list, cards, dropdown, content",
-                    "type": "string"
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "logic": {
-                    "type": "string"
-                }
-            }
-        },
         "filter.Criteria": {
             "type": "object",
             "properties": {
@@ -6780,40 +6791,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "pending": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "server.bulkUpdatePatch": {
-            "type": "object",
-            "properties": {
-                "editor": {
-                    "$ref": "#/definitions/files.EditorType"
-                },
-                "tagsAdd": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "tagsRemove": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "server.bulkUpdateRequest": {
-            "type": "object",
-            "properties": {
-                "filter": {
-                    "$ref": "#/definitions/filter.Config"
-                },
-                "patch": {
-                    "$ref": "#/definitions/server.bulkUpdatePatch"
-                },
-                "preview": {
                     "type": "boolean"
                 }
             }

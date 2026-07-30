@@ -42,8 +42,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	// if section is specified, use section editor with the editor type from metadata
 	if sectionID != "" && fp != "" {
 		html = render.RenderCodeMirrorSectionEditorForm(fp, sectionID)
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
+		writeResponse(w, r, map[string]string{"filepath": fp, "section": sectionID}, html)
 		return
 	}
 
@@ -88,8 +87,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 		html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 	}
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]string{"filepath": fp, "editor": editorParam}, html)
 }
 
 // @Summary Save index editor
@@ -208,8 +206,7 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "index saved successfully"),
 		filezpath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(render.RenderStatusMessage(render.StatusOK, successMsg)))
+	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filezpath}, render.RenderStatusMessage(render.StatusOK, successMsg))
 }
 
 // @Summary Add index entry
@@ -244,8 +241,7 @@ func handleAPIAddIndexEntry(w http.ResponseWriter, r *http.Request) {
 	// render entry row with index 999 (will be reindexed by JavaScript)
 	html := render.RenderIndexEntryRowHelper(999, entry)
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, entry, html)
 }
 
 // @Summary Save filter editor
@@ -347,8 +343,7 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "list saved successfully"),
 		filePath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(render.RenderStatusMessage(render.StatusOK, successMsg)))
+	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, render.RenderStatusMessage(render.StatusOK, successMsg))
 }
 
 // @Summary Save todo editor
@@ -430,8 +425,7 @@ func handleAPISaveTodoEditor(w http.ResponseWriter, r *http.Request) {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "todo saved successfully"),
 		filePath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(render.RenderStatusMessage(render.StatusOK, successMsg)))
+	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, render.RenderStatusMessage(render.StatusOK, successMsg))
 }
 
 // @Summary Save table data
@@ -535,8 +529,7 @@ func handleAPITableEditorSave(w http.ResponseWriter, r *http.Request) {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "file saved successfully"),
 		filePath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(successMsg))
+	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath}, successMsg)
 }
 
 // @Summary Get table editor form
@@ -562,8 +555,7 @@ func handleAPITableEditorForm(w http.ResponseWriter, r *http.Request) {
 
 	html := render.RenderTableEditorForm(filePath, tableIndex)
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, map[string]any{"filepath": filePath, "tableIndex": tableIndex}, html)
 }
 
 // @Summary Save section content
@@ -625,8 +617,7 @@ func handleAPISaveSectionEditor(w http.ResponseWriter, r *http.Request) {
 		sectionID,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(successMsg))
+	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filePath, "section": sectionID}, successMsg)
 }
 
 // @Summary Convert single file from DokuWiki to Markdown

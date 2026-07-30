@@ -146,8 +146,7 @@ func handleAPIGetThemeSettingsForm(w http.ResponseWriter, r *http.Request) {
 
 	html := render.RenderThemeSettingsForm(schema, currentValues, "help-text")
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	writeResponse(w, r, currentValues, html)
 }
 
 // @Summary Update theme setting

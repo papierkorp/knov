@@ -49,8 +49,7 @@ func handleAPIInvalidateCache(w http.ResponseWriter, r *http.Request) {
 func handleAPIGetLogs(w http.ResponseWriter, r *http.Request) {
 	entries := logging.GetRecentEntries(200)
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write([]byte(render.RenderLogTable(entries)))
+	writeResponse(w, r, entries, render.RenderLogTable(entries))
 }
 
 // handleAPIGetLogsFileAll merges every current (non-rotated) per-key log file
@@ -95,8 +94,7 @@ func handleAPIGetLogsFileAll(w http.ResponseWriter, r *http.Request) {
 		entries = entries[len(entries)-limit:]
 	}
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write([]byte(render.RenderLogTable(entries)))
+	writeResponse(w, r, entries, render.RenderLogTable(entries))
 }
 
 func resolveLogFilePath(r *http.Request) string {
@@ -210,7 +208,7 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 		sb.WriteString(`</div></div>`)
 	}
 
-	w.Write([]byte(sb.String()))
+	writeResponse(w, r, chunk, sb.String())
 }
 
 // @Summary Get job history
@@ -221,12 +219,6 @@ func handleAPIGetLogsFile(w http.ResponseWriter, r *http.Request) {
 // @Router /api/system/jobs [get]
 func handleAPIGetJobs(w http.ResponseWriter, r *http.Request) {
 	runs := job.GetRecentRuns()
-	acceptHeader := r.Header.Get("Accept")
-	if strings.Contains(acceptHeader, "text/html") {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Write([]byte(render.RenderJobsTable(runs)))
-		return
-	}
 	writeResponse(w, r, runs, render.RenderJobsTable(runs))
 }
 
