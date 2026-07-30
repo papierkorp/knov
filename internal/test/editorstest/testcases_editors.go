@@ -12,7 +12,7 @@ import (
 	"knov/internal/test"
 )
 
-// createEditSaveCase covers the raw-content editors (codemirror, overtype): write
+// createEditSaveCase covers the raw-content editors (codemirror): write
 // initial content + metadata, overwrite with edited content, verify both persisted.
 func createEditSaveCase(name, relPath string, editor files.EditorType, initial, edited string) test.CaseResult {
 	if err := writeFile(relPath, initial); err != nil {
@@ -53,11 +53,6 @@ func createEditSaveCase(name, relPath string, editor files.EditorType, initial, 
 func caseCodeMirrorCreateEditSave() test.CaseResult {
 	return createEditSaveCase("codemirror", testPath("codemirror.md"), files.EditorTypeCodeMirror,
 		"# CodeMirror initial\n", "# CodeMirror edited\n")
-}
-
-func caseOverTypeCreateEditSave() test.CaseResult {
-	return createEditSaveCase("overtype", testPath("overtype.md"), files.EditorTypeOverType,
-		"# OverType initial\n", "# OverType edited\n")
 }
 
 // caseFilterCreateEditSave saves a filter config, resaves it with different criteria, and

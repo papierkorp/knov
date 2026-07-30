@@ -32,7 +32,6 @@ type SettingGroup struct {
 var (
 	GroupNone            = SettingGroup{}
 	GroupCodeMirror      = SettingGroup{Key: "code-mirror", Label: "Code / Text Editor (CodeMirror)"}
-	GroupOverType        = SettingGroup{Key: "overtype", Label: "OverType Editor"}
 	GroupAllEditors      = SettingGroup{Key: "all-editors", Label: "All Editors"}
 	GroupSectionEditing  = SettingGroup{Key: "section-editing", Label: "Section Editing & Display"}
 	GroupFileExtensions  = SettingGroup{Key: "file-extensions", Label: "File Extensions", Description: "Use dedicated file extensions instead of .md for these editor types"}

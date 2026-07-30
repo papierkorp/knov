@@ -73,14 +73,6 @@ var (
 		Desc:  "hide markdown syntax markers on lines the cursor isn't touching, Obsidian/Typora-style live preview",
 	})
 
-	// ── Editor / OverType ──────────────────────────────────────────────────────
-	OverTypeShowToolbar = register(&BoolSetting{
-		key: "overtypeShowToolbar", Default: true,
-		Section: SectionEditor, Group: GroupOverType,
-		Label: "Show Toolbar",
-		Desc:  "display the formatting toolbar above the editor",
-	})
-
 	// ── Editor / All Editors ──────────────────────────────────────────────────
 	DefaultMarkdownEditor = register(&StringSetting{
 		key: "defaultMarkdownEditor", Default: "codemirror-editor",
@@ -89,7 +81,6 @@ var (
 		Desc:  "which editor opens by default for new and unassigned markdown files",
 		Options: []SettingOption{
 			{"codemirror-editor", "CodeMirror (plain text editor)"},
-			{"overtype-editor", "OverType (minimalist markdown editor)"},
 		},
 	})
 	SpellCheck = register(&BoolSetting{

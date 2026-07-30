@@ -6499,16 +6499,14 @@ const docTemplate = `{
                 "list-editor",
                 "todo-editor",
                 "index-editor",
-                "codemirror-editor",
-                "overtype-editor"
+                "codemirror-editor"
             ],
             "x-enum-varnames": [
                 "EditorTypeFilter",
                 "EditorTypeList",
                 "EditorTypeTodo",
                 "EditorTypeIndex",
-                "EditorTypeCodeMirror",
-                "EditorTypeOverType"
+                "EditorTypeCodeMirror"
             ]
         },
         "files.EditorTypeCount": {

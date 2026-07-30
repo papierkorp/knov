@@ -431,7 +431,7 @@ func GetMetadataLinkRegex() []string {
 // IsFileTypeHidden checks if a specific editor type should be hidden
 func IsFileTypeHidden(editorType string) bool {
 	switch strings.ToLower(editorType) {
-	case "codemirror-editor", "overtype-editor":
+	case "codemirror-editor":
 		return HideMarkdown.Get()
 	case "list-editor":
 		return HideList.Get()

@@ -35,7 +35,6 @@
 - take a look at the whole codebase into all javascript snippets/scripts with the goal of reducing javascript in favor of more htmx - im also fine with refactoring to make this to work since i think we already use a lot of javascript which could be resolved using htmx
 - refactor render_editor_toastui.go (autcomplete duplications)
 - refactor wiki-autocomplete.js to use htmx (at the moment it takes json input) -> maybe we can generalize the navigation in such a output since we need it a few times
-- overtype editor - view mode select color overwrite the font color
 - wire the editor settings directly in the editor via a button menu besides the toolbar
 - codemirror index.html => render problem (script block, and markdown content at least)
 - opening admin in new tab - close the sidebar just like for settings and system

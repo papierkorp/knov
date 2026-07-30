@@ -82,7 +82,6 @@ func NewRouter() *chi.Mux {
 	r.Get("/files/edittable/*", handleFileEditTable)
 	r.Get("/files/history/*", handleHistory)
 	r.Get("/files/new/codemirror", handleFileNewCodeMirror)
-	r.Get("/files/new/overtype", handleFileNewOverType)
 	r.Get("/files/new/list", handleFileNewList)
 	r.Get("/files/new/todo", handleFileNewTodo)
 	r.Get("/files/new/filter", handleFileNewFilter)

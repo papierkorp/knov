@@ -41,19 +41,7 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 
 	// if section is specified, use section editor with the editor type from metadata
 	if sectionID != "" && fp != "" {
-		metadata, _ := files.MetaDataGet(fp)
-		var sectionEditorType files.EditorType
-		if metadata != nil && metadata.Editor != "" {
-			sectionEditorType = metadata.Editor
-		} else {
-			sectionEditorType = defaultMarkdownEditor()
-		}
-		switch sectionEditorType {
-		case files.EditorTypeOverType:
-			html = render.RenderOverTypeSectionEditorForm(fp, sectionID)
-		default:
-			html = render.RenderCodeMirrorSectionEditorForm(fp, sectionID)
-		}
+		html = render.RenderCodeMirrorSectionEditorForm(fp, sectionID)
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
 		return
@@ -96,8 +84,6 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 			logging.LogError(logging.KeyApp, "failed to render index editor: %v", renderErr)
 			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 		}
-	case files.EditorTypeOverType:
-		html = render.RenderOverTypeEditorForm(fp, prefillPath, editorParam)
 	default:
 		html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 	}

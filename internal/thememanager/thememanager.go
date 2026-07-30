@@ -325,7 +325,6 @@ func injectDefaultCSS(html string) string {
     <link href="/static/css/tableeditor.css" rel="stylesheet" />
     <link href="/static/css/filtereditor.css" rel="stylesheet" />
     <link href="/static/css/codemirroreditor.css" rel="stylesheet" />
-    <link href="/static/css/overtypeeditor.css" rel="stylesheet" />
     <link href="/static/css/custom.css" rel="stylesheet" />
 `
 

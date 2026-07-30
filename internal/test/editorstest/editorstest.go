@@ -24,7 +24,6 @@ func (Suite) Run() (*test.SuiteResult, error) {
 
 	cases := []func() test.CaseResult{
 		caseCodeMirrorCreateEditSave,
-		caseOverTypeCreateEditSave,
 		caseFilterCreateEditSave,
 		caseListCreateEditSave,
 		caseTodoCreateEditSave,

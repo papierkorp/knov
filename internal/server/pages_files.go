@@ -120,14 +120,6 @@ func handleFileNewCodeMirror(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleFileNewOverType(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewFileNewTemplateData("overtype-editor")
-	if err := tm.Render(w, "filenew", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-	}
-}
-
 func handleFileEditTable(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/files/edittable/")
 
