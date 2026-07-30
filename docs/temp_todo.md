@@ -38,6 +38,12 @@
 - wire the editor settings directly in the editor via a button menu besides the toolbar
 - opening admin in new tab - close the sidebar just like for settings and system
 - add repair broken links to jobs
+- tests
+  - manual-trigger test doesnt run through: `Error: RunAsync's manual job sequence did not complete as expected within the timeout`
+  - all-editor-types `Expected: 6 editor types, including codemirror-editor and todo-editorActual: 5 types: [filter-editor list-editor todo-editor index-editor codemirror-editor] Error: AllEditorTypes did not return the expected set`
+  - in-app-tests.log => also add the error message behind the failed test
+  - clean the test folder after the tests
+  - is anything besides the test folder influenced? can i run the tests in my prod binary?
 
 # ai prompts
 
