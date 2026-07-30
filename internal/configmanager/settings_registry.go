@@ -88,6 +88,18 @@ var (
 		Label: "Whole-Word Matches Only",
 		Desc:  "only highlight when the selection matches a complete word boundary",
 	})
+	CodeMirrorShowToolbar = register(&BoolSetting{
+		key: "codeMirrorShowToolbar", Default: true,
+		Section: SectionEditor, Group: GroupCodeMirror,
+		Label: "Show Toolbar",
+		Desc:  "display the formatting toolbar above the editor",
+	})
+	CodeMirrorWysiwyg = register(&BoolSetting{
+		key: "codeMirrorWysiwyg", Default: false,
+		Section: SectionEditor, Group: GroupCodeMirror,
+		Label: "WYSIWYG Marker Hiding",
+		Desc:  "hide markdown syntax markers on lines the cursor isn't touching, Obsidian/Typora-style live preview",
+	})
 
 	// ── Editor / OverType ──────────────────────────────────────────────────────
 	OverTypeShowToolbar = register(&BoolSetting{

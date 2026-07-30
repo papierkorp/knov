@@ -1,3 +1,4 @@
+- DO NOT EVER MAKE ANY CHANGES IN "/media/markus/SamsungT5/knov/data"
 - im currently working on the following golang, htmx app.
 - i want you to anwser with as little code as possible to only fix the problem i anwsered without any unecessary code, as simple and small as possible with as few changes as possible
 - Create an artifact called "current_files_manifest.md" that lists all the artifacts you have created in this conversation with their current versions and last update times.

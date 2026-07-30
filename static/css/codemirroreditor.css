@@ -4,6 +4,46 @@
   overflow: hidden;
 }
 
+#component-codemirror-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-secondary);
+}
+
+#component-codemirror-toolbar button {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: inherit;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
+#component-codemirror-toolbar button:hover {
+  border-color: var(--border);
+  background: var(--bg);
+}
+
+#component-codemirror-toolbar button:active {
+  background: var(--border);
+}
+
+#component-codemirror-toolbar .cm-toolbar-sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  margin: 0 4px;
+}
+
 #codemirror-editor .cm-editor {
   height: 100%;
   font-family: inherit;
@@ -41,4 +81,124 @@
 #codemirror-editor .cm-cursor,
 #codemirror-editor .cm-dropCursor {
   border-left-color: var(--text);
+}
+
+/* ── Markdown live preview: content is styled, syntax markers stay
+   visible but recede — driven by classHighlighter (tok-*) and the
+   custom markdown HighlightStyle (cm-h1..cm-mark), see editor.js. ── */
+
+/* generic tokens (@lezer/highlight classHighlighter) */
+#codemirror-editor .tok-strong {
+  font-weight: 700;
+  color: var(--text);
+}
+#codemirror-editor .tok-emphasis {
+  font-style: italic;
+}
+#codemirror-editor .tok-link {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+#codemirror-editor .tok-url,
+#codemirror-editor .tok-comment,
+#codemirror-editor .tok-meta,
+#codemirror-editor .tok-punctuation,
+#codemirror-editor .tok-operator {
+  color: var(--text-secondary);
+}
+#codemirror-editor .tok-comment {
+  font-style: italic;
+}
+#codemirror-editor .tok-labelName,
+#codemirror-editor .tok-typeName,
+#codemirror-editor .tok-className,
+#codemirror-editor .tok-namespace,
+#codemirror-editor .tok-propertyName {
+  color: var(--accent);
+}
+#codemirror-editor .tok-string,
+#codemirror-editor .tok-string2 {
+  color: var(--success);
+}
+#codemirror-editor .tok-keyword {
+  color: var(--primary);
+}
+#codemirror-editor .tok-number,
+#codemirror-editor .tok-atom,
+#codemirror-editor .tok-bool {
+  color: var(--warning);
+}
+#codemirror-editor .tok-variableName,
+#codemirror-editor .tok-macroName {
+  color: var(--text);
+}
+#codemirror-editor .tok-invalid {
+  color: var(--danger);
+  text-decoration: wavy underline;
+}
+
+/* markdown-specific tokens (custom HighlightStyle, see editor.js) */
+#codemirror-editor .cm-h1 {
+  font-size: 1.7em;
+  font-weight: 700;
+}
+#codemirror-editor .cm-h2 {
+  font-size: 1.45em;
+  font-weight: 700;
+}
+#codemirror-editor .cm-h3 {
+  font-size: 1.25em;
+  font-weight: 700;
+}
+#codemirror-editor .cm-h4 {
+  font-size: 1.12em;
+  font-weight: 600;
+}
+#codemirror-editor .cm-h5 {
+  font-size: 1.04em;
+  font-weight: 600;
+}
+#codemirror-editor .cm-h6 {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+#codemirror-editor .cm-strike {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+#codemirror-editor .cm-quote {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+#codemirror-editor .cm-hr {
+  color: var(--text-secondary);
+  letter-spacing: 0.2em;
+}
+
+#codemirror-editor .cm-inline-code {
+  font-family: var(--font-code);
+  font-size: 0.92em;
+  color: var(--text);
+  background: var(--bg-secondary);
+  padding: 0.05em 0.35em;
+  border-radius: 4px;
+}
+
+/* syntax markers: #, **, _, `, >, -, [ ], etc. — always visible, muted */
+#codemirror-editor .cm-mark {
+  color: var(--text-secondary) !important;
+  opacity: 0.6;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  text-decoration: none !important;
+}
+
+/* block-level touches driven by the marker/content classes above */
+#codemirror-editor .cm-line:has(.cm-quote) {
+  border-left: 3px solid var(--primary);
+  padding-left: 10px;
+  background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
 }

@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"html"
+	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
@@ -10,6 +11,75 @@ import (
 	"knov/internal/pathutils"
 	"knov/internal/translation"
 )
+
+type codeMirrorToolbarBtn struct {
+	cmd, arg, label, titleKey string
+}
+
+// codeMirrorToolbarGroups defines the formatting toolbar buttons, grouped with a separator between groups.
+func codeMirrorToolbarGroups() [][]codeMirrorToolbarBtn {
+	return [][]codeMirrorToolbarBtn{
+		{
+			{"heading", "1", "H1", "heading 1"},
+			{"heading", "2", "H2", "heading 2"},
+			{"heading", "3", "H3", "heading 3"},
+		},
+		{
+			{"bold", "", "<strong>B</strong>", "bold"},
+			{"italic", "", "<em>I</em>", "italic"},
+			{"strikethrough", "", "<s>S</s>", "strikethrough"},
+			{"inlineCode", "", "&lt;/&gt;", "inline code"},
+		},
+		{
+			{"quote", "", `<i class="fa fa-quote-left"></i>`, "quote"},
+			{"bulletList", "", `<i class="fa fa-list-ul"></i>`, "bullet list"},
+			{"orderedList", "", `<i class="fa fa-list-ol"></i>`, "numbered list"},
+		},
+		{
+			{"link", "", "Link", "link"},
+			{"codeBlock", "", "{ }", "code block"},
+			{"hr", "", "&mdash;", "horizontal rule"},
+		},
+	}
+}
+
+// codeMirrorToolbarHTML renders the formatting toolbar shown above the CodeMirror editor.
+func codeMirrorToolbarHTML(lang string) string {
+	if !configmanager.CodeMirrorShowToolbar.Get() {
+		return ""
+	}
+	var sb strings.Builder
+	sb.WriteString(`<div id="component-codemirror-toolbar">`)
+	for i, group := range codeMirrorToolbarGroups() {
+		if i > 0 {
+			sb.WriteString(`<span class="cm-toolbar-sep"></span>`)
+		}
+		for _, btn := range group {
+			argAttr := ""
+			if btn.arg != "" {
+				argAttr = fmt.Sprintf(` data-arg="%s"`, btn.arg)
+			}
+			fmt.Fprintf(&sb, `<button type="button" data-cmd="%s"%s title="%s">%s</button>`,
+				btn.cmd, argAttr, translation.SprintfForRequest(lang, btn.titleKey), btn.label)
+		}
+	}
+	sb.WriteString(`</div>`)
+	return sb.String()
+}
+
+// jsCodeMirrorToolbar wires the formatting toolbar buttons to window.mdCommands.
+func jsCodeMirrorToolbar() string {
+	if !configmanager.CodeMirrorShowToolbar.Get() {
+		return ""
+	}
+	return `
+	document.getElementById('component-codemirror-toolbar').addEventListener('click', function(e) {
+		var btn = e.target.closest('button[data-cmd]');
+		if (!btn) return;
+		var arg = btn.dataset.arg ? Number(btn.dataset.arg) : undefined;
+		window.mdCommands[btn.dataset.cmd](view, arg);
+	});`
+}
 
 // RenderCodeMirrorSectionEditorForm renders a CodeMirror editor form for editing a single section.
 func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
@@ -52,12 +122,13 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 		bracketMatching:                %s,
 		autoBrackets:                   %s,
 		highlightSelection:             %s,
-		highlightSelectionWholeWord:    %s
+		highlightSelectionWholeWord:    %s,
+		wysiwyg:                        %s
 	});
 	view.contentDOM.setAttribute('spellcheck', '%s');
 
 	initWikiAutocompleteForCodeMirror(view, {cursorEnd: %t, currentFile: %s});
-
+	%s
 	document.querySelector('.file-form').addEventListener('submit', function() {
 		document.getElementById('editor-content').value = view.state.doc.toString();
 	});
@@ -72,9 +143,11 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 		jsBool(configmanager.CodeMirrorAutoBrackets.Get()),
 		jsBool(configmanager.CodeMirrorHighlightSelection.Get()),
 		jsBool(configmanager.CodeMirrorHighlightSelectionWholeWord.Get()),
+		jsBool(configmanager.CodeMirrorWysiwyg.Get()),
 		jsBool(configmanager.SpellCheck.Get()),
 		configmanager.WikiLinkCursorEnd.Get(),
-		jsEscapeString(filePath))
+		jsEscapeString(filePath),
+		jsCodeMirrorToolbar())
 
 	return fmt.Sprintf(`
 		<form hx-post="/api/files/section/save" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">
@@ -83,6 +156,7 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 				<input type="text" name="sectionid" value="%s" readonly />
 			</div>
 			<div class="form-group">
+				%s
 				<div id="codemirror-editor"></div>
 				<input type="hidden" name="content" id="editor-content" />
 				<input type="hidden" name="filepath" value="%s" />
@@ -96,6 +170,7 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 		%s`,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section"),
 		sectionID,
+		codeMirrorToolbarHTML(configmanager.GetLanguage()),
 		filePath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save section"),
 		cancelURL,
@@ -171,12 +246,13 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		bracketMatching:                %s,
 		autoBrackets:                   %s,
 		highlightSelection:             %s,
-		highlightSelectionWholeWord:    %s
+		highlightSelectionWholeWord:    %s,
+		wysiwyg:                        %s
 	});
 	view.contentDOM.setAttribute('spellcheck', '%s');
 
 	initWikiAutocompleteForCodeMirror(view, {cursorEnd: %t, currentFile: %s});
-
+	%s
 	document.querySelector('.file-form').addEventListener('submit', function() {
 		document.getElementById('editor-content').value = view.state.doc.toString();
 	});
@@ -191,14 +267,17 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		jsBool(configmanager.CodeMirrorAutoBrackets.Get()),
 		jsBool(configmanager.CodeMirrorHighlightSelection.Get()),
 		jsBool(configmanager.CodeMirrorHighlightSelectionWholeWord.Get()),
+		jsBool(configmanager.CodeMirrorWysiwyg.Get()),
 		jsBool(configmanager.SpellCheck.Get()),
 		configmanager.WikiLinkCursorEnd.Get(),
-		jsEscapeString(filePath))
+		jsEscapeString(filePath),
+		jsCodeMirrorToolbar())
 
 	return fmt.Sprintf(`
 		<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">
 			%s
 			<div class="form-group">
+				%s
 				<div id="codemirror-editor"></div>
 				<input type="hidden" name="content" id="editor-content" />
 			</div>
@@ -211,6 +290,7 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		%s`,
 		action,
 		filepathInput,
+		codeMirrorToolbarHTML(configmanager.GetLanguage()),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save file"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),
