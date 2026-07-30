@@ -1493,7 +1493,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "array of {path, filename}",
+                        "description": "array of {value, label, detail}",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -1895,19 +1895,31 @@ const docTemplate = `{
         },
         "/api/files/folder-suggestions": {
             "get": {
-                "description": "Returns folder path suggestions for file creation form",
+                "description": "Returns folder paths matching a query string for use in path autocomplete",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
                     "files"
                 ],
-                "summary": "Get folder path suggestions for datalist",
+                "summary": "Get folder path suggestions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "search query",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "datalist options html",
+                        "description": "array of {value, label, detail}",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
                         }
                     }
                 }
@@ -1957,9 +1969,10 @@ const docTemplate = `{
         },
         "/api/files/headers": {
             "get": {
-                "description": "Returns all headings from a file for use in wiki link anchor autocomplete",
+                "description": "Returns headings from a file, optionally filtered, for use in wiki link anchor autocomplete",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "files"
@@ -1972,6 +1985,18 @@ const docTemplate = `{
                         "name": "filepath",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter headings by text or id",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "if set, autocomplete values are a bare #id instead of filepath#id (same-file links)",
+                        "name": "bare",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -3585,7 +3610,8 @@ const docTemplate = `{
             "get": {
                 "description": "Returns media files matching a query string for use in image/media link autocomplete",
                 "produces": [
-                    "application/json"
+                    "application/json",
+                    "text/html"
                 ],
                 "tags": [
                     "media"
@@ -3601,7 +3627,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "array of {path, filename}",
+                        "description": "array of {value, label, detail}",
                         "schema": {
                             "type": "array",
                             "items": {

@@ -31,7 +31,6 @@
 - filter editor - add a save and cancel button
 - loading kanban (/kanban/arbeit-sirconic-todo) takes a really long time => does it load ALL files and not just the collection files?
 - kanban server route - all ancestors selection - it always shows all ancestors even if all of its child are already archived - maybe a new env which sets all done/archived status?
-- refactor wiki-autocomplete.js to use htmx (at the moment it takes json input) -> maybe we can generalize the navigation in such a output since we need it a few times
 - wire the editor settings directly in the editor via a button menu besides the toolbar
 - opening admin in new tab - close the sidebar just like for settings and system
 - add repair broken links to jobs

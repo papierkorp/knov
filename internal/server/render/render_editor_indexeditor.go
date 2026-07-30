@@ -237,7 +237,7 @@ func renderIndexEntryRow(index int, entry IndexEntry) string {
 		html.WriteString(`<div class="entry-file">`)
 		fmt.Fprintf(&html, `<label>%s:</label>`, translation.SprintfForRequest(configmanager.GetLanguage(), "file"))
 		inputID := fmt.Sprintf("entry-file-%d", indexEntryRowCounter.Add(1))
-		html.WriteString(GenerateDatalistInput(inputID, fmt.Sprintf("entries[%d][value]", index), entry.Value, translation.SprintfForRequest(configmanager.GetLanguage(), "search files"), "/api/files/list?format=datalist"))
+		html.WriteString(GenerateDatalistInput(inputID, fmt.Sprintf("entries[%d][value]", index), entry.Value, translation.SprintfForRequest(configmanager.GetLanguage(), "search files"), "/api/files/autocomplete"))
 		html.WriteString(`</div>`)
 
 	case "title":

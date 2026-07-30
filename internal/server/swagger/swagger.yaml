@@ -1398,7 +1398,7 @@ paths:
       - text/html
       responses:
         "200":
-          description: array of {path, filename}
+          description: array of {value, label, detail}
           schema:
             items:
               type: object
@@ -1669,15 +1669,23 @@ paths:
       - files
   /api/files/folder-suggestions:
     get:
-      description: Returns folder path suggestions for file creation form
+      description: Returns folder paths matching a query string for use in path autocomplete
+      parameters:
+      - description: search query
+        in: query
+        name: q
+        type: string
       produces:
+      - application/json
       - text/html
       responses:
         "200":
-          description: datalist options html
+          description: array of {value, label, detail}
           schema:
-            type: string
-      summary: Get folder path suggestions for datalist
+            items:
+              type: object
+            type: array
+      summary: Get folder path suggestions
       tags:
       - files
   /api/files/form:
@@ -1710,15 +1718,26 @@ paths:
       - files
   /api/files/headers:
     get:
-      description: Returns all headings from a file for use in wiki link anchor autocomplete
+      description: Returns headings from a file, optionally filtered, for use in wiki
+        link anchor autocomplete
       parameters:
       - description: relative file path
         in: query
         name: filepath
         required: true
         type: string
+      - description: filter headings by text or id
+        in: query
+        name: q
+        type: string
+      - description: 'if set, autocomplete values are a bare #id instead of filepath#id
+          (same-file links)'
+        in: query
+        name: bare
+        type: string
       produces:
       - application/json
+      - text/html
       responses:
         "200":
           description: array of {id, text, level}
@@ -2870,9 +2889,10 @@ paths:
         type: string
       produces:
       - application/json
+      - text/html
       responses:
         "200":
-          description: array of {path, filename}
+          description: array of {value, label, detail}
           schema:
             items:
               type: object

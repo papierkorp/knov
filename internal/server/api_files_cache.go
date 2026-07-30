@@ -58,13 +58,6 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 
 	allFiles = files.FilterByVisibility(allFiles)
 
-	if format == "datalist" {
-		html := render.RenderFilesDatalist(allFiles)
-		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprint(w, html)
-		return
-	}
-
 	html := render.RenderFilesList(allFiles, r.URL.Query().Get("actions") == "true")
 	writeResponse(w, r, allFiles, html)
 }

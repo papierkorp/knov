@@ -29,13 +29,16 @@ import (
 	"knov/internal/translation"
 )
 
-// @Summary Get folder path suggestions for datalist
-// @Description Returns folder path suggestions for file creation form
+// @Summary Get folder path suggestions
+// @Description Returns folder paths matching a query string for use in path autocomplete
 // @Tags files
-// @Produce html
-// @Success 200 {string} string "datalist options html"
+// @Param q query string false "search query"
+// @Produce json,html
+// @Success 200 {array} object "array of {value, label, detail}"
 // @Router /api/files/folder-suggestions [get]
 func handleAPIGetFolderSuggestions(w http.ResponseWriter, r *http.Request) {
+	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
+
 	// get cached folder paths, fallback to live data if needed
 	folderPaths, err := files.GetAllFolderPathsFromCache()
 	if err != nil {
@@ -44,18 +47,26 @@ func handleAPIGetFolderSuggestions(w http.ResponseWriter, r *http.Request) {
 		folderPaths, err = files.GetAllFolderPaths()
 		if err != nil {
 			logging.LogError(logging.KeyApp, "failed to get folder paths: %v", err)
-			writeResponse(w, r, []string{}, "")
+			writeResponse(w, r, []render.AutocompleteItem{}, "")
 			return
 		}
 	}
 
-	var html strings.Builder
+	results := make([]render.AutocompleteItem, 0, 20)
 	for _, folderPath := range folderPaths {
-		// add suggestion with placeholder filename
-		fmt.Fprintf(&html, `<option value="%s"></option>`, folderPath)
+		if q == "" || strings.Contains(strings.ToLower(folderPath), q) {
+			results = append(results, render.AutocompleteItem{
+				Value:  folderPath,
+				Label:  filepath.Base(strings.TrimSuffix(folderPath, "/")),
+				Detail: folderPath,
+			})
+			if len(results) >= 20 {
+				break
+			}
+		}
 	}
 
-	writeResponse(w, r, folderPaths, html.String())
+	writeResponse(w, r, results, render.RenderAutocompleteList(results))
 }
 
 // @Summary Get folder structure
@@ -1173,16 +1184,20 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Get headers (TOC) for a file
-// @Description Returns all headings from a file for use in wiki link anchor autocomplete
+// @Description Returns headings from a file, optionally filtered, for use in wiki link anchor autocomplete
 // @Tags files
 // @Param filepath query string true "relative file path"
-// @Produce json
+// @Param q query string false "filter headings by text or id"
+// @Param bare query string false "if set, autocomplete values are a bare #id instead of filepath#id (same-file links)"
+// @Produce json,html
 // @Success 200 {array} object "array of {id, text, level}"
 // @Failure 400 {string} string "missing filepath"
 // @Failure 404 {string} string "file not found"
 // @Router /api/files/headers [get]
 func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimSpace(r.URL.Query().Get("filepath"))
+	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
+	bare := r.URL.Query().Get("bare") != ""
 	if filePath == "" {
 		http.Error(w, "missing filepath", http.StatusBadRequest)
 		return
@@ -1195,10 +1210,17 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	type headerResult struct {
+		ID    string `json:"id"`
+		Text  string `json:"text"`
+		Level int    `json:"level"`
+	}
+	results := make([]headerResult, 0)
+	items := make([]render.AutocompleteItem, 0)
+
 	handler := parser.GetParserRegistry().GetHandler(fullPath)
 	if handler == nil {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode([]struct{}{})
+		writeResponse(w, r, results, "")
 		return
 	}
 
@@ -1208,21 +1230,23 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	toc := parser.GenerateTOC(string(rendered))
-
-	type headerResult struct {
-		ID    string `json:"id"`
-		Text  string `json:"text"`
-		Level int    `json:"level"`
-	}
-
-	results := make([]headerResult, 0, len(toc))
-	for _, item := range toc {
+	for _, item := range parser.GenerateTOC(string(rendered)) {
+		if q != "" && !strings.Contains(strings.ToLower(item.Text), q) && !strings.Contains(strings.ToLower(item.ID), q) {
+			continue
+		}
 		results = append(results, headerResult{ID: item.ID, Text: item.Text, Level: item.Level})
+		value := filePath + "#" + item.ID
+		if bare {
+			value = "#" + item.ID
+		}
+		items = append(items, render.AutocompleteItem{
+			Value:  value,
+			Label:  strings.Repeat("#", item.Level) + " " + item.Text,
+			Detail: value,
+		})
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(results)
+	writeResponse(w, r, results, render.RenderAutocompleteList(items))
 }
 
 // @Summary Autocomplete file paths
@@ -1230,7 +1254,7 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 // @Tags files
 // @Param q query string false "search query"
 // @Produce json,html
-// @Success 200 {array} object "array of {path, filename}"
+// @Success 200 {array} object "array of {value, label, detail}"
 // @Router /api/files/autocomplete [get]
 func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
@@ -1241,13 +1265,14 @@ func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results := make([]render.WikiFileResult, 0, 20)
+	results := make([]render.AutocompleteItem, 0, 20)
 	for _, f := range allFiles {
 		rel := pathutils.ToRelative(f.Path)
 		if q == "" || strings.Contains(strings.ToLower(rel), q) {
-			results = append(results, render.WikiFileResult{
-				Path:     rel,
-				Filename: filepath.Base(rel),
+			results = append(results, render.AutocompleteItem{
+				Value:  rel,
+				Label:  filepath.Base(rel),
+				Detail: rel,
 			})
 			if len(results) >= 20 {
 				break
@@ -1255,5 +1280,5 @@ func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	writeResponse(w, r, results, render.RenderWikiFileAutocompleteList(results))
+	writeResponse(w, r, results, render.RenderAutocompleteList(results))
 }

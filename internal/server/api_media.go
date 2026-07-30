@@ -2,7 +2,6 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -171,8 +170,8 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 // @Description Returns media files matching a query string for use in image/media link autocomplete
 // @Tags media
 // @Param q query string false "search query"
-// @Produce json
-// @Success 200 {array} object "array of {path, filename}"
+// @Produce json,html
+// @Success 200 {array} object "array of {value, label, detail}"
 // @Router /api/media/autocomplete [get]
 func handleAPIMediaAutocomplete(w http.ResponseWriter, r *http.Request) {
 	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
@@ -183,24 +182,18 @@ func handleAPIMediaAutocomplete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type result struct {
-		Path     string `json:"path"`
-		Filename string `json:"filename"`
-	}
-
-	results := make([]result, 0, 20)
+	results := make([]render.AutocompleteItem, 0, 20)
 	for _, f := range mediaFiles {
 		rel := strings.TrimPrefix(f.Path, "media/")
 		if q == "" || strings.Contains(strings.ToLower(rel), q) {
-			results = append(results, result{Path: rel, Filename: filepath.Base(rel)})
+			results = append(results, render.AutocompleteItem{Value: rel, Label: filepath.Base(rel), Detail: rel})
 			if len(results) >= 20 {
 				break
 			}
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(results)
+	writeResponse(w, r, results, render.RenderAutocompleteList(results))
 }
 
 // @Summary Delete media file

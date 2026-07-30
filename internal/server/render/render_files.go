@@ -34,16 +34,6 @@ func RenderFilesOptionsFromPaths(filePaths []string) string {
 	return html.String()
 }
 
-// RenderFilesDatalist renders files as datalist options
-func RenderFilesDatalist(allFiles []files.File) string {
-	var html strings.Builder
-	for _, file := range allFiles {
-		path := strings.TrimPrefix(file.Path, "data/")
-		html.WriteString(fmt.Sprintf(`<option value="%s">`, path))
-	}
-	return html.String()
-}
-
 // RenderFilesList renders files as list with direct navigation links.
 // If deletable is true, each row includes a hover-revealed delete button.
 func RenderFilesList(allFiles []files.File, deletable bool) string {

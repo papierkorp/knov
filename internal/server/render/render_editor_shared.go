@@ -4,6 +4,7 @@ package render
 import (
 	"encoding/json"
 	"fmt"
+	htmlpkg "html"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -89,35 +90,29 @@ func jsUploadMediaBlob() string {
 	)
 }
 
-// WikiFileResult is a single autocomplete match, shared between the JSON response and the
-// server-rendered wiki-file autocomplete list (see handleAPIFilesAutocomplete in the server
-// package).
-type WikiFileResult struct {
-	Path     string `json:"path"`
-	Filename string `json:"filename"`
+// AutocompleteItem is a single suggestion in the shared autocomplete dropdown
+// (files, media, headers, folder paths). Value is what gets inserted, Label is
+// the primary display text, Detail the secondary one.
+type AutocompleteItem struct {
+	Value  string `json:"value"`
+	Label  string `json:"label"`
+	Detail string `json:"detail,omitempty"`
 }
 
-// RenderWikiFileAutocompleteList renders file search results as HTML for the wiki-link
-// autocomplete (see static/wiki-autocomplete.js).
-func RenderWikiFileAutocompleteList(results []WikiFileResult) string {
-	lang := configmanager.GetLanguage()
-	t := func(key string, args ...any) string {
-		return translation.SprintfForRequest(lang, key, args...)
+// RenderAutocompleteList renders suggestions as the shared dropdown list partial
+// consumed by static/wiki-autocomplete.js. Empty input renders nothing (the
+// dropdown hides itself).
+func RenderAutocompleteList(items []AutocompleteItem) string {
+	if len(items) == 0 {
+		return ""
 	}
-
-	if len(results) == 0 {
-		return fmt.Sprintf(`<p class="no-media">%s</p>`, t("no files found"))
-	}
-
 	var htmlBuilder strings.Builder
-	htmlBuilder.WriteString(`<div class="wiki-file-select-list">`)
-	for _, f := range results {
-		htmlBuilder.WriteString(`<div class="wiki-file-select-item" onclick="insertWikiFileIntoEditor(this)">`)
-		fmt.Fprintf(&htmlBuilder, `<input type="hidden" class="wiki-file-path" value="%s">`, f.Path)
-		fmt.Fprintf(&htmlBuilder, `<input type="hidden" class="wiki-file-filename" value="%s">`, f.Filename)
-		fmt.Fprintf(&htmlBuilder, `<span class="wiki-file-select-name">%s</span>`, f.Path)
-		htmlBuilder.WriteString(`</div>`)
+	htmlBuilder.WriteString(`<ul class="autocomplete-list">`)
+	for _, item := range items {
+		fmt.Fprintf(&htmlBuilder,
+			`<li class="autocomplete-item" data-value="%s"><span class="autocomplete-item-label">%s</span><span class="autocomplete-item-detail">%s</span></li>`,
+			htmlpkg.EscapeString(item.Value), htmlpkg.EscapeString(item.Label), htmlpkg.EscapeString(item.Detail))
 	}
-	htmlBuilder.WriteString(`</div>`)
+	htmlBuilder.WriteString(`</ul>`)
 	return htmlBuilder.String()
 }

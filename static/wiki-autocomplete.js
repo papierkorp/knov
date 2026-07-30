@@ -1,4 +1,10 @@
 // Wiki link autocomplete for [[...]] syntax.
+//
+// The suggestion list itself is server-rendered HTML (render.RenderAutocompleteList,
+// served by the autocomplete endpoints through writeResponse). This file only
+// positions the dropdown at the caret, handles keyboard navigation and inserts
+// the selected data-value into the editor — things hx-attributes can't express
+// for a caret-anchored dropdown inside CodeMirror.
 
 (function (global) {
   var FILES_PREFIX = "/files/";
@@ -6,31 +12,21 @@
   // ── shared dropdown state ────────────────────────────────────────────────
 
   var dropdown = null;
-  var currentResults = [];
+  var items = [];
   var activeIdx = 0;
   var fetchTimer = null;
   var onInsert = null; // set by each init function
 
   function ensureDropdown() {
     if (dropdown) return;
-    dropdown = document.createElement("ul");
-    dropdown.style.cssText = [
-      "position:fixed",
-      "z-index:99999",
-      "background:var(--bg,#fff)",
-      "border:1px solid var(--border,#ccc)",
-      "border-radius:6px",
-      "list-style:none",
-      "margin:0",
-      "padding:4px 0",
-      "max-height:240px",
-      "overflow-y:auto",
-      "min-width:320px",
-      "max-width:520px",
-      "box-shadow:0 4px 16px rgba(0,0,0,0.18)",
-      "display:none",
-      "font-size:13px",
-    ].join(";");
+    dropdown = document.createElement("div");
+    dropdown.id = "component-autocomplete";
+    dropdown.addEventListener("mousedown", function (e) {
+      var li = e.target.closest(".autocomplete-item");
+      if (!li) return;
+      e.preventDefault();
+      doInsert(Array.prototype.indexOf.call(items, li));
+    });
     document.body.appendChild(dropdown);
   }
 
@@ -40,20 +36,16 @@
   }
 
   function isVisible() {
-    return dropdown && dropdown.style.display !== "none";
+    return dropdown && dropdown.style.display === "block";
   }
 
   function highlight(idx) {
     if (!dropdown) return;
-    var activeEl = null;
-    Array.from(dropdown.children).forEach(function (li, i) {
-      var on = i === idx;
-      li.style.background = on ? "var(--bg-secondary,#e5e7eb)" : "";
-      li.style.color = on ? "var(--text,#1f2937)" : "inherit";
-      if (on) activeEl = li;
+    Array.prototype.forEach.call(items, function (li, i) {
+      li.classList.toggle("active", i === idx);
     });
     activeIdx = idx;
-    if (activeEl) activeEl.scrollIntoView({ block: "nearest" });
+    if (items[idx]) items[idx].scrollIntoView({ block: "nearest" });
   }
 
   function getCaretRect(el) {
@@ -65,34 +57,15 @@
     return (el || document.body).getBoundingClientRect();
   }
 
-  function show(items, anchorEl) {
+  function show(html, anchorEl) {
     ensureDropdown();
-    currentResults = items;
+    dropdown.innerHTML = html;
+    items = dropdown.querySelectorAll(".autocomplete-item");
     activeIdx = 0;
-    dropdown.innerHTML = "";
     if (!items.length) {
       hide();
       return;
     }
-
-    items.forEach(function (item, i) {
-      var li = document.createElement("li");
-      li.style.cssText =
-        "padding:5px 14px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
-      var nameSpan = document.createElement("span");
-      nameSpan.style.fontWeight = "600";
-      nameSpan.textContent = item.filename;
-      var pathSpan = document.createElement("span");
-      pathSpan.style.cssText = "margin-left:8px;color:var(--text-secondary,#6b7280);font-size:11px;";
-      pathSpan.textContent = item.path;
-      li.appendChild(nameSpan);
-      li.appendChild(pathSpan);
-      li.addEventListener("mousedown", function (e) {
-        e.preventDefault();
-        doInsert(i);
-      });
-      dropdown.appendChild(li);
-    });
     highlight(0);
 
     var rect = getCaretRect(anchorEl);
@@ -110,56 +83,35 @@
   }
 
   function doInsert(idx) {
-    if (idx < 0 || idx >= currentResults.length) return;
-    if (onInsert) onInsert(currentResults[idx].path);
+    if (idx < 0 || idx >= items.length) return;
+    if (onInsert) onInsert(items[idx].getAttribute("data-value"));
     hide();
   }
 
-  function debouncedFetch(q, anchorEl) {
+  // Debounced fetch of a server-rendered suggestion list partial into the dropdown.
+  function fetchList(url, anchorEl) {
     clearTimeout(fetchTimer);
     fetchTimer = setTimeout(function () {
-      fetch("/api/files/autocomplete?q=" + encodeURIComponent(q), {
-        headers: { Accept: "application/json" },
-      })
+      fetch(url, { headers: { Accept: "text/html" } })
         .then(function (r) {
-          return r.json();
+          return r.text();
         })
-        .then(function (items) {
-          show(items, anchorEl);
+        .then(function (html) {
+          show(html, anchorEl);
         })
         .catch(hide);
     }, 120);
   }
 
-  function debouncedFetchHeaders(filepath, q, anchorEl, sameFile) {
-    clearTimeout(fetchTimer);
-    fetchTimer = setTimeout(function () {
-      fetch("/api/files/headers?filepath=" + encodeURIComponent(filepath))
-        .then(function (r) {
-          return r.json();
-        })
-        .then(function (headers) {
-          var ql = q.toLowerCase();
-          var items = headers
-            .filter(function (h) {
-              return (
-                !q ||
-                h.text.toLowerCase().includes(ql) ||
-                h.id.toLowerCase().includes(ql)
-              );
-            })
-            .map(function (h) {
-              return {
-                filename: "#".repeat(h.level) + " " + h.text,
-                // same-file lookup ("](#" with no path) → keep the inserted
-                // link a same-page anchor instead of the full file path
-                path: (sameFile ? "" : filepath) + "#" + h.id,
-              };
-            });
-          show(items, anchorEl);
-        })
-        .catch(hide);
-    }, 120);
+  function fetchHeaders(filepath, q, anchorEl, bare) {
+    fetchList(
+      "/api/files/headers?filepath=" +
+        encodeURIComponent(filepath) +
+        "&q=" +
+        encodeURIComponent(q) +
+        (bare ? "&bare=1" : ""),
+      anchorEl,
+    );
   }
 
   function cursorOffset(path, opts, closeLen) {
@@ -209,23 +161,9 @@
     }
   }
 
-  function debouncedFetchMedia(q, anchorEl) {
-    clearTimeout(fetchTimer);
-    fetchTimer = setTimeout(function () {
-      fetch("/api/media/autocomplete?q=" + encodeURIComponent(q))
-        .then(function (r) {
-          return r.json();
-        })
-        .then(function (items) {
-          show(items, anchorEl);
-        })
-        .catch(hide);
-    }, 120);
-  }
-
   function dispatchFetch(inner, anchorEl, currentFile, isMedia) {
     if (isMedia) {
-      debouncedFetchMedia(inner, anchorEl);
+      fetchList("/api/media/autocomplete?q=" + encodeURIComponent(inner), anchorEl);
       return;
     }
     // Markdown links store "/files/<path>" (a real href), but the file and
@@ -238,16 +176,18 @@
     var hashIdx = inner.indexOf("#");
     if (hashIdx !== -1) {
       // no filepath before the "#" (e.g. "](#") — link to a header in the
-      // file currently being edited instead of querying an empty filepath
+      // file currently being edited instead of querying an empty filepath.
+      // Ask the server for bare "#id" values in that case, so the inserted
+      // link stays a same-page anchor instead of the full file path.
       var typedFilepath = inner.substring(0, hashIdx);
       var filepath = typedFilepath || currentFile;
       if (!filepath) {
         hide();
         return;
       }
-      debouncedFetchHeaders(filepath, inner.substring(hashIdx + 1), anchorEl, typedFilepath === "");
+      fetchHeaders(filepath, inner.substring(hashIdx + 1), anchorEl, typedFilepath === "");
     } else {
-      debouncedFetch(inner, anchorEl);
+      fetchList("/api/files/autocomplete?q=" + encodeURIComponent(inner), anchorEl);
     }
   }
 
@@ -259,7 +199,7 @@
         if (e.key === "ArrowDown") {
           e.preventDefault();
           e.stopPropagation();
-          highlight(Math.min(activeIdx + 1, currentResults.length - 1));
+          highlight(Math.min(activeIdx + 1, items.length - 1));
         } else if (e.key === "ArrowUp") {
           e.preventDefault();
           e.stopPropagation();
@@ -463,28 +403,11 @@
   };
 
   // ── path autocomplete ────────────────────────────────────────────────────────
-  // Reuses the shared dropdown. Substring matching so partial folder/file names
-  // anywhere in the path are found. Tab selects the highlighted item and stays
-  // in the input instead of moving focus (native <datalist> can't do this).
+  // Reuses the shared dropdown; the endpoint does the substring matching and
+  // returns the rendered list. Tab selects the highlighted item and stays in
+  // the input instead of moving focus (native <datalist> can't do this).
   function initPathAutocomplete(inputEl, apiEndpoint) {
     if (!inputEl) return;
-
-    var suggestions = [];
-
-    fetch(apiEndpoint)
-      .then(function (r) {
-        return r.text();
-      })
-      .then(function (html) {
-        var tmp = document.createElement("datalist");
-        tmp.innerHTML = html;
-        suggestions = Array.from(tmp.options)
-          .map(function (o) {
-            return o.value;
-          })
-          .filter(Boolean);
-      })
-      .catch(function () {});
 
     attachSharedKeydown(inputEl);
 
@@ -503,24 +426,16 @@
       // requiring the user to type the [[...]] bracket syntax
       var hashIdx = v.indexOf("#");
       if (hashIdx !== -1) {
-        debouncedFetchHeaders(
-          v.substring(0, hashIdx),
-          v.substring(hashIdx + 1),
-          inputEl,
-        );
+        fetchHeaders(v.substring(0, hashIdx), v.substring(hashIdx + 1), inputEl);
         return;
       }
 
-      var vl = v.toLowerCase();
-      var items = suggestions
-        .filter(function (s) {
-          return s.toLowerCase().includes(vl);
-        })
-        .map(function (s) {
-          var parts = s.replace(/\/$/, "").split("/");
-          return { filename: parts[parts.length - 1], path: s };
-        });
-      show(items, inputEl);
+      fetchList(
+        apiEndpoint +
+          (apiEndpoint.indexOf("?") === -1 ? "?q=" : "&q=") +
+          encodeURIComponent(v),
+        inputEl,
+      );
     }
 
     inputEl.addEventListener("input", refresh);

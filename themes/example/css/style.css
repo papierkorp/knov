@@ -16,3 +16,48 @@ nav a {
 nav a:hover {
     text-decoration: underline;
 }
+
+/* shared autocomplete dropdown (floating list created by static/wiki-autocomplete.js) */
+#component-autocomplete {
+    position: fixed;
+    z-index: 99999;
+    display: none;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    min-width: 320px;
+    max-width: 520px;
+    max-height: 240px;
+    overflow-y: auto;
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--text) 18%, transparent);
+    font-size: 13px;
+}
+
+#component-autocomplete .autocomplete-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+}
+
+#component-autocomplete .autocomplete-item {
+    padding: 5px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#component-autocomplete .autocomplete-item.active {
+    background: var(--bg-secondary);
+    color: var(--text);
+}
+
+#component-autocomplete .autocomplete-item-label {
+    font-weight: 600;
+}
+
+#component-autocomplete .autocomplete-item-detail {
+    margin-left: 8px;
+    color: var(--text-secondary);
+    font-size: 11px;
+}
