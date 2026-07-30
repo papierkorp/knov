@@ -96,9 +96,23 @@ func (h *MarkdownHandler) wrapRawHTMLBlocks(content string) string {
 	lines := strings.Split(content, "\n")
 	var result []string
 	i := 0
+	inFence := false
 	for i < len(lines) {
 		line := lines[i]
 		trimmed := strings.TrimSpace(line)
+
+		// don't touch content already inside a fenced code block
+		if strings.HasPrefix(trimmed, "```") {
+			inFence = !inFence
+			result = append(result, line)
+			i++
+			continue
+		}
+		if inFence {
+			result = append(result, line)
+			i++
+			continue
+		}
 
 		// detect start of a bare HTML block (line starts with < and a tag name)
 		if strings.HasPrefix(trimmed, "<") && !strings.HasPrefix(trimmed, "<!--") &&
