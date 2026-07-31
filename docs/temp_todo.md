@@ -29,10 +29,9 @@
 - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 - handle image links in lists/todo => maybe just show the link? make setting to choos between link/image? at the moment its just invisible
 - filter editor - add a save and cancel button
-- loading kanban (/kanban/arbeit-sirconic-todo) takes a really long time => does it load ALL files and not just the collection files?
+- 
 - kanban server route - all ancestors selection - it always shows all ancestors even if all of its child are already archived - maybe a new env which sets all done/archived status?
 - wire the editor settings directly in the editor via a button menu besides the toolbar
-- opening admin in new tab - close the sidebar just like for settings and system
 - add repair broken links to jobs
 - tests
   - manual-trigger test doesnt run through: `Error: RunAsync's manual job sequence did not complete as expected within the timeout`

@@ -356,8 +356,8 @@ function setupFilePage() {
     return true;
   }
 
-  // settings page — no file panel content applies here
-  if (path === "/settings") {
+  // settings/admin pages — no file panel content applies here
+  if (path === "/settings" || path === "/admin") {
     closePanel();
     return true;
   }
