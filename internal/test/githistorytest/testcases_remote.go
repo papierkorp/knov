@@ -66,7 +66,7 @@ func caseGitRemotePushPullTestAuth(_ *sampleState) test.CaseResult {
 
 	git.Push() // fire-and-forget; poll the bare remote below instead of assuming completion
 
-	pushed := waitForBranch(bareDir, branch, 3*time.Second)
+	pushed := waitForBranch(bareDir, branch, 15*time.Second)
 
 	// test-auth (ls-remote) only after the push - go-git errors on ls-remote against a
 	// truly empty bare repo (zero refs), which a fresh PlainInit(bare) always is

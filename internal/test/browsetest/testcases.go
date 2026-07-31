@@ -70,6 +70,13 @@ func caseFileTree() test.CaseResult {
 func caseFolderContents() test.CaseResult {
 	name := "folder-contents"
 
+	// hiddenFile is a todo-editor file expected to show up below - pin hideTodo to false
+	// for the duration of the check, since it's a real persisted user setting (not scoped
+	// to test data) and may already be true in the running environment.
+	prevHideTodo := configmanager.HideTodo.Get()
+	configmanager.HideTodo.SetFromString("false")
+	defer configmanager.HideTodo.SetFromString(fmt.Sprintf("%v", prevHideTodo))
+
 	fullPath := pathutils.ToDocsPath(testDir)
 	entries, err := os.ReadDir(fullPath)
 	if err != nil {

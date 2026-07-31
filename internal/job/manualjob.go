@@ -230,3 +230,18 @@ func (j *gitPushJob) Run() error {
 	git.Push()
 	return nil
 }
+
+// ----------------------------------------------------------------------------------------
+// ------------------------------------ gitRepackJob ---------------------------------------
+// ----------------------------------------------------------------------------------------
+
+type gitRepackJob struct{}
+
+func (j *gitRepackJob) Name() string { return "git-repack" }
+
+func (j *gitRepackJob) Run() error {
+	if err := git.RepackIfNeeded(); err != nil {
+		return fmt.Errorf("git repack failed: %w", err)
+	}
+	return nil
+}

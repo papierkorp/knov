@@ -12,6 +12,10 @@ import (
 	"knov/internal/test"
 )
 
+// gitRepackInterval is fixed rather than config-driven - RunGitRepack is a cheap no-op below
+// the loose-object threshold, so how often it's checked barely matters.
+const gitRepackInterval = 24 * time.Hour
+
 var (
 	stopChan                chan bool
 	fileInterval            time.Duration
@@ -66,7 +70,7 @@ func execute(mu *sync.Mutex, job Job) error {
 			var failedNames []string
 			for _, c := range sr.Cases {
 				if !c.Success {
-					failedNames = append(failedNames, c.Name)
+					failedNames = append(failedNames, fmt.Sprintf("%s: %s", c.Name, c.Error))
 				}
 			}
 			logging.LogWarning(logging.KeyInAppTests, "suite %s: %d passed, %d failed (%s)", sr.Suite, sr.Passed, sr.Failed, strings.Join(failedNames, ", "))
@@ -148,7 +152,22 @@ func Start() {
 		}
 	}()
 
-	logging.LogInfo(logging.KeyApp, "cronjob scheduler started (file: %v, search: %v, metadata rebuild: %v)", fileInterval, searchInterval, metadataRebuildInterval)
+	go func() {
+		ticker := time.NewTicker(gitRepackInterval)
+		defer ticker.Stop()
+		RunGitRepack() // check once on startup - cheap no-op unless already over threshold
+		for {
+			select {
+			case <-ticker.C:
+				RunGitRepack()
+			case <-stopChan:
+				logging.LogInfo(logging.KeyApp, "git repack cronjob stopped")
+				return
+			}
+		}
+	}()
+
+	logging.LogInfo(logging.KeyApp, "cronjob scheduler started (file: %v, search: %v, metadata rebuild: %v, git repack: %v)", fileInterval, searchInterval, metadataRebuildInterval, gitRepackInterval)
 }
 
 // Stop stops the cronjob scheduler.
@@ -206,6 +225,14 @@ func RunGitPull() error {
 // RunGitPush runs a git push with dedup protection.
 func RunGitPush() error {
 	return execute(&gitPushMu, &gitPushJob{})
+}
+
+// RunGitRepack packs loose git objects when their count crosses the threshold. Shares fileMu
+// with the periodic file-sync job rather than its own mutex - that job does its own git pull
+// and commit, and go-git's repack rewriting the object store while those add objects is unsafe.
+// A repack skipped because fileMu is busy just retries on the next tick.
+func RunGitRepack() error {
+	return execute(&fileMu, &gitRepackJob{})
 }
 
 // RunTestdataSetup sets up test data with dedup protection.

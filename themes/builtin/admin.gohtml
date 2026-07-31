@@ -278,12 +278,16 @@
                             hx-confirm="{{T "This will remove all files in the data/test Folder."}}">
                         {{T "Clean Test Data"}}
                     </button>
-                    <button class="btn-secondary" hx-post="/api/testdata/filtertest" hx-target="#testdata-result"
-                            hx-confirm="{{T "Run filter tests? This will create test metadata objects."}}">
-                        {{T "Run Filter Tests"}}
+                    <button class="btn-secondary" hx-post="/api/testdata/run-all" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run all test suites? This will create test metadata objects."}}">
+                        {{T "Run All Tests"}}
                     </button>
                     <button class="btn-secondary" hx-get="/api/testdata/filtertest/testdata" hx-target="#testdata-result">
                         {{T "View Filter Test Metadata"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/filtertest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run filter tests? This will create test metadata objects."}}">
+                        {{T "Run Filter Tests"}}
                     </button>
                     <button class="btn-secondary" hx-post="/api/testdata/editorstest" hx-target="#testdata-result"
                             hx-confirm="{{T "Run editors tests? This will create test files and metadata."}}">
@@ -348,10 +352,6 @@
                     <button class="btn-secondary" hx-post="/api/testdata/parsertest" hx-target="#testdata-result"
                             hx-confirm="{{T "Run parser tests?"}}">
                         {{T "Run Parser Tests"}}
-                    </button>
-                    <button class="btn-secondary" hx-post="/api/testdata/run-all" hx-target="#testdata-result"
-                            hx-confirm="{{T "Run all test suites? This will create test metadata objects."}}">
-                        {{T "Run All Tests"}}
                     </button>
                 </div>
             </div>

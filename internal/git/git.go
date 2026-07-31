@@ -109,6 +109,67 @@ func EnsureRepoConfig() {
 	}
 }
 
+// looseObjectRepackThreshold is the loose object count above which RepackIfNeeded packs the
+// repo. go-git never packs on its own (unlike the git CLI's automatic gc), so a long-lived
+// repo's .git/objects only ever grows - past a few thousand loose objects this measurably
+// slows every git operation (push/pull/commit), so it needs occasional maintenance.
+const looseObjectRepackThreshold = 2000
+
+// countLooseObjects counts files under .git/objects, excluding the pack/ and info/
+// subdirectories, mirroring what `git count-objects` reports as "count".
+func countLooseObjects(dataDir string) (int, error) {
+	objectsDir := filepath.Join(dataDir, ".git", "objects")
+	entries, err := os.ReadDir(objectsDir)
+	if err != nil {
+		return 0, err
+	}
+
+	count := 0
+	for _, entry := range entries {
+		if !entry.IsDir() || entry.Name() == "pack" || entry.Name() == "info" {
+			continue
+		}
+		shard, err := os.ReadDir(filepath.Join(objectsDir, entry.Name()))
+		if err != nil {
+			continue
+		}
+		count += len(shard)
+	}
+	return count, nil
+}
+
+// RepackIfNeeded packs loose objects into a packfile once their count crosses
+// looseObjectRepackThreshold. Meant to be called from a rarely-run periodic job (e.g. daily) -
+// go-git's pure-Go repack is slow on a large repo (minutes, not seconds), so the threshold
+// check keeps it a no-op on every run except the occasional one where it's actually needed.
+func RepackIfNeeded() error {
+	dataDir := configmanager.GetAppConfig().DataPath
+
+	before, err := countLooseObjects(dataDir)
+	if err != nil {
+		return fmt.Errorf("failed to count loose objects: %w", err)
+	}
+	if before < looseObjectRepackThreshold {
+		logging.LogDebug(logging.KeyGitMaintenance, "loose object count %d below threshold %d, skipping repack", before, looseObjectRepackThreshold)
+		return nil
+	}
+
+	logging.LogInfo(logging.KeyGitMaintenance, "loose object count %d exceeds threshold %d, repacking", before, looseObjectRepackThreshold)
+
+	repo, err := openRepo()
+	if err != nil {
+		return fmt.Errorf("failed to open repo: %w", err)
+	}
+
+	if err := repo.RepackObjects(&git.RepackConfig{}); err != nil {
+		return fmt.Errorf("failed to repack objects: %w", err)
+	}
+
+	after, _ := countLooseObjects(dataDir)
+	logging.LogInfo(logging.KeyGitMaintenance, "repack complete: loose objects %d -> %d", before, after)
+	return nil
+}
+
 // GetRecentlyChangedFiles returns recently changed unique files with pagination.
 // count is the number of unique files to return; offset skips that many unique files first.
 func GetRecentlyChangedFiles(count, offset int) ([]GitHistoryFile, error) {

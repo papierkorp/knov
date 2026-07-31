@@ -418,25 +418,39 @@ func (ss *sqliteStorage) Delete(key string) error {
 
 // GetAll returns all metadata key-value pairs as JSON
 func (ss *sqliteStorage) GetAll() (map[string][]byte, error) {
+	// paths are collected under the read lock, then released before calling Get
+	// per path below - Get takes the same RLock itself, and sync.RWMutex forbids
+	// recursive read-locking: a Set/Delete Lock() arriving between the two RLock
+	// calls would queue as a pending writer and block this goroutine's own second
+	// RLock forever, deadlocking every other reader/writer behind it too.
 	ss.mutex.RLock()
-	defer ss.mutex.RUnlock()
-
-	result := make(map[string][]byte)
-
 	rows, err := ss.db.Query("SELECT path FROM metadata")
 	if err != nil {
+		ss.mutex.RUnlock()
 		logging.LogError(logging.KeyApp, "failed to get all metadata paths: %v", err)
 		return nil, err
 	}
-	defer rows.Close()
 
+	var paths []string
 	for rows.Next() {
 		var path string
 		if err := rows.Scan(&path); err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to scan path: %v", err)
 			continue
 		}
+		paths = append(paths, path)
+	}
+	rowsErr := rows.Err()
+	rows.Close()
+	ss.mutex.RUnlock()
 
+	if rowsErr != nil {
+		logging.LogError(logging.KeyApp, "error iterating metadata rows: %v", rowsErr)
+		return nil, rowsErr
+	}
+
+	result := make(map[string][]byte)
+	for _, path := range paths {
 		data, err := ss.Get(path)
 		if err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to get metadata for %s: %v", path, err)
@@ -445,11 +459,6 @@ func (ss *sqliteStorage) GetAll() (map[string][]byte, error) {
 		if data != nil {
 			result[path] = data
 		}
-	}
-
-	if err := rows.Err(); err != nil {
-		logging.LogError(logging.KeyApp, "error iterating metadata rows: %v", err)
-		return nil, err
 	}
 
 	logging.LogDebug(logging.KeyApp, "retrieved %d metadata entries", len(result))
