@@ -2914,41 +2914,6 @@
                 }
             }
         },
-        "/api/kanban/excerpt": {
-            "get": {
-                "description": "Returns the first N runes of meaningful body text, stripping front matter and markdown syntax",
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "kanban"
-                ],
-                "summary": "Get a short text excerpt from a file",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "File path (relative)",
-                        "name": "filepath",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Max runes to return (default 30)",
-                        "name": "chars",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "excerpt text",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/kanban/{board}": {
             "get": {
                 "description": "Returns all kanban cards grouped by status column for the given board",

@@ -402,7 +402,7 @@ sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 
 ## Architecture
 
 - Board is a **page shell + HTMX** pattern: `/kanban/{board}` renders the template, `GET /api/kanban/{board}` returns the column HTML on load and on filter change. `{board}` is a URL slug, not a raw folder path.
-- Excerpts are **lazy-loaded** per card via `GET /api/kanban/excerpt?filepath=...&chars=30`
+- Excerpts are built **inline** in `cardFromFile` (`kanban.ExcerptRunes` runes) and rendered with the card — one request per board instead of one per card
 - Card moves are **optimistic UI** — the card is moved in the DOM immediately, then `POST /api/kanban/card/move` persists the tag change using `MetaDataSaveRaw` (skips parent/link processing)
 
 ## Tag System

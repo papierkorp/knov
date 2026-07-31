@@ -353,7 +353,6 @@ func NewRouter() *chi.Mux {
 			r.Post("/{board}/filter", handleAPIPostKanbanFilter)
 			r.Post("/{board}/order", handleAPIKanbanSaveOrder)
 			r.Post("/card/move", handleAPIKanbanMoveCard)
-			r.Get("/excerpt", handleAPIGetKanbanExcerpt)
 		})
 
 		// ----------------------------------------------------------------------------------------

@@ -67,9 +67,9 @@ func RenderKanbanCard(card kanban.Card) string {
 	}
 	html.WriteString(`</div>`)
 
-	// excerpt — loaded lazily
-	fmt.Fprintf(&html, `<div hx-get="/api/kanban/excerpt?filepath=%s&chars=30" hx-trigger="load" hx-swap="outerHTML"></div>`,
-		card.FilePath)
+	if card.Excerpt != "" {
+		fmt.Fprintf(&html, `<div class="kanban-card-excerpt">%s</div>`, card.Excerpt)
+	}
 
 	// dates
 	html.WriteString(`<div class="kanban-card-meta">`)

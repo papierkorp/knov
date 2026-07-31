@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 
 	"knov/internal/cacheStorage"
 	"knov/internal/logging"
@@ -33,9 +34,54 @@ const (
 	CacheKeyEditorCounts          CacheKey = "editor_counts"
 )
 
+// in-memory memo of the decoded file list. cacheStorage.Get + json.Unmarshal of
+// the whole list on every call is expensive with a few thousand files, so the
+// decoded slice is kept here and reused until the list is invalidated.
+// Treat entries as read-only - all callers share the same File/Metadata values.
+//
+// fileListMemoGen guards against a stale writer winning: RebuildAllCaches runs in
+// the background, so a walk started before a mutation can finish after it and
+// would otherwise memoize a file list that is already out of date. Writers capture
+// the generation before reading and their result is dropped if it changed since.
+var (
+	fileListMemoMu  sync.RWMutex
+	fileListMemo    []File
+	fileListMemoGen uint64
+)
+
+// fileListGeneration returns the current file-list invalidation generation.
+// Capture it before building a list that will later be handed to setFileListMemo.
+func fileListGeneration() uint64 {
+	fileListMemoMu.RLock()
+	defer fileListMemoMu.RUnlock()
+	return fileListMemoGen
+}
+
+// setFileListMemo replaces the in-memory decoded file list, unless the list was
+// invalidated since gen was captured - in that case allFiles is already stale.
+func setFileListMemo(allFiles []File, gen uint64) {
+	fileListMemoMu.Lock()
+	defer fileListMemoMu.Unlock()
+	if fileListMemoGen != gen {
+		return
+	}
+	fileListMemo = allFiles
+}
+
+// invalidateFileListMemo drops the memo and bumps the generation, so any read or
+// rebuild already in flight will not store its now-stale result.
+func invalidateFileListMemo() {
+	fileListMemoMu.Lock()
+	fileListMemo = nil
+	fileListMemoGen++
+	fileListMemoMu.Unlock()
+}
+
 // saveFileListToCache persists the full file list (including metadata) to cache storage
-func saveFileListToCache(allFiles []File) error {
+// and memoizes it. gen must be the generation captured before allFiles was built.
+func saveFileListToCache(allFiles []File, gen uint64) error {
 	logging.LogDebug(logging.KeyApp, "saving %s to cache", CacheKeyFullFileList)
+	setFileListMemo(allFiles, gen)
 	jsonData, err := json.Marshal(allFiles)
 	if err != nil {
 		return err
@@ -72,10 +118,19 @@ func getFileListFromCache() ([]File, error) {
 // The cache is populated by the periodic RebuildAllCaches job and kept
 // fresh in between by InvalidateFileListCache on mutations.
 func GetAllFilesCached() ([]File, error) {
+	fileListMemoMu.RLock()
+	memo := fileListMemo
+	gen := fileListMemoGen
+	fileListMemoMu.RUnlock()
+	if memo != nil {
+		return memo, nil
+	}
+
 	cached, err := getFileListFromCache()
 	if err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to read file list cache, falling back to live data: %v", err)
 	} else if cached != nil {
+		setFileListMemo(cached, gen)
 		return cached, nil
 	}
 
@@ -84,7 +139,7 @@ func GetAllFilesCached() ([]File, error) {
 		return nil, err
 	}
 
-	if err := saveFileListToCache(allFiles); err != nil {
+	if err := saveFileListToCache(allFiles, gen); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to persist file list cache: %v", err)
 	}
 
@@ -95,6 +150,7 @@ func GetAllFilesCached() ([]File, error) {
 // from disk. Called after any mutation that adds, removes, renames, or
 // changes the visibility-relevant metadata of a file.
 func InvalidateFileListCache() {
+	invalidateFileListMemo()
 	if err := cacheStorage.Delete(string(CacheKeyFullFileList)); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to invalidate file list cache: %v", err)
 	}
@@ -578,6 +634,9 @@ func RebuildAllCaches() error {
 
 	collector := NewMetadataCollector()
 
+	// captured before the walk so a mutation landing mid-rebuild discards this result
+	gen := fileListGeneration()
+
 	// collect from document files (pathsToFiles already attached metadata to each file)
 	allFiles, err := GetAllFiles()
 	if err != nil {
@@ -593,7 +652,7 @@ func RebuildAllCaches() error {
 
 	// persist the full file list too, so tree/list requests can reuse this same
 	// walk instead of triggering their own
-	if err := saveFileListToCache(allFiles); err != nil {
+	if err := saveFileListToCache(allFiles, gen); err != nil {
 		logging.LogWarning(logging.KeyFileSync, "failed to persist file list cache: %v", err)
 	}
 
@@ -790,6 +849,9 @@ func UpdateOrphanedMediaCacheForFile(filePath string) error {
 
 // CacheInvalidate removes all cache entries, forcing a rebuild on next access
 func CacheInvalidate() error {
+	// flushing the store alone would leave the decoded file list memo serving
+	// stale data, since it is not backed by a cacheStorage read
+	invalidateFileListMemo()
 	if err := cacheStorage.Flush(); err != nil {
 		return fmt.Errorf("failed to invalidate cache: %w", err)
 	}

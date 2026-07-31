@@ -50,14 +50,20 @@ func FilterFiles(criteria []Criteria, logic string) ([]files.File, error) {
 		return nil, err
 	}
 
-	allFiles = files.FilterByVisibility(allFiles)
+	return FilterFileList(files.FilterByVisibility(allFiles), criteria, logic), nil
+}
 
+// FilterFileList applies criteria to an already-loaded file list. Callers that
+// have narrowed the candidate set themselves - e.g. kanban scoping to a board
+// folder - use this instead of FilterFiles so the criteria loop only ever sees
+// the files that can actually end up in the result.
+func FilterFileList(fileList []files.File, criteria []Criteria, logic string) []files.File {
 	if len(criteria) == 0 {
-		return allFiles, nil
+		return fileList
 	}
 
 	var filteredFiles []files.File
-	for _, file := range allFiles {
+	for _, file := range fileList {
 		if file.Metadata == nil { // already loaded by GetAllFiles
 			continue
 		}
@@ -66,7 +72,7 @@ func FilterFiles(criteria []Criteria, logic string) ([]files.File, error) {
 		}
 	}
 
-	return filteredFiles, nil
+	return filteredFiles
 }
 
 // FilterFilesWithConfig filters files using config and returns result

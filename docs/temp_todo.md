@@ -29,7 +29,6 @@
 - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 - handle image links in lists/todo => maybe just show the link? make setting to choos between link/image? at the moment its just invisible
 - filter editor - add a save and cancel button
-- 
 - kanban server route - all ancestors selection - it always shows all ancestors even if all of its child are already archived - maybe a new env which sets all done/archived status?
 - wire the editor settings directly in the editor via a button menu besides the toolbar
 - add repair broken links to jobs
@@ -39,6 +38,9 @@
   - in-app-tests.log => also add the error message behind the failed test
   - clean the test folder after the tests
   - is anything besides the test folder influenced? can i run the tests in my prod binary?
+- autocomplete only shows 20 entries?
+- kanban add a refresh button
+- run all tests in my prod takes forever => is there a need to get all files multiple times? how can we optimize this? can we use the filter and filter for the test collection so all other files are ignored?
 
 # every other time
 

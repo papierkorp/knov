@@ -29,7 +29,11 @@ type Card struct {
 	LastEdited    string
 	KanbanAddedAt string
 	KanbanMovedAt string
+	Excerpt       string
 }
+
+// ExcerptRunes is the number of body-text runes shown on a kanban card.
+const ExcerptRunes = 30
 
 // Column holds a status column and its ordered cards.
 type Column struct {
@@ -69,15 +73,24 @@ func resolveBoardFolder(dir string) string {
 }
 
 // BuildBoard runs the filter, applies optional search, sorts by sortBy, and returns columns with cards.
-// folderPath scopes the board to that folder and its subfolders.
+// folderPath scopes the board to that folder and its subfolders. Only cfg's criteria and logic are
+// used - a board always shows every matching card, so cfg.Limit is deliberately ignored.
 func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortBy SortBy) ([]Column, error) {
 	columns := configmanager.GetKanbanColumns()
 	prefix := configmanager.GetKanbanPrefix()
 
-	result, err := filter.FilterFilesWithConfig(cfg)
+	// scope to the board's own cards first, so the filter criteria only ever run
+	// over the files that can actually land on this board instead of every file
+	candidates, err := cardFilesInFolder(folderPath)
 	if err != nil {
-		logging.LogError(logging.KeyApp, "kanban: filter failed for folder %s: %v", folderPath, err)
-		result = &filter.Result{}
+		logging.LogError(logging.KeyApp, "kanban: failed to collect cards for folder %s: %v", folderPath, err)
+		candidates = nil
+	}
+	var matched []files.File
+	if cfg != nil {
+		matched = filter.FilterFileList(files.FilterByVisibility(candidates), cfg.Criteria, cfg.Logic)
+	} else {
+		matched = files.FilterByVisibility(candidates)
 	}
 
 	cardsByStatus := make(map[string][]Card, len(columns))
@@ -86,10 +99,7 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 	}
 
 	lq := strings.ToLower(searchQuery)
-	for _, file := range result.Files {
-		if file.Metadata == nil || !folderMatches(file.Metadata, folderPath) {
-			continue
-		}
+	for _, file := range matched {
 		meta := file.Metadata
 
 		status := StatusFromTags(meta.Tags, prefix)
@@ -111,7 +121,7 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 	// precompute file sizes once if needed
 	var fileSizes map[string]int64
 	if sortBy == SortSize {
-		fileSizes = make(map[string]int64, len(result.Files))
+		fileSizes = make(map[string]int64, len(matched))
 		for col := range cardsByStatus {
 			for _, c := range cardsByStatus[col] {
 				if fi, err := os.Stat(pathutils.ToDocsPath(c.FilePath)); err == nil {
@@ -258,14 +268,16 @@ func GetEvents(folderPath, filePath string, from, to *time.Time, limit int) ([]k
 // cardFromFile builds a Card from a cached file entry and its already-resolved kanban status.
 func cardFromFile(file files.File, status string) Card {
 	meta := file.Metadata
+	relPath := pathutils.ToRelative(file.Path)
 	card := Card{
-		FilePath:   pathutils.ToRelative(file.Path),
+		FilePath:   relPath,
 		Title:      meta.Title,
 		Collection: meta.Collection,
 		Status:     status,
 		Tags:       meta.Tags,
 		CreatedAt:  meta.CreatedAt.Format("2006-01-02"),
 		LastEdited: meta.LastEdited.Format("2006-01-02"),
+		Excerpt:    Excerpt(pathutils.ToDocsPath(relPath), ExcerptRunes),
 	}
 	if !meta.KanbanAddedAt.IsZero() {
 		card.KanbanAddedAt = meta.KanbanAddedAt.Format("2006-01-02T15:04:05Z07:00")

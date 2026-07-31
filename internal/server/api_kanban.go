@@ -14,7 +14,6 @@ import (
 	"knov/internal/filter"
 	"knov/internal/kanban"
 	"knov/internal/logging"
-	"knov/internal/pathutils"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
 	"knov/internal/translation"
@@ -213,37 +212,6 @@ func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-// @Summary Get a short text excerpt from a file
-// @Description Returns the first N runes of meaningful body text, stripping front matter and markdown syntax
-// @Tags kanban
-// @Param filepath query string true "File path (relative)"
-// @Param chars query int false "Max runes to return (default 30)"
-// @Produce html
-// @Success 200 {string} string "excerpt text"
-// @Router /api/kanban/excerpt [get]
-func handleAPIGetKanbanExcerpt(w http.ResponseWriter, r *http.Request) {
-	filePath := r.URL.Query().Get("filepath")
-	if filePath == "" {
-		writeResponse(w, r, map[string]string{"excerpt": ""}, "")
-		return
-	}
-
-	chars := 30
-	if c := r.URL.Query().Get("chars"); c != "" {
-		if n, err := strconv.Atoi(c); err == nil && n > 0 {
-			chars = n
-		}
-	}
-
-	excerpt := kanban.Excerpt(pathutils.ToDocsPath(filePath), chars)
-
-	var html string
-	if excerpt != "" {
-		html = fmt.Sprintf(`<div class="kanban-card-excerpt">%s</div>`, excerpt)
-	}
-	writeResponse(w, r, map[string]string{"excerpt": excerpt}, html)
 }
 
 // @Summary Get all non-kanban tags used in a board's kanban cards

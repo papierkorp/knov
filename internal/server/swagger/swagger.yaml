@@ -2530,30 +2530,6 @@ paths:
       summary: Move a kanban card to a new status column
       tags:
       - kanban
-  /api/kanban/excerpt:
-    get:
-      description: Returns the first N runes of meaningful body text, stripping front
-        matter and markdown syntax
-      parameters:
-      - description: File path (relative)
-        in: query
-        name: filepath
-        required: true
-        type: string
-      - description: Max runes to return (default 30)
-        in: query
-        name: chars
-        type: integer
-      produces:
-      - text/html
-      responses:
-        "200":
-          description: excerpt text
-          schema:
-            type: string
-      summary: Get a short text excerpt from a file
-      tags:
-      - kanban
   /api/links/ancestors:
     get:
       parameters:
