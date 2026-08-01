@@ -200,13 +200,14 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 			newContent = []byte(msg.Content)
 		}
 		// initialize metadata if file is new
-		if existingMeta, _ := files.MetaDataGet(pathutils.ToWithPrefix(target)); existingMeta == nil {
-			metadata := &files.Metadata{
-				Path:   pathutils.ToWithPrefix(target),
-				Editor: files.EditorFromExtension(target),
-			}
-			if err := files.MetaDataSave(metadata); err != nil {
+		normalizedTarget := pathutils.ToWithPrefix(target)
+		if existingMeta, _ := files.MetaDataGet(normalizedTarget); existingMeta == nil {
+			if err := files.MetaDataSync(normalizedTarget); err != nil {
 				logging.LogWarning(logging.KeyApp, "failed to save metadata after append: %v", err)
+			} else if et := files.EditorFromExtension(target); et != "" {
+				if err := files.SetEditor(normalizedTarget, et); err != nil {
+					logging.LogWarning(logging.KeyApp, "failed to set editor after append: %v", err)
+				}
 			}
 		}
 	} else {
@@ -214,12 +215,11 @@ func handleAPIMoveChatMessage(w http.ResponseWriter, r *http.Request) {
 		var resolvedEditor files.EditorType
 		target, newContent, resolvedEditor = formatForEditor(target, msg.Content, editor)
 		fullPath = pathutils.ToDocsPath(target)
-		metadata := &files.Metadata{
-			Path:   pathutils.ToWithPrefix(target),
-			Editor: resolvedEditor,
-		}
-		if err := files.MetaDataSave(metadata); err != nil {
+		normalizedTarget := pathutils.ToWithPrefix(target)
+		if err := files.MetaDataSync(normalizedTarget); err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to save metadata for moved chat message: %v", err)
+		} else if err := files.SetEditor(normalizedTarget, resolvedEditor); err != nil {
+			logging.LogWarning(logging.KeyApp, "failed to set editor for moved chat message: %v", err)
 		}
 	}
 
@@ -315,12 +315,11 @@ func handleAPIBulkMoveChatMessages(w http.ResponseWriter, r *http.Request) {
 		var resolvedEditor files.EditorType
 		target, newContent, resolvedEditor = formatForEditor(target, combined, editor)
 		fullPath = pathutils.ToDocsPath(target)
-		metadata := &files.Metadata{
-			Path:   pathutils.ToWithPrefix(target),
-			Editor: resolvedEditor,
-		}
-		if err := files.MetaDataSave(metadata); err != nil {
+		normalizedTarget := pathutils.ToWithPrefix(target)
+		if err := files.MetaDataSync(normalizedTarget); err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to save metadata for bulk chat move: %v", err)
+		} else if err := files.SetEditor(normalizedTarget, resolvedEditor); err != nil {
+			logging.LogWarning(logging.KeyApp, "failed to set editor for bulk chat move: %v", err)
 		}
 	}
 

@@ -33,14 +33,20 @@
 - wire the editor settings directly in the editor via a button menu besides the toolbar
 - add repair broken links to jobs
 - tests
-  - manual-trigger test doesnt run through: `Error: RunAsync's manual job sequence did not complete as expected within the timeout`
-  - all-editor-types `Expected: 6 editor types, including codemirror-editor and todo-editorActual: 5 types: [filter-editor list-editor todo-editor index-editor codemirror-editor] Error: AllEditorTypes did not return the expected set`
-  - in-app-tests.log => also add the error message behind the failed test
   - clean the test folder after the tests
-  - is anything besides the test folder influenced? can i run the tests in my prod binary?
 - autocomplete only shows 20 entries?
 - kanban add a refresh button
 - run all tests in my prod takes forever => is there a need to get all files multiple times? how can we optimize this? can we use the filter and filter for the test collection so all other files are ignored?
+- refactor the build in theme and make the slideout modular => each feature (e.g. tree slideout, search, file history) can be easily plugged in anywhere
+- deleting references does not work
+- sqlite checkpoint merging (https://micrologics.org/blog/sqlite-in-production-optimizing-wal-mode-concurrency-and-vfs-layers-for-low-latency-app-servers)? in my prod: metadata.db => 936K, metadata.db-wal => 4.0M, events.db => 4.0K, events.db-wal => 2.5M
+- ~~metadata write races / foolproof write API~~ => done, see # metadata refactor
+- add the start jobs (after the app is started) to the /system/jobs => why are they not there in the first place?
+- codemirror file upload (multifile) => make it a markdown link
+- codemirror add fileupload buttons
+- better solution for all of the xxxNoRefresh functions
+- `handleAPIUpdateDashboard`/`handleAPIRenameDashboard` and `handleAPISetMetadata` moved from one atomic-looking (but actually unsynchronized) write to several independently-locked field writes. Each individual field is now race-safe, but a single "set metadata" HTTP request no longer holds one lock across all its fields — a concurrent `MoveCard` could still interleave between, say, the `SetTags` and `SetParents` calls within the same request. That's a real improvement over "no locking at all," just not full request-level atomicity; the comment above `handleAPISetMetadata` acknowledges this honestly, which I'd rather see than a claim of full atomicity that isn't true.
+- translation for log?
 
 # every other time
 

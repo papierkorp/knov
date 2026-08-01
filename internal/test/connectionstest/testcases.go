@@ -11,7 +11,7 @@ import (
 
 // caseParentsAncestors covers handleAPIGetParents/handleAPIGetAncestors, both plain field
 // reads off *files.Metadata - childFile's Parents/Ancestor were computed by the real
-// parent-child cascade during seeding (updateParentChildRelationships/updateAncestors),
+// parent-child cascade during seeding (parentChildFanOut/updateAncestors),
 // not faked.
 func caseParentsAncestors() test.CaseResult {
 	name := "parents-ancestors"
@@ -113,7 +113,7 @@ func caseLinksToHere() test.CaseResult {
 		Success:  success,
 	}
 	if !success {
-		cr.Error = "LinksToHere did not round-trip through MetaDataSaveRaw as expected"
+		cr.Error = "LinksToHere did not round-trip through SeedMetadataRaw as expected"
 	}
 	return cr
 }

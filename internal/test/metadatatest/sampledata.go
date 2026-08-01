@@ -20,6 +20,7 @@ const (
 	deleteFile     = "metadata-delete.md"
 	exportFile     = "metadata-export.md"
 	referencesFile = "metadata-references.md"
+	raceFile       = "metadata-race.md"
 )
 
 func testPath(name string) string {
@@ -34,11 +35,10 @@ func writeFile(relPath, content string) error {
 	return contentStorage.WriteFile(full, []byte(content), 0644)
 }
 
-// resetAndSeed wipes the sample folder and writes one plain file per case - each case saves
+// resetAndSeed wipes the sample folder and writes one plain file per case - each case seeds
 // its own metadata directly, since the fields under test differ per case. Metadata is deleted
-// explicitly (not just the physical file) before reseeding: metaDataUpdate only overwrites
-// list fields like References when the new value is non-nil, so a leftover References list
-// from a previous run would otherwise silently survive the physical-file wipe below.
+// explicitly (not just the physical file) before reseeding so leftover user fields from a
+// previous run cannot silently survive the physical-file wipe below.
 func resetAndSeed() error {
 	full := pathutils.ToDocsPath(testDir)
 	if err := os.RemoveAll(full); err != nil {
@@ -48,7 +48,7 @@ func resetAndSeed() error {
 		return err
 	}
 
-	for _, name := range []string{fieldsFile, deleteFile, exportFile, referencesFile} {
+	for _, name := range []string{fieldsFile, deleteFile, exportFile, referencesFile, raceFile} {
 		if err := files.MetaDataDelete(pathutils.ToWithPrefix(testPath(name))); err != nil {
 			return err
 		}

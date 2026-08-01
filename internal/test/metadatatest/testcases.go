@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/kanban"
 	"knov/internal/pathutils"
 	"knov/internal/test"
 )
@@ -15,12 +17,13 @@ import (
 var fixedCreatedAt = time.Date(2021, 6, 15, 0, 0, 0, 0, time.UTC)
 
 // caseMetadataGetSetFields saves every settable field on fieldsFile and checks both the
-// auto-derived fields (collection/folders/title/size/timestamps, computed by metaDataUpdate
-// from the file's path/content) and the manual ones (tags/editor/createdAt) round-trip.
+// auto-derived fields (collection/folders/title/size/timestamps, computed by
+// recomputeDerivedFields from the file's path/content) and the manual ones
+// (tags/editor/createdAt) round-trip.
 func caseMetadataGetSetFields() test.CaseResult {
 	name := "metadata-get-set-fields"
 
-	err := files.MetaDataSave(&files.Metadata{
+	err := test.SeedMetadata(&files.Metadata{
 		Path:      pathutils.ToWithPrefix(testPath(fieldsFile)),
 		Editor:    files.EditorTypeCodeMirror,
 		Tags:      []string{"metadatatest-alpha"},
@@ -52,22 +55,21 @@ func caseMetadataGetSetFields() test.CaseResult {
 		Success:  success,
 	}
 	if !success {
-		cr.Error = "MetaDataGet did not return the expected auto/manual field values after MetaDataSave"
+		cr.Error = "MetaDataGet did not return the expected auto/manual field values after SeedMetadata"
 	}
 	return cr
 }
 
 // caseMetadataPartialUpdate continues from caseMetadataGetSetFields' saved state on
-// fieldsFile: a second save with a new Tags value but an empty Editor checks that
-// metaDataUpdate only overwrites Tags/Editor/Parents when the new value is non-empty
-// (empty means "unspecified", not "clear it" - same semantics kanbantest relies on for tags).
+// fieldsFile: setting only Tags via SetTags checks that it changes nothing else, in
+// particular leaving the previously-set Editor untouched (SetTags/SetEditor are each
+// single-field Mutate wrappers - unlike the old struct-merge, there's no "empty means
+// unspecified" convention to verify anymore since callers can no longer pass a partial
+// struct at all).
 func caseMetadataPartialUpdate() test.CaseResult {
 	name := "metadata-partial-update"
 
-	if err := files.MetaDataSave(&files.Metadata{
-		Path: pathutils.ToWithPrefix(testPath(fieldsFile)),
-		Tags: []string{"metadatatest-beta"},
-	}); err != nil {
+	if err := files.SetTags(pathutils.ToWithPrefix(testPath(fieldsFile)), []string{"metadatatest-beta"}); err != nil {
 		return errCase(name, err)
 	}
 
@@ -87,7 +89,7 @@ func caseMetadataPartialUpdate() test.CaseResult {
 		Success:  success,
 	}
 	if !success {
-		cr.Error = "MetaDataSave did not apply partial-update semantics as expected"
+		cr.Error = "SetTags changed more than tags (editor should stay untouched)"
 	}
 	return cr
 }
@@ -96,7 +98,7 @@ func caseMetadataDelete() test.CaseResult {
 	name := "metadata-delete"
 
 	path := pathutils.ToWithPrefix(testPath(deleteFile))
-	if err := files.MetaDataSave(&files.Metadata{Path: path, Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadata(&files.Metadata{Path: path, Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
 	if err := files.MetaDataDelete(path); err != nil {
@@ -125,7 +127,7 @@ func caseMetadataExportAll() test.CaseResult {
 	name := "metadata-export-all"
 
 	path := pathutils.ToWithPrefix(testPath(exportFile))
-	if err := files.MetaDataSave(&files.Metadata{Path: path, Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadata(&files.Metadata{Path: path, Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
 
@@ -160,25 +162,15 @@ func caseReferencesAdd() test.CaseResult {
 	name := "references-add"
 
 	path := pathutils.ToWithPrefix(testPath(referencesFile))
-	if err := files.MetaDataSave(&files.Metadata{Path: path, Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadata(&files.Metadata{Path: path, Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
 
-	metadata, err := files.MetaDataGet(path)
-	if err != nil {
-		return errCase(name, err)
+	refs := []files.Reference{
+		{URL: "https://example.com/one", Description: "first reference", AddedAt: time.Now()},
+		{URL: "https://example.com/two", Description: "second reference", AddedAt: time.Now()},
 	}
-	metadata.References = append(metadata.References, files.Reference{
-		URL:         "https://example.com/one",
-		Description: "first reference",
-		AddedAt:     time.Now(),
-	})
-	metadata.References = append(metadata.References, files.Reference{
-		URL:         "https://example.com/two",
-		Description: "second reference",
-		AddedAt:     time.Now(),
-	})
-	if err := files.MetaDataSave(metadata); err != nil {
+	if err := files.SetReferences(path, refs); err != nil {
 		return errCase(name, err)
 	}
 
@@ -211,14 +203,13 @@ func caseReferencesRemove() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	filtered := metadata.References[:0]
+	var filtered []files.Reference
 	for _, ref := range metadata.References {
 		if ref.URL != "https://example.com/one" {
 			filtered = append(filtered, ref)
 		}
 	}
-	metadata.References = filtered
-	if err := files.MetaDataSave(metadata); err != nil {
+	if err := files.SetReferences(path, filtered); err != nil {
 		return errCase(name, err)
 	}
 
@@ -240,17 +231,112 @@ func caseReferencesRemove() test.CaseResult {
 	return cr
 }
 
+// caseMutateVsSyncRace runs MoveCard in parallel with MetaDataSyncNoRefresh on the same path.
+// The final kanban status must remain the moved status - Sync must not clobber user tags.
+func caseMutateVsSyncRace() test.CaseResult {
+	name := "mutate-vs-sync-race"
+
+	path := pathutils.ToWithPrefix(testPath(raceFile))
+	inbox := configmanager.KanbanStatusTag("inbox")
+	if err := test.SeedMetadata(&files.Metadata{
+		Path:   path,
+		Editor: files.EditorTypeCodeMirror,
+		Tags:   []string{"metadatatest-race", inbox},
+	}); err != nil {
+		return errCase(name, err)
+	}
+
+	var wg sync.WaitGroup
+	errCh := make(chan error, 2)
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 40; i++ {
+			if err := files.MetaDataSyncNoRefresh(path); err != nil {
+				errCh <- err
+				return
+			}
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		if _, err := kanban.MoveCard(testDir, path, "inprogress"); err != nil {
+			errCh <- err
+		}
+	}()
+	wg.Wait()
+	close(errCh)
+	for err := range errCh {
+		if err != nil {
+			return errCase(name, err)
+		}
+	}
+
+	got, err := files.MetaDataGet(path)
+	if err != nil {
+		return errCase(name, err)
+	}
+	status := kanban.StatusFromTags(got.Tags, configmanager.GetKanbanPrefix())
+	success := status == "inprogress" && slices.Contains(got.Tags, "metadatatest-race")
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: `status=inprogress and non-kanban tag "metadatatest-race" preserved after parallel MoveCard+Sync`,
+		Actual:   fmt.Sprintf("status=%q tags=%v", status, got.Tags),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "parallel MetaDataSync clobbered MoveCard tags"
+	}
+	return cr
+}
+
+// caseMutateMissingPath checks MetaDataMutate creates a bare record when the path has no metadata yet.
+func caseMutateMissingPath() test.CaseResult {
+	name := "mutate-missing-path"
+
+	path := pathutils.ToWithPrefix(testPath("metadata-missing-created.md"))
+	_ = files.MetaDataDelete(path)
+
+	err := files.MetaDataMutate(path, func(m *files.Metadata, existed bool) (bool, error) {
+		if existed {
+			return false, fmt.Errorf("expected existed=false")
+		}
+		m.Editor = files.EditorTypeCodeMirror
+		return true, nil
+	})
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	got, err := files.MetaDataGet(path)
+	if err != nil {
+		return errCase(name, err)
+	}
+	success := got != nil && got.Editor == files.EditorTypeCodeMirror
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "MetaDataMutate with existed=false creates and saves a bare record",
+		Actual:   fmt.Sprintf("got=%+v", got),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "MetaDataMutate did not create metadata for a missing path"
+	}
+	_ = files.MetaDataDelete(path)
+	return cr
+}
+
 func caseAllEditorTypes() test.CaseResult {
 	name := "all-editor-types"
 
 	types := files.AllEditorTypes()
-	success := len(types) == 6 &&
+	success := len(types) == 5 &&
 		slices.Contains(types, files.EditorTypeCodeMirror) &&
 		slices.Contains(types, files.EditorTypeTodo)
 
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: "6 editor types, including codemirror-editor and todo-editor",
+		Expected: "5 editor types, including codemirror-editor and todo-editor",
 		Actual:   fmt.Sprintf("%d types: %v", len(types), types),
 		Success:  success,
 	}

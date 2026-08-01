@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -211,19 +212,6 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dash, err := dashboard.Get(id)
-	if err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard not found"), http.StatusNotFound)
-		return
-	}
-
-	if name := r.FormValue("name"); name != "" {
-		dash.Name = name
-	}
-	if layout := r.FormValue("layout"); layout != "" {
-		dash.Layout = dashboard.Layout(layout)
-	}
-
 	widgets, err := parseWidgetsFromForm(r)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to parse widgets: %v", err)
@@ -231,11 +219,23 @@ func handleAPIUpdateDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(widgets) > 0 {
-		dash.Widgets = widgets
+	dash, err := dashboard.Mutate(id, func(d *dashboard.Dashboard) error {
+		if name := r.FormValue("name"); name != "" {
+			d.Name = name
+		}
+		if layout := r.FormValue("layout"); layout != "" {
+			d.Layout = dashboard.Layout(layout)
+		}
+		if len(widgets) > 0 {
+			d.Widgets = widgets
+		}
+		return nil
+	})
+	if errors.Is(err, dashboard.ErrNotFound) {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard not found"), http.StatusNotFound)
+		return
 	}
-
-	if err := dashboard.Update(dash); err != nil {
+	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to update dashboard: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -450,14 +450,15 @@ func handleAPIRenameDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dash, err := dashboard.Get(id)
-	if err != nil {
+	_, err := dashboard.Mutate(id, func(d *dashboard.Dashboard) error {
+		d.Name = name
+		return nil
+	})
+	if errors.Is(err, dashboard.ErrNotFound) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "dashboard not found"), http.StatusNotFound)
 		return
 	}
-
-	dash.Name = name
-	if err := dashboard.Update(dash); err != nil {
+	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to rename dashboard: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

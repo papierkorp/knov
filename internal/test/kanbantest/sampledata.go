@@ -52,15 +52,13 @@ func writeFile(relPath, content string) error {
 	return contentStorage.WriteFile(full, []byte(content), 0644)
 }
 
-// writeCard seeds a file with the given tags and pins CreatedAt to a fixed value (via
-// MetaDataSave then a MetaDataGet/MetaDataSaveRaw round-trip - MetaDataSave always stamps
-// LastEdited/CreatedAt from the save call itself, so a directly-set CreatedAt only sticks
-// through the raw save) so sort-order cases don't depend on wall-clock timing.
+// writeCard seeds a file with the given tags and pins CreatedAt to a fixed value via
+// SetCreatedAt after seeding, so sort-order cases don't depend on wall-clock timing.
 func writeCard(relPath, title string, tags []string, createdAt time.Time) error {
 	if err := writeFile(relPath, "# "+title+"\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSave(&files.Metadata{
+	if err := test.SeedMetadata(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(relPath),
 		Editor: files.EditorTypeCodeMirror,
 		Tags:   tags,
@@ -68,12 +66,7 @@ func writeCard(relPath, title string, tags []string, createdAt time.Time) error 
 		return err
 	}
 
-	meta, err := files.MetaDataGet(pathutils.ToWithPrefix(relPath))
-	if err != nil {
-		return err
-	}
-	meta.CreatedAt = createdAt
-	return files.MetaDataSaveRaw(meta)
+	return files.SetCreatedAt(pathutils.ToWithPrefix(relPath), createdAt)
 }
 
 func kanbanTag(status string) string {
@@ -83,18 +76,17 @@ func kanbanTag(status string) string {
 // clearKanbanStatus strips any kanban status tag from a file's metadata via a raw save,
 // bypassing metaDataUpdate's "empty Tags means unchanged" merge semantics.
 func clearKanbanStatus(relPath string) error {
-	meta, err := files.MetaDataGet(pathutils.ToWithPrefix(relPath))
-	if err != nil {
-		return err
-	}
-	filtered := meta.Tags[:0:0]
-	for _, t := range meta.Tags {
-		if !configmanager.IsKanbanTag(t) {
-			filtered = append(filtered, t)
+	normalizedPath := pathutils.ToWithPrefix(relPath)
+	return files.MetaDataMutate(normalizedPath, func(meta *files.Metadata, existed bool) (bool, error) {
+		filtered := meta.Tags[:0:0]
+		for _, t := range meta.Tags {
+			if !configmanager.IsKanbanTag(t) {
+				filtered = append(filtered, t)
+			}
 		}
-	}
-	meta.Tags = filtered
-	return files.MetaDataSaveRaw(meta)
+		meta.Tags = filtered
+		return true, nil
+	})
 }
 
 // resetAndSeed wipes the sample folder, resets its kanban card order (kanban-order/<folder>,
@@ -129,17 +121,16 @@ func resetAndSeed() error {
 		return err
 	}
 	// writeCard's tags=nil above leaves any pre-existing kanban status tag untouched -
-	// MetaDataSave only overwrites Tags when the new value is non-empty (metaDataUpdate
-	// treats an empty Tags field as "not specified", not "clear it"). caseMoveCard needs
-	// moveFile to genuinely start unstatused even after a previous run already moved it,
-	// so strip any kanban tag directly via MetaDataSaveRaw, mirroring MoveCard's own approach.
+	// SeedMetadata only overwrites Tags when the new value is non-empty. caseMoveCard needs
+	// moveFile to genuinely start unstatused even after a previous run already moved it, so
+	// strip any kanban tag directly via Mutate, mirroring MoveCard's own approach.
 	if err := clearKanbanStatus(testPath(moveFile)); err != nil {
 		return err
 	}
 	if err := writeFile(testPath(excerptFile), "---\ntitle: excerpt\n---\n# Excerpt Card\n\nThis is the **excerpt** body text.\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSave(&files.Metadata{
+	if err := test.SeedMetadata(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(testPath(excerptFile)),
 		Editor: files.EditorTypeCodeMirror,
 	}); err != nil {

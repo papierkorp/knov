@@ -302,7 +302,6 @@ func NewRouter() *chi.Mux {
 			r.Post("/references", handleAPIAddMetadataReference)
 			r.Delete("/references", handleAPIDeleteMetadataReference)
 
-			r.Post("/collection", handleAPISetMetadataCollection)
 			r.Post("/editor", handleAPISetMetadataEditor)
 			r.Post("/path", handleAPISetMetadataPath)
 			r.Post("/createdat", handleAPISetMetadataCreatedAt)

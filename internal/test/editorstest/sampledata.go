@@ -44,7 +44,7 @@ func readFile(relPath string) (string, error) {
 }
 
 func saveMetadata(relPath string, editor files.EditorType) error {
-	return files.MetaDataSave(&files.Metadata{
+	return test.SeedMetadata(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(relPath),
 		Editor: editor,
 	})

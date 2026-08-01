@@ -337,9 +337,13 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 			editor = files.EditorType(configmanager.DefaultMarkdownEditor.Get())
 		}
 
-		metadata := &files.Metadata{
-			Path:   pathutils.ToWithPrefix(filePath),
-			Editor: editor,
+		normalizedPath := pathutils.ToWithPrefix(filePath)
+		if err := files.MetaDataSync(normalizedPath); err != nil {
+			logging.LogError(logging.KeyApp, "failed to save metadata for new file %s: %v", filePath, err)
+		} else if err := files.SetEditor(normalizedPath, editor); err != nil {
+			logging.LogError(logging.KeyApp, "failed to set editor for new file %s: %v", filePath, err)
+		} else {
+			logging.LogInfo(logging.KeyApp, "created metadata for new file: %s (editor: %s)", filePath, editor)
 		}
 
 		// apply auto-create tags if configured
@@ -352,15 +356,12 @@ func handleAPIFileSave(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			if len(tagsToApply) > 0 {
-				metadata.Tags = append(metadata.Tags, tagsToApply...)
-				logging.LogInfo(logging.KeyApp, "applied auto-create tags %v to new file: %s", tagsToApply, filePath)
+				if err := files.SetTags(normalizedPath, tagsToApply); err != nil {
+					logging.LogError(logging.KeyApp, "failed to apply auto-create tags for %s: %v", filePath, err)
+				} else {
+					logging.LogInfo(logging.KeyApp, "applied auto-create tags %v to new file: %s", tagsToApply, filePath)
+				}
 			}
-		}
-
-		if err := files.MetaDataSave(metadata); err != nil {
-			logging.LogError(logging.KeyApp, "failed to save metadata for new file %s: %v", filePath, err)
-		} else {
-			logging.LogInfo(logging.KeyApp, "created metadata for new file: %s (editor: %s)", filePath, editor)
 		}
 	} else {
 		// update links for existing files

@@ -4,14 +4,13 @@
 // api_links.go is a thin field read off *files.Metadata (or, for grandchildren, an inline
 // loop with no exported equivalent - replicated directly here, same as editorstest/chattest
 // replicate other unexported handler logic). Parents/Kids/Ancestor are seeded via real
-// MetaDataSave calls so the actual parent-child cascade (updateParentChildRelationships/
+// SeedMetadata/SetParents calls so the actual parent-child cascade (parentChildFanOut/
 // updateAncestors in internal/files/metadata_links.go) computes them; UsedLinks/LinksToHere
 // are seeded via a real files.UpdateLinksForSingleFile call on the linking file (which updates
 // both its own UsedLinks and the linked target's LinksToHere) - none of these are faked via
 // a raw shortcut. Related has no per-file computation path (only the full-vault
 // MetaDataLinksRebuild computes it, which would rebuild every real file in the vault, not just
-// this suite's sample folder) so it's seeded directly via MetaDataSaveRaw instead, mirroring
-// kanbantest's CreatedAt pin.
+// this suite's sample folder) so it's seeded directly via SeedMetadataRaw instead.
 package connectionstest
 
 import (

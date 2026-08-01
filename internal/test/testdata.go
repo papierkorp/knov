@@ -76,7 +76,7 @@ func setupTestMetadata() error {
 	logging.LogInfo(logging.KeyApp, "creating test metadata")
 
 	for _, meta := range getCopiedFilesMetadata() {
-		if err := files.MetaDataSave(meta); err != nil {
+		if err := SeedMetadata(meta); err != nil {
 			logging.LogError(logging.KeyApp, "failed to save metadata for %s: %v", meta.Path, err)
 		}
 	}

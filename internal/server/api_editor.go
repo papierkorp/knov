@@ -171,31 +171,18 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 	}
 	go git.CommitFile(fullPath)
 
-	// create/update metadata with filetype ".index" and collection based on filename
-	collectionName := filezpath
-	collectionName = strings.TrimSuffix(collectionName, filepath.Ext(collectionName))
-
-	metadata := &files.Metadata{
-		Path:       filepath.Join("docs", filezpath),
-		Editor:     files.EditorTypeIndex,
-		Collection: collectionName,
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
+	normalizedPath := pathutils.ToWithPrefix(filezpath)
+	if err := files.MetaDataSync(normalizedPath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save metadata for index file %s: %v", filezpath, err)
-		// don't fail the whole request, just log the error
+	} else if err := files.SetEditor(normalizedPath, files.EditorTypeIndex); err != nil {
+		logging.LogError(logging.KeyApp, "failed to set editor for index file %s: %v", filezpath, err)
 	} else {
-		logging.LogInfo(logging.KeyApp, "saved metadata for index file: %s (collection: %s)", filezpath, collectionName)
+		logging.LogInfo(logging.KeyApp, "saved metadata for index file: %s", filezpath)
 	}
 
-	// update links for this file
-	normalizedPath := filepath.Join("docs", filezpath)
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filezpath, err)
-		// don't fail the request, just log the error
 	}
-
-	// update orphaned media cache
 	if err := files.UpdateOrphanedMediaCacheForFile(normalizedPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to update orphaned media cache: %v", err)
 	}
@@ -312,21 +299,14 @@ func handleAPISaveListEditor(w http.ResponseWriter, r *http.Request) {
 	}
 	go git.CommitFile(fullPath)
 
-	// create/update metadata
-	metadata := &files.Metadata{
-		Path:   filepath.Join("docs", filePath),
-		Editor: files.EditorTypeTodo,
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
+	normalizedPath := pathutils.ToWithPrefix(filePath)
+	if err := files.MetaDataSync(normalizedPath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save metadata for list file %s: %v", filePath, err)
-		// don't fail the whole request, just log the error
+	} else if err := files.SetEditor(normalizedPath, files.EditorTypeTodo); err != nil {
+		logging.LogError(logging.KeyApp, "failed to set editor for list file %s: %v", filePath, err)
 	} else {
 		logging.LogInfo(logging.KeyApp, "saved metadata for list file: %s (filetype: %s)", filePath, files.EditorTypeTodo)
 	}
-
-	// update links for this file
-	normalizedPath := filepath.Join("docs", filePath)
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 		// don't fail the request, just log the error
@@ -400,18 +380,14 @@ func handleAPISaveTodoEditor(w http.ResponseWriter, r *http.Request) {
 	}
 	go git.CommitFile(fullPath)
 
-	metadata := &files.Metadata{
-		Path:   filepath.Join("docs", filePath),
-		Editor: files.EditorTypeTodo,
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
+	normalizedPath := pathutils.ToWithPrefix(filePath)
+	if err := files.MetaDataSync(normalizedPath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save metadata for todo file %s: %v", filePath, err)
+	} else if err := files.SetEditor(normalizedPath, files.EditorTypeTodo); err != nil {
+		logging.LogError(logging.KeyApp, "failed to set editor for todo file %s: %v", filePath, err)
 	} else {
 		logging.LogInfo(logging.KeyApp, "saved metadata for todo file: %s", filePath)
 	}
-
-	normalizedPath := filepath.Join("docs", filePath)
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to update links for file %s: %v", filePath, err)
 	}

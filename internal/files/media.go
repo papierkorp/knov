@@ -91,14 +91,10 @@ func UploadMedia(file multipart.File, header *multipart.FileHeader, contextPath 
 	// create metadata for the media file with proper path prefix
 	metadataPath := "media/" + pathutils.ToSlash(finalMediaPath) // Add media/ prefix to distinguish from docs
 
-	metadata := &Metadata{
-		Path: metadataPath,
-		// Editor is intentionally not set for media files — metaDataUpdate skips
-		// the editor fallback for media/ paths, so it stays empty.
-		// Filtering uses the path prefix + mime type via isHiddenByType instead.
-	}
-
-	if err := MetaDataSave(metadata); err != nil {
+	// Editor is intentionally left unset for media files — recomputeDerivedFields skips
+	// the editor fallback for media/ paths, so it stays empty. Filtering uses the path
+	// prefix + mime type via isHiddenByType instead.
+	if err := MetaDataSync(metadataPath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to save metadata for media file %s: %v", metadataPath, err)
 		// don't fail the whole request, just log the error
 	} else {

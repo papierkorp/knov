@@ -198,14 +198,10 @@ func handleAPIKanbanSaveOrder(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	stored, err := kanban.GetOrder(board.FolderPath)
+	err := kanban.MutateOrder(board.FolderPath, func(o kanban.Order) {
+		o[status] = paths
+	})
 	if err != nil {
-		logging.LogError(logging.KeyApp, "kanban: load order failed for %s: %v", board.FolderPath, err)
-		stored = kanban.Order{}
-	}
-	stored[status] = paths
-
-	if err := kanban.SaveOrder(board.FolderPath, stored); err != nil {
 		logging.LogError(logging.KeyApp, "kanban: save order failed for %s: %v", board.FolderPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save order"), http.StatusInternalServerError)
 		return

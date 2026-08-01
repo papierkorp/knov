@@ -363,13 +363,14 @@ func GenerateFilterIndex(filterID string, config *Config) error {
 		return fmt.Errorf("failed to write filter index %s: %w", indexPath, err)
 	}
 
-	// save metadata marking this as a filter-editor file so the filter editor opens
-	metadata := &files.Metadata{
-		Path:   pathutils.ToWithPrefix(indexPath),
-		Editor: files.EditorTypeFilter,
-	}
-	if err := files.MetaDataSave(metadata); err != nil {
+	// save metadata marking this as a filter-editor file so the filter editor opens -
+	// the physical file uses the "index" extension, so the editor type must be forced
+	// rather than left to extension inference
+	normalizedIndexPath := pathutils.ToWithPrefix(indexPath)
+	if err := files.MetaDataSync(normalizedIndexPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to save metadata for filter index %s: %v", indexPath, err)
+	} else if err := files.SetEditor(normalizedIndexPath, files.EditorTypeFilter); err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to set editor for filter index %s: %v", indexPath, err)
 	}
 
 	logging.LogInfo(logging.KeyApp, "generated filter index: %s (%d files)", indexPath, len(result.Files))

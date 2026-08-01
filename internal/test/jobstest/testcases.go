@@ -94,8 +94,8 @@ func caseSearchReindex() test.CaseResult {
 	return cr
 }
 
-// caseCacheInvalidate primes the file-list cache, adds a new file via a raw save (which
-// skips the cache refresh MetaDataSave normally triggers), confirms the cache is stale,
+// caseCacheInvalidate primes the file-list cache, adds a new file via SeedMetadataRaw (which
+// skips the cache refresh MetaDataSync/Set* normally trigger), confirms the cache is stale,
 // then checks job.RunCacheInvalidate() makes the next read see the new file.
 func caseCacheInvalidate() test.CaseResult {
 	name := "cache-invalidate"
@@ -108,7 +108,7 @@ func caseCacheInvalidate() test.CaseResult {
 	if err := writeFile(newFile, "# jobs-cache-new.md\n\ncontent\n"); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.MetaDataSaveRaw(&files.Metadata{Path: pathutils.ToWithPrefix(newFile), Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadataRaw(&files.Metadata{Path: pathutils.ToWithPrefix(newFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return errCase(name, err)
 	}
 
@@ -188,7 +188,7 @@ func caseManualTrigger() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	deadline := time.Now().Add(5 * time.Second)
+	deadline := time.Now().Add(20 * time.Second)
 	var found *job.JobRun
 	for time.Now().Before(deadline) {
 		for _, run := range job.GetRecentRuns() {

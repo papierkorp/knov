@@ -175,7 +175,7 @@ func createAutoMetadata() error {
 			Editor:  files.EditorTypeCodeMirror,
 		}
 
-		if err := files.MetaDataSave(metadata); err != nil {
+		if err := SeedMetadata(metadata); err != nil {
 			logging.LogError(logging.KeyApp, "failed to save test metadata for %s: %v", file, err)
 		}
 	}

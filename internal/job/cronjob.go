@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"slices"
 
-	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/logging"
@@ -128,11 +127,9 @@ func (j *fileJob) Run() error {
 		logging.LogInfo(logging.KeyFileSync, "processing %d files", len(filesToProcess))
 		for _, filePath := range filesToProcess {
 			normalizedPath := pathutils.ToWithPrefix(filePath)
-			metadata := &files.Metadata{
-				Path:   normalizedPath,
-				Editor: files.EditorType(configmanager.DefaultMarkdownEditor.Get()),
-			}
-			if err := files.MetaDataSaveNoRefresh(metadata); err != nil {
+			// Sync only fills the default editor when the field is empty - unlike the old
+			// blind save, it can't clobber a user-picked editor on a file edited externally
+			if err := files.MetaDataSyncNoRefresh(normalizedPath); err != nil {
 				logging.LogError(logging.KeyFileSync, "failed to save metadata for %s: %v", normalizedPath, err)
 				continue
 			}

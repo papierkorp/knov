@@ -187,7 +187,7 @@ func caseIndexCreateEditSave() test.CaseResult {
 	if err := writeFile(relPath, initial); err != nil {
 		return errCase(name, err)
 	}
-	if err := files.MetaDataSave(&files.Metadata{
+	if err := test.SeedMetadata(&files.Metadata{
 		Path:       pathutils.ToWithPrefix(relPath),
 		Editor:     files.EditorTypeIndex,
 		Collection: base,

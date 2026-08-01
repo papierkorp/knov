@@ -218,35 +218,46 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 // file's own location (used when the caller doesn't know which board triggered the move).
 func MoveCard(boardFolder, filePath, newStatus string) (oldStatus string, err error) {
 	normalizedPath := pathutils.ToWithPrefix(filePath)
-	meta, err := files.MetaDataGet(normalizedPath)
-	if err != nil || meta == nil {
-		return "", err
-	}
 
-	oldStatus = StatusFromTags(meta.Tags, configmanager.GetKanbanPrefix())
+	var found bool
+	var folders []string
 
-	newTag := configmanager.KanbanStatusTag(newStatus)
-	filtered := meta.Tags[:0:0]
-	for _, t := range meta.Tags {
-		if !configmanager.IsKanbanTag(t) {
-			filtered = append(filtered, t)
+	// MetaDataMutate holds the path's write lock across this whole read-modify-write, so a
+	// concurrent writer of the same file (e.g. file-sync's per-changed-file metadata
+	// refresh) can't read stale tags in between and silently revert this move on its own
+	// save.
+	err = files.MetaDataMutate(normalizedPath, func(meta *files.Metadata, existed bool) (bool, error) {
+		if !existed {
+			return false, nil
 		}
-	}
-	meta.Tags = append(filtered, newTag)
+		found = true
+		oldStatus = StatusFromTags(meta.Tags, configmanager.GetKanbanPrefix())
 
-	now := time.Now()
-	if meta.KanbanAddedAt.IsZero() {
-		meta.KanbanAddedAt = now
-	}
-	meta.KanbanMovedAt = now
+		newTag := configmanager.KanbanStatusTag(newStatus)
+		filtered := meta.Tags[:0:0]
+		for _, t := range meta.Tags {
+			if !configmanager.IsKanbanTag(t) {
+				filtered = append(filtered, t)
+			}
+		}
+		meta.Tags = append(filtered, newTag)
 
-	if err := files.MetaDataSaveRaw(meta); err != nil {
+		now := time.Now()
+		if meta.KanbanAddedAt.IsZero() {
+			meta.KanbanAddedAt = now
+		}
+		meta.KanbanMovedAt = now
+		folders = meta.Folders
+		return true, nil
+	})
+	if err != nil || !found {
 		return "", err
 	}
+
 	files.RefreshCaches()
 	eventFolder := boardFolder
 	if eventFolder == "" {
-		dir := strings.Join(meta.Folders, "/")
+		dir := strings.Join(folders, "/")
 		eventFolder = resolveBoardFolder(dir)
 		if eventFolder == "" {
 			eventFolder = dir // file isn't under any configured board; log under its own folder

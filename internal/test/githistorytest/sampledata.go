@@ -60,10 +60,10 @@ func writeFile(relPath, content string) error {
 	return contentStorage.WriteFile(full, []byte(content), 0644)
 }
 
-// saveMetadata saves metadata for relPath. Collection is not settable here - MetaDataSave
+// saveMetadata saves metadata for relPath. Collection is not settable here - MetaDataSync
 // always derives it from the file's top-level folder (files.CollectionFromPath).
 func saveMetadata(relPath string) error {
-	return files.MetaDataSave(&files.Metadata{
+	return test.SeedMetadata(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(relPath),
 		Editor: files.EditorTypeCodeMirror,
 	})

@@ -3282,31 +3282,6 @@ paths:
       summary: Get file collection
       tags:
       - metadata
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: File path
-        in: formData
-        name: filepath
-        required: true
-        type: string
-      - description: Collection name
-        in: formData
-        name: collection
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Set file collection
-      tags:
-      - metadata
   /api/metadata/collections:
     get:
       description: Get all collections with counts, or collection for a specific file
@@ -3552,31 +3527,6 @@ paths:
           schema:
             $ref: '#/definitions/files.FolderCount'
       summary: Get all folders or folders for a specific file
-      tags:
-      - metadata
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - description: File path
-        in: formData
-        name: filepath
-        required: true
-        type: string
-      - description: Comma-separated folder list
-        in: formData
-        name: folders
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Set file folders
       tags:
       - metadata
   /api/metadata/inline-display:

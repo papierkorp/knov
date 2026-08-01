@@ -53,7 +53,7 @@ func resetAndSeed() error {
 	if err := writeFile(testPath(alphaFile), "# Browse Alpha\n\ngeneric content\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSave(&files.Metadata{
+	if err := test.SeedMetadata(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(testPath(alphaFile)),
 		Editor: files.EditorTypeCodeMirror,
 		Tags:   []string{marker},
@@ -64,7 +64,7 @@ func resetAndSeed() error {
 	if err := writeFile(testPath(betaFile), "# Browse Beta\n\nnested content\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSave(&files.Metadata{
+	if err := test.SeedMetadata(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(testPath(betaFile)),
 		Editor: files.EditorTypeCodeMirror,
 	}); err != nil {
@@ -74,7 +74,7 @@ func resetAndSeed() error {
 	if err := writeFile(testPath(tocFile), "# Heading One\n\ntext\n\n## Heading Two\n\nmore text\n\n### Heading Three\n\nend\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSave(&files.Metadata{
+	if err := test.SeedMetadata(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(testPath(tocFile)),
 		Editor: files.EditorTypeCodeMirror,
 	}); err != nil {
@@ -84,7 +84,7 @@ func resetAndSeed() error {
 	if err := writeFile(testPath(hiddenFile), "# Browse Hidden\n\ncontent\n"); err != nil {
 		return err
 	}
-	if err := files.MetaDataSave(&files.Metadata{
+	if err := test.SeedMetadata(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(testPath(hiddenFile)),
 		Editor: files.EditorTypeTodo,
 	}); err != nil {
@@ -92,7 +92,7 @@ func resetAndSeed() error {
 	}
 
 	// GetAllFolderPathsFromCache/GetAllFilePathsFromCache read the aggregate caches directly
-	// (no lazy-rebuild-on-miss like GetAllFilesCached has) and MetaDataSave only refreshes
+	// (no lazy-rebuild-on-miss like GetAllFilesCached has) and SeedMetadata/Sync only refresh
 	// them in a background goroutine - rebuild synchronously here so caseFolderSuggestions
 	// doesn't race that goroutine.
 	return files.RebuildAllCaches()

@@ -48,7 +48,7 @@ func writeFile(relPath, content string) error {
 }
 
 func saveMetadata(relPath string) error {
-	return files.MetaDataSave(&files.Metadata{
+	return test.SeedMetadata(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(relPath),
 		Editor: files.EditorTypeCodeMirror,
 	})

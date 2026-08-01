@@ -234,6 +234,14 @@ KNOV_LOG_MAX_FILES      # number of rotated files to keep (default: 5)
 KNOV_LOGS_PATH          # override the logs directory (default: ./logs)
 ```
 
+# Concurrent Writes (keylock)
+
+- `internal/keylock` hands out one mutex per string key, lazily created and never freed. It's the shared fix for a lost-update race: two goroutines that read the same keyed record, each compute a change, and save back independently can otherwise silently revert one another.
+- Used by `internal/files` (metadata, keyed by file path), `internal/kanban` (card order, keyed by board folder), and `internal/dashboard` (keyed by dashboard id) — each package owns a private `keylock.Registry` and exposes its own `Mutate`-style entry point (load under the key's lock, let a callback modify the record, save before unlocking).
+- The raw get/save primitives underneath are unexported or documented as whole-record-replace-only, so a get-then-save outside the lock isn't something you can do by accident — going through the package's `Mutate` helper is the only path for a partial update.
+- Locks aren't reentrant and are scoped to one key at a time — never lock a second key while already holding one; defer any cross-key write as a closure run after the first lock is released, otherwise two goroutines doing the mirror-image update can deadlock each other.
+- Any new keyed record with concurrent writers (another per-id JSON blob, etc.) should follow the same shape rather than a bespoke lock.
+
 # dbmigration
 
 Tiny version-based schema migrations for sqlite. No external tools, no SQL files — migrations are plain Go functions.
@@ -403,13 +411,13 @@ sqlite3 storage/metadata/metadata.db "SELECT version FROM schema_version" # → 
 
 - Board is a **page shell + HTMX** pattern: `/kanban/{board}` renders the template, `GET /api/kanban/{board}` returns the column HTML on load and on filter change. `{board}` is a URL slug, not a raw folder path.
 - Excerpts are built **inline** in `cardFromFile` (`kanban.ExcerptRunes` runes) and rendered with the card — one request per board instead of one per card
-- Card moves are **optimistic UI** — the card is moved in the DOM immediately, then `POST /api/kanban/card/move` persists the tag change using `MetaDataSaveRaw` (skips parent/link processing)
+- Card moves are **optimistic UI** — the card is moved in the DOM immediately, then `POST /api/kanban/card/move` persists the tag change via `MetaDataMutate` (tags + kanban timestamps only; no derived-field recompute)
 
 ## Tag System
 
 - Kanban state is stored as a regular metadata tag: `{prefix}-status-{status}` (e.g. `kb-status-inbox`)
 - Prefix and valid statuses come from env: `KNOV_KANBAN_PREFIX`, `KNOV_KANBAN_STATUS`
-- `sanitizeKanbanTags()` in `metadata.go` enforces: one kanban tag max, known sub-namespace only (`status` for now), status must be in allowlist — called on every `MetaDataSave`
+- `sanitizeKanbanTags()` in `metadata.go` enforces: one kanban tag max, known sub-namespace only (`status` for now), status must be in allowlist — called from `SetTags` / `PatchTags`
 - Adding a new sub-namespace (e.g. `kb-priority-*`): add it to `knownSubNamespaces` in `sanitizeKanbanTags`
 
 ## Boards

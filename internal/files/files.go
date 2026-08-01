@@ -14,14 +14,18 @@ import (
 	"knov/internal/pathutils"
 )
 
+// DefaultCollection is the Collection value for root-level files (no containing folder).
+// Collection is always derived (see recomputeDerivedFields) — a file is never without one.
+const DefaultCollection = "default"
+
 // CollectionFromPath derives the collection name from a file path —
-// the first path segment of the relative path, matching metaDataUpdate logic.
-// Returns "" for root-level files.
+// the first path segment of the relative path, matching recomputeDerivedFields logic.
+// Returns DefaultCollection for root-level files.
 func CollectionFromPath(path string) string {
 	relPath := pathutils.ToRelative(path)
 	folderPath := pathutils.ToSlash(filepath.Dir(relPath))
 	if folderPath == "." || folderPath == "" {
-		return ""
+		return DefaultCollection
 	}
 	return strings.SplitN(folderPath, "/", 2)[0]
 }

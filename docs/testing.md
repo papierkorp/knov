@@ -56,26 +56,26 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 
 ## Kanban suite (`internal/test/kanbantest`)
 - Calls `internal/kanban`'s exported board-build, card-move, order-persistence and helper functions directly
-- `kanban.MoveCard` saves via `MetaDataSaveRaw`, which skips the cache refresh `MetaDataSave` normally triggers - cases call `files.InvalidateFileListCache()` afterward so `BuildBoard` sees the move immediately (the kanban analog of searchtest's synchronous reindex)
-- Sample cards pin `CreatedAt` via a `MetaDataSave` followed by a `MetaDataGet`+`MetaDataSaveRaw` round-trip, since `MetaDataSave` always stamps `LastEdited`/`CreatedAt` from the save call itself
-- `MetaDataSave` only overwrites `Tags` when the new value is non-empty, so a stale kanban status tag from a previous run has to be stripped explicitly via `MetaDataSaveRaw` at seed time
+- `kanban.MoveCard` uses `MetaDataMutate` and calls `RefreshCaches` itself
+- Sample cards pin `CreatedAt` via `test.SeedMetadata` (Sync + SetCreatedAt)
+- Stale kanban status tags from a previous run are cleared by wiping metadata in `resetAndSeed` before re-seeding
 - Column order (`kanban-order/<folder>`) is config-store backed like dashboards, not touched by wiping `docs/test/`, so it's reset at suite start and via `defer`
 - Native HTML5 drag-and-drop itself is the one piece genuinely untestable outside a browser - the suite covers the API/state it drives (`SaveOrder`/`BuildBoard`) instead
 
 ## Browse suite (`internal/test/browsetest`)
 - Calls `internal/files`' tree/folder/browse/autocomplete functions directly, replicating each handler's inline logic (file-tree nesting, folder-contents listing, browse-by-tag/folder, autocomplete, folder suggestions, header/TOC extraction) since none of it is exported as a single callable
 - Browse-by-folder needs a folder *segment* as the query value, not the joined path - `Folders` is stored one path segment per element
-- `GetAllFolderPathsFromCache` only refreshes in a background goroutine after `MetaDataSave`, so the suite calls `files.RebuildAllCaches()` synchronously to avoid racing it
+- `GetAllFolderPathsFromCache` only refreshes in a background goroutine after Sync/Set*, so the suite calls `files.RebuildAllCaches()` synchronously to avoid racing it
 
 ## Metadata suite (`internal/test/metadatatest`)
 - Calls `internal/files`' metadata get/set/delete/export functions directly, covering every settable field and the partial-update semantics (empty `Tags`/`Editor` means "unspecified", not "clear it")
 - References add/remove has no exported wrapper, so the suite replicates the handler's inline append/filter
-- `MetaDataSave` only overwrites `References` when non-nil, so `resetAndSeed` explicitly deletes metadata first rather than relying on a physical-file wipe
+- `resetAndSeed` explicitly deletes metadata first rather than relying on a physical-file wipe, so leftover user fields cannot survive across runs
 
 ## Connections suite (`internal/test/connectionstest`)
-- Seeds parents/kids/ancestors and used-links/links-to-here via real `MetaDataSave`/`UpdateLinksForSingleFile` calls so the actual cascade computes them, not faked
+- Seeds parents/kids/ancestors and used-links/links-to-here via real `SeedMetadata`/`SetParents`/`UpdateLinksForSingleFile` calls so the actual cascade computes them, not faked
 - Grandchildren replicates the handler's inline kid-of-kids loop, since there's no exported equivalent
-- Related-files has no per-file computation path (only a full-vault rebuild computes it), so it's seeded directly via `MetaDataSaveRaw` instead
+- Related-files has no per-file computation path (only a full-vault rebuild computes it), so it's seeded directly via `SeedMetadataRaw` instead
 
 ## Jobs suite (`internal/test/jobstest`)
 - Calls `job.RunFullRebuild`/`RunSearchReindex`/`RunCacheInvalidate`/`RunMediaCleanup` and the manual "run all jobs" trigger directly, asserting on the resulting filesystem/DB state rather than just "no error" - e.g. seeding a raw save that bypasses the normal link cascade, so `Ancestor`/`Kids`/`UsedLinks` only exist once the rebuild job actually recomputes them

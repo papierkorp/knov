@@ -1,10 +1,10 @@
-// Package metadatatest - Metadata suite: exercises files.MetaDataGet/Save/Delete/ExportAll
-// for every settable field, the references add/remove/list flow, and the pure kanban-tag
-// sanitizer (see docs/temp_todo.md step 5). Inline-display/inline-edit rendering
-// (render.RenderSidebarFieldDisplay/Edit) lives in internal/server/render - those functions
-// only switch on the same four fields exercised below (tags, parents, editor, path) and read
-// straight off *files.Metadata, so covering the data here plus connectionstest's parents/kids
-// coverage exercises the same ground without needing to assert on rendered HTML.
+// Package metadatatest - Metadata suite: exercises files.MetaDataGet/Mutate/Sync/Delete/ExportAll
+// for every settable field, the references add/remove/list flow, the pure kanban-tag sanitizer,
+// and the MoveCard∥Sync race (see docs/temp_todo.md metadata refactor). Inline-display/inline-edit
+// rendering (render.RenderSidebarFieldDisplay/Edit) lives in internal/server/render - those
+// functions only switch on the same four fields exercised below (tags, parents, editor, path)
+// and read straight off *files.Metadata, so covering the data here plus connectionstest's
+// parents/kids coverage exercises the same ground without needing to assert on rendered HTML.
 package metadatatest
 
 import (
@@ -34,6 +34,8 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseMetadataExportAll,
 		caseReferencesAdd,
 		caseReferencesRemove,
+		caseMutateVsSyncRace,
+		caseMutateMissingPath,
 		caseAllEditorTypes,
 		caseSanitizeKanbanTags,
 	}

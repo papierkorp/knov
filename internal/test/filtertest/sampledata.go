@@ -10,6 +10,7 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/logging"
+	"knov/internal/test"
 )
 
 // createFilterTestFiles creates the physical test files on disk
@@ -141,7 +142,7 @@ func createFilterTestMetadata() error {
 	}
 
 	for _, metadata := range getFilterTestMetadata() {
-		if err := files.MetaDataSave(metadata); err != nil {
+		if err := test.SeedMetadata(metadata); err != nil {
 			logging.LogError(logging.KeyApp, "failed to save metadata for %s: %v", metadata.Path, err)
 			logging.LogInfo(logging.KeyFilterDebug, "error saving metadata for %s: %v", metadata.Path, err)
 			return fmt.Errorf("failed to save metadata for %s: %v", metadata.Path, err)

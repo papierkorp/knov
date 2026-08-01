@@ -25,7 +25,7 @@ func caseBulkDeleteFiles() test.CaseResult {
 		if err := writeFile(p, "# bulk delete sample\n"); err != nil {
 			return errCase(name, err)
 		}
-		if err := files.MetaDataSave(&files.Metadata{
+		if err := test.SeedMetadata(&files.Metadata{
 			Path:   pathutils.ToWithPrefix(p),
 			Editor: files.EditorTypeCodeMirror,
 			Tags:   []string{tag},
@@ -74,7 +74,7 @@ func caseBulkDeleteFiles() test.CaseResult {
 }
 
 // caseBulkMetadataPatch mirrors handleAPIBulkUpdateMetadata + applyBulkPatch's tag-add
-// branch: filter files by tag, then add a new tag to each match via files.MetaDataSave.
+// branch: filter files by tag, then add a new tag to each match via test.SeedMetadata.
 func caseBulkMetadataPatch() test.CaseResult {
 	name := "bulk-metadata-patch"
 	paths := []string{testPath("patch1.md"), testPath("patch2.md")}
@@ -83,7 +83,7 @@ func caseBulkMetadataPatch() test.CaseResult {
 		if err := writeFile(p, "# bulk patch sample\n"); err != nil {
 			return errCase(name, err)
 		}
-		if err := files.MetaDataSave(&files.Metadata{
+		if err := test.SeedMetadata(&files.Metadata{
 			Path:   pathutils.ToWithPrefix(p),
 			Editor: files.EditorTypeCodeMirror,
 			Tags:   []string{"edtest-patch-before"},
@@ -103,7 +103,7 @@ func caseBulkMetadataPatch() test.CaseResult {
 			continue
 		}
 		tags := append(append([]string{}, f.Metadata.Tags...), "edtest-patch-after")
-		if err := files.MetaDataSave(&files.Metadata{Path: f.Metadata.Path, Tags: tags}); err != nil {
+		if err := test.SeedMetadata(&files.Metadata{Path: f.Metadata.Path, Tags: tags}); err != nil {
 			return errCase(name, err)
 		}
 	}

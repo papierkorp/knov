@@ -49,11 +49,11 @@ func writeFile(relPath, content string) error {
 
 func saveMetadata(name string, m *files.Metadata) error {
 	m.Path = withPrefix(name)
-	return files.MetaDataSave(m)
+	return test.SeedMetadata(m)
 }
 
 // resetAndSeed wipes the sample folder and seeds two independent parent->child(->grandchild)
-// chains (real MetaDataSave calls, so Kids/Ancestor are computed by the actual cascade rather
+// chains (real SeedMetadata calls, so Kids/Ancestor are computed by the actual cascade rather
 // than faked), a linker/linked pair for used-links, and standalone files for related/conflict.
 func resetAndSeed() error {
 	full := pathutils.ToDocsPath(testDir)
@@ -109,12 +109,11 @@ func resetAndSeed() error {
 	if err := saveMetadata(relatedFile, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
-	relatedMeta, err := files.MetaDataGet(withPrefix(relatedFile))
-	if err != nil {
-		return err
-	}
-	relatedMeta.Related = []string{withPrefix(childFile), withPrefix(grandchild), withPrefix(parent2File)}
-	if err := files.MetaDataSaveRaw(relatedMeta); err != nil {
+	related := []string{withPrefix(childFile), withPrefix(grandchild), withPrefix(parent2File)}
+	if err := files.MetaDataMutate(withPrefix(relatedFile), func(m *files.Metadata, existed bool) (bool, error) {
+		m.Related = related
+		return true, nil
+	}); err != nil {
 		return err
 	}
 

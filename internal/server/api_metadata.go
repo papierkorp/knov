@@ -112,6 +112,8 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// applyBulkPatch uses the NoRefresh setters so a bulk update over many files rebuilds the
+	// aggregate caches once here instead of once per file.
 	var failed []string
 	for _, f := range matched {
 		if err := applyBulkPatch(f.Metadata, p); err != nil {
@@ -119,6 +121,7 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 			failed = append(failed, f.Metadata.Path)
 		}
 	}
+	files.RefreshCaches()
 
 	if len(failed) > 0 {
 		logging.LogWarning(logging.KeyApp, "bulk-update: %d/%d files failed to save", len(failed), len(matched))
@@ -132,47 +135,14 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 
 func applyBulkPatch(current *files.Metadata, p bulkUpdatePatch) error {
 	if p.Editor != nil {
-		return files.MetaDataSave(&files.Metadata{Path: current.Path, Editor: *p.Editor})
+		return files.SetEditorNoRefresh(current.Path, *p.Editor)
 	}
-
 	if len(p.TagsAdd) > 0 || len(p.TagsRemove) > 0 {
-		tags := make([]string, len(current.Tags))
-		copy(tags, current.Tags)
-
-		for _, add := range p.TagsAdd {
-			found := false
-			for _, t := range tags {
-				if t == add {
-					found = true
-					break
-				}
-			}
-			if !found {
-				tags = append(tags, add)
-			}
-		}
-
-		if len(p.TagsRemove) > 0 {
-			removeSet := make(map[string]bool, len(p.TagsRemove))
-			for _, t := range p.TagsRemove {
-				removeSet[t] = true
-			}
-			filtered := tags[:0]
-			for _, t := range tags {
-				if !removeSet[t] {
-					filtered = append(filtered, t)
-				}
-			}
-			tags = filtered
-		}
-
-		if len(tags) == 0 {
-			logging.LogWarning(logging.KeyApp, "bulk-update: skipping tag clear for %s (clearing all tags is not supported via bulk update)", current.Path)
-			return nil
-		}
-		return files.MetaDataSave(&files.Metadata{Path: current.Path, Tags: tags})
+		// PatchTagsNoRefresh re-reads tags under the path lock - never apply add/remove against
+		// the unlocked snapshot in current (that lost concurrent MoveCard/bulk edits).
+		_, err := files.PatchTagsNoRefresh(current.Path, p.TagsAdd, p.TagsRemove)
+		return err
 	}
-
 	return nil
 }
 
@@ -243,10 +213,45 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := files.MetaDataSave(&metadata); err != nil {
+	// each Set*NoRefresh call is its own locked read-modify-write, so a concurrent editor of
+	// the same path can't be reverted - but none of them rebuilds the aggregate caches on its
+	// own; that happens once at the end instead of once per field.
+	path := pathutils.ToWithPrefix(metadata.Path)
+	if err := files.MetaDataSyncNoRefresh(path); err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
 		return
 	}
+	if metadata.Editor != "" {
+		if err := files.SetEditorNoRefresh(path, metadata.Editor); err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+			return
+		}
+	}
+	if len(metadata.Tags) > 0 {
+		if err := files.SetTagsNoRefresh(path, metadata.Tags); err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+			return
+		}
+	}
+	if len(metadata.Parents) > 0 {
+		if err := files.SetParentsNoRefresh(path, metadata.Parents); err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+			return
+		}
+	}
+	if !metadata.CreatedAt.IsZero() {
+		if err := files.SetCreatedAt(path, metadata.CreatedAt); err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+			return
+		}
+	}
+	if metadata.References != nil {
+		if err := files.SetReferences(path, metadata.References); err != nil {
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
+			return
+		}
+	}
+	files.RefreshCaches()
 
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata saved"))
 	writeResponse(w, r, "metadata saved", "")
@@ -563,38 +568,6 @@ func handleAPIGetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 // ---------------------------------- SET INDIVIDUAL ----------------------------------
 // ----------------------------------------------------------------------------------------
 
-// @Summary Set file collection
-// @Tags metadata
-// @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Param filepath formData string true "File path"
-// @Param collection formData string true "Collection name"
-// @Success 200 {string} string
-// @Router /api/metadata/collection [post]
-func handleAPISetMetadataCollection(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	filePath := r.FormValue("filepath")
-	collection := r.FormValue("collection")
-
-	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
-		return
-	}
-
-	metadata := &files.Metadata{
-		Path:       pathutils.ToWithPrefix(filePath),
-		Collection: collection,
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
-		return
-	}
-
-	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "collection updated"))
-	writeResponse(w, r, "collection updated", "")
-}
-
 // @Summary Set editor type for a file
 // @Tags metadata
 // @Accept application/x-www-form-urlencoded
@@ -613,12 +586,7 @@ func handleAPISetMetadataEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata := &files.Metadata{
-		Path:   pathutils.ToWithPrefix(filePath),
-		Editor: files.EditorType(editor),
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
+	if err := files.SetEditor(pathutils.ToWithPrefix(filePath), files.EditorType(editor)); err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
 		return
 	}
@@ -728,12 +696,7 @@ func handleAPISetMetadataCreatedAt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata := &files.Metadata{
-		Path:      pathutils.ToWithPrefix(filePath),
-		CreatedAt: createdAt,
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
+	if err := files.SetCreatedAt(pathutils.ToWithPrefix(filePath), createdAt); err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
 		return
 	}
@@ -766,58 +729,13 @@ func handleAPISetMetadataLastEdited(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata := &files.Metadata{
-		Path:       pathutils.ToWithPrefix(filePath),
-		LastEdited: lastEdited,
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
+	if err := files.SetLastEdited(pathutils.ToWithPrefix(filePath), lastEdited); err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
 		return
 	}
 
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "last edited updated"))
 	writeResponse(w, r, "lastedited updated", "")
-}
-
-// @Summary Set file folders
-// @Tags metadata
-// @Accept application/x-www-form-urlencoded
-// @Produce json,html
-// @Param filepath formData string true "File path"
-// @Param folders formData string true "Comma-separated folder list"
-// @Success 200 {string} string
-// @Router /api/metadata/folders [post]
-func handleAPISetMetadataFolders(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	filePath := r.FormValue("filepath")
-	foldersStr := r.FormValue("folders")
-
-	if filePath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
-		return
-	}
-
-	var folders []string
-	if foldersStr != "" {
-		folders = strings.Split(foldersStr, ",")
-		for i := range folders {
-			folders[i] = strings.TrimSpace(folders[i])
-		}
-	}
-
-	metadata := &files.Metadata{
-		Path:    pathutils.ToWithPrefix(filePath),
-		Folders: folders,
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
-		return
-	}
-
-	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "folders updated"))
-	writeResponse(w, r, "folders updated", "")
 }
 
 // @Summary Set file tags
@@ -870,12 +788,7 @@ func handleAPISetMetadataTags(w http.ResponseWriter, r *http.Request) {
 	}
 	newKbTag := kanban.TagFromList(sanitized)
 
-	metadata := &files.Metadata{
-		Path: pathutils.ToWithPrefix(filePath),
-		Tags: sanitized,
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
+	if err := files.SetTags(pathutils.ToWithPrefix(filePath), sanitized); err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
 		return
 	}
@@ -928,12 +841,7 @@ func handleAPISetMetadataParents(w http.ResponseWriter, r *http.Request) {
 		parents = []string{}
 	}
 
-	metadata := &files.Metadata{
-		Path:    pathutils.ToWithPrefix(filePath),
-		Parents: parents,
-	}
-
-	if err := files.MetaDataSave(metadata); err != nil {
+	if err := files.SetParents(pathutils.ToWithPrefix(filePath), parents); err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
 		return
 	}
@@ -1318,26 +1226,33 @@ func handleAPIAddMetadataReference(w http.ResponseWriter, r *http.Request) {
 	}
 
 	normalizedPath := pathutils.ToWithPrefix(filePath)
-	metadata, err := files.MetaDataGet(normalizedPath)
-	if err != nil || metadata == nil {
+	notFound := false
+	var references []files.Reference
+	err := files.MetaDataMutate(normalizedPath, func(m *files.Metadata, existed bool) (bool, error) {
+		if !existed {
+			notFound = true
+			return false, nil
+		}
+		m.References = append(m.References, files.Reference{
+			URL:         refURL,
+			Description: description,
+			AddedAt:     time.Now(),
+		})
+		references = m.References
+		return true, nil
+	})
+	if notFound {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
 		return
 	}
-
-	metadata.References = append(metadata.References, files.Reference{
-		URL:         refURL,
-		Description: description,
-		AddedAt:     time.Now(),
-	})
-
-	if err := files.MetaDataSave(metadata); err != nil {
+	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to save references for %s: %v", normalizedPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
 		return
 	}
 
-	html := render.RenderReferencesHTML(metadata.References)
-	writeResponse(w, r, metadata.References, html)
+	html := render.RenderReferencesHTML(references)
+	writeResponse(w, r, references, html)
 }
 
 // @Summary Delete a reference from a file
@@ -1363,28 +1278,35 @@ func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 	}
 
 	normalizedPath := pathutils.ToWithPrefix(filePath)
-	metadata, err := files.MetaDataGet(normalizedPath)
-	if err != nil || metadata == nil {
+	notFound := false
+	var references []files.Reference
+	err := files.MetaDataMutate(normalizedPath, func(m *files.Metadata, existed bool) (bool, error) {
+		if !existed {
+			notFound = true
+			return false, nil
+		}
+		filtered := m.References[:0]
+		for _, ref := range m.References {
+			if ref.URL != refURL {
+				filtered = append(filtered, ref)
+			}
+		}
+		m.References = filtered
+		references = m.References
+		return true, nil
+	})
+	if notFound {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata not found"), http.StatusNotFound)
 		return
 	}
-
-	filtered := metadata.References[:0]
-	for _, ref := range metadata.References {
-		if ref.URL != refURL {
-			filtered = append(filtered, ref)
-		}
-	}
-	metadata.References = filtered
-
-	if err := files.MetaDataSave(metadata); err != nil {
+	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to save references for %s: %v", normalizedPath, err)
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
 		return
 	}
 
-	html := render.RenderReferencesHTML(metadata.References)
-	writeResponse(w, r, metadata.References, html)
+	html := render.RenderReferencesHTML(references)
+	writeResponse(w, r, references, html)
 }
 
 // ----------------------------------------------------------------------------------------

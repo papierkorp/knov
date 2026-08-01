@@ -3,12 +3,21 @@ package dashboard
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"knov/internal/configStorage"
+	"knov/internal/keylock"
 	"knov/internal/logging"
 	"knov/internal/utils"
 )
+
+// dashboardLocks guards Mutate's read-modify-write span per dashboard id - see internal/keylock.
+var dashboardLocks = keylock.New()
+
+// ErrNotFound is returned by Get (and so by Mutate) when id has no dashboard - callers use
+// errors.Is to tell a missing dashboard apart from other failures (e.g. bad form input).
+var ErrNotFound = errors.New("dashboard not found")
 
 // Layout represents dashboard layout types
 type Layout string
@@ -69,7 +78,7 @@ func Get(id string) (*Dashboard, error) {
 	}
 
 	if data == nil {
-		return nil, fmt.Errorf("dashboard with id '%s' not found", id)
+		return nil, fmt.Errorf("%w: %s", ErrNotFound, id)
 	}
 
 	var dashboard Dashboard
@@ -121,7 +130,31 @@ func Create(dashboard *Dashboard) error {
 	return nil
 }
 
-// Update updates an existing dashboard
+// Mutate loads id's dashboard under its own lock, lets fn modify it in place, and saves the
+// result before releasing the lock - so a rename racing a widget-layout edit on the same
+// dashboard can't read stale data and revert each other (same race MetaDataMutate closes for
+// file metadata, see internal/files/metadata.go).
+func Mutate(id string, fn func(d *Dashboard) error) (*Dashboard, error) {
+	unlock := dashboardLocks.Lock(id)
+	defer unlock()
+
+	dash, err := Get(id)
+	if err != nil {
+		return nil, err
+	}
+	if err := fn(dash); err != nil {
+		return nil, err
+	}
+	if err := Update(dash); err != nil {
+		return nil, err
+	}
+	return dash, nil
+}
+
+// Update updates an existing dashboard, replacing it wholesale. Only safe for callers that own
+// the entire record (e.g. test setup) - a caller that read the dashboard first and wants to
+// change part of it must use Mutate instead, or a concurrent edit can read stale data and get
+// silently reverted.
 func Update(dashboard *Dashboard) error {
 	// Validate layout
 	if !isValidLayout(dashboard.Layout) {
