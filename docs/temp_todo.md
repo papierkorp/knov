@@ -42,11 +42,10 @@
 - sqlite checkpoint merging (https://micrologics.org/blog/sqlite-in-production-optimizing-wal-mode-concurrency-and-vfs-layers-for-low-latency-app-servers)? in my prod: metadata.db => 936K, metadata.db-wal => 4.0M, events.db => 4.0K, events.db-wal => 2.5M
 - ~~metadata write races / foolproof write API~~ => done, see # metadata refactor
 - add the start jobs (after the app is started) to the /system/jobs => why are they not there in the first place?
-- codemirror file upload (multifile) => make it a markdown link
-- codemirror add fileupload buttons
 - better solution for all of the xxxNoRefresh functions
 - `handleAPIUpdateDashboard`/`handleAPIRenameDashboard` and `handleAPISetMetadata` moved from one atomic-looking (but actually unsynchronized) write to several independently-locked field writes. Each individual field is now race-safe, but a single "set metadata" HTTP request no longer holds one lock across all its fields — a concurrent `MoveCard` could still interleave between, say, the `SetTags` and `SetParents` calls within the same request. That's a real improvement over "no locking at all," just not full request-level atomicity; the comment above `handleAPISetMetadata` acknowledges this honestly, which I'd rather see than a claim of full atomicity that isn't true.
 - translation for log?
+- `handleAPISetMetadata` went from one atomic save to up to six independently-locked field writes, changing the endpoint's failure/atomicity contract (partial success is now possible, and concurrent readers can see an in-between state). Probably fine given the new model, but it's a real behavioral change that isn't called out anywhere.
 
 # every other time
 

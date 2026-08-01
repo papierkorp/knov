@@ -40,6 +40,11 @@ func codeMirrorToolbarGroups() [][]codeMirrorToolbarBtn {
 			{"codeBlock", "", "{ }", "code block"},
 			{"hr", "", "&mdash;", "horizontal rule"},
 		},
+		{
+			{"uploadFile", "", `<i class="fa fa-upload"></i>`, "upload file"},
+			{"insertMedia", "", `<i class="fa fa-image"></i>`, "insert media"},
+			{"insertWikiLink", "", `<i class="fa fa-file-lines"></i>`, "insert wiki link"},
+		},
 	}
 }
 
@@ -76,9 +81,66 @@ func jsCodeMirrorToolbar() string {
 	document.getElementById('component-codemirror-toolbar').addEventListener('click', function(e) {
 		var btn = e.target.closest('button[data-cmd]');
 		if (!btn) return;
+		if (btn.dataset.cmd === 'uploadFile') {
+			document.getElementById('codemirror-file-input').click();
+			return;
+		}
+		if (btn.dataset.cmd === 'insertMedia') {
+			view.cmInsertMedia();
+			return;
+		}
+		if (btn.dataset.cmd === 'insertWikiLink') {
+			view.cmInsertWikiLink();
+			return;
+		}
 		var arg = btn.dataset.arg ? Number(btn.dataset.arg) : undefined;
 		window.mdCommands[btn.dataset.cmd](view, arg);
 	});`
+}
+
+// jsCodeMirrorFileUpload wires multi-file upload (toolbar button + drag-and-drop) into the
+// editor. Uploaded files are inserted as markdown image links (images) or plain links (other
+// files) at the current cursor position. Relies on uploadMediaBlob (render_editor_shared.go).
+func jsCodeMirrorFileUpload() string {
+	return `
+	function insertMarkdownAtCursor(markdown) {
+		var pos = view.state.selection.main.to;
+		view.dispatch({changes: {from: pos, to: pos, insert: markdown}, selection: {anchor: pos + markdown.length}});
+		view.focus();
+	}
+	function uploadFilesToEditor(fileList) {
+		Array.from(fileList).forEach(function(file) {
+			uploadMediaBlob(file, function(url, alt) {
+				if (!url) return;
+				var markdown = file.type.startsWith('image/') ? '![' + alt + '](' + url + ')' : '[' + alt + '](' + url + ')';
+				insertMarkdownAtCursor(markdown);
+			});
+		});
+	}
+	document.getElementById('codemirror-file-input').addEventListener('change', function(e) {
+		uploadFilesToEditor(e.target.files);
+		e.target.value = '';
+	});
+	el.addEventListener('dragover', function(e) {
+		e.preventDefault();
+		e.dataTransfer.dropEffect = 'copy';
+		el.classList.add('cm-dragover');
+	});
+	el.addEventListener('dragleave', function(e) {
+		el.classList.remove('cm-dragover');
+	});
+	el.addEventListener('drop', function(e) {
+		e.preventDefault();
+		el.classList.remove('cm-dragover');
+		if (e.dataTransfer.files && e.dataTransfer.files.length) {
+			uploadFilesToEditor(e.dataTransfer.files);
+		}
+	});`
+}
+
+// codeMirrorFileInputHTML renders the hidden multi-file input used by the upload toolbar button.
+func codeMirrorFileInputHTML() string {
+	return `<input type="file" id="codemirror-file-input" multiple hidden />`
 }
 
 // RenderCodeMirrorSectionEditorForm renders a CodeMirror editor form for editing a single section.
@@ -129,6 +191,8 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 
 	initWikiAutocompleteForCodeMirror(view, {cursorEnd: %t, currentFile: %s});
 	%s
+	%s
+	%s
 	document.querySelector('.file-form').addEventListener('submit', function() {
 		document.getElementById('editor-content').value = view.state.doc.toString();
 	});
@@ -147,7 +211,9 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 		jsBool(configmanager.SpellCheck.Get()),
 		configmanager.WikiLinkCursorEnd.Get(),
 		jsEscapeString(filePath),
-		jsCodeMirrorToolbar())
+		jsCodeMirrorToolbar(),
+		jsUploadMediaBlob(),
+		jsCodeMirrorFileUpload())
 
 	return fmt.Sprintf(`
 		<form hx-post="/api/files/section/save" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">
@@ -158,6 +224,7 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 			<div class="form-group">
 				%s
 				<div id="codemirror-editor"></div>
+				%s
 				<input type="hidden" name="content" id="editor-content" />
 				<input type="hidden" name="filepath" value="%s" />
 			</div>
@@ -171,6 +238,7 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 		translation.SprintfForRequest(configmanager.GetLanguage(), "section"),
 		sectionID,
 		codeMirrorToolbarHTML(configmanager.GetLanguage()),
+		codeMirrorFileInputHTML(),
 		filePath,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save section"),
 		cancelURL,
@@ -253,6 +321,8 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 
 	initWikiAutocompleteForCodeMirror(view, {cursorEnd: %t, currentFile: %s});
 	%s
+	%s
+	%s
 	document.querySelector('.file-form').addEventListener('submit', function() {
 		document.getElementById('editor-content').value = view.state.doc.toString();
 	});
@@ -271,7 +341,9 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		jsBool(configmanager.SpellCheck.Get()),
 		configmanager.WikiLinkCursorEnd.Get(),
 		jsEscapeString(filePath),
-		jsCodeMirrorToolbar())
+		jsCodeMirrorToolbar(),
+		jsUploadMediaBlob(),
+		jsCodeMirrorFileUpload())
 
 	return fmt.Sprintf(`
 		<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">
@@ -279,6 +351,7 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 			<div class="form-group">
 				%s
 				<div id="codemirror-editor"></div>
+				%s
 				<input type="hidden" name="content" id="editor-content" />
 			</div>
 			<div class="form-actions">
@@ -291,6 +364,7 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		action,
 		filepathInput,
 		codeMirrorToolbarHTML(configmanager.GetLanguage()),
+		codeMirrorFileInputHTML(),
 		translation.SprintfForRequest(configmanager.GetLanguage(), "save file"),
 		cancelURL,
 		translation.SprintfForRequest(configmanager.GetLanguage(), "cancel"),

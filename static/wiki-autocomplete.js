@@ -265,10 +265,7 @@
       });
     }
 
-    view.dom.addEventListener("keyup", function (e) {
-      if (["ArrowUp", "ArrowDown", "Enter", "Tab", "Escape"].includes(e.key))
-        return;
-      var pos = view.state.selection.main.head;
+    function runAutocompleteAt(pos) {
       var lineInfo = view.state.doc.lineAt(pos);
       var before = lineInfo.text.substring(0, pos - lineInfo.from);
       var coords = view.coordsAtPos(pos);
@@ -288,7 +285,33 @@
         if (mode === "wiki") insertWikiLink(path);
         else insertMdLink(path, mode === "media");
       }, opts.currentFile);
+    }
+
+    view.dom.addEventListener("keyup", function (e) {
+      if (["ArrowUp", "ArrowDown", "Enter", "Tab", "Escape"].includes(e.key))
+        return;
+      runAutocompleteAt(view.state.selection.main.head);
     });
+
+    // toolbar-triggered inserts: type the same opening syntax a user would
+    // type by hand, then open the same autocomplete dropdown at the caret.
+    function insertTrigger(snippet) {
+      var pos = view.state.selection.main.to;
+      var endPos = pos + snippet.length;
+      view.dispatch({
+        changes: { from: pos, to: pos, insert: snippet },
+        selection: { anchor: endPos },
+      });
+      view.focus();
+      runAutocompleteAt(endPos);
+    }
+
+    view.cmInsertMedia = function () {
+      insertTrigger("![](");
+    };
+    view.cmInsertWikiLink = function () {
+      insertTrigger("[[");
+    };
   };
 
   // ── textarea caret position via mirror div ───────────────────────────────

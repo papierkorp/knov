@@ -4,6 +4,11 @@
   overflow: hidden;
 }
 
+#codemirror-editor.cm-dragover {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
 #component-codemirror-toolbar {
   display: flex;
   align-items: center;
