@@ -45,6 +45,12 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 	if _, err := db.Exec("PRAGMA synchronous=NORMAL"); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to set synchronous mode: %v", err)
 	}
+	if _, err := db.Exec("PRAGMA busy_timeout=5000"); err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to set busy timeout: %v", err)
+	}
+	if _, err := db.Exec("PRAGMA wal_checkpoint(TRUNCATE)"); err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to checkpoint wal: %v", err)
+	}
 
 	storage := &sqliteStorage{
 		db:       db,

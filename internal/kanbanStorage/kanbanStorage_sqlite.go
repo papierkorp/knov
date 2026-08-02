@@ -37,6 +37,12 @@ func newSQLiteStorage(storagePath string) (*sqliteKanbanStorage, error) {
 	if _, err := db.Exec("PRAGMA synchronous=NORMAL"); err != nil {
 		logging.LogWarning(logging.KeyApp, "kanban storage: failed to set synchronous mode: %v", err)
 	}
+	if _, err := db.Exec("PRAGMA busy_timeout=5000"); err != nil {
+		logging.LogWarning(logging.KeyApp, "kanban storage: failed to set busy timeout: %v", err)
+	}
+	if _, err := db.Exec("PRAGMA wal_checkpoint(TRUNCATE)"); err != nil {
+		logging.LogWarning(logging.KeyApp, "kanban storage: failed to checkpoint wal: %v", err)
+	}
 
 	s := &sqliteKanbanStorage{db: db}
 	if err := s.initialize(); err != nil {
