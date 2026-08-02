@@ -22,7 +22,6 @@ import (
 	"knov/internal/notificationStorage"
 	"knov/internal/parser"
 	"knov/internal/pdfexport"
-	"knov/internal/search"
 	"knov/internal/searchStorage"
 	"knov/internal/server"
 
@@ -148,13 +147,13 @@ func main() {
 	files.OnMetadataRebuild = filter.RegenerateAllIndexes
 
 	go func() {
-		if err := search.InitSearch(); err != nil {
-			logging.LogError(logging.KeyApp, "failed to initialize search: %v", err)
+		if err := job.RunSearchReindex(); err != nil {
+			logging.LogError(logging.KeyApp, "failed to run startup search index: %v", err)
 		}
 	}()
 	go func() {
 		time.Sleep(2 * time.Minute)
-		if err := files.MetaDataLinksRebuild(logging.KeyApp); err != nil {
+		if err := job.RunMetadataRebuild(); err != nil {
 			logging.LogError(logging.KeyApp, "failed to run startup metadata rebuild: %v", err)
 		}
 	}()

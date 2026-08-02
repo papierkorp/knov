@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"slices"
 
+	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/logging"
@@ -170,6 +171,10 @@ func (j *searchIndexJob) Name() string { return "search-reindex" }
 
 func (j *searchIndexJob) Run() error {
 	logging.MarkSessionStart(logging.KeySearchReindex)
+	if configmanager.GetSearchEngine() == "grep" {
+		logging.LogDebug(logging.KeySearchReindex, "grep search engine active, skipping index")
+		return nil
+	}
 	logging.LogDebug(logging.KeySearchReindex, "running search index cronjob")
 	if err := search.IndexAllFiles(); err != nil {
 		return fmt.Errorf("failed to reindex search: %w", err)

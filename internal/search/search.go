@@ -14,19 +14,6 @@ import (
 	"knov/internal/searchStorage"
 )
 
-// InitSearch initializes search by indexing all files
-func InitSearch() error {
-	engineType := configmanager.GetSearchEngine()
-	logging.LogInfo(logging.KeyApp, "initializing search engine: %s", engineType)
-
-	if engineType == "grep" {
-		logging.LogInfo(logging.KeyApp, "grep search engine initialized (no indexing needed)")
-		return nil
-	}
-
-	return IndexAllFiles()
-}
-
 // IndexAllFiles indexes all files, skipping the (expensive) FTS reindex for
 // files already indexed and unchanged. The trigram fallback index is always
 // fully rebuilt from the current file list and swapped in at the end - since
