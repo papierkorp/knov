@@ -408,10 +408,11 @@ function setupFilePage() {
       htmx.ajax(
         "GET",
         "/api/metadata/inline-display?field=" + field + "&filepath=" + fp,
-        { target: el, swap: "outerHTML", headers: { Accept: "text/html" } },
+        { source: el, target: el, swap: "outerHTML", headers: { Accept: "text/html" } },
       );
     }
     htmx.ajax("GET", "/api/metadata/references?filepath=" + fp, {
+      source: document.getElementById("component-references-list"),
       target: document.getElementById("component-references-list"),
       swap: "outerHTML",
       headers: { Accept: "text/html" },
@@ -484,6 +485,7 @@ function setupFilePage() {
   const refFp = document.getElementById("fp-reference-filepath");
   if (refFp) refFp.value = filepath;
   htmx.ajax("GET", "/api/metadata/references?filepath=" + fp, {
+    source: document.getElementById("component-references-list"),
     target: document.getElementById("component-references-list"),
     swap: "outerHTML",
     headers: { Accept: "text/html" },
@@ -535,7 +537,7 @@ function setupFilePage() {
     htmx.ajax(
       "GET",
       "/api/metadata/inline-display?field=" + field + "&filepath=" + fp,
-      { target: el, swap: "outerHTML", headers: { Accept: "text/html" } },
+      { source: el, target: el, swap: "outerHTML", headers: { Accept: "text/html" } },
     );
   }
 
