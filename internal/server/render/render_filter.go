@@ -74,11 +74,13 @@ func RenderFilterForm(opts FilterFormOpts) string {
 	if opts.Context == FilterFormContextSave {
 		html.WriteString(fmt.Sprintf(`<button type="button" hx-post="/api/filters" hx-include="closest form" hx-target="#filter-results" class="btn-secondary">%s</button>`,
 			translation.SprintfForRequest(configmanager.GetLanguage(), "preview results")))
+		cancelURL := "/"
 		if opts.IsEdit {
-			html.WriteString(fmt.Sprintf(`<button type="button" data-href="/files/%s" onclick="window.location.href=this.dataset.href" class="btn-secondary">%s</button>`,
-				filter.FilterIndexPath(opts.FilterID),
-				translation.SprintfForRequest(configmanager.GetLanguage(), "cancel")))
+			cancelURL = "/files/" + filter.FilterIndexPath(opts.FilterID)
 		}
+		html.WriteString(fmt.Sprintf(`<button type="button" data-href="%s" onclick="window.location.href=this.dataset.href" class="btn-secondary">%s</button>`,
+			cancelURL,
+			translation.SprintfForRequest(configmanager.GetLanguage(), "cancel")))
 	}
 	html.WriteString(fmt.Sprintf(
 		`<button type="button" hx-post="/api/filters/add-criteria" hx-target="#%s" hx-swap="beforeend"%s class="btn-secondary">%s</button>`,
