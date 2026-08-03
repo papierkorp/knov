@@ -328,6 +328,43 @@ func Archived(folderPath string) ([]Card, error) {
 	return cards, nil
 }
 
+// FilterAncestorsByAllowedStatus drops ancestors whose descendant cards in folderPath (and its
+// subfolders) have no allowed status configured via KNOV_KANBAN_ANCESTOR_ALLOWED_STATUS - e.g.
+// hides an "epic" once every child card under it has been archived. No allowed status configured
+// means no filtering (all ancestors kept).
+func FilterAncestorsByAllowedStatus(ancestors []string, folderPath string) ([]string, error) {
+	allowed := configmanager.GetKanbanAncestorAllowedStatus()
+	if len(allowed) == 0 {
+		return ancestors, nil
+	}
+
+	prefix := configmanager.GetKanbanPrefix()
+	allFiles, err := files.GetAllFilesCached()
+	if err != nil {
+		return nil, err
+	}
+
+	active := make(map[string]struct{})
+	for _, file := range allFiles {
+		if file.Metadata == nil || len(file.Metadata.Ancestor) == 0 || !folderMatches(file.Metadata, folderPath) {
+			continue
+		}
+		status := StatusFromTags(file.Metadata.Tags, prefix)
+		if status == "" || !slices.Contains(allowed, status) {
+			continue
+		}
+		active[file.Metadata.Ancestor[0]] = struct{}{}
+	}
+
+	var result []string
+	for _, a := range ancestors {
+		if _, ok := active[a]; ok {
+			result = append(result, a)
+		}
+	}
+	return result, nil
+}
+
 // cardFilesInFolder returns all cached files that are kanban cards (have a kanban status tag)
 // scoped to folderPath (and its subfolders).
 func cardFilesInFolder(folderPath string) ([]files.File, error) {

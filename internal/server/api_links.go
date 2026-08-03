@@ -8,6 +8,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/kanban"
 	"knov/internal/pathutils"
 	"knov/internal/search"
 	"knov/internal/server/render"
@@ -222,6 +223,11 @@ func handleAPIGetAncestorsInFolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ancestors, err := files.GetAncestorsInFolder(folderPath)
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get ancestors"), http.StatusInternalServerError)
+		return
+	}
+	ancestors, err = kanban.FilterAncestorsByAllowedStatus(ancestors, folderPath)
 	if err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get ancestors"), http.StatusInternalServerError)
 		return

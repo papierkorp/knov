@@ -9,7 +9,6 @@
 ## Working style
 
 - i want you to anwser with as little code as possible to only fix the problem i anwsered without any unecessary code, as simple and small as possible with as few changes as possible
-- Instead of creating a new artifact, please update your existing [filename] artifact with the new changes and present your artifact to me so we use the same file
 - check current status of the project
 - give me the full file not just the changes
 - always search the project since you already have all the files

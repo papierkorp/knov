@@ -25,40 +25,41 @@ var appConfig AppConfig
 
 // AppConfig contains environment-based application configuration
 type AppConfig struct {
-	DataPath                string
-	ThemesPath              string
-	StoragePath             string
-	LogsPath                string
-	ServerPort              string
-	GitRemote               string
-	GitRemoteBranch         string
-	GitAutoPush             bool
-	GitPushTimeout          string
-	GitUser                 string
-	GitPassword             string
-	GitToken                string
-	GitSSHKey               string
-	ConfigStorageProvider   string
-	MetadataStorageProvider string
-	CacheStorageProvider    string
-	SearchStorageProvider   string
-	KanbanEventsEnabled     bool
-	KanbanEventsProvider    string
-	SearchEngine            string
-	LinkRegex               []string
-	CronjobInterval         string
-	SearchIndexInterval     string
-	MetadataRebuildInterval string
-	KanbanPrefix            string
-	KanbanStatuses          []string
-	KanbanColumns           []string
-	AutoCreateTags          []AutoCreateTag
-	KanbanTagColors         map[string]string
-	KanbanCardStyles        map[string]string // status → "normal"|"italic"|"highlighted"|"deleted"
-	KanbanArchiveStatus     string
-	KanbanBoards            []KanbanBoard
-	NotifyDuration          int
-	DefaultEditor           string
+	DataPath                    string
+	ThemesPath                  string
+	StoragePath                 string
+	LogsPath                    string
+	ServerPort                  string
+	GitRemote                   string
+	GitRemoteBranch             string
+	GitAutoPush                 bool
+	GitPushTimeout              string
+	GitUser                     string
+	GitPassword                 string
+	GitToken                    string
+	GitSSHKey                   string
+	ConfigStorageProvider       string
+	MetadataStorageProvider     string
+	CacheStorageProvider        string
+	SearchStorageProvider       string
+	KanbanEventsEnabled         bool
+	KanbanEventsProvider        string
+	SearchEngine                string
+	LinkRegex                   []string
+	CronjobInterval             string
+	SearchIndexInterval         string
+	MetadataRebuildInterval     string
+	KanbanPrefix                string
+	KanbanStatuses              []string
+	KanbanColumns               []string
+	AutoCreateTags              []AutoCreateTag
+	KanbanTagColors             map[string]string
+	KanbanCardStyles            map[string]string // status → "normal"|"italic"|"highlighted"|"deleted"
+	KanbanArchiveStatus         string
+	KanbanAncestorAllowedStatus []string
+	KanbanBoards                []KanbanBoard
+	NotifyDuration              int
+	DefaultEditor               string
 }
 
 // KanbanBoard maps a folder to a kanban board with a display name and a stable URL slug
@@ -116,19 +117,20 @@ func InitAppConfig() {
 			"\\[\\[([^|]+)\\|[^\\]]+\\]\\]",
 			"\\{\\{([^}]+)\\}\\}",
 		},
-		CronjobInterval:         getEnv("KNOV_CRONJOB_INTERVAL", "5m"),
-		SearchIndexInterval:     getEnv("KNOV_SEARCH_INDEX_INTERVAL", "15m"),
-		MetadataRebuildInterval: getEnv("KNOV_METADATA_REBUILD_INTERVAL", "60m"),
-		KanbanPrefix:            getEnv("KNOV_KANBAN_PREFIX", "kb"),
-		KanbanStatuses:          getStringListEnv("KNOV_KANBAN_STATUS", []string{"inbox", "inprogress", "blocked", "archive"}),
-		KanbanColumns:           getStringListEnv("KNOV_KANBAN_COLUMNS", []string{"inbox", "inprogress", "blocked"}),
-		AutoCreateTags:          getAutoCreateTagsEnv("KNOV_AUTOCREATE_TAGS"),
-		KanbanTagColors:         getStringMapEnv("KNOV_KANBAN_TAG_COLORS"),
-		KanbanCardStyles:        getStringMapEnv("KNOV_KANBAN_CARD_STYLES"),
-		KanbanArchiveStatus:     getEnv("KNOV_KANBAN_ARCHIVE_STATUS", "archive"),
-		KanbanBoards:            getKanbanBoardsEnv("KNOV_KANBAN_BOARDS"),
-		NotifyDuration:          getIntEnv("KNOV_NOTIFY_DURATION", 3500),
-		DefaultEditor:           getEnv("KNOV_DEFAULT_EDITOR", ""),
+		CronjobInterval:             getEnv("KNOV_CRONJOB_INTERVAL", "5m"),
+		SearchIndexInterval:         getEnv("KNOV_SEARCH_INDEX_INTERVAL", "15m"),
+		MetadataRebuildInterval:     getEnv("KNOV_METADATA_REBUILD_INTERVAL", "60m"),
+		KanbanPrefix:                getEnv("KNOV_KANBAN_PREFIX", "kb"),
+		KanbanStatuses:              getStringListEnv("KNOV_KANBAN_STATUS", []string{"inbox", "inprogress", "blocked", "archive"}),
+		KanbanColumns:               getStringListEnv("KNOV_KANBAN_COLUMNS", []string{"inbox", "inprogress", "blocked"}),
+		AutoCreateTags:              getAutoCreateTagsEnv("KNOV_AUTOCREATE_TAGS"),
+		KanbanTagColors:             getStringMapEnv("KNOV_KANBAN_TAG_COLORS"),
+		KanbanCardStyles:            getStringMapEnv("KNOV_KANBAN_CARD_STYLES"),
+		KanbanArchiveStatus:         getEnv("KNOV_KANBAN_ARCHIVE_STATUS", "archive"),
+		KanbanAncestorAllowedStatus: getStringListEnv("KNOV_KANBAN_ANCESTOR_ALLOWED_STATUS", nil),
+		KanbanBoards:                getKanbanBoardsEnv("KNOV_KANBAN_BOARDS"),
+		NotifyDuration:              getIntEnv("KNOV_NOTIFY_DURATION", 3500),
+		DefaultEditor:               getEnv("KNOV_DEFAULT_EDITOR", ""),
 	}
 
 	initLogLevel()
@@ -164,6 +166,12 @@ func GetKanbanCardStyles() map[string]string {
 // GetKanbanArchiveStatus returns the status used to archive (hide) cards from the board
 func GetKanbanArchiveStatus() string {
 	return appConfig.KanbanArchiveStatus
+}
+
+// GetKanbanAncestorAllowedStatus returns the statuses a descendant card must have for its
+// ancestor to be listed in the ancestor filter; empty means no restriction (all allowed)
+func GetKanbanAncestorAllowedStatus() []string {
+	return appConfig.KanbanAncestorAllowedStatus
 }
 
 // GetKanbanBoards returns the configured folder-based kanban boards
