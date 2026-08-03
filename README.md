@@ -7,7 +7,7 @@ KNOV (Knowledge Vault) is a local-first open source knowledge management system 
 ## The Binary
 
 - Ships as a single executable for all major operating systems - can be carried on a USB stick
-- Both built-in themes (`builtin` and `rail`) are bundled inside and unpacked on first start
+- The built-in `builtin` theme is bundled inside and unpacked on first start
 - All static assets and templates are embedded - the binary is everything you need
 - Docker image available for server deployments
 - Configuration via a single `.env` file; take a look at `.env.example` for all options
@@ -49,7 +49,7 @@ KNOV tracks metadata automatically and lets you enrich it manually.
 **Manual:**
 - Tags, parent links, editor type
 - External references (URL + description, stored in metadata - not cluttering the file content) appended to a file
-- easy way to add internal links with a `[[<filelink>]]` syntax
+- autocomplete for both internal wiki links with `[[<filelink>]]` and for default markdown links `[]()` including header
 
 All metadata is browsable on the overview page (`/browse/files`) grouped by metadata
 
@@ -81,7 +81,7 @@ Filters are saved metadata queries that produce a live file list.
 
 - Customisable dashboards with multiple widget types to surface your data
 - The home page (`/`) shows a configurable dashboard
-- Dashboards support filter widgets, file lists, recent changes and more
+- Widget types: filters, filter forms, file content, static text, tags, collections and folders
 
 ---
 
@@ -112,11 +112,30 @@ Filters are saved metadata queries that produce a live file list.
 
 ---
 
+## PDF Export
+
+- Export any file to PDF, from the file actions panel or per-heading
+- Configurable page format, orientation and margins
+- Header and footer zones (left/centre/right) with page number and date tokens, optional rule lines, skippable on the first page
+- Separate fonts for body text, headings, the title and code blocks
+- Per-language syntax highlighting for code blocks; task checkboxes rendered as status icons
+
+---
+
+## Admin & System Jobs
+
+- `/system/jobs` runs and monitors maintenance jobs
+- `/system/logs` shows application logs, including per-job run logs
+- Jobs run automatically on a configurable interval or can be triggered manually
+
+---
+
 ## Theme System
 
-- Two themes bundled: `builtin` (classic layout) and `rail` (sidebar panel layout)
+- Bundled `builtin` theme, plus an `example` theme to use as a starting point for your own
 - Drop additional theme folders into `themes/` to add more
-- Per-user appearance settings: dark mode, colour scheme, font family, sidebar configuration
+- Per-user appearance settings: dark mode, colour scheme, sidebar configuration, timezone and date format
+- Separate font settings for body text, headings, the title and code
 - Custom CSS settable per theme in the UI - no restart needed
 - Template overrides: place `.gohtml` files in `themes/overwrite/` to override specific pages without touching the theme itself
 
@@ -127,7 +146,7 @@ Filters are saved metadata queries that produce a live file list.
 - **Tags** - free-form, fully customisable
 - **Collections** - automatic grouping by top-level folder, overridable per file
 - **Parent/child hierarchy** - set a parent to build a tree; ancestors and children are computed automatically
-- **Editor/File types** - custom editors for: todo's, list's, filter, index/MOC files with every output being stored as a viable markdown file
+- **Editor/File types** - a general-purpose CodeMirror editor (WYSIWYG, syntax highlighting, live rendering) plus dedicated editors for todo's, list's, filter and index/MOC files, with every output stored as a viable markdown file
 
 ---
 

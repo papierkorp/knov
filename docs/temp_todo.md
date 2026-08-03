@@ -27,7 +27,6 @@
 - autocomplete only shows 20 entries?
 - refactor the built in theme and make the slideout modular => each feature (e.g. tree slideout, search, file history) can be easily plugged in anywhere
 - change dokuwiki_example.txt to a genuine example file and remove all personal data
-- update readme
 
 # every other time
 
