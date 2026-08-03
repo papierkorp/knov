@@ -159,7 +159,7 @@ func GetFileContent(filePath string) (*FileContent, error) {
 func FilterByVisibility(files []File) []File {
 	var filtered []File
 	for _, file := range files {
-		if !isHiddenByType(file) {
+		if !isHiddenByType(file) && !isInHiddenFolder(file) {
 			filtered = append(filtered, file)
 		}
 	}
@@ -189,6 +189,16 @@ func isHiddenByType(file File) bool {
 	}
 
 	return false
+}
+
+// isInHiddenFolder returns true if the file's containing folder path matches a configured hide-path pattern.
+func isInHiddenFolder(file File) bool {
+	rel := pathutils.ToRelative(file.Path)
+	parts := strings.Split(rel, "/")
+	if len(parts) < 2 {
+		return false
+	}
+	return configmanager.IsPathHidden(strings.Join(parts[:len(parts)-1], "/"))
 }
 
 // TreeNode represents a node in the file tree (either a directory or a file)

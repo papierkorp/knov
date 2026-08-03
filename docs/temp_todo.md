@@ -24,9 +24,10 @@
       - for devs
   - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
   - wire the editor settings directly in the editor via a button menu besides the toolbar
-- settings/configs to hide certain folders from different searches e.g. hide "todo" folders in the browse slideout - tree/browse
 - autocomplete only shows 20 entries?
 - refactor the built in theme and make the slideout modular => each feature (e.g. tree slideout, search, file history) can be easily plugged in anywhere
+- change dokuwiki_example.txt to a genuine example file and remove all personal data
+- update readme
 
 # every other time
 

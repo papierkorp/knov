@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -452,6 +453,44 @@ func IsFileTypeHidden(editorType string) bool {
 	default:
 		return false
 	}
+}
+
+// IsPathHidden checks if a relative folder path ("/"-separated, no leading/trailing slash)
+// matches any of the configured hide-path patterns. Each pattern is itself "/"-separated;
+// a pattern segment of "*" matches any single path segment, while any other segment is a
+// case-insensitive regular expression that must fully match one segment. A pattern matches
+// if its segments align with any contiguous run of the path's segments, e.g. "*/todo" hides
+// every folder named "todo", while "test/todo" only hides the "todo" folder inside "test".
+func IsPathHidden(relDirPath string) bool {
+	if relDirPath == "" {
+		return false
+	}
+	pathSegs := strings.Split(relDirPath, "/")
+	for _, pattern := range HidePaths.Get() {
+		patternSegs := strings.Split(strings.Trim(pattern, "/"), "/")
+		if len(patternSegs) == 0 || len(patternSegs) > len(pathSegs) {
+			continue
+		}
+		for start := 0; start+len(patternSegs) <= len(pathSegs); start++ {
+			if pathSegmentsMatch(patternSegs, pathSegs[start:start+len(patternSegs)]) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func pathSegmentsMatch(patternSegs, candidateSegs []string) bool {
+	for i, seg := range patternSegs {
+		if seg == "*" {
+			continue
+		}
+		re, err := regexp.Compile("(?i)^" + seg + "$")
+		if err != nil || !re.MatchString(candidateSegs[i]) {
+			return false
+		}
+	}
+	return true
 }
 
 // InitGitRepository initializes git repository based on configuration

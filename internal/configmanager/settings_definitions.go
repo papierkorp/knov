@@ -38,6 +38,7 @@ var (
 	GroupPreviewSettings = SettingGroup{Key: "preview-settings", Label: "Preview Settings"}
 	GroupEditorTypes     = SettingGroup{Key: "editor-types", Label: "Editor Types"}
 	GroupMediaTypes      = SettingGroup{Key: "media-types", Label: "Media Types"}
+	GroupFolders         = SettingGroup{Key: "folders", Label: "Folders"}
 	GroupTypography      = SettingGroup{Key: "typography", Label: "Typography"}
 	GroupPDFNotes        = SettingGroup{Key: "pdf-notes", Label: "PDF Notes"}
 	GroupPDFFooterLeft   = SettingGroup{Key: "pdf-footer-left", Label: "Footer Left"}

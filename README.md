@@ -1,6 +1,6 @@
 # KNOV - Knowledge Management System
 
-KNOV (Knowledge Vault) is a local-first knowledge management system that runs as a single self-contained binary. No cloud, no account, no dependencies.
+KNOV (Knowledge Vault) is a local-first open source knowledge management system that runs as a single self-contained binary. No cloud, no account, no dependencies.
 
 ---
 
