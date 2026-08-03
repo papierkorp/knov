@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/test"
 )
@@ -35,6 +36,11 @@ var (
 	testdataSetupMu sync.Mutex
 	testdataCleanMu sync.Mutex
 	runMu           sync.Mutex // prevents concurrent manual Run() calls
+
+	bulkDeleteFilesMu    sync.Mutex
+	deleteFolderMu       sync.Mutex
+	moveFolderMu         sync.Mutex
+	bulkUpdateMetadataMu sync.Mutex
 )
 
 // execute runs job under mu, recording start/finish in job history.
@@ -243,6 +249,43 @@ func RunGitPush() error {
 // A repack skipped because fileMu is busy just retries on the next tick.
 func RunGitRepack() error {
 	return execute(&fileMu, &gitRepackJob{})
+}
+
+// RunBulkDeleteFiles deletes the given (pre-resolved) files with dedup protection.
+func RunBulkDeleteFiles(fullPaths []string, groupType, groupVal string) (BulkDeleteResult, error) {
+	j := &bulkDeleteFilesJob{fullPaths: fullPaths, groupType: groupType, groupVal: groupVal}
+	if err := execute(&bulkDeleteFilesMu, j); err != nil {
+		return BulkDeleteResult{}, err
+	}
+	return j.result, nil
+}
+
+// RunDeleteFolder recursively deletes a folder and its files with dedup protection.
+func RunDeleteFolder(folderPath string) (BulkDeleteResult, error) {
+	j := &deleteFolderJob{folderPath: folderPath}
+	if err := execute(&deleteFolderMu, j); err != nil {
+		return BulkDeleteResult{}, err
+	}
+	return j.result, nil
+}
+
+// RunMoveFolder moves a folder to a new parent and updates its files' links with dedup protection.
+func RunMoveFolder(currentPath, newPath string) (BulkUpdateResult, error) {
+	j := &moveFolderJob{currentPath: currentPath, newPath: newPath}
+	if err := execute(&moveFolderMu, j); err != nil {
+		return BulkUpdateResult{}, err
+	}
+	return j.result, nil
+}
+
+// RunBulkUpdateMetadata applies a metadata patch to the given (pre-resolved/filter-matched)
+// files with dedup protection.
+func RunBulkUpdateMetadata(matched []files.File, patch files.BulkUpdatePatch) (BulkUpdateResult, error) {
+	j := &bulkUpdateMetadataJob{matched: matched, patch: patch}
+	if err := execute(&bulkUpdateMetadataMu, j); err != nil {
+		return BulkUpdateResult{}, err
+	}
+	return j.result, nil
 }
 
 // RunTestdataSetup sets up test data with dedup protection.

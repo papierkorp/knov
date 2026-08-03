@@ -294,3 +294,148 @@ func (j *gitRepackJob) Run() error {
 	}
 	return nil
 }
+
+// ----------------------------------------------------------------------------------------
+// ---------------------------------- bulkDeleteFilesJob -----------------------------------
+// ----------------------------------------------------------------------------------------
+
+// bulkDeleteFilesJob deletes a pre-resolved set of files (e.g. everything matching a
+// collection/folder/tag) and their metadata, then commits the deletion in the background.
+// The actual file/metadata work lives in files.BulkDeleteFiles - this is just the
+// history-tracking + git wiring around it.
+type bulkDeleteFilesJob struct {
+	fullPaths           []string
+	groupType, groupVal string
+	result              BulkDeleteResult
+}
+
+func (j *bulkDeleteFilesJob) Name() string { return "bulk-delete-files" }
+
+func (j *bulkDeleteFilesJob) Run() error {
+	deleted := files.BulkDeleteFiles(logging.KeyApp, j.fullPaths)
+
+	for _, fullPath := range deleted {
+		if err := git.InvalidateFileHistoryCache(pathutils.ToRelative(fullPath)); err != nil {
+			logging.LogWarning(logging.KeyApp, "bulk-delete-files: failed to invalidate file history cache for %s: %v", fullPath, err)
+		}
+	}
+	if len(deleted) > 0 {
+		go func() {
+			if err := git.CommitDeletedFiles(deleted); err != nil {
+				logging.LogError(logging.KeyApp, "bulk-delete-files: failed to commit deleted files (%s=%s): %v", j.groupType, j.groupVal, err)
+			}
+		}()
+	}
+
+	j.result = BulkDeleteResult{Deleted: len(deleted)}
+	return nil
+}
+
+func (j *bulkDeleteFilesJob) Output() any { return j.result }
+
+func (j *bulkDeleteFilesJob) Message() string {
+	return fmt.Sprintf("deleted %d files (%s=%s)", j.result.Deleted, j.groupType, j.groupVal)
+}
+
+// ----------------------------------------------------------------------------------------
+// ----------------------------------- deleteFolderJob --------------------------------------
+// ----------------------------------------------------------------------------------------
+
+// deleteFolderJob recursively deletes a folder, its files, and their metadata, then commits
+// the deletion in the background. The actual work lives in files.DeleteFolder - this is just
+// the history-tracking + git wiring around it.
+type deleteFolderJob struct {
+	folderPath string
+	result     BulkDeleteResult
+}
+
+func (j *deleteFolderJob) Name() string { return "delete-folder" }
+
+func (j *deleteFolderJob) Run() error {
+	filesInFolder, err := files.DeleteFolder(logging.KeyApp, pathutils.ToDocsPath(j.folderPath))
+	if err != nil {
+		return fmt.Errorf("failed to delete folder: %w", err)
+	}
+
+	for _, fullPath := range filesInFolder {
+		if err := git.InvalidateFileHistoryCache(pathutils.ToRelative(fullPath)); err != nil {
+			logging.LogWarning(logging.KeyApp, "delete-folder: failed to invalidate file history cache for %s: %v", fullPath, err)
+		}
+	}
+	if len(filesInFolder) > 0 {
+		go func() {
+			if err := git.CommitDeletedFiles(filesInFolder); err != nil {
+				logging.LogError(logging.KeyApp, "delete-folder: failed to commit deleted folder %s: %v", j.folderPath, err)
+			}
+		}()
+	}
+
+	j.result = BulkDeleteResult{Deleted: len(filesInFolder)}
+	return nil
+}
+
+func (j *deleteFolderJob) Output() any { return j.result }
+
+func (j *deleteFolderJob) Message() string {
+	return fmt.Sprintf("deleted folder %s (%d files)", j.folderPath, j.result.Deleted)
+}
+
+// ----------------------------------------------------------------------------------------
+// ------------------------------------ moveFolderJob ----------------------------------------
+// ----------------------------------------------------------------------------------------
+
+// moveFolderJob moves a folder to a new parent and updates the links of every file inside it.
+// The actual work lives in files.MoveFolder - this is just the history-tracking wrapper.
+type moveFolderJob struct {
+	currentPath, newPath string
+	result               BulkUpdateResult
+}
+
+func (j *moveFolderJob) Name() string { return "move-folder" }
+
+func (j *moveFolderJob) Run() error {
+	updated, failed, err := files.MoveFolder(logging.KeyApp, pathutils.ToDocsPath(j.currentPath), pathutils.ToDocsPath(j.newPath))
+	if err != nil {
+		return err
+	}
+
+	j.result = BulkUpdateResult{Updated: updated, Failed: failed}
+	return nil
+}
+
+func (j *moveFolderJob) Output() any { return j.result }
+
+func (j *moveFolderJob) Message() string {
+	return fmt.Sprintf("moved %s -> %s (%d files updated)", j.currentPath, j.newPath, j.result.Updated)
+}
+
+// ----------------------------------------------------------------------------------------
+// -------------------------------- bulkUpdateMetadataJob -----------------------------------
+// ----------------------------------------------------------------------------------------
+
+// bulkUpdateMetadataJob applies a metadata patch to a pre-resolved (filter-matched) set of
+// files. The actual work lives in files.BulkUpdateMetadata - this is just the
+// history-tracking wrapper.
+type bulkUpdateMetadataJob struct {
+	matched []files.File
+	patch   files.BulkUpdatePatch
+	result  BulkUpdateResult
+}
+
+func (j *bulkUpdateMetadataJob) Name() string { return "bulk-update-metadata" }
+
+func (j *bulkUpdateMetadataJob) Run() error {
+	updated, failed := files.BulkUpdateMetadata(logging.KeyApp, j.matched, j.patch)
+	j.result = BulkUpdateResult{Updated: updated, Failed: failed}
+	return nil
+}
+
+func (j *bulkUpdateMetadataJob) Output() any { return j.result }
+
+func (j *bulkUpdateMetadataJob) Message() string {
+	msg := fmt.Sprintf("updated %d files", j.result.Updated)
+	if j.result.Failed > 0 {
+		msg += fmt.Sprintf(", %d failed", j.result.Failed)
+	}
+	return msg
+}

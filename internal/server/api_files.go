@@ -5,6 +5,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -19,6 +20,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/git"
+	"knov/internal/job"
 	"knov/internal/logging"
 	"knov/internal/mapping"
 	"knov/internal/parser"
@@ -914,61 +916,29 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// collect all files before the move so we can update their links
-	var filesToUpdate []struct{ oldRel, newRel string }
-	_ = filepath.Walk(currentFullPath, func(p string, info os.FileInfo, err error) error {
-		if err != nil || info.IsDir() {
-			return nil
-		}
-		oldRel := pathutils.ToRelative(p)
-		suffix := strings.TrimPrefix(p, currentFullPath)
-		newRel := pathutils.ToRelative(newFullPath + suffix)
-		filesToUpdate = append(filesToUpdate, struct{ oldRel, newRel string }{oldRel, newRel})
-		return nil
-	})
-
-	if err := os.MkdirAll(filepath.Dir(newFullPath), 0755); err != nil {
-		logging.LogError(logging.KeyApp, "failed to create parent directory for %s: %v", newFullPath, err)
-		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
-		return
-	}
-
-	if err := os.Rename(currentFullPath, newFullPath); err != nil {
+	result, err := job.RunMoveFolder(currentPath, newPath)
+	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to move folder %s -> %s: %v", currentPath, newPath, err)
-		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move folder"))
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		writeAPIError(w, status, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move folder"))
 		return
 	}
 
-	for _, f := range filesToUpdate {
-		if err := files.UpdateLinksForMovedFileNoRefresh(logging.KeyApp, f.oldRel, f.newRel); err != nil {
-			logging.LogWarning(logging.KeyApp, "failed to update links for %s -> %s: %v", f.oldRel, f.newRel, err)
-		}
-	}
-	if len(filesToUpdate) > 0 {
-		files.RefreshCaches()
-	}
-
-	logging.LogInfo(logging.KeyApp, "successfully moved folder: %s -> %s (%d files updated)", currentPath, newPath, len(filesToUpdate))
+	logging.LogInfo(logging.KeyApp, "successfully moved folder: %s -> %s (%d files updated)", currentPath, newPath, result.Updated)
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "folder moved"))
 	writeResponse(w, r, map[string]string{"folderpath": newPath}, "")
 }
 
-// cleanupDeletedFileMetadata deletes a file's metadata, refreshes the
-// aggregate caches, and commits the deletion to git. For a single deleted
-// file (the common case).
-func cleanupDeletedFileMetadata(fullPath string) {
-	cleanupDeletedFileMetadataNoRefresh(fullPath)
-	files.RefreshCaches()
-	go git.CommitDeletedFile(fullPath)
-}
-
-// cleanupDeletedFileMetadataNoRefresh deletes a file's metadata without
-// refreshing the aggregate caches or committing to git. Used when deleting
-// many files in one request (folder delete, bulk delete) - the caller loops
-// this, then does one files.RefreshCaches() and one batched
-// git.CommitDeletedFiles() after the loop, instead of paying for a full cache
-// rebuild and a separate git commit per file.
-func cleanupDeletedFileMetadataNoRefresh(fullPath string) {
+// removeFileAndMetadata removes a single file from disk, deletes its metadata, refreshes the
+// aggregate caches, and commits the deletion to git. For a single deleted file (the common
+// case) - folder delete and bulk delete run as tracked jobs instead (see internal/job).
+func removeFileAndMetadata(fullPath string) error {
+	if err := os.Remove(fullPath); err != nil {
+		return err
+	}
 	relPath := pathutils.ToRelative(fullPath)
 	if err := files.MetaDataDeleteNoRefresh(logging.KeyApp, relPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to delete metadata for %s: %v", relPath, err)
@@ -976,25 +946,8 @@ func cleanupDeletedFileMetadataNoRefresh(fullPath string) {
 	if err := git.InvalidateFileHistoryCache(relPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to invalidate file history cache for %s: %v", relPath, err)
 	}
-}
-
-// removeFileAndMetadata removes a single file from disk, then cleans up its
-// metadata and git history via cleanupDeletedFileMetadata.
-func removeFileAndMetadata(fullPath string) error {
-	if err := os.Remove(fullPath); err != nil {
-		return err
-	}
-	cleanupDeletedFileMetadata(fullPath)
-	return nil
-}
-
-// removeFileAndMetadataNoRefresh is removeFileAndMetadata without the cache
-// refresh/git commit. See cleanupDeletedFileMetadataNoRefresh.
-func removeFileAndMetadataNoRefresh(fullPath string) error {
-	if err := os.Remove(fullPath); err != nil {
-		return err
-	}
-	cleanupDeletedFileMetadataNoRefresh(fullPath)
+	files.RefreshCaches()
+	go git.CommitDeletedFile(fullPath)
 	return nil
 }
 
@@ -1061,36 +1014,18 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "deleting folder: %s", folderPath)
 
-	// collect every file inside so we can clean up metadata and git afterwards,
-	// since os.RemoveAll below removes them before we get a chance to look
-	var filesInFolder []string
-	_ = filepath.Walk(fullPath, func(p string, info os.FileInfo, err error) error {
-		if err != nil || info.IsDir() {
-			return nil
-		}
-		filesInFolder = append(filesInFolder, p)
-		return nil
-	})
-
-	if err := os.RemoveAll(fullPath); err != nil {
+	result, err := job.RunDeleteFolder(folderPath)
+	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to delete folder %s: %v", folderPath, err)
-		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete folder"))
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		writeAPIError(w, status, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to delete folder"))
 		return
 	}
 
-	for _, filePath := range filesInFolder {
-		cleanupDeletedFileMetadataNoRefresh(filePath)
-	}
-	if len(filesInFolder) > 0 {
-		files.RefreshCaches()
-		go func() {
-			if err := git.CommitDeletedFiles(filesInFolder); err != nil {
-				logging.LogError(logging.KeyApp, "failed to commit deleted folder %s: %v", folderPath, err)
-			}
-		}()
-	}
-
-	logging.LogInfo(logging.KeyApp, "successfully deleted folder: %s (%d files)", folderPath, len(filesInFolder))
+	logging.LogInfo(logging.KeyApp, "successfully deleted folder: %s (%d files)", folderPath, result.Deleted)
 
 	w.Header().Set("HX-Redirect", "/browse")
 	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "folder deleted"))
@@ -1132,8 +1067,7 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deleted := 0
-	var deletedFullPaths []string
+	var toDelete []string
 	for _, file := range allFiles {
 		meta, err := files.MetaDataGet(file.Path)
 		if err != nil || meta == nil {
@@ -1164,28 +1098,20 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		fullPath := pathutils.ToDocsPath(pathutils.ToRelative(file.Path))
-		if err := removeFileAndMetadataNoRefresh(fullPath); err != nil {
-			logging.LogWarning(logging.KeyApp, "failed to delete file %s: %v", fullPath, err)
-			continue
-		}
-		deletedFullPaths = append(deletedFullPaths, fullPath)
-		deleted++
+		toDelete = append(toDelete, pathutils.ToDocsPath(pathutils.ToRelative(file.Path)))
 	}
 
-	if deleted > 0 {
-		files.RefreshCaches()
-		go func() {
-			if err := git.CommitDeletedFiles(deletedFullPaths); err != nil {
-				logging.LogError(logging.KeyApp, "failed to commit bulk deleted files (%s=%s): %v", groupType, value, err)
-			}
-		}()
+	result, err := job.RunBulkDeleteFiles(toDelete, groupType, value)
+	if err != nil {
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
+			translation.SprintfForRequest(configmanager.GetLanguage(), err.Error())))
+		return
 	}
 
-	logging.LogInfo(logging.KeyApp, "bulk deleted %d files from %s=%s", deleted, groupType, value)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "deleted %d files", deleted))
+	logging.LogInfo(logging.KeyApp, "bulk deleted %d files from %s=%s", result.Deleted, groupType, value)
+	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "deleted %d files", result.Deleted))
 	w.Header().Set("HX-Redirect", "/browse/"+groupType)
-	writeResponse(w, r, map[string]int{"deleted": deleted}, "")
+	writeResponse(w, r, map[string]int{"deleted": result.Deleted}, "")
 }
 
 // @Summary Get headers (TOC) for a file

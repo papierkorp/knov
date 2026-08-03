@@ -55,3 +55,14 @@ type RepairBrokenLinksResult struct {
 	Repaired int
 	Skipped  int
 }
+
+// BulkDeleteResult holds the outcome of a bulk/folder file delete run.
+type BulkDeleteResult struct {
+	Deleted int
+}
+
+// BulkUpdateResult holds the outcome of a bulk metadata update or folder move run.
+type BulkUpdateResult struct {
+	Updated int
+	Failed  int
+}

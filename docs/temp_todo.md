@@ -29,7 +29,7 @@
 - autocomplete only shows 20 entries?
 - run all tests in my prod takes forever => is there a need to get all files multiple times? how can we optimize this? can we use the filter and filter for the test collection so all other files are ignored?
 - refactor the built in theme and make the slideout modular => each feature (e.g. tree slideout, search, file history) can be easily plugged in anywhere
-- add bulk delete to jobs
+
 
 # every other time
 

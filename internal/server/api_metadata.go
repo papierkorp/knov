@@ -111,38 +111,27 @@ func handleAPIBulkUpdateMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// applyBulkPatch uses the NoRefresh setters so a bulk update over many files rebuilds the
-	// aggregate caches once here instead of once per file.
-	var failed []string
-	for _, f := range matched {
-		if err := applyBulkPatch(f.Metadata, p); err != nil {
-			logging.LogError(logging.KeyApp, "bulk-update: failed to save %s: %v", f.Metadata.Path, err)
-			failed = append(failed, f.Metadata.Path)
+	result, err := job.RunBulkUpdateMetadata(matched, files.BulkUpdatePatch{
+		Editor:     p.Editor,
+		TagsAdd:    p.TagsAdd,
+		TagsRemove: p.TagsRemove,
+	})
+	if err != nil {
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
 		}
+		http.Error(w, err.Error(), status)
+		return
 	}
-	files.RefreshCaches()
+	if result.Failed > 0 {
+		logging.LogWarning(logging.KeyApp, "bulk-update: %d/%d files failed to save", result.Failed, len(matched))
+	}
 
-	if len(failed) > 0 {
-		logging.LogWarning(logging.KeyApp, "bulk-update: %d/%d files failed to save", len(failed), len(matched))
-	}
-
-	updated := len(matched) - len(failed)
-	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "%d files updated", updated))
-	writeResponse(w, r, bulkUpdateResult{Updated: paths, Count: updated, Preview: false},
-		render.RenderBulkUpdateResult(paths, updated, false))
-}
-
-func applyBulkPatch(current *files.Metadata, p bulkUpdatePatch) error {
-	if p.Editor != nil {
-		return files.SetEditorNoRefresh(current.Path, *p.Editor)
-	}
-	if len(p.TagsAdd) > 0 || len(p.TagsRemove) > 0 {
-		// PatchTagsNoRefresh re-reads tags under the path lock - never apply add/remove against
-		// the unlocked snapshot in current (that lost concurrent MoveCard/bulk edits).
-		_, err := files.PatchTagsNoRefresh(current.Path, p.TagsAdd, p.TagsRemove)
-		return err
-	}
-	return nil
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "%d files updated", result.Updated))
+	writeResponse(w, r, bulkUpdateResult{Updated: paths, Count: result.Updated, Preview: false},
+		render.RenderBulkUpdateResult(paths, result.Updated, false))
 }
 
 // @Summary Get metadata for a single file
