@@ -198,6 +198,55 @@ func doMediaCleanup() (MediaCleanupResult, error) {
 }
 
 // ----------------------------------------------------------------------------------------
+// -------------------------------- repairBrokenLinksJob -----------------------------------
+// ----------------------------------------------------------------------------------------
+
+type repairBrokenLinksJob struct {
+	entries []string
+	result  RepairBrokenLinksResult
+}
+
+func (j *repairBrokenLinksJob) Name() string { return "repair-broken-links" }
+
+func (j *repairBrokenLinksJob) Run() error {
+	var result RepairBrokenLinksResult
+	for _, entry := range j.entries {
+		parts := strings.SplitN(entry, "|", 3)
+		if len(parts) != 3 {
+			continue
+		}
+		sourceFile, target, suggested := parts[0], parts[1], parts[2]
+		ok, err := files.RepairBrokenLink(sourceFile, target, suggested)
+		if err != nil {
+			logging.LogError(logging.KeyRepairLinks, "skipped: %s: %s -> %s (error: %v)", sourceFile, target, suggested, err)
+			result.Skipped++
+			continue
+		}
+		if !ok {
+			logging.LogWarning(logging.KeyRepairLinks, "skipped: %s: %s -> %s (no matching link occurrence found)", sourceFile, target, suggested)
+			result.Skipped++
+			continue
+		}
+		logging.LogInfo(logging.KeyRepairLinks, "repaired: %s: %s -> %s", sourceFile, target, suggested)
+		go git.CommitFile(pathutils.ToFullPath(sourceFile))
+		result.Repaired++
+	}
+
+	if result.Repaired > 0 {
+		files.RefreshCaches()
+	}
+
+	j.result = result
+	return nil
+}
+
+func (j *repairBrokenLinksJob) Output() any { return j.result }
+
+func (j *repairBrokenLinksJob) Message() string {
+	return fmt.Sprintf("repaired %d links, %d skipped", j.result.Repaired, j.result.Skipped)
+}
+
+// ----------------------------------------------------------------------------------------
 // -------------------------------------- gitPullJob --------------------------------------
 // ----------------------------------------------------------------------------------------
 

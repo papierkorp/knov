@@ -171,6 +171,18 @@ func RefreshCaches() {
 	}()
 }
 
+// withRefresh runs fn and, on success, refreshes the aggregate caches - the shared shape behind
+// every SetX/SetXNoRefresh pair. Batch callers loop the NoRefresh variant instead and call
+// RefreshCaches() once afterwards, so a single mutation and a batch of many both pay for exactly
+// one cache rebuild.
+func withRefresh(fn func() error) error {
+	if err := fn(); err != nil {
+		return err
+	}
+	RefreshCaches()
+	return nil
+}
+
 // saveStringListToCache saves a sorted string list to cache storage
 func saveStringListToCache(key CacheKey, data []string) error {
 	logging.LogDebug(logging.KeyApp, "saving %s to cache", key)

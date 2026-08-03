@@ -49,3 +49,9 @@ type MediaCleanupResult struct {
 	Size    int64
 	Failed  int
 }
+
+// RepairBrokenLinksResult holds the outcome of a broken-links repair run.
+type RepairBrokenLinksResult struct {
+	Repaired int
+	Skipped  int
+}

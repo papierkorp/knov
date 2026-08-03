@@ -31,13 +31,11 @@
 - filter editor - add a save and cancel button
 - kanban server route - all ancestors selection - it always shows all ancestors even if all of its child are already archived - maybe a new env which sets all done/archived status?
 - wire the editor settings directly in the editor via a button menu besides the toolbar
-- add repair broken links to jobs
 - autocomplete only shows 20 entries?
 - kanban add a refresh button
 - run all tests in my prod takes forever => is there a need to get all files multiple times? how can we optimize this? can we use the filter and filter for the test collection so all other files are ignored?
 - refactor the build in theme and make the slideout modular => each feature (e.g. tree slideout, search, file history) can be easily plugged in anywhere
 - deleting references does not work
-- better solution for all of the xxxNoRefresh (cache) functions
 - translation for log?
 
 

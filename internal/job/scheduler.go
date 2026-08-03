@@ -31,6 +31,7 @@ var (
 	mediaCleanupMu  sync.Mutex
 	gitPullMu       sync.Mutex
 	gitPushMu       sync.Mutex
+	repairLinksMu   sync.Mutex
 	testdataSetupMu sync.Mutex
 	testdataCleanMu sync.Mutex
 	runMu           sync.Mutex // prevents concurrent manual Run() calls
@@ -213,6 +214,15 @@ func RunMediaCleanup() (MediaCleanupResult, error) {
 	j := &mediaCleanupJob{}
 	if err := execute(&mediaCleanupMu, j); err != nil {
 		return MediaCleanupResult{}, err
+	}
+	return j.result, nil
+}
+
+// RunRepairBrokenLinks applies the selected broken-link repairs with dedup protection.
+func RunRepairBrokenLinks(entries []string) (RepairBrokenLinksResult, error) {
+	j := &repairBrokenLinksJob{entries: entries}
+	if err := execute(&repairLinksMu, j); err != nil {
+		return RepairBrokenLinksResult{}, err
 	}
 	return j.result, nil
 }

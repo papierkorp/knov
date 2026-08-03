@@ -15,7 +15,6 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/filter"
-	"knov/internal/git"
 	"knov/internal/job"
 	"knov/internal/kanban"
 	"knov/internal/logging"
@@ -352,35 +351,19 @@ func handleAPIRepairBrokenLinks(w http.ResponseWriter, r *http.Request) {
 	entries := r.Form["repair"]
 	logging.LogInfo(logging.KeyRepairLinks, "broken links repair started: %d requested", len(entries))
 
-	repaired := 0
-	skipped := 0
-	for _, entry := range entries {
-		parts := strings.SplitN(entry, "|", 3)
-		if len(parts) != 3 {
-			continue
+	result, err := job.RunRepairBrokenLinks(entries)
+	if err != nil {
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
 		}
-		sourceFile, target, suggested := parts[0], parts[1], parts[2]
-		ok, err := files.RepairBrokenLink(sourceFile, target, suggested)
-		if err != nil {
-			logging.LogError(logging.KeyRepairLinks, "skipped: %s: %s -> %s (error: %v)", sourceFile, target, suggested, err)
-			skipped++
-			continue
-		}
-		if !ok {
-			logging.LogWarning(logging.KeyRepairLinks, "skipped: %s: %s -> %s (no matching link occurrence found)", sourceFile, target, suggested)
-			skipped++
-			continue
-		}
-		logging.LogInfo(logging.KeyRepairLinks, "repaired: %s: %s -> %s", sourceFile, target, suggested)
-		go git.CommitFile(pathutils.ToFullPath(sourceFile))
-		repaired++
+		http.Error(w, err.Error(), status)
+		return
 	}
+	repaired, skipped := result.Repaired, result.Skipped
 
 	logging.LogInfo(logging.KeyRepairLinks, "broken links repair completed: %d repaired, %d skipped", repaired, skipped)
-
-	if repaired > 0 {
-		files.RefreshCaches()
-	}
 
 	broken, _ := files.FindBrokenLinks()
 	html := render.RenderBrokenLinksHTML(broken)

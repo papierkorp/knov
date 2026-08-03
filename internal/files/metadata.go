@@ -259,11 +259,7 @@ func recomputeDerivedFields(metadata *Metadata) []func() {
 // syncing many files in one batch, use MetaDataSyncNoRefresh in the loop and RefreshCaches()
 // once afterwards instead.
 func MetaDataSync(path string) error {
-	if err := MetaDataSyncNoRefresh(path); err != nil {
-		return err
-	}
-	RefreshCaches()
-	return nil
+	return withRefresh(func() error { return MetaDataSyncNoRefresh(path) })
 }
 
 // MetaDataSyncNoRefresh is MetaDataSync without the aggregate cache refresh. See MetaDataSync.
@@ -412,11 +408,7 @@ func ClearConflictFile(originalFilePath string) error {
 // current value). Errors if path has no metadata yet - callers change an existing file's
 // editor, they don't create metadata as a side effect.
 func SetEditor(path string, editor EditorType) error {
-	if err := SetEditorNoRefresh(path, editor); err != nil {
-		return err
-	}
-	RefreshCaches()
-	return nil
+	return withRefresh(func() error { return SetEditorNoRefresh(path, editor) })
 }
 
 // SetEditorNoRefresh is SetEditor without the aggregate cache refresh - for callers that set
@@ -435,11 +427,7 @@ func SetEditorNoRefresh(path string, editor EditorType) error {
 // SetTags sanitizes and sets path's tags, applying kanban add/moved timestamps on status
 // transitions the same way the old field-merge path did.
 func SetTags(path string, tags []string) error {
-	if err := SetTagsNoRefresh(path, tags); err != nil {
-		return err
-	}
-	RefreshCaches()
-	return nil
+	return withRefresh(func() error { return SetTagsNoRefresh(path, tags) })
 }
 
 // SetTagsNoRefresh is SetTags without the aggregate cache refresh. See SetEditorNoRefresh.
@@ -456,21 +444,10 @@ func SetTagsNoRefresh(path string, tags []string) error {
 	})
 }
 
-// PatchTags adds and/or removes tags under the path lock (so concurrent bulk ops / MoveCard
-// cannot lose updates the way a stale unlocked read + SetTags would). Skips the save when the
-// result would be empty - clearing every tag via bulk is not supported.
-func PatchTags(path string, add, remove []string) error {
-	changed, err := PatchTagsNoRefresh(path, add, remove)
-	if err != nil || !changed {
-		return err
-	}
-	RefreshCaches()
-	return nil
-}
-
-// PatchTagsNoRefresh is PatchTags without the aggregate cache refresh, reporting whether a
-// change was actually saved so a batch caller knows whether RefreshCaches() is needed at all.
-// See SetEditorNoRefresh.
+// PatchTagsNoRefresh adds and/or removes tags under the path lock (so concurrent bulk ops /
+// MoveCard cannot lose updates the way a stale unlocked read + SetTags would), reporting whether
+// a change was actually saved so a batch caller knows whether RefreshCaches() is needed at all.
+// Skips the save when the result would be empty - clearing every tag via bulk is not supported.
 func PatchTagsNoRefresh(path string, add, remove []string) (changed bool, err error) {
 	skipped := false
 	err = MetaDataMutate(path, func(m *Metadata, existed bool) (bool, error) {
@@ -658,11 +635,7 @@ func MetaDataInitializeAll() error {
 // in the loop and RefreshCaches() once afterwards instead - otherwise each
 // deletion kicks off its own full background cache rebuild.
 func MetaDataDelete(filepath string) error {
-	if err := MetaDataDeleteNoRefresh(logging.KeyApp, filepath); err != nil {
-		return err
-	}
-	RefreshCaches()
-	return nil
+	return withRefresh(func() error { return MetaDataDeleteNoRefresh(logging.KeyApp, filepath) })
 }
 
 // MetaDataDeleteNoRefresh removes metadata for a file path without refreshing

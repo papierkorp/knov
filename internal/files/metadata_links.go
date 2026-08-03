@@ -487,11 +487,7 @@ func updateKidsAndLinksToHere(metadata *Metadata) {
 // in the loop and RefreshCaches() once afterwards instead - otherwise each file
 // kicks off its own full background cache rebuild.
 func UpdateLinksForMovedFile(key logging.Key, oldPath, newPath string) error {
-	if err := UpdateLinksForMovedFileNoRefresh(key, oldPath, newPath); err != nil {
-		return err
-	}
-	RefreshCaches()
-	return nil
+	return withRefresh(func() error { return UpdateLinksForMovedFileNoRefresh(key, oldPath, newPath) })
 }
 
 // UpdateLinksForMovedFileNoRefresh is UpdateLinksForMovedFile without the
@@ -803,11 +799,7 @@ func updateTitle(metadata *Metadata) {
 // SetParents normalizes and sets path's parent links, updates the ancestor chain, and fans
 // out the resulting Kids add/remove onto the old and new parents' own metadata.
 func SetParents(path string, parents []string) error {
-	if err := SetParentsNoRefresh(path, parents); err != nil {
-		return err
-	}
-	RefreshCaches()
-	return nil
+	return withRefresh(func() error { return SetParentsNoRefresh(path, parents) })
 }
 
 // SetParentsNoRefresh is SetParents without the aggregate cache refresh - for callers that set
