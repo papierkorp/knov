@@ -15,8 +15,6 @@
 
 **per ai**
 - not important
-  - codemirror copy + paste with y+p does not work properly (e.g. i have something in the clipboard and it doesnt paste and i need to use ctlr+v in edit mode)
-    - is a harder problem to tackle
   - backup solution
   - create a system for themes (another repoistory with themes)
     - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
@@ -24,16 +22,14 @@
     - make docker build viable
       - for usage
       - for devs
-- move file button (can be done in rename at the moment)
-- settings/configs to hide certain folders from different searches
-- update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
+  - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
+  - wire the editor settings directly in the editor via a button menu besides the toolbar
+- settings/configs to hide certain folders from different searches e.g. hide "todo" folders in the browse slideout - tree/browse
 - kanban server route - all ancestors selection - it always shows all ancestors even if all of its child are already archived - maybe a new env which sets all done/archived status?
-- wire the editor settings directly in the editor via a button menu besides the toolbar
 - autocomplete only shows 20 entries?
 - run all tests in my prod takes forever => is there a need to get all files multiple times? how can we optimize this? can we use the filter and filter for the test collection so all other files are ignored?
 - refactor the built in theme and make the slideout modular => each feature (e.g. tree slideout, search, file history) can be easily plugged in anywhere
-- translation for log?
-
+- add bulk delete to jobs
 
 # every other time
 

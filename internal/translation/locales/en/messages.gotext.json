@@ -17,11 +17,6 @@
       "translation": ""
     },
     {
-      "id": "Actual Files",
-      "message": "Actual Files",
-      "translation": ""
-    },
-    {
       "id": "add",
       "message": "add",
       "translation": ""
@@ -172,11 +167,6 @@
       "translation": ""
     },
     {
-      "id": "archive visibility updated",
-      "message": "archive visibility updated",
-      "translation": ""
-    },
-    {
       "id": "Are you sure?",
       "message": "Are you sure?",
       "translation": "Are you sure?"
@@ -194,11 +184,6 @@
     {
       "id": "at",
       "message": "at",
-      "translation": ""
-    },
-    {
-      "id": "at least one mime type required",
-      "message": "at least one mime type required",
       "translation": ""
     },
     {
@@ -239,11 +224,6 @@
     {
       "id": "board history",
       "message": "board history",
-      "translation": ""
-    },
-    {
-      "id": "border style updated",
-      "message": "border style updated",
       "translation": ""
     },
     {
@@ -342,11 +322,6 @@
       "translation": ""
     },
     {
-      "id": "caption setting updated",
-      "message": "caption setting updated",
-      "translation": ""
-    },
-    {
       "id": "cards",
       "message": "cards",
       "translation": ""
@@ -382,18 +357,8 @@
       "translation": ""
     },
     {
-      "id": "click setting updated",
-      "message": "click setting updated",
-      "translation": ""
-    },
-    {
       "id": "close",
       "message": "close",
-      "translation": ""
-    },
-    {
-      "id": "code block wrap setting updated",
-      "message": "code block wrap setting updated",
       "translation": ""
     },
     {
@@ -424,11 +389,6 @@
     {
       "id": "Collections",
       "message": "Collections",
-      "translation": ""
-    },
-    {
-      "id": "collection updated",
-      "message": "collection updated",
       "translation": ""
     },
     {
@@ -487,11 +447,6 @@
       "translation": ""
     },
     {
-      "id": "convert to markdown",
-      "message": "convert to markdown",
-      "translation": ""
-    },
-    {
       "id": "copy link",
       "message": "copy link",
       "translation": ""
@@ -529,11 +484,6 @@
     {
       "id": "Create New File",
       "message": "Create New File",
-      "translation": ""
-    },
-    {
-      "id": "cronjob executed successfully",
-      "message": "cronjob executed successfully",
       "translation": ""
     },
     {
@@ -747,11 +697,6 @@
       "translation": ""
     },
     {
-      "id": "display mode updated",
-      "message": "display mode updated",
-      "translation": ""
-    },
-    {
       "id": "download",
       "message": "download",
       "translation": ""
@@ -862,18 +807,8 @@
       "translation": ""
     },
     {
-      "id": "executable visibility updated",
-      "message": "executable visibility updated",
-      "translation": ""
-    },
-    {
       "id": "expand all",
       "message": "expand all",
-      "translation": ""
-    },
-    {
-      "id": "Expected Files",
-      "message": "Expected Files",
       "translation": ""
     },
     {
@@ -934,11 +869,6 @@
     {
       "id": "failed to browse files",
       "message": "failed to browse files",
-      "translation": ""
-    },
-    {
-      "id": "failed to clean test data",
-      "message": "failed to clean test data",
       "translation": ""
     },
     {
@@ -1074,11 +1004,6 @@
     {
       "id": "failed to get notifications",
       "message": "failed to get notifications",
-      "translation": ""
-    },
-    {
-      "id": "failed to get orphaned media",
-      "message": "failed to get orphaned media",
       "translation": ""
     },
     {
@@ -1312,11 +1237,6 @@
       "translation": ""
     },
     {
-      "id": "failed to setup test data",
-      "message": "failed to setup test data",
-      "translation": ""
-    },
-    {
       "id": "failed to update card",
       "message": "failed to update card",
       "translation": ""
@@ -1387,6 +1307,11 @@
       "translation": ""
     },
     {
+      "id": "file moved",
+      "message": "file moved",
+      "translation": ""
+    },
+    {
       "id": "file moved successfully",
       "message": "file moved successfully",
       "translation": ""
@@ -1399,11 +1324,6 @@
     {
       "id": "filename match",
       "message": "filename match",
-      "translation": ""
-    },
-    {
-      "id": "file not found",
-      "message": "file not found",
       "translation": ""
     },
     {
@@ -1457,11 +1377,6 @@
       "translation": ""
     },
     {
-      "id": "Files Comparison",
-      "message": "Files Comparison",
-      "translation": ""
-    },
-    {
       "id": "file size",
       "message": "file size",
       "translation": ""
@@ -1512,11 +1427,6 @@
       "translation": ""
     },
     {
-      "id": "Filter Configuration",
-      "message": "Filter Configuration",
-      "translation": ""
-    },
-    {
       "id": "filter deleted",
       "message": "filter deleted",
       "translation": ""
@@ -1559,21 +1469,6 @@
     {
       "id": "filter saved successfully!",
       "message": "filter saved successfully!",
-      "translation": ""
-    },
-    {
-      "id": "Filter Test Metadata",
-      "message": "Filter Test Metadata",
-      "translation": ""
-    },
-    {
-      "id": "Filter Test Results Summary",
-      "message": "Filter Test Results Summary",
-      "translation": ""
-    },
-    {
-      "id": "filter visibility updated",
-      "message": "filter visibility updated",
       "translation": ""
     },
     {
@@ -1624,11 +1519,6 @@
     {
       "id": "Folders",
       "message": "Folders",
-      "translation": ""
-    },
-    {
-      "id": "folders updated",
-      "message": "folders updated",
       "translation": ""
     },
     {
@@ -1707,11 +1597,6 @@
       "translation": ""
     },
     {
-      "id": "hidden files setting updated",
-      "message": "hidden files setting updated",
-      "translation": ""
-    },
-    {
       "id": "hide diff",
       "message": "hide diff",
       "translation": ""
@@ -1742,11 +1627,6 @@
       "translation": "Home"
     },
     {
-      "id": "home dashboard updated",
-      "message": "home dashboard updated",
-      "translation": ""
-    },
-    {
       "id": "https://github.com/user/repo.git or git@github.com:user/repo.git",
       "message": "https://github.com/user/repo.git or git@github.com:user/repo.git",
       "translation": ""
@@ -1759,11 +1639,6 @@
     {
       "id": "ids are required",
       "message": "ids are required",
-      "translation": ""
-    },
-    {
-      "id": "image visibility updated",
-      "message": "image visibility updated",
       "translation": ""
     },
     {
@@ -1807,18 +1682,8 @@
       "translation": ""
     },
     {
-      "id": "index extension setting updated",
-      "message": "index extension setting updated",
-      "translation": ""
-    },
-    {
       "id": "index saved successfully",
       "message": "index saved successfully",
-      "translation": ""
-    },
-    {
-      "id": "index visibility updated",
-      "message": "index visibility updated",
       "translation": ""
     },
     {
@@ -1829,11 +1694,6 @@
     {
       "id": "Invalidate the cache? It will be rebuilt automatically.",
       "message": "Invalidate the cache? It will be rebuilt automatically.",
-      "translation": ""
-    },
-    {
-      "id": "invalid border style",
-      "message": "invalid border style",
       "translation": ""
     },
     {
@@ -1849,11 +1709,6 @@
     {
       "id": "invalid date format",
       "message": "invalid date format",
-      "translation": ""
-    },
-    {
-      "id": "invalid display mode",
-      "message": "invalid display mode",
       "translation": ""
     },
     {
@@ -1892,23 +1747,8 @@
       "translation": ""
     },
     {
-      "id": "invalid page size",
-      "message": "invalid page size",
-      "translation": ""
-    },
-    {
-      "id": "invalid preview size",
-      "message": "invalid preview size",
-      "translation": ""
-    },
-    {
       "id": "invalid settings file",
       "message": "invalid settings file",
-      "translation": ""
-    },
-    {
-      "id": "invalid upload size",
-      "message": "invalid upload size",
       "translation": ""
     },
     {
@@ -2072,18 +1912,8 @@
       "translation": ""
     },
     {
-      "id": "list extension setting updated",
-      "message": "list extension setting updated",
-      "translation": ""
-    },
-    {
       "id": "list saved successfully",
       "message": "list saved successfully",
-      "translation": ""
-    },
-    {
-      "id": "list visibility updated",
-      "message": "list visibility updated",
       "translation": ""
     },
     {
@@ -2192,11 +2022,6 @@
       "translation": ""
     },
     {
-      "id": "log level updated",
-      "message": "log level updated",
-      "translation": ""
-    },
-    {
       "id": "Logs",
       "message": "Logs",
       "translation": ""
@@ -2209,11 +2034,6 @@
     {
       "id": "manage test data for development and testing purposes",
       "message": "manage test data for development and testing purposes",
-      "translation": ""
-    },
-    {
-      "id": "markdown visibility updated",
-      "message": "markdown visibility updated",
       "translation": ""
     },
     {
@@ -2292,28 +2112,8 @@
       "translation": ""
     },
     {
-      "id": "mime types updated",
-      "message": "mime types updated",
-      "translation": ""
-    },
-    {
       "id": "missing board",
       "message": "missing board",
-      "translation": ""
-    },
-    {
-      "id": "missing border style",
-      "message": "missing border style",
-      "translation": ""
-    },
-    {
-      "id": "missing collection",
-      "message": "missing collection",
-      "translation": ""
-    },
-    {
-      "id": "missing collection parameter",
-      "message": "missing collection parameter",
       "translation": ""
     },
     {
@@ -2324,11 +2124,6 @@
     {
       "id": "missing data",
       "message": "missing data",
-      "translation": ""
-    },
-    {
-      "id": "missing display mode",
-      "message": "missing display mode",
       "translation": ""
     },
     {
@@ -2407,11 +2202,6 @@
       "translation": ""
     },
     {
-      "id": "missing mime types",
-      "message": "missing mime types",
-      "translation": ""
-    },
-    {
       "id": "missing parameters",
       "message": "missing parameters",
       "translation": ""
@@ -2419,11 +2209,6 @@
     {
       "id": "missing path parameter",
       "message": "missing path parameter",
-      "translation": ""
-    },
-    {
-      "id": "missing preview size",
-      "message": "missing preview size",
       "translation": ""
     },
     {
@@ -2447,11 +2232,6 @@
       "translation": ""
     },
     {
-      "id": "missing upload size",
-      "message": "missing upload size",
-      "translation": ""
-    },
-    {
       "id": "more",
       "message": "more",
       "translation": ""
@@ -2459,6 +2239,16 @@
     {
       "id": "more actions",
       "message": "more actions",
+      "translation": ""
+    },
+    {
+      "id": "move",
+      "message": "move",
+      "translation": ""
+    },
+    {
+      "id": "Move",
+      "message": "Move",
       "translation": ""
     },
     {
@@ -2554,11 +2344,6 @@
     {
       "id": "no children found",
       "message": "no children found",
-      "translation": ""
-    },
-    {
-      "id": "no collections found",
-      "message": "no collections found",
       "translation": ""
     },
     {
@@ -2752,11 +2537,6 @@
       "translation": "No widgets configured"
     },
     {
-      "id": "office document visibility updated",
-      "message": "office document visibility updated",
-      "translation": ""
-    },
-    {
       "id": "OK",
       "message": "OK",
       "translation": ""
@@ -2872,13 +2652,13 @@
       "translation": ""
     },
     {
-      "id": "path to your data storage relative from the executable",
-      "message": "path to your data storage relative from the executable",
+      "id": "path/to/folder",
+      "message": "path/to/folder",
       "translation": ""
     },
     {
-      "id": "pdf visibility updated",
-      "message": "pdf visibility updated",
+      "id": "path to your data storage relative from the executable",
+      "message": "path to your data storage relative from the executable",
       "translation": ""
     },
     {
@@ -2907,16 +2687,6 @@
       "translation": ""
     },
     {
-      "id": "preview setting updated",
-      "message": "preview setting updated",
-      "translation": ""
-    },
-    {
-      "id": "preview size updated",
-      "message": "preview size updated",
-      "translation": ""
-    },
-    {
       "id": "previous",
       "message": "previous",
       "translation": ""
@@ -2929,11 +2699,6 @@
     {
       "id": "pull completed",
       "message": "pull completed",
-      "translation": ""
-    },
-    {
-      "id": "pull failed",
-      "message": "pull failed",
       "translation": ""
     },
     {
@@ -3292,11 +3057,6 @@
       "translation": ""
     },
     {
-      "id": "script visibility updated",
-      "message": "script visibility updated",
-      "translation": ""
-    },
-    {
       "id": "search",
       "message": "search",
       "translation": ""
@@ -3362,11 +3122,6 @@
       "translation": ""
     },
     {
-      "id": "section edit setting updated",
-      "message": "section edit setting updated",
-      "translation": ""
-    },
-    {
       "id": "section saved successfully",
       "message": "section saved successfully",
       "translation": ""
@@ -3374,11 +3129,6 @@
     {
       "id": "select a board to open the kanban board",
       "message": "select a board to open the kanban board",
-      "translation": ""
-    },
-    {
-      "id": "select a collection to open the kanban board",
-      "message": "select a collection to open the kanban board",
       "translation": ""
     },
     {
@@ -3557,28 +3307,8 @@
       "translation": ""
     },
     {
-      "id": "table info setting updated",
-      "message": "table info setting updated",
-      "translation": ""
-    },
-    {
       "id": "table of contents",
       "message": "table of contents",
-      "translation": ""
-    },
-    {
-      "id": "table page size updated",
-      "message": "table page size updated",
-      "translation": ""
-    },
-    {
-      "id": "table paging setting updated",
-      "message": "table paging setting updated",
-      "translation": ""
-    },
-    {
-      "id": "table search setting updated",
-      "message": "table search setting updated",
       "translation": ""
     },
     {
@@ -3634,11 +3364,6 @@
     {
       "id": "text file",
       "message": "text file",
-      "translation": ""
-    },
-    {
-      "id": "text visibility updated",
-      "message": "text visibility updated",
       "translation": ""
     },
     {
@@ -3717,18 +3442,8 @@
       "translation": ""
     },
     {
-      "id": "todo extension setting updated",
-      "message": "todo extension setting updated",
-      "translation": ""
-    },
-    {
       "id": "todo saved successfully",
       "message": "todo saved successfully",
-      "translation": ""
-    },
-    {
-      "id": "todo visibility updated",
-      "message": "todo visibility updated",
       "translation": ""
     },
     {
@@ -3842,11 +3557,6 @@
       "translation": ""
     },
     {
-      "id": "upload size updated",
-      "message": "upload size updated",
-      "translation": ""
-    },
-    {
       "id": "used",
       "message": "used",
       "translation": ""
@@ -3879,11 +3589,6 @@
     {
       "id": "version no longer available",
       "message": "version no longer available",
-      "translation": ""
-    },
-    {
-      "id": "video visibility updated",
-      "message": "video visibility updated",
       "translation": ""
     },
     {

@@ -78,6 +78,11 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// theme files are edited on disk during development, so never let the
+		// browser cache them heuristically off a bare Last-Modified header
+		// (Go's http.ServeFile doesn't set Cache-Control on its own)
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+
 		// for CSS files, read and serve manually to ensure correct MIME type
 		if ext == ".css" {
 			cssData, err := os.ReadFile(fullPath)
@@ -87,7 +92,6 @@ func handleStatic(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			w.Header().Set("Content-Type", "text/css; charset=utf-8")
-			w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 			w.Write(cssData)
 			logging.LogDebug(logging.KeyApp, "serving theme CSS file: %s", fullPath)
 			return

@@ -463,6 +463,18 @@ function setupFilePage() {
   }
   if (renameInput) renameInput.value = filepath;
 
+  const moveForm = document.getElementById("move-form");
+  const moveFolderInput = document.getElementById("move-folder-input");
+  const lastSlash = filepath.lastIndexOf("/");
+  if (moveForm) {
+    moveForm.setAttribute("hx-post", "/api/files/rename/" + filepath);
+    moveForm.dataset.filename =
+      lastSlash === -1 ? filepath : filepath.substring(lastSlash + 1);
+    htmx.process(moveForm);
+  }
+  if (moveFolderInput)
+    moveFolderInput.value = lastSlash === -1 ? "" : filepath.substring(0, lastSlash);
+
   const deleteForm = document.getElementById("delete-form");
   if (deleteForm) {
     deleteForm.setAttribute("hx-delete", "/api/files/delete/" + filepath);
@@ -723,6 +735,62 @@ document.addEventListener("input", function (e) {
   if (!container || !container.contains(e.target)) return;
   saveFpFilterState();
 });
+
+// ================================================================
+// file panel overflow menu (rename / move / rebuild / export / delete),
+// same toggle + viewport-aware positioning + close-on-outside-click
+// pattern as the kanban toolbar menu (kanban.js) and chat kebab menu
+// (chat-bulk.js).
+// ================================================================
+function closeAllFpFileMenus() {
+  document.querySelectorAll(".fp-menu").forEach((m) => (m.hidden = true));
+}
+
+function positionFpFileMenu(btn, menu) {
+  const rect = btn.getBoundingClientRect();
+  menu.style.left = "auto";
+  menu.style.right = window.innerWidth - rect.right + "px";
+  menu.style.top = rect.bottom + 2 + "px";
+  menu.style.bottom = "auto";
+
+  const menuRect = menu.getBoundingClientRect();
+  if (menuRect.bottom > window.innerHeight) {
+    menu.style.top = "auto";
+    menu.style.bottom = window.innerHeight - rect.top + 2 + "px";
+  }
+}
+
+function toggleFpFileMenu(btn) {
+  const menu = btn.parentElement.querySelector(".fp-menu");
+  if (!menu) return;
+  const wasHidden = menu.hidden;
+  closeAllFpFileMenus();
+  if (wasHidden) {
+    menu.hidden = false;
+    positionFpFileMenu(btn, menu);
+  }
+}
+
+// builds the new full path for the move modal from the folder input plus
+// the filename stashed on the form when the file panel opened
+function buildMoveTargetName() {
+  const folderEl = document.getElementById("move-folder-input");
+  const form = document.getElementById("move-form");
+  if (!folderEl || !form) return "";
+  const folder = folderEl.value.replace(/\/+$/, "");
+  const filename = form.dataset.filename || "";
+  return folder ? folder + "/" + filename : filename;
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".fp-menu-item")) {
+    closeAllFpFileMenus();
+    return;
+  }
+  if (!e.target.closest(".fp-menu-wrap")) closeAllFpFileMenus();
+});
+
+document.addEventListener("scroll", closeAllFpFileMenus, true);
 
 function initDashboardEditButtons(container) {
   // if called with a container, decorate it immediately (e.g. from switchBrowseMode)

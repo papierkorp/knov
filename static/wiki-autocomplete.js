@@ -21,6 +21,10 @@
     if (dropdown) return;
     dropdown = document.createElement("div");
     dropdown.id = "component-autocomplete";
+    // "manual" popover: promotes the dropdown to the browser's top layer so it
+    // still renders above native <div popover> modals (e.g. the move/rename
+    // modals) — a plain z-index can never win against top-layer content.
+    dropdown.setAttribute("popover", "manual");
     dropdown.addEventListener("mousedown", function (e) {
       var li = e.target.closest(".autocomplete-item");
       if (!li) return;
@@ -31,7 +35,10 @@
   }
 
   function hide() {
-    if (dropdown) dropdown.style.display = "none";
+    if (dropdown) {
+      dropdown.style.display = "none";
+      if (dropdown.hidePopover && dropdown.matches(":popover-open")) dropdown.hidePopover();
+    }
     onInsert = null;
   }
 
@@ -70,6 +77,7 @@
 
     var rect = getCaretRect(anchorEl);
     dropdown.style.display = "block";
+    if (dropdown.showPopover && !dropdown.matches(":popover-open")) dropdown.showPopover();
     dropdown.style.top = rect.bottom + 6 + "px";
     dropdown.style.left = rect.left + "px";
     requestAnimationFrame(function () {

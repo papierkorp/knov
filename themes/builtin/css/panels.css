@@ -124,6 +124,82 @@
   border-color: var(--danger);
 }
 
+#fp-file-actions .fp-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+#fp-file-actions .fp-menu-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
+}
+
+#fp-file-actions .fp-menu-btn:hover,
+#fp-file-actions .fp-menu-btn:focus-visible {
+  background: var(--bg-secondary);
+  color: var(--text);
+}
+
+.fp-menu {
+  position: fixed;
+  z-index: 30;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--text) 20%, transparent);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 150px;
+}
+
+.fp-menu[hidden] {
+  display: none;
+}
+
+.fp-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.85em;
+  text-align: left;
+  text-decoration: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.fp-menu-item:hover,
+.fp-menu-item:focus-visible {
+  background: var(--bg-secondary);
+}
+
+.fp-menu-item i {
+  width: 14px;
+  text-align: center;
+}
+
+.fp-menu-item--danger {
+  color: var(--danger);
+}
+
 .fp-file-modes {
   display: flex;
   flex-wrap: wrap;

@@ -243,10 +243,16 @@
                 {{if not .SystemPage}}
                 <div id="fp-file-actions">
                     <a  class="fp-action-btn fp-btn-edit"   id="fp-edit-link"   href="#" title="{{T "edit"}}"><i class="fa fa-pen"></i></a>
-                    <button class="fp-action-btn"           id="fp-rename-btn"  popovertarget="rename-modal"  title="{{T "rename"}}"><i class="fa fa-i-cursor"></i></button>
-                    <button class="fp-action-btn"           id="fp-rebuild-btn" title="{{T "rebuild"}}"><i class="fa fa-rotate"></i></button>
-                    {{if .ShowPDFFileButton}}<a  class="fp-action-btn"               id="fp-export-pdf-link" href="#" title="{{T "export to pdf"}}"><i class="fa fa-file-pdf"></i></a>{{end}}
-                    <button class="fp-action-btn fp-btn-delete" popovertarget="delete-modal" title="{{T "delete"}}"><i class="fa fa-trash"></i></button>
+                    <div class="fp-menu-wrap">
+                        <button type="button" class="fp-menu-btn" onclick="toggleFpFileMenu(this)" title="{{T "more actions"}}"><i class="fa fa-ellipsis-vertical"></i></button>
+                        <div class="fp-menu" hidden>
+                            <button type="button" class="fp-menu-item" popovertarget="rename-modal"><i class="fa fa-i-cursor"></i> {{T "rename"}}</button>
+                            <button type="button" class="fp-menu-item" popovertarget="move-modal"><i class="fa fa-folder-tree"></i> {{T "move"}}</button>
+                            <button type="button" class="fp-menu-item" id="fp-rebuild-btn"><i class="fa fa-rotate"></i> {{T "rebuild"}}</button>
+                            {{if .ShowPDFFileButton}}<a class="fp-menu-item" id="fp-export-pdf-link" href="#"><i class="fa fa-file-pdf"></i> {{T "export to pdf"}}</a>{{end}}
+                            <button type="button" class="fp-menu-item fp-menu-item--danger" popovertarget="delete-modal"><i class="fa fa-trash"></i> {{T "delete"}}</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="fp-file-modes" id="fp-file-modes">
                     <button class="fp-file-mode-btn active" data-mode="metadata"    onclick="switchFileSubPanel('metadata')"    title="{{T "metadata"}}"><i class="fa fa-circle-info"></i></button>
@@ -374,6 +380,20 @@
             <div class="modal-actions">
                 <button type="submit" class="btn-primary">{{T "Rename"}}</button>
                 <button type="button" class="btn-secondary" popovertarget="rename-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="move-modal" popover>
+    <div class="modal-content">
+        <h3>{{T "Move"}}</h3>
+        <form id="move-form" hx-post="" hx-vals='js:{"name": buildMoveTargetName()}' hx-swap="none">
+            <input type="text" id="move-folder-input" placeholder="{{T "path/to/folder"}}" autocomplete="off"/>
+            <script>document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById('move-folder-input');if(el&&window.initPathAutocomplete)window.initPathAutocomplete(el,'/api/files/folder-suggestions');})</script>
+            <div class="modal-actions">
+                <button type="submit" class="btn-primary">{{T "Move"}}</button>
+                <button type="button" class="btn-secondary" popovertarget="move-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
             </div>
         </form>
     </div>

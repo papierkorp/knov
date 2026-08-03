@@ -847,7 +847,11 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 
 	// redirect to the new file location
 	w.Header().Set("HX-Redirect", pathutils.ToFileURL(newPath))
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file renamed"))
+	if filepath.Dir(currentFullPath) != newDir {
+		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved"))
+	} else {
+		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file renamed"))
+	}
 	writeResponse(w, r, map[string]string{"filepath": newPath}, "")
 }
 

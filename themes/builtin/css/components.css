@@ -256,6 +256,8 @@
 
 #component-autocomplete {
   position: fixed;
+  inset: auto;
+  margin: 0;
   z-index: 99999;
   display: none;
   background: var(--bg);
