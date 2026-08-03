@@ -1146,7 +1146,7 @@ func handleAPIGetMetadataReferences(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderReferencesHTML(metadata.References)
+	html := render.RenderReferencesHTML(filePath, metadata.References)
 	if r.URL.Query().Get("sidebar") == "true" {
 		html = render.RenderReferencesSidebarHTML(metadata.References)
 	}
@@ -1203,7 +1203,7 @@ func handleAPIAddMetadataReference(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderReferencesHTML(references)
+	html := render.RenderReferencesHTML(filePath, references)
 	writeResponse(w, r, references, html)
 }
 
@@ -1225,6 +1225,7 @@ func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 	refURL := r.FormValue("url")
 
 	if filePath == "" || refURL == "" {
+		logging.LogWarning(logging.KeyApp, "delete reference: missing filepath or url in request")
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "filepath and url are required"), http.StatusBadRequest)
 		return
 	}
@@ -1257,7 +1258,7 @@ func handleAPIDeleteMetadataReference(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := render.RenderReferencesHTML(references)
+	html := render.RenderReferencesHTML(filePath, references)
 	writeResponse(w, r, references, html)
 }
 

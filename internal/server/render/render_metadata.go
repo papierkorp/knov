@@ -115,9 +115,10 @@ func RenderReferencesSidebarHTML(refs []files.Reference) string {
 }
 
 // RenderReferencesHTML renders the references list with a delete button per entry
-func RenderReferencesHTML(refs []files.Reference) string {
+func RenderReferencesHTML(filePath string, refs []files.Reference) string {
 	var html strings.Builder
 	html.WriteString(`<div id="component-references-list">`)
+	fmt.Fprintf(&html, `<input type="hidden" id="reference-filepath" name="filepath" value="%s">`, filePath)
 	if len(refs) == 0 {
 		fmt.Fprintf(&html, `<p class="no-items">%s</p>`, translation.SprintfForRequest(configmanager.GetLanguage(), "no references"))
 	}
