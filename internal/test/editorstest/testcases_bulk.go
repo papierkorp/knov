@@ -10,12 +10,15 @@ import (
 	"knov/internal/contentStorage"
 	"knov/internal/files"
 	"knov/internal/filter"
+	"knov/internal/logging"
 	"knov/internal/pathutils"
 	"knov/internal/test"
 )
 
 // caseBulkDeleteFiles mirrors handleAPIDeleteFilesBulk's tag-matching branch: find all files
-// tagged with a marker tag and delete each (file + metadata).
+// tagged with a marker tag and delete each (file + metadata). The tagged set is exactly the
+// paths seeded below, so this operates on them directly instead of walking every prod file to
+// rediscover what it just created.
 func caseBulkDeleteFiles() test.CaseResult {
 	name := "bulk-delete-files"
 	tag := "edtest-bulk-delete-tag"
@@ -25,7 +28,7 @@ func caseBulkDeleteFiles() test.CaseResult {
 		if err := writeFile(p, "# bulk delete sample\n"); err != nil {
 			return errCase(name, err)
 		}
-		if err := test.SeedMetadata(&files.Metadata{
+		if err := test.SeedMetadataNoRefresh(&files.Metadata{
 			Path:   pathutils.ToWithPrefix(p),
 			Editor: files.EditorTypeCodeMirror,
 			Tags:   []string{tag},
@@ -33,25 +36,22 @@ func caseBulkDeleteFiles() test.CaseResult {
 			return errCase(name, err)
 		}
 	}
-
-	allFiles, err := files.GetAllFiles()
-	if err != nil {
-		return errCase(name, err)
-	}
+	files.RefreshCaches()
 
 	deleted := 0
-	for _, f := range allFiles {
-		meta, err := files.MetaDataGet(f.Path)
+	for _, p := range paths {
+		normalized := pathutils.ToWithPrefix(p)
+		meta, err := files.MetaDataGet(normalized)
 		if err != nil || meta == nil || !slices.Contains(meta.Tags, tag) {
 			continue
 		}
-		fullPath := pathutils.ToDocsPath(pathutils.ToRelative(f.Path))
-		if err := os.Remove(fullPath); err != nil {
+		if err := os.Remove(pathutils.ToDocsPath(p)); err != nil {
 			continue
 		}
-		files.MetaDataDelete(f.Path)
+		files.MetaDataDeleteNoRefresh(logging.KeyApp, normalized)
 		deleted++
 	}
+	files.RefreshCaches()
 
 	stillExists := false
 	for _, p := range paths {

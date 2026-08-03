@@ -58,7 +58,7 @@ func writeCard(relPath, title string, tags []string, createdAt time.Time) error 
 	if err := writeFile(relPath, "# "+title+"\n"); err != nil {
 		return err
 	}
-	if err := test.SeedMetadata(&files.Metadata{
+	if err := test.SeedMetadataNoRefresh(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(relPath),
 		Editor: files.EditorTypeCodeMirror,
 		Tags:   tags,
@@ -130,7 +130,7 @@ func resetAndSeed() error {
 	if err := writeFile(testPath(excerptFile), "---\ntitle: excerpt\n---\n# Excerpt Card\n\nThis is the **excerpt** body text.\n"); err != nil {
 		return err
 	}
-	if err := test.SeedMetadata(&files.Metadata{
+	if err := test.SeedMetadataNoRefresh(&files.Metadata{
 		Path:   pathutils.ToWithPrefix(testPath(excerptFile)),
 		Editor: files.EditorTypeCodeMirror,
 	}); err != nil {

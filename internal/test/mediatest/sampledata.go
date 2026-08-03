@@ -61,7 +61,7 @@ func writeMediaFile(relPath string, content []byte) error {
 }
 
 func saveMediaMetadata(relPath string) error {
-	return test.SeedMetadata(&files.Metadata{Path: "media/" + relPath})
+	return test.SeedMetadataNoRefresh(&files.Metadata{Path: "media/" + relPath})
 }
 
 // linkDoc writes a docs file embedding an image link to the given media path and updates
@@ -71,7 +71,7 @@ func linkDoc(relDocPath, mediaRelPath string) error {
 	if err := writeFile(relDocPath, "# "+relDocPath+"\n\n![img](media/"+mediaRelPath+")\n"); err != nil {
 		return err
 	}
-	if err := test.SeedMetadata(&files.Metadata{Path: pathutils.ToWithPrefix(relDocPath), Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: pathutils.ToWithPrefix(relDocPath), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 	return files.UpdateLinksForSingleFile(pathutils.ToWithPrefix(relDocPath))
@@ -97,7 +97,7 @@ func resetAndSeed() error {
 	if err := writeFile(testPath(contextFile), "# media-context.md\n\ncontent\n"); err != nil {
 		return err
 	}
-	if err := test.SeedMetadata(&files.Metadata{Path: withPrefix(contextFile), Editor: files.EditorTypeCodeMirror}); err != nil {
+	if err := test.SeedMetadataNoRefresh(&files.Metadata{Path: withPrefix(contextFile), Editor: files.EditorTypeCodeMirror}); err != nil {
 		return err
 	}
 

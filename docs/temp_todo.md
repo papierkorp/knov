@@ -26,7 +26,6 @@
   - wire the editor settings directly in the editor via a button menu besides the toolbar
 - settings/configs to hide certain folders from different searches e.g. hide "todo" folders in the browse slideout - tree/browse
 - autocomplete only shows 20 entries?
-- run all tests in my prod takes forever => is there a need to get all files multiple times? how can we optimize this? can we use the filter and filter for the test collection so all other files are ignored?
 - refactor the built in theme and make the slideout modular => each feature (e.g. tree slideout, search, file history) can be easily plugged in anywhere
 
 # every other time
