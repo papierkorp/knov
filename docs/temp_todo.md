@@ -39,9 +39,7 @@
 - deleting references does not work
 - better solution for all of the xxxNoRefresh (cache) functions
 - translation for log?
-- atomic
-  - `handleAPISetMetadata` went from one atomic save to up to six independently-locked field writes, changing the endpoint's failure/atomicity contract (partial success is now possible, and concurrent readers can see an in-between state). Probably fine given the new model, but it's a real behavioral change that isn't called out anywhere.
-  - `handleAPIUpdateDashboard`/`handleAPIRenameDashboard` and `handleAPISetMetadata` moved from one atomic-looking (but actually unsynchronized) write to several independently-locked field writes. Each individual field is now race-safe, but a single "set metadata" HTTP request no longer holds one lock across all its fields — a concurrent `MoveCard` could still interleave between, say, the `SetTags` and `SetParents` calls within the same request. That's a real improvement over "no locking at all," just not full request-level atomicity; the comment above `handleAPISetMetadata` acknowledges this honestly, which I'd rather see than a claim of full atomicity that isn't true.
+
 
 # every other time
 

@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 
 	"knov/internal/chat"
 	"knov/internal/contentStorage"
@@ -833,6 +834,67 @@ func SetParentsNoRefresh(path string, parents []string) error {
 	fanOut := parentChildFanOut(normalized, oldParents, newParents)
 	for _, apply := range fanOut {
 		apply()
+	}
+	return nil
+}
+
+// SetMetadataNoRefresh applies patch's user-owned fields (editor, tags, parents, createdAt,
+// references) together with a derived-field resync in a single MetaDataMutate call, so the
+// whole request-level update happens under one lock acquisition instead of one per field - a
+// concurrent kanban move or file-sync on the same path can no longer interleave between, say,
+// the tags and parents writes. Fan-out onto other paths (parents' Kids, linked files'
+// LinksToHere) still runs after this path's own lock is released - see parentChildFanOut and
+// updateLinksToHereFanOut.
+func SetMetadataNoRefresh(path string, patch *Metadata) error {
+	normalized := pathutils.ToWithPrefix(path)
+
+	var oldParents, newParents []string
+	var fanOut []func()
+	err := MetaDataMutate(normalized, func(m *Metadata, existed bool) (bool, error) {
+		if !existed {
+			m.CreatedAt = time.Now()
+		}
+
+		if patch.Editor != "" {
+			m.Editor = patch.Editor
+		}
+		if len(patch.Tags) > 0 {
+			oldKanbanStatus := kanbanStatusFromTags(m.Tags)
+			cleaned, err := sanitizeKanbanTags(patch.Tags)
+			if err != nil {
+				logging.LogWarning(logging.KeyApp, "tag sanitization for %s: %v", normalized, err)
+			}
+			m.Tags = cleaned
+			applyKanbanTimestamps(m, oldKanbanStatus)
+		}
+		if len(patch.Parents) > 0 {
+			oldParents = append(oldParents, m.Parents...)
+			for _, parent := range patch.Parents {
+				newParents = append(newParents, utils.CleanLink(parent))
+			}
+			m.Parents = newParents
+		}
+		if !patch.CreatedAt.IsZero() {
+			m.CreatedAt = patch.CreatedAt
+		}
+		if patch.References != nil {
+			m.References = patch.References
+		}
+
+		fanOut = recomputeDerivedFields(m)
+		return true, nil
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, apply := range fanOut {
+		apply()
+	}
+	if newParents != nil {
+		for _, apply := range parentChildFanOut(normalized, oldParents, newParents) {
+			apply()
+		}
 	}
 	return nil
 }

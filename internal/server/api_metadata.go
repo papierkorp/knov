@@ -213,43 +213,12 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// each Set*NoRefresh call is its own locked read-modify-write, so a concurrent editor of
-	// the same path can't be reverted - but none of them rebuilds the aggregate caches on its
-	// own; that happens once at the end instead of once per field.
+	// SetMetadataNoRefresh applies every provided field plus the derived-field resync under a
+	// single lock acquisition for path, so the request is atomic against other writers again.
 	path := pathutils.ToWithPrefix(metadata.Path)
-	if err := files.MetaDataSyncNoRefresh(path); err != nil {
+	if err := files.SetMetadataNoRefresh(path, &metadata); err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
 		return
-	}
-	if metadata.Editor != "" {
-		if err := files.SetEditorNoRefresh(path, metadata.Editor); err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
-			return
-		}
-	}
-	if len(metadata.Tags) > 0 {
-		if err := files.SetTagsNoRefresh(path, metadata.Tags); err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
-			return
-		}
-	}
-	if len(metadata.Parents) > 0 {
-		if err := files.SetParentsNoRefresh(path, metadata.Parents); err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
-			return
-		}
-	}
-	if !metadata.CreatedAt.IsZero() {
-		if err := files.SetCreatedAt(path, metadata.CreatedAt); err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
-			return
-		}
-	}
-	if metadata.References != nil {
-		if err := files.SetReferences(path, metadata.References); err != nil {
-			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save metadata"), http.StatusInternalServerError)
-			return
-		}
 	}
 	files.RefreshCaches()
 
