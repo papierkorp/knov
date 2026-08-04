@@ -39,7 +39,7 @@ import (
 // @Success 200 {array} object "array of {value, label, detail}"
 // @Router /api/files/folder-suggestions [get]
 func handleAPIGetFolderSuggestions(w http.ResponseWriter, r *http.Request) {
-	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
+	q := r.URL.Query().Get("q")
 
 	// get cached folder paths, fallback to live data if needed
 	folderPaths, err := files.GetAllFolderPathsFromCache()
@@ -54,17 +54,13 @@ func handleAPIGetFolderSuggestions(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	results := make([]render.AutocompleteItem, 0, 20)
-	for _, folderPath := range folderPaths {
-		if q == "" || strings.Contains(strings.ToLower(folderPath), q) {
-			results = append(results, render.AutocompleteItem{
-				Value:  folderPath,
-				Label:  filepath.Base(strings.TrimSuffix(folderPath, "/")),
-				Detail: folderPath,
-			})
-			if len(results) >= 20 {
-				break
-			}
+	matches := files.RankAutocompleteMatches(folderPaths, q, 20)
+	results := make([]render.AutocompleteItem, len(matches))
+	for i, folderPath := range matches {
+		results[i] = render.AutocompleteItem{
+			Value:  folderPath,
+			Label:  filepath.Base(strings.TrimSuffix(folderPath, "/")),
+			Detail: folderPath,
 		}
 	}
 
@@ -1191,7 +1187,7 @@ func handleAPIFilesHeaders(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {array} object "array of {value, label, detail}"
 // @Router /api/files/autocomplete [get]
 func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
-	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
+	q := r.URL.Query().Get("q")
 
 	allFiles, err := files.GetAllFilesCached()
 	if err != nil {
@@ -1199,19 +1195,15 @@ func handleAPIFilesAutocomplete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results := make([]render.AutocompleteItem, 0, 20)
-	for _, f := range allFiles {
-		rel := pathutils.ToRelative(f.Path)
-		if q == "" || strings.Contains(strings.ToLower(rel), q) {
-			results = append(results, render.AutocompleteItem{
-				Value:  rel,
-				Label:  filepath.Base(rel),
-				Detail: rel,
-			})
-			if len(results) >= 20 {
-				break
-			}
-		}
+	paths := make([]string, len(allFiles))
+	for i, f := range allFiles {
+		paths[i] = pathutils.ToRelative(f.Path)
+	}
+
+	matches := files.RankAutocompleteMatches(paths, q, 20)
+	results := make([]render.AutocompleteItem, len(matches))
+	for i, rel := range matches {
+		results[i] = render.AutocompleteItem{Value: rel, Label: filepath.Base(rel), Detail: rel}
 	}
 
 	writeResponse(w, r, results, render.RenderAutocompleteList(results))

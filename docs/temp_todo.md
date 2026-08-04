@@ -23,7 +23,6 @@
       - for devs
   - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
   - wire the editor settings directly in the editor via a button menu besides the toolbar
-- autocomplete only shows 20 entries?
 - refactor the built in theme and make the slideout modular => each feature (e.g. tree slideout, search, file history) can be easily plugged in anywhere
 - i like the https://traven.dev/ look with a topbar with settings in the topbar to enable/disable certain features
 - todo editor with markdown on top/bottom + header

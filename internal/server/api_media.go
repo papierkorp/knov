@@ -174,7 +174,7 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {array} object "array of {value, label, detail}"
 // @Router /api/media/autocomplete [get]
 func handleAPIMediaAutocomplete(w http.ResponseWriter, r *http.Request) {
-	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
+	q := r.URL.Query().Get("q")
 
 	mediaFiles, err := files.GetAllMediaFiles()
 	if err != nil {
@@ -182,15 +182,15 @@ func handleAPIMediaAutocomplete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results := make([]render.AutocompleteItem, 0, 20)
-	for _, f := range mediaFiles {
-		rel := strings.TrimPrefix(f.Path, "media/")
-		if q == "" || strings.Contains(strings.ToLower(rel), q) {
-			results = append(results, render.AutocompleteItem{Value: rel, Label: filepath.Base(rel), Detail: rel})
-			if len(results) >= 20 {
-				break
-			}
-		}
+	paths := make([]string, len(mediaFiles))
+	for i, f := range mediaFiles {
+		paths[i] = strings.TrimPrefix(f.Path, "media/")
+	}
+
+	matches := files.RankAutocompleteMatches(paths, q, 20)
+	results := make([]render.AutocompleteItem, len(matches))
+	for i, rel := range matches {
+		results[i] = render.AutocompleteItem{Value: rel, Label: filepath.Base(rel), Detail: rel}
 	}
 
 	writeResponse(w, r, results, render.RenderAutocompleteList(results))
