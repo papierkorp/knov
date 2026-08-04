@@ -11,8 +11,6 @@
   - browse media
   - use both builtin and rail theme
 - translations
-- i like the https://traven.dev/ look with a topbar with settings in the topbar to enable/disable certain features
-- wiki link dark mode colors
 
 **per ai**
 - not important
@@ -27,6 +25,11 @@
   - wire the editor settings directly in the editor via a button menu besides the toolbar
 - autocomplete only shows 20 entries?
 - refactor the built in theme and make the slideout modular => each feature (e.g. tree slideout, search, file history) can be easily plugged in anywhere
+- i like the https://traven.dev/ look with a topbar with settings in the topbar to enable/disable certain features
+- todo editor with markdown on top/bottom + header
+- no success message / anything after successfull rename and the modal stays up (need to wait quite a bit of time)
+- kanban refresh - destroys order
+- update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse)
 
 # every other time
 

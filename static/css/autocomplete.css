@@ -1,0 +1,55 @@
+/* shared autocomplete dropdown
+   (floating list created by static/wiki-autocomplete.js,
+   items rendered by render.RenderAutocompleteList)
+   applies to every theme — do not duplicate in theme CSS */
+
+#component-autocomplete {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  z-index: 99999;
+  display: none;
+  background: var(--bg);
+  color: var(--neutral);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  min-width: 320px;
+  max-width: 520px;
+  max-height: 240px;
+  overflow-y: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  font-size: 13px;
+}
+
+#component-autocomplete .autocomplete-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+#component-autocomplete .autocomplete-item {
+  padding: 5px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#component-autocomplete .autocomplete-item.active {
+  background: var(--text);
+  color: var(--bg);
+}
+
+#component-autocomplete .autocomplete-item-label {
+  font-weight: 600;
+}
+
+#component-autocomplete .autocomplete-item-detail {
+  margin-left: 8px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+#component-autocomplete .autocomplete-item.active .autocomplete-item-detail {
+  color: var(--bg);
+}
