@@ -12,6 +12,7 @@
   - use both builtin and rail theme
 - translations
 - i like the https://traven.dev/ look with a topbar with settings in the topbar to enable/disable certain features
+- wiki link dark mode colors
 
 **per ai**
 - not important
@@ -26,7 +27,6 @@
   - wire the editor settings directly in the editor via a button menu besides the toolbar
 - autocomplete only shows 20 entries?
 - refactor the built in theme and make the slideout modular => each feature (e.g. tree slideout, search, file history) can be easily plugged in anywhere
-- change dokuwiki_example.txt to a genuine example file and remove all personal data
 
 # every other time
 

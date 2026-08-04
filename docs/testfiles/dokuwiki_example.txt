@@ -1,438 +1,177 @@
-====== Testdokuwiki ======
+====== DokuWiki Example ======
 
-<catlist p:projects -nohead -noNsinbold -noAddPageButton>
-====== Installation ======
+<catlist ns:projects -nohead -noNsinbold -noAddPageButton>
 
-**Upgrade 10/2023**
+This file demonstrates the DokuWiki syntax elements supported by the converter. It is not real content - just a syntax showcase.
 
-```
-asdf
-ddd eee
-```
+===== Text formatting =====
 
-=> ''about:config'' - ''security.tls.insecure_fallback_hosts'' - ''ops-pipeline-testfaelle-test.sirconic-k8s.de''
-=> remove cookies in url bar
+**bold**, //italic//, __underline__, ''monospace'' and <del>deleted</del> text can be combined: **__//''all at once''//__**.
 
-__italic__ => should use ''_italic_'' instead of ''<ul>italic</ul'' in markdown
+  DokuWiki also supports: **fetten**, //kursiven//, __unterstrichenen__ und ''dicktengleichen'' Text.
 
-===== Gitlab =====
+Superscript and subscript: 19^th^ and H<sub>2</sub>O.
 
-https://wiki.leasone.de/de/devops/kubernetes/kubernetes_installationen#gitlab-installation
+__Escaped syntax__ => should render as ''_italic_'' instead of turning into italic in markdown.
 
-[[wiki:DokuWiki]] can highlight sourcecode, which makes it easier to read. It uses the [[http://qbnz.com/highlighter/|GeSHi]] Generic Syntax Highlighter -- so any language supported by GeSHi is supported. The syntax uses the same code and file blocks described in the previous section, but this time the name of the language syntax to be highlighted is included inside the tag, e.g. ''<nowiki><code java></nowiki>'' or ''<nowiki><file java></nowiki>''.
+===== Links =====
 
-**[[https://docs.gitlab.com/charts/installation/tools.html|Vorraussetzungen]]**
-===== Gitlab installation =====
+[[wiki:start]] is an internal wiki link. See also [[intro#installation]] for an anchor link, or [[intro:installation:steps|the installation guide]] for a labelled one.
 
-https://wiki.leasone.de/de/devops/kubernetes/kubernetes_installationen#gitlab-installation
+  * Internal Link1: [[wiki:start]]
+  * Internal Link2: [[intro:section:subsection|example]]
+  * Internal Link3: [[#link_anchor]]
+  * Internal Link4: [[#link_anchor|jump here]]
+  * External Link1: [[www.example.com]]
+  * External Link2: [[https://example.com]]
+  * External Link3: [[example|www.example.com]]
+  * External Link4: [[example|https://example.com]]
 
-**[[https://docs.gitlab.com/charts/installation/tools.html|Vorraussetzungen]]**
+[[wiki:DokuWiki]] can highlight sourcecode using the [[http://qbnz.com/highlighter/|GeSHi]] Generic Syntax Highlighter, e.g. ''<nowiki><code java></nowiki>'' or ''<nowiki><file java></nowiki>''.
+
+===== Lists =====
 
   * first
-  * small
-    * a=mc2
-  * list
-  * example
+  * second
+    * nested item
+  * third
 
-  * Anotherlist
-    * with a secondlevel
+  * Another list
+    * with a second level
       * and a third level
-      * https://docs.gitlab.com/charts/installation/secrets.html#postgresql-password
-      * a link above
-        * a forth level header
-        * ++ folded plugin in a list |
+        * a fourth level
+        * ++ folded block in a list |
 <sxh>
 # comment
-yamltest:
-  nothing_important: true
+example:
+  key: value
 </sxh>
 ++
-        * another 4th level after folded
-        * ''code line in 4th level''
-        * ''# comment in single code line''
-      * another 3rd level
-        * ''singel codeline 1''
-        * aaaaaaabbbbbbbccccccccccccc
-        * ''\dx''
-      * Secret erstellen
-        * ''kubectl delete secret xxx -n yyy''
-        * ''kubectl create secret generic xxx -n yyy --from-literal=password="zzz"''
-      * ''helm upgrade --install gitlab gitlab/gitlab -f values.yaml --namespace="gitlab" --create-namespace --timeout 600s --version "8.0.1"''
-      * ++ Output |
+        * another item after the fold
+
+===== Code blocks =====
+
+<code>
+plain code block, no language
+</code>
+
 <code bash>
-Release "gitlab" has been upgraded. Happy Helming!
-NAME: gitlab
-LAST DEPLOYED: Thu Jun  6 10:41:16 2024
-NAMESPACE: gitlab
-STATUS: deployed
-REVISION: 3
-NOTES:
-=== CRITICAL
-The following charts are included for evaluation purposes only. They will not be supported by GitLab Support
-for production workloads. Use Cloud Native Hybrid deployments for production. For more information visit
-https://docs.gitlab.com/charts/installation/index.html#use-the-reference-architectures.
-- Redis
-- Gitaly
-- Praefect
-
-=== NOTICE
-The minimum required version of PostgreSQL is now 13. See https://gitlab.com/gitlab-org/charts/gitlab/-/blob/master/doc/installation/upgrade.md for more details.
-
-## NOTICE
-You've installed GitLab Runner without the ability to use 'docker in docker'.
-The GitLab Runner chart (gitlab/gitlab-runner) is deployed without the `privileged` flag by default for security purposes. This can be changed by setting `gitlab-runner.runners.privileged` to `true`. Before doing so, please read the GitLab Runner chart's documentation on why we
-chose not to enable this by default. See https://docs.gitlab.com/runner/install/kubernetes.html#running-docker-in-docker-containers-with-gitlab-runners
-</code>
-++
-    * Settings
-      * Admins Passwort: "zzz" - ''kubectl get secret gitlab-gitlab-initial-root-password -n gitlab -ojsonpath='{.data.password}' | base64 --decode ; echo''
-
-
-**Problem**
-
-Wir wollen keine klartext Passwörter im Repo (z.B. db.yml)
-
-**Lösungsvorschläge**
-1. per externen passwort manager
-  * vorgehen
-    * im kubernetes wird ein external secrets operator installiert
-    * passwörter werden in einem passwort manager gespeichert (z.B. gitlab, hashicorp vault)
-    * im repo wird der external secrets operator referenziert
-    * im external secrets operator wird der passwort manager referenziert
-    * der external secrets operator erkennt die passwort referenz und legt ein secret im jeweiligen namespace an
-  * vorteile
-    * einfache rotation von passwörter durch zentrales management
-    * gar kein passwort im repo
-  * nachteile
-    * bissl mehr setup aufwand
-    * neues externes tool benötigt (fals wir nicht gitlab als passwort manager verwenden)
-2. per verschlüsseltem secret in git
-  * vorgehen
-    * im kubernetes ein cluster secret tool installieren
-    * per cluster secret tool ein verschlüsseltes passwort erstellen und im repo ablegen
-    * cluster secret tool erkennt das verschlüsselte passwort im kubernetes und entschlüsselt on the go
-  * vorteile
-    * secret änderungen werden im git getracked
-  * nachteile
-    * nicht so flexibel
-    * abhängig vom cluster secret zertifikat (welches ablaufen kann)
-3. per gitlab variablen + pipeline
-  * vorgehen
-    * secret variablen in gitlab speichern
-    * per gitlab ci/cd pipeline secret basierend auf diesen vars erstellen
-    * per gitlab ci/cd pipeline secret ins kubernetes pushen
-  * vorteile
-    * schnell eingerichtet
-    * keine externen tools nötig
-  * nachteile
-    * nicht so flexibel
-    * secrets laufen durch ci/cd
-    * könnte leicht kaputt gehen
-    * hart zu scalen
-
-===== GitLab Update/Upgrades =====
-
-<code sh update_gitlab.sh>
 #!/bin/bash
-
-VERSION="xtest10"
+echo "hello world"
 </code>
 
-===== vial =====
-
-https://www.reddit.com/r/glorious/comments/rxj1h8/getting_started_with_vial_and_why_you_might_use/
-https://www.youtube.com/watch?v=POi9ttF2dsk
-
-
-**How does vial work**
-
-In general, everything is stored on the keyboard. Nothing is stored on the computer.
-
-The [[https://get.vial.today/|Vial]] configuration is stored in (emulated) [[https://en.wikipedia.org/wiki/EEPROM|EEPROM]] memory on the microcontroller (in some cases, on an external IC connected to the microcontroller). The Vial keymap overrides the keymap in the firmware ([[https://docs.keeb.io/via|Via]] does the same). Thus the keymap in the firmware only has an effect when the EEPROM memory is reset. After a reset, Vial copies the keymap stored inside the firmware to the EEPROM memory; in other words, it starts out with an exact copy of the firmware's keymap.
-
-  * You can export the Vial configuration to a file, manipulate this file, and import it back in. For instance, tedious changes could be automated by some script this way. Exporting the Via configuration is also a good idea for backing up the Vial configuration, as it is easily wiped out (much more easily than the firmware itself)
-  * Source code files for the Vial firmware itself, for example, containing the default key map. These are only required if you build the Vial firmware from source (not if getting the .bin or .hex file from somewhere)
-  * Some settings for the Vial client is stored on the computer, but this isn't the keyboard configuration (though it may affect how the keyboard configuration is changed).
-
-
-__Bug in Via's import function__
-
-Note that there is a [[https://www.reddit.com/r/Keychron/comments/1aozam7/comment/kqew1ms/|fault in Via's import function]], and thus not all configuration survives the export/import cycle. I don't know if Vial has the same bug. Due to this, manual changes may have to be performed after every import...
-
-
-
-====== more tests ======
-
-  * Internal Link1: [[ai#ollama_open-webui]]
-  * Internal Link2: [[test:testA:testAB:testABA|ollama]]
-  * Internal Link3: [[#link_anchor]]
-  * Internal Link4: [[#link_anchor|test]]
-  * Internal Link5: [[doku>config:htmlok|HTML]]
-  * External Link1: [[www.google.de]]
-  * External Link2: [[https://google.de]]
-  * External Link3: [[google|www.google.de]]
-  * External Link4: [[google|https://google.de]]
-
-
-
-====== link anchor ======
-
-++++ folded with 4 |
-<codify bash>
-# comment
-name=test
-echo $name
-</codify>
+<sxh yaml>
+service:
+  name: example
+  replicas: 3
+</sxh>
 
 <codify go>
 package main
 
-import (
-  "fmt"
-  "net/http"
-)
+import "fmt"
 
-func start_server_native() {
-  fmt.Println("Starting native HTTP server on http://localhost:1322")
-
-  http.HandleFunc("/", native_template)
-  http.HandleFunc("/templ", native_templ)
-
-  err := http.ListenAndServe(":1322", nil)
-  if err != nil {
-    fmt.Printf("Error starting native server: %v\n", err)
-    return
-  }
+func main() {
+	fmt.Println("hello world")
 }
 </codify>
+
+++++ folded code, click to expand |
+<code bash>
+# comment
+name=example
+echo "$name"
+</code>
 ++++
 
------
-
-splitline with a table
-
+===== Tables =====
 
 <datatables searching="true" paging-type="full_numbers" buttons='[ "copy", "csv" ]'>
-^ Name                                                                                                |                                                      ^ Art          ^ Kapitel  ^ Status         ^ Wertung  ^
-| Abyss Rage                                                                                          |                                                      | Manga        | 64       | Laufend        | 09       |
-| Aphorism                                                                                            |                                                      | Manga        | 14       | Laufend        | 07       |
-| God of Highschool                                                                                   |                                                      | Manga        | 176      | Laufend        | 08       |
-| Hardcore Leveling Warrior                                                                           |                                                      | Manga        | 174      | Laufend        | 10       |
-| Kuang Shen                                                                                          |                                                      | Manga        | 46       | Laufend        | 09       |
-| Land Lock                                                                                           |                                                      | Manga        | 34       | Abgeschlossen  | 08       |
-| Maze Age Z                                                                                          |                                                      | Manga        | 26       | Abgesetzt      | 08       |
-| Solo Leveling                                                                                       |                                                      | Manga        | 128      | Laufend        | 10       |
-| Unkown Code                                                                                         |                                                      | Manga        | 82       | Abgeschlossen  | 08       |
-| Nano Hazard                                                                                         |                                                      | Manga        | 25       | Abgeschlossen  | 08       |
+^ Name        ^ Category  ^ Count  ^ Status       ^
+| Alpha       | Sample    | 12     | Active       |
+| Beta        | Sample    | 34     | Active       |
+| Gamma       | Sample    | 56     | Archived     |
 </datatables>
 
-
-===== link anchor subheader 1 =====
+===== Images =====
 
 Image Example:
 
-{{:p:it:pasted:20211204-020045.png}}
+{{:example:pasted:screenshot.png}}
 
-{{ :p:it:hardware:2x3trrs.svg |}}
+{{ :example:diagrams:layout.svg |}}
 
-{{ :p:it:hardware:macropad6keys.svg | SVG}}
+{{ :example:diagrams:overview.svg | An SVG diagram}}
 
-{{ :p:it:electronics:mysterium_flashing_guide.pdf | QMK Toolbox Flashing Guide}}
-
-
-==== link anchor subheader 2 ====
-
-{{..:hardware:tablelayout?rowsHeaderSource=1&rowsVisible=auto&colwidth="300px,100px,600px"}}
-^ Part                          ^ Amount  ^ Note                                                              ^
-| PCB                           | 2       | Left & Right                                                      |
-| 0.91 OLED Display             | 2       | 128x32                                                            |
-| Pro Micro Controller          | 2       | May use any other compatible controller.                          |
+===== Columns =====
 
 <col2>
 {{tablelayout?rowsHeaderSource=Auto}}
-^ Language                 ^ Available language mode(s)                      ^
-| ASP.NET                  | asp, aspx                                       |
-| C                        | c                                               |
-| C%%++%%, cpp, cplusplus  |                                                 |
-| C#                       | cs, csharp                                      |
-| JSX                      | jsx                                             |
-| JSON                     | json                                            |
-| Julia                    | jl, julia                                       |
+^ Language     ^ Available mode(s)  ^
+| Go           | go, golang         |
+| Python       | py, python         |
+| JSON         | json               |
 <sep2>
-^ Language       ^ Available language mode(s)                                          ^
-| Kotlin         | kotlin, kt                                                          |
-| SQL            | cql, mssql, mysql, plsql, postgres, postgresql, pgsql, sql, sqlite  |
-| Swift          | swift                                                               |
-| TypeScript     | ts, typescript                                                      |
-| YAML           | yaml, yml                                                           |
+^ Language     ^ Available mode(s)  ^
+| YAML         | yaml, yml          |
+| SQL          | sql, sqlite        |
+| TypeScript   | ts, typescript     |
 </col>
 
-=== link anchor subheader 3 ===
-
-Escape 1: ''smb:%%//%%nas/transfer/''
-Escape 2: command1 %%||%% command2
-Escape 3: %%//%% CHANGE THIS
-Escape 4: "%%{{!!first}}%%"
-Escape 5: %%open N++%%
-Escape 6: ''%%baseURL = https://google.de%%''
-Escape 7: https:%%//%%github.com/bitst0rm-pub/Formatter/issues/62
-Escape 8: %%----%% (hr)
-Escape 9: python name: %%__name__%%
-
-== link anchor subheader 4 ==
-
-= link anchor subheader 5 =
-
-====== another main header ======
-
-some text
-
-**Included Text via [[https://www.dokuwiki.org/plugin:include|Include Plugin]]**
-
-{{section>test:testA:testAB:testABA#another_anchor_test}}
-
-
-==== Iris ====
-
-FLAHNS - 5mm Hotswap PCB Silicone Bumpers (1$)
-Cherry MX Stabilizer 2u - PCB Mount (2-pack) (4$)
-Coiled USB-C to USB-C Cable (4$)
-Iris PE (Phoenix Edition) Black Aluminum Plates (20$)
-Iris PE (Phoenix Edition) Acrylic Middle Layer - Frosted (28$)
-SKUF Silicone Rubber Keyboard Feet (5$)
-Durock Shrimp (Silent Tactile T1) Switches (40$)
-Iris Rev. 8 Keyboard - Hotswap PCBs (80$)
-
-
-===== prom =====
-
-
-  * [[https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack|Prometheus-Community Stack]]
-    * ''helm repo add prometheus-community https://prometheus-community.github.io/helm-charts''
-    * ''helm repo update''
-    * ''helm install prometheus prometheus-community/kube-prometheus-stack --namespace prom --create-namespace -f prometheus_values.yaml''
-    * ++ prometheus_valus.yaml |
-<sxh yaml>
-prometheus:
-  prometheusSpec:
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          storageClassName: 'nfs-client'
-          accessModes: ['ReadWriteOnce']
-          resources:
-            requests:
-              storage: 50Gi
-        selector: {}
-grafana:
-  defaultDashboardsTimezone: Europe/Berlin
-  persistence:
-    enabled: true
-    type: sts # statefulset
-    storageClassName: 'nfs-client'
-    accessModes:
-      - ReadWriteOnce
-    size: 20Gi
-  adminPassword: xxx
-</sxh>
-++
-    * ++ Ausgabe | <code>
-NAME: prometheus
-LAST DEPLOYED: Wed Jan 11 14:02:40 2023
-NAMESPACE: prom
-STATUS: deployed
-REVISION: 1
-NOTES:
-kube-prometheus-stack has been installed. Check its status by running:
-  kubectl --namespace prom get pods -l "release=prometheus"
-
-Visit https://github.com/prometheus-operator/kube-prometheus for instructions on how to create & configure Alertmanager and Prometheus instances using the Operator.
-</code>++
-  * Installation prüfen
-    * ''k get pods -n prom''
-  * Konfigurationen
-    * DNS für Prometheus und Grafana anlegen
-      * Schlundtech: prometheus.sirconic-group.de
-      * Schlundtech: grafana.sirconic-group.de
-    * Grafana Admin Daten rausfinden
-      * ''k get secret --namespace prom prometheus-grafana -o yaml''
-      * admin-user Code: ''k get secret --namespace prom prometheus-grafana -o=jsonpath='{.data.admin-user}' | base64 -d''
-      * admin-password Code: ''k get secret --namespace prom prometheus-grafana -o=jsonpath='{.data.admin-password}' | base64 -d''
-    * Error: ''connect: connection refused'' bei Kubernetes Parts verhindern [[sirconic:systemadmin:kubernetes:kubernetesfehlermeldungen#prometheusconnectconnection_refused|siehe hier]]
-      * controller-manager
-        * auf jedem Master: ''sudo vi /etc/kubernetes/manifests/kube-controller-manager.yaml'' und ''--bind-adress'' von ''127.0.0.1'' auf ''0.0.0.0'' ändern
-        * ++ kube-controller-manager.yaml |
-<sxh yaml>
-apiVersion: v1
-kind: Pod
-metadata:
-  ...
-spec:
-  containers:
-  - command:
-    - kube-controller-manager
-    ...
-    - --bind-address=0.0.0.0
-    ...
-</sxh>++
-      * kube-scheduler
-        * auf jedem Master: ''sudo vi /etc/kubernetes/manifests/kube-scheduler.yaml'' und ''--bind-adress'' von ''127.0.0.1'' auf ''0.0.0.0'' ändern
-        * ++ kube-scheduler.yaml |
-<sxh yaml>
-apiVersion: v1
-kind: Pod
-metadata:
-  ...
-spec:
-  containers:
-  - command:
-    - kube-controller-manager
-    ...
-    - --bind-address=0.0.0.0
-    ...
-</sxh>++
-      * kube-proxy
-        * Per ''kubectl edit cm/kube-proxy -n kube-system'' die ''metricsBindAddress'' von ''""'' auf ''0.0.0.0:10249'' ändern
-
-====== Quotes ======
+===== Quotes =====
 
 > single quote
 
 > another single
->> with an anwser
->>> and a thir person?
->> second person again
+>> with an answer
+>>> and a third reply
+>> second reply again
 > finish
 
-====== Drucker reparieren ======
+===== Escaping =====
 
-Folgende Datei lokal öffnen: {{ :sh:doku:drucker:haufig_probleme_beim_drucken.chm | Häufige Probleme beim Drucken}}
+Escape 1: ''smb:%%//%%server/share''
+Escape 2: command1 %%||%% command2
+Escape 3: %%//%% not a comment
+Escape 4: %%----%% (not a horizontal rule)
+Escape 5: python name: %%__name__%%
 
-====== Theory ======
+===== Notes =====
 
-<col2>
-![20221026-092942.png](/files/media/p/programmieren/pasted/20221026-092942.png)
-<sep2>
-![20221026-085146.png](/files/media/p/programmieren/pasted/20221026-085146.png)
-</col>
+**Problem**
 
+We want to avoid storing plaintext secrets in a repository (e.g. ''config.yml'').
 
-===== 1.1 Formatierungen =====
+**Possible approaches**
 
-DokuWiki unterstützt **fetten**, //kursiven//, __unterstrichenen__ und ''dicktengleichen'' ([[wpde>Dickte|Dickte]]) Text. Natürlich kann auch alles **__//''kombiniert''//__** werden.
+1. External secret manager
+  * process
+    * install a secret operator in the cluster
+    * store secrets in the external manager
+    * reference the secret from the repository
+  * pros
+    * central rotation of secrets
+    * no plaintext secret in the repository
+  * cons
+    * additional setup effort
+    * requires an extra external tool
+2. Encrypted secret in git
+  * process
+    * install a cluster secret tool
+    * commit an encrypted secret to the repository
+    * the tool decrypts it on the fly
+  * pros
+    * changes are tracked in git
+  * cons
+    * less flexible
+    * depends on a certificate that can expire
 
-  DokuWiki unterstützt **fetten**, //kursiven//, __unterstrichenen__ und ''dicktengleichen'' Text.
-  Natürlich kann auch alles **__//''kombiniert''//__** werden.
+===== link anchor =====
 
-Ebenso gibt es <sub>tiefgestellten</sub> und <sup>hochgestellten</sup> Text.
+some text linking back up to [[#Links|the links section]].
 
-  Ebenso gibt es <sub>tiefgestellten</sub> und <sup>hochgestellten</sup> Text.
+====== another main header ======
 
-Text kann als <del>gelöscht</del>((wer das Tag "eingefügt" (%%<ins>%%) benötigt. kann dies über Plugins realisieren. Siehe ganz unten!)) markiert werden.
+**Included Text via [[https://www.dokuwiki.org/plugin:include|Include Plugin]]**
 
-  Text kann als <del>gelöscht</del> markiert werden.
-
-2 Leerzeichen (  ) am Anfang eines Satzes bzw. 1 Tab (	) führt dazu dass der Satz als %%<code>%% formatiert wird.
-Beispiel:
-%%  Beispielcode%%
-  Beispielcode
+{{section>intro:section:subsection#another_anchor_test}}

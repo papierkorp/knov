@@ -456,6 +456,18 @@ function setupFilePage() {
     htmx.process(rebuildBtn);
   }
 
+  // dokuwiki detection - a rendered dokuwiki file still starts with its
+  // "====== heading ======" syntax since no dokuwiki parser exists anymore,
+  // only the plaintext fallback (which HTML-escapes but doesn't strip it)
+  const convertLink = document.getElementById("fp-convert-dokuwiki-link");
+  if (convertLink) {
+    const article = document.querySelector("article.file-content");
+    const isDokuwiki = !!article && article.textContent.trimStart().startsWith("======");
+    convertLink.hidden = !isDokuwiki;
+    if (isDokuwiki)
+      convertLink.href = "/api/files/export/markdown?filepath=" + fp;
+  }
+
   const renameForm = document.getElementById("rename-form");
   const renameInput = document.getElementById("rename-input");
   if (renameForm) {
