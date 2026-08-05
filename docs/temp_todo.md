@@ -22,13 +22,12 @@
       - for usage
       - for devs
   - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
-  - wire the editor settings directly in the editor via a button menu besides the toolbar
 - refactor the built in theme and make the slideout modular => each feature (e.g. tree slideout, search, file history) can be easily plugged in anywhere
-- i like the https://traven.dev/ look with a topbar with settings in the topbar to enable/disable certain features
 - todo editor with markdown on top/bottom + header
 - no success message / anything after successfull rename and the modal stays up (need to wait quite a bit of time)
 - kanban refresh - destroys order
 - update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse)
+- 2 tables in same markdown file - if i edit the bottom table the first one is changed
 
 # every other time
 

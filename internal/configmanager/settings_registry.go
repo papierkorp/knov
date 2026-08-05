@@ -80,7 +80,7 @@ var (
 		Label: "Default Markdown Editor",
 		Desc:  "which editor opens by default for new and unassigned markdown files",
 		Options: []SettingOption{
-			{"codemirror-editor", "CodeMirror (plain text editor)"},
+			{"codemirror-editor", "CodeMirror"},
 		},
 	})
 	SpellCheck = register(&BoolSetting{

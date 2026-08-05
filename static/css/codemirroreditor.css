@@ -21,6 +21,12 @@
   background: var(--bg-secondary);
 }
 
+#component-codemirror-settings .fp-menu {
+  width: 280px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
 #component-codemirror-toolbar button {
   background: none;
   border: 1px solid transparent;

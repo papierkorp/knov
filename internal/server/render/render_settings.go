@@ -38,6 +38,12 @@ func RenderSettingsSection(section configmanager.SettingSection, t func(string, 
 	groupMap := make(map[configmanager.SettingGroup]*groupEntry)
 
 	for _, s := range items {
+		// The rest of GroupCodeMirror is surfaced via the settings menu in the
+		// editor toolbar instead (see codeMirrorSettingsMenuHTML) — CodeMirrorShowToolbar
+		// stays here since it controls whether that toolbar (and its menu) exists at all.
+		if s.GetMeta().Group == configmanager.GroupCodeMirror && s.Key() != configmanager.CodeMirrorShowToolbar.Key() {
+			continue
+		}
 		g := s.GetMeta().Group
 		if _, exists := groupMap[g]; !exists {
 			groupOrder = append(groupOrder, g)

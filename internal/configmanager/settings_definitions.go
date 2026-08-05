@@ -31,8 +31,8 @@ type SettingGroup struct {
 
 var (
 	GroupNone            = SettingGroup{}
-	GroupCodeMirror      = SettingGroup{Key: "code-mirror", Label: "Code / Text Editor (CodeMirror)"}
 	GroupAllEditors      = SettingGroup{Key: "all-editors", Label: "All Editors"}
+	GroupCodeMirror      = SettingGroup{Key: "code-mirror", Label: "CodeMirror"}
 	GroupSectionEditing  = SettingGroup{Key: "section-editing", Label: "Section Editing & Display"}
 	GroupFileExtensions  = SettingGroup{Key: "file-extensions", Label: "File Extensions", Description: "Use dedicated file extensions instead of .md for these editor types"}
 	GroupPreviewSettings = SettingGroup{Key: "preview-settings", Label: "Preview Settings"}

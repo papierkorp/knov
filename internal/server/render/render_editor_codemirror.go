@@ -48,7 +48,8 @@ func codeMirrorToolbarGroups() [][]codeMirrorToolbarBtn {
 	}
 }
 
-// codeMirrorToolbarHTML renders the formatting toolbar shown above the CodeMirror editor.
+// codeMirrorToolbarHTML renders the formatting toolbar shown above the CodeMirror editor,
+// ending with the editor settings menu button (see codeMirrorSettingsMenuHTML).
 func codeMirrorToolbarHTML(lang string) string {
 	if !configmanager.CodeMirrorShowToolbar.Get() {
 		return ""
@@ -68,6 +69,8 @@ func codeMirrorToolbarHTML(lang string) string {
 				btn.cmd, argAttr, translation.SprintfForRequest(lang, btn.titleKey), btn.label)
 		}
 	}
+	sb.WriteString(`<span class="cm-toolbar-sep"></span>`)
+	sb.WriteString(codeMirrorSettingsMenuHTML(lang))
 	sb.WriteString(`</div>`)
 	return sb.String()
 }
@@ -95,6 +98,49 @@ func jsCodeMirrorToolbar() string {
 		}
 		var arg = btn.dataset.arg ? Number(btn.dataset.arg) : undefined;
 		window.mdCommands[btn.dataset.cmd](view, arg);
+	});`
+}
+
+// codeMirrorSettingsMenuHTML renders the gear-menu button, placed last in the toolbar, that
+// exposes the CodeMirror (Group: GroupCodeMirror) settings directly in the editor so they can
+// be toggled without leaving the page. CodeMirrorShowToolbar is excluded — it stays an
+// app-wide /settings-only setting since it controls whether this toolbar (and menu) exists at
+// all. Reuses renderSettingItem, the same per-setting htmx form used on the /settings page, so
+// persistence and markup stay identical there.
+func codeMirrorSettingsMenuHTML(lang string) string {
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+	var sb strings.Builder
+	sb.WriteString(`<div id="component-codemirror-settings" class="fp-menu-wrap">`)
+	fmt.Fprintf(&sb, `<button type="button" class="fp-menu-btn" onclick="toggleFpFileMenu(this)" title="%s"><i class="fa fa-gear"></i></button>`,
+		t("editor settings"))
+	sb.WriteString(`<div class="fp-menu" hidden>`)
+	for _, s := range configmanager.SettingsBySection(configmanager.SectionEditor) {
+		if s.GetMeta().Group == configmanager.GroupCodeMirror && s.Key() != configmanager.CodeMirrorShowToolbar.Key() {
+			sb.WriteString(renderSettingItem(s, t))
+		}
+	}
+	sb.WriteString(`</div></div>`)
+	return sb.String()
+}
+
+// jsCodeMirrorSettingsMenu wires the editor settings menu: each boolean toggle persists via
+// its own htmx form (see renderSettingItem) and is additionally applied live by reconfiguring
+// the running CodeMirror view via reinitCodeMirror.
+func jsCodeMirrorSettingsMenu() string {
+	if !configmanager.CodeMirrorShowToolbar.Get() {
+		return ""
+	}
+	return `
+	document.getElementById('component-codemirror-settings').addEventListener('change', function(e) {
+		var cb = e.target.closest('input[type=checkbox][name^="codeMirror"]');
+		if (!cb) return;
+		var opt = cb.name.slice('codeMirror'.length);
+		opt = opt.charAt(0).toLowerCase() + opt.slice(1);
+		var patch = {};
+		patch[opt] = cb.checked;
+		reinitCodeMirror(patch);
 	});`
 }
 
@@ -143,6 +189,71 @@ func codeMirrorFileInputHTML() string {
 	return `<input type="file" id="codemirror-file-input" multiple hidden />`
 }
 
+// codeMirrorInitScript renders the JS that boots the CodeMirror view, wires up
+// autocomplete/toolbar/upload, and defines reinitCodeMirror — used by the settings
+// menu (jsCodeMirrorSettingsMenu) to apply toggled options to the live editor by
+// rebuilding the view in place, without losing unsaved content or reloading the page.
+func codeMirrorInitScript(content, filePath string) string {
+	jsBool := func(b bool) string {
+		if b {
+			return "true"
+		}
+		return "false"
+	}
+	return fmt.Sprintf(`
+	var cmOptions = {
+		vimMode:                        %s,
+		lineNumbers:                    %s,
+		relativeLineNumbers:            %s,
+		foldGutter:                     %s,
+		bracketMatching:                %s,
+		autoBrackets:                   %s,
+		highlightSelection:             %s,
+		highlightSelectionWholeWord:    %s,
+		wysiwyg:                        %s
+	};
+	var wikiOpts = {cursorEnd: %t, currentFile: %s};
+	var view = createCodeMirror(el, %s, cmOptions);
+	view.contentDOM.setAttribute('spellcheck', '%s');
+	initWikiAutocompleteForCodeMirror(view, wikiOpts);
+
+	function reinitCodeMirror(patch) {
+		Object.assign(cmOptions, patch);
+		var pos = Math.min(view.state.selection.main.anchor, view.state.doc.length);
+		var newContent = view.state.doc.toString();
+		view.destroy();
+		el.innerHTML = '';
+		view = createCodeMirror(el, newContent, cmOptions);
+		view.contentDOM.setAttribute('spellcheck', '%s');
+		view.dispatch({selection: {anchor: pos}});
+		initWikiAutocompleteForCodeMirror(view, wikiOpts);
+		view.focus();
+	}
+
+	%s
+	%s
+	%s
+	%s`,
+		jsBool(configmanager.CodeMirrorVimMode.Get()),
+		jsBool(configmanager.CodeMirrorLineNumbers.Get()),
+		jsBool(configmanager.CodeMirrorRelativeLineNumbers.Get()),
+		jsBool(configmanager.CodeMirrorFoldGutter.Get()),
+		jsBool(configmanager.CodeMirrorBracketMatching.Get()),
+		jsBool(configmanager.CodeMirrorAutoBrackets.Get()),
+		jsBool(configmanager.CodeMirrorHighlightSelection.Get()),
+		jsBool(configmanager.CodeMirrorHighlightSelectionWholeWord.Get()),
+		jsBool(configmanager.CodeMirrorWysiwyg.Get()),
+		configmanager.WikiLinkCursorEnd.Get(),
+		jsEscapeString(filePath),
+		jsEscapeString(content),
+		jsBool(configmanager.SpellCheck.Get()),
+		jsBool(configmanager.SpellCheck.Get()),
+		jsCodeMirrorToolbar(),
+		jsCodeMirrorSettingsMenu(),
+		jsUploadMediaBlob(),
+		jsCodeMirrorFileUpload())
+}
+
 // RenderCodeMirrorSectionEditorForm renders a CodeMirror editor form for editing a single section.
 func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 	content := ""
@@ -158,13 +269,6 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 
 	cancelURL := fmt.Sprintf("/files/%s#%s", filePath, sectionID)
 
-	jsBool := func(b bool) string {
-		if b {
-			return "true"
-		}
-		return "false"
-	}
-
 	script := fmt.Sprintf(`<script>
 (function() {
 	var el = document.getElementById('codemirror-editor');
@@ -175,45 +279,12 @@ func RenderCodeMirrorSectionEditorForm(filePath, sectionID string) string {
 		var available = window.innerHeight - rect.top - actionsH;
 		el.style.height = Math.max(300, available) + 'px';
 	})();
-
-	var view = createCodeMirror(el, %s, {
-		vimMode:                        %s,
-		lineNumbers:                    %s,
-		relativeLineNumbers:            %s,
-		foldGutter:                     %s,
-		bracketMatching:                %s,
-		autoBrackets:                   %s,
-		highlightSelection:             %s,
-		highlightSelectionWholeWord:    %s,
-		wysiwyg:                        %s
-	});
-	view.contentDOM.setAttribute('spellcheck', '%s');
-
-	initWikiAutocompleteForCodeMirror(view, {cursorEnd: %t, currentFile: %s});
-	%s
-	%s
 	%s
 	document.querySelector('.file-form').addEventListener('submit', function() {
 		document.getElementById('editor-content').value = view.state.doc.toString();
 	});
 })();
-</script>`,
-		jsEscapeString(content),
-		jsBool(configmanager.CodeMirrorVimMode.Get()),
-		jsBool(configmanager.CodeMirrorLineNumbers.Get()),
-		jsBool(configmanager.CodeMirrorRelativeLineNumbers.Get()),
-		jsBool(configmanager.CodeMirrorFoldGutter.Get()),
-		jsBool(configmanager.CodeMirrorBracketMatching.Get()),
-		jsBool(configmanager.CodeMirrorAutoBrackets.Get()),
-		jsBool(configmanager.CodeMirrorHighlightSelection.Get()),
-		jsBool(configmanager.CodeMirrorHighlightSelectionWholeWord.Get()),
-		jsBool(configmanager.CodeMirrorWysiwyg.Get()),
-		jsBool(configmanager.SpellCheck.Get()),
-		configmanager.WikiLinkCursorEnd.Get(),
-		jsEscapeString(filePath),
-		jsCodeMirrorToolbar(),
-		jsUploadMediaBlob(),
-		jsCodeMirrorFileUpload())
+</script>`, codeMirrorInitScript(content, filePath))
 
 	return fmt.Sprintf(`
 		<form hx-post="/api/files/section/save" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">
@@ -288,13 +359,6 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		filepathInput = fmt.Sprintf(`<input type="hidden" name="filepath" value="%s" />`, filePath)
 	}
 
-	jsBool := func(b bool) string {
-		if b {
-			return "true"
-		}
-		return "false"
-	}
-
 	script := fmt.Sprintf(`<script>
 (function() {
 	var el = document.getElementById('codemirror-editor');
@@ -305,45 +369,12 @@ func RenderCodeMirrorEditorForm(filePath, prefillPath string, editorParam ...str
 		var available = window.innerHeight - rect.top - actionsH;
 		el.style.height = Math.max(300, available) + 'px';
 	})();
-
-	var view = createCodeMirror(el, %s, {
-		vimMode:                        %s,
-		lineNumbers:                    %s,
-		relativeLineNumbers:            %s,
-		foldGutter:                     %s,
-		bracketMatching:                %s,
-		autoBrackets:                   %s,
-		highlightSelection:             %s,
-		highlightSelectionWholeWord:    %s,
-		wysiwyg:                        %s
-	});
-	view.contentDOM.setAttribute('spellcheck', '%s');
-
-	initWikiAutocompleteForCodeMirror(view, {cursorEnd: %t, currentFile: %s});
-	%s
-	%s
 	%s
 	document.querySelector('.file-form').addEventListener('submit', function() {
 		document.getElementById('editor-content').value = view.state.doc.toString();
 	});
 })();
-</script>`,
-		jsEscapeString(content),
-		jsBool(configmanager.CodeMirrorVimMode.Get()),
-		jsBool(configmanager.CodeMirrorLineNumbers.Get()),
-		jsBool(configmanager.CodeMirrorRelativeLineNumbers.Get()),
-		jsBool(configmanager.CodeMirrorFoldGutter.Get()),
-		jsBool(configmanager.CodeMirrorBracketMatching.Get()),
-		jsBool(configmanager.CodeMirrorAutoBrackets.Get()),
-		jsBool(configmanager.CodeMirrorHighlightSelection.Get()),
-		jsBool(configmanager.CodeMirrorHighlightSelectionWholeWord.Get()),
-		jsBool(configmanager.CodeMirrorWysiwyg.Get()),
-		jsBool(configmanager.SpellCheck.Get()),
-		configmanager.WikiLinkCursorEnd.Get(),
-		jsEscapeString(filePath),
-		jsCodeMirrorToolbar(),
-		jsUploadMediaBlob(),
-		jsCodeMirrorFileUpload())
+</script>`, codeMirrorInitScript(content, filePath))
 
 	return fmt.Sprintf(`
 		<form hx-post="%s" hx-target="#editor-status" hx-swap="innerHTML" class="file-form">
