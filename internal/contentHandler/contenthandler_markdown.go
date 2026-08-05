@@ -414,6 +414,7 @@ func (h *MarkdownContentHandler) replaceTableInMarkdown(content string, headers 
 
 	lines := strings.Split(content, "\n")
 	var result []string
+	var inAnyTable bool
 	var inTable bool
 	var currentTable int = -1
 	var tableStartIdx int
@@ -423,13 +424,14 @@ func (h *MarkdownContentHandler) replaceTableInMarkdown(content string, headers 
 		trimmed := strings.TrimSpace(line)
 
 		// detect table header (starts with | but is not separator line)
-		if strings.HasPrefix(trimmed, "|") && !inTable {
+		if strings.HasPrefix(trimmed, "|") && !inAnyTable {
 			// check if next line exists and is separator
 			if i+1 < len(lines) {
 				nextLine := strings.TrimSpace(lines[i+1])
 				if strings.HasPrefix(nextLine, "|") && strings.Contains(nextLine, "-") {
 					// this is a table header
 					currentTable++
+					inAnyTable = true
 					logging.LogDebug(logging.KeyApp, "found table %d at line %d: %s", currentTable, i, trimmed)
 					if currentTable == tableIndex {
 						inTable = true
@@ -441,13 +443,21 @@ func (h *MarkdownContentHandler) replaceTableInMarkdown(content string, headers 
 			}
 		}
 
-		if inTable {
+		if inAnyTable {
 			if strings.HasPrefix(trimmed, "|") {
-				// still in table, continue skipping
-				logging.LogDebug(logging.KeyApp, "skipping table line %d: %s", i, trimmed)
+				if inTable {
+					// still in target table, continue skipping
+					logging.LogDebug(logging.KeyApp, "skipping table line %d: %s", i, trimmed)
+					continue
+				}
+				// row of a different table, keep as-is
+				result = append(result, line)
 				continue
-			} else {
-				// table ended, insert new table
+			}
+
+			// table ended
+			inAnyTable = false
+			if inTable {
 				tableEndIdx = i
 				logging.LogDebug(logging.KeyApp, "table %d ended at line %d, generating replacement", tableIndex, i)
 				newTable := h.generateMarkdownTable(headers, rows)
@@ -455,9 +465,7 @@ func (h *MarkdownContentHandler) replaceTableInMarkdown(content string, headers 
 				logging.LogDebug(logging.KeyApp, "replacing table from line %d to %d with %d new lines", tableStartIdx, tableEndIdx, len(newTable))
 				// replace the old table with new table
 				result = append(result[:tableStartIdx], newTable...)
-				result = append(result, line)
 				inTable = false
-				continue
 			}
 		}
 

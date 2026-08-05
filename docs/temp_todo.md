@@ -27,7 +27,6 @@
 - no success message / anything after successfull rename and the modal stays up (need to wait quite a bit of time)
 - kanban refresh - destroys order
 - update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse)
-- 2 tables in same markdown file - if i edit the bottom table the first one is changed
 
 # every other time
 
