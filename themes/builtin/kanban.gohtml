@@ -55,9 +55,9 @@
         <button class="btn-secondary" hx-get="/api/kanban/{{.Board}}" hx-target="#view-kanban-board-wrap" hx-swap="innerHTML"
                 hx-include="#kanban-ancestor-select,#kanban-tag-select,#kanban-search,#kanban-sort-select" title="{{T "refresh"}}"><i class="fa fa-rotate"></i></button>
 
-        <div class="kanban-menu-wrap">
-            <button type="button" class="kanban-menu-btn" onclick="toggleKanbanMenu(this)" title="{{T "more actions"}}"><i class="fa fa-ellipsis-vertical"></i></button>
-            <div class="kanban-menu" hidden>
+        <div class="kanban-menu-wrap" x-data="dropdownMenu()" @click.outside="close()">
+            <button type="button" class="kanban-menu-btn" x-ref="btn" @click="toggle()" title="{{T "more actions"}}"><i class="fa fa-ellipsis-vertical"></i></button>
+            <div class="kanban-menu" x-ref="menu" :hidden="!open" @click="close()" @scroll.window.capture="close()">
                 <a href="/history?folder={{.FolderPath}}" class="kanban-menu-item"><i class="fa fa-clock-rotate-left"></i> {{T "board history"}}</a>
                 <button id="kanban-events-btn" class="kanban-menu-item" onclick="kanbanToggleEvents()"><i class="fa fa-timeline"></i> {{T "show events"}}</button>
                 <button id="kanban-archive-btn" class="kanban-menu-item" onclick="kanbanToggleArchive()"><i class="fa fa-box-archive"></i> {{T "show archive"}}</button>

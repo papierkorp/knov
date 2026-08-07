@@ -64,6 +64,43 @@ function closePanel() {
 }
 
 // ================================================================
+// dropdown menu — generic toggle + viewport-aware positioning +
+// close-on-outside-click/scroll, shared by every kebab/overflow menu
+// (file panel actions, kanban toolbar, chat message actions). Host markup
+// binds x-ref="btn"/x-ref="menu" plus @click.outside="close()" on the
+// wrapping element and :hidden="!open" @click="close()" on the menu itself.
+// ================================================================
+document.addEventListener("alpine:init", () => {
+  Alpine.data("dropdownMenu", () => ({
+    open: false,
+
+    toggle() {
+      this.open = !this.open;
+      if (this.open) this.$nextTick(() => this.position());
+    },
+
+    close() {
+      this.open = false;
+    },
+
+    position() {
+      const rect = this.$refs.btn.getBoundingClientRect();
+      const menu = this.$refs.menu;
+      menu.style.left = "auto";
+      menu.style.right = window.innerWidth - rect.right + "px";
+      menu.style.top = rect.bottom + 2 + "px";
+      menu.style.bottom = "auto";
+
+      const menuRect = menu.getBoundingClientRect();
+      if (menuRect.bottom > window.innerHeight) {
+        menu.style.top = "auto";
+        menu.style.bottom = window.innerHeight - rect.top + 2 + "px";
+      }
+    },
+  }));
+});
+
+// ================================================================
 // lazy load panel content on first open
 // ================================================================
 function lazyLoad(panelId) {

@@ -131,20 +131,20 @@
             <!-- filename header + action buttons + select -->
             <div id="fp-file-header">
                 <div id="fp-file-title-row">
-                    <div id="fp-file-title">{{if .SystemPage}}{{T "contents"}}{{else}}-{{end}}</div>
+                    <div id="fp-file-title">{{if .SystemPage}}{{T "contents"}}{{else}}<span x-text="$store.filePanel.displayName || '-'">-</span>{{end}}</div>
                     <button class="flyout-close-btn" @click="$store.rail.close()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
                 </div>
                 {{if not .SystemPage}}
                 <div id="fp-file-actions">
-                    <a  class="fp-action-btn fp-btn-edit"   id="fp-edit-link"   href="#" title="{{T "edit"}}"><i class="fa fa-pen"></i></a>
-                    <div class="fp-menu-wrap" x-data="fpFileMenu()" @click.outside="close()">
+                    <a  class="fp-action-btn fp-btn-edit"   id="fp-edit-link"   href="#" :href="$store.filePanel.filepath ? '/files/edit/' + $store.filePanel.filepath : '#'" title="{{T "edit"}}"><i class="fa fa-pen"></i></a>
+                    <div class="fp-menu-wrap" x-data="dropdownMenu()" @click.outside="close()">
                         <button type="button" class="fp-menu-btn" x-ref="btn" @click="toggle()" title="{{T "more actions"}}"><i class="fa fa-ellipsis-vertical"></i></button>
                         <div class="fp-menu" x-ref="menu" :hidden="!open" @click="close()" @scroll.window.capture="close()">
                             <button type="button" class="fp-menu-item" popovertarget="rename-modal"><i class="fa fa-i-cursor"></i> {{T "rename"}}</button>
                             <button type="button" class="fp-menu-item" popovertarget="move-modal"><i class="fa fa-folder-tree"></i> {{T "move"}}</button>
                             <button type="button" class="fp-menu-item" id="fp-rebuild-btn"><i class="fa fa-rotate"></i> {{T "rebuild"}}</button>
-                            {{if .ShowPDFFileButton}}<a class="fp-menu-item" id="fp-export-pdf-link" href="#"><i class="fa fa-file-pdf"></i> {{T "export to pdf"}}</a>{{end}}
-                            <a class="fp-menu-item" id="fp-convert-dokuwiki-link" href="#" hidden><i class="fa fa-file-export"></i> {{T "convert to markdown"}}</a>
+                            {{if .ShowPDFFileButton}}<a class="fp-menu-item" id="fp-export-pdf-link" href="#" :href="$store.filePanel.filepath ? '/api/files/export/pdf?filepath=' + $store.filePanel.fp : '#'"><i class="fa fa-file-pdf"></i> {{T "export to pdf"}}</a>{{end}}
+                            <a class="fp-menu-item" id="fp-convert-dokuwiki-link" href="#" hidden :hidden="!$store.filePanel.isDokuwiki" :href="$store.filePanel.isDokuwiki ? '/api/files/export/markdown?filepath=' + $store.filePanel.fp : '#'"><i class="fa fa-file-export"></i> {{T "convert to markdown"}}</a>
                             <button type="button" class="fp-menu-item fp-menu-item--danger" popovertarget="delete-modal"><i class="fa fa-trash"></i> {{T "delete"}}</button>
                         </div>
                     </div>

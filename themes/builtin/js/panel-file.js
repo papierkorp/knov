@@ -11,6 +11,19 @@ document.addEventListener("alpine:init", () => {
   Alpine.store("filePanel", {
     active: document.getElementById("fp-file")?.dataset.initSubpanel || "metadata",
     hasFile: false,
+    // raw path segment (not query-encoded) of the currently viewed file, set
+    // once by setupFilePage; base.gohtml's title/edit-link/export-pdf-link
+    // bind straight to this instead of setupFilePage writing to each element.
+    filepath: "",
+    isDokuwiki: false,
+
+    get displayName() {
+      return decodeURIComponent(this.filepath);
+    },
+
+    get fp() {
+      return encodeURIComponent(this.filepath);
+    },
 
     switch(view) {
       this.active = view;
@@ -89,9 +102,6 @@ function setupFilePage() {
     const fp = encodeURIComponent(filepath);
     document.body.setAttribute("data-has-file", "true");
     Alpine.store("filePanel").hasFile = true;
-    const pathEl = document.getElementById("fp-meta-path");
-    if (pathEl)
-      pathEl.innerHTML = '<a href="/files/' + fp + '">' + filepath + "</a>";
     const refFp = document.getElementById("fp-reference-filepath");
     if (refFp) refFp.value = filepath;
     const editFields = {
@@ -109,27 +119,12 @@ function setupFilePage() {
         headers: { Accept: "text/html" },
       });
     }
-    // inline-edit fields: swap outerHTML so edit button HTMX works
-    const editInlineFields = {
+    loadInlineFields(fp, {
       "fp-meta-tags": "tags",
       "fp-meta-editor": "editor",
       "fp-meta-path": "path",
-    };
-    for (const [id, field] of Object.entries(editInlineFields)) {
-      const el = document.getElementById(id);
-      if (!el) continue;
-      htmx.ajax(
-        "GET",
-        "/api/metadata/inline-display?field=" + field + "&filepath=" + fp,
-        { source: el, target: el, swap: "outerHTML", headers: { Accept: "text/html" } },
-      );
-    }
-    htmx.ajax("GET", "/api/metadata/references?filepath=" + fp, {
-      source: document.getElementById("component-references-list"),
-      target: document.getElementById("component-references-list"),
-      swap: "outerHTML",
-      headers: { Accept: "text/html" },
     });
+    loadReferences(fp);
     closePanel();
     return true;
   }
@@ -150,35 +145,23 @@ function setupFilePage() {
   // reveal file rail button
   document.body.setAttribute("data-has-file", "true");
 
-  // populate filename header
-  const titleEl = document.getElementById("fp-file-title");
-  if (titleEl) titleEl.textContent = decodeURIComponent(filepath);
+  // filename header + edit-link + export-pdf-link bind straight to
+  // $store.filePanel in base.gohtml
+  Alpine.store("filePanel").filepath = filepath;
 
-  // wire action buttons
-  const editLink = document.getElementById("fp-edit-link");
-  if (editLink) editLink.href = "/files/edit/" + filepath;
-
-  const exportPdfLink = document.getElementById("fp-export-pdf-link");
-  if (exportPdfLink)
-    exportPdfLink.href = "/api/files/export/pdf?filepath=" + fp;
+  // dokuwiki detection - a rendered dokuwiki file still starts with its
+  // "====== heading ======" syntax since no dokuwiki parser exists anymore,
+  // only the plaintext fallback (which HTML-escapes but doesn't strip it);
+  // fp-convert-dokuwiki-link binds to $store.filePanel.isDokuwiki
+  const article = document.querySelector("article.file-content");
+  Alpine.store("filePanel").isDokuwiki =
+    !!article && article.textContent.trimStart().startsWith("======");
 
   const rebuildBtn = document.getElementById("fp-rebuild-btn");
   if (rebuildBtn) {
     rebuildBtn.setAttribute("hx-post", "/api/metadata/rebuild/" + filepath);
     rebuildBtn.setAttribute("hx-target", "#fp-rebuild-result");
     htmx.process(rebuildBtn);
-  }
-
-  // dokuwiki detection - a rendered dokuwiki file still starts with its
-  // "====== heading ======" syntax since no dokuwiki parser exists anymore,
-  // only the plaintext fallback (which HTML-escapes but doesn't strip it)
-  const convertLink = document.getElementById("fp-convert-dokuwiki-link");
-  if (convertLink) {
-    const article = document.querySelector("article.file-content");
-    const isDokuwiki = !!article && article.textContent.trimStart().startsWith("======");
-    convertLink.hidden = !isDokuwiki;
-    if (isDokuwiki)
-      convertLink.href = "/api/files/export/markdown?filepath=" + fp;
   }
 
   const renameForm = document.getElementById("rename-form");
@@ -209,12 +192,7 @@ function setupFilePage() {
 
   const refFp = document.getElementById("fp-reference-filepath");
   if (refFp) refFp.value = filepath;
-  htmx.ajax("GET", "/api/metadata/references?filepath=" + fp, {
-    source: document.getElementById("component-references-list"),
-    target: document.getElementById("component-references-list"),
-    swap: "outerHTML",
-    headers: { Accept: "text/html" },
-  });
+  loadReferences(fp);
 
   // hide no-file message and show metadata rows
   Alpine.store("filePanel").hasFile = true;
@@ -248,22 +226,12 @@ function setupFilePage() {
     })
     .catch(() => {});
 
-  // inline-edit fields: swap outerHTML so edit button HTMX works
-  const inlineFields = {
+  loadInlineFields(fp, {
     "fp-meta-tags": "tags",
     "fp-meta-editor": "editor",
     "fp-meta-path": "path",
     "fp-parents": "parents",
-  };
-  for (const [id, field] of Object.entries(inlineFields)) {
-    const el = document.getElementById(id);
-    if (!el) continue;
-    htmx.ajax(
-      "GET",
-      "/api/metadata/inline-display?field=" + field + "&filepath=" + fp,
-      { source: el, target: el, swap: "outerHTML", headers: { Accept: "text/html" } },
-    );
-  }
+  });
 
   htmx.ajax("GET", "/api/files/versions/" + fp + "?output=full", {
     source: document.getElementById("fp-versions"),
@@ -289,42 +257,33 @@ function setupFilePage() {
   return true;
 }
 
-// ================================================================
-// file panel overflow menu (rename / move / rebuild / export / delete) —
-// toggle + viewport-aware positioning + close-on-outside-click/scroll, all
-// declarative on the .fp-menu-wrap element in base.gohtml (@click.outside,
-// @scroll.window.capture, :hidden="!open"); this component just owns
-// `open` and the position() math.
-// ================================================================
-document.addEventListener("alpine:init", () => {
-  Alpine.data("fpFileMenu", () => ({
-    open: false,
+// shared by setupFilePage's edit-page and file-page branches: swap outerHTML
+// so the inline-edit button's own HTMX attributes work after the swap
+function loadInlineFields(fp, fields) {
+  for (const [id, field] of Object.entries(fields)) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    htmx.ajax(
+      "GET",
+      "/api/metadata/inline-display?field=" + field + "&filepath=" + fp,
+      { source: el, target: el, swap: "outerHTML", headers: { Accept: "text/html" } },
+    );
+  }
+}
 
-    toggle() {
-      this.open = !this.open;
-      if (this.open) this.$nextTick(() => this.position());
-    },
+function loadReferences(fp) {
+  const el = document.getElementById("component-references-list");
+  htmx.ajax("GET", "/api/metadata/references?filepath=" + fp, {
+    source: el,
+    target: el,
+    swap: "outerHTML",
+    headers: { Accept: "text/html" },
+  });
+}
 
-    close() {
-      this.open = false;
-    },
-
-    position() {
-      const rect = this.$refs.btn.getBoundingClientRect();
-      const menu = this.$refs.menu;
-      menu.style.left = "auto";
-      menu.style.right = window.innerWidth - rect.right + "px";
-      menu.style.top = rect.bottom + 2 + "px";
-      menu.style.bottom = "auto";
-
-      const menuRect = menu.getBoundingClientRect();
-      if (menuRect.bottom > window.innerHeight) {
-        menu.style.top = "auto";
-        menu.style.bottom = window.innerHeight - rect.top + 2 + "px";
-      }
-    },
-  }));
-});
+// file panel overflow menu (rename / move / rebuild / export / delete) uses
+// the shared dropdownMenu() component (rail-core.js) via x-data on
+// .fp-menu-wrap in base.gohtml.
 
 // builds the new full path for the move modal from the folder input plus
 // the filename stashed on the form when the file panel opened

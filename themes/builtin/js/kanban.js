@@ -25,53 +25,9 @@
         }
     }
 
-    // toolbar overflow menu (board history / show events / show archive), same
-    // pattern as the chat kebab menu (chat-bulk.js): toggle + viewport-aware
-    // positioning + close on outside click or scroll.
-    function closeAllKanbanMenus() {
-        document.querySelectorAll('.kanban-menu').forEach(function (m) {
-            m.hidden = true;
-        });
-    }
-
-    function positionKanbanMenu(btn, menu) {
-        var rect = btn.getBoundingClientRect();
-        menu.style.left = 'auto';
-        menu.style.right = (window.innerWidth - rect.right) + 'px';
-        menu.style.top = (rect.bottom + 2) + 'px';
-        menu.style.bottom = 'auto';
-
-        var menuRect = menu.getBoundingClientRect();
-        if (menuRect.bottom > window.innerHeight) {
-            menu.style.top = 'auto';
-            menu.style.bottom = (window.innerHeight - rect.top + 2) + 'px';
-        }
-    }
-
-    window.toggleKanbanMenu = function (btn) {
-        var menu = btn.parentElement.querySelector('.kanban-menu');
-        if (!menu) return;
-        var wasHidden = menu.hidden;
-        closeAllKanbanMenus();
-        if (wasHidden) {
-            menu.hidden = false;
-            positionKanbanMenu(btn, menu);
-        }
-    };
-
-    document.addEventListener('click', function (e) {
-        if (!e.target.closest('.kanban-menu-wrap')) {
-            closeAllKanbanMenus();
-        }
-    });
-
-    document.addEventListener(
-        'scroll',
-        function () {
-            closeAllKanbanMenus();
-        },
-        true,
-    );
+    // toolbar overflow menu (board history / show events / show archive) uses
+    // the shared dropdownMenu() Alpine component (rail-core.js), see markup
+    // in kanban.gohtml.
 
     var dragging = null;
     var showingEvents = false;
@@ -185,7 +141,6 @@
         var filterPanel = document.getElementById('kanban-filter-panel');
         if (!wrap || !btn) return;
 
-        closeAllKanbanMenus();
         showingArchive = !showingArchive;
 
         if (showingArchive) {
@@ -208,7 +163,6 @@
         var filterPanel = document.getElementById('kanban-filter-panel');
         if (!wrap || !btn) return;
 
-        closeAllKanbanMenus();
         showingEvents = !showingEvents;
 
         if (showingEvents) {

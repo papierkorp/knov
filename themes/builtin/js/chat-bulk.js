@@ -89,52 +89,6 @@ function chatBulkDelete() {
     }).then(chatBulkRemoveSelected);
 }
 
-// ================================================================
-// compact message kebab menu (to new file / append / delete)
-// ================================================================
-function closeAllChatShortMenus() {
-    document.querySelectorAll('.chat-short-menu').forEach(function (m) {
-        m.hidden = true;
-    });
-}
-
-function positionChatShortMenu(btn, menu) {
-    var rect = btn.getBoundingClientRect();
-    menu.style.left = 'auto';
-    menu.style.right = (window.innerWidth - rect.right) + 'px';
-    menu.style.top = (rect.bottom + 2) + 'px';
-    menu.style.bottom = 'auto';
-
-    var menuRect = menu.getBoundingClientRect();
-    if (menuRect.bottom > window.innerHeight) {
-        // not enough room below — open upward instead
-        menu.style.top = 'auto';
-        menu.style.bottom = (window.innerHeight - rect.top + 2) + 'px';
-    }
-}
-
-function toggleChatShortMenu(btn) {
-    var menu = btn.parentElement.querySelector('.chat-short-menu');
-    if (!menu) return;
-    var wasHidden = menu.hidden;
-    closeAllChatShortMenus();
-    if (wasHidden) {
-        menu.hidden = false;
-        positionChatShortMenu(btn, menu);
-    }
-}
-
-document.addEventListener('click', function (e) {
-    if (!e.target.closest('.chat-short-menu-wrap')) {
-        closeAllChatShortMenus();
-    }
-});
-
-// close on scroll so the menu doesn't stay stuck at a stale position
-document.addEventListener(
-    'scroll',
-    function () {
-        closeAllChatShortMenus();
-    },
-    true,
-);
+// compact message kebab menu (to new file / append / delete) uses the
+// shared dropdownMenu() Alpine component (rail-core.js), see markup in
+// render_chat.go's renderMessage.

@@ -111,9 +111,9 @@ func renderMessage(m chat.Message, short bool) string {
 		<div class="chat-message-content">%s</div>
 		<span class="chat-timestamp">%s</span>
 	</div>
-	<div class="chat-short-menu-wrap">
-		<button type="button" class="chat-short-menu-btn" onclick="toggleChatShortMenu(this)" title="%s"><i class="fa fa-ellipsis-vertical"></i></button>
-		<div class="chat-short-menu" hidden>
+	<div class="chat-short-menu-wrap" x-data="dropdownMenu()" @click.outside="close()">
+		<button type="button" class="chat-short-menu-btn" x-ref="btn" @click="toggle()" title="%s"><i class="fa fa-ellipsis-vertical"></i></button>
+		<div class="chat-short-menu" x-ref="menu" :hidden="!open" @click="close()" @scroll.window.capture="close()">
 			<button class="btn-small btn-secondary"
 				hx-get="%s" hx-target="#%s" hx-swap="outerHTML">%s</button>
 			<button class="btn-small btn-secondary"
