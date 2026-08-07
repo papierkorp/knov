@@ -320,13 +320,6 @@ var (
 		Desc:  "comma-separated folder path patterns to exclude from file listings and browse views. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test",
 	})
 
-	// ── Theme settings ────────────────────────────────────────────────────────
-	// MapSetting: persisted but not renderable — mutated via SetThemeSetting.
-	ThemeSettingsStore = register(&MapSetting[AllThemeSettings]{
-		key:     "themeSettings",
-		Default: make(AllThemeSettings),
-	})
-
 	// ── General ───────────────────────────────────────────────────────────────
 	Language = register(&StringSetting{
 		key: "language", Default: "en",

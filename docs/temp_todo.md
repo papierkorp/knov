@@ -44,7 +44,6 @@
 -  clicking "rebuild" throws `htmx:targetError` because `#fp-rebuild-result` doesn't exist in the DOM — present since the original `f86d0eb` commit
 - move copy-code.js to the app
 - convert to markdown button is always shown
-- split theme settings out of the config/settings.json file into: `config/themes/builtin.json` each themes gets its own json file
 - new kanban feature: create folders based on the kanban status and move the files based on the kanban status => what would be the single source of truth - i think the metadata and if a file in such a folder doesnt have metadata => add it / change it
 - tables if a header/field is empty the display is cooked
 - copy and paste images in codemirror
@@ -52,6 +51,7 @@
 - gitlab pipeline to get a release
 - /api/system/version => add json output
 - in the theme let me also arrange the info slideout components
+- codemirror editor - search and replace no darkmode
 
 
 # every other time

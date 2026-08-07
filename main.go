@@ -140,6 +140,7 @@ func main() {
 	}
 
 	configmanager.InitSettings()
+	configmanager.LoadThemeSettings()
 	translation.SetLanguage(configmanager.GetLanguage())
 
 	thememanager.InitThemeManager()

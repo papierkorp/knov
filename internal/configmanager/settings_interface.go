@@ -1,7 +1,6 @@
 package configmanager
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -351,46 +350,3 @@ func (s *NoteSetting) GetMeta() Meta {
 }
 func (s *NoteSetting) setFromJSON(interface{})    {}
 func (s *NoteSetting) SetFromString(string) error { return nil }
-
-// ── MapSetting ────────────────────────────────────────────────────────────────
-
-// MapSetting holds an arbitrary structured value serialised as JSON.
-// Set uses copy-on-write: it stores a pointer to a new value, so concurrent
-// Get calls always see a complete, immutable snapshot with no locking needed.
-//
-// MapSetting intentionally does NOT implement RenderableSetting — it is
-// persisted via allSettings but never auto-rendered on the settings page.
-// Mutations go through dedicated accessor functions (e.g. SetThemeSetting),
-// not the generic POST /api/settings/{key} handler.
-type MapSetting[T any] struct {
-	key     string
-	Default T
-	val     atomic.Pointer[T]
-}
-
-func (s *MapSetting[T]) Get() T {
-	if p := s.val.Load(); p != nil {
-		return *p
-	}
-	return s.Default
-}
-func (s *MapSetting[T]) Set(v T) {
-	s.val.Store(&v)
-}
-func (s *MapSetting[T]) Key() string           { return s.key }
-func (s *MapSetting[T]) GetValue() interface{} { return s.Get() }
-func (s *MapSetting[T]) setFromJSON(v interface{}) {
-	if v == nil {
-		return
-	}
-	data, err := json.Marshal(v)
-	if err != nil {
-		return
-	}
-	var t T
-	if err := json.Unmarshal(data, &t); err != nil {
-		return
-	}
-	s.val.Store(&t)
-}
-func (s *MapSetting[T]) SetFromString(string) error { return nil }
