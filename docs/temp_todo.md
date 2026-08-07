@@ -23,31 +23,33 @@
       - for usage
       - for devs
   - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
-- backup solution
-  - easy recovery
-  - new /system/backup page which then lists all available backups + adds a recover to this state
-  - backup rotation (just like for logs)
-    - e.g. keep one from 365 days ago, keep one from 30 days ago, keep everything from the last 7 days?
-  - modular backup system
-    - metadata
-    - chat
-    - config
-    - favicon
-    - kanban
-  - do we add this to the storageInterfaces or do we handle this in a backup package?
-- todo editor with markdown on top/bottom + header
-- kanban refresh - destroys order
-- update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse)
-- delete file takes FOREVER and doesnt give an immediate response (just stays at the are you sure?) no success message / anything after successfull rename and the modal stays up (need to wait quite a bit of time)
-- add go tests?
-- refactor template_data.go make it more general/modular/uniform/ easier for themecreators, e.g. only one general pass and not mutliple different ones => would it make a performance difference?
-- move copy-code.js to the app
-- convert to markdown button is always shown
-- new kanban feature: create folders based on the kanban status and move the files based on the kanban status => what would be the single source of truth - i think the metadata and if a file in such a folder doesnt have metadata => add it / change it
-- gitlab pipeline to get a release
-- /api/system/version => add json output
-- in the theme let me also arrange the info slideout components
-- make darkmode a required setting and move it to appearance
+- features
+  - backup solution
+    - easy recovery
+    - new /system/backup page which then lists all available backups + adds a recover to this state
+    - backup rotation (just like for logs)
+      - e.g. keep one from 365 days ago, keep one from 30 days ago, keep everything from the last 7 days?
+    - modular backup system
+      - metadata
+      - chat
+      - config
+      - favicon
+      - kanban
+    - do we add this to the storageInterfaces or do we handle this in a backup package?
+  - todo editor with markdown on top/bottom + header
+  - update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse)
+  - add go tests?
+  - new kanban feature: create folders based on the kanban status and move the files based on the kanban status => what would be the single source of truth - i think the metadata and if a file in such a folder doesnt have metadata => add it / change it
+  - gitlab pipeline to get a release
+  - in the theme let me also arrange the info slideout components
+- fixes
+  - kanban refresh - destroys order
+  - delete file takes FOREVER and doesnt give an immediate response (just stays at the are you sure?) no success message / anything after successfull rename and the modal stays up (need to wait quite a bit of time)
+- chore
+  - refactor template_data.go make it more general/modular/uniform/ easier for themecreators, e.g. only one general pass and not mutliple different ones => would it make a performance difference?
+  - /api/system/version => add json output
+  - move copy-code.js to the app
+  - make darkmode a required setting and move it to appearance
 
 
 # every other time

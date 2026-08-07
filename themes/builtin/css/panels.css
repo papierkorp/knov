@@ -179,6 +179,10 @@
   background: var(--bg-secondary);
 }
 
+.fp-menu-item[hidden] {
+  display: none;
+}
+
 .fp-menu-item i {
   width: 14px;
   text-align: center;
