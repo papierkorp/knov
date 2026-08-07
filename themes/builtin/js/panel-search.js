@@ -1,4 +1,4 @@
-// theme: builtin-reworked — "search" rail snippet: a filter-scoped search
+// theme: builtin — "search" rail snippet: a filter-scoped search
 // box that hx-gets straight into its own results div. No client-side state
 // of its own beyond what htmx already tracks via the DOM, so `body` is the
 // whole thing.

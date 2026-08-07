@@ -190,7 +190,7 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 			}
 			html.WriteString(fmt.Sprintf(`<button type="submit" class="btn-primary">%s</button>`, t("save")))
 			// plain textarea reset, theme-agnostic; themes that overlay a custom
-			// widget on the textarea (e.g. builtin-reworked's rail-layout-builder.js)
+			// widget on the textarea (e.g. builtin's rail-layout-builder.js)
 			// listen for "settings-textarea-reset" to rebuild their own UI too.
 			html.WriteString(fmt.Sprintf(
 				`<button type="button" class="btn-secondary" style="margin-left: 8px;" data-confirm="%s" onclick="if(confirm(this.dataset.confirm)){var ta=document.getElementById('%s');ta.value=ta.dataset.default;ta.dispatchEvent(new CustomEvent('settings-textarea-reset',{bubbles:true}));}">%s</button>`,

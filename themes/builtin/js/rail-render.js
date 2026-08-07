@@ -1,4 +1,4 @@
-// theme: builtin-reworked — rail rendering: base.gohtml's #rail-site /
+// theme: builtin — rail rendering: base.gohtml's #rail-site /
 // #flyout templates iterate `$store.rail.groups` (the parsed "railLayout"
 // setting, an opaque JSON string as far as the server is concerned) directly
 // with alpine x-for; this file supplies:

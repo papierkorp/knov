@@ -1,4 +1,4 @@
-// theme: builtin-reworked — file panel (metadata/toc/history/chat/references/connections/find sub-panels)
+// theme: builtin — file panel (metadata/toc/history/chat/references/connections/find sub-panels)
 
 // ================================================================
 // file sub-panel switching — Alpine.store since fp-file is a page-wide

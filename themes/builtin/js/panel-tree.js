@@ -1,4 +1,4 @@
-// theme: builtin-reworked — "tree" rail snippet: same generic content shape
+// theme: builtin — "tree" rail snippet: same generic content shape
 // as browse/overview/etc. (its `.body` is assigned along with the rest of
 // them in panel-content.js), plus inline rename and drag&drop move on top.
 // Event delegation is registered once against #flyout rather than per group

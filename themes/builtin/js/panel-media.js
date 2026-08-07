@@ -1,4 +1,4 @@
-// theme: builtin-reworked — "media" rail snippet: all/used/orphaned filter
+// theme: builtin — "media" rail snippet: all/used/orphaned filter
 // switch, client-side name filter, and a hidden-file warning banner fed by
 // a response header on the list request. instanceID is groupID + "-media",
 // matching the ids `body` renders.

@@ -1,4 +1,4 @@
-// theme: builtin-reworked — settings page: dynamic rail composition widget, built
+// theme: builtin — settings page: dynamic rail composition widget, built
 // entirely client-side from the same RAIL_SNIPPETS registry rail-render.js
 // resolves the actual rail against (rail-snippets.js) — no separate/parallel
 // snippet list here. The server renders "railLayout" as a plain

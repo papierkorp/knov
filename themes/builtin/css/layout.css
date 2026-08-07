@@ -47,6 +47,17 @@ body {
   z-index: 60;
 }
 
+/* scopes the group loop's per-item :style="order" (see base.gohtml) to just
+   its own section, so it can't collide with the default order:0 of the
+   static home/quicklink/file-info buttons or the rail-sep/rail-spacer
+   dividers sitting alongside it in #rail-site's flex flow. */
+.rail-group-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
 .rail-btn {
   width: 34px;
   height: 34px;

@@ -1,4 +1,4 @@
-// theme: builtin-reworked — "filter" rail snippet: a live criteria builder
+// theme: builtin — "filter" rail snippet: a live criteria builder
 // whose state (rows + and/or logic) persists per rail-group instance in
 // localStorage — a snippet can be placed in multiple groups (see
 // rail-layout-builder.js), so state is keyed and looked up by instanceID

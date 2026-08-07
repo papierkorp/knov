@@ -1,4 +1,4 @@
-// theme: builtin-reworked — rail snippet pool: the fixed, code-defined building
+// theme: builtin — rail snippet pool: the fixed, code-defined building
 // blocks available for rail groups (tree, browse, chat, ...). This is the
 // client-side source of truth now — the server only stores/serves the
 // opaque "railLayout" JSON setting (see theme.json), it has no concept of

@@ -1,4 +1,4 @@
-// theme: builtin-reworked — "new" rail snippet: static quick-links to create
+// theme: builtin — "new" rail snippet: static quick-links to create
 // each content type. No per-instance state, so `body` just ignores its args.
 railSnippetByID("new").body = () => `<div class="flyout-content" data-snippet="new">
   <a href="/dashboard/new">Dashboard</a>

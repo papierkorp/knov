@@ -1,4 +1,4 @@
-// theme: builtin-reworked — generic "content"-kind rail snippets (tree,
+// theme: builtin — generic "content"-kind rail snippets (tree,
 // browse, overview, tags, folders, collections, dashboards, editor,
 // filters, notifications, latest changes, chat). They all share one shape:
 // an optional filter/fold search row plus a lazy-loaded content div, keyed

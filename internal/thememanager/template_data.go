@@ -160,15 +160,31 @@ func getMergedThemeSettings() map[string]interface{} {
 
 	// first, add all defaults from schema
 	for key, setting := range schema {
-		merged[key] = setting.Default
+		merged[key] = asTextareaValue(setting.Type, setting.Default)
 	}
 
 	// then override with user settings
 	for key, value := range userSettings {
-		merged[key] = value
+		merged[key] = asTextareaValue(schema[key].Type, value)
 	}
 
 	return merged
+}
+
+// asTextareaValue stringifies textarea settings so templates can treat them
+// as opaque strings - a JSON-object default (e.g. railLayout) is unmarshaled
+// from theme.json as a map/slice, not a string, unless re-marshaled here.
+func asTextareaValue(settingType string, value interface{}) interface{} {
+	if settingType != "textarea" {
+		return value
+	}
+	if s, ok := value.(string); ok {
+		return s
+	}
+	if b, err := json.Marshal(value); err == nil {
+		return string(b)
+	}
+	return ""
 }
 
 // CreateFuncMap creates template function map for HTML templates

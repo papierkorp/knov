@@ -1,4 +1,4 @@
-// theme: builtin-reworked — core rail/flyout plumbing: an alpine store owns
+// theme: builtin — core rail/flyout plumbing: an alpine store owns
 // panel open/close/toggle state + persistence + the parsed rail groups, and
 // this file keeps the lazy-load/reload helpers every content snippet relies
 // on.

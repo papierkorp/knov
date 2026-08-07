@@ -112,18 +112,6 @@
   border-color: var(--primary);
 }
 
-.fp-action-btn.fp-btn-delete {
-  border-color: color-mix(in srgb, var(--danger) 40%, var(--border));
-  background: color-mix(in srgb, var(--danger) 6%, var(--bg));
-  color: var(--danger);
-}
-
-.fp-action-btn.fp-btn-delete:hover {
-  background: var(--danger);
-  color: var(--bg);
-  border-color: var(--danger);
-}
-
 #fp-file-actions .fp-menu-wrap {
   position: relative;
   flex-shrink: 0;
@@ -401,41 +389,7 @@
   color: var(--primary);
 }
 
-/* version items */
-.fp-version-item {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 5px 7px;
-  margin-bottom: 5px;
-  font-size: 0.8em;
-}
-
-.fp-version-date {
-  color: var(--text-secondary);
-  margin-bottom: 2px;
-}
-
 /* references */
-.fp-reference-item {
-  padding: 4px 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
-}
-
-.fp-reference-item:last-child {
-  border-bottom: none;
-}
-.fp-reference-item a {
-  color: var(--primary);
-  font-size: 0.85em;
-  word-break: break-all;
-}
-.fp-reference-desc {
-  font-size: 0.75em;
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
 .reference-date {
   font-size: 0.72em;
   color: var(--text-secondary);
@@ -492,6 +446,24 @@
   display: flex;
   flex-wrap: wrap;
   gap: 2px;
+  padding: 6px 8px 4px;
+  flex-shrink: 0;
+}
+
+/* one snippet's self-contained body within a group — built client-side by
+   its own RAIL_SNIPPETS[].body(groupID, instanceID) (see panel-*.js). Only
+   one is visible per group at a time, toggled via the [hidden] attribute by
+   panelGroup's switchSnippet() (rail-render.js). */
+.rail-tab-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.rail-tab-panel[hidden] {
+  display: none;
 }
 
 .fp-browse-mode-btn {
@@ -524,6 +496,11 @@
   color: var(--primary);
   background: color-mix(in srgb, var(--primary) 10%, transparent);
   border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+/* "link" tab entries render as <a>, not <button> — same look, no underline */
+a.fp-browse-mode-btn {
+  text-decoration: none;
 }
 
 .fp-tree {
@@ -592,7 +569,7 @@
    search panel
    ============================================= */
 
-#fp-search .flyout-content {
+.flyout-content[data-snippet="search"] {
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -651,58 +628,17 @@
   margin: 0 2px;
 }
 
-/* toggle switch */
-.fp-toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 28px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
-.fp-toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.fp-toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background: var(--border);
-  border-radius: 16px;
-  transition: background 0.2s;
-}
-
-.fp-toggle-slider::before {
-  content: "";
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  left: 3px;
-  top: 3px;
-  background: var(--bg);
-  border-radius: 50%;
-  transition: transform 0.2s;
-}
-
-.fp-toggle-switch input:checked + .fp-toggle-slider {
-  background: var(--primary);
-}
-
-.fp-toggle-switch input:checked + .fp-toggle-slider::before {
-  transform: translateX(12px);
-}
-
 /* =============================================
-   filter header controls
+   filter controls
    ============================================= */
 
-.fp-filter-header-controls {
+.fp-filter-controls {
   display: flex;
   align-items: center;
   gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .fp-filter-add {
@@ -752,7 +688,7 @@
   background: color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
-#fp-filter .flyout-content {
+.flyout-content[data-snippet="filter"] {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -760,13 +696,13 @@
   overflow-y: auto;
 }
 
-#fp-filter .filter-criteria-container {
+[data-snippet="filter"] .filter-criteria-container {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-#fp-filter .filter-criteria-row {
+[data-snippet="filter"] .filter-criteria-row {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
   grid-template-rows: auto auto;
@@ -775,48 +711,48 @@
   border-bottom: 1px solid var(--border);
 }
 
-#fp-filter .filter-criteria-row:last-child {
+[data-snippet="filter"] .filter-criteria-row:last-child {
   border-bottom: none;
 }
 
-#fp-filter .filter-field {
+[data-snippet="filter"] .filter-field {
   display: flex;
   flex-direction: column;
   gap: 1px;
   min-width: 0;
 }
 
-#fp-filter .filter-criteria-row > :nth-child(3) {
+[data-snippet="filter"] .filter-criteria-row > :nth-child(3) {
   grid-column: 1 / -1;
   grid-row: 2;
 }
 
-#fp-filter .filter-field-action {
+[data-snippet="filter"] .filter-field-action {
   display: contents;
 }
 
-#fp-filter .filter-field-action label {
+[data-snippet="filter"] .filter-field-action label {
   display: none;
 }
 
-#fp-filter .filter-field-action .form-select {
+[data-snippet="filter"] .filter-field-action .form-select {
   grid-column: 3;
   grid-row: 1;
   align-self: end;
 }
 
-#fp-filter .filter-field-action .filter-remove-btn {
+[data-snippet="filter"] .filter-field-action .filter-remove-btn {
   grid-column: 3;
   grid-row: 2;
   align-self: end;
   justify-self: end;
 }
 
-#fp-filter .filter-criteria-row hr {
+[data-snippet="filter"] .filter-criteria-row hr {
   display: none;
 }
 
-#fp-filter .filter-field label {
+[data-snippet="filter"] .filter-field label {
   font-size: 0.62em;
   font-weight: 500;
   color: var(--text-secondary);
@@ -824,9 +760,9 @@
   letter-spacing: 0.03em;
 }
 
-#fp-filter .filter-field select,
-#fp-filter .filter-field input[type="text"],
-#fp-filter .filter-field input[type="number"] {
+[data-snippet="filter"] .filter-field select,
+[data-snippet="filter"] .filter-field input[type="text"],
+[data-snippet="filter"] .filter-field input[type="number"] {
   padding: 2px 4px;
   font-size: 0.78em;
   border: none;
@@ -839,13 +775,13 @@
   height: 22px;
 }
 
-#fp-filter .filter-field select:focus,
-#fp-filter .filter-field input:focus {
+[data-snippet="filter"] .filter-field select:focus,
+[data-snippet="filter"] .filter-field input:focus {
   outline: none;
   border-bottom-color: var(--primary);
 }
 
-#fp-filter .filter-field .btn-danger.btn-small {
+[data-snippet="filter"] .filter-field .btn-danger.btn-small {
   padding: 1px 5px;
   font-size: 0.68em;
   align-self: flex-start;
@@ -855,18 +791,18 @@
   color: var(--text-secondary);
 }
 
-#fp-filter .filter-field .btn-danger.btn-small:hover {
+[data-snippet="filter"] .filter-field .btn-danger.btn-small:hover {
   color: var(--danger);
 }
 
-#fp-filter .fp-filter-results {
+[data-snippet="filter"] .fp-filter-results {
   display: flex;
   flex-direction: column;
   gap: 1px;
   margin-top: 4px;
 }
 
-#fp-filter .fp-filter-results a {
+[data-snippet="filter"] .fp-filter-results a {
   display: block;
   padding: 3px 4px;
   border-radius: 3px;
@@ -882,12 +818,12 @@
   text-overflow: ellipsis;
 }
 
-#fp-filter .fp-filter-results a:hover {
+[data-snippet="filter"] .fp-filter-results a:hover {
   border-left-color: var(--primary);
   color: var(--primary);
 }
 
-#fp-filter .filter-no-results {
+[data-snippet="filter"] .filter-no-results {
   color: var(--text-secondary);
   font-style: italic;
   font-size: 0.78em;
@@ -898,14 +834,14 @@
    chat flyout panel (compact mode)
    ============================================= */
 
-#fp-chat .flyout-content {
+.flyout-content[data-snippet="chat"] {
   padding: 6px;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
 }
 
-#fp-chat #component-chat,
+[data-snippet="chat"] #component-chat,
 #fps-chat #component-chat {
   max-width: 100%;
   padding: 0;
@@ -913,13 +849,13 @@
   overflow-x: hidden;
 }
 
-#fp-chat #component-chat-history,
+[data-snippet="chat"] #component-chat-history,
 #fps-chat #component-chat-history {
   gap: 4px;
   overflow-x: hidden;
 }
 
-#fp-chat .chat-message,
+[data-snippet="chat"] .chat-message,
 #fps-chat .chat-message {
   padding: 4px 7px;
   border-radius: 4px;
@@ -929,7 +865,7 @@
   overflow-wrap: break-word;
 }
 
-#fp-chat .chat-message-content,
+[data-snippet="chat"] .chat-message-content,
 #fps-chat .chat-message-content {
   margin-bottom: 0;
   line-height: 1.35;
@@ -938,20 +874,20 @@
 
 /* short message: content+timestamp on the left, kebab menu vertically
    centered against the whole card on the right */
-#fp-chat .chat-message-short,
+[data-snippet="chat"] .chat-message-short,
 #fps-chat .chat-message-short {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-#fp-chat .chat-message-short-main,
+[data-snippet="chat"] .chat-message-short-main,
 #fps-chat .chat-message-short-main {
   flex: 1;
   min-width: 0;
 }
 
-#fp-chat .chat-message-short-main .chat-timestamp,
+[data-snippet="chat"] .chat-message-short-main .chat-timestamp,
 #fps-chat .chat-message-short-main .chat-timestamp {
   display: block;
   font-size: 0.65em;
@@ -960,13 +896,13 @@
   margin-top: 2px;
 }
 
-#fp-chat .chat-short-menu-wrap,
+[data-snippet="chat"] .chat-short-menu-wrap,
 #fps-chat .chat-short-menu-wrap {
   position: relative;
   flex-shrink: 0;
 }
 
-#fp-chat .chat-short-menu-btn,
+[data-snippet="chat"] .chat-short-menu-btn,
 #fps-chat .chat-short-menu-btn {
   display: flex;
   align-items: center;
@@ -986,9 +922,9 @@
     color 0.15s;
 }
 
-#fp-chat .chat-short-menu-btn:hover,
+[data-snippet="chat"] .chat-short-menu-btn:hover,
 #fps-chat .chat-short-menu-btn:hover,
-#fp-chat .chat-short-menu-btn:focus-visible,
+[data-snippet="chat"] .chat-short-menu-btn:focus-visible,
 #fps-chat .chat-short-menu-btn:focus-visible {
   background: color-mix(in srgb, var(--text) 10%, transparent);
   color: var(--text);
@@ -1072,13 +1008,13 @@
   color: var(--primary);
 }
 
-#fp-new .flyout-content {
+.flyout-content[data-snippet="new"] {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-#fp-new .flyout-content a {
+.flyout-content[data-snippet="new"] a {
   display: block;
   padding: 7px 10px;
   border-radius: 4px;
@@ -1092,7 +1028,7 @@
     color 0.15s;
 }
 
-#fp-new .flyout-content a:hover {
+.flyout-content[data-snippet="new"] a:hover {
   border-color: var(--primary);
   color: var(--primary);
 }
@@ -1331,7 +1267,6 @@
 
 #fp-toc-filter,
 #fp-versions-search,
-#fp-latest-search,
 #fp-find-input {
   display: block;
   width: 100%;
@@ -1348,7 +1283,6 @@
 
 #fp-toc-filter:focus,
 #fp-versions-search:focus,
-#fp-latest-search:focus,
 #fp-find-input:focus {
   border-color: var(--primary);
 }
@@ -1390,12 +1324,27 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  padding: 0 8px 6px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
-.fp-browse-search-row #fp-browse-search {
+.fp-browse-search-row input[type="text"] {
   flex: 1;
   min-width: 0;
   margin-bottom: 0;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  font-size: 0.8em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+
+.fp-browse-search-row input[type="text"]:focus {
+  border-color: var(--primary);
 }
 
 .fp-browse-search-row .fp-fold-all-btn {
@@ -1762,8 +1711,22 @@ mark.kfind.current {
   flex-shrink: 0;
 }
 
-.fp-latest-search-wrap #fp-latest-search {
+.fp-latest-search-wrap input[type="search"] {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
   margin-bottom: 0;
+  font-size: 0.82em;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+
+.fp-latest-search-wrap input[type="search"]:focus {
+  border-color: var(--primary);
 }
 
 #component-version-compare {
@@ -1882,29 +1845,6 @@ mark.kfind.current {
   color: var(--text);
   padding: 0 3px;
   outline: none;
-}
-
-/* conflict group in connections panel */
-.fp-conflict-group {
-  border-left: 2px solid var(--warning);
-  padding-left: 6px;
-}
-
-.fp-conflict-label {
-  color: var(--warning) !important;
-}
-
-.fp-conflict-group > div a {
-  color: var(--warning);
-  font-size: 0.85em;
-  text-decoration: none;
-  display: block;
-  padding: 2px 0;
-  word-break: break-all;
-}
-
-.fp-conflict-group > div a:hover {
-  text-decoration: underline;
 }
 
 /* -----------------------------------------------------------------------
@@ -2146,4 +2086,36 @@ a.search-history-name {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* =============================================
+   system panels: logs / jobs / version — the tables/layout come from
+   render_system.go's own <style> block, sized for the full-width
+   /system/* pages. These narrow it down for the flyout instead of
+   letting .flyout-content's overflow-x:hidden silently clip columns.
+   ============================================= */
+
+.flyout-content[data-snippet="logs"],
+.flyout-content[data-snippet="jobs"] {
+  overflow-x: auto;
+}
+
+.flyout-content[data-snippet="logs"] .log-table,
+.flyout-content[data-snippet="jobs"] .jobs-table {
+  font-size: 0.78em;
+}
+
+.flyout-content[data-snippet="version"] .version-table {
+  min-width: 0;
+  width: 100%;
+}
+
+.flyout-content[data-snippet="version"] .version-label {
+  width: auto;
+  min-width: 0;
+  padding-right: 0.5rem;
+}
+
+.flyout-content[data-snippet="version"] .version-value {
+  overflow-wrap: anywhere;
 }

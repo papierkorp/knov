@@ -1,4 +1,4 @@
-// theme: builtin-reworked — "chat" rail snippet: same generic content shape
+// theme: builtin — "chat" rail snippet: same generic content shape
 // as browse/overview/etc. (its `.body` is assigned along with the rest of
 // them in panel-content.js), plus scroll-to-top after every swap. Flagged
 // `singleton: true` on its RAIL_SNIPPETS entry (rail-snippets.js) — its
