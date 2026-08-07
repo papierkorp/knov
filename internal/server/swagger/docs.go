@@ -2775,6 +2775,18 @@ const docTemplate = `{
                         "description": "Filter by folder, recursive (includes subfolders)",
                         "name": "folder",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Only include changes on/after this date (YYYY-MM-DD)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Only include changes on/before this date (YYYY-MM-DD)",
+                        "name": "to",
+                        "in": "query"
                     }
                 ],
                 "responses": {}

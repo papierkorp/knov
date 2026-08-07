@@ -19,7 +19,7 @@ import (
 
 // RenderGitHistoryFileList renders a list of git history files as HTML.
 // nextOffset is the offset to use for the load more button; hasMore controls whether to show it.
-func RenderGitHistoryFileList(files []git.GitHistoryFile, collection, folder string, nextOffset int, hasMore bool) string {
+func RenderGitHistoryFileList(files []git.GitHistoryFile, collection, folder, from, to string, nextOffset int, hasMore bool) string {
 	var b strings.Builder
 	b.WriteString("<ul>")
 	for _, file := range files {
@@ -38,6 +38,12 @@ func RenderGitHistoryFileList(files []git.GitHistoryFile, collection, folder str
 		}
 		if folder != "" {
 			url += "&folder=" + folder
+		}
+		if from != "" {
+			url += "&from=" + from
+		}
+		if to != "" {
+			url += "&to=" + to
 		}
 		fmt.Fprintf(&b, `<button class="load-more-btn" hx-get="%s" hx-target="this" hx-swap="outerHTML" hx-headers='{"Accept":"text/html"}'>%s</button>`,
 			url, translation.SprintfForRequest(configmanager.GetLanguage(), "load more"))

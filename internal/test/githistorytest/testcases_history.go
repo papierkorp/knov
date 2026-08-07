@@ -3,6 +3,7 @@ package githistorytest
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"knov/internal/files"
 	"knov/internal/git"
@@ -13,11 +14,11 @@ import (
 func caseGitLatestChangesPagination(_ *sampleState) test.CaseResult {
 	name := "git-latestchanges-pagination"
 
-	page1, err := git.GetRecentlyChangedFiles(1, 0)
+	page1, err := git.GetRecentlyChangedFiles(1, 0, time.Time{}, time.Time{})
 	if err != nil {
 		return errCase(name, err)
 	}
-	page2, err := git.GetRecentlyChangedFiles(1, 1)
+	page2, err := git.GetRecentlyChangedFiles(1, 1, time.Time{}, time.Time{})
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -61,7 +62,7 @@ func caseGitLatestChangesCollectionFilter(_ *sampleState) test.CaseResult {
 	wantPath := pathutils.ToWithPrefix(testPath(gammaFile))
 
 	filterByCollection := func(collection string) []string {
-		all, err := git.GetRecentlyChangedFiles(20, 0)
+		all, err := git.GetRecentlyChangedFiles(20, 0, time.Time{}, time.Time{})
 		if err != nil {
 			return nil
 		}

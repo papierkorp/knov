@@ -172,7 +172,10 @@ func RepackIfNeeded() error {
 
 // GetRecentlyChangedFiles returns recently changed unique files with pagination.
 // count is the number of unique files to return; offset skips that many unique files first.
-func GetRecentlyChangedFiles(count, offset int) ([]GitHistoryFile, error) {
+// since/until, if non-zero, restrict results to that date range (inclusive). The log is walked
+// newest-first, so once a commit older than since is hit the walk stops early instead of
+// scanning the full history; commits newer than until are skipped but the walk continues.
+func GetRecentlyChangedFiles(count, offset int, since, until time.Time) ([]GitHistoryFile, error) {
 	repo, err := openRepo()
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to open git repository: %v", err)
@@ -207,6 +210,13 @@ func GetRecentlyChangedFiles(count, offset int) ([]GitHistoryFile, error) {
 				break
 			}
 			return nil, err
+		}
+
+		if !since.IsZero() && c.Author.When.Before(since) {
+			break
+		}
+		if !until.IsZero() && c.Author.When.After(until) {
+			continue
 		}
 
 		currentTree, err := c.Tree()

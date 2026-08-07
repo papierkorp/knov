@@ -1706,6 +1706,9 @@ mark.kfind.current {
 }
 
 .fp-latest-search-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: 5px 8px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
@@ -1726,6 +1729,30 @@ mark.kfind.current {
 }
 
 .fp-latest-search-wrap input[type="search"]:focus {
+  border-color: var(--primary);
+}
+
+.fp-latest-date-range {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+}
+
+.fp-latest-date-range input[type="date"] {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 3px 4px;
+  font-size: 0.78em;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+
+.fp-latest-date-range input[type="date"]:focus {
   border-color: var(--primary);
 }
 

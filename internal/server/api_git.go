@@ -2,8 +2,10 @@ package server
 
 import (
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
@@ -23,6 +25,8 @@ import (
 // @Param q query string false "Search query — filters by filename in git history"
 // @Param collection query string false "Filter by collection"
 // @Param folder query string false "Filter by folder, recursive (includes subfolders)"
+// @Param from query string false "Only include changes on/after this date (YYYY-MM-DD)"
+// @Param to query string false "Only include changes on/before this date (YYYY-MM-DD)"
 // @Produce json,html
 // @Router /api/git/latestchanges [get]
 func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +50,18 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 	collection := r.URL.Query().Get("collection")
 	folder := r.URL.Query().Get("folder")
 
+	fromStr := r.URL.Query().Get("from")
+	toStr := r.URL.Query().Get("to")
+	var since, until time.Time
+	if fromStr != "" {
+		since, _ = time.ParseInLocation("2006-01-02", fromStr, time.Local)
+	}
+	if toStr != "" {
+		if t, err := time.ParseInLocation("2006-01-02", toStr, time.Local); err == nil {
+			until = t.Add(24*time.Hour - time.Nanosecond) // end of day, inclusive
+		}
+	}
+
 	// search mode — git title search, no pagination
 	if query != "" {
 		results, err := git.SearchGitByTitle(query, count, false)
@@ -53,12 +69,17 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to search git history"), http.StatusInternalServerError)
 			return
 		}
-		html := render.RenderGitHistoryFileList(results, "", "", 0, false)
+		if !since.IsZero() || !until.IsZero() {
+			results = slices.DeleteFunc(results, func(f git.GitHistoryFile) bool {
+				return (!since.IsZero() && f.Date.Before(since)) || (!until.IsZero() && f.Date.After(until))
+			})
+		}
+		html := render.RenderGitHistoryFileList(results, "", "", "", "", 0, false)
 		writeResponse(w, r, results, html)
 		return
 	}
 
-	allFiles, err := git.GetRecentlyChangedFiles(count, offset)
+	allFiles, err := git.GetRecentlyChangedFiles(count, offset, since, until)
 	if err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get recent files"), http.StatusInternalServerError)
 		return
@@ -84,7 +105,7 @@ func handleAPIGetRecentlyChanged(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hasMore := unfilteredCount == count
-	html := render.RenderGitHistoryFileList(allFiles, collection, folder, offset+count, hasMore)
+	html := render.RenderGitHistoryFileList(allFiles, collection, folder, fromStr, toStr, offset+count, hasMore)
 	writeResponse(w, r, allFiles, html)
 }
 

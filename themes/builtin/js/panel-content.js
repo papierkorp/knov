@@ -19,6 +19,11 @@ function railGenericContentBody(groupID, snippet) {
   } else if (snippet.search === "latest") {
     searchRow = `<div class="fp-latest-search-wrap">
         <input type="search" placeholder="filter..." oninput="filterGroupContent('${instanceID}', this.value)" autocomplete="off"/>
+        <div class="fp-latest-date-range">
+          <input type="date" class="fp-latest-from" title="from date" onchange="filterLatestDateRange('${instanceID}')"/>
+          <span>&ndash;</span>
+          <input type="date" class="fp-latest-to" title="to date" onchange="filterLatestDateRange('${instanceID}')"/>
+        </div>
       </div>`;
   }
   const url = snippet.url ? snippet.url(groupID) : "";
@@ -34,8 +39,9 @@ RAIL_SNIPPETS.filter((s) => s.kind === "content").forEach((s) => {
 
 // ================================================================
 // search — dispatches to the debounced server search for "latest changes"
-// or the generic client-side filter for everything else. instanceID is
-// groupID + "-" + snippetID, matching the content div's own id.
+// (also applying the from/to date range alongside it) or the generic
+// client-side filter for everything else. instanceID is groupID + "-" +
+// snippetID, matching the content div's own id.
 // ================================================================
 let _latestSearchTimers = {};
 function filterGroupContent(instanceID, query) {
@@ -45,16 +51,7 @@ function filterGroupContent(instanceID, query) {
   if (content.dataset.snippet === "latest") {
     clearTimeout(_latestSearchTimers[instanceID]);
     _latestSearchTimers[instanceID] = setTimeout(() => {
-      const q = query.trim();
-      const base = content.dataset.url || "/api/git/latestchanges?count=50";
-      const url = q
-        ? `/api/git/latestchanges?count=50&q=${encodeURIComponent(q)}`
-        : base;
-      htmx.ajax("GET", url, {
-        target: content,
-        swap: "innerHTML",
-        headers: { Accept: "text/html" },
-      });
+      fetchLatestChanges(instanceID, query.trim());
     }, 300);
     return;
   }
@@ -127,6 +124,33 @@ function filterGroupContent(instanceID, query) {
       item.style.display = name.includes(q) || href.includes(q) ? "" : "none";
     });
   }
+}
+
+// fetches the "latest changes" content for instanceID, combining the filename
+// query with the from/to date-range inputs in its search row (immediately,
+// no debounce — used both by the debounced text filter and the date inputs'
+// own onchange).
+function fetchLatestChanges(instanceID, query) {
+  const content = document.getElementById("fp-" + instanceID + "-content");
+  if (!content) return;
+  const row = content.previousElementSibling;
+  const from = row?.querySelector(".fp-latest-from")?.value || "";
+  const to = row?.querySelector(".fp-latest-to")?.value || "";
+  let url = content.dataset.url || "/api/git/latestchanges?count=50";
+  if (query) url += `&q=${encodeURIComponent(query)}`;
+  if (from) url += `&from=${encodeURIComponent(from)}`;
+  if (to) url += `&to=${encodeURIComponent(to)}`;
+  htmx.ajax("GET", url, {
+    target: content,
+    swap: "innerHTML",
+    headers: { Accept: "text/html" },
+  });
+}
+
+function filterLatestDateRange(instanceID) {
+  const row = document.getElementById("fp-" + instanceID + "-content")?.previousElementSibling;
+  const query = row?.querySelector("input[type=search]")?.value.trim() || "";
+  fetchLatestChanges(instanceID, query);
 }
 
 function setAllGroupFolds(instanceID, collapse) {

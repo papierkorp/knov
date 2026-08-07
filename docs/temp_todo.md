@@ -45,8 +45,6 @@
 - convert to markdown button is always shown
 - new kanban feature: create folders based on the kanban status and move the files based on the kanban status => what would be the single source of truth - i think the metadata and if a file in such a folder doesnt have metadata => add it / change it
 - tables if a header/field is empty the display is cooked
-- copy and paste images in codemirror
-- latest changes time filter
 - gitlab pipeline to get a release
 - /api/system/version => add json output
 - in the theme let me also arrange the info slideout components

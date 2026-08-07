@@ -2265,6 +2265,14 @@ paths:
         in: query
         name: folder
         type: string
+      - description: Only include changes on/after this date (YYYY-MM-DD)
+        in: query
+        name: from
+        type: string
+      - description: Only include changes on/before this date (YYYY-MM-DD)
+        in: query
+        name: to
+        type: string
       produces:
       - application/json
       - text/html
