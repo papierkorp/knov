@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
@@ -487,6 +488,29 @@ func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
 	data.SystemPage = true
 	if err := tm.Render(w, "fileview", data); err != nil {
 		logging.LogError(logging.KeyApp, "failed to render changelog page: %v", err)
+	}
+}
+
+// VersionInfo is the JSON representation of the version/build-info table.
+type VersionInfo struct {
+	Version           string    `json:"version"`
+	BuildTime         time.Time `json:"buildTime"`
+	GoVersion         string    `json:"goVersion"`
+	OS                string    `json:"os"`
+	Arch              string    `json:"arch"`
+	LastCommitMessage string    `json:"lastCommitMessage"`
+}
+
+// GetVersionInfo returns the version/build-info as a struct - the JSON
+// counterpart of RenderVersionInfo.
+func GetVersionInfo() VersionInfo {
+	return VersionInfo{
+		Version:           version.Version,
+		BuildTime:         version.BuildTimeParsed,
+		GoVersion:         runtime.Version(),
+		OS:                runtime.GOOS,
+		Arch:              runtime.GOARCH,
+		LastCommitMessage: version.LastCommitMessage,
 	}
 }
 

@@ -127,18 +127,8 @@
       "translation": ""
     },
     {
-      "id": "and / or",
-      "message": "and / or",
-      "translation": ""
-    },
-    {
       "id": "append",
       "message": "append",
-      "translation": ""
-    },
-    {
-      "id": "apply",
-      "message": "apply",
       "translation": ""
     },
     {
@@ -227,13 +217,13 @@
       "translation": ""
     },
     {
-      "id": "broken link",
-      "message": "broken link",
+      "id": "board order",
+      "message": "board order",
       "translation": ""
     },
     {
-      "id": "browse",
-      "message": "browse",
+      "id": "broken link",
+      "message": "broken link",
       "translation": ""
     },
     {
@@ -362,11 +352,6 @@
       "translation": ""
     },
     {
-      "id": "CodeMirror",
-      "message": "CodeMirror",
-      "translation": ""
-    },
-    {
       "id": "coll.",
       "message": "coll.",
       "translation": ""
@@ -379,11 +364,6 @@
     {
       "id": "collection",
       "message": "collection",
-      "translation": ""
-    },
-    {
-      "id": "collections",
-      "message": "collections",
       "translation": ""
     },
     {
@@ -569,11 +549,6 @@
     {
       "id": "dashboard renamed successfully",
       "message": "dashboard renamed successfully",
-      "translation": ""
-    },
-    {
-      "id": "dashboards",
-      "message": "dashboards",
       "translation": ""
     },
     {
@@ -1407,11 +1382,6 @@
       "translation": ""
     },
     {
-      "id": "filter",
-      "message": "filter",
-      "translation": ""
-    },
-    {
       "id": "filter...",
       "message": "filter...",
       "translation": ""
@@ -1459,11 +1429,6 @@
     {
       "id": "filter preview",
       "message": "filter preview",
-      "translation": ""
-    },
-    {
-      "id": "filters",
-      "message": "filters",
       "translation": ""
     },
     {
@@ -1677,11 +1642,6 @@
       "translation": ""
     },
     {
-      "id": "Index",
-      "message": "Index",
-      "translation": ""
-    },
-    {
       "id": "index configuration",
       "message": "index configuration",
       "translation": ""
@@ -1857,11 +1817,6 @@
       "translation": ""
     },
     {
-      "id": "latest changes",
-      "message": "latest changes",
-      "translation": ""
-    },
-    {
       "id": "layout",
       "message": "layout",
       "translation": ""
@@ -1899,11 +1854,6 @@
     {
       "id": "list",
       "message": "list",
-      "translation": ""
-    },
-    {
-      "id": "List",
-      "message": "List",
       "translation": ""
     },
     {
@@ -2044,11 +1994,6 @@
     {
       "id": "manage test data for development and testing purposes",
       "message": "manage test data for development and testing purposes",
-      "translation": ""
-    },
-    {
-      "id": "media",
-      "message": "media",
       "translation": ""
     },
     {
@@ -2292,11 +2237,6 @@
       "translation": ""
     },
     {
-      "id": "new",
-      "message": "new",
-      "translation": ""
-    },
-    {
       "id": "new file",
       "message": "new file",
       "translation": ""
@@ -2512,11 +2452,6 @@
       "translation": ""
     },
     {
-      "id": "notifications",
-      "message": "notifications",
-      "translation": ""
-    },
-    {
       "id": "Notify Duration",
       "message": "Notify Duration",
       "translation": ""
@@ -2562,16 +2497,6 @@
       "translation": ""
     },
     {
-      "id": "open media page",
-      "message": "open media page",
-      "translation": ""
-    },
-    {
-      "id": "open search page",
-      "message": "open search page",
-      "translation": ""
-    },
-    {
       "id": "operator",
       "message": "operator",
       "translation": ""
@@ -2609,11 +2534,6 @@
     {
       "id": "outdent",
       "message": "outdent",
-      "translation": ""
-    },
-    {
-      "id": "overview",
-      "message": "overview",
       "translation": ""
     },
     {
@@ -3067,11 +2987,6 @@
       "translation": ""
     },
     {
-      "id": "search",
-      "message": "search",
-      "translation": ""
-    },
-    {
       "id": "search...",
       "message": "search...",
       "translation": ""
@@ -3447,11 +3362,6 @@
       "translation": ""
     },
     {
-      "id": "Todo",
-      "message": "Todo",
-      "translation": ""
-    },
-    {
       "id": "todo saved successfully",
       "message": "todo saved successfully",
       "translation": ""
@@ -3464,11 +3374,6 @@
     {
       "id": "total media files",
       "message": "total media files",
-      "translation": ""
-    },
-    {
-      "id": "tree",
-      "message": "tree",
       "translation": ""
     },
     {

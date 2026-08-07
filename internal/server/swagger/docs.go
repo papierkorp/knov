@@ -5556,8 +5556,9 @@ const docTemplate = `{
         },
         "/api/system/version": {
             "get": {
-                "description": "Returns the version/build-info table as HTML (for HTMX) - the same content shown on the /system/version page, for embedding in the rail \"version\" panel",
+                "description": "Returns the version/build-info table as HTML (for HTMX) or JSON - the same content shown on the /system/version page, for embedding in the rail \"version\" panel",
                 "produces": [
+                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -5566,9 +5567,9 @@ const docTemplate = `{
                 "summary": "Get version/build info",
                 "responses": {
                     "200": {
-                        "description": "version info HTML",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/render.VersionInfo"
                         }
                     }
                 }
@@ -6767,6 +6768,29 @@ const docTemplate = `{
                 },
                 "pending": {
                     "type": "boolean"
+                }
+            }
+        },
+        "render.VersionInfo": {
+            "type": "object",
+            "properties": {
+                "arch": {
+                    "type": "string"
+                },
+                "buildTime": {
+                    "type": "string"
+                },
+                "goVersion": {
+                    "type": "string"
+                },
+                "lastCommitMessage": {
+                    "type": "string"
+                },
+                "os": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
                 }
             }
         },

@@ -223,13 +223,13 @@ func handleAPIGetJobs(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Get version/build info
-// @Description Returns the version/build-info table as HTML (for HTMX) - the same content shown on the /system/version page, for embedding in the rail "version" panel
+// @Description Returns the version/build-info table as HTML (for HTMX) or JSON - the same content shown on the /system/version page, for embedding in the rail "version" panel
 // @Tags system
-// @Produce html
-// @Success 200 {string} string "version info HTML"
+// @Produce json,html
+// @Success 200 {object} render.VersionInfo
 // @Router /api/system/version [get]
 func handleAPIGetSystemVersion(w http.ResponseWriter, r *http.Request) {
-	writeResponse(w, r, nil, render.RenderVersionInfo())
+	writeResponse(w, r, render.GetVersionInfo(), render.RenderVersionInfo())
 }
 
 // @Summary Get changelog
