@@ -41,7 +41,6 @@
 - delete file takes FOREVER and doesnt give an immediate response (just stays at the are you sure?) no success message / anything after successfull rename and the modal stays up (need to wait quite a bit of time)
 - add go tests?
 - refactor template_data.go make it more general/modular/uniform/ easier for themecreators, e.g. only one general pass and not mutliple different ones => would it make a performance difference?
--  clicking "rebuild" throws `htmx:targetError` because `#fp-rebuild-result` doesn't exist in the DOM — present since the original `f86d0eb` commit
 - move copy-code.js to the app
 - convert to markdown button is always shown
 - new kanban feature: create folders based on the kanban status and move the files based on the kanban status => what would be the single source of truth - i think the metadata and if a file in such a folder doesnt have metadata => add it / change it

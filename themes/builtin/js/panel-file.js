@@ -160,7 +160,7 @@ function setupFilePage() {
   const rebuildBtn = document.getElementById("fp-rebuild-btn");
   if (rebuildBtn) {
     rebuildBtn.setAttribute("hx-post", "/api/metadata/rebuild/" + filepath);
-    rebuildBtn.setAttribute("hx-target", "#fp-rebuild-result");
+    rebuildBtn.setAttribute("hx-swap", "none");
     htmx.process(rebuildBtn);
   }
 
