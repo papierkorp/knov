@@ -5468,6 +5468,32 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/changelog": {
+            "get": {
+                "description": "Returns the rendered changelog as HTML (for HTMX) - the same content shown on the /system/changelog page, for embedding in the rail \"changelog\" panel",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Get changelog",
+                "responses": {
+                    "200": {
+                        "description": "changelog HTML",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to read changelogs",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/jobs": {
             "get": {
                 "description": "Returns recent job runs as HTML table (for HTMX) or JSON",
@@ -5509,6 +5535,26 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "restarting",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/version": {
+            "get": {
+                "description": "Returns the version/build-info table as HTML (for HTMX) - the same content shown on the /system/version page, for embedding in the rail \"version\" panel",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Get version/build info",
+                "responses": {
+                    "200": {
+                        "description": "version info HTML",
                         "schema": {
                             "type": "string"
                         }

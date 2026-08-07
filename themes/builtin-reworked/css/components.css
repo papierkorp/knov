@@ -1,4 +1,4 @@
-/* theme: builtin */
+/* theme: builtin-reworked */
 
 /* =============================================
    buttons
@@ -202,50 +202,6 @@
   [popover] .modal-actions {
     flex-direction: column;
   }
-}
-
-/* shared chrome for the editor toolbar's file-browser popovers
-   (media selector: #media-selector-modal, wiki-file selector: #wiki-file-selector-modal) */
-
-.media-selector-content {
-  min-width: 0;
-  width: 600px;
-  max-width: 90vw;
-  max-height: 70vh;
-  margin: 10vh auto;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.media-selector-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.media-selector-header h3 {
-  margin: 0;
-  padding: 0;
-  border: none;
-  color: var(--text);
-  font-size: 1em;
-}
-
-.media-selector-content .form-input {
-  margin: 8px 16px;
-  width: calc(100% - 32px);
-}
-
-#media-selector-body,
-#wiki-file-selector-body {
-  padding: 0 16px 12px;
-  overflow-y: auto;
-  flex: 1;
 }
 
 /* =============================================
@@ -882,13 +838,6 @@ body[data-dark-mode="true"] .tooltip::after {
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
 }
-#component-filter .filter-no-results {
-  text-align: center;
-  color: var(--text-secondary);
-  font-style: italic;
-  padding: 20px;
-}
-
 /* =============================================
    page: media
    ============================================= */
@@ -1765,7 +1714,7 @@ blockquote p blockquote p,
    compact chat messages inside the flyout
    ============================================= */
 
-#fp-chat #component-chat,
+[data-snippet="chat"] #component-chat,
 #fps-chat #component-chat {
   max-width: 100%;
   padding: 0;
@@ -1776,7 +1725,7 @@ blockquote p blockquote p,
   height: 100%;
 }
 
-#fp-chat #component-chat-history,
+[data-snippet="chat"] #component-chat-history,
 #fps-chat #component-chat-history {
   flex: 1;
   overflow-y: auto;
@@ -1787,12 +1736,12 @@ blockquote p blockquote p,
   padding: 6px;
 }
 
-#fp-chat .flyout-content {
+[data-snippet="chat"] .flyout-content {
   overflow-x: hidden;
   padding: 6px;
 }
 
-#fp-chat .chat-message,
+[data-snippet="chat"] .chat-message,
 #fps-chat .chat-message {
   padding: 4px 7px;
   border-radius: 4px;
@@ -1802,26 +1751,26 @@ blockquote p blockquote p,
   overflow-wrap: break-word;
 }
 
-#fp-chat .chat-bulk-bar,
+[data-snippet="chat"] .chat-bulk-bar,
 #fps-chat .chat-bulk-bar {
   font-size: 0.75rem;
   padding: 4px 6px;
 }
 
-#fp-chat .chat-bulk-bar .btn-small,
+[data-snippet="chat"] .chat-bulk-bar .btn-small,
 #fps-chat .chat-bulk-bar .btn-small {
   font-size: 0.7rem;
   padding: 2px 5px;
 }
 
-#fp-chat .chat-message-content,
+[data-snippet="chat"] .chat-message-content,
 #fps-chat .chat-message-content {
   margin-bottom: 0;
   line-height: 1.35;
   min-width: 0;
 }
 
-#fp-chat .chat-message-actions .btn-small,
+[data-snippet="chat"] .chat-message-actions .btn-small,
 #fps-chat .chat-message-actions .btn-small {
   font-size: 0.72em;
   padding: 2px 5px;
@@ -1843,21 +1792,18 @@ blockquote p blockquote p,
 }
 
 /* admin: two-column masonry */
-.settings-sections,
-.admin-sections {
+.settings-sections {
   columns: 2;
   column-gap: 12px;
 }
 
-.settings-section,
-.admin-section {
+.settings-section {
   break-inside: avoid;
   margin-bottom: 12px;
 }
 
 @media (max-width: 900px) {
-  .settings-sections,
-  .admin-sections {
+  .settings-sections {
     columns: 1;
   }
 }
@@ -1891,8 +1837,7 @@ blockquote p blockquote p,
 }
 
 /* section card */
-.settings-section,
-.admin-section {
+.settings-section {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1911,8 +1856,7 @@ blockquote p blockquote p,
   margin-top: 0;
 }
 
-.settings-section h2,
-.admin-section h2 {
+.settings-section h2 {
   margin: 0 0 16px;
   font-size: 1em;
   font-weight: 600;
@@ -1923,8 +1867,7 @@ blockquote p blockquote p,
   padding-bottom: 8px;
 }
 
-.settings-section h3,
-.admin-section h3 {
+.settings-section h3 {
   margin: 0 0 8px;
   font-size: 0.92em;
   font-weight: 600;
@@ -1961,6 +1904,192 @@ blockquote p blockquote p,
   gap: 5px;
   font-size: 0.9em;
   color: var(--text);
+}
+
+/* theme settings section (settings.gohtml's "theme-section" template, spans
+   the full settings-section-wide width): flow the simple boolean/select/text
+   settings into a grid instead of one long column now that there are
+   several of them, but keep railLayout's own drag-and-drop builder (the
+   only textarea-type setting) on its own full-width row - it's a different
+   kind of control entirely, not just a wider text field.
+   Ordering (checkboxes | other settings | railLayout) mirrors
+   #section-pdf-export below: order + an invisible full-width spacer per
+   break, grouped by *kind* via :has() rather than relying on source order.
+   Grid rather than flex-wrap: a flex item with flex-grow:1 stretches to
+   fill whatever's left on a short trailing row, which throws its columns
+   out of alignment with the row above - grid just leaves the remaining
+   cells empty instead. */
+#theme-settings-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  column-gap: 24px;
+  row-gap: 14px;
+}
+
+#theme-settings-container::after {
+  content: "";
+  grid-column: 1 / -1;
+  order: 2;
+}
+
+#theme-settings-container > .setting-item {
+  order: 1;
+  margin-bottom: 0;
+}
+
+#theme-settings-container > .setting-item:not(:has(.checkbox-label)) {
+  order: 3;
+}
+
+#theme-settings-container > .setting-item:has(textarea) {
+  grid-column: 1 / -1;
+}
+
+/* rail layout builder (settings → theme → rail layout): drag snippets
+   between the palette and any group — see render_themes.go's "railLayout"
+   case and rail-layout-builder.js. Root has exactly 3 children in this
+   order (palette, top section, bottom section - see railLayoutBuilderInit),
+   so a 2-column grid with the palette spanning both columns puts top/bottom
+   side by side on the row below it without any JS/markup change. */
+.rail-layout-builder {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
+}
+
+.rail-layout-palette {
+  grid-column: 1 / -1;
+}
+
+.rail-layout-palette-label {
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.rail-snippet-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 34px;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+}
+
+.rail-snippet-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  font-size: 0.85em;
+  cursor: grab;
+}
+
+/* "link" chip: carries its own icon/label/url inputs (rail-layout-builder.js's
+   railLinkChipHTML), so it takes a full row instead of the pill shape above */
+.rail-link-chip {
+  width: 100%;
+  border-radius: 4px;
+  cursor: default;
+}
+
+.rail-link-chip-handle {
+  flex: 0 0 auto;
+  cursor: grab;
+  color: var(--text-secondary);
+}
+
+.rail-link-icon-input {
+  width: 6em;
+  flex: 0 0 auto;
+}
+
+.rail-link-label-input,
+.rail-link-url-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.rail-layout-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rail-layout-section + .rail-layout-section {
+  border-left: 1px solid var(--border);
+  padding-left: 20px;
+}
+
+.rail-layout-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 8px;
+}
+
+.rail-layout-group {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px;
+}
+
+.rail-layout-group-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.rail-group-handle {
+  flex: 0 0 auto;
+  cursor: grab;
+  color: var(--text-secondary);
+}
+
+.rail-group-icon-input {
+  width: 6em;
+  flex: 0 0 auto;
+}
+
+.rail-group-label-input,
+.rail-group-url-input {
+  flex: 1;
+}
+
+.rail-group-remove-btn {
+  flex: 0 0 auto;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.rail-layout-add-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+/* narrow viewports: each rail-layout-group card needs real width for its
+   icon/label/url inputs, so drop back to one stacked column instead of
+   squeezing top/bottom side by side */
+@media (max-width: 900px) {
+  .rail-layout-builder {
+    grid-template-columns: 1fr;
+  }
+
+  .rail-layout-section + .rail-layout-section {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
 }
 
 /* help text: always visible, italic, subtle */
@@ -2438,12 +2567,6 @@ main textarea {
   flex-shrink: 0;
 }
 
-#component-filter-test-results .test-description {
-  margin: 6px 0 0;
-  font-size: 0.82em;
-  color: var(--text-secondary);
-}
-
 #component-filter-test-results .test-counts {
   margin: 4px 0 0;
   font-size: 0.82em;
@@ -2461,13 +2584,11 @@ main textarea {
 }
 
 /* collapsible sections */
-#component-filter-test-results .test-config,
-#component-filter-test-results .test-files {
+#component-filter-test-results .test-config {
   border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
 }
 
-#component-filter-test-results .test-config summary,
-#component-filter-test-results .test-files summary {
+#component-filter-test-results .test-config summary {
   cursor: pointer;
   padding: 7px 14px;
   font-size: 0.82em;
@@ -2476,8 +2597,7 @@ main textarea {
   user-select: none;
 }
 
-#component-filter-test-results .test-config summary:hover,
-#component-filter-test-results .test-files summary:hover {
+#component-filter-test-results .test-config summary:hover {
   color: var(--text);
 }
 
@@ -2511,8 +2631,7 @@ main textarea {
   border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
 }
 
-#component-filter-test-results .config-content,
-#component-filter-test-results .files-content {
+#component-filter-test-results .config-content {
   padding: 10px 14px;
   font-size: 0.82em;
   color: var(--text);
@@ -2554,58 +2673,6 @@ main textarea {
 #component-filter-test-results .action-badge.action-exclude {
   color: var(--danger);
   background: color-mix(in srgb, var(--danger) 12%, transparent);
-}
-
-/* files grid */
-#component-filter-test-results .files-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-#component-filter-test-results .files-header {
-  margin: 0 0 6px;
-  font-size: 0.85em;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 3px;
-}
-
-#component-filter-test-results .files-header.expected {
-  color: var(--success);
-  background: color-mix(in srgb, var(--success) 10%, transparent);
-}
-
-#component-filter-test-results .files-header.actual {
-  color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
-}
-
-#component-filter-test-results .files-list {
-  margin: 0;
-  padding-left: 16px;
-  font-family: monospace;
-  font-size: 0.88em;
-  color: var(--text);
-}
-
-#component-filter-test-results .files-list li {
-  margin: 2px 0;
-  padding: 1px 0;
-}
-
-#component-filter-test-results .unexpected-file {
-  color: var(--danger);
-  font-weight: 600;
-  background: color-mix(in srgb, var(--danger) 10%, transparent);
-  border-radius: 3px;
-  padding: 1px 5px;
-}
-
-#component-filter-test-results .no-files {
-  color: var(--text-muted);
-  font-size: 0.88em;
-  font-style: italic;
 }
 
 /* =============================================
@@ -3247,8 +3314,7 @@ dl.media-info dd {
 }
 
 /* result message area */
-#dashboard-result,
-#dashboard-edit-result {
+#dashboard-result {
   margin-top: 12px;
 }
 
@@ -3776,7 +3842,7 @@ dl.media-info dd {
   overflow-y: auto;
 }
 
-#page-latestchanges #latestchanges-search {
+.page-history #latestchanges-search {
   width: 100%;
   max-width: 400px;
   margin-bottom: 12px;

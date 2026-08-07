@@ -1,0 +1,322 @@
+{{/* theme: builtin-reworked */}}
+<!DOCTYPE html>
+<html class="no-transition">
+<head>
+    <title>{{ .Title }}</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <!-- restore panel state before first paint to avoid transition flash -->
+    <script>
+    (function() {
+        var path = window.location.pathname;
+        if (path === '/history' || path.startsWith('/files/history/')) return;
+        var p = localStorage.getItem('rail-panel');
+        if (p) document.documentElement.setAttribute('data-init-panel', p);
+    })();
+    </script>
+    <link href="/themes/{{.CurrentTheme}}/css/style.css" rel="stylesheet"/>
+    {{ .FontStyleTag }}
+    <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+    <link rel="stylesheet" href="/static/font-awesome-7.3.1-all.min.css"/>
+    <link rel="stylesheet" href="/static/handsontable-16.2.0.full.min.css"/>
+    <link rel="stylesheet" href="/static/handsontable-theme-main-16.2.0.min.css"/>
+</head>
+<body
+    x-data="{}"
+    data-theme="{{ .CurrentTheme }}"
+    data-dark-mode="{{ index .ThemeSettings "darkMode" }}"
+    data-color-scheme="{{ index .ThemeSettings "colorScheme" }}"
+    data-code-wrap="{{ .CodeBlockWrap }}"
+    data-language="{{ .Language }}"
+    data-rail-layout="{{ index .ThemeSettings "railLayout" | htmlAttr }}">
+
+<div id="wrapper">
+<div id="layout-rail">
+
+    <!-- ================================================================
+         RAIL
+         ================================================================ -->
+    <nav id="rail-site">
+
+        <a class="rail-btn" href="/" title="{{T "home"}}" @click="$store.rail.close()"><i class="fa fa-house"></i></a>
+        {{ if index .ThemeSettings "quickLink1Url" }}<a class="rail-btn" href="{{ index .ThemeSettings "quickLink1Url" }}" @click="$store.rail.close()"><i class="fa {{ or (index .ThemeSettings "quickLink1Icon") "fa-link" }}"></i></a>{{ end }}
+        {{ if index .ThemeSettings "quickLink2Url" }}<a class="rail-btn" href="{{ index .ThemeSettings "quickLink2Url" }}" @click="$store.rail.close()"><i class="fa {{ or (index .ThemeSettings "quickLink2Icon") "fa-link" }}"></i></a>{{ end }}
+        {{ if index .ThemeSettings "quickLink3Url" }}<a class="rail-btn" href="{{ index .ThemeSettings "quickLink3Url" }}" @click="$store.rail.close()"><i class="fa {{ or (index .ThemeSettings "quickLink3Icon") "fa-link" }}"></i></a>{{ end }}
+        <button class="rail-btn rail-btn-file" :class="{active: $store.rail.isActive('fp-file')}" @click="$store.rail.toggle('fp-file')" id="rb-file" title="{{T "file info"}}"><i class="fa fa-circle-info"></i></button>
+
+        <div class="rail-sep"></div>
+
+        <!-- user-composed rail groups — $store.rail.groups is the parsed
+             opaque "railLayout" setting (see rail-render.js / rail-snippets.js);
+             the server has no concept of "rail" at all. Split top/bottom by
+             group.position (default "top") — bottom groups render below the
+             spacer, e.g. settings/admin/server links by default. Two loops
+             per section instead of one x-for/x-if pair, so each iteration
+             keeps a single root node - that puts every link before every
+             panel button in DOM order regardless of their order in the
+             layout, so each section gets its own flex sub-container and each
+             item an explicit :style="order" (its true index within the
+             section) to restore the actual configured order visually. -->
+        <div class="rail-group-section">
+            <template x-for="(group, index) in $store.rail.groups.filter((g) => g.position !== 'bottom')" :key="group.id">
+                <a class="rail-btn" x-show="group.link" :style="'order:' + index" :href="group.link" :title="group.label" @click="$store.rail.close()"><i class="fa" :class="group.icon"></i></a>
+            </template>
+            <template x-for="(group, index) in $store.rail.groups.filter((g) => g.position !== 'bottom')" :key="group.id">
+                <button class="rail-btn" x-show="!group.link" :style="'order:' + index" :class="{active: $store.rail.isActive('fp-' + group.id)}" :id="'rb-' + group.id" :title="group.label" @click="$store.rail.toggle('fp-' + group.id)"><i class="fa" :class="group.icon"></i></button>
+            </template>
+        </div>
+
+        <div class="rail-spacer"></div>
+
+        <div class="rail-group-section">
+            <template x-for="(group, index) in $store.rail.groups.filter((g) => g.position === 'bottom')" :key="group.id">
+                <a class="rail-btn" x-show="group.link" :style="'order:' + index" :href="group.link" :title="group.label" @click="$store.rail.close()"><i class="fa" :class="group.icon"></i></a>
+            </template>
+            <template x-for="(group, index) in $store.rail.groups.filter((g) => g.position === 'bottom')" :key="group.id">
+                <button class="rail-btn" x-show="!group.link" :style="'order:' + index" :class="{active: $store.rail.isActive('fp-' + group.id)}" :id="'rb-' + group.id" :title="group.label" @click="$store.rail.toggle('fp-' + group.id)"><i class="fa" :class="group.icon"></i></button>
+            </template>
+        </div>
+
+    </nav>
+
+    <!-- ================================================================
+         SHARED FLYOUT
+         ================================================================ -->
+    <div id="flyout" x-init="initFlyoutResize($el)" :data-active="$store.rail.active">
+        <div class="flyout-resizer" id="flyout-resizer"></div>
+
+        <!-- user-composed rail panels — one alpine component (panelGroup, see
+             rail-render.js) per group resolved from $store.rail.groups; the
+             server has no concept of "rail" at all. rail-snippets.js supplies
+             the snippet registry (RAIL_SNIPPETS/railSnippetByID) these
+             resolve against. -->
+        <script src="/themes/{{.CurrentTheme}}/js/rail-snippets.js"></script>
+        <script src="/themes/{{.CurrentTheme}}/js/rail-render.js"></script>
+        <script src="/themes/{{.CurrentTheme}}/js/panel-new.js"></script>
+        <script src="/themes/{{.CurrentTheme}}/js/panel-content.js"></script>
+        <script src="/themes/{{.CurrentTheme}}/js/panel-tree.js"></script>
+        <script src="/themes/{{.CurrentTheme}}/js/panel-search.js"></script>
+        <script src="/themes/{{.CurrentTheme}}/js/panel-filter.js"></script>
+        <script src="/themes/{{.CurrentTheme}}/js/panel-media.js"></script>
+        <script src="/themes/{{.CurrentTheme}}/js/panel-chat.js"></script>
+        <template x-for="group in $store.rail.groups.filter((g) => !g.link && (g.snippets || []).length)" :key="group.id">
+            <div class="flyout-panel" :id="'fp-' + group.id" :class="{active: $store.rail.isActive('fp-' + group.id)}" x-data="panelGroup(group)">
+                <div class="flyout-header">
+                    <span x-text="group.label"></span>
+                    <div class="flyout-header-actions">
+                        <button class="flyout-close-btn" @click="refresh()" title="{{T "refresh"}}"><i class="fa fa-rotate"></i></button>
+                        <button class="flyout-close-btn" @click="$store.rail.close()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
+                    </div>
+                </div>
+                <!-- "link" snippets are tabs that navigate instead of switching content,
+                     so they're a separate loop (own root element, an <a> not a <button>)
+                     and excluded from the tab-panel loop below entirely -->
+                <div class="fp-browse-modes" x-show="snippets.length > 1 || snippets.some((s) => s.kind === 'link')">
+                    <template x-for="s in snippets.filter((s) => s.kind !== 'link')" :key="s.tabId">
+                        <button class="fp-browse-mode-btn" :class="{active: activeSnippet === s.tabId}" :data-mode="s.tabId" @click="switchSnippet(s.tabId)" :title="s.label"><i class="fa" :class="s.icon"></i></button>
+                    </template>
+                    <template x-for="s in snippets.filter((s) => s.kind === 'link')" :key="s.tabId">
+                        <a class="fp-browse-mode-btn" :href="s.link" :title="s.label" @click="$store.rail.close()"><i class="fa" :class="s.icon"></i></a>
+                    </template>
+                </div>
+                <template x-for="s in snippets.filter((s) => s.kind !== 'link')" :key="s.tabId">
+                    <div class="rail-tab-panel" :id="'fp-' + group.id + '-' + s.tabId" :hidden="activeSnippet !== s.tabId" x-html="bodyHTML(s)"></div>
+                </template>
+            </div>
+        </template>
+
+        <!-- file panel: filename + actions + select + sub-panels -->
+        <div class="flyout-panel" id="fp-file" :class="{active: $store.rail.isActive('fp-file')}" data-init-subpanel="{{if .SystemPage}}toc{{else}}metadata{{end}}">
+
+            <!-- filename header + action buttons + select -->
+            <div id="fp-file-header">
+                <div id="fp-file-title-row">
+                    <div id="fp-file-title">{{if .SystemPage}}{{T "contents"}}{{else}}-{{end}}</div>
+                    <button class="flyout-close-btn" @click="$store.rail.close()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
+                </div>
+                {{if not .SystemPage}}
+                <div id="fp-file-actions">
+                    <a  class="fp-action-btn fp-btn-edit"   id="fp-edit-link"   href="#" title="{{T "edit"}}"><i class="fa fa-pen"></i></a>
+                    <div class="fp-menu-wrap" x-data="fpFileMenu()" @click.outside="close()">
+                        <button type="button" class="fp-menu-btn" x-ref="btn" @click="toggle()" title="{{T "more actions"}}"><i class="fa fa-ellipsis-vertical"></i></button>
+                        <div class="fp-menu" x-ref="menu" :hidden="!open" @click="close()" @scroll.window.capture="close()">
+                            <button type="button" class="fp-menu-item" popovertarget="rename-modal"><i class="fa fa-i-cursor"></i> {{T "rename"}}</button>
+                            <button type="button" class="fp-menu-item" popovertarget="move-modal"><i class="fa fa-folder-tree"></i> {{T "move"}}</button>
+                            <button type="button" class="fp-menu-item" id="fp-rebuild-btn"><i class="fa fa-rotate"></i> {{T "rebuild"}}</button>
+                            {{if .ShowPDFFileButton}}<a class="fp-menu-item" id="fp-export-pdf-link" href="#"><i class="fa fa-file-pdf"></i> {{T "export to pdf"}}</a>{{end}}
+                            <a class="fp-menu-item" id="fp-convert-dokuwiki-link" href="#" hidden><i class="fa fa-file-export"></i> {{T "convert to markdown"}}</a>
+                            <button type="button" class="fp-menu-item fp-menu-item--danger" popovertarget="delete-modal"><i class="fa fa-trash"></i> {{T "delete"}}</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="fp-file-modes" id="fp-file-modes">
+                    <button class="fp-file-mode-btn" :class="{active: $store.filePanel.active === 'metadata'}"    @click="$store.filePanel.switch('metadata')"    title="{{T "metadata"}}"><i class="fa fa-circle-info"></i></button>
+                    <button class="fp-file-mode-btn" :class="{active: $store.filePanel.active === 'toc'}"         @click="$store.filePanel.switch('toc')"         title="{{T "table of contents"}}"><i class="fa fa-list"></i></button>
+                    <button class="fp-file-mode-btn" :class="{active: $store.filePanel.active === 'history'}"     @click="$store.filePanel.switch('history')"     title="{{T "history"}}"><i class="fa fa-clock-rotate-left"></i></button>
+                    <button class="fp-file-mode-btn" :class="{active: $store.filePanel.active === 'chat'}"        @click="$store.filePanel.switch('chat')"        title="{{T "chat"}}"><i class="fa fa-comments"></i></button>
+                    <button class="fp-file-mode-btn" :class="{active: $store.filePanel.active === 'references'}"  @click="$store.filePanel.switch('references')"  title="{{T "references"}}"><i class="fa fa-link"></i></button>
+                    <button class="fp-file-mode-btn" :class="{active: $store.filePanel.active === 'connections'}" @click="$store.filePanel.switch('connections')" title="{{T "connections"}}"><i class="fa fa-diagram-project"></i></button>
+                    <button class="fp-file-mode-btn" :class="{active: $store.filePanel.active === 'find'}"        @click="$store.filePanel.switch('find')"        title="{{T "find in file"}}"><i class="fa fa-magnifying-glass"></i></button>
+                </div>
+                {{end}}
+            </div>
+
+            <!-- metadata sub-panel -->
+            <div class="flyout-content">
+                {{if not .SystemPage}}<div class="fp-no-file" x-show="!$store.filePanel.hasFile">{{T "no file selected"}}</div>{{end}}
+
+                <div class="fp-sub-panel" :class="{active: $store.filePanel.active === 'metadata'}" id="fps-metadata">
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "path"}}:</span><span class="fp-meta-value" id="fp-meta-path">-</span></div>
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "editor"}}:</span><span class="fp-meta-value" id="fp-meta-editor">-</span></div>
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "created"}}:</span><span class="fp-meta-value" id="fp-meta-created">-</span></div>
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "edited"}}:</span><span class="fp-meta-value" id="fp-meta-edited">-</span></div>
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "tags"}}:</span><div class="fp-meta-value" id="fp-meta-tags">-</div></div>
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "coll."}}:</span><span class="fp-meta-value" id="fp-meta-collection">-</span></div>
+                    <div class="fp-meta-row"><span class="fp-meta-label">{{T "folder"}}:</span><span class="fp-meta-value" id="fp-meta-folders">-</span></div>
+                </div>
+
+                <div class="fp-sub-panel" :class="{active: $store.filePanel.active === 'toc'}" id="fps-toc">
+                    <div class="fp-toc-controls">
+                        <input type="search" id="fp-toc-filter" placeholder="{{T "filter..."}}"
+                               oninput="filterTocItems(this.value)"/>
+                        <button type="button" class="fp-fold-all-btn" title="{{T "collapse all"}}" onclick="setAllTocFolds(true)"><i class="fa fa-angles-up"></i></button>
+                        <button type="button" class="fp-fold-all-btn" title="{{T "expand all"}}" onclick="setAllTocFolds(false)"><i class="fa fa-angles-down"></i></button>
+                    </div>
+                    <nav id="fp-toc-nav" class="fp-toc-nav"></nav>
+                </div>
+
+                <div class="fp-sub-panel" :class="{active: $store.filePanel.active === 'history'}" id="fps-history">
+                    <input type="search" id="fp-versions-search" placeholder="{{T "filter..."}}"
+                           oninput="filterFpVersions(this.value)" autocomplete="off"/>
+                    <div id="fp-versions"><span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span></div>
+                </div>
+
+                <div class="fp-sub-panel" :class="{active: $store.filePanel.active === 'chat'}" id="fps-chat">
+                    <div id="fp-file-chat-content" data-url="" data-loaded="false">
+                        <span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span>
+                    </div>
+                </div>
+
+                <div class="fp-sub-panel" :class="{active: $store.filePanel.active === 'references'}" id="fps-references">
+                    <div id="component-references-list"><span style="color:var(--text-secondary);font-style:italic;">{{T "loading..."}}</span></div>
+                    <div class="fp-section-header" style="margin-top:8px">{{T "add reference"}}</div>
+                    <form id="references-form"
+                          hx-post="/api/metadata/references"
+                          hx-target="#component-references-list"
+                          hx-swap="outerHTML"
+                          hx-include="#fp-reference-filepath"
+                          style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+                        <input type="hidden" id="fp-reference-filepath" name="filepath" value=""/>
+                        <input type="url" name="url" placeholder="https://" required/>
+                        <textarea name="description" rows="2" placeholder="{{T "description"}}"></textarea>
+                        <button type="submit" class="btn-small btn-primary">{{T "add"}}</button>
+                    </form>
+                </div>
+
+                <div class="fp-sub-panel" :class="{active: $store.filePanel.active === 'find'}" id="fps-find">
+                    <div class="fp-find-controls">
+                        <input type="search" id="fp-find-input" placeholder="{{T "find in file..."}}"
+                               @input="$store.fileFind.search($event.target.value)"
+                               @keydown.enter.prevent="$event.shiftKey ? $store.fileFind.prev() : $store.fileFind.next()"
+                               autocomplete="off"/>
+                        <div class="fp-find-nav">
+                            <span x-text="$store.fileFind.count"></span>
+                            <button @click="$store.fileFind.prev()" title="{{T "previous"}}"><i class="fa fa-chevron-up"></i></button>
+                            <button @click="$store.fileFind.next()" title="{{T "next"}}"><i class="fa fa-chevron-down"></i></button>
+                        </div>
+                    </div>
+                    <div id="fp-find-results">
+                        <template x-for="(m, i) in $store.fileFind.matches" :key="i">
+                            <button class="fp-find-item" :class="{active: $store.fileFind.index === i}" @click="$store.fileFind.goTo(i)">
+                                <span class="fp-find-ctx" x-text="m.before"></span>
+                                <span class="fp-find-hl" x-text="m.text"></span>
+                                <span class="fp-find-ctx" x-text="m.after"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="fp-sub-panel" :class="{active: $store.filePanel.active === 'connections'}" id="fps-connections">
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "ancestors"}}</div><div id="fp-ancestors">-</div></div>
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "parents"}}</div><div id="fp-parents" class="fp-inline-editable">-</div></div>
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "children"}}</div><div id="fp-children">-</div></div>
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "grandchildren"}}</div><div id="fp-grandchildren">-</div></div>
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "links to"}}</div><div id="fp-links-to">-</div></div>
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "links from"}}</div><div id="fp-links-from">-</div></div>
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "related"}}</div><div id="fp-related">-</div></div>
+                    <div class="fp-connection-group"><div class="fp-connection-label">{{T "media files"}}</div><div id="fp-media-links">-</div></div>
+                </div>
+
+            </div>
+        </div>
+
+    </div><!-- #flyout -->
+
+    <!-- ================================================================
+         MAIN CONTENT
+         ================================================================ -->
+    <main>
+        {{ template "content" . }}
+    </main>
+
+</div><!-- #layout-rail -->
+</div><!-- #wrapper -->
+
+{{ template "rail-modals" . }}
+
+<script src="/static/htmx-2.0.10.min.js"></script>
+<script src="/static/codemirror6-bundle.min.js"></script>
+<script src="/static/sortable-1.15.0.min.js"></script>
+<script src="/static/handsontable-16.2.0.full.min.js"></script>
+<script src="/themes/{{.CurrentTheme}}/js/rail-core.js"></script>
+<script src="/themes/{{.CurrentTheme}}/js/panel-file.js"></script>
+<script src="/themes/{{.CurrentTheme}}/js/copy-code.js"></script>
+<script src="/themes/{{.CurrentTheme}}/js/chat-bulk.js"></script>
+<!-- alpine boots last (deferred): every other script above runs first and can
+     safely register `alpine:init` listeners (stores, components) regardless
+     of file order -->
+<script src="/themes/{{.CurrentTheme}}/js/alpinejs_3_15_12.min.js" defer></script>
+</body>
+</html>
+
+{{ define "rail-modals" }}
+<div id="rename-modal" popover>
+    <div class="modal-content">
+        <h3>{{T "Rename"}}</h3>
+        <form id="rename-form" hx-post="" hx-swap="none">
+            <input type="text" name="name" id="rename-input" placeholder="{{T "new file path"}}" required/>
+            <div class="modal-actions">
+                <button type="submit" class="btn-primary">{{T "Rename"}}</button>
+                <button type="button" class="btn-secondary" popovertarget="rename-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="move-modal" popover>
+    <div class="modal-content">
+        <h3>{{T "Move"}}</h3>
+        <form id="move-form" hx-post="" hx-vals='js:{"name": buildMoveTargetName()}' hx-swap="none">
+            <input type="text" id="move-folder-input" placeholder="{{T "path/to/folder"}}" autocomplete="off"/>
+            <script>document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById('move-folder-input');if(el&&window.initPathAutocomplete)window.initPathAutocomplete(el,'/api/files/folder-suggestions');})</script>
+            <div class="modal-actions">
+                <button type="submit" class="btn-primary">{{T "Move"}}</button>
+                <button type="button" class="btn-secondary" popovertarget="move-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="delete-modal" popover>
+    <div class="modal-content">
+        <h3>{{T "Delete"}}</h3>
+        <p>{{T "Are you sure?"}}</p>
+        <form id="delete-form" hx-delete="" hx-swap="none">
+            <div class="modal-actions">
+                <button type="submit" class="btn-danger">{{T "Delete"}}</button>
+                <button type="button" class="btn-secondary" popovertarget="delete-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{{ end }}

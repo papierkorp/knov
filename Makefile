@@ -6,12 +6,13 @@ LAST_COMMIT_MSG := $(shell git log -1 --pretty=%s)
 LDFLAGS   := -ldflags "-X 'knov/internal/version.Version=$(VERSION)' -X 'knov/internal/version.BuildTime=$(BUILD_TIME) UTC' -X 'knov/internal/version.LastCommitMessage=$(LAST_COMMIT_MSG)'"
 
 # ------------- actual usage -------------
-dev: swaggo-api-init changelog
+dev: killdev swaggo-api-init changelog
 	KNOV_LOG_LEVEL=debug go run ./
 
 prod: swaggo-api-init translation changelog
 	go build $(LDFLAGS) -o bin/$(APP_NAME) ./
 	GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME).exe ./
+
 
 # ------------- docker -------------
 
@@ -37,6 +38,9 @@ changelog:
 	@chmod +x generate-changelog.sh
 	@./generate-changelog.sh
 	@git add docs/changelogs/
+
+killdev:
+	-fuser -k 1324/tcp
 
 tempai:
 	@echo "Creating tempai folder for AI context (flat structure)..."
@@ -95,4 +99,4 @@ tempai:
 # windows dev
 #KNOV_LOG_LEVEL=debug go run ./
 
-.PHONY: dev dev-fast swaggo-api-init translation prod docker docker-build docker-run tree changelog tempai
+.PHONY: dev dev-fast swaggo-api-init translation prod docker docker-build docker-run tree changelog tempai killdev

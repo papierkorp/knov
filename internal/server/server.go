@@ -159,6 +159,8 @@ func NewRouter() *chi.Mux {
 			r.Post("/restart", handleAPIRestartApp)
 			r.Delete("/cache", handleAPIInvalidateCache)
 			r.Get("/jobs", handleAPIGetJobs)
+			r.Get("/version", handleAPIGetSystemVersion)
+			r.Get("/changelog", handleAPIGetSystemChangelog)
 		})
 
 		// ----------------------------------------------------------------------------------------

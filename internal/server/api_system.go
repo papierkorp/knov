@@ -222,6 +222,32 @@ func handleAPIGetJobs(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, runs, render.RenderJobsTable(runs))
 }
 
+// @Summary Get version/build info
+// @Description Returns the version/build-info table as HTML (for HTMX) - the same content shown on the /system/version page, for embedding in the rail "version" panel
+// @Tags system
+// @Produce html
+// @Success 200 {string} string "version info HTML"
+// @Router /api/system/version [get]
+func handleAPIGetSystemVersion(w http.ResponseWriter, r *http.Request) {
+	writeResponse(w, r, nil, render.RenderVersionInfo())
+}
+
+// @Summary Get changelog
+// @Description Returns the rendered changelog as HTML (for HTMX) - the same content shown on the /system/changelog page, for embedding in the rail "changelog" panel
+// @Tags system
+// @Produce html
+// @Success 200 {string} string "changelog HTML"
+// @Failure 500 {string} string "failed to read changelogs"
+// @Router /api/system/changelog [get]
+func handleAPIGetSystemChangelog(w http.ResponseWriter, r *http.Request) {
+	html, err := render.RenderChangelog()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read changelogs"), http.StatusInternalServerError)
+		return
+	}
+	writeResponse(w, r, nil, html)
+}
+
 // @Summary Download a log file
 // @Description Downloads the raw contents of a single log file as plain text
 // @Tags system

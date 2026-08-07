@@ -1,10 +1,11 @@
 package thememanager
 
 import (
-	"html/template"
+	htmltemplate "html/template"
 	"net/http"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"knov/internal/configmanager"
 )
@@ -20,11 +21,11 @@ const systemPageContent = `{{ define "content" }}
 type SystemPageData struct {
 	BaseTemplateData
 	SystemTitle string
-	Content     template.HTML
+	Content     htmltemplate.HTML
 }
 
 // RenderSystemPage renders an app-controlled system page using the current theme's base
-func (tm *ThemeManager) RenderSystemPage(w http.ResponseWriter, title string, content template.HTML) error {
+func (tm *ThemeManager) RenderSystemPage(w http.ResponseWriter, title string, content htmltemplate.HTML) error {
 	currentTheme := tm.GetCurrentTheme()
 	themesDir := configmanager.GetThemesPath()
 	baseFilePath := filepath.Join(themesDir, currentTheme.Name, "base.gohtml")
@@ -44,6 +45,7 @@ func (tm *ThemeManager) RenderSystemPage(w http.ResponseWriter, title string, co
 		SystemTitle:      title,
 		Content:          content,
 	}
+	data.SystemPage = true
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 

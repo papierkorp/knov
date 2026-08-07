@@ -1,0 +1,78 @@
+{
+  "name": "Builtin Reworked",
+  "version": "2.1.0",
+  "author": "System",
+  "description": "icon rail with slide-out flyout panels",
+  "themeSettings": {
+    "darkMode": {
+      "type": "boolean",
+      "default": true,
+      "label": "Dark Mode",
+      "description": "enable dark theme appearance"
+    },
+    "colorScheme": {
+      "type": "select",
+      "options": ["blue", "green", "red", "purple"],
+      "default": "green",
+      "label": "Color Scheme",
+      "description": "choose the color theme"
+    },
+    "linkDisplayMode": {
+      "type": "select",
+      "options": [
+        "filename",
+        "filepath",
+        "title",
+        "title-filepath",
+        "title-filename",
+        "filename-title",
+        "filepath-title"
+      ],
+      "default": "filename",
+      "label": "Link Display Mode",
+      "description": "show filenames, file paths, or extracted titles in links"
+    },
+    "quickLink1Url": {
+      "type": "text",
+      "default": "",
+      "label": "Quick Link 1 URL",
+      "description": "url for quick link 1, must start with http:// or https:// (leave empty to hide)"
+    },
+    "quickLink1Icon": {
+      "type": "text",
+      "default": "fa-link",
+      "label": "Quick Link 1 Icon",
+      "description": "font awesome icon class (e.g. fa-star, fa-bookmark)"
+    },
+    "quickLink2Url": {
+      "type": "text",
+      "default": "",
+      "label": "Quick Link 2 URL",
+      "description": "url for quick link 2, must start with http:// or https:// (leave empty to hide)"
+    },
+    "quickLink2Icon": {
+      "type": "text",
+      "default": "fa-link",
+      "label": "Quick Link 2 Icon",
+      "description": "font awesome icon class (e.g. fa-star, fa-bookmark)"
+    },
+    "quickLink3Url": {
+      "type": "text",
+      "default": "",
+      "label": "Quick Link 3 URL",
+      "description": "url for quick link 3, must start with http:// or https:// (leave empty to hide)"
+    },
+    "quickLink3Icon": {
+      "type": "text",
+      "default": "fa-link",
+      "label": "Quick Link 3 Icon",
+      "description": "font awesome icon class (e.g. fa-star, fa-bookmark)"
+    },
+    "railLayout": {
+      "type": "textarea",
+      "default": [{"id":"g-new","icon":"fa-plus","label":"new","snippets":["new"]},{"id":"g-browse","icon":"fa-folder-tree","label":"browse","snippets":["tree","browse","overview","tags","folders","collections","dashboards","editor","filters","notifications"]},{"id":"g-search","icon":"fa-magnifying-glass","label":"search","snippets":["search"]},{"id":"g-filter","icon":"fa-filter","label":"filter","snippets":["filter"]},{"id":"g-media","icon":"fa-photo-film","label":"media","snippets":["media"]},{"id":"g-latest","icon":"fa-clock-rotate-left","label":"latest changes","snippets":["latest"]},{"id":"g-chat","icon":"fa-message","label":"chat","snippets":["chat"]},{"id":"g-kanban","icon":"fa-table-columns","label":"kanban","link":"/kanban"},{"id":"g-server","icon":"fa-server","label":"server","position":"bottom","snippets":["logs","jobs","version","changelog"]},{"id":"g-settings","icon":"fa-gear","label":"settings","position":"bottom","link":"/settings"},{"id":"g-admin","icon":"fa-screwdriver-wrench","label":"admin","position":"bottom","link":"/admin"}],
+      "label": "Rail Layout",
+      "description": "Customize the icons in the left navigation rail. Drag components from \"available\" into a group to add them, reorder groups by dragging their handle, and drop a group into \"bottom\" to pin it below the divider. Changes only take effect after clicking save."
+    }
+  }
+}

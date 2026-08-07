@@ -4104,6 +4104,25 @@ paths:
       summary: Invalidate cache
       tags:
       - system
+  /api/system/changelog:
+    get:
+      description: Returns the rendered changelog as HTML (for HTMX) - the same content
+        shown on the /system/changelog page, for embedding in the rail "changelog"
+        panel
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: changelog HTML
+          schema:
+            type: string
+        "500":
+          description: failed to read changelogs
+          schema:
+            type: string
+      summary: Get changelog
+      tags:
+      - system
   /api/system/jobs:
     get:
       description: Returns recent job runs as HTML table (for HTMX) or JSON
@@ -4135,6 +4154,21 @@ paths:
           schema:
             type: string
       summary: Restart application
+      tags:
+      - system
+  /api/system/version:
+    get:
+      description: Returns the version/build-info table as HTML (for HTMX) - the same
+        content shown on the /system/version page, for embedding in the rail "version"
+        panel
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: version info HTML
+          schema:
+            type: string
+      summary: Get version/build info
       tags:
       - system
   /api/testdata/browsetest:

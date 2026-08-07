@@ -1,0 +1,11 @@
+{{/* theme: builtin-reworked */}}
+{{ define "content" }}
+<div class="page-filter">
+    <div class="filterview-header">
+        <h1>{{ T "Filter" }}: {{ .FilterID }}</h1>
+    </div>
+    <div id="filter-results">
+        {{ .ResultsHTML }}
+    </div>
+</div>
+{{ end }}

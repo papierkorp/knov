@@ -2,7 +2,9 @@
 package render
 
 import (
+	"encoding/json"
 	"fmt"
+	stdhtml "html"
 	"sort"
 	"strings"
 
@@ -151,11 +153,26 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 			html.WriteString(`</form>`)
 
 		case "textarea":
-			current := ""
-			if v, ok := currentValue.(string); ok {
-				current = v
+			// textarea values are opaque strings to this form, but a schema/config
+			// default can also arrive as parsed JSON (e.g. railLayout's default in
+			// theme.json is a native array) rather than an already-serialized
+			// string - re-marshal it back into the same string form the textarea
+			// (and rail-layout-builder.js, which parses it as JSON) expects.
+			asTextareaString := func(v interface{}) string {
+				if s, ok := v.(string); ok {
+					return s
+				}
+				if b, err := json.Marshal(v); err == nil {
+					return string(b)
+				}
+				return ""
 			}
-			html.WriteString(fmt.Sprintf(`<form hx-post="/api/themes/settings" hx-vals='{"key": "%s"}' hx-trigger="change delay:500ms">`, key))
+			current := asTextareaString(currentValue)
+			defaultVal := asTextareaString(setting.Default)
+			// no auto-submit trigger: the rail-layout drag-and-drop builder (see
+			// rail-layout-builder.js) writes into this textarea on every drag, so
+			// saving on "change" would reload mid-drag. saved explicitly via the button below.
+			html.WriteString(fmt.Sprintf(`<form hx-post="/api/themes/settings" hx-vals='{"key": "%s"}'>`, key))
 
 			// render label with conditional tooltip
 			if descriptionType == "tooltips" && desc != "" {
@@ -164,12 +181,20 @@ func RenderThemeSettingsForm(schema map[string]thememanager.ThemeSetting, curren
 				html.WriteString(fmt.Sprintf(`<label for="%s">%s</label>`, key, label))
 			}
 
-			html.WriteString(fmt.Sprintf(`<textarea name="value" id="%s" rows="10" class="form-textarea">%s</textarea>`, key, current))
+			html.WriteString(fmt.Sprintf(`<textarea name="value" id="%s" rows="10" class="form-textarea" data-default="%s">%s</textarea>`,
+				key, stdhtml.EscapeString(defaultVal), stdhtml.EscapeString(current)))
 
 			// render help text if not using tooltips
 			if descriptionType == "help-text" && desc != "" {
 				html.WriteString(fmt.Sprintf(`<div class="help-text">%s</div>`, desc))
 			}
+			html.WriteString(fmt.Sprintf(`<button type="submit" class="btn-primary">%s</button>`, t("save")))
+			// plain textarea reset, theme-agnostic; themes that overlay a custom
+			// widget on the textarea (e.g. builtin-reworked's rail-layout-builder.js)
+			// listen for "settings-textarea-reset" to rebuild their own UI too.
+			html.WriteString(fmt.Sprintf(
+				`<button type="button" class="btn-secondary" style="margin-left: 8px;" data-confirm="%s" onclick="if(confirm(this.dataset.confirm)){var ta=document.getElementById('%s');ta.value=ta.dataset.default;ta.dispatchEvent(new CustomEvent('settings-textarea-reset',{bubbles:true}));}">%s</button>`,
+				stdhtml.EscapeString(t("reset to default? unsaved changes will be lost")), key, t("reset to default")))
 			html.WriteString(`</form>`)
 
 		case "number":

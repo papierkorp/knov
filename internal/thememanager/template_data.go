@@ -3,6 +3,7 @@ package thememanager
 import (
 	"encoding/json"
 	"fmt"
+	"html"
 	htmltemplate "html/template"
 	"net/url"
 	"strings"
@@ -209,6 +210,15 @@ func CreateFuncMap() template.FuncMap {
 				return "{}"
 			}
 			return string(data)
+		},
+		// htmlAttr escapes a string for safe embedding inside an HTML attribute
+		// value. Theme templates use text/template (not html/template — themes
+		// commonly embed pre-rendered trusted HTML from the render package,
+		// which html/template would double-escape), so nothing auto-escapes;
+		// any value that isn't from a closed, server-controlled set (an enum,
+		// a boolean) needs this explicitly.
+		"htmlAttr": func(s string) string {
+			return html.EscapeString(s)
 		},
 		"dict": func(values ...interface{}) map[string]interface{} {
 			dict := make(map[string]interface{})

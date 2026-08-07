@@ -430,12 +430,13 @@ func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
-	lang := configmanager.GetLanguage()
+// RenderChangelog concatenates every docs/changelogs/*.md file (newest
+// first) into one rendered HTML string - shared by the full /system/changelog
+// page and the rail "changelog" content snippet's fragment endpoint.
+func RenderChangelog() (string, error) {
 	entries, err := docsFiles.ReadDir("docs/changelogs")
 	if err != nil {
-		http.Error(w, translation.SprintfForRequest(lang, "failed to read changelogs"), http.StatusInternalServerError)
-		return
+		return "", err
 	}
 
 	sort.Slice(entries, func(i, j int) bool {
@@ -465,7 +466,17 @@ func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
 		combined.Write(rendered)
 	}
 
-	html := combined.String()
+	return combined.String(), nil
+}
+
+func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
+	lang := configmanager.GetLanguage()
+	html, err := RenderChangelog()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(lang, "failed to read changelogs"), http.StatusInternalServerError)
+		return
+	}
+
 	fileContent := &files.FileContent{
 		HTML: html,
 		TOC:  parser.GenerateTOC(html),
@@ -479,7 +490,10 @@ func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
+// RenderVersionInfo renders the version/build-info table - shared by the
+// full /system/version page and the rail "version" content snippet's
+// fragment endpoint.
+func RenderVersionInfo() string {
 	lang := configmanager.GetLanguage()
 	t := func(key string, args ...any) string {
 		return translation.SprintfForRequest(lang, key, args...)
@@ -490,7 +504,7 @@ func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
 			template.HTMLEscapeString(label), template.HTMLEscapeString(value))
 	}
 
-	content := `<style>
+	return `<style>
 .version-table { border-collapse: collapse; font-size: .9rem; min-width: 320px; }
 .version-table td { padding: .45rem .75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
 .version-label { font-weight: 600; white-space: nowrap; width: 160px; }
@@ -505,9 +519,11 @@ func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
 		row(t("Last commit"), version.LastCommitMessage) +
 		`</tbody></table>` +
 		fmt.Sprintf(`<a class="version-changelog-link" href="/system/changelog">%s &rarr;</a>`, t("Release notes / Changelog"))
+}
 
+func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
-	if err := tm.RenderSystemPage(w, "Version", template.HTML(content)); err != nil {
+	if err := tm.RenderSystemPage(w, "Version", template.HTML(RenderVersionInfo())); err != nil {
 		logging.LogError(logging.KeyApp, "failed to render version page: %v", err)
 	}
 }

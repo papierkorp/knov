@@ -1,3 +1,5 @@
+# temp todo
+
 # small stuff
 
 **manual**
@@ -14,7 +16,6 @@
 
 **per ai**
 - not important
-  - backup solution
   - create a system for themes (another repoistory with themes)
     - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
   - deployment
@@ -22,24 +23,44 @@
       - for usage
       - for devs
   - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
-- refactor the built in theme and make the slideout modular => each feature (e.g. tree slideout, search, file history) can be easily plugged in anywhere
+- backup solution
+  - easy recovery
+  - new /system/backup page which then lists all available backups + adds a recover to this state
+  - backup rotation (just like for logs)
+    - e.g. keep one from 365 days ago, keep one from 30 days ago, keep everything from the last 7 days?
+  - modular backup system
+    - metadata
+    - chat
+    - config
+    - favicon
+    - kanban
+  - do we add this to the storageInterfaces or do we handle this in a backup package?
 - todo editor with markdown on top/bottom + header
-- no success message / anything after successfull rename and the modal stays up (need to wait quite a bit of time)
 - kanban refresh - destroys order
 - update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse)
+- delete file takes FOREVER and doesnt give an immediate response (just stays at the are you sure?) no success message / anything after successfull rename and the modal stays up (need to wait quite a bit of time)
+- add go tests?
+- refactor template_data.go make it more general/modular/uniform/ easier for themecreators, e.g. only one general pass and not mutliple different ones => would it make a performance difference?
+-  clicking "rebuild" throws `htmx:targetError` because `#fp-rebuild-result` doesn't exist in the DOM — present since the original `f86d0eb` commit
+- move copy-code.js to the app
+- convert to markdown button is always shown
+- split theme settings out of the config/settings.json file into: `config/themes/builtin.json` each themes gets its own json file
+- new kanban feature: create folders based on the kanban status and move the files based on the kanban status => what would be the single source of truth - i think the metadata and if a file in such a folder doesnt have metadata => add it / change it
+- tables if a header/field is empty the display is cooked
+- copy and paste images in codemirror
+- latest changes time filter
+- gitlab pipeline to get a release
+- /api/system/version => add json output
+- in the theme let me also arrange the info slideout components
+
 
 # every other time
 
 - take a look at all routes if we use writeResponse everywhere neccessary and if we can update the functions where we only use json to htmx as well
 - take a look at the whole codebase into all javascript snippets/scripts with the goal of reducing javascript in favor of more htmx - im also fine with refactoring to make this to work since i think we already use a lot of javascript which could be resolved using htmx
+- pass over css files (components.css/panels.css/layout.css) for dead selectors, confirm remaining ones follow the id-selector convention
 
 # ai prompts
-
-## kill 1324
-
-```bash
-fuser -k 1324/tcp
-```
 
 ## docs
 
