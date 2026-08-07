@@ -371,6 +371,13 @@ var (
 		Desc:  "set a dashboard ID to use as the home page",
 	})
 	// ── Appearance ────────────────────────────────────────────────────────────
+	DarkMode = register(&BoolSetting{
+		key: "darkMode", Default: true,
+		Section: SectionAppearance, Group: GroupNone,
+		Label:   "Dark Mode",
+		Desc:    "enable dark theme appearance",
+		Refresh: true,
+	})
 	Theme = register(&StringSetting{
 		key: "theme", Default: "builtin",
 		Section: SectionAppearance, Group: GroupNone,

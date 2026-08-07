@@ -83,26 +83,29 @@ func caseThemeSwitch() test.CaseResult {
 }
 
 // caseThemeSettingsRoundtrip covers handleAPIGetThemeSettings/handleAPISetThemeSetting's
-// SetThemeSetting/GetThemeSetting/GetCurrentThemeSettings path, using builtin's "darkMode"
-// boolean setting (themes/builtin/theme.json) as a probe. Uses SetTheme rather than
+// SetThemeSetting/GetThemeSetting/GetCurrentThemeSettings path, using builtin's "colorScheme"
+// select setting (themes/builtin/theme.json) as a probe. Uses SetTheme rather than
 // SetCurrentTheme so the probe applies regardless of whichever theme is active when the suite
 // runs, without needing to switch the active theme.
 func caseThemeSettingsRoundtrip() test.CaseResult {
 	name := "theme-settings-roundtrip"
 
-	const probeKey = "darkMode"
+	const probeKey = "colorScheme"
 	original := configmanager.GetThemeSetting("builtin", probeKey)
-	// origBool defaults to false when no override was ever stored (GetThemeSetting returns
-	// nil) - restoreValue falls back to themes/builtin/theme.json's declared default (true)
-	// instead, so a fresh install doesn't end up with a spurious explicit "false" override.
-	origBool, existed := original.(bool)
-	restoreValue := origBool
+	// origStr defaults to "" when no override was ever stored (GetThemeSetting returns nil) -
+	// restoreValue falls back to themes/builtin/theme.json's declared default ("green")
+	// instead, so a fresh install doesn't end up with a spurious explicit override.
+	origStr, existed := original.(string)
+	restoreValue := origStr
 	if !existed {
-		restoreValue = true
+		restoreValue = "green"
 	}
 	defer configmanager.SetThemeSetting("builtin", probeKey, restoreValue)
 
-	probe := !restoreValue
+	probe := "blue"
+	if restoreValue == "blue" {
+		probe = "red"
+	}
 	configmanager.SetThemeSetting("builtin", probeKey, probe)
 
 	got := configmanager.GetThemeSetting("builtin", probeKey)

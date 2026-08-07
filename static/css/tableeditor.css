@@ -8,7 +8,7 @@
 
 .component-table-edit .btn-table-edit {
   background: var(--primary);
-  color: white;
+  color: var(--primary-text);
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
@@ -60,7 +60,7 @@
 .page-file-dittable .btn-primary,
 .page-file-dittable .btn-secondary {
   background: var(--primary);
-  color: white;
+  color: var(--primary-text);
   border: none;
   padding: 8px 16px;
   border-radius: 4px;

@@ -11,6 +11,7 @@ Reference for CSS class naming conventions, file structure, and theming rules ac
 - **Theme-agnostic class names** — classes describe structure/role, not visual appearance
 - **Lowercase kebab-case everywhere** — no underscores, no camelCase
 - **Flat child selectors** — `.section-metadata .label`, not `.section-metadata__label`
+- **NO HARDCODED COLORS** - use the color vars which are available
 
 ---
 

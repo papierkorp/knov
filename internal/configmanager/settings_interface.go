@@ -87,6 +87,7 @@ type BoolSetting struct {
 	Desc     string
 	Trigger  string
 	Target   string
+	Refresh  bool
 	OnChange func(interface{})
 }
 
@@ -100,7 +101,7 @@ func (s *BoolSetting) Key() string           { return s.key }
 func (s *BoolSetting) Type() string          { return "boolean" }
 func (s *BoolSetting) GetValue() interface{} { return s.Get() }
 func (s *BoolSetting) GetMeta() Meta {
-	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target}
+	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target, Refresh: s.Refresh}
 }
 func (s *BoolSetting) setFromJSON(v interface{}) {
 	if b, ok := v.(bool); ok {

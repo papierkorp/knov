@@ -48,7 +48,6 @@
   - refactor template_data.go make it more general/modular/uniform/ easier for themecreators, e.g. only one general pass and not mutliple different ones => would it make a performance difference?
   - /api/system/version => add json output
   - move copy-code.js to the app
-  - make darkmode a required setting and move it to appearance
 
 
 # every other time
@@ -56,6 +55,7 @@
 - take a look at all routes if we use writeResponse everywhere neccessary and if we can update the functions where we only use json to htmx as well
 - take a look at the whole codebase into all javascript snippets/scripts with the goal of reducing javascript in favor of more htmx - im also fine with refactoring to make this to work since i think we already use a lot of javascript which could be resolved using htmx
 - pass over css files (components.css/panels.css/layout.css) for dead selectors, confirm remaining ones follow the id-selector convention
+- check the whole codebase for hardcoded colors and replace theme with the vars provided by the defaults.css file
 
 # ai prompts
 

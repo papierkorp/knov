@@ -4,11 +4,6 @@
   "author": "System",
   "description": "Minimal reference theme showing the required structure — see docs/create_your_own_theme.md",
   "themeSettings": {
-    "darkMode": {
-      "type": "boolean",
-      "default": false,
-      "label": "Dark mode"
-    },
     "colorScheme": {
       "type": "select",
       "default": "minimal",

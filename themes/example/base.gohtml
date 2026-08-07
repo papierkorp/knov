@@ -12,8 +12,8 @@
 </head>
 <body
     data-theme="{{ .CurrentTheme }}"
-    {{/* darkMode/colorScheme must be declared in theme.json's themeSettings, or these are always empty */}}
-    data-dark-mode="{{ index .ThemeSettings "darkMode" }}"
+    data-dark-mode="{{ .DarkMode }}"
+    {{/* colorScheme must be declared in theme.json's themeSettings, or this is always empty */}}
     data-color-scheme="{{ index .ThemeSettings "colorScheme" }}"
     data-language="{{ .Language }}">
 

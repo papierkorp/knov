@@ -24,7 +24,7 @@
 <body
     x-data="{}"
     data-theme="{{ .CurrentTheme }}"
-    data-dark-mode="{{ index .ThemeSettings "darkMode" }}"
+    data-dark-mode="{{ .DarkMode }}"
     data-color-scheme="{{ index .ThemeSettings "colorScheme" }}"
     data-code-wrap="{{ .CodeBlockWrap }}"
     data-language="{{ .Language }}"

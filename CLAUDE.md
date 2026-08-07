@@ -42,6 +42,7 @@
 - goal: less hand-rolled JS, more htmx
 - if you add a new env also add it to .env.example and the html templates of both themes
 - keep the usage of alpine js in mind if useful
+- DONT USE HARDCODE COLORS, ALWAYS use the color vars which are provided per defaults.css file
 
 ## Go style
 

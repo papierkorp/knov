@@ -44,7 +44,7 @@ Nothing here is enforced, but the built-in themes follow these conventions and y
 
 - Never hardcode colors — use the CSS variables, and only override the ones your theme wants to change (`defaults.css` covers the rest).
 - Keep global rules in `style.css`; scope page- or component-specific rules under ID selectors (`#page-*`, `#component-*`, `#view-*`).
-- Dark mode is pure convention: keep the `darkMode` and `colorScheme` settings from the example's `theme.json`, mirror them as `data-*` attributes on `<body>`, and style against those attributes — that's the whole mechanism.
+- Dark mode is a required app setting (Appearance section), exposed to every template as `.DarkMode` — mirror it as `data-dark-mode` on `<body>` (see `themes/example/base.gohtml`) and style against that attribute. `colorScheme` stays a theme-declared setting, mirrored the same way via `.ThemeSettings`.
 - Reference your own assets as `/themes/{{.CurrentTheme}}/...` instead of hardcoding the folder name, so a copied or renamed theme folder keeps loading its own files.
 - Pass server values to external `.js` files via `data-*` attributes or a small inline config script, and keep the logic in the external file.
 - Run user-facing text through the `T` template function so it gets translated.
@@ -52,7 +52,7 @@ Nothing here is enforced, but the built-in themes follow these conventions and y
 # Theme Configuration
 
 - `theme.json` describes your theme — `name`, `version`, `author`, `description` are all required. `themes/example/theme.json` is the reference.
-- It can also declare your own options (toggles, dropdowns, text, numbers) under `themeSettings`. Declared options appear in the Settings UI automatically and are available in every template via `.ThemeSettings` — the example theme's `darkMode` and `colorScheme` are exactly this.
+- It can also declare your own options (toggles, dropdowns, text, numbers) under `themeSettings`. Declared options appear in the Settings UI automatically and are available in every template via `.ThemeSettings` — the example theme's `colorScheme` is exactly this.
 
 # Quickstart
 

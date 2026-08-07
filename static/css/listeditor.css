@@ -147,7 +147,7 @@
 
 #undo-bar button:hover {
   background: var(--primary);
-  color: white;
+  color: var(--primary-text);
   border-color: var(--primary);
 }
 
@@ -180,7 +180,7 @@
 
 .component-list-editor .controls .danger {
   background: var(--danger);
-  color: white;
+  color: var(--primary-text);
   border-color: var(--danger);
 }
 

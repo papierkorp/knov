@@ -4,12 +4,6 @@
   "author": "System",
   "description": "icon rail with slide-out flyout panels",
   "themeSettings": {
-    "darkMode": {
-      "type": "boolean",
-      "default": true,
-      "label": "Dark Mode",
-      "description": "enable dark theme appearance"
-    },
     "colorScheme": {
       "type": "select",
       "options": ["blue", "green", "red", "purple"],

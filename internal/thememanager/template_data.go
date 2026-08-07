@@ -111,6 +111,7 @@ type BaseTemplateData struct {
 	MenuNavLinks      []NavLink
 	FontStyleTag      htmltemplate.HTML
 	ShowPDFFileButton bool
+	DarkMode          bool
 }
 
 // NewBaseTemplateData creates base data used by all templates
@@ -133,6 +134,7 @@ func NewBaseTemplateData(title string) BaseTemplateData {
 		MenuNavLinks:      menuLinks,
 		FontStyleTag:      fontStyleTag(),
 		ShowPDFFileButton: configmanager.PDFShowFileButton.Get(),
+		DarkMode:          configmanager.DarkMode.Get(),
 	}
 }
 
