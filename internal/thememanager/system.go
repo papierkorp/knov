@@ -12,16 +12,15 @@ import (
 
 const systemPageContent = `{{ define "content" }}
 <div class="system-page">
-    <h1 class="system-page-title">{{T .SystemTitle}}</h1>
-    <div class="system-page-content">{{ .Content }}</div>
+    <h1 class="system-page-title">{{T .Data.SystemTitle}}</h1>
+    <div class="system-page-content">{{ .Data.Content }}</div>
 </div>
 {{ end }}`
 
-// SystemPageData is the template data for all /system/* pages.
-type SystemPageData struct {
-	BaseTemplateData
-	SystemTitle string
-	Content     htmltemplate.HTML
+// SystemData is the page payload for all /system/* pages.
+type SystemData struct {
+	SystemTitle string            // page title shown in the system-page header (translated via T)
+	Content     htmltemplate.HTML // pre-rendered HTML body for the system page
 }
 
 // RenderSystemPage renders an app-controlled system page using the current theme's base
@@ -40,11 +39,10 @@ func (tm *ThemeManager) RenderSystemPage(w http.ResponseWriter, title string, co
 		return err
 	}
 
-	data := SystemPageData{
-		BaseTemplateData: NewBaseTemplateData(title),
-		SystemTitle:      title,
-		Content:          content,
-	}
+	data := newPageData(title, SystemData{
+		SystemTitle: title,
+		Content:     content,
+	})
 	data.SystemPage = true
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")

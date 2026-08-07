@@ -21,6 +21,14 @@ import (
 	"knov/internal/version"
 )
 
+// This file defines the data every theme template renders against. Each page
+// handler builds one of these and hands it to ThemeManager.Render.
+// BaseTemplateData carries what every page gets (title, theme, nav, ...);
+// page-specific structs (e.g. KanbanData) carry the rest and are wrapped in
+// PageData[T], exposed to templates as .Data. See docs/create_your_own_theme.md
+// (the "Templates & Data" section) for the theme-author-facing explanation,
+// and docs/template_data.md for the generated field reference.
+
 // -----------------------------------------------
 // -------------- Base TemplateData --------------
 // -----------------------------------------------
@@ -95,23 +103,23 @@ func computeNavLinks(settings map[string]interface{}) (header []NavLink, menu []
 
 // BaseTemplateData contains data needed by all templates
 type BaseTemplateData struct {
-	Title             string
-	CurrentTheme      string
-	ThemeSettings     map[string]interface{}
-	Language          string
-	DateFormat        string
-	Themes            []Theme
-	FileType          string
-	CodeBlockWrap     bool
-	T                 func(string, ...any) string
-	Version           string
-	BuildTime         string
-	SystemPage        bool
-	HeaderNavLinks    []NavLink
-	MenuNavLinks      []NavLink
-	FontStyleTag      htmltemplate.HTML
-	ShowPDFFileButton bool
-	DarkMode          bool
+	Title             string                      // page title, shown in <title> and usable in templates
+	CurrentTheme      string                      // slug of the active theme, e.g. "builtin"
+	ThemeSettings     map[string]interface{}      // merged theme settings (schema defaults + user overrides), keyed by setting name
+	Language          string                      // active UI language code
+	DateFormat        string                      // user's configured date format
+	Themes            []Theme                     // all installed themes, for the theme picker
+	FileType          string                      // parser handler name for the current file (e.g. "markdown"), empty outside file pages
+	CodeBlockWrap     bool                        // whether code blocks should soft-wrap
+	T                 func(string, ...any) string // translation helper; prefer the "T" template func in templates
+	Version           string                      // app build version
+	BuildTime         string                      // app build timestamp
+	SystemPage        bool                        // true on /system/* pages, for theme-specific styling
+	HeaderNavLinks    []NavLink                   // user-configured links shown in the header
+	MenuNavLinks      []NavLink                   // remaining nav links shown in the menu
+	FontStyleTag      htmltemplate.HTML           // @font-face rules + font CSS vars; must be rendered in <head>
+	ShowPDFFileButton bool                        // whether to show the "convert to PDF" button on file pages
+	DarkMode          bool                        // user's dark mode setting; mirror as data-dark-mode on <body>
 }
 
 // NewBaseTemplateData creates base data used by all templates
@@ -135,6 +143,21 @@ func NewBaseTemplateData(title string) BaseTemplateData {
 		FontStyleTag:      fontStyleTag(),
 		ShowPDFFileButton: configmanager.PDFShowFileButton.Get(),
 		DarkMode:          configmanager.DarkMode.Get(),
+	}
+}
+
+// PageData wraps the data every page gets (BaseTemplateData) with the
+// page-specific payload T, available to templates as .Data.
+type PageData[T any] struct {
+	BaseTemplateData
+	Data T
+}
+
+// newPageData builds the base data for title and attaches the page payload.
+func newPageData[T any](title string, data T) PageData[T] {
+	return PageData[T]{
+		BaseTemplateData: NewBaseTemplateData(title),
+		Data:             data,
 	}
 }
 
@@ -258,225 +281,191 @@ func CreateFuncMap() template.FuncMap {
 // ------------ Settings TemplateData ------------
 // -----------------------------------------------
 
-// SettingsTemplateData extends base with settings-specific data
-type SettingsTemplateData struct {
-	BaseTemplateData
-	AvailableThemes      []Theme
-	CurrentThemeSettings map[string]interface{}
-	ThemeSettingsSchema  map[string]ThemeSetting
-	AppConfig            configmanager.AppConfig
-	CustomFaviconExt     string
+// SettingsData is the page payload for settings and admin pages.
+type SettingsData struct {
+	AvailableThemes      []Theme                 // installed themes, for the theme picker
+	CurrentThemeSettings map[string]interface{}  // merged settings for the active theme, for the settings-editor form
+	ThemeSettingsSchema  map[string]ThemeSetting // the active theme's declared setting definitions (type, default, options)
+	AppConfig            configmanager.AppConfig // full app configuration, shown on the admin environment panel
+	CustomFaviconExt     string                  // file extension of the user's uploaded custom favicon, if any
 }
 
 // NewSettingsTemplateData creates settings-specific data
-func NewSettingsTemplateData() SettingsTemplateData {
-	return SettingsTemplateData{
-		BaseTemplateData:     NewBaseTemplateData("Settings"),
+func NewSettingsTemplateData() PageData[SettingsData] {
+	return newPageData("Settings", SettingsData{
 		AvailableThemes:      themeManager.GetAvailableThemes(),
 		CurrentThemeSettings: getMergedThemeSettings(),
 		ThemeSettingsSchema:  themeManager.GetCurrentThemeSettingsSchema(),
 		AppConfig:            configmanager.GetAppConfig(),
 		CustomFaviconExt:     configmanager.GetCustomFaviconExt(),
-	}
+	})
 }
 
 // -----------------------------------------------
 // ------------ FileView TemplateData ------------
 // -----------------------------------------------
 
-// FileViewTemplateData extends base with file-specific data
-type FileViewTemplateData struct {
-	BaseTemplateData
-	FilePath    string
-	FileContent *files.FileContent
+// FileViewData is the page payload for the file view page.
+type FileViewData struct {
+	FilePath    string             // relative path of the file being viewed
+	FileContent *files.FileContent // rendered HTML + table of contents for the file
 }
 
 // NewFileViewTemplateData creates file view specific data
-func NewFileViewTemplateData(title, filePath string, fileContent *files.FileContent) FileViewTemplateData {
-	baseData := NewBaseTemplateData(title)
+func NewFileViewTemplateData(title, filePath string, fileContent *files.FileContent) PageData[FileViewData] {
+	data := newPageData(title, FileViewData{
+		FilePath:    filePath,
+		FileContent: fileContent,
+	})
 
 	// detect file type using parser registry
 	if filePath != "" {
 		fullPath := pathutils.ToDocsPath(filePath)
 		handler := parser.GetParserRegistry().GetHandler(fullPath)
 		if handler != nil {
-			baseData.FileType = handler.Name()
+			data.FileType = handler.Name()
 		}
 	}
 
-	return FileViewTemplateData{
-		BaseTemplateData: baseData,
-		FilePath:         filePath,
-		FileContent:      fileContent,
-	}
+	return data
 }
 
 // -----------------------------------------------
 // ---------- FileEdit TemplateData -------------
 // -----------------------------------------------
 
-// FileEditTemplateData extends base with file edit specific data
-type FileEditTemplateData struct {
-	BaseTemplateData
-	FilePath  string
-	SectionID string
+// FileEditData is the page payload for the file edit page.
+type FileEditData struct {
+	FilePath  string // relative path of the file being edited
+	SectionID string // optional section anchor to edit directly (list/todo files)
 }
 
 // NewFileEditTemplateData creates file edit specific data
-func NewFileEditTemplateData(filePath, sectionID string) FileEditTemplateData {
+func NewFileEditTemplateData(filePath, sectionID string) PageData[FileEditData] {
 	title := "Edit File"
 	if filePath != "" {
 		title = "Edit: " + filePath
 	}
-	return FileEditTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title),
-		FilePath:         filePath,
-		SectionID:        sectionID,
-	}
+	return newPageData(title, FileEditData{
+		FilePath:  filePath,
+		SectionID: sectionID,
+	})
 }
 
 // -----------------------------------------------
 // ---------- browsefiles TemplateData ----------
 // -----------------------------------------------
 
-// BrowseFilesTemplateData extends base with browse-specific data
-type BrowseFilesTemplateData struct {
-	BaseTemplateData
-	MetadataType string
-	Value        string
+// BrowseFilesData is the page payload for the browse-files page.
+type BrowseFilesData struct {
+	MetadataType string // metadata dimension being browsed (collection, tag, folder, editor)
+	Value        string // the specific metadata value being filtered on
 }
 
 // NewBrowseFilesTemplateData creates browse files specific data
-func NewBrowseFilesTemplateData(metadataType, value string) BrowseFilesTemplateData {
-	return BrowseFilesTemplateData{
-		BaseTemplateData: NewBaseTemplateData("Browse Files"),
-		MetadataType:     metadataType,
-		Value:            value,
-	}
+func NewBrowseFilesTemplateData(metadataType, value string) PageData[BrowseFilesData] {
+	return newPageData("Browse Files", BrowseFilesData{
+		MetadataType: metadataType,
+		Value:        value,
+	})
 }
 
 // -----------------------------------------------
 // -------- browsemetadata TemplateData ---------
 // -----------------------------------------------
 
-// BrowseMetadataTemplateData extends base with metadata type browsing data
-type BrowseMetadataTemplateData struct {
-	BaseTemplateData
-	MetadataType string
+// BrowseMetadataData is the page payload for the browse-metadata page.
+type BrowseMetadataData struct {
+	MetadataType string // metadata dimension being browsed (collection, tag, folder, editor)
 }
 
 // NewBrowseMetadataTemplateData creates browse metadata specific data
-func NewBrowseMetadataTemplateData(metadataType string) BrowseMetadataTemplateData {
+func NewBrowseMetadataTemplateData(metadataType string) PageData[BrowseMetadataData] {
 	title := fmt.Sprintf("Browse: %s", metadataType)
-	return BrowseMetadataTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title),
-		MetadataType:     metadataType,
-	}
+	return newPageData(title, BrowseMetadataData{
+		MetadataType: metadataType,
+	})
 }
 
 // -----------------------------------------------
 // ---------- FileNew TemplateData --------------
 // -----------------------------------------------
 
-// FileNewTemplateData extends base with file creation specific data
-type FileNewTemplateData struct {
-	BaseTemplateData
-	Editor      string
+// FileNewData is the page payload for the file creation page.
+type FileNewData struct {
+	Editor      string // editor type to open (e.g. "codemirror-editor", "list-editor")
 	PrefillPath string // pre-populates the file path input (e.g. a kanban board's folder)
 }
 
 // NewFileNewTemplateData creates file creation specific data
-func NewFileNewTemplateData(editor string) FileNewTemplateData {
-	return FileNewTemplateData{
-		BaseTemplateData: NewBaseTemplateData("create new file"),
-		Editor:           editor,
-	}
+func NewFileNewTemplateData(editor string) PageData[FileNewData] {
+	return newPageData("create new file", FileNewData{
+		Editor: editor,
+	})
 }
 
 // -----------------------------------------------
 // ---------- Dashboard TemplateData -------------
 // -----------------------------------------------
 
-// DashboardTemplateData extends base with dashboard-specific data
-type DashboardTemplateData struct {
-	BaseTemplateData
-	Dashboard *dashboard.Dashboard
+// DashboardData is the page payload for dashboard view and edit pages.
+type DashboardData struct {
+	Dashboard *dashboard.Dashboard // the dashboard being viewed or edited; nil if not found
 }
 
 // NewDashboardTemplateData creates dashboard view specific data
-func NewDashboardTemplateData(dash *dashboard.Dashboard) DashboardTemplateData {
+func NewDashboardTemplateData(dash *dashboard.Dashboard) PageData[DashboardData] {
 	title := "Dashboard"
 	if dash != nil {
 		title = dash.Name
 	}
-	return DashboardTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title),
-		Dashboard:        dash,
-	}
-}
-
-// DashboardEditTemplateData extends base with dashboard edit specific data
-type DashboardEditTemplateData struct {
-	BaseTemplateData
-	Dashboard *dashboard.Dashboard
+	return newPageData(title, DashboardData{Dashboard: dash})
 }
 
 // NewDashboardEditTemplateData creates dashboard edit specific data
-func NewDashboardEditTemplateData(dash *dashboard.Dashboard) DashboardEditTemplateData {
+func NewDashboardEditTemplateData(dash *dashboard.Dashboard) PageData[DashboardData] {
 	title := "Edit Dashboard"
 	if dash != nil {
 		title = "Edit Dashboard: " + dash.Name
 	}
-	return DashboardEditTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title),
-		Dashboard:        dash,
-	}
+	return newPageData(title, DashboardData{Dashboard: dash})
 }
 
 // -----------------------------------------------
 // ------------ Search TemplateData -------------
 // -----------------------------------------------
 
-// SearchPageData extends base with search-specific data
-type SearchPageData struct {
-	BaseTemplateData
-	SearchQuery string
+// SearchData is the page payload for the search page.
+type SearchData struct {
+	SearchQuery string // the current search term, if any
 }
 
 // NewSearchPageData creates search page specific data
-func NewSearchPageData(searchQuery string) SearchPageData {
-	return SearchPageData{
-		BaseTemplateData: NewBaseTemplateData("Search"),
-		SearchQuery:      searchQuery,
-	}
+func NewSearchPageData(searchQuery string) PageData[SearchData] {
+	return newPageData("Search", SearchData{SearchQuery: searchQuery})
 }
-
-// -----------------------------------------------
-// -------- LatestChanges TemplateData ----------
-// -----------------------------------------------
 
 // -----------------------------------------------
 // ------------ History TemplateData ------------
 // -----------------------------------------------
 
-// HistoryTemplateData extends base with file history specific data
-type HistoryTemplateData struct {
-	BaseTemplateData
-	FilePath        string
-	CurrentVersion  string
-	SelectedVersion string
+// HistoryData is the page payload for the file history page.
+type HistoryData struct {
+	FilePath        string              // relative path of the file; empty for the general "latest changes" view
+	CurrentVersion  string              // the file's most recent commit hash
+	SelectedVersion string              // commit hash selected for the diff view, if any
 	AllVersions     git.FileVersionList // FileVersion from git package
-	ShowDiff        bool
-	SingleVersion   bool   // true if only one version exists
-	FileDeleted     bool   // true if the file no longer exists on disk
-	Collection      string // optional collection filter for the general history view
-	Folder          string // optional folder filter (recursive) for the general history view, e.g. from a kanban board
-	CompareFrom     string // optional commit for an explicit from/to diff (arbitrary version pair, not just vs current)
-	CompareTo       string // optional commit for an explicit from/to diff
+	ShowDiff        bool                // whether the diff panel should render expanded
+	SingleVersion   bool                // true if only one version exists
+	FileDeleted     bool                // true if the file no longer exists on disk
+	Collection      string              // optional collection filter for the general history view
+	Folder          string              // optional folder filter (recursive) for the general history view, e.g. from a kanban board
+	CompareFrom     string              // optional commit for an explicit from/to diff (arbitrary version pair, not just vs current)
+	CompareTo       string              // optional commit for an explicit from/to diff
 }
 
 // NewHistoryTemplateData creates file history specific data
-func NewHistoryTemplateData(filePath, currentVersion, selectedVersion string, allVersions git.FileVersionList, showDiff bool) HistoryTemplateData {
+func NewHistoryTemplateData(filePath, currentVersion, selectedVersion string, allVersions git.FileVersionList, showDiff bool) PageData[HistoryData] {
 	title := "History"
 	if filePath != "" {
 		title = "History: " + filePath
@@ -485,156 +474,135 @@ func NewHistoryTemplateData(filePath, currentVersion, selectedVersion string, al
 	// determine if this is a single version file
 	singleVersion := len(allVersions) <= 1
 
-	return HistoryTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title),
-		FilePath:         filePath,
-		CurrentVersion:   currentVersion,
-		SelectedVersion:  selectedVersion,
-		AllVersions:      allVersions,
-		ShowDiff:         showDiff,
-		SingleVersion:    singleVersion,
-	}
+	return newPageData(title, HistoryData{
+		FilePath:        filePath,
+		CurrentVersion:  currentVersion,
+		SelectedVersion: selectedVersion,
+		AllVersions:     allVersions,
+		ShowDiff:        showDiff,
+		SingleVersion:   singleVersion,
+	})
 }
 
 // -----------------------------------------------
 // --------- FileEditTable TemplateData ---------
 // -----------------------------------------------
 
-// FileEditTableTemplateData extends base with table editor data
-type FileEditTableTemplateData struct {
-	BaseTemplateData
-	FilePath   string
-	TableIndex int
+// FileEditTableData is the page payload for the table editor page.
+type FileEditTableData struct {
+	FilePath   string // relative path of the file containing the table
+	TableIndex int    // index of the table within the file being edited
 }
 
 // NewFileEditTableTemplateData creates table editor template data
-func NewFileEditTableTemplateData(filePath string, tableIndex int) FileEditTableTemplateData {
+func NewFileEditTableTemplateData(filePath string, tableIndex int) PageData[FileEditTableData] {
 	title := "table editor: " + filePath
 
-	return FileEditTableTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title),
-		FilePath:         filePath,
-		TableIndex:       tableIndex,
-	}
+	return newPageData(title, FileEditTableData{
+		FilePath:   filePath,
+		TableIndex: tableIndex,
+	})
 }
 
 // -----------------------------------------------
 // --------- Media Overview TemplateData --------
 // -----------------------------------------------
 
-// MediaOverviewTemplateData extends base with media overview data
-type MediaOverviewTemplateData struct {
-	BaseTemplateData
-}
-
 // NewMediaOverviewTemplateData creates media overview specific data
-func NewMediaOverviewTemplateData() MediaOverviewTemplateData {
-	return MediaOverviewTemplateData{
-		BaseTemplateData: NewBaseTemplateData("media overview"),
-	}
+func NewMediaOverviewTemplateData() BaseTemplateData {
+	return NewBaseTemplateData("media overview")
 }
 
 // -----------------------------------------------
 // --------- Media View TemplateData ------------
 // -----------------------------------------------
 
-// MediaViewTemplateData extends base with media view data
-type MediaViewTemplateData struct {
-	BaseTemplateData
-	MediaPath string
+// MediaViewData is the page payload for the media view page.
+type MediaViewData struct {
+	MediaPath string // relative path of the media file, under data/media
 }
 
 // NewMediaViewTemplateData creates media view specific data
-func NewMediaViewTemplateData(mediaPath string) MediaViewTemplateData {
+func NewMediaViewTemplateData(mediaPath string) PageData[MediaViewData] {
 	title := "Media: " + mediaPath
-	return MediaViewTemplateData{
-		BaseTemplateData: NewBaseTemplateData(title),
-		MediaPath:        mediaPath,
-	}
+	return newPageData(title, MediaViewData{MediaPath: mediaPath})
 }
 
 // -----------------------------------------------
 // --------- Filter ------------
 // -----------------------------------------------
 
-// FilterViewTemplateData extends base with filter view data
-type FilterViewTemplateData struct {
-	BaseTemplateData
-	FilterID    string
-	ResultsHTML string
+// FilterViewData is the page payload for the filter view page.
+type FilterViewData struct {
+	FilterID    string // id of the filter being viewed
+	ResultsHTML string // pre-rendered HTML of the filter's matching files
 }
 
-// in NewFilterViewTemplateData, set FileType:
-func NewFilterViewTemplateData(filterID, resultsHTML string) FilterViewTemplateData {
-	base := NewBaseTemplateData("filter: " + filterID)
-	base.FileType = "filter"
-	return FilterViewTemplateData{
-		BaseTemplateData: base,
-		FilterID:         filterID,
-		ResultsHTML:      resultsHTML,
-	}
+// NewFilterViewTemplateData creates filter view specific data
+func NewFilterViewTemplateData(filterID, resultsHTML string) PageData[FilterViewData] {
+	data := newPageData("filter: "+filterID, FilterViewData{
+		FilterID:    filterID,
+		ResultsHTML: resultsHTML,
+	})
+	data.FileType = "filter"
+	return data
 }
 
-// FilterEditTemplateData extends base with filter edit data
-type FilterEditTemplateData struct {
-	BaseTemplateData
-	FilterID string
+// FilterEditData is the page payload for the filter edit page.
+type FilterEditData struct {
+	FilterID string // id of the filter being edited
 	FilePath string // id + ".filter" for the editor API
 }
 
-func NewFilterEditTemplateData(filterID string) FilterEditTemplateData {
-	return FilterEditTemplateData{
-		BaseTemplateData: NewBaseTemplateData("edit filter: " + filterID),
-		FilterID:         filterID,
-		FilePath:         filterID + ".filter",
-	}
+// NewFilterEditTemplateData creates filter edit specific data
+func NewFilterEditTemplateData(filterID string) PageData[FilterEditData] {
+	return newPageData("edit filter: "+filterID, FilterEditData{
+		FilterID: filterID,
+		FilePath: filterID + ".filter",
+	})
 }
 
 // -----------------------------------------------
 // ------------ Kanban TemplateData --------------
 // -----------------------------------------------
 
-// KanbanTemplateData extends base with kanban board data
-type KanbanTemplateData struct {
-	BaseTemplateData
-	Board           string // URL slug
-	FolderPath      string // configured folder path (for new-file prefill etc. and the board history link)
-	DisplayName     string
-	Columns         []kanban.Column
-	Statuses        []string // all possible statuses (for move target)
-	Prefix          string   // kanban tag prefix
-	FilterPanelHTML string   // pre-rendered advanced filter panel HTML
-	ArchiveStatus   string   // status that hides cards from the board
+// KanbanData is the page payload for a single kanban board.
+type KanbanData struct {
+	Board           string          // URL slug
+	FolderPath      string          // configured folder path (for new-file prefill etc. and the board history link)
+	DisplayName     string          // human-readable board name
+	Columns         []kanban.Column // the board's columns and their cards
+	Statuses        []string        // all possible statuses (for move target)
+	Prefix          string          // kanban tag prefix
+	FilterPanelHTML string          // pre-rendered advanced filter panel HTML
+	ArchiveStatus   string          // status that hides cards from the board
 }
 
 // NewKanbanTemplateData creates kanban board template data
-func NewKanbanTemplateData(board configmanager.KanbanBoard, columns []kanban.Column, filterPanelHTML string) KanbanTemplateData {
-	return KanbanTemplateData{
-		BaseTemplateData: NewBaseTemplateData("kanban: " + board.DisplayName),
-		Board:            board.Slug,
-		FolderPath:       board.FolderPath,
-		DisplayName:      board.DisplayName,
-		Columns:          columns,
-		Statuses:         configmanager.GetKanbanStatuses(),
-		Prefix:           configmanager.GetKanbanPrefix(),
-		FilterPanelHTML:  filterPanelHTML,
-		ArchiveStatus:    configmanager.GetKanbanArchiveStatus(),
-	}
+func NewKanbanTemplateData(board configmanager.KanbanBoard, columns []kanban.Column, filterPanelHTML string) PageData[KanbanData] {
+	return newPageData("kanban: "+board.DisplayName, KanbanData{
+		Board:           board.Slug,
+		FolderPath:      board.FolderPath,
+		DisplayName:     board.DisplayName,
+		Columns:         columns,
+		Statuses:        configmanager.GetKanbanStatuses(),
+		Prefix:          configmanager.GetKanbanPrefix(),
+		FilterPanelHTML: filterPanelHTML,
+		ArchiveStatus:   configmanager.GetKanbanArchiveStatus(),
+	})
 }
 
-// KanbanSelectTemplateData extends base with board picker data
-type KanbanSelectTemplateData struct {
-	BaseTemplateData
-	Board         string // always empty — signals the template to show the picker
-	Boards        []configmanager.KanbanBoard
-	ArchiveStatus string
+// KanbanSelectData is the page payload for the board picker page.
+type KanbanSelectData struct {
+	Board         string                      // always empty — signals the template to show the picker
+	Boards        []configmanager.KanbanBoard // configured kanban boards, for the picker
+	ArchiveStatus string                      // status that hides cards from the board
 }
 
 // NewKanbanSelectTemplateData creates the board picker template data
-func NewKanbanSelectTemplateData(boards []configmanager.KanbanBoard) KanbanSelectTemplateData {
-	return KanbanSelectTemplateData{
-		BaseTemplateData: NewBaseTemplateData("kanban"),
-		Boards:           boards,
-		ArchiveStatus:    configmanager.GetKanbanArchiveStatus(),
-	}
+func NewKanbanSelectTemplateData(boards []configmanager.KanbanBoard) PageData[KanbanSelectData] {
+	return newPageData("kanban", KanbanSelectData{
+		Boards:        boards,
+		ArchiveStatus: configmanager.GetKanbanArchiveStatus(),
+	})
 }

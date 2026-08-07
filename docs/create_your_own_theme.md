@@ -14,7 +14,7 @@ This section covers what the app enforces — a theme has to follow these rules 
 ## Templates & Data
 
 - Templates are plain HTML with `{{...}}` placeholders the server fills in. `base.gohtml` is the shared layout (head, navigation, scripts); every other template only defines a `content` block that gets rendered inside it. The comments in the example's `base.gohtml` explain every placeholder it must include.
-- Every page receives a shared set of data: `.Title`, `.CurrentTheme`, `.ThemeSettings`, `.Language`, `.DateFormat`, `.Version`, `.FontStyleTag` (the user's font settings — must be rendered in `<head>`), and `.HeaderNavLinks` / `.MenuNavLinks` (the user-configured navigation). Pages add their own fields on top — the built-in theme (`themes/builtin/`) shows every field in real use and is the practical reference.
+- Every page receives a shared set of data: `.Title`, `.CurrentTheme`, `.ThemeSettings`, `.Language`, `.DateFormat`, `.Version`, `.FontStyleTag` (the user's font settings — must be rendered in `<head>`), and `.HeaderNavLinks` / `.MenuNavLinks` (the user-configured navigation). Pages add their own fields on top, available under `.Data` (e.g. `.Data.FilePath` on `fileview.gohtml`) — see [docs/template_data.md](template_data.md) for the full, always-up-to-date field list per page, and the built-in theme (`themes/builtin/`) for real usage.
 - Helper functions are available inside `{{...}}`: `T` translates a string, `urlQuery` / `urlPath` safely encode file paths for URLs. Again, `themes/builtin/` shows them in use.
 - External `.js` files can't contain `{{...}}` placeholders — they are served as-is.
 

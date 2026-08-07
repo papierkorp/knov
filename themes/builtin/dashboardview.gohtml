@@ -1,11 +1,11 @@
 {{/* theme: builtin */}}
 {{ define "content" }}
 <div class="page-dashboard">
-	{{ if .Dashboard }}
-		<h1>{{ .Dashboard.Name }}</h1>
+	{{ if .Data.Dashboard }}
+		<h1>{{ .Data.Dashboard.Name }}</h1>
 		<div class="dashboard-layout">
-			<div class="dashboard-widgets dashboard-{{ .Dashboard.Layout }}">
-				{{ range .Dashboard.Widgets }}
+			<div class="dashboard-widgets dashboard-{{ .Data.Dashboard.Layout }}">
+				{{ range .Data.Dashboard.Widgets }}
 					<div
 					class="dashboard-widget"
 					data-widget-id="{{ .ID }}"
@@ -15,7 +15,7 @@
 						<h3>{{ if .Title }}{{ .Title }}{{ else }}{{ .Type }}{{ end }}</h3>
 						<div
 							hx-post="/api/dashboards/widget/{{ .ID }}"
-							hx-vals='{"dashboardId": "{{ $.Dashboard.ID }}"}'
+							hx-vals='{"dashboardId": "{{ $.Data.Dashboard.ID }}"}'
 							hx-trigger="load"
 							class="widget-content"
 						>
@@ -23,7 +23,7 @@
 						</div>
 					</div>
 				{{ end }}
-				{{ if eq (len .Dashboard.Widgets) 0 }}
+				{{ if eq (len .Data.Dashboard.Widgets) 0 }}
 					<div class="dashboard-empty">
 						<p>{{ T "No widgets configured" }}</p>
 					</div>
@@ -31,7 +31,7 @@
 			</div>
 		</div>
 		<!-- Custom layout positioning - disabled for now, will implement later
-		{{ if eq .Dashboard.Layout "custom" }}
+		{{ if eq .Data.Dashboard.Layout "custom" }}
 		<script>
 		// setup custom grid positioning
 		document.addEventListener('DOMContentLoaded', function() {

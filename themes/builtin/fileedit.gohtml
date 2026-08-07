@@ -1,22 +1,22 @@
 {{/* theme: builtin */}}
 {{ define "content" }}
 <div class="page-file-editor">
-    {{ if .FilePath }}
-		{{ if .SectionID }}
+    {{ if .Data.FilePath }}
+		{{ if .Data.SectionID }}
 			<h2>
-				{{ T "Edit Section" }}: {{ .SectionID }} {{ T "in" }}
-				<a href="/files/{{ .FilePath }}">{{ .FilePath }}</a>
+				{{ T "Edit Section" }}: {{ .Data.SectionID }} {{ T "in" }}
+				<a href="/files/{{ .Data.FilePath }}">{{ .Data.FilePath }}</a>
 			</h2>
 		{{ else }}
 			<h2>
 				{{ T "Edit" }}:
-				<a href="/files/{{ .FilePath }}">{{ .FilePath }}</a>
+				<a href="/files/{{ .Data.FilePath }}">{{ .Data.FilePath }}</a>
 			</h2>
 		{{ end }}
 
 
 		<div class="editor-wrap"
-			hx-get="/api/editor?filepath={{ .FilePath }}{{ if .SectionID }}&section={{ .SectionID }}{{ end }}"
+			hx-get="/api/editor?filepath={{ .Data.FilePath }}{{ if .Data.SectionID }}&section={{ .Data.SectionID }}{{ end }}"
 			hx-trigger="load"
 			hx-target="this"
 			hx-swap="outerHTML"

@@ -33,9 +33,9 @@
   - in the theme let me also arrange the info slideout components
 - fixes
 - chore
-  - refactor template_data.go make it more general/modular/uniform/ easier for themecreators, e.g. only one general pass and not mutliple different ones => would it make a performance difference?
   - move copy-code.js to the app
   - storage/config/theme/xxx.json => do we need to add escapes in this json file? i dont like it
+  - move translation and changelog to a tools/ package just like templatedocs
 
 # every other time
 

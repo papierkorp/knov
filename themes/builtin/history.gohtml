@@ -1,18 +1,18 @@
 {{/* theme: builtin */}}
 {{ define "content" }}
 <div class="page-history">
-    {{if .FilePath}}
+    {{if .Data.FilePath}}
         <!-- File-specific history -->
         <div class="file-history-header">
-            <h1>{{T "History"}}: <a href="/files/{{.FilePath}}" class="file-link">{{.FilePath}}</a></h1>
-            {{if or .SelectedVersion (and .CompareFrom .CompareTo)}}
+            <h1>{{T "History"}}: <a href="/files/{{.Data.FilePath}}" class="file-link">{{.Data.FilePath}}</a></h1>
+            {{if or .Data.SelectedVersion (and .Data.CompareFrom .Data.CompareTo)}}
                 <div class="version-actions">
-                    <a href="/files/history/{{urlPathSegment .FilePath}}" class="action-link">{{T "view all versions"}}</a>
-                    {{if and .SelectedVersion (or .FileDeleted (ne .SelectedVersion .CurrentVersion))}}
-                        <form hx-post="/api/files/versions/restore/{{urlQuery .FilePath}}"
+                    <a href="/files/history/{{urlPathSegment .Data.FilePath}}" class="action-link">{{T "view all versions"}}</a>
+                    {{if and .Data.SelectedVersion (or .Data.FileDeleted (ne .Data.SelectedVersion .Data.CurrentVersion))}}
+                        <form hx-post="/api/files/versions/restore/{{urlQuery .Data.FilePath}}"
                               hx-swap="none"
                               style="display: inline;">
-                            <input type="hidden" name="commit" value="{{.SelectedVersion}}">
+                            <input type="hidden" name="commit" value="{{.Data.SelectedVersion}}">
                             <button type="submit" class="action-button action-restore">{{T "restore this version"}}</button>
                         </form>
                     {{end}}
@@ -20,27 +20,27 @@
             {{end}}
         </div>
         <hr />
-        <div id="diff-content" class="diff-section" {{if or .SelectedVersion (and .CompareFrom .CompareTo)}}style="display: block;"{{end}}>
-            {{if and .CompareFrom .CompareTo}}
+        <div id="diff-content" class="diff-section" {{if or .Data.SelectedVersion (and .Data.CompareFrom .Data.CompareTo)}}style="display: block;"{{end}}>
+            {{if and .Data.CompareFrom .Data.CompareTo}}
                 <!-- Auto-load diff for an explicit from/to version pair -->
-                <div hx-get="/api/files/versions/diff/{{urlQuery .FilePath}}?from={{.CompareFrom}}&to={{.CompareTo}}"
+                <div hx-get="/api/files/versions/diff/{{urlQuery .Data.FilePath}}?from={{.Data.CompareFrom}}&to={{.Data.CompareTo}}"
                      hx-trigger="load"
                      hx-swap="innerHTML">
                     {{T "loading diff..."}}
                 </div>
-            {{else if .SelectedVersion}}
+            {{else if .Data.SelectedVersion}}
                 <!-- Auto-load diff for selected version -->
-                <div hx-get="/api/files/versions/diff/{{urlQuery .FilePath}}?from={{.SelectedVersion}}&to={{if eq .SelectedVersion .CurrentVersion}}previous{{else}}current{{end}}"
+                <div hx-get="/api/files/versions/diff/{{urlQuery .Data.FilePath}}?from={{.Data.SelectedVersion}}&to={{if eq .Data.SelectedVersion .Data.CurrentVersion}}previous{{else}}current{{end}}"
                      hx-trigger="load"
                      hx-swap="innerHTML">
                     {{T "loading diff..."}}
                 </div>
             {{end}}
         </div>
-        {{if not (or .SelectedVersion (and .CompareFrom .CompareTo))}}
+        {{if not (or .Data.SelectedVersion (and .Data.CompareFrom .Data.CompareTo))}}
             <div class="file-history-content">
                 <!-- Show all versions list -->
-                <div hx-get="/api/files/versions/{{urlQuery .FilePath}}?compare=true"
+                <div hx-get="/api/files/versions/{{urlQuery .Data.FilePath}}?compare=true"
                      hx-trigger="load"
                      hx-swap="outerHTML">
                     {{T "loading file history..."}}
@@ -50,17 +50,17 @@
 
     {{else}}
         <!-- General history / latest changes -->
-        <h1>{{if .Folder}}{{T "recent file history"}}: {{.Folder}}{{else if .Collection}}{{T "recent file history"}}: {{.Collection}}{{else}}{{T "recent file history"}}{{end}}</h1>
+        <h1>{{if .Data.Folder}}{{T "recent file history"}}: {{.Data.Folder}}{{else if .Data.Collection}}{{T "recent file history"}}: {{.Data.Collection}}{{else}}{{T "recent file history"}}{{end}}</h1>
         <input type="search" id="latestchanges-search"
                placeholder="{{T "search by filename..."}}"
                autocomplete="off"
                oninput="updateLatestChangesSearch(this.value)"/>
         <div id="latestchanges-results"
-             hx-get="/api/git/latestchanges?count=50{{if .Collection}}&collection={{.Collection}}{{end}}{{if .Folder}}&folder={{.Folder}}{{end}}"
+             hx-get="/api/git/latestchanges?count=50{{if .Data.Collection}}&collection={{.Data.Collection}}{{end}}{{if .Data.Folder}}&folder={{.Data.Folder}}{{end}}"
              hx-trigger="load"
              hx-headers='{"Accept": "text/html"}'
-             data-collection="{{.Collection}}"
-             data-folder="{{.Folder}}">
+             data-collection="{{.Data.Collection}}"
+             data-folder="{{.Data.Folder}}">
             {{T "loading recent changes..."}}
         </div>
         <script src="/themes/{{.CurrentTheme}}/js/history-search.js"></script>

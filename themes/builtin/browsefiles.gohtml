@@ -2,16 +2,16 @@
 {{ define "content" }}
 <div class="page-browse-files">
     <div class="browse-header">
-        <h1>{{T "Files with"}} {{ .MetadataType }}: <span class="filter-value">{{ .Value }}</span></h1>
+        <h1>{{T "Files with"}} {{ .Data.MetadataType }}: <span class="filter-value">{{ .Data.Value }}</span></h1>
         <div class="browse-breadcrumb">
             <a href="/">{{T "Home"}}</a>
             → <a href="/browse">{{T "Browse"}}</a>
-            → <span>{{ .MetadataType }}: {{ .Value }}</span>
+            → <span>{{ .Data.MetadataType }}: {{ .Data.Value }}</span>
         </div>
-        {{if or (eq .MetadataType "collection") (eq .MetadataType "folder") (eq .MetadataType "tag")}}
+        {{if or (eq .Data.MetadataType "collection") (eq .Data.MetadataType "folder") (eq .Data.MetadataType "tag")}}
         <button class="btn-danger btn-small"
-                hx-delete="/api/files/bulk?type={{ .MetadataType }}&value={{ urlQuery .Value }}"
-                hx-confirm='{{T "delete all files in this"}} {{ .MetadataType }}?'
+                hx-delete="/api/files/bulk?type={{ .Data.MetadataType }}&value={{ urlQuery .Data.Value }}"
+                hx-confirm='{{T "delete all files in this"}} {{ .Data.MetadataType }}?'
                 hx-swap="none">
             <i class="fa fa-trash"></i> {{T "delete all files"}}
         </button>
@@ -19,7 +19,7 @@
     </div>
     <div class="browse-content">
         <div
-            hx-get="/api/files/browse?metadata={{ .MetadataType }}&value={{ urlQuery .Value }}&actions=true"
+            hx-get="/api/files/browse?metadata={{ .Data.MetadataType }}&value={{ urlQuery .Data.Value }}&actions=true"
             hx-trigger="load"
             hx-headers='{"Accept": "text/html"}'
             class="filter-results"

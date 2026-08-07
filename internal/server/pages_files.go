@@ -114,7 +114,7 @@ func handleFileNewIndex(w http.ResponseWriter, r *http.Request) {
 func handleFileNewCodeMirror(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("codemirror-editor")
-	data.PrefillPath = r.URL.Query().Get("prefillpath")
+	data.Data.PrefillPath = r.URL.Query().Get("prefillpath")
 	if err := tm.Render(w, "filenew", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}
@@ -182,10 +182,10 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		}
 
 		data := thememanager.NewHistoryTemplateData(filePath, currentCommit, selectedCommit, versions, false)
-		data.CompareFrom = r.URL.Query().Get("from")
-		data.CompareTo = r.URL.Query().Get("to")
+		data.Data.CompareFrom = r.URL.Query().Get("from")
+		data.Data.CompareTo = r.URL.Query().Get("to")
 		_, statErr := os.Stat(pathutils.ToFullPath(filePath))
-		data.FileDeleted = os.IsNotExist(statErr)
+		data.Data.FileDeleted = os.IsNotExist(statErr)
 
 		err = tm.Render(w, "history", data)
 		if err != nil {
@@ -196,8 +196,8 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := thememanager.NewHistoryTemplateData("", "", "", nil, false)
-	data.Collection = r.URL.Query().Get("collection")
-	data.Folder = r.URL.Query().Get("folder")
+	data.Data.Collection = r.URL.Query().Get("collection")
+	data.Data.Folder = r.URL.Query().Get("folder")
 
 	err := tm.Render(w, "history", data)
 	if err != nil {

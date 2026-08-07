@@ -3,41 +3,41 @@
 <link rel="stylesheet" href="/static/css/kanban.css"/>
 <div id="view-kanban">
 
-    {{if .Board}}
+    {{if .Data.Board}}
 
     <div id="view-kanban-toolbar">
-        <span class="kanban-title">{{T "kanban"}}: {{.DisplayName}}</span>
+        <span class="kanban-title">{{T "kanban"}}: {{.Data.DisplayName}}</span>
 
         <select id="kanban-ancestor-select" name="ancestor"
-                hx-get="/api/kanban/{{.Board}}"
+                hx-get="/api/kanban/{{.Data.Board}}"
                 hx-trigger="change"
                 hx-target="#view-kanban-board-wrap"
                 hx-swap="innerHTML"
                 hx-include="#kanban-tag-select,#kanban-search,#kanban-sort-select"
-                hx-get-ancestors="/api/links/ancestors-in-folder?folder={{.FolderPath}}&format=options">
+                hx-get-ancestors="/api/links/ancestors-in-folder?folder={{.Data.FolderPath}}&format=options">
             <option value="">{{T "all ancestors"}}</option>
         </select>
 
         <select id="kanban-tag-select" name="tag"
-                hx-get="/api/kanban/{{.Board}}"
+                hx-get="/api/kanban/{{.Data.Board}}"
                 hx-trigger="change"
                 hx-target="#view-kanban-board-wrap"
                 hx-swap="innerHTML"
                 hx-include="#kanban-ancestor-select,#kanban-search,#kanban-sort-select"
-                hx-get-tags="/api/kanban/{{.Board}}/tags">
+                hx-get-tags="/api/kanban/{{.Data.Board}}/tags">
             <option value="">{{T "all tags"}}</option>
         </select>
 
         <input type="search" id="kanban-search" name="q"
                placeholder="{{T "search..."}}"
-               hx-get="/api/kanban/{{.Board}}"
+               hx-get="/api/kanban/{{.Data.Board}}"
                hx-trigger="keyup changed delay:300ms"
                hx-target="#view-kanban-board-wrap"
                hx-swap="innerHTML"
                hx-include="#kanban-ancestor-select,#kanban-tag-select,#kanban-sort-select"/>
 
         <select id="kanban-sort-select" name="sort"
-                hx-get="/api/kanban/{{.Board}}"
+                hx-get="/api/kanban/{{.Data.Board}}"
                 hx-trigger="change"
                 hx-target="#view-kanban-board-wrap"
                 hx-swap="innerHTML"
@@ -51,15 +51,15 @@
             <option value="kanbanMovedAt">{{T "kanban moved at"}}</option>
         </select>
 
-        <a href="/files/new/codemirror?prefillpath={{.FolderPath}}/" class="btn-secondary" title="{{T "new file"}}"><i class="fa fa-plus"></i></a>
+        <a href="/files/new/codemirror?prefillpath={{.Data.FolderPath}}/" class="btn-secondary" title="{{T "new file"}}"><i class="fa fa-plus"></i></a>
         <button class="btn-secondary" onclick="document.getElementById('kanban-filter-panel').toggleAttribute('hidden')" title="{{T "advanced filter"}}"><i class="fa fa-filter"></i></button>
-        <button class="btn-secondary" hx-get="/api/kanban/{{.Board}}" hx-target="#view-kanban-board-wrap" hx-swap="innerHTML"
+        <button class="btn-secondary" hx-get="/api/kanban/{{.Data.Board}}" hx-target="#view-kanban-board-wrap" hx-swap="innerHTML"
                 hx-include="#kanban-ancestor-select,#kanban-tag-select,#kanban-search,#kanban-sort-select" title="{{T "refresh"}}"><i class="fa fa-rotate"></i></button>
 
         <div class="kanban-menu-wrap" x-data="dropdownMenu()" @click.outside="close()">
             <button type="button" class="kanban-menu-btn" x-ref="btn" @click="toggle()" title="{{T "more actions"}}"><i class="fa fa-ellipsis-vertical"></i></button>
             <div class="kanban-menu" x-ref="menu" :hidden="!open" @click="close()" @scroll.window.capture="close()">
-                <a href="/history?folder={{.FolderPath}}" class="kanban-menu-item"><i class="fa fa-clock-rotate-left"></i> {{T "board history"}}</a>
+                <a href="/history?folder={{.Data.FolderPath}}" class="kanban-menu-item"><i class="fa fa-clock-rotate-left"></i> {{T "board history"}}</a>
                 <button id="kanban-events-btn" class="kanban-menu-item" onclick="kanbanToggleEvents()"><i class="fa fa-timeline"></i> {{T "show events"}}</button>
                 <button id="kanban-archive-btn" class="kanban-menu-item" onclick="kanbanToggleArchive()"><i class="fa fa-box-archive"></i> {{T "show archive"}}</button>
             </div>
@@ -68,17 +68,17 @@
 
     {{/* ---- Advanced filter panel ---- */}}
     <div id="kanban-filter-panel" class="kanban-filter-panel" hidden>
-        {{.FilterPanelHTML}}
+        {{.Data.FilterPanelHTML}}
     </div>
 
     <div id="view-kanban-board-wrap"
-         hx-get="/api/kanban/{{.Board}}"
+         hx-get="/api/kanban/{{.Data.Board}}"
          hx-trigger="load">
         {{T "loading..."}}
     </div>
 
     {{/* ---- Archive drop zone (shown during drag, only when archive status is configured) ---- */}}
-    {{if .ArchiveStatus}}
+    {{if .Data.ArchiveStatus}}
     <div id="kanban-archive-zone"
          ondragover="kanbanArchiveDragOver(event)"
          ondragleave="kanbanArchiveDragLeave(event)"
@@ -93,7 +93,7 @@
         <h2>{{T "kanban"}}</h2>
         <p>{{T "select a board to open the kanban board"}}</p>
         <div class="kanban-board-list">
-            {{range .Boards}}
+            {{range .Data.Boards}}
             <a class="kanban-board-item" href="/kanban/{{.Slug}}">{{.DisplayName}}</a>
             {{else}}
             <p class="kanban-empty">{{T "no boards configured"}}</p>
@@ -107,8 +107,8 @@
 
 <script>
 window.KANBAN_CONFIG = {
-    board: '{{.Board}}',
-    archiveStatus: '{{.ArchiveStatus}}',
+    board: '{{.Data.Board}}',
+    archiveStatus: '{{.Data.ArchiveStatus}}',
     t: {
         backToBoard: '{{T "back to board"}}',
         showEvents: '{{T "show events"}}',

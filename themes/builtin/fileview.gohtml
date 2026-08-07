@@ -4,15 +4,15 @@
     {{ template "rail-reader" . }}
 {{else}}
 <div id="view-fileview-rail">
-    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-    <article class="file-content" data-filepath="{{.FilePath}}">
-        {{.FileContent.HTML}}
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .Data.FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .Data.FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <article class="file-content" data-filepath="{{.Data.FilePath}}">
+        {{.Data.FileContent.HTML}}
     </article>
 </div>
-{{ if .FileContent.TOC }}
+{{ if .Data.FileContent.TOC }}
 <div id="fp-toc-data" style="display:none;">
-    {{ range .FileContent.TOC }}
+    {{ range .Data.FileContent.TOC }}
         <a href="#{{ .ID }}" data-level="{{ .Level }}" style="padding-left:{{ mul .Level 12 }}px">{{ .Text }}</a>
     {{ end }}
 </div>
@@ -26,15 +26,15 @@
 
 {{ define "rail-reader" }}
 <div id="view-fileview-reader">
-    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
-    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .Data.FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/banner?filepath={{urlQuery .Data.FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div hx-get="/api/links/conflicts/of-banner?filepath={{urlQuery .Data.FilePath}}" hx-trigger="load" hx-swap="outerHTML"></div>
     <div class="reader-controls">
         <button class="font-size-btn" onclick="adjustFontSize(-2)">A-</button>
         <button class="font-size-btn" onclick="adjustFontSize(2)">A+</button>
     </div>
-    <article class="file-content" data-filepath="{{.FilePath}}">
-        {{.FileContent.HTML}}
+    <article class="file-content" data-filepath="{{.Data.FilePath}}">
+        {{.Data.FileContent.HTML}}
     </article>
 </div>
 <script src="/themes/{{.CurrentTheme}}/js/fileview-reader.js"></script>

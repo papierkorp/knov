@@ -12,7 +12,7 @@
             hx-include="#search-titleonly, #search-history"
             name="q"
             id="search-page-input"
-            value="{{ .SearchQuery }}"
+            value="{{ .Data.SearchQuery }}"
         />
         <div class="search-options">
             <label class="search-option-label">
@@ -26,7 +26,7 @@
         </div>
     </div>
     <div id="page-search-results">
-        {{ if .SearchQuery }}
+        {{ if .Data.SearchQuery }}
             <p>{{T "Loading results..."}}</p>
         {{ else }}
             <p>{{T "Enter a search term"}}</p>

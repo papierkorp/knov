@@ -54,11 +54,11 @@
                 </div>
             </section>
 
-            {{if .AppConfig.GitRemote}}
+            {{if .Data.AppConfig.GitRemote}}
             <section class="settings-section">
                 <h2>{{T "Git Remote Sync"}}</h2>
                 <div class="setting-item">
-                    <div class="help-text">{{T "remote"}}: <code>{{.AppConfig.GitRemote}}</code> / <code>{{.AppConfig.GitRemoteBranch}}</code></div>
+                    <div class="help-text">{{T "remote"}}: <code>{{.Data.AppConfig.GitRemote}}</code> / <code>{{.Data.AppConfig.GitRemoteBranch}}</code></div>
                     <div class="admin-action-list">
                         <button class="btn-secondary" hx-post="/api/git/pull" hx-swap="none">
                             <i class="fa fa-arrow-down"></i> {{T "Pull"}}
@@ -369,33 +369,33 @@
     <div class="setting-item">
         <div class="help-text">{{T "Version"}} <small style="opacity:0.55;">-ldflags</small>: <code>{{.Version}}</code></div>
         <div class="help-text">{{T "Build Time"}} <small style="opacity:0.55;">-ldflags</small>: <code>{{.BuildTime}}</code></div>
-        <div class="help-text">{{T "Server Port"}} <small style="opacity:0.55;">KNOV_SERVER_PORT</small>: <code>{{.AppConfig.ServerPort}}</code></div>
-        <div class="help-text">{{T "Data Path"}} <small style="opacity:0.55;">KNOV_DATA_PATH</small>: <code>{{.AppConfig.DataPath}}</code></div>
-        <div class="help-text">{{T "Storage Path"}} <small style="opacity:0.55;">KNOV_STORAGE_PATH</small>: <code>{{.AppConfig.StoragePath}}</code></div>
-        <div class="help-text">{{T "Themes Path"}} <small style="opacity:0.55;">KNOV_THEMES_PATH</small>: <code>{{.AppConfig.ThemesPath}}</code></div>
-        <div class="help-text">{{T "Logs Path"}} <small style="opacity:0.55;">KNOV_LOGS_PATH</small>: <code>{{.AppConfig.LogsPath}}</code></div>
-        <div class="help-text">{{T "Git Remote"}} <small style="opacity:0.55;">KNOV_GIT_REMOTE</small>: <code>{{if .AppConfig.GitRemote}}{{.AppConfig.GitRemote}}{{else}}local only{{end}}</code></div>
-        <div class="help-text">{{T "Git Branch"}} <small style="opacity:0.55;">KNOV_GIT_REMOTE_BRANCH</small>: <code>{{.AppConfig.GitRemoteBranch}}</code></div>
-        <div class="help-text">{{T "Git Auto Push"}} <small style="opacity:0.55;">KNOV_GIT_AUTO_PUSH</small>: <code>{{.AppConfig.GitAutoPush}}</code></div>
-        <div class="help-text">{{T "Metadata Storage"}} <small style="opacity:0.55;">KNOV_METADATA_STORAGE_PROVIDER</small>: <code>{{.AppConfig.MetadataStorageProvider}}</code></div>
-        <div class="help-text">{{T "Cache Storage"}} <small style="opacity:0.55;">KNOV_CACHE_STORAGE_PROVIDER</small>: <code>{{.AppConfig.CacheStorageProvider}}</code></div>
-        <div class="help-text">{{T "Search Storage"}} <small style="opacity:0.55;">KNOV_SEARCH_STORAGE_PROVIDER</small>: <code>{{.AppConfig.SearchStorageProvider}}</code></div>
-        <div class="help-text">{{T "Kanban Events Enabled"}} <small style="opacity:0.55;">KNOV_KANBAN_EVENTS_ENABLED</small>: <code>{{.AppConfig.KanbanEventsEnabled}}</code></div>
-        <div class="help-text">{{T "Kanban Events Storage"}} <small style="opacity:0.55;">KNOV_KANBAN_EVENTS_STORAGE_PROVIDER</small>: <code>{{.AppConfig.KanbanEventsProvider}}</code></div>
-        <div class="help-text">{{T "Search Engine"}} <small style="opacity:0.55;">KNOV_SEARCH_ENGINE</small>: <code>{{.AppConfig.SearchEngine}}</code></div>
-        <div class="help-text">{{T "Cronjob Interval"}} <small style="opacity:0.55;">KNOV_CRONJOB_INTERVAL</small>: <code>{{.AppConfig.CronjobInterval}}</code></div>
-        <div class="help-text">{{T "Search Index Interval"}} <small style="opacity:0.55;">KNOV_SEARCH_INDEX_INTERVAL</small>: <code>{{.AppConfig.SearchIndexInterval}}</code></div>
-        <div class="help-text">{{T "Metadata Rebuild Interval"}} <small style="opacity:0.55;">KNOV_METADATA_REBUILD_INTERVAL</small>: <code>{{.AppConfig.MetadataRebuildInterval}}</code></div>
-        <div class="help-text">{{T "Notify Duration"}} <small style="opacity:0.55;">KNOV_NOTIFY_DURATION</small>: <code>{{.AppConfig.NotifyDuration}}ms</code></div>
-        <div class="help-text">{{T "Kanban Prefix"}} <small style="opacity:0.55;">KNOV_KANBAN_PREFIX</small>: <code>{{.AppConfig.KanbanPrefix}}</code></div>
-        <div class="help-text">{{T "Kanban Statuses"}} <small style="opacity:0.55;">KNOV_KANBAN_STATUS</small>: <code>{{join .AppConfig.KanbanStatuses ", "}}</code></div>
-        <div class="help-text">{{T "Kanban Columns"}} <small style="opacity:0.55;">KNOV_KANBAN_COLUMNS</small>: <code>{{join .AppConfig.KanbanColumns ", "}}</code></div>
-        <div class="help-text">{{T "Auto-create Tags"}} <small style="opacity:0.55;">KNOV_AUTOCREATE_TAGS</small>: <code>{{if .AppConfig.AutoCreateTags}}{{range .AppConfig.AutoCreateTags}}{{if .FolderPath}}{{.FolderPath}}:{{end}}{{.Tag}} {{end}}{{else}}disabled{{end}}</code></div>
-        <div class="help-text">{{T "Kanban Tag Colors"}} <small style="opacity:0.55;">KNOV_KANBAN_TAG_COLORS</small>: <code>{{if .AppConfig.KanbanTagColors}}{{range $k,$v := .AppConfig.KanbanTagColors}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
-        <div class="help-text">{{T "Kanban Card Styles"}} <small style="opacity:0.55;">KNOV_KANBAN_CARD_STYLES</small>: <code>{{if .AppConfig.KanbanCardStyles}}{{range $k,$v := .AppConfig.KanbanCardStyles}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
-        <div class="help-text">{{T "Kanban Archive Status"}} <small style="opacity:0.55;">KNOV_KANBAN_ARCHIVE_STATUS</small>: <code>{{if .AppConfig.KanbanArchiveStatus}}{{.AppConfig.KanbanArchiveStatus}}{{else}}disabled{{end}}</code></div>
-        <div class="help-text">{{T "Kanban Ancestor Allowed Status"}} <small style="opacity:0.55;">KNOV_KANBAN_ANCESTOR_ALLOWED_STATUS</small>: <code>{{if .AppConfig.KanbanAncestorAllowedStatus}}{{join .AppConfig.KanbanAncestorAllowedStatus ", "}}{{else}}all{{end}}</code></div>
-        <div class="help-text">{{T "Kanban Boards"}} <small style="opacity:0.55;">KNOV_KANBAN_BOARDS</small>: <code>{{if .AppConfig.KanbanBoards}}{{range .AppConfig.KanbanBoards}}{{.FolderPath}}:{{.DisplayName}} {{end}}{{else}}none{{end}}</code></div>
+        <div class="help-text">{{T "Server Port"}} <small style="opacity:0.55;">KNOV_SERVER_PORT</small>: <code>{{.Data.AppConfig.ServerPort}}</code></div>
+        <div class="help-text">{{T "Data Path"}} <small style="opacity:0.55;">KNOV_DATA_PATH</small>: <code>{{.Data.AppConfig.DataPath}}</code></div>
+        <div class="help-text">{{T "Storage Path"}} <small style="opacity:0.55;">KNOV_STORAGE_PATH</small>: <code>{{.Data.AppConfig.StoragePath}}</code></div>
+        <div class="help-text">{{T "Themes Path"}} <small style="opacity:0.55;">KNOV_THEMES_PATH</small>: <code>{{.Data.AppConfig.ThemesPath}}</code></div>
+        <div class="help-text">{{T "Logs Path"}} <small style="opacity:0.55;">KNOV_LOGS_PATH</small>: <code>{{.Data.AppConfig.LogsPath}}</code></div>
+        <div class="help-text">{{T "Git Remote"}} <small style="opacity:0.55;">KNOV_GIT_REMOTE</small>: <code>{{if .Data.AppConfig.GitRemote}}{{.Data.AppConfig.GitRemote}}{{else}}local only{{end}}</code></div>
+        <div class="help-text">{{T "Git Branch"}} <small style="opacity:0.55;">KNOV_GIT_REMOTE_BRANCH</small>: <code>{{.Data.AppConfig.GitRemoteBranch}}</code></div>
+        <div class="help-text">{{T "Git Auto Push"}} <small style="opacity:0.55;">KNOV_GIT_AUTO_PUSH</small>: <code>{{.Data.AppConfig.GitAutoPush}}</code></div>
+        <div class="help-text">{{T "Metadata Storage"}} <small style="opacity:0.55;">KNOV_METADATA_STORAGE_PROVIDER</small>: <code>{{.Data.AppConfig.MetadataStorageProvider}}</code></div>
+        <div class="help-text">{{T "Cache Storage"}} <small style="opacity:0.55;">KNOV_CACHE_STORAGE_PROVIDER</small>: <code>{{.Data.AppConfig.CacheStorageProvider}}</code></div>
+        <div class="help-text">{{T "Search Storage"}} <small style="opacity:0.55;">KNOV_SEARCH_STORAGE_PROVIDER</small>: <code>{{.Data.AppConfig.SearchStorageProvider}}</code></div>
+        <div class="help-text">{{T "Kanban Events Enabled"}} <small style="opacity:0.55;">KNOV_KANBAN_EVENTS_ENABLED</small>: <code>{{.Data.AppConfig.KanbanEventsEnabled}}</code></div>
+        <div class="help-text">{{T "Kanban Events Storage"}} <small style="opacity:0.55;">KNOV_KANBAN_EVENTS_STORAGE_PROVIDER</small>: <code>{{.Data.AppConfig.KanbanEventsProvider}}</code></div>
+        <div class="help-text">{{T "Search Engine"}} <small style="opacity:0.55;">KNOV_SEARCH_ENGINE</small>: <code>{{.Data.AppConfig.SearchEngine}}</code></div>
+        <div class="help-text">{{T "Cronjob Interval"}} <small style="opacity:0.55;">KNOV_CRONJOB_INTERVAL</small>: <code>{{.Data.AppConfig.CronjobInterval}}</code></div>
+        <div class="help-text">{{T "Search Index Interval"}} <small style="opacity:0.55;">KNOV_SEARCH_INDEX_INTERVAL</small>: <code>{{.Data.AppConfig.SearchIndexInterval}}</code></div>
+        <div class="help-text">{{T "Metadata Rebuild Interval"}} <small style="opacity:0.55;">KNOV_METADATA_REBUILD_INTERVAL</small>: <code>{{.Data.AppConfig.MetadataRebuildInterval}}</code></div>
+        <div class="help-text">{{T "Notify Duration"}} <small style="opacity:0.55;">KNOV_NOTIFY_DURATION</small>: <code>{{.Data.AppConfig.NotifyDuration}}ms</code></div>
+        <div class="help-text">{{T "Kanban Prefix"}} <small style="opacity:0.55;">KNOV_KANBAN_PREFIX</small>: <code>{{.Data.AppConfig.KanbanPrefix}}</code></div>
+        <div class="help-text">{{T "Kanban Statuses"}} <small style="opacity:0.55;">KNOV_KANBAN_STATUS</small>: <code>{{join .Data.AppConfig.KanbanStatuses ", "}}</code></div>
+        <div class="help-text">{{T "Kanban Columns"}} <small style="opacity:0.55;">KNOV_KANBAN_COLUMNS</small>: <code>{{join .Data.AppConfig.KanbanColumns ", "}}</code></div>
+        <div class="help-text">{{T "Auto-create Tags"}} <small style="opacity:0.55;">KNOV_AUTOCREATE_TAGS</small>: <code>{{if .Data.AppConfig.AutoCreateTags}}{{range .Data.AppConfig.AutoCreateTags}}{{if .FolderPath}}{{.FolderPath}}:{{end}}{{.Tag}} {{end}}{{else}}disabled{{end}}</code></div>
+        <div class="help-text">{{T "Kanban Tag Colors"}} <small style="opacity:0.55;">KNOV_KANBAN_TAG_COLORS</small>: <code>{{if .Data.AppConfig.KanbanTagColors}}{{range $k,$v := .Data.AppConfig.KanbanTagColors}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
+        <div class="help-text">{{T "Kanban Card Styles"}} <small style="opacity:0.55;">KNOV_KANBAN_CARD_STYLES</small>: <code>{{if .Data.AppConfig.KanbanCardStyles}}{{range $k,$v := .Data.AppConfig.KanbanCardStyles}}{{$k}}:{{$v}} {{end}}{{else}}none{{end}}</code></div>
+        <div class="help-text">{{T "Kanban Archive Status"}} <small style="opacity:0.55;">KNOV_KANBAN_ARCHIVE_STATUS</small>: <code>{{if .Data.AppConfig.KanbanArchiveStatus}}{{.Data.AppConfig.KanbanArchiveStatus}}{{else}}disabled{{end}}</code></div>
+        <div class="help-text">{{T "Kanban Ancestor Allowed Status"}} <small style="opacity:0.55;">KNOV_KANBAN_ANCESTOR_ALLOWED_STATUS</small>: <code>{{if .Data.AppConfig.KanbanAncestorAllowedStatus}}{{join .Data.AppConfig.KanbanAncestorAllowedStatus ", "}}{{else}}all{{end}}</code></div>
+        <div class="help-text">{{T "Kanban Boards"}} <small style="opacity:0.55;">KNOV_KANBAN_BOARDS</small>: <code>{{if .Data.AppConfig.KanbanBoards}}{{range .Data.AppConfig.KanbanBoards}}{{.FolderPath}}:{{.DisplayName}} {{end}}{{else}}none{{end}}</code></div>
     </div>
 </section>
 {{ end }}
