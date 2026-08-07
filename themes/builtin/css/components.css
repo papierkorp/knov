@@ -2879,6 +2879,15 @@ h6:hover .header-pdf-btn {
   display: block;
 }
 
+/* inline previews (RenderMediaPreviewWithSize) reuse .media-preview-image
+   inside .preview-link - keep it inline-block there so the block display
+   above doesn't blockify the wrapping <a>, which would stretch it (and its
+   click target) to the full width of the surrounding container instead of
+   hugging the image. */
+.preview-link .media-preview-image {
+  display: inline-block;
+}
+
 .media-preview-video,
 .media-preview-audio {
   width: 100%;
