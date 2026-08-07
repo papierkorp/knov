@@ -392,10 +392,14 @@ func (h *MarkdownContentHandler) parseMarkdownTable(lines []string) *types.Simpl
 	}
 }
 
-// parseTableRow parses a single markdown table row
+// parseTableRow parses a single markdown table row. Trims exactly one
+// leading/trailing "|" rather than a whole run of " |" chars - an empty
+// edge cell (e.g. "|   | b | c |") would otherwise be swallowed into the
+// same trim as its delimiter, silently dropping the column.
 func (h *MarkdownContentHandler) parseTableRow(line string) []string {
-	// remove leading/trailing pipes and whitespace
-	line = strings.Trim(line, " |")
+	line = strings.TrimSpace(line)
+	line = strings.TrimPrefix(line, "|")
+	line = strings.TrimSuffix(line, "|")
 
 	// split by pipe
 	cells := strings.Split(line, "|")
