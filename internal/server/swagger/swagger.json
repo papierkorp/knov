@@ -2862,6 +2862,41 @@
                 "responses": {}
             }
         },
+        "/api/jobs/{id}": {
+            "get": {
+                "description": "Polled by htmx while an async job (started via a delete-folder or bulk-delete\nrequest) runs in the background; returns a small status fragment - a\nself-polling spinner while running, empty once done, or an inline error message.",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "jobs"
+                ],
+                "summary": "Get async job status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jobStorage.JobRecord"
+                        }
+                    },
+                    "404": {
+                        "description": "job not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/kanban/card/move": {
             "post": {
                 "description": "Updates the kanban status tag on a file, replacing any existing kanban tag",
@@ -6744,6 +6779,33 @@
                 "JobStatusOK",
                 "JobStatusError"
             ]
+        },
+        "jobStorage.JobRecord": {
+            "type": "object",
+            "properties": {
+                "args": {
+                    "description": "JSON blob, job-type specific",
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "finishedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "startedAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
         },
         "notificationStorage.Notification": {
             "type": "object",

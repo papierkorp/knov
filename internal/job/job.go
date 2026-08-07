@@ -43,6 +43,14 @@ type Messenger interface {
 	Message() string
 }
 
+// Resumable may be implemented by a Job started via StartAsync to indicate it can be safely
+// re-invoked with the same persisted args after a crash mid-run (e.g. a delete job holding a
+// pre-resolved file list, rather than a folder path it would have to re-walk non-idempotently).
+// A Job that doesn't implement this is treated as not resumable.
+type Resumable interface {
+	Resumable() bool
+}
+
 // MediaCleanupResult holds the outcome of an orphaned media cleanup run.
 type MediaCleanupResult struct {
 	Deleted int

@@ -71,71 +71,169 @@ Goal: fix slow/blocking delete (single file cache race + synchronous
 folder/bulk delete), by building a reusable async job runner with
 persisted state, crash recovery, and htmx status polling.
 
-## Step 1 — `jobStorage` package (persistence)
+## Step 1 — `jobStorage` package (persistence) — DONE
 - New `internal/jobStorage` following the existing per-domain pattern
   (`internal/notificationStorage` as template): `_interface.go` +
   `_sqlite.go`, `Init(storagePath)`, own migration in `internal/dbmigration`.
 - Table: id, job type, args (JSON blob — e.g. target file list), status
   (running/done/error/interrupted), started_at, finished_at, error message.
 - Minimal ops needed: `Create`, `UpdateStatus`, `Get(id)`, `ListRunning()`.
+- Wired into `main.go` init sequence alongside the other storages.
 
-## Step 2 — `Job` interface changes (`internal/job`)
-- Add resumability: e.g. `Resumable() bool` on `Job` (default false via a
-  base/helper, explicit true for delete-type jobs).
-- Keep `Run()` as is; business logic doesn't change.
+## Step 2 — `Job` interface changes (`internal/job`) — DONE
+- Added `Resumable` as an optional interface (`Resumable() bool`), same
+  shape as the existing `Outputter`/`Messenger` optional interfaces —
+  checked via type assertion, not required on every `Job`.
+- `Run()` unchanged; business logic doesn't change.
 
-## Step 3 — Async runner (`internal/job`)
-- `RunAsync(job Job) (id string, err error)`:
-  - persist job record via `jobStorage` (status=running) before starting
-  - launch existing `execute()`/`Run()` in a goroutine
-  - update `jobStorage` (+ existing in-memory history) on finish
-- Existing synchronous `Run()` path stays for anything that doesn't need
-  async (don't force-migrate everything at once).
+## Step 3 — Async runner (`internal/job`) — DONE
+- Named `StartAsync` (not `RunAsync` — that name is already taken by the
+  existing no-arg "run all jobs now" admin-button trigger in
+  `scheduler.go`/`api_cronjob.go`; keeping both avoids a collision/rename
+  of an existing public API).
+- `StartAsync(mu *sync.Mutex, job Job, args string) (id string, err error)`:
+  - `mu.TryLock()` synchronously so the caller gets `ErrAlreadyRunning`
+    immediately, same guarantee the old `RunAsync()` has
+  - persists job record via `jobStorage.Create` (status=running) *before*
+    spawning the goroutine, so a poll right after `StartAsync` returns
+    always finds the record
+  - goroutine runs the shared `runLocked(job)` (factored out of `execute`,
+    holds history/panic-recovery logic) and updates `jobStorage` on finish
+- Existing synchronous `execute()`/`Run()` path untouched for anything that
+  doesn't need async (don't force-migrate everything at once).
+- Not yet used by any caller — next step (4) needs a job-type registry
+  (mirroring `externalsuite.go`'s `suiteRunners` map) to reconstruct a Job
+  from persisted `(type, args)` on startup recovery, then step 7 wires
+  actual delete handlers to call it.
 
-## Step 4 — Startup recovery hook
-- On app init, after `jobStorage.Init`, scan `ListRunning()`:
-  - if `Resumable()` job type → re-invoke via `RunAsync` with persisted args
-  - else → mark `interrupted`, push a message via existing
-    `notificationStorage` pending-flash mechanism so the user sees it on
-    next page load
-- For folder-delete specifically: persist the *resolved file list* at job
-  start, not the folder path — avoids deleting files added to that folder
-  after a crash (re-walking would not be idempotent, a snapshot list is).
+## Step 4 — Startup recovery hook — DONE
+- `job.RecoverInterrupted()`, called from `main.go` right after
+  `jobStorage.Init` (before `job.Start()`). New `internal/job/asyncdelete.go`
+  holds a `resumers` map (`Name() -> func(args) (Job, *sync.Mutex, error)`,
+  mirroring `externalsuite.go`'s `suiteRunners`) for `delete-folder` and
+  `bulk-delete-files`.
+- Resumable type found → `StartAsync`'d fresh (new id) with the persisted
+  args; the stale `running` record is marked `interrupted` (reason "resumed
+  as a new job after restart") rather than reused, to avoid two goroutines
+  racing to update the same jobStorage row.
+- Non-resumable/unrecognized type → marked `interrupted` + a pending
+  notification via `notificationStorage.Add(..., true)` directly (same
+  precedent as `git.go`'s conflict notifications - bypasses `notify.SetFlash`
+  since there's no in-flight request to attach it to).
+- Folder-delete resumability: `StartDeleteFolder` resolves the folder to a
+  file list via the new `files.ListFilesInFolder` *before* persisting the
+  job, and that resolved list (not the folder path) is what's replayed on
+  resume - see Step 7.
 
-## Step 5 — Status endpoint (server package)
-- `GET /api/jobs/{id}` — thin handler, reads `jobStorage`/history, renders
-  fragment via `render` package (spinner while running, success/error
-  when terminal). Unknown id → explicit error state, not "still running".
-- RESTful, swagger comments, `writeResponse`, translation.SprintfForRequest
-  per project conventions.
+## Step 5 — Status endpoint (server package) — DONE
+- `GET /api/jobs/{id}` in new `internal/server/api_jobs.go`: reads
+  `jobStorage.Get(id)` directly (server already imports other `*Storage`
+  packages directly, e.g. `notificationStorage`, `kanbanStorage`), renders
+  via `render.RenderJobStatus`. Unknown id → 404 `writeAPIError`.
+- On a terminal state it also fires the toast (`notify.SetHeader`) or queues
+  the flash + `HX-Redirect` (`notify.SetFlash`, bulk-delete only - see Step
+  6) - so the *first* poll response after completion is what the user sees,
+  not a separate mechanism.
+- RESTful, swagger comment (`swag init` re-run, docs regenerated), `writeResponse`,
+  `translation.SprintfForRequest` per project conventions.
 
-## Step 6 — htmx polling partial (render + theme templates)
-- Small fragment: `hx-get="/api/jobs/{id}" hx-trigger="every 1s"`, swapped
-  in place of the confirm-delete popup once a job starts.
-- Stop polling on terminal status (drop the trigger / `HX-Redirect` /
-  `HX-Trigger` header on completion).
-- No hardcoded colors, ID-selector CSS per component, both themes updated.
+## Step 6 — htmx polling partial (render + theme templates) — DONE
+- `render.RenderJobStatus` (bare self-polling `<span id="job-status-{id}">`,
+  `hx-get hx-trigger="every 1s" hx-swap="outerHTML"` while running; empty
+  span when done; inline `<i class="fa fa-triangle-exclamation">` + message
+  on error/interrupted) + `render.RenderJobStatusListItem` (same, wrapped in
+  `<li>` for the one-time swap of a browse-tree row, so the parent `<ul>`'s
+  content model stays valid across every later self-swap of just the span).
+- Terminal states carry no `hx-trigger` → polling stops itself, no extra
+  bookkeeping needed.
+- `.job-status-pending` / `.job-status-failed` added to
+  `themes/builtin/css/components.css` (global reusable classes, next to the
+  existing `.status-ok/.status-error/...`), `var(--danger)` only, no
+  hardcoded colors. `themes/example` is a stub reference theme (every
+  relevant page is `{{ define "content" }}{{ end }}`) - nothing to update
+  there.
 
-## Step 7 — Wire up folder/bulk delete
-- `handleAPIDeleteFolder` / bulk delete handler: call `RunAsync` instead
-  of blocking `job.RunDeleteFolder`/`RunBulkDeleteFiles` directly.
-- Return job id immediately, frontend swaps in polling partial.
-- Commit to git earlier/more granularly during the job (not one commit at
-  the very end) so an interrupted run leaves a clean committed state
-  rather than dangling uncommitted deletions.
+## Step 7 — Wire up folder/bulk delete — DONE
+- `handleAPIDeleteFolder` / `handleAPIDeleteFilesBulk` now call
+  `job.StartDeleteFolder` / `job.StartBulkDeleteFiles` and return the
+  polling fragment immediately instead of blocking.
+- `deleteFolderJob` reshaped to take a pre-resolved `fullPaths []string`
+  (like `bulkDeleteFilesJob` already did) instead of a folder path it
+  re-walked internally - `files.DeleteFolder` (which did the walk *and* the
+  `os.RemoveAll` in one call, making the walk-then-delete non-resumable) was
+  replaced by `files.ListFilesInFolder` (walk only) + `files.BulkDeleteFiles`
+  (already resumable/idempotent-ish - re-deleting an already-gone path just
+  logs a warning and continues) + a final `os.RemoveAll` to clean up the
+  now-empty folder tree.
+- Old synchronous `job.RunDeleteFolder`/`RunBulkDeleteFiles` removed (no
+  other callers - grepped test suites and server package first).
+- Granular git commits: unchanged from before this pass -
+  `git.CommitDeletedFiles` still fires once per job run, not per file. Left
+  as a Step 9 follow-up rather than bundled in here (independent of the
+  async plumbing itself).
+- Frontend: builtin theme's bulk-delete button changed from `hx-swap="none"`
+  to `hx-target="this" hx-swap="outerHTML"` so it can show the polling
+  fragment; on completion the job-status endpoint sets `HX-Redirect` (same
+  target as the old synchronous handler) since that page's file list still
+  needs a full reload to drop the deleted files - only the *blocking*
+  behavior needed fixing there, not the redirect-on-success UX.
 
-## Step 8 — Fix single-file delete (separate, smaller)
-- Not async-job based — fix the actual bug: `RefreshCaches()` /
-  `InvalidateFileListCache()` wipes the cache synchronously before the
-  background rebuild finishes, so the subsequent `/browse` tree fragment
-  falls through to a synchronous full-vault walk.
-- Fix: either incrementally update the cache (remove just the deleted
-  entry) instead of nuking it, or serve stale cache until the background
-  rebuild finishes (stale-while-revalidate) in `metadata_cache.go`.
+## Step 8 — Fix single-file delete — DONE
+- Root cause confirmed: `RefreshCaches()` → `InvalidateFileListCache()`
+  synchronously nils the in-memory memo *and* deletes the on-disk cache
+  entry, then rebuilds in the background - any `GetAllFilesCached()` call
+  in that window (e.g. the `/browse` tree fragment right after a delete)
+  falls through to a full synchronous disk walk.
+- Fix: `files.RefreshCachesAfterDelete(deletedPath)` (new, used only by
+  `removeFileAndMetadata`) removes just that one path from the memo + cached
+  JSON in place (matched via `pathutils.ToRelative` on both sides, so it's
+  robust to prefix-format differences) instead of wiping the whole list,
+  then rebuilds the other aggregate caches in the background same as
+  `RefreshCaches`. Falls back to a full `InvalidateFileListCache` if the
+  memo isn't currently populated (nothing to remove from).
+- `RefreshCaches` itself is untouched - still used by edits/renames/moves,
+  which don't have a single well-known deleted path to splice out.
 
 ## Step 9 — Follow-up candidates (not now)
-- Route other slow ops (import/export, cache rebuild, bulk move/rename)
-  through `RunAsync` once the base system is proven on delete.
+- Route other slow, HTTP-triggered ops through `StartAsync` once the base
+  system is proven on delete. Candidates (priority order), all currently
+  blocking their request handler:
+  - `job.RunMoveFolder` (`api_files.go:919`) - walks a folder and rewrites
+    links for every file inside, same shape `deleteFolderJob` had pre-async.
+    Best first pick - structurally closest to what's already built.
+  - `job.RunBulkUpdateMetadata` (`api_metadata.go:114`) - patches every file
+    in a matched set, same shape as `bulkDeleteFilesJob`.
+  - `job.RunFullRebuild` (`api_metadata.go:225`) - full-vault metadata cache
+    rebuild.
+  - `job.RunRepairBrokenLinks` (`api_metadata.go:343`) and
+    `job.RunMediaCleanup` (`api_media.go:399`) - both scan/mutate an
+    unbounded number of files.
+  - `job.RunGitPush`/`RunGitPull` (`api_git.go:119,139`) - network calls,
+    can hang on a slow remote regardless of file count.
+  - Not worth it: test-suite runners (`RunFilterTest` etc.) and
+    `RunCacheInvalidate` - admin/dev-facing, synchronous pass/fail is fine.
+  - None of these are safely resumable like delete is (no clean "replay a
+    move/patch after a crash" without checking what already landed) - set
+    `Resumable() bool { return false }` and get non-blocking + polling +
+    interrupted-notification only, not crash-safe resume.
+- Before adding more job types, generalize two spots that are currently
+  delete-specific despite `StartAsync`/`jobStorage`/`RenderJobStatus` being
+  generic:
+  - `handleAPIGetJobStatus`'s completion handling (`api_jobs.go`) hardcodes
+    a `switch` on `rec.Type` for the toast text and the bulk-delete-files
+    redirect special-case - needs a per-job-type success-message lookup (or
+    lean on `Messenger`) instead of growing that switch per job.
+  - `asyncdelete.go`'s `resumers` map is structurally reusable but named/
+    scoped as delete-only - either rename/generalize the file or add a
+    sibling file per job group that contributes to a shared registry.
+- More granular git commits during `deleteFolderJob`/`bulkDeleteFilesJob`
+  (currently one commit at the end, same as before this pass) so an
+  interrupted run leaves a cleaner partially-committed state.
+- `RecoverInterrupted`'s resumed jobs get a fresh job id - if the UI is ever
+  mid-poll on the old id when a restart happens, that poll will 404 once
+  and the user has to reload to pick up the new id. Fine for now (a crash
+  mid-delete is already a rare/degraded path), but worth a "poll redirects
+  to new id" affordance if it comes up in practice.
 
 ---
 Key files found during investigation:

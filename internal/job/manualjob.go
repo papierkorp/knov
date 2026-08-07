@@ -3,6 +3,7 @@ package job
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -311,6 +312,10 @@ type bulkDeleteFilesJob struct {
 
 func (j *bulkDeleteFilesJob) Name() string { return "bulk-delete-files" }
 
+// Resumable is true because fullPaths is already the resolved snapshot the caller wants
+// deleted - re-running it after a crash is safe (files.BulkDeleteFiles skips paths already gone).
+func (j *bulkDeleteFilesJob) Resumable() bool { return true }
+
 func (j *bulkDeleteFilesJob) Run() error {
 	deleted := files.BulkDeleteFiles(logging.KeyApp, j.fullPaths)
 
@@ -341,36 +346,43 @@ func (j *bulkDeleteFilesJob) Message() string {
 // ----------------------------------- deleteFolderJob --------------------------------------
 // ----------------------------------------------------------------------------------------
 
-// deleteFolderJob recursively deletes a folder, its files, and their metadata, then commits
-// the deletion in the background. The actual work lives in files.DeleteFolder - this is just
-// the history-tracking + git wiring around it.
+// deleteFolderJob deletes a pre-resolved snapshot of the files inside a folder (resolved once
+// by StartDeleteFolder before the job starts, not re-walked here - see ListFilesInFolder),
+// then removes the now-empty folder tree and commits the deletion in the background.
 type deleteFolderJob struct {
-	folderPath string
+	folderPath string   // relative, for history/messages only
+	fullPath   string   // resolved absolute folder path, removed once its files are gone
+	fullPaths  []string // resolved absolute file paths to delete
 	result     BulkDeleteResult
 }
 
 func (j *deleteFolderJob) Name() string { return "delete-folder" }
 
-func (j *deleteFolderJob) Run() error {
-	filesInFolder, err := files.DeleteFolder(logging.KeyApp, pathutils.ToDocsPath(j.folderPath))
-	if err != nil {
-		return fmt.Errorf("failed to delete folder: %w", err)
-	}
+// Resumable is true because fullPaths is the resolved snapshot taken at job start, not the
+// folder path - resuming re-deletes exactly that snapshot instead of re-walking a folder that
+// may have gained new files since the crash.
+func (j *deleteFolderJob) Resumable() bool { return true }
 
-	for _, fullPath := range filesInFolder {
+func (j *deleteFolderJob) Run() error {
+	deleted := files.BulkDeleteFiles(logging.KeyApp, j.fullPaths)
+
+	for _, fullPath := range deleted {
 		if err := git.InvalidateFileHistoryCache(pathutils.ToRelative(fullPath)); err != nil {
 			logging.LogWarning(logging.KeyApp, "delete-folder: failed to invalidate file history cache for %s: %v", fullPath, err)
 		}
 	}
-	if len(filesInFolder) > 0 {
+	if err := os.RemoveAll(j.fullPath); err != nil {
+		logging.LogWarning(logging.KeyApp, "delete-folder: failed to remove folder %s: %v", j.folderPath, err)
+	}
+	if len(deleted) > 0 {
 		go func() {
-			if err := git.CommitDeletedFiles(filesInFolder); err != nil {
+			if err := git.CommitDeletedFiles(deleted); err != nil {
 				logging.LogError(logging.KeyApp, "delete-folder: failed to commit deleted folder %s: %v", j.folderPath, err)
 			}
 		}()
 	}
 
-	j.result = BulkDeleteResult{Deleted: len(filesInFolder)}
+	j.result = BulkDeleteResult{Deleted: len(deleted)}
 	return nil
 }
 

@@ -16,6 +16,7 @@ import (
 	"knov/internal/fonts"
 	"knov/internal/git"
 	"knov/internal/job"
+	"knov/internal/jobStorage"
 	"knov/internal/kanbanStorage"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
@@ -138,6 +139,12 @@ func main() {
 		logging.LogError(logging.KeyApp, "failed to initialize notification storage: %v", err)
 		return
 	}
+
+	if err := jobStorage.Init(appConfig.StoragePath); err != nil {
+		logging.LogError(logging.KeyApp, "failed to initialize job storage: %v", err)
+		return
+	}
+	job.RecoverInterrupted()
 
 	configmanager.InitSettings()
 	configmanager.LoadThemeSettings()

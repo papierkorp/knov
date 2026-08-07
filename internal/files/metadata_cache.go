@@ -171,6 +171,53 @@ func RefreshCaches() {
 	}()
 }
 
+// RefreshCachesAfterDelete removes deletedPath from the file list cache in place instead of
+// wiping it like RefreshCaches/InvalidateFileListCache do, then rebuilds the other aggregate
+// caches (tags, collections, folders, counts, orphaned media) in the background same as
+// RefreshCaches. A full wipe would force every GetAllFilesCached call made while that
+// background rebuild is still running through a synchronous full-vault walk - noticeable on a
+// single-file delete, where the caller (e.g. the browse tree fragment right after) expects a
+// fast response.
+func RefreshCachesAfterDelete(deletedPath string) {
+	removeFileFromListMemo(deletedPath)
+	go func() {
+		if err := RebuildAllCaches(); err != nil {
+			logging.LogWarning(logging.KeyApp, "failed to refresh caches after delete: %v", err)
+		}
+	}()
+}
+
+// removeFileFromListMemo drops deletedPath from the in-memory and on-disk file list cache.
+// Falls back to a full InvalidateFileListCache if the memo isn't currently populated - there
+// is nothing to remove from, so a full rebuild-from-disk on next read is unavoidable anyway.
+func removeFileFromListMemo(deletedPath string) {
+	target := pathutils.ToRelative(deletedPath)
+
+	fileListMemoMu.Lock()
+	if fileListMemo == nil {
+		fileListMemoMu.Unlock()
+		InvalidateFileListCache()
+		return
+	}
+	filtered := make([]File, 0, len(fileListMemo))
+	for _, f := range fileListMemo {
+		if pathutils.ToRelative(f.Path) != target {
+			filtered = append(filtered, f)
+		}
+	}
+	fileListMemo = filtered
+	fileListMemoMu.Unlock()
+
+	jsonData, err := json.Marshal(filtered)
+	if err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to encode file list cache after removing %s: %v", deletedPath, err)
+		return
+	}
+	if err := cacheStorage.Set(string(CacheKeyFullFileList), jsonData); err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to update file list cache after removing %s: %v", deletedPath, err)
+	}
+}
+
 // withRefresh runs fn and, on success, refreshes the aggregate caches - the shared shape behind
 // every SetX/SetXNoRefresh pair. Batch callers loop the NoRefresh variant instead and call
 // RefreshCaches() once afterwards, so a single mutation and a batch of many both pay for exactly

@@ -1,6 +1,8 @@
 package job
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
@@ -9,6 +11,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/jobStorage"
 	"knov/internal/logging"
 	"knov/internal/test"
 )
@@ -50,8 +53,15 @@ func execute(mu *sync.Mutex, job Job) error {
 		logging.LogDebug(logging.KeyApp, "%s job already running, skipping", job.Name())
 		return fmt.Errorf("%s: %w", job.Name(), ErrAlreadyRunning)
 	}
-	slot := recordStart(job.Name())
 	defer mu.Unlock()
+	return runLocked(job)
+}
+
+// runLocked runs job and records start/finish in job history, assuming the caller already
+// holds job's dedup mutex (and will unlock it). Shared by execute (synchronous callers) and
+// StartAsync (background callers, which additionally persist to jobStorage around this).
+func runLocked(job Job) error {
+	slot := recordStart(job.Name())
 	defer func() {
 		if r := recover(); r != nil {
 			recordFinish(slot, JobStatusError, fmt.Sprintf("panic: %v", r), nil)
@@ -85,6 +95,40 @@ func execute(mu *sync.Mutex, job Job) error {
 	}
 	recordFinish(slot, JobStatusOK, msg, output)
 	return nil
+}
+
+// StartAsync runs job in a background goroutine under mu, persisting its progress via
+// jobStorage so status can be polled by id and an interrupted run detected on next startup.
+// Returns ErrAlreadyRunning synchronously (no race between the check and the goroutine start)
+// if mu is already held. args is a job-type-specific JSON blob used to resume the job after a
+// crash (see Resumable) - pass "" for jobs that don't need it.
+func StartAsync(mu *sync.Mutex, job Job, args string) (string, error) {
+	if !mu.TryLock() {
+		return "", fmt.Errorf("%s: %w", job.Name(), ErrAlreadyRunning)
+	}
+	id := generateJobID()
+	if err := jobStorage.Create(id, job.Name(), args); err != nil {
+		mu.Unlock()
+		return "", fmt.Errorf("failed to persist job %s: %w", job.Name(), err)
+	}
+	go func() {
+		defer mu.Unlock()
+		status, errMsg := jobStorage.StatusDone, ""
+		if err := runLocked(job); err != nil {
+			status, errMsg = jobStorage.StatusError, err.Error()
+		}
+		if err := jobStorage.UpdateStatus(id, status, errMsg); err != nil {
+			logging.LogError(logging.KeyApp, "failed to persist finished status for job %s (%s): %v", job.Name(), id, err)
+		}
+	}()
+	return id, nil
+}
+
+// generateJobID returns a unique id for a StartAsync job record.
+func generateJobID() string {
+	b := make([]byte, 8)
+	rand.Read(b)
+	return fmt.Sprintf("%d-%s", time.Now().UnixNano(), hex.EncodeToString(b))
 }
 
 // Start begins the cronjob scheduler.
@@ -249,24 +293,6 @@ func RunGitPush() error {
 // A repack skipped because fileMu is busy just retries on the next tick.
 func RunGitRepack() error {
 	return execute(&fileMu, &gitRepackJob{})
-}
-
-// RunBulkDeleteFiles deletes the given (pre-resolved) files with dedup protection.
-func RunBulkDeleteFiles(fullPaths []string, groupType, groupVal string) (BulkDeleteResult, error) {
-	j := &bulkDeleteFilesJob{fullPaths: fullPaths, groupType: groupType, groupVal: groupVal}
-	if err := execute(&bulkDeleteFilesMu, j); err != nil {
-		return BulkDeleteResult{}, err
-	}
-	return j.result, nil
-}
-
-// RunDeleteFolder recursively deletes a folder and its files with dedup protection.
-func RunDeleteFolder(folderPath string) (BulkDeleteResult, error) {
-	j := &deleteFolderJob{folderPath: folderPath}
-	if err := execute(&deleteFolderMu, j); err != nil {
-		return BulkDeleteResult{}, err
-	}
-	return j.result, nil
 }
 
 // RunMoveFolder moves a folder to a new parent and updates its files' links with dedup protection.

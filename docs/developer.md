@@ -479,6 +479,17 @@ notify.SetFlash(notify.LevelError, translation.SprintfForRequest(lang, "failed t
 http.Error(w, "...", http.StatusInternalServerError)
 ```
 
+# Async Jobs
+
+For work too slow to block a request (currently folder delete and bulk delete-by-filter), `internal/job.StartAsync(mu, job, args)` runs the job in a background goroutine and returns an id immediately instead of the caller blocking on `execute()`.
+
+- `internal/jobStorage` persists each run (id, type, args JSON, status, timestamps, error) in its own sqlite db, same shape/pattern as `notificationStorage`
+- a job type opts into crash-recovery by implementing the optional `Resumable() bool` interface (like `Outputter`/`Messenger`) and registering a reconstructor in `internal/job/asyncdelete.go`'s `resumers` map, keyed by `Name()`
+- on startup, `job.RecoverInterrupted()` re-runs every job still marked `running` (a clean shutdown leaves none) as a fresh `StartAsync` call using its persisted args; non-resumable/unregistered types are marked `interrupted` and surfaced via a pending notification instead
+- folder delete persists the *resolved file list*, not the folder path, so a resumed run can't pick up files added to the folder after a crash
+- `GET /api/jobs/{id}` + `render.RenderJobStatus` give a self-polling htmx fragment (spinner while running) that stops polling itself on any terminal status — no separate stop signal needed
+- deleting a single file goes through `files.RefreshCachesAfterDelete` instead of the blanket `RefreshCaches`, splicing just that path out of the file-list cache in place rather than wiping it and forcing the next request into a synchronous full-vault walk while the background rebuild catches up
+
 # Editor Types
 
 Each file can have an editor type stored in its metadata (`editor` field). The type controls which editor opens when the file is edited. The editor is resolved in this order: explicit metadata → file extension → parser detection → default (toastui).

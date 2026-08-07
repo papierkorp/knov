@@ -31,34 +31,20 @@ func BulkDeleteFiles(key logging.Key, fullPaths []string) []string {
 	return deleted
 }
 
-// DeleteFolder recursively deletes fullPath and every file's metadata inside it, then
-// refreshes the aggregate caches once. Returns the full paths of the files that were inside
-// the folder, so the caller can commit/invalidate history for them afterwards.
-func DeleteFolder(key logging.Key, fullPath string) ([]string, error) {
-	// collect every file inside so metadata can be cleaned up afterwards, since
-	// os.RemoveAll below removes them before we get a chance to look
-	var filesInFolder []string
-	_ = filepath.Walk(fullPath, func(p string, info os.FileInfo, err error) error {
+// ListFilesInFolder returns the full path of every regular file recursively inside fullPath.
+// Used to snapshot a folder's contents once before a delete, so an operation resumed after a
+// crash deletes exactly that snapshot rather than re-walking (and possibly picking up files
+// added to the folder in the meantime).
+func ListFilesInFolder(fullPath string) ([]string, error) {
+	var out []string
+	err := filepath.Walk(fullPath, func(p string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
 			return nil
 		}
-		filesInFolder = append(filesInFolder, p)
+		out = append(out, p)
 		return nil
 	})
-
-	if err := os.RemoveAll(fullPath); err != nil {
-		return nil, err
-	}
-
-	for _, filePath := range filesInFolder {
-		if err := MetaDataDeleteNoRefresh(key, pathutils.ToRelative(filePath)); err != nil {
-			logging.LogWarning(key, "delete-folder: failed to delete metadata for %s: %v", filePath, err)
-		}
-	}
-	if len(filesInFolder) > 0 {
-		RefreshCaches()
-	}
-	return filesInFolder, nil
+	return out, err
 }
 
 // MoveFolder moves currentFullPath to newFullPath and updates the links of every file that

@@ -21,6 +21,7 @@ import (
 	"knov/internal/filter"
 	"knov/internal/git"
 	"knov/internal/job"
+	"knov/internal/jobStorage"
 	"knov/internal/logging"
 	"knov/internal/mapping"
 	"knov/internal/parser"
@@ -945,7 +946,7 @@ func removeFileAndMetadata(fullPath string) error {
 	if err := git.InvalidateFileHistoryCache(relPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to invalidate file history cache for %s: %v", relPath, err)
 	}
-	files.RefreshCaches()
+	files.RefreshCachesAfterDelete(relPath)
 	go git.CommitDeletedFile(fullPath)
 	return nil
 }
@@ -1013,9 +1014,9 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "deleting folder: %s", folderPath)
 
-	result, err := job.RunDeleteFolder(folderPath)
+	id, err := job.StartDeleteFolder(folderPath)
 	if err != nil {
-		logging.LogError(logging.KeyApp, "failed to delete folder %s: %v", folderPath, err)
+		logging.LogError(logging.KeyApp, "failed to start folder delete %s: %v", folderPath, err)
 		status := http.StatusInternalServerError
 		if errors.Is(err, job.ErrAlreadyRunning) {
 			status = http.StatusConflict
@@ -1024,11 +1025,9 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logging.LogInfo(logging.KeyApp, "successfully deleted folder: %s (%d files)", folderPath, result.Deleted)
-
-	w.Header().Set("HX-Redirect", "/browse")
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "folder deleted"))
-	writeResponse(w, r, map[string]string{"status": "deleted"}, "")
+	lang := configmanager.GetLanguage()
+	rec := &jobStorage.JobRecord{ID: id, Type: "delete-folder", Status: jobStorage.StatusRunning}
+	writeResponse(w, r, rec, render.RenderJobStatusListItem(lang, id, rec))
 }
 
 // @Summary Delete all files in a collection or folder
@@ -1100,17 +1099,18 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 		toDelete = append(toDelete, pathutils.ToDocsPath(pathutils.ToRelative(file.Path)))
 	}
 
-	result, err := job.RunBulkDeleteFiles(toDelete, groupType, value)
+	id, err := job.StartBulkDeleteFiles(toDelete, groupType, value)
 	if err != nil {
 		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
 			translation.SprintfForRequest(configmanager.GetLanguage(), err.Error())))
 		return
 	}
 
-	logging.LogInfo(logging.KeyApp, "bulk deleted %d files from %s=%s", result.Deleted, groupType, value)
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "deleted %d files", result.Deleted))
-	w.Header().Set("HX-Redirect", "/browse/"+groupType)
-	writeResponse(w, r, map[string]int{"deleted": result.Deleted}, "")
+	logging.LogInfo(logging.KeyApp, "started bulk delete of %d files from %s=%s (job %s)", len(toDelete), groupType, value, id)
+
+	lang := configmanager.GetLanguage()
+	rec := &jobStorage.JobRecord{ID: id, Type: "bulk-delete-files", Status: jobStorage.StatusRunning}
+	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec))
 }
 
 // @Summary Get headers (TOC) for a file
