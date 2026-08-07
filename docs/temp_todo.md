@@ -43,7 +43,6 @@
   - gitlab pipeline to get a release
   - in the theme let me also arrange the info slideout components
 - fixes
-  - kanban refresh - destroys order
   - delete file takes FOREVER and doesnt give an immediate response (just stays at the are you sure?) no success message / anything after successfull rename and the modal stays up (need to wait quite a bit of time)
 - chore
   - refactor template_data.go make it more general/modular/uniform/ easier for themecreators, e.g. only one general pass and not mutliple different ones => would it make a performance difference?
