@@ -50,7 +50,7 @@
 - gitlab pipeline to get a release
 - /api/system/version => add json output
 - in the theme let me also arrange the info slideout components
-- codemirror editor - search and replace no darkmode
+- make darkmode a required setting and move it to appearance
 
 
 # every other time

@@ -213,3 +213,44 @@
   padding-left: 10px;
   background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
 }
+
+/* search/replace panel (@codemirror/search) — themed to match the app instead
+   of the library's hardcoded light-mode defaults */
+#codemirror-editor .cm-panels {
+  background: var(--bg-secondary);
+  color: var(--text);
+}
+#codemirror-editor .cm-panel.cm-search {
+  padding: 6px 8px;
+}
+#codemirror-editor .cm-panel.cm-search label {
+  color: var(--text);
+}
+#codemirror-editor .cm-panel.cm-search input,
+#codemirror-editor .cm-textfield {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+#codemirror-editor .cm-panel.cm-search button,
+#codemirror-editor .cm-button {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-image: none;
+}
+#codemirror-editor .cm-panel.cm-search button:hover,
+#codemirror-editor .cm-button:hover {
+  background: var(--border);
+}
+#codemirror-editor .cm-panel.cm-search button[name="close"] {
+  color: var(--text-secondary);
+}
+#codemirror-editor .cm-searchMatch {
+  background: color-mix(in srgb, var(--warning) 40%, transparent);
+}
+#codemirror-editor .cm-searchMatch-selected {
+  background: color-mix(in srgb, var(--warning) 70%, transparent);
+}
