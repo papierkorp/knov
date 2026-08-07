@@ -144,8 +144,8 @@ func jsCodeMirrorSettingsMenu() string {
 	});`
 }
 
-// jsCodeMirrorFileUpload wires multi-file upload (toolbar button + drag-and-drop) into the
-// editor. Uploaded files are inserted as markdown image links (images) or plain links (other
+// jsCodeMirrorFileUpload wires multi-file upload (toolbar button + drag-and-drop + paste) into
+// the editor. Uploaded files are inserted as markdown image links (images) or plain links (other
 // files) at the current cursor position. Relies on uploadMediaBlob (render_editor_shared.go).
 func jsCodeMirrorFileUpload() string {
 	return `
@@ -180,6 +180,12 @@ func jsCodeMirrorFileUpload() string {
 		el.classList.remove('cm-dragover');
 		if (e.dataTransfer.files && e.dataTransfer.files.length) {
 			uploadFilesToEditor(e.dataTransfer.files);
+		}
+	});
+	el.addEventListener('paste', function(e) {
+		if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length) {
+			e.preventDefault();
+			uploadFilesToEditor(e.clipboardData.files);
 		}
 	});`
 }
