@@ -180,6 +180,12 @@ func NewRouter() *chi.Mux {
 		r.Post("/cronjob", handleAPIRunCronjob)
 
 		// ----------------------------------------------------------------------------------------
+		// ----------------------------------------- JOBS -----------------------------------------
+		// ----------------------------------------------------------------------------------------
+
+		r.Get("/jobs/{id}", handleAPIGetJobStatus)
+
+		// ----------------------------------------------------------------------------------------
 		// ---------------------------------------- SETTINGS ----------------------------------------
 		// ----------------------------------------------------------------------------------------
 		r.Get("/settings", handleAPIGetAllSettings)
@@ -405,6 +411,7 @@ func NewRouter() *chi.Mux {
 			r.Post("/metadatatest", handleAPIMetadataTest)
 			r.Post("/connectionstest", handleAPIConnectionsTest)
 			r.Post("/jobstest", handleAPIJobsTest)
+			r.Post("/asyncjobtest", handleAPIAsyncJobTest)
 			r.Post("/mediatest", handleAPIMediaTest)
 			r.Post("/exporttest", handleAPIExportTest)
 			r.Post("/notificationtest", handleAPINotificationTest)

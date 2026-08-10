@@ -19,16 +19,28 @@ import (
 // ------------------------------------ fullRebuildJob -------------------------------------
 // ----------------------------------------------------------------------------------------
 
-// RunFullRebuild runs the full metadata rebuild triggered from the admin UI:
-// init all + purge stale/duplicates + links + orphaned media cache.
-// Uses the same rebuildMu as the scheduled job to prevent concurrent runs.
+// RunFullRebuild runs the full metadata rebuild synchronously: init all + purge stale/duplicates
+// + links + orphaned media cache. Uses the same rebuildMu as the scheduled job to prevent
+// concurrent runs. Kept alongside the async StartFullRebuild for callers (e.g. jobstest) that
+// need the result available as soon as the call returns.
 func RunFullRebuild() error {
 	return execute(&rebuildMu, &fullRebuildJob{})
 }
 
+// StartFullRebuild runs the full metadata rebuild in the background, triggered from the admin
+// UI so the request doesn't block for the duration of a potentially slow full-vault rebuild.
+// Returns the job id to poll for completion.
+func StartFullRebuild() (string, error) {
+	return StartAsync(&rebuildMu, &fullRebuildJob{}, "")
+}
+
 type fullRebuildJob struct{}
 
-func (j *fullRebuildJob) Name() string { return "metadata-full-rebuild" }
+func (j *fullRebuildJob) Name() string { return JobTypeFullRebuild }
+
+// Resumable is true because a full rebuild always starts fresh from disk - re-running it after
+// a crash is exactly the same as running it fresh, no snapshot/state needed.
+func (j *fullRebuildJob) Resumable() bool { return true }
 
 func (j *fullRebuildJob) Run() error {
 	logging.LogInfo(logging.KeyFullRebuild, "running full metadata rebuild")
@@ -295,6 +307,39 @@ func (j *gitRepackJob) Run() error {
 	return nil
 }
 
+// deleteResolvedFiles deletes a pre-resolved snapshot of files via files.BulkDeleteFiles,
+// invalidates each deleted file's history cache, and commits the deletion, all before
+// returning. Shared by bulkDeleteFilesJob and deleteFolderJob, which differ only in what they
+// do with the deleted paths afterwards.
+//
+// The commit runs synchronously (not in a detached goroutine) because this only ever runs
+// inside a StartAsync job: the caller is already a background goroutine, so there's no request
+// to keep fast, and a crash mid-commit leaves the job's jobStorage row "running" - so
+// RecoverInterrupted replays this same snapshot on next startup and retries the commit,
+// instead of the commit being silently lost forever as it would be if detached.
+//
+// The returned count also covers paths already gone before this call (e.g. a resumed run
+// re-deleting its snapshot after a crash) - see files.BulkDeleteFiles - so a resumed run still
+// commits those. Paths that failed to remove for another reason are excluded, since they may
+// still exist on disk and committing them as deleted would desync git/cache from actual state.
+func deleteResolvedFiles(logPrefix string, fullPaths []string) []string {
+	deleted := files.BulkDeleteFiles(logging.KeyApp, fullPaths)
+
+	for _, fullPath := range deleted {
+		if err := git.InvalidateFileHistoryCache(pathutils.ToRelative(fullPath)); err != nil {
+			logging.LogWarning(logging.KeyApp, "%s: failed to invalidate file history cache for %s: %v", logPrefix, fullPath, err)
+		}
+	}
+	if len(deleted) > 0 {
+		// commit failure is logged only, not returned as a job error - the files are already
+		// gone from disk either way, so the delete itself still succeeded.
+		if err := git.CommitDeletedFiles(deleted); err != nil {
+			logging.LogError(logging.KeyApp, "%s: failed to commit deleted files: %v", logPrefix, err)
+		}
+	}
+	return deleted
+}
+
 // ----------------------------------------------------------------------------------------
 // ---------------------------------- bulkDeleteFilesJob -----------------------------------
 // ----------------------------------------------------------------------------------------
@@ -309,24 +354,14 @@ type bulkDeleteFilesJob struct {
 	result              BulkDeleteResult
 }
 
-func (j *bulkDeleteFilesJob) Name() string { return "bulk-delete-files" }
+func (j *bulkDeleteFilesJob) Name() string { return JobTypeBulkDeleteFiles }
+
+// Resumable is true because fullPaths is already the resolved snapshot the caller wants
+// deleted - re-running it after a crash is safe (files.BulkDeleteFiles skips paths already gone).
+func (j *bulkDeleteFilesJob) Resumable() bool { return true }
 
 func (j *bulkDeleteFilesJob) Run() error {
-	deleted := files.BulkDeleteFiles(logging.KeyApp, j.fullPaths)
-
-	for _, fullPath := range deleted {
-		if err := git.InvalidateFileHistoryCache(pathutils.ToRelative(fullPath)); err != nil {
-			logging.LogWarning(logging.KeyApp, "bulk-delete-files: failed to invalidate file history cache for %s: %v", fullPath, err)
-		}
-	}
-	if len(deleted) > 0 {
-		go func() {
-			if err := git.CommitDeletedFiles(deleted); err != nil {
-				logging.LogError(logging.KeyApp, "bulk-delete-files: failed to commit deleted files (%s=%s): %v", j.groupType, j.groupVal, err)
-			}
-		}()
-	}
-
+	deleted := deleteResolvedFiles("bulk-delete-files", j.fullPaths)
 	j.result = BulkDeleteResult{Deleted: len(deleted)}
 	return nil
 }
@@ -341,36 +376,35 @@ func (j *bulkDeleteFilesJob) Message() string {
 // ----------------------------------- deleteFolderJob --------------------------------------
 // ----------------------------------------------------------------------------------------
 
-// deleteFolderJob recursively deletes a folder, its files, and their metadata, then commits
-// the deletion in the background. The actual work lives in files.DeleteFolder - this is just
-// the history-tracking + git wiring around it.
+// deleteFolderJob deletes a pre-resolved snapshot of the files inside a folder (resolved once
+// by StartDeleteFolder before the job starts, not re-walked here - see ListFilesInFolder),
+// then removes the now-empty folder tree and commits the deletion in the background.
 type deleteFolderJob struct {
-	folderPath string
+	folderPath string   // relative, for history/messages only
+	fullPath   string   // resolved absolute folder path, removed once its files are gone
+	fullPaths  []string // resolved absolute file paths to delete
 	result     BulkDeleteResult
 }
 
-func (j *deleteFolderJob) Name() string { return "delete-folder" }
+func (j *deleteFolderJob) Name() string { return JobTypeDeleteFolder }
+
+// Resumable is true because fullPaths is the resolved snapshot taken at job start, not the
+// folder path - resuming re-deletes exactly that snapshot instead of re-walking a folder that
+// may have gained new files since the crash.
+func (j *deleteFolderJob) Resumable() bool { return true }
 
 func (j *deleteFolderJob) Run() error {
-	filesInFolder, err := files.DeleteFolder(logging.KeyApp, pathutils.ToDocsPath(j.folderPath))
-	if err != nil {
-		return fmt.Errorf("failed to delete folder: %w", err)
-	}
+	deleted := deleteResolvedFiles("delete-folder", j.fullPaths)
+	j.result = BulkDeleteResult{Deleted: len(deleted)}
 
-	for _, fullPath := range filesInFolder {
-		if err := git.InvalidateFileHistoryCache(pathutils.ToRelative(fullPath)); err != nil {
-			logging.LogWarning(logging.KeyApp, "delete-folder: failed to invalidate file history cache for %s: %v", fullPath, err)
-		}
+	// RemoveEmptyDirTree only removes directories left empty by the deletes above - unlike
+	// os.RemoveAll, it won't touch a file written into the folder after the snapshot was
+	// taken (e.g. during a slow delete, or a crash-to-resume gap). A failure here (leftover
+	// content, or a locked file on Windows) must still surface as a job error, not a silent
+	// "folder deleted" success while the folder is still there.
+	if err := files.RemoveEmptyDirTree(j.fullPath); err != nil {
+		return fmt.Errorf("deleted %d files but failed to remove folder %s: %w", len(deleted), j.folderPath, err)
 	}
-	if len(filesInFolder) > 0 {
-		go func() {
-			if err := git.CommitDeletedFiles(filesInFolder); err != nil {
-				logging.LogError(logging.KeyApp, "delete-folder: failed to commit deleted folder %s: %v", j.folderPath, err)
-			}
-		}()
-	}
-
-	j.result = BulkDeleteResult{Deleted: len(filesInFolder)}
 	return nil
 }
 

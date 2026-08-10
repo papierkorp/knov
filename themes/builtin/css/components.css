@@ -119,6 +119,17 @@
   display: block;
 }
 
+.job-status-pending,
+.job-status-failed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.job-status-failed {
+  color: var(--danger);
+}
+
 .file-form .form-actions {
   display: flex;
   align-items: center;

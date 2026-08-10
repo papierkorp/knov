@@ -351,7 +351,8 @@ func RenderBrowseHTML(items map[string]int, urlPrefix string, deletable bool, gr
 					<button class="btn-danger-icon browse-delete-btn"
 					        hx-delete="/api/files/bulk?type=%s&value=%s"
 					        hx-confirm="%s"
-					        hx-swap="none"
+					        hx-target="this"
+					        hx-swap="outerHTML"
 					        title="%s"><i class="fa fa-trash"></i></button>
 				</li>`,
 				urlPrefix, url.QueryEscape(item), item, count,

@@ -479,6 +479,15 @@ notify.SetFlash(notify.LevelError, translation.SprintfForRequest(lang, "failed t
 http.Error(w, "...", http.StatusInternalServerError)
 ```
 
+# Async Jobs
+
+`job.StartAsync(mu, job, args)` runs a job in the background and returns an id immediately, instead of blocking the request like `execute()` does.
+
+- `internal/jobStorage` persists each run (id, type, args, status, timestamps, error) in sqlite, same shape/pattern as `notificationStorage`
+- a job type opts into crash-recovery by implementing `Resumable() bool` and registering a reconstructor keyed by `Name()`; on startup `job.RecoverInterrupted()` re-runs everything still marked `running`, and marks non-resumable/unregistered types `interrupted` with a notification instead
+- resumable jobs persist a resolved snapshot (e.g. a file list) rather than something re-derivable, so a resumed run can't pick up state changes made since the crash
+- `GET /api/jobs/{id}` + `render.RenderJobStatus` return a self-polling htmx fragment that stops polling once the job reaches a terminal status
+
 # Editor Types
 
 Each file can have an editor type stored in its metadata (`editor` field). The type controls which editor opens when the file is edited. The editor is resolved in this order: explicit metadata → file extension → parser detection → default (toastui).

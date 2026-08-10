@@ -2868,6 +2868,41 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/api/jobs/{id}": {
+            "get": {
+                "description": "Polled by htmx while an async job (started via a delete-folder or bulk-delete\nrequest) runs in the background; returns a small status fragment - a\nself-polling spinner while running, empty once done, or an inline error message.",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "jobs"
+                ],
+                "summary": "Get async job status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jobStorage.JobRecord"
+                        }
+                    },
+                    "404": {
+                        "description": "job not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/kanban/card/move": {
             "post": {
                 "description": "Updates the kanban status tag on a file, replacing any existing kanban tag",
@@ -4860,9 +4895,8 @@ const docTemplate = `{
         },
         "/api/metadata/rebuild": {
             "post": {
-                "description": "Creates metadata for all files that don't have metadata yet",
+                "description": "Starts a full metadata rebuild (init all + purge stale/duplicates + links +\norphaned media cache) in the background; returns a polling status fragment - see\nGET /api/jobs/{id}.",
                 "produces": [
-                    "application/json",
                     "text/html"
                 ],
                 "tags": [
@@ -4871,13 +4905,19 @@ const docTemplate = `{
                 "summary": "Initialize/Rebuild metadata for all files",
                 "responses": {
                     "200": {
-                        "description": "metadata initialized",
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jobStorage.JobRecord"
+                        }
+                    },
+                    "409": {
+                        "description": "rebuild already running",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "500": {
-                        "description": "failed to initialize metadata",
+                        "description": "failed to start rebuild",
                         "schema": {
                             "type": "string"
                         }
@@ -5570,6 +5610,33 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/render.VersionInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/testdata/asyncjobtest": {
+            "post": {
+                "description": "Executes the async job suite (StartAsync dedup mutex/persistence ordering, panic recovery, RecoverInterrupted resumable/non-resumable paths, RemoveEmptyDirTree)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run async job tests",
+                "responses": {
+                    "200": {
+                        "description": "async job test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -6750,6 +6817,33 @@ const docTemplate = `{
                 "JobStatusOK",
                 "JobStatusError"
             ]
+        },
+        "jobStorage.JobRecord": {
+            "type": "object",
+            "properties": {
+                "args": {
+                    "description": "JSON blob, job-type specific",
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "finishedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "startedAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
         },
         "notificationStorage.Notification": {
             "type": "object",

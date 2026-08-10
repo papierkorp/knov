@@ -18,10 +18,12 @@
                 <div class="setting-item">
                     <div class="help-text">{{T "system maintenance operations for keeping your application running smoothly"}}</div>
                     <div class="admin-action-list">
-                        <button class="btn-secondary" hx-post="/api/metadata/rebuild" hx-swap="none"
+                        <button class="btn-secondary" hx-post="/api/metadata/rebuild"
+                                hx-target="#rebuild-metadata-status" hx-swap="innerHTML"
                                 hx-confirm="{{T "Rebuild all metadata? This may take a while."}}">
                             {{T "Rebuild Metadata"}}
                         </button>
+                        <span id="rebuild-metadata-status"></span>
                         <button class="btn-secondary" hx-post="/api/cronjob" hx-swap="none">
                             {{T "Run Cronjob"}}
                         </button>
@@ -328,6 +330,10 @@
                     <button class="btn-secondary" hx-post="/api/testdata/jobstest" hx-target="#testdata-result"
                             hx-confirm="{{T "Run jobs tests? This will trigger a full metadata rebuild, search reindex, cache invalidate and media cleanup."}}">
                         {{T "Run Jobs Tests"}}
+                    </button>
+                    <button class="btn-secondary" hx-post="/api/testdata/asyncjobtest" hx-target="#testdata-result"
+                            hx-confirm="{{T "Run async job tests? This will start/interrupt-recover real background jobs and consume pending notifications."}}">
+                        {{T "Run Async Job Tests"}}
                     </button>
                     <button class="btn-secondary" hx-post="/api/testdata/mediatest" hx-target="#testdata-result"
                             hx-confirm="{{T "Run media tests? This will upload, rename and delete test media files."}}">

@@ -16,6 +16,7 @@ import (
 	"knov/internal/fonts"
 	"knov/internal/git"
 	"knov/internal/job"
+	"knov/internal/jobStorage"
 	"knov/internal/kanbanStorage"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
@@ -31,6 +32,7 @@ import (
 	// doesn't import any of them directly to avoid a cycle for suites that themselves need
 	// to import internal/job (e.g. jobstest), so these blank imports are what actually
 	// trigger each suite's init() (see internal/job/externalsuite.go).
+	_ "knov/internal/test/asyncjobtest"
 	_ "knov/internal/test/browsetest"
 	_ "knov/internal/test/chattest"
 	_ "knov/internal/test/connectionstest"
@@ -139,6 +141,11 @@ func main() {
 		return
 	}
 
+	if err := jobStorage.Init(appConfig.StoragePath); err != nil {
+		logging.LogError(logging.KeyApp, "failed to initialize job storage: %v", err)
+		return
+	}
+
 	configmanager.InitSettings()
 	configmanager.LoadThemeSettings()
 	translation.SetLanguage(configmanager.GetLanguage())
@@ -146,6 +153,10 @@ func main() {
 	thememanager.InitThemeManager()
 	// register filter index regeneration to run after every metadata rebuild
 	files.OnMetadataRebuild = filter.RegenerateAllIndexes
+
+	// after config/theme/OnMetadataRebuild are wired up, since a resumed job's background
+	// cache rebuild depends on them
+	job.RecoverInterrupted()
 
 	go func() {
 		if err := job.RunSearchReindex(); err != nil {

@@ -11,12 +11,15 @@ import (
 )
 
 // BulkDeleteFiles removes each file in fullPaths from disk and deletes its metadata, then
-// refreshes the aggregate caches once for the whole batch. Returns the full paths that were
-// actually deleted (skips - with a warning - any that failed to remove).
+// refreshes the aggregate caches once for the whole batch. Returns the full paths that are
+// now gone - including ones already absent before this call (e.g. a resumed job re-deleting
+// its snapshot after a crash) - since it's safe to treat those as deleted too. Skips - with a
+// warning - only paths that failed to remove for another reason (permission, locked file),
+// which are NOT safe to report as deleted since they may still exist on disk.
 func BulkDeleteFiles(key logging.Key, fullPaths []string) []string {
 	var deleted []string
 	for _, fullPath := range fullPaths {
-		if err := os.Remove(fullPath); err != nil {
+		if err := os.Remove(fullPath); err != nil && !os.IsNotExist(err) {
 			logging.LogWarning(key, "bulk-delete-files: failed to delete %s: %v", fullPath, err)
 			continue
 		}
@@ -31,34 +34,43 @@ func BulkDeleteFiles(key logging.Key, fullPaths []string) []string {
 	return deleted
 }
 
-// DeleteFolder recursively deletes fullPath and every file's metadata inside it, then
-// refreshes the aggregate caches once. Returns the full paths of the files that were inside
-// the folder, so the caller can commit/invalidate history for them afterwards.
-func DeleteFolder(key logging.Key, fullPath string) ([]string, error) {
-	// collect every file inside so metadata can be cleaned up afterwards, since
-	// os.RemoveAll below removes them before we get a chance to look
-	var filesInFolder []string
-	_ = filepath.Walk(fullPath, func(p string, info os.FileInfo, err error) error {
+// ListFilesInFolder returns the full path of every regular file recursively inside fullPath.
+// Used to snapshot a folder's contents once before a delete, so an operation resumed after a
+// crash deletes exactly that snapshot rather than re-walking (and possibly picking up files
+// added to the folder in the meantime).
+func ListFilesInFolder(fullPath string) ([]string, error) {
+	var out []string
+	err := filepath.Walk(fullPath, func(p string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
 			return nil
 		}
-		filesInFolder = append(filesInFolder, p)
+		out = append(out, p)
 		return nil
 	})
+	return out, err
+}
 
-	if err := os.RemoveAll(fullPath); err != nil {
-		return nil, err
+// RemoveEmptyDirTree removes fullPath and its subdirectories bottom-up, but only the ones left
+// empty by a prior delete - unlike os.RemoveAll, it never deletes a file, so anything written
+// into the tree after the delete's file snapshot was taken survives. Returns an error naming a
+// directory that still has content instead of removing it.
+func RemoveEmptyDirTree(fullPath string) error {
+	entries, err := os.ReadDir(fullPath)
+	if os.IsNotExist(err) {
+		return nil
 	}
-
-	for _, filePath := range filesInFolder {
-		if err := MetaDataDeleteNoRefresh(key, pathutils.ToRelative(filePath)); err != nil {
-			logging.LogWarning(key, "delete-folder: failed to delete metadata for %s: %v", filePath, err)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			return fmt.Errorf("%s is not empty: %s", fullPath, entry.Name())
+		}
+		if err := RemoveEmptyDirTree(filepath.Join(fullPath, entry.Name())); err != nil {
+			return err
 		}
 	}
-	if len(filesInFolder) > 0 {
-		RefreshCaches()
-	}
-	return filesInFolder, nil
+	return os.Remove(fullPath)
 }
 
 // MoveFolder moves currentFullPath to newFullPath and updates the links of every file that

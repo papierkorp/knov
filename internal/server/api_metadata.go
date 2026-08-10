@@ -16,6 +16,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/job"
+	"knov/internal/jobStorage"
 	"knov/internal/kanban"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
@@ -215,14 +216,18 @@ func handleAPISetMetadata(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Initialize/Rebuild metadata for all files
-// @Description Creates metadata for all files that don't have metadata yet
+// @Description Starts a full metadata rebuild (init all + purge stale/duplicates + links +
+// @Description orphaned media cache) in the background; returns a polling status fragment - see
+// @Description GET /api/jobs/{id}.
 // @Tags metadata
-// @Produce json,html
-// @Success 200 {string} string "metadata initialized"
-// @Failure 500 {string} string "failed to initialize metadata"
+// @Produce html
+// @Success 200 {object} jobStorage.JobRecord
+// @Failure 409 {string} string "rebuild already running"
+// @Failure 500 {string} string "failed to start rebuild"
 // @Router /api/metadata/rebuild [post]
 func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
-	if err := job.RunFullRebuild(); err != nil {
+	id, err := job.StartFullRebuild()
+	if err != nil {
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
 		status := http.StatusInternalServerError
 		if errors.Is(err, job.ErrAlreadyRunning) {
@@ -232,8 +237,9 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "metadata rebuilt successfully"))
-	writeResponse(w, r, map[string]string{"status": "metadata initialized"}, "")
+	lang := configmanager.GetLanguage()
+	rec := &jobStorage.JobRecord{ID: id, Type: job.JobTypeFullRebuild, Status: jobStorage.StatusRunning}
+	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec))
 }
 
 // @Summary Rebuild metadata links for a single file

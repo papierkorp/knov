@@ -362,6 +362,32 @@ func handleAPIJobsTest(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, results, html)
 }
 
+// @Summary Run async job tests
+// @Description Executes the async job suite (StartAsync dedup mutex/persistence ordering, panic recovery, RecoverInterrupted resumable/non-resumable paths, RemoveEmptyDirTree)
+// @Tags testdata
+// @Produce json,html
+// @Success 200 {object} test.SuiteResult "async job test results"
+// @Failure 500 {object} string "Internal server error"
+// @Router /api/testdata/asyncjobtest [post]
+func handleAPIAsyncJobTest(w http.ResponseWriter, r *http.Request) {
+	logging.LogDebug(logging.KeyApp, "async job test request received")
+
+	results, err := job.RunAsyncJobTest()
+	if err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		logging.LogError(logging.KeyApp, "failed to run async job tests: %v", err)
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), err.Error()))
+		http.Error(w, err.Error(), status)
+		return
+	}
+
+	html := render.RenderSuiteResult(results)
+	writeResponse(w, r, results, html)
+}
+
 // @Summary Run media tests
 // @Description Executes the media suite (upload, list/partition all-used-orphaned, rename, delete, referenced-delete guard, storage stats)
 // @Tags testdata

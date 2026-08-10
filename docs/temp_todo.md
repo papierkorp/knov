@@ -32,10 +32,13 @@
   - gitlab pipeline to get a release
   - in the theme let me also arrange the info slideout components
 - fixes
+  - codemirror editor => using tab to indent a list entry jumps to save section
+  - codemirror editor => using space/delete removes list entries
 - chore
   - move copy-code.js to the app
   - storage/config/theme/xxx.json => do we need to add escapes in this json file? i dont like it
   - move translation and changelog to a tools/ package just like templatedocs
+  - async jobs follow up candidates
 
 # every other time
 
@@ -65,97 +68,22 @@ Decided: interface-per-storage, not pure filesystem-level. New `internal/backup`
 - `/system/backup` fits alongside the existing `/system/logs`, `/system/jobs` pages. Restore is destructive, so run it through `internal/job` as a manual job (gets logged into `JobRun` history like `gitPushJob` etc.) and auto-snapshot current state immediately before overwriting it — free "undo" for a bad restore, same safety-net idea as the git auto-push
 - reuse the GFS (grandfather-father-son) idea already sketched — a different shape than `logging_rotate.go`'s count-based shifting (which just cares about N most recent files). Needs date-bucketing logic instead: keep everything ≤7 days, thin to one/day up to 30 days, one/month up to 365 days. Worth a small `backup/rotate.go` rather than reusing the log rotator directly, since the algorithms don't overlap much
 
-# Async job system — plan
-
-Goal: fix slow/blocking delete (single file cache race + synchronous
-folder/bulk delete), by building a reusable async job runner with
-persisted state, crash recovery, and htmx status polling.
-
-## Step 1 — `jobStorage` package (persistence)
-- New `internal/jobStorage` following the existing per-domain pattern
-  (`internal/notificationStorage` as template): `_interface.go` +
-  `_sqlite.go`, `Init(storagePath)`, own migration in `internal/dbmigration`.
-- Table: id, job type, args (JSON blob — e.g. target file list), status
-  (running/done/error/interrupted), started_at, finished_at, error message.
-- Minimal ops needed: `Create`, `UpdateStatus`, `Get(id)`, `ListRunning()`.
-
-## Step 2 — `Job` interface changes (`internal/job`)
-- Add resumability: e.g. `Resumable() bool` on `Job` (default false via a
-  base/helper, explicit true for delete-type jobs).
-- Keep `Run()` as is; business logic doesn't change.
-
-## Step 3 — Async runner (`internal/job`)
-- `RunAsync(job Job) (id string, err error)`:
-  - persist job record via `jobStorage` (status=running) before starting
-  - launch existing `execute()`/`Run()` in a goroutine
-  - update `jobStorage` (+ existing in-memory history) on finish
-- Existing synchronous `Run()` path stays for anything that doesn't need
-  async (don't force-migrate everything at once).
-
-## Step 4 — Startup recovery hook
-- On app init, after `jobStorage.Init`, scan `ListRunning()`:
-  - if `Resumable()` job type → re-invoke via `RunAsync` with persisted args
-  - else → mark `interrupted`, push a message via existing
-    `notificationStorage` pending-flash mechanism so the user sees it on
-    next page load
-- For folder-delete specifically: persist the *resolved file list* at job
-  start, not the folder path — avoids deleting files added to that folder
-  after a crash (re-walking would not be idempotent, a snapshot list is).
-
-## Step 5 — Status endpoint (server package)
-- `GET /api/jobs/{id}` — thin handler, reads `jobStorage`/history, renders
-  fragment via `render` package (spinner while running, success/error
-  when terminal). Unknown id → explicit error state, not "still running".
-- RESTful, swagger comments, `writeResponse`, translation.SprintfForRequest
-  per project conventions.
-
-## Step 6 — htmx polling partial (render + theme templates)
-- Small fragment: `hx-get="/api/jobs/{id}" hx-trigger="every 1s"`, swapped
-  in place of the confirm-delete popup once a job starts.
-- Stop polling on terminal status (drop the trigger / `HX-Redirect` /
-  `HX-Trigger` header on completion).
-- No hardcoded colors, ID-selector CSS per component, both themes updated.
-
-## Step 7 — Wire up folder/bulk delete
-- `handleAPIDeleteFolder` / bulk delete handler: call `RunAsync` instead
-  of blocking `job.RunDeleteFolder`/`RunBulkDeleteFiles` directly.
-- Return job id immediately, frontend swaps in polling partial.
-- Commit to git earlier/more granularly during the job (not one commit at
-  the very end) so an interrupted run leaves a clean committed state
-  rather than dangling uncommitted deletions.
-
-## Step 8 — Fix single-file delete (separate, smaller)
-- Not async-job based — fix the actual bug: `RefreshCaches()` /
-  `InvalidateFileListCache()` wipes the cache synchronously before the
-  background rebuild finishes, so the subsequent `/browse` tree fragment
-  falls through to a synchronous full-vault walk.
-- Fix: either incrementally update the cache (remove just the deleted
-  entry) instead of nuking it, or serve stale cache until the background
-  rebuild finishes (stale-while-revalidate) in `metadata_cache.go`.
-
-## Step 9 — Follow-up candidates (not now)
-- Route other slow ops (import/export, cache rebuild, bulk move/rename)
-  through `RunAsync` once the base system is proven on delete.
-
----
-Key files found during investigation:
-- `internal/server/api_files.go:961` handleAPIDeleteFile
-- `internal/server/api_files.go:1000` delete-folder route
-- `internal/server/api_files.go:1045` bulk delete route
-- `internal/files/metadata_cache.go:152-172` cache invalidation/rebuild race
-- `internal/job/scheduler.go:48-88,255-280` execute(), RunDeleteFolder etc.
-- `internal/job/history.go` in-memory job history (ring buffer)
-- `internal/job/manualjob.go:324,367` synchronous git commit inside jobs
-- `internal/git/git.go:372-410` CommitDeletedFiles, `:482-521` CommitDeletedFile (async)
-- `internal/notificationStorage/notificationStorage_interface.go` pending-flash pattern to reuse for "job interrupted" messages
-- `internal/dbmigration/dbmigration.go` migration pattern to follow for new jobStorage table
-
-
 # ai prompts
 
 ## docs
 
 small, precise and concise, high level overview, no examples that are prone to change, just a few bullet points, as few subheaders as possible (i think it becomes more unreadable if its too segmented)
+
+## overview
+
+give me an overview of the current git changes, dont make any changes yet just give me your opinion
+
+- does it use the same principles as the rest of the application/packages?
+- is it easy to understand code without overcomplicating it? it should be a easy to follow solution
+- is there overengineering going on which could easily be simplified?
+- does it fit in the app or is it out of place?
+- if you could refactor it - are there better ways to implement it?
+- are there some serious problems with the current solution?
 
 ## review
 
