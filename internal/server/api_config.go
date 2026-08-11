@@ -13,6 +13,7 @@ import (
 	"knov/internal/logging"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
+	"knov/internal/system"
 	"knov/internal/translation"
 )
 
@@ -86,7 +87,7 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Restart application
-// @Description Restarts the application (requires process manager like systemd or docker)
+// @Description Restarts the application in place (same PID on Linux/macOS, so it keeps working under a supervisor like systemd) and standalone otherwise
 // @Tags system
 // @Accept application/x-www-form-urlencoded
 // @Produce json,html
@@ -95,15 +96,26 @@ func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
 func handleAPIRestartApp(w http.ResponseWriter, r *http.Request) {
 	logging.LogInfo(logging.KeyApp, "application restart requested")
 
+	if err := system.CanRestart(); err != nil {
+		logging.LogError(logging.KeyApp, "cannot restart: %v", err)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to restart"), http.StatusInternalServerError)
+		return
+	}
+
 	data := "restarting"
 	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "restarting application..."))
 	writeResponse(w, r, data, "")
+	if f, ok := w.(http.Flusher); ok {
+		f.Flush()
+	}
 
-	// give response time to send
-	go func() {
-		time.Sleep(500 * time.Millisecond)
-		os.Exit(0)
-	}()
+	// give the response time to reach the client before this process is replaced/exited below
+	time.Sleep(500 * time.Millisecond)
+	if err := system.Restart(); err != nil {
+		logging.LogError(logging.KeyApp, "failed to restart: %v", err)
+		return
+	}
+	os.Exit(0) // windows only - the in-place restart above never returns on success
 }
 
 // @Summary Update data path

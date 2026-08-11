@@ -18,6 +18,7 @@ import (
 	"knov/internal/backup"
 	"knov/internal/configmanager"
 	"knov/internal/logging"
+	"knov/internal/system"
 )
 
 // backup can't import configmanager itself (configmanager already depends on configStorage, which
@@ -190,6 +191,11 @@ func (j *restoreJob) Run() error {
 	}
 	go func() {
 		time.Sleep(500 * time.Millisecond)
+		// must exit regardless of whether the restart below succeeds - the live storage
+		// connections are already broken (see comment above), so staying up is not an option
+		if err := system.Restart(); err != nil {
+			logging.LogError(logging.KeyApp, "restore: failed to restart, manual restart required: %v", err)
+		}
 		os.Exit(0)
 	}()
 	return err

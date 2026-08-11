@@ -3,8 +3,11 @@ package server
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"net/http"
+	"syscall"
+	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/server/render"
@@ -42,10 +45,18 @@ func StartServerChi() {
 	// ----------------------------------- start chi server -----------------------------------
 	// ----------------------------------------------------------------------------------------
 
-	err := http.ListenAndServe(":"+port, r)
+	// on self-restart the old process may still hold the port for a moment after this one
+	// starts - retry the bind for a few seconds before giving up
+	var err error
+	for range 20 {
+		err = http.ListenAndServe(":"+port, r)
+		if !errors.Is(err, syscall.EADDRINUSE) {
+			break
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
 	if err != nil {
 		fmt.Printf("error starting chi server: %v\n", err)
-		return
 	}
 }
 

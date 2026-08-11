@@ -5753,7 +5753,7 @@ const docTemplate = `{
         },
         "/api/system/restart": {
             "post": {
-                "description": "Restarts the application (requires process manager like systemd or docker)",
+                "description": "Restarts the application in place (same PID on Linux/macOS, so it keeps working under a supervisor like systemd) and standalone otherwise",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],

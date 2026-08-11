@@ -4387,8 +4387,8 @@ paths:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Restarts the application (requires process manager like systemd
-        or docker)
+      description: Restarts the application in place (same PID on Linux/macOS, so
+        it keeps working under a supervisor like systemd) and standalone otherwise
       produces:
       - application/json
       - text/html
