@@ -264,6 +264,13 @@ func (ys *yamlFrontmatterStorage) GetBackendType() string {
 	return "yaml"
 }
 
+// Backup is a no-op - front matter lives inside docs files under DataPath, which git already
+// covers, not StoragePath.
+func (ys *yamlFrontmatterStorage) Backup(_ string) error { return nil }
+
+// Restore is a no-op for the same reason as Backup.
+func (ys *yamlFrontmatterStorage) Restore(_ string) error { return nil }
+
 // Cleanup strips front matter from all docs files in one pass
 func (ys *yamlFrontmatterStorage) Cleanup() error {
 	ys.mutex.Lock()

@@ -11,3 +11,7 @@ func (n *noopStorage) LogEvent(_, _, _, _ string) error {
 func (n *noopStorage) GetEvents(_, _ string, _, _ *time.Time, _ int) ([]Event, error) {
 	return []Event{}, nil
 }
+
+func (n *noopStorage) Backup(_ string) error { return nil }
+
+func (n *noopStorage) Restore(_ string) error { return nil }

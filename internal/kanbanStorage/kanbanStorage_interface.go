@@ -4,6 +4,7 @@ package kanbanStorage
 import (
 	"time"
 
+	"knov/internal/backup"
 	"knov/internal/logging"
 )
 
@@ -20,9 +21,22 @@ type Event struct {
 type KanbanStorage interface {
 	LogEvent(filePath, boardFolder, fromStatus, toStatus string) error
 	GetEvents(boardFolder, filePath string, from, to *time.Time, limit int) ([]Event, error)
+	Backup(destDir string) error
+	Restore(srcDir string) error
 }
 
 var storage KanbanStorage
+
+func init() {
+	backup.Register("kanban", backupAdapter{})
+}
+
+// backupAdapter defers to the package-level storage var, which isn't set until Init runs -
+// unlike backup.Register, which happens at package init time before that.
+type backupAdapter struct{}
+
+func (backupAdapter) Backup(destDir string) error { return storage.Backup(destDir) }
+func (backupAdapter) Restore(srcDir string) error { return storage.Restore(srcDir) }
 
 // Init initializes kanban event storage.
 // If enabled is false the noop backend is used regardless of provider.

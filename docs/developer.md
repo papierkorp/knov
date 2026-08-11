@@ -488,6 +488,26 @@ http.Error(w, "...", http.StatusInternalServerError)
 - resumable jobs persist a resolved snapshot (e.g. a file list) rather than something re-derivable, so a resumed run can't pick up state changes made since the crash
 - `GET /api/jobs/{id}` + `render.RenderJobStatus` return a self-polling htmx fragment that stops polling once the job reaches a terminal status
 
+# Backup & Restore
+
+`internal/backup` snapshots every StoragePath-backed storage (metadata, cache, chat, kanban, notifications, config, search) into a single `.tar.gz` backup set. DataPath (docs/media) is already versioned by git, so it's out of scope.
+
+- storages self-register in their own `init()` via `backup.Register(name, ...)` — the same self-registration pattern `externalsuite.go` uses for test suites. `internal/backup` never imports a storage package directly, since every storage imports it for the `BackupSQLite`/`RestoreSQLite`/`BackupFile`/`RestoreFile` helpers, and an orchestrator-side import back would cycle
+- sqlite storages snapshot via `VACUUM INTO` under their own existing read lock; json/yaml storages snapshot via a plain directory copy. `metadataStorage_yaml.go`'s front matter backend is a no-op — its data lives in DataPath
+- `backup.Run(target, names...)` backs up a subset of registered storages when given explicit names (e.g. just `"metadata"`), or everything when called with none — each set carries a `manifest.json` (list of included storage names) so a partial set can be told apart from a full one later without extracting the rest; `backup.Manifest` reads just that entry back out
+- no cross-storage atomicity — storages are snapshotted sequentially, each under its own lock, not one transaction
+- a partial backup failure aborts and discards the whole set rather than keeping an incomplete one
+- restore takes a fresh **full** safety snapshot first (regardless of what the set being restored contains). Each sqlite storage's `Restore` reads and validates the backed-up database (`backup.ReadSQLiteBackup`) *before* closing its live db handle, so a corrupt or missing backup file fails without bricking a working connection — only once validated does it close the handle (Windows refuses to overwrite a file another handle still has open) and write the restored file (`backup.RestoreSQLite`). The app then restarts so a fresh process picks everything up — no live `*sql.DB`/in-memory state is hot-swapped. Restoring a partial set only touches the storages listed in the set's `manifest.json` (read back from the extracted archive), not "whichever subdirectories happen to exist" — a storage that was genuinely empty at backup time has no extracted subdirectory either, but is still restored (to empty) if the manifest lists it
+- `RestoreFile` clears the live directory before copying the backed-up files back in, so restore actually replaces state instead of overlaying onto it — a file created or renamed after the backup was taken doesn't survive a restore. Both `BackupFile` and `RestoreFile` write through `utils.WriteFileAtomic`, so an interrupted restore can't leave a live json/yaml file torn
+- `manifest.json` is written as the first entry in the archive (not wherever the directory walk's alphabetical order happens to put it), so `backup.Manifest` only has to decompress the start of the archive, not scan past every storage's data first, to answer "what's in this set" for the `/system/backup` log page
+- backup set names are timestamp-based at 1-second resolution; `Run` disambiguates with a `-N` suffix if that name is already taken on the target (e.g. a manual backup immediately followed by a restore's own pre-restore safety snapshot, landing in the same second) instead of one silently overwriting the other. A partial set's name gets a `_<storages>` suffix (e.g. `2026-08-08T21-10-29_metadata`); `backup.IsFullSet` checks for that underscore (the timestamp itself never contains one) to tell full and partial sets apart without opening the manifest
+- `backup.Rotate(target, keepDays, keepFull)` — a set survives if it matches any of three independent rules: it's locked (`BackupTarget.Lock`/`Unlock`/`Locked`, a `<name>.locked` marker file next to the archive on `localTarget`, checked and toggled via `/system/backup`'s Lock/Unlock button), it's within `keepDays` of now (any kind, full or partial), or it's a full backup among the `keepFull` most recent full backups — a long-term floor so coming back after months away still leaves something restorable. Partial backups get no long-term floor of their own: once they age out of `keepDays` and aren't locked, they're deleted, so a partial set can never occupy the slot a full backup would otherwise have kept. `KNOV_BACKUP_ROTATION_KEEP_DAYS`/`KNOV_BACKUP_ROTATION_KEEP_FULL` configure the two counts; GFS-style date-bucketing was deliberately dropped in favor of this — not proportional to how little data/complexity budget a single-user app's backups need
+- `BackupTarget` is byte-stream shaped (`io.Reader`/`io.ReadCloser`), so a remote target (S3, NFS) can be added later without touching `Run`/`Restore` — only a local-filesystem implementation (`job.DefaultBackupTarget`, rooted at `KNOV_BACKUPS_PATH`, default `./backups`) exists today
+- `BackupTarget.LogEvent`/`Events` durably record every backup created and restore applied (`backup.Event{Kind, Set, Time}`, on `localTarget` a `log.json` array next to the archives, rewritten atomically) - kept independent of whether the referenced set still exists, so the history survives both rotation deleting the set later and a restore's own restart (which would otherwise wipe any purely in-memory record of the very event it just performed, unlike the in-memory `job.GetRecentRuns` history used by `/system/jobs`). `job.ListBackupLog` merges this with the target's current `List()`/`Locked()` state into `BackupLogEntry` (adding a synthetic "backup created" row, timestamped from the name, for any set that predates event logging or survived a lost log file) for the `/system/backup` page - a log, not just a listing: past events stay visible with a "no longer available" note and no actions once their set is gone, instead of just disappearing
+- `job.OpenBackup` + `GET /api/system/backups/{name}/download` streams a set's raw archive back with `setAttachmentFilename` for the download link on each log row
+- triggered manually from `/system/backup` (`job.RunBackup`/`RunRestore`, logged into `JobRun` history like `gitPushJob`), with a storage checkbox row for partial backups and a lock/unlock/download action per available log row
+- optional scheduled backups: `KNOV_BACKUP_AUTO_ENABLED`/`KNOV_BACKUP_AUTO_INTERVAL` (AppConfig env vars, restart required — same two-layer split as everything else in Configuration Management above) gate `job.checkAutoBackup`, ticked every `backupAutoCheckInterval` (fixed, 15m) from `job.Start()` — it's a no-op unless enabled and the newest existing set (via `backup.ParseSetTime`) is older than the configured interval, so the check cadence and the actual backup cadence are decoupled
+
 # Editor Types
 
 Each file can have an editor type stored in its metadata (`editor` field). The type controls which editor opens when the file is edited. The editor is resolved in this order: explicit metadata → file extension → parser detection → default (toastui).
@@ -634,7 +654,7 @@ See [`docs/create_your_own_theme.md`](create_your_own_theme.md).
 
 # System Pages
 
-`/system/*` (`changelog`, `logs`, `version`, `jobs`) is a namespace for app-internal pages whose **content is controlled by the application**, not theme templates.
+`/system/*` (`changelog`, `logs`, `version`, `jobs`, `backup`) is a namespace for app-internal pages whose **content is controlled by the application**, not theme templates.
 
 **How it works**
 
@@ -657,6 +677,10 @@ Shows `.Version` and `.BuildTime` (see [Versioning](#versioning) below).
 ## /system/jobs
 
 Table of recent background job runs (name, start/finish time, duration, status, error), polling `/api/system/jobs` every 3 seconds.
+
+## /system/backup
+
+A log of every backup created and restore applied, newest first, plus a "create backup" action and per-row restore/lock/download actions (hidden once a row's set is no longer available). See [Backup & Restore](#backup--restore) below.
 
 ## Adding a new system page
 

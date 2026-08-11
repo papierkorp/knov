@@ -4,6 +4,7 @@ package cacheStorage
 import (
 	"fmt"
 
+	"knov/internal/backup"
 	"knov/internal/logging"
 )
 
@@ -16,9 +17,22 @@ type CacheStorage interface {
 	Exists(key string) bool
 	GetBackendType() string
 	Flush() error
+	Backup(destDir string) error
+	Restore(srcDir string) error
 }
 
 var storage CacheStorage
+
+func init() {
+	backup.Register("cache", backupAdapter{})
+}
+
+// backupAdapter defers to the package-level storage var, which isn't set until Init runs -
+// unlike backup.Register, which happens at package init time before that.
+type backupAdapter struct{}
+
+func (backupAdapter) Backup(destDir string) error { return storage.Backup(destDir) }
+func (backupAdapter) Restore(srcDir string) error { return storage.Restore(srcDir) }
 
 // Init initializes cache storage with the specified provider
 func Init(provider, storagePath string) error {

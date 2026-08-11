@@ -1,5 +1,50 @@
 basePath: /
 definitions:
+  backup.EventKind:
+    enum:
+    - backup
+    - restore
+    type: string
+    x-enum-varnames:
+    - EventBackup
+    - EventRestore
+  backup.EventSource:
+    enum:
+    - manual
+    - scheduled
+    - restore
+    type: string
+    x-enum-comments:
+      SourceManual: triggered from /system/backup
+      SourceRestore: the pre-restore safety snapshot Restore always takes first
+      SourceScheduled: KNOV_BACKUP_AUTO_ENABLED, via job.checkAutoBackup
+    x-enum-descriptions:
+    - triggered from /system/backup
+    - KNOV_BACKUP_AUTO_ENABLED, via job.checkAutoBackup
+    - the pre-restore safety snapshot Restore always takes first
+    x-enum-varnames:
+    - SourceManual
+    - SourceScheduled
+    - SourceRestore
+  backup.LogEntry:
+    properties:
+      available:
+        type: boolean
+      full:
+        type: boolean
+      kind:
+        $ref: '#/definitions/backup.EventKind'
+      locked:
+        type: boolean
+      set:
+        type: string
+      source:
+        allOf:
+        - $ref: '#/definitions/backup.EventSource'
+        description: '"" for entries logged before this field existed'
+      time:
+        type: string
+    type: object
   configmanager.SettingOption:
     properties:
       label:
@@ -4157,6 +4202,132 @@ paths:
       summary: Get settings section
       tags:
       - settings
+  /api/system/backups:
+    get:
+      description: Lists every backup created and restore applied, newest first
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/backup.LogEntry'
+            type: array
+      summary: List the backup/restore history
+      tags:
+      - system
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Snapshots the selected storages (metadata, cache, chat, kanban,
+        notifications, config, search - all of them when none are given) into a new
+        backup set and trims expired sets
+      parameters:
+      - collectionFormat: csv
+        description: Storage names to include (repeatable); omit for a full backup
+        in: formData
+        items:
+          type: string
+        name: storages
+        type: array
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: backup set name
+          schema:
+            type: string
+      summary: Create a backup
+      tags:
+      - system
+  /api/system/backups/{name}/download:
+    get:
+      description: Downloads a backup set's raw .tar.gz archive
+      parameters:
+      - description: Backup set name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/gzip
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      summary: Download a backup
+      tags:
+      - system
+  /api/system/backups/{name}/lock:
+    delete:
+      description: Removes a backup set's protection from automatic rotation
+      parameters:
+      - description: Backup set name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/backup.LogEntry'
+            type: array
+      summary: Unlock a backup
+      tags:
+      - system
+    post:
+      description: Marks a backup set to never be deleted by automatic rotation, until
+        unlocked
+      parameters:
+      - description: Backup set name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/backup.LogEntry'
+            type: array
+      summary: Lock a backup
+      tags:
+      - system
+  /api/system/backups/{name}/restore:
+    post:
+      description: Takes a fresh safety snapshot, restores a backup set onto disk,
+        then restarts the app to apply it. Runs in the background - poll GET /api/jobs/{id}
+        (returned in the response body/fragment) for completion.
+      parameters:
+      - description: Backup set name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jobStorage.JobRecord'
+      summary: Restore a backup
+      tags:
+      - system
   /api/system/cache:
     delete:
       consumes:
@@ -4263,6 +4434,26 @@ paths:
           schema:
             type: string
       summary: Run async job tests
+      tags:
+      - testdata
+  /api/testdata/backuptest:
+    post:
+      description: Executes the backup suite (full/selective/failed Run, Restore roundtrip,
+        Rotate's locked/keepDays/keepFull rules, checkAutoBackup, ListBackupLog, event
+        log, WriteFileAtomic) against real live storages and scratch backup targets
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: backup test results
+          schema:
+            $ref: '#/definitions/test.SuiteResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Run backup tests
       tags:
       - testdata
   /api/testdata/browsetest:

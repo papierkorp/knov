@@ -5490,6 +5490,187 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/backups": {
+            "get": {
+                "description": "Lists every backup created and restore applied, newest first",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "List the backup/restore history",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/backup.LogEntry"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Snapshots the selected storages (metadata, cache, chat, kanban, notifications, config, search - all of them when none are given) into a new backup set and trims expired sets",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Create a backup",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Storage names to include (repeatable); omit for a full backup",
+                        "name": "storages",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "backup set name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/backups/{name}/download": {
+            "get": {
+                "description": "Downloads a backup set's raw .tar.gz archive",
+                "produces": [
+                    "application/gzip"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Download a backup",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Backup set name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/backups/{name}/lock": {
+            "post": {
+                "description": "Marks a backup set to never be deleted by automatic rotation, until unlocked",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Lock a backup",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Backup set name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/backup.LogEntry"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes a backup set's protection from automatic rotation",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Unlock a backup",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Backup set name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/backup.LogEntry"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/backups/{name}/restore": {
+            "post": {
+                "description": "Takes a fresh safety snapshot, restores a backup set onto disk, then restarts the app to apply it. Runs in the background - poll GET /api/jobs/{id} (returned in the response body/fragment) for completion.",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Restore a backup",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Backup set name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jobStorage.JobRecord"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/cache": {
             "delete": {
                 "description": "Removes all cache entries, forcing a rebuild on next access",
@@ -5629,6 +5810,33 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "async job test results",
+                        "schema": {
+                            "$ref": "#/definitions/test.SuiteResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/testdata/backuptest": {
+            "post": {
+                "description": "Executes the backup suite (full/selective/failed Run, Restore roundtrip, Rotate's locked/keepDays/keepFull rules, checkAutoBackup, ListBackupLog, event log, WriteFileAtomic) against real live storages and scratch backup targets",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "testdata"
+                ],
+                "summary": "Run backup tests",
+                "responses": {
+                    "200": {
+                        "description": "backup test results",
                         "schema": {
                             "$ref": "#/definitions/test.SuiteResult"
                         }
@@ -6391,6 +6599,71 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "backup.EventKind": {
+            "type": "string",
+            "enum": [
+                "backup",
+                "restore"
+            ],
+            "x-enum-varnames": [
+                "EventBackup",
+                "EventRestore"
+            ]
+        },
+        "backup.EventSource": {
+            "type": "string",
+            "enum": [
+                "manual",
+                "scheduled",
+                "restore"
+            ],
+            "x-enum-comments": {
+                "SourceManual": "triggered from /system/backup",
+                "SourceRestore": "the pre-restore safety snapshot Restore always takes first",
+                "SourceScheduled": "KNOV_BACKUP_AUTO_ENABLED, via job.checkAutoBackup"
+            },
+            "x-enum-descriptions": [
+                "triggered from /system/backup",
+                "KNOV_BACKUP_AUTO_ENABLED, via job.checkAutoBackup",
+                "the pre-restore safety snapshot Restore always takes first"
+            ],
+            "x-enum-varnames": [
+                "SourceManual",
+                "SourceScheduled",
+                "SourceRestore"
+            ]
+        },
+        "backup.LogEntry": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "boolean"
+                },
+                "full": {
+                    "type": "boolean"
+                },
+                "kind": {
+                    "$ref": "#/definitions/backup.EventKind"
+                },
+                "locked": {
+                    "type": "boolean"
+                },
+                "set": {
+                    "type": "string"
+                },
+                "source": {
+                    "description": "\"\" for entries logged before this field existed",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/backup.EventSource"
+                        }
+                    ]
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
         "configmanager.SettingOption": {
             "type": "object",
             "properties": {

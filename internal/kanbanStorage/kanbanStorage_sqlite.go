@@ -8,15 +8,19 @@ import (
 	"sync"
 	"time"
 
+	"knov/internal/backup"
 	"knov/internal/dbmigration"
 	"knov/internal/logging"
 
 	_ "modernc.org/sqlite"
 )
 
+const kanbanDBFile = "events.db"
+
 type sqliteKanbanStorage struct {
-	db    *sql.DB
-	mutex sync.RWMutex
+	db     *sql.DB
+	dbPath string
+	mutex  sync.RWMutex
 }
 
 func newSQLiteStorage(storagePath string) (*sqliteKanbanStorage, error) {
@@ -25,7 +29,7 @@ func newSQLiteStorage(storagePath string) (*sqliteKanbanStorage, error) {
 		return nil, err
 	}
 
-	dbPath := filepath.Join(fullPath, "events.db")
+	dbPath := filepath.Join(fullPath, kanbanDBFile)
 	db, err := sql.Open("sqlite", dbPath+"?mode=rwc")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open kanban events database: %w", err)
@@ -44,7 +48,7 @@ func newSQLiteStorage(storagePath string) (*sqliteKanbanStorage, error) {
 		logging.LogWarning(logging.KeyApp, "kanban storage: failed to checkpoint wal: %v", err)
 	}
 
-	s := &sqliteKanbanStorage{db: db}
+	s := &sqliteKanbanStorage{db: db, dbPath: dbPath}
 	if err := s.initialize(); err != nil {
 		db.Close()
 		return nil, err
@@ -164,4 +168,30 @@ func (s *sqliteKanbanStorage) GetEvents(boardFolder, filePath string, from, to *
 		events = append(events, e)
 	}
 	return events, rows.Err()
+}
+
+// Backup snapshots the kanban events database into destDir via VACUUM INTO.
+func (s *sqliteKanbanStorage) Backup(destDir string) error {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	return backup.BackupSQLite(s.db, destDir, kanbanDBFile)
+}
+
+// Restore overwrites the live kanban events database file with a previously backed-up snapshot
+// from srcDir. The backup is read and validated before the current db handle is closed, so a bad
+// backup fails without leaving this storage without a usable connection. Closing first (once
+// validated) matters on Windows, where overwriting a file still opened by this process fails
+// with a sharing violation. Safe only because the caller restarts the app right after a
+// successful restore; this connection is never used again in this process.
+func (s *sqliteKanbanStorage) Restore(srcDir string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	data, err := backup.ReadSQLiteBackup(srcDir, kanbanDBFile)
+	if err != nil {
+		return err
+	}
+	if err := s.db.Close(); err != nil {
+		logging.LogWarning(logging.KeyApp, "kanban restore: failed to close db: %v", err)
+	}
+	return backup.RestoreSQLite(data, s.dbPath)
 }

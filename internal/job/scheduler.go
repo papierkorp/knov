@@ -20,6 +20,11 @@ import (
 // the loose-object threshold, so how often it's checked barely matters.
 const gitRepackInterval = 24 * time.Hour
 
+// backupAutoCheckInterval is fixed, not the user-facing setting - checkAutoBackup is a cheap
+// no-op when auto-backup is disabled or not yet due. The interval users actually control is
+// configmanager.BackupAutoInterval (how often a backup is taken), not this check's own cadence.
+const backupAutoCheckInterval = 15 * time.Minute
+
 var (
 	stopChan                chan bool
 	fileInterval            time.Duration
@@ -44,6 +49,10 @@ var (
 	deleteFolderMu       sync.Mutex
 	moveFolderMu         sync.Mutex
 	bulkUpdateMetadataMu sync.Mutex
+
+	// backupMu also guards restore, since restore starts with a full backup - the two must not
+	// run concurrently, or two same-second-precision set names could race on the same target.
+	backupMu sync.Mutex
 )
 
 // execute runs job under mu, recording start/finish in job history.
@@ -249,6 +258,21 @@ func Start() {
 		}
 	}()
 
+	go func() {
+		ticker := time.NewTicker(backupAutoCheckInterval)
+		defer ticker.Stop()
+		checkAutoBackup() // check once on startup - covers a due backup missed while the app was down
+		for {
+			select {
+			case <-ticker.C:
+				checkAutoBackup()
+			case <-stopChan:
+				logging.LogInfo(logging.KeyApp, "backup auto-check stopped")
+				return
+			}
+		}
+	}()
+
 	logging.LogInfo(logging.KeyApp, "cronjob scheduler started (file: %v, search: %v, metadata rebuild: %v, git repack: %v)", fileInterval, searchInterval, metadataRebuildInterval, gitRepackInterval)
 }
 
@@ -412,6 +436,9 @@ func RunLogsTest() (*test.SuiteResult, error) { return RunSuiteTest("logs-test")
 
 // RunParserTest runs the parser test suite and returns its results alongside any error.
 func RunParserTest() (*test.SuiteResult, error) { return RunSuiteTest("parser-test") }
+
+// RunBackupTest runs the backup/restore/rotate test suite and returns its results alongside any error.
+func RunBackupTest() (*test.SuiteResult, error) { return RunSuiteTest("backup-test") }
 
 // RunAllTests runs every registered test suite and returns the aggregated results.
 func RunAllTests() (*test.SuiteResult, error) { return RunSuiteTest("run-all-tests") }

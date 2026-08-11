@@ -67,6 +67,7 @@ func NewRouter() *chi.Mux {
 	r.Get("/system/logs", render.HandleSystemLogs)
 	r.Get("/system/version", render.HandleSystemVersion)
 	r.Get("/system/jobs", render.HandleSystemJobs)
+	r.Get("/system/backup", render.HandleSystemBackup)
 	r.Get("/settings", handleSettings)
 	r.Get("/admin", handleAdmin)
 	r.Get("/playground", handlePlayground)
@@ -161,6 +162,15 @@ func NewRouter() *chi.Mux {
 			r.Get("/jobs", handleAPIGetJobs)
 			r.Get("/version", handleAPIGetSystemVersion)
 			r.Get("/changelog", handleAPIGetSystemChangelog)
+
+			r.Route("/backups", func(r chi.Router) {
+				r.Get("/", handleAPIGetBackups)
+				r.Post("/", handleAPICreateBackup)
+				r.Post("/{name}/restore", handleAPIRestoreBackup)
+				r.Post("/{name}/lock", handleAPILockBackup)
+				r.Delete("/{name}/lock", handleAPIUnlockBackup)
+				r.Get("/{name}/download", handleAPIDownloadBackup)
+			})
 		})
 
 		// ----------------------------------------------------------------------------------------
@@ -418,6 +428,7 @@ func NewRouter() *chi.Mux {
 			r.Post("/settingstest", handleAPISettingsTest)
 			r.Post("/logstest", handleAPILogsTest)
 			r.Post("/parsertest", handleAPIParserTest)
+			r.Post("/backuptest", handleAPIBackupTest)
 			r.Post("/run-all", handleAPIRunAllTests)
 		})
 

@@ -4,6 +4,7 @@ package configStorage
 import (
 	"fmt"
 
+	"knov/internal/backup"
 	"knov/internal/logging"
 )
 
@@ -16,9 +17,22 @@ type ConfigStorage interface {
 	List(prefix string) ([]string, error)
 	Exists(key string) bool
 	GetBackendType() string
+	Backup(destDir string) error
+	Restore(srcDir string) error
 }
 
 var storage ConfigStorage
+
+func init() {
+	backup.Register("config", backupAdapter{})
+}
+
+// backupAdapter defers to the package-level storage var, which isn't set until Init runs -
+// unlike backup.Register, which happens at package init time before that.
+type backupAdapter struct{}
+
+func (backupAdapter) Backup(destDir string) error { return storage.Backup(destDir) }
+func (backupAdapter) Restore(srcDir string) error { return storage.Restore(srcDir) }
 
 // Init initializes config storage with the specified provider
 func Init(provider, storagePath string) error {

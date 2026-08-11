@@ -207,6 +207,7 @@ bin/
 config/
 .storage
 storage/
+backups/
 .metadata
 metadata
 static/temp_extracted.go

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"knov/internal/backup"
 	"knov/internal/configStorage"
 	"knov/internal/logging"
 )
@@ -14,6 +15,10 @@ const markerKey = "metadata-backend"
 // MetadataStorage interface defines methods for metadata storage
 type MetadataStorage interface {
 	Get(key string) ([]byte, error)
+	// Set stores data, a JSON-encoded files.Metadata - the only real caller is
+	// files.metaDataSaveRaw, which always json.Marshal's a Metadata struct first. A structured
+	// backend (sqlite today, e.g. Postgres later) may parse known fields out of data rather than
+	// storing it verbatim, so Get is not guaranteed to return the exact bytes passed to Set.
 	Set(key string, data []byte) error
 	Delete(key string) error
 	GetAll() (map[string][]byte, error)
@@ -22,9 +27,22 @@ type MetadataStorage interface {
 	// Cleanup removes all data managed by this backend.
 	// Called once after a successful migration to a new backend.
 	Cleanup() error
+	Backup(destDir string) error
+	Restore(srcDir string) error
 }
 
 var storage MetadataStorage
+
+func init() {
+	backup.Register("metadata", backupAdapter{})
+}
+
+// backupAdapter defers to the package-level storage var, which isn't set until Init runs -
+// unlike backup.Register, which happens at package init time before that.
+type backupAdapter struct{}
+
+func (backupAdapter) Backup(destDir string) error { return storage.Backup(destDir) }
+func (backupAdapter) Restore(srcDir string) error { return storage.Restore(srcDir) }
 
 // readMarker returns the previously active backend name from configStorage, or "".
 func readMarker() string {

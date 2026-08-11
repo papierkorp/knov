@@ -30,6 +30,7 @@ type AppConfig struct {
 	ThemesPath                  string
 	StoragePath                 string
 	LogsPath                    string
+	BackupsPath                 string
 	ServerPort                  string
 	GitRemote                   string
 	GitRemoteBranch             string
@@ -61,6 +62,10 @@ type AppConfig struct {
 	KanbanBoards                []KanbanBoard
 	NotifyDuration              int
 	DefaultEditor               string
+	BackupAutoEnabled           bool
+	BackupAutoInterval          string
+	BackupRotationKeepDays      int
+	BackupRotationKeepFull      int
 }
 
 // KanbanBoard maps a folder to a kanban board with a display name and a stable URL slug
@@ -96,6 +101,7 @@ func InitAppConfig() {
 		ThemesPath:              getEnv("KNOV_THEMES_PATH", filepath.Join(baseDir, "themes")),
 		StoragePath:             getEnv("KNOV_STORAGE_PATH", filepath.Join(baseDir, "storage")),
 		LogsPath:                getEnv("KNOV_LOGS_PATH", filepath.Join(baseDir, "logs")),
+		BackupsPath:             getEnv("KNOV_BACKUPS_PATH", filepath.Join(baseDir, "backups")),
 		ServerPort:              getEnv("KNOV_SERVER_PORT", "1324"),
 		GitRemote:               getEnv("KNOV_GIT_REMOTE", ""),
 		GitRemoteBranch:         getEnv("KNOV_GIT_REMOTE_BRANCH", "main"),
@@ -132,6 +138,10 @@ func InitAppConfig() {
 		KanbanBoards:                getKanbanBoardsEnv("KNOV_KANBAN_BOARDS"),
 		NotifyDuration:              getIntEnv("KNOV_NOTIFY_DURATION", 3500),
 		DefaultEditor:               getEnv("KNOV_DEFAULT_EDITOR", ""),
+		BackupAutoEnabled:           getBoolEnv("KNOV_BACKUP_AUTO_ENABLED", false),
+		BackupAutoInterval:          getEnv("KNOV_BACKUP_AUTO_INTERVAL", "24h"),
+		BackupRotationKeepDays:      getIntEnv("KNOV_BACKUP_ROTATION_KEEP_DAYS", 7),
+		BackupRotationKeepFull:      getIntEnv("KNOV_BACKUP_ROTATION_KEEP_FULL", 10),
 	}
 
 	initLogLevel()
@@ -152,6 +162,47 @@ func GetAppConfig() AppConfig {
 // GetNotifyDuration returns the notification toast display duration in milliseconds
 func GetNotifyDuration() int {
 	return appConfig.NotifyDuration
+}
+
+// GetBackupAutoEnabled returns whether automatic background backups are enabled
+func GetBackupAutoEnabled() bool {
+	return appConfig.BackupAutoEnabled
+}
+
+// GetBackupAutoInterval returns how often to create an automatic backup, as a duration string
+// (e.g. "24h"), when GetBackupAutoEnabled is true
+func GetBackupAutoInterval() string {
+	return appConfig.BackupAutoInterval
+}
+
+// GetBackupRotationKeepDays returns how many days of backup sets (full or partial) are always
+// kept, regardless of count. <= 0 disables this rule.
+func GetBackupRotationKeepDays() int {
+	return appConfig.BackupRotationKeepDays
+}
+
+// GetBackupRotationKeepFull returns the minimum number of full backup sets always kept
+// regardless of age, on top of GetBackupRotationKeepDays. <= 0 disables this rule. Locked
+// backup sets are kept regardless of either setting.
+func GetBackupRotationKeepFull() int {
+	return appConfig.BackupRotationKeepFull
+}
+
+// SetBackupAutoEnabled overrides BackupAutoEnabled/BackupAutoInterval in memory only (no .env
+// write) - these are AppConfig fields by design (see docs/temp_todo.md's backup-solution
+// section), not live Settings, so there's no production setter. Exists for backuptest to
+// exercise job.checkAutoBackup's enabled/disabled/due branches without a real restart; callers
+// must restore the original values themselves.
+func SetBackupAutoEnabled(enabled bool, interval string) {
+	appConfig.BackupAutoEnabled = enabled
+	appConfig.BackupAutoInterval = interval
+}
+
+// SetBackupsPath overrides BackupsPath in memory only (no .env write) - lets backuptest point
+// job.DefaultBackupTarget at a scratch directory instead of the real KNOV_BACKUPS_PATH.
+// Callers must restore the original value themselves.
+func SetBackupsPath(path string) {
+	appConfig.BackupsPath = path
 }
 
 // GetKanbanTagColors returns the tag-name → CSS-color map
@@ -364,6 +415,11 @@ func GetThemesPath() string {
 // GetStoragePath returns storage path
 func GetStoragePath() string {
 	return appConfig.StoragePath
+}
+
+// GetBackupsPath returns the path backup sets are written to and restored from
+func GetBackupsPath() string {
+	return appConfig.BackupsPath
 }
 
 // GetGitRemote returns the configured git remote URL (empty = local only)

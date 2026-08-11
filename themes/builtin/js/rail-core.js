@@ -244,7 +244,14 @@ document.addEventListener("alpine:initialized", () => {
   const isSystemPage = !document.getElementById("fp-file-modes");
   if (isSystemPage) {
     document.body.setAttribute("data-has-file", "true");
-    Alpine.store("rail").open("fp-file");
+    // only auto-open the contents panel if there's actually a TOC to show - system pages
+    // rendered via RenderSystemPage (jobs/logs/version/backup) have none, so #fp-toc-nav is
+    // still empty at this point; fileview-based system pages (changelog) already had their TOC
+    // copied in by restoreTocFromData() above, even a "no headings found" placeholder.
+    const tocNav = document.getElementById("fp-toc-nav");
+    if (tocNav && tocNav.children.length > 0) {
+      Alpine.store("rail").open("fp-file");
+    }
   }
 
   const isFilePage =

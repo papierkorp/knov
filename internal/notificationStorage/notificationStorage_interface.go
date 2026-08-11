@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"knov/internal/backup"
 	"knov/internal/logging"
 )
 
@@ -26,9 +27,22 @@ type NotificationStorage interface {
 	DeleteByID(id string) error
 	Clear() error
 	GetBackendType() string
+	Backup(destDir string) error
+	Restore(srcDir string) error
 }
 
 var storage NotificationStorage
+
+func init() {
+	backup.Register("notifications", backupAdapter{})
+}
+
+// backupAdapter defers to the package-level storage var, which isn't set until Init runs -
+// unlike backup.Register, which happens at package init time before that.
+type backupAdapter struct{}
+
+func (backupAdapter) Backup(destDir string) error { return storage.Backup(destDir) }
+func (backupAdapter) Restore(srcDir string) error { return storage.Restore(srcDir) }
 
 // Init initializes notification storage with the specified provider.
 func Init(storagePath string) error {

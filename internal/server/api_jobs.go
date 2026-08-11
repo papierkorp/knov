@@ -65,6 +65,10 @@ func handleAPIGetJobStatus(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("HX-Redirect", "/browse")
 	case rec.Status == jobStorage.StatusDone && rec.Type == job.JobTypeFullRebuild:
 		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(lang, "metadata rebuilt successfully"))
+	case rec.Status == jobStorage.StatusDone && rec.Type == job.JobTypeRestore:
+		// the app restarts itself a moment after this - see restoreJob.Run - so there's nothing
+		// to redirect to; a toast is all a client still connected at that instant will show.
+		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(lang, "backup restored, application restarting..."))
 	case rec.Status == jobStorage.StatusDone:
 		// generic fallback for any future StartAsync job type not special-cased above.
 		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(lang, "done"))

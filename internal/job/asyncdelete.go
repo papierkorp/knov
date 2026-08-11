@@ -1,6 +1,7 @@
 // Package job - async, resumable jobs (folder delete, bulk delete-by-filter, full metadata
-// rebuild) started via StartAsync so the triggering HTTP request returns immediately and the
-// caller polls for completion instead of blocking on a potentially slow operation.
+// rebuild, backup restore) started via StartAsync so the triggering HTTP request returns
+// immediately and the caller polls for completion instead of blocking on a potentially slow
+// operation.
 package job
 
 import (
@@ -21,6 +22,7 @@ const (
 	JobTypeDeleteFolder    = "delete-folder"
 	JobTypeBulkDeleteFiles = "bulk-delete-files"
 	JobTypeFullRebuild     = "metadata-full-rebuild"
+	JobTypeRestore         = "restore"
 )
 
 // resumers maps a resumable job's Name() to a constructor that rebuilds it (and returns its
@@ -48,6 +50,17 @@ var resumers = map[string]func(args string) (Job, *sync.Mutex, error){
 	// after a crash is just re-running the same no-state job again.
 	JobTypeFullRebuild: func(args string) (Job, *sync.Mutex, error) {
 		return &fullRebuildJob{}, &rebuildMu, nil
+	},
+	JobTypeRestore: func(args string) (Job, *sync.Mutex, error) {
+		var a restoreArgs
+		if err := json.Unmarshal([]byte(args), &a); err != nil {
+			return nil, nil, fmt.Errorf("invalid restore args: %w", err)
+		}
+		target, err := resolveExistingSet(a.SetName)
+		if err != nil {
+			return nil, nil, err
+		}
+		return &restoreJob{target: target, setName: a.SetName}, &backupMu, nil
 	},
 }
 

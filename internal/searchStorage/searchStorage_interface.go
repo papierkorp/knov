@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"knov/internal/backup"
 	"knov/internal/logging"
 )
 
@@ -19,6 +20,8 @@ type SearchStorage interface {
 	IndexDeletedFile(path string, content []byte) error
 	SearchDeletedContent(query string, limit int) ([]SearchResult, error)
 	GetBackendType() string
+	Backup(destDir string) error
+	Restore(srcDir string) error
 }
 
 // SearchResult represents a search result
@@ -29,6 +32,17 @@ type SearchResult struct {
 }
 
 var storage SearchStorage
+
+func init() {
+	backup.Register("search", backupAdapter{})
+}
+
+// backupAdapter defers to the package-level storage var, which isn't set until Init runs -
+// unlike backup.Register, which happens at package init time before that.
+type backupAdapter struct{}
+
+func (backupAdapter) Backup(destDir string) error { return storage.Backup(destDir) }
+func (backupAdapter) Restore(srcDir string) error { return storage.Restore(srcDir) }
 
 // Init initializes search storage with the specified provider
 func Init(provider, storagePath string) error {

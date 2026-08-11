@@ -5,6 +5,7 @@
 ## Safety
 
 - DO NOT EVER MAKE ANY CHANGES IN "/media/markus/SamsungT5/knov/data"
+- dont touch or use the prod environment which is using the Port 1325
 
 ## Working style
 
@@ -18,6 +19,7 @@
 ## Architecture
 
 - business logic belongs in the package it's about (files, git, filter, etc.) - server (handlers) and job should stay thin wrappers: validate/resolve input, call one function in the owning package, translate the result into a response or JobRun
+- same for the job, the job package should just include a wrapper
 - i dont want any html generation in the handler - use the render subpackage for any html strings
 - if anything related to paths prop up - use the pathutils package!
 - if working with paths - we have to take care of both linux and windows os paths

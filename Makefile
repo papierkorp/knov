@@ -36,7 +36,7 @@ docs-templatedata:
 	@git add docs/template_data.md
 
 tree:
-	tree -I 'bin|data|data2|data3|storage'
+	tree -I 'bin|data|data2|data3|storage|backups'
 
 changelog:
 	@chmod +x generate-changelog.sh
@@ -83,7 +83,7 @@ tempai:
 	@rm -f tempai/docs.go tempai/swagger.json tempai/swagger.yaml
 	@rm -f tempai/*.gotext* tempai/catalog.go
 	@echo "Creating file listing using tree command..."
-	@make tree > tempai/FILE_LIST.txt 2>/dev/null || tree -I 'bin|data|data2|data3|storage' > tempai/FILE_LIST.txt
+	@make tree > tempai/FILE_LIST.txt 2>/dev/null || tree -I 'bin|data|data2|data3|storage|backups' > tempai/FILE_LIST.txt
 	@echo ""
 	@echo "tempai folder created successfully at ./tempai/"
 	@echo "Total files: $$(ls -1 tempai/ | grep -v FILE_LIST.txt | wc -l)"

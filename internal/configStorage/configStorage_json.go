@@ -8,7 +8,9 @@ import (
 	"strings"
 	"sync"
 
+	"knov/internal/backup"
 	"knov/internal/logging"
+	"knov/internal/utils"
 )
 
 // jsonStorage implements ConfigStorage interface using JSON files
@@ -69,7 +71,7 @@ func (js *jsonStorage) Set(key string, data []byte) error {
 		}
 	}
 
-	if err := os.WriteFile(filePath, data, 0644); err != nil {
+	if err := utils.WriteFileAtomic(filePath, data, 0644); err != nil {
 		logging.LogError(logging.KeyApp, "failed to write config file %s: %v", filePath, err)
 		return err
 	}
@@ -194,4 +196,18 @@ func (js *jsonStorage) getFilePath(key string) string {
 func (js *jsonStorage) pathToKey(relPath string) string {
 	key := strings.TrimSuffix(relPath, ".json")
 	return filepath.ToSlash(key)
+}
+
+// Backup snapshots every config file into destDir.
+func (js *jsonStorage) Backup(destDir string) error {
+	js.mutex.RLock()
+	defer js.mutex.RUnlock()
+	return backup.BackupFile(js.basePath, destDir)
+}
+
+// Restore overwrites the config directory with a previously backed-up snapshot from srcDir.
+func (js *jsonStorage) Restore(srcDir string) error {
+	js.mutex.Lock()
+	defer js.mutex.Unlock()
+	return backup.RestoreFile(srcDir, js.basePath)
 }

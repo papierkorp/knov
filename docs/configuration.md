@@ -149,6 +149,22 @@ Configured under **Settings => PDF Export**.
 - Optional rule lines can be shown above the footer / below the header
 - The header and footer can each be hidden on the first page independently, useful for a cover page
 
+## Backup & Restore
+
+Available at **Admin => Backups** (`/system/backup`).
+
+- Snapshots storages under `KNOV_STORAGE_PATH` (metadata, cache, chat, kanban, notifications, config, search) into one backup set, stored locally under `KNOV_BACKUPS_PATH` (default `./backups`, next to `storage/` - point it elsewhere, e.g. a separate disk, to keep backups off the same volume as what they're backing up) - your docs/media (`KNOV_DATA_PATH`) are already versioned by git, so they're not included
+- Untick any storage before clicking "Create backup" to snapshot only that subset (e.g. just metadata) instead of everything - each row shows that set's actual contents
+- The page is a log, not just a current listing: every backup created and every restore applied gets its own row, newest first, and stays there even after the set behind it is gone (rotated away, or a restore whose source set was later deleted) - such a row just loses its actions and is marked "no longer available", the historical fact of it happening is kept
+- Click "Download" on any available row to get that set's raw `.tar.gz` archive
+- Click "Restore" on any available row to roll back to it
+- Restoring is destructive but safe: your current state is snapshotted first (a full backup, regardless of what the restored set contains), then the app restarts to apply the restored data - a bad restore can always be undone by restoring that automatic pre-restore snapshot
+- Old backups are trimmed automatically after every backup. A set survives if it matches any of three independent rules:
+  - it's within `KNOV_BACKUP_ROTATION_KEEP_DAYS` days (default 7) - any kind, full or partial
+  - it's a full backup and among the `KNOV_BACKUP_ROTATION_KEEP_FULL` most recent full backups (default 10) - a long-term floor so coming back after months away still leaves something restorable, even if daily backups lapsed. Partial backups (e.g. "just metadata") get no long-term floor of their own - once they age out of the days window, they're deleted
+  - it's locked - click "Lock" on any set to keep it forever regardless of the two settings above, until "Unlock" is clicked
+- **Automatic backups** - off by default. Set `KNOV_BACKUP_AUTO_ENABLED=true` and `KNOV_BACKUP_AUTO_INTERVAL` (e.g. `24h`) to create a full backup periodically in the background, on top of manual ones. Requires a restart to take effect, like every other env var
+
 ## Logging
 
 - `KNOV_LOG_LEVEL` - controls verbosity (`debug`, `info`, `warning`, `error`)

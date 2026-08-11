@@ -33,6 +33,7 @@ import (
 	// to import internal/job (e.g. jobstest), so these blank imports are what actually
 	// trigger each suite's init() (see internal/job/externalsuite.go).
 	_ "knov/internal/test/asyncjobtest"
+	_ "knov/internal/test/backuptest"
 	_ "knov/internal/test/browsetest"
 	_ "knov/internal/test/chattest"
 	_ "knov/internal/test/connectionstest"
