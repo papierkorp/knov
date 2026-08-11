@@ -116,11 +116,27 @@ func handleSomeHTMX(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
+Add translatable strings in a `render` package that already threads a per-request `lang` via a local `t` closure:
+
+```go
+t := func(key string, args ...any) string { return translation.SprintfForRequest(lang, key, args...) }
+text := t("Your translatable text")
+```
+
+Add translatable strings on setting definitions (`Label`, `Desc`, `Description` struct fields):
+
+```go
+Label: "Vim Keybindings",
+Desc:  "enable vim normal / insert / visual mode in the code editor",
+```
+
 Generate translations:
 
 ```bash
 make translation
 ```
+
+This runs `tools/i18nextract`, which parses the Go AST and templates for the four patterns above and refreshes the catalog. It requires the `gotext` CLI to be installed.
 
 Translation files in `internal/translation/locales/{lang}/messages.gotext.json`
 

@@ -73,8 +73,6 @@ tempai:
 		new_name="static_$${filename}"; \
 		cp "$$file" "tempai/$$new_name"; \
 	done
-	@echo "Copying static/generate-translations.sh with 'static_' prefix..."
-	@cp static/generate-translations.sh tempai/static_generate-translations.sh 2>/dev/null || true
 	@echo "Renaming .gohtml to .html..."
 	@for f in tempai/*.gohtml; do [ -f "$$f" ] && mv "$$f" "$${f%.gohtml}.html"; done
 	@echo "Cleaning up"
@@ -92,7 +90,6 @@ tempai:
 	@echo "File naming conventions:"
 	@echo "  Theme files:    {theme_name}-{original_filename}"
 	@echo "  Static CSS:     static_{filename}"
-	@echo "  Static script:  static_generate-translations.sh"
 	@echo "  Other files:    {original_filename}"
 	@echo ""
 	@echo "See tempai/FILE_LIST.txt for project structure (from 'make tree')"

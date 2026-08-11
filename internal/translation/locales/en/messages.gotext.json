@@ -2,8 +2,73 @@
   "language": "en",
   "messages": [
     {
-      "id": "action",
-      "message": "action",
+      "id": "{Integer} TESTS FAILED",
+      "message": "{Integer} TESTS FAILED",
+      "translation": ""
+    },
+    {
+      "id": "{Integer} files not shown (hidden in settings)",
+      "message": "{Integer} files not shown (hidden in settings)",
+      "translation": ""
+    },
+    {
+      "id": "{Integer} files not shown due to hide settings",
+      "message": "{Integer} files not shown due to hide settings",
+      "translation": ""
+    },
+    {
+      "id": "{Integer} files updated",
+      "message": "{Integer} files updated",
+      "translation": ""
+    },
+    {
+      "id": "{Integer} files would be updated",
+      "message": "{Integer} files would be updated",
+      "translation": ""
+    },
+    {
+      "id": "{Integer} links repaired",
+      "message": "{Integer} links repaired",
+      "translation": ""
+    },
+    {
+      "id": "{Integer} links repaired, {Integer_1} could not be matched in their file",
+      "message": "{Integer} links repaired, {Integer_1} could not be matched in their file",
+      "translation": ""
+    },
+    {
+      "id": "{Integer}h ago",
+      "message": "{Integer}h ago",
+      "translation": ""
+    },
+    {
+      "id": "{Integer}m ago",
+      "message": "{Integer}m ago",
+      "translation": ""
+    },
+    {
+      "id": "{Arg_1}",
+      "message": "{Arg_1}",
+      "translation": ""
+    },
+    {
+      "id": "/path/to/data",
+      "message": "/path/to/data",
+      "translation": ""
+    },
+    {
+      "id": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
+      "message": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
+      "translation": ""
+    },
+    {
+      "id": "ALL TESTS PASSED",
+      "message": "ALL TESTS PASSED",
+      "translation": ""
+    },
+    {
+      "id": "Aa Bb Gg 0123",
+      "message": "Aa Bb Gg 0123",
       "translation": ""
     },
     {
@@ -12,13 +77,1658 @@
       "translation": ""
     },
     {
-      "id": "actions",
-      "message": "actions",
+      "id": "Actual",
+      "message": "Actual",
       "translation": ""
     },
     {
-      "id": "Actual Files",
-      "message": "Actual Files",
+      "id": "Admin",
+      "message": "Admin",
+      "translation": "Admin"
+    },
+    {
+      "id": "All (merged)",
+      "message": "All (merged)",
+      "translation": ""
+    },
+    {
+      "id": "All Editors",
+      "message": "All Editors",
+      "translation": ""
+    },
+    {
+      "id": "All Files",
+      "message": "All Files",
+      "translation": "All Files"
+    },
+    {
+      "id": "Allowed MIME Types",
+      "message": "Allowed MIME Types",
+      "translation": ""
+    },
+    {
+      "id": "Appearance",
+      "message": "Appearance",
+      "translation": ""
+    },
+    {
+      "id": "Apply",
+      "message": "Apply",
+      "translation": ""
+    },
+    {
+      "id": "Apply bulk metadata change? This cannot be undone.",
+      "message": "Apply bulk metadata change? This cannot be undone.",
+      "translation": ""
+    },
+    {
+      "id": "Are you sure?",
+      "message": "Are you sure?",
+      "translation": "Are you sure?"
+    },
+    {
+      "id": "Auto-Close Brackets",
+      "message": "Auto-Close Brackets",
+      "translation": ""
+    },
+    {
+      "id": "Auto-create Tags",
+      "message": "Auto-create Tags",
+      "translation": ""
+    },
+    {
+      "id": "Backup created: {Arg_1}",
+      "message": "Backup created: {Arg_1}",
+      "translation": ""
+    },
+    {
+      "id": "Backups",
+      "message": "Backups",
+      "translation": ""
+    },
+    {
+      "id": "Barebones history",
+      "message": "Barebones history",
+      "translation": ""
+    },
+    {
+      "id": "Bold",
+      "message": "Bold",
+      "translation": ""
+    },
+    {
+      "id": "Border Style",
+      "message": "Border Style",
+      "translation": ""
+    },
+    {
+      "id": "Bracket Matching",
+      "message": "Bracket Matching",
+      "translation": ""
+    },
+    {
+      "id": "Browse",
+      "message": "Browse",
+      "translation": "Browse"
+    },
+    {
+      "id": "Browse Files",
+      "message": "Browse Files",
+      "translation": ""
+    },
+    {
+      "id": "Browse by Folder Structure",
+      "message": "Browse by Folder Structure",
+      "translation": ""
+    },
+    {
+      "id": "Browse by Metadata",
+      "message": "Browse by Metadata",
+      "translation": ""
+    },
+    {
+      "id": "Build Time",
+      "message": "Build Time",
+      "translation": ""
+    },
+    {
+      "id": "Build time",
+      "message": "Build time",
+      "translation": ""
+    },
+    {
+      "id": "Bulk Metadata Update",
+      "message": "Bulk Metadata Update",
+      "translation": ""
+    },
+    {
+      "id": "By Collections",
+      "message": "By Collections",
+      "translation": ""
+    },
+    {
+      "id": "By Folders",
+      "message": "By Folders",
+      "translation": ""
+    },
+    {
+      "id": "By Tags",
+      "message": "By Tags",
+      "translation": ""
+    },
+    {
+      "id": "By Type",
+      "message": "By Type",
+      "translation": ""
+    },
+    {
+      "id": "Cache Storage",
+      "message": "Cache Storage",
+      "translation": ""
+    },
+    {
+      "id": "Caller",
+      "message": "Caller",
+      "translation": ""
+    },
+    {
+      "id": "Cancel",
+      "message": "Cancel",
+      "translation": "Cancel"
+    },
+    {
+      "id": "Changelog",
+      "message": "Changelog",
+      "translation": ""
+    },
+    {
+      "id": "Chat",
+      "message": "Chat",
+      "translation": ""
+    },
+    {
+      "id": "Clean Test Data",
+      "message": "Clean Test Data",
+      "translation": ""
+    },
+    {
+      "id": "Cleanup Orphaned Files",
+      "message": "Cleanup Orphaned Files",
+      "translation": ""
+    },
+    {
+      "id": "Click to Enlarge",
+      "message": "Click to Enlarge",
+      "translation": ""
+    },
+    {
+      "id": "Code Folding",
+      "message": "Code Folding",
+      "translation": ""
+    },
+    {
+      "id": "CodeMirror",
+      "message": "CodeMirror",
+      "translation": ""
+    },
+    {
+      "id": "Collections",
+      "message": "Collections",
+      "translation": ""
+    },
+    {
+      "id": "Color",
+      "message": "Color",
+      "translation": ""
+    },
+    {
+      "id": "Contents",
+      "message": "Contents",
+      "translation": ""
+    },
+    {
+      "id": "Control which file types are visible in file listings and browsing",
+      "message": "Control which file types are visible in file listings and browsing",
+      "translation": ""
+    },
+    {
+      "id": "Create New Dashboard",
+      "message": "Create New Dashboard",
+      "translation": "Create New Dashboard"
+    },
+    {
+      "id": "Create New File",
+      "message": "Create New File",
+      "translation": ""
+    },
+    {
+      "id": "Create backup",
+      "message": "Create backup",
+      "translation": ""
+    },
+    {
+      "id": "Criteria",
+      "message": "Criteria",
+      "translation": ""
+    },
+    {
+      "id": "Cronjob Interval",
+      "message": "Cronjob Interval",
+      "translation": ""
+    },
+    {
+      "id": "Custom CSS",
+      "message": "Custom CSS",
+      "translation": ""
+    },
+    {
+      "id": "Custom Favicon",
+      "message": "Custom Favicon",
+      "translation": ""
+    },
+    {
+      "id": "Dark Mode",
+      "message": "Dark Mode",
+      "translation": ""
+    },
+    {
+      "id": "Dashboard",
+      "message": "Dashboard",
+      "translation": ""
+    },
+    {
+      "id": "Data Path",
+      "message": "Data Path",
+      "translation": ""
+    },
+    {
+      "id": "Date Format",
+      "message": "Date Format",
+      "translation": ""
+    },
+    {
+      "id": "Default Markdown Editor",
+      "message": "Default Markdown Editor",
+      "translation": ""
+    },
+    {
+      "id": "Default Preview Size (px)",
+      "message": "Default Preview Size (px)",
+      "translation": ""
+    },
+    {
+      "id": "Delete",
+      "message": "Delete",
+      "translation": "Delete"
+    },
+    {
+      "id": "Delete all orphaned media files? This cannot be undone.",
+      "message": "Delete all orphaned media files? This cannot be undone.",
+      "translation": ""
+    },
+    {
+      "id": "Design your custom dashboard with widgets",
+      "message": "Design your custom dashboard with widgets",
+      "translation": "Design your custom dashboard with widgets"
+    },
+    {
+      "id": "Display Mode",
+      "message": "Display Mode",
+      "translation": ""
+    },
+    {
+      "id": "Download",
+      "message": "Download",
+      "translation": ""
+    },
+    {
+      "id": "Duration",
+      "message": "Duration",
+      "translation": ""
+    },
+    {
+      "id": "Each backup set snapshots StoragePath (metadata, cache, chat, kanban, notifications, config, search) - not the docs/media in DataPath, which git already covers. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_FULL (see .env.example). Lock a set to keep it regardless of rotation.",
+      "message": "Each backup set snapshots StoragePath (metadata, cache, chat, kanban, notifications, config, search) - not the docs/media in DataPath, which git already covers. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_FULL (see .env.example). Lock a set to keep it regardless of rotation.",
+      "translation": ""
+    },
+    {
+      "id": "Edit",
+      "message": "Edit",
+      "translation": "Edit"
+    },
+    {
+      "id": "Edit Dashboard",
+      "message": "Edit Dashboard",
+      "translation": "Edit Dashboard"
+    },
+    {
+      "id": "Edit Filter",
+      "message": "Edit Filter",
+      "translation": ""
+    },
+    {
+      "id": "Edit Section",
+      "message": "Edit Section",
+      "translation": ""
+    },
+    {
+      "id": "Editor Settings",
+      "message": "Editor Settings",
+      "translation": ""
+    },
+    {
+      "id": "Editor Types",
+      "message": "Editor Types",
+      "translation": ""
+    },
+    {
+      "id": "Editor-Type",
+      "message": "Editor-Type",
+      "translation": ""
+    },
+    {
+      "id": "Enable Media Previews",
+      "message": "Enable Media Previews",
+      "translation": ""
+    },
+    {
+      "id": "Enter a search term",
+      "message": "Enter a search term",
+      "translation": "Enter a search term"
+    },
+    {
+      "id": "Environment Info",
+      "message": "Environment Info",
+      "translation": ""
+    },
+    {
+      "id": "Error",
+      "message": "Error",
+      "translation": ""
+    },
+    {
+      "id": "Event",
+      "message": "Event",
+      "translation": ""
+    },
+    {
+      "id": "Expected",
+      "message": "Expected",
+      "translation": ""
+    },
+    {
+      "id": "Export / Import",
+      "message": "Export / Import",
+      "translation": ""
+    },
+    {
+      "id": "Failed: {Integer}",
+      "message": "Failed: {Integer}",
+      "translation": ""
+    },
+    {
+      "id": "Field",
+      "message": "Field",
+      "translation": ""
+    },
+    {
+      "id": "File Extensions",
+      "message": "File Extensions",
+      "translation": ""
+    },
+    {
+      "id": "File Type Visibility",
+      "message": "File Type Visibility",
+      "translation": ""
+    },
+    {
+      "id": "File path not provided",
+      "message": "File path not provided",
+      "translation": ""
+    },
+    {
+      "id": "Files",
+      "message": "Files",
+      "translation": ""
+    },
+    {
+      "id": "Files Overview",
+      "message": "Files Overview",
+      "translation": ""
+    },
+    {
+      "id": "Files with",
+      "message": "Files with",
+      "translation": "Files with"
+    },
+    {
+      "id": "Filter",
+      "message": "Filter",
+      "translation": ""
+    },
+    {
+      "id": "Filter Configuration",
+      "message": "Filter Configuration",
+      "translation": ""
+    },
+    {
+      "id": "Filter Test Metadata",
+      "message": "Filter Test Metadata",
+      "translation": ""
+    },
+    {
+      "id": "Filter logs…",
+      "message": "Filter logs…",
+      "translation": ""
+    },
+    {
+      "id": "Filters",
+      "message": "Filters",
+      "translation": ""
+    },
+    {
+      "id": "Finished",
+      "message": "Finished",
+      "translation": ""
+    },
+    {
+      "id": "Folders",
+      "message": "Folders",
+      "translation": ""
+    },
+    {
+      "id": "Font",
+      "message": "Font",
+      "translation": ""
+    },
+    {
+      "id": "Font (Body)",
+      "message": "Font (Body)",
+      "translation": ""
+    },
+    {
+      "id": "Font (Code Blocks)",
+      "message": "Font (Code Blocks)",
+      "translation": ""
+    },
+    {
+      "id": "Font (Code)",
+      "message": "Font (Code)",
+      "translation": ""
+    },
+    {
+      "id": "Font (H1 Headings)",
+      "message": "Font (H1 Headings)",
+      "translation": ""
+    },
+    {
+      "id": "Font (Headings)",
+      "message": "Font (Headings)",
+      "translation": ""
+    },
+    {
+      "id": "Font (Overall)",
+      "message": "Font (Overall)",
+      "translation": ""
+    },
+    {
+      "id": "Footer Center",
+      "message": "Footer Center",
+      "translation": ""
+    },
+    {
+      "id": "Footer Left",
+      "message": "Footer Left",
+      "translation": ""
+    },
+    {
+      "id": "Footer Right",
+      "message": "Footer Right",
+      "translation": ""
+    },
+    {
+      "id": "General Settings",
+      "message": "General Settings",
+      "translation": ""
+    },
+    {
+      "id": "Git Auto Push",
+      "message": "Git Auto Push",
+      "translation": ""
+    },
+    {
+      "id": "Git Branch",
+      "message": "Git Branch",
+      "translation": ""
+    },
+    {
+      "id": "Git Remote",
+      "message": "Git Remote",
+      "translation": ""
+    },
+    {
+      "id": "Git Remote Sync",
+      "message": "Git Remote Sync",
+      "translation": ""
+    },
+    {
+      "id": "Git Repository",
+      "message": "Git Repository",
+      "translation": ""
+    },
+    {
+      "id": "Go version",
+      "message": "Go version",
+      "translation": ""
+    },
+    {
+      "id": "Header Center",
+      "message": "Header Center",
+      "translation": ""
+    },
+    {
+      "id": "Header Left",
+      "message": "Header Left",
+      "translation": ""
+    },
+    {
+      "id": "Header Right",
+      "message": "Header Right",
+      "translation": ""
+    },
+    {
+      "id": "Help",
+      "message": "Help",
+      "translation": ""
+    },
+    {
+      "id": "Hide Archives",
+      "message": "Hide Archives",
+      "translation": ""
+    },
+    {
+      "id": "Hide Executables",
+      "message": "Hide Executables",
+      "translation": ""
+    },
+    {
+      "id": "Hide Filter Files",
+      "message": "Hide Filter Files",
+      "translation": ""
+    },
+    {
+      "id": "Hide Footer On First Page",
+      "message": "Hide Footer On First Page",
+      "translation": ""
+    },
+    {
+      "id": "Hide Header On First Page",
+      "message": "Hide Header On First Page",
+      "translation": ""
+    },
+    {
+      "id": "Hide Image Files",
+      "message": "Hide Image Files",
+      "translation": ""
+    },
+    {
+      "id": "Hide Index Files",
+      "message": "Hide Index Files",
+      "translation": ""
+    },
+    {
+      "id": "Hide List Files",
+      "message": "Hide List Files",
+      "translation": ""
+    },
+    {
+      "id": "Hide Markdown Files",
+      "message": "Hide Markdown Files",
+      "translation": ""
+    },
+    {
+      "id": "Hide Office Documents",
+      "message": "Hide Office Documents",
+      "translation": ""
+    },
+    {
+      "id": "Hide PDF Files",
+      "message": "Hide PDF Files",
+      "translation": ""
+    },
+    {
+      "id": "Hide Paths",
+      "message": "Hide Paths",
+      "translation": ""
+    },
+    {
+      "id": "Hide Scripts",
+      "message": "Hide Scripts",
+      "translation": ""
+    },
+    {
+      "id": "Hide Todo Files",
+      "message": "Hide Todo Files",
+      "translation": ""
+    },
+    {
+      "id": "Hide Video Files",
+      "message": "Hide Video Files",
+      "translation": ""
+    },
+    {
+      "id": "Highlight Selection Matches",
+      "message": "Highlight Selection Matches",
+      "translation": ""
+    },
+    {
+      "id": "History",
+      "message": "History",
+      "translation": "History"
+    },
+    {
+      "id": "Home",
+      "message": "Home",
+      "translation": "Home"
+    },
+    {
+      "id": "Home Dashboard",
+      "message": "Home Dashboard",
+      "translation": ""
+    },
+    {
+      "id": "IANA timezone name for displaying timestamps (e.g. Local, Europe/Berlin, America/New_York)",
+      "message": "IANA timezone name for displaying timestamps (e.g. Local, Europe/Berlin, America/New_York)",
+      "translation": ""
+    },
+    {
+      "id": "Include Sub-Headers When Editing Sections",
+      "message": "Include Sub-Headers When Editing Sections",
+      "translation": ""
+    },
+    {
+      "id": "Invalidate Cache",
+      "message": "Invalidate Cache",
+      "translation": ""
+    },
+    {
+      "id": "Invalidate the cache? It will be rebuilt automatically.",
+      "message": "Invalidate the cache? It will be rebuilt automatically.",
+      "translation": ""
+    },
+    {
+      "id": "Italic",
+      "message": "Italic",
+      "translation": ""
+    },
+    {
+      "id": "Job",
+      "message": "Job",
+      "translation": ""
+    },
+    {
+      "id": "Jobs",
+      "message": "Jobs",
+      "translation": ""
+    },
+    {
+      "id": "Kanban",
+      "message": "Kanban",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Ancestor Allowed Status",
+      "message": "Kanban Ancestor Allowed Status",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Archive Status",
+      "message": "Kanban Archive Status",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Boards",
+      "message": "Kanban Boards",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Card Styles",
+      "message": "Kanban Card Styles",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Columns",
+      "message": "Kanban Columns",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Events Enabled",
+      "message": "Kanban Events Enabled",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Events Storage",
+      "message": "Kanban Events Storage",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Prefix",
+      "message": "Kanban Prefix",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Statuses",
+      "message": "Kanban Statuses",
+      "translation": ""
+    },
+    {
+      "id": "Kanban Tag Colors",
+      "message": "Kanban Tag Colors",
+      "translation": ""
+    },
+    {
+      "id": "Language",
+      "message": "Language",
+      "translation": ""
+    },
+    {
+      "id": "Last commit",
+      "message": "Last commit",
+      "translation": ""
+    },
+    {
+      "id": "Latest Changes",
+      "message": "Latest Changes",
+      "translation": ""
+    },
+    {
+      "id": "Level",
+      "message": "Level",
+      "translation": ""
+    },
+    {
+      "id": "Line Numbers",
+      "message": "Line Numbers",
+      "translation": ""
+    },
+    {
+      "id": "Live",
+      "message": "Live",
+      "translation": ""
+    },
+    {
+      "id": "Load earlier lines",
+      "message": "Load earlier lines",
+      "translation": ""
+    },
+    {
+      "id": "Loading files...",
+      "message": "Loading files...",
+      "translation": "Loading files..."
+    },
+    {
+      "id": "Loading results...",
+      "message": "Loading results...",
+      "translation": ""
+    },
+    {
+      "id": "Loading theme settings...",
+      "message": "Loading theme settings...",
+      "translation": ""
+    },
+    {
+      "id": "Loading...",
+      "message": "Loading...",
+      "translation": ""
+    },
+    {
+      "id": "Lock",
+      "message": "Lock",
+      "translation": ""
+    },
+    {
+      "id": "Logic",
+      "message": "Logic",
+      "translation": ""
+    },
+    {
+      "id": "Logs",
+      "message": "Logs",
+      "translation": ""
+    },
+    {
+      "id": "Logs Path",
+      "message": "Logs Path",
+      "translation": ""
+    },
+    {
+      "id": "Margin (mm)",
+      "message": "Margin (mm)",
+      "translation": ""
+    },
+    {
+      "id": "Max Upload Size (MB)",
+      "message": "Max Upload Size (MB)",
+      "translation": ""
+    },
+    {
+      "id": "Media",
+      "message": "Media",
+      "translation": ""
+    },
+    {
+      "id": "Media Types",
+      "message": "Media Types",
+      "translation": ""
+    },
+    {
+      "id": "Media Upload Settings",
+      "message": "Media Upload Settings",
+      "translation": ""
+    },
+    {
+      "id": "Message",
+      "message": "Message",
+      "translation": ""
+    },
+    {
+      "id": "Metadata",
+      "message": "Metadata",
+      "translation": ""
+    },
+    {
+      "id": "Metadata Rebuild Interval",
+      "message": "Metadata Rebuild Interval",
+      "translation": ""
+    },
+    {
+      "id": "Metadata Storage",
+      "message": "Metadata Storage",
+      "translation": ""
+    },
+    {
+      "id": "Move",
+      "message": "Move",
+      "translation": ""
+    },
+    {
+      "id": "No backups yet",
+      "message": "No backups yet",
+      "translation": ""
+    },
+    {
+      "id": "No dashboard found",
+      "message": "No dashboard found",
+      "translation": ""
+    },
+    {
+      "id": "No jobs recorded yet",
+      "message": "No jobs recorded yet",
+      "translation": ""
+    },
+    {
+      "id": "No widgets configured",
+      "message": "No widgets configured",
+      "translation": "No widgets configured"
+    },
+    {
+      "id": "Notifications",
+      "message": "Notifications",
+      "translation": ""
+    },
+    {
+      "id": "Notify Duration",
+      "message": "Notify Duration",
+      "translation": ""
+    },
+    {
+      "id": "OK",
+      "message": "OK",
+      "translation": ""
+    },
+    {
+      "id": "OS / Arch",
+      "message": "OS / Arch",
+      "translation": ""
+    },
+    {
+      "id": "Operator",
+      "message": "Operator",
+      "translation": ""
+    },
+    {
+      "id": "Orientation",
+      "message": "Orientation",
+      "translation": ""
+    },
+    {
+      "id": "Overview",
+      "message": "Overview",
+      "translation": ""
+    },
+    {
+      "id": "PDF Export Settings",
+      "message": "PDF Export Settings",
+      "translation": ""
+    },
+    {
+      "id": "PDF Notes",
+      "message": "PDF Notes",
+      "translation": ""
+    },
+    {
+      "id": "Page Break Before Headings",
+      "message": "Page Break Before Headings",
+      "translation": ""
+    },
+    {
+      "id": "Page Format",
+      "message": "Page Format",
+      "translation": ""
+    },
+    {
+      "id": "Passed: {Integer}",
+      "message": "Passed: {Integer}",
+      "translation": ""
+    },
+    {
+      "id": "Pause",
+      "message": "Pause",
+      "translation": ""
+    },
+    {
+      "id": "Playground",
+      "message": "Playground",
+      "translation": "Playground"
+    },
+    {
+      "id": "Preview",
+      "message": "Preview",
+      "translation": ""
+    },
+    {
+      "id": "Preview Settings",
+      "message": "Preview Settings",
+      "translation": ""
+    },
+    {
+      "id": "Pull",
+      "message": "Pull",
+      "translation": ""
+    },
+    {
+      "id": "Push",
+      "message": "Push",
+      "translation": ""
+    },
+    {
+      "id": "Rebuild Metadata",
+      "message": "Rebuild Metadata",
+      "translation": "Rebuild Metadata"
+    },
+    {
+      "id": "Rebuild all metadata? This may take a while.",
+      "message": "Rebuild all metadata? This may take a while.",
+      "translation": ""
+    },
+    {
+      "id": "Refresh",
+      "message": "Refresh",
+      "translation": ""
+    },
+    {
+      "id": "Relative Line Numbers",
+      "message": "Relative Line Numbers",
+      "translation": ""
+    },
+    {
+      "id": "Release notes / Changelog",
+      "message": "Release notes / Changelog",
+      "translation": ""
+    },
+    {
+      "id": "Remote Repository URL",
+      "message": "Remote Repository URL",
+      "translation": ""
+    },
+    {
+      "id": "Rename",
+      "message": "Rename",
+      "translation": "Rename"
+    },
+    {
+      "id": "Repair Broken Links",
+      "message": "Repair Broken Links",
+      "translation": ""
+    },
+    {
+      "id": "Repair Selected",
+      "message": "Repair Selected",
+      "translation": ""
+    },
+    {
+      "id": "Restart System",
+      "message": "Restart System",
+      "translation": ""
+    },
+    {
+      "id": "Restart the system? This will disconnect all users.",
+      "message": "Restart the system? This will disconnect all users.",
+      "translation": ""
+    },
+    {
+      "id": "Restore",
+      "message": "Restore",
+      "translation": ""
+    },
+    {
+      "id": "Restore {Arg_1}? Current state is snapshotted first, then the app restarts to apply it.",
+      "message": "Restore {Arg_1}? Current state is snapshotted first, then the app restarts to apply it.",
+      "translation": ""
+    },
+    {
+      "id": "Restored: {Arg_1}",
+      "message": "Restored: {Arg_1}",
+      "translation": ""
+    },
+    {
+      "id": "Resume",
+      "message": "Resume",
+      "translation": ""
+    },
+    {
+      "id": "Rows Per Page",
+      "message": "Rows Per Page",
+      "translation": ""
+    },
+    {
+      "id": "Run All Tests",
+      "message": "Run All Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Async Job Tests",
+      "message": "Run Async Job Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Backup Tests",
+      "message": "Run Backup Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Browse Tests",
+      "message": "Run Browse Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Chat Tests",
+      "message": "Run Chat Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Connections Tests",
+      "message": "Run Connections Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Cronjob",
+      "message": "Run Cronjob",
+      "translation": ""
+    },
+    {
+      "id": "Run Dashboard Tests",
+      "message": "Run Dashboard Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Editors Tests",
+      "message": "Run Editors Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Export Tests",
+      "message": "Run Export Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Filter Tests",
+      "message": "Run Filter Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Git History Tests",
+      "message": "Run Git History Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Jobs Tests",
+      "message": "Run Jobs Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Kanban Tests",
+      "message": "Run Kanban Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Logs Tests",
+      "message": "Run Logs Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Media Tests",
+      "message": "Run Media Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Metadata Tests",
+      "message": "Run Metadata Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Notification Tests",
+      "message": "Run Notification Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Parser Tests",
+      "message": "Run Parser Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Search Tests",
+      "message": "Run Search Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run Settings Tests",
+      "message": "Run Settings Tests",
+      "translation": ""
+    },
+    {
+      "id": "Run all test suites? This will create test metadata objects.",
+      "message": "Run all test suites? This will create test metadata objects.",
+      "translation": ""
+    },
+    {
+      "id": "Run async job tests? This will start/interrupt-recover real background jobs and consume pending notifications.",
+      "message": "Run async job tests? This will start/interrupt-recover real background jobs and consume pending notifications.",
+      "translation": ""
+    },
+    {
+      "id": "Run backup tests? This will create real backups of live storages into scratch targets, and briefly restore them in place.",
+      "message": "Run backup tests? This will create real backups of live storages into scratch targets, and briefly restore them in place.",
+      "translation": ""
+    },
+    {
+      "id": "Run browse tests? This will create test files and folders.",
+      "message": "Run browse tests? This will create test files and folders.",
+      "translation": ""
+    },
+    {
+      "id": "Run chat tests? This will create and delete chat messages and test files.",
+      "message": "Run chat tests? This will create and delete chat messages and test files.",
+      "translation": ""
+    },
+    {
+      "id": "Run connections tests? This will create test files with parent/child/link relationships.",
+      "message": "Run connections tests? This will create test files with parent/child/link relationships.",
+      "translation": ""
+    },
+    {
+      "id": "Run dashboard tests? This will create and delete test dashboards.",
+      "message": "Run dashboard tests? This will create and delete test dashboards.",
+      "translation": ""
+    },
+    {
+      "id": "Run editors tests? This will create test files and metadata.",
+      "message": "Run editors tests? This will create test files and metadata.",
+      "translation": ""
+    },
+    {
+      "id": "Run export tests? This will export test files as zip and round-trip a settings export.",
+      "message": "Run export tests? This will export test files as zip and round-trip a settings export.",
+      "translation": ""
+    },
+    {
+      "id": "Run filter tests? This will create test metadata objects.",
+      "message": "Run filter tests? This will create test metadata objects.",
+      "translation": ""
+    },
+    {
+      "id": "Run git history tests? This will create test files, git commits, and temporarily point the git remote at a throwaway local repo.",
+      "message": "Run git history tests? This will create test files, git commits, and temporarily point the git remote at a throwaway local repo.",
+      "translation": ""
+    },
+    {
+      "id": "Run jobs tests? This will trigger a full metadata rebuild, search reindex, cache invalidate and media cleanup.",
+      "message": "Run jobs tests? This will trigger a full metadata rebuild, search reindex, cache invalidate and media cleanup.",
+      "translation": ""
+    },
+    {
+      "id": "Run kanban tests? This will create test files and move kanban cards.",
+      "message": "Run kanban tests? This will create test files and move kanban cards.",
+      "translation": ""
+    },
+    {
+      "id": "Run logs tests? This will write probe entries to the in-app-tests log.",
+      "message": "Run logs tests? This will write probe entries to the in-app-tests log.",
+      "translation": ""
+    },
+    {
+      "id": "Run media tests? This will upload, rename and delete test media files.",
+      "message": "Run media tests? This will upload, rename and delete test media files.",
+      "translation": ""
+    },
+    {
+      "id": "Run metadata tests? This will create and delete test metadata and references.",
+      "message": "Run metadata tests? This will create and delete test metadata and references.",
+      "translation": ""
+    },
+    {
+      "id": "Run notification tests? This will add, consume and clear real notifications.",
+      "message": "Run notification tests? This will add, consume and clear real notifications.",
+      "translation": ""
+    },
+    {
+      "id": "Run parser tests?",
+      "message": "Run parser tests?",
+      "translation": ""
+    },
+    {
+      "id": "Run search tests? This will create test files and git commits.",
+      "message": "Run search tests? This will create test files and git commits.",
+      "translation": ""
+    },
+    {
+      "id": "Run settings tests? This will temporarily change real settings, theme and favicon, then restore them.",
+      "message": "Run settings tests? This will temporarily change real settings, theme and favicon, then restore them.",
+      "translation": ""
+    },
+    {
+      "id": "Scan for Broken Links",
+      "message": "Scan for Broken Links",
+      "translation": ""
+    },
+    {
+      "id": "Search",
+      "message": "Search",
+      "translation": ""
+    },
+    {
+      "id": "Search Engine",
+      "message": "Search Engine",
+      "translation": ""
+    },
+    {
+      "id": "Search Index Interval",
+      "message": "Search Index Interval",
+      "translation": ""
+    },
+    {
+      "id": "Search Results",
+      "message": "Search Results",
+      "translation": "Search Results"
+    },
+    {
+      "id": "Search Storage",
+      "message": "Search Storage",
+      "translation": ""
+    },
+    {
+      "id": "Search files...",
+      "message": "Search files...",
+      "translation": "Search files..."
+    },
+    {
+      "id": "Section Editing \u0026 Display",
+      "message": "Section Editing \u0026 Display",
+      "translation": ""
+    },
+    {
+      "id": "Server Port",
+      "message": "Server Port",
+      "translation": ""
+    },
+    {
+      "id": "Set Data Path",
+      "message": "Set Data Path",
+      "translation": ""
+    },
+    {
+      "id": "Set Remote Repository",
+      "message": "Set Remote Repository",
+      "translation": ""
+    },
+    {
+      "id": "Settings",
+      "message": "Settings",
+      "translation": "Settings"
+    },
+    {
+      "id": "Setup Test Data",
+      "message": "Setup Test Data",
+      "translation": ""
+    },
+    {
+      "id": "Setup test data? This will create example files in the data/test folder.",
+      "message": "Setup test data? This will create example files in the data/test folder.",
+      "translation": ""
+    },
+    {
+      "id": "Show Captions",
+      "message": "Show Captions",
+      "translation": ""
+    },
+    {
+      "id": "Show Column Filters",
+      "message": "Show Column Filters",
+      "translation": ""
+    },
+    {
+      "id": "Show File Export Button",
+      "message": "Show File Export Button",
+      "translation": ""
+    },
+    {
+      "id": "Show Hidden Files",
+      "message": "Show Hidden Files",
+      "translation": ""
+    },
+    {
+      "id": "Show Pagination Buttons",
+      "message": "Show Pagination Buttons",
+      "translation": ""
+    },
+    {
+      "id": "Show Row Count Info",
+      "message": "Show Row Count Info",
+      "translation": ""
+    },
+    {
+      "id": "Show Rule Above Footer",
+      "message": "Show Rule Above Footer",
+      "translation": ""
+    },
+    {
+      "id": "Show Rule Below Header",
+      "message": "Show Rule Below Header",
+      "translation": ""
+    },
+    {
+      "id": "Show Search Input",
+      "message": "Show Search Input",
+      "translation": ""
+    },
+    {
+      "id": "Show Section Export Buttons",
+      "message": "Show Section Export Buttons",
+      "translation": ""
+    },
+    {
+      "id": "Show Toolbar",
+      "message": "Show Toolbar",
+      "translation": ""
+    },
+    {
+      "id": "Size",
+      "message": "Size",
+      "translation": ""
+    },
+    {
+      "id": "Source",
+      "message": "Source",
+      "translation": ""
+    },
+    {
+      "id": "Spell Checking",
+      "message": "Spell Checking",
+      "translation": ""
+    },
+    {
+      "id": "Started",
+      "message": "Started",
+      "translation": ""
+    },
+    {
+      "id": "Status",
+      "message": "Status",
+      "translation": ""
+    },
+    {
+      "id": "Storage Path",
+      "message": "Storage Path",
+      "translation": ""
+    },
+    {
+      "id": "Storage Statistics",
+      "message": "Storage Statistics",
+      "translation": ""
+    },
+    {
+      "id": "Swagger",
+      "message": "Swagger",
+      "translation": ""
+    },
+    {
+      "id": "Syntax Highlighting",
+      "message": "Syntax Highlighting",
+      "translation": ""
+    },
+    {
+      "id": "System Actions",
+      "message": "System Actions",
+      "translation": ""
+    },
+    {
+      "id": "Table Settings",
+      "message": "Table Settings",
+      "translation": ""
+    },
+    {
+      "id": "Tags",
+      "message": "Tags",
+      "translation": ""
+    },
+    {
+      "id": "Test Auth",
+      "message": "Test Auth",
+      "translation": ""
+    },
+    {
+      "id": "Test Data",
+      "message": "Test Data",
+      "translation": ""
+    },
+    {
+      "id": "Test Results Summary",
+      "message": "Test Results Summary",
+      "translation": ""
+    },
+    {
+      "id": "Text",
+      "message": "Text",
+      "translation": ""
+    },
+    {
+      "id": "Theme",
+      "message": "Theme",
+      "translation": ""
+    },
+    {
+      "id": "Theme Settings",
+      "message": "Theme Settings",
+      "translation": "Theme Settings"
+    },
+    {
+      "id": "Theme, typography and favicon",
+      "message": "Theme, typography and favicon",
+      "translation": ""
+    },
+    {
+      "id": "Themes Path",
+      "message": "Themes Path",
+      "translation": ""
+    },
+    {
+      "id": "This will remove all files in the data/test Folder.",
+      "message": "This will remove all files in the data/test Folder.",
+      "translation": ""
+    },
+    {
+      "id": "Time",
+      "message": "Time",
+      "translation": ""
+    },
+    {
+      "id": "Timezone",
+      "message": "Timezone",
+      "translation": ""
+    },
+    {
+      "id": "Total Files",
+      "message": "Total Files",
+      "translation": ""
+    },
+    {
+      "id": "Total: {Integer}",
+      "message": "Total: {Integer}",
+      "translation": ""
+    },
+    {
+      "id": "Trigger",
+      "message": "Trigger",
+      "translation": ""
+    },
+    {
+      "id": "Typography",
+      "message": "Typography",
+      "translation": ""
+    },
+    {
+      "id": "Unknown metadata type",
+      "message": "Unknown metadata type",
+      "translation": ""
+    },
+    {
+      "id": "Unlock",
+      "message": "Unlock",
+      "translation": ""
+    },
+    {
+      "id": "Update",
+      "message": "Update",
+      "translation": ""
+    },
+    {
+      "id": "Update your dashboard configuration",
+      "message": "Update your dashboard configuration",
+      "translation": "Update your dashboard configuration"
+    },
+    {
+      "id": "Use .index Extension",
+      "message": "Use .index Extension",
+      "translation": ""
+    },
+    {
+      "id": "Use .list Extension",
+      "message": "Use .list Extension",
+      "translation": ""
+    },
+    {
+      "id": "Use .todo Extension",
+      "message": "Use .todo Extension",
+      "translation": ""
+    },
+    {
+      "id": "Use Icons for Task Checkboxes",
+      "message": "Use Icons for Task Checkboxes",
+      "translation": ""
+    },
+    {
+      "id": "Use dedicated file extensions instead of .md for these editor types",
+      "message": "Use dedicated file extensions instead of .md for these editor types",
+      "translation": ""
+    },
+    {
+      "id": "Value",
+      "message": "Value",
+      "translation": ""
+    },
+    {
+      "id": "Version",
+      "message": "Version",
+      "translation": ""
+    },
+    {
+      "id": "View Filter Test Metadata",
+      "message": "View Filter Test Metadata",
+      "translation": ""
+    },
+    {
+      "id": "View all collections",
+      "message": "View all collections",
+      "translation": ""
+    },
+    {
+      "id": "View all editor types",
+      "message": "View all editor types",
+      "translation": ""
+    },
+    {
+      "id": "View all filter files",
+      "message": "View all filter files",
+      "translation": ""
+    },
+    {
+      "id": "View all folders",
+      "message": "View all folders",
+      "translation": ""
+    },
+    {
+      "id": "View all tags",
+      "message": "View all tags",
+      "translation": ""
+    },
+    {
+      "id": "View all types",
+      "message": "View all types",
+      "translation": ""
+    },
+    {
+      "id": "Vim Keybindings",
+      "message": "Vim Keybindings",
+      "translation": ""
+    },
+    {
+      "id": "WYSIWYG Marker Hiding",
+      "message": "WYSIWYG Marker Hiding",
+      "translation": ""
+    },
+    {
+      "id": "Whole-Word Matches Only",
+      "message": "Whole-Word Matches Only",
+      "translation": ""
+    },
+    {
+      "id": "Wiki Link Autocomplete: Jump Cursor Past ]]",
+      "message": "Wiki Link Autocomplete: Jump Cursor Past ]]",
+      "translation": ""
+    },
+    {
+      "id": "Wrap Long Lines in Code Blocks",
+      "message": "Wrap Long Lines in Code Blocks",
+      "translation": ""
+    },
+    {
+      "id": "action",
+      "message": "action",
+      "translation": ""
+    },
+    {
+      "id": "actions",
+      "message": "actions",
       "translation": ""
     },
     {
@@ -77,14 +1787,14 @@
       "translation": ""
     },
     {
-      "id": "admin",
-      "message": "admin",
+      "id": "additional CSS applied on top of the active theme, across all themes",
+      "message": "additional CSS applied on top of the active theme, across all themes",
       "translation": ""
     },
     {
-      "id": "Admin",
-      "message": "Admin",
-      "translation": "Admin"
+      "id": "admin",
+      "message": "admin",
+      "translation": ""
     },
     {
       "id": "advanced filter",
@@ -107,9 +1817,14 @@
       "translation": ""
     },
     {
-      "id": "All Files",
-      "message": "All Files",
-      "translation": "All Files"
+      "id": "all keys",
+      "message": "all keys",
+      "translation": ""
+    },
+    {
+      "id": "all levels",
+      "message": "all levels",
+      "translation": ""
     },
     {
       "id": "all tags",
@@ -137,18 +1852,8 @@
       "translation": ""
     },
     {
-      "id": "Apply",
-      "message": "Apply",
-      "translation": ""
-    },
-    {
       "id": "apply a metadata change to all files matching a filter",
       "message": "apply a metadata change to all files matching a filter",
-      "translation": ""
-    },
-    {
-      "id": "Apply bulk metadata change? This cannot be undone.",
-      "message": "Apply bulk metadata change? This cannot be undone.",
       "translation": ""
     },
     {
@@ -160,16 +1865,6 @@
       "id": "archive",
       "message": "archive",
       "translation": ""
-    },
-    {
-      "id": "archive visibility updated",
-      "message": "archive visibility updated",
-      "translation": ""
-    },
-    {
-      "id": "Are you sure?",
-      "message": "Are you sure?",
-      "translation": "Are you sure?"
     },
     {
       "id": "are you sure you want to delete this dashboard?",
@@ -187,11 +1882,6 @@
       "translation": ""
     },
     {
-      "id": "at least one mime type required",
-      "message": "at least one mime type required",
-      "translation": ""
-    },
-    {
       "id": "auth test failed",
       "message": "auth test failed",
       "translation": ""
@@ -202,8 +1892,8 @@
       "translation": ""
     },
     {
-      "id": "Auto-create Tags",
-      "message": "Auto-create Tags",
+      "id": "automatically insert closing brackets, parentheses and quotes",
+      "message": "automatically insert closing brackets, parentheses and quotes",
       "translation": ""
     },
     {
@@ -222,18 +1912,18 @@
       "translation": ""
     },
     {
-      "id": "Backups",
-      "message": "Backups",
-      "translation": ""
-    },
-    {
-      "id": "Barebones history",
-      "message": "Barebones history",
-      "translation": ""
-    },
-    {
       "id": "barebone theme - home page",
       "message": "barebone theme - home page",
+      "translation": ""
+    },
+    {
+      "id": "base font used for body text across the app",
+      "message": "base font used for body text across the app",
+      "translation": ""
+    },
+    {
+      "id": "base font used for body text when exporting to pdf, and the fallback for headings",
+      "message": "base font used for body text when exporting to pdf, and the fallback for headings",
       "translation": ""
     },
     {
@@ -252,43 +1942,8 @@
       "translation": ""
     },
     {
-      "id": "border style updated",
-      "message": "border style updated",
-      "translation": ""
-    },
-    {
       "id": "broken link",
       "message": "broken link",
-      "translation": ""
-    },
-    {
-      "id": "Browse",
-      "message": "Browse",
-      "translation": "Browse"
-    },
-    {
-      "id": "Browse by Folder Structure",
-      "message": "Browse by Folder Structure",
-      "translation": ""
-    },
-    {
-      "id": "Browse by Metadata",
-      "message": "Browse by Metadata",
-      "translation": ""
-    },
-    {
-      "id": "Browse Files",
-      "message": "Browse Files",
-      "translation": ""
-    },
-    {
-      "id": "Build Time",
-      "message": "Build Time",
-      "translation": ""
-    },
-    {
-      "id": "Bulk Metadata Update",
-      "message": "Bulk Metadata Update",
       "translation": ""
     },
     {
@@ -297,44 +1952,14 @@
       "translation": ""
     },
     {
-      "id": "By Collections",
-      "message": "By Collections",
-      "translation": ""
-    },
-    {
-      "id": "By Folders",
-      "message": "By Folders",
-      "translation": ""
-    },
-    {
-      "id": "By Tags",
-      "message": "By Tags",
-      "translation": ""
-    },
-    {
-      "id": "By Type",
-      "message": "By Type",
-      "translation": ""
-    },
-    {
       "id": "cache invalidated",
       "message": "cache invalidated",
-      "translation": ""
-    },
-    {
-      "id": "Cache Storage",
-      "message": "Cache Storage",
       "translation": ""
     },
     {
       "id": "cancel",
       "message": "cancel",
       "translation": ""
-    },
-    {
-      "id": "Cancel",
-      "message": "Cancel",
-      "translation": "Cancel"
     },
     {
       "id": "cannot delete media file",
@@ -344,11 +1969,6 @@
     {
       "id": "cannot move folder into itself",
       "message": "cannot move folder into itself",
-      "translation": ""
-    },
-    {
-      "id": "caption setting updated",
-      "message": "caption setting updated",
       "translation": ""
     },
     {
@@ -362,11 +1982,6 @@
       "translation": ""
     },
     {
-      "id": "Changelog",
-      "message": "Changelog",
-      "translation": ""
-    },
-    {
       "id": "chat",
       "message": "chat",
       "translation": ""
@@ -377,28 +1992,38 @@
       "translation": ""
     },
     {
-      "id": "Clean Test Data",
-      "message": "Clean Test Data",
+      "id": "choose file",
+      "message": "choose file",
       "translation": ""
     },
     {
-      "id": "Cleanup Orphaned Files",
-      "message": "Cleanup Orphaned Files",
+      "id": "choose how dates are displayed throughout the app",
+      "message": "choose how dates are displayed throughout the app",
       "translation": ""
     },
     {
-      "id": "click setting updated",
-      "message": "click setting updated",
+      "id": "choose the visual appearance of the interface",
+      "message": "choose the visual appearance of the interface",
+      "translation": ""
+    },
+    {
+      "id": "choose your preferred interface language",
+      "message": "choose your preferred interface language",
+      "translation": ""
+    },
+    {
+      "id": "clear all",
+      "message": "clear all",
+      "translation": ""
+    },
+    {
+      "id": "clear all notifications?",
+      "message": "clear all notifications?",
       "translation": ""
     },
     {
       "id": "close",
       "message": "close",
-      "translation": ""
-    },
-    {
-      "id": "code block wrap setting updated",
-      "message": "code block wrap setting updated",
       "translation": ""
     },
     {
@@ -417,13 +2042,18 @@
       "translation": ""
     },
     {
-      "id": "Collections",
-      "message": "Collections",
+      "id": "color-highlight code blocks by language when exporting to pdf",
+      "message": "color-highlight code blocks by language when exporting to pdf",
       "translation": ""
     },
     {
-      "id": "collection updated",
-      "message": "collection updated",
+      "id": "comma-separated MIME types accepted for upload (e.g. image/*, application/pdf)",
+      "message": "comma-separated MIME types accepted for upload (e.g. image/*, application/pdf)",
+      "translation": ""
+    },
+    {
+      "id": "comma-separated folder path patterns to exclude from file listings and browse views. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test",
+      "message": "comma-separated folder path patterns to exclude from file listings and browse views. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test",
       "translation": ""
     },
     {
@@ -497,13 +2127,13 @@
       "translation": ""
     },
     {
-      "id": "created",
-      "message": "created",
+      "id": "create dashboard",
+      "message": "create dashboard",
       "translation": ""
     },
     {
-      "id": "create dashboard",
-      "message": "create dashboard",
+      "id": "created",
+      "message": "created",
       "translation": ""
     },
     {
@@ -517,26 +2147,6 @@
       "translation": ""
     },
     {
-      "id": "Create New Dashboard",
-      "message": "Create New Dashboard",
-      "translation": "Create New Dashboard"
-    },
-    {
-      "id": "Create New File",
-      "message": "Create New File",
-      "translation": ""
-    },
-    {
-      "id": "cronjob executed successfully",
-      "message": "cronjob executed successfully",
-      "translation": ""
-    },
-    {
-      "id": "Cronjob Interval",
-      "message": "Cronjob Interval",
-      "translation": ""
-    },
-    {
       "id": "cronjob is already running",
       "message": "cronjob is already running",
       "translation": ""
@@ -544,6 +2154,11 @@
     {
       "id": "cronjob started",
       "message": "cronjob started",
+      "translation": ""
+    },
+    {
+      "id": "current custom favicon",
+      "message": "current custom favicon",
       "translation": ""
     },
     {
@@ -559,11 +2174,6 @@
     {
       "id": "custom favicon removed",
       "message": "custom favicon removed",
-      "translation": ""
-    },
-    {
-      "id": "Dashboard",
-      "message": "Dashboard",
       "translation": ""
     },
     {
@@ -584,11 +2194,6 @@
     {
       "id": "dashboard deleted",
       "message": "dashboard deleted",
-      "translation": ""
-    },
-    {
-      "id": "dashboardId is required",
-      "message": "dashboardId is required",
       "translation": ""
     },
     {
@@ -622,13 +2227,13 @@
       "translation": ""
     },
     {
-      "id": "data path",
-      "message": "data path",
+      "id": "dashboardId is required",
+      "message": "dashboardId is required",
       "translation": ""
     },
     {
-      "id": "Data Path",
-      "message": "Data Path",
+      "id": "data path",
+      "message": "data path",
       "translation": ""
     },
     {
@@ -642,14 +2247,19 @@
       "translation": ""
     },
     {
-      "id": "delete",
-      "message": "delete",
+      "id": "debug",
+      "message": "debug",
       "translation": ""
     },
     {
-      "id": "Delete",
-      "message": "Delete",
-      "translation": "Delete"
+      "id": "default max-width and max-height for inline media previews in pixels",
+      "message": "default max-width and max-height for inline media previews in pixels",
+      "translation": ""
+    },
+    {
+      "id": "delete",
+      "message": "delete",
+      "translation": ""
     },
     {
       "id": "delete all files",
@@ -659,16 +2269,6 @@
     {
       "id": "delete all files in this",
       "message": "delete all files in this",
-      "translation": ""
-    },
-    {
-      "id": "Delete all orphaned media files? This cannot be undone.",
-      "message": "Delete all orphaned media files? This cannot be undone.",
-      "translation": ""
-    },
-    {
-      "id": "deleted",
-      "message": "deleted",
       "translation": ""
     },
     {
@@ -702,6 +2302,11 @@
       "translation": ""
     },
     {
+      "id": "deleted",
+      "message": "deleted",
+      "translation": ""
+    },
+    {
       "id": "description",
       "message": "description",
       "translation": ""
@@ -710,11 +2315,6 @@
       "id": "deselect all",
       "message": "deselect all",
       "translation": ""
-    },
-    {
-      "id": "Design your custom dashboard with widgets",
-      "message": "Design your custom dashboard with widgets",
-      "translation": "Design your custom dashboard with widgets"
     },
     {
       "id": "details",
@@ -737,8 +2337,43 @@
       "translation": ""
     },
     {
-      "id": "display mode updated",
-      "message": "display mode updated",
+      "id": "display a search box above interactive tables",
+      "message": "display a search box above interactive tables",
+      "translation": ""
+    },
+    {
+      "id": "display a value-picker dropdown below column headers that have repeated values",
+      "message": "display a value-picker dropdown below column headers that have repeated values",
+      "translation": ""
+    },
+    {
+      "id": "display first / prev / next / last navigation buttons below the table",
+      "message": "display first / prev / next / last navigation buttons below the table",
+      "translation": ""
+    },
+    {
+      "id": "display the 'showing X-Y of Z rows' summary line",
+      "message": "display the 'showing X-Y of Z rows' summary line",
+      "translation": ""
+    },
+    {
+      "id": "display the filename as a caption below each media preview",
+      "message": "display the filename as a caption below each media preview",
+      "translation": ""
+    },
+    {
+      "id": "display the formatting toolbar above the editor",
+      "message": "display the formatting toolbar above the editor",
+      "translation": ""
+    },
+    {
+      "id": "display the pdf export button in the file actions panel",
+      "message": "display the pdf export button in the file actions panel",
+      "translation": ""
+    },
+    {
+      "id": "display the pdf export button next to each heading in a rendered file",
+      "message": "display the pdf export button next to each heading in a rendered file",
       "translation": ""
     },
     {
@@ -752,6 +2387,11 @@
       "translation": ""
     },
     {
+      "id": "draw task-list checkboxes as status icons instead of plain text marks ([ ], [x], [-], [O]) when exporting to pdf",
+      "message": "draw task-list checkboxes as status icons instead of plain text marks ([ ], [x], [-], [O]) when exporting to pdf",
+      "translation": ""
+    },
+    {
       "id": "dropdown",
       "message": "dropdown",
       "translation": ""
@@ -762,48 +2402,8 @@
       "translation": ""
     },
     {
-      "id": "Edit",
-      "message": "Edit",
-      "translation": "Edit"
-    },
-    {
-      "id": "Edit Dashboard",
-      "message": "Edit Dashboard",
-      "translation": "Edit Dashboard"
-    },
-    {
-      "id": "edited",
-      "message": "edited",
-      "translation": ""
-    },
-    {
-      "id": "Edit Filter",
-      "message": "Edit Filter",
-      "translation": ""
-    },
-    {
-      "id": "editor",
-      "message": "editor",
-      "translation": ""
-    },
-    {
-      "id": "Editor-Type",
-      "message": "Editor-Type",
-      "translation": ""
-    },
-    {
-      "id": "editor updated",
-      "message": "editor updated",
-      "translation": ""
-    },
-    {
       "id": "edit section",
       "message": "edit section",
-      "translation": ""
-    },
-    {
-      "id": "Edit Section",
-      "message": "Edit Section",
       "translation": ""
     },
     {
@@ -812,9 +2412,34 @@
       "translation": ""
     },
     {
-      "id": "Enter a search term",
-      "message": "Enter a search term",
-      "translation": "Enter a search term"
+      "id": "edited",
+      "message": "edited",
+      "translation": ""
+    },
+    {
+      "id": "editor",
+      "message": "editor",
+      "translation": ""
+    },
+    {
+      "id": "editor settings",
+      "message": "editor settings",
+      "translation": ""
+    },
+    {
+      "id": "editor updated",
+      "message": "editor updated",
+      "translation": ""
+    },
+    {
+      "id": "enable dark theme appearance",
+      "message": "enable dark theme appearance",
+      "translation": ""
+    },
+    {
+      "id": "enable vim normal / insert / visual mode in the code editor",
+      "message": "enable vim normal / insert / visual mode in the code editor",
+      "translation": ""
     },
     {
       "id": "enter file path",
@@ -837,18 +2462,18 @@
       "translation": ""
     },
     {
-      "id": "Environment Info",
-      "message": "Environment Info",
-      "translation": ""
-    },
-    {
       "id": "equals",
       "message": "equals",
       "translation": ""
     },
     {
-      "id": "Error",
-      "message": "Error",
+      "id": "error",
+      "message": "error",
+      "translation": ""
+    },
+    {
+      "id": "error loading content: {Arg_1}",
+      "message": "error loading content: {Arg_1}",
       "translation": ""
     },
     {
@@ -857,18 +2482,68 @@
       "translation": ""
     },
     {
-      "id": "executable visibility updated",
-      "message": "executable visibility updated",
+      "id": "exclude .docx, .xlsx, .pptx, .ods and similar files from listings",
+      "message": "exclude .docx, .xlsx, .pptx, .ods and similar files from listings",
+      "translation": ""
+    },
+    {
+      "id": "exclude .exe, .jar, .pfx and similar executable files from listings",
+      "message": "exclude .exe, .jar, .pfx and similar executable files from listings",
+      "translation": ""
+    },
+    {
+      "id": "exclude .sh, .bat and similar script files from file listings",
+      "message": "exclude .sh, .bat and similar script files from file listings",
+      "translation": ""
+    },
+    {
+      "id": "exclude .zip, .rar, .7z and similar archives from file listings",
+      "message": "exclude .zip, .rar, .7z and similar archives from file listings",
+      "translation": ""
+    },
+    {
+      "id": "exclude PDF files from file listings and browse views",
+      "message": "exclude PDF files from file listings and browse views",
+      "translation": ""
+    },
+    {
+      "id": "exclude filter files from file listings and browse views",
+      "message": "exclude filter files from file listings and browse views",
+      "translation": ""
+    },
+    {
+      "id": "exclude image files from file listings and browse views",
+      "message": "exclude image files from file listings and browse views",
+      "translation": ""
+    },
+    {
+      "id": "exclude index files from file listings and browse views",
+      "message": "exclude index files from file listings and browse views",
+      "translation": ""
+    },
+    {
+      "id": "exclude list files from file listings and browse views",
+      "message": "exclude list files from file listings and browse views",
+      "translation": ""
+    },
+    {
+      "id": "exclude markdown files from file listings and browse views",
+      "message": "exclude markdown files from file listings and browse views",
+      "translation": ""
+    },
+    {
+      "id": "exclude todo files from file listings and browse views",
+      "message": "exclude todo files from file listings and browse views",
+      "translation": ""
+    },
+    {
+      "id": "exclude video files from file listings and browse views",
+      "message": "exclude video files from file listings and browse views",
       "translation": ""
     },
     {
       "id": "expand all",
       "message": "expand all",
-      "translation": ""
-    },
-    {
-      "id": "Expected Files",
-      "message": "Expected Files",
       "translation": ""
     },
     {
@@ -889,11 +2564,6 @@
     {
       "id": "export failed",
       "message": "export failed",
-      "translation": ""
-    },
-    {
-      "id": "Export / Import",
-      "message": "Export / Import",
       "translation": ""
     },
     {
@@ -929,11 +2599,6 @@
     {
       "id": "failed to browse files",
       "message": "failed to browse files",
-      "translation": ""
-    },
-    {
-      "id": "failed to clean test data",
-      "message": "failed to clean test data",
       "translation": ""
     },
     {
@@ -1069,11 +2734,6 @@
     {
       "id": "failed to get notifications",
       "message": "failed to get notifications",
-      "translation": ""
-    },
-    {
-      "id": "failed to get orphaned media",
-      "message": "failed to get orphaned media",
       "translation": ""
     },
     {
@@ -1322,11 +2982,6 @@
       "translation": ""
     },
     {
-      "id": "failed to setup test data",
-      "message": "failed to setup test data",
-      "translation": ""
-    },
-    {
       "id": "failed to update card",
       "message": "failed to update card",
       "translation": ""
@@ -1337,6 +2992,11 @@
       "translation": ""
     },
     {
+      "id": "failed to upload file:",
+      "message": "failed to upload file:",
+      "translation": ""
+    },
+    {
       "id": "favicon uploaded",
       "message": "favicon uploaded",
       "translation": ""
@@ -1344,11 +3004,6 @@
     {
       "id": "field",
       "message": "field",
-      "translation": ""
-    },
-    {
-      "id": "Field",
-      "message": "Field",
       "translation": ""
     },
     {
@@ -1407,28 +3062,8 @@
       "translation": ""
     },
     {
-      "id": "filename",
-      "message": "filename",
-      "translation": ""
-    },
-    {
-      "id": "filename match",
-      "message": "filename match",
-      "translation": ""
-    },
-    {
-      "id": "file not found",
-      "message": "file not found",
-      "translation": ""
-    },
-    {
       "id": "file path",
       "message": "file path",
-      "translation": ""
-    },
-    {
-      "id": "filepath and url are required",
-      "message": "filepath and url are required",
       "translation": ""
     },
     {
@@ -1437,28 +3072,13 @@
       "translation": ""
     },
     {
-      "id": "File path not provided",
-      "message": "File path not provided",
-      "translation": ""
-    },
-    {
-      "id": "filepath parameter required",
-      "message": "filepath parameter required",
-      "translation": ""
-    },
-    {
       "id": "file renamed",
       "message": "file renamed",
       "translation": ""
     },
     {
-      "id": "files",
-      "message": "files",
-      "translation": ""
-    },
-    {
-      "id": "Files",
-      "message": "Files",
+      "id": "file restored to version {Arg_1}",
+      "message": "file restored to version {Arg_1}",
       "translation": ""
     },
     {
@@ -1472,29 +3092,9 @@
       "translation": ""
     },
     {
-      "id": "Files Comparison",
-      "message": "Files Comparison",
-      "translation": ""
-    },
-    {
-      "id": "files deleted",
-      "message": "files deleted",
-      "translation": ""
-    },
-    {
       "id": "file size",
       "message": "file size",
       "translation": ""
-    },
-    {
-      "id": "Files Overview",
-      "message": "Files Overview",
-      "translation": ""
-    },
-    {
-      "id": "Files with",
-      "message": "Files with",
-      "translation": "Files with"
     },
     {
       "id": "file with new name already exists",
@@ -1507,13 +3107,33 @@
       "translation": ""
     },
     {
-      "id": "filter...",
-      "message": "filter...",
+      "id": "filename",
+      "message": "filename",
       "translation": ""
     },
     {
-      "id": "Filter",
-      "message": "Filter",
+      "id": "filename match",
+      "message": "filename match",
+      "translation": ""
+    },
+    {
+      "id": "filepath and url are required",
+      "message": "filepath and url are required",
+      "translation": ""
+    },
+    {
+      "id": "filepath parameter required",
+      "message": "filepath parameter required",
+      "translation": ""
+    },
+    {
+      "id": "files",
+      "message": "files",
+      "translation": ""
+    },
+    {
+      "id": "files deleted",
+      "message": "files deleted",
       "translation": ""
     },
     {
@@ -1527,18 +3147,8 @@
       "translation": ""
     },
     {
-      "id": "Filter Configuration",
-      "message": "Filter Configuration",
-      "translation": ""
-    },
-    {
       "id": "filter deleted",
       "message": "filter deleted",
-      "translation": ""
-    },
-    {
-      "id": "filtered results will appear here",
-      "message": "filtered results will appear here",
       "translation": ""
     },
     {
@@ -1562,28 +3172,18 @@
       "translation": ""
     },
     {
-      "id": "Filters",
-      "message": "Filters",
-      "translation": ""
-    },
-    {
       "id": "filter saved successfully!",
       "message": "filter saved successfully!",
       "translation": ""
     },
     {
-      "id": "Filter Test Metadata",
-      "message": "Filter Test Metadata",
+      "id": "filter...",
+      "message": "filter...",
       "translation": ""
     },
     {
-      "id": "Filter Test Results Summary",
-      "message": "Filter Test Results Summary",
-      "translation": ""
-    },
-    {
-      "id": "filter visibility updated",
-      "message": "filter visibility updated",
+      "id": "filtered results will appear here",
+      "message": "filtered results will appear here",
       "translation": ""
     },
     {
@@ -1627,28 +3227,68 @@
       "translation": ""
     },
     {
-      "id": "folders",
-      "message": "folders",
-      "translation": ""
-    },
-    {
-      "id": "Folders",
-      "message": "Folders",
-      "translation": ""
-    },
-    {
-      "id": "folders updated",
-      "message": "folders updated",
-      "translation": ""
-    },
-    {
       "id": "folder with new name already exists",
       "message": "folder with new name already exists",
       "translation": ""
     },
     {
+      "id": "folders",
+      "message": "folders",
+      "translation": ""
+    },
+    {
+      "id": "font size in points",
+      "message": "font size in points",
+      "translation": ""
+    },
+    {
+      "id": "font used for code blocks and inline code across the app (monospace fonts only, so aligned characters stay aligned)",
+      "message": "font used for code blocks and inline code across the app (monospace fonts only, so aligned characters stay aligned)",
+      "translation": ""
+    },
+    {
+      "id": "font used for code blocks and inline code when exporting to pdf (monospace fonts only, so wrapped code lines stay aligned)",
+      "message": "font used for code blocks and inline code when exporting to pdf (monospace fonts only, so wrapped code lines stay aligned)",
+      "translation": ""
+    },
+    {
+      "id": "font used for headings across the app",
+      "message": "font used for headings across the app",
+      "translation": ""
+    },
+    {
+      "id": "font used for headings when exporting to pdf",
+      "message": "font used for headings when exporting to pdf",
+      "translation": ""
+    },
+    {
+      "id": "font used for level-1 headings across the app, overriding the general heading font",
+      "message": "font used for level-1 headings across the app, overriding the general heading font",
+      "translation": ""
+    },
+    {
+      "id": "font used for level-1 headings when exporting to pdf, overriding the general heading font",
+      "message": "font used for level-1 headings when exporting to pdf, overriding the general heading font",
+      "translation": ""
+    },
+    {
       "id": "format",
       "message": "format",
+      "translation": ""
+    },
+    {
+      "id": "found {Integer} deleted files for \"{Arg_2}\"",
+      "message": "found {Integer} deleted files for \"{Arg_2}\"",
+      "translation": ""
+    },
+    {
+      "id": "found {Integer} files",
+      "message": "found {Integer} files",
+      "translation": ""
+    },
+    {
+      "id": "found {Integer} results for \"{Arg_2}\"",
+      "message": "found {Integer} results for \"{Arg_2}\"",
       "translation": ""
     },
     {
@@ -1662,38 +3302,18 @@
       "translation": ""
     },
     {
+      "id": "full",
+      "message": "full",
+      "translation": ""
+    },
+    {
       "id": "fuzzy match",
       "message": "fuzzy match",
       "translation": ""
     },
     {
-      "id": "Git Auto Push",
-      "message": "Git Auto Push",
-      "translation": ""
-    },
-    {
-      "id": "Git Branch",
-      "message": "Git Branch",
-      "translation": ""
-    },
-    {
-      "id": "Git Remote",
-      "message": "Git Remote",
-      "translation": ""
-    },
-    {
       "id": "git remote saved",
       "message": "git remote saved",
-      "translation": ""
-    },
-    {
-      "id": "Git Remote Sync",
-      "message": "Git Remote Sync",
-      "translation": ""
-    },
-    {
-      "id": "Git Repository",
-      "message": "Git Repository",
       "translation": ""
     },
     {
@@ -1707,18 +3327,8 @@
       "translation": ""
     },
     {
-      "id": "<h3>welcome!</h3><p>your static content here</p>",
-      "message": "<h3>welcome!</h3><p>your static content here</p>",
-      "translation": ""
-    },
-    {
       "id": "hand down status to sub-items",
       "message": "hand down status to sub-items",
-      "translation": ""
-    },
-    {
-      "id": "hidden files setting updated",
-      "message": "hidden files setting updated",
       "translation": ""
     },
     {
@@ -1727,14 +3337,24 @@
       "translation": ""
     },
     {
-      "id": "history",
-      "message": "history",
+      "id": "hide markdown syntax markers on lines the cursor isn't touching, Obsidian/Typora-style live preview",
+      "message": "hide markdown syntax markers on lines the cursor isn't touching, Obsidian/Typora-style live preview",
       "translation": ""
     },
     {
-      "id": "History",
-      "message": "History",
-      "translation": "History"
+      "id": "highlight all other occurrences of the currently selected text",
+      "message": "highlight all other occurrences of the currently selected text",
+      "translation": ""
+    },
+    {
+      "id": "highlight matching brackets, parentheses and braces",
+      "message": "highlight matching brackets, parentheses and braces",
+      "translation": ""
+    },
+    {
+      "id": "history",
+      "message": "history",
+      "translation": ""
     },
     {
       "id": "history search failed",
@@ -1747,13 +3367,13 @@
       "translation": ""
     },
     {
-      "id": "Home",
-      "message": "Home",
-      "translation": "Home"
+      "id": "how inline media previews are aligned in the document",
+      "message": "how inline media previews are aligned in the document",
+      "translation": ""
     },
     {
-      "id": "home dashboard updated",
-      "message": "home dashboard updated",
+      "id": "how many rows to show per page in interactive tables",
+      "message": "how many rows to show per page in interactive tables",
       "translation": ""
     },
     {
@@ -1769,11 +3389,6 @@
     {
       "id": "ids are required",
       "message": "ids are required",
-      "translation": ""
-    },
-    {
-      "id": "image visibility updated",
-      "message": "image visibility updated",
       "translation": ""
     },
     {
@@ -1812,33 +3427,13 @@
       "translation": ""
     },
     {
-      "id": "index extension setting updated",
-      "message": "index extension setting updated",
-      "translation": ""
-    },
-    {
       "id": "index saved successfully",
       "message": "index saved successfully",
       "translation": ""
     },
     {
-      "id": "index visibility updated",
-      "message": "index visibility updated",
-      "translation": ""
-    },
-    {
-      "id": "Invalidate Cache",
-      "message": "Invalidate Cache",
-      "translation": ""
-    },
-    {
-      "id": "Invalidate the cache? It will be rebuilt automatically.",
-      "message": "Invalidate the cache? It will be rebuilt automatically.",
-      "translation": ""
-    },
-    {
-      "id": "invalid border style",
-      "message": "invalid border style",
+      "id": "info",
+      "message": "info",
       "translation": ""
     },
     {
@@ -1854,11 +3449,6 @@
     {
       "id": "invalid date format",
       "message": "invalid date format",
-      "translation": ""
-    },
-    {
-      "id": "invalid display mode",
-      "message": "invalid display mode",
       "translation": ""
     },
     {
@@ -1897,23 +3487,8 @@
       "translation": ""
     },
     {
-      "id": "invalid page size",
-      "message": "invalid page size",
-      "translation": ""
-    },
-    {
-      "id": "invalid preview size",
-      "message": "invalid preview size",
-      "translation": ""
-    },
-    {
       "id": "invalid settings file",
       "message": "invalid settings file",
-      "translation": ""
-    },
-    {
-      "id": "invalid upload size",
-      "message": "invalid upload size",
       "translation": ""
     },
     {
@@ -1922,13 +3497,18 @@
       "translation": ""
     },
     {
+      "id": "job failed: {Arg_1}",
+      "message": "job failed: {Arg_1}",
+      "translation": ""
+    },
+    {
       "id": "job not found",
       "message": "job not found",
       "translation": ""
     },
     {
-      "id": "Jobs",
-      "message": "Jobs",
+      "id": "just now",
+      "message": "just now",
       "translation": ""
     },
     {
@@ -1942,58 +3522,8 @@
       "translation": ""
     },
     {
-      "id": "Kanban Ancestor Allowed Status",
-      "message": "Kanban Ancestor Allowed Status",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Archive Status",
-      "message": "Kanban Archive Status",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Boards",
-      "message": "Kanban Boards",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Card Styles",
-      "message": "Kanban Card Styles",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Columns",
-      "message": "Kanban Columns",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Events Enabled",
-      "message": "Kanban Events Enabled",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Events Storage",
-      "message": "Kanban Events Storage",
-      "translation": ""
-    },
-    {
       "id": "kanban moved at",
       "message": "kanban moved at",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Prefix",
-      "message": "Kanban Prefix",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Statuses",
-      "message": "Kanban Statuses",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Tag Colors",
-      "message": "Kanban Tag Colors",
       "translation": ""
     },
     {
@@ -2037,6 +3567,11 @@
       "translation": ""
     },
     {
+      "id": "let the browser underline misspelled words while editing",
+      "message": "let the browser underline misspelled words while editing",
+      "translation": ""
+    },
+    {
       "id": "limit",
       "message": "limit",
       "translation": ""
@@ -2077,33 +3612,23 @@
       "translation": ""
     },
     {
-      "id": "list extension setting updated",
-      "message": "list extension setting updated",
-      "translation": ""
-    },
-    {
       "id": "list saved successfully",
       "message": "list saved successfully",
       "translation": ""
     },
     {
-      "id": "list visibility updated",
-      "message": "list visibility updated",
+      "id": "load more",
+      "message": "load more",
       "translation": ""
     },
     {
-      "id": "Load earlier lines",
-      "message": "Load earlier lines",
+      "id": "load older messages",
+      "message": "load older messages",
       "translation": ""
     },
     {
       "id": "loading",
       "message": "loading",
-      "translation": ""
-    },
-    {
-      "id": "loading...",
-      "message": "loading...",
       "translation": ""
     },
     {
@@ -2125,11 +3650,6 @@
       "id": "loading file history...",
       "message": "loading file history...",
       "translation": ""
-    },
-    {
-      "id": "Loading files...",
-      "message": "Loading files...",
-      "translation": "Loading files..."
     },
     {
       "id": "loading folders...",
@@ -2157,11 +3677,6 @@
       "translation": ""
     },
     {
-      "id": "Loading results...",
-      "message": "Loading results...",
-      "translation": ""
-    },
-    {
       "id": "loading tags...",
       "message": "loading tags...",
       "translation": ""
@@ -2169,11 +3684,6 @@
     {
       "id": "loading themes...",
       "message": "loading themes...",
-      "translation": ""
-    },
-    {
-      "id": "Loading theme settings...",
-      "message": "Loading theme settings...",
       "translation": ""
     },
     {
@@ -2187,28 +3697,13 @@
       "translation": "loading widget..."
     },
     {
-      "id": "load more",
-      "message": "load more",
+      "id": "loading...",
+      "message": "loading...",
       "translation": ""
     },
     {
-      "id": "load older messages",
-      "message": "load older messages",
-      "translation": ""
-    },
-    {
-      "id": "log level updated",
-      "message": "log level updated",
-      "translation": ""
-    },
-    {
-      "id": "Logs",
-      "message": "Logs",
-      "translation": ""
-    },
-    {
-      "id": "Logs Path",
-      "message": "Logs Path",
+      "id": "make preview images clickable to open the full-size version",
+      "message": "make preview images clickable to open the full-size version",
       "translation": ""
     },
     {
@@ -2217,13 +3712,8 @@
       "translation": ""
     },
     {
-      "id": "markdown visibility updated",
-      "message": "markdown visibility updated",
-      "translation": ""
-    },
-    {
-      "id": "Media",
-      "message": "Media",
+      "id": "maximum file size allowed for media uploads in megabytes",
+      "message": "maximum file size allowed for media uploads in megabytes",
       "translation": ""
     },
     {
@@ -2232,13 +3722,13 @@
       "translation": ""
     },
     {
-      "id": "media files",
-      "message": "media files",
+      "id": "media file storage usage and cleanup",
+      "message": "media file storage usage and cleanup",
       "translation": ""
     },
     {
-      "id": "media file storage usage and cleanup",
-      "message": "media file storage usage and cleanup",
+      "id": "media files",
+      "message": "media files",
       "translation": ""
     },
     {
@@ -2257,11 +3747,6 @@
       "translation": ""
     },
     {
-      "id": "Metadata",
-      "message": "Metadata",
-      "translation": ""
-    },
-    {
       "id": "metadata links rebuilt",
       "message": "metadata links rebuilt",
       "translation": ""
@@ -2269,11 +3754,6 @@
     {
       "id": "metadata not found",
       "message": "metadata not found",
-      "translation": ""
-    },
-    {
-      "id": "Metadata Rebuild Interval",
-      "message": "Metadata Rebuild Interval",
       "translation": ""
     },
     {
@@ -2287,33 +3767,8 @@
       "translation": ""
     },
     {
-      "id": "Metadata Storage",
-      "message": "Metadata Storage",
-      "translation": ""
-    },
-    {
-      "id": "mime types updated",
-      "message": "mime types updated",
-      "translation": ""
-    },
-    {
       "id": "missing board",
       "message": "missing board",
-      "translation": ""
-    },
-    {
-      "id": "missing border style",
-      "message": "missing border style",
-      "translation": ""
-    },
-    {
-      "id": "missing collection",
-      "message": "missing collection",
-      "translation": ""
-    },
-    {
-      "id": "missing collection parameter",
-      "message": "missing collection parameter",
       "translation": ""
     },
     {
@@ -2324,11 +3779,6 @@
     {
       "id": "missing data",
       "message": "missing data",
-      "translation": ""
-    },
-    {
-      "id": "missing display mode",
-      "message": "missing display mode",
       "translation": ""
     },
     {
@@ -2412,11 +3862,6 @@
       "translation": ""
     },
     {
-      "id": "missing mime types",
-      "message": "missing mime types",
-      "translation": ""
-    },
-    {
       "id": "missing parameters",
       "message": "missing parameters",
       "translation": ""
@@ -2424,11 +3869,6 @@
     {
       "id": "missing path parameter",
       "message": "missing path parameter",
-      "translation": ""
-    },
-    {
-      "id": "missing preview size",
-      "message": "missing preview size",
       "translation": ""
     },
     {
@@ -2452,11 +3892,6 @@
       "translation": ""
     },
     {
-      "id": "missing upload size",
-      "message": "missing upload size",
-      "translation": ""
-    },
-    {
       "id": "more",
       "message": "more",
       "translation": ""
@@ -2472,23 +3907,18 @@
       "translation": ""
     },
     {
-      "id": "Move",
-      "message": "Move",
-      "translation": ""
-    },
-    {
       "id": "move down",
       "message": "move down",
       "translation": ""
     },
     {
-      "id": "moved to",
-      "message": "moved to",
+      "id": "move up",
+      "message": "move up",
       "translation": ""
     },
     {
-      "id": "move up",
-      "message": "move up",
+      "id": "moved to",
+      "message": "moved to",
       "translation": ""
     },
     {
@@ -2567,11 +3997,6 @@
       "translation": ""
     },
     {
-      "id": "no collections found",
-      "message": "no collections found",
-      "translation": ""
-    },
-    {
       "id": "no configuration needed",
       "message": "no configuration needed",
       "translation": ""
@@ -2579,11 +4004,6 @@
     {
       "id": "no custom favicon set",
       "message": "no custom favicon set",
-      "translation": ""
-    },
-    {
-      "id": "No dashboard found",
-      "message": "No dashboard found",
       "translation": ""
     },
     {
@@ -2607,6 +4027,11 @@
       "translation": ""
     },
     {
+      "id": "no file uploaded",
+      "message": "no file uploaded",
+      "translation": ""
+    },
+    {
       "id": "no files found",
       "message": "no files found",
       "translation": ""
@@ -2614,11 +4039,6 @@
     {
       "id": "no files found matching filter criteria",
       "message": "no files found matching filter criteria",
-      "translation": ""
-    },
-    {
-      "id": "no file uploaded",
-      "message": "no file uploaded",
       "translation": ""
     },
     {
@@ -2642,6 +4062,11 @@
       "translation": ""
     },
     {
+      "id": "no longer available",
+      "message": "no longer available",
+      "translation": ""
+    },
+    {
       "id": "no media files",
       "message": "no media files",
       "translation": ""
@@ -2649,6 +4074,11 @@
     {
       "id": "no media files found",
       "message": "no media files found",
+      "translation": ""
+    },
+    {
+      "id": "no notifications yet",
+      "message": "no notifications yet",
       "translation": ""
     },
     {
@@ -2727,16 +4157,6 @@
       "translation": ""
     },
     {
-      "id": "Notify Duration",
-      "message": "Notify Duration",
-      "translation": ""
-    },
-    {
-      "id": "not used in any files",
-      "message": "not used in any files",
-      "translation": ""
-    },
-    {
       "id": "no used media files",
       "message": "no used media files",
       "translation": ""
@@ -2752,23 +4172,18 @@
       "translation": ""
     },
     {
-      "id": "No widgets configured",
-      "message": "No widgets configured",
-      "translation": "No widgets configured"
-    },
-    {
-      "id": "office document visibility updated",
-      "message": "office document visibility updated",
-      "translation": ""
-    },
-    {
-      "id": "OK",
-      "message": "OK",
+      "id": "not used in any files",
+      "message": "not used in any files",
       "translation": ""
     },
     {
       "id": "only .ico, .png and .svg files are allowed",
       "message": "only .ico, .png and .svg files are allowed",
+      "translation": ""
+    },
+    {
+      "id": "only highlight when the selection matches a complete word boundary",
+      "message": "only highlight when the selection matches a complete word boundary",
       "translation": ""
     },
     {
@@ -2779,11 +4194,6 @@
     {
       "id": "operator",
       "message": "operator",
-      "translation": ""
-    },
-    {
-      "id": "Operator",
-      "message": "Operator",
       "translation": ""
     },
     {
@@ -2817,6 +4227,26 @@
       "translation": ""
     },
     {
+      "id": "page margin in millimeters on every side when exporting to pdf",
+      "message": "page margin in millimeters on every side when exporting to pdf",
+      "translation": ""
+    },
+    {
+      "id": "page orientation used when exporting to pdf",
+      "message": "page orientation used when exporting to pdf",
+      "translation": ""
+    },
+    {
+      "id": "paper size used when exporting to pdf",
+      "message": "paper size used when exporting to pdf",
+      "translation": ""
+    },
+    {
+      "id": "parent file does not exist: {Arg_1}",
+      "message": "parent file does not exist: {Arg_1}",
+      "translation": ""
+    },
+    {
       "id": "parents",
       "message": "parents",
       "translation": ""
@@ -2837,8 +4267,8 @@
       "translation": ""
     },
     {
-      "id": "/path/to/data",
-      "message": "/path/to/data",
+      "id": "path to your data storage relative from the executable",
+      "message": "path to your data storage relative from the executable",
       "translation": ""
     },
     {
@@ -2867,23 +4297,8 @@
       "translation": ""
     },
     {
-      "id": "path to your data storage relative from the executable",
-      "message": "path to your data storage relative from the executable",
-      "translation": ""
-    },
-    {
-      "id": "pdf visibility updated",
-      "message": "pdf visibility updated",
-      "translation": ""
-    },
-    {
-      "id": "Playground",
-      "message": "Playground",
-      "translation": "Playground"
-    },
-    {
-      "id": "Preview",
-      "message": "Preview",
+      "id": "please save the document first to enable file uploads.",
+      "message": "please save the document first to enable file uploads.",
       "translation": ""
     },
     {
@@ -2902,38 +4317,13 @@
       "translation": ""
     },
     {
-      "id": "preview setting updated",
-      "message": "preview setting updated",
-      "translation": ""
-    },
-    {
-      "id": "preview size updated",
-      "message": "preview size updated",
-      "translation": ""
-    },
-    {
       "id": "previous",
       "message": "previous",
       "translation": ""
     },
     {
-      "id": "Pull",
-      "message": "Pull",
-      "translation": ""
-    },
-    {
       "id": "pull completed",
       "message": "pull completed",
-      "translation": ""
-    },
-    {
-      "id": "pull failed",
-      "message": "pull failed",
-      "translation": ""
-    },
-    {
-      "id": "Push",
-      "message": "Push",
       "translation": ""
     },
     {
@@ -2945,16 +4335,6 @@
       "id": "rebuild",
       "message": "rebuild",
       "translation": ""
-    },
-    {
-      "id": "Rebuild all metadata? This may take a while.",
-      "message": "Rebuild all metadata? This may take a while.",
-      "translation": ""
-    },
-    {
-      "id": "Rebuild Metadata",
-      "message": "Rebuild Metadata",
-      "translation": "Rebuild Metadata"
     },
     {
       "id": "recent file history",
@@ -2987,13 +4367,13 @@
       "translation": ""
     },
     {
-      "id": "Remote Repository URL",
-      "message": "Remote Repository URL",
+      "id": "remove",
+      "message": "remove",
       "translation": ""
     },
     {
-      "id": "remove",
-      "message": "remove",
+      "id": "remove custom favicon and revert to default?",
+      "message": "remove custom favicon and revert to default?",
       "translation": ""
     },
     {
@@ -3012,23 +4392,13 @@
       "translation": ""
     },
     {
-      "id": "Rename",
-      "message": "Rename",
-      "translation": "Rename"
-    },
-    {
-      "id": "Repair Broken Links",
-      "message": "Repair Broken Links",
+      "id": "reset to default",
+      "message": "reset to default",
       "translation": ""
     },
     {
-      "id": "Repair Selected",
-      "message": "Repair Selected",
-      "translation": ""
-    },
-    {
-      "id": "restarting application...",
-      "message": "restarting application...",
+      "id": "reset to default? unsaved changes will be lost",
+      "message": "reset to default? unsaved changes will be lost",
       "translation": ""
     },
     {
@@ -3037,223 +4407,13 @@
       "translation": ""
     },
     {
-      "id": "Restart System",
-      "message": "Restart System",
-      "translation": ""
-    },
-    {
-      "id": "Restart the system? This will disconnect all users.",
-      "message": "Restart the system? This will disconnect all users.",
+      "id": "restarting application...",
+      "message": "restarting application...",
       "translation": ""
     },
     {
       "id": "restore this version",
       "message": "restore this version",
-      "translation": ""
-    },
-    {
-      "id": "Run All Tests",
-      "message": "Run All Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run all test suites? This will create test metadata objects.",
-      "message": "Run all test suites? This will create test metadata objects.",
-      "translation": ""
-    },
-    {
-      "id": "Run Async Job Tests",
-      "message": "Run Async Job Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run async job tests? This will start/interrupt-recover real background jobs and consume pending notifications.",
-      "message": "Run async job tests? This will start/interrupt-recover real background jobs and consume pending notifications.",
-      "translation": ""
-    },
-    {
-      "id": "Run Backup Tests",
-      "message": "Run Backup Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run backup tests? This will create real backups of live storages into scratch targets, and briefly restore them in place.",
-      "message": "Run backup tests? This will create real backups of live storages into scratch targets, and briefly restore them in place.",
-      "translation": ""
-    },
-    {
-      "id": "Run Browse Tests",
-      "message": "Run Browse Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run browse tests? This will create test files and folders.",
-      "message": "Run browse tests? This will create test files and folders.",
-      "translation": ""
-    },
-    {
-      "id": "Run Chat Tests",
-      "message": "Run Chat Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run chat tests? This will create and delete chat messages and test files.",
-      "message": "Run chat tests? This will create and delete chat messages and test files.",
-      "translation": ""
-    },
-    {
-      "id": "Run Connections Tests",
-      "message": "Run Connections Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run connections tests? This will create test files with parent/child/link relationships.",
-      "message": "Run connections tests? This will create test files with parent/child/link relationships.",
-      "translation": ""
-    },
-    {
-      "id": "Run Cronjob",
-      "message": "Run Cronjob",
-      "translation": ""
-    },
-    {
-      "id": "Run Dashboard Tests",
-      "message": "Run Dashboard Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run dashboard tests? This will create and delete test dashboards.",
-      "message": "Run dashboard tests? This will create and delete test dashboards.",
-      "translation": ""
-    },
-    {
-      "id": "Run Editors Tests",
-      "message": "Run Editors Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run editors tests? This will create test files and metadata.",
-      "message": "Run editors tests? This will create test files and metadata.",
-      "translation": ""
-    },
-    {
-      "id": "Run Export Tests",
-      "message": "Run Export Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run export tests? This will export test files as zip and round-trip a settings export.",
-      "message": "Run export tests? This will export test files as zip and round-trip a settings export.",
-      "translation": ""
-    },
-    {
-      "id": "Run Filter Tests",
-      "message": "Run Filter Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run filter tests? This will create test metadata objects.",
-      "message": "Run filter tests? This will create test metadata objects.",
-      "translation": ""
-    },
-    {
-      "id": "Run Git History Tests",
-      "message": "Run Git History Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run git history tests? This will create test files, git commits, and temporarily point the git remote at a throwaway local repo.",
-      "message": "Run git history tests? This will create test files, git commits, and temporarily point the git remote at a throwaway local repo.",
-      "translation": ""
-    },
-    {
-      "id": "Run Jobs Tests",
-      "message": "Run Jobs Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run jobs tests? This will trigger a full metadata rebuild, search reindex, cache invalidate and media cleanup.",
-      "message": "Run jobs tests? This will trigger a full metadata rebuild, search reindex, cache invalidate and media cleanup.",
-      "translation": ""
-    },
-    {
-      "id": "Run Kanban Tests",
-      "message": "Run Kanban Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run kanban tests? This will create test files and move kanban cards.",
-      "message": "Run kanban tests? This will create test files and move kanban cards.",
-      "translation": ""
-    },
-    {
-      "id": "Run Logs Tests",
-      "message": "Run Logs Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run logs tests? This will write probe entries to the in-app-tests log.",
-      "message": "Run logs tests? This will write probe entries to the in-app-tests log.",
-      "translation": ""
-    },
-    {
-      "id": "Run Media Tests",
-      "message": "Run Media Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run media tests? This will upload, rename and delete test media files.",
-      "message": "Run media tests? This will upload, rename and delete test media files.",
-      "translation": ""
-    },
-    {
-      "id": "Run Metadata Tests",
-      "message": "Run Metadata Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run metadata tests? This will create and delete test metadata and references.",
-      "message": "Run metadata tests? This will create and delete test metadata and references.",
-      "translation": ""
-    },
-    {
-      "id": "Run Notification Tests",
-      "message": "Run Notification Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run notification tests? This will add, consume and clear real notifications.",
-      "message": "Run notification tests? This will add, consume and clear real notifications.",
-      "translation": ""
-    },
-    {
-      "id": "Run parser tests?",
-      "message": "Run parser tests?",
-      "translation": ""
-    },
-    {
-      "id": "Run Parser Tests",
-      "message": "Run Parser Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run Search Tests",
-      "message": "Run Search Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run search tests? This will create test files and git commits.",
-      "message": "Run search tests? This will create test files and git commits.",
-      "translation": ""
-    },
-    {
-      "id": "Run Settings Tests",
-      "message": "Run Settings Tests",
-      "translation": ""
-    },
-    {
-      "id": "Run settings tests? This will temporarily change real settings, theme and favicon, then restore them.",
-      "message": "Run settings tests? This will temporarily change real settings, theme and favicon, then restore them.",
       "translation": ""
     },
     {
@@ -3287,33 +4447,28 @@
       "translation": ""
     },
     {
+      "id": "save index files as .index instead of .md",
+      "message": "save index files as .index instead of .md",
+      "translation": ""
+    },
+    {
+      "id": "save list files as .list instead of .md",
+      "message": "save list files as .list instead of .md",
+      "translation": ""
+    },
+    {
       "id": "save section",
       "message": "save section",
       "translation": ""
     },
     {
+      "id": "save todo files as .todo instead of .md",
+      "message": "save todo files as .todo instead of .md",
+      "translation": ""
+    },
+    {
       "id": "scan all files for links pointing to paths that no longer exist and repair the selected ones",
       "message": "scan all files for links pointing to paths that no longer exist and repair the selected ones",
-      "translation": ""
-    },
-    {
-      "id": "Scan for Broken Links",
-      "message": "Scan for Broken Links",
-      "translation": ""
-    },
-    {
-      "id": "scanning .gohtml template files...",
-      "message": "scanning .gohtml template files...",
-      "translation": ""
-    },
-    {
-      "id": "script visibility updated",
-      "message": "script visibility updated",
-      "translation": ""
-    },
-    {
-      "id": "search...",
-      "message": "search...",
       "translation": ""
     },
     {
@@ -3327,11 +4482,6 @@
       "translation": ""
     },
     {
-      "id": "Search Engine",
-      "message": "Search Engine",
-      "translation": ""
-    },
-    {
       "id": "search failed",
       "message": "search failed",
       "translation": ""
@@ -3342,38 +4492,18 @@
       "translation": ""
     },
     {
-      "id": "Search files...",
-      "message": "Search files...",
-      "translation": "Search files..."
-    },
-    {
       "id": "search history",
       "message": "search history",
       "translation": ""
     },
     {
-      "id": "Search Index Interval",
-      "message": "Search Index Interval",
-      "translation": ""
-    },
-    {
-      "id": "Search Results",
-      "message": "Search Results",
-      "translation": "Search Results"
-    },
-    {
-      "id": "Search Storage",
-      "message": "Search Storage",
+      "id": "search...",
+      "message": "search...",
       "translation": ""
     },
     {
       "id": "section",
       "message": "section",
-      "translation": ""
-    },
-    {
-      "id": "section edit setting updated",
-      "message": "section edit setting updated",
       "translation": ""
     },
     {
@@ -3384,11 +4514,6 @@
     {
       "id": "select a board to open the kanban board",
       "message": "select a board to open the kanban board",
-      "translation": ""
-    },
-    {
-      "id": "select a collection to open the kanban board",
-      "message": "select a collection to open the kanban board",
       "translation": ""
     },
     {
@@ -3437,13 +4562,8 @@
       "translation": ""
     },
     {
-      "id": "Server Port",
-      "message": "Server Port",
-      "translation": ""
-    },
-    {
-      "id": "Set Data Path",
-      "message": "Set Data Path",
+      "id": "set a dashboard ID to use as the home page",
+      "message": "set a dashboard ID to use as the home page",
       "translation": ""
     },
     {
@@ -3452,33 +4572,18 @@
       "translation": ""
     },
     {
-      "id": "Set Remote Repository",
-      "message": "Set Remote Repository",
-      "translation": ""
-    },
-    {
       "id": "settings",
       "message": "settings",
       "translation": ""
     },
     {
-      "id": "Settings",
-      "message": "Settings",
-      "translation": "Settings"
+      "id": "settings for {Arg_1}",
+      "message": "settings for {Arg_1}",
+      "translation": ""
     },
     {
       "id": "settings imported successfully",
       "message": "settings imported successfully",
-      "translation": ""
-    },
-    {
-      "id": "Setup Test Data",
-      "message": "Setup Test Data",
-      "translation": ""
-    },
-    {
-      "id": "Setup test data? This will create example files in the data/test folder.",
-      "message": "Setup test data? This will create example files in the data/test folder.",
       "translation": ""
     },
     {
@@ -3502,8 +4607,43 @@
       "translation": ""
     },
     {
+      "id": "show files and folders starting with a dot",
+      "message": "show files and folders starting with a dot",
+      "translation": ""
+    },
+    {
+      "id": "show fold indicators in the gutter and enable folding keybindings",
+      "message": "show fold indicators in the gutter and enable folding keybindings",
+      "translation": ""
+    },
+    {
+      "id": "show images and other media inline in file view with configurable sizing",
+      "message": "show images and other media inline in file view with configurable sizing",
+      "translation": ""
+    },
+    {
+      "id": "show line numbers in the gutter",
+      "message": "show line numbers in the gutter",
+      "translation": ""
+    },
+    {
+      "id": "show line numbers relative to the cursor — useful with vim mode",
+      "message": "show line numbers relative to the cursor — useful with vim mode",
+      "translation": ""
+    },
+    {
+      "id": "showing last {Integer} of {Integer_1} lines",
+      "message": "showing last {Integer} of {Integer_1} lines",
+      "translation": ""
+    },
+    {
       "id": "size",
       "message": "size",
+      "translation": ""
+    },
+    {
+      "id": "start a new page before each top-level heading when exporting to pdf",
+      "message": "start a new page before each top-level heading when exporting to pdf",
       "translation": ""
     },
     {
@@ -3522,33 +4662,23 @@
       "translation": ""
     },
     {
+      "id": "status added: {Arg_1}",
+      "message": "status added: {Arg_1}",
+      "translation": ""
+    },
+    {
+      "id": "status changed: {Arg_1} → {Arg_2}",
+      "message": "status changed: {Arg_1} → {Arg_2}",
+      "translation": ""
+    },
+    {
       "id": "still referenced by",
       "message": "still referenced by",
       "translation": ""
     },
     {
-      "id": "Storage Path",
-      "message": "Storage Path",
-      "translation": ""
-    },
-    {
-      "id": "Storage Statistics",
-      "message": "Storage Statistics",
-      "translation": ""
-    },
-    {
       "id": "suggested fix",
       "message": "suggested fix",
-      "translation": ""
-    },
-    {
-      "id": "Swagger",
-      "message": "Swagger",
-      "translation": ""
-    },
-    {
-      "id": "System Actions",
-      "message": "System Actions",
       "translation": ""
     },
     {
@@ -3567,28 +4697,8 @@
       "translation": ""
     },
     {
-      "id": "table info setting updated",
-      "message": "table info setting updated",
-      "translation": ""
-    },
-    {
       "id": "table of contents",
       "message": "table of contents",
-      "translation": ""
-    },
-    {
-      "id": "table page size updated",
-      "message": "table page size updated",
-      "translation": ""
-    },
-    {
-      "id": "table paging setting updated",
-      "message": "table paging setting updated",
-      "translation": ""
-    },
-    {
-      "id": "table search setting updated",
-      "message": "table search setting updated",
       "translation": ""
     },
     {
@@ -3599,11 +4709,6 @@
     {
       "id": "tags",
       "message": "tags",
-      "translation": ""
-    },
-    {
-      "id": "Tags",
-      "message": "Tags",
       "translation": ""
     },
     {
@@ -3622,16 +4727,6 @@
       "translation": ""
     },
     {
-      "id": "Test Auth",
-      "message": "Test Auth",
-      "translation": ""
-    },
-    {
-      "id": "Test Data",
-      "message": "Test Data",
-      "translation": ""
-    },
-    {
       "id": "test data cleaned",
       "message": "test data cleaned",
       "translation": ""
@@ -3647,18 +4742,8 @@
       "translation": ""
     },
     {
-      "id": "text visibility updated",
-      "message": "text visibility updated",
-      "translation": ""
-    },
-    {
       "id": "theme",
       "message": "theme",
-      "translation": ""
-    },
-    {
-      "id": "theme:",
-      "message": "theme:",
       "translation": ""
     },
     {
@@ -3672,13 +4757,8 @@
       "translation": ""
     },
     {
-      "id": "Theme Settings",
-      "message": "Theme Settings",
-      "translation": "Theme Settings"
-    },
-    {
-      "id": "Themes Path",
-      "message": "Themes Path",
+      "id": "theme:",
+      "message": "theme:",
       "translation": ""
     },
     {
@@ -3689,11 +4769,6 @@
     {
       "id": "this is a conflict copy of",
       "message": "this is a conflict copy of",
-      "translation": ""
-    },
-    {
-      "id": "This will remove all files in the data/test Folder.",
-      "message": "This will remove all files in the data/test Folder.",
       "translation": ""
     },
     {
@@ -3722,23 +4797,13 @@
       "translation": ""
     },
     {
-      "id": "todo extension setting updated",
-      "message": "todo extension setting updated",
+      "id": "to new file",
+      "message": "to new file",
       "translation": ""
     },
     {
       "id": "todo saved successfully",
       "message": "todo saved successfully",
-      "translation": ""
-    },
-    {
-      "id": "todo visibility updated",
-      "message": "todo visibility updated",
-      "translation": ""
-    },
-    {
-      "id": "to new file",
-      "message": "to new file",
       "translation": ""
     },
     {
@@ -3802,11 +4867,6 @@
       "translation": ""
     },
     {
-      "id": "Unknown metadata type",
-      "message": "Unknown metadata type",
-      "translation": ""
-    },
-    {
       "id": "unknown section",
       "message": "unknown section",
       "translation": ""
@@ -3822,19 +4882,14 @@
       "translation": ""
     },
     {
+      "id": "unknown widget type: {Arg_1}",
+      "message": "unknown widget type: {Arg_1}",
+      "translation": ""
+    },
+    {
       "id": "unused",
       "message": "unused",
       "translation": ""
-    },
-    {
-      "id": "Update",
-      "message": "Update",
-      "translation": ""
-    },
-    {
-      "id": "Update your dashboard configuration",
-      "message": "Update your dashboard configuration",
-      "translation": "Update your dashboard configuration"
     },
     {
       "id": "upload",
@@ -3842,8 +4897,28 @@
       "translation": ""
     },
     {
-      "id": "upload size updated",
-      "message": "upload size updated",
+      "id": "upload a custom favicon (.ico, .png or .svg, max 2 MB)",
+      "message": "upload a custom favicon (.ico, .png or .svg, max 2 MB)",
+      "translation": ""
+    },
+    {
+      "id": "upload failed:",
+      "message": "upload failed:",
+      "translation": ""
+    },
+    {
+      "id": "upload favicon",
+      "message": "upload favicon",
+      "translation": ""
+    },
+    {
+      "id": "uploaded file",
+      "message": "uploaded file",
+      "translation": ""
+    },
+    {
+      "id": "uploading...",
+      "message": "uploading...",
       "translation": ""
     },
     {
@@ -3867,23 +4942,8 @@
       "translation": ""
     },
     {
-      "id": "Value",
-      "message": "Value",
-      "translation": ""
-    },
-    {
-      "id": "Version",
-      "message": "Version",
-      "translation": ""
-    },
-    {
       "id": "version no longer available",
       "message": "version no longer available",
-      "translation": ""
-    },
-    {
-      "id": "video visibility updated",
-      "message": "video visibility updated",
       "translation": ""
     },
     {
@@ -3892,33 +4952,8 @@
       "translation": ""
     },
     {
-      "id": "View all collections",
-      "message": "View all collections",
-      "translation": ""
-    },
-    {
-      "id": "View all editor types",
-      "message": "View all editor types",
-      "translation": ""
-    },
-    {
-      "id": "View all filter files",
-      "message": "View all filter files",
-      "translation": ""
-    },
-    {
-      "id": "View all folders",
-      "message": "View all folders",
-      "translation": ""
-    },
-    {
-      "id": "View all tags",
-      "message": "View all tags",
-      "translation": ""
-    },
-    {
-      "id": "View all types",
-      "message": "View all types",
+      "id": "view all {Integer} versions",
+      "message": "view all {Integer} versions",
       "translation": ""
     },
     {
@@ -3937,8 +4972,33 @@
       "translation": ""
     },
     {
-      "id": "View Filter Test Metadata",
-      "message": "View Filter Test Metadata",
+      "id": "visual border style applied to inline media previews",
+      "message": "visual border style applied to inline media previews",
+      "translation": ""
+    },
+    {
+      "id": "warning",
+      "message": "warning",
+      "translation": ""
+    },
+    {
+      "id": "when enabled, editing a section also selects content from all nested sub-level headers",
+      "message": "when enabled, editing a section also selects content from all nested sub-level headers",
+      "translation": ""
+    },
+    {
+      "id": "when enabled, long lines in code blocks wrap instead of scrolling horizontally",
+      "message": "when enabled, long lines in code blocks wrap instead of scrolling horizontally",
+      "translation": ""
+    },
+    {
+      "id": "when off, the cursor lands before ]] after autocomplete (between the path and the closing brackets)",
+      "message": "when off, the cursor lands before ]] after autocomplete (between the path and the closing brackets)",
+      "translation": ""
+    },
+    {
+      "id": "which editor opens by default for new and unassigned markdown files",
+      "message": "which editor opens by default for new and unassigned markdown files",
       "translation": ""
     },
     {
@@ -3952,11 +5012,6 @@
       "translation": ""
     },
     {
-      "id": "widgets",
-      "message": "widgets",
-      "translation": ""
-    },
-    {
       "id": "widget title",
       "message": "widget title",
       "translation": ""
@@ -3964,6 +5019,11 @@
     {
       "id": "widget type",
       "message": "widget type",
+      "translation": ""
+    },
+    {
+      "id": "widgets",
+      "message": "widgets",
       "translation": ""
     },
     {

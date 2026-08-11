@@ -8,7 +8,7 @@ import (
 	"golang.org/x/text/message"
 )
 
-//go:generate sh -c "../../static/generate-translations.sh"
+//go:generate go run ../../tools/i18nextract
 
 var globalPrinter *message.Printer
 
