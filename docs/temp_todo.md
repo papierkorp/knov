@@ -12,7 +12,6 @@
   - create a dashboard with different widgets
   - browse media
   - use both builtin and rail theme
-- translations
 
 **per ai**
 - not important
@@ -24,11 +23,10 @@
       - for devs
   - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 - features
-  - todo editor with markdown on top/bottom + header
+  - combine todo/list editor (setting to change the gfm todo), add headers (which adds a `#` instead of a list)
   - update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse)
   - add go tests?
   - new kanban feature: create folders based on the kanban status and move the files based on the kanban status => what would be the single source of truth - i think the metadata and if a file in such a folder doesnt have metadata => add it / change it
-  - gitlab pipeline to get a release
   - in the theme let me also arrange the info slideout components
   - add s3 to backup storage
 - fixes
