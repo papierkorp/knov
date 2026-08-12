@@ -29,11 +29,12 @@
   - new kanban feature: create folders based on the kanban status and move the files based on the kanban status => what would be the single source of truth - i think the metadata and if a file in such a folder doesnt have metadata => add it / change it
   - in the theme let me also arrange the info slideout components
   - add s3 to backup storage
+  - first start of application => add a helper text to home
+  - add backup to server slideout
 - fixes
   - codemirror editor => using tab to indent a list entry jumps to save section
   - codemirror editor => using space/delete removes list entries
 - chore
-  - move copy-code.js to the app
   - storage/config/theme/xxx.json => do we need to add escapes in this json file? i dont like it
   - move translation and changelog to a tools/ package just like templatedocs
   - async jobs follow up candidates

@@ -343,6 +343,7 @@ func injectDefaultJS(html string) string {
 	scripts += `<script src="/static/wiki-autocomplete.js"></script>`
 	scripts += `<script src="/static/todo-state.js"></script>`
 	scripts += `<script src="/static/conflict-diff.js"></script>`
+	scripts += `<script src="/static/copy-code.js"></script>`
 	return html[:bodyCloseIndex] + scripts + html[bodyCloseIndex:]
 }
 

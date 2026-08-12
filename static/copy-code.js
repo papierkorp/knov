@@ -1,4 +1,3 @@
-// theme: builtin
 (function () {
     function addCopyButtons(root) {
         root.querySelectorAll('pre:not([data-copy-ready]):not(.CodeMirror-line)').forEach(function (pre) {
