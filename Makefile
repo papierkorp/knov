@@ -39,8 +39,7 @@ tree:
 	tree -I 'bin|data|data2|data3|storage|backups'
 
 changelog:
-	@chmod +x generate-changelog.sh
-	@./generate-changelog.sh
+	go run ./tools/genchangelog
 	@git add docs/changelogs/
 
 killdev:

@@ -32,7 +32,6 @@
   - first start of application => add a helper text to home
 - fixes
 - chore
-  - move translation and changelog to a tools/ package just like templatedocs
   - async jobs follow up candidates
 
 
