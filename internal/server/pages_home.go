@@ -14,7 +14,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 	if id := configmanager.GetHomeDashboard(); id != "" {
 		dash, err := dashboard.Get(id)
 		if err != nil {
-			logging.LogWarning(logging.KeyApp, "home dashboard %q not found, falling back to home page: %v", id, err)
+			logging.LogWarning(logging.KeyApp, "home dashboard %q not found, falling back to help page: %v", id, err)
 		} else {
 			tm := thememanager.GetThemeManager()
 			data := thememanager.NewDashboardTemplateData(dash)
@@ -25,11 +25,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewBaseTemplateData("home")
-	if err := tm.Render(w, "home", data); err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-	}
+	handleHelp(w, r)
 }
 
 func handleSettings(w http.ResponseWriter, r *http.Request) {

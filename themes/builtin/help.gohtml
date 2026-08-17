@@ -1,3 +1,75 @@
 {{/* theme: builtin */}}
 {{ define "content" }}
+<div class="page-help">
+    <h1>{{T "Help"}}</h1>
+    <h2>{{T "Dashboards"}}</h2>
+    <p>{{T "A dashboard is a page you customize yourself - pin lists of files by tag or folder, saved searches, or your own notes, arranged however you like."}}</p>
+    <p>{{T "You're seeing this help page because no home dashboard exists yet. The home dashboard is simply whichever dashboard appears on the start page - home by default, changeable in Settings."}}</p>
+    <p>{{T "Create a dashboard and name it home to make it your new start page."}}</p>
+    <div class="admin-links">
+        <a href="/dashboard/new">{{T "New Dashboard"}}</a>
+    </div>
+
+    <h2>{{T "Files"}}</h2>
+    <p>{{T "Every file has an editor type - pick the one that fits what you're writing."}}</p>
+    <ul class="help-list">
+        <li><a href="/files/new/codemirror">{{T "Markdown"}}</a> - {{T "distraction-free writing"}}</li>
+        <li><a href="/files/new/list">{{T "List"}}</a> - {{T "drag-and-drop nested list"}}</li>
+        <li><a href="/files/new/todo">{{T "Todo"}}</a> - {{T "checkbox task list"}}</li>
+        <li><a href="/files/new/index">{{T "Index"}}</a> - {{T "ordered list of links to other files (a map of content)"}}</li>
+        <li><a href="/files/new/filter">{{T "Filter"}}</a> - {{T "saved search, built visually"}}</li>
+    </ul>
+
+    <h2>{{T "Browse & Search"}}</h2>
+    <p>{{T "Files can be found by where they live or by labels attached to them."}}</p>
+    <ul class="help-list">
+        <li><a href="/browse/folder">{{T "Folders"}}</a> - {{T "where a file lives, nested like on disk"}}</li>
+        <li><a href="/browse/collection">{{T "Collections"}}</a> - {{T "a file's top-level folder, a coarser grouping"}}</li>
+        <li><a href="/browse/tag">{{T "Tags"}}</a> - {{T "freeform labels, independent of location - a file can have several"}}</li>
+        <li><a href="/browse/editor">{{T "Editor types"}}</a> - {{T "group files by which editor they use"}}</li>
+        <li><a href="/search">{{T "Search"}}</a> - {{T "full-text search across all files"}}</li>
+    </ul>
+
+    <h2>{{T "Media"}}</h2>
+    <p>{{T "Upload images and attachments straight from the editor. They show up in Browse & Search like any other file, and are versioned the same way as your notes (see History)."}}</p>
+    <div class="admin-links">
+        <a href="/media">{{T "Media"}}</a>
+    </div>
+
+    <h2>{{T "History"}}</h2>
+    <p>{{T "Every change - to a file or a media upload - is automatically saved as a new version using git, the version-control system many developers use. Nothing is ever really overwritten: open History to see every past version and restore one if you need to."}}</p>
+    <div class="admin-links">
+        <a href="/history">{{T "History"}}</a>
+    </div>
+
+    <h2>{{T "Chat"}}</h2>
+    <p>{{T "A running stream of thoughts - global, or attached to a single file. Unlike your notes, chat messages aren't saved as part of a file, they're kept separately."}}</p>
+    <div class="admin-links">
+        <a href="/chat">{{T "Chat"}}</a>
+    </div>
+
+    <h2>{{T "Kanban"}}</h2>
+    <p>{{T "Track files as cards moving through stages, e.g. inbox to in progress to done. It's not a separate system - a card is just a file with a status tag, so it's still the same file everywhere else in the app. Configure boards in Settings."}}</p>
+    <div class="admin-links">
+        <a href="/kanban">{{T "Kanban"}}</a>
+    </div>
+
+    <h2>{{T "Settings & Admin"}}</h2>
+    <p>{{T "Settings controls how the app looks and behaves for you. Admin covers maintenance for the whole app."}}</p>
+    <div class="admin-links">
+        <a href="/settings">{{T "Settings"}}</a>
+        <a href="/admin">{{T "Admin"}}</a>
+    </div>
+    <p>{{T "Want to try the app out without using your real notes? Fill it with sample files."}}</p>
+    <div class="admin-action-list">
+        <button class="btn-secondary" hx-post="/api/testdata/setup" hx-swap="none"
+                hx-confirm="{{T "Setup test data? This will create example files in the data/test folder."}}">
+            {{T "Setup Test Data"}}
+        </button>
+        <button class="btn-danger" hx-post="/api/testdata/clean" hx-swap="none"
+                hx-confirm="{{T "This will remove all files in the data/test Folder."}}">
+            {{T "Clean Test Data"}}
+        </button>
+    </div>
+</div>
 {{ end }}

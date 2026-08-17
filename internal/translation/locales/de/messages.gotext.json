@@ -62,6 +62,16 @@
       "translation": "\u003ch3\u003eWillkommen!\u003c/h3\u003e\u003cp\u003eDein statischer Inhalt hier\u003c/p\u003e"
     },
     {
+      "id": "A dashboard is a page you customize yourself - pin lists of files by tag or folder, saved searches, or your own notes, arranged however you like.",
+      "message": "A dashboard is a page you customize yourself - pin lists of files by tag or folder, saved searches, or your own notes, arranged however you like.",
+      "translation": ""
+    },
+    {
+      "id": "A running stream of thoughts - global, or attached to a single file. Unlike your notes, chat messages aren't saved as part of a file, they're kept separately.",
+      "message": "A running stream of thoughts - global, or attached to a single file. Unlike your notes, chat messages aren't saved as part of a file, they're kept separately.",
+      "translation": ""
+    },
+    {
       "id": "ALL TESTS PASSED",
       "message": "ALL TESTS PASSED",
       "translation": "ALLE TESTS BESTANDEN"
@@ -85,6 +95,11 @@
       "id": "Admin",
       "message": "Admin",
       "translation": "Admin"
+    },
+    {
+      "id": "Admin covers maintenance for the whole app, for example:",
+      "message": "Admin covers maintenance for the whole app, for example:",
+      "translation": ""
     },
     {
       "id": "All (merged)",
@@ -170,6 +185,11 @@
       "id": "Browse",
       "message": "Browse",
       "translation": "Durchsuchen"
+    },
+    {
+      "id": "Browse \u0026 Search",
+      "message": "Browse \u0026 Search",
+      "translation": ""
     },
     {
       "id": "Browse Files",
@@ -337,6 +357,11 @@
       "translation": "Dashboard"
     },
     {
+      "id": "Dashboards",
+      "message": "Dashboards",
+      "translation": ""
+    },
+    {
       "id": "Data Path",
       "message": "Data Path",
       "translation": "Datenpfad"
@@ -422,6 +447,11 @@
       "translation": "Editor-Typen"
     },
     {
+      "id": "Editor types",
+      "message": "Editor types",
+      "translation": ""
+    },
+    {
       "id": "Editor-Type",
       "message": "Editor-Type",
       "translation": "Editor-Typ"
@@ -450,6 +480,16 @@
       "id": "Event",
       "message": "Event",
       "translation": "Ereignis"
+    },
+    {
+      "id": "Every change - to a file or a media upload - is automatically saved as a new version using git, the version-control system many developers use. Nothing is ever really overwritten: open History to see every past version and restore one if you need to.",
+      "message": "Every change - to a file or a media upload - is automatically saved as a new version using git, the version-control system many developers use. Nothing is ever really overwritten: open History to see every past version and restore one if you need to.",
+      "translation": ""
+    },
+    {
+      "id": "Every file has an editor type - pick the one that fits what you're writing.",
+      "message": "Every file has an editor type - pick the one that fits what you're writing.",
+      "translation": ""
     },
     {
       "id": "Expected",
@@ -495,6 +535,11 @@
       "id": "Files Overview",
       "message": "Files Overview",
       "translation": "Dateiübersicht"
+    },
+    {
+      "id": "Files can be found by where they live or by labels attached to them.",
+      "message": "Files can be found by where they live or by labels attached to them.",
+      "translation": ""
     },
     {
       "id": "Files with",
@@ -747,6 +792,11 @@
       "translation": "Unterüberschriften beim Bearbeiten von Abschnitten einbeziehen"
     },
     {
+      "id": "Index",
+      "message": "Index",
+      "translation": ""
+    },
+    {
       "id": "Invalidate Cache",
       "message": "Invalidate Cache",
       "translation": "Cache invalidieren"
@@ -832,6 +882,11 @@
       "translation": "Sprache"
     },
     {
+      "id": "Language \u0026 Timezone",
+      "message": "Language \u0026 Timezone",
+      "translation": ""
+    },
+    {
       "id": "Last commit",
       "message": "Last commit",
       "translation": "Letzter Commit"
@@ -850,6 +905,11 @@
       "id": "Line Numbers",
       "message": "Line Numbers",
       "translation": "Zeilennummern"
+    },
+    {
+      "id": "List",
+      "message": "List",
+      "translation": ""
     },
     {
       "id": "Live",
@@ -897,6 +957,11 @@
       "translation": "Logs"
     },
     {
+      "id": "Logs \u0026 Jobs",
+      "message": "Logs \u0026 Jobs",
+      "translation": ""
+    },
+    {
       "id": "Logs Path",
       "message": "Logs Path",
       "translation": "Logs-Pfad"
@@ -905,6 +970,11 @@
       "id": "Margin (mm)",
       "message": "Margin (mm)",
       "translation": "Rand (mm)"
+    },
+    {
+      "id": "Markdown",
+      "message": "Markdown",
+      "translation": ""
     },
     {
       "id": "Max Upload Size (MB)",
@@ -950,6 +1020,11 @@
       "id": "Move",
       "message": "Move",
       "translation": "Verschieben"
+    },
+    {
+      "id": "New Dashboard",
+      "message": "New Dashboard",
+      "translation": ""
     },
     {
       "id": "No backups yet",
@@ -1407,6 +1482,16 @@
       "translation": "Einstellungen"
     },
     {
+      "id": "Settings \u0026 Admin",
+      "message": "Settings \u0026 Admin",
+      "translation": ""
+    },
+    {
+      "id": "Settings controls how the app looks and behaves for you, for example:",
+      "message": "Settings controls how the app looks and behaves for you, for example:",
+      "translation": ""
+    },
+    {
       "id": "Setup Test Data",
       "message": "Setup Test Data",
       "translation": "Testdaten einrichten"
@@ -1552,9 +1637,19 @@
       "translation": "Text"
     },
     {
+      "id": "The home dashboard is whichever one is shown on the start page - named home by default, changeable in Settings.",
+      "message": "The home dashboard is whichever one is shown on the start page - named home by default, changeable in Settings.",
+      "translation": ""
+    },
+    {
       "id": "Theme",
       "message": "Theme",
       "translation": "Theme"
+    },
+    {
+      "id": "Theme \u0026 Dark Mode",
+      "message": "Theme \u0026 Dark Mode",
+      "translation": ""
     },
     {
       "id": "Theme Settings",
@@ -1587,6 +1682,11 @@
       "translation": "Zeitzone"
     },
     {
+      "id": "Todo",
+      "message": "Todo",
+      "translation": ""
+    },
+    {
       "id": "Total Files",
       "message": "Total Files",
       "translation": "Dateien gesamt"
@@ -1595,6 +1695,11 @@
       "id": "Total: {Integer}",
       "message": "Total: {Integer}",
       "translation": "Gesamt: {Integer}"
+    },
+    {
+      "id": "Track files as cards moving through stages, e.g. inbox to in progress to done. It's not a separate system - a card is just a file with a status tag, so it's still the same file everywhere else in the app. Configure boards in Settings.",
+      "message": "Track files as cards moving through stages, e.g. inbox to in progress to done. It's not a separate system - a card is just a file with a status tag, so it's still the same file everywhere else in the app. Configure boards in Settings.",
+      "translation": ""
     },
     {
       "id": "Trigger",
@@ -1625,6 +1730,11 @@
       "id": "Update your dashboard configuration",
       "message": "Update your dashboard configuration",
       "translation": "Aktualisiere deine Dashboard-Konfiguration"
+    },
+    {
+      "id": "Upload images and attachments straight from the editor. They show up in Browse \u0026 Search like any other file, and are versioned the same way as your notes (see History).",
+      "message": "Upload images and attachments straight from the editor. They show up in Browse \u0026 Search like any other file, and are versioned the same way as your notes (see History).",
+      "translation": ""
     },
     {
       "id": "Use .index Extension",
@@ -1720,6 +1830,11 @@
       "id": "Wrap Long Lines in Code Blocks",
       "message": "Wrap Long Lines in Code Blocks",
       "translation": "Lange Zeilen in Codeblöcken umbrechen"
+    },
+    {
+      "id": "a file's top-level folder, a coarser grouping",
+      "message": "a file's top-level folder, a coarser grouping",
+      "translation": ""
     },
     {
       "id": "action",
@@ -1987,6 +2102,11 @@
       "translation": "Chat"
     },
     {
+      "id": "checkbox task list",
+      "message": "checkbox task list",
+      "translation": ""
+    },
+    {
       "id": "children",
       "message": "children",
       "translation": "Unterelemente"
@@ -2130,6 +2250,11 @@
       "id": "create dashboard",
       "message": "create dashboard",
       "translation": "Dashboard erstellen"
+    },
+    {
+      "id": "create, restore or download a backup",
+      "message": "create, restore or download a backup",
+      "translation": ""
     },
     {
       "id": "created",
@@ -2377,6 +2502,11 @@
       "translation": "PDF-Export-Button neben jeder Überschrift in einer gerenderten Datei anzeigen"
     },
     {
+      "id": "distraction-free writing",
+      "message": "distraction-free writing",
+      "translation": ""
+    },
+    {
       "id": "done",
       "message": "done",
       "translation": "fertig"
@@ -2385,6 +2515,11 @@
       "id": "download",
       "message": "download",
       "translation": "herunterladen"
+    },
+    {
+      "id": "drag-and-drop nested list",
+      "message": "drag-and-drop nested list",
+      "translation": ""
     },
     {
       "id": "draw task-list checkboxes as status icons instead of plain text marks ([ ], [x], [-], [O]) when exporting to pdf",
@@ -3197,6 +3332,11 @@
       "translation": "in Datei suchen..."
     },
     {
+      "id": "fix stale tags, links or search results",
+      "message": "fix stale tags, links or search results",
+      "translation": ""
+    },
+    {
       "id": "folder",
       "message": "folder",
       "translation": "Ordner"
@@ -3292,6 +3432,11 @@
       "translation": "{Integer} Ergebnisse für \"{Arg_2}\" gefunden"
     },
     {
+      "id": "freeform labels, independent of location - a file can have several",
+      "message": "freeform labels, independent of location - a file can have several",
+      "translation": ""
+    },
+    {
       "id": "from",
       "message": "from",
       "translation": "von"
@@ -3305,6 +3450,11 @@
       "id": "full",
       "message": "full",
       "translation": "voll"
+    },
+    {
+      "id": "full-text search across all files",
+      "message": "full-text search across all files",
+      "translation": ""
     },
     {
       "id": "fuzzy match",
@@ -3325,6 +3475,11 @@
       "id": "greater than",
       "message": "greater than",
       "translation": "größer als"
+    },
+    {
+      "id": "group files by which editor they use",
+      "message": "group files by which editor they use",
+      "translation": ""
     },
     {
       "id": "hand down status to sub-items",
@@ -4222,6 +4377,11 @@
       "translation": "oder"
     },
     {
+      "id": "ordered list of links to other files (a map of content)",
+      "message": "ordered list of links to other files (a map of content)",
+      "translation": ""
+    },
+    {
       "id": "orphaned",
       "message": "orphaned",
       "translation": "verwaist"
@@ -4487,6 +4647,11 @@
       "translation": "Todo-Dateien als .todo statt .md speichern"
     },
     {
+      "id": "saved search, built visually",
+      "message": "saved search, built visually",
+      "translation": ""
+    },
+    {
       "id": "scan all files for links pointing to paths that no longer exist and repair the selected ones",
       "message": "scan all files for links pointing to paths that no longer exist and repair the selected ones",
       "translation": "alle Dateien nach Links durchsuchen, die auf nicht mehr existierende Pfade verweisen, und die ausgewählten reparieren"
@@ -4530,6 +4695,11 @@
       "id": "section saved successfully",
       "message": "section saved successfully",
       "translation": "Abschnitt erfolgreich gespeichert"
+    },
+    {
+      "id": "see what the app has been doing",
+      "message": "see what the app has been doing",
+      "translation": ""
     },
     {
       "id": "select a board to open the kanban board",
@@ -4700,6 +4870,16 @@
       "id": "suggested fix",
       "message": "suggested fix",
       "translation": "vorgeschlagene Korrektur"
+    },
+    {
+      "id": "switch the look, or write your own custom CSS",
+      "message": "switch the look, or write your own custom CSS",
+      "translation": ""
+    },
+    {
+      "id": "sync your files to a remote repository",
+      "message": "sync your files to a remote repository",
+      "translation": ""
     },
     {
       "id": "system maintenance operations for keeping your application running smoothly",
@@ -5015,6 +5195,16 @@
       "id": "when off, the cursor lands before ]] after autocomplete (between the path and the closing brackets)",
       "message": "when off, the cursor lands before ]] after autocomplete (between the path and the closing brackets)",
       "translation": "wenn deaktiviert, landet der Cursor nach der Autovervollständigung vor ]] (zwischen dem Pfad und den schließenden Klammern)"
+    },
+    {
+      "id": "where a file lives, nested like on disk",
+      "message": "where a file lives, nested like on disk",
+      "translation": ""
+    },
+    {
+      "id": "which dashboard is shown on the start page",
+      "message": "which dashboard is shown on the start page",
+      "translation": ""
     },
     {
       "id": "which editor opens by default for new and unassigned markdown files",

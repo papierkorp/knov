@@ -15,6 +15,8 @@
 
 **per ai**
 - not important
+  - add s3 to backup storage
+  - add go tests?
   - create a system for themes (another repoistory with themes)
     - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
   - deployment
@@ -25,11 +27,8 @@
 - features
   - combine todo/list editor (setting to change the gfm todo), add headers (which adds a `#` instead of a list)
   - update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse)
-  - add go tests?
   - new kanban feature: create folders based on the kanban status and move the files based on the kanban status => what would be the single source of truth - i think the metadata and if a file in such a folder doesnt have metadata => add it / change it
   - in the theme let me also arrange the info slideout components
-  - add s3 to backup storage
-  - first start of application => add a helper text to home
 - fixes
 - chore
   - async jobs follow up candidates
