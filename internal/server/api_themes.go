@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -189,6 +190,15 @@ func handleAPIUpdateThemeSetting(w http.ResponseWriter, r *http.Request) {
 		var num float64
 		fmt.Sscanf(value, "%f", &num)
 		settingValue = num
+	case "textarea":
+		// textarea values are often JSON (e.g. railLayout) - store them as native
+		// JSON rather than a JSON-encoded string so the config file stays readable.
+		var parsed interface{}
+		if err := json.Unmarshal([]byte(value), &parsed); err == nil {
+			settingValue = parsed
+		} else {
+			settingValue = value
+		}
 	default:
 		settingValue = value
 	}
