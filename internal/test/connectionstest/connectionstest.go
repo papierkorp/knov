@@ -40,6 +40,8 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseLinksToHere,
 		caseRelatedFiles,
 		caseAncestorsInFolder,
+		caseSameFolder,
+		caseSameTags,
 		caseConflictBanner,
 		caseConflictOfBanner,
 	}

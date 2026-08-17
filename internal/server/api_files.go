@@ -172,9 +172,10 @@ func handleAPIGetFileHeader(w http.ResponseWriter, r *http.Request) {
 // @Summary Get file overview (dates, hierarchy, links, related files)
 // @Description Returns every metadata/link fragment used on a file's detail page (created/edited
 // @Description dates, collection, folders, ancestors, kids, grandchildren, used/media/inbound
-// @Description links, related files) in a single response, replacing the ~11 separate round trips
-// @Description that page used to fire on every load. Keys are semantic field names, not
-// @Description theme-specific DOM ids — the theme's own JS maps them onto its markup.
+// @Description links, related files, files in the same folder, files sharing a tag) in a single
+// @Description response, replacing the ~11 separate round trips that page used to fire on every
+// @Description load. Keys are semantic field names, not theme-specific DOM ids — the theme's own
+// @Description JS maps them onto its markup.
 // @Tags files
 // @Param filepath query string true "File path"
 // @Produce json
@@ -248,6 +249,20 @@ func handleAPIGetFileOverview(w http.ResponseWriter, r *http.Request) {
 		result["related"] = render.RenderRelatedFiles(nil)
 	} else {
 		result["related"] = render.RenderRelatedFiles(relatedPaths)
+	}
+
+	sameFolderPaths, err := files.GetFilesInSameFolder(filePath, 5)
+	if err != nil || len(sameFolderPaths) == 0 {
+		result["sameFolder"] = render.RenderSameFolderFiles(nil)
+	} else {
+		result["sameFolder"] = render.RenderSameFolderFiles(sameFolderPaths)
+	}
+
+	sameTagPaths, err := files.GetFilesWithSameTags(filePath, 5)
+	if err != nil || len(sameTagPaths) == 0 {
+		result["sameTags"] = render.RenderSameTagFiles(nil)
+	} else {
+		result["sameTags"] = render.RenderSameTagFiles(sameTagPaths)
 	}
 
 	w.Header().Set("Content-Type", "application/json")

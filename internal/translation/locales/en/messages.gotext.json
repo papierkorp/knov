@@ -4042,6 +4042,11 @@
       "translation": ""
     },
     {
+      "id": "no files with matching tags",
+      "message": "no files with matching tags",
+      "translation": ""
+    },
+    {
       "id": "no git history available",
       "message": "no git history available",
       "translation": ""
@@ -4089,6 +4094,11 @@
     {
       "id": "no orphaned media files to clean up",
       "message": "no orphaned media files to clean up",
+      "translation": ""
+    },
+    {
+      "id": "no other files in this folder",
+      "message": "no other files in this folder",
       "translation": ""
     },
     {
@@ -4414,6 +4424,16 @@
     {
       "id": "restore this version",
       "message": "restore this version",
+      "translation": ""
+    },
+    {
+      "id": "same folder",
+      "message": "same folder",
+      "translation": ""
+    },
+    {
+      "id": "same tags",
+      "message": "same tags",
       "translation": ""
     },
     {

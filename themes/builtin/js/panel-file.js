@@ -213,6 +213,8 @@ function setupFilePage() {
     mediaLinks: "fp-media-links",
     linksFrom: "fp-links-from",
     related: "fp-related",
+    sameFolder: "fp-same-folder",
+    sameTags: "fp-same-tags",
   };
   fetch("/api/files/overview?filepath=" + fp, {
     headers: { Accept: "application/json" },

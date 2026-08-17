@@ -272,6 +272,44 @@ func handleAPIGetRelatedFiles(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, paths, render.RenderRelatedFiles(paths))
 }
 
+// @Description Returns other files located in the same folder as the given file
+// @Tags links
+// @Param filepath query string true "File path"
+// @Produce json,html
+// @Router /api/links/same-folder [get]
+func handleAPIGetSameFolderFiles(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+	paths, err := files.GetFilesInSameFolder(filePath, 5)
+	if err != nil || len(paths) == 0 {
+		writeResponse(w, r, []string{}, render.RenderSameFolderFiles(nil))
+		return
+	}
+	writeResponse(w, r, paths, render.RenderSameFolderFiles(paths))
+}
+
+// @Description Returns other files sharing at least one tag with the given file
+// @Tags links
+// @Param filepath query string true "File path"
+// @Produce json,html
+// @Router /api/links/same-tags [get]
+func handleAPIGetSameTagFiles(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("filepath")
+	if filePath == "" {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath parameter"), http.StatusBadRequest)
+		return
+	}
+	paths, err := files.GetFilesWithSameTags(filePath, 5)
+	if err != nil || len(paths) == 0 {
+		writeResponse(w, r, []string{}, render.RenderSameTagFiles(nil))
+		return
+	}
+	writeResponse(w, r, paths, render.RenderSameTagFiles(paths))
+}
+
 // @Summary Get live diff between a file and its conflict copy
 // @Description Compares current file on disk with a .conflict.md copy using text diff
 // @Tags links

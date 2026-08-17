@@ -311,7 +311,7 @@ func handleAPIMetadataTest(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Run connections tests
-// @Description Executes the connections suite (parents/ancestors, kids/grandchildren, used-links, links-to-here, related files, ancestors-in-folder, conflict banner/of-banner)
+// @Description Executes the connections suite (parents/ancestors, kids/grandchildren, used-links, links-to-here, related files, ancestors-in-folder, same folder, same tags, conflict banner/of-banner)
 // @Tags testdata
 // @Produce json,html
 // @Success 200 {object} test.SuiteResult "connections test results"

@@ -206,6 +206,22 @@ func RenderRelatedFiles(paths []string) string {
 	return RenderLinksList(paths, false)
 }
 
+// RenderSameFolderFiles renders links to other files in the same folder, or a fallback message
+func RenderSameFolderFiles(paths []string) string {
+	if len(paths) == 0 {
+		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no other files in this folder"))
+	}
+	return RenderLinksList(paths, false)
+}
+
+// RenderSameTagFiles renders links to other files sharing a tag, or a fallback message
+func RenderSameTagFiles(paths []string) string {
+	if len(paths) == 0 {
+		return RenderNoLinksMessage(translation.SprintfForRequest(configmanager.GetLanguage(), "no files with matching tags"))
+	}
+	return RenderLinksList(paths, false)
+}
+
 // RenderConflictBanner renders a prominent warning banner above the file content,
 // or empty string if no conflict exists (outerHTML swap removes the placeholder).
 func RenderConflictBanner(originalFilePath string, conflictFile string) string {

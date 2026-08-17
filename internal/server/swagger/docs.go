@@ -2135,7 +2135,7 @@ const docTemplate = `{
         },
         "/api/files/overview": {
             "get": {
-                "description": "Returns every metadata/link fragment used on a file's detail page (created/edited\ndates, collection, folders, ancestors, kids, grandchildren, used/media/inbound\nlinks, related files) in a single response, replacing the ~11 separate round trips\nthat page used to fire on every load. Keys are semantic field names, not\ntheme-specific DOM ids — the theme's own JS maps them onto its markup.",
+                "description": "Returns every metadata/link fragment used on a file's detail page (created/edited\ndates, collection, folders, ancestors, kids, grandchildren, used/media/inbound\nlinks, related files, files in the same folder, files sharing a tag) in a single\nresponse, replacing the ~11 separate round trips that page used to fire on every\nload. Keys are semantic field names, not theme-specific DOM ids — the theme's own\nJS maps them onto its markup.",
                 "produces": [
                     "application/json"
                 ],
@@ -3471,6 +3471,50 @@ const docTemplate = `{
         "/api/links/related": {
             "get": {
                 "description": "Returns files that share link neighbors with the given file",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/links/same-folder": {
+            "get": {
+                "description": "Returns other files located in the same folder as the given file",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "links"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "File path",
+                        "name": "filepath",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/links/same-tags": {
+            "get": {
+                "description": "Returns other files sharing at least one tag with the given file",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -5933,7 +5977,7 @@ const docTemplate = `{
         },
         "/api/testdata/connectionstest": {
             "post": {
-                "description": "Executes the connections suite (parents/ancestors, kids/grandchildren, used-links, links-to-here, related files, ancestors-in-folder, conflict banner/of-banner)",
+                "description": "Executes the connections suite (parents/ancestors, kids/grandchildren, used-links, links-to-here, related files, ancestors-in-folder, same folder, same tags, conflict banner/of-banner)",
                 "produces": [
                     "application/json",
                     "text/html"

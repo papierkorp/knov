@@ -29,6 +29,12 @@ const (
 
 	conflictOriginal = "conn-conflict-original.md"
 	conflictCopy     = "conn-conflict-original.conflict.md"
+
+	nestedFile = "nested/conn-nested.md" // lives one level below testDir, for same-folder exclusion
+
+	tagAFile     = "conn-tag-a.md"     // Tags=[conn-shared-tag], shares a tag with tagBFile
+	tagBFile     = "conn-tag-b.md"     // Tags=[conn-shared-tag]
+	tagOtherFile = "conn-tag-other.md" // Tags=[conn-other-tag], no overlap with tagAFile/tagBFile
 )
 
 func testPath(name string) string {
@@ -67,6 +73,7 @@ func resetAndSeed() error {
 	for _, name := range []string{
 		parentFile, childFile, grandchild, parent2File, child2File,
 		linkedFile, relatedFile, conflictOriginal, conflictCopy,
+		nestedFile, tagAFile, tagBFile, tagOtherFile,
 	} {
 		if err := writeFile(testPath(name), "# "+name+"\n\ncontent\n"); err != nil {
 			return err
@@ -121,6 +128,20 @@ func resetAndSeed() error {
 		return err
 	}
 	if err := saveMetadata(conflictCopy, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
+		return err
+	}
+
+	if err := saveMetadata(nestedFile, &files.Metadata{Editor: files.EditorTypeCodeMirror}); err != nil {
+		return err
+	}
+
+	if err := saveMetadata(tagAFile, &files.Metadata{Editor: files.EditorTypeCodeMirror, Tags: []string{"conn-shared-tag"}}); err != nil {
+		return err
+	}
+	if err := saveMetadata(tagBFile, &files.Metadata{Editor: files.EditorTypeCodeMirror, Tags: []string{"conn-shared-tag"}}); err != nil {
+		return err
+	}
+	if err := saveMetadata(tagOtherFile, &files.Metadata{Editor: files.EditorTypeCodeMirror, Tags: []string{"conn-other-tag"}}); err != nil {
 		return err
 	}
 

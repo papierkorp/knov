@@ -164,6 +164,57 @@ func caseAncestorsInFolder() test.CaseResult {
 	return cr
 }
 
+// caseSameFolder covers handleAPIGetSameFolderFiles / files.GetFilesInSameFolder - parentFile
+// and nestedFile share testDir's parent folder, but nestedFile lives one level deeper so it
+// must be excluded (same-folder is exact, unlike GetAncestorsInFolder's subfolder match).
+func caseSameFolder() test.CaseResult {
+	name := "same-folder"
+
+	got, err := files.GetFilesInSameFolder(withPrefix(parentFile), 20)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	success := slices.Contains(got, withPrefix(childFile)) &&
+		!slices.Contains(got, withPrefix(parentFile)) &&
+		!slices.Contains(got, withPrefix(nestedFile))
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: fmt.Sprintf("includes %s, excludes self and %s", withPrefix(childFile), withPrefix(nestedFile)),
+		Actual:   fmt.Sprintf("%v", got),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "GetFilesInSameFolder did not match exact folder as expected"
+	}
+	return cr
+}
+
+// caseSameTags covers handleAPIGetSameTagFiles / files.GetFilesWithSameTags - tagAFile and
+// tagBFile share "conn-shared-tag", tagOtherFile carries an unrelated tag.
+func caseSameTags() test.CaseResult {
+	name := "same-tags"
+
+	got, err := files.GetFilesWithSameTags(withPrefix(tagAFile), 20)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	success := slices.Contains(got, withPrefix(tagBFile)) &&
+		!slices.Contains(got, withPrefix(tagAFile)) &&
+		!slices.Contains(got, withPrefix(tagOtherFile))
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: fmt.Sprintf("includes %s, excludes self and %s", withPrefix(tagBFile), withPrefix(tagOtherFile)),
+		Actual:   fmt.Sprintf("%v", got),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "GetFilesWithSameTags did not match shared tags as expected"
+	}
+	return cr
+}
+
 // caseConflictBanner covers handleAPIGetConflictBanner's condition (metadata.ConflictFile
 // != "") via files.SetConflictFile/ClearConflictFile.
 func caseConflictBanner() test.CaseResult {

@@ -4042,6 +4042,11 @@
       "translation": "keine Dateien gefunden, die den Filterkriterien entsprechen"
     },
     {
+      "id": "no files with matching tags",
+      "message": "no files with matching tags",
+      "translation": "keine Dateien mit übereinstimmenden Tags"
+    },
+    {
       "id": "no git history available",
       "message": "no git history available",
       "translation": "kein Git-Verlauf verfügbar"
@@ -4090,6 +4095,11 @@
       "id": "no orphaned media files to clean up",
       "message": "no orphaned media files to clean up",
       "translation": "keine verwaisten Mediendateien zu bereinigen"
+    },
+    {
+      "id": "no other files in this folder",
+      "message": "no other files in this folder",
+      "translation": "keine weiteren Dateien in diesem Ordner"
     },
     {
       "id": "no outbound links",
@@ -4415,6 +4425,16 @@
       "id": "restore this version",
       "message": "restore this version",
       "translation": "diese Version wiederherstellen"
+    },
+    {
+      "id": "same folder",
+      "message": "same folder",
+      "translation": "gleicher Ordner"
+    },
+    {
+      "id": "same tags",
+      "message": "same tags",
+      "translation": "gleiche Tags"
     },
     {
       "id": "save",

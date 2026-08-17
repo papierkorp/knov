@@ -364,6 +364,8 @@ func NewRouter() *chi.Mux {
 			r.Get("/linkstohere", handleAPIGetLinksToHere)
 			r.Get("/media", handleAPIGetMediaLinks)
 			r.Get("/related", handleAPIGetRelatedFiles)
+			r.Get("/same-folder", handleAPIGetSameFolderFiles)
+			r.Get("/same-tags", handleAPIGetSameTagFiles)
 			r.Get("/conflicts/diff", handleAPIGetConflictDiff)
 			r.Get("/conflicts/banner", handleAPIGetConflictBanner)
 			r.Get("/conflicts/of-banner", handleAPIGetConflictOfBanner)

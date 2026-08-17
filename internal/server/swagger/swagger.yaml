@@ -1911,9 +1911,10 @@ paths:
       description: |-
         Returns every metadata/link fragment used on a file's detail page (created/edited
         dates, collection, folders, ancestors, kids, grandchildren, used/media/inbound
-        links, related files) in a single response, replacing the ~11 separate round trips
-        that page used to fire on every load. Keys are semantic field names, not
-        theme-specific DOM ids — the theme's own JS maps them onto its markup.
+        links, related files, files in the same folder, files sharing a tag) in a single
+        response, replacing the ~11 separate round trips that page used to fire on every
+        load. Keys are semantic field names, not theme-specific DOM ids — the theme's own
+        JS maps them onto its markup.
       parameters:
       - description: File path
         in: query
@@ -2830,6 +2831,36 @@ paths:
   /api/links/related:
     get:
       description: Returns files that share link neighbors with the given file
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      tags:
+      - links
+  /api/links/same-folder:
+    get:
+      description: Returns other files located in the same folder as the given file
+      parameters:
+      - description: File path
+        in: query
+        name: filepath
+        required: true
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses: {}
+      tags:
+      - links
+  /api/links/same-tags:
+    get:
+      description: Returns other files sharing at least one tag with the given file
       parameters:
       - description: File path
         in: query
@@ -4517,7 +4548,8 @@ paths:
   /api/testdata/connectionstest:
     post:
       description: Executes the connections suite (parents/ancestors, kids/grandchildren,
-        used-links, links-to-here, related files, ancestors-in-folder, conflict banner/of-banner)
+        used-links, links-to-here, related files, ancestors-in-folder, same folder,
+        same tags, conflict banner/of-banner)
       produces:
       - application/json
       - text/html

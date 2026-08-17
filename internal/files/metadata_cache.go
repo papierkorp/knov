@@ -899,3 +899,85 @@ func GetAncestorsInFolder(folderPath string) ([]string, error) {
 	}
 	return ancestors, nil
 }
+
+// GetFilesInSameFolder returns other files whose folder path exactly matches filePath's
+// (unlike GetAncestorsInFolder, this does not include subfolders).
+func GetFilesInSameFolder(filePath string, limit int) ([]string, error) {
+	if limit <= 0 {
+		limit = 5
+	}
+
+	meta, err := MetaDataGet(filePath)
+	if err != nil || meta == nil {
+		return nil, err
+	}
+	folder := strings.Join(meta.Folders, "/")
+
+	allFiles, err := GetAllFilesCached()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []string
+	for _, f := range allFiles {
+		if f.Metadata == nil || f.Metadata.Path == meta.Path {
+			continue
+		}
+		if strings.Join(f.Metadata.Folders, "/") != folder {
+			continue
+		}
+		result = append(result, f.Metadata.Path)
+		if len(result) >= limit {
+			break
+		}
+	}
+	return result, nil
+}
+
+// GetFilesWithSameTags returns other files sharing at least one tag with filePath, ranked by
+// number of shared tags.
+func GetFilesWithSameTags(filePath string, limit int) ([]string, error) {
+	if limit <= 0 {
+		limit = 5
+	}
+
+	meta, err := MetaDataGet(filePath)
+	if err != nil || meta == nil || len(meta.Tags) == 0 {
+		return nil, err
+	}
+
+	allFiles, err := GetAllFilesCached()
+	if err != nil {
+		return nil, err
+	}
+
+	type scored struct {
+		path  string
+		score int
+	}
+	var candidates []scored
+	for _, f := range allFiles {
+		if f.Metadata == nil || f.Metadata.Path == meta.Path {
+			continue
+		}
+		score := 0
+		for _, tag := range f.Metadata.Tags {
+			if slices.Contains(meta.Tags, tag) {
+				score++
+			}
+		}
+		if score > 0 {
+			candidates = append(candidates, scored{f.Metadata.Path, score})
+		}
+	}
+	slices.SortStableFunc(candidates, func(a, b scored) int { return b.score - a.score })
+
+	if len(candidates) > limit {
+		candidates = candidates[:limit]
+	}
+	result := make([]string, len(candidates))
+	for i, c := range candidates {
+		result[i] = c.path
+	}
+	return result, nil
+}
