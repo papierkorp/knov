@@ -190,6 +190,32 @@ func jsCodeMirrorFileUpload() string {
 	});`
 }
 
+// jsCodeMirrorTabIndent binds Tab/Shift-Tab to indent/dedent the current line(s), since the
+// bundled CodeMirror build (static/codemirror6-bundle.min.js) ships no Tab keymap at all -
+// without this, Tab falls through to the browser's default focus-next-element behavior,
+// jumping out of the editor (e.g. while indenting a list entry) instead of indenting.
+// Attached on el (bubble phase) rather than view.dom, so it naturally defers to
+// wiki-autocomplete's capture-phase Tab handling on view.dom (accept suggestion) when its
+// dropdown is open: that handler stops propagation before it would reach here.
+func jsCodeMirrorTabIndent() string {
+	return `
+	el.addEventListener('keydown', function(e) {
+		if (e.key !== 'Tab') return;
+		e.preventDefault();
+		var doc = view.state.doc, sel = view.state.selection.main, changes = [];
+		for (var ln = doc.lineAt(sel.from).number; ln <= doc.lineAt(sel.to).number; ln++) {
+			var line = doc.line(ln);
+			if (e.shiftKey) {
+				var m = line.text.match(/^(\t| {1,2})/);
+				if (m) changes.push({from: line.from, to: line.from + m[0].length});
+			} else {
+				changes.push({from: line.from, insert: '  '});
+			}
+		}
+		if (changes.length) view.dispatch({changes: changes});
+	});`
+}
+
 // codeMirrorFileInputHTML renders the hidden multi-file input used by the upload toolbar button.
 func codeMirrorFileInputHTML() string {
 	return `<input type="file" id="codemirror-file-input" multiple hidden />`
@@ -239,6 +265,7 @@ func codeMirrorInitScript(content, filePath string) string {
 	%s
 	%s
 	%s
+	%s
 	%s`,
 		jsBool(configmanager.CodeMirrorVimMode.Get()),
 		jsBool(configmanager.CodeMirrorLineNumbers.Get()),
@@ -257,7 +284,8 @@ func codeMirrorInitScript(content, filePath string) string {
 		jsCodeMirrorToolbar(),
 		jsCodeMirrorSettingsMenu(),
 		jsUploadMediaBlob(),
-		jsCodeMirrorFileUpload())
+		jsCodeMirrorFileUpload(),
+		jsCodeMirrorTabIndent())
 }
 
 // RenderCodeMirrorSectionEditorForm renders a CodeMirror editor form for editing a single section.
