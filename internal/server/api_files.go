@@ -821,40 +821,18 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "renaming file: %s -> %s", currentPath, newPath)
 
-	// check if current file exists
-	currentFullPath := pathutils.ToDocsPath(currentPath)
-	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
-		writeAPIError(w, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist"))
+	err := files.MoveFileNoRefresh(logging.KeyApp, currentPath, newPath)
+	msgs := moveErrorMessages{
+		sourceMissing: translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist"),
+		targetExists:  translation.SprintfForRequest(configmanager.GetLanguage(), "file with new name already exists"),
+		moveFailed:    translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file"),
+	}
+	if handleMoveError(err, "rename file", currentPath, newPath, msgs, func(status int, message string) {
+		writeAPIError(w, status, message)
+	}) {
 		return
 	}
-
-	// check if new path already exists
-	newFullPath := pathutils.ToDocsPath(newPath)
-	if _, err := os.Stat(newFullPath); err == nil {
-		writeAPIError(w, http.StatusConflict, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new name already exists"))
-		return
-	}
-
-	// create directory for new path if needed
-	newDir := filepath.Dir(newFullPath)
-	if err := os.MkdirAll(newDir, 0755); err != nil {
-		logging.LogError(logging.KeyApp, "failed to create directory %s: %v", newDir, err)
-		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
-		return
-	}
-
-	// rename the file
-	if err := os.Rename(currentFullPath, newFullPath); err != nil {
-		logging.LogError(logging.KeyApp, "failed to rename file %s -> %s: %v", currentPath, newPath, err)
-		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file"))
-		return
-	}
-
-	// update links in other files that reference this file
-	if err := files.UpdateLinksForMovedFile(logging.KeyApp, currentPath, newPath); err != nil {
-		logging.LogWarning(logging.KeyApp, "failed to update links for renamed file %s -> %s: %v", currentPath, newPath, err)
-		// don't fail the operation for this, just log a warning
-	}
+	files.RefreshCaches()
 
 	if err := git.InvalidateFileHistoryCache(currentPath); err != nil {
 		logging.LogWarning(logging.KeyApp, "failed to invalidate file history cache for %s: %v", currentPath, err)
@@ -864,7 +842,7 @@ func handleAPIRenameFile(w http.ResponseWriter, r *http.Request) {
 
 	// redirect to the new file location
 	w.Header().Set("HX-Redirect", pathutils.ToFileURL(newPath))
-	if filepath.Dir(currentFullPath) != newDir {
+	if files.FolderFromPath(currentPath) != files.FolderFromPath(newPath) {
 		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file moved"))
 	} else {
 		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "file renamed"))
@@ -951,7 +929,7 @@ func handleAPIMoveFolderFile(w http.ResponseWriter, r *http.Request) {
 // aggregate caches, and commits the deletion to git. For a single deleted file (the common
 // case) - folder delete and bulk delete run as tracked jobs instead (see internal/job).
 func removeFileAndMetadata(fullPath string) error {
-	if err := os.Remove(fullPath); err != nil {
+	if err := files.DeleteFileNoRefresh(fullPath); err != nil {
 		return err
 	}
 	relPath := pathutils.ToRelative(fullPath)

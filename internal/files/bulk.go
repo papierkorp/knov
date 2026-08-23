@@ -1,10 +1,7 @@
 package files
 
 import (
-	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"knov/internal/logging"
 	"knov/internal/pathutils"
@@ -19,7 +16,7 @@ import (
 func BulkDeleteFiles(key logging.Key, fullPaths []string) []string {
 	var deleted []string
 	for _, fullPath := range fullPaths {
-		if err := os.Remove(fullPath); err != nil && !os.IsNotExist(err) {
+		if err := DeleteFileNoRefresh(fullPath); err != nil && !os.IsNotExist(err) {
 			logging.LogWarning(key, "bulk-delete-files: failed to delete %s: %v", fullPath, err)
 			continue
 		}
@@ -32,83 +29,6 @@ func BulkDeleteFiles(key logging.Key, fullPaths []string) []string {
 		RefreshCaches()
 	}
 	return deleted
-}
-
-// ListFilesInFolder returns the full path of every regular file recursively inside fullPath.
-// Used to snapshot a folder's contents once before a delete, so an operation resumed after a
-// crash deletes exactly that snapshot rather than re-walking (and possibly picking up files
-// added to the folder in the meantime).
-func ListFilesInFolder(fullPath string) ([]string, error) {
-	var out []string
-	err := filepath.Walk(fullPath, func(p string, info os.FileInfo, err error) error {
-		if err != nil || info.IsDir() {
-			return nil
-		}
-		out = append(out, p)
-		return nil
-	})
-	return out, err
-}
-
-// RemoveEmptyDirTree removes fullPath and its subdirectories bottom-up, but only the ones left
-// empty by a prior delete - unlike os.RemoveAll, it never deletes a file, so anything written
-// into the tree after the delete's file snapshot was taken survives. Returns an error naming a
-// directory that still has content instead of removing it.
-func RemoveEmptyDirTree(fullPath string) error {
-	entries, err := os.ReadDir(fullPath)
-	if os.IsNotExist(err) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			return fmt.Errorf("%s is not empty: %s", fullPath, entry.Name())
-		}
-		if err := RemoveEmptyDirTree(filepath.Join(fullPath, entry.Name())); err != nil {
-			return err
-		}
-	}
-	return os.Remove(fullPath)
-}
-
-// MoveFolder moves currentFullPath to newFullPath and updates the links of every file that
-// was inside it, then refreshes the aggregate caches once. Returns the number of files whose
-// links were updated successfully and the number that failed.
-func MoveFolder(key logging.Key, currentFullPath, newFullPath string) (updated, failed int, err error) {
-	// collect all files before the move so we can update their links
-	var filesToUpdate []struct{ oldRel, newRel string }
-	_ = filepath.Walk(currentFullPath, func(p string, info os.FileInfo, err error) error {
-		if err != nil || info.IsDir() {
-			return nil
-		}
-		oldRel := pathutils.ToRelative(p)
-		suffix := strings.TrimPrefix(p, currentFullPath)
-		newRel := pathutils.ToRelative(newFullPath + suffix)
-		filesToUpdate = append(filesToUpdate, struct{ oldRel, newRel string }{oldRel, newRel})
-		return nil
-	})
-
-	if err := os.MkdirAll(filepath.Dir(newFullPath), 0755); err != nil {
-		return 0, 0, fmt.Errorf("failed to create parent directory: %w", err)
-	}
-	if err := os.Rename(currentFullPath, newFullPath); err != nil {
-		return 0, 0, fmt.Errorf("failed to move folder: %w", err)
-	}
-
-	for _, f := range filesToUpdate {
-		if err := UpdateLinksForMovedFileNoRefresh(key, f.oldRel, f.newRel); err != nil {
-			logging.LogWarning(key, "move-folder: failed to update links for %s -> %s: %v", f.oldRel, f.newRel, err)
-			failed++
-			continue
-		}
-		updated++
-	}
-	if len(filesToUpdate) > 0 {
-		RefreshCaches()
-	}
-	return updated, failed, nil
 }
 
 // BulkUpdatePatch describes a metadata patch applied to many files at once.

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -477,52 +476,21 @@ func handleAPIMediaRename(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentFull := pathutils.ToMediaPath(currentRel)
-	newFull := pathutils.ToMediaPath(newRel)
-
-	if _, err := os.Stat(currentFull); os.IsNotExist(err) {
-		w.WriteHeader(http.StatusNotFound)
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist")))
+	err := files.MoveMediaFileNoRefresh(currentRel, newRel)
+	msgs := moveErrorMessages{
+		sourceMissing: translation.SprintfForRequest(configmanager.GetLanguage(), "file does not exist"),
+		targetExists:  translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"),
+		moveFailed:    translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file"),
+	}
+	if handleMoveError(err, "media rename", currentRel, newRel, msgs, func(status int, message string) {
+		w.WriteHeader(status)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, message))
+	}) {
 		return
 	}
+	files.RefreshCaches()
 
-	if _, err := os.Stat(newFull); err == nil {
-		w.WriteHeader(http.StatusConflict)
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists")))
-		return
-	}
-
-	oldMediaPath := "media/" + currentRel
-	newMediaPath := "media/" + newRel
-
-	// update links in docs BEFORE moving metadata so LinksToHere is still readable
-	if err := files.UpdateLinksForMovedMedia(oldMediaPath, newMediaPath); err != nil {
-		logging.LogWarning(logging.KeyApp, "media rename: failed to update links %s -> %s: %v", oldMediaPath, newMediaPath, err)
-	}
-
-	if err := os.MkdirAll(filepath.Dir(newFull), 0755); err != nil {
-		logging.LogError(logging.KeyApp, "media rename: failed to create directory for %s: %v", newFull, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory")))
-		return
-	}
-
-	if err := os.Rename(currentFull, newFull); err != nil {
-		logging.LogError(logging.KeyApp, "media rename: failed to rename %s -> %s: %v", currentFull, newFull, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError,
-			translation.SprintfForRequest(configmanager.GetLanguage(), "failed to rename file")))
-		return
-	}
-
-	if err := files.MoveMediaMetadata(oldMediaPath, newMediaPath); err != nil {
-		logging.LogWarning(logging.KeyApp, "media rename: failed to move metadata %s -> %s: %v", oldMediaPath, newMediaPath, err)
-	}
-
-	logging.LogInfo(logging.KeyApp, "media renamed: %s -> %s", oldMediaPath, newMediaPath)
+	logging.LogInfo(logging.KeyApp, "media renamed: media/%s -> media/%s", currentRel, newRel)
 
 	// redirect to the new media detail page
 	w.Header().Set("HX-Redirect", "/media/"+newRel+"?mode=detail")

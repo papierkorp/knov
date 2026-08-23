@@ -570,47 +570,27 @@ func handleAPISetMetadataPath(w http.ResponseWriter, r *http.Request) {
 
 	logging.LogInfo(logging.KeyApp, "changing file path via metadata: %s -> %s", filePath, newpath)
 
-	var currentFullPath, newFullPath string
-	if strings.HasPrefix(filePath, "media/") {
-		currentFullPath = pathutils.ToMediaPath(pathutils.ToRelative(filePath))
-		newFullPath = pathutils.ToMediaPath(pathutils.ToRelative(newpath))
+	isMedia := strings.HasPrefix(filePath, "media/")
+	context := "move file via metadata"
+	var err error
+	if isMedia {
+		context = "move media via metadata"
+		err = files.MoveMediaFileNoRefresh(pathutils.ToRelative(filePath), pathutils.ToRelative(newpath))
 	} else {
-		currentFullPath = pathutils.ToDocsPath(pathutils.ToRelative(filePath))
-		newFullPath = pathutils.ToDocsPath(pathutils.ToRelative(newpath))
+		err = files.MoveFileNoRefresh(logging.KeyApp, pathutils.ToRelative(filePath), pathutils.ToRelative(newpath))
 	}
-
-	if _, err := os.Stat(currentFullPath); os.IsNotExist(err) {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"))
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"), http.StatusNotFound)
+	msgs := moveErrorMessages{
+		sourceMissing: translation.SprintfForRequest(configmanager.GetLanguage(), "current file does not exist"),
+		targetExists:  translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"),
+		moveFailed:    translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"),
+	}
+	if handleMoveError(err, context, filePath, newpath, msgs, func(status int, message string) {
+		notify.SetHeader(w, notify.LevelError, message)
+		http.Error(w, message, status)
+	}) {
 		return
 	}
-
-	if _, err := os.Stat(newFullPath); err == nil {
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"))
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "file with new path already exists"), http.StatusConflict)
-		return
-	}
-
-	newDir := filepath.Dir(newFullPath)
-	if err := os.MkdirAll(newDir, 0755); err != nil {
-		logging.LogError(logging.KeyApp, "failed to create directory %s: %v", newDir, err)
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"))
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to create directory"), http.StatusInternalServerError)
-		return
-	}
-
-	if err := os.Rename(currentFullPath, newFullPath); err != nil {
-		logging.LogError(logging.KeyApp, "failed to move file %s -> %s: %v", filePath, newpath, err)
-		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"))
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to move file"), http.StatusInternalServerError)
-		return
-	}
-
-	if !strings.HasPrefix(filePath, "media/") {
-		if err := files.UpdateLinksForMovedFile(logging.KeyApp, filePath, newpath); err != nil {
-			logging.LogWarning(logging.KeyApp, "failed to update links for moved file %s -> %s: %v", filePath, newpath, err)
-		}
-	}
+	files.RefreshCaches()
 
 	logging.LogInfo(logging.KeyApp, "successfully moved file via metadata: %s -> %s", filePath, newpath)
 	newRelPath := pathutils.ToRelative(newpath)

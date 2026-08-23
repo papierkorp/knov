@@ -3,10 +3,13 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"mime"
 	"net/http"
 	"strings"
 
+	"knov/internal/files"
+	"knov/internal/logging"
 	"knov/internal/server/render"
 )
 
@@ -38,4 +41,39 @@ func writeAPIError(w http.ResponseWriter, status int, message string) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(status)
 	w.Write([]byte(render.RenderStatusMessage(render.StatusError, message)))
+}
+
+// moveErrorMessages holds a call site's translated response text for each outcome
+// handleMoveError distinguishes, so the classification logic can be shared without dictating
+// wording that differs (deliberately) between the rename/media-rename/set-path handlers.
+type moveErrorMessages struct {
+	sourceMissing, targetExists, moveFailed string
+}
+
+// handleMoveError classifies an error from files.MoveFileNoRefresh/MoveMediaFileNoRefresh and
+// reports it, replacing the same 4-way errors.Is switch previously duplicated across every move
+// handler. respond is called with the response status/message for a fatal outcome (source
+// missing, target exists, or any other failure) - the caller returns immediately afterward. A
+// nil error is a no-op; the non-fatal ErrLinkUpdateFailed (the physical move already succeeded,
+// only the secondary link-rewrite step failed) is only logged, matching every call site's
+// existing "don't fail the operation for this" handling. stop reports whether the caller should
+// return.
+func handleMoveError(err error, context, oldPath, newPath string, msgs moveErrorMessages, respond func(status int, message string)) (stop bool) {
+	switch {
+	case err == nil:
+		return false
+	case errors.Is(err, files.ErrMoveSourceMissing):
+		respond(http.StatusNotFound, msgs.sourceMissing)
+		return true
+	case errors.Is(err, files.ErrMoveTargetExists):
+		respond(http.StatusConflict, msgs.targetExists)
+		return true
+	case errors.Is(err, files.ErrLinkUpdateFailed):
+		logging.LogWarning(logging.KeyApp, "%s: failed to update links %s -> %s: %v", context, oldPath, newPath, err)
+		return false
+	default:
+		logging.LogError(logging.KeyApp, "%s: failed to move %s -> %s: %v", context, oldPath, newPath, err)
+		respond(http.StatusInternalServerError, msgs.moveFailed)
+		return true
+	}
 }
