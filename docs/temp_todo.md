@@ -29,8 +29,7 @@
   - update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse)
   - in the theme let me also arrange the info slideout components
 - fixes
-  - media rename
-  - codemirror settings button: Uncaught ReferenceError: toggleFpFileMenu is not defined
+  - media rename?
 - chore
   - async jobs follow up candidates
   - switch to static id instead of using the path
