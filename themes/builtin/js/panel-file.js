@@ -254,8 +254,8 @@ function setupFilePage() {
     });
   }
 
-  // auto-open file info panel
-  togglePanel("fp-file");
+  // auto-open file info panel (not toggle: it may already be open on reload)
+  Alpine.store("rail").open("fp-file");
   return true;
 }
 
