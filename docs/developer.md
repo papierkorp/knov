@@ -562,6 +562,7 @@ import {
   placeholder,
   lineNumbers,
   highlightSpecialChars,
+  rectangularSelection,
 } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import {
@@ -594,6 +595,11 @@ window.createCodeMirror = function (element, content, options) {
   var extensions = [
     // VIM - MUST BE FIRST for proper Vim mode behavior
     vim(),
+
+    // Multi-cursor: Alt+click adds a cursor, Alt+drag makes a rectangular (column) selection
+    EditorState.allowMultipleSelections.of(true),
+    EditorView.clickAddsSelectionRange.of((e) => e.altKey),
+    rectangularSelection(),
 
     // Core editing features
     history(),
