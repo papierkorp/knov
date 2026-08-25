@@ -6,17 +6,86 @@ import (
 	"strings"
 )
 
-// ListItem represents a single item in the list or todo editor.
-// State is only used by the todo editor; list editor always leaves it empty.
+// todo state constants
+const (
+	TodoStateOpen      = "open"
+	TodoStateDone      = "done"
+	TodoStateCancelled = "cancelled"
+	TodoStateWaiting   = "waiting"
+)
+
+// stateToGlyph maps a state string to its GFM display glyph
+func stateToGlyph(state string) string {
+	switch state {
+	case TodoStateDone:
+		return "[X]"
+	case TodoStateCancelled:
+		return "[-]"
+	case TodoStateWaiting:
+		return "[O]"
+	default:
+		return "[ ]"
+	}
+}
+
+// stateToMarkdown maps a state string to its GFM markdown prefix
+func stateToMarkdown(state string) string {
+	switch state {
+	case TodoStateDone:
+		return "[X] "
+	case TodoStateCancelled:
+		return "[-] "
+	case TodoStateWaiting:
+		return "[O] "
+	default:
+		return "[ ] "
+	}
+}
+
+// markdownToState parses a GFM checkbox prefix into a state string
+func markdownToState(prefix string) string {
+	switch strings.ToUpper(prefix) {
+	case "[X]":
+		return TodoStateDone
+	case "[-]":
+		return TodoStateCancelled
+	case "[O]":
+		return TodoStateWaiting
+	default:
+		return TodoStateOpen
+	}
+}
+
+// ListItem represents a single item in the list/todo editor. State is set for
+// checkbox items (open/done/cancelled/waiting) and empty for a plain bullet -
+// both can be mixed freely in the same file. Type is "header" for a section
+// heading (rendered/parsed as "# text".."###### text"), with Level (1-6)
+// giving the heading depth; headers are always flat, never nested as a child.
 type ListItem struct {
 	ID       string     `json:"id"`
 	Content  string     `json:"content"`
 	State    string     `json:"state,omitempty"`
+	Type     string     `json:"type,omitempty"`
+	Level    int        `json:"level,omitempty"`
 	Children []ListItem `json:"children,omitempty"`
 }
 
-// ParseMarkdownToListItems parses plain markdown list format (no state extraction).
-// Format: nested lists with "- " prefix and indentation for nesting.
+// headerLevel returns the ATX heading level (1-6) if trimmed is a "# "/"## "/... line,
+// along with the heading text, or ok=false if it isn't a heading line.
+func headerLevel(trimmed string) (level int, title string, ok bool) {
+	for level < 6 && level < len(trimmed) && trimmed[level] == '#' {
+		level++
+	}
+	if level == 0 || level >= len(trimmed) || trimmed[level] != ' ' {
+		return 0, "", false
+	}
+	return level, strings.TrimSpace(trimmed[level+1:]), true
+}
+
+// ParseMarkdownToListItems parses a nested markdown list, extracting GFM checkbox
+// state per item when present (- [ ] open, - [x]/[X] done, - [-] cancelled, - [o]/[O]
+// waiting) and leaving State empty for plain bullets. A "#".."######" line is parsed
+// as a root-level header item carrying its heading level, resetting any open nesting.
 func ParseMarkdownToListItems(content string) []ListItem {
 	if content == "" {
 		return []ListItem{}
@@ -33,7 +102,25 @@ func ParseMarkdownToListItems(content string) []ListItem {
 	idCounter := 0
 
 	for _, line := range lines {
-		if strings.TrimSpace(line) == "" {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+
+		if level, title, ok := headerLevel(trimmed); ok {
+			stack = stack[:1]
+			indentLevels = indentLevels[:1]
+			*stack[0] = append(*stack[0], ListItem{
+				ID:      fmt.Sprintf("%d", idCounter),
+				Content: title,
+				Type:    "header",
+				Level:   level,
+			})
+			idCounter++
+			continue
+		}
+
+		if !strings.HasPrefix(trimmed, "- ") {
 			continue
 		}
 
@@ -48,12 +135,15 @@ func ParseMarkdownToListItems(content string) []ListItem {
 			}
 		}
 
-		trimmed := strings.TrimSpace(line)
-		if !strings.HasPrefix(trimmed, "- ") {
-			continue
-		}
+		rest := strings.TrimPrefix(trimmed, "- ")
 
-		itemContent := strings.TrimPrefix(trimmed, "- ")
+		// extract state prefix if present (e.g. "[ ] ", "[X] ", "[-] ", "[O] ")
+		state := ""
+		itemContent := rest
+		if len(rest) >= 4 && rest[0] == '[' && rest[2] == ']' && rest[3] == ' ' {
+			state = markdownToState(strings.ToUpper(rest[0:3]))
+			itemContent = rest[4:]
+		}
 
 		for len(indentLevels) > 1 && indent <= indentLevels[len(indentLevels)-1] {
 			stack = stack[:len(stack)-1]
@@ -63,6 +153,7 @@ func ParseMarkdownToListItems(content string) []ListItem {
 		item := ListItem{
 			ID:       fmt.Sprintf("%d", idCounter),
 			Content:  itemContent,
+			State:    state,
 			Children: []ListItem{},
 		}
 		idCounter++
@@ -77,14 +168,28 @@ func ParseMarkdownToListItems(content string) []ListItem {
 	return items
 }
 
-// ConvertListItemsToMarkdown converts plain list items to markdown (no state prefix).
+// ConvertListItemsToMarkdown converts list/todo items to markdown: a GFM checkbox
+// prefix when item.State is set, a plain bullet otherwise, and "#".."######" for
+// header items (per item.Level, root-level only, no children).
 func ConvertListItemsToMarkdown(items []ListItem, indent int) string {
 	var md strings.Builder
 	indentStr := strings.Repeat("  ", indent)
 
 	for _, item := range items {
+		if item.Type == "header" {
+			level := item.Level
+			if level < 1 || level > 6 {
+				level = 1
+			}
+			fmt.Fprintf(&md, "\n%s %s\n\n", strings.Repeat("#", level), item.Content)
+			continue
+		}
+
 		md.WriteString(indentStr)
 		md.WriteString("- ")
+		if item.State != "" {
+			md.WriteString(stateToMarkdown(item.State))
+		}
 		md.WriteString(item.Content)
 		md.WriteString("\n")
 
@@ -96,8 +201,9 @@ func ConvertListItemsToMarkdown(items []ListItem, indent int) string {
 	return md.String()
 }
 
-// sortableBaseJS returns the shared JS fragment embedded by both list and todo editors.
-// Assumes createListItem(text, state) is defined in the enclosing editor scope.
+// sortableBaseJS returns the shared JS fragment embedded by the list/todo editor.
+// Assumes createListItem(text, state, type, level) and changeHeaderLevel(li, delta) are
+// defined in the enclosing editor scope.
 func sortableBaseJS() string {
 	return `
 			let itemCounter = 0;
@@ -129,9 +235,15 @@ func sortableBaseJS() string {
 						});
 						dropAsChild = null;
 
+						// headers are flat section markers: always root-level, so block any
+						// native reorder that would drop one into a nested-list, not just
+						// the drop-as-child gesture below
+						if (evt.dragged.dataset.type === "header") return evt.to.id === "main-list";
+
 						const related = evt.related;
 						if (!related || !related.classList.contains("list-item")) return true;
 						if (related === evt.dragged) return true;
+						if (related.dataset.type === "header") return true;
 
 						const target = evt.originalEvent.target;
 						if (target && target.closest(".drag-handle")) {
@@ -201,6 +313,7 @@ func sortableBaseJS() string {
 					if (allItems.length === 0) return;
 					parentLi = allItems[allItems.length - 1];
 				}
+				if (parentLi.dataset.type === "header") return; // headers can't hold children
 
 				let nestedList = parentLi.querySelector(".nested-list");
 				if (!nestedList) {
@@ -219,8 +332,15 @@ func sortableBaseJS() string {
 			}
 
 			function indentItem(li) {
+				// headers are flat section markers: indent bumps heading level instead
+				if (li.dataset.type === "header") {
+					changeHeaderLevel(li, 1);
+					return;
+				}
+
 				const previousLi = li.previousElementSibling;
 				if (!previousLi) return;
+				if (previousLi.dataset.type === "header") return; // headers can't hold children
 
 				let nestedList = previousLi.querySelector(".nested-list");
 				if (!nestedList) {
@@ -235,6 +355,11 @@ func sortableBaseJS() string {
 			}
 
 			function outdentItem(li) {
+				if (li.dataset.type === "header") {
+					changeHeaderLevel(li, -1);
+					return;
+				}
+
 				const parentUl = li.parentElement;
 				const grandparentLi = parentUl.closest(".list-item");
 				if (!grandparentLi) return;
@@ -317,19 +442,24 @@ func sortableBaseJS() string {
 				for (const li of ul.children) {
 					const input = li.querySelector(".item-input");
 					const nestedList = li.querySelector(".nested-list");
-					items.push({
+					const item = {
 						id: li.dataset.id,
 						content: input ? input.value : "",
 						state: li.dataset.state || "",
+						type: li.dataset.type || "",
 						children: nestedList ? serializeList(nestedList) : []
-					});
+					};
+					if (li.dataset.type === "header") {
+						item.level = parseInt(li.dataset.level || "1", 10);
+					}
+					items.push(item);
 				}
 				return items;
 			}
 
 			function deserializeList(items, parentUl) {
 				items.forEach(function(item) {
-					const li = createListItem(item.content, item.state || "");
+					const li = createListItem(item.content, item.state || "", item.type || "", item.level || 1);
 					li.dataset.id = item.id;
 					itemCounter = Math.max(itemCounter, parseInt(item.id) + 1);
 					parentUl.appendChild(li);

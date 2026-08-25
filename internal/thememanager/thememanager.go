@@ -321,7 +321,6 @@ func injectDefaultCSS(html string) string {
     <link href="/static/css/indexeditor.css" rel="stylesheet" />
     <link href="/static/css/listeditor.css" rel="stylesheet" />
 	  <link href="/static/css/kanban.css" rel="stylesheet" />
-    <link href="/static/css/todoeditor.css" rel="stylesheet" />
     <link href="/static/css/tableeditor.css" rel="stylesheet" />
     <link href="/static/css/filtereditor.css" rel="stylesheet" />
     <link href="/static/css/codemirroreditor.css" rel="stylesheet" />

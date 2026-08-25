@@ -1319,7 +1319,7 @@ const docTemplate = `{
         },
         "/api/editor/listeditor": {
             "post": {
-                "description": "Saves a list file for todo file types",
+                "description": "Saves a list/todo file; mode selects plain bullets (\"list\", default) or\nGFM checkbox syntax (- [ ] / - [X] / - [-] / - [O]) for \"todo\"",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -1344,6 +1344,12 @@ const docTemplate = `{
                         "name": "content",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "list or todo",
+                        "name": "mode",
+                        "in": "formData"
                     }
                 ],
                 "responses": {}
@@ -1438,38 +1444,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/api/editor/todoeditor": {
-            "post": {
-                "description": "Saves a todo file using GFM checkbox syntax (- [ ] / - [X] / - [-] / - [O])",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "editor"
-                ],
-                "summary": "Save todo editor",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "file path",
-                        "name": "filepath",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "todo content as json",
-                        "name": "content",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {}
             }
         },
         "/api/files/autocomplete": {

@@ -25,7 +25,6 @@
       - for devs
   - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 - features
-  - combine todo/list editor (setting to change the gfm todo), add headers (which adds a `#` instead of a list)
   - update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse)
   - in the theme let me also arrange the info slideout components
 - fixes

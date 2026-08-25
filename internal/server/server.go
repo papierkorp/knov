@@ -158,7 +158,6 @@ func NewRouter() *chi.Mux {
 			r.Post("/indexeditor/add-entry", handleAPIAddIndexEntry)
 			r.Post("/filtereditor", handleAPISaveFilterEditor)
 			r.Post("/listeditor", handleAPISaveListEditor)
-			r.Post("/todoeditor", handleAPISaveTodoEditor)
 			r.Post("/tableeditor", handleAPITableEditorSave)
 			r.Get("/tableeditor", handleAPITableEditorForm)
 		})

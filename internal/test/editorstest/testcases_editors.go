@@ -96,12 +96,10 @@ func caseFilterCreateEditSave() test.CaseResult {
 	return cr
 }
 
-// caseListCreateEditSave mirrors handleAPISaveListEditor: convert list items to markdown
-// (render.ConvertListItemsToMarkdown just joins "- "+content+"\n" per item, replicated
-// directly here rather than importing internal/server/render for one line of logic), write, save
-// metadata. Note: the real handler tags list saves with EditorTypeTodo (not EditorTypeList)
-// - that's existing app behavior, so this case matches it rather than the "correct" type,
-// since the suite verifies what the app actually does.
+// caseListCreateEditSave mirrors handleAPISaveListEditor (list/todo editor merged, mode="list"):
+// convert list items to markdown (render.ConvertListItemsToMarkdown just joins "- "+content+"\n"
+// per item, replicated directly here rather than importing internal/server/render for one line of
+// logic), write, save metadata tagged EditorTypeList.
 func caseListCreateEditSave() test.CaseResult {
 	name := "list"
 	relPath := testPath("list") + configmanager.ExtensionForEditor("list")
@@ -110,7 +108,7 @@ func caseListCreateEditSave() test.CaseResult {
 	if err := writeFile(relPath, initial); err != nil {
 		return errCase(name, err)
 	}
-	if err := saveMetadata(relPath, files.EditorTypeTodo); err != nil {
+	if err := saveMetadata(relPath, files.EditorTypeList); err != nil {
 		return errCase(name, err)
 	}
 
@@ -137,8 +135,8 @@ func caseListCreateEditSave() test.CaseResult {
 	return cr
 }
 
-// caseTodoCreateEditSave mirrors handleAPISaveTodoEditor: GFM checkbox markdown (state
-// prefixes "[ ] "/"[X] " match render.stateToMarkdown's open/done cases, replicated
+// caseTodoCreateEditSave mirrors handleAPISaveListEditor (mode="todo"): GFM checkbox markdown
+// (state prefixes "[ ] "/"[X] " match render.stateToMarkdown's open/done cases, replicated
 // directly here to avoid importing internal/server/render - see caseListCreateEditSave),
 // edited to flip a task's state.
 func caseTodoCreateEditSave() test.CaseResult {

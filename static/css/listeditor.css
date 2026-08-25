@@ -200,3 +200,85 @@
   padding: 8px 0;
   min-height: 400px;
 }
+
+.component-list-editor .controls .toggle-btn.active {
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* state badge (open/done/cancelled/waiting): only shown once "todo mode" is on */
+.component-list-editor .state-btn,
+.component-list-editor #cascade-status-toggle {
+  display: none;
+}
+
+.component-list-editor.todo-mode .state-btn {
+  display: inline-flex;
+}
+
+.component-list-editor.todo-mode #cascade-status-toggle {
+  display: inline-block;
+}
+
+.component-list-editor .state-btn {
+  flex-shrink: 0;
+  margin-right: 8px;
+  padding: 2px 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 0.9rem;
+  border-radius: 3px;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.component-list-editor .state-btn:hover {
+  opacity: 0.7;
+}
+
+.component-list-editor .state-open {
+  color: var(--text-secondary);
+}
+
+.component-list-editor .state-done {
+  color: var(--success);
+}
+
+.component-list-editor .state-cancelled {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.component-list-editor .state-waiting {
+  color: var(--warning);
+}
+
+.component-list-editor.todo-mode .item-input.item-struck {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.component-list-editor.todo-mode .item-input.item-waiting {
+  font-style: italic;
+}
+
+/* header rows (section titles): no state badge, bolder/larger text */
+.component-list-editor .list-item-header .item-input {
+  font-weight: 600;
+  font-size: 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.component-list-editor .header-level-badge {
+  flex-shrink: 0;
+  margin-right: 8px;
+  padding: 2px 6px;
+  color: var(--text-secondary);
+  font-family: monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
