@@ -30,9 +30,7 @@
   - in the theme let me also arrange the info slideout components
 - fixes
   - media rename
-  - close sidepanel for /media
-  - theme is not using the media upload settings (change to media settings)
-  - always unpack the theme even if the files already exist (overwrite the existing ones) we have the overwrite folder if a user wants to change things
+  - codemirror settings button: Uncaught ReferenceError: toggleFpFileMenu is not defined
 - chore
   - async jobs follow up candidates
   - switch to static id instead of using the path

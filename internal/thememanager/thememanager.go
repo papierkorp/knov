@@ -326,6 +326,7 @@ func injectDefaultCSS(html string) string {
     <link href="/static/css/filtereditor.css" rel="stylesheet" />
     <link href="/static/css/codemirroreditor.css" rel="stylesheet" />
     <link href="/static/css/autocomplete.css" rel="stylesheet" />
+    <link href="/static/css/media.css" rel="stylesheet" />
     <link href="/static/css/custom.css" rel="stylesheet" />
 `
 
@@ -344,6 +345,7 @@ func injectDefaultJS(html string) string {
 	scripts += `<script src="/static/todo-state.js"></script>`
 	scripts += `<script src="/static/conflict-diff.js"></script>`
 	scripts += `<script src="/static/copy-code.js"></script>`
+	scripts += `<script src="/static/media-lightbox.js"></script>`
 	return html[:bodyCloseIndex] + scripts + html[bodyCloseIndex:]
 }
 

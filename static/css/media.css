@@ -1,0 +1,123 @@
+/* ── inline media previews (render_media.go RenderMediaPreviewWithSize) ────── */
+/* Base styles using only CSS variables defined by every theme.               */
+/* Themes can override .media-preview and its modifier classes in their own   */
+/* CSS if they need a different look.                                        */
+
+.media-preview {
+  margin: 8px 0;
+}
+
+/* block display avoids the few-pixel whitespace gap browsers leave under
+   inline images (their default display). */
+.media-preview-image {
+  display: block;
+}
+
+/* .preview-link (the "detail" click behavior) is an <a>, inline by default -
+   a block-level img as its sole child would force the browser to blockify
+   the <a> itself, stretching it (and its click target) to the full width of
+   the surrounding container instead of hugging the image. .preview-trigger
+   doesn't need this: it's a <button>, inline-block by default already. */
+.preview-link .media-preview-image {
+  display: inline-block;
+}
+
+.media-preview.display-left {
+  float: left;
+  margin: 4px 16px 8px 0;
+}
+
+.media-preview.display-right {
+  float: right;
+  margin: 4px 0 8px 16px;
+}
+
+.media-preview.display-center {
+  display: block;
+  text-align: center;
+}
+
+.media-preview.display-inline {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+
+.media-preview.border-simple img,
+.media-preview.border-simple video,
+.media-preview.border-simple iframe {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.media-preview.border-rounded img,
+.media-preview.border-rounded video,
+.media-preview.border-rounded iframe {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.media-preview.border-shadow img,
+.media-preview.border-shadow video,
+.media-preview.border-shadow iframe {
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--text) 15%, transparent);
+}
+
+.media-preview .preview-caption {
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+/* click-to-enlarge trigger button - looks like the media it wraps */
+.preview-trigger {
+  all: unset;
+  cursor: pointer;
+  display: inline-block;
+}
+
+/* full-size lightbox opened by the "enlarge" click behavior */
+#media-lightbox.media-lightbox {
+  position: relative;
+  border: none;
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 12px;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+#media-lightbox.media-lightbox::backdrop {
+  background: color-mix(in srgb, var(--text) 70%, transparent);
+}
+
+.media-lightbox-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-lightbox-content img,
+.media-lightbox-content video {
+  max-width: 86vw;
+  max-height: 82vh;
+}
+
+.media-lightbox-close {
+  all: unset;
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  cursor: pointer;
+  font-size: 1.5em;
+  line-height: 1;
+  color: var(--text-secondary);
+}
+
+.media-lightbox-close:hover {
+  color: var(--text);
+}

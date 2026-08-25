@@ -2903,17 +2903,12 @@ h6:hover .header-pdf-btn {
   max-width: 100%;
   max-height: 60vh;
   border-radius: 4px;
-  display: block;
 }
 
-/* inline previews (RenderMediaPreviewWithSize) reuse .media-preview-image
-   inside .preview-link - keep it inline-block there so the block display
-   above doesn't blockify the wrapping <a>, which would stretch it (and its
-   click target) to the full width of the surrounding container instead of
-   hugging the image. */
-.preview-link .media-preview-image {
-  display: inline-block;
-}
+/* inline preview container (RenderMediaPreviewWithSize) - display mode,
+   border style and caption are handled theme-agnostically by
+   /static/css/media.css, injected into every theme. Override .media-preview
+   here only for builtin-specific tweaks. */
 
 .media-preview-video,
 .media-preview-audio {

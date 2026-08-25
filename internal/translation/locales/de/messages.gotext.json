@@ -272,11 +272,6 @@
       "translation": "Verwaiste Dateien bereinigen"
     },
     {
-      "id": "Click to Enlarge",
-      "message": "Click to Enlarge",
-      "translation": "Zum Vergrößern klicken"
-    },
-    {
       "id": "Code Folding",
       "message": "Code Folding",
       "translation": "Code-Faltung"
@@ -787,6 +782,11 @@
       "translation": "IANA-Zeitzonenname zur Anzeige von Zeitstempeln (z. B. Local, Europe/Berlin, America/New_York)"
     },
     {
+      "id": "Image Click Behavior",
+      "message": "Image Click Behavior",
+      "translation": ""
+    },
+    {
       "id": "Include Sub-Headers When Editing Sections",
       "message": "Include Sub-Headers When Editing Sections",
       "translation": "Unterüberschriften beim Bearbeiten von Abschnitten einbeziehen"
@@ -982,14 +982,14 @@
       "translation": ""
     },
     {
+      "id": "Media Settings",
+      "message": "Media Settings",
+      "translation": ""
+    },
+    {
       "id": "Media Types",
       "message": "Media Types",
       "translation": "Medientypen"
-    },
-    {
-      "id": "Media Upload Settings",
-      "message": "Media Upload Settings",
-      "translation": "Medien-Upload-Einstellungen"
     },
     {
       "id": "Message",
@@ -3847,11 +3847,6 @@
       "translation": "lädt..."
     },
     {
-      "id": "make preview images clickable to open the full-size version",
-      "message": "make preview images clickable to open the full-size version",
-      "translation": "Vorschaubilder anklickbar machen, um die Vollbildversion zu öffnen"
-    },
-    {
       "id": "manage test data for development and testing purposes",
       "message": "manage test data for development and testing purposes",
       "translation": "Testdaten für Entwicklungs- und Testzwecke verwalten"
@@ -5165,6 +5160,11 @@
       "id": "warning",
       "message": "warning",
       "translation": "Warnung"
+    },
+    {
+      "id": "what happens when an inline image preview is clicked",
+      "message": "what happens when an inline image preview is clicked",
+      "translation": ""
     },
     {
       "id": "when enabled, editing a section also selects content from all nested sub-level headers",

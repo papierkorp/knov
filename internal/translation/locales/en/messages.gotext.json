@@ -272,11 +272,6 @@
       "translation": ""
     },
     {
-      "id": "Click to Enlarge",
-      "message": "Click to Enlarge",
-      "translation": ""
-    },
-    {
       "id": "Code Folding",
       "message": "Code Folding",
       "translation": ""
@@ -787,6 +782,11 @@
       "translation": ""
     },
     {
+      "id": "Image Click Behavior",
+      "message": "Image Click Behavior",
+      "translation": ""
+    },
+    {
       "id": "Include Sub-Headers When Editing Sections",
       "message": "Include Sub-Headers When Editing Sections",
       "translation": ""
@@ -982,13 +982,13 @@
       "translation": ""
     },
     {
-      "id": "Media Types",
-      "message": "Media Types",
+      "id": "Media Settings",
+      "message": "Media Settings",
       "translation": ""
     },
     {
-      "id": "Media Upload Settings",
-      "message": "Media Upload Settings",
+      "id": "Media Types",
+      "message": "Media Types",
       "translation": ""
     },
     {
@@ -3847,11 +3847,6 @@
       "translation": ""
     },
     {
-      "id": "make preview images clickable to open the full-size version",
-      "message": "make preview images clickable to open the full-size version",
-      "translation": ""
-    },
-    {
       "id": "manage test data for development and testing purposes",
       "message": "manage test data for development and testing purposes",
       "translation": ""
@@ -5164,6 +5159,11 @@
     {
       "id": "warning",
       "message": "warning",
+      "translation": ""
+    },
+    {
+      "id": "what happens when an inline image preview is clicked",
+      "message": "what happens when an inline image preview is clicked",
       "translation": ""
     },
     {

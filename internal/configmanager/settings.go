@@ -194,7 +194,7 @@ func GetBorderStyle() string {
 	return s
 }
 func GetShowCaption() bool          { return ShowCaption.Get() }
-func GetClickToEnlarge() bool       { return ClickToEnlarge.Get() }
+func GetImageClickBehavior() string { return ImageClickBehavior.Get() }
 func GetAllowedMimeTypes() []string { return AllowedMimeTypes.Get() }
 
 func GetTablePageSize() int {

@@ -89,6 +89,12 @@ function setupFilePage() {
     return true;
   }
 
+  // media overview/detail pages — media has its own detail view, not fp-file
+  if (path === "/browse/media" || path.startsWith("/media/")) {
+    closePanel();
+    return true;
+  }
+
   // table editor page — no file panel metadata to populate
   if (path.match(/^\/files\/edittable\/(.+)/)) {
     closePanel();

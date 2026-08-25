@@ -221,11 +221,12 @@ var (
 		Label: "Show Captions",
 		Desc:  "display the filename as a caption below each media preview",
 	})
-	ClickToEnlarge = register(&BoolSetting{
-		key: "clickToEnlarge", Default: true,
+	ImageClickBehavior = register(&StringSetting{
+		key: "imageClickBehavior", Default: "enlarge",
 		Section: SectionMedia, Group: GroupPreviewSettings,
-		Label: "Click to Enlarge",
-		Desc:  "make preview images clickable to open the full-size version",
+		Label:   "Image Click Behavior",
+		Desc:    "what happens when an inline image preview is clicked",
+		Options: []SettingOption{{"none", "No click action"}, {"enlarge", "Enlarge in place"}, {"detail", "Go to detail page"}},
 	})
 
 	ShowHiddenFiles = register(&BoolSetting{

@@ -12,7 +12,7 @@ var (
 	SectionAppearance = SettingSection{Key: "appearance", Label: "Appearance", Description: "Theme, typography and favicon"}
 	SectionEditor     = SettingSection{Key: "editor", Label: "Editor Settings"}
 	SectionTable      = SettingSection{Key: "table", Label: "Table Settings"}
-	SectionMedia      = SettingSection{Key: "media", Label: "Media Upload Settings"}
+	SectionMedia      = SettingSection{Key: "media", Label: "Media Settings"}
 	SectionFileTypes  = SettingSection{Key: "file-types", Label: "File Type Visibility", Description: "Control which file types are visible in file listings and browsing"}
 	SectionPDFExport  = SettingSection{Key: "pdf-export", Label: "PDF Export Settings"}
 )
