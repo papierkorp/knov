@@ -68,11 +68,15 @@ type AppConfig struct {
 	BackupRotationKeepFull      int
 }
 
-// KanbanBoard maps a folder to a kanban board with a display name and a stable URL slug
+// KanbanBoard maps a folder to a kanban board with a display name and a stable URL slug.
+// FolderSync keeps a card's status tag and its physical folder location in sync with each
+// other: moving a card moves the file into FolderPath/<status>/, and moving the file on disk
+// into an existing FolderPath/<status>/ folder sets the tag.
 type KanbanBoard struct {
 	FolderPath  string
 	DisplayName string
 	Slug        string
+	FolderSync  bool
 }
 
 // AutoCreateTag applies Tag to every new file created under FolderPath (recursive - also
@@ -135,7 +139,7 @@ func InitAppConfig() {
 		KanbanCardStyles:            getStringMapEnv("KNOV_KANBAN_CARD_STYLES"),
 		KanbanArchiveStatus:         getEnv("KNOV_KANBAN_ARCHIVE_STATUS", "archive"),
 		KanbanAncestorAllowedStatus: getStringListEnv("KNOV_KANBAN_ANCESTOR_ALLOWED_STATUS", nil),
-		KanbanBoards:                getKanbanBoardsEnv("KNOV_KANBAN_BOARDS"),
+		KanbanBoards:                applyKanbanFolderSyncEnv(getKanbanBoardsEnv("KNOV_KANBAN_BOARDS"), "KNOV_KANBAN_FOLDERSYNC"),
 		NotifyDuration:              getIntEnv("KNOV_NOTIFY_DURATION", 3500),
 		DefaultEditor:               getEnv("KNOV_DEFAULT_EDITOR", ""),
 		BackupAutoEnabled:           getBoolEnv("KNOV_BACKUP_AUTO_ENABLED", false),
@@ -241,6 +245,16 @@ func GetKanbanBoardBySlug(slug string) (KanbanBoard, bool) {
 	return KanbanBoard{}, false
 }
 
+// GetKanbanBoardByFolder looks up a configured kanban board by its exact folder path
+func GetKanbanBoardByFolder(folderPath string) (KanbanBoard, bool) {
+	for _, b := range appConfig.KanbanBoards {
+		if b.FolderPath == folderPath {
+			return b, true
+		}
+	}
+	return KanbanBoard{}, false
+}
+
 // getStringMapEnv parses "key1:val1,key2:val2" into a map
 func getStringMapEnv(key string) map[string]string {
 	result := make(map[string]string)
@@ -260,8 +274,8 @@ func getStringMapEnv(key string) map[string]string {
 }
 
 // getKanbanBoardsEnv parses "folder/path:Display Name, other/folder:Other Name" into a list of
-// kanban boards, deriving a stable URL slug from each folder path (colliding slugs get a
-// numeric suffix, same scheme as header-anchor IDs).
+// kanban boards, deriving a stable URL slug from each folder path (colliding slugs get a numeric
+// suffix, same scheme as header-anchor IDs).
 func getKanbanBoardsEnv(key string) []KanbanBoard {
 	var boards []KanbanBoard
 	usedSlugs := map[string]int{}
@@ -281,6 +295,22 @@ func getKanbanBoardsEnv(key string) []KanbanBoard {
 		}
 		slug := utils.GenerateID(folderPath, usedSlugs)
 		boards = append(boards, KanbanBoard{FolderPath: folderPath, DisplayName: displayName, Slug: slug})
+	}
+	return boards
+}
+
+// applyKanbanFolderSyncEnv marks the boards named in KNOV_KANBAN_FOLDERSYNC (a comma-separated
+// list of board folder paths) as FolderSync-enabled. Kept separate from KNOV_KANBAN_BOARDS so the
+// board list's free-text display names can never collide with a flag token.
+func applyKanbanFolderSyncEnv(boards []KanbanBoard, key string) []KanbanBoard {
+	for _, raw := range getStringListEnv(key, nil) {
+		folderPath := strings.Trim(raw, "/")
+		i := slices.IndexFunc(boards, func(b KanbanBoard) bool { return b.FolderPath == folderPath })
+		if i == -1 {
+			logging.LogWarning(logging.KeyApp, "%s names folder %q which has no matching board in KNOV_KANBAN_BOARDS, ignoring", key, folderPath)
+			continue
+		}
+		boards[i].FolderSync = true
 	}
 	return boards
 }

@@ -23,6 +23,7 @@ const (
 	JobTypeBulkDeleteFiles = "bulk-delete-files"
 	JobTypeFullRebuild     = "metadata-full-rebuild"
 	JobTypeRestore         = "restore"
+	JobTypeFileSync        = "file-sync"
 )
 
 // resumers maps a resumable job's Name() to a constructor that rebuilds it (and returns its

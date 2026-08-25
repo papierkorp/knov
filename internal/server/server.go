@@ -375,6 +375,7 @@ func NewRouter() *chi.Mux {
 		// --------------------------------------- KANBAN ------------------------------------------
 		// ----------------------------------------------------------------------------------------
 		r.Route("/kanban", func(r chi.Router) {
+			r.Post("/sync", handleAPIKanbanSync)
 			r.Get("/{board}", handleAPIGetKanbanBoard)
 			r.Get("/{board}/archive", handleAPIGetKanbanArchive)
 			r.Get("/{board}/events", handleAPIGetKanbanEvents)

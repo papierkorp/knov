@@ -697,10 +697,10 @@ func updateLinksInFile(key logging.Key, filePath, oldPath, newPath string) (bool
 	return updated, nil
 }
 
-// moveFileMetadata moves metadata from old path to new path: the user-owned fields (tags,
-// parents, editor, createdAt, references) carry over from the old record via Mutate, then
-// every derived field is recomputed fresh at the new location via Sync (same "Mutate then
-// Sync" two-lock pattern as any other user-field-plus-derived-fields update).
+// moveFileMetadata moves metadata from old path to new path: the user-owned fields carry over
+// from the old record via Mutate, then every derived field is recomputed fresh at the new
+// location via Sync (same "Mutate then Sync" two-lock pattern as any other
+// user-field-plus-derived-fields update).
 //
 // The initial read of oldPath below is deliberately NOT held under oldPath's lock across the
 // rest of this function: doing so would mean acquiring newPath's lock while still holding
@@ -726,6 +726,8 @@ func moveFileMetadata(key logging.Key, oldPath, newPath string) error {
 			m.Editor = oldMetadata.Editor
 			m.CreatedAt = oldMetadata.CreatedAt
 			m.References = oldMetadata.References
+			m.KanbanAddedAt = oldMetadata.KanbanAddedAt
+			m.KanbanMovedAt = oldMetadata.KanbanMovedAt
 			return true, nil
 		}); err != nil {
 			return fmt.Errorf("failed to save metadata for new path %s: %w", normalizedNewPath, err)

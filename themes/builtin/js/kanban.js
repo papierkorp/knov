@@ -222,24 +222,33 @@
         var col = e.currentTarget;
         col.classList.remove('drag-over');
         if (!dragging) return;
-        var filepath = dragging.dataset.filepath;
-        var oldStatus = dragging.dataset.status;
+        var card = dragging;
+        var filepath = card.dataset.filepath;
+        var oldStatus = card.dataset.status;
         var newStatus = col.dataset.status;
-        dragging.dataset.status = newStatus;
-        dragging.classList.remove('dragging');
+        card.dataset.status = newStatus;
+        card.classList.remove('dragging');
         dragging = null;
         updateColumnCount(oldStatus);
         updateColumnCount(newStatus);
-        if (oldStatus !== newStatus) {
-            var body = new URLSearchParams();
-            body.append('filepath', filepath);
-            body.append('status', newStatus);
-            body.append('board', board);
-            fetch('/api/kanban/card/move', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
-                .catch(function (err) { console.error('kanban move error', err); });
-            saveColumnOrder(oldStatus);
+        if (oldStatus === newStatus) {
+            saveColumnOrder(newStatus);
+            return;
         }
-        saveColumnOrder(newStatus);
+        var body = new URLSearchParams();
+        body.append('filepath', filepath);
+        body.append('status', newStatus);
+        body.append('board', board);
+        // requests JSON so foldersync's (possibly changed) new path can be applied to the card
+        // before the order below is saved under a stale filepath
+        fetch('/api/kanban/card/move', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' }, body: body.toString() })
+            .then(function (res) { return res.json(); })
+            .then(function (data) { if (data && data.filepath) card.dataset.filepath = data.filepath; })
+            .catch(function (err) { console.error('kanban move error', err); })
+            .then(function () {
+                saveColumnOrder(oldStatus);
+                saveColumnOrder(newStatus);
+            });
     };
 
     window.kanbanArchiveDragOver = function (e) {

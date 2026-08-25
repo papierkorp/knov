@@ -2,7 +2,10 @@
 package kanban
 
 import (
+	"errors"
+	"fmt"
 	"os"
+	"path/filepath"
 	"slices"
 	"sort"
 	"strings"
@@ -213,61 +216,212 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 	return cols, nil
 }
 
-// MoveCard updates the kanban status tag on a file and returns the previous status (empty if none).
-// boardFolder scopes the event log entry; pass "" to fall back to guessing the board from the
-// file's own location (used when the caller doesn't know which board triggered the move).
-func MoveCard(boardFolder, filePath, newStatus string) (oldStatus string, err error) {
+// MoveCard updates the kanban status tag on a file and returns the previous status (empty if
+// none) and the file's current path - unchanged unless the resolved board has foldersync
+// enabled (via KNOV_KANBAN_FOLDERSYNC), in which case the file is physically moved into
+// board/newStatus/ and newFilePath reflects that. The physical move (if
+// any) always happens before the tag is touched: if it fails outright, MoveCard returns an error
+// and nothing changes, so the tag can never end up claiming a location the file was never
+// actually moved to. boardFolder scopes the event log entry (and, under foldersync, the move
+// target); pass "" to fall back to guessing the board from the file's own location (used when
+// the caller doesn't know which board triggered the move).
+func MoveCard(boardFolder, filePath, newStatus string) (oldStatus, newFilePath string, err error) {
 	normalizedPath := pathutils.ToWithPrefix(filePath)
+	newFilePath = filePath
 
+	// unlocked read, only to learn the file's current folder (to decide whether a physical
+	// move is needed and which board it belongs to) - same narrow race window already accepted
+	// by moveFileMetadata for the move below, see its docstring; here it can also make the
+	// physical move below fail with ErrMoveSourceMissing under a concurrent mover of the same
+	// path, which is an accepted, fail-safe race (returns an error, changes nothing) rather than
+	// one worth retrying - see prior review discussion for why a retry can't actually recover it
+	meta, err := files.MetaDataGet(normalizedPath)
+	if err != nil || meta == nil {
+		return "", filePath, err
+	}
+
+	dir := strings.Join(meta.Folders, "/")
+	board := boardFolder
+	if board == "" || !pathutils.FolderContains(dir, board) {
+		// caller either didn't say which board, or named one the file isn't actually under -
+		// never trust an unvalidated board hint for the physical move below, only for scoping
+		// the event log entry
+		board = resolveBoardFolder(dir)
+	}
+	eventFolder := board
+	if eventFolder == "" {
+		eventFolder = dir // file isn't under any configured board; log under its own folder
+	}
+
+	// foldersync: physically relocate the card into board/newStatus/ so its on-disk location
+	// mirrors the tag - only for boards that opted in via KNOV_KANBAN_FOLDERSYNC. Done before the
+	// tag write below so a failed move can't leave the tag out of sync with where the file
+	// actually is.
+	if cfgBoard, ok := configmanager.GetKanbanBoardByFolder(board); ok && cfgBoard.FolderSync {
+		targetDir := board + "/" + newStatus
+		if targetDir != dir {
+			targetPath, moveErr := moveFileUnique(logging.KeyApp, filePath, targetDir, filepath.Base(filePath))
+			if moveErr != nil && !errors.Is(moveErr, files.ErrLinkUpdateFailed) {
+				// the rename itself never happened - filePath is still where it was, so bail out
+				// before the tag is touched instead of applying a status that claims a location
+				// the file was never actually moved to
+				return "", filePath, fmt.Errorf("kanban: foldersync failed to move %s to %s: %w", filePath, targetPath, moveErr)
+			}
+			if moveErr != nil {
+				// the rename itself already succeeded on disk and only the metadata/link fixup
+				// afterward had trouble - the file really is at targetPath now, so state must
+				// reflect that instead of pointing at a path that no longer exists
+				logging.LogWarning(logging.KeyApp, "kanban: foldersync moved %s to %s but link update failed: %v", filePath, targetPath, moveErr)
+			}
+			newFilePath = targetPath
+		}
+	}
+
+	normalizedNewPath := pathutils.ToWithPrefix(newFilePath)
 	var found bool
-	var folders []string
 
 	// MetaDataMutate holds the path's write lock across this whole read-modify-write, so a
 	// concurrent writer of the same file (e.g. file-sync's per-changed-file metadata
 	// refresh) can't read stale tags in between and silently revert this move on its own
 	// save.
-	err = files.MetaDataMutate(normalizedPath, func(meta *files.Metadata, existed bool) (bool, error) {
+	err = files.MetaDataMutate(normalizedNewPath, func(meta *files.Metadata, existed bool) (bool, error) {
 		if !existed {
 			return false, nil
 		}
 		found = true
-		oldStatus = StatusFromTags(meta.Tags, configmanager.GetKanbanPrefix())
-
-		newTag := configmanager.KanbanStatusTag(newStatus)
-		filtered := meta.Tags[:0:0]
-		for _, t := range meta.Tags {
-			if !configmanager.IsKanbanTag(t) {
-				filtered = append(filtered, t)
-			}
-		}
-		meta.Tags = append(filtered, newTag)
+		oldStatus = applyStatusTag(meta, newStatus)
 
 		now := time.Now()
 		if meta.KanbanAddedAt.IsZero() {
 			meta.KanbanAddedAt = now
 		}
 		meta.KanbanMovedAt = now
-		folders = meta.Folders
 		return true, nil
 	})
 	if err != nil || !found {
-		return "", err
+		return "", newFilePath, err
 	}
 
 	files.RefreshCaches()
-	eventFolder := boardFolder
-	if eventFolder == "" {
-		dir := strings.Join(folders, "/")
-		eventFolder = resolveBoardFolder(dir)
-		if eventFolder == "" {
-			eventFolder = dir // file isn't under any configured board; log under its own folder
+
+	if err := kanbanStorage.LogEvent(newFilePath, eventFolder, oldStatus, newStatus); err != nil {
+		logging.LogWarning(logging.KeyApp, "kanban: failed to log event for %s: %v", newFilePath, err)
+	}
+	logging.LogInfo(logging.KeyApp, "kanban: moved card %s to status %s", newFilePath, newStatus)
+	return oldStatus, newFilePath, nil
+}
+
+// moveFileUnique moves oldPath into dir/name, or dir/name_2, dir/name_3, ... (inserted before the
+// extension) if that candidate is already taken - so foldersync never fails a move just because
+// another card, coming from a different subfolder, already has the same filename in the
+// destination status folder. Unlike a stat-then-move check, each candidate is tried by actually
+// attempting the move and reacting to files.ErrMoveTargetExists, which is decided under
+// movePhysical's lock - so two callers racing for the same name can't both pass a check that's
+// already stale by the time they act on it; the loser simply retries the next candidate. Caps
+// out at maxMoveUniqueAttempts as a safety net against an unbounded loop if MoveFileNoRefresh
+// ever misreports ErrMoveTargetExists.
+const maxMoveUniqueAttempts = 100
+
+func moveFileUnique(key logging.Key, oldPath, dir, name string) (newPath string, err error) {
+	ext := filepath.Ext(name)
+	base := strings.TrimSuffix(name, ext)
+	candidate := dir + "/" + name
+	for n := 2; n <= maxMoveUniqueAttempts; n++ {
+		err = files.MoveFileNoRefresh(key, oldPath, candidate)
+		if err == nil || !errors.Is(err, files.ErrMoveTargetExists) {
+			return candidate, err
+		}
+		candidate = fmt.Sprintf("%s/%s_%d%s", dir, base, n, ext)
+	}
+	return candidate, fmt.Errorf("too many filename collisions in %s", dir)
+}
+
+// applyStatusTag replaces meta's kanban status tag with newStatus, returning the previous
+// status (or "" if none was set). Shared by MoveCard's tag→folder sync and SyncFolderTag's
+// folder→tag sync so both directions agree on what "the" kanban tag is.
+func applyStatusTag(meta *files.Metadata, newStatus string) (oldStatus string) {
+	oldStatus = StatusFromTags(meta.Tags, configmanager.GetKanbanPrefix())
+	newTag := configmanager.KanbanStatusTag(newStatus)
+	filtered := meta.Tags[:0:0]
+	for _, t := range meta.Tags {
+		if !configmanager.IsKanbanTag(t) {
+			filtered = append(filtered, t)
 		}
 	}
-	if err := kanbanStorage.LogEvent(filePath, eventFolder, oldStatus, newStatus); err != nil {
-		logging.LogWarning(logging.KeyApp, "kanban: failed to log event for %s: %v", filePath, err)
+	meta.Tags = append(filtered, newTag)
+	return oldStatus
+}
+
+// SyncFolderTag is foldersync's reverse direction: called by the file-sync cronjob for a file
+// it just found on disk (newly created, edited, or renamed), it checks whether path sits
+// directly inside one of its board's status folders and, if so, updates the file's kanban tag to
+// match - covering a plain "drop a new file into board/status/" just as much as an actual move.
+// changedAt is when the physical change happened (the git commit's authored time) - if the tag
+// was changed more recently than that, the metadata change wins and the folder hint is ignored,
+// so an in-app drag-drop (which already moved the file itself) can't be undone by the cronjob
+// picking up its own rename on the next run.
+//
+// KanbanMovedAt only advances on an in-app move (MoveCard), so that's the only kind of tag
+// change this protects against the folder hint. A tag edited by hand (or by anything else that
+// bypasses MoveCard) without also moving the file leaves it sitting in a folder that disagrees
+// with its tag - once foldersync is on for the board, the folder is treated as authoritative and
+// wins on the next sync. That's intentional, not a race: foldersync's contract is that folder
+// and tag agree, so a hand-edited tag that disagrees with the current folder is describing an
+// inconsistent state, not a competing source of truth.
+func SyncFolderTag(path string, changedAt time.Time) error {
+	normalizedPath := pathutils.ToWithPrefix(path)
+
+	var oldStatus, status, board string
+	var applied bool
+	err := files.MetaDataMutate(normalizedPath, func(meta *files.Metadata, existed bool) (bool, error) {
+		if !existed {
+			return false, nil
+		}
+		dir := strings.Join(meta.Folders, "/")
+		board = resolveBoardFolder(dir)
+		if board == "" {
+			return false, nil // not under any configured board
+		}
+		if cfgBoard, ok := configmanager.GetKanbanBoardByFolder(board); !ok || !cfgBoard.FolderSync {
+			return false, nil // foldersync not enabled for this board
+		}
+		status = strings.TrimPrefix(dir, board+"/")
+		if status == dir || !slices.Contains(configmanager.GetKanbanStatuses(), status) {
+			return false, nil // not directly inside a status folder
+		}
+
+		oldStatus = StatusFromTags(meta.Tags, configmanager.GetKanbanPrefix())
+		if oldStatus == status {
+			// already correct - this is what stops an in-app MoveCard from being undone by the
+			// cronjob picking up the physical move it just made: MoveCard sets the tag and moves
+			// the file into the matching status folder in the same call, so by the time this
+			// runs both already agree and there's nothing to sync. The changedAt check below is
+			// only a secondary guard for the remaining case (a file edited/created directly in a
+			// status folder, no matching MoveCard call, and its tag still lagging).
+			return false, nil
+		}
+		if !meta.KanbanMovedAt.IsZero() && meta.KanbanMovedAt.After(changedAt) {
+			return false, nil // tag was changed after this physical change - metadata wins
+		}
+
+		applyStatusTag(meta, status)
+		if meta.KanbanAddedAt.IsZero() {
+			meta.KanbanAddedAt = changedAt
+		}
+		meta.KanbanMovedAt = changedAt
+		applied = true
+		return true, nil
+	})
+	if err != nil || !applied {
+		return err
 	}
-	logging.LogInfo(logging.KeyApp, "kanban: moved card %s to status %s", filePath, newStatus)
-	return oldStatus, nil
+
+	relPath := pathutils.ToRelative(path)
+	if err := kanbanStorage.LogEvent(relPath, board, oldStatus, status); err != nil {
+		logging.LogWarning(logging.KeyFileSync, "kanban: failed to log foldersync event for %s: %v", relPath, err)
+	}
+	logging.LogInfo(logging.KeyFileSync, "kanban: foldersync set status %s for %s from physical change", status, relPath)
+	return nil
 }
 
 // GetEvents returns kanban move events with optional filters, newest first.

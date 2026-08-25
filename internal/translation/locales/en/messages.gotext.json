@@ -97,11 +97,6 @@
       "translation": "Admin"
     },
     {
-      "id": "Admin covers maintenance for the whole app, for example:",
-      "message": "Admin covers maintenance for the whole app, for example:",
-      "translation": ""
-    },
-    {
       "id": "All (merged)",
       "message": "All (merged)",
       "translation": ""
@@ -319,6 +314,11 @@
     {
       "id": "Create New File",
       "message": "Create New File",
+      "translation": ""
+    },
+    {
+      "id": "Create a dashboard and name it home to make it your new start page.",
+      "message": "Create a dashboard and name it home to make it your new start page.",
       "translation": ""
     },
     {
@@ -882,11 +882,6 @@
       "translation": ""
     },
     {
-      "id": "Language \u0026 Timezone",
-      "message": "Language \u0026 Timezone",
-      "translation": ""
-    },
-    {
       "id": "Last commit",
       "message": "Last commit",
       "translation": ""
@@ -957,11 +952,6 @@
       "translation": ""
     },
     {
-      "id": "Logs \u0026 Jobs",
-      "message": "Logs \u0026 Jobs",
-      "translation": ""
-    },
-    {
       "id": "Logs Path",
       "message": "Logs Path",
       "translation": ""
@@ -984,6 +974,11 @@
     {
       "id": "Media",
       "message": "Media",
+      "translation": ""
+    },
+    {
+      "id": "Media Overview",
+      "message": "Media Overview",
       "translation": ""
     },
     {
@@ -1487,8 +1482,8 @@
       "translation": ""
     },
     {
-      "id": "Settings controls how the app looks and behaves for you, for example:",
-      "message": "Settings controls how the app looks and behaves for you, for example:",
+      "id": "Settings controls how the app looks and behaves for you. Admin covers maintenance for the whole app.",
+      "message": "Settings controls how the app looks and behaves for you. Admin covers maintenance for the whole app.",
       "translation": ""
     },
     {
@@ -1637,18 +1632,8 @@
       "translation": ""
     },
     {
-      "id": "The home dashboard is whichever one is shown on the start page - named home by default, changeable in Settings.",
-      "message": "The home dashboard is whichever one is shown on the start page - named home by default, changeable in Settings.",
-      "translation": ""
-    },
-    {
       "id": "Theme",
       "message": "Theme",
-      "translation": ""
-    },
-    {
-      "id": "Theme \u0026 Dark Mode",
-      "message": "Theme \u0026 Dark Mode",
       "translation": ""
     },
     {
@@ -1817,6 +1802,11 @@
       "translation": ""
     },
     {
+      "id": "Want to try the app out without using your real notes? Fill it with sample files.",
+      "message": "Want to try the app out without using your real notes? Fill it with sample files.",
+      "translation": ""
+    },
+    {
       "id": "Whole-Word Matches Only",
       "message": "Whole-Word Matches Only",
       "translation": ""
@@ -1829,6 +1819,11 @@
     {
       "id": "Wrap Long Lines in Code Blocks",
       "message": "Wrap Long Lines in Code Blocks",
+      "translation": ""
+    },
+    {
+      "id": "You're seeing this help page because no home dashboard exists yet. The home dashboard is simply whichever dashboard appears on the start page - home by default, changeable in Settings.",
+      "message": "You're seeing this help page because no home dashboard exists yet. The home dashboard is simply whichever dashboard appears on the start page - home by default, changeable in Settings.",
       "translation": ""
     },
     {
@@ -2249,11 +2244,6 @@
     {
       "id": "create dashboard",
       "message": "create dashboard",
-      "translation": ""
-    },
-    {
-      "id": "create, restore or download a backup",
-      "message": "create, restore or download a backup",
       "translation": ""
     },
     {
@@ -3332,11 +3322,6 @@
       "translation": ""
     },
     {
-      "id": "fix stale tags, links or search results",
-      "message": "fix stale tags, links or search results",
-      "translation": ""
-    },
-    {
       "id": "folder",
       "message": "folder",
       "translation": ""
@@ -3819,6 +3804,11 @@
     {
       "id": "loading media details...",
       "message": "loading media details...",
+      "translation": ""
+    },
+    {
+      "id": "loading media files...",
+      "message": "loading media files...",
       "translation": ""
     },
     {
@@ -4697,11 +4687,6 @@
       "translation": ""
     },
     {
-      "id": "see what the app has been doing",
-      "message": "see what the app has been doing",
-      "translation": ""
-    },
-    {
       "id": "select a board to open the kanban board",
       "message": "select a board to open the kanban board",
       "translation": ""
@@ -4872,13 +4857,13 @@
       "translation": ""
     },
     {
-      "id": "switch the look, or write your own custom CSS",
-      "message": "switch the look, or write your own custom CSS",
+      "id": "sync already running",
+      "message": "sync already running",
       "translation": ""
     },
     {
-      "id": "sync your files to a remote repository",
-      "message": "sync your files to a remote repository",
+      "id": "sync files",
+      "message": "sync files",
       "translation": ""
     },
     {
@@ -5199,11 +5184,6 @@
     {
       "id": "where a file lives, nested like on disk",
       "message": "where a file lives, nested like on disk",
-      "translation": ""
-    },
-    {
-      "id": "which dashboard is shown on the start page",
-      "message": "which dashboard is shown on the start page",
       "translation": ""
     },
     {

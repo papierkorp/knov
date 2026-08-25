@@ -2967,6 +2967,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/kanban/sync": {
+            "post": {
+                "description": "Starts the file-sync job (the same one the scheduler runs periodically) in the\nbackground, so files moved or edited outside the app are picked up before\ndragging their cards; poll the returned job id via GET /api/jobs/{id} for\ncompletion. Its dedup lock already rejects a second concurrent run outright, so\nrepeated presses just report \"already running\" instead of queuing up.",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "kanban"
+                ],
+                "summary": "Trigger a manual file-sync",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jobStorage.JobRecord"
+                        }
+                    },
+                    "409": {
+                        "description": "sync already running",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/kanban/{board}": {
             "get": {
                 "description": "Returns all kanban cards grouped by status column for the given board",

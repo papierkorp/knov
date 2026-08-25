@@ -3,6 +3,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"slices"
@@ -12,6 +13,8 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/filter"
+	"knov/internal/job"
+	"knov/internal/jobStorage"
 	"knov/internal/kanban"
 	"knov/internal/logging"
 	"knov/internal/server/notify"
@@ -34,6 +37,35 @@ func resolveBoard(w http.ResponseWriter, r *http.Request) (configmanager.KanbanB
 		return configmanager.KanbanBoard{}, false
 	}
 	return board, true
+}
+
+// @Summary Trigger a manual file-sync
+// @Description Starts the file-sync job (the same one the scheduler runs periodically) in the
+// @Description background, so files moved or edited outside the app are picked up before
+// @Description dragging their cards; poll the returned job id via GET /api/jobs/{id} for
+// @Description completion. Its dedup lock already rejects a second concurrent run outright, so
+// @Description repeated presses just report "already running" instead of queuing up.
+// @Tags kanban
+// @Produce json,html
+// @Success 200 {object} jobStorage.JobRecord
+// @Failure 409 {string} string "sync already running"
+// @Router /api/kanban/sync [post]
+func handleAPIKanbanSync(w http.ResponseWriter, r *http.Request) {
+	id, err := job.StartFileSyncManual()
+	if err != nil {
+		msg := translation.SprintfForRequest(configmanager.GetLanguage(), "sync already running")
+		notify.SetHeader(w, notify.LevelError, msg)
+		status := http.StatusInternalServerError
+		if errors.Is(err, job.ErrAlreadyRunning) {
+			status = http.StatusConflict
+		}
+		http.Error(w, msg, status)
+		return
+	}
+
+	lang := configmanager.GetLanguage()
+	rec := &jobStorage.JobRecord{ID: id, Type: job.JobTypeFileSync, Status: jobStorage.StatusRunning}
+	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec))
 }
 
 // @Summary Get kanban board for a folder
@@ -61,7 +93,7 @@ func handleAPIGetKanbanBoard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cols, _ := kanban.BuildBoard(board.FolderPath, cfg, strings.ToLower(r.URL.Query().Get("q")), kanban.SortBy(r.URL.Query().Get("sort")))
-	writeResponse(w, r, cols, render.RenderKanbanBoard(cols))
+	writeResponse(w, r, cols, render.RenderKanbanBoard(cols, board))
 }
 
 // @Summary Get archived kanban cards for a board
@@ -83,7 +115,7 @@ func handleAPIGetKanbanArchive(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeResponse(w, r, cards, render.RenderKanbanArchive(cards))
+	writeResponse(w, r, cards, render.RenderKanbanArchive(cards, board))
 }
 
 // @Summary Apply advanced filter to kanban board
@@ -109,7 +141,7 @@ func handleAPIPostKanbanFilter(w http.ResponseWriter, r *http.Request) {
 	cfg.Logic = "and"
 
 	cols, _ := kanban.BuildBoard(board.FolderPath, cfg, "", kanban.SortBy(r.FormValue("sort")))
-	writeResponse(w, r, cols, render.RenderKanbanBoard(cols))
+	writeResponse(w, r, cols, render.RenderKanbanBoard(cols, board))
 }
 
 // @Summary Move a kanban card to a new status column
@@ -148,7 +180,7 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 		boardFolder = board.FolderPath
 	}
 
-	oldStatus, err := kanban.MoveCard(boardFolder, filePath, newStatus)
+	oldStatus, newFilePath, err := kanban.MoveCard(boardFolder, filePath, newStatus)
 	if err != nil {
 		logging.LogError(logging.KeyApp, "failed to move kanban card %s to %s: %v", filePath, newStatus, err)
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to update card"))
@@ -163,7 +195,7 @@ func handleAPIKanbanMoveCard(w http.ResponseWriter, r *http.Request) {
 		msg = translation.SprintfForRequest(configmanager.GetLanguage(), "status changed: %s → %s", oldStatus, newStatus)
 	}
 	notify.SetHeader(w, notify.LevelSuccess, msg)
-	writeResponse(w, r, map[string]string{"filepath": filePath, "status": newStatus}, "")
+	writeResponse(w, r, map[string]string{"filepath": newFilePath, "status": newStatus}, "")
 }
 
 // @Summary Save card order for a kanban column

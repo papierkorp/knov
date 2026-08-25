@@ -28,10 +28,15 @@
   - combine todo/list editor (setting to change the gfm todo), add headers (which adds a `#` instead of a list)
   - update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse)
   - in the theme let me also arrange the info slideout components
-  - kanban - new env config which is disabled by default: foldersync: if a card is moved into a new status (and thus a new tag is set) move the file into a physical folder with the status name => this is always the prio, now if its also detected that the physical file was moved into a existing status folder: set the tag (and thus show it in the correct kanban lane after the next reload)
+  - codemirror editor select multiple lines
 - fixes
+  - media rename
+  - close sidepanel for /media
+  - theme is not using the media upload settings (change to media settings)
+  - always unpack the theme even if the files already exist (overwrite the existing ones) we have the overwrite folder if a user wants to change things
 - chore
   - async jobs follow up candidates
+  - switch to static id instead of using the path
 
 # every other time
 

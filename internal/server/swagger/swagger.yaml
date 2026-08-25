@@ -2643,6 +2643,29 @@ paths:
       summary: Move a kanban card to a new status column
       tags:
       - kanban
+  /api/kanban/sync:
+    post:
+      description: |-
+        Starts the file-sync job (the same one the scheduler runs periodically) in the
+        background, so files moved or edited outside the app are picked up before
+        dragging their cards; poll the returned job id via GET /api/jobs/{id} for
+        completion. Its dedup lock already rejects a second concurrent run outright, so
+        repeated presses just report "already running" instead of queuing up.
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jobStorage.JobRecord'
+        "409":
+          description: sync already running
+          schema:
+            type: string
+      summary: Trigger a manual file-sync
+      tags:
+      - kanban
   /api/links/ancestors:
     get:
       parameters:

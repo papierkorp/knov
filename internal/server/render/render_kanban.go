@@ -15,7 +15,7 @@ import (
 )
 
 // RenderKanbanCard renders a single draggable card
-func RenderKanbanCard(card kanban.Card) string {
+func RenderKanbanCard(card kanban.Card, board configmanager.KanbanBoard) string {
 	var html strings.Builder
 	prefix := configmanager.GetKanbanPrefix()
 
@@ -24,8 +24,12 @@ func RenderKanbanCard(card kanban.Card) string {
 		displayTitle = card.FilePath
 	}
 
-	// remove collection prefix from title (e.g. "mycollection/My Title" -> "My Title")
-	if card.Collection != "" {
+	if board.FolderSync {
+		// foldersync always parks a card at board/<status>/<filename> - the column already
+		// says the status, so repeating it in the title (e.g. "inprogress/foo.md") is noise
+		displayTitle = strings.TrimPrefix(displayTitle, board.FolderPath+"/"+card.Status+"/")
+	} else if card.Collection != "" {
+		// remove collection prefix from title (e.g. "mycollection/My Title" -> "My Title")
 		displayTitle = strings.TrimPrefix(displayTitle, card.Collection+"/")
 	}
 
@@ -95,7 +99,7 @@ func RenderKanbanCard(card kanban.Card) string {
 }
 
 // RenderKanbanColumn renders a single column with its cards
-func RenderKanbanColumn(status, label string, cards []kanban.Card) string {
+func RenderKanbanColumn(status, label string, cards []kanban.Card, board configmanager.KanbanBoard) string {
 	var html strings.Builder
 
 	fmt.Fprintf(&html, `<div class="kanban-column" id="kanban-col-%s"
@@ -109,7 +113,7 @@ func RenderKanbanColumn(status, label string, cards []kanban.Card) string {
 
 	html.WriteString(`<div class="kanban-cards">`)
 	for _, card := range cards {
-		html.WriteString(RenderKanbanCard(card))
+		html.WriteString(RenderKanbanCard(card, board))
 	}
 	html.WriteString(`</div>`)
 	html.WriteString(`</div>`)
@@ -117,11 +121,11 @@ func RenderKanbanColumn(status, label string, cards []kanban.Card) string {
 }
 
 // RenderKanbanBoard renders the full board (all columns)
-func RenderKanbanBoard(columns []kanban.Column) string {
+func RenderKanbanBoard(columns []kanban.Column, board configmanager.KanbanBoard) string {
 	var html strings.Builder
 	html.WriteString(`<div class="kanban-board" id="kanban-board">`)
 	for _, col := range columns {
-		html.WriteString(RenderKanbanColumn(col.Status, col.Status, col.Cards))
+		html.WriteString(RenderKanbanColumn(col.Status, col.Status, col.Cards, board))
 	}
 	html.WriteString(`</div>`)
 	return html.String()
@@ -131,7 +135,7 @@ func RenderKanbanBoard(columns []kanban.Column) string {
 // sortable table, mirroring RenderKanbanEvents. Search, the tag filter, and column sorting
 // all operate client-side over the already-rendered rows (applyKanbanArchiveFilters /
 // sortKanbanArchive in kanban.js), so no extra fetch/JSON round trip is needed.
-func RenderKanbanArchive(cards []kanban.Card) string {
+func RenderKanbanArchive(cards []kanban.Card, board configmanager.KanbanBoard) string {
 	tagSet := make(map[string]struct{})
 	for _, c := range cards {
 		for _, t := range c.Tags {
@@ -183,7 +187,7 @@ func RenderKanbanArchive(cards []kanban.Card) string {
 
 	html.WriteString(`<tbody id="kanban-archive-rows">`)
 	for _, card := range cards {
-		html.WriteString(renderKanbanArchiveRow(card))
+		html.WriteString(renderKanbanArchiveRow(card, board))
 	}
 	html.WriteString(`</tbody>`)
 	html.WriteString(`</table>`)
@@ -196,14 +200,16 @@ func RenderKanbanArchive(cards []kanban.Card) string {
 // data-tags carry the values applyKanbanArchiveFilters matches against; data-title,
 // data-createdat and data-lastedited back sortKanbanArchive — filtering and sorting never
 // need to re-fetch or re-render anything.
-func renderKanbanArchiveRow(card kanban.Card) string {
+func renderKanbanArchiveRow(card kanban.Card, board configmanager.KanbanBoard) string {
 	var html strings.Builder
 
 	displayTitle := card.Title
 	if displayTitle == "" {
 		displayTitle = card.FilePath
 	}
-	if card.Collection != "" {
+	if board.FolderSync {
+		displayTitle = strings.TrimPrefix(displayTitle, board.FolderPath+"/"+card.Status+"/")
+	} else if card.Collection != "" {
 		displayTitle = strings.TrimPrefix(displayTitle, card.Collection+"/")
 	}
 

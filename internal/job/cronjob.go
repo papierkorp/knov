@@ -4,10 +4,12 @@ package job
 import (
 	"fmt"
 	"slices"
+	"time"
 
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/git"
+	"knov/internal/kanban"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
 	"knov/internal/search"
@@ -19,7 +21,16 @@ import (
 
 type fileJob struct{}
 
-func (j *fileJob) Name() string { return "file-sync" }
+func (j *fileJob) Name() string { return JobTypeFileSync }
+
+// StartFileSyncManual starts the file-sync job in the background via StartAsync, for UI
+// triggers that need to poll for completion (e.g. the kanban board's sync button) instead of
+// blocking the request for however long a run takes. Not registered as resumable - if the
+// process crashes mid-run, the scheduled tick just picks the same incremental work back up on
+// its own next run, so there's nothing to recover.
+func StartFileSyncManual() (string, error) {
+	return StartAsync(&fileMu, &fileJob{}, "")
+}
 
 func (j *fileJob) Run() error {
 	logging.MarkSessionStart(logging.KeyFileSync)
@@ -31,6 +42,7 @@ func (j *fileJob) Run() error {
 
 	var filesToProcess []string
 	var filesToDelete []string
+	var haveNewCommits bool // whether a new commit range was detected below, see syncTime
 
 	if _, err := git.CommitAllPending(); err != nil {
 		logging.LogError(logging.KeyFileSync, "failed to commit pending changes: %v", err)
@@ -45,6 +57,7 @@ func (j *fileJob) Run() error {
 			logging.LogError(logging.KeyFileSync, "failed to get current commit: %v", err)
 		} else if currentCommit != "" && currentCommit != lastCommit {
 			hadError := false
+			haveNewCommits = true
 
 			changedFiles, err := git.GetFilesChangedSinceCommit(lastCommit)
 			if err != nil {
@@ -82,6 +95,14 @@ func (j *fileJob) Run() error {
 						filesToDelete = append(filesToDelete, move.OldPath)
 					} else {
 						logging.LogInfo(logging.KeyFileSync, "successfully updated links for moved file %s -> %s", oldNormalized, newNormalized)
+						// foldersync: a physical move into a status folder sets the kanban tag to
+						// match - changedAt lets it defer to a more recent tag change instead of
+						// fighting it
+						if changedAt, _, err := git.GetCommitDetails(move.Commit); err != nil {
+							logging.LogWarning(logging.KeyFileSync, "failed to get commit time for %s, skipping kanban foldersync: %v", move.Commit, err)
+						} else if err := kanban.SyncFolderTag(newNormalized, changedAt); err != nil {
+							logging.LogWarning(logging.KeyFileSync, "kanban foldersync failed for %s: %v", newNormalized, err)
+						}
 					}
 				}
 			}
@@ -126,6 +147,23 @@ func (j *fileJob) Run() error {
 		logging.LogDebug(logging.KeyFileSync, "no files to process")
 	} else {
 		logging.LogInfo(logging.KeyFileSync, "processing %d files", len(filesToProcess))
+		// single lookup shared by every file below - foldersync: a file that showed up (new or
+		// edited) directly inside a status folder gets that status's tag, e.g. a file created
+		// straight in board/archive/ picks up the archive tag without ever being dragged there.
+		// Uses lastCommit (the range's lower bound, before any of these files changed) rather
+		// than currentCommit: filesToProcess can span several commits when the cronjob catches
+		// up after a gap, and using a timestamp that's too late would make a manual tag edit
+		// made in between look older than the physical change and get overwritten by it. A
+		// timestamp that's too early only means the reverse - a real physical change occasionally
+		// not applied yet - which self-corrects on the next run instead of clobbering anything.
+		var syncTime time.Time
+		if haveNewCommits && lastCommit != "" {
+			if t, _, err := git.GetCommitDetails(lastCommit); err != nil {
+				logging.LogWarning(logging.KeyFileSync, "failed to get commit time for kanban foldersync: %v", err)
+			} else {
+				syncTime = t
+			}
+		}
 		for _, filePath := range filesToProcess {
 			normalizedPath := pathutils.ToWithPrefix(filePath)
 			// Sync only fills the default editor when the field is empty - unlike the old
@@ -133,6 +171,11 @@ func (j *fileJob) Run() error {
 			if err := files.MetaDataSyncNoRefresh(normalizedPath); err != nil {
 				logging.LogError(logging.KeyFileSync, "failed to save metadata for %s: %v", normalizedPath, err)
 				continue
+			}
+			if !syncTime.IsZero() {
+				if err := kanban.SyncFolderTag(normalizedPath, syncTime); err != nil {
+					logging.LogWarning(logging.KeyFileSync, "kanban foldersync failed for %s: %v", normalizedPath, err)
+				}
 			}
 			logging.LogDebug(logging.KeyFileSync, "processed metadata for %s", normalizedPath)
 		}

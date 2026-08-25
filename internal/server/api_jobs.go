@@ -69,6 +69,11 @@ func handleAPIGetJobStatus(w http.ResponseWriter, r *http.Request) {
 		// the app restarts itself a moment after this - see restoreJob.Run - so there's nothing
 		// to redirect to; a toast is all a client still connected at that instant will show.
 		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(lang, "backup restored, application restarting..."))
+	case rec.Status == jobStorage.StatusDone && rec.Type == job.JobTypeFileSync:
+		// no toast - the kanban board's own container listens for this event and refetches
+		// itself (see #view-kanban-board-wrap's hx-trigger in kanban.gohtml), which is
+		// feedback enough.
+		w.Header().Set("HX-Trigger", "kanban-sync-done")
 	case rec.Status == jobStorage.StatusDone:
 		// generic fallback for any future StartAsync job type not special-cased above.
 		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(lang, "done"))

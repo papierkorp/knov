@@ -126,7 +126,7 @@ func caseBoardSorting() test.CaseResult {
 func caseMoveCard() test.CaseResult {
 	name := "move-card"
 
-	oldStatus, err := kanban.MoveCard(testFolder, testPath(moveFile), "inprogress")
+	oldStatus, _, err := kanban.MoveCard(testFolder, testPath(moveFile), "inprogress")
 	if err != nil {
 		return errCase(name, err)
 	}
@@ -154,7 +154,7 @@ func caseMoveCard() test.CaseResult {
 func caseMoveCardEventLog() test.CaseResult {
 	name := "move-card-event-log"
 
-	oldStatus, err := kanban.MoveCard(testFolder, testPath(moveFile), "blocked")
+	oldStatus, _, err := kanban.MoveCard(testFolder, testPath(moveFile), "blocked")
 	if err != nil {
 		return errCase(name, err)
 	}

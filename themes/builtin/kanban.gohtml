@@ -53,8 +53,9 @@
 
         <a href="/files/new/codemirror?prefillpath={{.Data.FolderPath}}/" class="btn-secondary" title="{{T "new file"}}"><i class="fa fa-plus"></i></a>
         <button class="btn-secondary" onclick="document.getElementById('kanban-filter-panel').toggleAttribute('hidden')" title="{{T "advanced filter"}}"><i class="fa fa-filter"></i></button>
-        <button class="btn-secondary" hx-get="/api/kanban/{{.Data.Board}}" hx-target="#view-kanban-board-wrap" hx-swap="innerHTML"
-                hx-include="#kanban-ancestor-select,#kanban-tag-select,#kanban-search,#kanban-sort-select" title="{{T "refresh"}}"><i class="fa fa-rotate"></i></button>
+        <button id="kanban-sync-btn" class="btn-secondary" hx-post="/api/kanban/sync" hx-target="#kanban-sync-status" hx-swap="innerHTML"
+                title="{{T "sync files"}}"><i class="fa fa-rotate"></i></button>
+        <span id="kanban-sync-status"></span>
 
         <div class="kanban-menu-wrap" x-data="dropdownMenu()" @click.outside="close()">
             <button type="button" class="kanban-menu-btn" x-ref="btn" @click="toggle()" title="{{T "more actions"}}"><i class="fa fa-ellipsis-vertical"></i></button>
@@ -73,7 +74,8 @@
 
     <div id="view-kanban-board-wrap"
          hx-get="/api/kanban/{{.Data.Board}}"
-         hx-trigger="load">
+         hx-trigger="load, click from:#kanban-sync-btn, kanban-sync-done from:body"
+         hx-include="#kanban-ancestor-select,#kanban-tag-select,#kanban-search,#kanban-sort-select">
         {{T "loading..."}}
     </div>
 
