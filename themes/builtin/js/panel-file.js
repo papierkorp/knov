@@ -119,7 +119,7 @@ function setupFilePage() {
   }
 
   // media overview/detail pages — media has its own detail view, not fp-file
-  if (path === "/browse/media" || path.startsWith("/media/")) {
+  if (path.startsWith("/browse/") || path.startsWith("/media/")) {
     closePanel();
     return true;
   }
