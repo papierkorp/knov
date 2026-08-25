@@ -25,13 +25,14 @@
       - for devs
   - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 - features
-  - update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse)
-  - in the theme let me also arrange the info slideout components
+  - update hide paths (filevisibility) to only hide from certain features (e.g. hide in tree but show in browse) - do we create a setting for each feature (e.g. hidetree, hidesearch) or do we use parameter tags in the existing hiding feature (e.g. in the existing hidepaths settings use: <folderpath>:tree,search)
+  - add a /system/environment (/system/environment_info) page which includes ALL environment vars (we currently have it in /admin visible => maybe we can use the new system page there as well so we dont loose it there?)
 - fixes
   - media rename?
 - chore
   - async jobs follow up candidates
   - switch to static id instead of using the path
+  - show if auto backup is enabled in the /system/backup page and the backup slideout
 
 # every other time
 

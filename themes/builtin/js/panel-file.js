@@ -1,5 +1,20 @@
 // theme: builtin — file panel (metadata/toc/history/chat/references/connections/find sub-panels)
 
+// tab order/visibility comes from the "infoPanelLayout" theme setting (an
+// opaque JSON array of tab ids to render, in order) - the settings page
+// arranges it via infopanel-layout-builder.js; the server has no concept
+// of these tabs at all.
+function infoPanelParseLayout() {
+  const raw = document.body.dataset.infoPanelLayout;
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+}
+
 // ================================================================
 // file sub-panel switching — Alpine.store since fp-file is a page-wide
 // singleton (like $store.rail, see rail-core.js) rather than an x-for'd
@@ -8,8 +23,10 @@
 // side effects (persistence, clearing toc/find state).
 // ================================================================
 document.addEventListener("alpine:init", () => {
+  const infoPanelLayout = infoPanelParseLayout();
   Alpine.store("filePanel", {
-    active: document.getElementById("fp-file")?.dataset.initSubpanel || "metadata",
+    active: document.getElementById("fp-file")?.dataset.initSubpanel || infoPanelLayout[0] || "metadata",
+    layout: infoPanelLayout,
     hasFile: false,
     // raw path segment (not query-encoded) of the currently viewed file, set
     // once by setupFilePage; base.gohtml's title/edit-link/export-pdf-link
@@ -23,6 +40,18 @@ document.addEventListener("alpine:init", () => {
 
     get fp() {
       return encodeURIComponent(this.filepath);
+    },
+
+    // an empty/unparseable layout means "show every tab, markup order" -
+    // same fallback as an unset railLayout falling back to no rail groups,
+    // just inverted since these 7 tabs are always the same fixed set.
+    enabled(tab) {
+      return this.layout.length === 0 || this.layout.includes(tab);
+    },
+
+    order(tab) {
+      const i = this.layout.indexOf(tab);
+      return i === -1 ? 999 : i;
     },
 
     switch(view) {

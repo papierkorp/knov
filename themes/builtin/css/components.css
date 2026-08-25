@@ -1936,10 +1936,13 @@ blockquote p blockquote p,
 /* theme settings section (settings.gohtml's "theme-section" template, spans
    the full settings-section-wide width): flow the simple boolean/select/text
    settings into a grid instead of one long column now that there are
-   several of them, but keep railLayout's own drag-and-drop builder (the
-   only textarea-type setting) on its own full-width row - it's a different
-   kind of control entirely, not just a wider text field.
-   Ordering (checkboxes | other settings | railLayout) mirrors
+   several of them, but keep the drag-and-drop builders (textarea-type
+   settings, e.g. railLayout/infoPanelLayout) on their own full-width rows,
+   grouped together at the end - they're a different kind of control
+   entirely, not just a wider text field, and used to get lost sorted
+   alphabetically among the plain fields (e.g. infoPanelLayout landing
+   right after colorScheme, before the reader even reaches linkDisplayMode).
+   Ordering (checkboxes | other settings | builders) mirrors
    #section-pdf-export below: order + an invisible full-width spacer per
    break, grouped by *kind* via :has() rather than relying on source order.
    Grid rather than flex-wrap: a flex item with flex-grow:1 stretches to
@@ -1968,8 +1971,31 @@ blockquote p blockquote p,
   order: 3;
 }
 
+/* builder settings (textarea-type) always sort last, each on its own
+   divided, clearly-labeled row so they read as a distinct "layout" tier
+   instead of blending into the short fields around them. Explicit order
+   per builder (rather than one shared order:4 relying on infoPanelLayout
+   sorting alphabetically before railLayout) pins info-panel-then-rail
+   regardless of key names. */
 #theme-settings-container > .setting-item:has(textarea) {
   grid-column: 1 / -1;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+#theme-settings-container > .setting-item:has(#infoPanelLayout) {
+  order: 4;
+}
+
+#theme-settings-container > .setting-item:has(#railLayout) {
+  order: 5;
+}
+
+#theme-settings-container > .setting-item:has(textarea) label {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--primary);
 }
 
 /* rail layout builder (settings → theme → rail layout): drag snippets

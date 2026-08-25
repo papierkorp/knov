@@ -267,7 +267,7 @@ document.addEventListener("alpine:initialized", () => {
 
   // restore saved file sub-panel selection (skip on system pages — TOC is set in HTML)
   const savedSubPanel = localStorage.getItem(RAIL_SUBPANEL_KEY);
-  if (savedSubPanel && !isSystemPage) {
+  if (savedSubPanel && !isSystemPage && Alpine.store("filePanel").enabled(savedSubPanel)) {
     Alpine.store("filePanel").switch(savedSubPanel);
   }
 
