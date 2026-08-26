@@ -14,12 +14,26 @@
 function railParseLayout() {
   const raw = document.body.dataset.railLayout;
   if (!raw) return [];
+  let parsed;
   try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    parsed = JSON.parse(raw);
   } catch (e) {
     return [];
   }
+  if (!Array.isArray(parsed)) return [];
+
+  // the /chat page already renders the full chat UI in <main> with fixed,
+  // non-namespaced ids (component-chat-history, chat-input, ...) — the
+  // rail's "chat" snippet renders that exact same markup, so having both in
+  // the DOM at once collides ids and htmx starts targeting the wrong copy.
+  // it's redundant here anyway, so drop it from every group on this page.
+  if (window.location.pathname === "/chat") {
+    return parsed.map((g) => ({
+      ...g,
+      snippets: (g.snippets || []).filter((s) => (typeof s === "string" ? s : s.id) !== "chat"),
+    }));
+  }
+  return parsed;
 }
 
 document.addEventListener("alpine:init", () => {

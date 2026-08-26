@@ -63,7 +63,7 @@
                 <a class="rail-btn" x-show="group.link" :style="'order:' + index" :href="group.link" :title="group.label" @click="$store.rail.close()"><i class="fa" :class="group.icon"></i></a>
             </template>
             <template x-for="(group, index) in $store.rail.groups.filter((g) => g.position !== 'bottom')" :key="group.id">
-                <button class="rail-btn" x-show="!group.link" :style="'order:' + index" :class="{active: $store.rail.isActive('fp-' + group.id)}" :id="'rb-' + group.id" :title="group.label" @click="$store.rail.toggle('fp-' + group.id)"><i class="fa" :class="group.icon"></i></button>
+                <button class="rail-btn" x-show="!group.link && (group.snippets || []).length" :style="'order:' + index" :class="{active: $store.rail.isActive('fp-' + group.id)}" :id="'rb-' + group.id" :title="group.label" @click="$store.rail.toggle('fp-' + group.id)"><i class="fa" :class="group.icon"></i></button>
             </template>
         </div>
 
@@ -74,7 +74,7 @@
                 <a class="rail-btn" x-show="group.link" :style="'order:' + index" :href="group.link" :title="group.label" @click="$store.rail.close()"><i class="fa" :class="group.icon"></i></a>
             </template>
             <template x-for="(group, index) in $store.rail.groups.filter((g) => g.position === 'bottom')" :key="group.id">
-                <button class="rail-btn" x-show="!group.link" :style="'order:' + index" :class="{active: $store.rail.isActive('fp-' + group.id)}" :id="'rb-' + group.id" :title="group.label" @click="$store.rail.toggle('fp-' + group.id)"><i class="fa" :class="group.icon"></i></button>
+                <button class="rail-btn" x-show="!group.link && (group.snippets || []).length" :style="'order:' + index" :class="{active: $store.rail.isActive('fp-' + group.id)}" :id="'rb-' + group.id" :title="group.label" @click="$store.rail.toggle('fp-' + group.id)"><i class="fa" :class="group.icon"></i></button>
             </template>
         </div>
 

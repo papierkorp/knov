@@ -31,6 +31,15 @@ document.addEventListener("alpine:init", () => {
     init() {
       this.active = document.documentElement.getAttribute("data-init-panel") || null;
       this.groups = railParseLayout();
+      // the restored panel may no longer resolve to anything - e.g. the
+      // rail's "chat" snippet is dropped from every group while on /chat
+      // (see railParseLayout), so a panel left open there from an earlier
+      // page would otherwise restore as a blank, empty flyout
+      if (this.active && this.active !== "fp-file" && !this.groups.some(
+        (g) => "fp-" + g.id === this.active && !g.link && (g.snippets || []).length,
+      )) {
+        this.close();
+      }
     },
 
     isActive(panelId) {
