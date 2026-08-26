@@ -170,6 +170,56 @@ func (s *sqliteKanbanStorage) GetEvents(boardFolder, filePath string, from, to *
 	return events, rows.Err()
 }
 
+// GetBackendType returns the backend type.
+func (s *sqliteKanbanStorage) GetBackendType() string {
+	return "sqlite"
+}
+
+// insertEvents bulk-inserts events verbatim, preserving their original timestamps - used by the
+// provider-migration path so kanban history survives a backend switch.
+func (s *sqliteKanbanStorage) insertEvents(events []Event) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	stmt, err := tx.Prepare(`INSERT INTO kanban_events (file_path, board_folder, from_status, to_status, timestamp) VALUES (?, ?, ?, ?, ?)`)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	defer stmt.Close()
+
+	for _, e := range events {
+		if _, err := stmt.Exec(e.FilePath, e.BoardFolder, e.FromStatus, e.ToStatus, e.Timestamp); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+// Cleanup closes the db and removes the db file, so a subsequent migration back to sqlite starts
+// clean rather than appending onto stale rows.
+func (s *sqliteKanbanStorage) Cleanup() error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if err := s.db.Close(); err != nil {
+		logging.LogWarning(logging.KeyApp, "sqlite kanban cleanup: failed to close db: %v", err)
+	}
+
+	for _, f := range []string{s.dbPath, s.dbPath + "-wal", s.dbPath + "-shm"} {
+		if err := os.Remove(f); err != nil && !os.IsNotExist(err) {
+			logging.LogError(logging.KeyApp, "sqlite kanban cleanup: failed to remove %s: %v", f, err)
+			return err
+		}
+	}
+	return nil
+}
+
 // Backup snapshots the kanban events database into destDir via VACUUM INTO.
 func (s *sqliteKanbanStorage) Backup(destDir string) error {
 	s.mutex.RLock()

@@ -34,7 +34,6 @@ const (
 	KeyPdfExport       Key = "pdf-export"
 	KeyRepairLinks     Key = "repair-broken-links"
 	KeyDBMigration     Key = "database-migration"
-	KeyMetaMigration   Key = "metadata-migration"
 	KeyFilterDebug     Key = "filter-debug"
 	KeyManualCronjob   Key = "manual-cronjob"
 	KeyInAppTests      Key = "in-app-tests"
@@ -46,7 +45,7 @@ const (
 var AvailableKeys = []Key{
 	KeyApp, KeyFileSync, KeySearchReindex, KeyMetadataRebuild, KeyFullRebuild,
 	KeyMediaCleanup, KeyGitRemote, KeyGitMaintenance, KeyDokuwikiExport, KeyPdfExport, KeyRepairLinks,
-	KeyDBMigration, KeyMetaMigration, KeyFilterDebug, KeyManualCronjob, KeyInAppTests,
+	KeyDBMigration, KeyFilterDebug, KeyManualCronjob, KeyInAppTests,
 	KeyTheme, KeySettingsImport,
 }
 

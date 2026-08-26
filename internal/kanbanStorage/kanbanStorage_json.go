@@ -110,6 +110,38 @@ func (s *jsonKanbanStorage) GetEvents(boardFolder, filePath string, from, to *ti
 	return filtered, nil
 }
 
+// GetBackendType returns the backend type.
+func (s *jsonKanbanStorage) GetBackendType() string {
+	return "json"
+}
+
+// insertEvents appends events verbatim, preserving their original timestamps - used by the
+// provider-migration path so kanban history survives a backend switch.
+func (s *jsonKanbanStorage) insertEvents(newEvents []Event) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	events, err := s.readEvents()
+	if err != nil {
+		return err
+	}
+	events = append(events, newEvents...)
+	return s.writeEvents(events)
+}
+
+// Cleanup removes the events file, so a subsequent migration back to json starts clean rather
+// than appending onto stale rows.
+func (s *jsonKanbanStorage) Cleanup() error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if err := os.Remove(s.filePath); err != nil && !os.IsNotExist(err) {
+		logging.LogError(logging.KeyApp, "json kanban cleanup: failed to remove %s: %v", s.filePath, err)
+		return err
+	}
+	return nil
+}
+
 // Backup snapshots the kanban events file into destDir.
 func (s *jsonKanbanStorage) Backup(destDir string) error {
 	s.mutex.RLock()

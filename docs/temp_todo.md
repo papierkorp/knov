@@ -31,6 +31,7 @@
 - chore
   - async jobs follow up candidates
   - switch to static id instead of using the path
+  - in backup/restore => before the restore check the storage types of the backup and the the current app storage types and if they differ (e.g. sqlite backup but a current json storage)
 
 # every other time
 
