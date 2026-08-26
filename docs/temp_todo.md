@@ -31,11 +31,9 @@
 - chore
   - async jobs follow up candidates
   - switch to static id instead of using the path
-  - show if auto backup is enabled in the /system/backup page and the backup slideout
   - add link to /browse in the browse slideout
   - in /browse - browse by metadata - add a link to view all files (just like overview)
   - remove the playground
-  - whats the difference between: browsefiles.gohtml and filesoverview.gohtml and do we need both, i feel like filesoverview is unncessary?
 
 # every other time
 

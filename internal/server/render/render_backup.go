@@ -57,6 +57,12 @@ func RenderBackupLog(entries []backup.LogEntry) string {
 	}
 
 	var sb strings.Builder
+	if configmanager.GetBackupAutoEnabled() {
+		fmt.Fprintf(&sb, `<p class="backup-auto-status">%s</p>`,
+			template.HTMLEscapeString(t("Auto backup: enabled (every %s)", configmanager.GetBackupAutoInterval())))
+	} else {
+		fmt.Fprintf(&sb, `<p class="backup-auto-status">%s</p>`, template.HTMLEscapeString(t("Auto backup: disabled")))
+	}
 	fmt.Fprintf(&sb, `<table class="backup-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th></th></tr></thead><tbody>`,
 		t("Time"), t("Event"), t("Trigger"), t("Contents"))
 	if len(entries) == 0 {
@@ -126,6 +132,7 @@ func HandleSystemBackup(w http.ResponseWriter, r *http.Request) {
 .backup-table th { text-align: left; padding: .35rem .6rem; border-bottom: 2px solid var(--border); }
 .backup-table td { padding: .28rem .6rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); vertical-align: middle; }
 .backup-note { color: var(--text-secondary); font-size: .8rem; margin-bottom: .75rem; }
+.backup-auto-status { font-size: .8rem; margin: 0 0 .5rem; }
 .backup-create-form { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .75rem; }
 .backup-storage-select { display: flex; flex-wrap: wrap; gap: .1rem 1rem; }
 .backup-storage-option { display: flex; align-items: center; gap: .3rem; font-size: .85rem; }
