@@ -160,6 +160,7 @@
         </div>
 
         <div class="settings-col">
+            {{ template "version-section" . }}
             {{ template "environment-section" . }}
         </div>
 
@@ -374,11 +375,19 @@
 {{ end }}
 
 
+{{ define "version-section" }}
+<section class="settings-section">
+    <h2>{{T "Version"}}</h2>
+    <div class="setting-item">
+        <div hx-get="/api/system/version" hx-trigger="load" hx-target="this" hx-swap="innerHTML">{{T "loading..."}}</div>
+    </div>
+</section>
+{{ end }}
+
 {{ define "environment-section" }}
 <section class="settings-section">
     <h2>{{T "Environment"}}</h2>
     <div class="setting-item">
-        <div class="help-text"><a href="/system/environment">{{T "full list of environment variables"}} &rarr;</a></div>
         <div hx-get="/api/system/environment?view=summary" hx-trigger="load" hx-target="this" hx-swap="innerHTML">{{T "loading..."}}</div>
     </div>
 </section>

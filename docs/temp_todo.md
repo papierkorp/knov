@@ -25,10 +25,9 @@
       - for devs
   - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 - features
-  - add a version panel above the environment panel to the admin page
+  - add a json storage for kanban
 - fixes
   - media rename?
-  - sidebar is not working in /chat
 - chore
   - async jobs follow up candidates
   - switch to static id instead of using the path

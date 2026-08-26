@@ -88,6 +88,7 @@ const RAIL_SNIPPETS = [
   { id: "jobs", icon: "fa-list-check", label: "jobs", kind: "content", url: () => "/api/system/jobs" },
   { id: "backup", icon: "fa-box-archive", label: "backup", kind: "content", url: () => "/api/system/backups" },
   { id: "version", icon: "fa-circle-info", label: "version", kind: "content", url: () => "/api/system/version" },
+  { id: "environment", icon: "fa-sliders", label: "environment", kind: "content", url: () => "/api/system/environment?view=summary" },
   { id: "changelog", icon: "fa-scroll", label: "changelog", kind: "content", url: () => "/api/system/changelog" },
 ];
 

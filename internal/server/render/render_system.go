@@ -656,13 +656,16 @@ func RenderEnvironmentTable() string {
 }
 
 // RenderEnvironmentSummary renders a compact "KEY: value" line per documented KNOV_* env var,
-// no grouping/description/options - used by the admin panel's environment section, which
-// links to the full /system/environment page (RenderEnvironmentTable) for details.
+// no grouping/description/options - used by the admin panel's environment section and the
+// rail "environment" content snippet's flyout, both of which link to the full
+// /system/environment page (RenderEnvironmentTable) for details.
 func RenderEnvironmentSummary() string {
+	lang := configmanager.GetLanguage()
 	var sb strings.Builder
 	sb.WriteString(`<style>
 .env-summary { display: flex; flex-direction: column; gap: .15rem; }
 .env-summary code { font-family: monospace; }
+.env-summary-link { display: inline-block; margin-top: .75rem; font-size: .875rem; }
 </style>`)
 	sb.WriteString(`<div class="env-summary">`)
 	for _, info := range GetEnvironmentInfo() {
@@ -670,6 +673,8 @@ func RenderEnvironmentSummary() string {
 			template.HTMLEscapeString(info.Key), template.HTMLEscapeString(info.Current))
 	}
 	sb.WriteString(`</div>`)
+	fmt.Fprintf(&sb, `<a class="env-summary-link" href="/system/environment">%s &rarr;</a>`,
+		translation.SprintfForRequest(lang, "full list of environment variables"))
 	return sb.String()
 }
 
