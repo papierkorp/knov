@@ -52,6 +52,11 @@
       "translation": ""
     },
     {
+      "id": "(default)",
+      "message": "(default)",
+      "translation": ""
+    },
+    {
       "id": "/path/to/data",
       "message": "/path/to/data",
       "translation": ""
@@ -137,13 +142,18 @@
       "translation": "Are you sure?"
     },
     {
-      "id": "Auto-Close Brackets",
-      "message": "Auto-Close Brackets",
+      "id": "Auto backup: disabled",
+      "message": "Auto backup: disabled",
       "translation": ""
     },
     {
-      "id": "Auto-create Tags",
-      "message": "Auto-create Tags",
+      "id": "Auto backup: enabled (every {Arg_1})",
+      "message": "Auto backup: enabled (every {Arg_1})",
+      "translation": ""
+    },
+    {
+      "id": "Auto-Close Brackets",
+      "message": "Auto-Close Brackets",
       "translation": ""
     },
     {
@@ -187,11 +197,6 @@
       "translation": ""
     },
     {
-      "id": "Browse Files",
-      "message": "Browse Files",
-      "translation": ""
-    },
-    {
       "id": "Browse by Folder Structure",
       "message": "Browse by Folder Structure",
       "translation": ""
@@ -202,11 +207,6 @@
       "translation": ""
     },
     {
-      "id": "Build Time",
-      "message": "Build Time",
-      "translation": ""
-    },
-    {
       "id": "Build time",
       "message": "Build time",
       "translation": ""
@@ -214,31 +214,6 @@
     {
       "id": "Bulk Metadata Update",
       "message": "Bulk Metadata Update",
-      "translation": ""
-    },
-    {
-      "id": "By Collections",
-      "message": "By Collections",
-      "translation": ""
-    },
-    {
-      "id": "By Folders",
-      "message": "By Folders",
-      "translation": ""
-    },
-    {
-      "id": "By Tags",
-      "message": "By Tags",
-      "translation": ""
-    },
-    {
-      "id": "By Type",
-      "message": "By Type",
-      "translation": ""
-    },
-    {
-      "id": "Cache Storage",
-      "message": "Cache Storage",
       "translation": ""
     },
     {
@@ -327,8 +302,8 @@
       "translation": ""
     },
     {
-      "id": "Cronjob Interval",
-      "message": "Cronjob Interval",
+      "id": "Current Value",
+      "message": "Current Value",
       "translation": ""
     },
     {
@@ -367,6 +342,11 @@
       "translation": ""
     },
     {
+      "id": "Default",
+      "message": "Default",
+      "translation": ""
+    },
+    {
       "id": "Default Markdown Editor",
       "message": "Default Markdown Editor",
       "translation": ""
@@ -384,6 +364,11 @@
     {
       "id": "Delete all orphaned media files? This cannot be undone.",
       "message": "Delete all orphaned media files? This cannot be undone.",
+      "translation": ""
+    },
+    {
+      "id": "Description",
+      "message": "Description",
       "translation": ""
     },
     {
@@ -462,8 +447,8 @@
       "translation": "Enter a search term"
     },
     {
-      "id": "Environment Info",
-      "message": "Environment Info",
+      "id": "Environment",
+      "message": "Environment",
       "translation": ""
     },
     {
@@ -524,11 +509,6 @@
     {
       "id": "Files",
       "message": "Files",
-      "translation": ""
-    },
-    {
-      "id": "Files Overview",
-      "message": "Files Overview",
       "translation": ""
     },
     {
@@ -629,21 +609,6 @@
     {
       "id": "General Settings",
       "message": "General Settings",
-      "translation": ""
-    },
-    {
-      "id": "Git Auto Push",
-      "message": "Git Auto Push",
-      "translation": ""
-    },
-    {
-      "id": "Git Branch",
-      "message": "Git Branch",
-      "translation": ""
-    },
-    {
-      "id": "Git Remote",
-      "message": "Git Remote",
       "translation": ""
     },
     {
@@ -827,56 +792,6 @@
       "translation": ""
     },
     {
-      "id": "Kanban Ancestor Allowed Status",
-      "message": "Kanban Ancestor Allowed Status",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Archive Status",
-      "message": "Kanban Archive Status",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Boards",
-      "message": "Kanban Boards",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Card Styles",
-      "message": "Kanban Card Styles",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Columns",
-      "message": "Kanban Columns",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Events Enabled",
-      "message": "Kanban Events Enabled",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Events Storage",
-      "message": "Kanban Events Storage",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Prefix",
-      "message": "Kanban Prefix",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Statuses",
-      "message": "Kanban Statuses",
-      "translation": ""
-    },
-    {
-      "id": "Kanban Tag Colors",
-      "message": "Kanban Tag Colors",
-      "translation": ""
-    },
-    {
       "id": "Language",
       "message": "Language",
       "translation": ""
@@ -952,11 +867,6 @@
       "translation": ""
     },
     {
-      "id": "Logs Path",
-      "message": "Logs Path",
-      "translation": ""
-    },
-    {
       "id": "Margin (mm)",
       "message": "Margin (mm)",
       "translation": ""
@@ -1002,16 +912,6 @@
       "translation": ""
     },
     {
-      "id": "Metadata Rebuild Interval",
-      "message": "Metadata Rebuild Interval",
-      "translation": ""
-    },
-    {
-      "id": "Metadata Storage",
-      "message": "Metadata Storage",
-      "translation": ""
-    },
-    {
       "id": "Move",
       "message": "Move",
       "translation": ""
@@ -1047,11 +947,6 @@
       "translation": ""
     },
     {
-      "id": "Notify Duration",
-      "message": "Notify Duration",
-      "translation": ""
-    },
-    {
       "id": "OK",
       "message": "OK",
       "translation": ""
@@ -1064,6 +959,11 @@
     {
       "id": "Operator",
       "message": "Operator",
+      "translation": ""
+    },
+    {
+      "id": "Options",
+      "message": "Options",
       "translation": ""
     },
     {
@@ -1422,24 +1322,9 @@
       "translation": ""
     },
     {
-      "id": "Search Engine",
-      "message": "Search Engine",
-      "translation": ""
-    },
-    {
-      "id": "Search Index Interval",
-      "message": "Search Index Interval",
-      "translation": ""
-    },
-    {
       "id": "Search Results",
       "message": "Search Results",
       "translation": "Search Results"
-    },
-    {
-      "id": "Search Storage",
-      "message": "Search Storage",
-      "translation": ""
     },
     {
       "id": "Search files...",
@@ -1449,11 +1334,6 @@
     {
       "id": "Section Editing \u0026 Display",
       "message": "Section Editing \u0026 Display",
-      "translation": ""
-    },
-    {
-      "id": "Server Port",
-      "message": "Server Port",
       "translation": ""
     },
     {
@@ -1572,11 +1452,6 @@
       "translation": ""
     },
     {
-      "id": "Storage Path",
-      "message": "Storage Path",
-      "translation": ""
-    },
-    {
       "id": "Storage Statistics",
       "message": "Storage Statistics",
       "translation": ""
@@ -1639,11 +1514,6 @@
     {
       "id": "Theme, typography and favicon",
       "message": "Theme, typography and favicon",
-      "translation": ""
-    },
-    {
-      "id": "Themes Path",
-      "message": "Themes Path",
       "translation": ""
     },
     {
@@ -1747,6 +1617,11 @@
       "translation": ""
     },
     {
+      "id": "Variable",
+      "message": "Variable",
+      "translation": ""
+    },
+    {
       "id": "Version",
       "message": "Version",
       "translation": ""
@@ -1767,6 +1642,11 @@
       "translation": ""
     },
     {
+      "id": "View all files",
+      "message": "View all files",
+      "translation": ""
+    },
+    {
       "id": "View all filter files",
       "message": "View all filter files",
       "translation": ""
@@ -1779,11 +1659,6 @@
     {
       "id": "View all tags",
       "message": "View all tags",
-      "translation": ""
-    },
-    {
-      "id": "View all types",
-      "message": "View all types",
       "translation": ""
     },
     {
@@ -2162,8 +2037,8 @@
       "translation": ""
     },
     {
-      "id": "comma-separated folder path patterns to exclude from file listings, browse, search and filter. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search and/or ::filter (combine with |, e.g. ::search|filter) to a pattern to keep it hidden everywhere else but show it again in just those scopes",
-      "message": "comma-separated folder path patterns to exclude from file listings, browse, search and filter. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search and/or ::filter (combine with |, e.g. ::search|filter) to a pattern to keep it hidden everywhere else but show it again in just those scopes",
+      "id": "comma-separated folder path patterns to exclude from file listings, browse, search, filter and kanban. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter and/or ::kanban (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
+      "message": "comma-separated folder path patterns to exclude from file listings, browse, search, filter and kanban. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter and/or ::kanban (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
       "translation": ""
     },
     {
@@ -3422,6 +3297,11 @@
       "translation": ""
     },
     {
+      "id": "full list of environment variables",
+      "message": "full list of environment variables",
+      "translation": ""
+    },
+    {
       "id": "full-text search across all files",
       "message": "full-text search across all files",
       "translation": ""
@@ -4537,11 +4417,6 @@
       "translation": ""
     },
     {
-      "id": "restart required to change",
-      "message": "restart required to change",
-      "translation": ""
-    },
-    {
       "id": "restarting application...",
       "message": "restarting application...",
       "translation": ""
@@ -4734,6 +4609,11 @@
     {
       "id": "settings imported successfully",
       "message": "settings imported successfully",
+      "translation": ""
+    },
+    {
+      "id": "settings imported, {Integer} setting(s) skipped - see logs",
+      "message": "settings imported, {Integer} setting(s) skipped - see logs",
       "translation": ""
     },
     {

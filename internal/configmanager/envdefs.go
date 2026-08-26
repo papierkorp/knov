@@ -151,7 +151,7 @@ var EnvVarDefs = []EnvVarDef{
 	stringDef("KNOV_METADATA_STORAGE_PROVIDER", "storage providers", "metadata storage", "sqlite", func(c *AppConfig) *string { return &c.MetadataStorageProvider }, withOptions("json", "yaml", "sqlite")),
 	stringDef("KNOV_CACHE_STORAGE_PROVIDER", "storage providers", "cache storage", "sqlite", func(c *AppConfig) *string { return &c.CacheStorageProvider }, withOptions("json", "sqlite")),
 	stringDef("KNOV_SEARCH_STORAGE_PROVIDER", "storage providers", "search index storage", "sqlite", func(c *AppConfig) *string { return &c.SearchStorageProvider }, withOptions("sqlite")),
-	stringDef("KNOV_KANBAN_EVENTS_STORAGE_PROVIDER", "storage providers", "kanban event log storage", "sqlite", func(c *AppConfig) *string { return &c.KanbanEventsProvider }, withOptions("sqlite")),
+	stringDef("KNOV_KANBAN_EVENTS_STORAGE_PROVIDER", "storage providers", "kanban event log storage", "sqlite", func(c *AppConfig) *string { return &c.KanbanEventsProvider }, withOptions("json", "sqlite")),
 
 	// ── search ──
 	stringDef("KNOV_SEARCH_ENGINE", "search", "search engine", "repository", func(c *AppConfig) *string { return &c.SearchEngine }, withOptions("repository", "grep")),

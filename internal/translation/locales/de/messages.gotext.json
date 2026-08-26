@@ -52,6 +52,11 @@
       "translation": "{Arg_1}"
     },
     {
+      "id": "(default)",
+      "message": "(default)",
+      "translation": ""
+    },
+    {
       "id": "/path/to/data",
       "message": "/path/to/data",
       "translation": "/pfad/zu/daten"
@@ -137,14 +142,19 @@
       "translation": "Bist du sicher?"
     },
     {
+      "id": "Auto backup: disabled",
+      "message": "Auto backup: disabled",
+      "translation": ""
+    },
+    {
+      "id": "Auto backup: enabled (every {Arg_1})",
+      "message": "Auto backup: enabled (every {Arg_1})",
+      "translation": ""
+    },
+    {
       "id": "Auto-Close Brackets",
       "message": "Auto-Close Brackets",
       "translation": "Klammern automatisch schließen"
-    },
-    {
-      "id": "Auto-create Tags",
-      "message": "Auto-create Tags",
-      "translation": "Automatisch erstellte Tags"
     },
     {
       "id": "Backup created: {Arg_1}",
@@ -187,11 +197,6 @@
       "translation": ""
     },
     {
-      "id": "Browse Files",
-      "message": "Browse Files",
-      "translation": "Dateien durchsuchen"
-    },
-    {
       "id": "Browse by Folder Structure",
       "message": "Browse by Folder Structure",
       "translation": "Nach Ordnerstruktur durchsuchen"
@@ -202,11 +207,6 @@
       "translation": "Nach Metadaten durchsuchen"
     },
     {
-      "id": "Build Time",
-      "message": "Build Time",
-      "translation": "Build-Zeit"
-    },
-    {
       "id": "Build time",
       "message": "Build time",
       "translation": "Build-Zeit"
@@ -215,31 +215,6 @@
       "id": "Bulk Metadata Update",
       "message": "Bulk Metadata Update",
       "translation": "Metadaten-Massenaktualisierung"
-    },
-    {
-      "id": "By Collections",
-      "message": "By Collections",
-      "translation": "Nach Sammlungen"
-    },
-    {
-      "id": "By Folders",
-      "message": "By Folders",
-      "translation": "Nach Ordnern"
-    },
-    {
-      "id": "By Tags",
-      "message": "By Tags",
-      "translation": "Nach Tags"
-    },
-    {
-      "id": "By Type",
-      "message": "By Type",
-      "translation": "Nach Typ"
-    },
-    {
-      "id": "Cache Storage",
-      "message": "Cache Storage",
-      "translation": "Cache-Speicher"
     },
     {
       "id": "Caller",
@@ -327,9 +302,9 @@
       "translation": "Kriterien"
     },
     {
-      "id": "Cronjob Interval",
-      "message": "Cronjob Interval",
-      "translation": "Cronjob-Intervall"
+      "id": "Current Value",
+      "message": "Current Value",
+      "translation": ""
     },
     {
       "id": "Custom CSS",
@@ -367,6 +342,11 @@
       "translation": "Datumsformat"
     },
     {
+      "id": "Default",
+      "message": "Default",
+      "translation": ""
+    },
+    {
       "id": "Default Markdown Editor",
       "message": "Default Markdown Editor",
       "translation": "Standard-Markdown-Editor"
@@ -385,6 +365,11 @@
       "id": "Delete all orphaned media files? This cannot be undone.",
       "message": "Delete all orphaned media files? This cannot be undone.",
       "translation": "Alle verwaisten Mediendateien löschen? Dies kann nicht rückgängig gemacht werden."
+    },
+    {
+      "id": "Description",
+      "message": "Description",
+      "translation": ""
     },
     {
       "id": "Design your custom dashboard with widgets",
@@ -462,9 +447,9 @@
       "translation": "Suchtext eingeben"
     },
     {
-      "id": "Environment Info",
-      "message": "Environment Info",
-      "translation": "Umgebungsinformationen"
+      "id": "Environment",
+      "message": "Environment",
+      "translation": ""
     },
     {
       "id": "Error",
@@ -525,11 +510,6 @@
       "id": "Files",
       "message": "Files",
       "translation": "Dateien"
-    },
-    {
-      "id": "Files Overview",
-      "message": "Files Overview",
-      "translation": "Dateiübersicht"
     },
     {
       "id": "Files can be found by where they live or by labels attached to them.",
@@ -630,21 +610,6 @@
       "id": "General Settings",
       "message": "General Settings",
       "translation": "Allgemeine Einstellungen"
-    },
-    {
-      "id": "Git Auto Push",
-      "message": "Git Auto Push",
-      "translation": "Git Auto-Push"
-    },
-    {
-      "id": "Git Branch",
-      "message": "Git Branch",
-      "translation": "Git-Branch"
-    },
-    {
-      "id": "Git Remote",
-      "message": "Git Remote",
-      "translation": "Git-Remote"
     },
     {
       "id": "Git Remote Sync",
@@ -827,56 +792,6 @@
       "translation": "Kanban"
     },
     {
-      "id": "Kanban Ancestor Allowed Status",
-      "message": "Kanban Ancestor Allowed Status",
-      "translation": "Kanban: erlaubter Status für Vorfahren"
-    },
-    {
-      "id": "Kanban Archive Status",
-      "message": "Kanban Archive Status",
-      "translation": "Kanban-Archivstatus"
-    },
-    {
-      "id": "Kanban Boards",
-      "message": "Kanban Boards",
-      "translation": "Kanban-Boards"
-    },
-    {
-      "id": "Kanban Card Styles",
-      "message": "Kanban Card Styles",
-      "translation": "Kanban-Kartenstile"
-    },
-    {
-      "id": "Kanban Columns",
-      "message": "Kanban Columns",
-      "translation": "Kanban-Spalten"
-    },
-    {
-      "id": "Kanban Events Enabled",
-      "message": "Kanban Events Enabled",
-      "translation": "Kanban-Ereignisse aktiviert"
-    },
-    {
-      "id": "Kanban Events Storage",
-      "message": "Kanban Events Storage",
-      "translation": "Kanban-Ereignisspeicher"
-    },
-    {
-      "id": "Kanban Prefix",
-      "message": "Kanban Prefix",
-      "translation": "Kanban-Präfix"
-    },
-    {
-      "id": "Kanban Statuses",
-      "message": "Kanban Statuses",
-      "translation": "Kanban-Status"
-    },
-    {
-      "id": "Kanban Tag Colors",
-      "message": "Kanban Tag Colors",
-      "translation": "Kanban-Tag-Farben"
-    },
-    {
       "id": "Language",
       "message": "Language",
       "translation": "Sprache"
@@ -952,11 +867,6 @@
       "translation": "Logs"
     },
     {
-      "id": "Logs Path",
-      "message": "Logs Path",
-      "translation": "Logs-Pfad"
-    },
-    {
       "id": "Margin (mm)",
       "message": "Margin (mm)",
       "translation": "Rand (mm)"
@@ -1002,16 +912,6 @@
       "translation": "Metadaten"
     },
     {
-      "id": "Metadata Rebuild Interval",
-      "message": "Metadata Rebuild Interval",
-      "translation": "Metadaten-Neuaufbau-Intervall"
-    },
-    {
-      "id": "Metadata Storage",
-      "message": "Metadata Storage",
-      "translation": "Metadaten-Speicher"
-    },
-    {
       "id": "Move",
       "message": "Move",
       "translation": "Verschieben"
@@ -1047,11 +947,6 @@
       "translation": "Benachrichtigungen"
     },
     {
-      "id": "Notify Duration",
-      "message": "Notify Duration",
-      "translation": "Benachrichtigungsdauer"
-    },
-    {
       "id": "OK",
       "message": "OK",
       "translation": "OK"
@@ -1065,6 +960,11 @@
       "id": "Operator",
       "message": "Operator",
       "translation": "Operator"
+    },
+    {
+      "id": "Options",
+      "message": "Options",
+      "translation": ""
     },
     {
       "id": "Orientation",
@@ -1422,24 +1322,9 @@
       "translation": "Suche"
     },
     {
-      "id": "Search Engine",
-      "message": "Search Engine",
-      "translation": "Suchmaschine"
-    },
-    {
-      "id": "Search Index Interval",
-      "message": "Search Index Interval",
-      "translation": "Suchindex-Intervall"
-    },
-    {
       "id": "Search Results",
       "message": "Search Results",
       "translation": "Suchergebnisse"
-    },
-    {
-      "id": "Search Storage",
-      "message": "Search Storage",
-      "translation": "Suchspeicher"
     },
     {
       "id": "Search files...",
@@ -1450,11 +1335,6 @@
       "id": "Section Editing \u0026 Display",
       "message": "Section Editing \u0026 Display",
       "translation": "Abschnittsbearbeitung \u0026 -anzeige"
-    },
-    {
-      "id": "Server Port",
-      "message": "Server Port",
-      "translation": "Server-Port"
     },
     {
       "id": "Set Data Path",
@@ -1572,11 +1452,6 @@
       "translation": "Status"
     },
     {
-      "id": "Storage Path",
-      "message": "Storage Path",
-      "translation": "Speicherpfad"
-    },
-    {
       "id": "Storage Statistics",
       "message": "Storage Statistics",
       "translation": "Speicherstatistik"
@@ -1640,11 +1515,6 @@
       "id": "Theme, typography and favicon",
       "message": "Theme, typography and favicon",
       "translation": "Theme, Typografie und Favicon"
-    },
-    {
-      "id": "Themes Path",
-      "message": "Themes Path",
-      "translation": "Themes-Pfad"
     },
     {
       "id": "This will remove all files in the data/test Folder.",
@@ -1747,6 +1617,11 @@
       "translation": "Wert"
     },
     {
+      "id": "Variable",
+      "message": "Variable",
+      "translation": ""
+    },
+    {
       "id": "Version",
       "message": "Version",
       "translation": "Version"
@@ -1767,6 +1642,11 @@
       "translation": "alle Editor-Typen anzeigen"
     },
     {
+      "id": "View all files",
+      "message": "View all files",
+      "translation": ""
+    },
+    {
       "id": "View all filter files",
       "message": "View all filter files",
       "translation": "alle Filterdateien anzeigen"
@@ -1780,11 +1660,6 @@
       "id": "View all tags",
       "message": "View all tags",
       "translation": "alle Tags anzeigen"
-    },
-    {
-      "id": "View all types",
-      "message": "View all types",
-      "translation": "alle Typen anzeigen"
     },
     {
       "id": "Vim Keybindings",
@@ -2162,8 +2037,8 @@
       "translation": "kommagetrennte MIME-Typen, die für den Upload akzeptiert werden (z. B. image/*, application/pdf)"
     },
     {
-      "id": "comma-separated folder path patterns to exclude from file listings, browse, search and filter. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search and/or ::filter (combine with |, e.g. ::search|filter) to a pattern to keep it hidden everywhere else but show it again in just those scopes",
-      "message": "comma-separated folder path patterns to exclude from file listings, browse, search and filter. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search and/or ::filter (combine with |, e.g. ::search|filter) to a pattern to keep it hidden everywhere else but show it again in just those scopes",
+      "id": "comma-separated folder path patterns to exclude from file listings, browse, search, filter and kanban. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter and/or ::kanban (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
+      "message": "comma-separated folder path patterns to exclude from file listings, browse, search, filter and kanban. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter and/or ::kanban (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
       "translation": ""
     },
     {
@@ -3422,6 +3297,11 @@
       "translation": "voll"
     },
     {
+      "id": "full list of environment variables",
+      "message": "full list of environment variables",
+      "translation": ""
+    },
+    {
       "id": "full-text search across all files",
       "message": "full-text search across all files",
       "translation": ""
@@ -4537,11 +4417,6 @@
       "translation": "auf Standard zurücksetzen? Nicht gespeicherte Änderungen gehen verloren"
     },
     {
-      "id": "restart required to change",
-      "message": "restart required to change",
-      "translation": "Neustart erforderlich, um dies zu ändern"
-    },
-    {
       "id": "restarting application...",
       "message": "restarting application...",
       "translation": "Anwendung wird neu gestartet..."
@@ -4735,6 +4610,11 @@
       "id": "settings imported successfully",
       "message": "settings imported successfully",
       "translation": "Einstellungen erfolgreich importiert"
+    },
+    {
+      "id": "settings imported, {Integer} setting(s) skipped - see logs",
+      "message": "settings imported, {Integer} setting(s) skipped - see logs",
+      "translation": ""
     },
     {
       "id": "shift+tab",

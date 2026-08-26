@@ -54,6 +54,13 @@ func Init(enabled bool, provider, storagePath string) error {
 		}
 		storage = s
 		logging.LogInfo(logging.KeyApp, "kanban storage initialized: sqlite")
+	case "json":
+		s, err := newJSONStorage(storagePath)
+		if err != nil {
+			return err
+		}
+		storage = s
+		logging.LogInfo(logging.KeyApp, "kanban storage initialized: json")
 	default:
 		s, err := newSQLiteStorage(storagePath)
 		if err != nil {

@@ -25,7 +25,7 @@
       - for devs
   - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 - features
-  - add a json storage for kanban
+  - set the time for the backup not just the interval (problem: im using the application on a stick and it "only" runs 8-10h per day then i take it home and no backup is done since 24h are not gone yet)
 - fixes
   - media rename?
 - chore
