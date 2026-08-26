@@ -17,17 +17,6 @@ import (
 	"knov/internal/translation"
 )
 
-func handleFileOverview(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewBaseTemplateData("Files Overview")
-
-	err := tm.Render(w, "filesoverview", data)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-		return
-	}
-}
-
 func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/files/")
 	fullPath := pathutils.ToDocsPath(filePath)

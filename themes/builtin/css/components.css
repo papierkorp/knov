@@ -638,12 +638,19 @@ body[data-dark-mode="true"] .tooltip::after {
   border-radius: 8px;
   border: 1px solid var(--border);
 }
+.page-browse-files .browse-content ul {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
 
 @media (max-width: 768px) {
   .page-browse .browse-grid {
     grid-template-columns: 1fr;
   }
   .page-browse .folder-content {
+    grid-template-columns: 1fr;
+  }
+  .page-browse-files .browse-content ul {
     grid-template-columns: 1fr;
   }
 }
@@ -951,47 +958,6 @@ body[data-dark-mode="true"] .tooltip::after {
   color: var(--text);
 }
 
-/* =============================================
-   page: files overview
-   ============================================= */
-
-.page-files-overview .overview-list ul {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-}
-.page-files-overview .overview-browse {
-  background: var(--bg-secondary);
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-.page-files-overview .browse-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
-}
-.page-files-overview .browse-section {
-  background: var(--bg);
-  padding: 15px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-}
-.page-files-overview .browse-section h3 {
-  margin: 0 0 10px 0;
-  color: var(--primary);
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-@media (max-width: 768px) {
-  .page-files-overview .browse-grid {
-    grid-template-columns: 1fr;
-  }
-  .page-files-overview .overview-list ul {
-    grid-template-columns: 1fr;
-  }
-}
 
 /* =============================================
    chat (full page)

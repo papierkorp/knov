@@ -106,7 +106,7 @@ func NewRouter() *chi.Mux {
 	r.Get("/dashboard/edit/{id}", handleDashboardEdit)
 
 	r.Get("/browse", handleBrowse)
-	r.Get("/browse/files", handleFileOverview)
+	r.Get("/browse/files", handleBrowseFiles)
 	r.Get("/browse/media", handleBrowseMedia)
 	r.Get("/browse/{metadata}", handleBrowseMetadata)
 	r.Get("/browse/{metadata}/{value}", handleBrowseFiles)

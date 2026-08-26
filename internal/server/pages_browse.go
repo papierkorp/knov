@@ -32,13 +32,11 @@ func handleBrowseFiles(w http.ResponseWriter, r *http.Request) {
 	metadataType := chi.URLParam(r, "metadata")
 	value := chi.URLParam(r, "value")
 
-	if metadataType == "" || value == "" {
-		http.Error(w, "missing metadata type or value", http.StatusBadRequest)
-		return
-	}
-
 	tm := thememanager.GetThemeManager()
-	title := fmt.Sprintf("Browse: %s", value)
+	title := "All Files"
+	if metadataType != "" {
+		title = fmt.Sprintf("Browse: %s", value)
+	}
 	data := thememanager.NewBrowseFilesTemplateData(metadataType, value)
 	data.Title = title
 

@@ -2,11 +2,11 @@
 {{ define "content" }}
 <div class="page-browse-files">
     <div class="browse-header">
-        <h1>{{T "Files with"}} {{ .Data.MetadataType }}: <span class="filter-value">{{ .Data.Value }}</span></h1>
+        <h1>{{if .Data.MetadataType}}{{T "Files with"}} {{ .Data.MetadataType }}: <span class="filter-value">{{ .Data.Value }}</span>{{else}}{{T "All Files"}}{{end}}</h1>
         <div class="browse-breadcrumb">
             <a href="/">{{T "Home"}}</a>
             → <a href="/browse">{{T "Browse"}}</a>
-            → <span>{{ .Data.MetadataType }}: {{ .Data.Value }}</span>
+            → <span>{{if .Data.MetadataType}}{{ .Data.MetadataType }}: {{ .Data.Value }}{{else}}{{T "All Files"}}{{end}}</span>
         </div>
         {{if or (eq .Data.MetadataType "collection") (eq .Data.MetadataType "folder") (eq .Data.MetadataType "tag")}}
         <button class="btn-danger btn-small"
@@ -20,7 +20,7 @@
     </div>
     <div class="browse-content">
         <div
-            hx-get="/api/files/browse?metadata={{ .Data.MetadataType }}&value={{ urlQuery .Data.Value }}&actions=true"
+            hx-get="{{if .Data.MetadataType}}/api/files/browse?metadata={{ .Data.MetadataType }}&value={{ urlQuery .Data.Value }}{{else}}/api/files/list{{end}}&actions=true"
             hx-trigger="load"
             hx-headers='{"Accept": "text/html"}'
             class="filter-results"
