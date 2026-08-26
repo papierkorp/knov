@@ -55,7 +55,6 @@ var navLinkPool = []NavLink{
 	{Key: "settings", URL: "/settings", Label: "Settings"},
 	{Key: "admin", URL: "/admin", Label: "Admin"},
 	{Key: "kanban", URL: "/kanban", Label: "Kanban"},
-	{Key: "playground", URL: "/playground", Label: "Playground"},
 	{Key: "logs", URL: "/system/logs", Label: "Logs"},
 	{Key: "changelog", URL: "/system/changelog", Label: "Changelog"},
 	{Key: "version", URL: "/system/version", Label: "Version"},

@@ -2339,7 +2339,7 @@ main textarea {
   transform: rotate(45deg);
 }
 
-/* admin quick links (playground, swagger) */
+/* admin quick links (swagger, changelog, ...) */
 .admin-links {
   display: flex;
   gap: 8px;

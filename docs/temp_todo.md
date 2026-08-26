@@ -31,7 +31,6 @@
 - chore
   - async jobs follow up candidates
   - switch to static id instead of using the path
-  - remove the playground
 
 # every other time
 

@@ -82,7 +82,6 @@ func NewRouter() *chi.Mux {
 	r.Get("/system/environment", render.HandleSystemEnvironment)
 	r.Get("/settings", handleSettings)
 	r.Get("/admin", handleAdmin)
-	r.Get("/playground", handlePlayground)
 	r.Get("/help", handleHelp)
 	r.Get("/history", handleHistory)
 	r.Get("/search", handleSearchPage)

@@ -62,17 +62,6 @@ func handleHelp(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handlePlayground(w http.ResponseWriter, r *http.Request) {
-	tm := thememanager.GetThemeManager()
-	data := thememanager.NewBaseTemplateData("playground")
-
-	err := tm.Render(w, "playground", data)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
-		return
-	}
-}
-
 func handleChat(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewBaseTemplateData("chat")
