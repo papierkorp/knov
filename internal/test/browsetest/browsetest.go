@@ -2,6 +2,10 @@
 // autocomplete/TOC pieces behind /browse (see docs/temp_todo.md step 5). The page routes
 // themselves are template shells with no logic (data comes from the /api/files/* endpoints via
 // htmx), so cases call the same exported functions/inline logic those handlers use directly.
+// caseHideScopeEndpoints (scope_endpoints.go) is the one exception - it hits the real
+// /api/files/tree, /api/files/list and /api/files/folder handlers over HTTP (an ephemeral
+// httptest server, not the app's own port) because the thing under test is which HideScope*
+// constant each handler hardcodes at its call site, which no shared function exposes.
 package browsetest
 
 import (
@@ -33,6 +37,8 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseFolderSuggestions,
 		caseHeadersTOC,
 		caseHiddenFileTypeFilter,
+		caseHidePathScope,
+		caseHideScopeEndpoints,
 	}
 
 	result := &test.SuiteResult{Suite: "browse"}

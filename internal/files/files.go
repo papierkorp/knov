@@ -154,12 +154,15 @@ func GetFileContent(filePath string) (*FileContent, error) {
 	}, nil
 }
 
-// FilterByVisibility returns only files that should be visible based on the current hide settings.
-// Checks mime type, extension, and editor type in that order.
-func FilterByVisibility(files []File) []File {
+// FilterByVisibility returns only files that should be visible based on the current hide
+// settings. Checks mime type, extension, and editor type in that order, then folder path
+// for the given scope - pass "" for feature areas without a per-scope override (see
+// configmanager.IsPathHidden), or one of configmanager.HideScopeTree/Browse/Overview/
+// Search/Filter/Kanban.
+func FilterByVisibility(files []File, scope string) []File {
 	var filtered []File
 	for _, file := range files {
-		if !isHiddenByType(file) && !isInHiddenFolder(file) {
+		if !isHiddenByType(file) && !isInHiddenFolder(file, scope) {
 			filtered = append(filtered, file)
 		}
 	}
@@ -191,14 +194,15 @@ func isHiddenByType(file File) bool {
 	return false
 }
 
-// isInHiddenFolder returns true if the file's containing folder path matches a configured hide-path pattern.
-func isInHiddenFolder(file File) bool {
+// isInHiddenFolder returns true if the file's containing folder path matches a configured
+// hide-path pattern for scope.
+func isInHiddenFolder(file File, scope string) bool {
 	rel := pathutils.ToRelative(file.Path)
 	parts := strings.Split(rel, "/")
 	if len(parts) < 2 {
 		return false
 	}
-	return configmanager.IsPathHidden(strings.Join(parts[:len(parts)-1], "/"))
+	return configmanager.IsPathHidden(strings.Join(parts[:len(parts)-1], "/"), scope)
 }
 
 // TreeNode represents a node in the file tree (either a directory or a file)

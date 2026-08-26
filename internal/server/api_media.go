@@ -125,7 +125,7 @@ func handleAPIGetAllMedia(w http.ResponseWriter, r *http.Request) {
 
 	totalRawCount := len(mediaFiles)
 	// apply hide-type settings (image, video, pdf, office, archives, etc.)
-	mediaFiles = files.FilterByVisibility(mediaFiles)
+	mediaFiles = files.FilterByVisibility(mediaFiles, "")
 	hiddenCount := totalRawCount - len(mediaFiles)
 
 	// get orphaned media from cache

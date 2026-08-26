@@ -147,7 +147,10 @@ func main() {
 		return
 	}
 
-	configmanager.InitSettings()
+	if err := configmanager.InitSettings(); err != nil {
+		logging.LogError(logging.KeyApp, "failed to initialize settings: %v", err)
+		return
+	}
 	configmanager.LoadThemeSettings()
 	translation.SetLanguage(configmanager.GetLanguage())
 

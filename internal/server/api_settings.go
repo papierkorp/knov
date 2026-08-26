@@ -120,7 +120,7 @@ func handleAPIBulkSetSettings(w http.ResponseWriter, r *http.Request) {
 		for i, e := range errs {
 			msgs[i] = e.Error()
 		}
-		http.Error(w, strings.Join(msgs, "; "), http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", strings.Join(msgs, "; ")), http.StatusBadRequest)
 		return
 	}
 	writeResponse(w, r, "saved", "")
@@ -145,7 +145,7 @@ func handleAPISetSetting(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.SetFromString(r.FormValue(key)); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()), http.StatusBadRequest)
 		return
 	}
 	if err := configmanager.SaveSettings(); err != nil {

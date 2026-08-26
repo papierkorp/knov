@@ -42,6 +42,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseThemeSettingsRoundtrip,
 		caseLanguages,
 		caseFaviconUploadDelete,
+		caseHidePathsTagValidation,
 	}
 
 	result := &test.SuiteResult{Suite: "settings"}

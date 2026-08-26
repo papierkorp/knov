@@ -23,7 +23,7 @@ func handleAPIGetFileTree(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get files"), http.StatusInternalServerError)
 		return
 	}
-	allFiles = files.FilterByVisibility(allFiles)
+	allFiles = files.FilterByVisibility(allFiles, configmanager.HideScopeTree)
 	tree := files.BuildFileTree(allFiles)
 	html := render.RenderTreeOverview(tree, r.URL.Query().Get("actions") == "true")
 	writeResponse(w, r, allFiles, html)
@@ -56,7 +56,7 @@ func handleAPIGetAllFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	allFiles = files.FilterByVisibility(allFiles)
+	allFiles = files.FilterByVisibility(allFiles, configmanager.HideScopeOverview)
 
 	html := render.RenderFilesList(allFiles, r.URL.Query().Get("actions") == "true")
 	writeResponse(w, r, allFiles, html)

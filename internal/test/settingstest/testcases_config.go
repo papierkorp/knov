@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/test"
@@ -43,6 +44,32 @@ func caseLanguages() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "SetLanguage did not switch the active language as expected"
+	}
+	return cr
+}
+
+// caseHidePathsTagValidation covers handleAPISetSetting("hidePaths") rejecting a HidePaths
+// entry with an unrecognized "::tag" scope (e.g. a typo like "::serach") instead of silently
+// accepting it as a pattern that's hidden everywhere.
+func caseHidePathsTagValidation() test.CaseResult {
+	name := "hide-paths-tag-validation"
+
+	prev := configmanager.HidePaths.Get()
+	defer configmanager.HidePaths.SetFromString(strings.Join(prev, ","))
+
+	err := configmanager.HidePaths.SetFromString("archive::serach")
+	rejected := err != nil
+	unchanged := slices.Equal(configmanager.HidePaths.Get(), prev)
+
+	success := rejected && unchanged
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "SetFromString(\"archive::serach\") returns an error and leaves HidePaths unchanged",
+		Actual:   fmt.Sprintf("err=%v unchanged=%v", err, unchanged),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "HidePaths accepted an unrecognized ::tag scope instead of rejecting it"
 	}
 	return cr
 }

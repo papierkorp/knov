@@ -541,18 +541,65 @@ func IsFileTypeHidden(editorType string) bool {
 	}
 }
 
+// Hide-path scopes: feature areas that can be targeted by a HidePaths entry's
+// "::tag1|tag2" suffix (see IsPathHidden). Callers with no per-scope override
+// (media) pass "" instead, which never matches a tag - an entry with tags can
+// never hide a path from such a caller, only an entry with no suffix can.
+const (
+	HideScopeTree     = "tree"
+	HideScopeBrowse   = "browse"
+	HideScopeOverview = "overview"
+	HideScopeSearch   = "search"
+	HideScopeFilter   = "filter"
+	HideScopeKanban   = "kanban"
+)
+
+// hideScopes lists every recognized HidePaths scope tag.
+var hideScopes = []string{HideScopeTree, HideScopeBrowse, HideScopeOverview, HideScopeSearch, HideScopeFilter, HideScopeKanban}
+
+// ValidateHidePaths rejects a HidePaths entry whose "::tag1|tag2" suffix contains an
+// unrecognized scope name, so a typo (e.g. "::serach") fails on save instead of silently
+// leaving the path hidden everywhere.
+func ValidateHidePaths(entries []string) error {
+	for _, entry := range entries {
+		_, tags := splitHidePathEntry(entry)
+		for _, tag := range tags {
+			if !slices.Contains(hideScopes, tag) {
+				return fmt.Errorf("hide paths: unknown scope %q in %q (known scopes: %s)", tag, entry, strings.Join(hideScopes, ", "))
+			}
+		}
+	}
+	return nil
+}
+
 // IsPathHidden checks if a relative folder path ("/"-separated, no leading/trailing slash)
-// matches any of the configured hide-path patterns. Each pattern is itself "/"-separated;
-// a pattern segment of "*" matches any single path segment, while any other segment is a
-// case-insensitive regular expression that must fully match one segment. A pattern matches
-// if its segments align with any contiguous run of the path's segments, e.g. "*/todo" hides
-// every folder named "todo", while "test/todo" only hides the "todo" folder inside "test".
-func IsPathHidden(relDirPath string) bool {
+// matches any of the configured hide-path patterns for the given scope.
+//
+// Each HidePaths entry is a pattern, optionally suffixed with "::tag1|tag2" (e.g.
+// "projects/archive::search|filter"). An entry without a suffix always matches, keeping
+// the path hidden everywhere. An entry with a suffix only matches (hides) when scope is
+// listed in its tags - this is how a path can stay visible everywhere by default while
+// being hidden in just the scopes it's tagged for, e.g. tagging it "filter" means it's
+// hidden from filter results but stays visible everywhere else. Callers with no
+// per-scope override (media, see FilterByVisibility) query with scope="", which never
+// appears in a tag list - such a caller is never affected by a tagged entry, only by
+// an entry with no suffix.
+//
+// Each pattern is itself "/"-separated; a pattern segment of "*" matches any single path
+// segment, while any other segment is a case-insensitive regular expression that must fully
+// match one segment. A pattern matches if its segments align with any contiguous run of the
+// path's segments, e.g. "*/todo" hides every folder named "todo", while "test/todo" only
+// hides the "todo" folder inside "test".
+func IsPathHidden(relDirPath, scope string) bool {
 	if relDirPath == "" {
 		return false
 	}
 	pathSegs := strings.Split(relDirPath, "/")
-	for _, pattern := range HidePaths.Get() {
+	for _, entry := range HidePaths.Get() {
+		pattern, tags := splitHidePathEntry(entry)
+		if len(tags) > 0 && !slices.Contains(tags, scope) {
+			continue
+		}
 		patternSegs := strings.Split(strings.Trim(pattern, "/"), "/")
 		if len(patternSegs) == 0 || len(patternSegs) > len(pathSegs) {
 			continue
@@ -564,6 +611,16 @@ func IsPathHidden(relDirPath string) bool {
 		}
 	}
 	return false
+}
+
+// splitHidePathEntry splits a HidePaths entry into its pattern and optional scope tags,
+// e.g. "projects/archive::search|filter" -> ("projects/archive", ["search", "filter"]).
+func splitHidePathEntry(entry string) (pattern string, tags []string) {
+	pattern, tagStr, ok := strings.Cut(entry, "::")
+	if !ok || tagStr == "" {
+		return pattern, nil
+	}
+	return pattern, strings.Split(tagStr, "|")
 }
 
 func pathSegmentsMatch(patternSegs, candidateSegs []string) bool {

@@ -91,9 +91,9 @@ func BuildBoard(folderPath string, cfg *filter.Config, searchQuery string, sortB
 	}
 	var matched []files.File
 	if cfg != nil {
-		matched = filter.FilterFileList(files.FilterByVisibility(candidates), cfg.Criteria, cfg.Logic)
+		matched = filter.FilterFileList(files.FilterByVisibility(candidates, configmanager.HideScopeKanban), cfg.Criteria, cfg.Logic)
 	} else {
-		matched = files.FilterByVisibility(candidates)
+		matched = files.FilterByVisibility(candidates, configmanager.HideScopeKanban)
 	}
 
 	cardsByStatus := make(map[string][]Card, len(columns))

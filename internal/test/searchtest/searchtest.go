@@ -27,6 +27,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseSearchLimit,
 		caseSearchDeletedFileByTitle,
 		caseSearchDeletedFileByContent,
+		caseSearchScopedHidePath,
 	}
 
 	result := &test.SuiteResult{Suite: "search"}

@@ -50,7 +50,7 @@ func FilterFiles(criteria []Criteria, logic string) ([]files.File, error) {
 		return nil, err
 	}
 
-	return FilterFileList(files.FilterByVisibility(allFiles), criteria, logic), nil
+	return FilterFileList(files.FilterByVisibility(allFiles, configmanager.HideScopeFilter), criteria, logic), nil
 }
 
 // FilterFileList applies criteria to an already-loaded file list. Callers that

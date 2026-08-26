@@ -108,7 +108,7 @@ func handleAPIGetFolder(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if entry.IsDir() {
-			if configmanager.IsPathHidden(pathutils.ToSlash(entryPath)) {
+			if configmanager.IsPathHidden(pathutils.ToSlash(entryPath), configmanager.HideScopeBrowse) {
 				continue // skip this folder if its path matches a configured hide-path pattern
 			}
 			folders = append(folders, item)

@@ -32,6 +32,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseExportZipRaw,
 		caseExportZipMarkdownConverted,
 		caseSettingsExportImportRoundtrip,
+		caseSettingsImportReportsSkipped,
 	}
 
 	result := &test.SuiteResult{Suite: "export"}

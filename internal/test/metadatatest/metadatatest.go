@@ -38,6 +38,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseMutateMissingPath,
 		caseAllEditorTypes,
 		caseSanitizeKanbanTags,
+		caseAggregatesRespectHiddenPaths,
 	}
 
 	result := &test.SuiteResult{Suite: "metadata"}

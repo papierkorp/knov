@@ -2,6 +2,7 @@ package kanbantest
 
 import (
 	"fmt"
+	"strings"
 
 	"knov/internal/configmanager"
 	"knov/internal/filter"
@@ -61,6 +62,37 @@ func caseBoardLoadColumns() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "BuildBoard did not bucket sample cards into the expected columns"
+	}
+	return cr
+}
+
+// caseHideScopeKanban checks that BuildBoard passes configmanager.HideScopeKanban when
+// filtering by visibility, by tagging the board's own folder so it's hidden only in the
+// kanban scope - if the call site regressed to passing "" or a different scope constant,
+// the tag would never match and every card would still show up on the board here instead
+// of the board coming back empty.
+func caseHideScopeKanban() test.CaseResult {
+	name := "hide-scope-kanban"
+
+	prev := configmanager.HidePaths.Get()
+	defer configmanager.HidePaths.SetFromString(strings.Join(prev, ","))
+	configmanager.HidePaths.SetFromString(testFolder + "::" + configmanager.HideScopeKanban)
+
+	cols, err := kanban.BuildBoard(testFolder, emptyFilterConfig(), "", "")
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	inbox := columnPaths(cols, "inbox")
+	success := !containsPath(inbox, testPath(alphaFile))
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: fmt.Sprintf("%s tagged ::kanban hides %s from the board", testFolder, alphaFile),
+		Actual:   fmt.Sprintf("inbox=%d", len(inbox)),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "BuildBoard did not apply configmanager.HideScopeKanban"
 	}
 	return cr
 }

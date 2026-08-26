@@ -2167,8 +2167,8 @@
       "translation": ""
     },
     {
-      "id": "comma-separated folder path patterns to exclude from file listings and browse views. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test",
-      "message": "comma-separated folder path patterns to exclude from file listings and browse views. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test",
+      "id": "comma-separated folder path patterns to exclude from file listings, browse, search and filter. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search and/or ::filter (combine with |, e.g. ::search|filter) to a pattern to keep it hidden everywhere else but show it again in just those scopes",
+      "message": "comma-separated folder path patterns to exclude from file listings, browse, search and filter. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search and/or ::filter (combine with |, e.g. ::search|filter) to a pattern to keep it hidden everywhere else but show it again in just those scopes",
       "translation": ""
     },
     {
@@ -2962,11 +2962,6 @@
       "translation": ""
     },
     {
-      "id": "failed to parse todo content",
-      "message": "failed to parse todo content",
-      "translation": ""
-    },
-    {
       "id": "failed to parse upload form",
       "message": "failed to parse upload form",
       "translation": ""
@@ -3089,11 +3084,6 @@
     {
       "id": "failed to save setting",
       "message": "failed to save setting",
-      "translation": ""
-    },
-    {
-      "id": "failed to save todo",
-      "message": "failed to save todo",
       "translation": ""
     },
     {
@@ -3469,6 +3459,11 @@
     {
       "id": "hand down status to sub-items",
       "message": "hand down status to sub-items",
+      "translation": ""
+    },
+    {
+      "id": "heading...",
+      "message": "heading...",
       "translation": ""
     },
     {
@@ -4432,18 +4427,8 @@
       "translation": ""
     },
     {
-      "id": "path/to/file.list",
-      "message": "path/to/file.list",
-      "translation": ""
-    },
-    {
       "id": "path/to/file.md",
       "message": "path/to/file.md",
-      "translation": ""
-    },
-    {
-      "id": "path/to/file.todo",
-      "message": "path/to/file.todo",
       "translation": ""
     },
     {
@@ -4982,8 +4967,8 @@
       "translation": ""
     },
     {
-      "id": "todo saved successfully",
-      "message": "todo saved successfully",
+      "id": "todo mode",
+      "message": "todo mode",
       "translation": ""
     },
     {

@@ -45,7 +45,15 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		}
 	}
 
-	result.Total = len(testConfigs)
+	scopedCase := caseFilterScopedHidePath()
+	result.Cases = append(result.Cases, scopedCase)
+	if scopedCase.Success {
+		result.Passed++
+	} else {
+		result.Failed++
+	}
+
+	result.Total = len(testConfigs) + 1
 	result.Success = result.Failed == 0
 
 	if result.Failed > 0 {

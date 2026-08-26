@@ -3,10 +3,12 @@ package exporttest
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"knov/internal/configmanager"
@@ -163,7 +165,7 @@ func caseSettingsExportImportRoundtrip() test.CaseResult {
 	}
 
 	configmanager.HideTodo.SetFromString(fmt.Sprintf("%v", original))
-	if err := configmanager.ImportSettingsJSON(exported); err != nil {
+	if _, err := configmanager.ImportSettingsJSON(exported); err != nil {
 		return errCase(name, err)
 	}
 
@@ -177,6 +179,47 @@ func caseSettingsExportImportRoundtrip() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "ExportSettingsJSON/ImportSettingsJSON did not round-trip the setting as expected"
+	}
+	return cr
+}
+
+// caseSettingsImportReportsSkipped checks that ImportSettingsJSON reports a stored value that
+// fails its setting's validation (here an out-of-range pageSize) back to the caller as skipped,
+// instead of only logging it - handleAPIImportSettings (internal/server/api_config.go) relies on
+// this to warn the user that part of their import didn't apply, rather than flashing an
+// unqualified "imported successfully".
+func caseSettingsImportReportsSkipped() test.CaseResult {
+	name := "settings-import-reports-skipped"
+
+	exported, err := configmanager.ExportSettingsJSON()
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	var raw map[string]interface{}
+	if err := json.Unmarshal(exported, &raw); err != nil {
+		return errCase(name, err)
+	}
+	raw["pageSize"] = -1
+	tampered, err := json.Marshal(raw)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	skipped, err := configmanager.ImportSettingsJSON(tampered)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	success := slices.Contains(skipped, "pageSize")
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: `skipped contains "pageSize"`,
+		Actual:   fmt.Sprintf("skipped=%v", skipped),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "ImportSettingsJSON did not report the invalid pageSize value as skipped"
 	}
 	return cr
 }

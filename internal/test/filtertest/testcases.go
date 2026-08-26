@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
+	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/filter"
 	"knov/internal/test"
 )
@@ -474,6 +476,41 @@ var testConfigs = []testConfig{
 		expectedCount: 1,
 		expectedFiles: []string{"filterTestE.md"},
 	},
+}
+
+// caseFilterScopedHidePath checks that FilterFiles (via FilterFilesWithConfig) passes
+// configmanager.HideScopeFilter when filtering by visibility, by tagging the whole sample
+// folder so it's hidden only in the filter scope - if the call site regressed to passing ""
+// or a different scope constant, the tag would never match and every sample file would still
+// show up here instead of the expected 0.
+func caseFilterScopedHidePath() test.CaseResult {
+	name := "test19scoped_hide_path"
+
+	prev := configmanager.HidePaths.Get()
+	defer configmanager.HidePaths.SetFromString(strings.Join(prev, ","))
+	configmanager.HidePaths.SetFromString("test/filter-tests::" + configmanager.HideScopeFilter)
+
+	result, err := filter.FilterFilesWithConfig(&filter.Config{
+		Criteria: []filter.Criteria{
+			{Metadata: "folders", Operator: "equals", Value: "filter-tests", Action: "include"},
+		},
+		Logic: "and",
+	})
+	if err != nil {
+		return test.CaseResult{Name: name, Success: false, Error: err.Error()}
+	}
+
+	success := result.Total == 0
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "0 files: folder tagged ::filter is hidden from filter results",
+		Actual:   fmt.Sprintf("%d files", result.Total),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "FilterFiles did not apply configmanager.HideScopeFilter"
+	}
+	return cr
 }
 
 // runCase executes a single scenario against the real filter engine and compares the

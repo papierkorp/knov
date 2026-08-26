@@ -42,7 +42,7 @@ func caseFileTree() test.CaseResult {
 	if err != nil {
 		return errCase(name, err)
 	}
-	tree := files.BuildFileTree(files.FilterByVisibility(allFiles))
+	tree := files.BuildFileTree(files.FilterByVisibility(allFiles, ""))
 
 	alphaNode := findTreeNode(tree, testPath(alphaFile))
 	subNode := findTreeNode(tree, subDir)
@@ -274,10 +274,10 @@ func caseHiddenFileTypeFilter() test.CaseResult {
 	sample := []files.File{{Path: testPath(hiddenFile), Metadata: &files.Metadata{Editor: files.EditorTypeTodo}}}
 
 	configmanager.HideTodo.SetFromString("false")
-	shown := files.FilterByVisibility(sample)
+	shown := files.FilterByVisibility(sample, "")
 
 	configmanager.HideTodo.SetFromString("true")
-	hidden := files.FilterByVisibility(sample)
+	hidden := files.FilterByVisibility(sample, "")
 
 	success := len(shown) == 1 && len(hidden) == 0
 	cr := test.CaseResult{
@@ -288,6 +288,34 @@ func caseHiddenFileTypeFilter() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "FilterByVisibility did not respect the hideTodo setting toggle"
+	}
+	return cr
+}
+
+// caseHidePathScope checks that a "::tag1|tag2" suffix on a HidePaths entry keeps the
+// path visible by default while hiding it only in the tagged scopes.
+func caseHidePathScope() test.CaseResult {
+	name := "hide-path-scope"
+
+	prev := configmanager.HidePaths.Get()
+	defer configmanager.HidePaths.SetFromString(strings.Join(prev, ","))
+	configmanager.HidePaths.SetFromString("archive::search|filter")
+
+	shownByDefault := !configmanager.IsPathHidden("archive", "")
+	shownInBrowse := !configmanager.IsPathHidden("archive", configmanager.HideScopeBrowse)
+	shownInKanban := !configmanager.IsPathHidden("archive", configmanager.HideScopeKanban)
+	hiddenInSearch := configmanager.IsPathHidden("archive", configmanager.HideScopeSearch)
+	hiddenInFilter := configmanager.IsPathHidden("archive", configmanager.HideScopeFilter)
+
+	success := shownByDefault && shownInBrowse && shownInKanban && hiddenInSearch && hiddenInFilter
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "archive::search|filter shown for scope=\"\"/browse/kanban, hidden for scope=search/filter",
+		Actual:   fmt.Sprintf("shownByDefault=%v shownInBrowse=%v shownInKanban=%v hiddenInSearch=%v hiddenInFilter=%v", shownByDefault, shownInBrowse, shownInKanban, hiddenInSearch, hiddenInFilter),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "IsPathHidden did not apply the ::tag scope suffix as an opt-in exception"
 	}
 	return cr
 }

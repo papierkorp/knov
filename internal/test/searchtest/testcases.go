@@ -2,7 +2,9 @@ package searchtest
 
 import (
 	"fmt"
+	"strings"
 
+	"knov/internal/configmanager"
 	"knov/internal/search"
 	"knov/internal/test"
 )
@@ -135,6 +137,52 @@ func caseSearchDeletedFileByTitle() test.CaseResult {
 	}
 	if !found {
 		cr.Error = fmt.Sprintf("%s not found via deleted-file title search", deltaFile)
+	}
+	return cr
+}
+
+// caseSearchScopedHidePath checks that SearchFilesByTitle/SearchFiles pass
+// configmanager.HideScopeSearch when filtering by visibility, by tagging the sample folder
+// so it's hidden only in the search scope - if either call site regressed to passing "" or a
+// different scope constant, the tag would never match and the sample files would still show
+// up in every result here instead of dropping out.
+func caseSearchScopedHidePath() test.CaseResult {
+	name := "search-scoped-hide-path"
+
+	prev := configmanager.HidePaths.Get()
+	defer configmanager.HidePaths.SetFromString(strings.Join(prev, ","))
+	configmanager.HidePaths.SetFromString(testDir + "::" + configmanager.HideScopeSearch)
+
+	byTitle, err := search.SearchFilesByTitle("AlphaUniqueTitle", 10)
+	if err != nil {
+		return errCase(name, err)
+	}
+	byContent, err := search.SearchFiles(betaContentMarker, 10)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	foundTitle, foundContent := false, false
+	for _, f := range byTitle {
+		if f.Name == alphaFile {
+			foundTitle = true
+		}
+	}
+	for _, f := range byContent {
+		if f.Name == betaFile {
+			foundContent = true
+		}
+	}
+
+	success := !foundTitle && !foundContent
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: fmt.Sprintf("%s tagged ::search hides %s and %s from search", testDir, alphaFile, betaFile),
+		Actual:   fmt.Sprintf("foundTitle=%v foundContent=%v", foundTitle, foundContent),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "SearchFilesByTitle/SearchFiles did not apply configmanager.HideScopeSearch"
 	}
 	return cr
 }

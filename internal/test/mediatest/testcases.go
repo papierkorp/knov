@@ -95,7 +95,7 @@ func caseListPartition() test.CaseResult {
 	if err != nil {
 		return errCase(name, err)
 	}
-	visible := files.FilterByVisibility(mediaFiles)
+	visible := files.FilterByVisibility(mediaFiles, "")
 
 	orphaned, err := files.GetOrphanedMediaFromCache()
 	if err != nil {

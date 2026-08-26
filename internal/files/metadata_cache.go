@@ -269,6 +269,7 @@ func GetAllTags() (TagCount, error) {
 	if err != nil {
 		return nil, err
 	}
+	allFiles = FilterByVisibility(allFiles, "")
 
 	tagCount := make(TagCount)
 	for _, file := range allFiles {
@@ -292,6 +293,7 @@ func GetAllCollections() (CollectionCount, error) {
 	if err != nil {
 		return nil, err
 	}
+	allFiles = FilterByVisibility(allFiles, "")
 
 	collectionCount := make(CollectionCount)
 	for _, file := range allFiles {
@@ -313,6 +315,7 @@ func GetAllFolders() (FolderCount, error) {
 	if err != nil {
 		return nil, err
 	}
+	allFiles = FilterByVisibility(allFiles, "")
 
 	folderCount := make(FolderCount)
 	for _, file := range allFiles {
@@ -336,6 +339,7 @@ func GetAllEditors() (EditorTypeCount, error) {
 	if err != nil {
 		return nil, err
 	}
+	allFiles = FilterByVisibility(allFiles, "")
 
 	editorTypeCount := make(EditorTypeCount)
 	for _, file := range allFiles {
@@ -486,6 +490,7 @@ func GetAllTitles() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	allFiles = FilterByVisibility(allFiles, "")
 
 	logging.LogInfo(logging.KeyApp, "getAllTitles: scanning %d files", len(allFiles))
 	seen := make(map[string]bool)
@@ -655,7 +660,7 @@ func RebuildAllCaches() error {
 		return err
 	}
 
-	for _, file := range allFiles {
+	for _, file := range FilterByVisibility(allFiles, "") {
 		if file.Metadata == nil {
 			continue
 		}

@@ -2,6 +2,7 @@ package metadatatest
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 	"sync"
@@ -367,6 +368,101 @@ func caseSanitizeKanbanTags() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "SanitizeKanbanTags did not drop the invalid status tag as expected"
+	}
+	return cr
+}
+
+// caseAggregatesRespectHiddenPaths checks that GetAllTags/GetAllCollections/GetAllFolders/
+// GetAllEditors/GetAllTitles and the RebuildAllCaches->GetAllTagsCountFromCache path all
+// exclude a file once its folder is added to HidePaths - each of these calls
+// files.FilterByVisibility(allFiles, "") internally, and this seeds one fixture whose tag,
+// folder segment and title are unique enough to check for directly, plus before/after counts
+// for collection and editor (both shared with other suites' fixtures under "test/").
+func caseAggregatesRespectHiddenPaths() test.CaseResult {
+	name := "aggregates-respect-hidden-paths"
+
+	const (
+		hideFolder = testDir + "/hide-agg"
+		tag        = "metadatatest-hide-scope-tag"
+		heading    = "MetadataHideScopeProbe"
+	)
+	relPath := pathutils.ToSlash(filepath.Join(hideFolder, "hidden-probe.md"))
+	probePath := pathutils.ToWithPrefix(relPath)
+
+	if err := writeFile(relPath, "# "+heading+"\n\ncontent\n"); err != nil {
+		return errCase(name, err)
+	}
+	if err := test.SeedMetadata(&files.Metadata{
+		Path:   probePath,
+		Editor: files.EditorTypeCodeMirror,
+		Tags:   []string{tag},
+	}); err != nil {
+		return errCase(name, err)
+	}
+
+	collectionsBefore, err := files.GetAllCollections()
+	if err != nil {
+		return errCase(name, err)
+	}
+	editorsBefore, err := files.GetAllEditors()
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	prev := configmanager.HidePaths.Get()
+	defer func() {
+		configmanager.HidePaths.SetFromString(strings.Join(prev, ","))
+		_ = files.MetaDataDelete(probePath)
+	}()
+	if err := configmanager.HidePaths.SetFromString(hideFolder); err != nil {
+		return errCase(name, err)
+	}
+
+	tags, err := files.GetAllTags()
+	if err != nil {
+		return errCase(name, err)
+	}
+	folders, err := files.GetAllFolders()
+	if err != nil {
+		return errCase(name, err)
+	}
+	titles, err := files.GetAllTitles()
+	if err != nil {
+		return errCase(name, err)
+	}
+	collectionsAfter, err := files.GetAllCollections()
+	if err != nil {
+		return errCase(name, err)
+	}
+	editorsAfter, err := files.GetAllEditors()
+	if err != nil {
+		return errCase(name, err)
+	}
+	if err := files.RebuildAllCaches(); err != nil {
+		return errCase(name, err)
+	}
+	cachedTags, err := files.GetAllTagsCountFromCache()
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	tagHidden := tags[tag] == 0
+	folderHidden := folders["hide-agg"] == 0
+	titleHidden := !slices.Contains(titles, heading)
+	collectionCountDropped := collectionsAfter["test"] == collectionsBefore["test"]-1
+	editorCountDropped := editorsAfter[string(files.EditorTypeCodeMirror)] == editorsBefore[string(files.EditorTypeCodeMirror)]-1
+	cacheTagHidden := cachedTags[tag] == 0
+
+	success := tagHidden && folderHidden && titleHidden && collectionCountDropped && editorCountDropped && cacheTagHidden
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "hidden folder's file excluded from tags/folders/titles/collections/editors and the rebuilt tag cache",
+		Actual: fmt.Sprintf("tagHidden=%v folderHidden=%v titleHidden=%v collectionCountDropped=%v editorCountDropped=%v cacheTagHidden=%v",
+			tagHidden, folderHidden, titleHidden, collectionCountDropped, editorCountDropped, cacheTagHidden),
+		Success: success,
+	}
+	if !success {
+		cr.Error = "one of GetAllTags/GetAllCollections/GetAllFolders/GetAllEditors/GetAllTitles/RebuildAllCaches did not apply FilterByVisibility"
 	}
 	return cr
 }

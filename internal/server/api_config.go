@@ -302,13 +302,19 @@ func handleAPIImportSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := configmanager.ImportSettingsJSON(data); err != nil {
+	skipped, err := configmanager.ImportSettingsJSON(data)
+	if err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "invalid settings file"), http.StatusBadRequest)
 		return
 	}
 
-	logging.LogInfo(logging.KeyApp, "settings imported successfully")
-	notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "settings imported successfully"))
+	if len(skipped) > 0 {
+		logging.LogInfo(logging.KeyApp, "settings imported, %d setting(s) skipped: %s", len(skipped), strings.Join(skipped, ", "))
+		notify.SetFlash(notify.LevelWarning, translation.SprintfForRequest(configmanager.GetLanguage(), "settings imported, %d setting(s) skipped - see logs", len(skipped)))
+	} else {
+		logging.LogInfo(logging.KeyApp, "settings imported successfully")
+		notify.SetFlash(notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "settings imported successfully"))
+	}
 	w.Header().Set("HX-Refresh", "true")
 	writeResponse(w, r, map[string]string{"status": "imported"}, "")
 }

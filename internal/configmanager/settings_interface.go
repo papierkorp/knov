@@ -5,15 +5,13 @@ import (
 	"strconv"
 	"strings"
 	"sync/atomic"
-
-	"knov/internal/logging"
 )
 
 // StorableSetting is implemented by all settings for persistence and value access.
 type StorableSetting interface {
 	Key() string
 	GetValue() interface{}
-	setFromJSON(v interface{})
+	setFromJSON(v interface{}) error
 	SetFromString(s string) error
 }
 
@@ -103,10 +101,11 @@ func (s *BoolSetting) GetValue() interface{} { return s.Get() }
 func (s *BoolSetting) GetMeta() Meta {
 	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target, Refresh: s.Refresh}
 }
-func (s *BoolSetting) setFromJSON(v interface{}) {
+func (s *BoolSetting) setFromJSON(v interface{}) error {
 	if b, ok := v.(bool); ok {
 		s.val.Store(&b)
 	}
+	return nil
 }
 func (s *BoolSetting) SetFromString(v string) error {
 	b, _ := strconv.ParseBool(v) // empty string → false (unchecked checkbox)
@@ -158,7 +157,7 @@ func (s *IntSetting) validate(n int) error {
 	}
 	return nil
 }
-func (s *IntSetting) setFromJSON(v interface{}) {
+func (s *IntSetting) setFromJSON(v interface{}) error {
 	var n int
 	switch val := v.(type) {
 	case float64:
@@ -166,13 +165,13 @@ func (s *IntSetting) setFromJSON(v interface{}) {
 	case int:
 		n = val
 	default:
-		return
+		return nil
 	}
 	if err := s.validate(n); err != nil {
-		logging.LogWarning(logging.KeyApp, "setting %q: ignoring stored value %d: %v", s.key, n, err)
-		return
+		return fmt.Errorf("setting %q: stored value %d: %w", s.key, n, err)
 	}
 	s.val.Store(&n)
+	return nil
 }
 func (s *IntSetting) SetFromString(v string) error {
 	n, err := strconv.Atoi(v)
@@ -236,16 +235,16 @@ func (s *StringSetting) validate(v string) error {
 	}
 	return nil
 }
-func (s *StringSetting) setFromJSON(v interface{}) {
+func (s *StringSetting) setFromJSON(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
-		return
+		return nil
 	}
 	if err := s.validate(str); err != nil {
-		logging.LogWarning(logging.KeyApp, "setting %q: ignoring stored value %q: %v", s.key, str, err)
-		return
+		return fmt.Errorf("setting %q: stored value %q: %w", s.key, str, err)
 	}
 	s.val.Store(&str)
+	return nil
 }
 func (s *StringSetting) SetFromString(v string) error {
 	if err := s.validate(v); err != nil {
@@ -286,6 +285,7 @@ type StringSliceSetting struct {
 	Trigger  string
 	Target   string
 	OnChange func(interface{})
+	Validate func([]string) error
 }
 
 func (s *StringSliceSetting) Get() []string {
@@ -300,19 +300,28 @@ func (s *StringSliceSetting) GetValue() interface{} { return s.Get() }
 func (s *StringSliceSetting) GetMeta() Meta {
 	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target}
 }
-func (s *StringSliceSetting) setFromJSON(v interface{}) {
+func (s *StringSliceSetting) setFromJSON(v interface{}) error {
+	var result []string
 	switch val := v.(type) {
 	case []interface{}:
-		result := make([]string, 0, len(val))
+		result = make([]string, 0, len(val))
 		for _, item := range val {
 			if str, ok := item.(string); ok {
 				result = append(result, str)
 			}
 		}
-		s.val.Store(&result)
 	case []string:
-		s.val.Store(&val)
+		result = val
+	default:
+		return nil
 	}
+	if s.Validate != nil {
+		if err := s.Validate(result); err != nil {
+			return fmt.Errorf("setting %q: stored value %v: %w", s.key, result, err)
+		}
+	}
+	s.val.Store(&result)
+	return nil
 }
 func (s *StringSliceSetting) SetFromString(v string) error {
 	parts := strings.Split(v, ",")
@@ -321,6 +330,11 @@ func (s *StringSliceSetting) SetFromString(v string) error {
 		p = strings.TrimSpace(p)
 		if p != "" {
 			result = append(result, p)
+		}
+	}
+	if s.Validate != nil {
+		if err := s.Validate(result); err != nil {
+			return err
 		}
 	}
 	s.val.Store(&result)
@@ -349,5 +363,5 @@ func (s *NoteSetting) GetValue() interface{} { return nil }
 func (s *NoteSetting) GetMeta() Meta {
 	return Meta{Section: s.Section, Group: s.Group, Desc: s.Text}
 }
-func (s *NoteSetting) setFromJSON(interface{})    {}
-func (s *NoteSetting) SetFromString(string) error { return nil }
+func (s *NoteSetting) setFromJSON(interface{}) error { return nil }
+func (s *NoteSetting) SetFromString(string) error    { return nil }

@@ -15,31 +15,34 @@ import (
 // ── init/save ─────────────────────────────────────────────────────────────────
 
 // InitSettings loads settings from storage, falling back to defaults if absent.
-func InitSettings() {
+// It returns an error if the stored settings can't be read/decoded. A stored
+// value that fails its setting's validation is logged and skipped, keeping
+// that one setting at its default rather than blocking startup.
+func InitSettings() error {
 	data, err := configStorage.Get("settings")
 	if err != nil {
-		logging.LogError(logging.KeyApp, "failed to read user settings: %v", err)
-		return
+		return fmt.Errorf("failed to read user settings: %w", err)
 	}
 	if data == nil {
 		logging.LogInfo(logging.KeyApp, "no user settings found, using defaults")
 		if err := SaveSettings(); err != nil {
-			logging.LogError(logging.KeyApp, "failed to save default settings: %v", err)
+			return fmt.Errorf("failed to save default settings: %w", err)
 		}
-		return
+		return nil
 	}
 
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(data, &raw); err != nil {
-		logging.LogError(logging.KeyApp, "failed to decode user settings: %v", err)
-		return
+		return fmt.Errorf("failed to decode user settings: %w", err)
 	}
 
 	for _, s := range allSettings {
 		if v, ok := raw[s.Key()]; ok {
 			var val interface{}
 			if err := json.Unmarshal(v, &val); err == nil {
-				s.setFromJSON(val)
+				if err := s.setFromJSON(val); err != nil {
+					logging.LogError(logging.KeyApp, "ignoring invalid stored setting: %v", err)
+				}
 			}
 		}
 	}
@@ -47,6 +50,7 @@ func InitSettings() {
 	applyLanguage(Language.Get())
 
 	logging.LogInfo(logging.KeyApp, "user settings loaded")
+	return nil
 }
 
 func applyLanguage(lang string) {
@@ -108,24 +112,29 @@ func ExportSettingsJSON() ([]byte, error) {
 	return json.MarshalIndent(m, "", "  ")
 }
 
-// ImportSettingsJSON loads settings from a JSON blob and persists them.
+// ImportSettingsJSON loads settings from a JSON blob and persists them, returning the
+// keys of any settings whose stored value failed validation and was skipped (kept at its
+// prior value) - see logging.KeySettingsImport for the reason each one was rejected.
 // Note: customFaviconExt is intentionally ignored on import for the same reason
 // it is excluded from export — the favicon file must be uploaded separately.
-func ImportSettingsJSON(data []byte) error {
+func ImportSettingsJSON(data []byte) (skipped []string, err error) {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
+		return nil, err
 	}
 	for _, s := range allSettings {
 		if v, ok := raw[s.Key()]; ok {
 			var val interface{}
 			if err := json.Unmarshal(v, &val); err == nil {
-				s.setFromJSON(val)
+				if err := s.setFromJSON(val); err != nil {
+					logging.LogError(logging.KeySettingsImport, "ignoring invalid imported setting: %v", err)
+					skipped = append(skipped, s.Key())
+				}
 			}
 		}
 	}
 	applyLanguage(Language.Get())
-	return SaveSettings()
+	return skipped, SaveSettings()
 }
 
 // ── favicon accessors ─────────────────────────────────────────────────────────

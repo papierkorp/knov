@@ -85,6 +85,19 @@ The kanban board organises files into columns based on status tags.
 
 ---
 
+## File Visibility
+
+Configured under **Settings => File Types / Folders**.
+
+**Hide Paths** - comma-separated folder path patterns to exclude from file listings, browse, search, filter and the kanban board.
+- Patterns are `/`-separated; `*` matches any single segment, e.g. `*/todo` hides every folder named `todo`, while `test/todo` only hides the `todo` folder inside `test`
+- By default a pattern hides its folder everywhere
+- Append `::tree`, `::browse`, `::overview`, `::search`, `::filter` and/or `::kanban` to a pattern (combine with `|`, e.g. `::search|filter`) to hide it in only those scopes, leaving it visible everywhere else, e.g. `projects/archive::search|filter` is hidden from search results and saved filters but still shows up in the file tree, browse, overview and kanban
+- An unrecognized scope in a pattern (e.g. a typo like `::serach`) is rejected on save rather than silently doing nothing
+- Media has no per-scope override - a `::tag` suffix never hides a path from `/media`; only a pattern with no suffix does
+
+---
+
 ## Filters
 
 Filters are saved queries that produce a live list of matching files.

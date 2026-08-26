@@ -317,8 +317,9 @@ var (
 		key:     "hidePaths",
 		Default: []string{},
 		Section: SectionFileTypes, Group: GroupFolders,
-		Label: "Hide Paths",
-		Desc:  "comma-separated folder path patterns to exclude from file listings and browse views. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test",
+		Label:    "Hide Paths",
+		Desc:     "comma-separated folder path patterns to exclude from file listings, browse, search, filter and kanban. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter and/or ::kanban (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
+		Validate: ValidateHidePaths,
 	})
 
 	// ── General ───────────────────────────────────────────────────────────────

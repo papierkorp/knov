@@ -82,6 +82,7 @@ func SearchFilesByTitle(query string, limit int) ([]files.File, error) {
 	if err != nil {
 		return nil, err
 	}
+	allFiles = files.FilterByVisibility(allFiles, configmanager.HideScopeSearch)
 
 	queryLower := strings.ToLower(query)
 	var results []files.File
@@ -107,6 +108,7 @@ func SearchFiles(query string, limit int) ([]files.File, error) {
 	if err != nil {
 		return nil, err
 	}
+	allFiles = files.FilterByVisibility(allFiles, configmanager.HideScopeSearch)
 
 	var results []files.File
 	if configmanager.GetSearchEngine() == "grep" {

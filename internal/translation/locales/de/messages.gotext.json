@@ -2167,9 +2167,9 @@
       "translation": "kommagetrennte MIME-Typen, die für den Upload akzeptiert werden (z. B. image/*, application/pdf)"
     },
     {
-      "id": "comma-separated folder path patterns to exclude from file listings and browse views. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test",
-      "message": "comma-separated folder path patterns to exclude from file listings and browse views. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test",
-      "translation": "kommagetrennte Ordnerpfad-Muster, die von Dateilisten und Browse-Ansichten ausgeschlossen werden. Verwende / zur Trennung von Segmenten und * als Platzhalter für ein einzelnes Segment, z. B. blendet */todo jeden todo-Ordner aus, während test/todo nur den todo-Ordner innerhalb von test ausblendet"
+      "id": "comma-separated folder path patterns to exclude from file listings, browse, search and filter. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search and/or ::filter (combine with |, e.g. ::search|filter) to a pattern to keep it hidden everywhere else but show it again in just those scopes",
+      "message": "comma-separated folder path patterns to exclude from file listings, browse, search and filter. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search and/or ::filter (combine with |, e.g. ::search|filter) to a pattern to keep it hidden everywhere else but show it again in just those scopes",
+      "translation": ""
     },
     {
       "id": "compare",
@@ -2962,11 +2962,6 @@
       "translation": "Fehler beim Verarbeiten des Listeninhalts"
     },
     {
-      "id": "failed to parse todo content",
-      "message": "failed to parse todo content",
-      "translation": "Fehler beim Verarbeiten des Todo-Inhalts"
-    },
-    {
       "id": "failed to parse upload form",
       "message": "failed to parse upload form",
       "translation": "Fehler beim Verarbeiten des Upload-Formulars"
@@ -3090,11 +3085,6 @@
       "id": "failed to save setting",
       "message": "failed to save setting",
       "translation": "Fehler beim Speichern der Einstellung"
-    },
-    {
-      "id": "failed to save todo",
-      "message": "failed to save todo",
-      "translation": "Fehler beim Speichern des Todos"
     },
     {
       "id": "failed to scan for broken links",
@@ -3470,6 +3460,11 @@
       "id": "hand down status to sub-items",
       "message": "hand down status to sub-items",
       "translation": "Status an Unterelemente weitergeben"
+    },
+    {
+      "id": "heading...",
+      "message": "heading...",
+      "translation": ""
     },
     {
       "id": "hide diff",
@@ -4432,19 +4427,9 @@
       "translation": "pfad/zu/datei"
     },
     {
-      "id": "path/to/file.list",
-      "message": "path/to/file.list",
-      "translation": "pfad/zu/datei.list"
-    },
-    {
       "id": "path/to/file.md",
       "message": "path/to/file.md",
       "translation": "pfad/zu/datei.md"
-    },
-    {
-      "id": "path/to/file.todo",
-      "message": "path/to/file.todo",
-      "translation": "pfad/zu/datei.todo"
     },
     {
       "id": "path/to/folder",
@@ -4982,9 +4967,9 @@
       "translation": "zu neuer Datei"
     },
     {
-      "id": "todo saved successfully",
-      "message": "todo saved successfully",
-      "translation": "Todo erfolgreich gespeichert"
+      "id": "todo mode",
+      "message": "todo mode",
+      "translation": ""
     },
     {
       "id": "total media files",
