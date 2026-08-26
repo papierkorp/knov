@@ -79,6 +79,7 @@ func NewRouter() *chi.Mux {
 	r.Get("/system/version", render.HandleSystemVersion)
 	r.Get("/system/jobs", render.HandleSystemJobs)
 	r.Get("/system/backup", render.HandleSystemBackup)
+	r.Get("/system/environment", render.HandleSystemEnvironment)
 	r.Get("/settings", handleSettings)
 	r.Get("/admin", handleAdmin)
 	r.Get("/playground", handlePlayground)
@@ -172,6 +173,7 @@ func NewRouter() *chi.Mux {
 			r.Get("/jobs", handleAPIGetJobs)
 			r.Get("/version", handleAPIGetSystemVersion)
 			r.Get("/changelog", handleAPIGetSystemChangelog)
+			r.Get("/environment", handleAPIGetSystemEnvironment)
 
 			r.Route("/backups", func(r chi.Router) {
 				r.Get("/", handleAPIGetBackups)

@@ -6,10 +6,10 @@ LAST_COMMIT_MSG := $(shell git log -1 --pretty=%s)
 LDFLAGS   := -ldflags "-X 'knov/internal/version.Version=$(VERSION)' -X 'knov/internal/version.BuildTime=$(BUILD_TIME) UTC' -X 'knov/internal/version.LastCommitMessage=$(LAST_COMMIT_MSG)'"
 
 # ------------- actual usage -------------
-dev: killdev swaggo-api-init changelog docs-templatedata
+dev: killdev swaggo-api-init changelog docs-templatedata env-example
 	KNOV_LOG_LEVEL=debug go run ./
 
-prod: swaggo-api-init translation changelog docs-templatedata
+prod: swaggo-api-init translation changelog docs-templatedata env-example
 	go build $(LDFLAGS) -o bin/$(APP_NAME) ./
 	GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME).exe ./
 
@@ -34,6 +34,10 @@ swaggo-api-init:
 docs-templatedata:
 	go run ./tools/gentemplatedocs
 	@git add docs/template_data.md
+
+env-example:
+	go run ./tools/genenv
+	@git add .env.example
 
 tree:
 	tree -I 'bin|data|data2|data3|storage|backups'
@@ -99,4 +103,4 @@ tempai:
 # windows dev
 #KNOV_LOG_LEVEL=debug go run ./
 
-.PHONY: dev dev-fast swaggo-api-init translation prod docker docker-build docker-run tree changelog docs-templatedata tempai killdev
+.PHONY: dev dev-fast swaggo-api-init translation prod docker docker-build docker-run tree changelog docs-templatedata env-example tempai killdev

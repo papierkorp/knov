@@ -24,7 +24,10 @@ import (
 
 var appConfig AppConfig
 
-// AppConfig contains environment-based application configuration
+// AppConfig contains environment-based application configuration. Each field's KNOV_*
+// variable, default, description and parsing are declared exactly once, in envdefs.go's
+// EnvVarDefs - not here. A field with no corresponding EnvVarDefs entry isn't 1:1 env-backed
+// (e.g. LinkRegex is a fixed constant, not user-configurable).
 type AppConfig struct {
 	DataPath                    string
 	ThemesPath                  string
@@ -100,53 +103,18 @@ func InitAppConfig() {
 		}
 	}
 
+	// LinkRegex has no KNOV_* key - it's a fixed constant, not user-configurable. Every other
+	// field is populated by applyEnvDefs from EnvVarDefs (envdefs.go), the single place each
+	// key, its default and its parsing are declared.
 	appConfig = AppConfig{
-		DataPath:                getEnv("KNOV_DATA_PATH", filepath.Join(baseDir, "data")),
-		ThemesPath:              getEnv("KNOV_THEMES_PATH", filepath.Join(baseDir, "themes")),
-		StoragePath:             getEnv("KNOV_STORAGE_PATH", filepath.Join(baseDir, "storage")),
-		LogsPath:                getEnv("KNOV_LOGS_PATH", filepath.Join(baseDir, "logs")),
-		BackupsPath:             getEnv("KNOV_BACKUPS_PATH", filepath.Join(baseDir, "backups")),
-		ServerPort:              getEnv("KNOV_SERVER_PORT", "1324"),
-		GitRemote:               getEnv("KNOV_GIT_REMOTE", ""),
-		GitRemoteBranch:         getEnv("KNOV_GIT_REMOTE_BRANCH", "main"),
-		GitAutoPush:             getBoolEnv("KNOV_GIT_AUTO_PUSH", true),
-		GitPushTimeout:          getEnv("KNOV_GIT_PUSH_TIMEOUT", "10s"),
-		GitUser:                 getEnv("KNOV_GIT_USER", ""),
-		GitPassword:             getEnv("KNOV_GIT_PASSWORD", ""),
-		GitToken:                getEnv("KNOV_GIT_TOKEN", ""),
-		GitSSHKey:               getEnv("KNOV_GIT_SSH_KEY", ""),
-		ConfigStorageProvider:   getEnv("KNOV_CONFIG_STORAGE_PROVIDER", "json"),
-		MetadataStorageProvider: getEnv("KNOV_METADATA_STORAGE_PROVIDER", "sqlite"),
-		CacheStorageProvider:    getEnv("KNOV_CACHE_STORAGE_PROVIDER", "sqlite"),
-		SearchStorageProvider:   getEnv("KNOV_SEARCH_STORAGE_PROVIDER", "sqlite"),
-		KanbanEventsEnabled:     getBoolEnv("KNOV_KANBAN_EVENTS_ENABLED", true),
-		KanbanEventsProvider:    getEnv("KNOV_KANBAN_EVENTS_STORAGE_PROVIDER", "sqlite"),
-		SearchEngine:            getEnv("KNOV_SEARCH_ENGINE", "repository"),
 		LinkRegex: []string{
 			"\\[\\[([^\\]]+)\\]\\]",
 			"\\[([^\\]]+)\\]\\([^)]+\\)",
 			"\\[\\[([^|]+)\\|[^\\]]+\\]\\]",
 			"\\{\\{([^}]+)\\}\\}",
 		},
-		CronjobInterval:             getEnv("KNOV_CRONJOB_INTERVAL", "5m"),
-		SearchIndexInterval:         getEnv("KNOV_SEARCH_INDEX_INTERVAL", "15m"),
-		MetadataRebuildInterval:     getEnv("KNOV_METADATA_REBUILD_INTERVAL", "60m"),
-		KanbanPrefix:                getEnv("KNOV_KANBAN_PREFIX", "kb"),
-		KanbanStatuses:              getStringListEnv("KNOV_KANBAN_STATUS", []string{"inbox", "inprogress", "blocked", "archive"}),
-		KanbanColumns:               getStringListEnv("KNOV_KANBAN_COLUMNS", []string{"inbox", "inprogress", "blocked"}),
-		AutoCreateTags:              getAutoCreateTagsEnv("KNOV_AUTOCREATE_TAGS"),
-		KanbanTagColors:             getStringMapEnv("KNOV_KANBAN_TAG_COLORS"),
-		KanbanCardStyles:            getStringMapEnv("KNOV_KANBAN_CARD_STYLES"),
-		KanbanArchiveStatus:         getEnv("KNOV_KANBAN_ARCHIVE_STATUS", "archive"),
-		KanbanAncestorAllowedStatus: getStringListEnv("KNOV_KANBAN_ANCESTOR_ALLOWED_STATUS", nil),
-		KanbanBoards:                applyKanbanFolderSyncEnv(getKanbanBoardsEnv("KNOV_KANBAN_BOARDS"), "KNOV_KANBAN_FOLDERSYNC"),
-		NotifyDuration:              getIntEnv("KNOV_NOTIFY_DURATION", 3500),
-		DefaultEditor:               getEnv("KNOV_DEFAULT_EDITOR", ""),
-		BackupAutoEnabled:           getBoolEnv("KNOV_BACKUP_AUTO_ENABLED", false),
-		BackupAutoInterval:          getEnv("KNOV_BACKUP_AUTO_INTERVAL", "24h"),
-		BackupRotationKeepDays:      getIntEnv("KNOV_BACKUP_ROTATION_KEEP_DAYS", 7),
-		BackupRotationKeepFull:      getIntEnv("KNOV_BACKUP_ROTATION_KEEP_FULL", 10),
 	}
+	applyEnvDefs(&appConfig, baseDir)
 
 	initLogLevel()
 
@@ -371,16 +339,25 @@ func getBoolEnv(key string, defaultValue bool) bool {
 
 func getStringListEnv(key string, defaultValue []string) []string {
 	if value := os.Getenv(key); value != "" {
-		parts := strings.Split(value, ",")
-		result := make([]string, 0, len(parts))
-		for _, p := range parts {
-			if t := strings.TrimSpace(p); t != "" {
-				result = append(result, t)
-			}
-		}
-		return result
+		return splitList(value)
 	}
 	return defaultValue
+}
+
+// splitList parses a comma-separated env var value into a trimmed, non-empty-entry list.
+// "" yields nil, matching the zero value of an unset []string field.
+func splitList(value string) []string {
+	if value == "" {
+		return nil
+	}
+	parts := strings.Split(value, ",")
+	result := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if t := strings.TrimSpace(p); t != "" {
+			result = append(result, t)
+		}
+	}
+	return result
 }
 
 // GetKanbanPrefix returns the kanban tag prefix
@@ -414,9 +391,10 @@ func IsKanbanTag(tag string) bool {
 }
 
 func initLogLevel() {
-	logLevel := getEnv("KNOV_LOG_LEVEL", "info")
+	const key = "KNOV_LOG_LEVEL"
+	logLevel := getEnv(key, envVarDefault(key))
 	logging.LogInfo(logging.KeyApp, "loglevel set to: %s", logLevel)
-	os.Setenv("KNOV_LOG_LEVEL", logLevel)
+	os.Setenv(key, logLevel)
 }
 
 // SetLogLevel set log level and update environment

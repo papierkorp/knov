@@ -373,6 +373,25 @@ definitions:
       pending:
         type: boolean
     type: object
+  render.EnvVarInfo:
+    properties:
+      availableValues:
+        items:
+          type: string
+        type: array
+      category:
+        type: string
+      current:
+        type: string
+      default:
+        type: string
+      description:
+        type: string
+      key:
+        type: string
+      sensitive:
+        type: boolean
+    type: object
   render.VersionInfo:
     properties:
       arch:
@@ -4402,6 +4421,32 @@ paths:
           schema:
             type: string
       summary: Get changelog
+      tags:
+      - system
+  /api/system/environment:
+    get:
+      description: 'Returns every recognized KNOV_* environment variable with description,
+        default and current value (sensitive values redacted) as JSON, a full HTML
+        table (for HTMX, the same content shown on the /system/environment page),
+        or - with view=summary - a compact "KEY: value" list (for the admin panel''s
+        environment section)'
+      parameters:
+      - description: 'html view: full table (default) or ''summary'' for a compact
+          key/value list'
+        in: query
+        name: view
+        type: string
+      produces:
+      - application/json
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/render.EnvVarInfo'
+            type: array
+      summary: Get environment variables
       tags:
       - system
   /api/system/jobs:

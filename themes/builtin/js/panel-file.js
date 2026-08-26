@@ -112,6 +112,11 @@ function setupFilePage() {
     return true;
   }
 
+  if (path === "/system/environment" || path === "/system/version" || path === "/system/backups" || path === "/system/jobs") {
+    closePanel();
+    return true;
+  }
+
   // settings/admin pages — no file panel content applies here
   if (path === "/settings" || path === "/admin") {
     closePanel();

@@ -551,3 +551,131 @@ func HandleSystemVersion(w http.ResponseWriter, r *http.Request) {
 		logging.LogError(logging.KeyApp, "failed to render version page: %v", err)
 	}
 }
+
+// sensitiveMask replaces a set sensitive value (git password/token) so it never leaves the
+// server - the environment page/API only ever reveals whether one is configured.
+const sensitiveMask = "••••••••"
+
+// EnvVarInfo is one row of the environment page/API - a configmanager.EnvVarDef merged with
+// its live current value.
+type EnvVarInfo struct {
+	Key             string   `json:"key"`
+	Category        string   `json:"category"`
+	Description     string   `json:"description"`
+	AvailableValues []string `json:"availableValues,omitempty"`
+	Default         string   `json:"default"`
+	Current         string   `json:"current"`
+	Sensitive       bool     `json:"sensitive"`
+}
+
+// GetEnvironmentInfo returns every documented KNOV_* env var with its live current value -
+// the JSON counterpart of RenderEnvironmentTable. A Sensitive var's Current is masked when
+// set, never the raw secret.
+func GetEnvironmentInfo() []EnvVarInfo {
+	current := configmanager.CurrentEnvValues()
+
+	infos := make([]EnvVarInfo, 0, len(configmanager.EnvVarDefs))
+	for _, def := range configmanager.EnvVarDefs {
+		value := current[def.Key]
+		if def.Sensitive && value != "" {
+			value = sensitiveMask
+		}
+		infos = append(infos, EnvVarInfo{
+			Key:             def.Key,
+			Category:        def.Category,
+			Description:     def.Description,
+			AvailableValues: def.AvailableValues,
+			Default:         def.Default,
+			Current:         value,
+			Sensitive:       def.Sensitive,
+		})
+	}
+	return infos
+}
+
+// RenderEnvironmentTable renders every documented KNOV_* env var, grouped by category, with
+// its description, default and current value - shared by the full /system/environment page
+// and the admin panel's environment section, which loads this same fragment via htmx so the
+// two never drift apart.
+func RenderEnvironmentTable() string {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
+	var sb strings.Builder
+	sb.WriteString(`<style>
+.env-table-wrap { display: flex; flex-direction: column; gap: 1.5rem; }
+.env-table-wrap h3 { margin: 0 0 .35rem; font-size: .95rem; text-transform: capitalize; }
+.env-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.env-table th { text-align: left; padding: .35rem .6rem; border-bottom: 2px solid var(--border); white-space: nowrap; }
+.env-table td { padding: .3rem .6rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); vertical-align: top; }
+.env-table td:first-child { font-family: monospace; white-space: nowrap; }
+.env-table td:nth-child(2) { color: var(--text-secondary); white-space: pre-line; }
+.env-table td:nth-child(3) { color: var(--text-secondary); font-size: .8rem; }
+.env-table td:nth-child(4), .env-table td:nth-child(5) { font-family: monospace; white-space: pre-line; word-break: break-word; }
+.env-current-unset { color: var(--text-secondary); font-style: italic; }
+</style>`)
+	sb.WriteString(`<div class="env-table-wrap">`)
+
+	category := ""
+	for _, info := range GetEnvironmentInfo() {
+		if info.Category != category {
+			if category != "" {
+				sb.WriteString(`</tbody></table></div>`)
+			}
+			category = info.Category
+			fmt.Fprintf(&sb, `<div><h3>%s</h3><table class="env-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
+				template.HTMLEscapeString(t(category)), t("Variable"), t("Description"), t("Options"), t("Current Value"), t("Default"))
+		}
+
+		current := fmt.Sprintf(`<span class="env-current-unset">%s</span>`, t("(default)"))
+		if info.Current != "" {
+			current = template.HTMLEscapeString(info.Current)
+		}
+
+		options := "-"
+		if len(info.AvailableValues) > 0 {
+			options = template.HTMLEscapeString(strings.Join(info.AvailableValues, ", "))
+		}
+
+		fmt.Fprintf(&sb, `<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>`,
+			template.HTMLEscapeString(info.Key),
+			template.HTMLEscapeString(t(info.Description)),
+			options,
+			current,
+			template.HTMLEscapeString(info.Default),
+		)
+	}
+	if category != "" {
+		sb.WriteString(`</tbody></table></div>`)
+	}
+	sb.WriteString(`</div>`)
+
+	return sb.String()
+}
+
+// RenderEnvironmentSummary renders a compact "KEY: value" line per documented KNOV_* env var,
+// no grouping/description/options - used by the admin panel's environment section, which
+// links to the full /system/environment page (RenderEnvironmentTable) for details.
+func RenderEnvironmentSummary() string {
+	var sb strings.Builder
+	sb.WriteString(`<style>
+.env-summary { display: flex; flex-direction: column; gap: .15rem; }
+.env-summary code { font-family: monospace; }
+</style>`)
+	sb.WriteString(`<div class="env-summary">`)
+	for _, info := range GetEnvironmentInfo() {
+		fmt.Fprintf(&sb, `<div class="help-text"><code>%s</code>: <code>%s</code></div>`,
+			template.HTMLEscapeString(info.Key), template.HTMLEscapeString(info.Current))
+	}
+	sb.WriteString(`</div>`)
+	return sb.String()
+}
+
+func HandleSystemEnvironment(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	if err := tm.RenderSystemPage(w, "Environment", template.HTML(RenderEnvironmentTable())); err != nil {
+		logging.LogError(logging.KeyApp, "failed to render environment page: %v", err)
+	}
+}

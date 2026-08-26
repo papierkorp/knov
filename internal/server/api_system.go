@@ -248,6 +248,21 @@ func handleAPIGetSystemChangelog(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, r, nil, html)
 }
 
+// @Summary Get environment variables
+// @Description Returns every recognized KNOV_* environment variable with description, default and current value (sensitive values redacted) as JSON, a full HTML table (for HTMX, the same content shown on the /system/environment page), or - with view=summary - a compact "KEY: value" list (for the admin panel's environment section)
+// @Tags system
+// @Produce json,html
+// @Param view query string false "html view: full table (default) or 'summary' for a compact key/value list"
+// @Success 200 {array} render.EnvVarInfo
+// @Router /api/system/environment [get]
+func handleAPIGetSystemEnvironment(w http.ResponseWriter, r *http.Request) {
+	html := render.RenderEnvironmentTable()
+	if r.URL.Query().Get("view") == "summary" {
+		html = render.RenderEnvironmentSummary()
+	}
+	writeResponse(w, r, render.GetEnvironmentInfo(), html)
+}
+
 // @Summary Download a log file
 // @Description Downloads the raw contents of a single log file as plain text
 // @Tags system

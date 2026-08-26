@@ -5766,6 +5766,38 @@
                 }
             }
         },
+        "/api/system/environment": {
+            "get": {
+                "description": "Returns every recognized KNOV_* environment variable with description, default and current value (sensitive values redacted) as JSON, a full HTML table (for HTMX, the same content shown on the /system/environment page), or - with view=summary - a compact \"KEY: value\" list (for the admin panel's environment section)",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Get environment variables",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "html view: full table (default) or 'summary' for a compact key/value list",
+                        "name": "view",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/render.EnvVarInfo"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/jobs": {
             "get": {
                 "description": "Returns recent job runs as HTML table (for HTMX) or JSON",
@@ -7173,6 +7205,35 @@
                     "type": "string"
                 },
                 "pending": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "render.EnvVarInfo": {
+            "type": "object",
+            "properties": {
+                "availableValues": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "category": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "string"
+                },
+                "default": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "sensitive": {
                     "type": "boolean"
                 }
             }

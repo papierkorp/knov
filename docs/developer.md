@@ -176,7 +176,7 @@ Two layers:
 | **AppConfig** | Environment variables | Yes |
 | **Settings** | `storage/config/settings.json` | No |
 
-**AppConfig** (`config.go`) — server-level options (paths, ports, intervals) loaded once at startup. Add a field to `AppConfig` and a `case` in `applyEnvToAppConfig`.
+**AppConfig** (`config.go`) — server-level options (paths, ports, intervals) loaded once at startup. Each `KNOV_*` var is declared exactly once as an `EnvVarDef` in `envdefs.go` (key, category, description, default, and how it applies to/reads from `AppConfig`) — that single definition drives `InitAppConfig`, the `/system/environment` page/API, and the generated `.env.example` (`make env-example`, via `tools/genenv`). Add a field to `AppConfig` and a matching `EnvVarDef` entry; nothing else needs touching.
 
 **Settings** (`settings_*.go`) — user preferences editable in the UI. Each setting is a typed package-level variable declared in `settings_registry.go` and registered at init time. Adding a setting there is all that's needed — persistence, UI rendering, and `MyNewSetting.Get()` access are automatic.
 
@@ -676,7 +676,7 @@ See [`docs/create_your_own_theme.md`](create_your_own_theme.md).
 
 # System Pages
 
-`/system/*` (`changelog`, `logs`, `version`, `jobs`, `backup`) is a namespace for app-internal pages whose **content is controlled by the application**, not theme templates.
+`/system/*` (`changelog`, `logs`, `version`, `jobs`, `backup`, `environment`) is a namespace for app-internal pages whose **content is controlled by the application**, not theme templates.
 
 **How it works**
 
@@ -703,6 +703,10 @@ Table of recent background job runs (name, start/finish time, duration, status, 
 ## /system/backup
 
 A log of every backup created and restore applied, newest first, plus a "create backup" action and per-row restore/lock/download actions (hidden once a row's set is no longer available). See [Backup & Restore](#backup--restore) below.
+
+## /system/environment
+
+Every documented `KNOV_*` env var (`configmanager.EnvVarDefs`), grouped by category, with description, options, current value and default. Sensitive values (git password/token) are redacted. `internal/server/render/render_system.go`'s `RenderEnvironmentTable`/`RenderEnvironmentSummary` render the full table and the compact admin-panel summary respectively, both fed by `/api/system/environment` (`?view=summary` for the compact form) so the page and the admin panel never drift apart.
 
 ## Adding a new system page
 
