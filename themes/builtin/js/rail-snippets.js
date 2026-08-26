@@ -24,6 +24,7 @@ const RAIL_SNIPPETS = [
     id: "browse", icon: "fa-folder-open", label: "browse", kind: "content", search: "generic",
     url: (groupID) => "/api/files/folder?path=&target=%23fp-" + groupID + "-browse-content",
   },
+  { id: "browse-page", icon: "fa-arrow-up-right-from-square", label: "open browse page", kind: "link", link: "/browse" },
   {
     id: "overview", icon: "fa-list", label: "overview", kind: "content", search: "generic",
     url: () => "/api/files/list?actions=true",
@@ -57,8 +58,10 @@ const RAIL_SNIPPETS = [
     url: () => "/api/notifications",
   },
   { id: "search", icon: "fa-magnifying-glass", label: "search", kind: "custom" },
+  { id: "search-page", icon: "fa-arrow-up-right-from-square", label: "open search page", kind: "link", link: "/search" },
   { id: "filter", icon: "fa-filter", label: "filter", kind: "custom" },
   { id: "media", icon: "fa-photo-film", label: "media", kind: "custom" },
+  { id: "media-page", icon: "fa-arrow-up-right-from-square", label: "open media page", kind: "link", link: "/browse/media" },
   {
     id: "latest", icon: "fa-clock-rotate-left", label: "latest changes", kind: "content", search: "latest",
     url: () => "/api/git/latestchanges?count=50",
@@ -71,6 +74,7 @@ const RAIL_SNIPPETS = [
     id: "chat", icon: "fa-message", label: "chat", kind: "content", singleton: true,
     url: () => "/api/chat/messages?short=true",
   },
+  { id: "chat-page", icon: "fa-arrow-up-right-from-square", label: "open chat page", kind: "link", link: "/chat" },
   // fixed-target links, same "kind: link" navigate-away behaviour as the
   // generic "link" snippet above, just with a pre-set icon/label/url instead
   // of a per-instance one — drag straight into any group, or leave as its
@@ -85,11 +89,17 @@ const RAIL_SNIPPETS = [
   { id: "settings", icon: "fa-gear", label: "settings", kind: "link", link: "/settings" },
   { id: "admin", icon: "fa-screwdriver-wrench", label: "admin", kind: "link", link: "/admin" },
   { id: "logs", icon: "fa-file-lines", label: "logs", kind: "content", url: () => "/api/logs" },
+  { id: "logs-page", icon: "fa-arrow-up-right-from-square", label: "open logs page", kind: "link", link: "/system/logs" },
   { id: "jobs", icon: "fa-list-check", label: "jobs", kind: "content", url: () => "/api/system/jobs" },
+  { id: "jobs-page", icon: "fa-arrow-up-right-from-square", label: "open jobs page", kind: "link", link: "/system/jobs" },
   { id: "backup", icon: "fa-box-archive", label: "backup", kind: "content", url: () => "/api/system/backups" },
+  { id: "backup-page", icon: "fa-arrow-up-right-from-square", label: "open backup page", kind: "link", link: "/system/backup" },
   { id: "version", icon: "fa-circle-info", label: "version", kind: "content", url: () => "/api/system/version" },
+  { id: "version-page", icon: "fa-arrow-up-right-from-square", label: "open version page", kind: "link", link: "/system/version" },
   { id: "environment", icon: "fa-sliders", label: "environment", kind: "content", url: () => "/api/system/environment?view=summary" },
+  { id: "environment-page", icon: "fa-arrow-up-right-from-square", label: "open environment page", kind: "link", link: "/system/environment" },
   { id: "changelog", icon: "fa-scroll", label: "changelog", kind: "content", url: () => "/api/system/changelog" },
+  { id: "changelog-page", icon: "fa-arrow-up-right-from-square", label: "open changelog page", kind: "link", link: "/system/changelog" },
 ];
 
 function railSnippetByID(id) {

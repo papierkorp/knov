@@ -31,8 +31,6 @@
 - chore
   - async jobs follow up candidates
   - switch to static id instead of using the path
-  - add link to /browse in the browse slideout
-  - in /browse - browse by metadata - add a link to view all files (just like overview)
   - remove the playground
 
 # every other time

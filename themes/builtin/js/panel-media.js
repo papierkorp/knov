@@ -9,7 +9,6 @@ railSnippetByID("media").body = (groupID, instanceID) => `<div class="fp-media-c
       <button class="fp-media-btn active" onclick="switchMediaFilter('${instanceID}', 'all', this)">all</button>
       <button class="fp-media-btn" onclick="switchMediaFilter('${instanceID}', 'used', this)">used</button>
       <button class="fp-media-btn" onclick="switchMediaFilter('${instanceID}', 'orphaned', this)">orphaned</button>
-      <a href="/browse/media" class="flyout-header-link" title="open media page"><i class="fa fa-arrow-up-right-from-square"></i></a>
     </div>
   </div>
   <div id="fp-${instanceID}-warning" class="fp-media-warning" style="display:none;"></div>

@@ -109,15 +109,16 @@
                         <button class="flyout-close-btn" @click="$store.rail.close()" title="{{T "close"}}"><i class="fa fa-xmark"></i></button>
                     </div>
                 </div>
-                <!-- "link" snippets are tabs that navigate instead of switching content,
-                     so they're a separate loop (own root element, an <a> not a <button>)
-                     and excluded from the tab-panel loop below entirely -->
+                <!-- "link" snippets are tabs that navigate instead of switching content, but
+                     still share the same ordered loop as the content-switching ones (both
+                     render as <a>) so drag-order from the rail layout builder is preserved -->
                 <div class="fp-browse-modes" x-show="snippets.length > 1 || snippets.some((s) => s.kind === 'link')">
-                    <template x-for="s in snippets.filter((s) => s.kind !== 'link')" :key="s.tabId">
-                        <button class="fp-browse-mode-btn" :class="{active: activeSnippet === s.tabId}" :data-mode="s.tabId" @click="switchSnippet(s.tabId)" :title="s.label"><i class="fa" :class="s.icon"></i></button>
-                    </template>
-                    <template x-for="s in snippets.filter((s) => s.kind === 'link')" :key="s.tabId">
-                        <a class="fp-browse-mode-btn" :href="s.link" :title="s.label" @click="$store.rail.close()"><i class="fa" :class="s.icon"></i></a>
+                    <template x-for="s in snippets" :key="s.tabId">
+                        <a class="fp-browse-mode-btn" :class="{active: s.kind !== 'link' && activeSnippet === s.tabId}"
+                           :href="s.kind === 'link' ? s.link : '#'" :data-mode="s.tabId" :title="s.label"
+                           @click="s.kind === 'link' ? $store.rail.close() : ($event.preventDefault(), switchSnippet(s.tabId))">
+                            <i class="fa" :class="s.icon"></i>
+                        </a>
                     </template>
                 </div>
                 <template x-for="s in snippets.filter((s) => s.kind !== 'link')" :key="s.tabId">
