@@ -20,7 +20,7 @@
     </div>
     <div class="browse-content">
         <div
-            hx-get="{{if .Data.MetadataType}}/api/files/browse?metadata={{ .Data.MetadataType }}&value={{ urlQuery .Data.Value }}{{else}}/api/files/list{{end}}&actions=true"
+            hx-get="{{if .Data.MetadataType}}/api/files/browse?metadata={{ .Data.MetadataType }}&value={{ urlQuery .Data.Value }}&actions=true{{else}}/api/files/list{{end}}"
             hx-trigger="load"
             hx-headers='{"Accept": "text/html"}'
             class="filter-results"
