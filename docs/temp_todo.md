@@ -40,7 +40,6 @@
   - add examples / example usage to template_data.md and explain what a template data acutally is and add a link to the create_your_own_theme.md file
   - remove allowing to set the datapath in the admin (should i leave git repository in? if yes we should also add the user/ssh key management and a test connection button otherwise it doesnt make much sense)
   - add "knov" to the backup name
-  - in Settings use all available space (e.g. appeareance only uses half)
   - for all tests: make it so it doesnt affect the live data (e.g. create a new database just for the test)
 
 # every other time

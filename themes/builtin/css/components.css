@@ -1832,6 +1832,14 @@ blockquote p blockquote p,
   padding: 16px 18px;
 }
 
+/* let inputs/selects/textareas use the full card width instead of the
+   400px cap meant for narrower contexts */
+.settings-section .form-input,
+.settings-section .form-select,
+.settings-section .form-textarea {
+  max-width: none;
+}
+
 /* wide sections: span both columns in the settings grid */
 .page-settings .settings-section-wide {
   grid-column: 1 / -1;
