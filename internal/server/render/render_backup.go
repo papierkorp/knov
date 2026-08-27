@@ -59,7 +59,7 @@ func RenderBackupLog(entries []backup.LogEntry) string {
 	var sb strings.Builder
 	if configmanager.GetBackupAutoEnabled() {
 		fmt.Fprintf(&sb, `<p class="backup-auto-status">%s</p>`,
-			template.HTMLEscapeString(t("Auto backup: enabled (every %s)", configmanager.GetBackupAutoInterval())))
+			template.HTMLEscapeString(t("Auto backup: enabled (cron: %s)", configmanager.GetBackupAutoCron())))
 	} else {
 		fmt.Fprintf(&sb, `<p class="backup-auto-status">%s</p>`, template.HTMLEscapeString(t("Auto backup: disabled")))
 	}

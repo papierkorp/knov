@@ -22,10 +22,10 @@ func caseCheckAutoBackup() test.CaseResult {
 
 	origPath := configmanager.GetBackupsPath()
 	origEnabled := configmanager.GetBackupAutoEnabled()
-	origInterval := configmanager.GetBackupAutoInterval()
+	origCron := configmanager.GetBackupAutoCron()
 	defer func() {
 		configmanager.SetBackupsPath(origPath)
-		configmanager.SetBackupAutoEnabled(origEnabled, origInterval)
+		configmanager.SetBackupAutoEnabled(origEnabled, origCron)
 	}()
 
 	scratchDir, err := os.MkdirTemp("", "knov-backuptest-auto-*")
@@ -40,7 +40,9 @@ func caseCheckAutoBackup() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	configmanager.SetBackupAutoEnabled(false, "24h")
+	const dailyAtMidnight = "0 0 * * *"
+
+	configmanager.SetBackupAutoEnabled(false, dailyAtMidnight)
 	job.CheckAutoBackupNow()
 	afterDisabled, err := target.List()
 	if err != nil {
@@ -48,7 +50,7 @@ func caseCheckAutoBackup() test.CaseResult {
 	}
 	disabledNoop := len(afterDisabled) == 0
 
-	configmanager.SetBackupAutoEnabled(true, "24h")
+	configmanager.SetBackupAutoEnabled(true, dailyAtMidnight)
 	job.CheckAutoBackupNow()
 	afterFirst, err := target.List()
 	if err != nil {
@@ -89,6 +91,82 @@ func caseCheckAutoBackup() test.CaseResult {
 	}
 	if !success {
 		cr.Error = "checkAutoBackup did not gate on enabled/due state as expected"
+	}
+	return cr
+}
+
+// caseCheckAutoBackupCronCatchesUp covers job.checkAutoBackup's cron-driven catch-up behavior
+// (backup.AutoBackupDue's schedule.Next(lastFullBackup) check), at minute precision rather than
+// caseCheckAutoBackup's whole-day one: given a full backup from 10 minutes ago, a cron target 5
+// minutes in the future is not yet due; the same backup against a cron target 5 minutes in the
+// past is due (catching up on a slot that was missed, e.g. because the app wasn't running); once
+// caught up, the same past target is a no-op again. Wall-clock-relative fixtures, so this can
+// flake within a few minutes of local midnight - same known limitation as caseCheckAutoBackup's.
+func caseCheckAutoBackupCronCatchesUp() test.CaseResult {
+	name := "check-auto-backup-cron-catches-up"
+
+	origPath := configmanager.GetBackupsPath()
+	origEnabled := configmanager.GetBackupAutoEnabled()
+	origCron := configmanager.GetBackupAutoCron()
+	defer func() {
+		configmanager.SetBackupsPath(origPath)
+		configmanager.SetBackupAutoEnabled(origEnabled, origCron)
+	}()
+
+	scratchDir, err := os.MkdirTemp("", "knov-backuptest-auto-cron-*")
+	if err != nil {
+		return errCase(name, err)
+	}
+	defer os.RemoveAll(scratchDir)
+	configmanager.SetBackupsPath(scratchDir)
+
+	target, err := backup.NewLocalTarget(scratchDir)
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	seedName := setNameAt(time.Now().Add(-10 * time.Minute))
+	if err := target.Write(seedName, strings.NewReader("")); err != nil {
+		return errCase(name, err)
+	}
+
+	cronAt := func(t time.Time) string {
+		return fmt.Sprintf("%d %d * * *", t.Minute(), t.Hour())
+	}
+
+	configmanager.SetBackupAutoEnabled(true, cronAt(time.Now().Add(5*time.Minute)))
+	job.CheckAutoBackupNow()
+	afterFuture, err := target.List()
+	if err != nil {
+		return errCase(name, err)
+	}
+	noopBeforeTarget := len(afterFuture) == 1
+
+	configmanager.SetBackupAutoEnabled(true, cronAt(time.Now().Add(-5*time.Minute)))
+	job.CheckAutoBackupNow()
+	afterPast, err := target.List()
+	if err != nil {
+		return errCase(name, err)
+	}
+	createdAfterTarget := len(afterPast) == 2
+
+	job.CheckAutoBackupNow()
+	afterSecondCall, err := target.List()
+	if err != nil {
+		return errCase(name, err)
+	}
+	noopOnceCaughtUp := len(afterSecondCall) == len(afterPast)
+
+	success := noopBeforeTarget && createdAfterTarget && noopOnceCaughtUp
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "future cron target=noop, past cron target+missed slot=creates, same past target again=noop",
+		Actual: fmt.Sprintf("noopBeforeTarget=%v createdAfterTarget=%v noopOnceCaughtUp=%v",
+			noopBeforeTarget, createdAfterTarget, noopOnceCaughtUp),
+		Success: success,
+	}
+	if !success {
+		cr.Error = "checkAutoBackup did not catch up on a missed cron slot as expected"
 	}
 	return cr
 }

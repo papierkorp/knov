@@ -66,7 +66,7 @@ type AppConfig struct {
 	NotifyDuration              int
 	DefaultEditor               string
 	BackupAutoEnabled           bool
-	BackupAutoInterval          string
+	BackupAutoCron              string
 	BackupRotationKeepDays      int
 	BackupRotationKeepFull      int
 }
@@ -141,10 +141,10 @@ func GetBackupAutoEnabled() bool {
 	return appConfig.BackupAutoEnabled
 }
 
-// GetBackupAutoInterval returns how often to create an automatic backup, as a duration string
-// (e.g. "24h"), when GetBackupAutoEnabled is true
-func GetBackupAutoInterval() string {
-	return appConfig.BackupAutoInterval
+// GetBackupAutoCron returns the standard 5-field cron expression (e.g. "0 18 * * *") an automatic
+// backup is scheduled on, when GetBackupAutoEnabled is true
+func GetBackupAutoCron() string {
+	return appConfig.BackupAutoCron
 }
 
 // GetBackupRotationKeepDays returns how many days of backup sets (full or partial) are always
@@ -160,14 +160,14 @@ func GetBackupRotationKeepFull() int {
 	return appConfig.BackupRotationKeepFull
 }
 
-// SetBackupAutoEnabled overrides BackupAutoEnabled/BackupAutoInterval in memory only (no .env
-// write) - these are AppConfig fields by design (see docs/temp_todo.md's backup-solution
+// SetBackupAutoEnabled overrides BackupAutoEnabled/BackupAutoCron in memory only (no .env write) -
+// these are AppConfig fields by design (see docs/temp_todo.md's backup-solution
 // section), not live Settings, so there's no production setter. Exists for backuptest to
 // exercise job.checkAutoBackup's enabled/disabled/due branches without a real restart; callers
 // must restore the original values themselves.
-func SetBackupAutoEnabled(enabled bool, interval string) {
+func SetBackupAutoEnabled(enabled bool, cronExpr string) {
 	appConfig.BackupAutoEnabled = enabled
-	appConfig.BackupAutoInterval = interval
+	appConfig.BackupAutoCron = cronExpr
 }
 
 // SetBackupsPath overrides BackupsPath in memory only (no .env write) - lets backuptest point

@@ -21,8 +21,8 @@ import (
 const gitRepackInterval = 24 * time.Hour
 
 // backupAutoCheckInterval is fixed, not the user-facing setting - checkAutoBackup is a cheap
-// no-op when auto-backup is disabled or not yet due. The interval users actually control is
-// configmanager.BackupAutoInterval (how often a backup is taken), not this check's own cadence.
+// no-op when auto-backup is disabled or not yet due. The schedule users actually control is
+// configmanager.BackupAutoCron (when a backup is taken), not this check's own cadence.
 const backupAutoCheckInterval = 15 * time.Minute
 
 var (

@@ -197,7 +197,7 @@ var EnvVarDefs = []EnvVarDef{
 
 	// ── backup ──
 	boolDef("KNOV_BACKUP_AUTO_ENABLED", "backup", "periodically create a full backup in the background, on top of manually triggered ones on /system/backup", false, func(c *AppConfig) *bool { return &c.BackupAutoEnabled }),
-	stringDef("KNOV_BACKUP_AUTO_INTERVAL", "backup", "how often, when enabled above", "24h", func(c *AppConfig) *string { return &c.BackupAutoInterval }),
+	stringDef("KNOV_BACKUP_AUTO_CRON", "backup", "when enabled above, a standard 5-field cron expression (minute hour day-of-month month\nday-of-week, e.g. \"0 18 * * *\" for daily at 18:00) the automatic backup is scheduled on. Due\ntime is tracked off the last full backup's own timestamp, not a \"ran today\" flag, so a device\nthat isn't running 24/7 (e.g. a USB stick) still catches up reliably: it backs up as soon as it's\nnext on past a missed occurrence, instead of a slot that only ever lands outside its usage window\ngetting skipped entirely", "0 0 * * *", func(c *AppConfig) *string { return &c.BackupAutoCron }),
 	intDef("KNOV_BACKUP_ROTATION_KEEP_DAYS", "backup", "how many days of backup sets (full or partial) to always keep, regardless of count", 7, func(c *AppConfig) *int { return &c.BackupRotationKeepDays }),
 	intDef("KNOV_BACKUP_ROTATION_KEEP_FULL", "backup", "on top of that, the minimum number of full backups to always keep regardless of age - a floor\nso coming back after months away still leaves something restorable. A backup set can also be\nlocked individually on /system/backup to always be kept, ignoring both settings above, until unlocked", 10, func(c *AppConfig) *int { return &c.BackupRotationKeepFull }),
 }

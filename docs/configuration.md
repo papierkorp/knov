@@ -178,7 +178,7 @@ Available at **Admin => Backups** (`/system/backup`).
   - it's within `KNOV_BACKUP_ROTATION_KEEP_DAYS` days (default 7) - any kind, full or partial
   - it's a full backup and among the `KNOV_BACKUP_ROTATION_KEEP_FULL` most recent full backups (default 10) - a long-term floor so coming back after months away still leaves something restorable, even if daily backups lapsed. Partial backups (e.g. "just metadata") get no long-term floor of their own - once they age out of the days window, they're deleted
   - it's locked - click "Lock" on any set to keep it forever regardless of the two settings above, until "Unlock" is clicked
-- **Automatic backups** - off by default. Set `KNOV_BACKUP_AUTO_ENABLED=true` and `KNOV_BACKUP_AUTO_INTERVAL` (e.g. `24h`) to create a full backup periodically in the background, on top of manual ones. Requires a restart to take effect, like every other env var
+- **Automatic backups** - off by default. Set `KNOV_BACKUP_AUTO_ENABLED=true` and `KNOV_BACKUP_AUTO_CRON` (a standard 5-field cron expression, e.g. `0 18 * * *` for daily at 18:00) to create a full backup periodically in the background, on top of manual ones. Due time tracks off the last full backup's own timestamp rather than a "ran today" flag, so a device that isn't running 24/7 still catches up as soon as it's next on past a missed slot. Requires a restart to take effect, like every other env var
 
 ## Logging
 

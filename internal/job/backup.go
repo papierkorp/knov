@@ -111,20 +111,20 @@ func runBackup(source backup.EventSource, names ...string) (string, error) {
 	return j.name, nil
 }
 
-// checkAutoBackup runs a full backup if automatic backups are enabled and the configured
-// interval has elapsed since the newest existing full set. Ticked from Start() on a fixed
-// internal cadence (backupAutoCheckInterval) - the interval users actually control is how often a
-// backup is taken, not how often this check runs. Only full sets count towards the interval - a
-// manually-triggered partial backup (e.g. "just metadata") must not push back when the next
-// scheduled full backup is due.
+// checkAutoBackup runs a full backup if automatic backups are enabled and it's due per
+// KNOV_BACKUP_AUTO_CRON. Ticked from Start() on a fixed internal cadence
+// (backupAutoCheckInterval) - the schedule users actually control is when a backup is taken, not
+// how often this check runs. Only full sets count towards being due - a manually-triggered partial
+// backup (e.g. "just metadata") must not push back when the next scheduled full backup is due.
 func checkAutoBackup() {
 	if !configmanager.GetBackupAutoEnabled() {
 		return
 	}
 
-	interval, err := time.ParseDuration(configmanager.GetBackupAutoInterval())
+	raw := configmanager.GetBackupAutoCron()
+	schedule, err := backup.ParseCronSchedule(raw)
 	if err != nil {
-		logging.LogWarning(logging.KeyApp, "backup: invalid KNOV_BACKUP_AUTO_INTERVAL %q: %v", configmanager.GetBackupAutoInterval(), err)
+		logging.LogWarning(logging.KeyApp, "backup: invalid KNOV_BACKUP_AUTO_CRON %q: %v", raw, err)
 		return
 	}
 
@@ -133,7 +133,7 @@ func checkAutoBackup() {
 		logging.LogWarning(logging.KeyApp, "backup: failed to check auto-backup due time: %v", err)
 		return
 	}
-	due, err := backup.AutoBackupDue(target, interval)
+	due, err := backup.AutoBackupDue(target, schedule)
 	if err != nil {
 		logging.LogWarning(logging.KeyApp, "backup: failed to check auto-backup due time: %v", err)
 		return

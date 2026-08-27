@@ -39,6 +39,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseReadSQLiteBackupRejectsCorrupt,
 		caseRotate,
 		caseCheckAutoBackup,
+		caseCheckAutoBackupCronCatchesUp,
 		caseListBackupLog,
 		caseEventRoundtripAcrossRestart,
 		caseWriteFileAtomicNoTornReads,
