@@ -23,13 +23,21 @@ type sqliteKanbanStorage struct {
 	mutex  sync.RWMutex
 }
 
+// newSQLiteStorage creates a new SQLite kanban storage instance under storagePath/kanban.
 func newSQLiteStorage(storagePath string) (*sqliteKanbanStorage, error) {
-	fullPath := filepath.Join(storagePath, "kanban")
-	if err := os.MkdirAll(fullPath, 0755); err != nil {
+	return newSQLiteStorageAt(filepath.Join(storagePath, "kanban"))
+}
+
+// newSQLiteStorageAt creates a new SQLite kanban storage instance with its db file directly
+// under dbDir, without joining on a "kanban" subfolder. Used to open a backup already extracted
+// to its own leaf directory (see restoreMigrate), instead of relying on that directory happening
+// to be named "kanban".
+func newSQLiteStorageAt(dbDir string) (*sqliteKanbanStorage, error) {
+	if err := os.MkdirAll(dbDir, 0755); err != nil {
 		return nil, err
 	}
 
-	dbPath := filepath.Join(fullPath, kanbanDBFile)
+	dbPath := filepath.Join(dbDir, kanbanDBFile)
 	db, err := sql.Open("sqlite", dbPath+"?mode=rwc")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open kanban events database: %w", err)

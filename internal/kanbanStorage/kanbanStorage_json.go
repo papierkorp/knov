@@ -22,12 +22,20 @@ type jsonKanbanStorage struct {
 	mutex    sync.RWMutex
 }
 
+// newJSONStorage creates a new JSON kanban storage instance under storagePath/kanban.
 func newJSONStorage(storagePath string) (*jsonKanbanStorage, error) {
-	fullPath := filepath.Join(storagePath, "kanban")
-	if err := os.MkdirAll(fullPath, 0755); err != nil {
+	return newJSONStorageAt(filepath.Join(storagePath, "kanban"))
+}
+
+// newJSONStorageAt creates a new JSON kanban storage instance with its events file directly
+// under dir, without joining on a "kanban" subfolder. Used to open a backup already extracted to
+// its own leaf directory (see restoreMigrate), instead of relying on that directory happening to
+// be named "kanban".
+func newJSONStorageAt(dir string) (*jsonKanbanStorage, error) {
+	if err := os.MkdirAll(dir, 0755); err != nil {
 		return nil, err
 	}
-	return &jsonKanbanStorage{filePath: filepath.Join(fullPath, kanbanEventsFile)}, nil
+	return &jsonKanbanStorage{filePath: filepath.Join(dir, kanbanEventsFile)}, nil
 }
 
 func (s *jsonKanbanStorage) readEvents() ([]Event, error) {

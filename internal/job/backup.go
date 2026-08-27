@@ -17,6 +17,7 @@ import (
 
 	"knov/internal/backup"
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/logging"
 	"knov/internal/system"
 )
@@ -169,35 +170,45 @@ func (j *restoreJob) Name() string { return JobTypeRestore }
 func (j *restoreJob) Resumable() bool { return true }
 
 func (j *restoreJob) Run() error {
-	err := backup.Restore(j.target, j.setName)
-	// A plain failure (bad set name, safety snapshot failed, extraction failed) touched no live
-	// storage - safe to just report the error and leave the process running. But
-	// ErrRestoreIncomplete means Restore got far enough to overwrite at least one storage before
-	// failing, which may have already closed that storage's live *sql.DB handle (see each sqlite
-	// storage's Restore doc) - the process must restart regardless to recover a working
-	// connection, so fall through to the restart below instead of returning early.
-	if err != nil && !errors.Is(err, backup.ErrRestoreIncomplete) {
+	// touched is set from inside the afterRestore callback backup.Restore requires - it only
+	// runs when Restore got far enough to actually overwrite live storage (see backup.Restore),
+	// which is also exactly when a restart is needed to recover any closed *sql.DB handles.
+	var touched bool
+	err := backup.Restore(j.target, j.setName, func() {
+		touched = true
+		// The safety snapshot Restore just took is otherwise never trimmed - rotate now so
+		// repeated restores don't leave the backup dir growing unbounded.
+		if rotateErr := rotateBackups(j.target); rotateErr != nil {
+			logging.LogWarning(logging.KeyApp, "restore: rotation failed: %v", rotateErr)
+		}
+		// Restore rolled storages back, but the cache - deliberately not backed up, see
+		// cacheStorage.CacheStorage's doc - still holds data derived from the pre-restore
+		// state. A rebuild can't run here (restored storages' handles are already closed and
+		// the restart below is what reopens them), so flush instead - the fresh process
+		// rebuilds it on demand.
+		if cacheErr := files.CacheInvalidate(); cacheErr != nil {
+			logging.LogWarning(logging.KeyApp, "restore: cache invalidation failed: %v", cacheErr)
+		}
+		go func() {
+			time.Sleep(500 * time.Millisecond)
+			// must exit regardless of whether the restart below succeeds - the live storage
+			// connections are already broken, so staying up is not an option
+			if err := system.Restart(); err != nil {
+				logging.LogError(logging.KeyApp, "restore: failed to restart, manual restart required: %v", err)
+			}
+			os.Exit(0)
+		}()
+	})
+	if !touched {
+		// plain failure (bad set name, safety snapshot failed, extraction failed) - no live
+		// storage was touched, safe to just report the error and leave the process running
 		return err
-	}
-	// The safety snapshot Restore just took is otherwise never trimmed - rotate now so repeated
-	// restores don't leave the backup dir growing unbounded.
-	if rotateErr := rotateBackups(j.target); rotateErr != nil {
-		logging.LogWarning(logging.KeyApp, "restore: rotation failed: %v", rotateErr)
 	}
 	if err != nil {
 		logging.LogError(logging.KeyApp, "restore: set %s applied with errors, restarting anyway to recover storage connections: %v", j.setName, err)
 	} else {
 		logging.LogInfo(logging.KeyApp, "restore: applied backup set %s, restarting to apply it", j.setName)
 	}
-	go func() {
-		time.Sleep(500 * time.Millisecond)
-		// must exit regardless of whether the restart below succeeds - the live storage
-		// connections are already broken (see comment above), so staying up is not an option
-		if err := system.Restart(); err != nil {
-			logging.LogError(logging.KeyApp, "restore: failed to restart, manual restart required: %v", err)
-		}
-		os.Exit(0)
-	}()
 	return err
 }
 

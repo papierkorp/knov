@@ -27,14 +27,21 @@ type sqliteStorage struct {
 	mutex    sync.RWMutex
 }
 
-// newSQLiteStorage creates a new SQLite metadata storage instance
+// newSQLiteStorage creates a new SQLite metadata storage instance under storagePath/metadata.
 func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
-	fullPath := filepath.Join(storagePath, "metadata")
-	if err := os.MkdirAll(fullPath, 0755); err != nil {
+	return newSQLiteStorageAt(filepath.Join(storagePath, "metadata"))
+}
+
+// newSQLiteStorageAt creates a new SQLite metadata storage instance with its db file directly
+// under dbDir, without joining on a "metadata" subfolder. Used to open a scratch snapshot db at
+// an exact directory backup.Run already chose (see yamlFrontmatterStorage.Backup/Restore),
+// instead of relying on that directory happening to be named "metadata".
+func newSQLiteStorageAt(dbDir string) (*sqliteStorage, error) {
+	if err := os.MkdirAll(dbDir, 0755); err != nil {
 		return nil, err
 	}
 
-	dbPath := filepath.Join(fullPath, metadataDBFile)
+	dbPath := filepath.Join(dbDir, metadataDBFile)
 
 	// open database with explicit read-write mode
 	db, err := sql.Open("sqlite", dbPath+"?mode=rwc")
@@ -58,7 +65,7 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 
 	storage := &sqliteStorage{
 		db:       db,
-		basePath: fullPath,
+		basePath: dbDir,
 		dbPath:   dbPath,
 	}
 
@@ -489,6 +496,13 @@ func (ss *sqliteStorage) Exists(key string) bool {
 // GetBackendType returns the backend type
 func (ss *sqliteStorage) GetBackendType() string {
 	return "sqlite"
+}
+
+// Close closes the underlying database handle without deleting any data.
+func (ss *sqliteStorage) Close() error {
+	ss.mutex.Lock()
+	defer ss.mutex.Unlock()
+	return ss.db.Close()
 }
 
 // Backup snapshots the metadata database into destDir via VACUUM INTO.

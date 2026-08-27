@@ -20,15 +20,22 @@ type jsonStorage struct {
 	mutex    sync.RWMutex
 }
 
-// newJSONStorage creates a new JSON metadata storage instance
+// newJSONStorage creates a new JSON metadata storage instance under storagePath/metadata.
 func newJSONStorage(storagePath string) (*jsonStorage, error) {
-	fullPath := filepath.Join(storagePath, "metadata")
-	if err := os.MkdirAll(fullPath, 0755); err != nil {
+	return newJSONStorageAt(filepath.Join(storagePath, "metadata"))
+}
+
+// newJSONStorageAt creates a new JSON metadata storage instance rooted directly at dir, without
+// joining on a "metadata" subfolder. Used to open a backup already extracted to its own leaf
+// directory (see restoreMigrate), instead of relying on that directory happening to be named
+// "metadata".
+func newJSONStorageAt(dir string) (*jsonStorage, error) {
+	if err := os.MkdirAll(dir, 0755); err != nil {
 		return nil, err
 	}
 
 	return &jsonStorage{
-		basePath: fullPath,
+		basePath: dir,
 	}, nil
 }
 
@@ -152,6 +159,11 @@ func (js *jsonStorage) Exists(key string) bool {
 // GetBackendType returns the backend type
 func (js *jsonStorage) GetBackendType() string {
 	return "json"
+}
+
+// Close is a no-op - the json backend holds no persistent file handle to release.
+func (js *jsonStorage) Close() error {
+	return nil
 }
 
 // getFilePath converts a key to a file path

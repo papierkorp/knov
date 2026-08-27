@@ -1,12 +1,13 @@
 package backuptest
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"knov/internal/backup"
-	"knov/internal/cacheStorage"
+	"knov/internal/configStorage"
 	"knov/internal/metadataStorage"
 	"knov/internal/test"
 )
@@ -86,6 +87,7 @@ type failingStorage struct{}
 
 func (failingStorage) Backup(destDir string) error { return fmt.Errorf("backuptest: forced failure") }
 func (failingStorage) Restore(srcDir string) error { return nil }
+func (failingStorage) GetBackendType() string      { return "test" }
 
 // caseRunAbortsOnPartialFailure covers backup.Run aborting and discarding the whole set when
 // one registered storage's Backup fails mid-run - no partial .tar.gz left on the target
@@ -180,8 +182,8 @@ func caseSelectiveBackup() test.CaseResult {
 		}
 	}
 
-	// mutate every probe (metadata, the included storage, plus cache, an excluded one), restore
-	// the selective set, and confirm only metadata came back - cache must stay mutated since it
+	// mutate every probe (metadata, the included storage, plus config, an excluded one), restore
+	// the selective set, and confirm only metadata came back - config must stay mutated since it
 	// was never part of this set.
 	if err := mutateProbes(p); err != nil {
 		return errCase(name, err)
@@ -195,13 +197,17 @@ func caseSelectiveBackup() test.CaseResult {
 		return errCase(name, err)
 	}
 	metaRestored := metaTitle(metaVal) == probeMetaTitle
-	cacheStillMutated := !cacheStorage.Exists(probeCacheKey)
+	configVal, err := configStorage.Get(probeConfigKey)
+	if err != nil {
+		return errCase(name, err)
+	}
+	configStillMutated := bytes.Equal(configVal, []byte("mutated"))
 
-	success := manifestOK && onlyMetadata && metaRestored && cacheStillMutated
+	success := manifestOK && onlyMetadata && metaRestored && configStillMutated
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: "manifest is exactly [metadata], only metadata/ exists in the archive, restore brings metadata back but leaves cache (excluded) mutated",
-		Actual:   fmt.Sprintf("manifest=%v onlyMetadata=%v metaRestored=%v cacheStillMutated=%v", manifest, onlyMetadata, metaRestored, cacheStillMutated),
+		Expected: "manifest is exactly [metadata], only metadata/ exists in the archive, restore brings metadata back but leaves config (excluded) mutated",
+		Actual:   fmt.Sprintf("manifest=%v onlyMetadata=%v metaRestored=%v configStillMutated=%v", manifest, onlyMetadata, metaRestored, configStillMutated),
 		Success:  success,
 	}
 	if !success {

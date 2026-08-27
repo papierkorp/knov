@@ -25,6 +25,11 @@ const manifestFile = "manifest.json"
 
 type manifest struct {
 	Storages []string `json:"storages"`
+	// Backends records each storage's GetBackendType() at backup time, so Restore can detect a
+	// provider that has since changed and convert the data instead of applying it as-is. Absent
+	// or missing entries (backups made before this field existed) are treated as "unknown" by
+	// Restore, which falls back to applying the backup as-is - the pre-existing behavior.
+	Backends map[string]string `json:"backends,omitempty"`
 }
 
 // locationFunc returns the timezone backup set names are stamped with and parsed back in -
@@ -93,6 +98,7 @@ func Run(target BackupTarget, source EventSource, names ...string) (string, erro
 	}
 	defer os.RemoveAll(staging)
 
+	backends := make(map[string]string, len(names))
 	for _, n := range names {
 		s, ok := lookupStorage(n)
 		if !ok {
@@ -106,10 +112,11 @@ func Run(target BackupTarget, source EventSource, names ...string) (string, erro
 			logging.LogError(logging.KeyApp, "backup: %s failed, discarding set %s: %v", n, setName, err)
 			return "", fmt.Errorf("backup %s failed: %w", n, err)
 		}
+		backends[n] = s.GetBackendType()
 		logging.LogDebug(logging.KeyApp, "backup: snapshotted %s for set %s", n, setName)
 	}
 
-	manifestBytes, err := json.Marshal(manifest{Storages: names})
+	manifestBytes, err := json.Marshal(manifest{Storages: names, Backends: backends})
 	if err != nil {
 		return "", fmt.Errorf("failed to encode manifest: %w", err)
 	}
@@ -187,11 +194,32 @@ func Manifest(target BackupTarget, name string) ([]string, error) {
 var ErrRestoreIncomplete = errors.New("restore incomplete")
 
 // Restore applies a previously created backup set back onto every registered storage's live
-// files on disk. It does not hot-swap any live *sql.DB or in-memory state - the caller must
-// restart the app afterwards for the restored files to take effect. Before overwriting
-// anything, it takes a fresh safety snapshot of the current state, so a bad restore can itself
-// be undone.
-func Restore(target BackupTarget, name string) error {
+// files on disk, then calls afterRestore - exactly once, synchronously, before returning -
+// whenever live storage may have been touched. That signal is deliberately conservative:
+// Storage.Restore reports no touched/untouched outcome of its own, so any attempt counts - even
+// one whose backend turns out to be a no-op (e.g. yaml metadata) - a spurious recovery beat is
+// cheaper than a missed one. It never hot-swaps any live *sql.DB or in-memory state itself:
+// afterRestore is the caller's one required chance to recover that,
+// e.g. by restarting the process for real (job.restoreJob) or re-running every storage's Init
+// in-process (backuptest.restoreAndReinit) - both need the live storages picking the restored
+// (or converted) data back up, just via different means. Making afterRestore a required
+// parameter here, rather than a "you must call X afterwards" convention documented next to
+// Restore, means a future caller can't add a new call site that quietly forgets the recovery
+// step - two independent ones (job and backuptest) had already each hand-rolled their own
+// version of exactly this "only if touched" check before this existed.
+func Restore(target BackupTarget, name string, afterRestore func()) error {
+	touched, err := restore(target, name)
+	if touched {
+		afterRestore()
+	}
+	return err
+}
+
+// restore is Restore's implementation. Before overwriting anything, it takes a fresh safety
+// snapshot of the current state, so a bad restore can itself be undone. touched, not the
+// presence or type of err, is Restore's sole signal for whether afterRestore runs - every return
+// below reports it explicitly rather than making the caller re-derive it from err.
+func restore(target BackupTarget, name string) (touched bool, err error) {
 	// Confirm the requested set actually exists before paying for a safety snapshot - a typo'd
 	// or already-rotated-away name would otherwise still burn a full backup cycle before failing.
 	// Closed again immediately rather than held open across the safety snapshot below (which can
@@ -199,34 +227,35 @@ func Restore(target BackupTarget, name string) error {
 	// unrelated, potentially slow operation would be fragile for a future remote target (S3/NFS).
 	rc, err := target.Read(name)
 	if err != nil {
-		return fmt.Errorf("backup set %s not found: %w", name, err)
+		return false, fmt.Errorf("backup set %s not found: %w", name, err)
 	}
 	rc.Close()
 
 	if _, err := Run(target, SourceRestore); err != nil {
-		return fmt.Errorf("pre-restore safety snapshot failed, aborting restore: %w", err)
+		return false, fmt.Errorf("pre-restore safety snapshot failed, aborting restore: %w", err)
 	}
 
 	rc, err = target.Read(name)
 	if err != nil {
-		return fmt.Errorf("backup set %s disappeared during restore: %w", name, err)
+		return false, fmt.Errorf("backup set %s disappeared during restore: %w", name, err)
 	}
 	defer rc.Close()
 
 	staging, err := os.MkdirTemp("", "knov-restore-*")
 	if err != nil {
-		return fmt.Errorf("failed to create staging dir: %w", err)
+		return false, fmt.Errorf("failed to create staging dir: %w", err)
 	}
 	defer os.RemoveAll(staging)
 
 	if err := untar(rc, staging); err != nil {
-		return fmt.Errorf("failed to extract backup set %s: %w", name, err)
+		return false, fmt.Errorf("failed to extract backup set %s: %w", name, err)
 	}
 
-	included, err := readManifest(staging)
+	m, err := readManifest(staging)
 	if err != nil {
-		return fmt.Errorf("failed to read manifest for set %s: %w", name, err)
+		return false, fmt.Errorf("failed to read manifest for set %s: %w", name, err)
 	}
+	included := append([]string(nil), m.Storages...)
 	sort.Strings(included)
 
 	// Driven by the manifest, not by which staging subdirectories exist - a storage that was
@@ -235,12 +264,46 @@ func Restore(target BackupTarget, name string) error {
 	// earlier one failed (best effort, errors collected) rather than aborting on the first
 	// failure - once we get this far, some storages' handles may already be closed regardless, so
 	// stopping early would only restore less without avoiding that risk.
+	//
+	// touched (the named return) tracks whether *any* storage's live backend may actually have
+	// been altered, as opposed to a failure that never got past reading/validating the backup.
+	// It, not just len(errs), decides whether ErrRestoreIncomplete applies below - a batch where
+	// every failure left live storage untouched (e.g. every mismatched backend lacked Migratable
+	// support) must not force the recovery/restart ErrRestoreIncomplete triggers in callers,
+	// since nothing there needs recovering. Storages no longer registered are silently skipped
+	// rather than counted as failures at all.
 	var errs []error
 	for _, n := range included {
 		s, ok := lookupStorage(n)
 		if !ok {
 			continue // storage no longer registered (e.g. removed since the backup was made)
 		}
+
+		// fromType is "" for backups made before the Backends field existed, or for a storage
+		// backup.Run didn't record for some other reason - treated as "unknown", applied as-is
+		// via the pre-existing same-backend Restore path rather than assumed mismatched.
+		fromType := m.Backends[n]
+		currentType := s.GetBackendType()
+		if fromType != "" && fromType != currentType {
+			mig, ok := s.(Migratable)
+			if !ok {
+				errs = append(errs, fmt.Errorf("restore %s failed: backup was made with %s backend, current is %s backend, which cannot auto-convert between backends", n, fromType, currentType))
+				continue
+			}
+			migTouched, err := mig.RestoreMigrate(filepath.Join(staging, n), fromType)
+			touched = touched || migTouched
+			if err != nil {
+				errs = append(errs, fmt.Errorf("restore %s failed: %w", n, err))
+				continue
+			}
+			logging.LogInfo(logging.KeyApp, "restore: converted %s from %s backup into %s backend for set %s", n, fromType, currentType, name)
+			continue
+		}
+
+		// Storage.Restore has no touched/untouched signal of its own - a sqlite-backed
+		// implementation may close its live *sql.DB handle before returning an error, so any
+		// attempt here is conservatively treated as touched regardless of outcome.
+		touched = true
 		if err := s.Restore(filepath.Join(staging, n)); err != nil {
 			errs = append(errs, fmt.Errorf("restore %s failed: %w", n, err))
 			continue
@@ -254,11 +317,14 @@ func Restore(target BackupTarget, name string) error {
 	}
 
 	if len(errs) > 0 {
-		return fmt.Errorf("%w: %w", ErrRestoreIncomplete, errors.Join(errs...))
+		if touched {
+			return touched, fmt.Errorf("%w: %w", ErrRestoreIncomplete, errors.Join(errs...))
+		}
+		return touched, errors.Join(errs...)
 	}
 
 	logging.LogInfo(logging.KeyApp, "restore: applied backup set %s", name)
-	return nil
+	return touched, nil
 }
 
 // uniqueSetName returns base, or base with a "-N" suffix appended if a set named base already
@@ -279,15 +345,15 @@ func uniqueSetName(target BackupTarget, base string) (string, error) {
 	return name, nil
 }
 
-// readManifest reads back the storage names an extracted backup set (in staging) contains.
-func readManifest(staging string) ([]string, error) {
+// readManifest reads back an extracted backup set's (in staging) manifest.
+func readManifest(staging string) (manifest, error) {
 	data, err := os.ReadFile(filepath.Join(staging, manifestFile))
 	if err != nil {
-		return nil, err
+		return manifest{}, err
 	}
 	var m manifest
 	if err := json.Unmarshal(data, &m); err != nil {
-		return nil, err
+		return manifest{}, err
 	}
-	return m.Storages, nil
+	return m, nil
 }

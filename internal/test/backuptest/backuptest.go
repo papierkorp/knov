@@ -7,11 +7,11 @@
 // KNOV_BACKUPS_PATH temporarily redirected to one via sampledata.go's scratchTarget/
 // withScratchBackupsPath) - never the real default target, so nothing here ever shows up on
 // /system/backup or gets mixed into real rotation. backup.Restore is still called directly
-// against the real, live storages though - every case that does this routes through
-// restoreAndReinit (sampledata.go) instead of calling backup.Restore directly, since the
-// sqlite storages' own Restore closes their live db handle and, unlike job.RunRestore, this
-// suite never restarts the process - restoreAndReinit's follow-up Init calls (mirroring
-// main.go's own startup sequence) are what reopen it in-process instead.
+// against the real, live storages though - every case that does this goes through
+// restoreAndReinit (sampledata.go), which supplies backup.Restore's required afterRestore
+// callback: the sqlite storages' own Restore closes their live db handle and, unlike
+// job.RunRestore, this suite never restarts the process, so restoreAndReinit's follow-up Init
+// calls (mirroring main.go's own startup sequence) are what reopen it in-process instead.
 package backuptest
 
 import (

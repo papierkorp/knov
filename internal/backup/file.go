@@ -10,9 +10,9 @@ import (
 )
 
 // BackupFile recursively copies srcDir's file tree into destDir, preserving relative paths.
-// Used by config/metadata/cache storages whose data is a directory of files (json today) rather
-// than a single database - kept generic (not JSON-specific) since it operates at the file-tree
-// level, not the encoding level.
+// Used by config/metadata storages whose data is a directory of files (json today) rather than a
+// single database - kept generic (not JSON-specific) since it operates at the file-tree level,
+// not the encoding level.
 func BackupFile(srcDir, destDir string) error {
 	return copyTree(srcDir, destDir)
 }

@@ -1,7 +1,7 @@
 // Package backup provides type-aware snapshot/restore helpers for StoragePath-backed storages
-// (metadata/cache/chat/kanban/notifications/config/search), plus the target abstraction and
-// rotation used to keep a trimmed, restorable backup history. DataPath (docs/media) is already
-// covered by git and is intentionally out of scope here.
+// (metadata/chat/kanban/notifications/config/search), plus the target abstraction and rotation
+// used to keep a trimmed, restorable backup history. DataPath (docs/media) is already covered by
+// git and is intentionally out of scope here, as is cache - see cacheStorage.CacheStorage's doc.
 //
 // Storages self-register via Register in their own init(), the same pattern externalsuite.go
 // uses for test suites - this package must never import a storage package directly, since every
@@ -18,6 +18,30 @@ import (
 type Storage interface {
 	Backup(destDir string) error
 	Restore(srcDir string) error
+	// GetBackendType identifies which backend (e.g. "sqlite", "json") is currently active, so a
+	// backup set can record what produced it and Restore can tell whether the provider has since
+	// changed (see Migratable).
+	GetBackendType() string
+}
+
+// Migratable is implemented by storages whose data can be converted between backend types on
+// the fly. Restore uses it when a backup set was made with a different backend than the one
+// currently configured (e.g. a sqlite-era backup restored after switching to json) - applying
+// such a backup as-is would silently corrupt or no-op the live storage, so Restore converts it
+// instead of calling Restore directly.
+type Migratable interface {
+	// RestoreMigrate restores from srcDir - this storage's own subdirectory within the backup
+	// set, the same directory Restore is given - produced by a backend of type fromBackendType,
+	// converting the data into the currently active backend.
+	//
+	// touched reports whether the live backend was altered before err occurred, i.e. whether the
+	// call passed its point of no return (typically a Cleanup/Flush of the live backend) - not
+	// merely whether an error occurred. restore() uses it to decide whether ErrRestoreIncomplete
+	// applies to this storage: a failure before touched would ever become true (e.g. the backup
+	// couldn't even be opened) left the live backend untouched and is safe to just report, while
+	// touched=true means the live backend may already be in a different state than before the
+	// call, regardless of err, and recovery (restart/reinit) is required.
+	RestoreMigrate(srcDir, fromBackendType string) (touched bool, err error)
 }
 
 // registryMu guards registry - storages normally only register once, at package init time, but

@@ -7,7 +7,6 @@ import (
 	"strings"
 	"sync"
 
-	"knov/internal/backup"
 	"knov/internal/logging"
 	"knov/internal/utils"
 )
@@ -18,15 +17,15 @@ type jsonStorage struct {
 	mutex    sync.RWMutex
 }
 
-// newJSONStorage creates a new JSON cache storage instance
+// newJSONStorage creates a new JSON cache storage instance under storagePath/cache.
 func newJSONStorage(storagePath string) (*jsonStorage, error) {
-	fullPath := filepath.Join(storagePath, "cache")
-	if err := os.MkdirAll(fullPath, 0755); err != nil {
+	basePath := filepath.Join(storagePath, "cache")
+	if err := os.MkdirAll(basePath, 0755); err != nil {
 		return nil, err
 	}
 
 	return &jsonStorage{
-		basePath: fullPath,
+		basePath: basePath,
 	}, nil
 }
 
@@ -135,11 +134,6 @@ func (js *jsonStorage) Exists(key string) bool {
 	return !os.IsNotExist(err)
 }
 
-// GetBackendType returns the backend type
-func (js *jsonStorage) GetBackendType() string {
-	return "json"
-}
-
 // getFilePath converts a key to a file path
 func (js *jsonStorage) getFilePath(key string) string {
 	// replace path separators with underscores for file name
@@ -152,20 +146,6 @@ func (js *jsonStorage) pathToKey(relPath string) string {
 	// convert underscores back to path separators
 	key := strings.ReplaceAll(relPath, "_", "/")
 	return key
-}
-
-// Backup snapshots every cache file into destDir.
-func (js *jsonStorage) Backup(destDir string) error {
-	js.mutex.RLock()
-	defer js.mutex.RUnlock()
-	return backup.BackupFile(js.basePath, destDir)
-}
-
-// Restore overwrites the cache directory with a previously backed-up snapshot from srcDir.
-func (js *jsonStorage) Restore(srcDir string) error {
-	js.mutex.Lock()
-	defer js.mutex.Unlock()
-	return backup.RestoreFile(srcDir, js.basePath)
 }
 
 // Flush removes all cache entries

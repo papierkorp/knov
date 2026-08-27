@@ -5559,7 +5559,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Snapshots the selected storages (metadata, cache, chat, kanban, notifications, config, search - all of them when none are given) into a new backup set and trims expired sets",
+                "description": "Snapshots the selected storages (metadata, chat, kanban, notifications, config, search - all of them when none are given) into a new backup set and trims expired sets",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],

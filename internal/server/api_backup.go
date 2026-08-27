@@ -31,7 +31,7 @@ func handleAPIGetBackups(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Create a backup
-// @Description Snapshots the selected storages (metadata, cache, chat, kanban, notifications, config, search - all of them when none are given) into a new backup set and trims expired sets
+// @Description Snapshots the selected storages (metadata, chat, kanban, notifications, config, search - all of them when none are given) into a new backup set and trims expired sets
 // @Tags system
 // @Accept application/x-www-form-urlencoded
 // @Param storages formData []string false "Storage names to include (repeatable); omit for a full backup"

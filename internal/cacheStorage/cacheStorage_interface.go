@@ -4,35 +4,26 @@ package cacheStorage
 import (
 	"fmt"
 
-	"knov/internal/backup"
 	"knov/internal/logging"
 )
 
-// CacheStorage interface defines methods for cache storage
+// CacheStorage interface defines methods for cache storage. Unlike the other *Storage packages,
+// cache holds nothing but derived data rebuilt from files/git on demand (see files.CacheInvalidate
+// and the periodic rebuild job) - so it's deliberately not registered with the backup package:
+// restoring an old cache snapshot would only reintroduce stale derived data. Restore's recovery
+// step refreshes it instead: job.restoreJob's afterRestore flushes it before the restart (a
+// rebuild can't run pre-restart - restored storages' handles are already closed), backuptest's
+// restoreAndReinit rebuilds it in-process after reinit.
 type CacheStorage interface {
 	Get(key string) ([]byte, error)
 	Set(key string, data []byte) error
 	Delete(key string) error
 	List(prefix string) ([]string, error)
 	Exists(key string) bool
-	GetBackendType() string
 	Flush() error
-	Backup(destDir string) error
-	Restore(srcDir string) error
 }
 
 var storage CacheStorage
-
-func init() {
-	backup.Register("cache", backupAdapter{})
-}
-
-// backupAdapter defers to the package-level storage var, which isn't set until Init runs -
-// unlike backup.Register, which happens at package init time before that.
-type backupAdapter struct{}
-
-func (backupAdapter) Backup(destDir string) error { return storage.Backup(destDir) }
-func (backupAdapter) Restore(srcDir string) error { return storage.Restore(srcDir) }
 
 // Init initializes cache storage with the specified provider
 func Init(provider, storagePath string) error {
@@ -79,11 +70,6 @@ func List(prefix string) ([]string, error) {
 // Exists checks if key exists
 func Exists(key string) bool {
 	return storage.Exists(key)
-}
-
-// GetBackendType returns the backend type
-func GetBackendType() string {
-	return storage.GetBackendType()
 }
 
 // Flush removes all cache entries

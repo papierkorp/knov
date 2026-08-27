@@ -31,7 +31,11 @@
 - chore
   - async jobs follow up candidates
   - switch to static id instead of using the path
-  - in backup/restore => before the restore check the storage types of the backup and the the current app storage types and if they differ (e.g. sqlite backup but a current json storage)
+  - for bool envs show true/false as options
+  - why are all the KNOV_LOG_* and KNOV_DEFAULT_EDITOR envs shown empty in the environment summary
+  - in the logs sidebar use a "summary" or "short" version or something like this with: time + level + message only + a parameter for a refresh button on top and use the all (merged)
+  - add examples / example usage to template_data.md and explain what a template data acutally is and add a link to the create_your_own_theme.md file
+  - make the hide paths textbox in /settings use 100% width
 
 # every other time
 
@@ -39,6 +43,18 @@
 - take a look at the whole codebase into all javascript snippets/scripts with the goal of reducing javascript in favor of more htmx - im also fine with refactoring to make this to work since i think we already use a lot of javascript which could be resolved using htmx
 - pass over css files (components.css/panels.css/layout.css) for dead selectors, confirm remaining ones follow the id-selector convention
 - check the whole codebase for hardcoded colors and replace theme with the vars provided by the defaults.css file
+
+# backup/restore testcases
+
+internal/test/backuptest doesn't cover the storage migration/cross-backend restore changes yet - next agent should extend it:
+
+- add a case for cross-backend restore (backup.Migratable/RestoreMigrate): seed a probe, back up, switch provider (metadataStorage: json/sqlite/yaml, kanbanStorage: json/sqlite), restore, verify the probe converted correctly into the new backend
+- add a case asserting a non-Migratable storage (chat/notification/search/config) fails restore with an explicit "cannot auto-convert between backends" error when the manifest's recorded backend differs from the current one, instead of silently applying mismatched data
+- add a case for an old-format backup with no manifest "Backends" entry (pre-migration backups) still restoring fine via the existing same-backend path
+- add a case for backup.Restore's afterRestore/touched contract: a restore that fails before touching anything (bad set name, corrupt archive) must not fire afterRestore; a restore where every storage's RestoreMigrate reports untouched must not fire it either
+- add a case for kanbanStorage's "noop" short-circuit: a backup taken while kanban was disabled restored onto an enabled backend (and vice versa) is a no-op, not an error
+- add a case for yamlFrontmatterStorage.Backup now snapshotting real front matter into a scratch sqlite file (used to be a no-op) - confirm restoring a "yaml"-tagged backup onto sqlite/json converts it via RestoreMigrate
+- add a case confirming a restore refreshes the cache (files.CacheInvalidate via job.restoreJob's afterRestore, files.RebuildAllCaches via restoreAndReinit) - cache lost its own probe/backup/restore in this change since it's no longer a registered storage, so nothing currently checks it gets refreshed
 
 # ai prompts
 
@@ -79,4 +95,4 @@ Areas to scrutinize (your opinion must cover these):
 - Ignore the i18n translations since they are unrelated
 - Ignore the temp_todo.md file this is just a summary for me
 
-Also give your opinion about the changes
+Also give your opinion about the changes, is the current solution overengineered and can be simplified?

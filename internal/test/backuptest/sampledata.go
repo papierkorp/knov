@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -16,11 +15,12 @@ import (
 	"time"
 
 	"knov/internal/backup"
-	"knov/internal/cacheStorage"
 	"knov/internal/chatStorage"
 	"knov/internal/configStorage"
 	"knov/internal/configmanager"
+	"knov/internal/files"
 	"knov/internal/kanbanStorage"
+	"knov/internal/logging"
 	"knov/internal/metadataStorage"
 	"knov/internal/notificationStorage"
 	"knov/internal/searchStorage"
@@ -38,7 +38,6 @@ func setNameAt(t time.Time) string {
 
 const (
 	probeMetaKey        = "backuptest-probe-meta"
-	probeCacheKey       = "backuptest-probe-cache"
 	probeConfigKey      = "backuptest-probe-config"
 	probeSearchPath     = "backuptest/probe-search.md"
 	probeChatFilePath   = "backuptest/probe-chat.md"
@@ -48,7 +47,7 @@ const (
 )
 
 // probeMetaTitle/probeMetaMutatedTitle are the metadata probe's only interesting values - unlike
-// cache/config, metadataStorage.Set's real (sqlite-enforced) contract is a JSON-encoded Metadata
+// config, metadataStorage.Set's real (sqlite-enforced) contract is a JSON-encoded Metadata
 // object, not an arbitrary blob, and sqlite's Get rebuilds JSON from named columns rather than
 // echoing back whatever bytes Set was given - so the probe must use a recognized field ("title")
 // and verifyProbes must compare that field, not the raw bytes, for this to work on every backend.
@@ -60,7 +59,6 @@ const (
 var (
 	probeMetaValue        = []byte(fmt.Sprintf(`{"title":%q}`, probeMetaTitle))
 	probeMetaMutatedValue = []byte(fmt.Sprintf(`{"title":%q}`, probeMetaMutatedTitle))
-	probeCacheValue       = []byte("backuptest-cache-value")
 	probeConfigValue      = []byte("backuptest-config-value")
 	probeSearchValue      = []byte("backuptest-search-value")
 	probeChatContent      = "backuptest-chat-value"
@@ -75,14 +73,12 @@ type probes struct {
 }
 
 // seedProbes writes one recognizable, test-only entry into every registered storage - a
-// generic key for the plain key/value backends (metadata/cache/config), a real row for the
+// generic key for the plain key/value backends (metadata/config), a real row for the
 // row-oriented ones (chat/notifications), an indexed file for search, and an event for kanban
-// (append-only, no single-row identity to mutate in place).
+// (append-only, no single-row identity to mutate in place). cache is deliberately not a
+// registered storage (see cacheStorage.CacheStorage's doc), so it gets no probe here.
 func seedProbes() (*probes, error) {
 	if err := metadataStorage.Set(probeMetaKey, probeMetaValue); err != nil {
-		return nil, err
-	}
-	if err := cacheStorage.Set(probeCacheKey, probeCacheValue); err != nil {
 		return nil, err
 	}
 	if err := configStorage.Set(probeConfigKey, probeConfigValue); err != nil {
@@ -110,9 +106,6 @@ func seedProbes() (*probes, error) {
 // the pre-mutation snapshot should make disappear again.
 func mutateProbes(p *probes) error {
 	if err := metadataStorage.Set(probeMetaKey, probeMetaMutatedValue); err != nil {
-		return err
-	}
-	if err := cacheStorage.Delete(probeCacheKey); err != nil {
 		return err
 	}
 	if err := configStorage.Set(probeConfigKey, []byte("mutated")); err != nil {
@@ -173,10 +166,6 @@ func verifyProbes(p *probes, baseline probeCounts) (bool, string, error) {
 	if err != nil {
 		return false, "", err
 	}
-	cacheVal, err := cacheStorage.Get(probeCacheKey)
-	if err != nil {
-		return false, "", err
-	}
 	configVal, err := configStorage.Get(probeConfigKey)
 	if err != nil {
 		return false, "", err
@@ -206,15 +195,14 @@ func verifyProbes(p *probes, baseline probeCounts) (bool, string, error) {
 	}
 
 	metaOK := metaTitle(metaVal) == probeMetaTitle
-	cacheOK := bytes.Equal(cacheVal, probeCacheValue)
 	configOK := bytes.Equal(configVal, probeConfigValue)
 	searchOK := bytes.Equal(searchVal, probeSearchValue)
 	kanbanOK := len(events) == baseline.kanbanEvents+1
 	chatOK := chatCount == baseline.chatCount+1
 
-	ok := metaOK && cacheOK && configOK && searchOK && kanbanOK && chatOK && notifFound
-	detail := fmt.Sprintf("meta=%v cache=%v config=%v search=%v kanbanEvents=%d(want %d) chatCount=%d(want %d) notifFound=%v",
-		metaOK, cacheOK, configOK, searchOK, len(events), baseline.kanbanEvents+1, chatCount, baseline.chatCount+1, notifFound)
+	ok := metaOK && configOK && searchOK && kanbanOK && chatOK && notifFound
+	detail := fmt.Sprintf("meta=%v config=%v search=%v kanbanEvents=%d(want %d) chatCount=%d(want %d) notifFound=%v",
+		metaOK, configOK, searchOK, len(events), baseline.kanbanEvents+1, chatCount, baseline.chatCount+1, notifFound)
 	return ok, detail, nil
 }
 
@@ -283,13 +271,12 @@ func extractTarGz(r io.Reader, destDir string) error {
 // backup.Restore() call closed it (see each sqlite storage's Restore doc - normally only a
 // real process restart reopens it). Mirrors main.go's own Init sequence exactly, so a case
 // calling backup.Restore in-process doesn't leave the live app's storages broken for the rest
-// of this run. config is json-backed (no handle to close), so it's not re-initialized here.
+// of this run. config is json-backed (no handle to close), so it's not re-initialized here;
+// cache isn't a registered storage at all (see cacheStorage.CacheStorage's doc), so
+// backup.Restore never touches its handle and it doesn't need reinitializing either.
 func reinitStorages() error {
 	cfg := configmanager.GetAppConfig()
 	if err := metadataStorage.Init(cfg.MetadataStorageProvider, cfg.StoragePath); err != nil {
-		return err
-	}
-	if err := cacheStorage.Init(cfg.CacheStorageProvider, cfg.StoragePath); err != nil {
 		return err
 	}
 	if err := chatStorage.Init(cfg.StoragePath); err != nil {
@@ -307,17 +294,28 @@ func reinitStorages() error {
 	return nil
 }
 
-// restoreAndReinit wraps backup.Restore with the reinitStorages call above - every case in this
-// suite that calls backup.Restore directly (bypassing job.RunRestore's os.Exit-then-real-restart)
-// must go through this instead of calling backup.Restore on its own. Reinit also runs on
-// ErrRestoreIncomplete (not just success), since that error means at least one storage's handle
-// may already be closed - skipping reinit there would leave the rest of this run's cases broken.
+// restoreAndReinit wraps backup.Restore with the reinitStorages call above, as this suite's
+// afterRestore (backup.Restore requires one - see its doc): unlike job.RunRestore, this suite
+// never restarts the process, so reinitStorages' follow-up Init calls are what reopen any db
+// handle Restore closed. backup.Restore only calls afterRestore when live storage may actually
+// have been touched, which is why reinitStorages runs on ErrRestoreIncomplete too, not just
+// success - skipping it there would leave the rest of this run's cases broken.
 func restoreAndReinit(target backup.BackupTarget, setName string) error {
-	err := backup.Restore(target, setName)
-	if err != nil && !errors.Is(err, backup.ErrRestoreIncomplete) {
-		return err
-	}
-	if reinitErr := reinitStorages(); reinitErr != nil {
+	var reinitErr error
+	err := backup.Restore(target, setName, func() {
+		if reinitErr = reinitStorages(); reinitErr != nil {
+			return
+		}
+		// Same reason job.restoreJob refreshes the cache after a restore (it isn't backed up,
+		// see cacheStorage.CacheStorage's doc) - except this suite never restarts, so rebuild
+		// it in-process now that the handles are live again instead of flushing for a fresh
+		// process.
+		reinitErr = files.RebuildAllCaches()
+	})
+	if reinitErr != nil {
+		if err != nil {
+			logging.LogWarning(logging.KeyApp, "backuptest: restore failed as well: %v", err)
+		}
 		return reinitErr
 	}
 	return err

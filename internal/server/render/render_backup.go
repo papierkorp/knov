@@ -140,7 +140,7 @@ func HandleSystemBackup(w http.ResponseWriter, r *http.Request) {
 .backup-actions { display: flex; gap: .4rem; justify-content: flex-end; }
 .backup-unavailable { color: var(--text-secondary); font-style: italic; }
 </style>` +
-		fmt.Sprintf(`<p class="backup-note">%s</p>`, t("Each backup set snapshots StoragePath (metadata, cache, chat, kanban, notifications, config, search) - not the docs/media in DataPath, which git already covers. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_FULL (see .env.example). Lock a set to keep it regardless of rotation.")) +
+		fmt.Sprintf(`<p class="backup-note">%s</p>`, t("Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) - not the docs/media in DataPath, which git already covers, and not cache, which holds only data rebuilt from files/git on demand. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_FULL (see .env.example). Lock a set to keep it regardless of rotation.")) +
 		`<form class="backup-create-form" hx-post="/api/system/backups" hx-target="#backup-list" hx-swap="innerHTML" hx-indicator="#backup-status">` +
 		fmt.Sprintf(`<div class="backup-storage-select">%s</div>`, renderBackupStorageCheckboxes()) +
 		`<div class="backup-toolbar">` +

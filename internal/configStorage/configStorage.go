@@ -33,6 +33,7 @@ type backupAdapter struct{}
 
 func (backupAdapter) Backup(destDir string) error { return storage.Backup(destDir) }
 func (backupAdapter) Restore(srcDir string) error { return storage.Restore(srcDir) }
+func (backupAdapter) GetBackendType() string      { return storage.GetBackendType() }
 
 // Init initializes config storage with the specified provider
 func Init(provider, storagePath string) error {

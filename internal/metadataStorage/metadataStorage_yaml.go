@@ -264,11 +264,44 @@ func (ys *yamlFrontmatterStorage) GetBackendType() string {
 	return "yaml"
 }
 
-// Backup is a no-op - front matter lives inside docs files under DataPath, which git already
-// covers, not StoragePath.
-func (ys *yamlFrontmatterStorage) Backup(_ string) error { return nil }
+// Close is a no-op - this backend holds no persistent file handle to release; it operates
+// directly on the live docs folder rather than a file it keeps open.
+func (ys *yamlFrontmatterStorage) Close() error {
+	return nil
+}
 
-// Restore is a no-op for the same reason as Backup.
+// Backup snapshots the current front matter into a scratch sqlite database under destDir,
+// leaving the live docs untouched. yaml has no storage format of its own to copy (front matter
+// lives inside docs files under DataPath, which git already covers, not StoragePath) - sqlite is
+// used purely as a portable snapshot container, so Restore/RestoreMigrate can read a "yaml"-tagged
+// backup set the same way they already read a real sqlite one.
+func (ys *yamlFrontmatterStorage) Backup(destDir string) error {
+	all, err := ys.GetAll()
+	if err != nil {
+		return fmt.Errorf("yaml backup: failed to read front matter: %w", err)
+	}
+
+	scratch, err := newSQLiteStorageAt(destDir)
+	if err != nil {
+		return fmt.Errorf("yaml backup: failed to create snapshot db: %w", err)
+	}
+	defer scratch.Close() // staging is disposable - release the handle promptly (Windows)
+
+	for key, data := range all {
+		if err := scratch.Set(key, data); err != nil {
+			return fmt.Errorf("yaml backup: failed to snapshot %s: %w", key, err)
+		}
+	}
+
+	logging.LogInfo(logging.KeyApp, "yaml backup: snapshotted %d front matter entries", len(all))
+	return nil
+}
+
+// Restore is a no-op - front matter lives inside docs files under DataPath, which git already
+// covers, not StoragePath, so a same-backend restore intentionally leaves live docs untouched.
+// Cross-backend conversion still works without this: RestoreMigrate reads a "yaml"-tagged
+// backup's snapshot directly (see Backup), and converting into yaml writes via Set through
+// migrate() - neither path calls Restore.
 func (ys *yamlFrontmatterStorage) Restore(_ string) error { return nil }
 
 // Cleanup strips front matter from all docs files in one pass

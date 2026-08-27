@@ -4277,9 +4277,9 @@ paths:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Snapshots the selected storages (metadata, cache, chat, kanban,
-        notifications, config, search - all of them when none are given) into a new
-        backup set and trims expired sets
+      description: Snapshots the selected storages (metadata, chat, kanban, notifications,
+        config, search - all of them when none are given) into a new backup set and
+        trims expired sets
       parameters:
       - collectionFormat: csv
         description: Storage names to include (repeatable); omit for a full backup

@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"knov/internal/backup"
 	"knov/internal/dbmigration"
 	"knov/internal/logging"
 
@@ -19,23 +18,17 @@ const cacheDBFile = "cache.db"
 
 // sqliteStorage implements CacheStorage interface using SQLite
 type sqliteStorage struct {
-	db     *sql.DB
-	dbPath string
-	mutex  sync.RWMutex
+	db    *sql.DB
+	mutex sync.RWMutex
 }
 
-// newSQLiteStorage creates a new SQLite cache storage instance
+// newSQLiteStorage creates a new SQLite cache storage instance under storagePath/cache.
 func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
-	// ensure storage directory exists with proper permissions
-	if err := os.MkdirAll(storagePath, 0755); err != nil {
-		return nil, fmt.Errorf("failed to create storage directory: %w", err)
-	}
-
-	cacheDir := filepath.Join(storagePath, "cache")
-	if err := os.MkdirAll(cacheDir, 0755); err != nil {
+	dbDir := filepath.Join(storagePath, "cache")
+	if err := os.MkdirAll(dbDir, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create cache directory: %w", err)
 	}
-	dbPath := filepath.Join(cacheDir, cacheDBFile)
+	dbPath := filepath.Join(dbDir, cacheDBFile)
 
 	// fix permissions on existing database file if it exists
 	if _, err := os.Stat(dbPath); err == nil {
@@ -65,8 +58,7 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 	}
 
 	storage := &sqliteStorage{
-		db:     db,
-		dbPath: dbPath,
+		db: db,
 	}
 
 	if err := storage.initialize(); err != nil {
@@ -183,37 +175,6 @@ func (ss *sqliteStorage) Exists(key string) bool {
 	var exists bool
 	err := ss.db.QueryRow("SELECT EXISTS(SELECT 1 FROM cache WHERE key = ?)", key).Scan(&exists)
 	return err == nil && exists
-}
-
-// GetBackendType returns the backend type
-func (ss *sqliteStorage) GetBackendType() string {
-	return "sqlite"
-}
-
-// Backup snapshots the cache database into destDir via VACUUM INTO.
-func (ss *sqliteStorage) Backup(destDir string) error {
-	ss.mutex.RLock()
-	defer ss.mutex.RUnlock()
-	return backup.BackupSQLite(ss.db, destDir, cacheDBFile)
-}
-
-// Restore overwrites the live cache database file with a previously backed-up snapshot from
-// srcDir. The backup is read and validated before the current db handle is closed, so a bad
-// backup fails without leaving this storage without a usable connection. Closing first (once
-// validated) matters on Windows, where overwriting a file still opened by this process fails
-// with a sharing violation. Safe only because the caller restarts the app right after a
-// successful restore; this connection is never used again in this process.
-func (ss *sqliteStorage) Restore(srcDir string) error {
-	ss.mutex.Lock()
-	defer ss.mutex.Unlock()
-	data, err := backup.ReadSQLiteBackup(srcDir, cacheDBFile)
-	if err != nil {
-		return err
-	}
-	if err := ss.db.Close(); err != nil {
-		logging.LogWarning(logging.KeyApp, "cache restore: failed to close db: %v", err)
-	}
-	return backup.RestoreSQLite(data, ss.dbPath)
 }
 
 // Flush removes all cache entries
