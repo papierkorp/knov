@@ -1884,6 +1884,10 @@ blockquote p blockquote p,
   margin-bottom: 0;
 }
 
+#hidePaths {
+  max-width: none;
+}
+
 /* labels + inputs */
 .setting-item label,
 .setting-item > form > label {
@@ -2171,6 +2175,10 @@ blockquote p blockquote p,
 #section-file-types .setting-group:first-of-type h3 {
   border-top: none;
   margin-top: 0;
+}
+
+#section-file-types .setting-group .setting-item:has(textarea) {
+  grid-column: 1 / -1;
 }
 
 /* pdf-export section (wide): ungrouped settings wrap into a multi-column

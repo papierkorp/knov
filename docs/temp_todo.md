@@ -25,7 +25,7 @@
       - for devs
   - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 - features
-  - set the time for the backup not just the interval (problem: im using the application on a stick and it "only" runs 8-10h per day then i take it home and no backup is done since 24h are not gone yet)
+  - new feature which allows the user to set the time for the backup not just the interval (problem: im using the application on a stick and it "only" runs 8-10h per day then i take it home and no backup is done since 24h are not gone yet) maybe use the cronjob annotation for this?
 - fixes
   - media rename?
 - chore
@@ -35,7 +35,6 @@
   - why are all the KNOV_LOG_* and KNOV_DEFAULT_EDITOR envs shown empty in the environment summary
   - in the logs sidebar use a "summary" or "short" version or something like this with: time + level + message only + a parameter for a refresh button on top and use the all (merged)
   - add examples / example usage to template_data.md and explain what a template data acutally is and add a link to the create_your_own_theme.md file
-  - make the hide paths textbox in /settings use 100% width
 
 # every other time
 
