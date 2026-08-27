@@ -75,8 +75,6 @@ func main() {
 	thememanager.SetBuiltinFiles(builtinThemeFS)
 	test.SetDocsFiles(docsFS)
 
-	logging.Init()
-	logging.InitInterceptor()
 	configmanager.InitAppConfig()
 	translation.Init()
 

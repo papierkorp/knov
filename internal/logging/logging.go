@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -127,34 +126,32 @@ func getCaller() string {
 var (
 	fileWriter    *rotatingWriter
 	fileWriterMux sync.Mutex
+
+	// rotationMaxMB/rotationMaxFiles are set once by Init and shared by every rotating log
+	// file (app.log and each per-key log via getKeyWriter).
+	rotationMaxMB    = 10
+	rotationMaxFiles = 5
 )
 
-// resolveRotationLimits reads the shared size/file-count rotation config used
-// by every rotating log file (app.log and each per-key log).
+// resolveRotationLimits returns the shared size/file-count rotation config set by Init.
 func resolveRotationLimits() (maxMB, maxFiles int) {
-	maxMB = 10
-	if v := os.Getenv("KNOV_LOG_MAX_SIZE_MB"); v != "" {
-		if n, err := strconv.Atoi(v); err == nil && n > 0 {
-			maxMB = n
-		}
-	}
-
-	maxFiles = 5
-	if v := os.Getenv("KNOV_LOG_MAX_FILES"); v != "" {
-		if n, err := strconv.Atoi(v); err == nil && n > 0 {
-			maxFiles = n
-		}
-	}
-	return maxMB, maxFiles
+	return rotationMaxMB, rotationMaxFiles
 }
 
-// Init sets up the rotating file logger. Call once at startup.
-func Init() {
-	if os.Getenv("KNOV_LOG_FILE_ENABLED") == "false" {
-		return
+// Init sets up the rotating file logger from the caller's already-resolved config
+// (KNOV_LOG_FILE_ENABLED/KNOV_LOG_MAX_SIZE_MB/KNOV_LOG_MAX_FILES). Call once at startup,
+// after the caller has loaded .env.
+func Init(fileEnabled bool, maxSizeMB, maxFiles int) {
+	if maxSizeMB > 0 {
+		rotationMaxMB = maxSizeMB
+	}
+	if maxFiles > 0 {
+		rotationMaxFiles = maxFiles
 	}
 
-	maxMB, maxFiles := resolveRotationLimits()
+	if !fileEnabled {
+		return
+	}
 
 	logsDir := resolveLogsDir()
 	if err := os.MkdirAll(logsDir, 0755); err != nil {
@@ -163,7 +160,7 @@ func Init() {
 	}
 
 	logPath := filepath.Join(logsDir, "app.log")
-	rw, err := newRotatingWriter(logPath, maxMB, maxFiles)
+	rw, err := newRotatingWriter(logPath, rotationMaxMB, rotationMaxFiles)
 	if err != nil {
 		log.Printf("logging: failed to open log file: %v", err)
 		return
@@ -175,7 +172,7 @@ func Init() {
 
 	fmt.Fprintf(rw, "\n════════════════════════════════════════\n session started %s\n════════════════════════════════════════\n\n", formatLogTime(time.Now()))
 
-	log.Printf("logging: file logging enabled, writing to %s (max %dMB, %d files)", logPath, maxMB, maxFiles)
+	log.Printf("logging: file logging enabled, writing to %s (max %dMB, %d files)", logPath, rotationMaxMB, rotationMaxFiles)
 }
 
 func writeToFile(line string) {

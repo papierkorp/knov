@@ -69,6 +69,9 @@ type AppConfig struct {
 	BackupAutoCron              string
 	BackupRotationKeepDays      int
 	BackupRotationKeepFull      int
+	LogFileEnabled              bool
+	LogMaxSizeMB                int
+	LogMaxFiles                 int
 }
 
 // KanbanBoard maps a folder to a kanban board with a display name and a stable URL slug.
@@ -91,7 +94,7 @@ type AutoCreateTag struct {
 
 // InitAppConfig initializes app config from environment variables
 func InitAppConfig() {
-	loadEnvFile()
+	envMsg, envWarn := loadEnvFile()
 
 	baseDir := "."
 	exePath, err := os.Executable()
@@ -115,6 +118,18 @@ func InitAppConfig() {
 		},
 	}
 	applyEnvDefs(&appConfig, baseDir)
+
+	// Set up file logging as soon as its config is known, so every log line from here on
+	// (the loadEnvFile result below, git repo init/clone, "app config initialized") lands in
+	// logs/app.log too.
+	logging.Init(appConfig.LogFileEnabled, appConfig.LogMaxSizeMB, appConfig.LogMaxFiles)
+	logging.InitInterceptor()
+
+	if envWarn {
+		logging.LogWarning(logging.KeyApp, "%s", envMsg)
+	} else {
+		logging.LogInfo(logging.KeyApp, "%s", envMsg)
+	}
 
 	initLogLevel()
 
@@ -708,17 +723,20 @@ func applyEnvToAppConfig(key, value string) {
 	// they require a restart to take effect safely.
 }
 
-func loadEnvFile() {
+// loadEnvFile applies .env onto the process environment and reports what happened as a log
+// line, rather than logging it directly: it runs before logging.Init (file logging needs
+// KNOV_LOG_FILE_ENABLED etc., which may themselves come from .env), so logging it here would
+// only reach stdout, not logs/app.log. The caller logs the returned message once file logging
+// is up, so it lands in the file like every other startup line.
+func loadEnvFile() (msg string, warn bool) {
 	envPath := ".env"
 	if _, err := os.Stat(envPath); os.IsNotExist(err) {
-		logging.LogInfo(logging.KeyApp, "no .env file found, using environment variables and defaults")
-		return
+		return "no .env file found, using environment variables and defaults", false
 	}
 
 	data, err := os.ReadFile(envPath)
 	if err != nil {
-		logging.LogWarning(logging.KeyApp, "failed to read .env file: %v", err)
-		return
+		return fmt.Sprintf("failed to read .env file: %v", err), true
 	}
 
 	for _, line := range strings.Split(string(data), "\n") {
@@ -735,7 +753,7 @@ func loadEnvFile() {
 		}
 	}
 
-	logging.LogInfo(logging.KeyApp, ".env file loaded")
+	return ".env file loaded", false
 }
 
 func ExtensionForEditor(editorType string) string {

@@ -33,8 +33,6 @@
 - chore
   - async jobs follow up candidates
   - switch to static id instead of using the path
-  - for bool envs show true/false as options
-  - why are all the KNOV_LOG_* and KNOV_DEFAULT_EDITOR envs shown empty in the environment summary
   - in the logs sidebar use a "summary" or "short" version or something like this with: time + level + message only + a parameter for a refresh button on top and use the all (merged)
   - in the backup sidebar use a "summary" or "short" version or something like this with: time + event only + a parameter to optionally add the action buttons (but dont show the buttons for now)
   - add examples / example usage to template_data.md and explain what a template data acutally is and add a link to the create_your_own_theme.md file

@@ -69,8 +69,9 @@ func pathDef(key, category, description, def string, field func(*AppConfig) *str
 func boolDef(key, category, description string, def bool, field func(*AppConfig) *bool) EnvVarDef {
 	return EnvVarDef{
 		Key: key, Category: category, Description: description, Default: strconv.FormatBool(def),
-		apply: func(cfg *AppConfig, _ string) { *field(cfg) = getBoolEnv(key, def) },
-		get:   func(cfg AppConfig) string { return strconv.FormatBool(*field(&cfg)) },
+		AvailableValues: []string{"true", "false"},
+		apply:           func(cfg *AppConfig, _ string) { *field(cfg) = getBoolEnv(key, def) },
+		get:             func(cfg AppConfig) string { return strconv.FormatBool(*field(&cfg)) },
 	}
 }
 
@@ -129,12 +130,18 @@ var EnvVarDefs = []EnvVarDef{
 	// ── server ──
 	stringDef("KNOV_SERVER_PORT", "server", "port the app listens on", "1324", func(c *AppConfig) *string { return &c.ServerPort }),
 
-	// ── logging ── no AppConfig field - read directly via os.Getenv in internal/logging.
-	compositeDef("KNOV_LOG_LEVEL", "logging", "stdout log level", "info", nil, getRaw, withOptions("debug", "info", "warning", "error")),
-	compositeDef("KNOV_LOG_FILE_ENABLED", "logging", "file logging (writes to logs/app.log with rotation)", "true", nil, getRaw),
-	compositeDef("KNOV_LOG_FILE_LEVEL", "logging", "file log level", "info", nil, getRaw, withOptions("debug", "info", "warning", "error")),
-	compositeDef("KNOV_LOG_MAX_SIZE_MB", "logging", "max size in MB before rotating", "10", nil, getRaw),
-	compositeDef("KNOV_LOG_MAX_FILES", "logging", "number of rotated files to keep", "5", nil, getRaw),
+	// ── logging ── KNOV_LOG_LEVEL and KNOV_LOG_FILE_LEVEL have no AppConfig field: they're read
+	// directly via os.Getenv in internal/logging on every log call (their get below just reuses
+	// getEnv for the same "info" fallback, for display), so a level change takes effect without
+	// a restart. The other three back real AppConfig fields, consumed once at startup by
+	// logging.Init.
+	compositeDef("KNOV_LOG_LEVEL", "logging", "stdout log level", "info", nil,
+		func(_ AppConfig, key string) string { return getEnv(key, "info") }, withOptions("debug", "info", "warning", "error")),
+	boolDef("KNOV_LOG_FILE_ENABLED", "logging", "file logging (writes to logs/app.log with rotation)", true, func(c *AppConfig) *bool { return &c.LogFileEnabled }),
+	compositeDef("KNOV_LOG_FILE_LEVEL", "logging", "file log level", "info", nil,
+		func(_ AppConfig, key string) string { return getEnv(key, "info") }, withOptions("debug", "info", "warning", "error")),
+	intDef("KNOV_LOG_MAX_SIZE_MB", "logging", "max size in MB before rotating", 10, func(c *AppConfig) *int { return &c.LogMaxSizeMB }),
+	intDef("KNOV_LOG_MAX_FILES", "logging", "number of rotated files to keep", 5, func(c *AppConfig) *int { return &c.LogMaxFiles }),
 
 	// ── git ──
 	stringDef("KNOV_GIT_REMOTE", "git", "remote sync URL (leave empty for local-only mode); if set and no local\nrepo exists yet, knov will clone it on first start", "", func(c *AppConfig) *string { return &c.GitRemote }),
