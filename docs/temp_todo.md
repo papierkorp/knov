@@ -28,6 +28,8 @@
   - new "book" feature with different stages
     - select headers/anchors from different files and export into one markdown/pdf
     - select different files and export into one markdown/pdf
+  - add data and media folder as options to the backup
+  - change the full backup to default backup and exclude data/media
 - fixes
   - media rename?
 - chore
@@ -36,6 +38,10 @@
   - in the logs sidebar use a "summary" or "short" version or something like this with: time + level + message only + a parameter for a refresh button on top and use the all (merged)
   - in the backup sidebar use a "summary" or "short" version or something like this with: time + event only + a parameter to optionally add the action buttons (but dont show the buttons for now)
   - add examples / example usage to template_data.md and explain what a template data acutally is and add a link to the create_your_own_theme.md file
+  - remove allowing to set the datapath in the admin (should i leave git repository in? if yes we should also add the user/ssh key management and a test connection button otherwise it doesnt make much sense)
+  - add "knov" to the backup name
+  - in Settings use all available space (e.g. appeareance only uses half)
+  - for all tests: make it so it doesnt affect the live data (e.g. create a new database just for the test)
 
 # every other time
 

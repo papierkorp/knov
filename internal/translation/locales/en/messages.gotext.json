@@ -147,8 +147,8 @@
       "translation": ""
     },
     {
-      "id": "Auto backup: enabled (every {Arg_1})",
-      "message": "Auto backup: enabled (every {Arg_1})",
+      "id": "Auto backup: enabled (cron: {Arg_1})",
+      "message": "Auto backup: enabled (cron: {Arg_1})",
       "translation": ""
     },
     {
@@ -392,8 +392,8 @@
       "translation": ""
     },
     {
-      "id": "Each backup set snapshots StoragePath (metadata, cache, chat, kanban, notifications, config, search) - not the docs/media in DataPath, which git already covers. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_FULL (see .env.example). Lock a set to keep it regardless of rotation.",
-      "message": "Each backup set snapshots StoragePath (metadata, cache, chat, kanban, notifications, config, search) - not the docs/media in DataPath, which git already covers. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_FULL (see .env.example). Lock a set to keep it regardless of rotation.",
+      "id": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) - not the docs/media in DataPath, which git already covers, and not cache, which holds only data rebuilt from files/git on demand. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_FULL (see .env.example). Lock a set to keep it regardless of rotation.",
+      "message": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) - not the docs/media in DataPath, which git already covers, and not cache, which holds only data rebuilt from files/git on demand. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_FULL (see .env.example). Lock a set to keep it regardless of rotation.",
       "translation": ""
     },
     {
