@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -323,4 +324,112 @@ func restoreAndReinit(target backup.BackupTarget, setName string) error {
 
 func errCase(name string, err error) test.CaseResult {
 	return test.CaseResult{Name: name, Success: false, Error: err.Error()}
+}
+
+// testManifest mirrors backup's own (unexported) manifest.json shape - needed so a case can
+// fabricate a synthetic recorded backend (cross-backend restore, a non-Migratable mismatch, or a
+// pre-migration backup with no "backends" entry at all) without backup exporting a type for it.
+type testManifest struct {
+	Storages []string          `json:"storages"`
+	Backends map[string]string `json:"backends,omitempty"`
+}
+
+// rewriteBackupSet extracts setName from target, lets edit mutate its manifest.json, repacks it,
+// and writes the result back to target under newName - setName itself is left untouched.
+func rewriteBackupSet(target backup.BackupTarget, setName, newName string, edit func(*testManifest)) error {
+	rc, err := target.Read(setName)
+	if err != nil {
+		return err
+	}
+	dir, err := os.MkdirTemp("", "knov-backuptest-remanifest-*")
+	if err != nil {
+		rc.Close()
+		return err
+	}
+	defer os.RemoveAll(dir)
+	extractErr := extractTarGz(rc, dir)
+	rc.Close()
+	if extractErr != nil {
+		return extractErr
+	}
+
+	manifestPath := filepath.Join(dir, manifestFileName)
+	data, err := os.ReadFile(manifestPath)
+	if err != nil {
+		return err
+	}
+	var m testManifest
+	if err := json.Unmarshal(data, &m); err != nil {
+		return err
+	}
+	edit(&m)
+	out, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(manifestPath, out, 0644); err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	if err := packTarGz(&buf, dir); err != nil {
+		return err
+	}
+	return target.Write(newName, &buf)
+}
+
+// manifestFileName mirrors backup's own unexported manifestFile constant - the archive entry
+// name rewriteBackupSet edits.
+const manifestFileName = "manifest.json"
+
+// packTarGz writes srcDir's file tree into w as a gzip-compressed tar archive, forward-slash
+// normalized (mirrors backup's own unexported tarDir) - the inverse of extractTarGz above, needed
+// so rewriteBackupSet can repack a set it just edited.
+func packTarGz(w io.Writer, srcDir string) error {
+	gz := gzip.NewWriter(w)
+	tw := tar.NewWriter(gz)
+
+	walkErr := filepath.WalkDir(srcDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if path == srcDir {
+			return nil
+		}
+		rel, err := filepath.Rel(srcDir, path)
+		if err != nil {
+			return err
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		hdr, err := tar.FileInfoHeader(info, "")
+		if err != nil {
+			return err
+		}
+		hdr.Name = filepath.ToSlash(rel)
+		if d.IsDir() {
+			hdr.Name += "/"
+			return tw.WriteHeader(hdr)
+		}
+		if err := tw.WriteHeader(hdr); err != nil {
+			return err
+		}
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		_, err = io.Copy(tw, f)
+		return err
+	})
+
+	if err := tw.Close(); walkErr == nil {
+		walkErr = err
+	}
+	if err := gz.Close(); walkErr == nil {
+		walkErr = err
+	}
+	return walkErr
 }

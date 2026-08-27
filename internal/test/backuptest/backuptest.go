@@ -43,6 +43,14 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseListBackupLog,
 		caseEventRoundtripAcrossRestart,
 		caseWriteFileAtomicNoTornReads,
+		caseCrossBackendRestoreMetadata,
+		caseCrossBackendRestoreKanban,
+		caseNonMigratableBackendMismatchFails,
+		caseOldFormatBackupNoBackendsRestoresFine,
+		caseAfterRestoreOnlyFiresWhenTouched,
+		caseKanbanNoopRestoreIsNoop,
+		caseYAMLTaggedBackupRestoresViaMigrate,
+		caseRestoreRefreshesCache,
 	}
 
 	result := &test.SuiteResult{Suite: "backup"}

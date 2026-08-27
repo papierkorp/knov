@@ -325,3 +325,11 @@ func GetEvents(boardFolder, filePath string, from, to *time.Time, limit int) ([]
 	defer storageMu.RUnlock()
 	return storage.GetEvents(boardFolder, filePath, from, to, limit)
 }
+
+// GetBackendType returns the backend type currently active ("sqlite", "json", or "noop" if
+// kanban event logging is disabled).
+func GetBackendType() string {
+	storageMu.RLock()
+	defer storageMu.RUnlock()
+	return storage.GetBackendType()
+}

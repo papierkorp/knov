@@ -50,18 +50,6 @@
 - pass over css files (components.css/panels.css/layout.css) for dead selectors, confirm remaining ones follow the id-selector convention
 - check the whole codebase for hardcoded colors and replace theme with the vars provided by the defaults.css file
 
-# backup/restore testcases
-
-internal/test/backuptest doesn't cover the storage migration/cross-backend restore changes yet - next agent should extend it:
-
-- add a case for cross-backend restore (backup.Migratable/RestoreMigrate): seed a probe, back up, switch provider (metadataStorage: json/sqlite/yaml, kanbanStorage: json/sqlite), restore, verify the probe converted correctly into the new backend
-- add a case asserting a non-Migratable storage (chat/notification/search/config) fails restore with an explicit "cannot auto-convert between backends" error when the manifest's recorded backend differs from the current one, instead of silently applying mismatched data
-- add a case for an old-format backup with no manifest "Backends" entry (pre-migration backups) still restoring fine via the existing same-backend path
-- add a case for backup.Restore's afterRestore/touched contract: a restore that fails before touching anything (bad set name, corrupt archive) must not fire afterRestore; a restore where every storage's RestoreMigrate reports untouched must not fire it either
-- add a case for kanbanStorage's "noop" short-circuit: a backup taken while kanban was disabled restored onto an enabled backend (and vice versa) is a no-op, not an error
-- add a case for yamlFrontmatterStorage.Backup now snapshotting real front matter into a scratch sqlite file (used to be a no-op) - confirm restoring a "yaml"-tagged backup onto sqlite/json converts it via RestoreMigrate
-- add a case confirming a restore refreshes the cache (files.CacheInvalidate via job.restoreJob's afterRestore, files.RebuildAllCaches via restoreAndReinit) - cache lost its own probe/backup/restore in this change since it's no longer a registered storage, so nothing currently checks it gets refreshed
-
 # ai prompts
 
 ## docs
