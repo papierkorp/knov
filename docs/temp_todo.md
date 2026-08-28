@@ -34,11 +34,20 @@
   - media rename?
   - releasenotes does not work
 - chore
-  - async jobs follow up candidates
   - add examples / example usage to template_data.md and explain what a template data acutally is and add a link to the create_your_own_theme.md file
   - remove allowing to set the datapath in the admin (should i leave git repository in? if yes we should also add the user/ssh key management and a test connection button otherwise it doesnt make much sense)
   - for all tests: make it so it doesnt affect the live data (e.g. create a new database just for the test or copy the data/media or copy everything into a temp folder (so we have knov binary and the temp folder in the same height))
   - i used: `git remote add origin git@github.com:papierkorp/test2.git && git branch -M main && git push -u origin main` but the app still said i dont have a git remote
+
+# Async follow up jobs
+
+- [ ] job cancellation: thread `context.Context` into `Job.Run()`, add cancel endpoint/button (currently only way to stop a stuck job is restarting the process, which re-runs it via `RecoverInterrupted()`)
+- [ ] sqlite `jobs` table cleanup: rows in `jobStorage` are never purged, grows unbounded; add a retention/purge job similar to existing `notification-purge` cron job
+- [ ] unify job history: cron/manual jobs use a 50-slot in-memory ring buffer (`job/history.go`, lost on restart), async jobs use sqlite (`jobStorage`); `/system/jobs` only shows the in-memory one, so async job history is invisible there
+- [ ] progress reporting: add a `Progress() (current, total int)` mixin (alongside existing `Outputter`/`Messenger`) so bulk-delete/bulk-update jobs (which already track counts internally) can surface progress instead of a binary running/done state
+- [ ] retry for failed async jobs: `StartAsync` jobs that end in `error` have no retry action; add a manual retry that re-invokes with the persisted args, reusing the existing `Resumable` machinery
+- [ ] concurrency/queueing: currently only per-job-type dedup via mutex, no global max-parallel-jobs limit or priority
+- [ ] cross-session completion notification: job results only reach the client that's still polling; other sessions/devices don't get notified on completion
 
 # every other time
 
