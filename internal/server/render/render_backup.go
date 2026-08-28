@@ -147,6 +147,49 @@ func RenderBackupLog(entries []backup.LogEntry) string {
 	return sb.String()
 }
 
+// RenderBackupSummary renders a compact time + event table, newest first, for the rail "backup"
+// content snippet's flyout - the full table's other columns (trigger/contents) and per-row
+// actions (restore/lock/download/delete) are too much detail for that small space. showActions
+// is reserved for a future compact action row (e.g. restore) and currently always omitted.
+func RenderBackupSummary(entries []backup.LogEntry, showActions bool) string {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
+	var sb strings.Builder
+	sb.WriteString(`<style>
+.backup-summary-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.backup-summary-table th { text-align: left; padding: .25rem .5rem; border-bottom: 2px solid var(--border); }
+.backup-summary-table td { padding: .2rem .5rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); }
+.backup-summary-link { display: inline-block; margin-top: .75rem; font-size: .875rem; }
+</style>`)
+	if configmanager.GetBackupAutoEnabled() {
+		fmt.Fprintf(&sb, `<p class="backup-auto-status">%s</p>`,
+			template.HTMLEscapeString(t("Auto backup: enabled (cron: %s)", configmanager.GetBackupAutoCron())))
+	} else {
+		fmt.Fprintf(&sb, `<p class="backup-auto-status">%s</p>`, template.HTMLEscapeString(t("Auto backup: disabled")))
+	}
+	fmt.Fprintf(&sb, `<table class="backup-summary-table"><thead><tr><th>%s</th><th>%s</th></tr></thead><tbody>`,
+		t("Time"), t("Event"))
+	if len(entries) == 0 {
+		fmt.Fprintf(&sb, `<tr><td colspan="2" style="text-align:center;color:var(--text-secondary);">%s</td></tr>`, t("No backups yet"))
+	}
+	for _, e := range entries {
+		event := t("Backup created: %s", e.Set)
+		if e.Kind == backup.EventRestore {
+			event = t("Restored: %s", e.Set)
+		}
+		fmt.Fprintf(&sb, `<tr><td>%s</td><td>%s</td></tr>`,
+			template.HTMLEscapeString(configmanager.FormatDateTimeSeconds(e.Time)),
+			template.HTMLEscapeString(event))
+	}
+	sb.WriteString(`</tbody></table>`)
+	fmt.Fprintf(&sb, `<a class="backup-summary-link" href="/system/backup">%s &rarr;</a>`,
+		t("full backup history"))
+	return sb.String()
+}
+
 // renderBackupStorageCheckboxes renders one checkbox per registered storage - checked by default
 // for every storage in the default backup set, unchecked for optional ones (e.g. docs/media),
 // which stay opt-in. Changing any checkbox from that starting point creates an explicit

@@ -19,9 +19,10 @@ import (
 )
 
 // @Summary List the backup/restore history
-// @Description Lists every backup created and restore applied, newest first
+// @Description Lists every backup created and restore applied, newest first, as JSON, a full HTML table (for HTMX, the same content shown on the /system/backup page), or - with view=summary - a compact time/event list (for the rail "backup" panel)
 // @Tags system
 // @Produce json,html
+// @Param view query string false "html view: full table (default) or 'summary' for a compact time/event list"
 // @Success 200 {array} backup.LogEntry
 // @Router /api/system/backups [get]
 func handleAPIGetBackups(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +31,11 @@ func handleAPIGetBackups(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to list backups"), http.StatusInternalServerError)
 		return
 	}
-	writeResponse(w, r, entries, render.RenderBackupLog(entries))
+	html := render.RenderBackupLog(entries)
+	if r.URL.Query().Get("view") == "summary" {
+		html = render.RenderBackupSummary(entries, false)
+	}
+	writeResponse(w, r, entries, html)
 }
 
 // @Summary Create a backup

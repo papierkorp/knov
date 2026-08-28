@@ -5537,7 +5537,7 @@ const docTemplate = `{
         },
         "/api/system/backups": {
             "get": {
-                "description": "Lists every backup created and restore applied, newest first",
+                "description": "Lists every backup created and restore applied, newest first, as JSON, a full HTML table (for HTMX, the same content shown on the /system/backup page), or - with view=summary - a compact time/event list (for the rail \"backup\" panel)",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -5546,6 +5546,14 @@ const docTemplate = `{
                     "system"
                 ],
                 "summary": "List the backup/restore history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "html view: full table (default) or 'summary' for a compact time/event list",
+                        "name": "view",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

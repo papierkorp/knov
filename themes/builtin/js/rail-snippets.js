@@ -92,7 +92,7 @@ const RAIL_SNIPPETS = [
   { id: "logs-page", icon: "fa-arrow-up-right-from-square", label: "open logs page", kind: "link", link: "/system/logs" },
   { id: "jobs", icon: "fa-list-check", label: "jobs", kind: "content", url: () => "/api/system/jobs" },
   { id: "jobs-page", icon: "fa-arrow-up-right-from-square", label: "open jobs page", kind: "link", link: "/system/jobs" },
-  { id: "backup", icon: "fa-box-archive", label: "backup", kind: "content", url: () => "/api/system/backups" },
+  { id: "backup", icon: "fa-box-archive", label: "backup", kind: "content", url: () => "/api/system/backups?view=summary" },
   { id: "backup-page", icon: "fa-arrow-up-right-from-square", label: "open backup page", kind: "link", link: "/system/backup" },
   { id: "version", icon: "fa-circle-info", label: "version", kind: "content", url: () => "/api/system/version" },
   { id: "version-page", icon: "fa-arrow-up-right-from-square", label: "open version page", kind: "link", link: "/system/version" },

@@ -32,15 +32,14 @@
   - let me allow to select what to auto backup/create multiple auto backups
 - fixes
   - media rename?
-  - releasenotes doees not work
+  - releasenotes does not work
 - chore
   - async jobs follow up candidates
   - switch to static id instead of using the path
   - in the logs sidebar use a "summary" or "short" version or something like this with: time + level + message only + a parameter for a refresh button on top and use the all (merged)
-  - in the backup sidebar use a "summary" or "short" version or something like this with: time + event only + a parameter to optionally add the action buttons (but dont show the buttons for now)
   - add examples / example usage to template_data.md and explain what a template data acutally is and add a link to the create_your_own_theme.md file
   - remove allowing to set the datapath in the admin (should i leave git repository in? if yes we should also add the user/ssh key management and a test connection button otherwise it doesnt make much sense)
-  - for all tests: make it so it doesnt affect the live data (e.g. create a new database just for the test)
+  - for all tests: make it so it doesnt affect the live data (e.g. create a new database just for the test or copy the data/media or copy everything into a temp folder (so we have knov binary and the temp folder in the same height))
   - i used: `git remote add origin git@github.com:papierkorp/test2.git && git branch -M main && git push -u origin main` but the app still said i dont have a git remote
 
 # every other time
