@@ -10,19 +10,19 @@ import (
 // LogEntry describes one row of the backup/restore history for display: what happened and when,
 // plus whether the set it refers to is still available on target (a set can be rotated away, or
 // a restore can reference one deleted since, but the fact something happened is kept regardless
-// - see Event) and, if available, its full/locked state.
+// - see Event) and, if available, its default/locked state.
 type LogEntry struct {
 	Kind      EventKind   `json:"kind"`
 	Source    EventSource `json:"source"` // "" for entries logged before this field existed
 	Set       string      `json:"set"`
 	Time      time.Time   `json:"time"`
 	Available bool        `json:"available"`
-	Full      bool        `json:"full"`
+	Default   bool        `json:"default"`
 	Locked    bool        `json:"locked"`
 }
 
 // Log returns the full backup/restore history for target, newest first, enriched with each
-// referenced set's current availability/full/locked state.
+// referenced set's current availability/default/locked state.
 func Log(target BackupTarget) ([]LogEntry, error) {
 	events, err := target.Events()
 	if err != nil {
@@ -44,7 +44,7 @@ func Log(target BackupTarget) ([]LogEntry, error) {
 		if e.Kind == EventBackup {
 			loggedBackup[e.Set] = true
 		}
-		entry.Full, entry.Locked = logEntryFlags(target, e.Set, entry.Available)
+		entry.Default, entry.Locked = logEntryFlags(target, e.Set, entry.Available)
 		entries = append(entries, entry)
 	}
 
@@ -58,15 +58,15 @@ func Log(target BackupTarget) ([]LogEntry, error) {
 		if err != nil {
 			continue
 		}
-		full, locked := logEntryFlags(target, n, true)
-		entries = append(entries, LogEntry{Kind: EventBackup, Set: n, Time: t, Available: true, Full: full, Locked: locked})
+		isDefault, locked := logEntryFlags(target, n, true)
+		entries = append(entries, LogEntry{Kind: EventBackup, Set: n, Time: t, Available: true, Default: isDefault, Locked: locked})
 	}
 
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Time.After(entries[j].Time) })
 	return entries, nil
 }
 
-func logEntryFlags(target BackupTarget, name string, available bool) (full, locked bool) {
+func logEntryFlags(target BackupTarget, name string, available bool) (isDefault, locked bool) {
 	if !available {
 		return false, false
 	}
@@ -74,5 +74,5 @@ func logEntryFlags(target BackupTarget, name string, available bool) (full, lock
 	if err != nil {
 		logging.LogWarning(logging.KeyApp, "backup: failed to check lock on %s: %v", name, err)
 	}
-	return IsFullSet(name), locked
+	return IsDefaultSet(name), locked
 }

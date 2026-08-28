@@ -392,8 +392,8 @@
       "translation": "Dauer"
     },
     {
-      "id": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) - not the docs/media in DataPath, which git already covers, and not cache, which holds only data rebuilt from files/git on demand. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_FULL (see .env.example). Lock a set to keep it regardless of rotation.",
-      "message": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) - not the docs/media in DataPath, which git already covers, and not cache, which holds only data rebuilt from files/git on demand. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_FULL (see .env.example). Lock a set to keep it regardless of rotation.",
+      "id": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.",
+      "message": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.",
       "translation": ""
     },
     {
@@ -1090,6 +1090,11 @@
       "id": "Restore {Arg_1}? Current state is snapshotted first, then the app restarts to apply it.",
       "message": "Restore {Arg_1}? Current state is snapshotted first, then the app restarts to apply it.",
       "translation": "Backup {Arg_1} wiederherstellen? Der aktuelle Zustand wird zuerst gesichert, danach startet die Anwendung neu, um es anzuwenden."
+    },
+    {
+      "id": "Restore {Arg_1}? Current state is snapshotted first, then the app restarts to apply it. The restored state will also be force-pushed to the configured remote, overwriting anything there - or on any other synced device - that this device hasn't seen.",
+      "message": "Restore {Arg_1}? Current state is snapshotted first, then the app restarts to apply it. The restored state will also be force-pushed to the configured remote, overwriting anything there - or on any other synced device - that this device hasn't seen.",
+      "translation": ""
     },
     {
       "id": "Restored: {Arg_1}",
@@ -2237,6 +2242,11 @@
       "translation": "debug"
     },
     {
+      "id": "default",
+      "message": "default",
+      "translation": "Standard"
+    },
+    {
       "id": "default max-width and max-height for inline media previews in pixels",
       "message": "default max-width and max-height for inline media previews in pixels",
       "translation": "Standard-Maximalbreite und -höhe für Inline-Medienvorschauen in Pixeln"
@@ -3290,11 +3300,6 @@
       "id": "from date",
       "message": "from date",
       "translation": "Von-Datum"
-    },
-    {
-      "id": "full",
-      "message": "full",
-      "translation": "voll"
     },
     {
       "id": "full list of environment variables",

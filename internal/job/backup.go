@@ -18,6 +18,7 @@ import (
 	"knov/internal/backup"
 	"knov/internal/configmanager"
 	"knov/internal/files"
+	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/system"
 )
@@ -37,7 +38,7 @@ func DefaultBackupTarget() (backup.BackupTarget, error) {
 }
 
 // ListBackupLog returns the full backup/restore history, newest first, enriched with each
-// referenced set's current availability/full/locked state.
+// referenced set's current availability/default/locked state.
 func ListBackupLog() ([]backup.LogEntry, error) {
 	target, err := DefaultBackupTarget()
 	if err != nil {
@@ -47,9 +48,16 @@ func ListBackupLog() ([]backup.LogEntry, error) {
 }
 
 // RegisteredStorageNames returns every storage available to back up individually (e.g. "just
-// metadata"), for building a selection UI.
+// metadata"), including optional ones (e.g. docs/media) not part of the default backup - for
+// building a selection UI.
 func RegisteredStorageNames() []string {
 	return backup.RegisteredNames()
+}
+
+// DefaultStorageNames returns the storages a backup includes when none are explicitly selected -
+// see RegisteredStorageNames for the full list a selection UI can offer beyond this.
+func DefaultStorageNames() []string {
+	return backup.DefaultNames()
 }
 
 // BackupManifest returns the storage names included in the named backup set.
@@ -86,15 +94,16 @@ func (j *backupJob) Output() any { return j.name }
 
 func (j *backupJob) Message() string { return fmt.Sprintf("created backup set %s", j.name) }
 
-// rotateBackups trims target per KNOV_BACKUP_ROTATION_KEEP_DAYS / KNOV_BACKUP_ROTATION_KEEP_FULL,
+// rotateBackups trims target per KNOV_BACKUP_ROTATION_KEEP_DAYS / KNOV_BACKUP_ROTATION_KEEP_DEFAULT,
 // always keeping locked sets regardless of either setting.
 func rotateBackups(target backup.BackupTarget) error {
-	return backup.Rotate(target, configmanager.GetBackupRotationKeepDays(), configmanager.GetBackupRotationKeepFull())
+	return backup.Rotate(target, configmanager.GetBackupRotationKeepDays(), configmanager.GetBackupRotationKeepDefault())
 }
 
 // RunBackup creates a new backup set on the default target and trims expired sets per the
 // configured rotation strategy, with dedup protection. names selects which storages to include -
-// empty means every registered storage (a full backup). Returns the created set's name.
+// empty means DefaultStorageNames (the default backup), which excludes optional storages like
+// docs/media unless named explicitly. Returns the created set's name.
 func RunBackup(names ...string) (string, error) {
 	return runBackup(backup.SourceManual, names...)
 }
@@ -111,11 +120,12 @@ func runBackup(source backup.EventSource, names ...string) (string, error) {
 	return j.name, nil
 }
 
-// checkAutoBackup runs a full backup if automatic backups are enabled and it's due per
+// checkAutoBackup runs a default backup if automatic backups are enabled and it's due per
 // KNOV_BACKUP_AUTO_CRON. Ticked from Start() on a fixed internal cadence
 // (backupAutoCheckInterval) - the schedule users actually control is when a backup is taken, not
-// how often this check runs. Only full sets count towards being due - a manually-triggered partial
-// backup (e.g. "just metadata") must not push back when the next scheduled full backup is due.
+// how often this check runs. Only default sets count towards being due - a manually-triggered
+// partial backup (e.g. "just metadata") must not push back when the next scheduled default
+// backup is due.
 func checkAutoBackup() {
 	if !configmanager.GetBackupAutoEnabled() {
 		return
@@ -188,6 +198,31 @@ func (j *restoreJob) Run() error {
 		// rebuilds it on demand.
 		if cacheErr := files.CacheInvalidate(); cacheErr != nil {
 			logging.LogWarning(logging.KeyApp, "restore: cache invalidation failed: %v", cacheErr)
+		}
+		// docs/media storages restore straight onto the working tree without going through git,
+		// so commit that now rather than leaving it for the next auto-commit cronjob tick to
+		// silently sweep up as an unrelated "external changes" commit. Gated on the manifest
+		// actually including docs/media - a restore of only the database-backed storages touches
+		// nothing git tracks, so committing/pushing then would just be "git add -A" of whatever
+		// else happens to be dirty in the working tree, unrelated to this restore. Uses
+		// CommitRestoredFiles, not CommitAllPending, since the latter's remote-sync step would
+		// fetch+hard-reset before committing and silently discard the files just restored - see
+		// CommitRestoredFiles. If a remote is configured, force-push the result too: a restore is
+		// a deliberate "this device's state is now authoritative" action, so the remote (and
+		// whatever any other synced device picks up next) should reflect it rather than reverting
+		// it on the next regular sync.
+		manifest, manifestErr := BackupManifest(j.setName)
+		if manifestErr != nil {
+			logging.LogWarning(logging.KeyApp, "restore: failed to read manifest for set %s: %v", j.setName, manifestErr)
+		} else if slices.Contains(manifest, files.DocsStorageName) || slices.Contains(manifest, files.MediaStorageName) {
+			committed, commitErr := git.CommitRestoredFiles()
+			if commitErr != nil {
+				logging.LogWarning(logging.KeyApp, "restore: failed to commit restored files: %v", commitErr)
+			} else if committed {
+				if pushErr := git.ForcePushRestore(); pushErr != nil {
+					logging.LogWarning(logging.KeyApp, "restore: failed to push restored state to remote, remote may now be out of sync with this device: %v", pushErr)
+				}
+			}
 		}
 		go func() {
 			time.Sleep(500 * time.Millisecond)

@@ -68,7 +68,7 @@ type AppConfig struct {
 	BackupAutoEnabled           bool
 	BackupAutoCron              string
 	BackupRotationKeepDays      int
-	BackupRotationKeepFull      int
+	BackupRotationKeepDefault   int
 	LogFileEnabled              bool
 	LogMaxSizeMB                int
 	LogMaxFiles                 int
@@ -162,17 +162,17 @@ func GetBackupAutoCron() string {
 	return appConfig.BackupAutoCron
 }
 
-// GetBackupRotationKeepDays returns how many days of backup sets (full or partial) are always
+// GetBackupRotationKeepDays returns how many days of backup sets (default or partial) are always
 // kept, regardless of count. <= 0 disables this rule.
 func GetBackupRotationKeepDays() int {
 	return appConfig.BackupRotationKeepDays
 }
 
-// GetBackupRotationKeepFull returns the minimum number of full backup sets always kept
+// GetBackupRotationKeepDefault returns the minimum number of default backup sets always kept
 // regardless of age, on top of GetBackupRotationKeepDays. <= 0 disables this rule. Locked
 // backup sets are kept regardless of either setting.
-func GetBackupRotationKeepFull() int {
-	return appConfig.BackupRotationKeepFull
+func GetBackupRotationKeepDefault() int {
+	return appConfig.BackupRotationKeepDefault
 }
 
 // SetBackupAutoEnabled overrides BackupAutoEnabled/BackupAutoCron in memory only (no .env write) -

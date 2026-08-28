@@ -12,10 +12,10 @@ func ParseCronSchedule(expr string) (cron.Schedule, error) {
 	return cron.ParseStandard(expr)
 }
 
-// AutoBackupDue reports whether a new scheduled full backup is due on target: true when no full
-// set exists yet, or when schedule's next occurrence after the newest existing full set has
-// already passed. Only full sets count - a manually-triggered partial backup (e.g. "just
-// metadata") must not push back when the next scheduled full backup is due.
+// AutoBackupDue reports whether a new scheduled default backup is due on target: true when no
+// default set exists yet, or when schedule's next occurrence after the newest existing default
+// set has already passed. Only default sets count - a manually-triggered partial backup (e.g.
+// "just metadata") must not push back when the next scheduled default backup is due.
 //
 // Driving this off the newest set's own timestamp (rather than tracking "did today's slot already
 // fire") is what lets a device that's only powered on part of each day (e.g. a USB stick) still
@@ -28,18 +28,18 @@ func AutoBackupDue(target BackupTarget, schedule cron.Schedule) (bool, error) {
 		return false, err
 	}
 
-	var newestFull time.Time
+	var newestDefault time.Time
 	found := false
 	for _, n := range names {
-		if !IsFullSet(n) {
+		if !IsDefaultSet(n) {
 			continue
 		}
 		t, err := ParseSetTime(n)
 		if err != nil {
 			continue
 		}
-		if !found || t.After(newestFull) {
-			newestFull = t
+		if !found || t.After(newestDefault) {
+			newestDefault = t
 			found = true
 		}
 	}
@@ -47,5 +47,5 @@ func AutoBackupDue(target BackupTarget, schedule cron.Schedule) (bool, error) {
 	if !found {
 		return true, nil
 	}
-	return !schedule.Next(newestFull).After(time.Now()), nil
+	return !schedule.Next(newestDefault).After(time.Now()), nil
 }

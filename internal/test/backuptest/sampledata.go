@@ -139,7 +139,7 @@ func metaTitle(data []byte) string {
 // probeCounts snapshots the shared kanban/chat probe locations' current sizes. Kanban is
 // append-only and a chat file accumulates one row per message, and - unlike the scratch backup
 // target each case gets - the probes themselves are seeded into the real, shared live storages,
-// so an earlier case (e.g. caseRunProducesFullSet, which never mutates/restores its own probes,
+// so an earlier case (e.g. caseRunProducesDefaultSet, which never mutates/restores its own probes,
 // or caseSelectiveBackup, whose metadata-only restore deliberately never reverts kanban/chat)
 // can leave permanent state behind. A case must compare against a baseline captured before its
 // own seedProbes call, not a hardcoded absolute count.
@@ -194,7 +194,6 @@ func verifyProbes(p *probes, baseline probeCounts) (bool, string, error) {
 			break
 		}
 	}
-
 	metaOK := metaTitle(metaVal) == probeMetaTitle
 	configOK := bytes.Equal(configVal, probeConfigValue)
 	searchOK := bytes.Equal(searchVal, probeSearchValue)

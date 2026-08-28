@@ -163,9 +163,14 @@
   padding: 30px;
   border-radius: 8px;
   min-width: 400px;
+  max-width: 500px;
   border: 2px solid var(--primary);
   margin: 20vh auto;
   position: relative;
+}
+
+#restore-modal-warning {
+  font-weight: 600;
 }
 
 [popover] .modal-content h3 {

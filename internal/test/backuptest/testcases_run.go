@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"knov/internal/backup"
 	"knov/internal/configStorage"
@@ -12,12 +13,61 @@ import (
 	"knov/internal/test"
 )
 
-// caseRunProducesFullSet covers backup.Run producing a set with every registered storage's
-// subdirectory populated with real content - seeds one probe per storage first (see
-// seedProbes), then extracts the resulting archive directly (not via Restore) to check each
-// subdirectory landed with a non-empty file.
-func caseRunProducesFullSet() test.CaseResult {
-	name := "run-produces-full-set"
+// extractedStorageDirs reports which of names have a non-empty subdirectory in extractDir - a
+// backup archive already extracted via extractTarGz.
+func extractedStorageDirs(extractDir string, names []string) (nonEmpty []string, err error) {
+	for _, n := range names {
+		hasContent := false
+		walkErr := filepath.Walk(filepath.Join(extractDir, n), func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return nil // missing subdirectory entirely - not an error, just not present
+			}
+			if !info.IsDir() && info.Size() > 0 {
+				hasContent = true
+			}
+			return nil
+		})
+		if walkErr != nil {
+			return nil, walkErr
+		}
+		if hasContent {
+			nonEmpty = append(nonEmpty, n)
+		}
+	}
+	return nonEmpty, nil
+}
+
+// runAndExtract runs backup.Run(target, backup.SourceManual, names...) and extracts the
+// resulting archive into a fresh temp dir the caller must os.RemoveAll.
+func runAndExtract(target backup.BackupTarget, names ...string) (extractDir string, err error) {
+	setName, err := backup.Run(target, backup.SourceManual, names...)
+	if err != nil {
+		return "", err
+	}
+	rc, err := target.Read(setName)
+	if err != nil {
+		return "", err
+	}
+	defer rc.Close()
+
+	extractDir, err = os.MkdirTemp("", "knov-backuptest-extract-*")
+	if err != nil {
+		return "", err
+	}
+	if err := extractTarGz(rc, extractDir); err != nil {
+		os.RemoveAll(extractDir)
+		return "", err
+	}
+	return extractDir, nil
+}
+
+// caseRunProducesDefaultSet covers backup.Run with no explicit selection producing a set with
+// every default storage's subdirectory populated with real content, while the optional storages
+// (docs, media - see backup.RegisterOptional) are left out entirely, not just empty. Seeds one
+// probe per storage first (see seedProbes), then extracts the resulting archive directly (not via
+// Restore) to check.
+func caseRunProducesDefaultSet() test.CaseResult {
+	name := "run-produces-default-set"
 
 	if _, err := seedProbes(); err != nil {
 		return errCase(name, err)
@@ -29,55 +79,53 @@ func caseRunProducesFullSet() test.CaseResult {
 	}
 	defer cleanup()
 
-	setName, err := backup.Run(target, backup.SourceManual)
-	if err != nil {
-		return errCase(name, err)
-	}
-
-	rc, err := target.Read(setName)
-	if err != nil {
-		return errCase(name, err)
-	}
-	defer rc.Close()
-
-	extractDir, err := os.MkdirTemp("", "knov-backuptest-extract-*")
+	extractDir, err := runAndExtract(target)
 	if err != nil {
 		return errCase(name, err)
 	}
 	defer os.RemoveAll(extractDir)
-	if err := extractTarGz(rc, extractDir); err != nil {
+
+	defaultNames := backup.DefaultNames()
+	withContent, err := extractedStorageDirs(extractDir, defaultNames)
+	if err != nil {
 		return errCase(name, err)
 	}
-
-	registered := backup.RegisteredNames()
-	var empty []string
-	for _, n := range registered {
-		hasContent := false
-		walkErr := filepath.Walk(filepath.Join(extractDir, n), func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if !info.IsDir() && info.Size() > 0 {
-				hasContent = true
-			}
-			return nil
-		})
-		if walkErr != nil || !hasContent {
-			empty = append(empty, n)
+	var missing []string
+	for _, n := range defaultNames {
+		if !slices.Contains(withContent, n) {
+			missing = append(missing, n)
 		}
 	}
 
-	success := len(empty) == 0
+	optionalWithContent, err := extractedStorageDirs(extractDir, optionalNames())
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	success := len(missing) == 0 && len(optionalWithContent) == 0
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: fmt.Sprintf("every registered storage %v has a non-empty subdirectory in the extracted archive", registered),
-		Actual:   fmt.Sprintf("empty or missing: %v", empty),
+		Expected: fmt.Sprintf("every default storage %v has a non-empty subdirectory, and no optional storage does", defaultNames),
+		Actual:   fmt.Sprintf("missing default: %v, optional present: %v", missing, optionalWithContent),
 		Success:  success,
 	}
 	if !success {
-		cr.Error = "backup.Run did not produce real content for every registered storage as expected"
+		cr.Error = "backup.Run with no explicit selection did not produce exactly the default storages as expected"
 	}
 	return cr
+}
+
+// optionalNames returns every registered storage not in DefaultNames - the storages the default
+// backup set must exclude.
+func optionalNames() []string {
+	def := backup.DefaultNames()
+	var opt []string
+	for _, n := range backup.RegisteredNames() {
+		if !slices.Contains(def, n) {
+			opt = append(opt, n)
+		}
+	}
+	return opt
 }
 
 // failingStorage is a fake backup.Storage that always fails, temporarily registered under a
@@ -91,8 +139,8 @@ func (failingStorage) GetBackendType() string      { return "test" }
 
 // caseRunAbortsOnPartialFailure covers backup.Run aborting and discarding the whole set when
 // one registered storage's Backup fails mid-run - no partial .tar.gz left on the target
-// afterward. Uses an explicit storage selection (not a full backup) so the temporarily
-// registered failing storage never has to be part of every future full backup.
+// afterward. Uses an explicit storage selection (not the default backup) so the temporarily
+// registered failing storage never has to be part of every future default backup.
 func caseRunAbortsOnPartialFailure() test.CaseResult {
 	name := "run-aborts-on-partial-failure"
 

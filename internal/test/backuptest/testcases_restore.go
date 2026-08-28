@@ -11,11 +11,15 @@ import (
 
 // caseRestoreRoundtrip covers backup.Restore (the package function, not job.RunRestore)
 // roundtripping: backup -> mutate/delete the seeded probes -> restore -> every probe is back to
-// its original value. Goes through restoreAndReinit since this calls backup.Restore directly
-// against the real, live sqlite storages - see backuptest.go's package doc. Captures a kanban/chat
-// baseline before seeding its own probes - see probeCounts - since earlier cases in this suite's
-// fixed run order (caseRunProducesFullSet, caseSelectiveBackup) leave permanent state on those
-// shared, live storages that a hardcoded absolute count would otherwise wrongly fail against.
+// its original value. Deliberately sticks to the default selection (DB-backed storages only) -
+// docs/media's Restore replaces the real DataPath docs/media folders on disk (see
+// files.docsBackup/mediaBackup), which this suite must never do against the real, live tree; that
+// coverage will come back once it can run against a redirected docs/media root instead. Goes
+// through restoreAndReinit since this calls backup.Restore directly against the real, live sqlite
+// storages - see backuptest.go's package doc. Captures a kanban/chat baseline before seeding its
+// own probes - see probeCounts - since earlier cases in this suite's fixed run order
+// (caseRunProducesDefaultSet, caseSelectiveBackup) leave permanent state on those shared, live
+// storages that a hardcoded absolute count would otherwise wrongly fail against.
 func caseRestoreRoundtrip() test.CaseResult {
 	name := "restore-roundtrip"
 

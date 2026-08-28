@@ -5559,7 +5559,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Snapshots the selected storages (metadata, chat, kanban, notifications, config, search - all of them when none are given) into a new backup set and trims expired sets",
+                "description": "Snapshots the selected storages into a new backup set and trims expired sets. The default set (metadata, chat, kanban, notifications, config, search) is used when none are given; docs/media are optional and only included when named explicitly",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -5578,7 +5578,7 @@ const docTemplate = `{
                             "type": "string"
                         },
                         "collectionFormat": "csv",
-                        "description": "Storage names to include (repeatable); omit for a full backup",
+                        "description": "Storage names to include (repeatable); omit for the default backup (excludes docs/media)",
                         "name": "storages",
                         "in": "formData"
                     }
@@ -5688,7 +5688,10 @@ const docTemplate = `{
         },
         "/api/system/backups/{name}/restore": {
             "post": {
-                "description": "Takes a fresh safety snapshot, restores a backup set onto disk, then restarts the app to apply it. Runs in the background - poll GET /api/jobs/{id} (returned in the response body/fragment) for completion.",
+                "description": "Takes a fresh safety snapshot, restores a backup set onto disk, then restarts the app to apply it. If a git remote is configured, the restored state is also force-pushed to it, overwriting anything there this device hasn't seen - confirm is then required to acknowledge that. Runs in the background - poll GET /api/jobs/{id} (returned in the response body/fragment) for completion.",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
                 "produces": [
                     "application/json",
                     "text/html"
@@ -5704,6 +5707,12 @@ const docTemplate = `{
                         "name": "name",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Required (true) when a git remote is configured, acknowledging the restored state will be force-pushed to it",
+                        "name": "confirm",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -5902,7 +5911,7 @@ const docTemplate = `{
         },
         "/api/testdata/backuptest": {
             "post": {
-                "description": "Executes the backup suite (full/selective/failed Run, Restore roundtrip, Rotate's locked/keepDays/keepFull rules, checkAutoBackup, ListBackupLog, event log, WriteFileAtomic) against real live storages and scratch backup targets",
+                "description": "Executes the backup suite (default/selective/failed Run, Restore roundtrip, Rotate's locked/keepDays/keepDefault rules, checkAutoBackup, ListBackupLog, event log, WriteFileAtomic) against real live storages and scratch backup targets",
                 "produces": [
                     "application/json",
                     "text/html"
@@ -6716,7 +6725,7 @@ const docTemplate = `{
                 "available": {
                     "type": "boolean"
                 },
-                "full": {
+                "default": {
                     "type": "boolean"
                 },
                 "kind": {

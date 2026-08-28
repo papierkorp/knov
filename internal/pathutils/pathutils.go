@@ -204,6 +204,14 @@ func getMediaPath() string {
 	return filepath.Join(configmanager.GetAppConfig().DataPath, "media")
 }
 
+// DocsRoot returns the full path to the docs directory - exported for callers outside this
+// package (e.g. the backup package's docs/media storage adapters) that need the directory itself
+// rather than a path resolved within it.
+func DocsRoot() string { return getDocsPath() }
+
+// MediaRoot returns the full path to the media directory - see DocsRoot.
+func MediaRoot() string { return getMediaPath() }
+
 // ToSlash converts path separators to forward slashes, without any of the docs/media
 // normalization the To* functions above do. Use this over filepath.ToSlash for any path
 // that will be compared against or stored as a forward-slash path (git tree paths, cache

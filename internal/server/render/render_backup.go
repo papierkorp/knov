@@ -4,31 +4,57 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"slices"
 	"strings"
 
 	"knov/internal/backup"
 	"knov/internal/configmanager"
+	"knov/internal/files"
+	"knov/internal/git"
 	"knov/internal/job"
 	"knov/internal/logging"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
 
-// backupContentsLabel summarizes the set an entry refers to - "full" when every registered
-// storage was included at backup time, the actual (partial) selection (e.g. "metadata") when
-// not, or "-" once the set itself is gone (nothing left to summarize).
-func backupContentsLabel(t func(string, ...any) string, e backup.LogEntry) string {
+// backupContentsLabel summarizes the set an entry refers to - "default" when exactly the default
+// storages were included at backup time, the actual (explicit) selection (e.g. "metadata", or
+// "metadata, ..., docs, media") when not given, or "-" once the set itself is gone (nothing left
+// to summarize). manifest is nil for a default/unavailable entry, where it's never read - see
+// rowManifest.
+func backupContentsLabel(t func(string, ...any) string, e backup.LogEntry, manifest []string) string {
 	if !e.Available {
 		return "-"
 	}
-	if e.Full {
-		return t("full")
+	if e.Default {
+		return t("default")
 	}
-	manifest, err := job.BackupManifest(e.Set)
-	if err != nil {
+	if manifest == nil {
 		return "-"
 	}
 	return strings.Join(manifest, ", ")
+}
+
+// restoreTouchesGit reports whether restoring e.Set would touch the working tree at all - true
+// only when manifest includes docs/media (see files.DocsStorageName/MediaStorageName), the only
+// storages that restore straight onto disk rather than into a database.
+func restoreTouchesGit(manifest []string) bool {
+	return slices.Contains(manifest, files.DocsStorageName) || slices.Contains(manifest, files.MediaStorageName)
+}
+
+// rowManifest returns e.Set's manifest, fetched once per row and shared between
+// backupContentsLabel and restoreTouchesGit rather than each reading the archive on its own. Nil
+// whenever there's nothing to read: e is a default set (its manifest is never shown), unavailable
+// (the set itself is gone), or the read failed.
+func rowManifest(e backup.LogEntry) []string {
+	if !e.Available || e.Default {
+		return nil
+	}
+	manifest, err := job.BackupManifest(e.Set)
+	if err != nil {
+		return nil
+	}
+	return manifest
 }
 
 // backupSourceLabel describes what triggered a backup-kind entry: "manual", "scheduled" (via
@@ -74,20 +100,27 @@ func RenderBackupLog(entries []backup.LogEntry) string {
 			event = t("Restored: %s", e.Set)
 		}
 
+		manifest := rowManifest(e)
 		actions := fmt.Sprintf(`<span class="backup-unavailable">%s</span>`, t("no longer available"))
 		if e.Available {
 			lockVerb, lockLabel := "hx-post", t("Lock")
 			if e.Locked {
 				lockVerb, lockLabel = "hx-delete", t("Unlock")
 			}
+			restoreMessage := t("Restore %s? The app restarts to apply it.", e.Set)
+			restoreWarning := ""
+			if git.RemoteEnabled() && restoreTouchesGit(manifest) {
+				restoreWarning = t("The restored state will also be force-pushed to the configured remote, overwriting anything there - or on any other synced device - that this device hasn't seen.")
+			}
 			actions = fmt.Sprintf(
 				`<button class="btn-secondary" %s="/api/system/backups/%s/lock" hx-target="#backup-list" hx-swap="innerHTML">%s</button>`+
 					`<a class="btn-secondary" href="/api/system/backups/%s/download" download>%s</a>`+
-					`<button class="btn-secondary" hx-post="/api/system/backups/%s/restore" hx-confirm="%s" hx-target="#backup-status" hx-swap="innerHTML">%s</button>`,
+					`<button type="button" class="btn-secondary backup-restore-btn" popovertarget="restore-modal" data-url="/api/system/backups/%s/restore" data-message="%s" data-warning="%s">%s</button>`,
 				lockVerb, template.HTMLEscapeString(e.Set), lockLabel,
 				template.HTMLEscapeString(e.Set), t("Download"),
 				template.HTMLEscapeString(e.Set),
-				template.HTMLEscapeString(t("Restore %s? Current state is snapshotted first, then the app restarts to apply it.", e.Set)),
+				template.HTMLEscapeString(restoreMessage),
+				template.HTMLEscapeString(restoreWarning),
 				t("Restore"),
 			)
 		}
@@ -96,7 +129,7 @@ func RenderBackupLog(entries []backup.LogEntry) string {
 			template.HTMLEscapeString(configmanager.FormatDateTimeSeconds(e.Time)),
 			template.HTMLEscapeString(event),
 			template.HTMLEscapeString(backupSourceLabel(t, e)),
-			template.HTMLEscapeString(backupContentsLabel(t, e)),
+			template.HTMLEscapeString(backupContentsLabel(t, e, manifest)),
 			actions,
 		)
 	}
@@ -104,14 +137,20 @@ func RenderBackupLog(entries []backup.LogEntry) string {
 	return sb.String()
 }
 
-// renderBackupStorageCheckboxes renders one checkbox per registered storage, all checked by
-// default (a full backup) - unchecking some (e.g. everything but "metadata") creates a partial
-// backup set instead.
+// renderBackupStorageCheckboxes renders one checkbox per registered storage - checked by default
+// for every storage in the default backup set, unchecked for optional ones (e.g. docs/media),
+// which stay opt-in. Changing any checkbox from that starting point creates an explicit
+// (non-default) backup set instead.
 func renderBackupStorageCheckboxes() string {
+	defaultNames := job.DefaultStorageNames()
 	var sb strings.Builder
 	for _, name := range job.RegisteredStorageNames() {
-		fmt.Fprintf(&sb, `<label class="backup-storage-option"><input type="checkbox" name="storages" value="%s" checked> %s</label>`,
-			template.HTMLEscapeString(name), template.HTMLEscapeString(name))
+		checked := ""
+		if slices.Contains(defaultNames, name) {
+			checked = " checked"
+		}
+		fmt.Fprintf(&sb, `<label class="backup-storage-option"><input type="checkbox" name="storages" value="%s"%s> %s</label>`,
+			template.HTMLEscapeString(name), checked, template.HTMLEscapeString(name))
 	}
 	return sb.String()
 }
@@ -140,7 +179,7 @@ func HandleSystemBackup(w http.ResponseWriter, r *http.Request) {
 .backup-actions { display: flex; gap: .4rem; justify-content: flex-end; }
 .backup-unavailable { color: var(--text-secondary); font-style: italic; }
 </style>` +
-		fmt.Sprintf(`<p class="backup-note">%s</p>`, t("Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) - not the docs/media in DataPath, which git already covers, and not cache, which holds only data rebuilt from files/git on demand. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_FULL (see .env.example). Lock a set to keep it regardless of rotation.")) +
+		fmt.Sprintf(`<p class="backup-note">%s</p>`, t("Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.")) +
 		`<form class="backup-create-form" hx-post="/api/system/backups" hx-target="#backup-list" hx-swap="innerHTML" hx-indicator="#backup-status">` +
 		fmt.Sprintf(`<div class="backup-storage-select">%s</div>`, renderBackupStorageCheckboxes()) +
 		`<div class="backup-toolbar">` +

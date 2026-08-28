@@ -32,7 +32,7 @@ func (Suite) Name() string { return "backup" }
 
 func (Suite) Run() (*test.SuiteResult, error) {
 	cases := []func() test.CaseResult{
-		caseRunProducesFullSet,
+		caseRunProducesDefaultSet,
 		caseRunAbortsOnPartialFailure,
 		caseSelectiveBackup,
 		caseRestoreRoundtrip,

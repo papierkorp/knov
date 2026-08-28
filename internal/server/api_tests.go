@@ -545,7 +545,7 @@ func handleAPIParserTest(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Run backup tests
-// @Description Executes the backup suite (full/selective/failed Run, Restore roundtrip, Rotate's locked/keepDays/keepFull rules, checkAutoBackup, ListBackupLog, event log, WriteFileAtomic) against real live storages and scratch backup targets
+// @Description Executes the backup suite (default/selective/failed Run, Restore roundtrip, Rotate's locked/keepDays/keepDefault rules, checkAutoBackup, ListBackupLog, event log, WriteFileAtomic) against real live storages and scratch backup targets
 // @Tags testdata
 // @Produce json,html
 // @Success 200 {object} test.SuiteResult "backup test results"

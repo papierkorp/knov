@@ -31,3 +31,10 @@ func lockMediaOp() (unlock func()) {
 	mediaOpMu.Lock()
 	return mediaOpMu.Unlock
 }
+
+// LockDocsOp and LockMediaOp are the exported form of lockDocsOp/lockMediaOp, for the rare
+// caller outside this package that walks/mutates the whole root rather than a single path - e.g.
+// git.CommitAllPending staging the entire data tree, which must not run concurrently with a
+// docs/media backup restore's RemoveAll+copy.
+func LockDocsOp() (unlock func())  { return lockDocsOp() }
+func LockMediaOp() (unlock func()) { return lockMediaOp() }

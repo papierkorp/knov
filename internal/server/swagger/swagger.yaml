@@ -30,7 +30,7 @@ definitions:
     properties:
       available:
         type: boolean
-      full:
+      default:
         type: boolean
       kind:
         $ref: '#/definitions/backup.EventKind'
@@ -4277,12 +4277,14 @@ paths:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Snapshots the selected storages (metadata, chat, kanban, notifications,
-        config, search - all of them when none are given) into a new backup set and
-        trims expired sets
+      description: Snapshots the selected storages into a new backup set and trims
+        expired sets. The default set (metadata, chat, kanban, notifications, config,
+        search) is used when none are given; docs/media are optional and only included
+        when named explicitly
       parameters:
       - collectionFormat: csv
-        description: Storage names to include (repeatable); omit for a full backup
+        description: Storage names to include (repeatable); omit for the default backup
+          (excludes docs/media)
         in: formData
         items:
           type: string
@@ -4364,15 +4366,24 @@ paths:
       - system
   /api/system/backups/{name}/restore:
     post:
+      consumes:
+      - application/x-www-form-urlencoded
       description: Takes a fresh safety snapshot, restores a backup set onto disk,
-        then restarts the app to apply it. Runs in the background - poll GET /api/jobs/{id}
-        (returned in the response body/fragment) for completion.
+        then restarts the app to apply it. If a git remote is configured, the restored
+        state is also force-pushed to it, overwriting anything there this device hasn't
+        seen - confirm is then required to acknowledge that. Runs in the background
+        - poll GET /api/jobs/{id} (returned in the response body/fragment) for completion.
       parameters:
       - description: Backup set name
         in: path
         name: name
         required: true
         type: string
+      - description: Required (true) when a git remote is configured, acknowledging
+          the restored state will be force-pushed to it
+        in: formData
+        name: confirm
+        type: boolean
       produces:
       - application/json
       - text/html
@@ -4520,9 +4531,10 @@ paths:
       - testdata
   /api/testdata/backuptest:
     post:
-      description: Executes the backup suite (full/selective/failed Run, Restore roundtrip,
-        Rotate's locked/keepDays/keepFull rules, checkAutoBackup, ListBackupLog, event
-        log, WriteFileAtomic) against real live storages and scratch backup targets
+      description: Executes the backup suite (default/selective/failed Run, Restore
+        roundtrip, Rotate's locked/keepDays/keepDefault rules, checkAutoBackup, ListBackupLog,
+        event log, WriteFileAtomic) against real live storages and scratch backup
+        targets
       produces:
       - application/json
       - text/html

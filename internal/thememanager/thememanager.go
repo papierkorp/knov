@@ -339,6 +339,7 @@ func injectDefaultJS(html string) string {
 	scripts += `<script src="/static/conflict-diff.js"></script>`
 	scripts += `<script src="/static/copy-code.js"></script>`
 	scripts += `<script src="/static/media-lightbox.js"></script>`
+	scripts += `<script src="/static/backup-restore.js"></script>`
 	return html[:bodyCloseIndex] + scripts + html[bodyCloseIndex:]
 }
 

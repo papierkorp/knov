@@ -1,11 +1,14 @@
 // Package backup provides type-aware snapshot/restore helpers for StoragePath-backed storages
-// (metadata/chat/kanban/notifications/config/search), plus the target abstraction and rotation
-// used to keep a trimmed, restorable backup history. DataPath (docs/media) is already covered by
-// git and is intentionally out of scope here, as is cache - see cacheStorage.CacheStorage's doc.
+// (metadata/chat/kanban/notifications/config/search) and DataPath's docs/media folders, plus the
+// target abstraction and rotation used to keep a trimmed, restorable backup history. cache stays
+// out of scope - see cacheStorage.CacheStorage's doc. docs/media register as optional (see
+// RegisterOptional): selectable explicitly, but excluded from the default backup set every
+// scheduled/unselected Run creates, since a full docs/media copy is a much larger, slower
+// operation than the database-backed storages it'd otherwise run alongside by default.
 //
-// Storages self-register via Register in their own init(), the same pattern externalsuite.go
-// uses for test suites - this package must never import a storage package directly, since every
-// storage imports this one for the Backup/Restore/File helpers below.
+// Storages self-register via Register/RegisterOptional in their own init(), the same pattern
+// externalsuite.go uses for test suites - this package must never import a storage package
+// directly, since every storage imports this one for the Backup/Restore/File helpers below.
 package backup
 
 import (
@@ -44,42 +47,70 @@ type Migratable interface {
 	RestoreMigrate(srcDir, fromBackendType string) (touched bool, err error)
 }
 
-// registryMu guards registry - storages normally only register once, at package init time, but
-// backuptest also registers/unregisters a temporary failing Storage at runtime (see Unregister),
-// concurrently with real Run/Restore calls (a scheduled auto-backup, or another request) reading
-// it via RegisteredNames/lookupStorage. Without a lock that's a concurrent map read/write, which
-// panics the whole process.
+// registryMu guards registry/optional - storages normally only register once, at package init
+// time, but backuptest also registers/unregisters a temporary failing Storage at runtime (see
+// Unregister), concurrently with real Run/Restore calls (a scheduled auto-backup, or another
+// request) reading them via RegisteredNames/DefaultNames/lookupStorage. Without a lock that's a
+// concurrent map read/write, which panics the whole process.
 var (
 	registryMu sync.RWMutex
 	registry   = map[string]Storage{}
+	optional   = map[string]bool{}
 )
 
-// Register wires a storage package into Run/Restore. name becomes that storage's subdirectory
-// name inside every backup set.
+// Register wires a storage package into Run/Restore as part of the default backup set. name
+// becomes that storage's subdirectory name inside every backup set.
 func Register(name string, s Storage) {
 	registryMu.Lock()
 	defer registryMu.Unlock()
 	registry[name] = s
 }
 
+// RegisterOptional is Register for a storage that should still be selectable by name (e.g. "just
+// docs") but left out of the default backup set - DefaultNames omits it, so a plain Run/RunBackup
+// call with no explicit selection skips it. Use this for storages expensive or unusual enough
+// that backing them up shouldn't be a silent side effect of every default/scheduled backup.
+func RegisterOptional(name string, s Storage) {
+	registryMu.Lock()
+	defer registryMu.Unlock()
+	registry[name] = s
+	optional[name] = true
+}
+
 // Unregister removes name from the registry - used by backuptest to install and then remove a
 // temporary failing Storage for the "partial failure discards the whole set" case, without
-// permanently breaking every future full backup with a storage that no longer exists.
+// permanently breaking every future default backup with a storage that no longer exists.
 func Unregister(name string) {
 	registryMu.Lock()
 	defer registryMu.Unlock()
 	delete(registry, name)
+	delete(optional, name)
 }
 
-// RegisteredNames returns every storage name available for backup/restore, sorted - the set
-// Run backs up when called with no explicit selection, and the choices a caller can pick a
-// subset from (e.g. "just metadata").
+// RegisteredNames returns every storage name available for backup/restore, sorted - including
+// optional ones (see RegisterOptional). The full set of choices a caller can pick a subset from
+// (e.g. "just metadata", or explicitly "docs" even though it's not in DefaultNames).
 func RegisteredNames() []string {
 	registryMu.RLock()
 	defer registryMu.RUnlock()
 	names := make([]string, 0, len(registry))
 	for n := range registry {
 		names = append(names, n)
+	}
+	sort.Strings(names)
+	return names
+}
+
+// DefaultNames is RegisteredNames minus every storage registered via RegisterOptional - the set
+// Run backs up when called with no explicit selection.
+func DefaultNames() []string {
+	registryMu.RLock()
+	defer registryMu.RUnlock()
+	names := make([]string, 0, len(registry))
+	for n := range registry {
+		if !optional[n] {
+			names = append(names, n)
+		}
 	}
 	sort.Strings(names)
 	return names

@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -16,11 +17,14 @@ import (
 	"knov/internal/logging"
 )
 
-// nameLayout is both the backup set name and, parsed back, the timestamp Rotate buckets by.
+// nameLayout is both the backup set name's timestamp portion and, parsed back, the timestamp
+// Rotate buckets by. namePrefix identifies the app that created a set, in case target's root is
+// ever shared with other backups (e.g. a bucket also used by something else).
 const nameLayout = "2006-01-02T15-04-05"
+const namePrefix = "knov-"
 
 // manifestFile holds the list of storages included in a backup set, so a partial set (e.g.
-// "just metadata") can be told apart from a full one without extracting the whole archive.
+// "just metadata") can be told apart from a default one without extracting the whole archive.
 const manifestFile = "manifest.json"
 
 type manifest struct {
@@ -45,43 +49,48 @@ func SetLocationFunc(f func() *time.Location) {
 	locationFunc = f
 }
 
-// ParseSetTime parses a backup set's name back into the timestamp it was created at. Only the
-// fixed-width leading timestamp is read - Run appends a "_<storages>" suffix to partial sets'
-// names, which time.Parse would otherwise reject outright as trailing garbage. Uses locationFunc
-// so the parsed instant matches what Run stamped the name with, not an arbitrary zone.
+// ParseSetTime parses a backup set's name back into the timestamp it was created at. namePrefix
+// is stripped first if present (tolerant, not required, so sets from before namePrefix existed
+// still parse), then only the fixed-width leading timestamp is read - Run appends a
+// "_<storages>" suffix to partial sets' names, which time.Parse would otherwise reject outright
+// as trailing garbage. Uses locationFunc so the parsed instant matches what Run stamped the name
+// with, not an arbitrary zone.
 func ParseSetTime(name string) (time.Time, error) {
+	name = strings.TrimPrefix(name, namePrefix)
 	if len(name) < len(nameLayout) {
 		return time.Time{}, fmt.Errorf("invalid backup set name %q", name)
 	}
 	return time.ParseInLocation(nameLayout, name[:len(nameLayout)], locationFunc())
 }
 
-// IsFullSet reports whether name is a full backup set (created with every storage registered at
-// the time, so Run appended no "_<storages>" partial-selection suffix) rather than a partial one
-// like "just metadata". nameLayout's timestamp never itself contains an underscore, so any
-// underscore in name is guaranteed to be that suffix, regardless of any "-N" dedup suffix
-// uniqueSetName may have added on top.
-func IsFullSet(name string) bool {
+// IsDefaultSet reports whether name is a default backup set (created with exactly DefaultNames,
+// so Run appended no "_<storages>" partial-selection suffix) rather than an explicit/partial one
+// like "just metadata" or "everything, including the optional docs/media storages". nameLayout's
+// timestamp never itself contains an underscore, so any underscore in name is guaranteed to be
+// that suffix, regardless of any "-N" dedup suffix uniqueSetName may have added on top.
+func IsDefaultSet(name string) bool {
 	return !strings.Contains(name, "_")
 }
 
-// Run snapshots the given storages (by the names passed to Register; all registered storages
-// when names is empty) into a new, timestamped backup set on target. source is recorded on the
-// logged event only (see BackupTarget.LogEvent) - it has no effect on what gets backed up.
-// Storages are snapshotted sequentially, each under its own lock - not one cross-storage
-// transaction. A failure partway through discards the whole set rather than writing an
-// incomplete one, since a backup that looks valid but silently missed a storage is worse than no
-// backup at all. Returns the created set's name.
+// Run snapshots the given storages (by the names passed to Register/RegisterOptional;
+// DefaultNames when names is empty, which skips optional storages like docs/media) into a new,
+// timestamped backup set on target. source is recorded on the logged event only (see
+// BackupTarget.LogEvent) - it has no effect on what gets backed up. Storages are snapshotted
+// sequentially, each under its own lock - not one cross-storage transaction. A failure partway
+// through discards the whole set rather than writing an incomplete one, since a backup that looks
+// valid but silently missed a storage is worse than no backup at all. Returns the created set's
+// name.
 func Run(target BackupTarget, source EventSource, names ...string) (string, error) {
+	defaultNames := DefaultNames()
 	if len(names) == 0 {
-		names = RegisteredNames()
+		names = defaultNames
 	} else {
 		names = append([]string(nil), names...)
 		sort.Strings(names)
 	}
 
-	setName := time.Now().In(locationFunc()).Format(nameLayout)
-	if len(names) < len(RegisteredNames()) {
+	setName := namePrefix + time.Now().In(locationFunc()).Format(nameLayout)
+	if !slices.Equal(names, defaultNames) {
 		setName += "_" + strings.Join(names, "-")
 	}
 	// Second-resolution timestamps collide when two sets are created within the same second (e.g.
@@ -153,7 +162,7 @@ func Run(target BackupTarget, source EventSource, names ...string) (string, erro
 
 // Manifest returns the storage names included in the named backup set, read directly from the
 // archive without extracting anything else - lets a caller (e.g. the backup list page) show
-// whether a set is a full backup or a partial one (e.g. "metadata only").
+// whether a set is a default backup or a partial one (e.g. "metadata only").
 func Manifest(target BackupTarget, name string) ([]string, error) {
 	rc, err := target.Read(name)
 	if err != nil {
@@ -221,17 +230,39 @@ func Restore(target BackupTarget, name string, afterRestore func()) error {
 // below reports it explicitly rather than making the caller re-derive it from err.
 func restore(target BackupTarget, name string) (touched bool, err error) {
 	// Confirm the requested set actually exists before paying for a safety snapshot - a typo'd
-	// or already-rotated-away name would otherwise still burn a full backup cycle before failing.
-	// Closed again immediately rather than held open across the safety snapshot below (which can
-	// take a while): fine for a local file, but holding a target.Read stream open across an
-	// unrelated, potentially slow operation would be fragile for a future remote target (S3/NFS).
+	// or already-rotated-away name would otherwise still burn a default backup cycle before
+	// failing. Closed again immediately rather than held open across the safety snapshot below
+	// (which can take a while): fine for a local file, but holding a target.Read stream open
+	// across an unrelated, potentially slow operation would be fragile for a future remote target
+	// (S3/NFS).
 	rc, err := target.Read(name)
 	if err != nil {
 		return false, fmt.Errorf("backup set %s not found: %w", name, err)
 	}
 	rc.Close()
 
-	if _, err := Run(target, SourceRestore); err != nil {
+	// The safety snapshot must cover whatever this restore is about to overwrite, not just
+	// DefaultNames - a set backed up with an explicit selection (e.g. including the optional
+	// docs/media storages) can touch storages the default set alone wouldn't capture. Storages
+	// the manifest names that are no longer registered are dropped, same as the restore loop
+	// below tolerates - Run would otherwise reject an unknown name outright.
+	manifestNames, err := Manifest(target, name)
+	if err != nil {
+		return false, fmt.Errorf("failed to read manifest for set %s: %w", name, err)
+	}
+	var toSnapshot []string
+	for _, n := range manifestNames {
+		if _, ok := lookupStorage(n); ok {
+			toSnapshot = append(toSnapshot, n)
+		}
+	}
+	// An empty toSnapshot means either the manifest was itself empty, or every storage it recorded
+	// has since been deregistered - either way there is nothing safe to snapshot, so refuse to
+	// proceed rather than silently restoring with no way back.
+	if len(toSnapshot) == 0 {
+		return false, fmt.Errorf("pre-restore safety snapshot failed: none of set %s's storages (%v) are still registered", name, manifestNames)
+	}
+	if _, err := Run(target, SourceRestore, toSnapshot...); err != nil {
 		return false, fmt.Errorf("pre-restore safety snapshot failed, aborting restore: %w", err)
 	}
 

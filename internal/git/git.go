@@ -579,12 +579,22 @@ func CommitModifiedFiles(modifiedFiles []string) error {
 	return nil
 }
 
-// CommitAllPending stages every pending change (modified, deleted, untracked)
-// using the equivalent of "git add -A" and commits them.
-// Returns true when a commit was actually made, false when the tree was already clean.
-func CommitAllPending() (bool, error) {
+// commitPending stages every pending change (modified, deleted, untracked) using the equivalent
+// of "git add -A" and commits them, under gitWriteMu and the docs/media physical-op locks (see
+// CommitAllPending's doc). sync controls whether SyncBeforeCommit's fetch+hard-reset-to-remote
+// runs first - CommitRestoredFiles passes false, since that reset would silently discard the
+// still-uncommitted files a restore just wrote to disk (see its doc). Returns true when a commit
+// was actually made, false when the tree was already clean.
+func commitPending(sync bool, msgPrefix string) (bool, error) {
 	gitWriteMu.Lock()
 	defer gitWriteMu.Unlock()
+
+	// walks the whole data tree (docs and media included) - must not run concurrently with a
+	// docs/media backup restore's RemoveAll+copy, or the index can end up corrupt/torn.
+	unlockDocs := files.LockDocsOp()
+	defer unlockDocs()
+	unlockMedia := files.LockMediaOp()
+	defer unlockMedia()
 
 	repo, err := openRepo()
 	if err != nil {
@@ -610,7 +620,9 @@ func CommitAllPending() (bool, error) {
 			}
 		}
 	}
-	SyncBeforeCommit(localFiles)
+	if sync {
+		SyncBeforeCommit(localFiles)
+	}
 
 	if err := worktree.AddWithOptions(&git.AddOptions{All: true}); err != nil {
 		return false, fmt.Errorf("git add -A failed: %w", err)
@@ -620,11 +632,11 @@ func CommitAllPending() (bool, error) {
 	var commitMsg string
 	switch {
 	case len(relPaths) == 0:
-		commitMsg = "auto-commit: external changes"
+		commitMsg = msgPrefix + ": external changes"
 	case len(relPaths) <= fileListLimit:
-		commitMsg = "auto-commit: " + strings.Join(relPaths, ", ")
+		commitMsg = msgPrefix + ": " + strings.Join(relPaths, ", ")
 	default:
-		commitMsg = fmt.Sprintf("auto-commit: %d files modified externally", len(relPaths))
+		commitMsg = fmt.Sprintf("%s: %d files modified externally", msgPrefix, len(relPaths))
 	}
 
 	_, err = worktree.Commit(commitMsg, &git.CommitOptions{
@@ -642,9 +654,33 @@ func CommitAllPending() (bool, error) {
 		return false, fmt.Errorf("git commit failed: %w", err)
 	}
 
-	logging.LogInfo(logging.KeyFileSync, "git: auto-committed pending changes")
-	Push()
+	logging.LogInfo(logging.KeyFileSync, "git: committed pending changes")
 	return true, nil
+}
+
+// CommitAllPending stages every pending change (modified, deleted, untracked) using the
+// equivalent of "git add -A", reconciling with the remote first via SyncBeforeCommit when one is
+// configured, and commits them. Returns true when a commit was actually made, false when the
+// tree was already clean. Pushes the result in the background on success - see Push.
+func CommitAllPending() (bool, error) {
+	committed, err := commitPending(true, "auto-commit")
+	if err == nil && committed {
+		Push()
+	}
+	return committed, err
+}
+
+// CommitRestoredFiles stages and commits whatever a backup restore just wrote directly to disk
+// (see files.docsBackup/mediaBackup, which restore straight onto the working tree, bypassing git
+// entirely). Deliberately skips SyncBeforeCommit: its fetch+hard-reset-to-remote-HEAD only
+// re-applies local content for paths the remote's own new commits also touched, so for every
+// other path it would silently overwrite the just-restored, still-uncommitted files with
+// whatever was last committed - exactly the case a restore exists to undo. The caller
+// (job.restoreJob) is expected to follow a successful commit with ForcePushRestore, rather than
+// this package's normal best-effort background Push, to make the restore authoritative on the
+// remote too instead of leaving it to a later fetch+hard-reset to silently discard again.
+func CommitRestoredFiles() (bool, error) {
+	return commitPending(false, "restore")
 }
 
 // fileHistoryCacheEntry holds a computed history alongside the HEAD it was
@@ -1974,6 +2010,77 @@ func Push() {
 
 		logging.LogInfo(logging.KeyGitRemote, "pushed to %s/%s", remote, branch)
 	}()
+}
+
+// RemoteEnabled reports whether a git remote is configured - exported for callers outside this
+// package (e.g. the restore confirmation prompt) that need to warn about ForcePushRestore before
+// it runs.
+func RemoteEnabled() bool { return remoteEnabled() }
+
+// ForcePushRestore pushes local HEAD to the configured remote branch, overwriting whatever's
+// there, right after CommitRestoredFiles has made a restore's outcome the local, authoritative
+// state - see CommitRestoredFiles for why the normal fetch+hard-reset dance can't run first here.
+// A blind force push, not force-with-lease: a restore is a deliberate "this device's state wins,
+// no matter what" action, so any commits the remote gained from elsewhere since this device's
+// last sync are overwritten without warning, same as the rest of this restore flow already
+// discards this device's own pre-restore state in favor of the backup. No-op if no remote is
+// configured. Runs synchronously (unlike the fire-and-forget Push) so the caller can log/surface
+// a failed push instead of it vanishing into a background goroutine right before the app
+// restarts. Deliberately ignores configmanager.GetGitAutoPush, unlike Push(): that setting exists
+// to opt out of routine, unattended pushing after every background auto-commit, but this only
+// ever runs right after a user explicitly requested this specific restore and (for a restore that
+// reaches this point) was shown the force-push warning in the confirm prompt first - see
+// RemoteEnabled and the /api/system/backups/{name}/restore confirm param. There is no unattended
+// path that reaches ForcePushRestore for GetGitAutoPush to gate.
+func ForcePushRestore() error {
+	if !remoteEnabled() {
+		return nil
+	}
+
+	// serializes against Push()'s own background goroutine, not gitWriteMu - by the time this
+	// runs, CommitRestoredFiles has already released gitWriteMu and the docs/media locks, so the
+	// network round-trip below doesn't hold up any physical file operation.
+	gitPushMu.Lock()
+	defer gitPushMu.Unlock()
+
+	repo, err := openRepo()
+	if err != nil {
+		return fmt.Errorf("failed to open repo: %w", err)
+	}
+
+	branch := configmanager.GetGitRemoteBranch()
+	remote := configmanager.GetGitRemote()
+
+	auth, err := buildAuth()
+	if err != nil {
+		logging.LogInfo(logging.KeyGitRemote, "restore push: failed to build auth: %v", err)
+	}
+
+	timeout := parsePushTimeout()
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	err = repo.PushContext(ctx, &git.PushOptions{
+		RemoteName: "origin",
+		RemoteURL:  remote,
+		RefSpecs:   []gitcfg.RefSpec{gitcfg.RefSpec("refs/heads/" + branch + ":refs/heads/" + branch)},
+		Auth:       auth,
+		Force:      true,
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, git.NoErrAlreadyUpToDate):
+			logging.LogInfo(logging.KeyGitRemote, "restore push: remote already up to date")
+			return nil
+		case errors.Is(err, context.DeadlineExceeded):
+			return fmt.Errorf("restore push: timed out after %s", timeout)
+		default:
+			return fmt.Errorf("restore push: push failed: %w", err)
+		}
+	}
+
+	logging.LogInfo(logging.KeyGitRemote, "restore: force-pushed restored state to %s/%s", remote, branch)
+	return nil
 }
 
 // EnsureRemote creates or updates the "origin" remote in .git/config

@@ -3,10 +3,13 @@ package server
 import (
 	"io"
 	"net/http"
+	"slices"
 
 	"github.com/go-chi/chi/v5"
 
 	"knov/internal/configmanager"
+	"knov/internal/files"
+	"knov/internal/git"
 	"knov/internal/job"
 	"knov/internal/jobStorage"
 	"knov/internal/logging"
@@ -31,10 +34,10 @@ func handleAPIGetBackups(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Create a backup
-// @Description Snapshots the selected storages (metadata, chat, kanban, notifications, config, search - all of them when none are given) into a new backup set and trims expired sets
+// @Description Snapshots the selected storages into a new backup set and trims expired sets. The default set (metadata, chat, kanban, notifications, config, search) is used when none are given; docs/media are optional and only included when named explicitly
 // @Tags system
 // @Accept application/x-www-form-urlencoded
-// @Param storages formData []string false "Storage names to include (repeatable); omit for a full backup"
+// @Param storages formData []string false "Storage names to include (repeatable); omit for the default backup (excludes docs/media)"
 // @Produce json,html
 // @Success 200 {string} string "backup set name"
 // @Router /api/system/backups [post]
@@ -58,14 +61,29 @@ func handleAPICreateBackup(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Restore a backup
-// @Description Takes a fresh safety snapshot, restores a backup set onto disk, then restarts the app to apply it. Runs in the background - poll GET /api/jobs/{id} (returned in the response body/fragment) for completion.
+// @Description Takes a fresh safety snapshot, restores a backup set onto disk, then restarts the app to apply it. If the set includes docs/media and a git remote is configured, the restored state is also force-pushed to it, overwriting anything there this device hasn't seen - confirm is then required to acknowledge that. Runs in the background - poll GET /api/jobs/{id} (returned in the response body/fragment) for completion.
 // @Tags system
-// @Produce json,html
+// @Accept application/x-www-form-urlencoded
 // @Param name path string true "Backup set name"
+// @Param confirm formData bool false "Required (true) when the set includes docs/media and a git remote is configured, acknowledging the restored state will be force-pushed to it"
+// @Produce json,html
 // @Success 200 {object} jobStorage.JobRecord
 // @Router /api/system/backups/{name}/restore [post]
 func handleAPIRestoreBackup(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
+
+	r.ParseForm()
+	// The restore job only commits/force-pushes when the set's manifest includes docs/media (the
+	// only storages that bypass git) - see job.restoreJob. Confirmation is only meaningful, so
+	// only required, for that case.
+	manifest, manifestErr := job.BackupManifest(name)
+	touchesGit := manifestErr == nil && (slices.Contains(manifest, files.DocsStorageName) || slices.Contains(manifest, files.MediaStorageName))
+	if touchesGit && git.RemoteEnabled() && r.FormValue("confirm") != "true" {
+		msg := translation.SprintfForRequest(configmanager.GetLanguage(), "restore requires confirm=true: a git remote is configured, so the restored state will be force-pushed to it")
+		notify.SetHeader(w, notify.LevelError, msg)
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, msg))
+		return
+	}
 
 	id, err := job.RunRestore(name)
 	if err != nil {

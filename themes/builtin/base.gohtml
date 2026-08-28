@@ -322,4 +322,19 @@
         </form>
     </div>
 </div>
+
+<div id="restore-modal" popover>
+    <div class="modal-content">
+        <h3>{{T "Restore"}}</h3>
+        <p id="restore-modal-message"></p>
+        <p id="restore-modal-warning" hidden></p>
+        <form id="restore-form" hx-post="" hx-target="#backup-status" hx-swap="innerHTML" hx-vals='{"confirm":"true"}'>
+            <div class="modal-actions">
+                <button type="submit" class="btn-danger">{{T "Restore"}}</button>
+                <button type="button" class="btn-secondary" popovertarget="restore-modal" popovertargetaction="hide">{{T "Cancel"}}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{ end }}

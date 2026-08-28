@@ -96,8 +96,8 @@ func caseCheckAutoBackup() test.CaseResult {
 }
 
 // caseCheckAutoBackupCronCatchesUp covers job.checkAutoBackup's cron-driven catch-up behavior
-// (backup.AutoBackupDue's schedule.Next(lastFullBackup) check), at minute precision rather than
-// caseCheckAutoBackup's whole-day one: given a full backup from 10 minutes ago, a cron target 5
+// (backup.AutoBackupDue's schedule.Next(lastDefaultBackup) check), at minute precision rather than
+// caseCheckAutoBackup's whole-day one: given a default backup from 10 minutes ago, a cron target 5
 // minutes in the future is not yet due; the same backup against a cron target 5 minutes in the
 // past is due (catching up on a slot that was missed, e.g. because the app wasn't running); once
 // caught up, the same past target is a no-op again. Wall-clock-relative fixtures, so this can
@@ -172,7 +172,7 @@ func caseCheckAutoBackupCronCatchesUp() test.CaseResult {
 }
 
 // caseListBackupLog covers job.ListBackupLog: an event referencing a set that was never
-// actually written comes back with Available=false and zeroed Full/Locked; a set on the target
+// actually written comes back with Available=false and zeroed Default/Locked; a set on the target
 // with no matching event still gets a synthetic row from its own name; entries sort newest
 // first (a backup event and its own restore event, logged moments apart). Redirects
 // KNOV_BACKUPS_PATH to a scratch directory, since ListBackupLog always reads the default target.
@@ -194,7 +194,7 @@ func caseListBackupLog() test.CaseResult {
 		return errCase(name, err)
 	}
 
-	// a) event referencing a set that was never written -> Available=false, Full/Locked zeroed
+	// a) event referencing a set that was never written -> Available=false, Default/Locked zeroed
 	if err := target.LogEvent(backup.EventBackup, "ghost-set", backup.SourceManual); err != nil {
 		return errCase(name, err)
 	}
@@ -238,14 +238,14 @@ func caseListBackupLog() test.CaseResult {
 		}
 	}
 
-	ghostOK := ghost != nil && !ghost.Available && !ghost.Full && !ghost.Locked
+	ghostOK := ghost != nil && !ghost.Available && !ghost.Default && !ghost.Locked
 	orphanOK := orphan != nil && orphan.Available && orphan.Kind == backup.EventBackup
 	orderOK := restoreIdx != -1 && backupIdx != -1 && restoreIdx < backupIdx
 
 	success := ghostOK && orphanOK && orderOK
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: "a deleted-set event is Available=false with Full/Locked zeroed, an event-less set gets a synthetic row, and the later restore event sorts before its own backup event",
+		Expected: "a deleted-set event is Available=false with Default/Locked zeroed, an event-less set gets a synthetic row, and the later restore event sorts before its own backup event",
 		Actual:   fmt.Sprintf("ghostOK=%v orphanOK=%v orderOK=%v entries=%d", ghostOK, orphanOK, orderOK, len(entries)),
 		Success:  success,
 	}
