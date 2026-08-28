@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 
 	"knov/internal/configStorage"
 	"knov/internal/keylock"
 	"knov/internal/logging"
+	"knov/internal/pathutils"
 	"knov/internal/utils"
 )
 
@@ -173,6 +175,46 @@ func Update(dashboard *Dashboard) error {
 
 	logging.LogDebug(logging.KeyApp, "updated dashboard: %s", dashboard.ID)
 	return nil
+}
+
+// PatchFilePathForMove updates every dashboard's fileContent widgets that reference oldPath,
+// replacing it with newPath - so a rename/move doesn't leave a widget silently pointing at a
+// path that no longer exists. Registered onto files.OnFileMoved at startup (see main.go). A
+// no-op for a path no widget references.
+func PatchFilePathForMove(oldPath, newPath string) {
+	dashboards, err := GetAll()
+	if err != nil {
+		logging.LogWarning(logging.KeyApp, "dashboard: failed to list dashboards for move patch: %v", err)
+		return
+	}
+
+	oldRel := pathutils.ToRelative(oldPath)
+	newRel := pathutils.ToRelative(newPath)
+
+	referencesOld := func(w Widget) bool {
+		return w.Type == WidgetTypeFileContent && w.Config.FileContent != nil &&
+			pathutils.ToRelative(w.Config.FileContent.FilePath) == oldRel
+	}
+
+	for _, d := range dashboards {
+		if !slices.ContainsFunc(d.Widgets, referencesOld) {
+			continue
+		}
+
+		_, err := Mutate(d.ID, func(dash *Dashboard) error {
+			for i := range dash.Widgets {
+				if w := &dash.Widgets[i]; referencesOld(*w) {
+					w.Config.FileContent.FilePath = newRel
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			logging.LogWarning(logging.KeyApp, "dashboard: failed to patch widget path for %s -> %s in dashboard %s: %v", oldPath, newPath, d.ID, err)
+		} else {
+			logging.LogInfo(logging.KeyApp, "dashboard: patched widget path for %s -> %s in dashboard %s", oldPath, newPath, d.ID)
+		}
+	}
 }
 
 // isValidLayout checks if the layout is one of the allowed enum values

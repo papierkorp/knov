@@ -11,12 +11,14 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
+	"knov/internal/dashboard"
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/fonts"
 	"knov/internal/git"
 	"knov/internal/job"
 	"knov/internal/jobStorage"
+	"knov/internal/kanban"
 	"knov/internal/kanbanStorage"
 	"knov/internal/logging"
 	"knov/internal/metadataStorage"
@@ -155,6 +157,11 @@ func main() {
 	thememanager.InitThemeManager()
 	// register filter index regeneration to run after every metadata rebuild
 	files.OnMetadataRebuild = filter.RegenerateAllIndexes
+	// keep kanban board order and dashboard widgets from going stale on a file rename/move
+	files.OnFileMoved = func(oldPath, newPath string) {
+		kanban.PatchPathForMove(oldPath, newPath)
+		dashboard.PatchFilePathForMove(oldPath, newPath)
+	}
 
 	// after config/theme/OnMetadataRebuild are wired up, since a resumed job's background
 	// cache rebuild depends on them

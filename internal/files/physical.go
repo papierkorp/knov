@@ -22,6 +22,21 @@ var ErrMoveTargetExists = errors.New("target file already exists")
 // move as failed.
 var ErrLinkUpdateFailed = errors.New("failed to update links after move")
 
+// OnFileMoved is called after a doc file's on-disk location changes, with its relative old and
+// new paths (the same form MoveFileNoRefresh/MoveFolder take - no docs/ prefix). Packages that
+// keep their own stored reference to a file's path (kanban board order, dashboard widgets)
+// register here at startup (see main.go) to patch that reference instead of silently going
+// stale - files can't import them directly without an import cycle (kanban already imports
+// files). Fired once the physical move has actually succeeded, regardless of whether the
+// subsequent link-content update below also succeeds.
+var OnFileMoved func(oldPath, newPath string)
+
+func notifyFileMoved(oldPath, newPath string) {
+	if OnFileMoved != nil {
+		OnFileMoved(oldPath, newPath)
+	}
+}
+
 // movePhysical performs just the on-disk rename of a single file under the root's physical-op
 // lock (docs or media, per isMedia) - the lock already serializes every physical mutation of
 // that root, so the stat-then-rename below can't race a concurrent mover in this process. Kept
@@ -58,6 +73,7 @@ func MoveFileNoRefresh(key logging.Key, oldRelPath, newRelPath string) error {
 	if err := movePhysical(pathutils.ToDocsPath(oldRelPath), pathutils.ToDocsPath(newRelPath), false); err != nil {
 		return err
 	}
+	notifyFileMoved(oldRelPath, newRelPath)
 	if err := UpdateLinksForMovedFileNoRefresh(key, oldRelPath, newRelPath); err != nil {
 		return fmt.Errorf("%w: %v", ErrLinkUpdateFailed, err)
 	}
@@ -175,6 +191,7 @@ func MoveFolder(key logging.Key, currentFullPath, newFullPath string) (updated, 
 	}
 
 	for _, f := range filesToUpdate {
+		notifyFileMoved(f.oldRel, f.newRel)
 		if err := UpdateLinksForMovedFileNoRefresh(key, f.oldRel, f.newRel); err != nil {
 			logging.LogWarning(key, "move-folder: failed to update links for %s -> %s: %v", f.oldRel, f.newRel, err)
 			failed++

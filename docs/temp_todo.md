@@ -35,7 +35,6 @@
   - releasenotes does not work
 - chore
   - async jobs follow up candidates
-  - switch to static id instead of using the path
   - in the logs sidebar use a "summary" or "short" version or something like this with: time + level + message only + a parameter for a refresh button on top and use the all (merged)
   - add examples / example usage to template_data.md and explain what a template data acutally is and add a link to the create_your_own_theme.md file
   - remove allowing to set the datapath in the admin (should i leave git repository in? if yes we should also add the user/ssh key management and a test connection button otherwise it doesnt make much sense)

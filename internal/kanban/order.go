@@ -3,8 +3,10 @@ package kanban
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 
 	"knov/internal/configStorage"
+	"knov/internal/configmanager"
 	"knov/internal/keylock"
 	"knov/internal/logging"
 )
@@ -62,6 +64,45 @@ func MutateOrder(folderPath string, fn func(o Order)) error {
 	}
 	fn(o)
 	return SaveOrder(folderPath, o)
+}
+
+// PatchPathForMove updates every board's stored card order that references oldPath, replacing
+// it with newPath - so a rename/move doesn't cost a card its remembered drag-drop position.
+// Registered onto files.OnFileMoved at startup (see main.go). A no-op for a path that isn't a
+// kanban card, or isn't ordered on any board yet.
+func PatchPathForMove(oldPath, newPath string) {
+	for _, board := range configmanager.GetKanbanBoards() {
+		o, err := GetOrder(board.FolderPath)
+		if err != nil {
+			continue
+		}
+		referenced := false
+		for _, paths := range o {
+			if slices.Contains(paths, oldPath) {
+				referenced = true
+				break
+			}
+		}
+		if !referenced {
+			continue
+		}
+
+		err = MutateOrder(board.FolderPath, func(o Order) {
+			for status, paths := range o {
+				for i, p := range paths {
+					if p == oldPath {
+						paths[i] = newPath
+					}
+				}
+				o[status] = paths
+			}
+		})
+		if err != nil {
+			logging.LogWarning(logging.KeyApp, "kanban: failed to patch order for moved card %s -> %s in board %s: %v", oldPath, newPath, board.FolderPath, err)
+		} else {
+			logging.LogInfo(logging.KeyApp, "kanban: patched order for moved card %s -> %s in board %s", oldPath, newPath, board.FolderPath)
+		}
+	}
 }
 
 // ApplyOrder reorders cards according to stored order.
