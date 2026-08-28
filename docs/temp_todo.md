@@ -41,7 +41,6 @@
   - add examples / example usage to template_data.md and explain what a template data acutally is and add a link to the create_your_own_theme.md file
   - remove allowing to set the datapath in the admin (should i leave git repository in? if yes we should also add the user/ssh key management and a test connection button otherwise it doesnt make much sense)
   - for all tests: make it so it doesnt affect the live data (e.g. create a new database just for the test)
-  - add a remove/delete button to backups
   - i used: `git remote add origin git@github.com:papierkorp/test2.git && git branch -M main && git push -u origin main` but the app still said i dont have a git remote
 
 # every other time
@@ -67,6 +66,7 @@ give me an overview of the current git changes, dont make any changes yet just g
 - does it fit in the app or is it out of place?
 - if you could refactor it - are there better ways to implement it?
 - are there some serious problems with the current solution?
+- what is it doing exactly?
 
 ## review
 

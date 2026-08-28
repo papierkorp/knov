@@ -136,6 +136,31 @@ func handleBackupLockToggle(w http.ResponseWriter, r *http.Request, apply func(s
 	writeResponse(w, r, entries, render.RenderBackupLog(entries))
 }
 
+// @Summary Delete a backup
+// @Description Permanently deletes a backup set. Rejected while the set is locked
+// @Tags system
+// @Produce json,html
+// @Param name path string true "Backup set name"
+// @Success 200 {array} backup.LogEntry
+// @Router /api/system/backups/{name} [delete]
+func handleAPIDeleteBackup(w http.ResponseWriter, r *http.Request) {
+	name := chi.URLParam(r, "name")
+
+	if err := job.DeleteBackup(name); err != nil {
+		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error()))
+		writeResponse(w, r, nil, render.RenderStatusMessage(render.StatusError, translation.SprintfForRequest(configmanager.GetLanguage(), "%s", err.Error())))
+		return
+	}
+
+	entries, err := job.ListBackupLog()
+	if err != nil {
+		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to list backups"), http.StatusInternalServerError)
+		return
+	}
+	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "backup deleted"))
+	writeResponse(w, r, entries, render.RenderBackupLog(entries))
+}
+
 // @Summary Download a backup
 // @Description Downloads a backup set's raw .tar.gz archive
 // @Tags system

@@ -5593,6 +5593,39 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/backups/{name}": {
+            "delete": {
+                "description": "Permanently deletes a backup set. Rejected while the set is locked",
+                "produces": [
+                    "application/json",
+                    "text/html"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Delete a backup",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Backup set name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/backup.LogEntry"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/backups/{name}/download": {
             "get": {
                 "description": "Downloads a backup set's raw .tar.gz archive",
@@ -5688,7 +5721,7 @@ const docTemplate = `{
         },
         "/api/system/backups/{name}/restore": {
             "post": {
-                "description": "Takes a fresh safety snapshot, restores a backup set onto disk, then restarts the app to apply it. If a git remote is configured, the restored state is also force-pushed to it, overwriting anything there this device hasn't seen - confirm is then required to acknowledge that. Runs in the background - poll GET /api/jobs/{id} (returned in the response body/fragment) for completion.",
+                "description": "Takes a fresh safety snapshot, restores a backup set onto disk, then restarts the app to apply it. If the set includes docs/media and a git remote is configured, the restored state is also force-pushed to it, overwriting anything there this device hasn't seen - confirm is then required to acknowledge that. Runs in the background - poll GET /api/jobs/{id} (returned in the response body/fragment) for completion.",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -5710,7 +5743,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "boolean",
-                        "description": "Required (true) when a git remote is configured, acknowledging the restored state will be force-pushed to it",
+                        "description": "Required (true) when the set includes docs/media and a git remote is configured, acknowledging the restored state will be force-pushed to it",
                         "name": "confirm",
                         "in": "formData"
                     }

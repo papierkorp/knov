@@ -316,3 +316,20 @@ func OpenBackup(name string) (io.ReadCloser, error) {
 	}
 	return target.Read(name)
 }
+
+// DeleteBackup permanently removes a backup set. Rejected while the set is locked - unlock it
+// first via UnlockBackup - since a lock exists specifically to protect a set from deletion.
+func DeleteBackup(name string) error {
+	target, err := resolveExistingSet(name)
+	if err != nil {
+		return err
+	}
+	locked, err := target.Locked(name)
+	if err != nil {
+		return fmt.Errorf("failed to check lock on %s: %w", name, err)
+	}
+	if locked {
+		return fmt.Errorf("backup set %s is locked, unlock it first", name)
+	}
+	return target.Delete(name)
+}

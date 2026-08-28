@@ -181,6 +181,7 @@ func NewRouter() *chi.Mux {
 				r.Post("/{name}/lock", handleAPILockBackup)
 				r.Delete("/{name}/lock", handleAPIUnlockBackup)
 				r.Get("/{name}/download", handleAPIDownloadBackup)
+				r.Delete("/{name}", handleAPIDeleteBackup)
 			})
 		})
 

@@ -70,12 +70,12 @@ func backupSourceLabel(t func(string, ...any) string, e backup.LogEntry) string 
 }
 
 // RenderBackupLog renders the backup/restore history table, newest first - one row per backup
-// created or restore applied. Restore is destructive, so its button carries a confirm prompt.
-// A row's actions (restore/lock/download) only appear while the set it refers to is still
-// available - once rotated away (or, for a restore row, once the restored-from set is gone),
-// the row stays for the historical record but with no actions, just a note that it's gone.
-// There's no manual delete action - rotation trims automatically - but a set can be locked to
-// opt out of that entirely, e.g. right before a risky change.
+// created or restore applied. Restore and delete are destructive, so their buttons carry a
+// confirm prompt. A row's actions (restore/lock/download/delete) only appear while the set it
+// refers to is still available - once rotated away (or, for a restore row, once the
+// restored-from set is gone), the row stays for the historical record but with no actions, just
+// a note that it's gone. A set can be locked to opt out of both automatic rotation and manual
+// deletion, e.g. right before a risky change.
 func RenderBackupLog(entries []backup.LogEntry) string {
 	lang := configmanager.GetLanguage()
 	t := func(key string, args ...any) string {
@@ -112,16 +112,26 @@ func RenderBackupLog(entries []backup.LogEntry) string {
 			if git.RemoteEnabled() && restoreTouchesGit(manifest) {
 				restoreWarning = t("The restored state will also be force-pushed to the configured remote, overwriting anything there - or on any other synced device - that this device hasn't seen.")
 			}
+			deleteBtn := ""
+			if !e.Locked {
+				deleteMessage := t("Delete backup %s? This cannot be undone.", e.Set)
+				deleteBtn = fmt.Sprintf(
+					`<button class="btn-danger-icon" hx-delete="/api/system/backups/%s" hx-confirm="%s" hx-target="#backup-list" hx-swap="innerHTML" title="%s"><i class="fa fa-trash"></i></button>`,
+					template.HTMLEscapeString(e.Set), template.HTMLEscapeString(deleteMessage), t("Delete"),
+				)
+			}
 			actions = fmt.Sprintf(
 				`<button class="btn-secondary" %s="/api/system/backups/%s/lock" hx-target="#backup-list" hx-swap="innerHTML">%s</button>`+
 					`<a class="btn-secondary" href="/api/system/backups/%s/download" download>%s</a>`+
-					`<button type="button" class="btn-secondary backup-restore-btn" popovertarget="restore-modal" data-url="/api/system/backups/%s/restore" data-message="%s" data-warning="%s">%s</button>`,
+					`<button type="button" class="btn-secondary backup-restore-btn" popovertarget="restore-modal" data-url="/api/system/backups/%s/restore" data-message="%s" data-warning="%s">%s</button>`+
+					`%s`,
 				lockVerb, template.HTMLEscapeString(e.Set), lockLabel,
 				template.HTMLEscapeString(e.Set), t("Download"),
 				template.HTMLEscapeString(e.Set),
 				template.HTMLEscapeString(restoreMessage),
 				template.HTMLEscapeString(restoreWarning),
 				t("Restore"),
+				deleteBtn,
 			)
 		}
 
