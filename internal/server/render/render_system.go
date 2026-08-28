@@ -167,6 +167,47 @@ func RenderLogTable(entries []logging.LogEntry) string {
 	return sb.String()
 }
 
+// RenderLogTableSummary renders a compact time + level + message table, newest first, with a
+// refresh button on top - for the rail "logs" content snippet's flyout, where the full table's
+// Source/Caller columns are too much detail for that small space (mirrors RenderBackupSummary).
+func RenderLogTableSummary(entries []logging.LogEntry) string {
+	lang := configmanager.GetLanguage()
+	t := func(key string, args ...any) string {
+		return translation.SprintfForRequest(lang, key, args...)
+	}
+
+	var sb strings.Builder
+	sb.WriteString(`<style>
+.log-summary-toolbar { display: flex; justify-content: flex-end; margin-bottom: .4rem; }
+.log-summary-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.log-summary-table th { text-align: left; padding: .25rem .5rem; border-bottom: 2px solid var(--border); }
+.log-summary-table td { padding: .2rem .5rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); vertical-align: top; }
+.log-summary-table td:nth-child(1) { white-space: nowrap; }
+.log-summary-table td:nth-child(2) { white-space: nowrap; }
+.log-summary-table td:nth-child(3) { word-break: break-word; }
+.log-summary-link { display: inline-block; margin-top: .5rem; font-size: .875rem; }
+</style>`)
+	fmt.Fprintf(&sb, `<div class="log-summary-toolbar"><button class="btn-secondary" hx-get="/api/logs/file?name=all&view=summary" hx-target="closest .flyout-content" hx-swap="innerHTML"><i class="fa fa-rotate"></i> %s</button></div>`,
+		t("Refresh"))
+	fmt.Fprintf(&sb, `<table class="log-summary-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>`,
+		t("Time"), t("Level"), t("Message"))
+	if len(entries) == 0 {
+		fmt.Fprintf(&sb, `<tr><td colspan="3" style="text-align:center;color:var(--text-secondary);">%s</td></tr>`, t("No logs yet"))
+	}
+	for i := len(entries) - 1; i >= 0; i-- {
+		e := entries[i]
+		fmt.Fprintf(&sb, `<tr class="log-level-%s"><td>%s</td><td>%s</td><td>%s</td></tr>`,
+			html.EscapeString(e.Level),
+			html.EscapeString(configmanager.FormatDateTimeSeconds(e.Time)),
+			html.EscapeString(e.Level),
+			html.EscapeString(e.Message),
+		)
+	}
+	sb.WriteString(`</tbody></table>`)
+	fmt.Fprintf(&sb, `<a class="log-summary-link" href="/system/logs">%s &rarr;</a>`, t("open full logs"))
+	return sb.String()
+}
+
 var docsFiles embed.FS
 
 func SetDocsFiles(fs embed.FS) {

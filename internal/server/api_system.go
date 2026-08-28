@@ -57,7 +57,12 @@ func handleAPIGetLogs(w http.ResponseWriter, r *http.Request) {
 // Unlike a single file, this reads and re-sorts on every request rather than
 // supporting the "load earlier lines" chunking handleAPIGetLogsFile does.
 func handleAPIGetLogsFileAll(w http.ResponseWriter, r *http.Request) {
+	summary := r.URL.Query().Get("view") == "summary"
+
 	limit := 1000
+	if summary {
+		limit = 20 // compact rail sidebar view - not the full history
+	}
 	if v := r.URL.Query().Get("limit"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
 			limit = n
@@ -94,6 +99,10 @@ func handleAPIGetLogsFileAll(w http.ResponseWriter, r *http.Request) {
 		entries = entries[len(entries)-limit:]
 	}
 
+	if summary {
+		writeResponse(w, r, entries, render.RenderLogTableSummary(entries))
+		return
+	}
 	writeResponse(w, r, entries, render.RenderLogTable(entries))
 }
 
@@ -118,7 +127,8 @@ func resolveLogFilePath(r *http.Request) string {
 // @Tags system
 // @Produce html
 // @Param name query string false "log file name, or 'all' to merge every key's log"
-// @Param limit query int false "max lines/entries to return (default 1000)"
+// @Param view query string false "'summary' for a compact time+level+message view with a lower default limit (name=all only)"
+// @Param limit query int false "max lines/entries to return (default 1000, or 20 for view=summary)"
 // @Param offset query int false "lines to skip from the end, for paging a single file"
 // @Param chunk query bool false "return only the appended fragment, without the surrounding container"
 // @Success 200 {string} string "log lines HTML"

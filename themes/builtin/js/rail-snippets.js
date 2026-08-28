@@ -88,7 +88,7 @@ const RAIL_SNIPPETS = [
   // GetSystemVersion/GetSystemChangelog).
   { id: "settings", icon: "fa-gear", label: "settings", kind: "link", link: "/settings" },
   { id: "admin", icon: "fa-screwdriver-wrench", label: "admin", kind: "link", link: "/admin" },
-  { id: "logs", icon: "fa-file-lines", label: "logs", kind: "content", url: () => "/api/logs" },
+  { id: "logs", icon: "fa-file-lines", label: "logs", kind: "content", url: () => "/api/logs/file?name=all&view=summary" },
   { id: "logs-page", icon: "fa-arrow-up-right-from-square", label: "open logs page", kind: "link", link: "/system/logs" },
   { id: "jobs", icon: "fa-list-check", label: "jobs", kind: "content", url: () => "/api/system/jobs" },
   { id: "jobs-page", icon: "fa-arrow-up-right-from-square", label: "open jobs page", kind: "link", link: "/system/jobs" },
