@@ -29,7 +29,6 @@
     - select headers/anchors from different files and export into one markdown/pdf
     - select different files and export into one markdown/pdf
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
-  - let me allow to select what to auto backup/create multiple auto backups
 - fixes
   - media rename?
   - releasenotes does not work

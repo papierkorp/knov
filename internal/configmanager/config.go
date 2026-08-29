@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"knov/internal/backup"
 	"knov/internal/logging"
 	"knov/internal/utils"
 
@@ -65,8 +66,7 @@ type AppConfig struct {
 	KanbanBoards                []KanbanBoard
 	NotifyDuration              int
 	DefaultEditor               string
-	BackupAutoEnabled           bool
-	BackupAutoCron              string
+	BackupAutoProfiles          []BackupProfile
 	BackupRotationKeepDays      int
 	BackupRotationKeepDefault   int
 	LogFileEnabled              bool
@@ -90,6 +90,18 @@ type KanbanBoard struct {
 type AutoCreateTag struct {
 	FolderPath string
 	Tag        string
+}
+
+// BackupProfile is one independently scheduled automatic backup: its own cron expression and
+// storage selection. Name is slugified from the configured name since it's stamped onto every set
+// the profile creates (see backup.RunProfile) and used to scope that profile's own due-tracking
+// (backup.AutoBackupDue) - a blank or post-slugify-duplicate name is rejected by
+// getBackupProfilesEnv rather than silently generated/renumbered, so a profile's identity never
+// shifts across restarts due to entry order.
+type BackupProfile struct {
+	Name     string
+	Cron     string
+	Storages []string // empty = the default backup set (job.DefaultStorageNames) at run time
 }
 
 // InitAppConfig initializes app config from environment variables
@@ -151,15 +163,10 @@ func GetNotifyDuration() int {
 	return appConfig.NotifyDuration
 }
 
-// GetBackupAutoEnabled returns whether automatic background backups are enabled
-func GetBackupAutoEnabled() bool {
-	return appConfig.BackupAutoEnabled
-}
-
-// GetBackupAutoCron returns the standard 5-field cron expression (e.g. "0 18 * * *") an automatic
-// backup is scheduled on, when GetBackupAutoEnabled is true
-func GetBackupAutoCron() string {
-	return appConfig.BackupAutoCron
+// GetBackupAutoProfiles returns the configured automatic backup profiles - each independently
+// scheduled and storage-selected. An empty list means automatic backups are disabled entirely.
+func GetBackupAutoProfiles() []BackupProfile {
+	return appConfig.BackupAutoProfiles
 }
 
 // GetBackupRotationKeepDays returns how many days of backup sets (default or partial) are always
@@ -175,14 +182,12 @@ func GetBackupRotationKeepDefault() int {
 	return appConfig.BackupRotationKeepDefault
 }
 
-// SetBackupAutoEnabled overrides BackupAutoEnabled/BackupAutoCron in memory only (no .env write) -
-// these are AppConfig fields by design (see docs/temp_todo.md's backup-solution
-// section), not live Settings, so there's no production setter. Exists for backuptest to
-// exercise job.checkAutoBackup's enabled/disabled/due branches without a real restart; callers
-// must restore the original values themselves.
-func SetBackupAutoEnabled(enabled bool, cronExpr string) {
-	appConfig.BackupAutoEnabled = enabled
-	appConfig.BackupAutoCron = cronExpr
+// SetBackupAutoProfiles overrides BackupAutoProfiles in memory only (no .env write) - this is an
+// AppConfig field by design, not a live Setting, so there's no production setter. Exists for
+// backuptest to exercise job.checkAutoBackup's per-profile enabled/disabled/due branches without a
+// real restart; callers must restore the original value themselves.
+func SetBackupAutoProfiles(profiles []BackupProfile) {
+	appConfig.BackupAutoProfiles = profiles
 }
 
 // SetBackupsPath overrides BackupsPath in memory only (no .env write) - lets backuptest point
@@ -296,6 +301,71 @@ func applyKanbanFolderSyncEnv(boards []KanbanBoard, key string) []KanbanBoard {
 		boards[i].FolderSync = true
 	}
 	return boards
+}
+
+// getBackupProfilesEnv parses "name:cron:storages;name:cron:storages" into a list of automatic
+// backup profiles - storages is itself comma-separated and, along with its leading ":", may be
+// omitted entirely for the default backup set at run time (e.g. "daily:0 0 * * *"). An entry with
+// a malformed shape, a blank name, an invalid cron expression, or an unregistered storage name is
+// dropped with a warning rather than failing startup or silently renaming/renumbering. Two entries
+// colliding on the same name once slugified disable automatic backups entirely (rather than
+// silently keeping just the first) - each profile's own due-tracking is scoped by that name (see
+// backup.HasProfileTag), so a silent partial drop would leave a schedule the user configured
+// quietly not running with no indication why.
+func getBackupProfilesEnv(key string) []BackupProfile {
+	var profiles []BackupProfile
+	seenNames := map[string]bool{}
+	value := os.Getenv(key)
+	if value == "" {
+		return profiles
+	}
+	for _, entry := range strings.Split(value, ";") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		parts := strings.SplitN(entry, ":", 3)
+		if len(parts) < 2 {
+			logging.LogWarning(logging.KeyApp, "%s entry %q is not name:cron[:storages], ignoring", key, entry)
+			continue
+		}
+		rawName := strings.TrimSpace(parts[0])
+		if rawName == "" {
+			logging.LogWarning(logging.KeyApp, "%s entry %q has no name, ignoring", key, entry)
+			continue
+		}
+		cronExpr := strings.TrimSpace(parts[1])
+		if _, err := backup.ParseCronSchedule(cronExpr); err != nil {
+			logging.LogWarning(logging.KeyApp, "%s entry %q has invalid cron expression %q, ignoring: %v", key, entry, cronExpr, err)
+			continue
+		}
+		var storagesRaw string
+		if len(parts) == 3 {
+			storagesRaw = parts[2]
+		}
+		storages := splitList(storagesRaw)
+		registered := backup.RegisteredNames()
+		if i := slices.IndexFunc(storages, func(s string) bool { return !slices.Contains(registered, s) }); i != -1 {
+			logging.LogWarning(logging.KeyApp, "%s entry %q has unknown storage %q, ignoring", key, entry, storages[i])
+			continue
+		}
+		name := utils.GenerateID(rawName, map[string]int{})
+		if seenNames[name] {
+			logging.LogWarning(logging.KeyApp, "%s entry %q has duplicate profile name %q, disabling all automatic backup profiles", key, entry, name)
+			return nil
+		}
+		seenNames[name] = true
+		profiles = append(profiles, BackupProfile{Name: name, Cron: cronExpr, Storages: storages})
+	}
+	return profiles
+}
+
+func formatBackupProfiles(profiles []BackupProfile) string {
+	parts := make([]string, 0, len(profiles))
+	for _, p := range profiles {
+		parts = append(parts, p.Name+":"+p.Cron+":"+strings.Join(p.Storages, ","))
+	}
+	return strings.Join(parts, "; ")
 }
 
 // getAutoCreateTagsEnv parses "folder/path:tagname, tagname2, other/folder:tagname3" into a

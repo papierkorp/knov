@@ -42,6 +42,27 @@ func restoreTouchesGit(manifest []string) bool {
 	return slices.Contains(manifest, files.DocsStorageName) || slices.Contains(manifest, files.MediaStorageName)
 }
 
+// autoBackupStatusHTML renders the configured auto-backup profiles (KNOV_BACKUP_AUTO_PROFILES) as
+// a short status block, one line per profile naming its cron schedule and storage selection
+// ("default" when none is set, i.e. the default backup set at run time) - "disabled" when none are
+// configured.
+func autoBackupStatusHTML(t func(string, ...any) string) string {
+	profiles := configmanager.GetBackupAutoProfiles()
+	if len(profiles) == 0 {
+		return fmt.Sprintf(`<p class="backup-auto-status">%s</p>`, template.HTMLEscapeString(t("Auto backup: disabled")))
+	}
+	var sb strings.Builder
+	for _, p := range profiles {
+		storages := strings.Join(p.Storages, ", ")
+		if storages == "" {
+			storages = t("default")
+		}
+		fmt.Fprintf(&sb, `<p class="backup-auto-status">%s</p>`,
+			template.HTMLEscapeString(t("Auto backup %s: cron %s, storages: %s", p.Name, p.Cron, storages)))
+	}
+	return sb.String()
+}
+
 // rowManifest returns e.Set's manifest, fetched once per row and shared between
 // backupContentsLabel and restoreTouchesGit rather than each reading the archive on its own. Nil
 // whenever there's nothing to read: e is a default set (its manifest is never shown), unavailable
@@ -58,7 +79,7 @@ func rowManifest(e backup.LogEntry) []string {
 }
 
 // backupSourceLabel describes what triggered a backup-kind entry: "manual", "scheduled" (via
-// KNOV_BACKUP_AUTO_ENABLED), or "restore" (the pre-restore safety snapshot every restore takes
+// KNOV_BACKUP_AUTO_PROFILES), or "restore" (the pre-restore safety snapshot every restore takes
 // first). Restore-kind entries get "-" instead - a restore is always manually triggered (there's
 // no scheduled-restore feature), so showing a trigger there would be redundant. Also "-" for
 // entries logged before this field existed.
@@ -83,12 +104,7 @@ func RenderBackupLog(entries []backup.LogEntry) string {
 	}
 
 	var sb strings.Builder
-	if configmanager.GetBackupAutoEnabled() {
-		fmt.Fprintf(&sb, `<p class="backup-auto-status">%s</p>`,
-			template.HTMLEscapeString(t("Auto backup: enabled (cron: %s)", configmanager.GetBackupAutoCron())))
-	} else {
-		fmt.Fprintf(&sb, `<p class="backup-auto-status">%s</p>`, template.HTMLEscapeString(t("Auto backup: disabled")))
-	}
+	sb.WriteString(autoBackupStatusHTML(t))
 	fmt.Fprintf(&sb, `<table class="backup-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th></th></tr></thead><tbody>`,
 		t("Time"), t("Event"), t("Trigger"), t("Contents"))
 	if len(entries) == 0 {
@@ -164,12 +180,7 @@ func RenderBackupSummary(entries []backup.LogEntry, showActions bool) string {
 .backup-summary-table td { padding: .2rem .5rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); }
 .backup-summary-link { display: inline-block; margin-top: .75rem; font-size: .875rem; }
 </style>`)
-	if configmanager.GetBackupAutoEnabled() {
-		fmt.Fprintf(&sb, `<p class="backup-auto-status">%s</p>`,
-			template.HTMLEscapeString(t("Auto backup: enabled (cron: %s)", configmanager.GetBackupAutoCron())))
-	} else {
-		fmt.Fprintf(&sb, `<p class="backup-auto-status">%s</p>`, template.HTMLEscapeString(t("Auto backup: disabled")))
-	}
+	sb.WriteString(autoBackupStatusHTML(t))
 	fmt.Fprintf(&sb, `<table class="backup-summary-table"><thead><tr><th>%s</th><th>%s</th></tr></thead><tbody>`,
 		t("Time"), t("Event"))
 	if len(entries) == 0 {
@@ -232,7 +243,7 @@ func HandleSystemBackup(w http.ResponseWriter, r *http.Request) {
 .backup-actions { display: flex; gap: .4rem; justify-content: flex-end; }
 .backup-unavailable { color: var(--text-secondary); font-style: italic; }
 </style>` +
-		fmt.Sprintf(`<p class="backup-note">%s</p>`, t("Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.")) +
+		fmt.Sprintf(`<p class="backup-note">%s</p>`, t("Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backup profiles are configured via KNOV_BACKUP_AUTO_PROFILES, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.")) +
 		`<form class="backup-create-form" hx-post="/api/system/backups" hx-target="#backup-list" hx-swap="innerHTML" hx-indicator="#backup-status">` +
 		fmt.Sprintf(`<div class="backup-storage-select">%s</div>`, renderBackupStorageCheckboxes()) +
 		`<div class="backup-toolbar">` +

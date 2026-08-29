@@ -70,16 +70,17 @@ func BackupManifest(setName string) ([]string, error) {
 }
 
 type backupJob struct {
-	target backup.BackupTarget
-	source backup.EventSource
-	names  []string
-	name   string
+	target  backup.BackupTarget
+	source  backup.EventSource
+	profile string // "" for a manual backup, otherwise the auto-backup profile that triggered it
+	names   []string
+	name    string
 }
 
 func (j *backupJob) Name() string { return "backup" }
 
 func (j *backupJob) Run() error {
-	name, err := backup.Run(j.target, j.source, j.names...)
+	name, err := backup.RunProfile(j.target, j.source, j.profile, j.names...)
 	if err != nil {
 		return err
 	}
@@ -105,36 +106,31 @@ func rotateBackups(target backup.BackupTarget) error {
 // empty means DefaultStorageNames (the default backup), which excludes optional storages like
 // docs/media unless named explicitly. Returns the created set's name.
 func RunBackup(names ...string) (string, error) {
-	return runBackup(backup.SourceManual, names...)
+	return runBackup(backup.SourceManual, "", names...)
 }
 
-func runBackup(source backup.EventSource, names ...string) (string, error) {
+func runBackup(source backup.EventSource, profile string, names ...string) (string, error) {
 	target, err := DefaultBackupTarget()
 	if err != nil {
 		return "", fmt.Errorf("failed to open backup target: %w", err)
 	}
-	j := &backupJob{target: target, source: source, names: names}
+	j := &backupJob{target: target, source: source, profile: profile, names: names}
 	if err := execute(&backupMu, j); err != nil {
 		return "", err
 	}
 	return j.name, nil
 }
 
-// checkAutoBackup runs a default backup if automatic backups are enabled and it's due per
-// KNOV_BACKUP_AUTO_CRON. Ticked from Start() on a fixed internal cadence
-// (backupAutoCheckInterval) - the schedule users actually control is when a backup is taken, not
-// how often this check runs. Only default sets count towards being due - a manually-triggered
-// partial backup (e.g. "just metadata") must not push back when the next scheduled default
-// backup is due.
+// checkAutoBackup runs every configured auto-backup profile (KNOV_BACKUP_AUTO_PROFILES) that's
+// due per its own cron schedule. Ticked from Start() on a fixed internal cadence
+// (backupAutoCheckInterval) - the schedule users actually control is when each profile's backup
+// is taken, not how often this check runs. Each profile is due-tracked independently (see
+// backup.AutoBackupDue) off the newest set it itself created, so one profile being behind
+// schedule (or never having run yet) never affects another's, and a manually-triggered backup
+// never pushes any profile's next due time back.
 func checkAutoBackup() {
-	if !configmanager.GetBackupAutoEnabled() {
-		return
-	}
-
-	raw := configmanager.GetBackupAutoCron()
-	schedule, err := backup.ParseCronSchedule(raw)
-	if err != nil {
-		logging.LogWarning(logging.KeyApp, "backup: invalid KNOV_BACKUP_AUTO_CRON %q: %v", raw, err)
+	profiles := configmanager.GetBackupAutoProfiles()
+	if len(profiles) == 0 {
 		return
 	}
 
@@ -143,17 +139,24 @@ func checkAutoBackup() {
 		logging.LogWarning(logging.KeyApp, "backup: failed to check auto-backup due time: %v", err)
 		return
 	}
-	due, err := backup.AutoBackupDue(target, schedule)
-	if err != nil {
-		logging.LogWarning(logging.KeyApp, "backup: failed to check auto-backup due time: %v", err)
-		return
-	}
-	if !due {
-		return
-	}
 
-	if _, err := runBackup(backup.SourceScheduled); err != nil && !errors.Is(err, ErrAlreadyRunning) {
-		logging.LogWarning(logging.KeyApp, "backup: automatic backup failed: %v", err)
+	for _, p := range profiles {
+		schedule, err := backup.ParseCronSchedule(p.Cron)
+		if err != nil {
+			logging.LogWarning(logging.KeyApp, "backup: profile %q has invalid cron %q: %v", p.Name, p.Cron, err)
+			continue
+		}
+		due, err := backup.AutoBackupDue(target, schedule, p.Name)
+		if err != nil {
+			logging.LogWarning(logging.KeyApp, "backup: failed to check auto-backup due time for profile %q: %v", p.Name, err)
+			continue
+		}
+		if !due {
+			continue
+		}
+		if _, err := runBackup(backup.SourceScheduled, p.Name, p.Storages...); err != nil && !errors.Is(err, ErrAlreadyRunning) {
+			logging.LogWarning(logging.KeyApp, "backup: automatic backup for profile %q failed: %v", p.Name, err)
+		}
 	}
 }
 

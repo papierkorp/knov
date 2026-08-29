@@ -18,7 +18,7 @@ type EventSource string
 
 const (
 	SourceManual    EventSource = "manual"    // triggered from /system/backup
-	SourceScheduled EventSource = "scheduled" // KNOV_BACKUP_AUTO_ENABLED, via job.checkAutoBackup
+	SourceScheduled EventSource = "scheduled" // KNOV_BACKUP_AUTO_PROFILES, via job.checkAutoBackup
 	SourceRestore   EventSource = "restore"   // the pre-restore safety snapshot Restore always takes first
 )
 

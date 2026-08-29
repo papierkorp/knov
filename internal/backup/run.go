@@ -23,6 +23,13 @@ import (
 const nameLayout = "2006-01-02T15-04-05"
 const namePrefix = "knov-"
 
+// profileTagSuffix marks which named auto-backup profile (see RunProfile) created a set, appended
+// after any "_<storages>" partial-selection suffix - e.g. "..._docs-media@weekly-docs". Kept
+// distinct from that suffix (and from IsDefaultSet, which only looks at "_") so a profile's own
+// due-tracking (AutoBackupDue) never depends on, and never affects, whether a set counts as
+// default-content.
+const profileTagSuffix = "@"
+
 // manifestFile holds the list of storages included in a backup set, so a partial set (e.g.
 // "just metadata") can be told apart from a default one without extracting the whole archive.
 const manifestFile = "manifest.json"
@@ -72,6 +79,12 @@ func IsDefaultSet(name string) bool {
 	return !strings.Contains(name, "_")
 }
 
+// HasProfileTag reports whether name is a set RunProfile created for the named profile - see
+// profileTagSuffix. Used by AutoBackupDue to scope its "newest set" search to one profile.
+func HasProfileTag(name, profile string) bool {
+	return strings.HasSuffix(name, profileTagSuffix+profile)
+}
+
 // Run snapshots the given storages (by the names passed to Register/RegisterOptional;
 // DefaultNames when names is empty, which skips optional storages like docs/media) into a new,
 // timestamped backup set on target. source is recorded on the logged event only (see
@@ -81,6 +94,18 @@ func IsDefaultSet(name string) bool {
 // valid but silently missed a storage is worse than no backup at all. Returns the created set's
 // name.
 func Run(target BackupTarget, source EventSource, names ...string) (string, error) {
+	return run(target, source, "", names...)
+}
+
+// RunProfile is Run for a named automatic-backup profile (see AutoBackupDue): the created set's
+// name additionally records profile, via profileTagSuffix, so each profile's own due-check only
+// ever looks at backups it itself created - independent of any other profile's schedule, and of
+// IsDefaultSet, which still reflects storage content only.
+func RunProfile(target BackupTarget, source EventSource, profile string, names ...string) (string, error) {
+	return run(target, source, profile, names...)
+}
+
+func run(target BackupTarget, source EventSource, profile string, names ...string) (string, error) {
 	defaultNames := DefaultNames()
 	if len(names) == 0 {
 		names = defaultNames
@@ -89,14 +114,19 @@ func Run(target BackupTarget, source EventSource, names ...string) (string, erro
 		sort.Strings(names)
 	}
 
-	setName := namePrefix + time.Now().In(locationFunc()).Format(nameLayout)
+	base := namePrefix + time.Now().In(locationFunc()).Format(nameLayout)
 	if !slices.Equal(names, defaultNames) {
-		setName += "_" + strings.Join(names, "-")
+		base += "_" + strings.Join(names, "-")
+	}
+	tag := ""
+	if profile != "" {
+		tag = profileTagSuffix + profile
 	}
 	// Second-resolution timestamps collide when two sets are created within the same second (e.g.
-	// a manual backup immediately followed by a restore's own pre-restore safety snapshot) -
-	// disambiguate up front rather than letting target.Write's collision guard fail the whole run.
-	setName, err := uniqueSetName(target, setName)
+	// a manual backup immediately followed by a restore's own pre-restore safety snapshot, or the
+	// same profile firing twice in a row) - disambiguate up front rather than letting
+	// target.Write's collision guard fail the whole run.
+	setName, err := uniqueSetName(target, base, tag)
 	if err != nil {
 		return "", fmt.Errorf("failed to check existing backup sets: %w", err)
 	}
@@ -358,9 +388,13 @@ func restore(target BackupTarget, name string) (touched bool, err error) {
 	return touched, nil
 }
 
-// uniqueSetName returns base, or base with a "-N" suffix appended if a set named base already
-// exists on target.
-func uniqueSetName(target BackupTarget, base string) (string, error) {
+// uniqueSetName returns base+tag, or base with a "-N" suffix inserted before tag if base+tag
+// already exists on target. Disambiguating before tag (rather than at the very end) keeps tag -
+// RunProfile's profileTagSuffix+profile, when present - an exact, literal trailing suffix of the
+// returned name no matter how many same-second collisions it took to get there, so HasProfileTag
+// can keep doing a plain, unambiguous suffix match instead of having to guess whether a trailing
+// "-N" is a dedup suffix or part of another profile's own name.
+func uniqueSetName(target BackupTarget, base, tag string) (string, error) {
 	existing, err := target.List()
 	if err != nil {
 		return "", err
@@ -369,9 +403,9 @@ func uniqueSetName(target BackupTarget, base string) (string, error) {
 	for _, n := range existing {
 		taken[n] = true
 	}
-	name := base
+	name := base + tag
 	for i := 1; taken[name]; i++ {
-		name = fmt.Sprintf("%s-%d", base, i)
+		name = fmt.Sprintf("%s-%d%s", base, i, tag)
 	}
 	return name, nil
 }

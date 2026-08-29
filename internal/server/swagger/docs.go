@@ -3629,8 +3629,14 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "description": "'summary' for a compact time+level+message view with a lower default limit (name=all only)",
+                        "name": "view",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
-                        "description": "max lines/entries to return (default 1000)",
+                        "description": "max lines/entries to return (default 1000, or 20 for view=summary)",
                         "name": "limit",
                         "in": "query"
                     },
@@ -6747,11 +6753,11 @@ const docTemplate = `{
             "x-enum-comments": {
                 "SourceManual": "triggered from /system/backup",
                 "SourceRestore": "the pre-restore safety snapshot Restore always takes first",
-                "SourceScheduled": "KNOV_BACKUP_AUTO_ENABLED, via job.checkAutoBackup"
+                "SourceScheduled": "KNOV_BACKUP_AUTO_PROFILES, via job.checkAutoBackup"
             },
             "x-enum-descriptions": [
                 "triggered from /system/backup",
-                "KNOV_BACKUP_AUTO_ENABLED, via job.checkAutoBackup",
+                "KNOV_BACKUP_AUTO_PROFILES, via job.checkAutoBackup",
                 "the pre-restore safety snapshot Restore always takes first"
             ],
             "x-enum-varnames": [
