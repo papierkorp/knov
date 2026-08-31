@@ -36,7 +36,7 @@
   - releasenotes does not work
   - codemirror editor markdown links are not visible if selected/marked
 - chore
-  - remove applyEnvToAppConfig - i thought we cant edit live envs anylonger since i removed this with `c0b59162a2929ef47c68f4832d8bd07083e054d3`
+  - 
 
 # Async follow up jobs
 

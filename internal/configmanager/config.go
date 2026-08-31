@@ -523,6 +523,13 @@ func GetGitRemote() string {
 	return appConfig.GitRemote
 }
 
+// SetGitRemoteForTest sets the in-memory git remote without touching the .env file.
+// Test-only: lets git remote tests point EnsureRemote at a throwaway repo and restore
+// the original afterward, without a restart.
+func SetGitRemoteForTest(value string) {
+	appConfig.GitRemote = value
+}
+
 // GetGitRemoteBranch returns the git remote branch name
 func GetGitRemoteBranch() string {
 	return appConfig.GitRemoteBranch
@@ -746,54 +753,6 @@ func InitGitRepository() error {
 // GetSearchEngine ..
 func GetSearchEngine() string {
 	return appConfig.SearchEngine
-}
-
-// UpdateEnvFile updates the .env file and immediately applies the change to the
-// in-memory appConfig so settings take effect without a restart.
-func UpdateEnvFile(key, value string) error {
-	envPath := ".env"
-
-	content := ""
-	if data, err := os.ReadFile(envPath); err == nil {
-		content = string(data)
-	}
-
-	lines := strings.Split(content, "\n")
-	found := false
-	for i, line := range lines {
-		if strings.HasPrefix(line, key+"=") {
-			lines[i] = fmt.Sprintf("%s=%s", key, value)
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		lines = append(lines, fmt.Sprintf("%s=%s", key, value))
-	}
-
-	if err := os.WriteFile(envPath, []byte(strings.Join(lines, "\n")), 0644); err != nil {
-		return err
-	}
-
-	// apply to live config immediately — no restart needed
-	applyEnvToAppConfig(key, value)
-	return nil
-}
-
-// applyEnvToAppConfig updates the in-memory appConfig for any writable env key.
-// Mirrors InitAppConfig so every UpdateEnvFile call is reflected instantly.
-func applyEnvToAppConfig(key, value string) {
-	switch key {
-	case "KNOV_DATA_PATH":
-		appConfig.DataPath = value
-	case "KNOV_GIT_REMOTE":
-		appConfig.GitRemote = value
-	case "KNOV_LOG_LEVEL":
-		SetLogLevel(value)
-	}
-	// fields like ServerPort, StoragePath, providers are intentionally excluded —
-	// they require a restart to take effect safely.
 }
 
 // loadEnvFile applies .env onto the process environment and reports what happened as a log

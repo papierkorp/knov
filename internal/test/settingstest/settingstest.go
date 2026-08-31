@@ -10,8 +10,8 @@
 // original value and restores it via defer.
 //
 // Git remote URL and data path are no longer settable in-app (admin UI removed, .env-only now,
-// see githistorytest's caseGitRemotePushPullTestAuth for the configmanager.UpdateEnvFile +
-// git.EnsureRemote() pair still exercised via direct env edits).
+// see githistorytest's caseGitRemotePushPullTestAuth for the configmanager.SetGitRemoteForTest +
+// git.EnsureRemote() pair still exercised there, since UpdateEnvFile itself no longer exists).
 package settingstest
 
 import (

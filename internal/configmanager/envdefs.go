@@ -235,9 +235,7 @@ func envVarDefault(key string) string {
 
 // CurrentEnvValues returns the effective current value for every documented env var
 // (EnvVarDefs): each entry's own get closure reads the live value, whether that's an
-// AppConfig field - so admin-updated settings (data path, git remote, log level, see
-// UpdateEnvFile) show immediately, no restart needed - or, for vars with no AppConfig field,
-// os.Getenv directly.
+// AppConfig field or, for vars with no AppConfig field, os.Getenv directly.
 func CurrentEnvValues() map[string]string {
 	values := make(map[string]string, len(EnvVarDefs))
 	for _, def := range EnvVarDefs {

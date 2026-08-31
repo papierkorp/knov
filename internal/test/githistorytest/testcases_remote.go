@@ -18,8 +18,9 @@ import (
 // caseGitRemotePushPullTestAuth points the app's git remote at a throwaway local bare repo
 // (file:// transport, no network involved) and exercises EnsureRemote/TestAuth/Push/
 // PullRebase against it, then always restores whatever remote was configured before the
-// case ran. KNOV_GIT_REMOTE is the only remote setting UpdateEnvFile applies live (branch/
-// autopush changes need a restart), so the case works with the currently configured branch.
+// case ran. Uses SetGitRemoteForTest rather than UpdateEnvFile since this only needs to
+// take effect in-process, not survive a restart; the case works with the currently
+// configured branch since KNOV_GIT_REMOTE_BRANCH isn't swapped.
 func caseGitRemotePushPullTestAuth(_ *sampleState) test.CaseResult {
 	name := "git-remote-push-pull-test-auth"
 
@@ -35,7 +36,7 @@ func caseGitRemotePushPullTestAuth(_ *sampleState) test.CaseResult {
 
 	origRemote := configmanager.GetGitRemote()
 	defer func() {
-		_ = configmanager.UpdateEnvFile("KNOV_GIT_REMOTE", origRemote)
+		configmanager.SetGitRemoteForTest(origRemote)
 		if origRemote == "" {
 			removeOriginRemote()
 		} else {
@@ -43,9 +44,7 @@ func caseGitRemotePushPullTestAuth(_ *sampleState) test.CaseResult {
 		}
 	}()
 
-	if err := configmanager.UpdateEnvFile("KNOV_GIT_REMOTE", bareDirFileURL(bareDir)); err != nil {
-		return errCase(name, err)
-	}
+	configmanager.SetGitRemoteForTest(bareDirFileURL(bareDir))
 	if err := git.EnsureRemote(); err != nil {
 		return errCase(name, err)
 	}
