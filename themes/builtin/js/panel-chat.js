@@ -12,8 +12,8 @@ function scrollChatToTop() {
   if (h) h.scrollTop = 0;
 }
 
-document.body.addEventListener("htmx:afterSwap", function (e) {
-  var target = e.detail.target;
+document.body.addEventListener("htmx:after:swap", function (e) {
+  var target = e.detail.ctx.target;
   if (target?.id === "component-chat-history" || target?.dataset?.snippet === "chat") {
     scrollChatToTop();
   }

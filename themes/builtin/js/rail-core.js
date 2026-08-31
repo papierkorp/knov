@@ -166,17 +166,17 @@ function reloadLoadedGroupsMatching(predicate) {
     });
 }
 
-document.body.addEventListener("htmx:afterRequest", function (e) {
-  if (!e.detail.successful) return;
-  const method = (e.detail.requestConfig?.verb || "").toUpperCase();
-  const url = e.detail.requestConfig?.path || "";
+document.body.addEventListener("htmx:after:request", function (e) {
+  if (!e.detail.ctx.response || e.detail.ctx.response.status >= 400) return;
+  const method = e.detail.ctx.request?.method || "";
+  const url = e.detail.ctx.request?.action || "";
 
   if (method === "GET") {
     // media list loads carry the hidden-files warning in a response header
     if (url.startsWith("/api/media/list")) {
-      const instanceID = e.detail.target?.id?.replace(/^fp-/, "").replace(/-content$/, "");
+      const instanceID = e.detail.ctx.target?.id?.replace(/^fp-/, "").replace(/-content$/, "");
       if (instanceID && typeof updateMediaHiddenWarning === "function") {
-        updateMediaHiddenWarning(instanceID, e.detail.xhr?.getResponseHeader("X-Hidden-Message"));
+        updateMediaHiddenWarning(instanceID, e.detail.ctx.response.headers?.get("X-Hidden-Message"));
       }
     }
     return;

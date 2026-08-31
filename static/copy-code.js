@@ -16,7 +16,7 @@
         });
     }
     addCopyButtons(document);
-    document.addEventListener('htmx:afterSettle', function (e) {
+    document.addEventListener('htmx:after:settle', function (e) {
         addCopyButtons(e.target);
     });
 })();

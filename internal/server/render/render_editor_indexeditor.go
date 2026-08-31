@@ -261,8 +261,8 @@ func RenderIndexEntryRowHelper(index int, entry IndexEntry) string {
 
 	// Use HTMX event to trigger reindexing after content is swapped
 	html += `<script>
-document.body.addEventListener('htmx:afterSwap', function(evt) {
-	if (evt.detail.target.id === 'entries-container') {
+document.body.addEventListener('htmx:after:swap', function(evt) {
+	if (evt.detail.ctx.target.id === 'entries-container') {
 		if (typeof window.reindexEntries === 'function') {
 			window.reindexEntries();
 		}

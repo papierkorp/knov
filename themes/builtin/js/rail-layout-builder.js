@@ -347,4 +347,4 @@ document.addEventListener("settings-textarea-reset", (e) => {
 });
 
 railTryInitBuilder();
-document.addEventListener("htmx:afterSettle", railTryInitBuilder);
+document.addEventListener("htmx:after:settle", railTryInitBuilder);

@@ -87,4 +87,4 @@ document.addEventListener("settings-textarea-reset", (e) => {
 });
 
 infoPanelTryInitBuilder();
-document.addEventListener("htmx:afterSettle", infoPanelTryInitBuilder);
+document.addEventListener("htmx:after:settle", infoPanelTryInitBuilder);

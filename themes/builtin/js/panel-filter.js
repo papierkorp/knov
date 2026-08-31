@@ -100,8 +100,8 @@ function restoreFpFilterState(instanceID) {
 
   // nothing saved — load one default criteria row with unique index
   const idx = Date.now() % 1000000;
-  criteria.addEventListener("htmx:afterSwap", function saveOnce() {
-    criteria.removeEventListener("htmx:afterSwap", saveOnce);
+  criteria.addEventListener("htmx:after:swap", function saveOnce() {
+    criteria.removeEventListener("htmx:after:swap", saveOnce);
     saveFpFilterState(instanceID);
   });
   htmx.ajax("GET", `/api/filters/criteria-row?row_index=${idx}`, {

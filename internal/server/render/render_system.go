@@ -306,11 +306,11 @@ var _logCurrentFile = '';
 var _logCurrentOffset = 0;
 var _logLimit = 1000;
 
-document.addEventListener('htmx:beforeRequest', function(e) {
+document.addEventListener('htmx:before:request', function(e) {
 	if (e.target.id === 'log-entries' && (_logPaused || _logFileView)) e.preventDefault();
 });
 
-document.addEventListener('htmx:afterSettle', function(e) {
+document.addEventListener('htmx:after:settle', function(e) {
 	if (e.target.id === 'log-entries') applyLogFilters();
 });
 

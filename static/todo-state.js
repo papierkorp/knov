@@ -54,15 +54,15 @@ document.addEventListener('click', function (e) {
     });
 
     function onAfterRequest(e) {
-        if (e.detail.elt !== el) return;
-        document.body.removeEventListener('htmx:afterRequest', onAfterRequest);
-        if (!e.detail.successful) {
+        if (e.detail.ctx.sourceElement !== el) return;
+        document.body.removeEventListener('htmx:after:request', onAfterRequest);
+        if (!e.detail.ctx.response || e.detail.ctx.response.status >= 400) {
             affected.forEach(function (item, i) {
                 applyTodoState(item, prevStates[i]);
             });
         }
     }
-    document.body.addEventListener('htmx:afterRequest', onAfterRequest);
+    document.body.addEventListener('htmx:after:request', onAfterRequest);
 
     htmx.ajax('POST', '/api/files/todo-toggle', {
         source: el,

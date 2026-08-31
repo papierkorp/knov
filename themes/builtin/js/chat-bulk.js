@@ -21,7 +21,7 @@ function chatBindMessageClick(root) {
 }
 
 document.addEventListener('DOMContentLoaded', function () { chatBindMessageClick(document); });
-document.addEventListener('htmx:afterSettle', function (e) { chatBindMessageClick(e.target); });
+document.addEventListener('htmx:after:settle', function (e) { chatBindMessageClick(e.target); });
 
 function chatSelectionChanged() {
     var bar = document.getElementById('chat-bulk-bar');

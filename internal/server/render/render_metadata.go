@@ -373,7 +373,7 @@ func RenderSidebarFieldEdit(field, filePath string, metadata *files.Metadata) st
 	}
 	displayURL := fmt.Sprintf("/api/metadata/inline-display?field=%s&filepath=%s", field, filePath)
 	return fmt.Sprintf(`<div class="meta-inline-wrap meta-inline-wrap--editing"
-	hx-on:htmx:after-request="if(event.detail.successful && event.detail.requestConfig.verb==='post') htmx.ajax('GET','%s',{target:this,swap:'outerHTML'})">
+	hx-on:htmx:after:request="if(event.detail.ctx.response && event.detail.ctx.response.status<400 && event.detail.ctx.request.method==='POST') htmx.ajax('GET','%s',{target:this,swap:'outerHTML'})">
 	<div class="meta-inline-editor">%s%s</div>
 </div>`, displayURL, renderSidebarCancelBtn(filePath, field), input)
 }

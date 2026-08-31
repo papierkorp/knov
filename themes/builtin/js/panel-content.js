@@ -191,8 +191,8 @@ function decorateDashboardLinks(container) {
   });
 }
 
-document.body.addEventListener("htmx:afterSwap", function (e) {
-  var target = e.detail.target;
+document.body.addEventListener("htmx:after:swap", function (e) {
+  var target = e.detail.ctx.target;
   if (!target) return;
   if (target.classList?.contains("flyout-content")) {
     decorateDashboardLinks(target);
@@ -232,8 +232,8 @@ function initGroupInterceptor() {
     });
     content.dataset.loaded = "true";
 
-    content.addEventListener("htmx:afterSwap", function addBack() {
-      content.removeEventListener("htmx:afterSwap", addBack);
+    content.addEventListener("htmx:after:swap", function addBack() {
+      content.removeEventListener("htmx:after:swap", addBack);
       const btn = document.createElement("button");
       btn.className = "fp-browse-back";
       const groupID = content.closest(".flyout-panel")?.id.replace(/^fp-/, "");
