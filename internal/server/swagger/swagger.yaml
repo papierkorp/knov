@@ -449,10 +449,9 @@ definitions:
         type: string
       value: {}
     type: object
-host: localhost:1324
 info:
   contact: {}
-  description: KNOV API \n http://localhost:1324
+  description: KNOV API \n GLHF
   title: Knov API
   version: "1.0"
 paths:

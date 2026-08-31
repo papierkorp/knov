@@ -1,12 +1,11 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "KNOV API \\n http://localhost:1324",
+        "description": "KNOV API \\n GLHF",
         "title": "Knov API",
         "contact": {},
         "version": "1.0"
     },
-    "host": "localhost:1324",
     "basePath": "/",
     "paths": {
         "/api/chat/bulk-form": {

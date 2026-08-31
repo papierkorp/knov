@@ -11,6 +11,7 @@ import (
 
 	"knov/internal/configmanager"
 	"knov/internal/server/render"
+	"knov/internal/server/swagger"
 	_ "knov/internal/server/swagger" // swaggo api docs
 
 	"github.com/go-chi/chi/v5"
@@ -129,7 +130,9 @@ func NewRouter() *chi.Mux {
 	// ----------------------------------------------------------------------------------------
 	// -------------------------------------- api routes --------------------------------------
 	// ----------------------------------------------------------------------------------------
-
+	// leave Host empty: per the OpenAPI 2.0 spec, Swagger UI then targets
+	// whatever host/port served the page, working for localhost, LAN IPs, and domains alike
+	swagger.SwaggerInfo.Host = ""
 	r.Get("/swagger/*", httpSwagger.Handler())
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/health", handleAPIHealth)

@@ -6732,11 +6732,11 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:1324",
+	Host:             "",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Knov API",
-	Description:      "KNOV API \\n http://localhost:1324",
+	Description:      "KNOV API \\n GLHF",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

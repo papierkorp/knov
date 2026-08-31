@@ -70,8 +70,7 @@ var docsFS embed.FS
 
 // @title Knov API
 // @version 1.0
-// @description KNOV API \n http://localhost:1324
-// @host localhost:1324
+// @description KNOV API \n GLHF
 // @BasePath /
 func main() {
 	server.SetStaticFiles(staticFS)
