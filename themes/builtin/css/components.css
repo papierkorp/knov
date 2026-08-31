@@ -120,7 +120,8 @@
 }
 
 .job-status-pending,
-.job-status-failed {
+.job-status-failed,
+.job-status-canceled {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -128,6 +129,21 @@
 
 .job-status-failed {
   color: var(--danger);
+}
+
+.job-status-canceled {
+  color: var(--warning);
+}
+
+.job-status-cancel {
+  margin-left: 6px;
+  padding: 0 6px;
+  font-size: 0.85em;
+  color: var(--danger);
+  background: none;
+  border: 1px solid var(--danger);
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .file-form .form-actions {

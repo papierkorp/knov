@@ -1,6 +1,7 @@
 package job
 
 import (
+	"context"
 	"errors"
 	"time"
 )
@@ -8,13 +9,17 @@ import (
 // ErrAlreadyRunning is returned by execute when the job's mutex is already held.
 var ErrAlreadyRunning = errors.New("job already running")
 
+// ErrNotRunning is returned by CancelAsync when id has no job currently in flight.
+var ErrNotRunning = errors.New("job not running")
+
 // JobStatus represents the outcome of a job run.
 type JobStatus string
 
 const (
-	JobStatusRunning JobStatus = "running"
-	JobStatusOK      JobStatus = "ok"
-	JobStatusError   JobStatus = "error"
+	JobStatusRunning  JobStatus = "running"
+	JobStatusOK       JobStatus = "ok"
+	JobStatusError    JobStatus = "error"
+	JobStatusCanceled JobStatus = "canceled"
 )
 
 // JobRun records a single execution of a named job.
@@ -27,10 +32,13 @@ type JobRun struct {
 	Output     any
 }
 
-// Job is implemented by anything that can be scheduled and tracked.
+// Job is implemented by anything that can be scheduled and tracked. ctx is canceled on a
+// CancelAsync request for StartAsync jobs (context.Background() for synchronous execute jobs) -
+// most Run() implementations ignore it; jobs with a per-item loop long enough to be worth
+// interrupting (e.g. bulk delete) check ctx.Err() between iterations.
 type Job interface {
 	Name() string
-	Run() error
+	Run(ctx context.Context) error
 }
 
 // Outputter may be implemented by a Job to expose its typed result in JobRun.Output.

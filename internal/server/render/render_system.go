@@ -460,7 +460,9 @@ func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 .job-status-running td:nth-child(5) { color: var(--primary); font-weight: 600; }
 .job-status-ok td:nth-child(5) { color: var(--success); font-weight: 600; }
 .job-status-error td:nth-child(5) { color: var(--danger); font-weight: 600; }
+.job-status-canceled td:nth-child(5) { color: var(--warning); font-weight: 600; }
 .job-status-error { background: color-mix(in srgb, var(--danger) 15%, transparent); }
+.job-status-canceled { background: color-mix(in srgb, var(--warning) 15%, transparent); }
 .job-status-running { background: color-mix(in srgb, var(--primary) 15%, transparent); }
 </style>` +
 		fmt.Sprintf(`<div class="jobs-toolbar"><button class="btn-secondary" hx-get="/api/system/jobs" hx-target="#jobs-entries" hx-swap="innerHTML" hx-headers='{"Accept":"text/html"}'>%s</button></div>`, t("Refresh")) +

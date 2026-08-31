@@ -1,6 +1,7 @@
 package files
 
 import (
+	"context"
 	"os"
 
 	"knov/internal/logging"
@@ -12,10 +13,14 @@ import (
 // now gone - including ones already absent before this call (e.g. a resumed job re-deleting
 // its snapshot after a crash) - since it's safe to treat those as deleted too. Skips - with a
 // warning - only paths that failed to remove for another reason (permission, locked file),
-// which are NOT safe to report as deleted since they may still exist on disk.
-func BulkDeleteFiles(key logging.Key, fullPaths []string) []string {
+// which are NOT safe to report as deleted since they may still exist on disk. Stops early if
+// ctx is canceled, leaving the remaining paths untouched.
+func BulkDeleteFiles(ctx context.Context, key logging.Key, fullPaths []string) []string {
 	var deleted []string
 	for _, fullPath := range fullPaths {
+		if ctx.Err() != nil {
+			break
+		}
 		if err := DeleteFileNoRefresh(fullPath); err != nil && !os.IsNotExist(err) {
 			logging.LogWarning(key, "bulk-delete-files: failed to delete %s: %v", fullPath, err)
 			continue

@@ -2,6 +2,7 @@
 package job
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -42,7 +43,7 @@ func (j *fullRebuildJob) Name() string { return JobTypeFullRebuild }
 // a crash is exactly the same as running it fresh, no snapshot/state needed.
 func (j *fullRebuildJob) Resumable() bool { return true }
 
-func (j *fullRebuildJob) Run() error {
+func (j *fullRebuildJob) Run(_ context.Context) error {
 	logging.LogInfo(logging.KeyFullRebuild, "running full metadata rebuild")
 
 	files.StartMetaGetCounter()
@@ -83,7 +84,7 @@ type filterJob struct{}
 
 func (j *filterJob) Name() string { return "filter-reindex" }
 
-func (j *filterJob) Run() error {
+func (j *filterJob) Run(_ context.Context) error {
 	logging.LogDebug(logging.KeyFileSync, "running filter index cronjob")
 
 	ids, err := filter.GetAllFilters()
@@ -116,7 +117,7 @@ type notifJob struct{}
 
 func (j *notifJob) Name() string { return "notification-purge" }
 
-func (j *notifJob) Run() error {
+func (j *notifJob) Run(_ context.Context) error {
 	if err := notificationStorage.Purge(100, 3); err != nil {
 		return fmt.Errorf("failed to purge notifications: %w", err)
 	}
@@ -131,7 +132,7 @@ type cacheInvalidateJob struct{}
 
 func (j *cacheInvalidateJob) Name() string { return "cache-invalidate" }
 
-func (j *cacheInvalidateJob) Run() error {
+func (j *cacheInvalidateJob) Run(_ context.Context) error {
 	if err := files.CacheInvalidate(); err != nil {
 		return fmt.Errorf("failed to invalidate cache: %w", err)
 	}
@@ -148,7 +149,7 @@ type mediaCleanupJob struct {
 
 func (j *mediaCleanupJob) Name() string { return "media-cleanup" }
 
-func (j *mediaCleanupJob) Run() error {
+func (j *mediaCleanupJob) Run(_ context.Context) error {
 	result, err := doMediaCleanup()
 	j.result = result
 	return err
@@ -220,7 +221,7 @@ type repairBrokenLinksJob struct {
 
 func (j *repairBrokenLinksJob) Name() string { return "repair-broken-links" }
 
-func (j *repairBrokenLinksJob) Run() error {
+func (j *repairBrokenLinksJob) Run(_ context.Context) error {
 	var result RepairBrokenLinksResult
 	for _, entry := range j.entries {
 		parts := strings.SplitN(entry, "|", 3)
@@ -266,7 +267,7 @@ type gitPullJob struct{}
 
 func (j *gitPullJob) Name() string { return "git-pull" }
 
-func (j *gitPullJob) Run() error {
+func (j *gitPullJob) Run(_ context.Context) error {
 	if configmanager.GetGitRemote() == "" {
 		return fmt.Errorf("no remote configured")
 	}
@@ -284,7 +285,7 @@ type gitPushJob struct{}
 
 func (j *gitPushJob) Name() string { return "git-push" }
 
-func (j *gitPushJob) Run() error {
+func (j *gitPushJob) Run(_ context.Context) error {
 	if configmanager.GetGitRemote() == "" {
 		return fmt.Errorf("no remote configured")
 	}
@@ -300,7 +301,7 @@ type gitRepackJob struct{}
 
 func (j *gitRepackJob) Name() string { return "git-repack" }
 
-func (j *gitRepackJob) Run() error {
+func (j *gitRepackJob) Run(_ context.Context) error {
 	if err := git.RepackIfNeeded(); err != nil {
 		return fmt.Errorf("git repack failed: %w", err)
 	}
@@ -310,7 +311,9 @@ func (j *gitRepackJob) Run() error {
 // deleteResolvedFiles deletes a pre-resolved snapshot of files via files.BulkDeleteFiles,
 // invalidates each deleted file's history cache, and commits the deletion, all before
 // returning. Shared by bulkDeleteFilesJob and deleteFolderJob, which differ only in what they
-// do with the deleted paths afterwards.
+// do with the deleted paths afterwards. If ctx is canceled mid-delete, BulkDeleteFiles stops
+// after the file it's currently on - whatever was deleted up to that point is still committed
+// below, the caller's Run() is left to report the cancellation.
 //
 // The commit runs synchronously (not in a detached goroutine) because this only ever runs
 // inside a StartAsync job: the caller is already a background goroutine, so there's no request
@@ -322,8 +325,8 @@ func (j *gitRepackJob) Run() error {
 // re-deleting its snapshot after a crash) - see files.BulkDeleteFiles - so a resumed run still
 // commits those. Paths that failed to remove for another reason are excluded, since they may
 // still exist on disk and committing them as deleted would desync git/cache from actual state.
-func deleteResolvedFiles(logPrefix string, fullPaths []string) []string {
-	deleted := files.BulkDeleteFiles(logging.KeyApp, fullPaths)
+func deleteResolvedFiles(ctx context.Context, logPrefix string, fullPaths []string) []string {
+	deleted := files.BulkDeleteFiles(ctx, logging.KeyApp, fullPaths)
 
 	for _, fullPath := range deleted {
 		if err := git.InvalidateFileHistoryCache(pathutils.ToRelative(fullPath)); err != nil {
@@ -360,10 +363,10 @@ func (j *bulkDeleteFilesJob) Name() string { return JobTypeBulkDeleteFiles }
 // deleted - re-running it after a crash is safe (files.BulkDeleteFiles skips paths already gone).
 func (j *bulkDeleteFilesJob) Resumable() bool { return true }
 
-func (j *bulkDeleteFilesJob) Run() error {
-	deleted := deleteResolvedFiles("bulk-delete-files", j.fullPaths)
+func (j *bulkDeleteFilesJob) Run(ctx context.Context) error {
+	deleted := deleteResolvedFiles(ctx, "bulk-delete-files", j.fullPaths)
 	j.result = BulkDeleteResult{Deleted: len(deleted)}
-	return nil
+	return ctx.Err()
 }
 
 func (j *bulkDeleteFilesJob) Output() any { return j.result }
@@ -393,9 +396,14 @@ func (j *deleteFolderJob) Name() string { return JobTypeDeleteFolder }
 // may have gained new files since the crash.
 func (j *deleteFolderJob) Resumable() bool { return true }
 
-func (j *deleteFolderJob) Run() error {
-	deleted := deleteResolvedFiles("delete-folder", j.fullPaths)
+func (j *deleteFolderJob) Run(ctx context.Context) error {
+	deleted := deleteResolvedFiles(ctx, "delete-folder", j.fullPaths)
 	j.result = BulkDeleteResult{Deleted: len(deleted)}
+	if err := ctx.Err(); err != nil {
+		// canceled before every file was deleted - the folder is deliberately left as-is
+		// rather than attempting RemoveEmptyDirTree below, which would just fail on it.
+		return err
+	}
 
 	// RemoveEmptyDirTree only removes directories left empty by the deletes above - unlike
 	// os.RemoveAll, it won't touch a file written into the folder after the snapshot was
@@ -427,7 +435,7 @@ type moveFolderJob struct {
 
 func (j *moveFolderJob) Name() string { return "move-folder" }
 
-func (j *moveFolderJob) Run() error {
+func (j *moveFolderJob) Run(_ context.Context) error {
 	updated, failed, err := files.MoveFolder(logging.KeyApp, pathutils.ToDocsPath(j.currentPath), pathutils.ToDocsPath(j.newPath))
 	if err != nil {
 		return err
@@ -458,7 +466,7 @@ type bulkUpdateMetadataJob struct {
 
 func (j *bulkUpdateMetadataJob) Name() string { return "bulk-update-metadata" }
 
-func (j *bulkUpdateMetadataJob) Run() error {
+func (j *bulkUpdateMetadataJob) Run(_ context.Context) error {
 	updated, failed := files.BulkUpdateMetadata(logging.KeyApp, j.matched, j.patch)
 	j.result = BulkUpdateResult{Updated: updated, Failed: failed}
 	return nil

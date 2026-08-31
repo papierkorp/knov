@@ -2,6 +2,7 @@
 package server
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -77,9 +78,57 @@ func handleAPIGetJobStatus(w http.ResponseWriter, r *http.Request) {
 	case rec.Status == jobStorage.StatusDone:
 		// generic fallback for any future StartAsync job type not special-cased above.
 		notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(lang, "done"))
+	case rec.Status == jobStorage.StatusCanceled && rec.Type == job.JobTypeBulkDeleteFiles:
+		// same reload reasoning as the StatusDone case above - a cancel still leaves whatever
+		// was deleted before it took effect, so the filtered list needs to drop those too.
+		groupType, _, perr := job.ParseBulkDeleteArgs(rec.Args)
+		if perr != nil {
+			logging.LogError(logging.KeyApp, "failed to parse bulk-delete-files args for job %s: %v", id, perr)
+			notify.SetHeader(w, notify.LevelWarning, translation.SprintfForRequest(lang, "job canceled"))
+			break
+		}
+		notify.SetFlash(notify.LevelWarning, translation.SprintfForRequest(lang, "deletion canceled"))
+		w.Header().Set("HX-Redirect", "/browse/"+groupType)
+	case rec.Status == jobStorage.StatusCanceled && rec.Type == job.JobTypeDeleteFolder:
+		notify.SetFlash(notify.LevelWarning, translation.SprintfForRequest(lang, "deletion canceled"))
+		w.Header().Set("HX-Redirect", "/browse")
+	case rec.Status == jobStorage.StatusCanceled:
+		notify.SetHeader(w, notify.LevelWarning, translation.SprintfForRequest(lang, "job canceled"))
 	case rec.Status != jobStorage.StatusRunning:
 		notify.SetHeader(w, notify.LevelError, translation.SprintfForRequest(lang, "job failed: %s", rec.Error))
 	}
 
-	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec))
+	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, job.IsCancellable(rec.Type)))
+}
+
+// @Summary Cancel a running async job
+// @Description Requests cancellation of a running async job (started via a delete-folder or
+// @Description bulk-delete request) by canceling its context. Cancellation is cooperative - the
+// @Description job only stops at its next checkpoint, so the response still reflects "running";
+// @Description poll GET /api/jobs/{id} for the eventual "canceled" status. Only job types the
+// @Description jobs UI shows a cancel button for actually honor it - see job.IsCancellable.
+// @Tags jobs
+// @Produce html
+// @Param id path string true "Job id"
+// @Success 200 {object} jobStorage.JobRecord
+// @Failure 404 {object} string "job not running"
+// @Router /api/jobs/{id} [delete]
+func handleAPIDeleteJob(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		writeAPIError(w, http.StatusBadRequest, translation.SprintfForRequest(configmanager.GetLanguage(), "missing job id"))
+		return
+	}
+
+	if err := job.CancelAsync(id); err != nil {
+		if errors.Is(err, job.ErrNotRunning) {
+			writeAPIError(w, http.StatusNotFound, translation.SprintfForRequest(configmanager.GetLanguage(), "job not running"))
+			return
+		}
+		logging.LogError(logging.KeyApp, "failed to cancel job %s: %v", id, err)
+		writeAPIError(w, http.StatusInternalServerError, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to cancel job"))
+		return
+	}
+
+	handleAPIGetJobStatus(w, r)
 }

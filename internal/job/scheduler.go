@@ -1,6 +1,7 @@
 package job
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
@@ -52,6 +53,11 @@ var (
 	// backupMu also guards restore, since restore starts with a full backup - the two must not
 	// run concurrently, or two same-second-precision set names could race on the same target.
 	backupMu sync.Mutex
+
+	// asyncCancel holds the cancel func for every StartAsync job currently in flight, keyed by
+	// its jobStorage id - looked up by CancelAsync to request cancellation of a specific run.
+	asyncCancelMu sync.Mutex
+	asyncCancel   = map[string]context.CancelFunc{}
 )
 
 // execute runs job under mu, recording start/finish in job history.
@@ -62,13 +68,13 @@ func execute(mu *sync.Mutex, job Job) error {
 		return fmt.Errorf("%s: %w", job.Name(), ErrAlreadyRunning)
 	}
 	defer mu.Unlock()
-	return runLocked(job)
+	return runLocked(context.Background(), job)
 }
 
 // runLocked runs job and records start/finish in job history, assuming the caller already
 // holds job's dedup mutex (and will unlock it). Shared by execute (synchronous callers) and
 // StartAsync (background callers, which additionally persist to jobStorage around this).
-func runLocked(job Job) error {
+func runLocked(ctx context.Context, job Job) error {
 	slot := recordStart(job.Name())
 	defer func() {
 		if r := recover(); r != nil {
@@ -76,8 +82,12 @@ func runLocked(job Job) error {
 			panic(r) // re-panic so the runtime still logs it
 		}
 	}()
-	if err := job.Run(); err != nil {
-		recordFinish(slot, JobStatusError, err.Error(), nil)
+	if err := job.Run(ctx); err != nil {
+		if errors.Is(err, context.Canceled) {
+			recordFinish(slot, JobStatusCanceled, "", nil)
+		} else {
+			recordFinish(slot, JobStatusError, err.Error(), nil)
+		}
 		return err
 	}
 	var msg string
@@ -128,9 +138,24 @@ func resumeAsync(mu *sync.Mutex, job Job, id string) error {
 // in-app job history, which is fine for execute's synchronous, request-scoped callers (a
 // panic there is caught by the HTTP server's own per-request recovery) but would take down
 // the whole process for this bare background goroutine.
+//
+// A cancelable context is registered under id for the duration of the run, so a concurrent
+// CancelAsync(id) call can request early termination - see CancelAsync.
 func runAsync(mu *sync.Mutex, job Job, id string) {
+	ctx, cancel := context.WithCancel(context.Background())
+	asyncCancelMu.Lock()
+	asyncCancel[id] = cancel
+	asyncCancelMu.Unlock()
+
 	go func() {
 		defer mu.Unlock()
+		defer cancel()
+		defer func() {
+			asyncCancelMu.Lock()
+			delete(asyncCancel, id)
+			asyncCancelMu.Unlock()
+		}()
+
 		status, errMsg := jobStorage.StatusDone, ""
 		func() {
 			defer func() {
@@ -138,7 +163,10 @@ func runAsync(mu *sync.Mutex, job Job, id string) {
 					status, errMsg = jobStorage.StatusError, fmt.Sprintf("panic: %v", r)
 				}
 			}()
-			if err := runLocked(job); err != nil {
+			switch err := runLocked(ctx, job); {
+			case errors.Is(err, context.Canceled):
+				status, errMsg = jobStorage.StatusCanceled, ""
+			case err != nil:
 				status, errMsg = jobStorage.StatusError, err.Error()
 			}
 		}()
@@ -146,6 +174,22 @@ func runAsync(mu *sync.Mutex, job Job, id string) {
 			logging.LogError(logging.KeyApp, "failed to persist finished status for job %s (%s): %v", job.Name(), id, err)
 		}
 	}()
+}
+
+// CancelAsync requests cancellation of the StartAsync job with the given id by canceling its
+// context. Cancellation is cooperative - whether/how soon the job actually stops depends on its
+// Run() checking ctx.Err() (e.g. between loop iterations); a job that doesn't check it keeps
+// running to completion unaffected. Returns ErrNotRunning if id has no job currently in flight
+// (already finished, or never existed).
+func CancelAsync(id string) error {
+	asyncCancelMu.Lock()
+	cancel, ok := asyncCancel[id]
+	asyncCancelMu.Unlock()
+	if !ok {
+		return fmt.Errorf("job %s: %w", id, ErrNotRunning)
+	}
+	cancel()
+	return nil
 }
 
 // generateJobID returns a unique id for a StartAsync job record.

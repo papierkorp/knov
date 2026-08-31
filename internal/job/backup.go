@@ -7,6 +7,7 @@
 package job
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -79,7 +80,7 @@ type backupJob struct {
 
 func (j *backupJob) Name() string { return "backup" }
 
-func (j *backupJob) Run() error {
+func (j *backupJob) Run(_ context.Context) error {
 	name, err := backup.RunProfile(j.target, j.source, j.profile, j.names...)
 	if err != nil {
 		return err
@@ -182,7 +183,10 @@ func (j *restoreJob) Name() string { return JobTypeRestore }
 // a crash mid-restore is safely replayed from scratch on next boot via RecoverInterrupted.
 func (j *restoreJob) Resumable() bool { return true }
 
-func (j *restoreJob) Run() error {
+// Run deliberately ignores ctx - restore is destructive and self-restarts the app once it's
+// touched live storage (see below), so aborting mid-way would leave things in a worse state
+// than either finishing or never having started; it isn't offered as cancellable in the UI.
+func (j *restoreJob) Run(_ context.Context) error {
 	// touched is set from inside the afterRestore callback backup.Restore requires - it only
 	// runs when Restore got far enough to actually overwrite live storage (see backup.Restore),
 	// which is also exactly when a restart is needed to recover any closed *sql.DB handles.

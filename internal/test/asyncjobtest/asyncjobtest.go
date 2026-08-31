@@ -26,6 +26,8 @@ func (Suite) Run() (*test.SuiteResult, error) {
 	cases := []func() test.CaseResult{
 		caseDedupMutexHeldUntilPersisted,
 		casePanicRecoveryBridgesToJobStorage,
+		caseCancelAsync,
+		caseCancelAsyncNotRunning,
 		caseRecoverInterruptedResumable,
 		caseRecoverInterruptedNonResumable,
 		caseRemoveEmptyDirTreeSuccess,

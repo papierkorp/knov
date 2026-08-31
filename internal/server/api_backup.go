@@ -99,7 +99,7 @@ func handleAPIRestoreBackup(w http.ResponseWriter, r *http.Request) {
 
 	lang := configmanager.GetLanguage()
 	rec := &jobStorage.JobRecord{ID: id, Type: job.JobTypeRestore, Status: jobStorage.StatusRunning}
-	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec))
+	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, job.IsCancellable(rec.Type)))
 }
 
 // @Summary Lock a backup

@@ -2,6 +2,7 @@
 package job
 
 import (
+	"context"
 	"fmt"
 
 	"knov/internal/test"
@@ -15,7 +16,7 @@ type testdataSetupJob struct{}
 
 func (j *testdataSetupJob) Name() string { return "testdata-setup" }
 
-func (j *testdataSetupJob) Run() error {
+func (j *testdataSetupJob) Run(_ context.Context) error {
 	if err := test.SetupTestData(); err != nil {
 		return fmt.Errorf("failed to setup test data: %w", err)
 	}
@@ -26,7 +27,7 @@ type testdataCleanJob struct{}
 
 func (j *testdataCleanJob) Name() string { return "testdata-clean" }
 
-func (j *testdataCleanJob) Run() error {
+func (j *testdataCleanJob) Run(_ context.Context) error {
 	if err := test.CleanTestData(); err != nil {
 		return fmt.Errorf("failed to clean test data: %w", err)
 	}

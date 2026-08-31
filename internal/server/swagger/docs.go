@@ -2781,6 +2781,39 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "Requests cancellation of a running async job (started via a delete-folder or\nbulk-delete request) by canceling its context. Cancellation is cooperative - the\njob only stops at its next checkpoint, so the response still reflects \"running\";\npoll GET /api/jobs/{id} for the eventual \"canceled\" status. Only job types the\njobs UI shows a cancel button for actually honor it - see job.IsCancellable.",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "jobs"
+                ],
+                "summary": "Cancel a running async job",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jobStorage.JobRecord"
+                        }
+                    },
+                    "404": {
+                        "description": "job not running",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/api/kanban/card/move": {

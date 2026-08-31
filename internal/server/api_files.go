@@ -1020,7 +1020,7 @@ func handleAPIDeleteFolder(w http.ResponseWriter, r *http.Request) {
 
 	lang := configmanager.GetLanguage()
 	rec := &jobStorage.JobRecord{ID: id, Type: job.JobTypeDeleteFolder, Status: jobStorage.StatusRunning}
-	writeResponse(w, r, rec, render.RenderJobStatusListItem(lang, id, rec))
+	writeResponse(w, r, rec, render.RenderJobStatusListItem(lang, id, rec, job.IsCancellable(rec.Type)))
 }
 
 // @Summary Delete all files in a collection or folder
@@ -1103,7 +1103,7 @@ func handleAPIDeleteFilesBulk(w http.ResponseWriter, r *http.Request) {
 
 	lang := configmanager.GetLanguage()
 	rec := &jobStorage.JobRecord{ID: id, Type: job.JobTypeBulkDeleteFiles, Status: jobStorage.StatusRunning}
-	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec))
+	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, job.IsCancellable(rec.Type)))
 }
 
 // @Summary Get headers (TOC) for a file

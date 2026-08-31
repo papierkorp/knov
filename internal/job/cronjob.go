@@ -2,6 +2,7 @@
 package job
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"time"
@@ -32,7 +33,7 @@ func StartFileSyncManual() (string, error) {
 	return StartAsync(&fileMu, &fileJob{}, "")
 }
 
-func (j *fileJob) Run() error {
+func (j *fileJob) Run(_ context.Context) error {
 	logging.MarkSessionStart(logging.KeyFileSync)
 	logging.LogDebug(logging.KeyFileSync, "running file cronjob")
 
@@ -212,7 +213,7 @@ type searchIndexJob struct{}
 
 func (j *searchIndexJob) Name() string { return "search-reindex" }
 
-func (j *searchIndexJob) Run() error {
+func (j *searchIndexJob) Run(_ context.Context) error {
 	logging.MarkSessionStart(logging.KeySearchReindex)
 	if configmanager.GetSearchEngine() == "grep" {
 		logging.LogDebug(logging.KeySearchReindex, "grep search engine active, skipping index")
@@ -235,7 +236,7 @@ type rebuildJob struct{}
 
 func (j *rebuildJob) Name() string { return "metadata-links-rebuild" }
 
-func (j *rebuildJob) Run() error {
+func (j *rebuildJob) Run(_ context.Context) error {
 	logging.MarkSessionStart(logging.KeyMetadataRebuild)
 	logging.LogDebug(logging.KeyMetadataRebuild, "running metadata rebuild cronjob")
 	if err := files.MetaDataLinksRebuild(logging.KeyMetadataRebuild); err != nil {

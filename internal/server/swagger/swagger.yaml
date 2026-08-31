@@ -2319,6 +2319,33 @@ paths:
       tags:
       - health
   /api/jobs/{id}:
+    delete:
+      description: |-
+        Requests cancellation of a running async job (started via a delete-folder or
+        bulk-delete request) by canceling its context. Cancellation is cooperative - the
+        job only stops at its next checkpoint, so the response still reflects "running";
+        poll GET /api/jobs/{id} for the eventual "canceled" status. Only job types the
+        jobs UI shows a cancel button for actually honor it - see job.IsCancellable.
+      parameters:
+      - description: Job id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jobStorage.JobRecord'
+        "404":
+          description: job not running
+          schema:
+            type: string
+      summary: Cancel a running async job
+      tags:
+      - jobs
     get:
       description: |-
         Polled by htmx while an async job (started via a delete-folder or bulk-delete

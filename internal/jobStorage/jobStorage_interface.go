@@ -15,6 +15,7 @@ const (
 	StatusDone        = "done"
 	StatusError       = "error"
 	StatusInterrupted = "interrupted"
+	StatusCanceled    = "canceled"
 )
 
 // JobRecord represents a single persisted async job run.

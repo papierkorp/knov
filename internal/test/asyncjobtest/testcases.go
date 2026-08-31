@@ -112,6 +112,70 @@ func casePanicRecoveryBridgesToJobStorage() test.CaseResult {
 	return cr
 }
 
+// caseCancelAsync covers job.CancelAsync: a probeJob blocked on its release channel is canceled
+// instead of released, and must end up jobStorage status=canceled (not error) with its dedup
+// mutex released - same as a normal completion, just via ctx.Done() instead of the channel.
+func caseCancelAsync() test.CaseResult {
+	name := "cancelasync-marks-canceled"
+
+	var mu sync.Mutex
+	release := make(chan struct{}) // deliberately never closed - job.Run must exit via ctx.Done()
+	probe := &probeJob{name: "asyncjobtest-cancel-probe", release: release}
+
+	id, err := job.StartAsync(&mu, probe, "")
+	if err != nil {
+		return errCase(name, err)
+	}
+
+	cancelErr := job.CancelAsync(id)
+
+	rec, err := waitForTerminal(id, 5*time.Second)
+	if err != nil {
+		return errCase(name, err)
+	}
+	statusOK := rec != nil && rec.Status == jobStorage.StatusCanceled
+
+	// the mutex must have been released despite the cancellation, or this would fail immediately.
+	_, reuseErr := job.StartAsync(&mu, &probeJob{name: "asyncjobtest-cancel-probe-reuse"}, "")
+	reuseOK := reuseErr == nil
+
+	success := cancelErr == nil && statusOK && reuseOK
+	var status string
+	if rec != nil {
+		status = rec.Status
+	}
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "CancelAsync succeeds, jobStorage status=canceled, mutex released",
+		Actual:   fmt.Sprintf("cancelErr=%v status=%s mutexReleased=%v", cancelErr, status, reuseOK),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "CancelAsync did not cancel the in-flight job as expected"
+	}
+	return cr
+}
+
+// caseCancelAsyncNotRunning covers job.CancelAsync returning ErrNotRunning for an id that has
+// no job currently in flight (already finished, or never existed).
+func caseCancelAsyncNotRunning() test.CaseResult {
+	name := "cancelasync-not-running"
+
+	err := job.CancelAsync("asyncjobtest-nonexistent-job-id")
+	success := errors.Is(err, job.ErrNotRunning)
+
+	cr := test.CaseResult{
+		Name:     name,
+		Expected: "CancelAsync on an id with no job in flight returns ErrNotRunning",
+		Actual:   fmt.Sprintf("err=%v", err),
+		Success:  success,
+	}
+	if !success {
+		cr.Error = "CancelAsync did not return ErrNotRunning for a non-running id as expected"
+	}
+	return cr
+}
+
 // caseRecoverInterruptedResumable covers RecoverInterrupted replaying a resumable job type
 // (bulk-delete-files) with its persisted args after a simulated crash - a jobStorage row left
 // "running" (as if the process died mid-run) with no in-memory goroutine behind it. Note:

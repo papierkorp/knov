@@ -1667,6 +1667,11 @@
       "translation": "abbrechen"
     },
     {
+      "id": "canceled",
+      "message": "canceled",
+      "translation": "abgebrochen"
+    },
+    {
       "id": "cannot delete media file",
       "message": "cannot delete media file",
       "translation": "Mediendatei kann nicht gelöscht werden"
@@ -2012,6 +2017,11 @@
       "translation": "gelöscht"
     },
     {
+      "id": "deletion canceled",
+      "message": "deletion canceled",
+      "translation": "Löschvorgang abgebrochen"
+    },
+    {
       "id": "description",
       "message": "description",
       "translation": "Beschreibung"
@@ -2315,6 +2325,11 @@
       "id": "failed to browse files",
       "message": "failed to browse files",
       "translation": "Fehler beim Durchsuchen der Dateien"
+    },
+    {
+      "id": "failed to cancel job",
+      "message": "failed to cancel job",
+      "translation": "Job konnte nicht abgebrochen werden"
     },
     {
       "id": "failed to clear notifications",
@@ -3207,6 +3222,11 @@
       "translation": "Element gelöscht"
     },
     {
+      "id": "job canceled",
+      "message": "job canceled",
+      "translation": "Job abgebrochen"
+    },
+    {
       "id": "job failed: {Arg_1}",
       "message": "job failed: {Arg_1}",
       "translation": "Job fehlgeschlagen: {Arg_1}"
@@ -3215,6 +3235,11 @@
       "id": "job not found",
       "message": "job not found",
       "translation": "Job nicht gefunden"
+    },
+    {
+      "id": "job not running",
+      "message": "job not running",
+      "translation": "Job läuft nicht"
     },
     {
       "id": "just now",

@@ -239,7 +239,7 @@ func handleAPIRebuildMetadata(w http.ResponseWriter, r *http.Request) {
 
 	lang := configmanager.GetLanguage()
 	rec := &jobStorage.JobRecord{ID: id, Type: job.JobTypeFullRebuild, Status: jobStorage.StatusRunning}
-	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec))
+	writeResponse(w, r, rec, render.RenderJobStatus(lang, id, rec, job.IsCancellable(rec.Type)))
 }
 
 // @Summary Rebuild metadata links for a single file

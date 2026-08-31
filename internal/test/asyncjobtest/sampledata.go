@@ -2,6 +2,7 @@
 package asyncjobtest
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"time"
@@ -45,18 +46,22 @@ func resetAndSeed() error {
 // none of the real job types expose a way to block mid-run or panic on demand.
 type probeJob struct {
 	name    string
-	release <-chan struct{} // if set, Run blocks until closed
+	release <-chan struct{} // if set, Run blocks until closed or ctx is canceled
 	panic   string          // if set, Run panics with this value instead of blocking/returning
 }
 
 func (j *probeJob) Name() string { return j.name }
 
-func (j *probeJob) Run() error {
+func (j *probeJob) Run(ctx context.Context) error {
 	if j.panic != "" {
 		panic(j.panic)
 	}
 	if j.release != nil {
-		<-j.release
+		select {
+		case <-j.release:
+		case <-ctx.Done():
+			return ctx.Err()
+		}
 	}
 	return nil
 }
