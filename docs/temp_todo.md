@@ -33,9 +33,7 @@
   - media rename?
   - releasenotes does not work
 - chore
-  - remove allowing to set the datapath in the admin (should i leave git repository in? if yes we should also add the user/ssh key management and a test connection button otherwise it doesnt make much sense)
   - for all tests: make it so it doesnt affect the live data (e.g. create a new database just for the test or copy the data/media or copy everything into a temp folder (so we have knov binary and the temp folder in the same height))
-  - i used: `git remote add origin git@github.com:papierkorp/test2.git && git branch -M main && git push -u origin main` but the app still said i dont have a git remote
   - update to [htmx4](https://four.htmx.org/announcements/2026-08-28-htmx-4.0.0-is-released)
 
 # Async follow up jobs

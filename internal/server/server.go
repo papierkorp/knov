@@ -239,15 +239,11 @@ func NewRouter() *chi.Mux {
 		r.Route("/config", func(r chi.Router) {
 			// GET
 			r.Get("/", handleAPIGetConfig)
-			r.Get("/datapath", handleAPIGetCurrentDataPath)
 			r.Get("/languages", handleAPIGetLanguages)
-			r.Get("/repository", handleAPIGetGitRepositoryURL)
 			r.Get("/export", handleAPIExportSettings)
 
 			// POST
 			r.Post("/import", handleAPIImportSettings)
-			r.Post("/repository", handleAPISetGitRepositoryURL)
-			r.Post("/datapath", handleAPISetDataPath)
 
 			r.Post("/favicon", handleAPIUploadFavicon)
 			r.Delete("/favicon", handleAPIDeleteFavicon)

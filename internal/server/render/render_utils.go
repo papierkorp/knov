@@ -19,16 +19,6 @@ type SelectOption struct {
 	Label string
 }
 
-// RenderInputField renders an input field with specified type, name, id, value and placeholder
-func RenderInputField(inputType, name, id, value, placeholder string, required bool) string {
-	requiredAttr := ""
-	if required {
-		requiredAttr = "required"
-	}
-	return fmt.Sprintf(`<input type="%s" name="%s" id="%s" value="%s" placeholder="%s" %s />`,
-		inputType, name, id, value, placeholder, requiredAttr)
-}
-
 // StatusClass represents valid status message classes
 type StatusClass string
 

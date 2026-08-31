@@ -40,23 +40,6 @@
                 </div>
             </section>
 
-            <section class="settings-section">
-                <h2>{{T "Git Repository"}}</h2>
-                <div class="setting-item">
-                    <div class="help-text">{{T "leave empty for local git repository only"}}</div>
-                    <form hx-post="/api/config/repository" hx-swap="none">
-                        <label for="git-url">
-                            {{T "Remote Repository URL"}} ({{T "optional"}})
-                            <input type="url" name="repositoryURL" id="git-url"
-                                   placeholder="https://github.com/user/repo.git" class="form-input"
-                                   hx-get="/api/config/repository" hx-trigger="load"
-                                   hx-target="this" hx-swap="outerHTML" />
-                        </label>
-                        <button type="submit" class="btn-primary" style="margin-top:8px;">{{T "Set Remote Repository"}}</button>
-                    </form>
-                </div>
-            </section>
-
             {{if .Data.AppConfig.GitRemote}}
             <section class="settings-section">
                 <h2>{{T "Git Remote Sync"}}</h2>
@@ -77,23 +60,6 @@
                 </div>
             </section>
             {{end}}
-
-            <section class="settings-section">
-                <h2>{{T "Data Path"}}</h2>
-                <div class="setting-item">
-                    <div class="help-text">{{T "path to your data storage relative from the executable"}}</div>
-                    <form hx-post="/api/config/datapath" hx-swap="none">
-                        <label for="data-path">
-                            {{T "Data Path"}}
-                            <input type="text" name="dataPath" id="data-path"
-                                   placeholder="/path/to/data" required class="form-input"
-                                   hx-get="/api/config/datapath" hx-trigger="load"
-                                   hx-target="this" hx-swap="outerHTML" />
-                        </label>
-                        <button type="submit" class="btn-primary" style="margin-top:8px;">{{T "Set Data Path"}}</button>
-                    </form>
-                </div>
-            </section>
 
             <section class="settings-section">
                 <h2>{{T "Storage Statistics"}}</h2>

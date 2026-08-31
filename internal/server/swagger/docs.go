@@ -443,49 +443,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/api/config/datapath": {
-            "get": {
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Get current data path as input field",
-                "responses": {}
-            },
-            "post": {
-                "description": "updates data path in .env file (requires restart)",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Update data path",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "data path",
-                        "name": "dataPath",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "saved",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/config/export": {
             "get": {
                 "description": "Downloads the current user settings as a JSON file",
@@ -606,57 +563,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get available languages",
                 "responses": {}
-            }
-        },
-        "/api/config/repository": {
-            "get": {
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Get git remote URL",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "updates git remote url in .env file",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json",
-                    "text/html"
-                ],
-                "tags": [
-                    "config"
-                ],
-                "summary": "Update git remote URL",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "remote repository url",
-                        "name": "repositoryURL",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "saved",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
             }
         },
         "/api/cronjob": {

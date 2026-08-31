@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"knov/internal/configmanager"
-	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
@@ -33,57 +32,6 @@ func handleAPIGetConfig(w http.ResponseWriter, r *http.Request) {
 	}
 	html := render.RenderConfigDisplay(appConfig)
 	writeResponse(w, r, config, html)
-}
-
-// @Summary Get current data path as input field
-// @Tags config
-// @Produce html
-// @Router /api/config/datapath [get]
-func handleAPIGetCurrentDataPath(w http.ResponseWriter, r *http.Request) {
-	appConfig := configmanager.GetAppConfig()
-	dataPath := appConfig.DataPath
-
-	html := render.RenderInputField("text", "dataPath", "data-path", dataPath, translation.SprintfForRequest(configmanager.GetLanguage(), "/path/to/data"), true)
-	writeResponse(w, r, map[string]string{"dataPath": dataPath}, html)
-}
-
-// @Summary Get git remote URL
-// @Tags config
-// @Produce json,html
-// @Success 200 {object} string
-// @Router /api/config/repository [get]
-func handleAPIGetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
-	appConfig := configmanager.GetAppConfig()
-	repositoryURL := appConfig.GitRemote
-
-	html := render.RenderInputField("text", "repositoryURL", "git-url", repositoryURL, translation.SprintfForRequest(configmanager.GetLanguage(), "https://github.com/user/repo.git or git@github.com:user/repo.git"), false)
-	writeResponse(w, r, repositoryURL, html)
-}
-
-// @Summary Update git remote URL
-// @Description updates git remote url in .env file
-// @Tags config
-// @Accept application/x-www-form-urlencoded
-// @Param repositoryURL formData string true "remote repository url"
-// @Produce json,html
-// @Success 200 {string} string "saved"
-// @Router /api/config/repository [post]
-func handleAPISetGitRepositoryURL(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	repositoryURL := r.FormValue("repositoryURL")
-
-	if err := configmanager.UpdateEnvFile("KNOV_GIT_REMOTE", repositoryURL); err != nil {
-		logging.LogError(logging.KeyApp, "failed to update env file: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save"), http.StatusInternalServerError)
-		return
-	}
-
-	if err := git.EnsureRemote(); err != nil {
-		logging.LogWarning(logging.KeyApp, "failed to configure git remote: %v", err)
-	}
-
-	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "git remote saved"))
-	writeResponse(w, r, "saved", "")
 }
 
 // @Summary Restart application
@@ -116,34 +64,6 @@ func handleAPIRestartApp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	os.Exit(0) // windows only - the in-place restart above never returns on success
-}
-
-// @Summary Update data path
-// @Description updates data path in .env file (requires restart)
-// @Tags config
-// @Accept application/x-www-form-urlencoded
-// @Param dataPath formData string true "data path"
-// @Produce json,html
-// @Success 200 {string} string "saved"
-// @Router /api/config/datapath [post]
-func handleAPISetDataPath(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	dataPath := r.FormValue("dataPath")
-
-	if dataPath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "data path cannot be empty"), http.StatusBadRequest)
-		return
-	}
-
-	if err := configmanager.UpdateEnvFile("KNOV_DATA_PATH", dataPath); err != nil {
-		logging.LogError(logging.KeyApp, "failed to update env file: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save"), http.StatusInternalServerError)
-		return
-	}
-
-	data := "saved"
-	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "data path saved. restart required."))
-	writeResponse(w, r, data, "")
 }
 
 // @Summary Get available languages

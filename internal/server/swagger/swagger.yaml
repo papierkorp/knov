@@ -788,35 +788,6 @@ paths:
       summary: Get current configuration
       tags:
       - config
-  /api/config/datapath:
-    get:
-      produces:
-      - text/html
-      responses: {}
-      summary: Get current data path as input field
-      tags:
-      - config
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      description: updates data path in .env file (requires restart)
-      parameters:
-      - description: data path
-        in: formData
-        name: dataPath
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: saved
-          schema:
-            type: string
-      summary: Update data path
-      tags:
-      - config
   /api/config/export:
     get:
       description: Downloads the current user settings as a JSON file
@@ -897,40 +868,6 @@ paths:
       - text/html
       responses: {}
       summary: Get available languages
-      tags:
-      - config
-  /api/config/repository:
-    get:
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Get git remote URL
-      tags:
-      - config
-    post:
-      consumes:
-      - application/x-www-form-urlencoded
-      description: updates git remote url in .env file
-      parameters:
-      - description: remote repository url
-        in: formData
-        name: repositoryURL
-        required: true
-        type: string
-      produces:
-      - application/json
-      - text/html
-      responses:
-        "200":
-          description: saved
-          schema:
-            type: string
-      summary: Update git remote URL
       tags:
       - config
   /api/cronjob:

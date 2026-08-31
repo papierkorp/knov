@@ -9,11 +9,9 @@
 // same category as exporttest's caseSettingsExportImportRoundtrip - each case captures the
 // original value and restores it via defer.
 //
-// Config repo url (handleAPISetGitRepositoryURL) is not covered here - it's the exact same
-// configmanager.UpdateEnvFile("KNOV_GIT_REMOTE", ...) + git.EnsureRemote() pair githistorytest's
-// caseGitRemotePushPullTestAuth already exercises (with its own restore). Config data path
-// change is out of scope entirely, per step 6's note: it only writes .env and needs a process
-// restart (os.Exit(0)) to take effect, which an in-app suite can't safely trigger+reverify.
+// Git remote URL and data path are no longer settable in-app (admin UI removed, .env-only now,
+// see githistorytest's caseGitRemotePushPullTestAuth for the configmanager.UpdateEnvFile +
+// git.EnsureRemote() pair still exercised via direct env edits).
 package settingstest
 
 import (
