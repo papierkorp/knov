@@ -5,11 +5,11 @@ import (
 	"embed"
 	"fmt"
 	"os"
-	"slices"
 	"time"
 
 	"knov/internal/cacheStorage"
 	"knov/internal/chatStorage"
+	"knov/internal/cli"
 	"knov/internal/configStorage"
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
@@ -79,8 +79,9 @@ func main() {
 	thememanager.SetBuiltinFiles(builtinThemeFS)
 	test.SetDocsFiles(docsFS)
 
-	startTests := slices.Contains(os.Args[1:], "--start-tests")
-	removeTestDir := slices.Contains(os.Args[1:], "--remove")
+	flags := cli.Parse()
+	startTests := flags.StartTests
+	removeTestDir := flags.Remove
 	if startTests {
 		// before InitAppConfig, which opens app.log against whatever this resolves to
 		logging.SetIsolatedLogsDir()

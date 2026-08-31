@@ -41,8 +41,6 @@
   - remove applyEnvToAppConfig - i thought we cant edit live envs anylonger since i removed this with `c0b59162a2929ef47c68f4832d8bd07083e054d3`
   - tests
     - add back to use a single tests with additional parameters (`knov --start-tests`)
-    - add a `make dev --start-tests` viable (so i dont have to build it to run the tests)
-  - add a `--help` and `--version` knov start parameter besides the existing `--start-tests` and create a solution for multiple parameters (maybe a new package?)
 
 # Async follow up jobs
 

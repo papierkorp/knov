@@ -6,8 +6,9 @@ LAST_COMMIT_MSG := $(shell git log -1 --pretty=%s)
 LDFLAGS   := -ldflags "-X 'knov/internal/version.Version=$(VERSION)' -X 'knov/internal/version.BuildTime=$(BUILD_TIME) UTC' -X 'knov/internal/version.LastCommitMessage=$(LAST_COMMIT_MSG)'"
 
 # ------------- actual usage -------------
+# make dev ARGS="--start-tests --remove"
 dev: killdev swaggo-api-init changelog docs-templatedata env-example
-	KNOV_LOG_LEVEL=debug go run ./
+	KNOV_LOG_LEVEL=debug go run ./ $(ARGS)
 
 prod: swaggo-api-init translation changelog docs-templatedata env-example
 	go build $(LDFLAGS) -o bin/$(APP_NAME) ./
