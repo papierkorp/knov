@@ -39,8 +39,6 @@
   - update to [htmx4](https://four.htmx.org/announcements/2026-08-28-htmx-4.0.0-is-released)
   - swagger doesnt use the current port but a fixed 1324 port
   - remove applyEnvToAppConfig - i thought we cant edit live envs anylonger since i removed this with `c0b59162a2929ef47c68f4832d8bd07083e054d3`
-  - tests
-    - add back to use a single tests with additional parameters (`knov --start-tests`)
 
 # Async follow up jobs
 

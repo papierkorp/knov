@@ -37,3 +37,13 @@ var suites []Suite
 func Register(s Suite) {
 	suites = append(suites, s)
 }
+
+// SuiteNames returns the Name() of every registered suite, in registration order - used by
+// cli's --start-tests usage text to list the suites available to run individually.
+func SuiteNames() []string {
+	names := make([]string, len(suites))
+	for i, s := range suites {
+		names[i] = s.Name()
+	}
+	return names
+}

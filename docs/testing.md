@@ -14,7 +14,7 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 - Same file layout in every subpackage: `<group>test.go` holds only the `Suite` type (`Name()`, `Run()`); `sampledata.go` holds the setup - physical file writes, metadata, git commit helpers, wipe/reseed; `testcases.go` (or `testcases_<category>.go` when there's enough of them to split) holds the actual cases
 
 **Wiring**
-- `knov --start-tests` is the only entry point - main.go calls `test.PrepareIsolatedStorage()` before any storage backend initializes, then `test.RunAllTestsAndLog()` once they're all up, and exits. There's no per-suite CLI flag, admin button or API route for running suites individually anymore - `RunAllTests()` runs every registered suite in one pass
+- `knov --start-tests` is the only entry point - main.go calls `test.PrepareIsolatedStorage()` before any storage backend initializes, then `test.RunAllTestsAndLog(name)` once they're all up, and exits. `knov --start-tests` runs every registered suite; `knov --start-tests <suite>` (e.g. `filter`) runs only the suite whose `Name()` matches - there's no admin button or API route for it, only the CLI
 - Adding a suite means: its subpackage, its `test.Register(Suite{})` call, and a blank import of the subpackage in main.go - nothing in `internal/job` or `internal/server` needs to know about it
 
 **Where `internal/testkit` fits**

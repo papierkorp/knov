@@ -1,10 +1,28 @@
 package test
 
-// RunAllTests runs every registered suite in order and aggregates the results.
-func RunAllTests() (*SuiteResult, error) {
+import "fmt"
+
+// RunAllTests runs the registered suite matching name, or every registered suite in order if
+// name is empty, and aggregates the results.
+func RunAllTests(name string) (*SuiteResult, error) {
 	result := &SuiteResult{Suite: "all"}
 
-	for _, suite := range suites {
+	toRun := suites
+	if name != "" {
+		toRun = nil
+		for _, suite := range suites {
+			if suite.Name() == name {
+				toRun = []Suite{suite}
+				break
+			}
+		}
+		if toRun == nil {
+			return nil, fmt.Errorf("no test suite named %q", name)
+		}
+		result.Suite = name
+	}
+
+	for _, suite := range toRun {
 		suiteResult, err := suite.Run()
 		if err != nil {
 			return nil, err

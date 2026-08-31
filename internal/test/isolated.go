@@ -68,17 +68,18 @@ func RemoveIsolatedStorage() error {
 	return os.RemoveAll(TempRoot())
 }
 
-// RunAllTestsAndLog runs every registered suite (see RunAllTests) and logs the aggregated
-// pass/fail summary to logging.KeyInAppTests - used by `knov --start-tests` once every storage
-// backend is initialized against the isolated copy PrepareIsolatedStorage already switched to.
-func RunAllTestsAndLog() (*SuiteResult, error) {
-	result, err := RunAllTests()
+// RunAllTestsAndLog runs the named suite, or every registered suite if name is empty (see
+// RunAllTests), and logs the aggregated pass/fail summary to logging.KeyInAppTests - used by
+// `knov --start-tests` once every storage backend is initialized against the isolated copy
+// PrepareIsolatedStorage already switched to.
+func RunAllTestsAndLog(name string) (*SuiteResult, error) {
+	result, err := RunAllTests(name)
 	if err != nil {
 		return nil, err
 	}
 
 	if result.Failed == 0 {
-		logging.LogInfo(logging.KeyInAppTests, "run-all-tests: %d passed, %d failed", result.Passed, result.Failed)
+		logging.LogInfo(logging.KeyInAppTests, "run-tests %s: %d passed, %d failed", result.Suite, result.Passed, result.Failed)
 		return result, nil
 	}
 
@@ -88,6 +89,6 @@ func RunAllTestsAndLog() (*SuiteResult, error) {
 			failedNames = append(failedNames, fmt.Sprintf("%s: %s", c.Name, c.Error))
 		}
 	}
-	logging.LogWarning(logging.KeyInAppTests, "run-all-tests: %d passed, %d failed (%s)", result.Passed, result.Failed, strings.Join(failedNames, ", "))
+	logging.LogWarning(logging.KeyInAppTests, "run-tests %s: %d passed, %d failed (%s)", result.Suite, result.Passed, result.Failed, strings.Join(failedNames, ", "))
 	return result, nil
 }

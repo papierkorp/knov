@@ -81,6 +81,7 @@ func main() {
 
 	flags := cli.Parse()
 	startTests := flags.StartTests
+	testSuite := flags.Suite
 	removeTestDir := flags.Remove
 	if startTests {
 		// before InitAppConfig, which opens app.log against whatever this resolves to
@@ -189,7 +190,7 @@ func main() {
 	// knov --start-tests runs headless against the isolated storage set up above, then exits -
 	// never starts the scheduler or HTTP server, and never touches live storage.
 	if startTests {
-		runHeadlessTests(removeTestDir)
+		runHeadlessTests(testSuite, removeTestDir)
 	}
 
 	// after config/theme/OnMetadataRebuild are wired up, since a resumed job's background
@@ -222,12 +223,13 @@ func main() {
 	server.StartServerChi()
 }
 
-// runHeadlessTests runs every registered test suite (via test.RunAllTestsAndLog) against the
-// isolated storage already prepared by test.PrepareIsolatedStorage, prints a summary, and exits
-// the process - `knov --start-tests` never starts the scheduler or HTTP server. If removeTestDir
-// is set (knov --start-tests --remove), test.TempRoot is deleted before exiting either way.
-func runHeadlessTests(removeTestDir bool) {
-	result, err := test.RunAllTestsAndLog()
+// runHeadlessTests runs the named test suite, or every registered suite if name is empty (via
+// test.RunAllTestsAndLog), against the isolated storage already prepared by
+// test.PrepareIsolatedStorage, prints a summary, and exits the process - `knov --start-tests`
+// never starts the scheduler or HTTP server. If removeTestDir is set (knov --start-tests
+// --remove), test.TempRoot is deleted before exiting either way.
+func runHeadlessTests(name string, removeTestDir bool) {
+	result, err := test.RunAllTestsAndLog(name)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "test run failed: %v\n", err)
 		exitHeadlessTests(removeTestDir, 1)

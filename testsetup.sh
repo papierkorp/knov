@@ -1,6 +1,6 @@
 #!/bin/bash
 
-folder="./temp-test-knov"
+folder="./temp-knov"
 
 rm -rf $folder
 mkdir $folder
