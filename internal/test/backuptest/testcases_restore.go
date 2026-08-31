@@ -11,10 +11,10 @@ import (
 
 // caseRestoreRoundtrip covers backup.Restore (the package function, not job.RunRestore)
 // roundtripping: backup -> mutate/delete the seeded probes -> restore -> every probe is back to
-// its original value. Deliberately sticks to the default selection (DB-backed storages only) -
-// docs/media's Restore replaces the real DataPath docs/media folders on disk (see
-// files.docsBackup/mediaBackup), which this suite must never do against the real, live tree; that
-// coverage will come back once it can run against a redirected docs/media root instead. Goes
+// its original value. Sticks to the default selection (DB-backed storages only) - docs/media's
+// Restore replaces the whole DataPath docs/media folders on disk (see
+// files.docsBackup/mediaBackup), which needs its own redirected DataPath rather than the shared
+// live tree every other probe here runs against; see caseDocsMediaRestoreRoundtrip. Goes
 // through restoreAndReinit since this calls backup.Restore directly against the real, live sqlite
 // storages - see backuptest.go's package doc. Captures a kanban/chat baseline before seeding its
 // own probes - see probeCounts - since earlier cases in this suite's fixed run order

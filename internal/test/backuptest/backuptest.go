@@ -34,6 +34,7 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseRunAbortsOnPartialFailure,
 		caseSelectiveBackup,
 		caseRestoreRoundtrip,
+		caseDocsMediaRestoreRoundtrip,
 		caseReadSQLiteBackupRejectsCorrupt,
 		caseRotate,
 		caseCheckAutoBackup,
