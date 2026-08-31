@@ -1,6 +1,6 @@
 # Testing
 
-In-app runtime test suites - not `go test`. Knov ships as a single binary with no go toolchain on the target machine, so tests need to be runnable against a real running instance, from an admin button or an API call. The filter suite (`internal/test/filtertest/`, wired to the admin page and `POST /api/testdata/filtertest`) is the model every other suite follows.
+In-app runtime test suites - not `go test`. Knov ships as a single binary with no go toolchain on the target machine, so tests need to be runnable against a real built binary: `knov --start-tests` runs every suite headless against an isolated `knov_temp_test` copy of the live data/storage directories (see `test.PrepareIsolatedStorage`/`test.RunAllTestsAndLog`, called from main.go), then exits - it's a separate process from any `knov` instance already running, so it never touches live data. Logging follows the same split: `logging.SetIsolatedLogsDir` (called from main.go before `configmanager.InitAppConfig`) redirects every log key except `KeyInAppTests` into `knov_temp_test/logs`, so the incidental logging from exercising every suite doesn't land in live log files - `KeyInAppTests` still writes to the real logs directory, giving a single persistent history of every test run, live or isolated. The filter suite (`internal/test/filtertest/`) is the model every other suite follows.
 
 **Suite interface**
 - `internal/test` defines the shared shape every suite returns: `CaseResult` (name, free-form `Expected`/`Actual` strings, error, success, `Detail any` for suite-specific extras) and `SuiteResult` (suite name, totals, pass/fail, list of `CaseResult`), plus a `Suite` interface (`Name() string`, `Run() (*SuiteResult, error)`)
@@ -8,15 +8,14 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 
 **Package layout**
 - One subpackage per test group under `internal/test/`, e.g. `internal/test/filtertest`, `internal/test/editorstest` - each seeds real files/metadata via the internal packages directly (no HTTP round-trip) and implements `Suite`
-- Subpackages are always suffixed `test` (`filtertest`, not `filter`) - a subpackage named `filter` would collide with `knov/internal/filter` in every file that needs both (job wrapper, API handler), forcing an import alias everywhere; the suffix avoids that
-- `internal/test/registry.go` holds `RunAllTests()`, which runs the registered suites in order and aggregates. Suites self-register via `test.Register(Suite{})` in their own `init()` (a `<group>test` package importing `internal/test` for the shared types rules out `internal/test` importing back to build the list directly) - adding a suite later means adding its subpackage plus that `init()` line
+- Subpackages are always suffixed `test` (`filtertest`, not `filter`) - a subpackage named `filter` would collide with `knov/internal/filter` in every file that needs both, forcing an import alias everywhere; the suffix avoids that
+- `internal/test/registry.go` holds `RunAllTests()`, which runs the registered suites in order and aggregates. Suites self-register via `test.Register(Suite{})` in their own `init()` (a `<group>test` package importing `internal/test` for the shared types rules out `internal/test` importing back to build the list directly) - adding a suite later means adding its subpackage plus that `init()` line, plus a blank import of it in main.go so that `init()` actually runs
 - Every suite's sample files live under `docs/test/` (e.g. `test/filter-tests`, `test/editors-tests`) so the admin "Clean Test Data" button removes them all in one go
 - Same file layout in every subpackage: `<group>test.go` holds only the `Suite` type (`Name()`, `Run()`); `sampledata.go` holds the setup - physical file writes, metadata, git commit helpers, wipe/reseed; `testcases.go` (or `testcases_<category>.go` when there's enough of them to split) holds the actual cases
 
-**Wiring (same shape for every suite, including `RunAllTests()` itself)**
-- Every suite self-registers via `job.RegisterSuiteRunner(name, run)` in its own `init()`, alongside its `test.Register(Suite{})` call - `internal/job/externalsuite.go`'s `externalSuiteJob` looks the runner up by name at execute time (mutex-guarded, recorded in job history, visible at `/system/jobs`), so `internal/job` never imports a suite package directly. That's what lets a suite that itself needs to call into `internal/job` (e.g. jobstest, to exercise the scheduler/history directly) exist without an import cycle
-- An HTTP handler in `internal/server`, swagger-annotated, at `POST /api/testdata/<group>test`
-- A button on the admin page
+**Wiring**
+- `knov --start-tests` is the only entry point - main.go calls `test.PrepareIsolatedStorage()` before any storage backend initializes, then `test.RunAllTestsAndLog()` once they're all up, and exits. There's no per-suite CLI flag, admin button or API route for running suites individually anymore - `RunAllTests()` runs every registered suite in one pass
+- Adding a suite means: its subpackage, its `test.Register(Suite{})` call, and a blank import of the subpackage in main.go - nothing in `internal/job` or `internal/server` needs to know about it
 
 **Where `internal/testkit` fits**
 - `internal/testkit` (`httptest` + `chromedp`) is not the primary vehicle for suites - it stays around for the rare case a suite genuinely needs a real HTTP/router pass, and for the handful of things an in-app suite structurally can't verify: real browser/JS interaction like kanban drag-and-drop or the toastui editor toolbar
@@ -79,7 +78,7 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 
 ## Jobs suite (`internal/test/jobstest`)
 - Calls `job.RunFullRebuild`/`RunSearchReindex`/`RunCacheInvalidate`/`RunMediaCleanup` and the manual "run all jobs" trigger directly, asserting on the resulting filesystem/DB state rather than just "no error" - e.g. seeding a raw save that bypasses the normal link cascade, so `Ancestor`/`Kids`/`UsedLinks` only exist once the rebuild job actually recomputes them
-- The first suite that itself needs to call into `internal/job` (to exercise the scheduler/history) while also needing its own admin-button job - see the `RegisterSuiteRunner` wiring above, which this suite drove the design of
+- The first suite that itself needs to call into `internal/job` (to exercise the scheduler/history) - this is why suites are wired via a blank import + `test.Register` rather than `internal/job` importing suite packages directly, which would cycle
 
 ## Media suite (`internal/test/mediatest`)
 - Calls `files.UploadMedia` with a real `multipart.File`/`*multipart.FileHeader` (round-tripped through an actual multipart form body), and the other media functions (list/partition, delete, storage stats) directly
@@ -102,7 +101,7 @@ In-app runtime test suites - not `go test`. Knov ships as a single binary with n
 
 ## Logs suite (`internal/test/logstest`)
 - Calls `logging.GetRecentEntries` directly for the ring buffer, and replicates `handleAPIGetLogsFile`'s inline offset/limit slicing arithmetic for pagination/chunking, since there's no exported wrapper for it
-- Reuses `logging.KeyInAppTests` - already a real, shared log key the job scheduler logs every suite run's summary to - rather than inventing a synthetic key
+- Reuses `logging.KeyInAppTests` - already a real, shared log key `test.RunAllTestsAndLog` logs every `--start-tests` run's summary to - rather than inventing a synthetic key
 - Assertions check that probe lines appear in the expected region (substring containment) rather than exact byte/line-count equality, tolerating real interleaved log activity
 
 ## Parser suite (`internal/test/parsertest`)

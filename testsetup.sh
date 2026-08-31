@@ -1,5 +1,7 @@
-#/bin/bash
+#!/bin/bash
 
-rm -rf ../test-knov
-mkdir ../test-knov
-make prod && cp bin/knov* ../test-knov/ && cd ../test-knov/
+folder="./temp-test-knov"
+
+rm -rf $folder
+mkdir $folder
+make prod && cp bin/knov* $folder && cd $folder

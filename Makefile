@@ -40,7 +40,7 @@ env-example:
 	@git add .env.example
 
 tree:
-	tree -I 'bin|data|data2|data3|storage|backups'
+	tree -I 'bin|data|data2|data3|storage|backups|knov_temp_test'
 
 changelog:
 	go run ./tools/genchangelog

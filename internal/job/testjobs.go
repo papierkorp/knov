@@ -1,7 +1,4 @@
-// Package job - test-data setup/cleanup jobs, triggered from the admin UI or API. Every
-// in-app test suite (internal/test/<group>test) registers its own admin-button job directly
-// via job.RegisterSuiteRunner in its own init() (see externalsuite.go) instead of getting a
-// dedicated wrapper type here - this file no longer imports any suite package.
+// Package job - test-data setup/cleanup jobs, triggered from the admin UI.
 package job
 
 import (
@@ -9,10 +6,6 @@ import (
 
 	"knov/internal/test"
 )
-
-func init() {
-	RegisterSuiteRunner("run-all-tests", test.RunAllTests)
-}
 
 // ----------------------------------------------------------------------------------------
 // ----------------------------------- testdata jobs --------------------------------------

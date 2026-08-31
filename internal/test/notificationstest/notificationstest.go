@@ -5,7 +5,6 @@
 package notificationstest
 
 import (
-	"knov/internal/job"
 	"knov/internal/test"
 )
 
@@ -14,7 +13,6 @@ type Suite struct{}
 
 func init() {
 	test.Register(Suite{})
-	job.RegisterSuiteRunner("notification-test", func() (*test.SuiteResult, error) { return (Suite{}).Run() })
 }
 
 func (Suite) Name() string { return "notification" }

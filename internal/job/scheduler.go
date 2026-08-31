@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 	"knov/internal/files"
 	"knov/internal/jobStorage"
 	"knov/internal/logging"
-	"knov/internal/test"
 )
 
 // gitRepackInterval is fixed rather than config-driven - RunGitRepack is a cheap no-op below
@@ -89,19 +87,6 @@ func runLocked(job Job) error {
 	var output any
 	if o, ok := job.(Outputter); ok {
 		output = o.Output()
-	}
-	if sr, ok := output.(*test.SuiteResult); ok && sr != nil {
-		if sr.Failed == 0 {
-			logging.LogInfo(logging.KeyInAppTests, "suite %s: %d passed, %d failed", sr.Suite, sr.Passed, sr.Failed)
-		} else {
-			var failedNames []string
-			for _, c := range sr.Cases {
-				if !c.Success {
-					failedNames = append(failedNames, fmt.Sprintf("%s: %s", c.Name, c.Error))
-				}
-			}
-			logging.LogWarning(logging.KeyInAppTests, "suite %s: %d passed, %d failed (%s)", sr.Suite, sr.Passed, sr.Failed, strings.Join(failedNames, ", "))
-		}
 	}
 	recordFinish(slot, JobStatusOK, msg, output)
 	return nil
@@ -379,70 +364,6 @@ func RunTestdataSetup() error {
 func RunTestdataClean() error {
 	return execute(&testdataCleanMu, &testdataCleanJob{})
 }
-
-// Every in-app test suite registers itself via RegisterSuiteRunner in its own init() (see
-// externalsuite.go) instead of getting a dedicated wrapper type + mutex here - each of these
-// is a thin, discoverable, named entry point for the API handlers over that shared mechanism.
-
-// RunFilterTest runs the filter test suite and returns its results alongside any error.
-func RunFilterTest() (*test.SuiteResult, error) { return RunSuiteTest("filter-test") }
-
-// RunEditorsTest runs the editors test suite and returns its results alongside any error.
-func RunEditorsTest() (*test.SuiteResult, error) { return RunSuiteTest("editors-test") }
-
-// RunSearchTest runs the search test suite and returns its results alongside any error.
-func RunSearchTest() (*test.SuiteResult, error) { return RunSuiteTest("search-test") }
-
-// RunGitHistoryTest runs the git repo/file history test suite and returns its results alongside any error.
-func RunGitHistoryTest() (*test.SuiteResult, error) { return RunSuiteTest("git-history-test") }
-
-// RunChatTest runs the chat test suite and returns its results alongside any error.
-func RunChatTest() (*test.SuiteResult, error) { return RunSuiteTest("chat-test") }
-
-// RunDashboardTest runs the dashboard test suite and returns its results alongside any error.
-func RunDashboardTest() (*test.SuiteResult, error) { return RunSuiteTest("dashboard-test") }
-
-// RunKanbanTest runs the kanban test suite and returns its results alongside any error.
-func RunKanbanTest() (*test.SuiteResult, error) { return RunSuiteTest("kanban-test") }
-
-// RunBrowseTest runs the browse test suite and returns its results alongside any error.
-func RunBrowseTest() (*test.SuiteResult, error) { return RunSuiteTest("browse-test") }
-
-// RunMetadataTest runs the metadata test suite and returns its results alongside any error.
-func RunMetadataTest() (*test.SuiteResult, error) { return RunSuiteTest("metadata-test") }
-
-// RunConnectionsTest runs the connections test suite and returns its results alongside any error.
-func RunConnectionsTest() (*test.SuiteResult, error) { return RunSuiteTest("connections-test") }
-
-// RunJobsTest runs the jobs test suite and returns its results alongside any error.
-func RunJobsTest() (*test.SuiteResult, error) { return RunSuiteTest("jobs-test") }
-
-// RunAsyncJobTest runs the async job test suite and returns its results alongside any error.
-func RunAsyncJobTest() (*test.SuiteResult, error) { return RunSuiteTest("async-job-test") }
-
-// RunMediaTest runs the media test suite and returns its results alongside any error.
-func RunMediaTest() (*test.SuiteResult, error) { return RunSuiteTest("media-test") }
-
-// RunExportTest runs the export/import test suite and returns its results alongside any error.
-func RunExportTest() (*test.SuiteResult, error) { return RunSuiteTest("export-test") }
-
-// RunNotificationTest runs the notification test suite and returns its results alongside any error.
-func RunNotificationTest() (*test.SuiteResult, error) { return RunSuiteTest("notification-test") }
-
-// RunSettingsTest runs the settings/themes/config test suite and returns its results alongside any error.
-func RunSettingsTest() (*test.SuiteResult, error) { return RunSuiteTest("settings-test") }
-
-// RunLogsTest runs the logs test suite and returns its results alongside any error.
-func RunLogsTest() (*test.SuiteResult, error) { return RunSuiteTest("logs-test") }
-
-// RunParserTest runs the parser test suite and returns its results alongside any error.
-func RunParserTest() (*test.SuiteResult, error) { return RunSuiteTest("parser-test") }
-
-// RunBackupTest runs the backup/restore/rotate test suite and returns its results alongside any error.
-func RunBackupTest() (*test.SuiteResult, error) { return RunSuiteTest("backup-test") }
-
-// RunAllTests runs every registered test suite and returns the aggregated results.
-func RunAllTests() (*test.SuiteResult, error) { return RunSuiteTest("run-all-tests") }
 
 // RunAsync starts a manual run of all jobs in a background goroutine.
 // Acquires runMu synchronously so the caller gets ErrAlreadyRunning immediately

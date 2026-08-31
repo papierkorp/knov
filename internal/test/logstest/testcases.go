@@ -15,7 +15,7 @@ func caseInMemoryRingBuffer() test.CaseResult {
 	name := "in-memory-ring-buffer"
 
 	marker := newMarker()
-	logging.LogError(logging.KeyInAppTests, "%s ring buffer probe", marker)
+	logging.LogError(logging.KeyInAppTests, probeNote+"%s ring buffer probe", marker)
 
 	entries := logging.GetRecentEntries(500)
 	found := false
@@ -54,7 +54,7 @@ func caseFilePaginationChunking() test.CaseResult {
 	marker := newMarker()
 	const n = 6
 	for i := 0; i < n; i++ {
-		logging.LogError(logging.KeyInAppTests, "%s line %d", marker, i)
+		logging.LogError(logging.KeyInAppTests, probeNote+"%s line %d", marker, i)
 	}
 
 	lines, err := readLines(inAppTestsLogPath())
@@ -110,16 +110,20 @@ func linesContainMarkerRange(chunk []string, marker string, from, to int) bool {
 // caseDownloadPathGuard covers handleAPIDownloadLogs' path-safety guard (a name containing a
 // path separator is rejected) and confirms a valid name resolves to the real log file with its
 // raw, untouched content - the download handler itself does nothing but io.Copy the file.
+// Uses KeyApp rather than KeyInAppTests: this checks that resolveDownloadPath (GetLogsDir()-
+// based, same as the real handler) agrees with where the file actually is, which only holds
+// for keys that aren't exempt from SetIsolatedLogsDir's redirect - KeyInAppTests is (see
+// inAppTestsLogPath), KeyApp isn't.
 func caseDownloadPathGuard() test.CaseResult {
 	name := "download-path-guard"
 
 	marker := newMarker()
-	logging.LogError(logging.KeyInAppTests, "%s download probe", marker)
+	logging.LogError(logging.KeyApp, probeNote+"%s download probe", marker)
 
 	rejected := resolveDownloadPath("sub/evil.log") == ""
 
-	resolved := resolveDownloadPath(logging.KeyInAppTests.String() + ".log")
-	expectedPath := inAppTestsLogPath()
+	resolved := resolveDownloadPath(logging.KeyApp.String() + ".log")
+	expectedPath := logging.LogFilePath(logging.KeyApp)
 	pathOK := resolved != "" && resolved == expectedPath
 
 	contentOK := false

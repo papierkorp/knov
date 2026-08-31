@@ -4,8 +4,6 @@ package filtertest
 import (
 	"fmt"
 
-	"knov/internal/files"
-	"knov/internal/job"
 	"knov/internal/logging"
 	"knov/internal/test"
 )
@@ -15,15 +13,9 @@ type Suite struct{}
 
 func init() {
 	test.Register(Suite{})
-	job.RegisterSuiteRunner("filter-test", func() (*test.SuiteResult, error) { return (Suite{}).Run() })
 }
 
 func (Suite) Name() string { return "filter" }
-
-// GetFilterTestMetadata returns the metadata definitions for all filter test files.
-func GetFilterTestMetadata() []*files.Metadata {
-	return getFilterTestMetadata()
-}
 
 // Run executes the filter test scenarios and returns the aggregated suite result.
 func (Suite) Run() (*test.SuiteResult, error) {

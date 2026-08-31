@@ -29,12 +29,20 @@
     - select headers/anchors from different files and export into one markdown/pdf
     - select different files and export into one markdown/pdf
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
+  - make `ctrl+s` work in the codemirror editor
+  - add a motd or something like this which is displayed at the top of the page as a env var (e.g. for copies/testsetups to easily distinguish) which is available for all themes
 - fixes
   - media rename?
   - releasenotes does not work
+  - codemirror editor markdown links are not visible if selected/marked
 - chore
-  - for all tests: make it so it doesnt affect the live data (e.g. create a new database just for the test or copy the data/media or copy everything into a temp folder (so we have knov binary and the temp folder in the same height))
   - update to [htmx4](https://four.htmx.org/announcements/2026-08-28-htmx-4.0.0-is-released)
+  - swagger doesnt use the current port but a fixed 1324 port
+  - remove applyEnvToAppConfig - i thought we cant edit live envs anylonger since i removed this with `c0b59162a2929ef47c68f4832d8bd07083e054d3`
+  - tests
+    - add back to use a single tests with additional parameters (`knov --start-tests`)
+    - add a `make dev --start-tests` viable (so i dont have to build it to run the tests)
+  - add a `--help` and `--version` knov start parameter besides the existing `--start-tests` and create a solution for multiple parameters (maybe a new package?)
 
 # Async follow up jobs
 

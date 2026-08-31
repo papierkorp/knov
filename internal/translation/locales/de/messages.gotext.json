@@ -2,11 +2,6 @@
   "language": "de",
   "messages": [
     {
-      "id": "{Integer} TESTS FAILED",
-      "message": "{Integer} TESTS FAILED",
-      "translation": "{Integer} TESTS FEHLGESCHLAGEN"
-    },
-    {
       "id": "{Integer} files not shown (hidden in settings)",
       "message": "{Integer} files not shown (hidden in settings)",
       "translation": "{Integer} Dateien nicht angezeigt (in den Einstellungen ausgeblendet)"
@@ -57,11 +52,6 @@
       "translation": ""
     },
     {
-      "id": "/path/to/data",
-      "message": "/path/to/data",
-      "translation": "/pfad/zu/daten"
-    },
-    {
       "id": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
       "message": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
       "translation": "\u003ch3\u003eWillkommen!\u003c/h3\u003e\u003cp\u003eDein statischer Inhalt hier\u003c/p\u003e"
@@ -77,11 +67,6 @@
       "translation": ""
     },
     {
-      "id": "ALL TESTS PASSED",
-      "message": "ALL TESTS PASSED",
-      "translation": "ALLE TESTS BESTANDEN"
-    },
-    {
       "id": "Aa Bb Gg 0123",
       "message": "Aa Bb Gg 0123",
       "translation": "Aa Bb Gg 0123"
@@ -90,11 +75,6 @@
       "id": "Action",
       "message": "Action",
       "translation": "Aktion"
-    },
-    {
-      "id": "Actual",
-      "message": "Actual",
-      "translation": "Tatsächlich"
     },
     {
       "id": "Admin",
@@ -297,11 +277,6 @@
       "translation": "Backup erstellen"
     },
     {
-      "id": "Criteria",
-      "message": "Criteria",
-      "translation": "Kriterien"
-    },
-    {
       "id": "Current Value",
       "message": "Current Value",
       "translation": ""
@@ -330,11 +305,6 @@
       "id": "Dashboards",
       "message": "Dashboards",
       "translation": ""
-    },
-    {
-      "id": "Data Path",
-      "message": "Data Path",
-      "translation": "Datenpfad"
     },
     {
       "id": "Date Format",
@@ -477,19 +447,9 @@
       "translation": ""
     },
     {
-      "id": "Expected",
-      "message": "Expected",
-      "translation": "Erwartet"
-    },
-    {
       "id": "Export / Import",
       "message": "Export / Import",
       "translation": "Export / Import"
-    },
-    {
-      "id": "Failed: {Integer}",
-      "message": "Failed: {Integer}",
-      "translation": "Fehlgeschlagen: {Integer}"
     },
     {
       "id": "Field",
@@ -530,16 +490,6 @@
       "id": "Filter",
       "message": "Filter",
       "translation": "Filter"
-    },
-    {
-      "id": "Filter Configuration",
-      "message": "Filter Configuration",
-      "translation": "Filterkonfiguration"
-    },
-    {
-      "id": "Filter Test Metadata",
-      "message": "Filter Test Metadata",
-      "translation": "Filtertest-Metadaten"
     },
     {
       "id": "Filter logs…",
@@ -620,11 +570,6 @@
       "id": "Git Remote Sync",
       "message": "Git Remote Sync",
       "translation": "Git-Remote-Synchronisierung"
-    },
-    {
-      "id": "Git Repository",
-      "message": "Git Repository",
-      "translation": "Git-Repository"
     },
     {
       "id": "Go version",
@@ -862,11 +807,6 @@
       "translation": "Sperren"
     },
     {
-      "id": "Logic",
-      "message": "Logic",
-      "translation": "Logik"
-    },
-    {
       "id": "Logs",
       "message": "Logs",
       "translation": "Logs"
@@ -1007,11 +947,6 @@
       "translation": "Seitenformat"
     },
     {
-      "id": "Passed: {Integer}",
-      "message": "Passed: {Integer}",
-      "translation": "Bestanden: {Integer}"
-    },
-    {
       "id": "Pause",
       "message": "Pause",
       "translation": "Pausieren"
@@ -1060,11 +995,6 @@
       "id": "Release notes / Changelog",
       "message": "Release notes / Changelog",
       "translation": "Release Notes / Änderungsprotokoll"
-    },
-    {
-      "id": "Remote Repository URL",
-      "message": "Remote Repository URL",
-      "translation": "Remote-Repository-URL"
     },
     {
       "id": "Rename",
@@ -1117,209 +1047,9 @@
       "translation": "Zeilen pro Seite"
     },
     {
-      "id": "Run All Tests",
-      "message": "Run All Tests",
-      "translation": "alle Tests ausführen"
-    },
-    {
-      "id": "Run Async Job Tests",
-      "message": "Run Async Job Tests",
-      "translation": "asynchrone Job-Tests ausführen"
-    },
-    {
-      "id": "Run Backup Tests",
-      "message": "Run Backup Tests",
-      "translation": "Backup-Tests ausführen"
-    },
-    {
-      "id": "Run Browse Tests",
-      "message": "Run Browse Tests",
-      "translation": "Browse-Tests ausführen"
-    },
-    {
-      "id": "Run Chat Tests",
-      "message": "Run Chat Tests",
-      "translation": "Chat-Tests ausführen"
-    },
-    {
-      "id": "Run Connections Tests",
-      "message": "Run Connections Tests",
-      "translation": "Verbindungstests ausführen"
-    },
-    {
       "id": "Run Cronjob",
       "message": "Run Cronjob",
       "translation": "Cronjob ausführen"
-    },
-    {
-      "id": "Run Dashboard Tests",
-      "message": "Run Dashboard Tests",
-      "translation": "Dashboard-Tests ausführen"
-    },
-    {
-      "id": "Run Editors Tests",
-      "message": "Run Editors Tests",
-      "translation": "Editor-Tests ausführen"
-    },
-    {
-      "id": "Run Export Tests",
-      "message": "Run Export Tests",
-      "translation": "Export-Tests ausführen"
-    },
-    {
-      "id": "Run Filter Tests",
-      "message": "Run Filter Tests",
-      "translation": "Filter-Tests ausführen"
-    },
-    {
-      "id": "Run Git History Tests",
-      "message": "Run Git History Tests",
-      "translation": "Git-Verlauf-Tests ausführen"
-    },
-    {
-      "id": "Run Jobs Tests",
-      "message": "Run Jobs Tests",
-      "translation": "Job-Tests ausführen"
-    },
-    {
-      "id": "Run Kanban Tests",
-      "message": "Run Kanban Tests",
-      "translation": "Kanban-Tests ausführen"
-    },
-    {
-      "id": "Run Logs Tests",
-      "message": "Run Logs Tests",
-      "translation": "Log-Tests ausführen"
-    },
-    {
-      "id": "Run Media Tests",
-      "message": "Run Media Tests",
-      "translation": "Medien-Tests ausführen"
-    },
-    {
-      "id": "Run Metadata Tests",
-      "message": "Run Metadata Tests",
-      "translation": "Metadaten-Tests ausführen"
-    },
-    {
-      "id": "Run Notification Tests",
-      "message": "Run Notification Tests",
-      "translation": "Benachrichtigungs-Tests ausführen"
-    },
-    {
-      "id": "Run Parser Tests",
-      "message": "Run Parser Tests",
-      "translation": "Parser-Tests ausführen"
-    },
-    {
-      "id": "Run Search Tests",
-      "message": "Run Search Tests",
-      "translation": "Such-Tests ausführen"
-    },
-    {
-      "id": "Run Settings Tests",
-      "message": "Run Settings Tests",
-      "translation": "Einstellungs-Tests ausführen"
-    },
-    {
-      "id": "Run all test suites? This will create test metadata objects.",
-      "message": "Run all test suites? This will create test metadata objects.",
-      "translation": "Alle Test-Suites ausführen? Dies erstellt Test-Metadatenobjekte."
-    },
-    {
-      "id": "Run async job tests? This will start/interrupt-recover real background jobs and consume pending notifications.",
-      "message": "Run async job tests? This will start/interrupt-recover real background jobs and consume pending notifications.",
-      "translation": "Asynchrone Job-Tests ausführen? Dies startet/unterbricht echte Hintergrundjobs und verarbeitet ausstehende Benachrichtigungen."
-    },
-    {
-      "id": "Run backup tests? This will create real backups of live storages into scratch targets, and briefly restore them in place.",
-      "message": "Run backup tests? This will create real backups of live storages into scratch targets, and briefly restore them in place.",
-      "translation": "Backup-Tests ausführen? Dies erstellt echte Backups der Live-Speicher in temporäre Ziele und stellt sie kurzzeitig an Ort und Stelle wieder her."
-    },
-    {
-      "id": "Run browse tests? This will create test files and folders.",
-      "message": "Run browse tests? This will create test files and folders.",
-      "translation": "Browse-Tests ausführen? Dies erstellt Testdateien und -ordner."
-    },
-    {
-      "id": "Run chat tests? This will create and delete chat messages and test files.",
-      "message": "Run chat tests? This will create and delete chat messages and test files.",
-      "translation": "Chat-Tests ausführen? Dies erstellt und löscht Chat-Nachrichten und Testdateien."
-    },
-    {
-      "id": "Run connections tests? This will create test files with parent/child/link relationships.",
-      "message": "Run connections tests? This will create test files with parent/child/link relationships.",
-      "translation": "Verbindungstests ausführen? Dies erstellt Testdateien mit Eltern-/Kind-/Link-Beziehungen."
-    },
-    {
-      "id": "Run dashboard tests? This will create and delete test dashboards.",
-      "message": "Run dashboard tests? This will create and delete test dashboards.",
-      "translation": "Dashboard-Tests ausführen? Dies erstellt und löscht Test-Dashboards."
-    },
-    {
-      "id": "Run editors tests? This will create test files and metadata.",
-      "message": "Run editors tests? This will create test files and metadata.",
-      "translation": "Editor-Tests ausführen? Dies erstellt Testdateien und -metadaten."
-    },
-    {
-      "id": "Run export tests? This will export test files as zip and round-trip a settings export.",
-      "message": "Run export tests? This will export test files as zip and round-trip a settings export.",
-      "translation": "Export-Tests ausführen? Dies exportiert Testdateien als ZIP und führt einen Export/Import-Zyklus der Einstellungen durch."
-    },
-    {
-      "id": "Run filter tests? This will create test metadata objects.",
-      "message": "Run filter tests? This will create test metadata objects.",
-      "translation": "Filter-Tests ausführen? Dies erstellt Test-Metadatenobjekte."
-    },
-    {
-      "id": "Run git history tests? This will create test files, git commits, and temporarily point the git remote at a throwaway local repo.",
-      "message": "Run git history tests? This will create test files, git commits, and temporarily point the git remote at a throwaway local repo.",
-      "translation": "Git-Verlauf-Tests ausführen? Dies erstellt Testdateien, Git-Commits und lenkt den Git-Remote vorübergehend auf ein temporäres lokales Repository um."
-    },
-    {
-      "id": "Run jobs tests? This will trigger a full metadata rebuild, search reindex, cache invalidate and media cleanup.",
-      "message": "Run jobs tests? This will trigger a full metadata rebuild, search reindex, cache invalidate and media cleanup.",
-      "translation": "Job-Tests ausführen? Dies löst einen vollständigen Metadaten-Neuaufbau, eine Neuindizierung der Suche, eine Cache-Invalidierung und eine Medienbereinigung aus."
-    },
-    {
-      "id": "Run kanban tests? This will create test files and move kanban cards.",
-      "message": "Run kanban tests? This will create test files and move kanban cards.",
-      "translation": "Kanban-Tests ausführen? Dies erstellt Testdateien und verschiebt Kanban-Karten."
-    },
-    {
-      "id": "Run logs tests? This will write probe entries to the in-app-tests log.",
-      "message": "Run logs tests? This will write probe entries to the in-app-tests log.",
-      "translation": "Log-Tests ausführen? Dies schreibt Testeinträge in das In-App-Test-Log."
-    },
-    {
-      "id": "Run media tests? This will upload, rename and delete test media files.",
-      "message": "Run media tests? This will upload, rename and delete test media files.",
-      "translation": "Medien-Tests ausführen? Dies lädt Test-Mediendateien hoch, benennt sie um und löscht sie."
-    },
-    {
-      "id": "Run metadata tests? This will create and delete test metadata and references.",
-      "message": "Run metadata tests? This will create and delete test metadata and references.",
-      "translation": "Metadaten-Tests ausführen? Dies erstellt und löscht Test-Metadaten und -Referenzen."
-    },
-    {
-      "id": "Run notification tests? This will add, consume and clear real notifications.",
-      "message": "Run notification tests? This will add, consume and clear real notifications.",
-      "translation": "Benachrichtigungs-Tests ausführen? Dies fügt echte Benachrichtigungen hinzu, verarbeitet und löscht sie."
-    },
-    {
-      "id": "Run parser tests?",
-      "message": "Run parser tests?",
-      "translation": "Parser-Tests ausführen?"
-    },
-    {
-      "id": "Run search tests? This will create test files and git commits.",
-      "message": "Run search tests? This will create test files and git commits.",
-      "translation": "Such-Tests ausführen? Dies erstellt Testdateien und Git-Commits."
-    },
-    {
-      "id": "Run settings tests? This will temporarily change real settings, theme and favicon, then restore them.",
-      "message": "Run settings tests? This will temporarily change real settings, theme and favicon, then restore them.",
-      "translation": "Einstellungs-Tests ausführen? Dies ändert vorübergehend echte Einstellungen, Theme und Favicon und stellt sie danach wieder her."
     },
     {
       "id": "Sample files are set up automatically on the very first start. Use Clean Test Data below if you want to remove them.",
@@ -1350,16 +1080,6 @@
       "id": "Section Editing \u0026 Display",
       "message": "Section Editing \u0026 Display",
       "translation": "Abschnittsbearbeitung \u0026 -anzeige"
-    },
-    {
-      "id": "Set Data Path",
-      "message": "Set Data Path",
-      "translation": "Datenpfad festlegen"
-    },
-    {
-      "id": "Set Remote Repository",
-      "message": "Set Remote Repository",
-      "translation": "Remote-Repository festlegen"
     },
     {
       "id": "Settings",
@@ -1507,11 +1227,6 @@
       "translation": "Testdaten"
     },
     {
-      "id": "Test Results Summary",
-      "message": "Test Results Summary",
-      "translation": "Testergebnis-Zusammenfassung"
-    },
-    {
       "id": "Text",
       "message": "Text",
       "translation": "Text"
@@ -1555,16 +1270,6 @@
       "id": "Todo",
       "message": "Todo",
       "translation": ""
-    },
-    {
-      "id": "Total Files",
-      "message": "Total Files",
-      "translation": "Dateien gesamt"
-    },
-    {
-      "id": "Total: {Integer}",
-      "message": "Total: {Integer}",
-      "translation": "Gesamt: {Integer}"
     },
     {
       "id": "Track files as cards moving through stages, e.g. inbox to in progress to done. It's not a separate system - a card is just a file with a status tag, so it's still the same file everywhere else in the app. Configure boards in Settings.",
@@ -1645,11 +1350,6 @@
       "id": "Version",
       "message": "Version",
       "translation": "Version"
-    },
-    {
-      "id": "View Filter Test Metadata",
-      "message": "View Filter Test Metadata",
-      "translation": "Filtertest-Metadaten anzeigen"
     },
     {
       "id": "View all collections",
@@ -2247,16 +1947,6 @@
       "translation": "Datenpfad"
     },
     {
-      "id": "data path cannot be empty",
-      "message": "data path cannot be empty",
-      "translation": "Datenpfad darf nicht leer sein"
-    },
-    {
-      "id": "data path saved. restart required.",
-      "message": "data path saved. restart required.",
-      "translation": "Datenpfad gespeichert. Neustart erforderlich."
-    },
-    {
       "id": "debug",
       "message": "debug",
       "translation": "debug"
@@ -2742,11 +2432,6 @@
       "translation": "Fehler beim Abrufen der Dateien"
     },
     {
-      "id": "failed to get filter test metadata",
-      "message": "failed to get filter test metadata",
-      "translation": "Fehler beim Abrufen der Filtertest-Metadaten"
-    },
-    {
       "id": "failed to get folders",
       "message": "failed to get folders",
       "translation": "Fehler beim Abrufen der Ordner"
@@ -2935,11 +2620,6 @@
       "id": "failed to restore file",
       "message": "failed to restore file",
       "translation": "Fehler beim Wiederherstellen der Datei"
-    },
-    {
-      "id": "failed to save",
-      "message": "failed to save",
-      "translation": "Speichern fehlgeschlagen"
     },
     {
       "id": "failed to save converted file",
@@ -3342,11 +3022,6 @@
       "translation": "unscharfer Treffer"
     },
     {
-      "id": "git remote saved",
-      "message": "git remote saved",
-      "translation": "Git-Remote gespeichert"
-    },
-    {
       "id": "grandchildren",
       "message": "grandchildren",
       "translation": "Enkelelemente"
@@ -3415,11 +3090,6 @@
       "id": "how many rows to show per page in interactive tables",
       "message": "how many rows to show per page in interactive tables",
       "translation": "wie viele Zeilen pro Seite in interaktiven Tabellen angezeigt werden"
-    },
-    {
-      "id": "https://github.com/user/repo.git or git@github.com:user/repo.git",
-      "message": "https://github.com/user/repo.git or git@github.com:user/repo.git",
-      "translation": "https://github.com/user/repo.git oder git@github.com:user/repo.git"
     },
     {
       "id": "ids and target are required",
@@ -3595,11 +3265,6 @@
       "id": "layout",
       "message": "layout",
       "translation": "Layout"
-    },
-    {
-      "id": "leave empty for local git repository only",
-      "message": "leave empty for local git repository only",
-      "translation": "leer lassen für nur lokales Git-Repository"
     },
     {
       "id": "less than",
@@ -4252,11 +3917,6 @@
       "translation": "Operator"
     },
     {
-      "id": "optional",
-      "message": "optional",
-      "translation": "optional"
-    },
-    {
       "id": "optional title",
       "message": "optional title",
       "translation": "optionaler Titel"
@@ -4325,11 +3985,6 @@
       "id": "path is required",
       "message": "path is required",
       "translation": "Pfad ist erforderlich"
-    },
-    {
-      "id": "path to your data storage relative from the executable",
-      "message": "path to your data storage relative from the executable",
-      "translation": "Pfad zu deinem Datenspeicher relativ zur ausführbaren Datei"
     },
     {
       "id": "path/to/file",

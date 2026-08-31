@@ -227,6 +227,16 @@ func FolderContains(dirPath, folderPath string) bool {
 	return dirPath == folderPath || strings.HasPrefix(dirPath, folderPath+"/")
 }
 
+// PathContains reports whether candidate is root itself or strictly beneath it on the
+// filesystem, checking real OS paths (filepath.Clean + filepath.Separator) rather than
+// forward-slash logical paths - use this over FolderContains for actual filesystem
+// directories so it works correctly on both Linux and Windows.
+func PathContains(root, candidate string) bool {
+	root = filepath.Clean(root)
+	candidate = filepath.Clean(candidate)
+	return candidate == root || strings.HasPrefix(candidate, root+string(filepath.Separator))
+}
+
 // ToFileURL returns a browser-safe URL for viewing a file.
 // Segments are path-escaped so spaces, Unicode, and special characters work correctly.
 func ToFileURL(rel string) string {

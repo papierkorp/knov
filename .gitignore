@@ -203,6 +203,7 @@ data*/
 data*/*
 temp*/
 temp*/*
+knov_temp_test/
 bin/
 config/
 .storage

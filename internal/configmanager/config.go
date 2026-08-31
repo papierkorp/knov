@@ -108,15 +108,9 @@ type BackupProfile struct {
 func InitAppConfig() {
 	envMsg, envWarn := loadEnvFile()
 
-	baseDir := "."
-	exePath, err := os.Executable()
-	if err == nil {
-		execDir := filepath.Dir(exePath)
-		// check if running from go build cache (go run)
-		if !strings.Contains(execDir, "go-build") {
-			baseDir = execDir
-		}
-	}
+	// resolved once here rather than duplicated - logging.ResolveBaseDir is the single
+	// implementation, since configmanager already depends on logging
+	baseDir := logging.ResolveBaseDir()
 
 	// LinkRegex has no KNOV_* key - it's a fixed constant, not user-configurable. Every other
 	// field is populated by applyEnvDefs from EnvVarDefs (envdefs.go), the single place each
@@ -156,6 +150,15 @@ func InitAppConfig() {
 // GetAppConfig returns the current app config
 func GetAppConfig() AppConfig {
 	return appConfig
+}
+
+// SetDataAndStoragePaths overrides DataPath and StoragePath in memory only (the .env file on
+// disk is left untouched). Used by `knov --start-tests` (see test.PrepareIsolatedStorage) to
+// point every storage backend at an isolated knov_temp_test scratch copy before anything is
+// initialized, so a headless test run never touches the live paths.
+func SetDataAndStoragePaths(dataPath, storagePath string) {
+	appConfig.DataPath = dataPath
+	appConfig.StoragePath = storagePath
 }
 
 // GetNotifyDuration returns the notification toast display duration in milliseconds

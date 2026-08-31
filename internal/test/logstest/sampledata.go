@@ -18,11 +18,18 @@ func newMarker() string {
 	return fmt.Sprintf("logstest-probe-%d", time.Now().UnixNano())
 }
 
+// probeNote prefixes every deliberate error/warning-level log line this suite writes, so
+// anyone skimming logs/in-app-tests.log (or app.log for caseDownloadPathGuard) can tell at a
+// glance that an "error" entry is an expected test probe rather than a real failure.
+const probeNote = "deliberate test probe, not a real error - "
+
 // inAppTestsLogPath is the file logging.KeyInAppTests writes to - already a real, shared log
 // key (the job scheduler logs every suite run's pass/fail summary here), reused directly
-// rather than inventing a synthetic key.
+// rather than inventing a synthetic key. KeyInAppTests is exempt from SetIsolatedLogsDir's
+// redirect (see internal/test/isolated.go), so this is logging.LogFilePath, not a
+// GetLogsDir()-based join - it wouldn't be under GetLogsDir() during a --start-tests run.
 func inAppTestsLogPath() string {
-	return filepath.Join(logging.GetLogsDir(), logging.KeyInAppTests.String()+".log")
+	return logging.LogFilePath(logging.KeyInAppTests)
 }
 
 // readLines reads a log file's current lines, oldest first - same shape handleAPIGetLogsFile's

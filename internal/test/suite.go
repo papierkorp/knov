@@ -28,9 +28,9 @@ type Suite interface {
 }
 
 // suites holds every registered Suite. A <group>test package registers itself via
-// Register() in its init(), which runs when anything imports that package (e.g. its
-// job wrapper) - avoids internal/test importing its own subpackages, which would cycle
-// since those subpackages import internal/test for the shared types above.
+// Register() in its init(), triggered by main.go's blank imports of every <group>test
+// package - avoids internal/test importing its own subpackages, which would cycle since
+// those subpackages import internal/test for the shared types above.
 var suites []Suite
 
 // Register adds a suite to the registry. Called from a <group>test package's init().

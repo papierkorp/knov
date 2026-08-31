@@ -3,7 +3,9 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"os"
+	"slices"
 	"time"
 
 	"knov/internal/cacheStorage"
@@ -31,11 +33,9 @@ import (
 	"knov/internal/server"
 
 	"knov/internal/test"
-	// every in-app test suite self-registers (test.Register for run-all,
-	// job.RegisterSuiteRunner for its own admin button) in its own init() - internal/job
-	// doesn't import any of them directly to avoid a cycle for suites that themselves need
-	// to import internal/job (e.g. jobstest), so these blank imports are what actually
-	// trigger each suite's init() (see internal/job/externalsuite.go).
+	// every in-app test suite self-registers with test.Register in its own init() -
+	// these blank imports are what actually trigger that (run via `knov --start-tests`,
+	// see runHeadlessTests below).
 	_ "knov/internal/test/asyncjobtest"
 	_ "knov/internal/test/backuptest"
 	_ "knov/internal/test/browsetest"
@@ -79,11 +79,28 @@ func main() {
 	thememanager.SetBuiltinFiles(builtinThemeFS)
 	test.SetDocsFiles(docsFS)
 
+	startTests := slices.Contains(os.Args[1:], "--start-tests")
+	removeTestDir := slices.Contains(os.Args[1:], "--remove")
+	if startTests {
+		// before InitAppConfig, which opens app.log against whatever this resolves to
+		logging.SetIsolatedLogsDir()
+	}
+
 	configmanager.InitAppConfig()
-	// docs dir doesn't exist yet - nothing has ever been stored, so seed starter content below
+	translation.Init()
+
+	if startTests {
+		if err := test.PrepareIsolatedStorage(); err != nil {
+			logging.LogError(logging.KeyApp, "failed to prepare isolated test storage: %v", err)
+			os.Exit(1)
+		}
+	}
+
+	// docs dir doesn't exist yet - nothing has ever been stored, so seed starter content below.
+	// Checked after PrepareIsolatedStorage so a --start-tests run stats the isolated copy, not
+	// the live one.
 	_, statErr := os.Stat(pathutils.DocsRoot())
 	firstStart := os.IsNotExist(statErr)
-	translation.Init()
 
 	if data, err := staticFS.ReadFile("static/font-awesome/ttf/7-3-1/Font Awesome 7 Free-Solid-900.ttf"); err == nil {
 		pdfexport.SetIconFont(data)
@@ -100,7 +117,7 @@ func main() {
 	// initialize content storage (creates data/docs and data/media directories)
 	if err := contentStorage.Init(); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize content storage: %v", err)
-		return
+		os.Exit(1)
 	}
 
 	// initialize content handlers
@@ -114,47 +131,47 @@ func main() {
 
 	if err := configStorage.Init(appConfig.ConfigStorageProvider, appConfig.StoragePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize config storage: %v", err)
-		return
+		os.Exit(1)
 	}
 
 	if err := metadataStorage.Init(appConfig.MetadataStorageProvider, appConfig.StoragePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize metadata storage: %v", err)
-		return
+		os.Exit(1)
 	}
 
 	if err := kanbanStorage.Init(appConfig.KanbanEventsEnabled, appConfig.KanbanEventsProvider, appConfig.StoragePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize kanban storage: %v", err)
-		return
+		os.Exit(1)
 	}
 
 	if err := cacheStorage.Init(appConfig.CacheStorageProvider, appConfig.StoragePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize cache storage: %v", err)
-		return
+		os.Exit(1)
 	}
 
 	if err := searchStorage.Init(appConfig.SearchStorageProvider, appConfig.StoragePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize search storage: %v", err)
-		return
+		os.Exit(1)
 	}
 
 	if err := chatStorage.Init(appConfig.StoragePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize chat storage: %v", err)
-		return
+		os.Exit(1)
 	}
 
 	if err := notificationStorage.Init(appConfig.StoragePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize notification storage: %v", err)
-		return
+		os.Exit(1)
 	}
 
 	if err := jobStorage.Init(appConfig.StoragePath); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize job storage: %v", err)
-		return
+		os.Exit(1)
 	}
 
 	if err := configmanager.InitSettings(); err != nil {
 		logging.LogError(logging.KeyApp, "failed to initialize settings: %v", err)
-		return
+		os.Exit(1)
 	}
 	configmanager.LoadThemeSettings()
 	translation.SetLanguage(configmanager.GetLanguage())
@@ -166,6 +183,12 @@ func main() {
 	files.OnFileMoved = func(oldPath, newPath string) {
 		kanban.PatchPathForMove(oldPath, newPath)
 		dashboard.PatchFilePathForMove(oldPath, newPath)
+	}
+
+	// knov --start-tests runs headless against the isolated storage set up above, then exits -
+	// never starts the scheduler or HTTP server, and never touches live storage.
+	if startTests {
+		runHeadlessTests(removeTestDir)
 	}
 
 	// after config/theme/OnMetadataRebuild are wired up, since a resumed job's background
@@ -196,6 +219,42 @@ func main() {
 	}()
 
 	server.StartServerChi()
+}
+
+// runHeadlessTests runs every registered test suite (via test.RunAllTestsAndLog) against the
+// isolated storage already prepared by test.PrepareIsolatedStorage, prints a summary, and exits
+// the process - `knov --start-tests` never starts the scheduler or HTTP server. If removeTestDir
+// is set (knov --start-tests --remove), test.TempRoot is deleted before exiting either way.
+func runHeadlessTests(removeTestDir bool) {
+	result, err := test.RunAllTestsAndLog()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "test run failed: %v\n", err)
+		exitHeadlessTests(removeTestDir, 1)
+	}
+
+	for _, c := range result.Cases {
+		if !c.Success {
+			fmt.Printf("FAIL %s: %s\n", c.Name, c.Error)
+		}
+	}
+	fmt.Printf("%d passed, %d failed, %d total\n", result.Passed, result.Failed, result.Total)
+
+	code := 0
+	if !result.Success {
+		code = 1
+	}
+	exitHeadlessTests(removeTestDir, code)
+}
+
+// exitHeadlessTests optionally removes the knov_temp_test scratch directory, then exits with
+// code - the single exit point for runHeadlessTests so --remove is honored on every path.
+func exitHeadlessTests(removeTestDir bool, code int) {
+	if removeTestDir {
+		if err := test.RemoveIsolatedStorage(); err != nil {
+			fmt.Fprintf(os.Stderr, "failed to remove knov_temp_test: %v\n", err)
+		}
+	}
+	os.Exit(code)
 }
 
 // loadFonts registers every embedded font family from the fonts manifest
