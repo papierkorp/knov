@@ -17,7 +17,8 @@ Knov ships as a single self-contained binary (or `.exe` on Windows) — no insta
 
 1. Copy `.env.example` to `.env` and adjust the values
 2. Run the binary or .exe - it creates all neccessary folders and a git repository automatically (if no one is configured)
-3. Open your browser at `http://localhost:8080` (or your configured port)
+3. Open your browser at `http://localhost:1324` (or your configured port)
+4. Check `/system/environment` any time to see every recognized `KNOV_*` variable with its description, default and current value
 
 ## Data Folder
 
@@ -36,7 +37,7 @@ Back the data and storage folders up to keep everything safe.
 ## Home Dashboard
 
 - The home page (`/`) shows a dashboard
-- Set `KNOV_HOME_DASHBOARD=your-dashboard-name` to choose which one
+- Choose which one under **Settings → Home Dashboard** (a UI setting, not an env var)
 - Defaults to a dashboard named `home`
 
 ## Git & Sync
@@ -62,17 +63,16 @@ Back the data and storage folders up to keep everything safe.
 
 # Configuration
 
-All settings go in your `.env` file. Copy `.env.example` to get started — every option is listed there with a description.
+All settings go in your `.env` file. Copy `.env.example` to get started — every option is listed there with a description. See `/system/environment` for the full live list.
 
 ## Key Settings
 
 | Variable | Default | What it does |
 |---|---|---|
-| `KNOV_DATA_PATH` | `./data` | Where your files, themes and config are stored |
-| `KNOV_PORT` | `8080` | Port the app listens on |
-| `KNOV_LANGUAGE` | `en` | Interface language |
-| `KNOV_THEME` | `builtin` | Active theme name |
-| `KNOV_HOME_DASHBOARD` | `home` | Dashboard shown at `/` |
+| `KNOV_DATA_PATH` | `data` | Where your files, themes and config are stored |
+| `KNOV_SERVER_PORT` | `1324` | Port the app listens on |
+
+Language, theme and home dashboard are UI settings, not env vars - see **Settings**.
 
 ## Git Sync
 
@@ -98,7 +98,8 @@ All settings go in your `.env` file. Copy `.env.example` to get started — ever
 | Variable | Notes |
 |---|---|
 | `KNOV_AUTOCREATE_TAGS` | Tags added to new files — `folder/path:tag` scopes to a folder (recursive), a bare tag applies everywhere |
-| `KNOV_USE_EXTENSION_INDEX` | Use `.index` extension instead of `.md` for index/filter files |
+
+Whether index/filter files use the `.index` extension instead of `.md` is a UI setting, not an env var.
 
 ## Notes
 

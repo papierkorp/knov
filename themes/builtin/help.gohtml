@@ -61,6 +61,7 @@
         <a href="/admin">{{T "Admin"}}</a>
     </div>
     <p>{{T "Want to try the app out without using your real notes? Fill it with sample files."}}</p>
+    <p>{{T "Sample files are set up automatically on the very first start. Use Clean Test Data below if you want to remove them."}}</p>
     <div class="admin-action-list">
         <button class="btn-secondary" hx-post="/api/testdata/setup" hx-swap="none"
                 hx-confirm="{{T "Setup test data? This will create example files in the data/test folder."}}">

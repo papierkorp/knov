@@ -142,13 +142,13 @@
       "translation": "Bist du sicher?"
     },
     {
-      "id": "Auto backup: disabled",
-      "message": "Auto backup: disabled",
+      "id": "Auto backup {Arg_1}: cron {Arg_2}, storages: {Arg_3}",
+      "message": "Auto backup {Arg_1}: cron {Arg_2}, storages: {Arg_3}",
       "translation": ""
     },
     {
-      "id": "Auto backup: enabled (cron: {Arg_1})",
-      "message": "Auto backup: enabled (cron: {Arg_1})",
+      "id": "Auto backup: disabled",
+      "message": "Auto backup: disabled",
       "translation": ""
     },
     {
@@ -367,6 +367,11 @@
       "translation": "Alle verwaisten Mediendateien löschen? Dies kann nicht rückgängig gemacht werden."
     },
     {
+      "id": "Delete backup {Arg_1}? This cannot be undone.",
+      "message": "Delete backup {Arg_1}? This cannot be undone.",
+      "translation": ""
+    },
+    {
       "id": "Description",
       "message": "Description",
       "translation": ""
@@ -392,8 +397,8 @@
       "translation": "Dauer"
     },
     {
-      "id": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.",
-      "message": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backups can be enabled via KNOV_BACKUP_AUTO_ENABLED, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.",
+      "id": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backup profiles are configured via KNOV_BACKUP_AUTO_PROFILES, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.",
+      "message": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backup profiles are configured via KNOV_BACKUP_AUTO_PROFILES, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.",
       "translation": ""
     },
     {
@@ -937,6 +942,11 @@
       "translation": "Noch keine Jobs aufgezeichnet"
     },
     {
+      "id": "No logs yet",
+      "message": "No logs yet",
+      "translation": ""
+    },
+    {
       "id": "No widgets configured",
       "message": "No widgets configured",
       "translation": "keine Widgets konfiguriert"
@@ -1087,13 +1097,8 @@
       "translation": "Wiederherstellen"
     },
     {
-      "id": "Restore {Arg_1}? Current state is snapshotted first, then the app restarts to apply it.",
-      "message": "Restore {Arg_1}? Current state is snapshotted first, then the app restarts to apply it.",
-      "translation": "Backup {Arg_1} wiederherstellen? Der aktuelle Zustand wird zuerst gesichert, danach startet die Anwendung neu, um es anzuwenden."
-    },
-    {
-      "id": "Restore {Arg_1}? Current state is snapshotted first, then the app restarts to apply it. The restored state will also be force-pushed to the configured remote, overwriting anything there - or on any other synced device - that this device hasn't seen.",
-      "message": "Restore {Arg_1}? Current state is snapshotted first, then the app restarts to apply it. The restored state will also be force-pushed to the configured remote, overwriting anything there - or on any other synced device - that this device hasn't seen.",
+      "id": "Restore {Arg_1}? The app restarts to apply it.",
+      "message": "Restore {Arg_1}? The app restarts to apply it.",
       "translation": ""
     },
     {
@@ -1317,6 +1322,11 @@
       "translation": "Einstellungs-Tests ausführen? Dies ändert vorübergehend echte Einstellungen, Theme und Favicon und stellt sie danach wieder her."
     },
     {
+      "id": "Sample files are set up automatically on the very first start. Use Clean Test Data below if you want to remove them.",
+      "message": "Sample files are set up automatically on the very first start. Use Clean Test Data below if you want to remove them.",
+      "translation": "Beispieldateien werden beim allerersten Start automatisch eingerichtet. Nutze unten \"Testdaten bereinigen\", um sie zu entfernen."
+    },
+    {
       "id": "Scan for Broken Links",
       "message": "Scan for Broken Links",
       "translation": "nach defekten Links suchen"
@@ -1505,6 +1515,11 @@
       "id": "Text",
       "message": "Text",
       "translation": "Text"
+    },
+    {
+      "id": "The restored state will also be force-pushed to the configured remote, overwriting anything there - or on any other synced device - that this device hasn't seen.",
+      "message": "The restored state will also be force-pushed to the configured remote, overwriting anything there - or on any other synced device - that this device hasn't seen.",
+      "translation": ""
     },
     {
       "id": "Theme",
@@ -1890,6 +1905,11 @@
       "id": "backup created",
       "message": "backup created",
       "translation": "Backup erstellt"
+    },
+    {
+      "id": "backup deleted",
+      "message": "backup deleted",
+      "translation": ""
     },
     {
       "id": "backup restored, application restarting...",
@@ -3302,6 +3322,11 @@
       "translation": "Von-Datum"
     },
     {
+      "id": "full backup history",
+      "message": "full backup history",
+      "translation": ""
+    },
+    {
       "id": "full list of environment variables",
       "message": "full list of environment variables",
       "translation": ""
@@ -4212,6 +4237,11 @@
       "translation": "nur hervorheben, wenn die Auswahl einer vollständigen Wortgrenze entspricht"
     },
     {
+      "id": "open full logs",
+      "message": "open full logs",
+      "translation": ""
+    },
+    {
       "id": "open in new tab",
       "message": "open in new tab",
       "translation": "in neuem Tab öffnen"
@@ -4425,6 +4455,11 @@
       "id": "restarting application...",
       "message": "restarting application...",
       "translation": "Anwendung wird neu gestartet..."
+    },
+    {
+      "id": "restore requires confirm=true: a git remote is configured, so the restored state will be force-pushed to it",
+      "message": "restore requires confirm=true: a git remote is configured, so the restored state will be force-pushed to it",
+      "translation": ""
     },
     {
       "id": "restore this version",

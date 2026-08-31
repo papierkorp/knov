@@ -3,6 +3,7 @@ package main
 
 import (
 	"embed"
+	"os"
 	"time"
 
 	"knov/internal/cacheStorage"
@@ -24,6 +25,7 @@ import (
 	"knov/internal/metadataStorage"
 	"knov/internal/notificationStorage"
 	"knov/internal/parser"
+	"knov/internal/pathutils"
 	"knov/internal/pdfexport"
 	"knov/internal/searchStorage"
 	"knov/internal/server"
@@ -78,6 +80,9 @@ func main() {
 	test.SetDocsFiles(docsFS)
 
 	configmanager.InitAppConfig()
+	// docs dir doesn't exist yet - nothing has ever been stored, so seed starter content below
+	_, statErr := os.Stat(pathutils.DocsRoot())
+	firstStart := os.IsNotExist(statErr)
 	translation.Init()
 
 	if data, err := staticFS.ReadFile("static/font-awesome/ttf/7-3-1/Font Awesome 7 Free-Solid-900.ttf"); err == nil {
@@ -166,6 +171,12 @@ func main() {
 	// after config/theme/OnMetadataRebuild are wired up, since a resumed job's background
 	// cache rebuild depends on them
 	job.RecoverInterrupted()
+
+	if firstStart {
+		if err := job.RunTestdataSetup(); err != nil {
+			logging.LogError(logging.KeyApp, "failed to seed starter docs: %v", err)
+		}
+	}
 
 	go func() {
 		if err := job.RunSearchReindex(); err != nil {

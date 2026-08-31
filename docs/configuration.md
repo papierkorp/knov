@@ -1,7 +1,7 @@
 # Configuration
 
 A deeper look at each system. For the initial setup and key env variables see `quickstart.md`.  
-All env variables go in your `.env` file - changes require a restart.
+All env variables go in your `.env` file, starting from `.env.example` - changes require a restart. See `/system/environment` for every recognized `KNOV_*` variable with its description, default and current value.
 
 ---
 
@@ -123,17 +123,64 @@ Example: `KNOV_AUTOCREATE_TAGS=projects/work:kb-status-inbox,personal/todo:kb-st
 
 ---
 
+## Storage Providers
+
+Knov's own internal data (not your files - `docs/`/`media/` are plain files on disk, versioned by git) lives in pluggable per-system backends under `KNOV_STORAGE_PATH` (default `storage/`), each configured independently:
+
+| Variable | Options | Default | Backs |
+|---|---|---|---|
+| `KNOV_CONFIG_STORAGE_PROVIDER` | `json` | `json` | app settings and filter configs |
+| `KNOV_METADATA_STORAGE_PROVIDER` | `json`, `yaml`, `sqlite` | `sqlite` | tags, dates, relationships, PARA fields per file |
+| `KNOV_CACHE_STORAGE_PROVIDER` | `json`, `sqlite` | `sqlite` | rendered-content cache |
+| `KNOV_SEARCH_STORAGE_PROVIDER` | `sqlite` | `sqlite` | full-text search index |
+| `KNOV_KANBAN_EVENTS_STORAGE_PROVIDER` | `json`, `sqlite` | `sqlite` | kanban card move history |
+
+- `yaml` for metadata stores each file's tags/dates/etc. as front matter inside the file itself instead of a separate database - the only provider whose data is already covered by git rather than a backup (see Backup & Restore)
+- Changing a provider takes effect after a restart; restoring an older backup converts its data into whichever provider is currently configured automatically (see Backup & Restore)
+
+---
+
 ## Metadata & Search
 
 Knov tracks metadata (tags, collection, dates, relationships, PARA fields) for every file automatically. You do not configure this - it runs in the background.
 
 **What you can influence:**
 - tags, parent relationships and references set manually per file in the sidebar
-- The metadata rebuild runs on a background cronjob and also after every save - you can trigger it manually from the admin page if something looks out of sync
+- The metadata rebuild also runs after every save, on top of its background schedule (see Background Jobs) - you can trigger it manually from the admin page if something looks out of sync
 
-**Search** is full-text and indexed in the background after each save. It covers file content as well as metadata fields.
+**Search** is full-text and indexed in the background after each save, on top of its own background schedule (see Background Jobs). It covers file content as well as metadata fields.
+- `KNOV_SEARCH_ENGINE` picks how a query runs: `repository` (default) hits the sqlite full-text index; `grep` reads files on disk directly instead - slower, but always current even if the index hasn't caught up yet
 
 **Search history** - the search page has a "search history" toggle that searches deleted files in git history. Useful when you want to remember content from a file you deleted. (can be slower in huge git repository)
+
+---
+
+## Background Jobs
+
+Knov runs a handful of jobs on their own timers, independently of anything you trigger by saving a file. Every current run and its outcome is visible in the admin page's job history.
+
+| Job | Interval | Configurable | Runs on startup too |
+|---|---|---|---|
+| File Sync | `KNOV_CRONJOB_INTERVAL` (default `5m`) | yes | yes |
+| Search Reindex | `KNOV_SEARCH_INDEX_INTERVAL` (default `15m`) | yes | yes |
+| Metadata Rebuild | `KNOV_METADATA_REBUILD_INTERVAL` (default `60m`) | yes | yes, once, 2 minutes after start |
+| Git Repack | fixed `24h` | no | yes (cheap no-op unless already over the loose-object threshold) |
+| Automatic Backup check | fixed `15m` | no | yes (catches a backup missed while the app was down) |
+
+**File Sync** - the workhorse job, on `KNOV_CRONJOB_INTERVAL`:
+- Pulls the remote (`KNOV_GIT_REMOTE`, if set) and commits any pending local changes
+- Diffs against the last commit it processed to find files changed, deleted or renamed since
+- For renamed files, updates every link pointing at the old path (see Filters/links) and applies kanban foldersync (see Kanban) if the move landed the file in a status folder
+- Removes metadata for deleted files, (re)builds metadata for new/changed files - filling only empty fields (e.g. editor type), so it never overwrites something you set by hand
+- Rebuilds the file/folder cache and regenerates saved-filter indexes as a final sub-step
+
+**Search Reindex** - rebuilds the full-text search index from every file, on `KNOV_SEARCH_INDEX_INTERVAL`. Skipped entirely when `KNOV_SEARCH_ENGINE=grep`, since there's no index to keep current.
+
+**Metadata Rebuild** - rebuilds cross-file relationships (parent/child links, ancestry) from what's on disk, on `KNOV_METADATA_REBUILD_INTERVAL`. This is the "link graph" rebuild, distinct from File Sync's per-file metadata sync above.
+
+**Git Repack** - packs loose git objects once their count crosses an internal threshold, keeping repo size and git operations fast on a long-running instance. Shares its lock with File Sync, so a repack in progress simply delays the next tick's git work rather than racing it.
+
+**Automatic Backup check** - evaluates every `KNOV_BACKUP_AUTO_PROFILES` entry and runs any that are due (see Backup & Restore).
 
 ---
 
@@ -176,9 +223,14 @@ Available at **Admin => Backups** (`/system/backup`).
 - Exception: if metadata is on the `yaml` provider (front matter stored inside docs files), restoring a backup never touches it, even for an old backup also made on `yaml` - that data is already covered by git, so use a file's history view (see Git & Conflict Handling) to roll back its tags/dates/etc. instead. A backup taken while on `yaml` still snapshots your front matter though (into a small sqlite file inside that backup's metadata folder) even though *restoring* it back onto a live `yaml` setup is a no-op - that snapshot exists specifically so it can be applied via the provider-conversion path below. If you specifically need to pull metadata out of an old *backup* while yaml is active (not from git history), temporarily switch `KNOV_METADATA_STORAGE_PROVIDER` to `sqlite` or `json` and restart first - that both migrates your current front matter out and makes the following restore go through the provider-conversion path above, which does apply an old yaml-era backup. Switch back to `yaml` and restart again afterwards to fold the restored data back into front matter
 - Old backups are trimmed automatically after every backup. A set survives if it matches any of three independent rules:
   - it's within `KNOV_BACKUP_ROTATION_KEEP_DAYS` days (default 7) - any kind, full or partial
-  - it's a full backup and among the `KNOV_BACKUP_ROTATION_KEEP_FULL` most recent full backups (default 10) - a long-term floor so coming back after months away still leaves something restorable, even if daily backups lapsed. Partial backups (e.g. "just metadata") get no long-term floor of their own - once they age out of the days window, they're deleted
+  - it's a full backup and among the `KNOV_BACKUP_ROTATION_KEEP_DEFAULT` most recent full backups (default 10) - a long-term floor so coming back after months away still leaves something restorable, even if daily backups lapsed. Partial backups (e.g. "just metadata") get no long-term floor of their own - once they age out of the days window, they're deleted
   - it's locked - click "Lock" on any set to keep it forever regardless of the two settings above, until "Unlock" is clicked
-- **Automatic backups** - off by default. Set `KNOV_BACKUP_AUTO_ENABLED=true` and `KNOV_BACKUP_AUTO_CRON` (a standard 5-field cron expression, e.g. `0 18 * * *` for daily at 18:00) to create a full backup periodically in the background, on top of manual ones. Due time tracks off the last full backup's own timestamp rather than a "ran today" flag, so a device that isn't running 24/7 still catches up as soon as it's next on past a missed slot. Requires a restart to take effect, like every other env var
+- **Automatic backups** - off by default. Set `KNOV_BACKUP_AUTO_PROFILES` to one or more `name:cron:storages` entries, semicolon-separated, to create backups periodically in the background, on top of manual ones:
+  - `cron` is a standard 5-field expression, e.g. `0 18 * * *` for daily at 18:00
+  - `storages` is comma-separated and may be empty for the default backup set (metadata, chat, kanban, notifications, config, search)
+  - e.g. `KNOV_BACKUP_AUTO_PROFILES=daily:0 0 * * *:metadata,chat,kanban,notifications,config;weekly-docs:0 0 * * 0:docs,media`
+  - Each profile's due time tracks off that profile's own newest backup timestamp rather than a "ran today" flag, so a device that isn't running 24/7 still catches up as soon as it's next on past a missed slot
+  - Requires a restart to take effect, like every other env var
 
 ## Logging
 
