@@ -49,7 +49,7 @@
     {
       "id": "(default)",
       "message": "(default)",
-      "translation": ""
+      "translation": "(Standard)"
     },
     {
       "id": "\u003ch3\u003ewelcome!\u003c/h3\u003e\u003cp\u003eyour static content here\u003c/p\u003e",
@@ -59,12 +59,12 @@
     {
       "id": "A dashboard is a page you customize yourself - pin lists of files by tag or folder, saved searches, or your own notes, arranged however you like.",
       "message": "A dashboard is a page you customize yourself - pin lists of files by tag or folder, saved searches, or your own notes, arranged however you like.",
-      "translation": ""
+      "translation": "Ein Dashboard ist eine Seite, die du selbst gestaltest – pinne Dateilisten nach Tag oder Ordner, gespeicherte Suchen oder eigene Notizen an, angeordnet wie du möchtest."
     },
     {
       "id": "A running stream of thoughts - global, or attached to a single file. Unlike your notes, chat messages aren't saved as part of a file, they're kept separately.",
       "message": "A running stream of thoughts - global, or attached to a single file. Unlike your notes, chat messages aren't saved as part of a file, they're kept separately.",
-      "translation": ""
+      "translation": "Ein fortlaufender Gedankenstrom – global oder an eine einzelne Datei gebunden. Anders als deine Notizen werden Chat-Nachrichten nicht als Teil einer Datei gespeichert, sondern getrennt aufbewahrt."
     },
     {
       "id": "Aa Bb Gg 0123",
@@ -124,12 +124,12 @@
     {
       "id": "Auto backup {Arg_1}: cron {Arg_2}, storages: {Arg_3}",
       "message": "Auto backup {Arg_1}: cron {Arg_2}, storages: {Arg_3}",
-      "translation": ""
+      "translation": "Automatisches Backup {Arg_1}: Cron {Arg_2}, Speicher: {Arg_3}"
     },
     {
       "id": "Auto backup: disabled",
       "message": "Auto backup: disabled",
-      "translation": ""
+      "translation": "Automatisches Backup: deaktiviert"
     },
     {
       "id": "Auto-Close Brackets",
@@ -174,7 +174,7 @@
     {
       "id": "Browse \u0026 Search",
       "message": "Browse \u0026 Search",
-      "translation": ""
+      "translation": "Durchsuchen \u0026 Suche"
     },
     {
       "id": "Browse by Folder Structure",
@@ -269,7 +269,7 @@
     {
       "id": "Create a dashboard and name it home to make it your new start page.",
       "message": "Create a dashboard and name it home to make it your new start page.",
-      "translation": ""
+      "translation": "Erstelle ein Dashboard und nenne es home, um es zu deiner neuen Startseite zu machen."
     },
     {
       "id": "Create backup",
@@ -279,7 +279,7 @@
     {
       "id": "Current Value",
       "message": "Current Value",
-      "translation": ""
+      "translation": "Aktueller Wert"
     },
     {
       "id": "Custom CSS",
@@ -304,7 +304,7 @@
     {
       "id": "Dashboards",
       "message": "Dashboards",
-      "translation": ""
+      "translation": "Dashboards"
     },
     {
       "id": "Date Format",
@@ -314,7 +314,7 @@
     {
       "id": "Default",
       "message": "Default",
-      "translation": ""
+      "translation": "Standard"
     },
     {
       "id": "Default Markdown Editor",
@@ -339,12 +339,12 @@
     {
       "id": "Delete backup {Arg_1}? This cannot be undone.",
       "message": "Delete backup {Arg_1}? This cannot be undone.",
-      "translation": ""
+      "translation": "Backup {Arg_1} löschen? Dies kann nicht rückgängig gemacht werden."
     },
     {
       "id": "Description",
       "message": "Description",
-      "translation": ""
+      "translation": "Beschreibung"
     },
     {
       "id": "Design your custom dashboard with widgets",
@@ -369,7 +369,7 @@
     {
       "id": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backup profiles are configured via KNOV_BACKUP_AUTO_PROFILES, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.",
       "message": "Each backup set snapshots StoragePath (metadata, chat, kanban, notifications, config, search) by default - not cache, which holds only data rebuilt from files/git on demand. DataPath's docs/media folders are optional: select them below to include them, since they're already covered by git and can make a backup much larger. Storages are snapshotted one at a time, not as a single point-in-time transaction. Automatic backup profiles are configured via KNOV_BACKUP_AUTO_PROFILES, and rotation tuned via KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (see .env.example). Lock a set to keep it regardless of rotation.",
-      "translation": ""
+      "translation": "Jeder Backup-Satz sichert standardmäßig StoragePath (Metadaten, Chat, Kanban, Benachrichtigungen, Konfiguration, Suche) – nicht den Cache, der nur Daten enthält, die bei Bedarf aus Dateien/Git neu aufgebaut werden. Die docs/media-Ordner von DataPath sind optional: wähle sie unten aus, um sie einzubeziehen, da sie bereits durch Git abgedeckt sind und ein Backup deutlich größer machen können. Speicher werden nacheinander gesichert, nicht als eine einzige Transaktion zu einem bestimmten Zeitpunkt. Automatische Backup-Profile werden über KNOV_BACKUP_AUTO_PROFILES konfiguriert, die Rotation über KNOV_BACKUP_ROTATION_KEEP_DAYS/KNOV_BACKUP_ROTATION_KEEP_DEFAULT (siehe .env.example). Sperre einen Satz, um ihn unabhängig von der Rotation zu behalten."
     },
     {
       "id": "Edit",
@@ -404,7 +404,7 @@
     {
       "id": "Editor types",
       "message": "Editor types",
-      "translation": ""
+      "translation": "Editor-Typen"
     },
     {
       "id": "Editor-Type",
@@ -424,7 +424,7 @@
     {
       "id": "Environment",
       "message": "Environment",
-      "translation": ""
+      "translation": "Umgebung"
     },
     {
       "id": "Error",
@@ -439,12 +439,12 @@
     {
       "id": "Every change - to a file or a media upload - is automatically saved as a new version using git, the version-control system many developers use. Nothing is ever really overwritten: open History to see every past version and restore one if you need to.",
       "message": "Every change - to a file or a media upload - is automatically saved as a new version using git, the version-control system many developers use. Nothing is ever really overwritten: open History to see every past version and restore one if you need to.",
-      "translation": ""
+      "translation": "Jede Änderung – an einer Datei oder einem Medien-Upload – wird automatisch als neue Version mit Git gespeichert, dem Versionskontrollsystem, das viele Entwickler verwenden. Nichts wird jemals wirklich überschrieben: Öffne den Verlauf, um jede frühere Version zu sehen und bei Bedarf wiederherzustellen."
     },
     {
       "id": "Every file has an editor type - pick the one that fits what you're writing.",
       "message": "Every file has an editor type - pick the one that fits what you're writing.",
-      "translation": ""
+      "translation": "Jede Datei hat einen Editor-Typ – wähle den, der zu dem passt, was du schreibst."
     },
     {
       "id": "Export / Import",
@@ -479,7 +479,7 @@
     {
       "id": "Files can be found by where they live or by labels attached to them.",
       "message": "Files can be found by where they live or by labels attached to them.",
-      "translation": ""
+      "translation": "Dateien lassen sich anhand ihres Speicherorts oder anhand von daran angehefteten Labels finden."
     },
     {
       "id": "Files with",
@@ -699,7 +699,7 @@
     {
       "id": "Image Click Behavior",
       "message": "Image Click Behavior",
-      "translation": ""
+      "translation": "Bildklick-Verhalten"
     },
     {
       "id": "Include Sub-Headers When Editing Sections",
@@ -709,7 +709,7 @@
     {
       "id": "Index",
       "message": "Index",
-      "translation": ""
+      "translation": "Index"
     },
     {
       "id": "Invalidate Cache",
@@ -769,7 +769,7 @@
     {
       "id": "List",
       "message": "List",
-      "translation": ""
+      "translation": "Liste"
     },
     {
       "id": "Live",
@@ -819,7 +819,7 @@
     {
       "id": "Markdown",
       "message": "Markdown",
-      "translation": ""
+      "translation": "Markdown"
     },
     {
       "id": "Max Upload Size (MB)",
@@ -834,12 +834,12 @@
     {
       "id": "Media Overview",
       "message": "Media Overview",
-      "translation": ""
+      "translation": "Medienübersicht"
     },
     {
       "id": "Media Settings",
       "message": "Media Settings",
-      "translation": ""
+      "translation": "Medieneinstellungen"
     },
     {
       "id": "Media Types",
@@ -864,7 +864,7 @@
     {
       "id": "New Dashboard",
       "message": "New Dashboard",
-      "translation": ""
+      "translation": "Neues Dashboard"
     },
     {
       "id": "No backups yet",
@@ -884,7 +884,7 @@
     {
       "id": "No logs yet",
       "message": "No logs yet",
-      "translation": ""
+      "translation": "Noch keine Logs"
     },
     {
       "id": "No widgets configured",
@@ -914,7 +914,7 @@
     {
       "id": "Options",
       "message": "Options",
-      "translation": ""
+      "translation": "Optionen"
     },
     {
       "id": "Orientation",
@@ -1029,7 +1029,7 @@
     {
       "id": "Restore {Arg_1}? The app restarts to apply it.",
       "message": "Restore {Arg_1}? The app restarts to apply it.",
-      "translation": ""
+      "translation": "{Arg_1} wiederherstellen? Die App startet neu, um dies anzuwenden."
     },
     {
       "id": "Restored: {Arg_1}",
@@ -1089,12 +1089,12 @@
     {
       "id": "Settings \u0026 Admin",
       "message": "Settings \u0026 Admin",
-      "translation": ""
+      "translation": "Einstellungen \u0026 Admin"
     },
     {
       "id": "Settings controls how the app looks and behaves for you. Admin covers maintenance for the whole app.",
       "message": "Settings controls how the app looks and behaves for you. Admin covers maintenance for the whole app.",
-      "translation": ""
+      "translation": "Einstellungen steuern, wie die App für dich aussieht und sich verhält. Admin umfasst die Wartung für die gesamte App."
     },
     {
       "id": "Setup Test Data",
@@ -1234,7 +1234,7 @@
     {
       "id": "The restored state will also be force-pushed to the configured remote, overwriting anything there - or on any other synced device - that this device hasn't seen.",
       "message": "The restored state will also be force-pushed to the configured remote, overwriting anything there - or on any other synced device - that this device hasn't seen.",
-      "translation": ""
+      "translation": "Der wiederhergestellte Zustand wird außerdem per Force-Push an das konfigurierte Remote gesendet und überschreibt dort – oder auf jedem anderen synchronisierten Gerät – alles, was dieses Gerät noch nicht gesehen hat."
     },
     {
       "id": "Theme",
@@ -1269,12 +1269,12 @@
     {
       "id": "Todo",
       "message": "Todo",
-      "translation": ""
+      "translation": "Todo"
     },
     {
       "id": "Track files as cards moving through stages, e.g. inbox to in progress to done. It's not a separate system - a card is just a file with a status tag, so it's still the same file everywhere else in the app. Configure boards in Settings.",
       "message": "Track files as cards moving through stages, e.g. inbox to in progress to done. It's not a separate system - a card is just a file with a status tag, so it's still the same file everywhere else in the app. Configure boards in Settings.",
-      "translation": ""
+      "translation": "Verfolge Dateien als Karten, die durch Phasen wandern, z. B. von Eingang über in Bearbeitung bis erledigt. Das ist kein separates System – eine Karte ist einfach eine Datei mit einem Status-Tag, also bleibt es überall sonst in der App dieselbe Datei. Boards werden in den Einstellungen konfiguriert."
     },
     {
       "id": "Trigger",
@@ -1309,7 +1309,7 @@
     {
       "id": "Upload images and attachments straight from the editor. They show up in Browse \u0026 Search like any other file, and are versioned the same way as your notes (see History).",
       "message": "Upload images and attachments straight from the editor. They show up in Browse \u0026 Search like any other file, and are versioned the same way as your notes (see History).",
-      "translation": ""
+      "translation": "Lade Bilder und Anhänge direkt aus dem Editor hoch. Sie erscheinen in Durchsuchen \u0026 Suche wie jede andere Datei und werden genauso versioniert wie deine Notizen (siehe Verlauf)."
     },
     {
       "id": "Use .index Extension",
@@ -1344,7 +1344,7 @@
     {
       "id": "Variable",
       "message": "Variable",
-      "translation": ""
+      "translation": "Variable"
     },
     {
       "id": "Version",
@@ -1364,7 +1364,7 @@
     {
       "id": "View all files",
       "message": "View all files",
-      "translation": ""
+      "translation": "Alle Dateien anzeigen"
     },
     {
       "id": "View all filter files",
@@ -1394,7 +1394,7 @@
     {
       "id": "Want to try the app out without using your real notes? Fill it with sample files.",
       "message": "Want to try the app out without using your real notes? Fill it with sample files.",
-      "translation": ""
+      "translation": "Möchtest du die App ausprobieren, ohne deine echten Notizen zu verwenden? Fülle sie mit Beispieldateien."
     },
     {
       "id": "Whole-Word Matches Only",
@@ -1414,12 +1414,12 @@
     {
       "id": "You're seeing this help page because no home dashboard exists yet. The home dashboard is simply whichever dashboard appears on the start page - home by default, changeable in Settings.",
       "message": "You're seeing this help page because no home dashboard exists yet. The home dashboard is simply whichever dashboard appears on the start page - home by default, changeable in Settings.",
-      "translation": ""
+      "translation": "Du siehst diese Hilfeseite, weil noch kein Home-Dashboard existiert. Das Home-Dashboard ist einfach das Dashboard, das auf der Startseite erscheint – standardmäßig home, änderbar in den Einstellungen."
     },
     {
       "id": "a file's top-level folder, a coarser grouping",
       "message": "a file's top-level folder, a coarser grouping",
-      "translation": ""
+      "translation": "der oberste Ordner einer Datei, eine gröbere Gruppierung"
     },
     {
       "id": "action",
@@ -1609,7 +1609,7 @@
     {
       "id": "backup deleted",
       "message": "backup deleted",
-      "translation": ""
+      "translation": "Backup gelöscht"
     },
     {
       "id": "backup restored, application restarting...",
@@ -1694,7 +1694,7 @@
     {
       "id": "checkbox task list",
       "message": "checkbox task list",
-      "translation": ""
+      "translation": "Checkbox-Aufgabenliste"
     },
     {
       "id": "children",
@@ -1764,7 +1764,7 @@
     {
       "id": "comma-separated folder path patterns to exclude from file listings, browse, search, filter and kanban. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter and/or ::kanban (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
       "message": "comma-separated folder path patterns to exclude from file listings, browse, search, filter and kanban. use / to separate segments and * as a wildcard for any single segment, e.g. */todo hides every todo folder, while test/todo only hides the todo folder inside test. by default a pattern hides everywhere; append ::tree, ::browse, ::overview, ::search, ::filter and/or ::kanban (combine with |, e.g. ::search|filter) to a pattern to hide it in only those scopes, leaving it visible everywhere else",
-      "translation": ""
+      "translation": "kommagetrennte Ordnerpfad-Muster, die aus Dateilisten, Durchsuchen, Suche, Filter und Kanban ausgeschlossen werden. verwende / zum Trennen von Segmenten und * als Platzhalter für ein einzelnes Segment, z. B. verbirgt */todo jeden todo-Ordner, während test/todo nur den todo-Ordner innerhalb von test verbirgt. standardmäßig verbirgt ein Muster überall; hänge ::tree, ::browse, ::overview, ::search, ::filter und/oder ::kanban (kombinierbar mit |, z. B. ::search|filter) an ein Muster an, um es nur in diesen Bereichen zu verbergen und ansonsten überall sichtbar zu lassen"
     },
     {
       "id": "compare",
@@ -2084,7 +2084,7 @@
     {
       "id": "distraction-free writing",
       "message": "distraction-free writing",
-      "translation": ""
+      "translation": "ablenkungsfreies Schreiben"
     },
     {
       "id": "done",
@@ -2099,7 +2099,7 @@
     {
       "id": "drag-and-drop nested list",
       "message": "drag-and-drop nested list",
-      "translation": ""
+      "translation": "verschachtelte Drag-and-Drop-Liste"
     },
     {
       "id": "draw task-list checkboxes as status icons instead of plain text marks ([ ], [x], [-], [O]) when exporting to pdf",
@@ -2989,7 +2989,7 @@
     {
       "id": "freeform labels, independent of location - a file can have several",
       "message": "freeform labels, independent of location - a file can have several",
-      "translation": ""
+      "translation": "freie Labels, unabhängig vom Speicherort – eine Datei kann mehrere haben"
     },
     {
       "id": "from",
@@ -3004,17 +3004,17 @@
     {
       "id": "full backup history",
       "message": "full backup history",
-      "translation": ""
+      "translation": "vollständiger Backup-Verlauf"
     },
     {
       "id": "full list of environment variables",
       "message": "full list of environment variables",
-      "translation": ""
+      "translation": "vollständige Liste der Umgebungsvariablen"
     },
     {
       "id": "full-text search across all files",
       "message": "full-text search across all files",
-      "translation": ""
+      "translation": "Volltextsuche über alle Dateien"
     },
     {
       "id": "fuzzy match",
@@ -3034,7 +3034,7 @@
     {
       "id": "group files by which editor they use",
       "message": "group files by which editor they use",
-      "translation": ""
+      "translation": "Dateien nach verwendetem Editor gruppieren"
     },
     {
       "id": "hand down status to sub-items",
@@ -3044,7 +3044,7 @@
     {
       "id": "heading...",
       "message": "heading...",
-      "translation": ""
+      "translation": "Überschrift..."
     },
     {
       "id": "hide diff",
@@ -3374,7 +3374,7 @@
     {
       "id": "loading media files...",
       "message": "loading media files...",
-      "translation": ""
+      "translation": "Medien werden geladen..."
     },
     {
       "id": "loading options...",
@@ -3904,7 +3904,7 @@
     {
       "id": "open full logs",
       "message": "open full logs",
-      "translation": ""
+      "translation": "vollständige Logs öffnen"
     },
     {
       "id": "open in new tab",
@@ -3929,7 +3929,7 @@
     {
       "id": "ordered list of links to other files (a map of content)",
       "message": "ordered list of links to other files (a map of content)",
-      "translation": ""
+      "translation": "geordnete Liste von Links zu anderen Dateien (eine Inhaltsübersicht)"
     },
     {
       "id": "orphaned",
@@ -4114,7 +4114,7 @@
     {
       "id": "restore requires confirm=true: a git remote is configured, so the restored state will be force-pushed to it",
       "message": "restore requires confirm=true: a git remote is configured, so the restored state will be force-pushed to it",
-      "translation": ""
+      "translation": "Wiederherstellung erfordert confirm=true: Es ist ein Git-Remote konfiguriert, daher wird der wiederhergestellte Zustand per Force-Push dorthin übertragen"
     },
     {
       "id": "restore this version",
@@ -4184,7 +4184,7 @@
     {
       "id": "saved search, built visually",
       "message": "saved search, built visually",
-      "translation": ""
+      "translation": "gespeicherte Suche, visuell erstellt"
     },
     {
       "id": "scan all files for links pointing to paths that no longer exist and repair the selected ones",
@@ -4309,7 +4309,7 @@
     {
       "id": "settings imported, {Integer} setting(s) skipped - see logs",
       "message": "settings imported, {Integer} setting(s) skipped - see logs",
-      "translation": ""
+      "translation": "Einstellungen importiert, {Integer} Einstellung(en) übersprungen – siehe Logs"
     },
     {
       "id": "shift+tab",
@@ -4409,12 +4409,12 @@
     {
       "id": "sync already running",
       "message": "sync already running",
-      "translation": ""
+      "translation": "Synchronisierung läuft bereits"
     },
     {
       "id": "sync files",
       "message": "sync files",
-      "translation": ""
+      "translation": "Dateien synchronisieren"
     },
     {
       "id": "system maintenance operations for keeping your application running smoothly",
@@ -4539,7 +4539,7 @@
     {
       "id": "todo mode",
       "message": "todo mode",
-      "translation": ""
+      "translation": "Todo-Modus"
     },
     {
       "id": "total media files",
@@ -4719,7 +4719,7 @@
     {
       "id": "what happens when an inline image preview is clicked",
       "message": "what happens when an inline image preview is clicked",
-      "translation": ""
+      "translation": "was passiert, wenn eine Inline-Bildvorschau angeklickt wird"
     },
     {
       "id": "when enabled, editing a section also selects content from all nested sub-level headers",
@@ -4739,7 +4739,7 @@
     {
       "id": "where a file lives, nested like on disk",
       "message": "where a file lives, nested like on disk",
-      "translation": ""
+      "translation": "wo eine Datei liegt, verschachtelt wie auf der Festplatte"
     },
     {
       "id": "which editor opens by default for new and unassigned markdown files",
