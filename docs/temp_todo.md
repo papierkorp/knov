@@ -20,14 +20,17 @@
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
   - add s3 to backup storage
   - new "book" feature with different stages
-    - select headers/anchors from different files and export into one markdown/pdf
-    - select different files and export into one markdown/pdf
+    - new systempage (system/book) which has a selection of available books
+    - (new storage bookStorage ? => maybe we can deal with it without this but im not sure, which is optional and disabled by default with a new env var)
+    - select headers/anchors from different files or different files and add them into a book
+    - the book combines all these headers/files into one file which allows it to be exported into one markdown/pdf
+    - i think we already have most of these features
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
   - add a image to the testfiles
 - fixes
   - releasenotes does not work
 - chore
-  - combine editors.md into developer.md
+  - 
 
 # Async follow up jobs
 
