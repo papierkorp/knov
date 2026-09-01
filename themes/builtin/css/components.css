@@ -2149,7 +2149,7 @@ blockquote p blockquote p,
 }
 
 /* font-picker <select> + its live preview sample, side by side — see
-   render_settings.go's FontPreview handling */
+   render_settings.go's font-select handling */
 .font-select-row {
   display: flex;
   align-items: center;

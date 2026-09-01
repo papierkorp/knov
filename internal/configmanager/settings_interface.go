@@ -18,7 +18,7 @@ type StorableSetting interface {
 // RenderableSetting extends StorableSetting with UI metadata for auto-rendering.
 type RenderableSetting interface {
 	StorableSetting
-	Type() string // "boolean"|"number"|"text"|"select"|"dynamic-select"|"textarea"
+	Type() string // "boolean"|"number"|"text"|"select"|"font-select"|"dynamic-select"|"textarea"
 	GetMeta() Meta
 }
 
@@ -35,10 +35,6 @@ type Meta struct {
 	DynURL   string
 	Min, Max *int
 	Refresh  bool // when true, the POST handler responds with HX-Refresh: true
-
-	// FontPreview renders each <option> in its own value as a font-family
-	// name, so a font picker shows what each choice actually looks like.
-	FontPreview bool
 }
 
 // ── registry ──────────────────────────────────────────────────────────────────
@@ -203,6 +199,9 @@ type StringSetting struct {
 	Options     []SettingOption
 	DynURL      string
 	Refresh     bool
+	// FontPreview makes Type() report "font-select" instead of "select", so a
+	// font picker showing what each choice actually looks like is rendered in
+	// place of a plain dropdown.
 	FontPreview bool
 	Multiline   bool
 	IsColor     bool
@@ -219,7 +218,7 @@ func (s *StringSetting) Get() string {
 func (s *StringSetting) Key() string           { return s.key }
 func (s *StringSetting) GetValue() interface{} { return s.Get() }
 func (s *StringSetting) GetMeta() Meta {
-	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target, Options: s.Options, DynURL: s.DynURL, Refresh: s.Refresh, FontPreview: s.FontPreview}
+	return Meta{Section: s.Section, Group: s.Group, Label: s.Label, Desc: s.Desc, Trigger: s.Trigger, Target: s.Target, Options: s.Options, DynURL: s.DynURL, Refresh: s.Refresh}
 }
 func (s *StringSetting) validate(v string) error {
 	if len(s.Options) > 0 {
@@ -258,6 +257,9 @@ func (s *StringSetting) SetFromString(v string) error {
 }
 func (s *StringSetting) Type() string {
 	if len(s.Options) > 0 {
+		if s.FontPreview {
+			return "font-select"
+		}
 		return "select"
 	}
 	if s.DynURL != "" {

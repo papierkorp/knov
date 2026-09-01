@@ -24,7 +24,7 @@ func RenderSettingsSection(section configmanager.SettingSection, t func(string, 
 	items := configmanager.SettingsBySection(section)
 
 	for _, s := range items {
-		if s.GetMeta().FontPreview {
+		if s.Type() == "font-select" {
 			html.WriteString(fontPreviewFaces())
 			break
 		}
@@ -127,8 +127,8 @@ func RenderFaviconItem(t func(string, ...any) string) string {
 }
 
 // fontPreviewFaces emits @font-face rules for every embedded family in the
-// fonts manifest, so the font picker previews (see FontPreview in
-// renderSettingItem) render in the actual fonts. Generated from the manifest
+// fonts manifest, so the font picker previews (see the "font-select" handling
+// in renderSettingItem) render in the actual fonts. Generated from the manifest
 // — rather than duplicated in each theme's css — so the selectable options,
 // the registered ttf files, and the previews can never drift apart. Core
 // fonts have no Dir (and no files); their preview relies on system fonts.
@@ -190,7 +190,7 @@ func renderSettingItem(s configmanager.RenderableSetting, t func(string, ...any)
 			t(meta.Desc),
 		))
 
-	case "select":
+	case "select", "font-select":
 		currentVal := ""
 		if v, ok := s.GetValue().(string); ok {
 			currentVal = v
@@ -202,8 +202,9 @@ func renderSettingItem(s configmanager.RenderableSetting, t func(string, ...any)
 		// So the font itself is previewed with a code-styled sample directly
 		// after the select instead, updated on change with a one-line inline
 		// handler (no shared JS file needed for a single style property).
+		isFontSelect := s.Type() == "font-select"
 		onchange := ""
-		if meta.FontPreview {
+		if isFontSelect {
 			html.WriteString(`<div class="font-select-row">`)
 			onchange = " onchange=\"this.nextElementSibling.style.fontFamily=`'${this.value}',sans-serif`\""
 		}
@@ -220,7 +221,7 @@ func renderSettingItem(s configmanager.RenderableSetting, t func(string, ...any)
 			html.WriteString(fmt.Sprintf(`<option value="%s"%s>%s</option>`, opt.Value, selected, t(label)))
 		}
 		html.WriteString(`</select>`)
-		if meta.FontPreview {
+		if isFontSelect {
 			html.WriteString(fmt.Sprintf(
 				`<code class="font-preview-sample" style="font-family:'%s',sans-serif;">%s</code>`,
 				currentVal, t("Aa Bb Gg 0123"),

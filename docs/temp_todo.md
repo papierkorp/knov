@@ -20,17 +20,17 @@
       - for usage
       - for devs
   - create a system for themes (another repoistory with themes)
-    - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
+    - e.g. https://github.com/papierkorp/knov_themes
+    - e.g. create a table/dict with all top level folders - than check if there is a theme.json
   - add s3 to backup storage
   - new "book" feature with different stages
     - select headers/anchors from different files and export into one markdown/pdf
     - select different files and export into one markdown/pdf
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
 - fixes
-  - media rename?
   - releasenotes does not work
 - chore
-  - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
+  - 
 
 # Async follow up jobs
 
