@@ -14,27 +14,23 @@
   - use both builtin and rail theme
 
 **per ai**
-- not important
-  - add s3 to backup storage
-  - add go tests?
-  - create a system for themes (another repoistory with themes)
-    - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
+- features
   - deployment
     - make docker build viable
       - for usage
       - for devs
-  - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
-- features
+  - create a system for themes (another repoistory with themes)
+    - .e.g. create a table/dict with all top level folders - than check if there is a theme.json
+  - add s3 to backup storage
   - new "book" feature with different stages
     - select headers/anchors from different files and export into one markdown/pdf
     - select different files and export into one markdown/pdf
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
-  - add a motd or something like this which is displayed at the top of the page as a env var (e.g. for copies/testsetups to easily distinguish) which is available for all themes
 - fixes
   - media rename?
   - releasenotes does not work
 - chore
-  - 
+  - update/change the fontpreview solution (pdfexport) - i dont like it (only setting to touch the DOM structure around the `<select>`)
 
 # Async follow up jobs
 

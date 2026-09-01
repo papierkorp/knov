@@ -35,6 +35,7 @@ On page load, htmx requests `/api/themes` and the server answers with ready-made
 ## Included on Every Page
 
 - Auto-injected into `<head>` / `<body>`: `static/css/defaults.css` (a fallback for every CSS variable — open it for the full list of colors like `--bg`, `--text`, `--primary` and fonts like `--font-body`) before your stylesheet, the user's custom CSS after it, and the app's core scripts and styles (notifications, editors, autocomplete, and similar) — don't add these yourself.
+- If `KNOV_MOTD` is set, a `<div id="site-motd">` banner is injected as the first element inside `<body>`, unconditionally — no template changes needed, and none possible: you can only hide it (`#site-motd { display: none }`), not reposition it. It's a fixed overlay at the very top of the viewport, so a full-viewport-height layout (like the builtin theme's `#wrapper`) will want `height: calc(100vh - var(--motd-height, 0px))` instead of a flat `100vh` to avoid it overlapping your own content — `--motd-height` is `0px` whenever no banner is shown, so this is a no-op otherwise.
 - Bundled and served offline from `/static/` — no CDNs: htmx, SortableJS, Font Awesome, and the editor libraries. You link the ones you use from `base.gohtml` yourself.
 - System pages (`/system/*` — changelog, logs, and so on) render their fixed content inside your `base.gohtml`; style them via the `.system-page*` classes.
 

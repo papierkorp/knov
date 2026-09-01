@@ -71,6 +71,7 @@ All settings go in your `.env` file. Copy `.env.example` to get started — ever
 |---|---|---|
 | `KNOV_DATA_PATH` | `data` | Where your files, themes and config are stored |
 | `KNOV_SERVER_PORT` | `1324` | Port the app listens on |
+| `KNOV_MOTD` | empty | Banner shown at the top of every page - e.g. to label a test/copy setup |
 
 Language, theme and home dashboard are UI settings, not env vars - see **Settings**.
 

@@ -72,6 +72,7 @@ type AppConfig struct {
 	LogFileEnabled              bool
 	LogMaxSizeMB                int
 	LogMaxFiles                 int
+	MOTD                        string
 }
 
 // KanbanBoard maps a folder to a kanban board with a display name and a stable URL slug.
@@ -446,6 +447,11 @@ func splitList(value string) []string {
 		}
 	}
 	return result
+}
+
+// GetMOTD returns the banner message shown at the top of every page, empty if unset
+func GetMOTD() string {
+	return appConfig.MOTD
 }
 
 // GetKanbanPrefix returns the kanban tag prefix

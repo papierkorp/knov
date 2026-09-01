@@ -4,6 +4,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io/fs"
 	"net/http"
 	"os"
@@ -297,6 +298,9 @@ func (tm *ThemeManager) Render(w http.ResponseWriter, templateName string, data 
 	// inject default JS before </body>
 	html = injectDefaultJS(html)
 
+	// inject the KNOV_MOTD banner, if set, right after <body>
+	html = injectMOTD(html)
+
 	// write final HTML to response
 	_, err = w.Write([]byte(html))
 	return err
@@ -320,6 +324,7 @@ func injectDefaultCSS(html string) string {
     <link href="/static/css/codemirroreditor.css" rel="stylesheet" />
     <link href="/static/css/autocomplete.css" rel="stylesheet" />
     <link href="/static/css/media.css" rel="stylesheet" />
+    <link href="/static/css/motd.css" rel="stylesheet" />
     <link href="/static/css/custom.css" rel="stylesheet" />
 `
 
@@ -341,6 +346,29 @@ func injectDefaultJS(html string) string {
 	scripts += `<script src="/static/media-lightbox.js"></script>`
 	scripts += `<script src="/static/backup-restore.js"></script>`
 	return html[:bodyCloseIndex] + scripts + html[bodyCloseIndex:]
+}
+
+// injectMOTD injects the KNOV_MOTD banner as the first element inside <body>, if set - a
+// theme needs no template changes to get it, and can only hide it (via CSS on #site-motd),
+// not opt out of receiving it or reposition it into its own layout.
+func injectMOTD(content string) string {
+	motd := configmanager.GetMOTD()
+	if motd == "" {
+		return content
+	}
+
+	bodyOpenIndex := strings.Index(content, "<body")
+	if bodyOpenIndex == -1 {
+		return content
+	}
+	bodyTagEnd := strings.Index(content[bodyOpenIndex:], ">")
+	if bodyTagEnd == -1 {
+		return content
+	}
+	insertAt := bodyOpenIndex + bodyTagEnd + 1
+
+	banner := fmt.Sprintf(`<div id="site-motd">%s</div>`, html.EscapeString(motd))
+	return content[:insertAt] + banner + content[insertAt:]
 }
 
 // -----------------------------------------------

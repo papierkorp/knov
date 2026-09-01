@@ -83,6 +83,12 @@ The kanban board organises files into columns based on status tags.
 - is supported by default
 - use this: `@import url("/themes/xxx.css");` in the setting to use a viable css file with proper syntax highlighting
 
+### MOTD banner
+
+- Set `KNOV_MOTD` to show a banner across the top of every page - handy for telling a test/copy setup apart from the real one at a glance
+- Injected server-side into every theme (`#site-motd`), not something a theme opts into - it can only be hidden with `#site-motd { display: none }`
+- Empty (the default) shows nothing
+
 ---
 
 ## File Visibility

@@ -1,0 +1,33 @@
+/* KNOV_MOTD banner — injected server-side (see thememanager.injectMOTD) as the first
+   element inside <body> for every theme. It's a fixed overlay rather than part of the
+   normal document flow, so no theme needs to reserve layout space for it; a theme can
+   only hide it, via #site-motd { display: none }, not reposition or restyle it away
+   from this file.
+
+   --motd-height carries the banner's height as a var so a theme MAY reserve space for
+   it (e.g. a full-viewport-height layout doing `height: calc(100vh - var(--motd-height,
+   0px))`) instead of just living with the overlap; it's 0px whenever no banner is
+   rendered, so that opt-in is a no-op for every other page. */
+:root {
+  --motd-height: 0px;
+}
+body:has(#site-motd) {
+  --motd-height: 28px;
+}
+
+#site-motd {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  height: var(--motd-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--warning);
+  color: var(--primary-text);
+}
