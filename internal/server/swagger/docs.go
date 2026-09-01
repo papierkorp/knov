@@ -6588,12 +6588,14 @@ const docTemplate = `{
             "enum": [
                 "running",
                 "ok",
-                "error"
+                "error",
+                "canceled"
             ],
             "x-enum-varnames": [
                 "JobStatusRunning",
                 "JobStatusOK",
-                "JobStatusError"
+                "JobStatusError",
+                "JobStatusCanceled"
             ]
         },
         "jobStorage.JobRecord": {

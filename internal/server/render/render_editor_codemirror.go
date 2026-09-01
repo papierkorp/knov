@@ -216,6 +216,17 @@ func jsCodeMirrorTabIndent() string {
 	});`
 }
 
+// jsCodeMirrorSaveShortcut binds Ctrl/Cmd+S to submit the surrounding form instead of
+// triggering the browser's "Save Page" dialog.
+func jsCodeMirrorSaveShortcut() string {
+	return `
+	el.addEventListener('keydown', function(e) {
+		if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.key.toLowerCase() !== 's') return;
+		e.preventDefault();
+		el.closest('form').requestSubmit();
+	});`
+}
+
 // codeMirrorFileInputHTML renders the hidden multi-file input used by the upload toolbar button.
 func codeMirrorFileInputHTML() string {
 	return `<input type="file" id="codemirror-file-input" multiple hidden />`
@@ -266,6 +277,7 @@ func codeMirrorInitScript(content, filePath string) string {
 	%s
 	%s
 	%s
+	%s
 	%s`,
 		jsBool(configmanager.CodeMirrorVimMode.Get()),
 		jsBool(configmanager.CodeMirrorLineNumbers.Get()),
@@ -285,7 +297,8 @@ func codeMirrorInitScript(content, filePath string) string {
 		jsCodeMirrorSettingsMenu(),
 		jsUploadMediaBlob(),
 		jsCodeMirrorFileUpload(),
-		jsCodeMirrorTabIndent())
+		jsCodeMirrorTabIndent(),
+		jsCodeMirrorSaveShortcut())
 }
 
 // RenderCodeMirrorSectionEditorForm renders a CodeMirror editor form for editing a single section.

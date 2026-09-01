@@ -29,7 +29,6 @@
     - select headers/anchors from different files and export into one markdown/pdf
     - select different files and export into one markdown/pdf
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
-  - make `ctrl+s` work in the codemirror editor
   - add a motd or something like this which is displayed at the top of the page as a env var (e.g. for copies/testsetups to easily distinguish) which is available for all themes
 - fixes
   - media rename?

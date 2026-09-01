@@ -337,11 +337,13 @@ definitions:
     - running
     - ok
     - error
+    - canceled
     type: string
     x-enum-varnames:
     - JobStatusRunning
     - JobStatusOK
     - JobStatusError
+    - JobStatusCanceled
   jobStorage.JobRecord:
     properties:
       args:
