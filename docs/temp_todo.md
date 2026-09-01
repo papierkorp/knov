@@ -34,7 +34,6 @@
 - fixes
   - media rename?
   - releasenotes does not work
-  - codemirror editor markdown links are not visible if selected/marked
 - chore
   - 
 

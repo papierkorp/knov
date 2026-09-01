@@ -94,6 +94,13 @@
   border-left-color: var(--text);
 }
 
+/* CM6's built-in selection color is hardcoded to a light-mode default (dark mode is
+   never passed into EditorView.theme), washing out var(--primary) link text in dark
+   mode; theming it here keeps it legible in every color scheme / dark-mode combo */
+#codemirror-editor .cm-selectionBackground {
+  background: color-mix(in srgb, var(--primary) 30%, transparent) !important;
+}
+
 /* ── Markdown live preview: content is styled, syntax markers stay
    visible but recede — driven by classHighlighter (tok-*) and the
    custom markdown HighlightStyle (cm-h1..cm-mark), see editor.js. ── */
