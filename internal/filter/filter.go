@@ -336,7 +336,7 @@ func filterKey(id string) string {
 }
 
 // filterIndexPath returns the docs-relative path of the index file paired with a filter.
-// Respects KNOV_USE_EXTENSION_INDEX: returns e.g. "my/filter.index" or "my/filter.md".
+// Respects the useExtensionIndex setting: returns e.g. "my/filter.index" or "my/filter.md".
 func FilterIndexPath(filterID string) string {
 	return filterID + configmanager.ExtensionForEditor("index")
 }

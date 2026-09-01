@@ -218,3 +218,10 @@ static/temp_extracted.go
 internal/translation/catalog.go
 internal/translation/locales/*/out.gotext.json
 internal/translation/temp_extracted.go
+
+# tools/docker_deployment - only track the build/config files, not local run state
+tools/docker_deployment/*
+!tools/docker_deployment/Dockerfile
+!tools/docker_deployment/docker-compose.yml
+!tools/docker_deployment/entrypoint.sh
+!tools/docker_deployment/.env.example

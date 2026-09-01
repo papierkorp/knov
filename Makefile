@@ -10,6 +10,10 @@ LDFLAGS   := -ldflags "-X 'knov/internal/version.Version=$(VERSION)' -X 'knov/in
 dev: killdev swaggo-api-init changelog docs-templatedata env-example
 	KNOV_LOG_LEVEL=debug go run ./ $(ARGS)
 
+# same as dev, but runs inside the dev docker image - no local go/swag/gotext install needed
+devd: docker-build-dev
+	$(MAKE) docker-run-dev VOLUME=$(CURDIR):/app
+
 prod: swaggo-api-init translation changelog docs-templatedata env-example
 	go build $(LDFLAGS) -o bin/$(APP_NAME) ./
 	GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o bin/$(APP_NAME).exe ./
@@ -17,13 +21,14 @@ prod: swaggo-api-init translation changelog docs-templatedata env-example
 
 # ------------- docker -------------
 
-docker: docker-build docker-run
+docker-build-dev:
+	docker build --no-cache -f tools/docker_dev/Dockerfile -t knov-dev .
 
-docker-build:
-	docker build --no-cache -t knov-dev .
+docker-build-deployment:
+	docker build --no-cache -f tools/docker_deployment/Dockerfile -t knov .
 
-docker-run:
-	docker run --rm -it --name knov-dev -p 1324:1324 -v /home/markus/develop/gitlab/gollum/tempwiki2:/data knov-dev
+docker-run-dev:
+	docker run --rm -it --name knov-dev -p 1324:1324 -v $(VOLUME) knov-dev
 
 # ------------- helper -------------
 translation:
@@ -57,7 +62,7 @@ tempai:
 	@echo "Copying internal files (flattening subfolders)..."
 	@find internal -type f \( -name "*.go" -o -name "*.tmpl" -o -name "*.json" -o -name "*.yaml" -o -name "*.yml" \) -exec cp {} tempai/ \;
 	@echo "Copying root files..."
-	@cp Dockerfile go.mod go.sum main.go Makefile styling.md tempai/ 2>/dev/null || true
+	@cp go.mod go.sum main.go Makefile styling.md tempai/ 2>/dev/null || true
 	@cp ".env.example" "tempai/" 2>/dev/null || true
 	@echo "Copying theme files with theme name prefix..."
 	@for theme_dir in themes/*/; do \
@@ -104,4 +109,4 @@ tempai:
 # windows dev
 #KNOV_LOG_LEVEL=debug go run ./
 
-.PHONY: dev dev-fast swaggo-api-init translation prod docker docker-build docker-run tree changelog docs-templatedata env-example tempai killdev
+.PHONY: dev devd swaggo-api-init translation prod docker-build-dev docker-build-deployment docker-run-dev tree changelog docs-templatedata env-example tempai killdev

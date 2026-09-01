@@ -34,7 +34,7 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 
 	dbPath := filepath.Join(dir, notificationDBFile)
 
-	db, err := sql.Open("sqlite", dbPath+"?mode=rwc")
+	db, err := sql.Open("sqlite", dbPath+"?mode=rwc&_time_format=sqlite")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open notification database: %w", err)
 	}

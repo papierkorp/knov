@@ -8,10 +8,20 @@
 
 Knov ships as a single self-contained binary (or `.exe` on Windows) — no installer, no dependencies, no separate database to set up.
 
-- Both built-in themes (`builtin` and `rail`) are bundled inside the binary and unpacked into `themes/` on first start
+- The builtin theme is bundled inside the binary and unpacked into `themes/` on first start
 - Static assets, default templates and all required files are embedded the same way — the binary is all you need
 - To update: stop knov, replace the binary, start again — your data and settings are untouched
 - To move to another machine: copy the binary and your data folder, done
+- to build the binary yourself use: `make prod`
+
+## Docker
+
+Alternative to running the binary directly:
+
+- Copy `.env.example` to `tools/docker_deployment/` as `.env` first, same as the binary setup
+- go to `tools/docker_deployment/`
+- use `docker compose up` to locally build and run a production image (at the moment there is no prebuild image)
+- Data, themes, storage, logs and backups are mounted as volumes so they persist outside the container
 
 ## First Run
 
@@ -53,7 +63,7 @@ Back the data and storage folders up to keep everything safe.
 ## Kanban
 
 - Configure boards explicitly with `KNOV_KANBAN_BOARDS=folder/path:Display Name` (comma-separated) - each board covers that folder and its subfolders
-- Add a status tag (can be configured, defaults to `kb-status`) to a file in a board's folder to put it on the board: `kb-status-inbox`, `kb-status-inprogress`, `kb-status-blocked`, `kb-status-archive`
+- Add a status tag to a file in a board's folder to put it on the board: `kb-status-inbox`, `kb-status-inprogress`, `kb-status-blocked`, `kb-status-archive` (the `kb` prefix is configurable, `-status-` is fixed)
 - Go to `/kanban` to see your configured boards and open one
 
 ## Themes
@@ -90,7 +100,7 @@ Language, theme and home dashboard are UI settings, not env vars - see **Setting
 | Variable | Notes |
 |---|---|
 | `KNOV_KANBAN_BOARDS` | Boards to show — `folder/path:Display Name`, comma-separated |
-| `KNOV_KANBAN_PREFIX` | Tag prefix for status tags (default: `kb-status`) |
+| `KNOV_KANBAN_PREFIX` | Tag prefix for status tags (default: `kb`) |
 | `KNOV_KANBAN_COLUMNS` | Comma-separated list of status columns |
 | `KNOV_KANBAN_TAG_COLORS` | Color chips per tag — e.g. `urgent:red,markus:green` |
 

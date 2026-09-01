@@ -46,7 +46,7 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 	}
 
 	// open database with explicit read-write mode
-	db, err := sql.Open("sqlite", dbPath+"?mode=rwc")
+	db, err := sql.Open("sqlite", dbPath+"?mode=rwc&_time_format=sqlite")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open search database: %w", err)
 	}

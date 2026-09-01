@@ -38,7 +38,7 @@ func newSQLiteStorageAt(dbDir string) (*sqliteKanbanStorage, error) {
 	}
 
 	dbPath := filepath.Join(dbDir, kanbanDBFile)
-	db, err := sql.Open("sqlite", dbPath+"?mode=rwc")
+	db, err := sql.Open("sqlite", dbPath+"?mode=rwc&_time_format=sqlite")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open kanban events database: %w", err)
 	}

@@ -28,7 +28,7 @@ func newSQLiteStorage(storagePath string) (*sqliteStorage, error) {
 
 	dbPath := filepath.Join(dir, "jobs.db")
 
-	db, err := sql.Open("sqlite", dbPath+"?mode=rwc")
+	db, err := sql.Open("sqlite", dbPath+"?mode=rwc&_time_format=sqlite")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open job database: %w", err)
 	}

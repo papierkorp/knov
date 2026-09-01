@@ -77,10 +77,15 @@ make translation
 
 # Build for production
 make prod
-
-# Create and Run Docker image
-make docker
 ```
+
+## Docker
+
+Two Dockerfiles under `tools/`, for different purposes:
+
+- `tools/docker_dev/` — local dev without installing Go/swag/gotext; `make devd` builds the image and runs it with the repo bind-mounted, doing the same as `make dev`
+- `tools/docker_deployment/` — minimal production image (multi-stage build, no dev tooling); `make docker-build-deployment` builds it, or use the `docker-compose.yml` in that folder to run it with persistent volumes
+- Pushing images to a registry isn't wired up yet — built and run locally for now
 
 ## API Development
 
@@ -196,7 +201,7 @@ Two layers:
 **Paired Index File**
 
 - Every filter has a paired physical index file in `data/docs/`
-- Path: `<filterID>` + extension from `KNOV_USE_EXTENSION_INDEX` (`.index` or `.md`)
+- Path: `<filterID>` + extension from the `useExtensionIndex` UI setting (`.index` or `.md`)
 - Example: filter `my/notes-filter` → `data/docs/my/notes-filter.index`
 - Content: a markdown link list of all files matching the filter at last run, e.g. `- [path](path)`
 - Metadata is saved with `Editor: filter-editor` so the filter editor opens when viewing the file

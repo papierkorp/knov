@@ -15,10 +15,6 @@
 
 **per ai**
 - features
-  - deployment
-    - make docker build viable
-      - for usage
-      - for devs
   - create a system for themes (another repoistory with themes)
     - e.g. https://github.com/papierkorp/knov_themes
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
@@ -27,10 +23,11 @@
     - select headers/anchors from different files and export into one markdown/pdf
     - select different files and export into one markdown/pdf
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
+  - add a image to the testfiles
 - fixes
   - releasenotes does not work
 - chore
-  - 
+  - combine editors.md into developer.md
 
 # Async follow up jobs
 
