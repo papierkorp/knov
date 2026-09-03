@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"knov/internal/book"
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
 	"knov/internal/files"
@@ -20,7 +21,7 @@ import (
 )
 
 // @Summary Export file to pdf
-// @Description Renders a file's markdown source, or optionally just one section of it, to a downloadable pdf
+// @Description Renders a file's markdown source (or one section of it, or a `.book` file's composed document) to a downloadable pdf
 // @Tags files
 // @Produce application/pdf
 // @Param filepath query string true "File path"
@@ -40,7 +41,16 @@ func handleAPIExportToPDF(w http.ResponseWriter, r *http.Request) {
 	var content []byte
 	filename := strings.TrimSuffix(filepath.Base(filePath), filepath.Ext(filePath))
 
-	if sectionID != "" {
+	if files.IsBook(filePath) {
+		// a book exports as its composed document, not its raw entry list
+		composed, err := book.Compose(filePath)
+		if err != nil {
+			logging.LogError(logging.KeyPdfExport, "pdf export: failed to compose book %s: %v", filePath, err)
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "export failed"), http.StatusInternalServerError)
+			return
+		}
+		content = []byte(composed)
+	} else if sectionID != "" {
 		logging.LogDebug(logging.KeyPdfExport, "pdf export requested: %s section %s", filePath, sectionID)
 
 		handler := contentHandler.GetHandler("markdown")

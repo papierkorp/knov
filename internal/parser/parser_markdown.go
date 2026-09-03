@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -29,9 +30,18 @@ func NewMarkdownHandler() *MarkdownHandler {
 	return &MarkdownHandler{}
 }
 
+// markdownExtensions are the extensions the markdown handler renders rather than letting
+// fall through to the plaintext handler. One list so CanHandle and IsMarkdownExtension agree.
+var markdownExtensions = []string{".md", ".markdown", ".index", ".moc", ".list", ".todo", ".book"}
+
 func (h *MarkdownHandler) CanHandle(filename string) bool {
-	ext := strings.ToLower(filepath.Ext(filename))
-	return ext == ".md" || ext == ".markdown" || ext == ".index" || ext == ".moc" || ext == ".list" || ext == ".todo"
+	return IsMarkdownExtension(filename)
+}
+
+// IsMarkdownExtension reports whether filename's extension renders as markdown. Save paths
+// use it to check a chosen name still renders (else it shows its raw source).
+func IsMarkdownExtension(filename string) bool {
+	return slices.Contains(markdownExtensions, strings.ToLower(filepath.Ext(filename)))
 }
 
 func (h *MarkdownHandler) Parse(content []byte) ([]byte, error) {
@@ -57,20 +67,13 @@ var wikiLinkRe = regexp.MustCompile(`\[\[([^\[\]]+)\]\]`)
 func ResolveWikiLinks(content string) string {
 	return wikiLinkRe.ReplaceAllStringFunc(content, func(match string) string {
 		inner := match[2 : len(match)-2]
-		parts := strings.SplitN(inner, "|", 2)
-		linkPath := strings.TrimSpace(parts[0])
 
 		display := ""
-		if len(parts) == 2 {
+		if parts := strings.SplitN(inner, "|", 2); len(parts) == 2 {
 			display = strings.TrimSpace(parts[1])
 		}
 
-		// split off anchor before any path manipulation
-		anchor := ""
-		if idx := strings.Index(linkPath, "#"); idx != -1 {
-			anchor = linkPath[idx:]
-			linkPath = linkPath[:idx]
-		}
+		linkPath, anchor := ResolveWikiTarget(inner)
 
 		// pure same-page anchor (e.g. "[[#some-header]]") - keep it a real
 		// same-page link instead of routing it through /files/. Leaving
@@ -79,15 +82,36 @@ func ResolveWikiLinks(content string) string {
 		if linkPath == "" {
 			return "[" + display + "](" + anchor + ")"
 		}
-
-		if !strings.Contains(filepath.Base(linkPath), ".") {
-			linkPath += ".md"
-		}
-		if decoded, err := url.PathUnescape(linkPath); err == nil {
-			linkPath = decoded
-		}
 		return "[" + display + "](" + pathutils.ToFileURL(linkPath) + anchor + ")"
 	})
+}
+
+// ResolveWikiTarget normalizes a wikilink body ("path", "path#anchor", "path|text", ...)
+// into a docs-relative path and a leading "#anchor" (empty when absent): drop the "|alias",
+// split off the "#anchor", default a missing extension to ".md", URL-decode the path. A
+// bare "#anchor" yields an empty path. Shared with internal/book so a book entry resolves
+// its reference the same way the link renderer does.
+func ResolveWikiTarget(inner string) (linkPath, anchor string) {
+	if i := strings.Index(inner, "|"); i != -1 {
+		inner = inner[:i]
+	}
+	linkPath = strings.TrimSpace(inner)
+
+	if idx := strings.Index(linkPath, "#"); idx != -1 {
+		anchor = linkPath[idx:]
+		linkPath = linkPath[:idx]
+	}
+	if linkPath == "" {
+		return "", anchor
+	}
+
+	if !strings.Contains(filepath.Base(linkPath), ".") {
+		linkPath += ".md"
+	}
+	if decoded, err := url.PathUnescape(linkPath); err == nil {
+		linkPath = decoded
+	}
+	return linkPath, anchor
 }
 
 // wrapRawHTMLBlocks wraps bare HTML blocks in fenced code blocks so goldmark
@@ -221,9 +245,14 @@ func newKnovNodeRenderer(filePath string, blocks []codeBlock) renderer.NodeRende
 func (r *knovNodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 	reg.Register(ast.KindFencedCodeBlock, r.renderFencedCode)
 	reg.Register(ast.KindCodeBlock, r.renderCodeBlock)
-	reg.Register(extast.KindTable, r.renderTable)
 	reg.Register(ast.KindImage, r.renderImage)
 	reg.Register(extast.KindTaskCheckBox, r.renderTaskCheckBox)
+
+	// renderTable emits the live, file-backed table editor; with no source file to load,
+	// leave KindTable to goldmark's default GFM renderer (a plain static <table>).
+	if r.filePath != PathlessRender {
+		reg.Register(extast.KindTable, r.renderTable)
+	}
 }
 
 func (r *knovNodeRenderer) renderFencedCode(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
@@ -505,9 +534,13 @@ func resolveMediaPath(dest string) string {
 	return ""
 }
 
-// addHeaderButtons injects edit-section anchor buttons into every header tag.
+// addHeaderButtons injects edit-section anchor buttons into every header tag. With no
+// source file to target (PathlessRender) none are emitted.
 func (h *MarkdownHandler) addHeaderButtons(htmlContent, filePath string) string {
 	relPath := pathutils.ToRelative(filePath)
+	if relPath == PathlessRender {
+		return htmlContent
+	}
 	headerRe := regexp.MustCompile(`<h([1-6])\s+id="([^"]+)"[^>]*>(.*?)</h[1-6]>`)
 	return headerRe.ReplaceAllStringFunc(htmlContent, func(match string) string {
 		parts := headerRe.FindStringSubmatch(match)
@@ -561,7 +594,7 @@ func (h *MarkdownHandler) wrapHeaderSections(htmlContent, filePath string) strin
 		section := strings.TrimSpace(htmlContent[start:end])
 		if section != "" {
 			editBtn := ""
-			if relPath != "" {
+			if relPath != PathlessRender {
 				if idParts := idRe.FindStringSubmatch(headerHTML); len(idParts) >= 2 {
 					editBtn = fmt.Sprintf(
 						`<a href="/files/edit/%s?section=%s" class="section-edit-btn" title="%s"><i class="fa fa-pen"></i> %s</a>`,

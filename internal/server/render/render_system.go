@@ -501,7 +501,7 @@ func RenderChangelog() (string, error) {
 			continue
 		}
 
-		rendered, err := mdHandler.Render(data, "")
+		rendered, err := mdHandler.Render(data, parser.PathlessRender)
 		if err != nil {
 			logging.LogWarning(logging.KeyApp, "failed to render changelog %s: %v", entry.Name(), err)
 			continue

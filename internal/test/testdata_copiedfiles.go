@@ -114,5 +114,10 @@ func getCopiedFilesMetadata() []*files.Metadata {
 			Tags:   []string{"test-index", "test-files", "kb-status-inbox"},
 			Editor: files.EditorTypeIndex,
 		},
+		{
+			Path:   "docs/test/example_book.md",
+			Tags:   []string{"test-book", "test-files", "kb-status-inbox"},
+			Editor: files.EditorTypeBook,
+		},
 	}
 }

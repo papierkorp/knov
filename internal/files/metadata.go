@@ -85,6 +85,7 @@ const (
 	EditorTypeList       EditorType = "list-editor"
 	EditorTypeTodo       EditorType = "todo-editor"
 	EditorTypeIndex      EditorType = "index-editor"
+	EditorTypeBook       EditorType = "book-editor"
 	EditorTypeCodeMirror EditorType = "codemirror-editor"
 )
 
@@ -101,6 +102,7 @@ func AllEditorTypes() []EditorType {
 		EditorTypeList,
 		EditorTypeTodo,
 		EditorTypeIndex,
+		EditorTypeBook,
 		EditorTypeCodeMirror,
 	}
 }
@@ -117,11 +119,28 @@ func EditorFromExtension(path string) EditorType {
 		return EditorTypeTodo
 	case ".index", ".moc":
 		return EditorTypeIndex
+	case ".book":
+		return EditorTypeBook
 	case ".txt":
 		return EditorTypeCodeMirror
 	default:
 		return ""
 	}
+}
+
+// ResolveEditor picks the editor for an existing file: metadata first, then the extension,
+// then "" for the caller to default. The one place the metadata→extension precedence lives.
+func ResolveEditor(path string) EditorType {
+	if meta, err := MetaDataGet(path); err == nil && meta != nil && meta.Editor != "" {
+		return meta.Editor
+	}
+	return EditorFromExtension(path)
+}
+
+// IsBook reports whether the file at path is a book (shown as its composed document, not
+// its raw entry list).
+func IsBook(path string) bool {
+	return ResolveEditor(path) == EditorTypeBook
 }
 
 // Metadata represents file metadata

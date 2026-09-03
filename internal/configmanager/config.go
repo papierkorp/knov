@@ -615,6 +615,8 @@ func IsFileTypeHidden(editorType string) bool {
 		return HideFilter.Get()
 	case "index-editor":
 		return HideIndex.Get()
+	case "book-editor":
+		return HideBook.Get()
 	default:
 		return false
 	}
@@ -802,6 +804,8 @@ func ExtensionForEditor(editorType string) string {
 		return utils.Ternary(UseExtensionList.Get(), ".list", ".md")
 	case "index":
 		return utils.Ternary(UseExtensionIndex.Get(), ".index", ".md")
+	case "book":
+		return utils.Ternary(UseExtensionBook.Get(), ".book", ".md")
 	default:
 		return ".md"
 	}

@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"knov/internal/book"
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
@@ -112,6 +113,10 @@ func GetAllMediaFiles() ([]File, error) {
 	return files, nil
 }
 
+// sectionEditBtnRe matches the per-header "edit section" anchors the markdown renderer
+// injects; GetFileContent strips them for editors with no inline section editing.
+var sectionEditBtnRe = regexp.MustCompile(`<a href="/files/edit/[^"]*\?section=[^"]*" class="header-edit-btn"[^>]*>.*?</a>`)
+
 // GetFileContent converts file content to html based on detected type
 func GetFileContent(filePath string) (*FileContent, error) {
 	handler := parser.GetParserRegistry().GetHandler(filePath)
@@ -119,10 +124,25 @@ func GetFileContent(filePath string) (*FileContent, error) {
 		return nil, fmt.Errorf("no handler found for file: %s", filePath)
 	}
 
-	// read file content directly using contentStorage
-	content, err := contentStorage.ReadFile(filePath)
-	if err != nil {
-		return nil, err
+	relativePath := pathutils.ToRelative(filePath)
+	editor := ResolveEditor(pathutils.ToWithPrefix(relativePath))
+
+	// a book is shown as its composed document (referenced bodies inlined), not its raw
+	// entry list. the composed markdown has no source file, so it renders PathlessRender.
+	// the file-view banner is added by the caller - see render.RenderBookViewPrefix.
+	var content []byte
+	renderPath := relativePath
+	if editor == EditorTypeBook {
+		composed, err := book.Compose(relativePath)
+		if err != nil {
+			return nil, err
+		}
+		content, renderPath = []byte(composed), parser.PathlessRender
+	} else {
+		var err error
+		if content, err = contentStorage.ReadFile(filePath); err != nil {
+			return nil, err
+		}
 	}
 
 	parsed, err := handler.Parse(content)
@@ -130,19 +150,16 @@ func GetFileContent(filePath string) (*FileContent, error) {
 		return nil, err
 	}
 
-	html, err := handler.Render(parsed, pathutils.ToRelative(filePath))
+	html, err := handler.Render(parsed, renderPath)
 	if err != nil {
 		return nil, err
 	}
 
-	relativePath := pathutils.ToRelative(filePath)
-
-	// strip section edit buttons for specialized editors that don't support inline section editing
-	if meta, err := MetaDataGet(pathutils.ToWithPrefix(relativePath)); err == nil && meta != nil {
-		if meta.Editor == EditorTypeFilter || meta.Editor == EditorTypeList ||
-			meta.Editor == EditorTypeTodo || meta.Editor == EditorTypeIndex {
-			html = regexp.MustCompile(`<a href="/files/edit/[^"]*\?section=[^"]*" class="header-edit-btn"[^>]*>.*?</a>`).ReplaceAll(html, nil)
-		}
+	// strip section edit buttons for editors with no inline section editing (a composed
+	// book emits none anyway, but keep it in the set for clarity)
+	if editor == EditorTypeFilter || editor == EditorTypeList ||
+		editor == EditorTypeTodo || editor == EditorTypeIndex || editor == EditorTypeBook {
+		html = sectionEditBtnRe.ReplaceAll(html, nil)
 	}
 	processedContent := strings.ReplaceAll(string(html), "{{FILEPATH}}", relativePath)
 

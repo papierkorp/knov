@@ -544,8 +544,9 @@ Each file can have an editor type stored in its metadata (`editor` field). The t
 | Todo | `todo-editor` | Checkbox task list editor using GFM `- [ ]` syntax |
 | Filter | `filter-editor` | Visual query builder for filter files (`.filter`) |
 | Index / MOC | `index-editor` | Ordered link list editor for index/map-of-content files (`.index`, `.moc`) |
+| Book | `book-editor` | Index editor in "book" mode (`.book`): entries carry an optional `#section` and subheaders flag, and the file view/export shows the composed document (referenced files and sections inlined into one markdown doc) rather than the raw entry list |
 
-Or via file extension — certain extensions map automatically: `.filter` → filter-editor, `.list` → list-editor, `.todo` → todo-editor, `.index` / `.moc` → index-editor, `.txt` → textarea-editor.
+Or via file extension — certain extensions map automatically: `.filter` → filter-editor, `.list` → list-editor, `.todo` → todo-editor, `.index` / `.moc` → index-editor, `.book` → book-editor, `.txt` → textarea-editor.
 
 ## build the codemirror editor
 

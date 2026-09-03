@@ -13,6 +13,7 @@ import (
 	"knov/internal/git"
 	"knov/internal/logging"
 	"knov/internal/pathutils"
+	"knov/internal/server/render"
 	"knov/internal/thememanager"
 	"knov/internal/translation"
 )
@@ -32,6 +33,12 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to get file content"), http.StatusInternalServerError)
 		return
+	}
+
+	// a book renders as its composed document (see files.GetFileContent); prepend the
+	// export toolbar, or an empty-book notice, above it.
+	if files.IsBook(filePath) {
+		fileContent.HTML = render.RenderBookViewPrefix(filePath) + fileContent.HTML
 	}
 
 	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
@@ -95,6 +102,14 @@ func handleFileNewFilter(w http.ResponseWriter, r *http.Request) {
 func handleFileNewIndex(w http.ResponseWriter, r *http.Request) {
 	tm := thememanager.GetThemeManager()
 	data := thememanager.NewFileNewTemplateData("index-editor")
+	if err := tm.Render(w, "filenew", data); err != nil {
+		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
+	}
+}
+
+func handleFileNewBook(w http.ResponseWriter, r *http.Request) {
+	tm := thememanager.GetThemeManager()
+	data := thememanager.NewFileNewTemplateData("book-editor")
 	if err := tm.Render(w, "filenew", data); err != nil {
 		http.Error(w, fmt.Sprintf("error rendering template: %v", err), http.StatusInternalServerError)
 	}

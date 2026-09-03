@@ -61,6 +61,11 @@ func (h *MarkdownContentHandler) ExtractSection(filePath, sectionID string, incl
 	return h.extractSectionFromMarkdown(string(content), sectionID, includeSubheaders)
 }
 
+// ExtractSectionFromString extracts a section by ID from content already in memory.
+func (h *MarkdownContentHandler) ExtractSectionFromString(content, sectionID string, includeSubheaders bool) (string, error) {
+	return h.extractSectionFromMarkdown(content, sectionID, includeSubheaders)
+}
+
 // SaveSection saves content to a specific section by ID
 func (h *MarkdownContentHandler) SaveSection(filePath, sectionID, sectionContent string) error {
 	fullPath := pathutils.ToDocsPath(filePath)

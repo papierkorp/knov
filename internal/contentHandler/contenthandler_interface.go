@@ -5,6 +5,10 @@ type ContentHandler interface {
 	// ExtractSection extracts content of a specific section by ID
 	ExtractSection(filePath, sectionID string, includeSubheaders bool) (string, error)
 
+	// ExtractSectionFromString is ExtractSection for content already in memory (no re-read),
+	// for callers composing many sections from one file.
+	ExtractSectionFromString(content, sectionID string, includeSubheaders bool) (string, error)
+
 	// SaveSection saves content to a specific section by ID
 	SaveSection(filePath, sectionID, content string) error
 

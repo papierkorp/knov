@@ -122,6 +122,17 @@ Filters are saved metadata queries that produce a live file list.
 
 ---
 
+## Books
+
+A book is an ordered list of whole files and individual sections that composes into one document.
+
+- Built with a dedicated editor - reorder entries, and optionally pull in a section's subheaders
+- Stored as a plain markdown file, so git, search, links and backups treat it like any other file
+- The file view shows the composed document; export it from there as markdown or PDF
+- Unresolvable references are marked inline instead of breaking the view or the export
+
+---
+
 ## Admin & System Jobs
 
 - `/system/jobs` runs and monitors maintenance jobs
@@ -146,7 +157,7 @@ Filters are saved metadata queries that produce a live file list.
 - **Tags** - free-form, fully customisable
 - **Collections** - automatic grouping by top-level folder, overridable per file
 - **Parent/child hierarchy** - set a parent to build a tree; ancestors and children are computed automatically
-- **Editor/File types** - a general-purpose CodeMirror editor (WYSIWYG, syntax highlighting, live rendering) plus dedicated editors for todo's, list's, filter and index/MOC files, with every output stored as a viable markdown file
+- **Editor/File types** - a general-purpose CodeMirror editor (WYSIWYG, syntax highlighting, live rendering) plus dedicated editors for todo's, list's, filter, index/MOC and book files, with every output stored as a viable markdown file
 
 ---
 

@@ -2,35 +2,32 @@
 
 # small stuff
 
-**manual**
-- add a smoketest todo file to testfiles
-  - create a new file for each editor
-  - move a file for each editor
-  - edit a file for each editor
-  - go to /kanban and move a task around
-  - use the filterForm
-  - create a dashboard with different widgets
-  - browse media
-  - use both builtin and rail theme
-
-**per ai**
 - features
   - create a system for themes (another repoistory with themes)
     - e.g. https://github.com/papierkorp/knov_themes
     - e.g. create a table/dict with all top level folders - than check if there is a theme.json
   - add s3 to backup storage
-  - new "book" feature with different stages
-    - new systempage (system/book) which has a selection of available books
-    - (new storage bookStorage ? => maybe we can deal with it without this but im not sure, which is optional and disabled by default with a new env var)
-    - select headers/anchors from different files or different files and add them into a book
-    - the book combines all these headers/files into one file which allows it to be exported into one markdown/pdf
-    - i think we already have most of these features
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
   - add a image to the testfiles
+  - cache for books?
+    - **`Compose` is uncached and re-runs on every view, every dashboard widget that embeds the book, and once per export request (markdown and pdf are separate).** The code comments acknowledge this and the ref/byte budgets bound the worst case. Fine for a personal wiki; would matter if books ever get listed/embedded in bulk.
+  - add settings for maxcompose in book.go
+  - table filter add filter as soon as you find the same 2 times
 - fixes
   - releasenotes does not work
+  - `--motd-height: 28px` is not loaded correctly it only works after i openend developer tools, unchecked (hide) body:has(#site-motd) {--motd-height: 28px;} and checked it again
+  - **10. Absolute-path entries bypass docs containment.** `book.Compose` resolves whole-file entries through `pathutils.ToDocsPath`, which contains `../` traversal for *relative* paths but not absolute ones — `parsePath` returns `inputPath` verbatim when `filepath.IsAbs` is true. A `.book` entry like `[[/etc/passwd]]` would be read and then be downloadable through `/api/files/export/{markdown,pdf}`. This is pre-existing wikilink behaviour and the app is single-user/authenticated, but "compose arbitrary referenced files into one downloadable artifact" lowers the bar for accidental or malicious local-file disclosure. Worth an explicit containment check on composed entries.
+  - codemirror suggestions starting with: < are not readable here a screenshot:
 - chore
-  - 
+  - dashboard one column widget if only one widget - take the whole space to the bottom
+  - change index editor to use markdownlinks instead of wiki links
+  - no selection for single code blocks
+  - The one place I'd push back for this app's context (single-user, unreleased, personal knowledge base): the **`maxComposeRefs` / `maxComposeBytes` truncation machinery** in `Compose` — the `truncated` flag, the mid-loop break, and the truncation marker. That guards against a 500-reference or 20 MB compose that a personal wiki will essentially never produce, and it adds a branch to reason about (e.g. its interaction with the "all entries failed" check). Dropping it would make `Compose` meaningfully shorter with no realistic downside. The `readCached` map is a smaller version of the same "optimize before it's a problem" instinct, but it's a few lines and does help the legitimate "many sections from one file" pattern, so I'd keep that.
+  - create/generalize a robust reuseable markdown scanner, at the moment we have duplicates for markdown/books and a parser in the book package directly to catch both ``` and ~~~
+  - **Two autocomplete-wiring mechanisms now coexist**: `GenerateDatalistInput` was modernized to `data-path-autocomplete` + global auto-init, but `GenerateDatalistInputWithSave` still emits the old inline script. Worth a follow-up to converge.
+  - make books more handwritten save
+  - **`regexp.MustCompile` runs on every `GetFileContent` call** for filter/list/todo/index/book files. Pre-existing, but this diff edits that exact line and widens the set of files that hit it. It should be a package-level `var`. => The regex should be hoisted 
+  - **`renderIndexEntryRow` does one `FileExists` stat per file entry, synchronously, on every editor open.** Fine for a book (small, capped at 500 refs); a large `.index`/MOC could feel it. Acceptable, noting it.
 
 # Async follow up jobs
 
@@ -90,5 +87,6 @@ Areas to scrutinize (your opinion must cover these):
 - Architecture: are the changes in line with the rest of the codebase?
 - Ignore the i18n translations since they are unrelated
 - Ignore the temp_todo.md file this is just a summary for me
+- ignore the ## => # title change its intentional and fine since im the only one using the application
 
 Also give your opinion about the changes, is the current solution overengineered and can be simplified?

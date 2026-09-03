@@ -110,7 +110,7 @@ Language, theme and home dashboard are UI settings, not env vars - see **Setting
 |---|---|
 | `KNOV_AUTOCREATE_TAGS` | Tags added to new files — `folder/path:tag` scopes to a folder (recursive), a bare tag applies everywhere |
 
-Whether index/filter files use the `.index` extension instead of `.md` is a UI setting, not an env var.
+Whether index, filter and book files use a dedicated extension (`.index`, `.book`) instead of `.md` is a UI setting, not an env var.
 
 ## Notes
 

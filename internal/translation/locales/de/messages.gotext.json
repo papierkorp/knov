@@ -157,6 +157,11 @@
       "translation": "Fett"
     },
     {
+      "id": "Book",
+      "message": "Book",
+      "translation": "Buch"
+    },
+    {
       "id": "Border Style",
       "message": "Border Style",
       "translation": "Rahmenstil"
@@ -600,6 +605,11 @@
       "id": "Hide Archives",
       "message": "Hide Archives",
       "translation": "Archive ausblenden"
+    },
+    {
+      "id": "Hide Book Files",
+      "message": "Hide Book Files",
+      "translation": ""
     },
     {
       "id": "Hide Executables",
@@ -1312,6 +1322,11 @@
       "translation": "Lade Bilder und Anhänge direkt aus dem Editor hoch. Sie erscheinen in Durchsuchen \u0026 Suche wie jede andere Datei und werden genauso versioniert wie deine Notizen (siehe Verlauf)."
     },
     {
+      "id": "Use .book Extension",
+      "message": "Use .book Extension",
+      "translation": ""
+    },
+    {
       "id": "Use .index Extension",
       "message": "Use .index Extension",
       "translation": ".index-Endung verwenden"
@@ -1647,6 +1662,16 @@
       "translation": "Board-Reihenfolge"
     },
     {
+      "id": "book configuration",
+      "message": "book configuration",
+      "translation": "Buch-Konfiguration"
+    },
+    {
+      "id": "book saved successfully",
+      "message": "book saved successfully",
+      "translation": "Buch erfolgreich gespeichert"
+    },
+    {
       "id": "broken link",
       "message": "broken link",
       "translation": "defekter Link"
@@ -1785,6 +1810,11 @@
       "id": "comparing",
       "message": "comparing",
       "translation": "vergleiche"
+    },
+    {
+      "id": "compose files and sections into one exportable document",
+      "message": "compose files and sections into one exportable document",
+      "translation": "Dateien und Abschnitte zu einem exportierbaren Dokument zusammenstellen"
     },
     {
       "id": "configure filter above and click preview to see results",
@@ -2232,6 +2262,11 @@
       "translation": "PDF-Dateien aus Dateilisten und Browse-Ansichten ausschließen"
     },
     {
+      "id": "exclude book files from file listings and browse views",
+      "message": "exclude book files from file listings and browse views",
+      "translation": ""
+    },
+    {
       "id": "exclude filter files from file listings and browse views",
       "message": "exclude filter files from file listings and browse views",
       "translation": "Filterdateien aus Dateilisten und Browse-Ansichten ausschließen"
@@ -2285,6 +2320,16 @@
       "id": "export all files (DokuWiki to Markdown)",
       "message": "export all files (DokuWiki to Markdown)",
       "translation": "alle Dateien exportieren (DokuWiki zu Markdown)"
+    },
+    {
+      "id": "export composed markdown",
+      "message": "export composed markdown",
+      "translation": "Zusammengestelltes Markdown exportieren"
+    },
+    {
+      "id": "export composed pdf",
+      "message": "export composed pdf",
+      "translation": "Zusammengestelltes PDF exportieren"
     },
     {
       "id": "export failed",
@@ -2635,6 +2680,11 @@
       "id": "failed to restore file",
       "message": "failed to restore file",
       "translation": "Fehler beim Wiederherstellen der Datei"
+    },
+    {
+      "id": "failed to save book",
+      "message": "failed to save book",
+      "translation": "Fehler beim Speichern des Buchs"
     },
     {
       "id": "failed to save converted file",
@@ -3140,6 +3190,11 @@
       "id": "in array",
       "message": "in array",
       "translation": "in Array"
+    },
+    {
+      "id": "include subheaders",
+      "message": "include subheaders",
+      "translation": "Unterüberschriften einschließen"
     },
     {
       "id": "indent",
@@ -4162,6 +4217,16 @@
       "translation": "speichern"
     },
     {
+      "id": "save book",
+      "message": "save book",
+      "translation": "Buch speichern"
+    },
+    {
+      "id": "save book files as .book instead of .md (either way the file is tagged as a book in its metadata, so the file view and export always show the composed document)",
+      "message": "save book files as .book instead of .md (either way the file is tagged as a book in its metadata, so the file view and export always show the composed document)",
+      "translation": ""
+    },
+    {
       "id": "save changes",
       "message": "save changes",
       "translation": "Änderungen speichern"
@@ -4235,6 +4300,11 @@
       "id": "search files",
       "message": "search files",
       "translation": "Dateien durchsuchen"
+    },
+    {
+      "id": "search files (append #section)",
+      "message": "search files (append #section)",
+      "translation": "Dateien suchen (#Abschnitt anhängen)"
     },
     {
       "id": "search history",
@@ -4522,6 +4592,11 @@
       "translation": "Theme:"
     },
     {
+      "id": "this book has no entries yet - add a file reference in the editor to compose and export it.",
+      "message": "this book has no entries yet - add a file reference in the editor to compose and export it.",
+      "translation": ""
+    },
+    {
       "id": "this file has an unresolved conflict:",
       "message": "this file has an unresolved conflict:",
       "translation": "diese Datei hat einen ungelösten Konflikt:"
@@ -4645,6 +4720,11 @@
       "id": "unknown widget type: {Arg_1}",
       "message": "unknown widget type: {Arg_1}",
       "translation": "unbekannter Widget-Typ: {Arg_1}"
+    },
+    {
+      "id": "unrecognized entry (kept as-is)",
+      "message": "unrecognized entry (kept as-is)",
+      "translation": "nicht erkannter Eintrag (unverändert übernommen)"
     },
     {
       "id": "unused",

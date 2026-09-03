@@ -8,7 +8,14 @@ import (
 	"knov/internal/logging"
 )
 
-// GenerateID generates a unique ID from header text with collision handling
+// GenerateID generates a unique ID from header text with collision handling.
+//
+// This is the one slug function for header ids: the markdown renderer/TOC
+// (parser.InjectHeaderIDs), the pdf exporter and internal/book all call it.
+// internal/book resolves a `.book` "path#section" entry by slugging the anchor
+// through here and matching it against the rendered header id, so changing the
+// slug rules silently breaks book section references - keep it in sync or route
+// both sides through a shared helper.
 func GenerateID(text string, usedIDs map[string]int) string {
 	id := strings.ToLower(text)
 	id = regexp.MustCompile(`[^\p{L}\p{N}]+`).ReplaceAllString(id, "-")

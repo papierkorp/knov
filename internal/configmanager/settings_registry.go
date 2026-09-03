@@ -129,6 +129,12 @@ var (
 		Label: "Use .index Extension",
 		Desc:  "save index files as .index instead of .md",
 	})
+	UseExtensionBook = register(&BoolSetting{
+		key: "useExtensionBook", Default: true,
+		Section: SectionEditor, Group: GroupFileExtensions,
+		Label: "Use .book Extension",
+		Desc:  "save book files as .book instead of .md (either way the file is tagged as a book in its metadata, so the file view and export always show the composed document)",
+	})
 
 	// ── Table ─────────────────────────────────────────────────────────────────
 	PageSize = register(&IntSetting{
@@ -266,6 +272,12 @@ var (
 		Section: SectionFileTypes, Group: GroupEditorTypes,
 		Label: "Hide Index Files",
 		Desc:  "exclude index files from file listings and browse views",
+	})
+	HideBook = register(&BoolSetting{
+		key: "hideBook", Default: false,
+		Section: SectionFileTypes, Group: GroupEditorTypes,
+		Label: "Hide Book Files",
+		Desc:  "exclude book files from file listings and browse views",
 	})
 
 	// ── File Types / Media Types ──────────────────────────────────────────────

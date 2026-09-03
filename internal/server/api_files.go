@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"knov/internal/book"
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/dokuwikiconverter"
@@ -469,7 +470,7 @@ func handleAPIToggleTodoState(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Export file to markdown
-// @Description Export dokuwiki file to markdown format
+// @Description Convert a dokuwiki file to markdown, or compose a `.book` file into one document, and download it
 // @Tags files
 // @Accept application/x-www-form-urlencoded
 // @Produce text/markdown
@@ -485,18 +486,25 @@ func handleAPIExportToMarkdown(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullPath := pathutils.ToDocsPath(filePath)
-
-	// read file content
-	content, err := os.ReadFile(fullPath)
-	if err != nil {
-		logging.LogError(logging.KeyApp, "failed to read file %s: %v", fullPath, err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
-		return
+	var markdown string
+	if files.IsBook(filePath) {
+		// a book exports as its composed document, not its raw entry list
+		composed, err := book.Compose(filePath)
+		if err != nil {
+			logging.LogError(logging.KeyApp, "failed to compose book %s: %v", filePath, err)
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "export failed"), http.StatusInternalServerError)
+			return
+		}
+		markdown = composed
+	} else {
+		content, err := os.ReadFile(pathutils.ToDocsPath(filePath))
+		if err != nil {
+			logging.LogError(logging.KeyApp, "failed to read file %s: %v", filePath, err)
+			http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to read file"), http.StatusInternalServerError)
+			return
+		}
+		markdown = dokuwikiconverter.NewWithFilePath(filePath).ConvertToMarkdown(string(content))
 	}
-
-	// convert to markdown
-	markdown := dokuwikiconverter.NewWithFilePath(filePath).ConvertToMarkdown(string(content))
 
 	// prepare download
 	filename := filepath.Base(filePath)

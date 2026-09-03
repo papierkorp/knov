@@ -1138,6 +1138,80 @@
                 "responses": {}
             }
         },
+        "/api/editor/bookeditor": {
+            "post": {
+                "description": "Saves a .book file: an ordered list of file/title/separator entries. A file\nentry value may carry a #section suffix and a \"subheaders\" flag.",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Save book editor",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file path",
+                        "name": "filepath",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "entry type (file, title, separator)",
+                        "name": "entries[][type]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "file path (path or path#section) or title text",
+                        "name": "entries[][value]",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "include subheaders for a section entry",
+                        "name": "entries[][subheaders]",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/api/editor/entry/add-entry": {
+            "post": {
+                "description": "Adds a new empty entry row to the index or book editor",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "editor"
+                ],
+                "summary": "Add index/book entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "entry type (separator, file, title)",
+                        "name": "type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "index (default) or book",
+                        "name": "mode",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/api/editor/filtereditor": {
             "post": {
                 "description": "Saves a filter file (redirects to existing filter save endpoint)",
@@ -1156,7 +1230,7 @@
         },
         "/api/editor/indexeditor": {
             "post": {
-                "description": "Saves an index/MOC file",
+                "description": "Saves an index/MOC file: an ordered list of file/title/separator entries.",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -1177,40 +1251,15 @@
                     },
                     {
                         "type": "string",
-                        "description": "entry type",
+                        "description": "entry type (file, title, separator)",
                         "name": "entries[][type]",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "description": "entry value",
+                        "description": "file path or title text",
                         "name": "entries[][value]",
                         "in": "formData"
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/api/editor/indexeditor/add-entry": {
-            "post": {
-                "description": "Adds a new entry to the index editor",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "editor"
-                ],
-                "summary": "Add index entry",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "entry type (separator, file, title)",
-                        "name": "type",
-                        "in": "formData",
-                        "required": true
                     }
                 ],
                 "responses": {}
@@ -1595,7 +1644,7 @@
         },
         "/api/files/export/markdown": {
             "get": {
-                "description": "Export dokuwiki file to markdown format",
+                "description": "Convert a dokuwiki file to markdown, or compose a `.book` file into one document, and download it",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -1668,7 +1717,7 @@
         },
         "/api/files/export/pdf": {
             "get": {
-                "description": "Renders a file's markdown source, or optionally just one section of it, to a downloadable pdf",
+                "description": "Renders a file's markdown source (or one section of it, or a `.book` file's composed document) to a downloadable pdf",
                 "produces": [
                     "application/pdf"
                 ],
@@ -6345,6 +6394,7 @@
                 "list-editor",
                 "todo-editor",
                 "index-editor",
+                "book-editor",
                 "codemirror-editor"
             ],
             "x-enum-varnames": [
@@ -6352,6 +6402,7 @@
                 "EditorTypeList",
                 "EditorTypeTodo",
                 "EditorTypeIndex",
+                "EditorTypeBook",
                 "EditorTypeCodeMirror"
             ]
         },

@@ -1,5 +1,6 @@
-// Package parsertest - Parser suite: exercises internal/parser's exported ProcessMarkdownLinks
-// directly. Every case here is a pure string-in/string-out function call with no file IO, no
+// Package parsertest - Parser suite: exercises internal/parser's exported link helpers
+// (ProcessMarkdownLinks, ResolveWikiLinks, ResolveWikiTarget) directly. Every case here is a
+// pure string-in/string-out function call with no file IO, no
 // setup/teardown and no global state to restore - unlike every prior suite, there's no
 // resetAndSeed step at all.
 package parsertest
@@ -27,6 +28,8 @@ func (Suite) Run() (*test.SuiteResult, error) {
 		caseUnicodeHeaderSlugCapitalization,
 		caseExternalLinkUntouched,
 		caseImageEmbedUntouched,
+		caseWikiTargetExtraction,
+		caseWikiLinkPureAnchor,
 	}
 
 	result := &test.SuiteResult{Suite: "parser"}

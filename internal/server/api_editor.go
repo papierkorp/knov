@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"knov/internal/book"
 	"knov/internal/configmanager"
 	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
@@ -16,6 +17,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/git"
 	"knov/internal/logging"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/server/notify"
 	"knov/internal/server/render"
@@ -53,14 +55,9 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 	} else if fp == "" {
 		// no filepath and no editor provided — use configured default for new files
 		et = defaultMarkdownEditor()
-	} else {
-		// existing file: read editor from metadata, fall back to configured default
-		metadata, _ := files.MetaDataGet(fp)
-		if metadata != nil && metadata.Editor != "" {
-			et = metadata.Editor
-		} else {
-			et = defaultMarkdownEditor()
-		}
+	} else if et = files.ResolveEditor(fp); et == "" {
+		// existing file with no metadata and a generic extension (e.g. .md)
+		et = defaultMarkdownEditor()
 	}
 
 	// render the appropriate editor
@@ -78,9 +75,14 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	case files.EditorTypeIndex:
 		var renderErr error
-		html, renderErr = render.RenderIndexEditor(fp)
-		if renderErr != nil {
+		if html, renderErr = render.RenderIndexEditor(fp); renderErr != nil {
 			logging.LogError(logging.KeyApp, "failed to render index editor: %v", renderErr)
+			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
+		}
+	case files.EditorTypeBook:
+		var renderErr error
+		if html, renderErr = render.RenderBookEditor(fp); renderErr != nil {
+			logging.LogError(logging.KeyApp, "failed to render book editor: %v", renderErr)
 			html = render.RenderCodeMirrorEditorForm(fp, prefillPath, editorParam)
 		}
 	default:
@@ -91,93 +93,117 @@ func handleAPIGetEditorHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Save index editor
-// @Description Saves an index/MOC file
+// @Description Saves an index/MOC file: an ordered list of file/title/separator entries.
 // @Tags editor
 // @Accept x-www-form-urlencoded
 // @Param filepath formData string true "file path"
-// @Param entries[][type] formData string false "entry type"
-// @Param entries[][value] formData string false "entry value"
+// @Param entries[][type] formData string false "entry type (file, title, separator)"
+// @Param entries[][value] formData string false "file path or title text"
 // @Produce html
 // @Router /api/editor/indexeditor [post]
 func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
+	saveEntryEditorFile(w, r, false)
+}
+
+// @Summary Save book editor
+// @Description Saves a .book file: an ordered list of file/title/separator entries. A file
+// @Description entry value may carry a #section suffix and a "subheaders" flag.
+// @Tags editor
+// @Accept x-www-form-urlencoded
+// @Param filepath formData string true "file path"
+// @Param entries[][type] formData string false "entry type (file, title, separator)"
+// @Param entries[][value] formData string false "file path (path or path#section) or title text"
+// @Param entries[][subheaders] formData string false "include subheaders for a section entry"
+// @Produce html
+// @Router /api/editor/bookeditor [post]
+func handleAPISaveBookEditor(w http.ResponseWriter, r *http.Request) {
+	saveEntryEditorFile(w, r, true)
+}
+
+// entryEditorKind is the per-editor config for the shared index/book save path: which
+// editor posted decides index vs book (not any form field), so the file is always tagged
+// to match the editor it was opened in.
+type entryEditorKind struct {
+	editor            files.EditorType
+	extKey            string // configmanager.ExtensionForEditor key
+	includeSubheaders bool   // whether file entries carry a subheaders flag
+	savedMsg          string
+	failMsg           string
+}
+
+// entryEditorKindFor selects the index or book config once; the message args stay literal
+// so the gotext extractor still sees them.
+func entryEditorKindFor(bookMode bool, lang string) entryEditorKind {
+	if bookMode {
+		return entryEditorKind{
+			editor:            files.EditorTypeBook,
+			extKey:            "book",
+			includeSubheaders: true,
+			savedMsg:          translation.SprintfForRequest(lang, "book saved successfully"),
+			failMsg:           translation.SprintfForRequest(lang, "failed to save book"),
+		}
+	}
+	return entryEditorKind{
+		editor:   files.EditorTypeIndex,
+		extKey:   "index",
+		savedMsg: translation.SprintfForRequest(lang, "index saved successfully"),
+		failMsg:  translation.SprintfForRequest(lang, "failed to save index"),
+	}
+}
+
+// saveEntryEditorFile is the shared save path for the index and book entry editors.
+func saveEntryEditorFile(w http.ResponseWriter, r *http.Request, bookMode bool) {
+	lang := configmanager.GetLanguage()
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(lang, "failed to parse form"), http.StatusBadRequest)
 		return
 	}
 
 	// dont rename to filepath otherwise filepath.join will not work anymore because of the import
 	filezpath := r.FormValue("filepath")
 	if filezpath == "" {
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "missing filepath"), http.StatusBadRequest)
+		http.Error(w, translation.SprintfForRequest(lang, "missing filepath"), http.StatusBadRequest)
 		return
 	}
 
-	// ensure .index or .moc extension (but not both)
-	if filepath.Ext(filezpath) == "" {
-		filezpath = filezpath + configmanager.ExtensionForEditor("index")
-	}
+	kind := entryEditorKindFor(bookMode, lang)
 
-	// convert to full path
+	// ensure a markdown-recognized extension, else the file falls through to the plaintext
+	// handler on view and shows its raw source instead of the composed index/book
+	if !parser.IsMarkdownExtension(filezpath) {
+		filezpath = filezpath + configmanager.ExtensionForEditor(kind.extKey)
+	}
 	fullPath := pathutils.ToDocsPath(filezpath)
 
-	// parse entries
-	var config render.IndexConfig
-	config.Entries = []render.IndexEntry{}
-
-	// parse entries[i][type] and entries[i][value]
-	i := 0
-	for {
-		typeKey := fmt.Sprintf("entries[%d][type]", i)
-		valueKey := fmt.Sprintf("entries[%d][value]", i)
-
-		entryType := r.FormValue(typeKey)
+	// parse entries[i][type] / [value] / [subheaders]
+	var entries []book.Entry
+	for i := 0; ; i++ {
+		entryType := r.FormValue(fmt.Sprintf("entries[%d][type]", i))
 		if entryType == "" {
-			break // no more entries
+			break
 		}
-
-		entryValue := r.FormValue(valueKey)
-		config.Entries = append(config.Entries, render.IndexEntry{
-			Type:  entryType,
-			Value: entryValue,
+		entries = append(entries, book.Entry{
+			Type:              entryType,
+			Value:             r.FormValue(fmt.Sprintf("entries[%d][value]", i)),
+			IncludeSubheaders: kind.includeSubheaders && r.FormValue(fmt.Sprintf("entries[%d][subheaders]", i)) == "true",
 		})
-		i++
 	}
 
-	// convert to markdown format with links (so existing link detection works)
-	var markdown strings.Builder
-	for _, entry := range config.Entries {
-		switch entry.Type {
-		case "separator":
-			markdown.WriteString("\n---\n\n")
-		case "file":
-			if entry.Value != "" {
-				// stored as a [[wikilink]] so header/anchor targeting and
-				// display-text resolution reuse the regular wikilink logic,
-				// even though the editor field itself is a plain path input
-				markdown.WriteString(fmt.Sprintf("- [[%s]]\n", entry.Value))
-			}
-		case "title":
-			if entry.Value != "" {
-				markdown.WriteString(fmt.Sprintf("\n## %s\n\n", entry.Value))
-			}
-		}
-	}
-
-	// save as markdown file
-	if err := contentStorage.WriteFile(fullPath, []byte(markdown.String()), 0644); err != nil {
-		logging.LogError(logging.KeyApp, "failed to write index file: %v", err)
-		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to save index"), http.StatusInternalServerError)
+	// serialize back to markdown - a file entry is stored as a [[wikilink]] so link detection works
+	if err := contentStorage.WriteFile(fullPath, []byte(book.ToMarkdown(entries)), 0644); err != nil {
+		logging.LogError(logging.KeyApp, "failed to write %s file: %v", kind.extKey, err)
+		http.Error(w, kind.failMsg, http.StatusInternalServerError)
 		return
 	}
 	go git.CommitFile(fullPath)
 
 	normalizedPath := pathutils.ToWithPrefix(filezpath)
 	if err := files.MetaDataSync(normalizedPath); err != nil {
-		logging.LogError(logging.KeyApp, "failed to save metadata for index file %s: %v", filezpath, err)
-	} else if err := files.SetEditor(normalizedPath, files.EditorTypeIndex); err != nil {
-		logging.LogError(logging.KeyApp, "failed to set editor for index file %s: %v", filezpath, err)
+		logging.LogError(logging.KeyApp, "failed to save metadata for %s file %s: %v", kind.extKey, filezpath, err)
+	} else if err := files.SetEditor(normalizedPath, kind.editor); err != nil {
+		logging.LogError(logging.KeyApp, "failed to set editor for %s file %s: %v", kind.extKey, filezpath, err)
 	} else {
-		logging.LogInfo(logging.KeyApp, "saved metadata for index file: %s", filezpath)
+		logging.LogInfo(logging.KeyApp, "saved metadata for %s file: %s", kind.extKey, filezpath)
 	}
 
 	if err := files.UpdateLinksForSingleFile(normalizedPath); err != nil {
@@ -187,23 +213,22 @@ func handleAPISaveIndexEditor(w http.ResponseWriter, r *http.Request) {
 		logging.LogWarning(logging.KeyApp, "failed to update orphaned media cache: %v", err)
 	}
 
-	logging.LogInfo(logging.KeyApp, "saved index file: %s", filezpath)
-	notify.SetHeader(w, notify.LevelSuccess, translation.SprintfForRequest(configmanager.GetLanguage(), "index saved successfully"))
+	logging.LogInfo(logging.KeyApp, "saved %s file: %s", kind.extKey, filezpath)
+	notify.SetHeader(w, notify.LevelSuccess, kind.savedMsg)
 	successMsg := fmt.Sprintf(`%s <a href="/files/%s">%s</a>`,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "index saved successfully"),
-		filezpath,
-		translation.SprintfForRequest(configmanager.GetLanguage(), "view file"))
+		kind.savedMsg, filezpath, translation.SprintfForRequest(lang, "view file"))
 	writeResponse(w, r, map[string]string{"status": "ok", "filepath": filezpath}, render.RenderStatusMessage(render.StatusOK, successMsg))
 }
 
-// @Summary Add index entry
-// @Description Adds a new entry to the index editor
+// @Summary Add index/book entry
+// @Description Adds a new empty entry row to the index or book editor
 // @Tags editor
 // @Accept x-www-form-urlencoded
 // @Param type formData string true "entry type (separator, file, title)"
+// @Param mode formData string false "index (default) or book"
 // @Produce html
-// @Router /api/editor/indexeditor/add-entry [post]
-func handleAPIAddIndexEntry(w http.ResponseWriter, r *http.Request) {
+// @Router /api/editor/entry/add-entry [post]
+func handleAPIAddEntry(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, translation.SprintfForRequest(configmanager.GetLanguage(), "failed to parse form"), http.StatusBadRequest)
 		return
@@ -215,19 +240,9 @@ func handleAPIAddIndexEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// get current count of entries
-	container := r.FormValue("container")
-	_ = container // not used, we'll use JavaScript to count
-
-	// create new entry with next index (JavaScript will handle proper indexing)
-	entry := render.IndexEntry{
-		Type:  entryType,
-		Value: "",
-	}
-
-	// render entry row with index 999 (will be reindexed by JavaScript)
-	html := render.RenderIndexEntryRowHelper(999, entry)
-
+	entry := book.Entry{Type: entryType}
+	// index 999 is a placeholder; the editor's reindex script fixes it after the swap
+	html := render.RenderEntryRowHelper(999, entry, r.FormValue("mode") == "book")
 	writeResponse(w, r, entry, html)
 }
 

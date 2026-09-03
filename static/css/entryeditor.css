@@ -1,21 +1,21 @@
 /* ---------------------------------------------------------------------------------------- */
-/* --------------------------------- Index Editor ---------------------------------------- */
+/* ----------------------------- Entry Editor (index / book) ----------------------------- */
 /* ---------------------------------------------------------------------------------------- */
 
-#index-editor {
+#entry-editor {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.index-form-container {
+.entry-form-container {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 16px;
 }
 
-.index-form-container h4 {
+.entry-form-container h4 {
   margin: 0 0 12px 0;
   color: var(--text);
   font-size: 1.1rem;
@@ -133,14 +133,14 @@
   min-width: 0;
 }
 
-.index-form-container .form-actions {
+.entry-form-container .form-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 8px;
 }
 
-.index-form-container .form-actions + .form-actions {
+.entry-form-container .form-actions + .form-actions {
   margin-top: 4px;
   padding-top: 8px;
   border-top: 1px solid var(--border);

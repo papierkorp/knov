@@ -99,6 +99,7 @@ func NewRouter() *chi.Mux {
 	r.Get("/files/new/todo", handleFileNewTodo)
 	r.Get("/files/new/filter", handleFileNewFilter)
 	r.Get("/files/new/index", handleFileNewIndex)
+	r.Get("/files/new/book", handleFileNewBook)
 
 	r.Get("/dashboard", handleDashboardView)
 	r.Get("/dashboard/{id}", handleDashboardView)
@@ -158,7 +159,8 @@ func NewRouter() *chi.Mux {
 		r.Route("/editor", func(r chi.Router) {
 			r.Get("/", handleAPIGetEditorHandler)
 			r.Post("/indexeditor", handleAPISaveIndexEditor)
-			r.Post("/indexeditor/add-entry", handleAPIAddIndexEntry)
+			r.Post("/bookeditor", handleAPISaveBookEditor)
+			r.Post("/entry/add-entry", handleAPIAddEntry) // shared by the index and book entry editors
 			r.Post("/filtereditor", handleAPISaveFilterEditor)
 			r.Post("/listeditor", handleAPISaveListEditor)
 			r.Post("/tableeditor", handleAPITableEditorSave)

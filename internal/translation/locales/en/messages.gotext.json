@@ -157,6 +157,11 @@
       "translation": ""
     },
     {
+      "id": "Book",
+      "message": "Book",
+      "translation": ""
+    },
+    {
       "id": "Border Style",
       "message": "Border Style",
       "translation": ""
@@ -599,6 +604,11 @@
     {
       "id": "Hide Archives",
       "message": "Hide Archives",
+      "translation": ""
+    },
+    {
+      "id": "Hide Book Files",
+      "message": "Hide Book Files",
       "translation": ""
     },
     {
@@ -1312,6 +1322,11 @@
       "translation": ""
     },
     {
+      "id": "Use .book Extension",
+      "message": "Use .book Extension",
+      "translation": ""
+    },
+    {
       "id": "Use .index Extension",
       "message": "Use .index Extension",
       "translation": ""
@@ -1647,6 +1662,16 @@
       "translation": ""
     },
     {
+      "id": "book configuration",
+      "message": "book configuration",
+      "translation": ""
+    },
+    {
+      "id": "book saved successfully",
+      "message": "book saved successfully",
+      "translation": ""
+    },
+    {
       "id": "broken link",
       "message": "broken link",
       "translation": ""
@@ -1784,6 +1809,11 @@
     {
       "id": "comparing",
       "message": "comparing",
+      "translation": ""
+    },
+    {
+      "id": "compose files and sections into one exportable document",
+      "message": "compose files and sections into one exportable document",
       "translation": ""
     },
     {
@@ -2232,6 +2262,11 @@
       "translation": ""
     },
     {
+      "id": "exclude book files from file listings and browse views",
+      "message": "exclude book files from file listings and browse views",
+      "translation": ""
+    },
+    {
       "id": "exclude filter files from file listings and browse views",
       "message": "exclude filter files from file listings and browse views",
       "translation": ""
@@ -2284,6 +2319,16 @@
     {
       "id": "export all files (DokuWiki to Markdown)",
       "message": "export all files (DokuWiki to Markdown)",
+      "translation": ""
+    },
+    {
+      "id": "export composed markdown",
+      "message": "export composed markdown",
+      "translation": ""
+    },
+    {
+      "id": "export composed pdf",
+      "message": "export composed pdf",
       "translation": ""
     },
     {
@@ -2634,6 +2679,11 @@
     {
       "id": "failed to restore file",
       "message": "failed to restore file",
+      "translation": ""
+    },
+    {
+      "id": "failed to save book",
+      "message": "failed to save book",
       "translation": ""
     },
     {
@@ -3139,6 +3189,11 @@
     {
       "id": "in array",
       "message": "in array",
+      "translation": ""
+    },
+    {
+      "id": "include subheaders",
+      "message": "include subheaders",
       "translation": ""
     },
     {
@@ -4162,6 +4217,16 @@
       "translation": ""
     },
     {
+      "id": "save book",
+      "message": "save book",
+      "translation": ""
+    },
+    {
+      "id": "save book files as .book instead of .md (either way the file is tagged as a book in its metadata, so the file view and export always show the composed document)",
+      "message": "save book files as .book instead of .md (either way the file is tagged as a book in its metadata, so the file view and export always show the composed document)",
+      "translation": ""
+    },
+    {
       "id": "save changes",
       "message": "save changes",
       "translation": ""
@@ -4234,6 +4299,11 @@
     {
       "id": "search files",
       "message": "search files",
+      "translation": ""
+    },
+    {
+      "id": "search files (append #section)",
+      "message": "search files (append #section)",
       "translation": ""
     },
     {
@@ -4522,6 +4592,11 @@
       "translation": ""
     },
     {
+      "id": "this book has no entries yet - add a file reference in the editor to compose and export it.",
+      "message": "this book has no entries yet - add a file reference in the editor to compose and export it.",
+      "translation": ""
+    },
+    {
       "id": "this file has an unresolved conflict:",
       "message": "this file has an unresolved conflict:",
       "translation": ""
@@ -4644,6 +4719,11 @@
     {
       "id": "unknown widget type: {Arg_1}",
       "message": "unknown widget type: {Arg_1}",
+      "translation": ""
+    },
+    {
+      "id": "unrecognized entry (kept as-is)",
+      "message": "unrecognized entry (kept as-is)",
       "translation": ""
     },
     {

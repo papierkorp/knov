@@ -483,6 +483,34 @@
 
   global.initPathAutocomplete = initPathAutocomplete;
 
+  // auto-wire any input carrying data-path-autocomplete, so a server-rendered input
+  // stays free of its own inline <script> (which used to race this file's own
+  // end-of-body load order and silently no-op on first paint). One initial scan plus
+  // an htmx:after:settle listener covers every swapped-in fragment (the editor form
+  // itself arrives via htmx, so DOMContentLoaded alone misses it); the data-* guard
+  // keeps re-scans idempotent. Note: htmx 4 has no htmx:load event.
+  function autoInitPathAutocomplete(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    if (scope.matches && scope.matches("input[data-path-autocomplete]")) bind(scope);
+    scope.querySelectorAll("input[data-path-autocomplete]").forEach(bind);
+  }
+  function bind(el) {
+    if (el.dataset.pathAutocompleteBound) return;
+    el.dataset.pathAutocompleteBound = "1";
+    initPathAutocomplete(el, el.getAttribute("data-path-autocomplete"));
+  }
+  function startAutoInit() {
+    autoInitPathAutocomplete(document);
+    document.addEventListener("htmx:after:settle", function (e) {
+      autoInitPathAutocomplete(e.target || document);
+    });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startAutoInit);
+  } else {
+    startAutoInit();
+  }
+
   // exposed so other insertion paths (e.g. the toolbar-triggered wiki-file
   // selector modal) build the same encoded "](...)" target instead of
   // duplicating (and potentially drifting from) the encoding logic here

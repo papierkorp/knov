@@ -3689,3 +3689,23 @@ dl.media-info dd {
   padding: 6px 8px;
   border-bottom: 1px solid var(--border);
 }
+
+/* book: composed-view export toolbar */
+#view-book-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* entry editor (index / book): entry points at a file that no longer exists */
+#entry-editor .entry-file-missing {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--warning);
+  font-size: 0.85em;
+}
+
+/* entry editor (index / book): a line the parser didn't recognize, kept read-only */
+#entry-editor .entry-unknown label {
+  color: var(--warning);
+}

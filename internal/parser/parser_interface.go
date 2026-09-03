@@ -2,6 +2,12 @@ package parser
 
 import "bytes"
 
+// PathlessRender is the filePath value for Render when the markdown has no source file on
+// disk (a composed book, the concatenated changelog). It makes Render emit static HTML
+// only: no per-header edit/pdf buttons, no section-edit buttons, a plain <table> instead
+// of the live table editor.
+const PathlessRender = ""
+
 // Parser manages all operations for a specific file type
 type Parser interface {
 	// CanHandle returns true if this handler supports the file
@@ -10,7 +16,8 @@ type Parser interface {
 	// Parse converts raw content to intermediate format if needed
 	Parse(content []byte) ([]byte, error)
 
-	// Render converts content to HTML
+	// Render converts content to HTML. filePath is the docs-relative path of the source
+	// file; pass PathlessRender when the content has no file on disk.
 	Render(content []byte, filePath string) ([]byte, error)
 
 	// ExtractLinks extracts internal links from content

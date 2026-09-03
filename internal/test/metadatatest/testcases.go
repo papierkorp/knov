@@ -331,13 +331,14 @@ func caseAllEditorTypes() test.CaseResult {
 	name := "all-editor-types"
 
 	types := files.AllEditorTypes()
-	success := len(types) == 5 &&
+	success := len(types) == 6 &&
 		slices.Contains(types, files.EditorTypeCodeMirror) &&
-		slices.Contains(types, files.EditorTypeTodo)
+		slices.Contains(types, files.EditorTypeTodo) &&
+		slices.Contains(types, files.EditorTypeBook)
 
 	cr := test.CaseResult{
 		Name:     name,
-		Expected: "5 editor types, including codemirror-editor and todo-editor",
+		Expected: "6 editor types, including codemirror-editor, todo-editor and book-editor",
 		Actual:   fmt.Sprintf("%d types: %v", len(types), types),
 		Success:  success,
 	}
