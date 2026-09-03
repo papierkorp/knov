@@ -206,6 +206,14 @@
   border-radius: 4px;
 }
 
+/* CM6 draws the selection in a layer behind .cm-content, so the opaque
+   inline-code background hides it (drawSelection also forces native
+   ::selection transparent). Re-enable a native ::selection tint here, matching
+   the .cm-selectionBackground color above, so selected inline code stays visible */
+#codemirror-editor .cm-inline-code::selection {
+  background-color: color-mix(in srgb, var(--text) 30%, transparent) !important;
+}
+
 /* syntax markers: #, **, _, `, >, -, [ ], etc. — always visible, muted */
 #codemirror-editor .cm-mark {
   color: var(--text-secondary) !important;
@@ -261,4 +269,31 @@
 }
 #codemirror-editor .cm-searchMatch-selected {
   background: color-mix(in srgb, var(--warning) 70%, transparent);
+}
+
+/* autocomplete + hover tooltips (@codemirror/autocomplete) — CM6's base
+   .cm-tooltip has a hardcoded light background and no text color, so the
+   completion list (e.g. the "<tag" html completions) is light-on-light and
+   unreadable in dark mode; theme it with the app vars like the panels above */
+#codemirror-editor .cm-tooltip {
+  background: var(--bg-secondary);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+#codemirror-editor .cm-tooltip-autocomplete > ul > li[aria-selected] {
+  background: var(--primary);
+  color: var(--bg);
+}
+#codemirror-editor .cm-completionDetail {
+  color: var(--text-secondary);
+}
+#codemirror-editor .cm-completionMatchedText {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 700;
+}
+#codemirror-editor .cm-tooltip-autocomplete > ul > li[aria-selected] .cm-completionDetail,
+#codemirror-editor .cm-tooltip-autocomplete > ul > li[aria-selected] .cm-completionMatchedText {
+  color: var(--bg);
 }
