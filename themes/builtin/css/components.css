@@ -793,6 +793,31 @@ body[data-dark-mode="true"] .tooltip::after {
   grid-template-columns: 1fr;
   gap: 20px;
 }
+/* single-widget oneColumn dashboard: stretch the widget to the bottom */
+.page-dashboard:has(.dashboard-oneColumn) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.page-dashboard:has(.dashboard-oneColumn) .dashboard-layout {
+  flex: 1;
+  min-height: 0;
+}
+.page-dashboard .dashboard-oneColumn:has(.dashboard-widget:only-child) {
+  height: 100%;
+}
+.page-dashboard .dashboard-oneColumn .dashboard-widget:only-child {
+  display: flex;
+  flex-direction: column;
+}
+.page-dashboard .dashboard-oneColumn .dashboard-widget:only-child .widget-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.page-dashboard .dashboard-oneColumn .dashboard-widget:only-child #filter-results {
+  max-height: none;
+}
 .page-dashboard .dashboard-custom {
   display: grid;
   gap: 20px;

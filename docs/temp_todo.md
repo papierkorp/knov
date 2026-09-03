@@ -14,7 +14,6 @@
 - fixes
   - releasenotes does not work
 - chore
-  - dashboard one column widget if only one widget - take the whole space to the bottom
   - change index/book editor to use markdownlinks instead of wiki links
   - create/generalize a robust reuseable markdown scanner, at the moment we have duplicates for markdown/books and a parser in the book package directly to catch both ``` and ~~~
   - we have two autocomplete-wiring mechanisms which coexist: `GenerateDatalistInput` was modernized to `data-path-autocomplete` + global auto-init, but `GenerateDatalistInputWithSave` still emits the old inline script. Worth a follow-up to converge.
