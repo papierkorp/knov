@@ -50,7 +50,20 @@ tree:
 
 changelog:
 	go run ./tools/genchangelog
-	@git add docs/changelogs/
+	@git add docs/changelogs/ docs/releases/
+
+# bump version.yaml first, then: make release  (writes the release notes, commits, tags)
+release:
+	@set -e; \
+	VERSION=$$(sed -n 's/^version:[[:space:]]*//p' version.yaml | tr -d '"'); \
+	test -n "$$VERSION" || { echo "no version in version.yaml"; exit 1; }; \
+	TAG="v$$VERSION"; \
+	git rev-parse -q --verify "refs/tags/$$TAG" >/dev/null && { echo "tag $$TAG already exists"; exit 1; } || true; \
+	go run ./tools/genchangelog -version "$$TAG"; \
+	git add version.yaml docs/changelogs/ docs/releases/; \
+	git commit -m "chore: release $$TAG"; \
+	git tag -a "$$TAG" -m "release $$TAG"; \
+	echo "created release commit + tag $$TAG - push with: git push --follow-tags"
 
 killdev:
 	-fuser -k 1324/tcp
@@ -109,4 +122,4 @@ tempai:
 # windows dev
 #KNOV_LOG_LEVEL=debug go run ./
 
-.PHONY: dev devd swaggo-api-init translation prod docker-build-dev docker-build-deployment docker-run-dev tree changelog docs-templatedata env-example tempai killdev
+.PHONY: dev devd swaggo-api-init translation prod docker-build-dev docker-build-deployment docker-run-dev tree changelog release docs-templatedata env-example tempai killdev

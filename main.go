@@ -66,7 +66,7 @@ var staticFS embed.FS
 //go:embed themes/builtin
 var builtinThemeFS embed.FS
 
-//go:embed docs
+//go:embed docs README.md
 var docsFS embed.FS
 
 // @title Knov API

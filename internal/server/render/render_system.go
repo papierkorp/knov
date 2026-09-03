@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -495,36 +496,45 @@ func HandleSystemJobs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// RenderChangelog concatenates every docs/changelogs/*.md file (newest
-// first) into one rendered HTML string - shared by the full /system/changelog
-// page and the rail "changelog" content snippet's fragment endpoint.
+// RenderChangelog concatenates the curated end-user release notes
+// (docs/releases/*.md, newest first) into one rendered HTML string - shared by
+// the full /system/changelog page and the rail "changelog" content snippet's
+// fragment endpoint. Before the first tagged release exists it falls back to
+// README.md.
 func RenderChangelog() (string, error) {
-	entries, err := docsFiles.ReadDir("docs/changelogs")
-	if err != nil {
-		return "", err
+	mdHandler := parser.NewMarkdownHandler()
+
+	var names []string
+	if entries, err := docsFiles.ReadDir("docs/releases"); err == nil {
+		for _, entry := range entries {
+			if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".md") {
+				names = append(names, entry.Name())
+			}
+		}
 	}
 
-	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].Name() > entries[j].Name()
-	})
-
-	mdHandler := parser.NewMarkdownHandler()
-	var combined strings.Builder
-
-	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") {
-			continue
-		}
-
-		data, err := docsFiles.ReadFile("docs/changelogs/" + entry.Name())
+	if len(names) == 0 {
+		data, err := docsFiles.ReadFile("README.md")
 		if err != nil {
-			logging.LogWarning(logging.KeyApp, "failed to read changelog %s: %v", entry.Name(), err)
+			return "", err
+		}
+		rendered, err := mdHandler.Render(data, parser.PathlessRender)
+		return string(rendered), err
+	}
+
+	sort.Slice(names, func(i, j int) bool { return releaseBefore(names[i], names[j]) })
+
+	var combined strings.Builder
+	for _, name := range names {
+		data, err := docsFiles.ReadFile("docs/releases/" + name)
+		if err != nil {
+			logging.LogWarning(logging.KeyApp, "failed to read release notes %s: %v", name, err)
 			continue
 		}
 
 		rendered, err := mdHandler.Render(data, parser.PathlessRender)
 		if err != nil {
-			logging.LogWarning(logging.KeyApp, "failed to render changelog %s: %v", entry.Name(), err)
+			logging.LogWarning(logging.KeyApp, "failed to render release notes %s: %v", name, err)
 			continue
 		}
 
@@ -532,6 +542,27 @@ func RenderChangelog() (string, error) {
 	}
 
 	return combined.String(), nil
+}
+
+// releaseBefore orders release-notes filenames for display: "unreleased.md"
+// first, then version files ("v1.2.3.md") by descending semver.
+func releaseBefore(a, b string) bool {
+	if a == "unreleased.md" || b == "unreleased.md" {
+		return a == "unreleased.md" && b != "unreleased.md"
+	}
+	return semverKey(a) > semverKey(b)
+}
+
+// semverKey turns "v1.2.3.md" into a comparable int (major, minor, patch each
+// assumed < 1000).
+func semverKey(name string) int {
+	name = strings.TrimPrefix(strings.TrimSuffix(name, ".md"), "v")
+	key := 0
+	for _, part := range strings.SplitN(name, ".", 3) {
+		n, _ := strconv.Atoi(part)
+		key = key*1000 + n
+	}
+	return key
 }
 
 func HandleSystemChangelog(w http.ResponseWriter, r *http.Request) {

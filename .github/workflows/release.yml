@@ -25,13 +25,13 @@ jobs:
 
       - run: make prod
 
-      - name: build release notes from changelog
+      - name: prepare release notes
         run: |
-          PREV_TAG=$(git tag --sort=-v:refname | grep -v "^${GITHUB_REF_NAME}$" | head -n1)
-          if [ -z "$PREV_TAG" ]; then
-            cat docs/changelogs/*.md > release_notes.md
+          NOTES="docs/releases/${GITHUB_REF_NAME}.md"
+          if [ -f "$NOTES" ]; then
+            cp "$NOTES" release_notes.md
           else
-            git diff "$PREV_TAG" -- docs/changelogs/ | grep -E '^\+[^+]' | sed 's/^+//' > release_notes.md
+            cp README.md release_notes.md
           fi
 
       - run: gh release create ${{ github.ref_name }} bin/knov bin/knov.exe --notes-file release_notes.md
