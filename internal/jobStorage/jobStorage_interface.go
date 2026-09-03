@@ -35,6 +35,7 @@ type JobStorage interface {
 	UpdateStatus(id, status, errMsg string) error
 	Get(id string) (*JobRecord, error)
 	ListRunning() ([]JobRecord, error)
+	Purge(maxCount int, maxAgeDays int) error
 	GetBackendType() string
 }
 
@@ -73,6 +74,12 @@ func Get(id string) (*JobRecord, error) {
 // resume or mark interrupted on startup after a crash.
 func ListRunning() ([]JobRecord, error) {
 	return storage.ListRunning()
+}
+
+// Purge removes finished job records exceeding maxCount or older than maxAgeDays.
+// A limit <= 0 is treated as "no limit". Rows still marked running are never removed.
+func Purge(maxCount int, maxAgeDays int) error {
+	return storage.Purge(maxCount, maxAgeDays)
 }
 
 // GetBackendType returns the storage backend type.

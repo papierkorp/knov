@@ -36,6 +36,7 @@ var (
 	rebuildMu       sync.Mutex
 	filterMu        sync.Mutex
 	notifMu         sync.Mutex
+	jobRecordMu     sync.Mutex
 	cacheInvalidMu  sync.Mutex
 	mediaCleanupMu  sync.Mutex
 	gitPullMu       sync.Mutex
@@ -338,6 +339,11 @@ func RunNotificationPurge() error {
 	return execute(&notifMu, &notifJob{})
 }
 
+// RunJobRecordPurge trims the persistent jobStorage table (async-job records) with dedup protection.
+func RunJobRecordPurge() error {
+	return execute(&jobRecordMu, &jobRecordPurgeJob{})
+}
+
 // RunCacheInvalidate clears the cache and records it in the job history.
 func RunCacheInvalidate() error {
 	return execute(&cacheInvalidMu, &cacheInvalidateJob{})
@@ -427,6 +433,7 @@ func RunAsync() error {
 			{"file-sync", RunFileSync}, // includes filter-reindex as a sub-step
 			{"search-reindex", RunSearchReindex},
 			{"metadata-rebuild", RunMetadataRebuild},
+			{"job-record-purge", RunJobRecordPurge},
 			{"notification-purge", RunNotificationPurge},
 		}
 

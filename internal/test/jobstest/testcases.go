@@ -177,9 +177,9 @@ func caseMediaCleanup() test.CaseResult {
 }
 
 // caseManualTrigger covers job.RunAsync (the admin "run all jobs now" button) - it runs
-// file-sync/search-reindex/metadata-rebuild/notification-purge sequentially in a goroutine,
-// so this polls job.GetRecentRuns() for notification-purge (the last step, and the only one
-// with no independent periodic ticker to race against) to complete.
+// file-sync/search-reindex/metadata-rebuild/job-record-purge/notification-purge sequentially
+// in a goroutine, so this polls job.GetRecentRuns() for notification-purge (the last step, and
+// the only one with no independent periodic ticker to race against) to complete.
 func caseManualTrigger() test.CaseResult {
 	name := "manual-trigger"
 

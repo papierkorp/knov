@@ -12,6 +12,7 @@ import (
 	"knov/internal/files"
 	"knov/internal/filter"
 	"knov/internal/git"
+	"knov/internal/jobStorage"
 	"knov/internal/logging"
 	"knov/internal/notificationStorage"
 	"knov/internal/pathutils"
@@ -138,6 +139,23 @@ func (j *notifJob) Name() string { return "notification-purge" }
 func (j *notifJob) Run(_ context.Context) error {
 	if err := notificationStorage.Purge(100, 3); err != nil {
 		return fmt.Errorf("failed to purge notifications: %w", err)
+	}
+	return nil
+}
+
+// ----------------------------------------------------------------------------------------
+// ------------------------------------ jobRecordPurgeJob --------------------------------
+// ----------------------------------------------------------------------------------------
+
+// jobRecordPurgeJob trims the persistent jobStorage table (async-job records). It does not
+// touch the separate in-memory job-history ring buffer (see history.go).
+type jobRecordPurgeJob struct{}
+
+func (j *jobRecordPurgeJob) Name() string { return "job-record-purge" }
+
+func (j *jobRecordPurgeJob) Run(_ context.Context) error {
+	if err := jobStorage.Purge(200, 30); err != nil {
+		return fmt.Errorf("failed to purge job records: %w", err)
 	}
 	return nil
 }

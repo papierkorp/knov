@@ -167,6 +167,42 @@ func (s *sqliteStorage) ListRunning() ([]JobRecord, error) {
 	return out, nil
 }
 
+// Purge only ever deletes rows whose status is not "running". The finished_at / datetime('now')
+// comparison assumes timestamps are stored in a lexicographically ordered, consistent format -
+// same assumption as notificationStorage.Purge's created_at comparison. maxCount / maxAgeDays
+// values <= 0 disable the corresponding limit rather than deleting everything.
+func (s *sqliteStorage) Purge(maxCount int, maxAgeDays int) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	// remove finished rows older than maxAgeDays
+	if maxAgeDays > 0 {
+		_, err := s.db.Exec(
+			`DELETE FROM jobs WHERE status != ? AND finished_at < datetime('now', ?)`,
+			StatusRunning, fmt.Sprintf("-%d days", maxAgeDays),
+		)
+		if err != nil {
+			return fmt.Errorf("failed to purge old jobs: %w", err)
+		}
+	}
+
+	// enforce max count on finished rows — keep the newest maxCount by finish time
+	if maxCount > 0 {
+		_, err := s.db.Exec(`
+			DELETE FROM jobs
+			WHERE status != ? AND id NOT IN (
+				SELECT id FROM jobs WHERE status != ? ORDER BY finished_at DESC LIMIT ?
+			)`, StatusRunning, StatusRunning, maxCount,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to enforce job count limit: %w", err)
+		}
+	}
+
+	logging.LogDebug(logging.KeyApp, "job record purge complete (max %d, max age %d days)", maxCount, maxAgeDays)
+	return nil
+}
+
 func (s *sqliteStorage) GetBackendType() string {
 	return "sqlite"
 }
