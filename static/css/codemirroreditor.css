@@ -95,10 +95,11 @@
 }
 
 /* CM6's built-in selection color is hardcoded to a light-mode default (dark mode is
-   never passed into EditorView.theme), washing out var(--primary) link text in dark
-   mode; theming it here keeps it legible in every color scheme / dark-mode combo */
+   never passed into EditorView.theme), washing out selected text in dark mode; tinting
+   it with var(--text) here keeps the selection legible in every color scheme / dark-mode
+   combo */
 #codemirror-editor .cm-selectionBackground {
-  background: color-mix(in srgb, var(--primary) 30%, transparent) !important;
+  background: color-mix(in srgb, var(--text) 30%, transparent) !important;
 }
 
 /* ── Markdown live preview: content is styled, syntax markers stay
