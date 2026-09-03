@@ -17,6 +17,7 @@ import (
 	"knov/internal/filter"
 	"knov/internal/kanbanStorage"
 	"knov/internal/logging"
+	"knov/internal/markdown"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 )
@@ -590,12 +591,17 @@ func Excerpt(fullPath string, maxRunes int) string {
 	}
 
 	body := parser.StripFrontMatter(data)
-	for _, line := range strings.Split(string(body), "\n") {
+	lines := strings.Split(string(body), "\n")
+	inFence := markdown.FenceMask(lines)
+	for i, line := range lines {
+		if inFence[i] {
+			continue
+		}
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
 		}
-		if strings.HasPrefix(line, "#") || strings.HasPrefix(line, "---") || strings.HasPrefix(line, "```") {
+		if strings.HasPrefix(line, "#") || strings.HasPrefix(line, "---") {
 			continue
 		}
 		line = strings.NewReplacer("**", "", "__", "", "*", "", "_", "").Replace(line)

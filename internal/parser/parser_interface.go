@@ -1,6 +1,6 @@
 package parser
 
-import "bytes"
+import "knov/internal/markdown"
 
 // PathlessRender is the filePath value for Render when the markdown has no source file on
 // disk (a composed book, the concatenated changelog). It makes Render emit static HTML
@@ -73,18 +73,8 @@ func StripFrontMatter(content []byte) []byte {
 }
 
 // StripFrontMatterBytes splits content into (frontmatterYAML, body).
-// frontmatterYAML is nil when no front matter is present.
+// frontmatterYAML is nil when no front matter is present. The rule lives in
+// markdown.SplitFrontMatter so the heading scanner and this share one definition.
 func StripFrontMatterBytes(content []byte) (frontmatter []byte, body []byte) {
-	delimiter := []byte("---\n")
-	closing := []byte("\n---\n")
-
-	if !bytes.HasPrefix(content, delimiter) {
-		return nil, content
-	}
-	rest := content[len(delimiter):]
-	idx := bytes.Index(rest, closing)
-	if idx < 0 {
-		return nil, content // malformed — leave untouched
-	}
-	return rest[:idx], rest[idx+len(closing):]
+	return markdown.SplitFrontMatter(content)
 }

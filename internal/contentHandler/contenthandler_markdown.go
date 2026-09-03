@@ -7,9 +7,10 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
+	"knov/internal/markdown"
+	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/types"
-	"knov/internal/utils"
 )
 
 // splitPreHeader separates any leading non-header content from the section content.
@@ -125,70 +126,28 @@ func (h *MarkdownContentHandler) SaveTable(filePath string, tableIndex int, head
 func (h *MarkdownContentHandler) extractSectionFromMarkdown(content, sectionID string, includeSubheaders bool) (string, error) {
 	logging.LogDebug(logging.KeyApp, "extractSectionFromMarkdown: looking for section '%s', includeSubheaders=%t", sectionID, includeSubheaders)
 	lines := strings.Split(content, "\n")
+	headings := parser.Headings(lines)
 
-	var sectionStart, sectionEnd int
-	var inSection bool
-	var inCodeBlock bool
-	var sectionHeaderLevel int
-	usedIDs := make(map[string]int)
-
-	for i, line := range lines {
-		trimmed := strings.TrimSpace(line)
-
-		// check for code block fences
-		if strings.HasPrefix(trimmed, "```") {
-			inCodeBlock = !inCodeBlock
+	for i, hd := range headings {
+		if hd.ID != sectionID {
+			continue
 		}
-
-		// only process headers outside of code blocks
-		if !inCodeBlock && strings.HasPrefix(trimmed, "#") {
-			level := len(trimmed) - len(strings.TrimLeft(trimmed, "#"))
-			headerText := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
-			headerID := utils.GenerateID(headerText, usedIDs)
-
-			logging.LogDebug(logging.KeyApp, "found header at line %d: level=%d, id='%s', text='%s'", i, level, headerID, headerText)
-
-			if headerID == sectionID && !inSection {
-				sectionStart = i
-				sectionHeaderLevel = level
-				inSection = true
-				logging.LogDebug(logging.KeyApp, "found target section '%s' at line %d (level %d)", sectionID, i, level)
+		// with includeSubheaders, keep going until a header of the same or higher level
+		// (fewer #); without it, stop at the very next header.
+		sectionEnd := len(lines)
+		for _, next := range headings[i+1:] {
+			if includeSubheaders && next.Level > hd.Level {
 				continue
 			}
-
-			// determine when to stop extraction based on includeSubheaders setting
-			if inSection && headerID != sectionID {
-				shouldStop := false
-				if includeSubheaders {
-					// original behavior: stop at header of same or higher level (fewer # = higher level)
-					shouldStop = level <= sectionHeaderLevel
-				} else {
-					// new behavior: stop at any header (same, higher, or lower level)
-					shouldStop = true
-				}
-
-				if shouldStop {
-					sectionEnd = i
-					logging.LogDebug(logging.KeyApp, "section ended at line %d due to header level %d (section level %d, includeSubheaders=%t)", i, level, sectionHeaderLevel, includeSubheaders)
-					break
-				}
-			}
+			sectionEnd = next.Line
+			break
 		}
+		logging.LogDebug(logging.KeyApp, "extracted section '%s': lines %d-%d", sectionID, hd.Line, sectionEnd-1)
+		return strings.Join(lines[hd.Line:sectionEnd], "\n"), nil
 	}
 
-	if !inSection {
-		logging.LogDebug(logging.KeyApp, "section '%s' not found", sectionID)
-		return "", fmt.Errorf("section not found: %s", sectionID)
-	}
-
-	if sectionEnd == 0 {
-		sectionEnd = len(lines)
-		logging.LogDebug(logging.KeyApp, "section extends to end of file (line %d)", sectionEnd)
-	}
-
-	sectionLines := lines[sectionStart:sectionEnd]
-	logging.LogDebug(logging.KeyApp, "extracted section '%s': lines %d-%d (%d lines total)", sectionID, sectionStart, sectionEnd-1, len(sectionLines))
-	return strings.Join(sectionLines, "\n"), nil
+	logging.LogDebug(logging.KeyApp, "section '%s' not found", sectionID)
+	return "", fmt.Errorf("section not found: %s", sectionID)
 }
 
 // replaceSectionInMarkdown replaces content of a specific section with options for subheader handling
@@ -202,42 +161,22 @@ func (h *MarkdownContentHandler) replaceSectionInMarkdown(content, sectionID, ne
 	// repeated saves when the user keeps a subheader in the editor content).
 	sectionStart := -1
 	sectionEnd := len(lines)
-	var inSection bool
-	var inCodeBlock bool
-	var sectionHeaderLevel int
-	usedIDs := make(map[string]int)
 
-	for i, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if strings.HasPrefix(trimmed, "```") {
-			inCodeBlock = !inCodeBlock
+	headings := parser.Headings(lines)
+	for i, hd := range headings {
+		if hd.ID != sectionID {
+			continue
 		}
-		if !inCodeBlock && strings.HasPrefix(trimmed, "#") {
-			level := len(trimmed) - len(strings.TrimLeft(trimmed, "#"))
-			headerText := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
-			headerID := utils.GenerateID(headerText, usedIDs)
-
-			if headerID == sectionID && !inSection {
-				sectionStart = i
-				sectionHeaderLevel = level
-				inSection = true
-				logging.LogDebug(logging.KeyApp, "found target section '%s' at line %d (level %d)", sectionID, i, sectionHeaderLevel)
+		sectionStart = hd.Line
+		for _, next := range headings[i+1:] {
+			if includeSubheaders && next.Level > hd.Level {
 				continue
 			}
-			if inSection {
-				shouldStop := false
-				if includeSubheaders {
-					shouldStop = level <= sectionHeaderLevel
-				} else {
-					shouldStop = true
-				}
-				if shouldStop {
-					sectionEnd = i
-					logging.LogDebug(logging.KeyApp, "section ends at line %d (level %d)", i, level)
-					break
-				}
-			}
+			sectionEnd = next.Line
+			break
 		}
+		logging.LogDebug(logging.KeyApp, "section '%s' spans lines %d-%d", sectionID, sectionStart, sectionEnd)
+		break
 	}
 
 	if sectionStart == -1 {
@@ -252,28 +191,31 @@ func (h *MarkdownContentHandler) replaceSectionInMarkdown(content, sectionID, ne
 	// header itself, then scanning forward from sectionEnd to skip any lines in the original
 	// file that belong to those same sub-header blocks.
 	if sectionEnd < len(lines) {
+		// Collect the sub-headers from newContent (everything after the section
+		// header itself), keyed by their raw trimmed line so the tail scan can
+		// match the identical lines. parser.Headings gives the same fence-aware,
+		// CommonMark heading definition the first pass uses, so a "#" inside a
+		// fenced block is never mistaken for a header on either side.
+		newLines := strings.Split(newContent, "\n")
 		subHeaders := make(map[string]bool)
 		pastSectionHeader := false
-		subUsedIDs := make(map[string]int)
-		for _, nl := range strings.Split(newContent, "\n") {
-			nlTrimmed := strings.TrimSpace(nl)
-			if strings.HasPrefix(nlTrimmed, "#") {
-				nlText := strings.TrimSpace(strings.TrimLeft(nlTrimmed, "#"))
-				nlID := utils.GenerateID(nlText, subUsedIDs)
-				if !pastSectionHeader && nlID == sectionID {
-					pastSectionHeader = true
-				} else if pastSectionHeader {
-					subHeaders[nlTrimmed] = true
-				}
+		for _, nh := range parser.Headings(newLines) {
+			if !pastSectionHeader && nh.ID == sectionID {
+				pastSectionHeader = true
+			} else if pastSectionHeader {
+				subHeaders[strings.TrimSpace(newLines[nh.Line])] = true
 			}
 		}
 		if len(subHeaders) > 0 {
+			headingLine := make(map[int]bool, len(headings))
+			for _, hd := range headings {
+				headingLine[hd.Line] = true
+			}
 			adjustedEnd := sectionEnd
 			inSubSection := false
 			for j := sectionEnd; j < len(lines); j++ {
-				jTrimmed := strings.TrimSpace(lines[j])
-				if strings.HasPrefix(jTrimmed, "#") {
-					if subHeaders[jTrimmed] {
+				if headingLine[j] {
+					if subHeaders[strings.TrimSpace(lines[j])] {
 						adjustedEnd = j + 1
 						inSubSection = true
 					} else {
@@ -546,8 +488,9 @@ func (h *MarkdownContentHandler) generateMarkdownTable(headers []string, rows []
 	return lines
 }
 
-// FindMarkdownTableAnchor returns the slugified ID of the header that precedes
-// the Nth table (0-based) in the markdown file. Returns "" if none is found.
+// FindMarkdownTableAnchor returns the id of the header that precedes the Nth
+// table (0-based) in the markdown file - the same id the renderer assigns, so a
+// wiki link can jump straight to it. Returns "" if none is found.
 func FindMarkdownTableAnchor(filePath string, tableIndex int) string {
 	fullPath := pathutils.ToDocsPath(filePath)
 	content, err := contentStorage.ReadFile(fullPath)
@@ -557,19 +500,25 @@ func FindMarkdownTableAnchor(filePath string, tableIndex int) string {
 	}
 
 	lines := strings.Split(string(content), "\n")
+	mask := markdown.FenceMask(lines)
+
+	headerID := make(map[int]string)
+	for _, hd := range parser.Headings(lines) {
+		headerID[hd.Line] = hd.ID
+	}
+
 	lastAnchor := ""
 	tableCount := -1
-
 	for i, line := range lines {
-		trimmed := strings.TrimSpace(line)
-
-		// track the most recent header
-		if strings.HasPrefix(trimmed, "#") {
-			headerText := strings.TrimSpace(strings.TrimLeft(trimmed, "#"))
-			lastAnchor = slugifyAnchor(headerText)
+		if id, ok := headerID[i]; ok {
+			lastAnchor = id
+		}
+		if mask[i] {
+			continue
 		}
 
 		// a table separator line (| --- |) following a row line marks a table
+		trimmed := strings.TrimSpace(line)
 		if strings.HasPrefix(trimmed, "|") && strings.Contains(trimmed, "-") {
 			if i > 0 && strings.HasPrefix(strings.TrimSpace(lines[i-1]), "|") {
 				tableCount++
@@ -580,25 +529,4 @@ func FindMarkdownTableAnchor(filePath string, tableIndex int) string {
 		}
 	}
 	return lastAnchor
-}
-
-// slugifyAnchor converts header text to the same anchor ID format that
-// gomarkdown's AutoHeadingIDs produces: lowercase, spaces→hyphens,
-// non-alphanumeric chars dropped, consecutive hyphens collapsed.
-func slugifyAnchor(text string) string {
-	var b strings.Builder
-	prevHyphen := false
-	for _, r := range strings.ToLower(text) {
-		switch {
-		case r >= 'a' && r <= 'z', r >= '0' && r <= '9':
-			b.WriteRune(r)
-			prevHyphen = false
-		case r == ' ' || r == '-':
-			if !prevHyphen {
-				b.WriteRune('-')
-				prevHyphen = true
-			}
-		}
-	}
-	return strings.Trim(b.String(), "-")
 }

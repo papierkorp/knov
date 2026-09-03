@@ -16,6 +16,7 @@ import (
 	"knov/internal/contentHandler"
 	"knov/internal/contentStorage"
 	"knov/internal/logging"
+	"knov/internal/markdown"
 	"knov/internal/parser"
 	"knov/internal/pathutils"
 	"knov/internal/utils"
@@ -47,12 +48,12 @@ type Entry struct {
 // "<!-- subheaders -->" sets IncludeSubheaders), a "#"-prefixed line a title, "---" a
 // separator. Any other non-blank line becomes an EntryUnknown that round-trips verbatim.
 // The [[ ]] body is taken verbatim (alias syntax not split out here). Parse assumes the
-// shape ToMarkdown writes, not arbitrary markdown; "#" lines inside closed ``` / ~~~
-// fences are skipped, an unterminated fence is ignored.
+// shape ToMarkdown writes, not arbitrary markdown; lines inside ``` / ~~~ fences are
+// skipped (an unterminated fence runs to end of file - see markdown.FenceMask).
 func Parse(content string) []Entry {
 	var entries []Entry
 	lines := strings.Split(content, "\n")
-	inFence := fencedLines(lines)
+	inFence := markdown.FenceMask(lines)
 
 	for i, line := range lines {
 		if inFence[i] {
@@ -89,33 +90,6 @@ func Parse(content string) []Entry {
 	}
 
 	return entries
-}
-
-// fencedLines marks line indices inside a ``` or ~~~ fenced block (fence lines included): a
-// marker opens a block that a later line starting with the same three chars closes. An
-// unterminated fence marks nothing, so its lines stay eligible as entries.
-func fencedLines(lines []string) []bool {
-	inside := make([]bool, len(lines))
-	open := -1 // opening-line index of the currently open fence, -1 when none is open
-	var marker string
-	for i, line := range lines {
-		t := strings.TrimSpace(line)
-		switch {
-		case open >= 0:
-			inside[i] = true
-			if strings.HasPrefix(t, marker) {
-				open = -1 // closed; its lines stay marked
-			}
-		case strings.HasPrefix(t, "```"), strings.HasPrefix(t, "~~~"):
-			open, marker = i, t[:3]
-			inside[i] = true
-		}
-	}
-	// unterminated fence: roll its lines back so they stay eligible as entries
-	for i := open; i >= 0 && i < len(lines); i++ {
-		inside[i] = false
-	}
-	return inside
 }
 
 // ToMarkdown serializes entries back to `.book`/`.index` markdown (inverse of Parse). File

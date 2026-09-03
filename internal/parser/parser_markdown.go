@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"knov/internal/configmanager"
+	"knov/internal/markdown"
 	"knov/internal/pathutils"
 	"knov/internal/translation"
 
@@ -209,12 +210,16 @@ func (h *MarkdownHandler) Render(content []byte, filePath string) ([]byte, error
 	return []byte(result), nil
 }
 
+// inlineMD is the shared goldmark instance for RenderInlineMarkdown. goldmark is
+// safe for concurrent use, so one instance avoids rebuilding the parser on every
+// call (RenderInlineMarkdown runs once per heading in parser.Headings).
+var inlineMD = goldmark.New(goldmark.WithExtensions(extension.GFM))
+
 // RenderInlineMarkdown renders inline markdown (code, bold, italic, links) to HTML.
 // It strips the wrapping <p> tag goldmark adds around single-line input.
 func RenderInlineMarkdown(s string) string {
-	md := goldmark.New(goldmark.WithExtensions(extension.GFM))
 	var buf bytes.Buffer
-	if err := md.Convert([]byte(s), &buf); err != nil {
+	if err := inlineMD.Convert([]byte(s), &buf); err != nil {
 		return s
 	}
 	result := strings.TrimSpace(buf.String())
@@ -376,42 +381,33 @@ type codeBlock struct {
 	rendered bool
 }
 
-// extractCodeBlocks replaces fenced code blocks with KNOVCODEBLOCK<n> placeholders
-// so chroma handles highlighting and goldmark never sees the raw code content.
+// extractCodeBlocks replaces every ``` / ~~~ fenced block with a KNOVCODEBLOCK<n>
+// placeholder (kept in a clean, blank-line-padded fence so goldmark still parses
+// it as one) so chroma handles highlighting and goldmark never sees the raw code.
 func (h *MarkdownHandler) extractCodeBlocks(content []byte) ([]byte, []codeBlock) {
-	var blocks []codeBlock
-	fenceRe := regexp.MustCompile("(?m)^([ \t]*)```([^\n]*)\n")
 	lines := strings.Split(string(content), "\n")
+	found := markdown.CodeBlocks(lines)
+	if len(found) == 0 {
+		return content, nil
+	}
+
+	var blocks []codeBlock
 	var result []string
-	i := 0
-	for i < len(lines) {
-		m := fenceRe.FindStringSubmatch(lines[i] + "\n")
-		if m == nil {
-			result = append(result, lines[i])
-			i++
-			continue
-		}
-		indent := m[1]
-		lang := strings.TrimSpace(m[2])
+	prev := 0
+	for _, cb := range found {
+		result = append(result, lines[prev:cb.Start]...)
+
+		lang := cb.Lang
 		if lang == "" {
 			lang = "text"
 		}
-		i++
-		var contentLines []string
-		for i < len(lines) {
-			if strings.TrimSpace(lines[i]) == "```" {
-				i++
-				break
-			}
-			contentLines = append(contentLines, lines[i])
-			i++
-		}
-		rawContent := strings.Join(contentLines, "\n") + "\n"
 		placeholder := fmt.Sprintf("KNOVCODEBLOCK%d", len(blocks))
-		blocks = append(blocks, codeBlock{lang: lang, content: rawContent})
-		// emit with blank lines so goldmark sees a proper fenced block
-		result = append(result, "", indent+"```", indent+placeholder, indent+"```", "")
+		blocks = append(blocks, codeBlock{lang: lang, content: cb.Body + "\n"})
+		result = append(result, "", cb.Indent+"```", cb.Indent+placeholder, cb.Indent+"```", "")
+
+		prev = cb.End + 1 // cb.End is always in range, so prev is at most len(lines)
 	}
+	result = append(result, lines[prev:]...)
 	return []byte(strings.Join(result, "\n")), blocks
 }
 
@@ -770,17 +766,10 @@ func (h *MarkdownHandler) ExtractLinks(content []byte) []string {
 }
 
 func removeCodeBlocks(text string) string {
-	// split on ``` fence markers so each block is removed independently (no greedy cross-block matching)
-	parts := strings.Split(text, "```")
-	var result strings.Builder
-	for i, part := range parts {
-		if i%2 == 0 {
-			// outside a code block — strip inline code then keep
-			result.WriteString(regexp.MustCompile("`[^`\n]+`").ReplaceAllString(part, ""))
-		}
-		// odd-indexed parts are inside fenced code blocks — discard
-	}
-	return result.String()
+	// drop ``` / ~~~ fenced blocks, then any remaining inline `code` spans, so links
+	// inside code are never extracted
+	text = markdown.StripFencedBlocks(strings.Split(text, "\n"))
+	return regexp.MustCompile("`[^`\n]+`").ReplaceAllString(text, "")
 }
 
 func (h *MarkdownHandler) Name() string {

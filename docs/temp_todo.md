@@ -13,13 +13,15 @@
   - table filter add filter as soon as you find the same 2 times
   - todo editor add a date at the end for each click
   - filter display: datalist
+  - delete in the browse sidebar uses a browser pop not our custom in app pop up we use for rename/move
+  - in the /system/jobs add a sort by button the the header (especially for duration)
 - fixes
   - releasenotes does not work
 - chore
   - change index/book editor to use markdownlinks instead of wiki links
-  - create/generalize a robust reuseable markdown scanner, at the moment we have duplicates for markdown/books and a parser in the book package directly to catch both ``` and ~~~
   - we have two autocomplete-wiring mechanisms which coexist: `GenerateDatalistInput` was modernized to `data-path-autocomplete` + global auto-init, but `GenerateDatalistInputWithSave` still emits the old inline script. Worth a follow-up to converge.
   - make books more handwritten save
+  - how much do we still use goldmarkdown?
 
 # Async follow up jobs
 
