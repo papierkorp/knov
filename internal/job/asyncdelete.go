@@ -67,13 +67,14 @@ var resumers = map[string]func(args string) (Job, *sync.Mutex, error){
 
 // IsCancellable reports whether jobType's Run() actually checks its context for cancellation -
 // used by the jobs UI to decide whether a running job of this type gets a cancel button.
-// bulk-delete-files/delete-folder check it between file deletes; other StartAsync types either
-// finish quickly (file-sync) or are unsafe to abort mid-run (restore) or would need a much
-// deeper cancellation-check pass through the files package to honor it meaningfully
-// (metadata-full-rebuild).
+// bulk-delete-files/delete-folder check it between file deletes; metadata-full-rebuild checks
+// it between files (canceling leaves metadata half-applied, so the job fires a notification
+// telling the user to re-run - only reachable via StartFullRebuild, not the synchronous or
+// cron paths, whose ctx is never canceled). Other StartAsync types either finish quickly
+// (file-sync) or are unsafe to abort mid-run (restore).
 func IsCancellable(jobType string) bool {
 	switch jobType {
-	case JobTypeBulkDeleteFiles, JobTypeDeleteFolder:
+	case JobTypeBulkDeleteFiles, JobTypeDeleteFolder, JobTypeFullRebuild:
 		return true
 	default:
 		return false

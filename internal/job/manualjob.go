@@ -3,6 +3,7 @@ package job
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -43,14 +44,28 @@ func (j *fullRebuildJob) Name() string { return JobTypeFullRebuild }
 // a crash is exactly the same as running it fresh, no snapshot/state needed.
 func (j *fullRebuildJob) Resumable() bool { return true }
 
-func (j *fullRebuildJob) Run(_ context.Context) error {
+func (j *fullRebuildJob) Run(ctx context.Context) (err error) {
 	logging.LogInfo(logging.KeyFullRebuild, "running full metadata rebuild")
 
 	files.StartMetaGetCounter()
 	defer files.StopMetaGetCounter()
 
+	// a canceled rebuild leaves metadata half-applied - the bare "canceled" job status
+	// doesn't convey that, so tell the user it needs re-running.
+	defer func() {
+		if errors.Is(err, context.Canceled) {
+			if _, nErr := notificationStorage.Add("warning",
+				"full metadata rebuild was canceled - metadata may be inconsistent, re-run it", true); nErr != nil {
+				logging.LogError(logging.KeyFullRebuild, "failed to store canceled-rebuild notification: %v", nErr)
+			}
+		}
+	}()
+
 	if err := files.MetaDataInitializeAll(); err != nil {
 		return fmt.Errorf("failed to initialize metadata: %w", err)
+	}
+	if ctx.Err() != nil {
+		return ctx.Err()
 	}
 
 	stalePurged, err := files.MetaDataPurgeStale()
@@ -62,8 +77,11 @@ func (j *fullRebuildJob) Run(_ context.Context) error {
 	if err != nil {
 		logging.LogError(logging.KeyFullRebuild, "full rebuild: failed to purge duplicate metadata: %v", err)
 	}
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 
-	if err := files.MetaDataLinksRebuild(logging.KeyFullRebuild); err != nil {
+	if err := files.MetaDataLinksRebuild(ctx, logging.KeyFullRebuild); err != nil {
 		return fmt.Errorf("failed to rebuild metadata links: %w", err)
 	}
 

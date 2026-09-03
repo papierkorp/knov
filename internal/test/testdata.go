@@ -2,6 +2,7 @@
 package test
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"os"
@@ -87,7 +88,7 @@ func setupTestMetadata() error {
 
 	createTestFilter()
 
-	return files.MetaDataLinksRebuild(logging.KeyApp)
+	return files.MetaDataLinksRebuild(context.Background(), logging.KeyApp)
 }
 
 func createTestFilter() {

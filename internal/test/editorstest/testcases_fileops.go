@@ -1,6 +1,7 @@
 package editorstest
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -35,7 +36,7 @@ func renameCase(name, oldRel, newRel string) test.CaseResult {
 
 	// full link rebuild so the target's LinksToHere is populated before the move -
 	// UpdateLinksForSingleFile only updates a file's own outbound links, not who points at it.
-	if err := files.MetaDataLinksRebuild(logging.KeyApp); err != nil {
+	if err := files.MetaDataLinksRebuild(context.Background(), logging.KeyApp); err != nil {
 		return errCase(name, err)
 	}
 

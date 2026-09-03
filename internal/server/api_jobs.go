@@ -102,8 +102,8 @@ func handleAPIGetJobStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Cancel a running async job
-// @Description Requests cancellation of a running async job (started via a delete-folder or
-// @Description bulk-delete request) by canceling its context. Cancellation is cooperative - the
+// @Description Requests cancellation of a running async job (a delete-folder, bulk-delete or
+// @Description metadata-full-rebuild run) by canceling its context. Cancellation is cooperative - the
 // @Description job only stops at its next checkpoint, so the response still reflects "running";
 // @Description poll GET /api/jobs/{id} for the eventual "canceled" status. Only job types the
 // @Description jobs UI shows a cancel button for actually honor it - see job.IsCancellable.

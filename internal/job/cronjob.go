@@ -236,10 +236,10 @@ type rebuildJob struct{}
 
 func (j *rebuildJob) Name() string { return "metadata-links-rebuild" }
 
-func (j *rebuildJob) Run(_ context.Context) error {
+func (j *rebuildJob) Run(ctx context.Context) error {
 	logging.MarkSessionStart(logging.KeyMetadataRebuild)
 	logging.LogDebug(logging.KeyMetadataRebuild, "running metadata rebuild cronjob")
-	if err := files.MetaDataLinksRebuild(logging.KeyMetadataRebuild); err != nil {
+	if err := files.MetaDataLinksRebuild(ctx, logging.KeyMetadataRebuild); err != nil {
 		return fmt.Errorf("metadata rebuild failed: %w", err)
 	}
 	logging.LogDebug(logging.KeyMetadataRebuild, "metadata rebuild cronjob completed")

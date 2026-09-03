@@ -2362,8 +2362,8 @@ paths:
   /api/jobs/{id}:
     delete:
       description: |-
-        Requests cancellation of a running async job (started via a delete-folder or
-        bulk-delete request) by canceling its context. Cancellation is cooperative - the
+        Requests cancellation of a running async job (a delete-folder, bulk-delete or
+        metadata-full-rebuild run) by canceling its context. Cancellation is cooperative - the
         job only stops at its next checkpoint, so the response still reflects "running";
         poll GET /api/jobs/{id} for the eventual "canceled" status. Only job types the
         jobs UI shows a cancel button for actually honor it - see job.IsCancellable.

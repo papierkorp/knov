@@ -2,6 +2,7 @@
 package files
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -24,8 +25,10 @@ var rebuildMetaGetCount *int
 // Register filter.RegenerateAllIndexes here at startup to keep filter indexes in sync.
 var OnMetadataRebuild func()
 
-// MetaDataLinksRebuild rebuilds all link metadata from scratch.
-func MetaDataLinksRebuild(key logging.Key) error {
+// MetaDataLinksRebuild rebuilds all link metadata from scratch. Cancellation is cooperative:
+// if ctx is canceled it stops before the next file and returns ctx.Err(), leaving the
+// metadata half-rebuilt (a re-run is needed to get back to a consistent state).
+func MetaDataLinksRebuild(ctx context.Context, key logging.Key) error {
 	logging.LogInfo(key, "metadata links rebuild started")
 
 	paths, err := contentStorage.ListFiles()
@@ -46,6 +49,9 @@ func MetaDataLinksRebuild(key logging.Key) error {
 	// Re-gets current metadata under Mutate rather than writing the pre-rebuild snapshot
 	// back, so a concurrent edit landing mid-rebuild isn't reverted (see metadata.go godoc).
 	for _, file := range allMediaFiles {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		normalizedPath := pathutils.ToWithPrefix(file.Path)
 		if err := MetaDataMutate(normalizedPath, func(m *Metadata, existed bool) (bool, error) {
 			if !existed {
@@ -64,6 +70,9 @@ func MetaDataLinksRebuild(key logging.Key) error {
 	// MoveCard/tag edit landing mid-rebuild is never reverted by this stale snapshot.
 	metaCache := make(map[string]*Metadata, len(paths))
 	for _, rawPath := range paths {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		normalizedPath := pathutils.ToWithPrefix(rawPath)
 		metadata, err := MetaDataGet(normalizedPath)
 		if err != nil || metadata == nil {
@@ -78,6 +87,9 @@ func MetaDataLinksRebuild(key logging.Key) error {
 	kidsMap := make(map[string][]string)        // parent → []children
 
 	for _, rawPath := range paths {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		normalizedPath := pathutils.ToWithPrefix(rawPath)
 
 		metadata := metaCache[normalizedPath]
@@ -130,6 +142,9 @@ func MetaDataLinksRebuild(key logging.Key) error {
 
 	// second pass: apply reverse maps from cache, re-getting the current record per write
 	for _, rawPath := range paths {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		normalizedPath := pathutils.ToWithPrefix(rawPath)
 
 		metadata := metaCache[normalizedPath]
@@ -158,6 +173,9 @@ func MetaDataLinksRebuild(key logging.Key) error {
 
 	// third pass: compute related files from cache — no I/O
 	for _, rawPath := range paths {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		normalizedPath := pathutils.ToWithPrefix(rawPath)
 		metadata := metaCache[normalizedPath]
 		if metadata == nil {
@@ -176,6 +194,9 @@ func MetaDataLinksRebuild(key logging.Key) error {
 	// apply media LinksToHere from the same reverse map
 	mediaCount := 0
 	for _, file := range allMediaFiles {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		normalizedPath := pathutils.ToWithPrefix(file.Path)
 		linksToHere := linksToHereMap[normalizedPath]
 		if linksToHere == nil {
