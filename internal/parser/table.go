@@ -156,20 +156,20 @@ func isNumericValue(s string) bool {
 // ColumnFilterValues returns the sorted, lowercased, de-duplicated set of
 // values found in the given column of the (unfiltered) table. It returns nil
 // when the column isn't worth offering as a filter:
-//   - there are fewer than 2 distinct values (nothing to group),
+//   - no value repeats, so filtering wouldn't group anything (a filter is
+//     offered as soon as the same value is found at least twice),
 //   - the column is mostly numeric (quantities/prices are better sorted than
-//     filtered by exact value),
-//   - or most values are unique, e.g. free-text descriptions, where a filter
-//     wouldn't meaningfully narrow anything down.
+//     filtered by exact value).
 func ColumnFilterValues(data *types.TableData, column int) []string {
 	if column < 0 || column >= len(data.Headers) {
 		return nil
 	}
 
-	seen := make(map[string]bool)
+	seen := make(map[string]int)
 	var values []string
 	numericCount := 0
 	nonEmptyCount := 0
+	hasRepeat := false
 
 	for _, row := range data.Rows {
 		if column >= len(row) {
@@ -185,20 +185,20 @@ func ColumnFilterValues(data *types.TableData, column int) []string {
 		}
 
 		v := strings.ToLower(raw)
-		if seen[v] {
+		seen[v]++
+		if seen[v] == 2 {
+			hasRepeat = true
+		}
+		if seen[v] > 1 {
 			continue
 		}
-		seen[v] = true
 		values = append(values, v)
 	}
 
-	if nonEmptyCount == 0 || len(values) <= 1 {
+	if nonEmptyCount == 0 || !hasRepeat {
 		return nil
 	}
 	if float64(numericCount)/float64(nonEmptyCount) > 0.8 {
-		return nil
-	}
-	if float64(len(values))/float64(nonEmptyCount) > 0.5 {
 		return nil
 	}
 

@@ -10,7 +10,6 @@
   - add a tracker editor (e.g. raid clan boss) in edit show a form where i can click, make entries and add new inputs and in view show them as a statistic (makdown table?)
   - add a image to the testfiles so setup/clean testdata also includes it
   - cache for books?
-  - table filter add filter as soon as you find the same 2 times
   - todo editor add a date at the end for each click
   - filter display: datalist
   - delete in the browse sidebar uses a browser pop not our custom in app pop up we use for rename/move
