@@ -8,6 +8,7 @@ import (
 	"knov/internal/configmanager"
 	"knov/internal/files"
 	"knov/internal/filter"
+	"knov/internal/logging"
 	"knov/internal/mapping"
 	"knov/internal/translation"
 	"knov/internal/utils"
@@ -251,6 +252,21 @@ func RenderFilterResult(result *filter.Result, display string) string {
 	default:
 		return fmt.Sprintf(`<div id="filter-results">%s</div>`, RenderFileList(result.Files))
 	}
+}
+
+// RenderFilterFileView renders a saved filter's results for its file view, honoring
+// the filter's configured display. Returns ok=false when relPath is not a saved filter.
+func RenderFilterFileView(relPath string) (string, bool) {
+	config := filter.GetFilterConfigForFile(relPath)
+	if config == nil {
+		return "", false
+	}
+	result, err := filter.FilterFilesWithConfig(config)
+	if err != nil {
+		logging.LogError(logging.KeyApp, "failed to run filter for %s: %v", relPath, err)
+		return "", false
+	}
+	return RenderFilterResult(result, config.Display), true
 }
 
 // renderFileListItems renders file list items as bare <a> tags for grid layouts

@@ -11,6 +11,8 @@
   - add a image to the testfiles so setup/clean testdata also includes it
   - cache for books?
   - table filter add filter as soon as you find the same 2 times
+  - todo editor add a date at the end for each click
+  - filter display: datalist
 - fixes
   - releasenotes does not work
 - chore

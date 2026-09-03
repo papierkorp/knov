@@ -401,6 +401,18 @@ func SaveFilterConfig(config *Config, filterID string) error {
 	return nil
 }
 
+// GetFilterConfigForFile returns the filter config paired with a viewed index file
+// (docs-relative path), or nil when the path is not a saved filter's index file.
+func GetFilterConfigForFile(relPath string) *Config {
+	id := strings.TrimSuffix(relPath, configmanager.ExtensionForEditor("index"))
+	config, err := GetFilterConfig(id)
+	if err != nil {
+		logging.LogWarning(logging.KeyApp, "failed to load filter config for %s: %v", relPath, err)
+		return nil
+	}
+	return config
+}
+
 // GetFilterConfig loads a filter configuration from configStorage
 func GetFilterConfig(filterID string) (*Config, error) {
 	data, err := configStorage.Get(filterKey(filterID))

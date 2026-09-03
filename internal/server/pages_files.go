@@ -41,6 +41,12 @@ func handleFileContent(w http.ResponseWriter, r *http.Request) {
 		fileContent.HTML = render.RenderBookViewPrefix(filePath) + fileContent.HTML
 	}
 
+	// a saved filter renders its results live, honoring the configured display type,
+	// instead of the static markdown index file paired with it.
+	if html, ok := render.RenderFilterFileView(pathutils.ToRelative(filePath)); ok {
+		fileContent.HTML = html
+	}
+
 	if r.URL.Query().Get("snippet") == "true" || r.Header.Get("HX-Request") == "true" {
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(fileContent.HTML))
